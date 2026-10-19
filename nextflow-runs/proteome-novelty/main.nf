@@ -16,6 +16,10 @@ params.n_splits  = 200
 // alphabet:k. Budgets matched in bits; see the pre-registered rule.
 params.settings  = 'hp_pbotc_1st_ed:21,hp_pbotc_1st_ed:30,hp_pbotc_1st_ed:42,protein:5,protein:7,protein:10'
 params.primary   = 'hp_pbotc_1st_ed:30'
+// Settings the synthetic proteomes are counted for; null = the same as `settings`. The sweep
+// (make run-sweep) counts real proteomes at every alphabet and k but keeps the synthetic
+// copies at the six pre-registered settings, which are already done.
+params.null_settings = null
 params.mmseqs_args = '--min-seq-id 0.3 -c 0.8 --cov-mode 0'
 
 // One row per proteome: [proteome, fasta path, n_sequences, n_residues, [clades]]
@@ -270,7 +274,9 @@ workflow {
 
     def table = readTable()
     def clades = table.collectMany { it[4] }.unique()
-    def settings = params.settings.tokenize(',').collect { def s = it.tokenize(':'); [s[0], s[1] as int] }
+    def parseSettings = { str -> str.tokenize(',').collect { def s = it.tokenize(':'); [s[0], s[1] as int] } }
+    def settings = parseSettings(params.settings)
+    def nullSettings = params.null_settings ? parseSettings(params.null_settings) : settings
 
     checked = checkFasta(Channel.fromList(table.collect { [it[0], it[1], it[2], it[3]] }))
     // Seeds 343000 + i predate the move from notebook number 343 to 345; kept unchanged.
@@ -293,8 +299,8 @@ workflow {
     realClades = bundle(checked)
     nullClades = bundle(nulls)
 
-    maskJobs = realClades.map { [it, 'real'] }.mix(nullClades.map { [it, 'null'] })
-        .combine(Channel.fromList(settings))
+    maskJobs = realClades.map { [it, 'real'] }.combine(Channel.fromList(settings))
+        .mix(nullClades.map { [it, 'null'] }.combine(Channel.fromList(nullSettings)))
         .map { b, kind, alphabet, k -> [b[0], kind, alphabet, k, b[1], b[2], b[3], b[4]] }
     cm = cladeMasks(maskJobs)
 

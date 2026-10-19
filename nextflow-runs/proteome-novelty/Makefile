@@ -44,7 +44,7 @@ HEAD_SUBMIT = HEAD_ACCOUNT=$(SLURM_ACCOUNT) HEAD_PARTITION=$(SLURM_PARTITION) \
               HEAD_SESSION=$(HEAD_SESSION) HEAD_JOBNAME=$(HEAD_JOBNAME) \
               $(MAKEFILE_DIR)/../../scripts/nf-head
 
-.PHONY: test stub run watch stop pull-results
+.PHONY: test stub run watch stop pull-results run-sweep stub-sweep pull-sweep
 
 test:
 	$(PYTHON) -m pytest -q $(MAKEFILE_DIR)/tests
@@ -72,6 +72,30 @@ stop:
 pull-results:
 	mkdir -p $(MAKEFILE_DIR)/../../tables/345
 	rsync -av sherlock:$(REMOTE_DIR)/run/results/ $(MAKEFILE_DIR)/../../tables/345/
+
+# --- Every alphabet and k of the region benchmark's sweep (notebook 345, section 8) -------
+## Same launch folder as `run`, with -resume, so its 325 finished tasks are reused. Real
+## proteomes are counted at all 182 settings in assets/sweep_settings.txt; the synthetic
+## copies stay at the six pre-registered settings. Results go to run/results-sweep, so the
+## pre-registered tables in run/results are never overwritten.
+SWEEP_SETTINGS := $(shell grep -E '^[a-z]' $(MAKEFILE_DIR)/assets/sweep_settings.txt | paste -sd, -)
+PREREG_SETTINGS := hp_pbotc_1st_ed:21,hp_pbotc_1st_ed:30,hp_pbotc_1st_ed:42,protein:5,protein:7,protein:10
+
+run-sweep:
+	mkdir -p run
+	cd run && if command -v ml >/dev/null 2>&1; then ml load biology nextflow; fi; \
+	  $(HEAD_SUBMIT) nextflow run ../main.nf -profile sherlock -resume --qfo_dir $(QFO_DIR) \
+	    --settings '$(SWEEP_SETTINGS)' --null_settings '$(PREREG_SETTINGS)' --outdir results-sweep
+
+stub-sweep:
+	mkdir -p run-stub
+	cd run-stub && $(NEXTFLOW) run ../main.nf -stub-run -profile stub \
+	  --qfo_dir $(LAPTOP_QFO_DIR) --outdir results-sweep \
+	  --settings '$(SWEEP_SETTINGS)' --null_settings '$(PREREG_SETTINGS)'
+
+pull-sweep:
+	mkdir -p $(MAKEFILE_DIR)/../../tables/345_sweep
+	rsync -av --exclude parts/ sherlock:$(REMOTE_DIR)/run/results-sweep/ $(MAKEFILE_DIR)/../../tables/345_sweep/
 
 # --- What is running --------------------------------------------------------------------
 ## Every Nextflow run with jobs in the SLURM queue, from any pipeline, then one row per job

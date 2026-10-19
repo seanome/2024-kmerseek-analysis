@@ -90,7 +90,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import polars as pl
 from matplotlib.lines import Line2D
-from matplotlib.ticker import FixedLocator, FuncFormatter, NullLocator
+from matplotlib.ticker import FixedLocator, FuncFormatter, MaxNLocator, NullLocator
 
 sys.path.insert(0, str(Path.cwd()))
 import ortholog_analysis_utils as ou
@@ -781,6 +781,137 @@ md(r"""
 The rule asks for Foldseek structure-cluster rarefaction across clades. That needs
 AlphaFold models for every proteome of each clade, and this pipeline fetches none, so the
 test is not run here. The rule stays as written in the first cell for a later run.
+""")
+
+md(r"""
+## 8. Every alphabet and k of the region benchmark's sweep (reported, not in the verdict)
+
+Asked for after the verdict: the section 4 test repeated for the 17 alphabets and the k
+values the QfO region benchmark sweeps (`nextflow-runs/qfo-pfam-region-benchmark/main.nf`,
+`ALL_ENCODINGS`), real proteomes only. That is 182 alphabet-k pairs: `uniprot18` k14 is
+left out because its words need 58.4 bits and the pipeline packs a word into 58. The
+splits are the same 898 as in section 4. Run with `make run-sweep` and pulled with
+`make pull-sweep` into `tables/345_sweep/`. None of this changes the pre-registered verdict.
+""")
+
+code(r"""
+SWEEP = Path(os.environ.get("NB345_SWEEP_DIR", REPO / "tables" / "345_sweep"))
+# Panels grouped by letter count, HP family first (rule: group a category axis by what it is).
+SWEEP_GROUPS = {
+    "2-3 letters (hydrophobic/polar)": ["hp_pbotc_1st_ed", "hp_lehninger2", "hp_lehninger_c_nonpolar2",
+                                        "hp_thomas_dill2", "hp_thomas_dill_no_c2", "hp_kyte_doolittle2",
+                                        "hp_lehninger_hpc3"],
+    "4-7 letters": ["gbmr4", "wwmj5", "dayhoff6", "gbmr7"],
+    "12-18 letters": ["mmseqs12", "sdm12", "wass14", "hsdm17", "uniprot18"],
+    "20 letters": ["protein"],
+}
+SWEEP_ALPHABETS = [a for g in SWEEP_GROUPS.values() for a in g]
+sweep_file = SWEEP / "345_splits.parquet"
+if sweep_file.exists():
+    sw = (pl.read_parquet(sweep_file)
+          .filter(pl.col("setting").str.starts_with("real.") & (pl.col("setting") != f"real.{FAMILY}"))
+          .with_columns(pl.col("setting").str.split(".").list.get(1).alias("alphabet"),
+                        pl.col("setting").str.split(".").list.get(2).cast(pl.Int64).alias("k")))
+    usable = sw.filter(pl.col("relative_error").is_not_nan() & pl.col("relative_error").is_not_null())
+    rows = []
+    for (a, k), d in usable.group_by(["alphabet", "k"]):
+        rows.append({"alphabet": a, "k": k, "weighted_median": weighted_median(d["relative_error"].to_list(), d["clade"].to_list()),
+                     "splits_used": d.height, "clades": d["clade"].n_unique()})
+    sweep_table = pl.DataFrame(rows).sort(pl.col("alphabet").replace_strict({a: i for i, a in enumerate(SWEEP_ALPHABETS)}, default=99), "k")
+    sweep_clade = usable.group_by(["alphabet", "k", "clade"]).agg(pl.col("relative_error").median().alias("median"))
+    dropped = sw.filter(pl.col("true_added") == 0).group_by("alphabet", "k").len().rename({"len": "splits_dropped_true_0"})
+    sweep_table = sweep_table.join(dropped, on=["alphabet", "k"], how="left").fill_null(0)
+    print(f"{sweep_table.height} alphabet-k pairs with a result; expected 182")
+    print("Missing alphabets:", sorted(set(SWEEP_ALPHABETS) - set(sweep_table["alphabet"])) or "none")
+    with pl.Config(tbl_rows=200):
+        print(sweep_table)
+    best = sweep_table.sort("weighted_median").head(10)
+    print("\nTen lowest errors:")
+    print(best)
+else:
+    sweep_table = None
+    print(f"No sweep tables in {SWEEP}: run `make run-sweep` on Sherlock, then `make pull-sweep`.")
+""")
+
+code(r"""
+if sweep_table is not None:
+    present = [a for a in SWEEP_ALPHABETS if a in set(sweep_table["alphabet"])]
+    ncol = 4
+    nrow = int(np.ceil(len(present) / ncol))
+    fig, axes = pf.figure(pf.TWO_COLUMN_MM, 34 * nrow, nrows=nrow, ncols=ncol, sharey=True, squeeze=False)
+    for ax, a in zip(axes.flat, present):
+        t = sweep_table.filter(pl.col("alphabet") == a).sort("k")
+        c = sweep_clade.filter(pl.col("alphabet") == a)
+        ax.scatter(c["k"], c["median"].clip(1e-2, None), s=3, color=pf.GREY, edgecolor="none", zorder=1)
+        ax.plot(t["k"], t["weighted_median"], color="black", lw=0.8, marker="o", ms=2.5, zorder=2)
+        ax.axhline(PASS_MAX_ERROR, color=pf.GREY, ls="--", lw=0.6, zorder=0)
+        ax.set_title(f"{a} ({len(nv.ALPHABETS[a])} letters)", fontsize=6)
+        ax.set_yscale("log")
+        ax.yaxis.set_major_locator(FixedLocator([0.01, 0.1, 1, 10, 100, 1000]))
+        ax.yaxis.set_major_formatter(FuncFormatter(lambda v, _: f"{v:g}"))
+        ax.yaxis.set_minor_locator(NullLocator())
+        ax.xaxis.set_major_locator(MaxNLocator(integer=True, nbins=5))
+        ax.grid(axis="y", color="#dddddd", lw=0.3)
+    for ax in list(axes.flat)[len(present):]:
+        ax.set_visible(False)
+    for ax in axes[:, 0]:
+        ax.set_ylabel("Median relative error")
+    for ax in axes[-1, :]:
+        ax.set_xlabel("k")
+    axes.flat[0].plot([], [], color="black", lw=0.8, marker="o", ms=2.5, label="median over all splits, clades weighted equally")
+    axes.flat[0].scatter([], [], s=3, color=pf.GREY, label="median of one clade")
+    axes.flat[0].plot([], [], color=pf.GREY, ls="--", lw=0.6, label=f"pass line, {PASS_MAX_ERROR}")
+    pf.shared_legend(fig, ncol=3)
+    pf.save(fig, FIG / "345_SF8_next_proteome_error_every_alphabet_k_region_sweep_qfo2020_04")
+""")
+
+md(r"""
+**Supplementary Figure 8 (SF8). How well Heaps' law predicts what the next proteome adds,
+for every alphabet and k of the region benchmark's sweep.** One panel per alphabet, grouped
+by letter count: hydrophobic/polar alphabets first, then 4-7 letters, 12-18 letters, and
+the 20 amino acids. Black line: the median relative error over all splits, clades weighted
+equally, the number section 4's verdict uses; grey dots: each clade's median. Lower is
+better; the dashed line is the pre-registered pass line, 0.15. Values below 0.01 are drawn
+at 0.01. The y axis spaces values by ratio: the step from 0.1 to 1 takes as much room as
+the step from 1 to 10.
+""")
+
+code(r"""
+if sweep_table is not None:
+    hp_ks = sorted(sweep_table.filter(pl.col("alphabet") == HP)["k"].to_list())
+    d = usable.filter(pl.col("alphabet") == HP)
+    print(sweep_table.filter(pl.col("alphabet") == HP).select("k", "weighted_median", "splits_used", "splits_dropped_true_0"))
+    fig, ax = pf.figure(pf.ONE_COLUMN_MM, 12 + 7 * len(hp_ks))
+    rng = np.random.default_rng(345)
+    for i, k in enumerate(hp_ks):
+        e = d.filter(pl.col("k") == k)
+        ax.scatter(np.clip(e["relative_error"], 1e-3, None), i + rng.uniform(-0.25, 0.25, e.height), s=2,
+                   color=COLOUR[HP], alpha=0.35, edgecolor="none")
+        m = sweep_table.filter((pl.col("alphabet") == HP) & (pl.col("k") == k))["weighted_median"][0]
+        ax.plot([m, m], [i - 0.35, i + 0.35], color="black", lw=1.2)
+    ax.axvline(PASS_MAX_ERROR, color=pf.GREY, ls="--", lw=0.8, label=f"pass line, {PASS_MAX_ERROR}")
+    ax.scatter([], [], s=6, color=COLOUR[HP], label="one split (all six clades)")
+    ax.plot([], [], color="black", lw=1.2, label="median over all splits, clades weighted equally")
+    ax.set_xscale("log")
+    ax.xaxis.set_major_locator(FixedLocator([0.001, 0.01, 0.1, 1, 10, 100, 1000]))
+    ax.xaxis.set_major_formatter(FuncFormatter(lambda v, _: f"{v:g}"))
+    ax.xaxis.set_minor_locator(NullLocator())
+    ax.set_yticks(range(len(hp_ks)), [str(k) for k in hp_ks])
+    ax.set_ylim(len(hp_ks) - 0.5, -0.5)
+    ax.grid(axis="y", color="#dddddd", lw=0.3)
+    ax.set_xlabel("Relative error of the predicted added count")
+    ax.set_ylabel("k")
+    ax.set_title(f"{HP}: hydrophobic ACFILMPVWY, polar DEGHKNQRST", fontsize=6)
+    pf.shared_legend(fig, ncol=1)
+    pf.save(fig, FIG / "345_SF9_next_proteome_error_hp_pbotc_every_k_region_sweep_qfo2020_04")
+""")
+
+md(r"""
+**Supplementary Figure 9 (SF9). Section 4's test for `hp_pbotc_1st_ed` at every k of the
+region benchmark's sweep.** Same layout as SF5, one row per k instead of per clade. Blue
+dots: one split each, all six clades together; black bar: the median with clades weighted
+equally. Left is better; the dashed line is the pass line, 0.15. Errors below 0.001 are
+drawn at 0.001.
 """)
 
 SUMMARY_MD = r"""

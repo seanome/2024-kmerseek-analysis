@@ -2,6 +2,7 @@
 
 import itertools
 import math
+import re
 import sys
 from pathlib import Path
 
@@ -32,7 +33,8 @@ def brute_words(seqs, alphabet, k):
     return out
 
 
-@pytest.mark.parametrize("alphabet,k", [("protein", 3), ("protein", 10), ("hp_pbotc_1st_ed", 7), ("hp_pbotc_1st_ed", 42)])
+@pytest.mark.parametrize("alphabet,k", [("protein", 3), ("protein", 10), ("hp_pbotc_1st_ed", 7), ("hp_pbotc_1st_ed", 42),
+                                        ("gbmr7", 18), ("hp_lehninger_hpc3", 27), ("hsdm17", 14)])
 def test_encode_matches_brute_force(alphabet, k):
     seqs = random_seqs(30, hi=80)
     w, p, s = nv.encode_words(seqs, alphabet, k)
@@ -44,6 +46,34 @@ def test_hp_groups_match_shared_utils():
     import ortholog_analysis_utils as ou
 
     assert nv.ALPHABETS["hp_pbotc_1st_ed"] == ou.ALPHABET_AA_GROUPS["hp_pbotc_1st_ed"]
+
+
+@pytest.mark.parametrize("alphabet", sorted(nv.ALPHABETS))
+def test_alphabet_splits_the_20_amino_acids_once(alphabet):
+    letters = "".join(nv.ALPHABETS[alphabet].values())
+    assert sorted(letters) == sorted(nv.AMINO_ACIDS), alphabet
+    count = re.search(r"\d+$", alphabet)
+    if count:  # kmerseek names end in their letter count
+        assert len(nv.ALPHABETS[alphabet]) == int(count.group()), alphabet
+
+
+@pytest.mark.parametrize("name", ["hp_lehninger", "hp_thomas_dill", "hp_thomas_dill_no_c", "hp_kyte_doolittle", "dayhoff"])
+def test_sweep_groups_match_shared_utils(name):
+    sys.path.insert(0, str(Path(__file__).resolve().parents[3] / "notebooks"))
+    import ortholog_analysis_utils as ou
+
+    ours = {"hp_lehninger": "hp_lehninger2", "hp_thomas_dill": "hp_thomas_dill2",
+            "hp_thomas_dill_no_c": "hp_thomas_dill_no_c2", "hp_kyte_doolittle": "hp_kyte_doolittle2",
+            "dayhoff": "dayhoff6"}[name]
+    assert sorted(nv.ALPHABETS[ours].values()) == sorted(ou.ALPHABET_AA_GROUPS[name].values())
+
+
+def test_sweep_settings_all_fit():
+    lines = (Path(__file__).resolve().parents[1] / "assets" / "sweep_settings.txt").read_text().splitlines()
+    settings = [line.split(":") for line in lines if line and not line.startswith("#")]
+    assert len(settings) == 182
+    for a, k in settings:
+        assert nv.word_bits(a, int(k)) <= 64 - nv.IDX_BITS, (a, k)
 
 
 def write(tmp, name, seqs):

@@ -43,6 +43,35 @@ ALPHABETS: dict[str, dict[str, str]] = {
     "hp_pbotc_1st_ed": {"h": "ACFILMPVWY", "p": "DEGHKNQRST"},
 }
 
+
+def _clusters(*groups: str) -> dict[str, str]:
+    return {f"c{i}": g for i, g in enumerate(groups)}
+
+
+# The rest of the region benchmark's sweep (nextflow-runs/qfo-pfam-region-benchmark/main.nf,
+# ALL_ENCODINGS), named as kmerseek names them. Groups copied from kmerseek
+# src/rust/alphabets.rs (origin/main, read 2026-10-19); dayhoff6 is sourmash's encoder
+# (sourmash 0.20.0 src/encodings.rs DAYHOFFTABLE). `protein` and `hp_pbotc_1st_ed` above are
+# kmerseek's protein20 and hp_pbotc_1st_ed2, kept under their old names so the
+# pre-registered run's cached tasks are reused.
+ALPHABETS |= {
+    "uniprot18": _clusters("A", "R", "N", "D", "C", "Q", "EP", "G", "HL", "I", "K", "M", "F", "S", "T", "W", "Y", "V"),
+    "hsdm17": _clusters("A", "D", "KE", "R", "N", "T", "S", "Q", "Y", "F", "LIV", "M", "C", "W", "H", "G", "P"),
+    "wass14": _clusters("WM", "DI", "P", "C", "AV", "K", "T", "RE", "G", "L", "Y", "SH", "F", "NQ"),
+    "mmseqs12": _clusters("AST", "LM", "IV", "KR", "EQ", "ND", "FY", "C", "G", "H", "P", "W"),
+    "sdm12": _clusters("A", "D", "KER", "N", "TSQ", "YF", "LIVM", "C", "W", "H", "G", "P"),
+    "dayhoff6": _clusters("C", "AGPST", "DENQ", "HKR", "ILMV", "FWY"),
+    "wwmj5": _clusters("CMFILVWY", "ATH", "GP", "DE", "SNQRK"),
+    "gbmr7": _clusters("DN", "AEFIKLMQRVWY", "CH", "T", "S", "G", "P"),
+    "gbmr4": _clusters("ADKERNTSQ", "YFLIVMCWH", "G", "P"),
+    "hp_lehninger_hpc3": {"h": "AFGILMPVWY", "p": "DEHKNQRST", "c": "C"},
+    "hp_lehninger2": {"h": "AFGILMPVWY", "p": "CDEHKNQRST"},
+    "hp_lehninger_c_nonpolar2": {"h": "ACFGILMPVWY", "p": "DEHKNQRST"},
+    "hp_thomas_dill2": {"h": "ACFILMVWY", "p": "DEGHKNPQRST"},
+    "hp_thomas_dill_no_c2": {"h": "AFILMVWY", "p": "CDEGHKNPQRST"},
+    "hp_kyte_doolittle2": {"h": "ACFILMV", "p": "DEGHKNPQRSTWY"},
+}
+
 INVALID = 255
 IDX_BITS = 6  # proteome index packed under the word while sorting; clades hold <= 64
 
