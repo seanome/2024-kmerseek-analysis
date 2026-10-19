@@ -77,6 +77,8 @@ class WordGraph:
     """
 
     def __init__(self, reduced: str, k: int):
+        if k < 2:
+            raise ValueError(f"word length k must be at least 2, got {k}")
         if len(reduced) < k:
             raise ValueError(
                 f"string of length {len(reduced)} has no words of length {k}"

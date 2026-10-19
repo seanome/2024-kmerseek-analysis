@@ -64,3 +64,8 @@ def test_realize_protein_keeps_composition_and_encodes():
         assert Counter(aa) == Counter(protein)
         assert u.encode(aa, "hp_pbotc_1st_ed2") == alt
         assert aa[:3] == protein[:3] and aa[-3:] == protein[-3:]
+
+
+def test_word_length_below_two_is_rejected():
+    with pytest.raises(ValueError):
+        u.WordGraph("hhpphp", 1)
