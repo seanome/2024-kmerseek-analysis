@@ -431,7 +431,10 @@ print(pl.concat(per_clade_rows).pivot(on="setting", index="clade", values="media
 # The verdict needs all six clades for HP k30, protein k7 and MMseqs2. With fewer, it is
 # not given; the medians on the clades all three share are printed instead.
 verdict_settings = [f"real.{PRIMARY_HP}", f"real.{PRIMARY_AA}", f"real.{FAMILY}"]
-present = [set(splits.filter(pl.col("setting") == s_)["clade"].unique()) for s_ in verdict_settings]
+# A clade counts as present only when it has at least one split with a real relative error.
+present = [set(splits.filter((pl.col("setting") == s_) & pl.col("relative_error").is_not_nan()
+                             & pl.col("relative_error").is_not_null())["clade"].unique())
+           for s_ in verdict_settings]
 common = [c for c in CLADES if all(c in p_ for p_ in present)]
 complete = len(common) == len(CLADES)
 if not complete:
