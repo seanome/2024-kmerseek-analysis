@@ -1365,6 +1365,9 @@ def main(argv: list[str] | None = None) -> int:
     args = ap.parse_args(argv)
     cfg = load_config(args.config)
     cfg["_out"].mkdir(parents=True, exist_ok=True)
+    if args.step == "all":
+        # A full rerun starts a fresh runtime log, so each step appears once.
+        (cfg["_out"] / "runtime.tsv").unlink(missing_ok=True)
     steps = {"manifest": [("manifest", None)], "panel": [("panel", None)],
              "align": [("align", args.split)], "select": [("select", None)],
              "evaluate": [("evaluate", None)],
