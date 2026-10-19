@@ -14,6 +14,7 @@ Runs on the laptop: pure Python, no kmerseek, about 1 GB of memory in total.
 from __future__ import annotations
 
 import argparse
+import os
 import random
 import sys
 import time
@@ -25,8 +26,13 @@ import polars as pl
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "notebooks"))
 import same_kmers_reordered_utils as u  # noqa: E402
 
+#: Set NB343_FASTA to use another copy of the file.
 FASTA = Path(
-    "/Users/olga/data/gencode/human/v49/gencode.v49.pc_translations.canonical.fa"
+    os.environ.get(
+        "NB343_FASTA",
+        Path.home()
+        / "data/gencode/human/v49/gencode.v49.pc_translations.canonical.fa",
+    )
 )
 OUT = (
     Path(__file__).resolve().parents[1]
