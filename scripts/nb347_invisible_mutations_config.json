@@ -73,7 +73,8 @@
     "noise_adjusted_floor_mse": "(observed SSE - expected_noise_sse) / N; an estimate, not a bound"
   },
   "bootstrap": {
-    "unit": "sequence position (all variants at a position are drawn together); collision groups are re-formed in each resample, and copies of a position drawn twice are kept apart except in the reference-sequence group",
+    "unit": "sequence position (all variants at a position are drawn together). A position drawn m times gives each of its variants weight m; group means, sums of squares, total variance and the noise term use these weights (weighted noise term: sum w_i se_i^2 - sum w_i^2 se_i^2 / W_g, since copies share one error). A group counts as a collision only if it holds two or more distinct sequences with weight above 0.",
+    "_amended": "2026-10-19, before any outcome was computed: replaced 'copies kept apart except in the reference group', which cannot be applied to composition groups (they span positions) and is not a consistent grouping rule, with weights.",
     "replicates": 2000,
     "seed": 347,
     "interval": "95% percentile",
@@ -87,6 +88,15 @@
     "sketch": "sourmash 4.9 MinHash, scaled=1, seed 42 (the hash kmerseek uses for these two alphabets)",
     "examples": "for each encoding: the 3 groups with the largest outcome range (labelled as selected extremes) and 3 groups drawn at random (seed 347)"
   },
+  "stop_rule": {
+    "_added": "2026-10-19, before any outcome was computed",
+    "applies_to": "each primary encoding separately",
+    "inconclusive": "fewer than 30 collision groups or fewer than 100 variants in collision groups, or no replicate-based se",
+    "detectable": "lower end of the 95% bootstrap interval of noise_ratio is above 1",
+    "not_detectable": "otherwise",
+    "practical": "with no tolerance, a detectable result is reported as 'detectable information loss, but practical importance is not established'"
+  },
+  "noise_model_check": "Synonymous variants all give the wild-type protein. If the variance of their scores is much larger than their mean se^2, the replicate-based se misses some variation (DNA-level effects or errors shared by all replicates), and noise_ratio is overstated by that amount. Reported, not used to change the rule.",
   "sensitivity": [
     "add one wild-type record whose outcome is the mean of the synonymous variants' scores"
   ]
