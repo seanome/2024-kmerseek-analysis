@@ -61,7 +61,13 @@ def main(max_evalue, out, summary, label):
     max_evalue = float(max_evalue)
     csv.field_size_limit(sys.maxsize)
     reader = csv.DictReader(sys.stdin)
-    missing = [c for c in KEEP if c not in (reader.fieldnames or [])]
+    # No header at all means kmerseek reported no regions for this chunk: write the
+    # header-only outputs with rows_in = 0 (SEARCH has already checked kmerseek's exit code).
+    missing = (
+        [c for c in KEEP if c not in reader.fieldnames]
+        if reader.fieldnames is not None
+        else []
+    )
     if missing:
         sys.exit(
             f"kmerseek output has no column(s) {missing}; is this the PR 133 build?"
