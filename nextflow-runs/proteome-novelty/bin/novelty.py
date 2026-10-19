@@ -460,7 +460,7 @@ def cmd_examples(a: argparse.Namespace) -> None:
                 "partner": a.proteomes[j],
                 "partner_protein": pn[y_prot],
                 "partner_start": y_start + 1,
-                "partner_end": y_start + span,
+                "partner_end": y_start + len(y_seq),
                 "partner_length": len(ps[y_prot]),
                 "n_words": run,
                 "n_partner_copies": len(at),
