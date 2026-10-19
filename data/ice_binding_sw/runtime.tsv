@@ -17,3 +17,8 @@ align	dev dayhoff6_B45_g15e2 2954 pairs	0.67	250.5	2026-10-19T14:24:59
 align	dev dayhoff6_B45_g6e1 2954 pairs	0.85	251.3	2026-10-19T14:25:00
 align	dev	9.22	290.9	2026-10-19T14:25:00
 select		0.38	279.3	2026-10-19T14:25:01
+align	eval protein20_B62_g11e1 6336 pairs	3.44	234.8	2026-10-19T14:26:26
+align	eval hp_lehninger2_B45_g4e1 6336 pairs	4.48	240.7	2026-10-19T14:26:30
+align	eval dayhoff6_B45_g6e1 6336 pairs	3.97	243.8	2026-10-19T14:26:34
+align	eval	11.93	265.9	2026-10-19T14:26:34
+evaluate		1.97	415.7	2026-10-19T14:26:37
