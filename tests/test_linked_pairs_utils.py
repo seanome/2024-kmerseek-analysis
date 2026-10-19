@@ -859,3 +859,50 @@ def test_alignment_rows_from_pairs_round_trip():
     assert sorted(zip(*np.nonzero(allowed))) == [
         (a - pq[0], b - pt[0]) for a, b in zip(pq, pt)
     ]
+
+
+def test_forward_max_matches_brute_force():
+    rng = np.random.default_rng(0)
+    for _ in range(50):
+        n, w = int(rng.integers(1, 120)), int(rng.integers(1, 40))
+        x = rng.integers(-50, 50, (n, 7))
+        want = np.array([[x[i : i + w, j].max() for j in range(7)] for i in range(n)])
+        assert (lp._forward_max(x, w, 0) == want).all()
+        assert (lp._forward_max(x.T, w, 1) == want.T).all()
+
+
+def test_best_keys_with_segments_add_up():
+    """The segments returned for the best linked and B3 keys hold both anchors, do not
+    overlap in either protein, contain no wall, and their cells add up to the score, which
+    equals diagonal_scan's."""
+    rng = np.random.default_rng(12)
+    hp = np.array(list("AD"))
+    for trial in range(30):
+        q, t = _related_pair(
+            rng, int(rng.integers(50, 90)), int(rng.integers(50, 90)), flip=0.15
+        )
+        qs = "".join(np.where(q == GAP, "X", hp[np.minimum(q, 1)]))
+        ts = "".join(np.where(t == GAP, "X", hp[np.minimum(t, 1)]))
+        got = lp.scan_sequences(qs, ts)
+        best = lp.best_keys_with_segments(qs, ts)
+        for name in ["linked", "B3"]:
+            b = best[name]
+            if b is None:
+                assert got[name] == 0
+                continue
+            assert b["score"] == got[name]
+            total = 0
+            for qs0, qe, ts0 in b["segments"]:
+                cells = [_cell(q, t, i, ts0 + i - qs0) for i in range(qs0, qe)]
+                assert None not in cells
+                total += sum(cells)
+            assert total == b["score"], (trial, name)
+            segs = b["segments"]
+            if len(segs) == 2:
+                (a0, a1_, at), (b0, b1, bt) = segs
+                assert a1_ <= b0 and at + (a1_ - a0) <= bt
+            for qa, ta, a in [(b["q1"], b["t1"], b["a1"]), (b["q2"], b["t2"], b["a2"])]:
+                assert any(
+                    s0 <= qa and qa + a <= e and ta - qa == t0 - s0
+                    for s0, e, t0 in segs
+                )

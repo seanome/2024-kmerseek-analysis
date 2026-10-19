@@ -972,6 +972,20 @@ def _diagonal_windows(match: np.ndarray, a: int) -> np.ndarray:
     return out
 
 
+def _forward_max(x: np.ndarray, w: int, axis: int) -> np.ndarray:
+    """out[i] = max of x[i .. i+w-1] along axis (positions past the end count as _NEG),
+    from running maxima within blocks of w (van Herk 1992; Gil and Werman 1993)."""
+    x = np.moveaxis(x, axis, 0)
+    n = x.shape[0]
+    nb = -(-(n + w - 1) // w)
+    pad = np.full((nb * w,) + x.shape[1:], _NEG, np.int64)
+    pad[:n] = x
+    blocks = pad.reshape((nb, w) + x.shape[1:])
+    prefix = np.maximum.accumulate(blocks, axis=1).reshape(pad.shape)
+    suffix = np.maximum.accumulate(blocks[:, ::-1], axis=1)[:, ::-1].reshape(pad.shape)
+    return np.moveaxis(np.maximum(suffix[:n], prefix[w - 1 : w - 1 + n]), 0, axis)
+
+
 def _cumsum2(x: np.ndarray) -> np.ndarray:
     cs = np.zeros((x.shape[0] + 1, x.shape[1] + 1), np.int64)
     cs[1:, 1:] = x.cumsum(0).cumsum(1)
@@ -1126,8 +1140,6 @@ def diagonal_scan(
 
     Returns a dict with ``<score>`` and ``<score>_count`` for each of DB_SCORES, plus
     ``words6`` and ``words8``, the number of exact shared 6- and 8-letter HP words."""
-    from scipy.ndimage import maximum_filter
-
     sc = _db_score_matrix(q, t, allowed)
     left, right = _diagonal_extensions(sc)
     match = sc == 1
@@ -1135,17 +1147,15 @@ def diagonal_scan(
     S = _diagonal_windows(match, DB_SEED)
     out = {"words6": int(A.sum()), "words8": int(S.sum())}
     span = DB_WINDOW + 1
-    half = DB_WINDOW // 2
 
     def rect_max(v, lo):
         """Max of v over rows i+lo .. i+lo+32 and columns j+lo .. j+lo+32, at (i, j)."""
-        m = maximum_filter(v, size=span, mode="constant", cval=_NEG)
-        sh = lo + half
+        m = _forward_max(_forward_max(v, span, 0), span, 1)
         res = np.full(v.shape, _NEG, np.int64)
-        if sh >= 0:
-            res[: v.shape[0] - sh, : v.shape[1] - sh] = m[sh:, sh:]
+        if lo >= 0:
+            res[: v.shape[0] - lo, : v.shape[1] - lo] = m[lo:, lo:]
         else:
-            res[-sh:, -sh:] = m[: v.shape[0] + sh, : v.shape[1] + sh]
+            res[-lo:, -lo:] = m[: v.shape[0] + lo, : v.shape[1] + lo]
         return res
 
     # B2: the best segment holding an exact 8-letter word
@@ -1300,3 +1310,110 @@ def alignment_rows_from_pairs(seq_q: str, seq_t: str, pos_q, pos_t) -> tuple[str
         qrow.append(seq_q[q1 - 1])
         trow.append(seq_t[t1 - 1])
     return "".join(qrow), "".join(trow)
+
+
+def _walk_extension(sc, i, j, step, limit=None):
+    """Cells from (i, j) along the diagonal in direction step (+1 or -1) until a wall:
+    the length of the shortest walk reaching the best running total, and that total."""
+    best, best_len, tot, y = 0, 0, 0, 0
+    while limit is None or y < limit:
+        c = int(sc[i + step * y, j + step * y])
+        if c <= DB_WALL // 2:
+            break
+        tot += c
+        y += 1
+        if tot > best:
+            best, best_len = tot, y
+    return best_len, best
+
+
+def key_segments(sc, i1, j1, a1, i2, j2, a2):
+    """The segments of one key's best score (padded coordinates, as _db_key_scores): a list
+    of (query start, query end exclusive, target start), one segment or two, and the total.
+    The total equals _db_key_scores for the key."""
+    out_l, best_l = _walk_extension(sc, i1 - 1, j1 - 1, -1)
+    out_r, best_r = _walk_extension(sc, i2 + a2, j2 + a2, +1)
+    L = min(i2 - i1 - a1, j2 - j1 - a1)
+    after = [int(sc[i1 + a1 + y, j1 + a1 + y]) for y in range(L)]
+    before = [int(sc[i2 - 1 - y, j2 - 1 - y]) for y in range(L)]
+    pre = np.r_[0, np.cumsum(after)] if L else np.zeros(1, int)
+    suf = np.r_[0, np.cumsum(before)] if L else np.zeros(1, int)
+    r1 = np.maximum.accumulate(pre)
+    l2 = np.maximum.accumulate(suf)
+    x = int(np.argmax([r1[x] + l2[L - x] for x in range(L + 1)]))
+    y1 = int(np.argmax(pre[: x + 1] == r1[x]))  # shortest walk reaching the best
+    y2 = int(np.argmax(suf[: L - x + 1] == l2[L - x]))
+    inner = int(r1[x] + l2[L - x])
+    total = a1 + a2 + best_l + best_r + inner
+    q1s, t1s = i1 - out_l, j1 - out_l
+    q1e = i1 + a1 + y1
+    q2s, t2s = i2 - y2, j2 - y2
+    q2e = i2 + a2 + out_r
+    same = (j1 - i1) == (j2 - i2)
+    if same and q1e == q2s:
+        segs = [(q1s, q2e, t1s)]
+    else:
+        segs = [(q1s, q1e, t1s), (q2s, q2e, t2s)]
+    if same:  # one segment over everything between the anchors, if no wall in it
+        span_cells = sc[np.arange(i1, i2 + a2), np.arange(j1, j2 + a2)]
+        if (span_cells > DB_WALL // 2).all():
+            span = best_l + best_r + int(span_cells.sum())
+            if span > total:
+                segs, total = [(q1s, q2e, t1s)], span
+    return [(a - DB_PAD, b - DB_PAD, c - DB_PAD) for a, b, c in segs], total
+
+
+def best_keys_with_segments(query: str, target: str, allowed=None, chunk: int = 20_000):
+    """For drawing: the best chosen-linked-pair key and the best B3 key of two sequences
+    (every diagonal, or only the allowed cells), each as a dict with both anchors (query
+    and target start, unpadded), the anchor lengths, the score and its segments. Ties go to
+    the first key in (query start, target start) order. None where a score has no key.
+    """
+    q, t = hp_classes(query), hp_classes(target)
+    sc = _db_score_matrix(q, t, allowed)
+    left, right = _diagonal_extensions(sc)
+    match = sc == 1
+    w = DB_WINDOW
+    out = {}
+    for name, first, a1, second, a2, orders in [
+        ("linked", _diagonal_windows(match, DB_ANCHOR), DB_ANCHOR,
+         _diagonal_windows(match, DB_ANCHOR), DB_ANCHOR, ["after"]),
+        ("B3", _diagonal_windows(match, DB_SEED), DB_SEED, match, 1, ["after", "before"]),
+    ]:  # fmt: skip
+        fi, fj = np.nonzero(first)
+        si, sj = np.nonzero(second)
+        best = None
+        for order in orders:
+            for c in range(0, fi.size, max(1, chunk // 100)):
+                bi, bj = fi[c : c + chunk // 100], fj[c : c + chunk // 100]
+                if order == "after":
+                    di = si[None, :] - bi[:, None] - a1
+                    dj = sj[None, :] - bj[:, None] - a1
+                else:
+                    di = bi[:, None] - si[None, :] - a2
+                    dj = bj[:, None] - sj[None, :] - a2
+                ok = (di >= 0) & (dj >= 0) & (di <= w) & (dj <= w)
+                k1, k2 = np.nonzero(ok)
+                if k1.size == 0:
+                    continue
+                if order == "after":
+                    key = (bi[k1], bj[k1], a1, si[k2], sj[k2], a2)
+                else:
+                    key = (si[k2], sj[k2], a2, bi[k1], bj[k1], a1)
+                s = _db_key_scores(sc, left, right, *key)
+                m = int(np.argmax(s))
+                cand = (int(s[m]), [int(v[m]) if np.ndim(v) else int(v) for v in key])
+                if best is None or cand[0] > best[0]:
+                    best = cand
+        if best is None:
+            out[name] = None
+            continue
+        score, (i1, j1, aa1, i2, j2, aa2) = best
+        segs, total = key_segments(sc, i1, j1, aa1, i2, j2, aa2)
+        assert total == score, (name, total, score)
+        out[name] = {
+            "q1": i1 - DB_PAD, "t1": j1 - DB_PAD, "a1": aa1,
+            "q2": i2 - DB_PAD, "t2": j2 - DB_PAD, "a2": aa2,
+            "score": score, "segments": segs,
+        }  # fmt: skip
+    return out

@@ -131,7 +131,33 @@ def main() -> None:
         help="run only this database (its name in 346_databases.tsv)",
     )
     ap.add_argument("--chunk", type=int, default=64)
+    ap.add_argument(
+        "--db-file", default="", help="read the --only database from this file instead"
+    )
+    ap.add_argument(
+        "--part",
+        type=int,
+        default=-1,
+        help="score only proteins with index %% nparts == part",
+    )
+    ap.add_argument("--nparts", type=int, default=1)
+    ap.add_argument(
+        "--merge",
+        action="store_true",
+        help="join the --only database's part files into one",
+    )
     args = ap.parse_args()
+    if args.merge:
+        slug = SLUG[args.only]
+        parts = sorted(OUT.glob(f"346_scan_{slug}.part*.parquet"))
+        df = pl.concat([pl.read_parquet(f) for f in parts]).sort(
+            "query", "target_index", "kind"
+        )
+        df.write_parquet(OUT / f"346_scan_{slug}.parquet")
+        print(
+            f"merged {len(parts)} parts, {df.height:_} rows -> {OUT / f'346_scan_{slug}.parquet'}"
+        )
+        return
 
     known = pl.read_csv(ROOT / "tables/346_known_pairs.tsv", separator="\t")
     dbs = pl.read_csv(ROOT / "tables/346_databases.tsv", separator="\t")
@@ -144,13 +170,19 @@ def main() -> None:
             continue
         searches = known.filter(pl.col("query_db") == db["database"])
         queries = searches["query"].to_list()
-        names, dseqs = read_fasta(db["file"])
+        names, dseqs = read_fasta(args.db_file or db["file"])
+        if len(names) != db["n_proteins"]:
+            raise ValueError(
+                f"{len(names)} proteins in the file, {db['n_proteins']} in 346_databases.tsv"
+            )
         if db["database"] == "Swiss-Prot":
             for r in searches.iter_rows(named=True):
                 names.append(f"partner|{r['pair']}|{r['partner']}")
                 dseqs.append(seqs[r["partner"]])
         n = len(names)
         idx = np.arange(n)
+        if args.part >= 0:
+            idx = idx[idx % args.nparts == args.part]
         if args.sample:
             idx = np.random.default_rng(0).choice(n, min(args.sample, n), replace=False)
         tasks = [
@@ -217,7 +249,8 @@ def main() -> None:
             .drop("query_i", "kind_i")
             .sort("query", "target_index", "kind")
         )
-        path = OUT / f"346_scan_{SLUG[db['database']]}.parquet"
+        part = f".part{args.part:02d}" if args.part >= 0 else ""
+        path = OUT / f"346_scan_{SLUG[db['database']]}{part}.parquet"
         df.write_parquet(path)
         print(f"  wrote {path} ({df.height:_} rows)", flush=True)
 
