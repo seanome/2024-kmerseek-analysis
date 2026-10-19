@@ -54,6 +54,7 @@
     "nonstandard_residue": "Ref or Alt is not one of the 20 standard amino acids",
     "reference_mismatch": "Ref does not match the reference residue, or Pos is outside the protein",
     "missing_score": "score is missing",
+    "wild_type_anchor": "the MaveDB row '_wt': score 1 in every replicate because the authors set wild type to 1; it is the scale's anchor, not a measurement with noise (added 2026-10-19, after the first run, which listed it as 'malformed'; this renames the reason only, the row was excluded either way)",
     "duplicate_sequence": "a second row giving the same full protein sequence; replicate scores would be pooled, not counted as a second variant"
   },
   "grouping": "(assay, condition, background, full encoded sequence); membership checked by exact string equality of the encoded sequence",
