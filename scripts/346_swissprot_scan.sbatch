@@ -31,10 +31,8 @@
 # $SCRATCH/346_linked_pairs/inputs/uniprot_sprot.fasta.gz. The script refuses a file whose
 # protein count differs from tables/346_databases.tsv (572,970).
 #
-# Submit from the repository root:
-#   sbatch scripts/346_swissprot_scan.sbatch
-# then, when all 16 tasks are done:
-#   sbatch --dependency=afterok:<jobid> --array=0 --export=ALL,NB346_MERGE=1 scripts/346_swissprot_scan.sbatch
+# Submit with `make run` in nextflow-runs/linked-pairs-known-pairs (on Sherlock): it submits
+# the 16 tasks and a merge task that waits for them (NB346_MERGE=1, --array=0).
 set -euo pipefail
 
 : "${SCRATCH:?}" "${SLURM_ARRAY_TASK_ID:?}"

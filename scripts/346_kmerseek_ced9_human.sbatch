@@ -35,8 +35,8 @@
 # 11.3 million residues holds far fewer results than that job's batches. Afterwards:
 #   sacct -j <jobid> -o JobID,MaxRSS,Elapsed,State
 #
-# Submit from the repository root (branch olgabot/linked-pairs-known-pairs):
-#   sbatch scripts/346_kmerseek_ced9_human.sbatch
+# Submit with `make run` in nextflow-runs/linked-pairs-known-pairs (on Sherlock), which
+# submits from the repository root (branch olgabot/linked-pairs-known-pairs).
 set -euo pipefail
 
 : "${SCRATCH:?}" "${SLURM_ARRAY_TASK_ID:?}"
@@ -64,7 +64,7 @@ awk '/^>/ { keep = ($1 == ">CED-9") } keep' "$REPO/tables/346_sequences.fasta" >
 
 export RAYON_NUM_THREADS=${SLURM_CPUS_PER_TASK:-16}
 kmerseek() { apptainer exec --bind /scratch "$IMG" kmerseek "$@"; }
-echo "346 k = $K on $(hostname), repo commit $(git -C "$REPO" rev-parse --short HEAD)"
+echo "346 k = $K on $(hostname), repo commit $(cd "$REPO" && git rev-parse --short HEAD)"
 kmerseek --version | tee "$W/kmerseek_version.txt"
 
 rm -rf "$W/human.kmerseek"
