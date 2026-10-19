@@ -1,0 +1,7 @@
+relation	shares_full_residue_kmer	len	dataset	setting
+background	false	8754	ice_binding	dayhoff6.k9
+background	true	1	ice_binding	dayhoff6.k9
+negative_hard	false	2017	ice_binding	dayhoff6.k9
+negative_hard	true	9	ice_binding	dayhoff6.k9
+positive	false	448	ice_binding	dayhoff6.k9
+positive	true	6	ice_binding	dayhoff6.k9

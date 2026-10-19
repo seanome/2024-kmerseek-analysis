@@ -1,0 +1,6 @@
+relation	shares_full_residue_kmer	len	dataset	setting
+background	false	31842	toxin_target	cys2.k12.mask
+negative_annotated	false	6036	toxin_target	cys2.k12.mask
+negative_hard	false	7520	toxin_target	cys2.k12.mask
+positive	false	2119	toxin_target	cys2.k12.mask
+positive	true	24	toxin_target	cys2.k12.mask

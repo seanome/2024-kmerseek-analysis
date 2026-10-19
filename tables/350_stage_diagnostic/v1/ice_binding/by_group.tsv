@@ -1,0 +1,57 @@
+split	group	method	recall	n_queries
+dev	2 fish, AFGP	A	0.02358490566037736	4
+dev	2 fish, AFGP	B	0.0	4
+dev	2 fish, AFGP	C_A	0.02358490566037736	4
+dev	2 fish, AFGP	C_B	0.0	4
+dev	2 fish, AFGP	D_B	0.0	4
+dev	2 fish, AFGP	E1	0.0	4
+dev	2 fish, AFGP	E10	0.0	4
+dev	3 fish, type II AFP	A	0.0	3
+dev	3 fish, type II AFP	B	0.006172839506172839	3
+dev	3 fish, type II AFP	C_A	0.0	3
+dev	3 fish, type II AFP	C_B	0.0	3
+dev	3 fish, type II AFP	D_B	0.006172839506172839	3
+dev	3 fish, type II AFP	E1	0.0	3
+dev	3 fish, type II AFP	E10	0.0	3
+dev	type-I AFP family	A	0.011857707509881422	11
+dev	type-I AFP family	B	0.0	11
+dev	type-I AFP family	C_A	0.009881422924901186	11
+dev	type-I AFP family	C_B	0.0	11
+dev	type-I AFP family	D_B	0.0	11
+dev	type-I AFP family	E1	0.0	11
+dev	type-I AFP family	E10	0.0	11
+dev	type-III AFP family	A	0.00554016620498615	19
+dev	type-III AFP family	B	0.002770083102493075	19
+dev	type-III AFP family	C_A	0.012465373961218836	19
+dev	type-III AFP family	C_B	0.002770083102493075	19
+dev	type-III AFP family	D_B	0.0	19
+dev	type-III AFP family	E1	0.0	19
+dev	type-III AFP family	E10	0.0	19
+heldout	apolipoprotein A1/A4/E family	A	0.0	3
+heldout	apolipoprotein A1/A4/E family	B	0.0	3
+heldout	apolipoprotein A1/A4/E family	C_A	0.0	3
+heldout	apolipoprotein A1/A4/E family	C_B	0.0	3
+heldout	apolipoprotein A1/A4/E family	D_B	0.0	3
+heldout	apolipoprotein A1/A4/E family	E1	0.0	3
+heldout	apolipoprotein A1/A4/E family	E10	0.0	3
+heldout	ice-binding protein family	A	0.006944444444444444	9
+heldout	ice-binding protein family	B	0.011574074074074073	9
+heldout	ice-binding protein family	C_A	0.0023148148148148147	9
+heldout	ice-binding protein family	C_B	0.009259259259259259	9
+heldout	ice-binding protein family	D_B	0.0023148148148148147	9
+heldout	ice-binding protein family	E1	0.0	9
+heldout	ice-binding protein family	E10	0.0	9
+heldout	insect antifreeze protein family	A	0.017857142857142856	1
+heldout	insect antifreeze protein family	B	0.0	1
+heldout	insect antifreeze protein family	C_A	0.0	1
+heldout	insect antifreeze protein family	C_B	0.0	1
+heldout	insect antifreeze protein family	D_B	0.0	1
+heldout	insect antifreeze protein family	E1	0.0	1
+heldout	insect antifreeze protein family	E10	0.0	1
+heldout	thermal hysteresis protein family	A	0.0	7
+heldout	thermal hysteresis protein family	B	0.002857142857142857	7
+heldout	thermal hysteresis protein family	C_A	0.0	7
+heldout	thermal hysteresis protein family	C_B	0.008571428571428572	7
+heldout	thermal hysteresis protein family	D_B	0.0	7
+heldout	thermal hysteresis protein family	E1	0.0	7
+heldout	thermal hysteresis protein family	E10	0.0	7

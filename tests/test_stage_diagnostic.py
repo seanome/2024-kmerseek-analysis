@@ -138,3 +138,11 @@ def test_bootstrap_resamples_groups():
     lo, hi = evaluate.bootstrap(vals, groups, 500, 1)
     assert lo == 0.0 and hi == 1.0
     assert all(math.isnan(x) for x in evaluate.bootstrap({"a1": 1.0}, {"a1": "A"}, 10, 1))
+
+
+def test_kmerseek_letters_for_table_alphabets():
+    # alphabets.rs: cys2 is c / x, HP tables h / p, cluster alphabets the first residue.
+    # A wrong letter keeps scaled-1 counts but changes which hashes scaled 10 keeps.
+    t = seeds._kmerseek_table("cys2")
+    assert t["C"] == "c" and t["A"] == "x" and set(t.values()) == {"c", "x"}
+    assert seeds._kmerseek_table("sdm12")["E"] == "k"  # cluster "KER"

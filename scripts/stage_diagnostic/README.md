@@ -52,7 +52,9 @@ $P $S freeze                       # panels, labels, splits; writes MANIFEST.tsv
 $P $S align                        # stages A and B, ~20 s on 12 cores
 $P $S job --job-dir /tmp/nb350_job # Sherlock job for C, D, E and the fixtures
 rsync -a /tmp/nb350_job/ sherlock:/scratch/users/olgabot/350_stage_diagnostic/v1/
-ssh sherlock 'cd /scratch/users/olgabot/350_stage_diagnostic/v1 && sbatch --wait submit.sbatch'
+# the whole job takes minutes; the dev partition starts at once but takes srun only
+ssh sherlock 'cd /scratch/users/olgabot/350_stage_diagnostic/v1 && srun -p dev -A ayeletv -c 4 --mem=16G -t 01:00:00 bash run.sh'
+# or, through the normal queue: sbatch --wait submit.sbatch
 rsync -a --exclude idx sherlock:/scratch/users/olgabot/350_stage_diagnostic/v1/ /tmp/nb350_job/
 $P $S collect --job-dir /tmp/nb350_job
 $P $S evaluate

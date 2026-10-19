@@ -263,7 +263,7 @@ def seed_counts(
     rs = read_fasta(data_dir / ds / "references.fasta")
     a, k, mask = s["alphabet"], s["ksize"], s["mask"]
     h1 = {r: seeds.hashes(x, a, k, mask, 1) for r, x in rs.items()}
-    h10 = {r: {x for x in hs if x in seeds.hashes(rs[r], a, k, mask, 10)} for r, hs in h1.items()}
+    h10 = {r: seeds.hashes(x, a, k, mask, 10) for r, x in rs.items()}
     full = {r: seeds.reduced_kmers(x, "protein20", k) for r, x in rs.items()}
     qrows, prs = [], []
     for q, x in qs.items():
@@ -390,6 +390,56 @@ def self_hits(
     )  # fmt: skip
 
 
+def ranking_alternatives(f, km, ds, lab, split, h) -> pl.DataFrame:
+    """Exploratory, not a pre-registered rule: kmerseek's own scaled-1 end-to-end output
+    ranked three ways (as the pipeline ranks it; by the best region Poisson score; by
+    rescoring the same reported pairs with B), on the dataset's positives and, for ice
+    binding, on same-origin homologs."""
+    e = km.filter(
+        (pl.col("dataset") == ds)
+        & (pl.col("setting") == lab)
+        & (pl.col("scaled") == 1)
+        & (pl.col("kind") == "e2e")
+    ).select(
+        "query",
+        "reference",
+        (pl.col("max_region_poisson") + 1e-6 * pl.col("n_shared")).alias("E1_poisson"),
+    )
+    g = f.join(e, on=["query", "reference"], how="left").with_columns(
+        E1_poisson=pl.col("E1_poisson").fill_null(NEG),
+        E1_B=pl.when(pl.col("E1_reported")).then(pl.col("B")).otherwise(NEG),
+    )
+    targets = [("positive", g)]
+    if ds == "ice_binding":
+        swap = g.with_columns(
+            relation=pl.when(pl.col("relation") == "same_origin").then(pl.lit("positive"))
+            .when(pl.col("relation") == "positive").then(pl.lit("same_origin"))
+            .otherwise(pl.col("relation"))
+        )  # fmt: skip
+        targets.append(("same-origin homolog", swap))
+    rows = []
+    ho = [q for q in split if split[q] == "heldout"]
+    for what, frame in targets:
+        for col, name in (
+            ("E1", "pipeline ranking"),
+            ("E1_poisson", "best region Poisson score"),
+            ("E1_B", "reported pairs rescored by B"),
+            ("C_B", "all scaled-1 candidates rescored by B"),
+        ):
+            pq = per_query(frame.with_columns(A=pl.col(col)), [h]).filter(
+                (pl.col("method") == "A") & pl.col("query").is_in(ho)
+            )
+            rows.append(
+                dict(
+                    dataset=ds,
+                    positives=what,
+                    ranking=name,
+                    heldout_recall=float(pq["recall"].mean()),
+                )
+            )
+    return pl.DataFrame(rows)
+
+
 # --------------------------------------------------------------------------- driver
 
 
@@ -398,7 +448,7 @@ def run(cfg, data_dir: Path, results: Path) -> None:
     budgets, h = ev["false_hit_budgets"], ev["headline_budget"]
     km = pl.read_parquet(results / "kmerseek_pairs.parquet")
     kcost = pl.read_csv(results / "kmerseek_cost.tsv", separator="\t", infer_schema_length=0)
-    all_sel, all_dec, all_self, all_cost = [], [], [], []
+    all_sel, all_dec, all_self, all_cost, all_alt = [], [], [], [], []
     for ds in ("ice_binding", "toxin_scaffold", "toxin_target"):
         out = results / ds
         qmeta = pl.read_csv(data_dir / ds / "queries.tsv", separator="\t", infer_schema_length=0)
@@ -469,6 +519,17 @@ def run(cfg, data_dir: Path, results: Path) -> None:
             how="anti",
         ).height
         all_cost[-1]["n_pairs_sharing_a_seed_not_emitted"] = missed_by_km
+        # the same at scaled 10. Counts at scaled 1 agree under any one-to-one relabelling
+        # of the letters; only a scaled sketch shows whether our hash values are kmerseek's.
+        d_ours = prs.filter(pl.col("our_shared_s10") > 0).select(
+            "query", "reference", "our_shared_s10"
+        )
+        d_km = f.filter(pl.col("D_cand")).select("query", "reference", "D_shared")
+        both = d_km.join(d_ours, on=["query", "reference"], how="full", coalesce=True)
+        all_cost[-1]["n_candidate_pairs_s10"] = both.height
+        all_cost[-1]["n_seed_count_agree_s10"] = both.filter(
+            pl.col("D_shared").cast(pl.Int64).fill_null(0) == pl.col("our_shared_s10").fill_null(0)
+        ).height
 
         # per-query summary
         n_c = f.filter(pl.col("C_cand")).group_by("query").len().rename({"len": "candidates_C"})
@@ -518,6 +579,17 @@ def run(cfg, data_dir: Path, results: Path) -> None:
                 )
                 vals = dict(zip(sub["query"], sub["r"]))
                 lo, hi = bootstrap(vals, group, ev["bootstrap_reps"], cfg["seed"])
+                # the same share among negatives: a seed that admits everything has both near 1
+                neg = (
+                    f.filter(
+                        pl.col("query").is_in(qq)
+                        & pl.col("relation").is_in(
+                            ["negative_annotated", "negative_hard", "background"]
+                        )
+                    )
+                    .group_by("query")
+                    .agg(pl.col(col).mean().alias("r"))
+                )
                 crec.append(
                     dict(
                         split=sp,
@@ -525,6 +597,7 @@ def run(cfg, data_dir: Path, results: Path) -> None:
                         candidate_recall=float(np.mean(list(vals.values()))) if vals else None,
                         ci_low=lo,
                         ci_high=hi,
+                        negatives_kept=float(neg["r"].mean()) if neg.height else None,
                         n_queries=len(vals),
                     )
                 )
@@ -565,6 +638,23 @@ def run(cfg, data_dir: Path, results: Path) -> None:
                     )
             pl.DataFrame(strat).write_csv(out / "same_family_vs_not.tsv", separator="\t")
 
+        if ds == "ice_binding":
+            # sanity check: the same methods on same-origin homologs (relabelled positive,
+            # other-origin proteins left out). A scorer that misses these is broken.
+            so = f.with_columns(
+                relation=pl.when(pl.col("relation") == "same_origin").then(pl.lit("positive"))
+                .when(pl.col("relation") == "positive").then(pl.lit("same_origin"))
+                .otherwise(pl.col("relation"))
+            )  # fmt: skip
+            spq = per_query(so, budgets).filter(pl.col("budget") == h)
+            spq.with_columns(split=pl.col("query").replace_strict(split)).group_by(
+                "split", "method"
+            ).agg(pl.col("recall").mean(), pl.len().alias("n_queries")).sort(
+                "split", "method"
+            ).write_csv(
+                out / "same_origin_sanity.tsv", separator="\t"
+            )
+
         pr = pl.concat(
             [
                 pr_points(
@@ -593,6 +683,7 @@ def run(cfg, data_dir: Path, results: Path) -> None:
         )
 
         all_self.append(self_hits(f, qsum, data_dir, ds, s, modes))
+        all_alt.append(ranking_alternatives(f, km, ds, chosen, split, h))
 
         # decisions on held-out at the headline budget
         ho = [q for q in split if split[q] == "heldout"]
@@ -705,5 +796,6 @@ def run(cfg, data_dir: Path, results: Path) -> None:
         res / "decisions.tsv", separator="\t"
     )
     pl.concat(all_self, how="diagonal_relaxed").write_csv(res / "self_hits.tsv", separator="\t")
+    pl.concat(all_alt).write_csv(res / "exploratory_e2e_ranking.tsv", separator="\t")
     pl.DataFrame(all_cost, infer_schema_length=None).write_csv(res / "cost.tsv", separator="\t")
     check_fixtures(cfg, km).write_csv(res / "fixtures.tsv", separator="\t")

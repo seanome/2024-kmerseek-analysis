@@ -144,7 +144,7 @@ def write_job(cfg: dict, data_dir: Path, job_dir: Path, datasets: list[str]) -> 
         "#SBATCH --partition=hns,normal\n"
         "#SBATCH --cpus-per-task=4\n"
         "#SBATCH --mem=16G\n"
-        "#SBATCH --time=02:00:00\n"
+        "#SBATCH --time=01:00:00\n"
         "#SBATCH --output=slurm-%j.out\n"
         'cd "$SLURM_SUBMIT_DIR"\n'
         "bash run.sh\n"

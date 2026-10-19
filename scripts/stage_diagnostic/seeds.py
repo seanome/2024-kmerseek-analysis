@@ -25,6 +25,15 @@ SOURMASH_KIND = {"protein20": "is_protein", "dayhoff6": "dayhoff", "hp_lehninger
 
 @lru_cache(maxsize=None)
 def _kmerseek_table(alphabet: str) -> dict[str, str]:
+    """The letters kmerseek hashes. Cluster alphabets (build_reduced in alphabets.rs) use
+    each cluster's first residue, lowercase. cys2 is written by hand there: c and x. The
+    HP tables (build_hp) use h and p. A wrong letter keeps every count at scaled 1 the same
+    (it is a relabelling) but changes which hashes a scaled sketch keeps."""
+    if alphabet == "cys2":
+        return {r: ("c" if r == "C" else "x") for r in CLUSTERS["protein20"]}
+    if alphabet.startswith("hp_"):
+        h, p = CLUSTERS[alphabet]
+        return {**{r: "h" for r in h}, **{r: "p" for r in p}}
     m = {}
     for members in CLUSTERS[alphabet]:
         for r in members:
