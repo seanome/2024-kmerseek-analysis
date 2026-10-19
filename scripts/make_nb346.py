@@ -44,14 +44,21 @@ database: false positives against thousands of unrelated proteins, chance key ma
 the alignment's diagonal, and kmerseek's own chaining.
 
 This notebook searches whole proteomes and Swiss-Prot with the same four scores, on six
-pairs whose answer is known before the search. **The decision:** is a linked key worth
+pairs whose answer is known before the search. BCL-2 and CED-9 are true homologs (one
+SCOP fold) that 20-letter methods find. P66 and CD47 are not homologs: P66 mimics CD47's
+binding to SIRPα without any shared sequence (Tal et al. 2024), so this pair can only show
+how often a key matches by chance. The four Pfam pairs are true pairs at 20–30% identity
+from notebook 294. The rule and predictions were written in the task brief before any
+search ran; the brief is committed as [`346_task_brief.md`](346_task_brief.md). **The decision:** is a linked key worth
 building into kmerseek's index for database search, beyond what scoring a second segment
 (B3) already gives? A PASS would put the linked key on the kmerseek roadmap; a KILL closes
-it for the HP alphabet.
+it for the HP alphabet. The rule decides on the BCL-2/CED-9 pair alone, in both directions;
+the other pairs inform the predictions.
 
 **Data.** Queries and partners: human BCL-2 (UniProt P10415) and *C. elegans* CED-9
 (P41958); *Borrelia burgdorferi* P66 (H7C7N8) and human CD47 (Q08722); four Pfam seed pairs
-from notebook 294's report half at 20–30% identity. Databases: the human proteome notebook
+from notebook 294's report half (the half of its pairs held back to report results, after
+it chose its key on the other half) at 20–30% identity. Databases: the human proteome notebook
 241 searched (GENCODE v49 canonical translations, 19,732 proteins), the *C. elegans*
 UniProt reference proteome UP000001940 (19,792 proteins), the *B. burgdorferi* B31
 reference proteome UP000001807 (1,291 proteins) and Swiss-Prot (572,970 proteins). Every
@@ -64,33 +71,58 @@ by `scripts/make_346_inputs.py`. The scores are computed by `scripts/346_databas
 
 - **HP alphabet** (`hp_thomas_dill2`): every residue becomes H (hydrophobic: A, C, F, I, L,
   M, V, W, Y) or P (polar: the other 11). Two residues match when they fall in the same class.
-- **Word**: a run of consecutive residues; an **exact shared word** is a run whose HP
-  classes are identical in both proteins, residue by residue, with no gap.
-- **Seed**: an exact shared word that starts a hit. **Extension**: growing the seed left
-  and right along the same diagonal, +1 per matching position and −2 per mismatch, keeping
-  the best total (notebook 232's rule). The result is a gap-free **segment**.
+- **Diagonal**: one fixed offset between query and target positions (query residue i paired
+  with target residue i + d), with no gaps. A database search with no alignment given looks
+  at every diagonal.
+- **Word**: a run of consecutive residues. An **exact shared word** is a run whose HP
+  classes are identical in both proteins, residue by residue, on one diagonal.
+- **Extension**: growing an exact shared word left and right along its diagonal, +1 per
+  matching position and −2 per mismatch, keeping the best total (notebook 232's rule). The
+  result is a gap-free **segment**; its total is the score in points.
 - **Strobemer** (the field's word, Sahlin 2021), called the **linked key** here: two exact
-  6-letter HP words, called **anchors**, whose starts are at most 32 residues apart in both
-  proteins. The **gap** is the number of residues between the two anchors; it is not part
-  of the key, so the gap may differ between the two proteins. A key's score is the best
-  total of one segment holding both anchors, or two segments, one through each anchor,
-  that do not overlap in either protein. This is notebook 294's chosen setting.
-- **B2**: one exact 8-letter HP word plus extension.
-- **B3**: B2's 8-letter word plus the best second segment within 32 residues, before or
-  after it (the second segment needs only one matching residue, no second exact word).
+  shared 6-letter HP words, called **anchors**, with at most 32 residues between them in
+  each protein (so their starts are at most 38 apart). The **gap**, the number of residues
+  between the anchors, is not part of the key, so it may differ between the two proteins
+  and the second anchor may sit on another diagonal. A key's score is the best total of
+  one segment holding both anchors, or two segments, one through each anchor, that do not
+  overlap in either protein. This is notebook 294's chosen setting. (The brief wrote
+  "starts at most 32 apart"; notebook 294's code limits the gap, and this notebook follows
+  the code, which gates 1 and 2 check.)
+- **B2**: one exact shared 8-letter HP word plus extension. **B1** (notebook 294 only):
+  the same with a 10-letter word.
+- **B3**: B2's 8-letter word plus the best second segment that holds one matching residue
+  within 32 residues before or after the word, in each protein (no second exact word). One
+  **B3 key** is one 8-letter word paired with one such matching residue.
 - **Randstrobe**: the linked key with one key per position: each protein, on its own,
   picks the second anchor for every first anchor by a hash rule (Sahlin 2021), so a key is
   shared only when both proteins pick the same partner word.
-- **Decoy**: a database protein with its residues shuffled. Two shuffles, both with fixed
-  seeds: (a) every residue moved at random (notebook 232's null), and (b) a shuffle that
-  keeps the count of every pair of adjacent residues (dipeptide), which keeps runs of H and
-  P residues. (b) is the headline.
+- **Key matches**: the number of keys two proteins share, over every diagonal.
+- **Decoy**: a database protein with its residues shuffled. Two shuffles, each with a fixed
+  random seed per protein: (a) every residue moved at random (notebook 232's null), and
+  (b) a shuffle that keeps the count of every pair of adjacent residues (dipeptide), which
+  keeps runs of H and P residues. (b) is the headline. Each database has one decoy of each
+  kind per protein.
 - **Rank** of the true partner: 1 plus the number of other real database proteins scoring
-  at or above it (ties count against the partner).
+  at or above it (ties count against the partner). Smaller is better.
 - **Decoy rate**: the share of decoy proteins scoring at or above the true partner. It
   plays the part of a **false-positive rate**: the share of unrelated proteins a cut-off at
-  the partner's score would also call.
-- **Key matches**: the number of keys two proteins share, over every diagonal.
+  the partner's score would also call. Lower is better.
+- **Gate**: a check that must pass before any result is read (here: the new scorer gives
+  notebook 294's numbers on known alignments).
+- **Report half**: the half of notebook 294's Pfam pairs it held back to report results.
+- **Pfam seed alignment**: Pfam's curated alignment of a family's representative members
+  (notebook 230 took its pairs from these).
+- **USalign**: a structure aligner; notebook 245 aligned the AlphaFold models of BCL-2 and
+  CED-9 with it. **BH1 block**: BCL-2 130–166 against CED-9 154–190, the conserved BCL-2
+  homology region 1, aligned without gaps.
+- **d1ohua_**: the SCOPe 2.08 domain of CED-9's crystal structure (CED-9 71–242, with three
+  cysteines changed to serine), used as a second CED-9 query.
+- **kmerseek terms** (section 3 only): `region_evalue` is kmerseek's E-value of a region;
+  **X-drop** stops an extension once its total falls that far below its best; **scaled 1**
+  keeps every k-mer in the index; **chaining** joins nearby regions into one hit.
+  **Karlin-Altschul K** is the constant in E = K·m·n·2^(−bits).
+- **Task brief**: the instructions this notebook was built from, with its rule
+  ([`346_task_brief.md`](346_task_brief.md)).
 - Notebook 241's code calls one kmerseek alphabet, k and metric an *arm*; this notebook
   writes "kmerseek setting".
 """)
@@ -149,7 +181,7 @@ md(r"""
 Each block shows both sequences, an identity line (`|`), the HP class strings (h, p) with a
 class-match line, a line marking every column inside an exact shared 6-letter HP word
 (`=`), the longest class-identical run (`^`), the best linked key's two anchors (`L`) and
-B3's seed segment (`S`) and second segment (`2`). The key and B3 marks are restricted to
+B3's segment with the 8-letter word (`S`) and its second segment (`2`). The key and B3 marks are restricted to
 the alignment shown.
 
 ### 1a. BCL-2 and CED-9 (pair 1)
@@ -171,7 +203,7 @@ print(f"USalign structure alignment, CED-9 {q0}-{q0 + len(q_seq) - 1} against BC
       f"{pairs245.height} aligned positions, {len(q_aln)} columns")
 us_marks = {"linked": ku.residue_marks(q_aln, t_aln, us_best["linked"]), "B3": ku.residue_marks(q_aln, t_aln, us_best["B3"])}
 us_counts = ku.print_block(q_aln, t_aln, "CED-9", "BCL-2", q0, t0, us_marks)
-print(f"linked keys on this alignment (anchor pairs at the same aligned positions, starts at most 32 apart): "
+print(f"linked keys on this alignment (anchor pairs on aligned positions, at most 32 residues between them): "
       f"{us_scan['linked_count']}; best linked key score {us_scan['linked']}, B3 {us_scan['B3']}, B2 {us_scan['B2']}")
 
 print("\nBH1 block on its own (one diagonal):")
@@ -195,7 +227,13 @@ two sequences shows no region of significant similarity (Tal et al. 2024). The S
 loop of P66 is residues 181–187 of the mature protein (202–208 of the precursor; 21-residue
 signal peptide). The cell then counts the exact shared 6- and 8-letter HP words and the
 shared linked keys between the two whole sequences, on every diagonal. It counts the same
-between P66 and 1,000 human proteins of CD47's length ± 10%, drawn with a fixed seed.
+between P66 and 1,000 human proteins of CD47's length ± 10%, drawn with a fixed random seed.
+""")
+
+md(r"""
+**Figure 1** (below the counts) shows the 1,000 length-matched human proteins as grey bars
+and CD47 as a black line, for each count. How to read it: CD47 far right of the grey bars
+would mean P66 and CD47 share more HP words than chance gives proteins of CD47's length.
 """)
 
 code(r"""
@@ -257,9 +295,11 @@ fig.legend(handles=[Patch(color=ku.COLOR["real"], label=f"{N_MATCHED:,} human pr
 hc.finish_figure(fig, FIG / "346_p66_cd47_shared_words_vs_length_matched_human.png", tools=TOOL + "; database: GENCODE v49 human",
                  hypothesis="If P66 and CD47 share HP sequence, CD47 shares more exact HP words and keys with P66 than other human proteins of its length do.",
                  conclusion=f"CD47 sits at the {p66_counts['CD47 percentile'][0]:.0f}th percentile for 6-letter words and the {p66_counts['CD47 percentile'][2]:.0f}th for linked keys: no excess. Right of the grey bars would mean shared HP sequence.",
-                 title="P66 against CD47 and 1,000 length-matched human proteins", wrap=120, tight_layout=False)
+                 title="Figure 1. P66 against CD47 and 1,000 length-matched human proteins", wrap=120, tight_layout=False)
 b3 = p66_best["B3"]
-print(f"best B3 key between P66 and CD47: score {b3['score']}, seed at P66 {min(b3['q1'], b3['q2']) + 1}, CD47 {min(b3['t1'], b3['t2']) + 1}")
+w8 = (b3["q1"], b3["t1"]) if b3["a1"] == lp.DB_SEED else (b3["q2"], b3["t2"])
+print(f"best B3 key between P66 and CD47: score {b3['score']}, its 8-letter word at P66 {w8[0] + 1}, CD47 {w8[1] + 1}, "
+      f"on diagonal {w8[1] - w8[0]} (the linked key's anchors sit on diagonals {b['t1'] - b['q1']} and {b['t2'] - b['q2']})")
 """)
 
 md(r"""
@@ -277,8 +317,8 @@ code(r"""
 print(f"notebook 294 thresholds, report half: B2 above {V['threshold_B2_report_half']:.0f}, linked key above "
       f"{V['threshold_linked_report_half']:.0f}; pairs found by the linked key and by neither aligner at 20-30%: "
       f"{V['n_linked_only_not_aligners_20_30']:.0f}")
-print(PFAM.select("pair", "family", "family_name", "query", "target", (pl.col("seqid_ali") * 100).round(1).alias("identity_%"),
-                  "B2_ext", "B3_ext", "all_a6_g32_none_ext", "why_chosen"))
+print(PFAM.select("pair", "family", "family_name", "query", "target", (pl.col("seqid_ali") * 100).round(1).alias("identity %"),
+                  pl.col("B2_ext").alias("B2"), pl.col("B3_ext").alias("B3"), pl.col("all_a6_g32_none_ext").alias("linked key"), "why_chosen"))
 pf_best = {}
 for r in PFAM.iter_rows(named=True):
     qs, ts, al = lp.alignment_cells(r["qaln"], r["taln"])
@@ -295,7 +335,7 @@ for r in PFAM.iter_rows(named=True):
 """)
 
 md(r"""
-**Figure 1. The best linked key on each pair, in residues.** How to read it: each panel is one pair, query on top, partner below, one square per
+**Figure 2. The best linked key on each pair, in residues.** How to read it: each panel is one pair, query on top, partner below, one square per
 residue coloured by HP class. A black outline marks an identical residue. Black bars under
 the partner mark exact shared HP words of 6 or more. The two vermillion bars above are the
 best linked key's anchors, joined by a bracket that gives the gap. Reddish-purple bars at
@@ -325,8 +365,10 @@ def cut(qrow, trow, q_start, t_start, marks, lo_, hi_):
     return qrow[lo_:hi_], trow[lo_:hi_], qs_, ts_, shifted
 
 
-panels = [("pair 1: CED-9 vs BCL-2, USalign structure alignment", q_aln, t_aln, "CED-9", "BCL-2", q0, t0, us_marks)]
-panels.append(("pair 2: P66 vs CD47, no alignment: the best linked key's two diagonals", p_rows[0], p_rows[1],
+panels = [(f"pair 1: CED-9 vs BCL-2, USalign structure alignment, {100 * us_counts['identical'] / us_counts['aligned']:.0f}% identity",
+           q_aln, t_aln, "CED-9", "BCL-2", q0, t0, us_marks)]
+panels.append((f"pair 2: P66 vs CD47, no alignment: the best linked key's two diagonals (B3's best key, score {b3['score']}, "
+               "is not drawn)", p_rows[0], p_rows[1],
                "P66 mature", "CD47", p_rows[2], p_rows[3], {"linked": ku.residue_marks(p_rows[0], p_rows[1], p_rows[4])}))
 for r in PFAM.iter_rows(named=True):
     best = pf_best[r["pair"]]
@@ -358,8 +400,9 @@ print(pl.DataFrame(fig1_rows))
 hc.finish_figure(
     fig, FIG / "346_best_linked_key_residues_six_pairs.png", tools=TOOL + "; alignments: USalign (pair 1), Pfam seed (pairs 3-6)",
     hypothesis="The best linked key of a true pair sits where the two proteins share HP structure.",
-    conclusion="Read each panel's vermillion bars against the black bars: a linked key needs two exact 6-letter HP words, which the true pairs hold and which the unrelated pair P66/CD47 also holds.",
-    title="Figure 1. The best linked key on six known pairs, residue by residue", wrap=120, tight_layout=False,
+    conclusion=(f"On the true pairs the best linked key sits on runs of shared HP class (black bars) inside the alignment. P66 and CD47, "
+                f"which share no sequence, still hold a linked key scoring {b['score']}; BCL-2's best key on the structure alignment scores {us_scan['linked']}."),
+    title="Figure 2. The best linked key on six known pairs, residue by residue", wrap=120, tight_layout=False,
 )
 """)
 
@@ -400,6 +443,10 @@ print(f"Best linked key plus its extension on the USalign alignment: {len(key['s
       f"{key_bits:.1f} bits. The whole {pairs245.height}-position alignment: {whole_bits:.1f} bits. "
       f"E = 1 against the human proteome needs log2(K·m·n) = log2({K} × {m} × {n:.3g}) = {need:.1f} bits "
       f"(K: Karlin-Altschul K borrowed from Swiss-Prot in notebook 245; m: CED-9's length; n: residues in one proteome).")
+wb = lp.best_keys_with_segments(ced9, bcl2)["linked"]
+wb_bits = sum(hp_bits(ced9[s0:e0], bcl2[t_: t_ + (e0 - s0)]) for s0, e0, t_ in wb["segments"])
+print(f"BCL-2's best linked key over the two whole sequences ({wb['score']} points, every diagonal, the score the search ranks) "
+      f"carries {wb_bits:.1f} bits by the same model.")
 print("The task brief quoted 22.9 bits for the whole alignment from notes; this model gives the number above "
       "(notebook 245's notebook does not print a whole-alignment total, so 22.9 is not reproduced here).")
 """)
@@ -439,8 +486,21 @@ md(r"""
 ## 3. The search
 
 Every protein of each database is scored against the query as it is and as two decoys
-(the shuffles a and b defined at the top), with the four scores on every diagonal, no alignment given.
-The score of a protein is its best key. Swiss-Prot is searched by each Pfam pair's query
+(the shuffles a and b defined at the top), with the four scores on every diagonal, no
+alignment given. The score of a protein is its best key. Each database has as many decoys
+of each kind as proteins, so the smallest decoy rate it can measure is 1 in its size (about
+0.00005 for the human and *C. elegans* proteomes, 0.0008 for *B. burgdorferi*). CED-9 is
+searched twice against human: full length, and as its crystallised domain d1ohua_.
+
+Only BCL-2 counts as CED-9's true partner. Other BCL-2 family members that score above it
+count against its rank; the table below also gives the best-scoring family member, and
+phmmer's rank (20 letters, HMMER 3.4) as a check that the pair can be found at all.
+
+The rule decides on the two BCL-2/CED-9 directions, which are complete. The two jobs still
+on Sherlock (pairs 3 to 6 against Swiss-Prot, and kmerseek's own search) cannot change the
+verdict; they test prediction P5 and kmerseek's chaining. Pair 6 cannot separate the linked
+key from B3 even there: on its alignment both score 50. Pairs 3 to 5 have no exact shared
+8-letter word on their alignment, so B2 and B3 score 0 on it. Swiss-Prot is searched by each Pfam pair's query
 domain; the partner's domain (from the Pfam seed alignment) is added to Swiss-Prot as one
 more protein, and any Swiss-Prot entry of the query's or the partner's own protein is left
 out.
@@ -484,18 +544,23 @@ gx = np.r_[gate1["notebook 294 scorer"].to_numpy(), gate2["stored by notebook 29
 gy = np.r_[gate1["database scorer, alignment cells"].to_numpy(), gate2["database scorer"].to_numpy()]
 gx1, gy1 = np.log10(gx + 1), np.log10(gy + 1)
 ax.plot([0, gx1.max() * 1.05], [0, gx1.max() * 1.05], color=ku.COLOR["real"], lw=0.6, label="equal")
-ax.scatter(gx1[: gate1.height], gy1[: gate1.height], s=18, facecolors="none", edgecolors=ku.COLOR["partner"], label="gate 1: BCL-2/CED-9, USalign")
-ax.scatter(gx1[gate1.height:], gy1[gate1.height:], s=5, color=ku.COLOR["partner"], label="gate 2: pairs 3 to 6, Pfam seed")
+is_count = np.r_[gate1["score"].str.contains("count").to_numpy(), gate2["score"].str.contains("count").to_numpy()]
+is_g1 = np.r_[np.ones(gate1.height, bool), np.zeros(gate2.height, bool)]
+for g1, cnt, label in [(True, False, "gate 1 (BCL-2/CED-9, USalign): scores"), (True, True, "gate 1: key counts"),
+                       (False, False, "gate 2 (pairs 3 to 6, Pfam seed alignments): scores"), (False, True, "gate 2: key counts")]:
+    m = (is_g1 == g1) & (is_count == cnt)
+    ax.scatter(gx1[m], gy1[m], s=18 if g1 else 7, marker="s" if cnt else "o", facecolors="none" if g1 else ku.COLOR["partner"],
+               edgecolors=ku.COLOR["partner"], label=label)
 ticks = [0, 1, 10, 30, 100]
 ax.set_xticks(np.log10(np.array(ticks) + 1), [str(t) for t in ticks])
 ax.set_yticks(np.log10(np.array(ticks) + 1), [str(t) for t in ticks])
-ax.set_xlabel("notebook 294's per-pair scorer (score or key count)")
+ax.set_xlabel("notebook 294's per-pair scorer (value; ratio spacing of value + 1)")
 ax.set_ylabel("database scorer on the alignment's cells")
 ax.legend(loc="upper left", frameon=False, fontsize=5)
 hc.finish_figure(fig, FIG / "346_gates_database_scorer_vs_nb294.png", tools=TOOL,
                  hypothesis="Restricted to an alignment, the all-diagonal scorer gives notebook 294's scores and key counts.",
                  conclusion=f"All {gx.size} values are equal, so every point sits on the line (scores and counts; both axes spaced by ratio, value + 1).",
-                 title="Gates 1 and 2", wrap=70, tight_layout=False)
+                 title="Figure 3. Gates 1 and 2: the new scorer reproduces notebook 294", wrap=70, tight_layout=False)
 """)
 
 code(r"""
@@ -517,26 +582,63 @@ for r in KNOWN.iter_rows(named=True):
     kept[r["pair"]] = (keep, partner)
     t = ku.search_table(SCAN[r["query_db"]], r["query"], partner, keep)
     results.append(t.with_columns(pl.lit(r["pair"]).alias("pair"), pl.lit(r["query"]).alias("query"),
-                                  pl.lit(r["query_db"]).alias("database")))
-RES = pl.concat(results).select("pair", "query", "database", "score", "partner_score", "rank", "n_real", "n_real_at_or_above",
+                                  pl.lit(r["query_db"]).alias("database"),
+                                  pl.lit(ku.DIRECTION.get(r["pair"], f"{r['query'].split('/')[0]} → Swiss-Prot")).alias("direction")))
+RES = pl.concat(results).select("direction", "pair", "query", "database", "score", "partner_score", "rank", "n_real", "n_real_at_or_above",
                                 "decoy_rate_dipeptide", "decoy_rate_uniform", "partner_keys", "median_keys",
                                 "n_decoys_dipeptide", "n_decoys_uniform")
 RES.write_csv(TAB / "346_ranks_and_decoy_rates.tsv", separator="\t")
 h_ced9 = human.filter((pl.col("query") == "CED-9") & (pl.col("kind") == "real"))
 failed = {db: int(s["shuffle_failed"].sum()) // max(1, s["query"].n_unique()) for db, s in SCAN.items()}
-print("dipeptide shuffles that failed (left out of the decoys), per database:", failed)
+print("dipeptide shuffles that came back unchanged (shuffle_fasta gave up after 1,000 tries, or no other order exists), "
+      "left out of the decoys, per database:", failed)
 print("Rank of the true partner (ties against it), decoy rate under each shuffle, and key matches:")
-print(RES.drop("n_decoys_dipeptide", "n_decoys_uniform").with_columns(pl.col("decoy_rate_dipeptide", "decoy_rate_uniform").round(4)))
+print(RES.drop("pair", "query", "database").with_columns(pl.col("decoy_rate_dipeptide", "decoy_rate_uniform").round(4)))
+
+# the best-scoring BCL-2 family member, as a second reading of "true partner" for CED-9
+FAMILY = ["BCL2", "BCL2L1", "BCL2L2", "MCL1", "BCL2A1", "BCL2L10", "BAX", "BAK1", "BOK"]
+fam_rows = []
+for q in ["CED-9", "d1ohua_"]:
+    d = human.filter(pl.col("query") == q)
+    real = d.filter(pl.col("kind") == "real").with_columns(pl.col("target").str.split("|").list.get(6).alias("gene"))
+    for sc_ in ku.SCORES:
+        best = real.filter(pl.col("gene").is_in(FAMILY)).sort([sc_, "gene"], descending=[True, False]).row(0, named=True)
+        v = best[sc_]
+        dk = d.filter((pl.col("kind") == "dipeptide") & (pl.col("shuffle_failed") == 0))[sc_]
+        fam_rows.append({"direction": ku.DIRECTION["pair 1" if q == "CED-9" else "pair 1, SCOPe domain"], "score": sc_,
+                         "best family member": best["gene"], "its score": v,
+                         "rank (ties against)": 1 + int((real.filter(pl.col("target") != best["target"])[sc_] >= v).sum()),
+                         "decoy rate (dipeptide)": round(float((dk >= v).mean()), 4)})
+FAM = pl.DataFrame(fam_rows)
+print("Best-scoring BCL-2 family member (BCL2, BCL2L1, BCL2L2, MCL1, BCL2A1, BCL2L10, BAX, BAK1, BOK) for CED-9:")
+print(FAM)
+
+# phmmer, 20 letters, filters off (scripts/346_phmmer_positive_control.sh)
+ph_rows = []
+for pair, q, db, partner_key in [("pair 1", "CED-9", "human_gencode_v49", "|BCL2|"), ("pair 1, SCOPe domain", "d1ohua_", "human_gencode_v49", "|BCL2|"),
+                                 ("pair 1, reverse", "BCL-2", "celegans_uniprot_UP000001940", "|P41958|"),
+                                 ("pair 2", "P66_mature", "human_gencode_v49", "|CD47|"), ("pair 2, reverse", "CD47", "borrelia_uniprot_UP000001807", "|H7C7N8|")]:
+    lines = [l.split() for l in (TAB / f"346_phmmer_{q}_vs_{db}.tbl").read_text().splitlines() if not l.startswith("#")]
+    evals = [(l[0], float(l[4])) for l in lines]
+    hit = [e for t_, e in evals if partner_key in t_]
+    rank = (1 + sum(e <= hit[0] for t_, e in evals if partner_key not in t_)) if hit else None
+    top = [t_.split("|")[6] if t_.count("|") >= 6 else t_.split("|")[2] for t_, _ in evals[:4]]
+    ph_rows.append({"direction": ku.DIRECTION[pair], "partner E-value": hit[0] if hit else None, "partner rank": rank,
+                    "proteins with E <= 1000": len(evals), "top 4 hits": ", ".join(top)})
+PHMMER = pl.DataFrame(ph_rows)
+print("phmmer (HMMER 3.4, --max, 20 letters) on the same queries and databases; partner rank by E-value, ties against it:")
+print(PHMMER)
 missing = [r["pair"] for r in KNOWN.iter_rows(named=True) if r["query_db"] not in SCAN]
 if missing:
     print(f"\nNot run yet: {', '.join(missing)} (Swiss-Prot scan, scripts/346_swissprot_scan.sbatch on Sherlock).")
 """)
 
 md(r"""
-**Figure 2. Scores of every database protein, every decoy and the true partner.** How to read it: one column per search direction, one row per score. Each line is the share
+**Figure 4. Scores of every database protein, every decoy and the true partner.** How to read it: one column per search direction, one row per score. Each line is the share
 of proteins scoring at or above a given score: grey for the real database proteins, green
 for decoys from the uniform shuffle, blue for decoys from the dipeptide-preserving shuffle.
-The black vertical line is the true partner's score, with its rank. The vertical axis is
+The black vertical line is the true partner's score, with its rank and its decoy rate
+(dipeptide shuffle) printed beside it. The vertical axis is
 spaced by ratio: the step from 1 to 0.1 takes as much room as the step from 0.01 to 0.001.
 Where the black line crosses the blue curve is the decoy rate. A key worth having would put
 the black line far right of the grey and blue curves, where they have fallen below 0.001.
@@ -567,15 +669,15 @@ def figure2(directions, path, title):
                 ax.step(grid, np.maximum(survival(v, grid), 0.5 / v.size), where="post", color=ku.COLOR[kind], lw=lw, alpha=alpha)
             row = RES.filter((pl.col("pair") == r["pair"]) & (pl.col("score") == s)).row(0, named=True)
             ax.axvline(row["partner_score"], color=ku.COLOR["partner"], lw=0.8)
-            ax.text(row["partner_score"] - 1, 0.5 / max(real.height, 1000), f"rank {row['rank']:,}\nof {row['n_real']:,}",
+            ax.text(row["partner_score"] - 1, 0.5 / max(real.height, 1000),
+                    f"rank {row['rank']:,} of {row['n_real']:,}\ndecoy rate {row['decoy_rate_dipeptide']:.2f}",
                     fontsize=5, va="bottom", ha="right")
             ax.set_yscale("log")
             ax.set_ylim(0.3 / max(real.height, 1000), 1.5)
             ax.set_yticks([1, 0.1, 0.01, 0.001], ["1", "0.1", "0.01", "0.001"])
             ax.minorticks_off()
             if i == 0:
-                qlab = {"P66_mature": "P66 (mature)"}.get(r["query"], r["query"].split("/")[0])
-                ax.set_title(f"{qlab} → {r['query_db'].split(' UniProt')[0].replace(' GENCODE v49 canonical', '')}", fontsize=6)
+                ax.set_title(ku.DIRECTION.get(r["pair"], f"{r['query'].split('/')[0]} → Swiss-Prot"), fontsize=6)
             if j == 0:
                 ax.set_ylabel(ku.SCORE_LABEL[s].replace(": ", ":\n"), fontsize=5.5)
             if i == len(ku.SCORES) - 1:
@@ -601,7 +703,7 @@ hc.finish_figure(
     conclusion=(f"CED-9 -> human: BCL-2 scores {c['partner_score']} under the linked key, rank {c['rank']:,} of {c['n_real']:,}; "
                 f"{100 * c['decoy_rate_dipeptide']:.0f}% of dipeptide decoys score as high. In none of the 20 panels does the black line "
                 "sit right of the point where the curves fall below 0.001. A smaller rank number and a lower decoy rate are better."),
-    title="Figure 2. Every protein's score in four proteome searches, HP alphabet", wrap=120, tight_layout=False,
+    title="Figure 4. Every protein's score in five proteome searches, HP alphabet", wrap=120, tight_layout=False,
 )
 if "Swiss-Prot" in SCAN:
     sp = [r for r in KNOWN.iter_rows(named=True) if r["query_db"] == "Swiss-Prot"]
@@ -609,16 +711,18 @@ if "Swiss-Prot" in SCAN:
     hc.finish_figure(fig, FIG / "346_score_distributions_swissprot.png", tools=TOOL + "; database: Swiss-Prot",
                      hypothesis="Under the linked key the Pfam partner domain scores far above Swiss-Prot and its decoys.",
                      conclusion="See the table above each figure for the decoy rates; lower is better.",
-                     title="Figure 2b. Pairs 3 to 6 against Swiss-Prot, HP alphabet", wrap=120, tight_layout=False)
+                     title="Figure 4b. Pairs 3 to 6 against Swiss-Prot, HP alphabet", wrap=120, tight_layout=False)
 else:
-    print("Figure 2b (pairs 3 to 6 against Swiss-Prot) waits on the Sherlock scan.")
+    print("Figure 4b (pairs 3 to 6 against Swiss-Prot) waits on the Sherlock scan.")
 """)
 
 md(r"""
-**Figure 3. Chance key matches per protein pair, against the database protein's length.** How to read it: one point per human protein, CED-9 as the query, real proteins only; the
+**Figure 5. Chance key matches per protein pair, against the database protein's length.** How to read it: one point per human protein, CED-9 as the query, real proteins only; the
 vertical position is how many keys of each kind the two proteins share over every diagonal.
-The stars are notebook 294's counts per pair of unrelated 131-residue proteins on one
-diagonal only, the number PR 143 could measure. Both axes are spaced by ratio. B2's
+The stars are notebook 294's expected counts for two unrelated 131-residue proteins over
+every pair of positions, from Swiss-Prot word frequencies (the brief described them as one
+diagonal; notebook 294's script counts every position pair). The dashed lines scale those
+counts by the search area, 280 × L against 131 × 131. Both axes are spaced by ratio. B2's
 squares and the randstrobe's triangles overlap because the two counts are nearly equal. What to
 decide from it: how many chance matches each key costs a search before any score is
 computed. A key that matches thousands of times per protein pair cannot be looked up one
@@ -627,17 +731,23 @@ match at a time.
 
 code(r"""
 fig, ax = pf.figure(pf.ONE_COLUMN_MM, 80, layout=None)
-fig.subplots_adjust(left=0.17, right=0.98, top=0.84, bottom=0.14)
+fig.subplots_adjust(left=0.17, right=0.98, top=0.78, bottom=0.14)
 rng = np.random.default_rng(346)
 idx = rng.choice(h_ced9.height, 3_000, replace=False)
 sub = h_ced9[np.sort(idx)]
 spec = [("words8", "B2's 8-letter words (squares)", "B2", "s", True), ("B3_count", "B3 keys", "B3", "o", True),
-        ("linked_count", "linked keys", "linked", "o", True), ("randstrobe_count", "randstrobe keys (open triangles)", "linked", "^", False)]
+        ("linked_count", "linked keys", "linked", "o", True), ("randstrobe_count", "randstrobe keys (open triangles)", "randstrobe", "^", False)]
 f3 = []
 for col, label, colour, marker, filled in spec:
     y = sub[col].to_numpy().astype(float)
     ax.scatter(sub["length"], np.where(y > 0, y, 0.7), s=4 if marker == "s" else 2, marker=marker, color=ku.COLOR[colour] if filled else "none",
                edgecolors="none" if filled else ku.COLOR[colour], linewidths=0.4, alpha=0.5, label=label, rasterized=True)
+    # median per length bin over all 19,732 proteins, drawn on top so overlapping clouds stay readable
+    edges = np.geomspace(60, 6_000, 13)
+    Lh, yh = h_ced9["length"].to_numpy(), h_ced9[col].to_numpy().astype(float)
+    mids = np.sqrt(edges[:-1] * edges[1:])
+    med = np.array([np.median(yh[(Lh >= a_) & (Lh < b_)]) for a_, b_ in zip(edges[:-1], edges[1:])])
+    ax.plot(mids, med, color=ku.COLOR[colour], lw=1.4, marker=marker, ms=3, mfc=ku.COLOR[colour] if filled else "white", zorder=4)
     f3.append({"key": label, "median per protein (all 19,732)": float(h_ced9[col].median()),
                "median per 100 residues of target": float((h_ced9[col] / h_ced9["length"] * 100).median())})
 for q, label, colour, marker in [("chance_keys_linked_per_131", "linked key, notebook 294", "linked", "*"),
@@ -652,21 +762,39 @@ ax.set_xticks([30, 100, 300, 1000, 3000, 10_000, 30_000], ["30", "100", "300", "
 ax.set_yticks([1, 10, 100, 1e3, 1e4, 1e5, 1e6, 1e7], ["1", "10", "100", "1,000", "10,000", "100,000", "1 million", "10 million"])
 ax.minorticks_off()
 ax.set_xlabel("human protein length (aa)")
-ax.set_ylabel("keys shared with CED-9 (280 aa), all diagonals")
+ax.set_ylabel("keys shared with CED-9 (280 aa), all diagonals\n(fewer is better)")
+# notebook 294's counts are for every position pair of two 131-residue proteins; scaled by search area
+Lgrid = np.array([30, 35_000])
+for q, colour in [("chance_keys_linked_per_131", "linked"), ("chance_keys_B2_per_131", "B2")]:
+    ax.plot(Lgrid, V[q] * (len(ced9) / V["chance_keys_pair_length"]) * (Lgrid / V["chance_keys_pair_length"]),
+            color=ku.COLOR[colour], lw=0.8, ls=(0, (4, 2)))
+ratio = {c: float((h_ced9[c] / (V[q] * len(ced9) * h_ced9["length"] / V["chance_keys_pair_length"] ** 2)).median())
+         for c, q in [("linked_count", "chance_keys_linked_per_131"), ("words8", "chance_keys_B2_per_131")]}
+print(f"measured / notebook 294's count scaled by search area (280 x L / 131 x 131), median over human proteins: "
+      f"linked keys {ratio['linked_count']:.2f}, B2's 8-letter words {ratio['words8']:.2f}")
 leg = ax.legend(loc="lower left", bbox_to_anchor=(0, 1.02), ncol=2, frameon=False, markerscale=3,
-                title="this notebook, all diagonals (no shared key: drawn below 1);\nstars: notebook 294, one diagonal of two 131-aa proteins", title_fontsize=5)
+                title="points: this notebook, all diagonals (no shared key: drawn below 1); stars: notebook 294,\nevery position pair of two unrelated 131-aa proteins; dashed: stars scaled by search area;\nsolid lines: median per length bin", title_fontsize=5)
 print(pl.DataFrame(f3))
 hc.finish_figure(
     fig, FIG / "346_chance_key_matches_vs_length_human.png", tools=TOOL + "; query CED-9, database GENCODE v49 human",
-    hypothesis="Off the alignment's diagonal, chance key matches per protein pair rise far above notebook 294's one-diagonal counts.",
+    hypothesis="Real proteins share as many chance keys as notebook 294's word-frequency count predicts for their search area.",
     conclusion=(f"Median keys per human protein: linked {h_ced9['linked_count'].median():,.0f}, B3 {h_ced9['B3_count'].median():,.0f}, "
-                f"B2's 8-letter words {h_ced9['words8'].median():,.0f}, randstrobe {h_ced9['randstrobe_count'].median():,.0f}. Fewer is better."),
-    title="Figure 3. Chance key matches grow with length", wrap=70, tight_layout=False,
+                f"B2's 8-letter words {h_ced9['words8'].median():,.0f}, randstrobe {h_ced9['randstrobe_count'].median():,.0f}; measured over predicted: "
+                f"linked {ratio['linked_count']:.2f}, B2 {ratio['words8']:.2f}. Fewer is better."),
+    title="Figure 5. Chance key matches grow with length", wrap=70, tight_layout=False,
 )
 """)
 
 md(r"""
 ### Where BCL-2's best key sits
+
+**Figure 6** draws CED-9 position against BCL-2 position: the structure alignment as a
+wide grey path, the best linked key over the two whole sequences as two vermillion
+segments, and the best linked key restricted to the structure alignment as dashed
+vermillion segments. How to read it: a key that tracks the shared fold lies on the grey path.
+""")
+
+md(r"""
 
 BCL-2's database-scale score is its best key over every diagonal of the two whole
 sequences. If that key lies off the structure alignment, the score is not evidence of the
@@ -689,6 +817,19 @@ print(WB)
 print(f"On the structure alignment alone the best linked key scores {us_scan['linked']}; the whole-sequence key "
       f"scores {whole_best['linked']['score']} with {WB.filter(pl.col('score') == 'linked')['on the USalign alignment'].sum()} "
       "of its residue pairs on the alignment.")
+aligned_b = set(pairs245["bcl2_pos"].to_list())
+skipped, run_ = [], []
+for pos in range(int(pairs245["bcl2_pos"].min()), int(pairs245["bcl2_pos"].max()) + 1):
+    if pos in aligned_b:
+        if len(run_) >= 10:
+            skipped.append((run_[0], run_[-1]))
+        run_ = []
+    else:
+        run_.append(pos)
+print(f"The structure alignment covers CED-9 {pairs245['ced9_pos'].min()}-{pairs245['ced9_pos'].max()} and BCL-2 "
+      f"{pairs245['bcl2_pos'].min()}-{pairs245['bcl2_pos'].max()}, skipping BCL-2 "
+      + ", ".join(f"{a_}-{b_}" for a_, b_ in skipped) + f" (stretches of 10 or more); d1ohua_ is CED-9 "
+      f"{int(V['d1ohua_start_in_CED9'])}-{int(V['d1ohua_start_in_CED9'] + V['length_d1ohua_'] - 1)}.")
 fig, ax = pf.figure(pf.ONE_COLUMN_MM, 80, layout=None)
 fig.subplots_adjust(left=0.15, right=0.97, top=0.78, bottom=0.13)
 ax.plot(pairs245["ced9_pos"], pairs245["bcl2_pos"], color=ku.COLOR["real"], lw=2.5, label="USalign structure alignment")
@@ -707,13 +848,16 @@ ax.legend(loc="lower left", bbox_to_anchor=(0, 1.0), frameon=False, fontsize=5)
 hc.finish_figure(fig, FIG / "346_bcl2_ced9_best_key_vs_structure_alignment.png", tools=TOOL,
                  hypothesis="BCL-2's best key at database scale lies on the structure alignment.",
                  conclusion=f"It does not: the whole-sequence key (score {whole_best['linked']['score']}) has no residue pair on the grey path; the best key on the path scores {us_scan['linked']}.",
-                 title="Where BCL-2's best linked key sits", wrap=70, tight_layout=False)
+                 title="Figure 6. Where BCL-2's best linked key sits", wrap=70, tight_layout=False)
 """)
 
 md(r"""
 ### Who ranks above BCL-2? The top 20 human proteins for CED-9 under the linked key
 
-A ranking that puts the true partner at rank 9,000 should say what is on top. If the top
+A ranking that puts the true partner at rank 9,000 should say what is on top. **Figure 7**
+plots every human protein's linked-key score against its length (grey), with the BCL-2
+family in black (BCL-2 filled). How to read it: if the family sat above the grey cloud at
+its length, the key would carry family signal; inside the cloud, it does not. If the top
 hits are long proteins with nothing in common with CED-9, the score is counting chance key
 matches, which grow with the target's length.
 """)
@@ -753,7 +897,7 @@ print(f"median length of the top 20: {top['length'].median():.0f} aa, of the pro
 hc.finish_figure(fig, FIG / "346_ced9_linked_score_vs_length_human.png", tools=TOOL + "; query CED-9, database GENCODE v49 human",
                  hypothesis="The BCL-2 family scores above other human proteins of its length under the linked key.",
                  conclusion=f"It does not: BCL-2 family members sit inside the grey cloud, and the score rises with length (Spearman {rho:.2f}). Higher is better.",
-                 title="Linked-key score against length, CED-9 against human", wrap=70, tight_layout=False)
+                 title="Figure 7. Linked-key score against length, CED-9 against human", wrap=70, tight_layout=False)
 """)
 
 md(r"""
@@ -796,7 +940,7 @@ if (KMERSEEK["status"] == "done").any():
     hc.finish_figure(fig, FIG / "346_kmerseek_bcl2_rank_by_k_human.png",
                      tools="kmerseek " + str(done["kmerseek"][0]) + ", hp_thomas_dill2, scaled 1, extension + chaining (gap 32, shift 32)",
                      hypothesis="kmerseek's own chaining finds BCL-2 from CED-9.", conclusion="Lower rank is better.",
-                     title="kmerseek's own search, CED-9 against human", wrap=70, tight_layout=False)
+                     title="Figure 8. kmerseek's own search, CED-9 against human", wrap=70, tight_layout=False)
 else:
     for r in krows:
         print(f"k = {r['k']}: {r['status']} (scripts/346_kmerseek_ced9_human.sbatch on Sherlock)")
@@ -854,11 +998,14 @@ ax.fill_between([0.8, 10], 1e-5, 1e-3, color=ku.COLOR["real"], alpha=0.25, lw=0,
 ax.axhline(0.01, color=ku.COLOR["real"], lw=0.6, ls=(0, (3, 2)))
 ax.text(1.0, 0.012, "decoy rate 0.01: at or above is KILL", fontsize=5, va="bottom")
 mk = {"pair 1": "o", "pair 1, reverse": "s", "pair 1, SCOPe domain": "D", "pair 2": "v", "pair 2, reverse": "^"}
-col_ = {"B2": ku.COLOR["B2"], "linked": ku.COLOR["linked"], "randstrobe": ku.COLOR["linked"], "B3": ku.COLOR["B3"]}
-for (pair, score), g in RES.group_by(["pair", "score"], maintain_order=True):
-    filled = score != "randstrobe"
-    ax.scatter(g["rank"], g[DEC].clip(1e-5, None), marker=mk.get(pair, "P"), s=16,
-               facecolors=col_[score] if filled else "none", edgecolors=col_[score], linewidths=0.6)
+col_ = {k: ku.COLOR[k] for k in ku.SCORES}
+mk = {"pair 1": "o", "pair 1, reverse": "s", "pair 1, SCOPe domain": "D"}
+R1 = RES.filter(pl.col("pair").is_in(list(mk)))
+for pair, g in R1.group_by("pair", maintain_order=True):  # thin line: linked key to B3, the rank clause
+    a_, b_ = g.filter(pl.col("score") == "linked").row(0, named=True), g.filter(pl.col("score") == "B3").row(0, named=True)
+    ax.plot([a_["rank"], b_["rank"]], [a_[DEC], b_[DEC]], color="black", lw=0.4, zorder=1)
+for (pair, score), g in R1.group_by(["pair", "score"], maintain_order=True):
+    ax.scatter(g["rank"], g[DEC].clip(1e-5, None), marker=mk[pair], s=18, color=col_[score], edgecolors="black", linewidths=0.3, zorder=2)
 ax.set_xscale("log")
 ax.set_yscale("log")
 ax.set_xlim(0.8, 3e4)
@@ -868,15 +1015,15 @@ ax.set_yticks([1e-5, 1e-4, 1e-3, 1e-2, 0.1, 1], ["0.00001", "0.0001", "0.001", "
 ax.minorticks_off()
 ax.set_xlabel("rank of the true partner (smaller is better)")
 ax.set_ylabel("decoy rate, dipeptide shuffle (lower is better)")
-handles = [Line2D([], [], marker=m, ls="", color="black", markerfacecolor="white", label=p) for p, m in mk.items() if p in RES["pair"].to_list()]
-handles += [Line2D([], [], marker="o", ls="", color=col_[k], label=lab) for k, lab in
-            [("B2", "B2"), ("linked", "linked key (filled), randstrobe (open)"), ("B3", "B3")]]
+handles = [Line2D([], [], marker=m, ls="", color="black", markerfacecolor="white", label=ku.DIRECTION[p]) for p, m in mk.items()]
+handles += [Line2D([], [], marker="o", ls="", color=col_[k], label=ku.SCORE_LABEL[k]) for k in ku.SCORES]
+handles += [Line2D([], [], color="black", lw=0.4, label="linked key to B3, same direction (rank clause)")]
 ax.legend(handles=handles + [Patch(color=ku.COLOR["real"], alpha=0.25, label="PASS region")], loc="lower left",
           bbox_to_anchor=(0, 1.0), ncol=2, frameon=False, fontsize=5)
 hc.finish_figure(fig, FIG / "346_verdict_rank_vs_decoy_rate.png", tools=TOOL,
-                 hypothesis="In at least one BCL-2/CED-9 direction the linked key lands in the PASS region and B3 does not.",
+                 hypothesis="In at least one BCL-2/CED-9 direction the linked key lands in the PASS region and B3 does not (pair 2 is left out: the rule does not use it).",
                  conclusion=f"Verdict {VERDICT}: every point sits far right of rank 10 and above decoy rate 0.01. Down and left is better.",
-                 title="The rule, drawn: rank against decoy rate", wrap=70, tight_layout=False)
+                 title="Figure 9. The rule, drawn: rank against decoy rate", wrap=70, tight_layout=False)
 PRED = pl.DataFrame([{"prediction": a, "held": ("held" if b else "failed") if b is not None else "not tested yet", "number": c} for a, b, c in preds])
 print(PRED)
 """)

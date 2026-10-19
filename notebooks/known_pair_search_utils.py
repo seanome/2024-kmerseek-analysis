@@ -23,6 +23,14 @@ SCORE_LABEL = {
     "B3": "B3: 8-letter word + second segment",
 }
 DECOYS = ["uniform", "dipeptide"]
+# One name per search direction, used in every table and figure of notebook 346.
+DIRECTION = {
+    "pair 1": "CED-9 → human",
+    "pair 1, SCOPe domain": "CED-9 domain d1ohua_ → human",
+    "pair 1, reverse": "BCL-2 → C. elegans",
+    "pair 2": "P66 → human",
+    "pair 2, reverse": "CD47 → B. burgdorferi",
+}
 HYDROPHOBIC = "ACFILMVWY"  # hp_thomas_dill2's H class; every other residue is P
 
 # One colour per meaning, in every figure of notebook 346 (Okabe-Ito, pubfig.OKABE_ITO).
@@ -32,6 +40,7 @@ COLOR = {
     "linked": "#D55E00",  # the linked key (its two words, its key counts)
     "B3": "#CC79A7",  # B3 (its two segments, its key counts)
     "B2": "#E69F00",  # B2's 8-letter words
+    "randstrobe": "#882255",  # the randstrobe (wine, from Paul Tol's palette: Okabe-Ito is used up)
     "real": "#999999",  # real database proteins
     "uniform": "#009E73",  # decoys: uniform residue shuffle
     "dipeptide": "#0072B2",  # decoys: dipeptide-preserving shuffle

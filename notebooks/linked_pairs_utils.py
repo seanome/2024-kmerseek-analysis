@@ -1366,8 +1366,10 @@ def key_segments(sc, i1, j1, a1, i2, j2, a2):
 def best_keys_with_segments(query: str, target: str, allowed=None, chunk: int = 20_000):
     """For drawing: the best chosen-linked-pair key and the best B3 key of two sequences
     (every diagonal, or only the allowed cells), each as a dict with both anchors (query
-    and target start, unpadded), the anchor lengths, the score and its segments. Ties go to
-    the first key in (query start, target start) order. None where a score has no key.
+    and target start, unpadded), the anchor lengths, the score and its segments. Among keys
+    with the best score the first found is kept: first anchors in (query start, target
+    start) order, and for B3 the keys with the matching residue after the 8-letter word
+    before those with it before the word. None where a score has no key.
     """
     q, t = hp_classes(query), hp_classes(target)
     sc = _db_score_matrix(q, t, allowed)
@@ -1384,8 +1386,9 @@ def best_keys_with_segments(query: str, target: str, allowed=None, chunk: int = 
         si, sj = np.nonzero(second)
         best = None
         for order in orders:
-            for c in range(0, fi.size, max(1, chunk // 100)):
-                bi, bj = fi[c : c + chunk // 100], fj[c : c + chunk // 100]
+            step = max(1, chunk // 100)  # first anchors per batch
+            for c in range(0, fi.size, step):
+                bi, bj = fi[c : c + step], fj[c : c + step]
                 if order == "after":
                     di = si[None, :] - bi[:, None] - a1
                     dj = sj[None, :] - bj[:, None] - a1

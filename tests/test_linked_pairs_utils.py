@@ -906,3 +906,11 @@ def test_best_keys_with_segments_add_up():
                     s0 <= qa and qa + a <= e and ta - qa == t0 - s0
                     for s0, e, t0 in segs
                 )
+
+
+def test_best_keys_with_segments_small_chunk():
+    """A chunk below 100 still searches every first anchor (it used to search none)."""
+    q = "A" * 10 + "D" * 10 + "A" * 10
+    want = lp.scan_sequences(q, q)["linked"]
+    for chunk in [1, 50, 100, 20_000]:
+        assert lp.best_keys_with_segments(q, q, chunk=chunk)["linked"]["score"] == want

@@ -77,7 +77,9 @@ def read_fasta(path) -> tuple[list[str], list[str]]:
 
 def decoys(seq: str, index: int) -> tuple[str, str, bool]:
     """The uniform and the dipeptide-preserving shuffle of one protein, and whether the
-    dipeptide shuffle failed (shuffle_fasta then returns the sequence unchanged)."""
+    dipeptide shuffle came back unchanged: either shuffle_fasta gave up after 1,000 tries of
+    its Euler-path sampling, or no other order with the same dipeptide counts exists (short
+    proteins). The output column is named shuffle_failed; such decoys are left out."""
     rng = np.random.default_rng([SEED_UNIFORM, index])
     arr = np.frombuffer(seq.encode(), np.uint8)
     uniform = arr[rng.permutation(arr.size)].tobytes().decode()
