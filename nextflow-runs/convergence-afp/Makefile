@@ -15,6 +15,9 @@
 #   make convergence_afp_and_score  one job: the searches, then the scoring
 #   make score                   turn the ranked lists into the notebook's tables
 #   make running                 what is running
+#   make adhesive_q25460         the adhesive case study: mussel foot protein 1 (Q25460)
+#                                as the one query, every method, all 230 settings
+#   make watch RUN=adhesive-q25460, make stop RUN=adhesive-q25460
 
 SHELL := /bin/bash
 MAKEFILE_DIR := $(abspath $(dir $(firstword $(MAKEFILE_LIST))))
@@ -76,7 +79,7 @@ HEAD_SUBMIT = HEAD_ACCOUNT=$(SLURM_ACCOUNT) HEAD_PARTITION=$(SLURM_PARTITION) \
 .PHONY: help assets test test-foldseek-db stage build-image push-image plan check-inputs \
         convergence_afp convergence_afp_pilot convergence_afp_after_pilot cancel-after-pilot \
         score pull-scored convergence_afp_and_score \
-        running watch stop pull
+        running watch stop pull adhesive_q25460
 
 help:
 	@sed -n '1,/^SHELL/p' $(firstword $(MAKEFILE_LIST)) | grep '^#' | sed 's/^# \{0,1\}//'
@@ -228,6 +231,45 @@ convergence_afp_and_score: check-inputs plan
 	$(refuse_second_driver)
 	cd $(LAUNCH_DIR) && $(LOAD_NEXTFLOW) && $(HEAD_SUBMIT) \
 	  $(MAKEFILE_DIR)/tools/run-and-score $(NF_RUN) --settings all $(NF_ARGS) -- $(NF_SCORE)
+
+# ---- adhesive case study: mussel foot protein 1 as the one query -----------------------
+
+# The same pipeline with --truth_dir pointed at the adhesive class
+# (scripts/convergence_adhesive_q25460_inputs.py fills it): Q25460 and its 20 null A and
+# 20 null B draws against Swiss-Prot 2026_03 plus the 3 truth entries that are only in
+# TrEMBL (2 sandcastle worm cement proteins, 1 barnacle). The reference is the same size
+# as the ice-binding run's, so each setting's first ask is planned from that run's
+# traces. Foldseek reuses that run's AFDB Swiss-Prot database. The scoring entry is
+# written for the ice-binding lineages, so this run stops at the ranked lists.
+ADH_RUN     := adhesive-q25460
+ADH_TRUTH   := $(REPO_DIR)/data/convergence_adhesive
+ADH_REF     := $(MAKEFILE_DIR)/data/uniprot_sprot.$(RELEASE).plus_adhesive_trembl.fasta
+AFP_LAUNCH  := $(MAKEFILE_DIR)/runs/convergence-afp
+AFP_FOLDSEEK_DB := $(MAKEFILE_DIR)/results/db_cache/foldseek/afdb_swissprot
+
+# Target-specific values, so `plan` and the head-job wiring see this run, not the
+# ice-binding one. LAUNCH_DIR is set with :=, so it is overridden here too.
+adhesive_q25460: RUN = $(ADH_RUN)
+adhesive_q25460: LAUNCH_DIR = $(MAKEFILE_DIR)/runs/$(ADH_RUN)
+adhesive_q25460: OUTDIR = $(MAKEFILE_DIR)/results-$(ADH_RUN)
+adhesive_q25460: OWN_TRACES = $(wildcard $(AFP_LAUNCH)/trace*.txt)
+
+# Built once: a rebuilt file has a new mtime, and Nextflow would then redo every task.
+$(ADH_REF): $(SPROT) $(ADH_TRUTH)/extra_reference.fasta
+	{ gzip -dc $(SPROT); cat $(ADH_TRUTH)/extra_reference.fasta; } > $@.tmp && mv -f $@.tmp $@
+	@echo "$@: $$(grep -c '>' $@) entries"
+
+ADH_NF_RUN = $(NEXTFLOW) run $(MAKEFILE_DIR)/main.nf -profile $(PROFILE) -resume \
+  --swissprot_fasta $(ADH_REF) --truth_dir $(ADH_TRUTH) --kmerseek_image $(IMAGE) \
+  --outdir $(OUTDIR) --resources $(LAUNCH_DIR)/resources.tsv --settings all \
+  --foldseek_target_db $(AFP_FOLDSEEK_DB) \
+  $(if $(wildcard $(PROSTT5)),--prostt5_weights $(PROSTT5),) --run_tag $(RUN)
+
+adhesive_q25460: check-inputs $(ADH_REF) plan
+	@test -f $(ADH_TRUTH)/queries.tsv || { echo "missing $(ADH_TRUTH)/queries.tsv"; exit 1; }
+	@test -f $(AFP_FOLDSEEK_DB)/db || { echo "missing $(AFP_FOLDSEEK_DB)/db (built by the ice-binding run)"; exit 1; }
+	$(refuse_second_driver)
+	cd $(LAUNCH_DIR) && $(LOAD_NEXTFLOW) && $(HEAD_SUBMIT) $(ADH_NF_RUN) $(NF_ARGS)
 
 # The scored tables back to the Mac for the notebook: a few MB, not the 1.2 GB of hits.
 pull-scored:
