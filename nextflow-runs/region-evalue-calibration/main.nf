@@ -145,7 +145,9 @@ process SEARCH {
     if [ "\${status[0]}" -ne 0 ] || [ "\${status[1]}" -ne 0 ]; then
         echo "344: search pipeline failed, exit codes \${status[*]}; kmerseek log:" >&2
         tail -20 ${chunk.baseName}.log >&2
-        exit 1
+        # Pass the kmerseek exit code (137 = OOM kill) through, so nextflow.config retries it.
+        if [ "\${status[0]}" -ne 0 ]; then exit "\${status[0]}"; fi
+        exit "\${status[1]}"
     fi
     """
 
