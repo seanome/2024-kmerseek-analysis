@@ -15,8 +15,8 @@
 # released 2019-11-12, file OM-RGC_v2_genes.fna.gz, 29_607_178_264 bytes (listing and HTTP
 # Content-Length read 2026-10-18). No md5 is published; the byte count is checked instead.
 #
-# Sizing (arithmetic, nothing measured yet): the download is 29.6 GB, at 50-100 MB/s about
-# 5-10 min; gunzip with 8 pigz threads and a six-figure-GB catalog are minutes to an hour;
+# Sizing: the download is 29.6 GB; 32 connections at the measured 1.9 MB/s each is about
+# 60 MB/s, about 9 min (a single connection would take about 4.5 h); gunzip with 8 pigz threads and a six-figure-GB catalog are minutes to an hour;
 # seqkit translate with 8 threads on about 40 GB of DNA is under an hour. 12 h is a wide
 # margin; 32 G covers seqkit's buffers (it streams). Read the real use afterwards with
 # `sacct -j <jobid> -o JobID,MaxRSS,Elapsed`.
@@ -50,14 +50,37 @@ E=$WORK/env/bin
 "$E/sourmash" scripts manysearch --help > /dev/null
 "$E/python" -c "import polars, matplotlib, sourmash; print('polars', polars.__version__)"
 
-# 2. Download, resumable, then check the byte count.
+# 2. Download, then check the byte count. EBI serves each connection at about 1.9 MB/s
+#    (measured from Sherlock 2026-10-19), and job 48470727's single download stalled at
+#    1.1 GB after 45 min. So the file comes down as N_RANGES byte ranges in parallel; each
+#    range resumes from its own last byte when its connection stalls (under 100 kB/s for
+#    60 s), up to 50 times, and the ranges are joined in order.
 GZ=$WORK/catalog/OM-RGC_v2_genes.fna.gz
-# A big HTTP download can stall without failing: --speed-limit/--speed-time drop a
-# connection slower than 1 MB/s for 60 s, and the loop resumes it (-C -), up to 30 times.
-for attempt in $(seq 1 30); do
-    [ "$(stat -c %s "$GZ" 2>/dev/null || echo 0)" = "$EXPECTED_BYTES" ] && break
-    curl -fL -C - --speed-limit 1000000 --speed-time 60 -o "$GZ" "$URL" || echo "download attempt $attempt stopped; resuming"
-done
+N_RANGES=32
+fetch_range() {  # fetch_range INDEX FIRST_BYTE LAST_BYTE
+    local part=$WORK/catalog/range.$1 want=$(( $3 - $2 + 1 )) have
+    for attempt in $(seq 1 50); do
+        have=$(stat -c %s "$part" 2>/dev/null || echo 0)
+        [ "$have" -ge "$want" ] && return 0
+        curl -sfL --speed-limit 100000 --speed-time 60 -r "$(( $2 + have ))-$3" "$URL" >> "$part" || true
+    done
+    echo "range $1 incomplete after 50 attempts"; return 1
+}
+if [ "$(stat -c %s "$GZ" 2>/dev/null || echo 0)" != "$EXPECTED_BYTES" ]; then
+    rm -f "$GZ"
+    STEP=$(( (EXPECTED_BYTES + N_RANGES - 1) / N_RANGES ))
+    PIDS=()
+    for i in $(seq 0 $(( N_RANGES - 1 ))); do
+        FIRST=$(( i * STEP )); LAST=$(( FIRST + STEP - 1 ))
+        (( LAST >= EXPECTED_BYTES )) && LAST=$(( EXPECTED_BYTES - 1 ))
+        fetch_range "$i" "$FIRST" "$LAST" &
+        PIDS+=($!)
+    done
+    for pid in "${PIDS[@]}"; do wait "$pid"; done
+    for i in $(seq 0 $(( N_RANGES - 1 ))); do cat "$WORK/catalog/range.$i"; done > "$GZ.tmp"
+    mv "$GZ.tmp" "$GZ"
+    rm -f "$WORK"/catalog/range.*
+fi
 test "$(stat -c %s "$GZ")" = "$EXPECTED_BYTES" || { echo "size mismatch on $GZ"; exit 1; }
 "$E/pigz" -t "$GZ"
 
