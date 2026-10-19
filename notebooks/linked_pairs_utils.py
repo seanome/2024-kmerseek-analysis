@@ -887,3 +887,416 @@ def group_multiplicities(groups, n_boot, seed):
     for _ in range(n_boot):
         g = rng.integers(0, codes.size, codes.size)
         yield np.bincount(g, minlength=codes.size)[inv]
+
+
+# ---------------------------------------------------------------------------
+# Notebook 346: the same four scores on every diagonal of two whole proteins, with no
+# alignment given (a database search).
+#
+# B2, B3, the chosen linked pair (every pair of 6-letter anchors whose starts are at most
+# 32 apart, gap not stored) and its randstrobe are scored as score_pair scores them on an
+# alignment, with one change forced by the missing alignment: the two anchors of a key may
+# sit on different diagonals (the gap is not part of the key, so the query gap and the
+# target gap may differ). A key's two extended segments then may not overlap in either
+# protein, the rule a gapped alignment with one indel between them would follow. When an
+# allowed-cell mask is given (the cells of a known alignment), every other cell is a wall
+# and the scores are score_pair's on that alignment (gates 1 and 2 of notebook 346).
+#
+# Coordinates: cell (i, j) pairs query residue i with target residue j; the diagonal of a
+# cell is j - i. A boundary (i, j) sits just before cell (i, j) on its diagonal.
+# ---------------------------------------------------------------------------
+
+DB_WALL = -100_000  # one wall outweighs any run of matches between two proteins
+DB_ANCHOR = 6  # anchor length of the chosen linked pair (all_a6_g32_none)
+DB_WINDOW = 32  # gap_max of the chosen linked pair, and B3's window
+DB_SEED = BASELINE_SEEDS["B2"]  # 8: B2's seed, and B3's
+DB_PAD = DB_WINDOW + DB_SEED + 2  # wall border, so no window reads past the matrix
+DB_SCORES = ["B2", "linked", "randstrobe", "B3"]
+_NEG = np.int64(-(1 << 40))  # "no key here", below any real score
+
+
+def _db_score_matrix(q: np.ndarray, t: np.ndarray, allowed=None) -> np.ndarray:
+    """Padded int32 score matrix: +1 where the HP classes match, -PENALTY where they differ,
+    DB_WALL where either residue is outside the two classes, outside an allowed mask, or in
+    the DB_PAD border."""
+    nq, nt = q.size, t.size
+    sc = np.full((nq + 2 * DB_PAD, nt + 2 * DB_PAD), DB_WALL, np.int32)
+    valid = (q != GAP)[:, None] & (t != GAP)[None, :]
+    if allowed is not None:
+        valid &= allowed
+    inner = np.where(q[:, None] == t[None, :], 1, -int(PENALTY)).astype(np.int32)
+    sc[DB_PAD : DB_PAD + nq, DB_PAD : DB_PAD + nt] = np.where(valid, inner, DB_WALL)
+    return sc
+
+
+def _diagonal_extensions(sc: np.ndarray):
+    """Best leftward and rightward extension from every boundary, along its diagonal:
+    left[i, j] = best total of cells (i-y, j-y) .. (i-1, j-1), y >= 0, and right[i, j] =
+    best total of cells (i, j) .. (i+y-1, j+y-1); both 0 at least (the empty extension).
+    Both arrays have shape (R + 1, C + 1) for an R x C matrix. The diagonals are laid out
+    as rows through strided views, so numpy's row-wise cumsum and running min/max apply.
+    """
+    from numpy.lib.stride_tricks import as_strided
+
+    R, C = sc.shape
+    if R * -DB_WALL >= 2**31:
+        raise ValueError("query too long for int32 prefix sums")
+    n_diag = R + C - 1
+    w = C + 2 * (R - 1)
+    buf = np.full((R, w), DB_WALL, np.int32)
+    buf[:, R - 1 : R - 1 + C] = sc
+    s = buf.itemsize
+    sheared = as_strided(buf, shape=(n_diag, R), strides=(s, (w + 1) * s))
+    P = np.zeros((n_diag, R + 1), np.int32)
+    np.cumsum(sheared, axis=1, out=P[:, 1:])
+    out = []
+    for ext in (
+        P - np.minimum.accumulate(P, axis=1),
+        np.maximum.accumulate(P[:, ::-1], axis=1)[:, ::-1] - P,
+    ):
+        bb = np.zeros((R + 1, w + 1), np.int32)
+        as_strided(bb, shape=(n_diag, R + 1), strides=(s, (w + 2) * s))[...] = ext
+        out.append(bb[:, R - 1 : R + C])
+    return out[0], out[1]
+
+
+def _diagonal_windows(match: np.ndarray, a: int) -> np.ndarray:
+    """True at (i, j) when cells (i, j) .. (i+a-1, j+a-1) all match: an exact shared
+    a-letter word starting at query residue i and target residue j."""
+    out = match.copy()
+    R, C = match.shape
+    for y in range(1, a):
+        out[: R - y, : C - y] &= match[y:, y:]
+        out[R - y :, :] = False
+        out[:, C - y :] = False
+    return out
+
+
+def _cumsum2(x: np.ndarray) -> np.ndarray:
+    cs = np.zeros((x.shape[0] + 1, x.shape[1] + 1), np.int64)
+    cs[1:, 1:] = x.cumsum(0).cumsum(1)
+    return cs
+
+
+def _rect_sum(cs, i0, i1, j0, j1):
+    """Sums over rectangles [i0, i1] x [j0, j1] (inclusive, arrays) of the array cs sums."""
+    return cs[i1 + 1, j1 + 1] - cs[i0, j1 + 1] - cs[i1 + 1, j0] + cs[i0, j0]
+
+
+def _db_key_scores(sc, left, right, i1, j1, a1, i2, j2, a2) -> np.ndarray:
+    """Exact score of each key: a first anchor of a1 matching cells from (i1, j1) and a
+    second of a2 from (i2, j2), with i2 >= i1 + a1 and j2 >= j1 + a1. The best total of
+    one segment holding both anchors (same diagonal, no wall between them) or two gap-free
+    segments, one through each anchor, that do not overlap in either protein."""
+    i1, j1, i2, j2 = (np.asarray(v, np.int64) for v in (i1, j1, i2, j2))
+    out1 = left[i1, j1].astype(np.int64)
+    out2 = right[i2 + a2, j2 + a2].astype(np.int64)
+    L = np.minimum(i2 - i1 - a1, j2 - j1 - a1)
+    y = np.arange(DB_WINDOW + 1)
+    after = sc[(i1 + a1)[:, None] + y, (j1 + a1)[:, None] + y].astype(np.int64)
+    before = sc[(i2 - 1)[:, None] - y, (j2 - 1)[:, None] - y].astype(np.int64)
+    zero = np.zeros((i1.size, 1), np.int64)
+    r1 = np.maximum.accumulate(np.hstack([zero, after.cumsum(1)]), axis=1)
+    l2 = np.maximum.accumulate(np.hstack([zero, before.cumsum(1)]), axis=1)
+    x = np.arange(DB_WINDOW + 2)[None, :]
+    rest = L[:, None] - x
+    pair = np.take_along_axis(r1, x.repeat(i1.size, 0), 1) + np.take_along_axis(
+        l2, np.clip(rest, 0, None), 1
+    )
+    inner = np.where(rest >= 0, pair, _NEG).max(axis=1)
+    best = a1 + a2 + out1 + out2 + inner
+    same_diag = (j1 - i1) == (j2 - i2)
+    if same_diag.any():
+        k = np.flatnonzero(same_diag)
+        n_span = (i2[k] + a2 - i1[k])[:, None]
+        z = np.arange(2 * DB_WINDOW + DB_SEED + 2)[None, :]
+        cells = sc[
+            np.clip(i1[k][:, None] + z, 0, sc.shape[0] - 1),
+            np.clip(j1[k][:, None] + z, 0, sc.shape[1] - 1),
+        ].astype(np.int64)
+        span = np.where(z < n_span, cells, 0).sum(axis=1) + out1[k] + out2[k]
+        best[k] = np.maximum(best[k], span)
+    return best
+
+
+def _best_over_rectangles(
+    sc,
+    left,
+    right,
+    i1,
+    j1,
+    a1,
+    bound,
+    partners,
+    a2,
+    row0,
+    col0,
+    best=0,
+    off_diag=False,
+    anchor_u=None,
+    partner_u=None,
+):
+    """Highest exact key score over first anchors (i1, j1), each with its partners in the
+    33 x 33 rectangle starting at (i1 + row0, j1 + col0) of the boolean array partners
+    (with off_diag, the anchor's own diagonal is left out). Anchors are visited in chunks
+    from the highest upper bound down, and the search stops when no remaining bound can
+    beat the best key found (starting from `best`). With anchor_u (per anchor) and
+    partner_u (per cell), the unconstrained segment scores, a key is scored exactly only
+    when their sum, an upper bound on its score, can beat the best."""
+    order = np.argsort(-bound, kind="stable")
+    y = np.arange(DB_WINDOW + 1)
+    own = np.eye(DB_WINDOW + 1, dtype=bool)[None] if off_diag else None
+    pos, chunk = 0, 16
+    while pos < order.size and bound[order[pos]] > best:
+        k = order[pos : pos + chunk]
+        k = k[bound[k] > best]
+        pos += chunk
+        r0, c0 = i1[k] + row0, j1[k] + col0
+        block = partners[
+            r0[:, None, None] + y[None, :, None], c0[:, None, None] + y[None, None, :]
+        ]
+        if own is not None:
+            block &= ~own
+        which, di, dj = np.nonzero(block)
+        if which.size == 0:
+            continue
+        p_i, p_j = r0[which] + di, c0[which] + dj
+        f_i, f_j = i1[k][which], j1[k][which]
+        if anchor_u is not None:
+            hi = anchor_u[k][which] + partner_u[p_i, p_j] > best
+            if not hi.any():
+                continue
+            p_i, p_j, f_i, f_j = p_i[hi], p_j[hi], f_i[hi], f_j[hi]
+        if row0 > 0:  # partners come after the anchor
+            s = _db_key_scores(sc, left, right, f_i, f_j, a1, p_i, p_j, a2)
+        else:  # partners come before it: they are the first anchor of the key
+            s = _db_key_scores(sc, left, right, p_i, p_j, a2, f_i, f_j, a1)
+        best = max(best, int(s.max()))
+    return best
+
+
+def _same_diagonal_seed_cell(sc, left, right, si, sj, seed, after: bool) -> np.ndarray:
+    """B3 keys whose matching cell sits on the seed's own diagonal, at most DB_WINDOW cells
+    after the seed's end (after=True) or before its start: the best key score per seed.
+
+    On one diagonal the two segments are the seed's and the cell's, and the cells between
+    them (g of them) are split into a prefix kept by the first segment and a suffix kept by
+    the second; the best split keeps all g cells minus their lowest-scoring run (possibly
+    empty, which is the one segment holding both). A wall in between is part of that
+    lowest run, so it is never kept."""
+    if si.size == 0:
+        return np.empty(0, np.int64)
+    y = np.arange(DB_WINDOW + 1)
+    if after:
+        ci, cj = (si + seed)[:, None] + y, (sj + seed)[:, None] + y
+    else:
+        ci, cj = (si - 1)[:, None] - y, (sj - 1)[:, None] - y
+    cells = sc[ci, cj].astype(np.int64)  # cells[:, g]: the cell g steps away
+    n, w = cells.shape
+    total = np.zeros(n, np.int64)
+    run_min = np.zeros(n, np.int64)  # lowest run ending just before step g
+    low = np.zeros(n, np.int64)  # lowest run anywhere in the first g cells
+    keep = np.zeros((n, w), np.int64)  # best kept total of the first g cells
+    for g in range(w):
+        keep[:, g] = total - low
+        total += cells[:, g]
+        run_min = np.minimum(run_min + cells[:, g], 0)
+        low = np.minimum(low, run_min)
+    if after:
+        outer = left[si, sj][:, None] + right[ci + 1, cj + 1]
+    else:
+        outer = left[ci, cj] + right[si + seed, sj + seed][:, None]
+    score = outer.astype(np.int64) + seed + 1 + keep
+    return np.where(cells == 1, score, _NEG).max(axis=1)
+
+
+def diagonal_scan(
+    q: np.ndarray,
+    t: np.ndarray,
+    q_partner: np.ndarray,
+    t_partner: np.ndarray,
+    allowed: np.ndarray | None = None,
+) -> dict:
+    """B2, the chosen linked pair, its randstrobe and B3 for one protein pair, each the best
+    key score over every diagonal, plus how many keys each finds.
+
+    q, t: HP class arrays (TABLES[ALPHABET] of the residues, GAP for letters outside the two
+    classes). q_partner, t_partner: randstrobe_partner(q, DB_ANCHOR, DB_WINDOW) and the
+    same for t. allowed: optional (len(q), len(t)) mask of the cells that may be used.
+
+    Returns a dict with ``<score>`` and ``<score>_count`` for each of DB_SCORES, plus
+    ``words6`` and ``words8``, the number of exact shared 6- and 8-letter HP words."""
+    from scipy.ndimage import maximum_filter
+
+    sc = _db_score_matrix(q, t, allowed)
+    left, right = _diagonal_extensions(sc)
+    match = sc == 1
+    A = _diagonal_windows(match, DB_ANCHOR)
+    S = _diagonal_windows(match, DB_SEED)
+    out = {"words6": int(A.sum()), "words8": int(S.sum())}
+    span = DB_WINDOW + 1
+    half = DB_WINDOW // 2
+
+    def rect_max(v, lo):
+        """Max of v over rows i+lo .. i+lo+32 and columns j+lo .. j+lo+32, at (i, j)."""
+        m = maximum_filter(v, size=span, mode="constant", cval=_NEG)
+        sh = lo + half
+        res = np.full(v.shape, _NEG, np.int64)
+        if sh >= 0:
+            res[: v.shape[0] - sh, : v.shape[1] - sh] = m[sh:, sh:]
+        else:
+            res[-sh:, -sh:] = m[: v.shape[0] + sh, : v.shape[1] + sh]
+        return res
+
+    # B2: the best segment holding an exact 8-letter word
+    si, sj = np.nonzero(S)
+    u8 = DB_SEED + left[si, sj].astype(np.int64) + right[si + DB_SEED, sj + DB_SEED]
+    out["B2"] = int(u8.max()) if si.size else 0
+    out["B2_count"] = int(si.size)
+
+    # linked pair: every pair of 6-letter anchors, starts at most 32 apart, gap not stored
+    ai, aj = np.nonzero(A)
+    a = DB_ANCHOR
+    if ai.size:
+        cs = _cumsum2(A)
+        n_keys = _rect_sum(cs, ai + a, ai + a + DB_WINDOW, aj + a, aj + a + DB_WINDOW)
+        out["linked_count"] = int(n_keys.sum())
+        RR, CC = left.shape[0] - 1, left.shape[1] - 1
+        ua = np.full(A.shape, _NEG, np.int64)
+        ua[ai, aj] = (
+            a + left[ai, aj] + right[np.minimum(ai + a, RR), np.minimum(aj + a, CC)]
+        )
+        bound = ua[ai, aj] + rect_max(ua, a)[ai, aj]
+        has = n_keys > 0
+        out["linked"] = _best_over_rectangles(
+            sc,
+            left,
+            right,
+            ai[has],
+            aj[has],
+            a,
+            bound[has],
+            A,
+            a,
+            a,
+            a,
+            anchor_u=ua[ai[has], aj[has]],
+            partner_u=ua,
+        )
+        # randstrobe: one partner per first anchor, chosen in each protein on its own
+        pq = q_partner[ai - DB_PAD]
+        pt = t_partner[aj - DB_PAD]
+        ok = (pq >= 0) & (pt >= 0)
+        ok[ok] = A[pq[ok] + DB_PAD, pt[ok] + DB_PAD]
+        out["randstrobe_count"] = int(ok.sum())
+        out["randstrobe"] = (
+            int(
+                _db_key_scores(
+                    sc,
+                    left,
+                    right,
+                    ai[ok],
+                    aj[ok],
+                    a,
+                    pq[ok] + DB_PAD,
+                    pt[ok] + DB_PAD,
+                    a,
+                ).max()
+            )
+            if ok.any()
+            else 0
+        )
+    else:
+        out.update(linked=0, linked_count=0, randstrobe=0, randstrobe_count=0)
+
+    # B3: the 8-letter seed plus any matching cell within 32 residues, before or after it
+    if si.size:
+        cm = _cumsum2(match)
+        s8 = DB_SEED
+        n_after = _rect_sum(
+            cm, si + s8, si + s8 + DB_WINDOW, sj + s8, sj + s8 + DB_WINDOW
+        )
+        n_before = _rect_sum(cm, si - span, si - 1, sj - span, sj - 1)
+        out["B3_count"] = int((n_after + n_before).sum())
+        mi, mj = np.nonzero(match)
+        u1 = np.full(match.shape, _NEG, np.int64)
+        u1[mi, mj] = 1 + left[mi, mj] + right[mi + 1, mj + 1]
+        best = 0
+        for after, row0 in ((True, s8), (False, -span)):
+            same = _same_diagonal_seed_cell(sc, left, right, si, sj, s8, after)
+            best = max(best, int(same.max()))
+            bound = u8 + rect_max(u1, row0)[si, sj]
+            best = _best_over_rectangles(
+                sc,
+                left,
+                right,
+                si,
+                sj,
+                s8,
+                bound,
+                match,
+                1,
+                row0,
+                row0,
+                best,
+                True,
+                anchor_u=u8,
+                partner_u=u1,
+            )
+        out["B3"] = max(best, 0)
+    else:
+        out.update(B3=0, B3_count=0)
+    return out
+
+
+def alignment_cells(qaln: str, taln: str):
+    """The residues of an alignment's two rows (gaps removed) and the mask of the cells the
+    alignment pairs, for running diagonal_scan restricted to that alignment."""
+    qb = np.frombuffer(qaln.encode(), np.uint8)
+    tb = np.frombuffer(taln.encode(), np.uint8)
+    _, qpos, _ = _residue_maps(qb)
+    _, tpos, _ = _residue_maps(tb)
+    q_seq = qb[qb != ord("-")].tobytes().decode()
+    t_seq = tb[tb != ord("-")].tobytes().decode()
+    both = (qpos >= 0) & (tpos >= 0)
+    allowed = np.zeros((len(q_seq), len(t_seq)), bool)
+    allowed[qpos[both], tpos[both]] = True
+    return q_seq, t_seq, allowed
+
+
+def hp_classes(seq: str) -> np.ndarray:
+    """HP classes of a residue string in hp_thomas_dill2, GAP for any other letter."""
+    return TABLES[ALPHABET][np.frombuffer(seq.encode(), np.uint8)]
+
+
+def scan_sequences(query: str, target: str, allowed=None) -> dict:
+    """diagonal_scan on two residue strings, randstrobe partners computed here."""
+    q, t = hp_classes(query), hp_classes(target)
+    return diagonal_scan(
+        q,
+        t,
+        randstrobe_partner(q, DB_ANCHOR, DB_WINDOW),
+        randstrobe_partner(t, DB_ANCHOR, DB_WINDOW),
+        allowed,
+    )
+
+
+def alignment_rows_from_pairs(seq_q: str, seq_t: str, pos_q, pos_t) -> tuple[str, str]:
+    """Two gapped alignment rows from aligned residue pairs (1-based positions, both
+    increasing), from the first aligned pair to the last. Residues between two aligned
+    pairs that are not themselves aligned become gap columns: the query's first, then the
+    target's."""
+    pos_q, pos_t = list(pos_q), list(pos_t)
+    if any(b <= a for a, b in zip(pos_q, pos_q[1:])) or any(
+        b <= a for a, b in zip(pos_t, pos_t[1:])
+    ):
+        raise ValueError("aligned positions must increase in both sequences")
+    qrow, trow = [seq_q[pos_q[0] - 1]], [seq_t[pos_t[0] - 1]]
+    for (q0, t0), (q1, t1) in zip(zip(pos_q, pos_t), zip(pos_q[1:], pos_t[1:])):
+        gap_q = seq_q[q0 : q1 - 1]
+        gap_t = seq_t[t0 : t1 - 1]
+        qrow.append(gap_q + "-" * len(gap_t))
+        trow.append("-" * len(gap_q) + gap_t)
+        qrow.append(seq_q[q1 - 1])
+        trow.append(seq_t[t1 - 1])
+    return "".join(qrow), "".join(trow)

@@ -408,20 +408,30 @@ def test_draw_unrelated_other_clan_long_enough():
         L = int(rng.integers(1, 41))
         j, off = lp.draw_unrelated(rng, L, "CL2", clans, lens)
         assert clans[j] != "CL2" and lens[j] >= L and 0 <= off <= lens[j] - L
-    assert lp.draw_unrelated(rng, 41, "CL2", clans, lens) == (None, "longer than any candidate")
+    assert lp.draw_unrelated(rng, 41, "CL2", clans, lens) == (
+        None,
+        "longer than any candidate",
+    )
     clans2 = np.array(["CL1", "CL1", "CL1", "CL2", "CL2"])
     assert lp.draw_unrelated(rng, 25, "CL2", clans2, lens, max_tries=5) == (
-        None, "no other-clan candidate long enough")
+        None,
+        "no other-clan candidate long enough",
+    )
     # the fallback after max_tries still finds the one other-clan candidate
     clans3 = np.array(["CL2", "CL2", "CL2", "CL2", "CL1"])
-    hits = {lp.draw_unrelated(rng, 1, "CL2", clans3, lens, max_tries=0)[0] for _ in range(20)}
+    hits = {
+        lp.draw_unrelated(rng, 1, "CL2", clans3, lens, max_tries=0)[0]
+        for _ in range(20)
+    }
     assert hits == {4}
 
 
 def test_pfam_clans_reads_ac_and_cl(tmp_path):
     f = tmp_path / "seed"
-    f.write_text("# STOCKHOLM 1.0\n#=GF ID   a\n#=GF AC   PF00001.5\n#=GF CL   CL0192\n//\n"
-                 "# STOCKHOLM 1.0\n#=GF ID   b\n#=GF AC   PF00002.1\n//\n")
+    f.write_text(
+        "# STOCKHOLM 1.0\n#=GF ID   a\n#=GF AC   PF00001.5\n#=GF CL   CL0192\n//\n"
+        "# STOCKHOLM 1.0\n#=GF ID   b\n#=GF AC   PF00002.1\n//\n"
+    )
     assert lp.pfam_clans(f) == {"PF00001": "CL0192", "PF00002": "PF00002"}
 
 
@@ -429,13 +439,24 @@ def test_shuffled_target_rows_are_score_pairs_shuffles():
     rng = np.random.default_rng(3)
     qa, ta = _random_gapped_pair(rng, 80, flip=0.2)
     q = _to_alignment(qa)
-    t = "".join(c if i % 17 else ("X" if c != "-" else c) for i, c in enumerate(_to_alignment(ta)))
+    t = "".join(
+        c if i % 17 else ("X" if c != "-" else c)
+        for i, c in enumerate(_to_alignment(ta))
+    )
     stored = lp.score_pair(q, t, np.random.default_rng(42), n_shuffle=2)
     rows = lp.shuffled_target_rows(t, 42, 2)
     for k, row in enumerate(rows):
-        assert [i for i, c in enumerate(row) if c in "-X"] == [i for i, c in enumerate(t) if c in "-X"]
+        assert [i for i, c in enumerate(row) if c in "-X"] == [
+            i for i, c in enumerate(t) if c in "-X"
+        ]
         (r,) = lp.score_pair(q, row, np.random.default_rng(0), n_shuffle=0)
-        for col in ["B1_ext", "B2_ext", "B3_ext", "all_a6_g32_none_ext", "rand_a6_g32_none_ext"]:
+        for col in [
+            "B1_ext",
+            "B2_ext",
+            "B3_ext",
+            "all_a6_g32_none_ext",
+            "rand_a6_g32_none_ext",
+        ]:
             assert r[col] == stored[k + 1][col]
 
 
@@ -469,9 +490,17 @@ def _fake_kmerseek_csv(path, rows):
         fh.write(",".join(lp.KMERSEEK_040_CSV_COLUMNS) + "\n")
         for q, t, e, ch in rows:
             vals = {c: "1" for c in lp.KMERSEEK_040_CSV_COLUMNS}
-            vals.update(query_name=q, target_name=t, region_evalue=e, region_n_chained=str(ch),
-                        moltype="hp_thomas_dill2", region_subseq="ACDA", target_subseq="ACDA",
-                        moltype_seq="hphh", remove_low_complexity="false")
+            vals.update(
+                query_name=q,
+                target_name=t,
+                region_evalue=e,
+                region_n_chained=str(ch),
+                moltype="hp_thomas_dill2",
+                region_subseq="ACDA",
+                target_subseq="ACDA",
+                moltype_seq="hphh",
+                remove_low_complexity="false",
+            )
             fh.write(",".join(vals[c] for c in lp.KMERSEEK_040_CSV_COLUMNS) + "\n")
 
 
@@ -479,11 +508,27 @@ def test_read_kmerseek_best_evalue_and_cutoff(tmp_path):
     import polars as pl
 
     real = tmp_path / "real.csv"
-    _fake_kmerseek_csv(real, [("q1", "t1", "0.5", 1), ("q1", "t1", "1.5e-3", 2), ("q2", "t2", "3.0", 1),
-                              ("q1", "t2", "0.0001", 1), ("q3", "t9", "0.1", 1)])
+    _fake_kmerseek_csv(
+        real,
+        [
+            ("q1", "t1", "0.5", 1),
+            ("q1", "t1", "1.5e-3", 2),
+            ("q2", "t2", "3.0", 1),
+            ("q1", "t2", "0.0001", 1),
+            ("q3", "t9", "0.1", 1),
+        ],
+    )
     best = lp.read_kmerseek_best_evalue(real)
-    got = {(r["query_name"], r["target_name"]): (r["region_evalue"], r["region_n_chained"]) for r in best.iter_rows(named=True)}
-    assert got == {("q1", "t1"): (1.5e-3, 2), ("q2", "t2"): (3.0, 1), ("q1", "t2"): (1e-4, 1), ("q3", "t9"): (0.1, 1)}
+    got = {
+        (r["query_name"], r["target_name"]): (r["region_evalue"], r["region_n_chained"])
+        for r in best.iter_rows(named=True)
+    }
+    assert got == {
+        ("q1", "t1"): (1.5e-3, 2),
+        ("q2", "t2"): (3.0, 1),
+        ("q1", "t2"): (1e-4, 1),
+        ("q3", "t9"): (0.1, 1),
+    }
     bad = tmp_path / "bad.csv"
     bad.write_text("query_name,target_name,region_evalue\nq,t,1\n")
     try:
@@ -519,17 +564,23 @@ def test_evalue_cutoff_recall_matches_brute_force():
                 np_ += [p] * r.size
                 ne_ += list(r)
             o = np.argsort(ne_, kind="stable")
-            cut, ach, rec = lp.evalue_cutoff_recall(own, np.array(np_)[o], np.array(ne_)[o], share, n_targets, fpr, mult)
+            cut, ach, rec = lp.evalue_cutoff_recall(
+                own, np.array(np_)[o], np.array(ne_)[o], share, n_targets, fpr, mult
+            )
             if want_cut is None:
                 assert ach == 0.0 and cut < vals.min()
             else:
-                assert cut == want_cut and np.isclose(ach, wts[vals <= cut].sum() / n_null)
+                assert cut == want_cut and np.isclose(
+                    ach, wts[vals <= cut].sum() / n_null
+                )
             assert np.isclose(rec, (m * (own <= cut)).sum() / m.sum())
 
 
 def test_evalue_cutoff_refuses_when_reported_rows_run_out():
     try:
-        lp.evalue_cutoff_recall(np.array([0.1]), np.array([0]), np.array([0.5]), np.array([1]), 10_000, 0.01)
+        lp.evalue_cutoff_recall(
+            np.array([0.1]), np.array([0]), np.array([0.5]), np.array([1]), 10_000, 0.01
+        )
     except ValueError:
         pass
     else:
@@ -540,14 +591,271 @@ def test_group_multiplicities_draw_whole_groups():
     groups = np.array(["a", "a", "b", "c", "c", "c"])
     for m in lp.group_multiplicities(groups, 50, 1):
         assert m[0] == m[1] and m[3] == m[4] == m[5]
-        assert sum(m[[0, 2, 3]]) == 3  # three groups drawn, each item counted by its group
+        assert (
+            sum(m[[0, 2, 3]]) == 3
+        )  # three groups drawn, each item counted by its group
 
 
 def test_evalue_cutoff_refuses_unsorted_or_empty_null():
-    for pair_, e_ in [(np.array([0, 0, 0]), np.array([3.0, 1.0, 2.0])), (np.array([], int), np.array([]))]:
+    for pair_, e_ in [
+        (np.array([0, 0, 0]), np.array([3.0, 1.0, 2.0])),
+        (np.array([], int), np.array([])),
+    ]:
         try:
-            lp.evalue_cutoff_recall(np.array([0.1]), pair_, e_, np.array([1]), 10_000, 0.01)
+            lp.evalue_cutoff_recall(
+                np.array([0.1]), pair_, e_, np.array([1]), 10_000, 0.01
+            )
         except ValueError:
             pass
         else:
             raise AssertionError("must refuse an unsorted or empty null")
+
+
+# ---------------------------------------------------------------------------
+# Notebook 346: diagonal_scan, the four scores on every diagonal of two whole proteins.
+# ---------------------------------------------------------------------------
+
+
+def _cell(q, t, i, j):
+    """Score of cell (i, j), or None for a wall (outside the proteins or not H/P)."""
+    if not (0 <= i < q.size and 0 <= j < t.size) or q[i] == GAP or t[j] == GAP:
+        return None
+    return 1 if q[i] == t[j] else -2
+
+
+def _diag_seg(q, t, d, s, e):
+    """Total of cells (s, s+d) .. (e-1, e-1+d), or None if a wall is inside."""
+    tot = 0
+    for i in range(s, e):
+        c = _cell(q, t, i, i + d)
+        if c is None:
+            return None
+        tot += c
+    return tot
+
+
+def _brute_two_anchors(q, t, i1, j1, a1, i2, j2, a2):
+    """Best of one segment holding both anchors (same diagonal) or two segments, one per
+    anchor, that do not overlap in either protein; plain enumeration."""
+    d1, d2 = j1 - i1, j2 - i2
+    best = None
+    n = q.size
+    if d1 == d2:
+        for s in range(0, i1 + 1):
+            for e in range(i2 + a2, n + 1):
+                v = _diag_seg(q, t, d1, s, e)
+                if v is not None and (best is None or v > best):
+                    best = v
+    for s1 in range(0, i1 + 1):
+        for e1 in range(i1 + a1, n + 1):
+            v1 = _diag_seg(q, t, d1, s1, e1)
+            if v1 is None:
+                continue
+            for s2 in range(0, i2 + 1):
+                if s2 < e1 or s2 + d2 < e1 + d1:
+                    continue  # overlap in the query or in the target
+                for e2 in range(i2 + a2, n + 1):
+                    v2 = _diag_seg(q, t, d2, s2, e2)
+                    if v2 is not None and (best is None or v1 + v2 > best):
+                        best = v1 + v2
+    return best
+
+
+def _brute_words(q, t, a):
+    return [
+        (i, j)
+        for i in range(q.size - a + 1)
+        for j in range(t.size - a + 1)
+        if all(_cell(q, t, i + y, j + y) == 1 for y in range(a))
+    ]
+
+
+def _brute_scan(q, t, a, seed, window, q_partner, t_partner):
+    A = _brute_words(q, t, a)
+    S = _brute_words(q, t, seed)
+    M1 = _brute_words(q, t, 1)
+    Aset = set(A)
+    res = {"words6": len(A), "words8": len(S)}
+    b2 = [
+        max(
+            v
+            for s in range(0, i + 1)
+            for e in range(i + seed, q.size + 1)
+            if (v := _diag_seg(q, t, j - i, s, e)) is not None
+        )
+        for i, j in S
+    ]
+    res["B2"] = max(b2, default=0)
+    keys = [
+        (k1, k2)
+        for k1 in A
+        for k2 in A
+        if 0 <= k2[0] - k1[0] - a <= window and 0 <= k2[1] - k1[1] - a <= window
+    ]
+    res["linked_count"] = len(keys)
+    res["linked"] = max(
+        (_brute_two_anchors(q, t, *k1, a, *k2, a) for k1, k2 in keys), default=0
+    )
+    rkeys = [
+        ((i, j), (q_partner[i], t_partner[j]))
+        for i, j in A
+        if q_partner[i] >= 0
+        and t_partner[j] >= 0
+        and (q_partner[i], t_partner[j]) in Aset
+    ]
+    res["randstrobe_count"] = len(rkeys)
+    res["randstrobe"] = max(
+        (_brute_two_anchors(q, t, *k1, a, *k2, a) for k1, k2 in rkeys), default=0
+    )
+    b3 = []
+    for si, sj in S:
+        for mi, mj in M1:
+            if 0 <= mi - si - seed <= window and 0 <= mj - sj - seed <= window:
+                b3.append(_brute_two_anchors(q, t, si, sj, seed, mi, mj, 1))
+            if 0 <= si - mi - 1 <= window and 0 <= sj - mj - 1 <= window:
+                b3.append(_brute_two_anchors(q, t, mi, mj, 1, si, sj, seed))
+    res["B3_count"] = len(b3)
+    res["B3"] = max(b3, default=0)
+    return res
+
+
+def _related_pair(rng, nq, nt, flip=0.15, x_rate=0.02):
+    """A query and a target that share a stretch on a shifted diagonal, with a few
+    non-H/P letters (GAP) sprinkled in."""
+    q = rng.integers(0, 2, nq).astype(np.uint8)
+    t = rng.integers(0, 2, nt).astype(np.uint8)
+    off = int(rng.integers(0, max(1, nt - nq + 1)))
+    m = min(nq, nt - off)
+    t[off : off + m] = q[:m]
+    f = rng.random(nt) < flip
+    t[f] = 1 - t[f]
+    for arr in (q, t):
+        arr[rng.random(arr.size) < x_rate] = GAP
+    return q, t
+
+
+def test_diagonal_scan_matches_brute_force_small():
+    """Scores and counts on short proteins: every diagonal, keys across diagonals."""
+    rng = np.random.default_rng(343)
+    for trial in range(25):
+        q, t = _related_pair(rng, int(rng.integers(14, 19)), int(rng.integers(14, 21)))
+        qp = lp.randstrobe_partner(q, lp.DB_ANCHOR, lp.DB_WINDOW)
+        tp = lp.randstrobe_partner(t, lp.DB_ANCHOR, lp.DB_WINDOW)
+        got = lp.diagonal_scan(q, t, qp, tp)
+        want = _brute_scan(q, t, lp.DB_ANCHOR, lp.DB_SEED, lp.DB_WINDOW, qp, tp)
+        for k, v in want.items():
+            assert got[k] == v, (trial, k, got[k], v)
+
+
+def test_diagonal_scan_short_anchor_keys_across_diagonals():
+    """The same scorer logic with 3-letter anchors (many keys on different diagonals), by
+    patching the module constants, so cross-diagonal keys are tested on short proteins.
+    """
+    rng = np.random.default_rng(7)
+    old = lp.DB_ANCHOR, lp.DB_SEED
+    try:
+        lp.DB_ANCHOR, lp.DB_SEED = 3, 4
+        for trial in range(20):
+            q, t = _related_pair(
+                rng, int(rng.integers(10, 14)), int(rng.integers(10, 15)), flip=0.3
+            )
+            qp = lp.randstrobe_partner(q, 3, lp.DB_WINDOW)
+            tp = lp.randstrobe_partner(t, 3, lp.DB_WINDOW)
+            got = lp.diagonal_scan(q, t, qp, tp)
+            want = _brute_scan(q, t, 3, 4, lp.DB_WINDOW, qp, tp)
+            for k, v in want.items():
+                assert got[k] == v, (trial, k, got[k], v)
+    finally:
+        lp.DB_ANCHOR, lp.DB_SEED = old
+
+
+def test_diagonal_scan_counts_respect_the_32_residue_window():
+    """Counts on proteins longer than the window, by brute enumeration of keys."""
+    rng = np.random.default_rng(11)
+    for trial in range(4):
+        q, t = _related_pair(
+            rng, int(rng.integers(70, 90)), int(rng.integers(70, 95)), flip=0.08
+        )
+        qp = lp.randstrobe_partner(q, lp.DB_ANCHOR, lp.DB_WINDOW)
+        tp = lp.randstrobe_partner(t, lp.DB_ANCHOR, lp.DB_WINDOW)
+        got = lp.diagonal_scan(q, t, qp, tp)
+        A = _brute_words(q, t, lp.DB_ANCHOR)
+        S = _brute_words(q, t, lp.DB_SEED)
+        M1 = _brute_words(q, t, 1)
+        w, a, s8 = lp.DB_WINDOW, lp.DB_ANCHOR, lp.DB_SEED
+        n_linked = sum(
+            1
+            for k1 in A
+            for k2 in A
+            if 0 <= k2[0] - k1[0] - a <= w and 0 <= k2[1] - k1[1] - a <= w
+        )
+        n_b3 = sum(
+            (0 <= mi - si - s8 <= w and 0 <= mj - sj - s8 <= w)
+            + (0 <= si - mi - 1 <= w and 0 <= sj - mj - 1 <= w)
+            for si, sj in S
+            for mi, mj in M1
+        )
+        assert got["linked_count"] == n_linked
+        assert got["B3_count"] == n_b3
+        assert got["words6"] == len(A) and got["words8"] == len(S)
+
+
+def _random_alignment(rng, n, identity=0.75, gap_rate=0.06):
+    """Two aligned rows of residues (A = hydrophobic, D = polar in hp_thomas_dill2) with
+    gaps, X letters and runs long enough to hold 6- and 8-letter anchors."""
+    hp = np.array(list("AD"))
+    q = rng.integers(0, 2, n)
+    t = q.copy()
+    f = rng.random(n) < (1 - identity)
+    t[f] = 1 - t[f]
+    qs, ts = hp[q].copy(), hp[t].copy()
+    qs[rng.random(n) < gap_rate] = "-"
+    ts[rng.random(n) < gap_rate] = "-"
+    ts[rng.random(n) < 0.01] = "X"
+    keep = ~((qs == "-") & (ts == "-"))
+    return "".join(qs[keep]), "".join(ts[keep])
+
+
+def test_diagonal_scan_restricted_to_an_alignment_equals_score_pair():
+    """With the alignment's cells as the mask, diagonal_scan gives score_pair's B2, B3,
+    chosen linked pair and randstrobe, scores and key counts (gates 1 and 2 rely on it).
+    """
+    rng = np.random.default_rng(2026)
+    name = lp.setting_name("all", 6, 32, "none")
+    rname = lp.setting_name("rand", 6, 32, "none")
+    for trial in range(30):
+        qaln, taln = _random_alignment(rng, int(rng.integers(60, 140)))
+        ref = lp.score_pair(qaln, taln, np.random.default_rng(0), n_shuffle=0)[0]
+        q_seq, t_seq, allowed = lp.alignment_cells(qaln, taln)
+        got = lp.scan_sequences(q_seq, t_seq, allowed)
+        assert got["B2"] == ref["B2_ext"], trial
+        assert got["B3"] == ref["B3_ext"], trial
+        assert got["linked"] == ref[f"{name}_ext"], trial
+        assert got["linked_count"] == ref[f"{name}_count"], trial
+        assert got["randstrobe"] == ref[f"{rname}_ext"], trial
+        assert got["randstrobe_count"] == ref[f"{rname}_count"], trial
+        assert (
+            got["words6"] == ref["seed6_count"] and got["words8"] == ref["seed8_count"]
+        )
+
+
+def test_alignment_rows_from_pairs_round_trip():
+    """Rows built from aligned pairs pair exactly those residues, and alignment_cells reads
+    the same pairs back."""
+    q, t = "ACDEFGHIKLMN", "PQRSTVWYACDE"
+    pq, pt = [2, 3, 6, 7, 11], [1, 4, 5, 6, 9]
+    qrow, trow = lp.alignment_rows_from_pairs(q, t, pq, pt)
+    assert len(qrow) == len(trow)
+    assert qrow.replace("-", "") == q[1:11] and trow.replace("-", "") == t[0:9]
+    pairs = []
+    iq, it = pq[0] - 1, pt[0] - 1
+    for a, b in zip(qrow, trow):
+        if a != "-" and b != "-":
+            pairs.append((iq + 1, it + 1))
+        iq += a != "-"
+        it += b != "-"
+    assert pairs == list(zip(pq, pt))
+    _, _, allowed = lp.alignment_cells(qrow, trow)
+    assert sorted(zip(*np.nonzero(allowed))) == [
+        (a - pq[0], b - pt[0]) for a, b in zip(pq, pt)
+    ]
