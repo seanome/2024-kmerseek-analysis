@@ -52,9 +52,12 @@ E=$WORK/env/bin
 
 # 2. Download, resumable, then check the byte count.
 GZ=$WORK/catalog/OM-RGC_v2_genes.fna.gz
-if [ "$(stat -c %s "$GZ" 2>/dev/null || echo 0)" != "$EXPECTED_BYTES" ]; then
-    curl -fL -C - --retry 5 -o "$GZ" "$URL"
-fi
+# A big HTTP download can stall without failing: --speed-limit/--speed-time drop a
+# connection slower than 1 MB/s for 60 s, and the loop resumes it (-C -), up to 30 times.
+for attempt in $(seq 1 30); do
+    [ "$(stat -c %s "$GZ" 2>/dev/null || echo 0)" = "$EXPECTED_BYTES" ] && break
+    curl -fL -C - --speed-limit 1000000 --speed-time 60 -o "$GZ" "$URL" || echo "download attempt $attempt stopped; resuming"
+done
 test "$(stat -c %s "$GZ")" = "$EXPECTED_BYTES" || { echo "size mismatch on $GZ"; exit 1; }
 "$E/pigz" -t "$GZ"
 
