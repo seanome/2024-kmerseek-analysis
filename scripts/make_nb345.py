@@ -319,6 +319,91 @@ enter the verdict.
 """)
 
 md(r"""
+### 2c. Why synthetic Eukaryota proteomes share more words than real ones
+
+Found by the adversarial check on PR 172. There are $2^{30}$ = 1,073,741,824 possible
+`hp_pbotc_1st_ed` words of 30 letters. The 48 Eukaryota proteomes hold 382,612,416 windows
+of 30 residues, about a third of that number, so two random proteomes already share many
+words by chance. `scripts/nb345_chance_collisions.py` computes how many words would be
+shared by at least two proteomes if each proteome's words came from a two-letter Markov
+chain with that proteome's own h/p pair frequencies. It does not use `bin/novelty.py`.
+If this chance count matches the synthetic count, the synthetic proteomes are what they
+should be and the ratio below 1 is not a bug.
+""")
+
+code(r"""
+chance = pl.read_parquet(DATA / "345_chance_collisions.parquet")
+comp = pl.read_parquet(DATA / "345_chance_hp_composition.parquet")
+u_full = fit.filter(pl.col("setting").is_in([f"real.{PRIMARY_HP}", f"null.{PRIMARY_HP}"])).select(
+    "clade", pl.col("setting").str.split(".").list.first().alias("kind"), "U_full"
+).pivot(on="kind", index="clade", values="U_full")
+distinct = words.filter((pl.col("alphabet") == HP) & (pl.col("ksize") == 30)).pivot(
+    on="kind", index="clade", values="n_distinct_words"
+)
+chance_table = (
+    chance.join(u_full.rename({"real": "real_shared_N", "null": "synthetic_shared_N"}), on="clade")
+    .join(distinct.rename({"real": "real_distinct", "null": "synthetic_distinct"}), on="clade")
+    .with_columns(
+        (pl.col("windows") / pl.col("possible_words")).alias("windows_per_possible_word"),
+        (pl.col("synthetic_shared_N") / pl.col("expected_shared_N")).alias("synthetic_over_chance"),
+        (pl.col("real_shared_N") / pl.col("synthetic_shared_N")).alias("real_over_synthetic"),
+    )
+    .select("clade", "n_proteomes", "windows", "windows_per_possible_word", "expected_shared_N",
+            "synthetic_shared_N", "synthetic_over_chance", "real_shared_N", "real_over_synthetic",
+            "expected_distinct", "synthetic_distinct", "real_distinct")
+)
+print(chance_table)
+euk = comp.filter(pl.col("clades").str.split(",").list.contains("Eukaryota"))
+print(f"\nEukaryota h fraction per proteome: {euk['h_fraction'].min():.3f} "
+      f"({euk.sort('h_fraction')['oscode'][0]}) to {euk['h_fraction'].max():.3f} "
+      f"({euk.sort('h_fraction')['oscode'][-1]})")
+
+fig, axs = pf.figure(pf.ONE_COLUMN_MM, 60, ncols=2, sharey=True, width_ratios=[1, 1.4])
+y = {c: i for i, c in enumerate(CLADES)}
+for r in chance_table.iter_rows(named=True):
+    axs[0].barh(y[r["clade"]], r["windows_per_possible_word"], color=pf.GREY, height=0.6)
+    axs[1].plot([r["expected_shared_N"], r["real_shared_N"]], [y[r["clade"]]] * 2, color="#dddddd", lw=0.8, zorder=0)
+axs[0].set_xlabel("Windows / possible words")
+axs[0].set_yticks(range(len(CLADES)), CLADES)
+axs[0].set_ylim(len(CLADES) - 0.5, -0.5)
+ys = [y[c] for c in chance_table["clade"]]
+axs[1].scatter(chance_table["expected_shared_N"], ys, marker="|", s=40, color="black",
+               label="chance alone (two-letter Markov model)")
+axs[1].scatter(chance_table["synthetic_shared_N"], ys, marker="o", s=14, facecolor="white",
+               edgecolor=COLOUR[HP], label=f"{LABEL[PRIMARY_HP]}, synthetic copies")
+axs[1].scatter(chance_table["real_shared_N"], ys, marker="o", s=14, color=COLOUR[HP],
+               label=f"{LABEL[PRIMARY_HP]}, real proteomes")
+axs[1].set_xscale("log")
+axs[1].set_xlim(4_000, 2e8)
+axs[1].xaxis.set_major_locator(FixedLocator([1e4, 1e6, 1e8]))
+axs[1].xaxis.set_major_formatter(FuncFormatter(lambda v, _: f"{v:,.0f}"))
+axs[1].xaxis.set_minor_locator(NullLocator())
+axs[1].set_xlabel("Words in 2 or more proteomes")
+for ax in axs:
+    ax.grid(axis="y", color="#dddddd", lw=0.3)
+pf.shared_legend(fig, ncol=1)
+for ax, letter in zip(axs, "ab"):
+    pf.panel_label(ax, letter)
+pf.save(fig, FIG / "345_SF3b_chance_shared_words_vs_synthetic_real_hp30_qfo2020_04")
+""")
+
+md(r"""
+**Supplementary Figure 3b (SF3b). The synthetic proteomes share exactly as many words as
+chance predicts; in Eukaryota, chance alone outnumbers the real shared words.** a, the
+clade's windows of 30 residues divided by the $2^{30}$ possible `hp_pbotc_1st_ed` words.
+b, words held by at least two of the clade's N proteomes (all of them, not a subset). Black tick: the number expected
+by chance, from a two-letter Markov model of each proteome (`scripts/nb345_chance_collisions.py`);
+open blue circle: the synthetic copies; filled blue circle: the real proteomes. The x axis
+spaces values by ratio. The open circle sits on the tick in every clade, so the synthetic
+proteomes have no bug. The real proteomes hold fewer distinct words than their copies
+(the table's last two columns), because proteins repeat words within a proteome, so fewer
+of their words are left to match another proteome by chance. When the windows fill a third
+of all possible words, as in Eukaryota, that loss outweighs the shared sequence. At this
+budget, a ratio of real to synthetic below 1 does not mean the real proteomes share less
+sequence; at 42 bits, where chance matches are rare, the Eukaryota ratio is 781 (section 2b table).
+""")
+
+md(r"""
 ## 3. Heaps' law
 
 $U(n) = \kappa\, n^{\gamma}$ fitted to each full-clade curve, $n = 2, \dots, N$. With this
@@ -951,7 +1036,11 @@ at least two of $n$ proteomes, was averaged exactly over every order of adding p
 (section 2). Real proteomes share 2 to 31 times more 30-bit words than their synthetic
 copies when two proteomes are compared, and the excess shrinks as proteomes are added
 (SF3). In Eukaryota at all 48 proteomes the synthetic copies share more words than the
-real ones (ratio 0.85 for H/P k30); this notebook does not explain why.
+real ones (ratio 0.85 for H/P k30). That is chance, not a bug (section 2c): the 48
+proteomes hold 382,612,416 windows, a third of the 1,073,741,824 possible H/P k30 words,
+and a two-letter Markov model predicts 60.0 million words shared by chance, against 60.1
+million for the synthetic copies. Real proteomes repeat words within a proteome, so they
+hold fewer distinct words (231 million against 308 million) and match fewer by chance.
 
 The primary test (section 4) used the same 898 splits for every setting. All three
 methods miss by more than half the true value. Section 4b shows that part of the miss is
