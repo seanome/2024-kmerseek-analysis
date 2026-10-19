@@ -336,10 +336,16 @@ def cmd_step1_table(args: argparse.Namespace) -> None:
 
 
 def cmd_plan_step3(args: argparse.Namespace) -> None:
-    """Print step 3 catalog-sketching commands, sized from step 1's measured rates."""
+    """Size step 3's catalog-sketching arrays from step 1's measured rates.
+
+    Prints one line per scaled value, "scaled n_chunks last_array_index hours mem_gb", for
+    299_gate.sbatch to submit; the reasoning goes to stderr. Exits 1 when step 1 killed the
+    idea.
+    """
     step1 = json.loads((DATA / "step1_verdict.json").read_text())
     if not step1["fits_at_some_scaled"]:
         sys.exit("step 1 killed the idea; there is no step 3 to plan")
+    stats = json.loads((work_dir() / "catalog_stats.json").read_text())
     timing = {
         r["setting"]: r
         for r in _read_csv(
@@ -359,16 +365,22 @@ def cmd_plan_step3(args: argparse.Namespace) -> None:
             for k in KSIZES
         )
         chunk_gb = target_hours * 3600 / rate
-        n_chunks = max(1, int(-(-step1["catalog_fna_gb"] // chunk_gb)))
+        # Each task takes whole catalog parts, so there can be no more tasks than parts.
+        n_chunks = min(
+            stats["n_parts"], max(1, int(-(-step1["catalog_fna_gb"] // chunk_gb)))
+        )
         hours = rate * step1["catalog_fna_gb"] / n_chunks / 3600
         print(
-            f"# scaled {scaled}: {rate:.0f} CPU-s per GB for all nine settings, {n_chunks} chunks of "
-            f"{step1['catalog_fna_gb'] / n_chunks:.2f} GB, predicted {hours:.1f} h and {mem:.1f} GB peak per task"
+            f"scaled {scaled}: {rate:.0f} CPU-s per GB for all nine settings, {n_chunks} chunks of "
+            f"{step1['catalog_fna_gb'] / n_chunks:.2f} GB, predicted {hours:.1f} h and {mem:.1f} GB peak per task",
+            file=sys.stderr,
         )
         print(
-            f"N_CHUNKS={n_chunks} SCALED={scaled} sbatch --array=0-{n_chunks + N_SAMPLE_PARTS - 1} "
-            f"--time={int(2 * hours) + 1}:00:00 --mem={max(4, int(4 * mem) + 1)}G "
-            "notebooks/299_step3_sketch_catalog.sbatch"
+            scaled,
+            n_chunks,
+            n_chunks + N_SAMPLE_PARTS - 1,
+            int(2 * hours) + 1,
+            max(4, int(4 * mem) + 1),
         )
 
 

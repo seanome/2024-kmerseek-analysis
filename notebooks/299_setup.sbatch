@@ -8,10 +8,8 @@
 #SBATCH --output=299-setup-%j.out
 #
 # Notebook 299, setup: tools, the OM-RGC v2 gene catalog, its proteins, the 1 GB slice for
-# step 1, and 256 catalog parts for step 3. Submit from the repo root of a checkout of
-# olgabot/nb299-omrgc-sketch-pilot:
-#
-#   cd $SCRATCH/2024-kmerseek-analysis-299 && git pull && sbatch notebooks/299_setup.sbatch
+# step 1, and 256 catalog parts for step 3. Submitted by notebooks/299_submit_all.sh, which
+# chains every job of the pilot.
 #
 # Catalog: BioStudies S-BSST297, "Ocean Microbial Reference Gene Catalog v2 (OM-RGC.v2)",
 # released 2019-11-12, file OM-RGC_v2_genes.fna.gz, 29_607_178_264 bytes (listing and HTTP

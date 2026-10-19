@@ -9,10 +9,8 @@
 #SBATCH --output=299-search-%A_%a.out
 #
 # Notebook 299, step 3b: search all 2_289 queries (109 real, 2_180 shuffled copies), one
-# array task per setting, after the DIAMOND job (step 2) and every
-# 299_step3_sketch_catalog.sbatch task have finished:
-#
-#   cd $SCRATCH/2024-kmerseek-analysis-299 && sbatch notebooks/299_step3_search.sbatch
+# array task per setting. Submitted by 299_gate.sbatch to start when the DIAMOND job
+# (step 2) and every 299_step3_sketch_catalog.sbatch task have succeeded.
 #
 # Search tool: `sourmash scripts manysearch` (branchwater plugin 0.9.15). It reports the
 # containment of each query in each gene, the comparison `sourmash search --containment`

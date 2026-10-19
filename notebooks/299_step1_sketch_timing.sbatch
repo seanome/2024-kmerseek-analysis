@@ -9,10 +9,8 @@
 #SBATCH --output=299-step1-%A_%a.out
 #
 # Notebook 299, step 1: time `sourmash sketch translate` on one CPU on the 1 GB slice, one
-# array task per setting (protein, dayhoff, hp x k 7, 10, 13 x scaled 100, 1000). After
-# 299_setup.sbatch has finished:
-#
-#   cd $SCRATCH/2024-kmerseek-analysis-299 && sbatch notebooks/299_step1_sketch_timing.sbatch
+# array task per setting (protein, dayhoff, hp x k 7, 10, 13 x scaled 100, 1000).
+# Submitted by notebooks/299_submit_all.sh to start when 299_setup.sbatch succeeds.
 #
 # Sizing: the rule's budget is 1_536 CPU-hours (two days of a 32-CPU node) for all nine
 # settings of one scaled value over the whole catalog (size read from catalog_stats.json

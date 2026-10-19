@@ -82,7 +82,10 @@ on the same Sherlock partition and thread count.
    E < 1e-5 while each shuffled copy hits fewer than 1% as many genes as a real query does.
    Higher recall is good; a lower shuffled-hit rate is good.
 
-**Status on 2026-10-18.** Queries, rules and the Sherlock jobs are ready. No Sherlock job
+**Status on 2026-10-18.** Queries, rules and the Sherlock jobs are ready. One command,
+`bash notebooks/299_submit_all.sh`, submits every job with SLURM dependencies (setup, step 1,
+then a job that reads step 1's verdict and, only if the catalog fits, submits DIAMOND, the
+sketching, the searches and the scoring). No Sherlock job
 has run yet, so steps 1 to 4 have no result. Sections below fill in as each job finishes.
 
 **Facts read 2026-10-18** (`notebooks/299_data/sources_read_2026-10-18.tsv`):

@@ -9,9 +9,8 @@
 #
 # Notebook 299, step 2: DIAMOND blastp of all 2_289 queries (109 real, 2_180 shuffled
 # copies) against the OM-RGC v2 proteins. The shuffled copies go through DIAMOND too, so
-# both methods get the same control. Run only if step 1 says the catalog fits:
-#
-#   cd $SCRATCH/2024-kmerseek-analysis-299 && sbatch notebooks/299_step2_diamond.sbatch
+# both methods get the same control. Submitted by 299_gate.sbatch only if step 1 says the
+# catalog fits.
 #
 # Settings, fixed before the run: --very-sensitive, report E <= 1e-3, every target
 # (--max-target-seqs 0); a true hit is E < 1e-5 (rule in notebooks/299_data/rules.md).

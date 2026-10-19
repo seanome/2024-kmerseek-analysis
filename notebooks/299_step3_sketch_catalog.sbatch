@@ -7,13 +7,9 @@
 #
 # Notebook 299, step 3a: sketch the whole catalog with `sourmash sketch translate`, all nine
 # alphabet and k settings of one scaled value in one pass, one array task per group of
-# catalog parts, plus 32 tasks for the parts of the 1% random gene sample. Time, memory and the number of tasks come from step 1's measured rates:
-# print the two commands (one per scaled value) with
-#
-#   $SCRATCH/299-omrgc-pilot/env/bin/python notebooks/299_omrgc_sketch_pilot.py plan-step3
-#
-# and submit what it prints. It refuses when step 1 killed the idea. Needs N_CHUNKS and
-# SCALED in the environment (the printed command sets both).
+# catalog parts, plus 32 tasks for the parts of the 1% random gene sample. Submitted by
+# 299_gate.sbatch, which sets the number of tasks, time and memory from step 1's measured
+# rates (plan-step3) and passes N_CHUNKS and SCALED in the environment.
 set -euo pipefail
 
 REPO=${SLURM_SUBMIT_DIR:?submit from the repo root}
