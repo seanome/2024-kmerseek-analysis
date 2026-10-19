@@ -4985,7 +4985,10 @@ process familyFrequency {
     publishDir "${params.outdir}/no_search/calls_raw", mode: 'copy'
 
     input:
-    tuple path(query_fasta), path(reference_fasta), path(reference_annotation)
+    // The query FASTA and the reference proteome can share a file name (both are
+    // UP000005640_9606.fasta for human), so each is staged in its own folder.
+    tuple path(query_fasta, stageAs: 'query/*'), path(reference_fasta, stageAs: 'reference/*'),
+          path(reference_annotation)
 
     output:
     path "pfam_family_frequency.length_bin.tsv", emit: calls
