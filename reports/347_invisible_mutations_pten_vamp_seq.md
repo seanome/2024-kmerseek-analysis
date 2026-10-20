@@ -36,6 +36,8 @@ Copied from `ALPHABET_AA_GROUPS` in `notebooks/ortholog_analysis_utils.py`, whic
 | protein20 (control) | the 20 residues themselves |
 | amino-acid counts (control) | the count of each residue, order ignored |
 
+kmerseek's other 16 alphabets (added 2026-10-20, see below) are copied from kmerseek's `src/rust/alphabets.rs` into `KMERSEEK_CLUSTERS` in `notebooks/invisible_mutations_utils.py`; a test compares the two.
+
 ## Where the variants fall
 
 ![Collision groups](../figures/347_SF1_collision_groups_pten_vamp_seq.png)
@@ -135,7 +137,23 @@ No tolerance for prediction error is established for this assay and none was sup
 |---|---|---|---|
 | amino-acid counts | 363 | 271 | 3475 |
 | dayhoff6 | 978 | 78 | 929 |
+| funcgroups8 | 1165 | 67 | 654 |
+| gbmr4 | 353 | 58 | 1892 |
+| gbmr7 | 300 | 51 | 1883 |
+| hp_kyte_doolittle2 | 327 | 53 | 2495 |
 | hp_lehninger2 | 335 | 80 | 2496 |
+| hp_lehninger_c_nonpolar2 | 336 | 72 | 2456 |
+| hp_lehninger_hpc3 | 344 | 73 | 2303 |
+| hp_pbotc_1st_ed2 | 333 | 70 | 2417 |
+| hp_thomas_dill2 | 329 | 58 | 2377 |
+| hp_thomas_dill_no_c2 | 324 | 60 | 2442 |
+| hsdm17 | 348 | 17 | 159 |
+| mmseqs12 | 976 | 15 | 247 |
+| polarity4 | 710 | 83 | 1632 |
+| sdm12 | 741 | 37 | 427 |
+| uniprot18 | 271 | 31 | 109 |
+| wass14 | 794 | 51 | 213 |
+| wwmj5 | 957 | 88 | 1186 |
 
 ## Examples
 
@@ -180,6 +198,67 @@ Adding one wild-type record (outcome = mean of the synonymous scores, 0.964) to 
 | hp_lehninger2 | 0.23462 | 0.23461 |
 | dayhoff6 | 0.15839 | 0.15839 |
 
+## All kmerseek alphabets and k-mer sizes (not planned)
+
+Added 2026-10-20, at Olga's request, after the first results (hp_lehninger2, dayhoff6) had been seen. Not planned; the primary encodings, the stop rule and their verdicts are unchanged. The same statistics and stop rule are reported for every added alphabet, labelled as not planned.
+
+![All alphabets and k-mer sizes](../figures/347_SF4_all_alphabets_ksizes_pten_vamp_seq.png)
+
+### Whole encoded sequence
+
+Same statistics as above, groups = same encoded sequence, coarsest alphabet first. The verdict uses the planned rule, but was not planned for these alphabets.
+
+The last column divides the lower end of the noise-ratio interval by the synonymous factor 2.66 (see "Check of the noise model"); below 1 means the loss is no longer detectable if replicate se understates the noise that much.
+
+| Alphabet | Letters | Variants in a group of 2+ | Floor RMSE (95% interval) | Floor / total variance (95% interval) | Noise ratio (95% interval) | Verdict | Lower end / synonymous factor |
+|---|---|---|---|---|---|---|---|
+| hp_kyte_doolittle2 | 2 | 99.5% | 0.234 (0.225-0.242) | 0.61 (0.57-0.64) | 4.39 (3.93-4.87) | Detectable information loss | 1.48 |
+| hp_lehninger2 | 2 | 99.6% | 0.235 (0.227-0.242) | 0.61 (0.59-0.64) | 4.39 (3.95-4.84) | Detectable information loss | 1.48 |
+| hp_lehninger_c_nonpolar2 | 2 | 99.6% | 0.233 (0.226-0.241) | 0.60 (0.58-0.63) | 4.32 (3.90-4.77) | Detectable information loss | 1.47 |
+| hp_pbotc_1st_ed2 | 2 | 99.6% | 0.229 (0.221-0.236) | 0.58 (0.55-0.61) | 4.17 (3.76-4.61) | Detectable information loss | 1.41 |
+| hp_thomas_dill2 | 2 | 99.5% | 0.226 (0.218-0.233) | 0.56 (0.53-0.59) | 4.07 (3.66-4.50) | Detectable information loss | 1.37 |
+| hp_thomas_dill_no_c2 | 2 | 99.4% | 0.228 (0.219-0.236) | 0.57 (0.54-0.61) | 4.15 (3.71-4.61) | Detectable information loss | 1.39 |
+| hp_lehninger_hpc3 | 3 | 95.2% | 0.227 (0.219-0.234) | 0.57 (0.54-0.59) | 4.34 (3.91-4.79) | Detectable information loss | 1.47 |
+| gbmr4 | 4 | 86.1% | 0.203 (0.195-0.210) | 0.45 (0.43-0.48) | 3.69 (3.31-4.10) | Detectable information loss | 1.24 |
+| polarity4 | 4 | 94.1% | 0.206 (0.198-0.213) | 0.47 (0.45-0.49) | 4.05 (3.63-4.48) | Detectable information loss | 1.36 |
+| wwmj5 | 5 | 92.4% | 0.175 (0.169-0.182) | 0.34 (0.32-0.36) | 3.17 (2.85-3.52) | Detectable information loss | 1.07 |
+| dayhoff6 | 6 | 88.4% | 0.158 (0.153-0.164) | 0.28 (0.26-0.30) | 2.92 (2.63-3.24) | Detectable information loss | 0.99 |
+| gbmr7 | 7 | 68.9% | 0.204 (0.195-0.212) | 0.46 (0.43-0.49) | 4.80 (4.27-5.38) | Detectable information loss | 1.60 |
+| funcgroups8 | 8 | 80.7% | 0.151 (0.145-0.157) | 0.25 (0.23-0.27) | 3.52 (3.16-3.90) | Detectable information loss | 1.19 |
+| mmseqs12 | 12 | 56.5% | 0.100 (0.095-0.105) | 0.11 (0.10-0.12) | 2.17 (1.94-2.42) | Detectable information loss | 0.73 |
+| sdm12 | 12 | 55.5% | 0.114 (0.109-0.119) | 0.14 (0.13-0.16) | 2.50 (2.22-2.80) | Detectable information loss | 0.83 |
+| wass14 | 14 | 41.3% | 0.102 (0.096-0.107) | 0.12 (0.10-0.13) | 3.89 (3.35-4.44) | Detectable information loss | 1.26 |
+| hsdm17 | 17 | 22.6% | 0.067 (0.062-0.072) | 0.05 (0.04-0.06) | 2.40 (2.03-2.87) | Detectable information loss | 0.76 |
+| uniprot18 | 18 | 14.3% | 0.067 (0.061-0.073) | 0.05 (0.04-0.06) | 3.93 (3.07-4.99) | Detectable information loss | 1.15 |
+| protein20 (identity) | 20 | 0.0% | 0.000 (n/a-n/a) | 0.00 (n/a-n/a) | n/a (n/a-n/a) | no collisions | n/a |
+
+### Only the set of encoded k-mers
+
+Variants grouped by their set of encoded k-mers at one k (which k-mers occur, not how often or where): what a scaled=1 sketch without abundances keeps. A group of the same encoded sequence always has the same k-mer set, so these floors are at least the whole-sequence floor. Two single substitutions can have the same k-mer set without the same sequence when every k-mer they change also occurs elsewhere in PTEN, which happens at small k and with few letters. Value: floor / total variance (share of score variance hidden). Every alphabet and k, with intervals: `tables/347_invisible_mutations_kmer_set_floors.tsv`.
+
+| Alphabet | Whole sequence | k=3 | k=5 | k=10 | k=20 | k=30 | From this k on, exactly the whole-sequence value |
+|---|---|---|---|---|---|---|---|
+| hp_kyte_doolittle2 | 0.61 | 1.00 | 1.00 | 0.61 | 0.61 | 0.61 | 15 |
+| hp_lehninger2 | 0.61 | 1.00 | 1.00 | 0.61 | 0.61 | 0.61 | 12 |
+| hp_lehninger_c_nonpolar2 | 0.60 | 1.00 | 1.00 | 0.61 | 0.60 | 0.60 | 12 |
+| hp_pbotc_1st_ed2 | 0.58 | 1.00 | 1.00 | 0.58 | 0.58 | 0.58 | 12 |
+| hp_thomas_dill2 | 0.56 | 1.00 | 1.00 | 0.56 | 0.56 | 0.56 | 15 |
+| hp_thomas_dill_no_c2 | 0.57 | 1.00 | 1.00 | 0.58 | 0.57 | 0.57 | 15 |
+| hp_lehninger_hpc3 | 0.57 | 0.99 | 0.88 | 0.57 | 0.57 | 0.57 | 12 |
+| gbmr4 | 0.45 | 0.96 | 0.70 | 0.45 | 0.45 | 0.45 | 9 |
+| polarity4 | 0.47 | 0.99 | 0.49 | 0.47 | 0.47 | 0.47 | 6 |
+| wwmj5 | 0.34 | 0.92 | 0.35 | 0.34 | 0.34 | 0.34 | 6 |
+| dayhoff6 | 0.28 | 0.83 | 0.28 | 0.28 | 0.28 | 0.28 | 5 |
+| gbmr7 | 0.46 | 0.80 | 0.49 | 0.46 | 0.46 | 0.46 | 9 |
+| funcgroups8 | 0.25 | 0.41 | 0.25 | 0.25 | 0.25 | 0.25 | 5 |
+| mmseqs12 | 0.11 | 0.13 | 0.11 | 0.11 | 0.11 | 0.11 | 4 |
+| sdm12 | 0.14 | 0.22 | 0.14 | 0.14 | 0.14 | 0.14 | 4 |
+| wass14 | 0.12 | 0.12 | 0.12 | 0.12 | 0.12 | 0.12 | 4 |
+| hsdm17 | 0.05 | 0.05 | 0.05 | 0.05 | 0.05 | 0.05 | 4 |
+| uniprot18 | 0.05 | 0.05 | 0.05 | 0.05 | 0.05 | 0.05 | 4 |
+| protein20 (identity) | 0.00 | 0.00 | 0.00 | 0.00 | 0.00 | 0.00 | 4 |
+
+
 ## Conclusion
 
 Rule (from the config): inconclusive if fewer than 30 collision groups or 100 variants in them; detectable if the lower end of the noise-ratio interval is above 1; no tolerance, so a detectable result cannot be called practically important.
@@ -191,6 +270,8 @@ Rule (from the config): inconclusive if fewer than 30 collision groups or 100 va
 - dayhoff6, if replicate se understates all noise by the synonymous factor 2.66 (not planned; see the noise section): lower end of the noise-ratio interval 0.99 for groups by encoded sequence, 0.84 for groups by sequence and position.
 
 So the dayhoff6 result, and the same-position part of the hp_lehninger2 result, rest on trusting the replicate se; the hp_lehninger2 result with groups spanning positions still holds under that assumption.
+
+- Not planned (added 2026-10-20): 16 of kmerseek's 16 other reduced alphabets show detectable information loss by the same rule; see the table in "All kmerseek alphabets and k-mer sizes".
 
 What this does not show:
 
@@ -211,4 +292,4 @@ Tests:
 /Users/olga/anaconda3/envs/2025-kmerseek-analysis/bin/python3 -m pytest -q tests/test_invisible_mutations_utils.py
 ```
 
-Outputs: `tables/347_invisible_mutations_*.tsv` (variants, collision groups, summary with intervals, exclusions, class counts, examples, k-mer check, sensitivity), `tables/347_invisible_mutations_provenance.json` (config, checksums, versions, git commit), `figures/347_SF1-3_*`.
+Outputs: `tables/347_invisible_mutations_*.tsv` (variants, collision groups, summary with intervals, exclusions, class counts, examples, k-mer check, sensitivity), `tables/347_invisible_mutations_provenance.json` (config, checksums, versions, git commit), `tables/347_invisible_mutations_kmer_set_floors.tsv` (every alphabet and k), `figures/347_SF1-4_*`.

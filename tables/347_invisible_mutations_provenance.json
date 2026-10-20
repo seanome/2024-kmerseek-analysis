@@ -64,6 +64,27 @@
       "hp_lehninger2",
       "dayhoff6"
     ],
+    "more_alphabets_and_ksizes": {
+      "_added": "2026-10-20, at Olga's request, after the first results (hp_lehninger2, dayhoff6) had been seen. Not planned; the primary encodings, the stop rule and their verdicts are unchanged. The same statistics and stop rule are reported for every added alphabet, labelled as not planned.",
+      "alphabets": "all 19 alphabets kmerseek can index with (Alphabet::all() in kmerseek src/rust/alphabets.rs, seanome/kmerseek main 00395d7432c8099755716108d39362118a4b57b1); residue clusters in notebooks/invisible_mutations_utils.py KMERSEEK_CLUSTERS, checked against that file by a test",
+      "kmer_set_grouping": "Variants grouped by their set of encoded k-mers at one k (which k-mers occur, not how often or where): what a scaled=1 sketch without abundances keeps. A group of the same encoded sequence always has the same k-mer set, so these floors are at least the whole-sequence floor.",
+      "ksizes": [
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        12,
+        15,
+        20,
+        25,
+        30
+      ],
+      "kmer_set_bootstrap": "same position resamples as the primary analysis; scope 'all' only"
+    },
     "inclusion": [
       "hgvs_pro matches p.<Ref><Pos><Alt> with three-letter codes of the 20 standard amino acids and Ref != Alt (single missense substitution)",
       "Ref equals the reference residue at Pos and 1 <= Pos <= 403",
@@ -138,6 +159,7 @@
   },
   "reference_length": 403,
   "reference_matches_uniprot": true,
+  "kmerseek_alphabets_from_commit": "00395d7432c8099755716108d39362118a4b57b1",
   "score_definition_check": {
     "max_abs_score_minus_replicate_mean": 7.771561172376096e-15,
     "rows_expts_not_replicate_count": 0,
@@ -153,7 +175,7 @@
     "ratio_var_to_mean_se2": 2.661504955899254
   },
   "n_bootstrap": 2000,
-  "last_commit_changing_code_or_data": "9830d07327fb20e6a65a8af090e4735a14ee7d4a",
+  "last_commit_changing_code_or_data": "17e7077483babcf20de1e730e55805550fe645b5",
   "code_had_uncommitted_changes": false,
   "python": "3.13.11",
   "packages": {
