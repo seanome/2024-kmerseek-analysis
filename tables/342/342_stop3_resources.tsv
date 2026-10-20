@@ -21,4 +21,4 @@ search	aro_hyd_chg_pol4	11	regions	4	120	2	90.4	20m50s	polarity4 k11 regions sea
 search	aro_hyd_arg_chg_pol5	9	regions	4	120	2	90.4	20m50s	no history; polarity4 k11 regions search
 search	hp_pbotc_1st_ed2	21	regions	4	32	1	21.3	3m28s	pilot trace
 search	protein20	5	regions	4	48	1	31.3	58.8s	pilot trace
-score	-	-	-	2	48	4	32.4	31s per file	job 48677411: one 1.1 GB aro_hyd_arg_chg_pol5 k9 call file read and filtered; files are read one at a time (1 GB + 30 GB per GB of the largest file, x1.25); time for 30 such files plus writing the on-exon calls
+score	-	-	-	2	64	2	40.5	91s per file	job 48687067: the scorer on the largest call file (1.36 GB, aro_hyd_arg_chg_pol5 k9, 56 million calls); files are read one at a time, so the largest sets the peak (48 GB was killed, job 48685827, by an earlier version that held more)

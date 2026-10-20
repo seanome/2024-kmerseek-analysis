@@ -46,7 +46,7 @@ P2_EVALUE = 1.0
 #: Peak memory = 1 GB + MEMORY_PER_FILE_GB per GB of the largest gzipped call file, as
 #: files are read one at a time. Set from a measured run (see tables/342/342_stop3_resources.tsv).
 MEMORY_BASE_GB = 1.0
-MEMORY_PER_FILE_GB = 30.0
+MEMORY_PER_FILE_GB = 32.0  # job 48687067: 40.5 GB on a 1.36 GB file
 SETTING_RE = re.compile(r"^(?P<alphabet>.+)_k(?P<k>\d+)_s1$")
 
 
