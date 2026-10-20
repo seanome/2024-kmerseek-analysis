@@ -44,7 +44,7 @@ Rule, written before any search was run:
 Optional chaining (gapped calls). kmerseek regions are gapless. 982a055's search can chain
 extended regions into one call: --chain-max-gap (largest distance on the query between
 chained regions) and --chain-max-shift (largest net shift in diagonals, an indel). Both are
-0 in notebook 241. NB289_CHAIN="30,10" (notebook 237's values) adds them to every search
+0 in notebook 241. NB289_CHAIN="30:10" or "30,10" (notebook 237's values) adds them to every search
 and writes to a separate variant folder; the indexes are shared. Default: off.
 
 Steps (each resumes where it stopped):
@@ -72,6 +72,7 @@ import json
 import math
 import os
 import random
+import re
 import shutil
 import sys
 from collections import Counter
@@ -187,7 +188,7 @@ def variant() -> str:
     c = ENV.get("NB289_CHAIN", "").strip()
     if not c:
         return "gapless"
-    gap, shift = (int(x) for x in c.split(","))
+    gap, shift = (int(x) for x in re.split(r"[,:]", c))
     return f"chain-gap{gap}-shift{shift}"
 
 
@@ -195,7 +196,7 @@ def chain_args() -> list[str]:
     c = ENV.get("NB289_CHAIN", "").strip()
     if not c:
         return []
-    gap, shift = c.split(",")
+    gap, shift = re.split(r"[,:]", c)
     return ["--chain-max-gap", gap, "--chain-max-shift", shift]
 
 
