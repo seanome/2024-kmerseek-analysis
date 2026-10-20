@@ -367,6 +367,35 @@ else:
 """)
 
 md(r"""
+Report only, not part of the rule. The rule counts region rows, and kmerseek can report many
+overlapping, shifted regions for one decoy and one target. The table below counts the same
+dipeptide rows at expected 100 once per decoy-target pair, per decoy and per source protein
+(5 decoys share each source), with the same exclusions. `pair_ratio` is distinct pairs over
+expected.
+""")
+
+code(r"""
+if HAVE_RESULTS:
+    t = u.tag_regions(decoys, regions[u.GATE_KIND], u.GATE_KIND).filter(
+        ~pl.col("not_a_decoy") & ~pl.col("own_source"))
+    rows = []
+    for column in u.GATE_COLUMNS:
+        g = table.filter((pl.col("kind") == u.GATE_KIND) & (pl.col("column") == column)
+                         & (pl.col("expected") == 100))
+        for r in g.iter_rows(named=True):
+            hit = t.filter((pl.col("stratum") == r["stratum"]) & (pl.col(column) <= r["cutoff"]))
+            rows.append({"column": column, "stratum": r["stratum"], "expected": r["expected"],
+                         "rows": hit.height,
+                         "pairs": hit.select("query_name", "target_name").unique().height,
+                         "decoys": hit["query_name"].n_unique(),
+                         "source proteins": hit["accession"].n_unique()})
+    by_pair = pl.DataFrame(rows).with_columns((pl.col("pairs") / pl.col("expected")).round(2).alias("pair_ratio"))
+    print(by_pair)
+else:
+    print("No results yet.")
+""")
+
+md(r"""
 ## 3. The worst-calibrated stratum, shown as one decoy region
 
 For each judged column, two strata on the dipeptide decoys:
@@ -484,6 +513,22 @@ almost every time.
    null "bites" hardest does not hold: holding neighbouring-residue pairs adds no chance
    regions here, and holding local composition (window10) adds many. Both E-values fail
    already under the dipeptide null, so the verdict does not depend on this.
+
+5. **Counting each decoy-target pair once shrinks the excess but does not remove it.**
+   kmerseek reports many overlapping, shifted regions for one pair of a low-complexity
+   decoy and target. Counted once per pair at expected 100 (the report-only table in
+   section 2), the 300-1000 and >1000-residue strata with SEG ≥ 15% give 286 and 454 pairs
+   by `region_run_evalue` (2.9 and 4.5 times expected) and 348 and 367 by
+   `region_ka_evalue` (3.5 and 3.7 times). Those are still outside a factor of two. In the
+   strata below 15% SEG, rows and pairs are nearly the same. The rule counts rows, as an
+   E-value counts regions, so the verdict stands; the size of the failure in the
+   low-complexity strata is 3 to 5 times by pair and 10 to 113 times by row.
+
+**Checked by a second reader.** An agent that had not seen this notebook's code recomputed
+all 12 result claims from the region files with its own code (2026-10-20). All 12 held,
+including both examples and the line in kmerseek that computes Pr(same class) from the two
+whole sequences (`src/rust/search.rs` line 317 at `0a22970`). It raised the pair counting
+in item 5.
 
 **What this decides.** Neither column can ship in 0.4.0 as an E-value without a fix for
 low-complexity regions. The data point to two fixes, neither tested here. One computes
