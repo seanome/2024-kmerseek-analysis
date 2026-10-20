@@ -222,3 +222,103 @@ def test_stockholm_match_columns(tmp_path):
     cols = cs.read_stockholm_match_columns(str(sto))
     assert cols["seq1"] == [(0, "A"), (1, "C"), (-1, "-"), (2, "D"), (4, "E")]
     assert cols["seq2"] == [(0, "A"), (1, "C"), (2, "G"), (3, "D"), (5, "E")]
+
+
+@needs_oasis
+def test_occurrences_and_pfam_overlap(tmp_path):
+    """Rerun the planted case, then put a fake Pfam domain over the planted window in the
+    class C0 proteins only: the planted anchor is then inside Pfam (not outside), and its
+    residues come back exactly."""
+    test_end_to_end_planted_clade_target(tmp_path)
+    occ_out, fa_out = [], []
+    for b in range(cs.N_TARGET_BUCKETS):
+        o, f = tmp_path / f"occ{b}.parquet", tmp_path / f"prot{b}.fa"
+        cs.main(["occurrences", "--setting", "dayhoff:14", "--bucket", str(b), "--dirs", str(tmp_path / "t"),
+                 "--accessions", str(tmp_path / "acc.parquet"), "--significant", str(tmp_path / "sig.parquet"),
+                 "--fasta-dirs", str(tmp_path / "fasta"), "--out", str(o), "--fasta-out", str(f)])
+        occ_out.append(str(o))
+        fa_out.append(str(f))
+    occ = pl.concat([pl.read_parquet(f) for f in occ_out])
+    assert occ.height == 60  # one occurrence in each of 60 species
+    assert set(occ["anchor_residues"]) == {"MKVLAAGHTRDEWY"}
+    assert set(occ["target_residues"]) == {"CCWWHHMMYY", "DDEEKKRRNN"}
+    assert set(occ["pos0"]) == {30}
+    # Fake hmmscan rows: a domain over residues 31-54 (1-based) in species 0-14 (class C0).
+    dom = tmp_path / "fake.domtblout"
+    with open(dom, "w") as fh:
+        fh.write("# fake\n")
+        for s in range(15):
+            f = ["PF99999_x", "PF99999.1", "100", f"s{s}_p0", "-", "84"] + ["0"] * 6 + ["1e-10"] + ["0"] * 6 + ["31", "54", "0.9", "-"]
+            fh.write(" ".join(f) + "\n")
+    cs.main(["pfam-overlap", "--occurrences", *occ_out, "--domtblout", str(dom),
+             "--occ-out", str(tmp_path / "po.parquet"), "--out", str(tmp_path / "pa.parquet"),
+             "--significant", str(tmp_path / "sig.parquet"), "--top-out", str(tmp_path / "top.parquet")])
+    pa = pl.read_parquet(tmp_path / "pa.parquet")
+    assert pa.height == 1
+    row = pa.row(0, named=True)
+    assert row["n_occurrences"] == 60 and row["n_occ_in_pfam"] == 15 and not row["outside_pfam"]
+    assert row["main_pfam"] == "PF99999"
+    top = pl.read_parquet(tmp_path / "top.parquet")
+    assert top.height == 60 and top["in_pfam"].sum() == 15
+
+
+HMMER_BIN = Path("/Users/olga/anaconda3/envs/hmmer/bin")
+needs_hmmer = pytest.mark.skipif(not (HMMER_BIN / "hmmalign").exists(), reason="HMMER not installed")
+
+
+@needs_oasis
+@needs_hmmer
+def test_alignment_control_finds_the_planted_columns(tmp_path):
+    """Make a fake Pfam family from the planted region (residues 21-64 of every species'
+    first protein), align the envelopes to it with hmmalign as the pipeline does, and run the
+    per-column test: the 10 target columns are found, and the class split is significant."""
+    test_end_to_end_planted_clade_target(tmp_path)
+    occ_out, fa_out = [], []
+    for b in range(cs.N_TARGET_BUCKETS):
+        o, f = tmp_path / f"occ{b}.parquet", tmp_path / f"prot{b}.fa"
+        cs.main(["occurrences", "--setting", "dayhoff:14", "--bucket", str(b), "--dirs", str(tmp_path / "t"),
+                 "--accessions", str(tmp_path / "acc.parquet"), "--significant", str(tmp_path / "sig.parquet"),
+                 "--fasta-dirs", str(tmp_path / "fasta"), "--out", str(o), "--fasta-out", str(f)])
+        occ_out.append(str(o))
+        fa_out.append(str(f))
+    seqs = {}
+    for f in fa_out:
+        name = None
+        for line in open(f):
+            if line.startswith(">"):
+                name = line[1:].split()[0]
+            elif name:
+                seqs[name] = line.strip()
+    # Family alignment: residues 21-64 of every protein (ungapped, so already aligned).
+    with open(tmp_path / "fam.sto", "w") as fh:
+        fh.write("# STOCKHOLM 1.0\n")
+        for n, sq in seqs.items():
+            fh.write(f"{n} {sq[20:64]}\n")
+        fh.write("//\n")
+    subprocess.run([str(HMMER_BIN / "hmmbuild"), "-n", "FAKE", str(tmp_path / "fam.hmm"), str(tmp_path / "fam.sto")],
+                   check=True, capture_output=True)
+    dom = tmp_path / "fake.domtblout"
+    with open(dom, "w") as fh:
+        for n in seqs:
+            f = ["FAKE", "PF99999.1", "44", n, "-", "84"] + ["0"] * 6 + ["1e-10"] + ["0"] * 6 + ["21", "64", "0.9", "-"]
+            fh.write(" ".join(f) + "\n")
+    cs.main(["pfam-overlap", "--occurrences", *occ_out, "--domtblout", str(dom),
+             "--occ-out", str(tmp_path / "po.parquet"), "--out", str(tmp_path / "pa.parquet"),
+             "--significant", str(tmp_path / "sig.parquet"), "--top-out", str(tmp_path / "top.parquet")])
+    cs.main(["align-input", "--pfam", str(tmp_path / "pa.parquet"), "--occurrences", *occ_out,
+             "--domtblout", str(dom), "--fastas", *fa_out, "--outdir", str(tmp_path / "ain"),
+             "--manifest", str(tmp_path / "man.tsv")])
+    man = pl.read_csv(tmp_path / "man.tsv", separator="\t")
+    assert man.height == 1
+    tag = man["tag"][0]
+    (tmp_path / "sto").mkdir()
+    with open(tmp_path / "sto" / f"{tag}.sto", "w") as fh:
+        subprocess.run([str(HMMER_BIN / "hmmalign"), "--outformat", "Stockholm", str(tmp_path / "fam.hmm"),
+                        str(tmp_path / "ain" / f"{tag}.fa")], check=True, stdout=fh)
+    cs.main(["align-control", "--manifest", str(tmp_path / "man.tsv"), "--sto-dir", str(tmp_path / "sto"),
+             "--significant", str(tmp_path / "sig.parquet"), "--species", str(tmp_path / "species.tsv"),
+             "--oasis", str(OASIS), "--seed", "357", "--out", str(tmp_path / "ac.parquet")])
+    ac = pl.read_parquet(tmp_path / "ac.parquet")
+    assert ac.height == 10  # the 10 target residues map to 10 match columns
+    assert ac["n_species"].min() == 60
+    assert (ac["q_column"] < 0.05).sum() >= 8  # C0 differs from the rest at every target column

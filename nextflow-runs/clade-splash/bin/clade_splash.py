@@ -741,7 +741,7 @@ def cmd_occurrences(a: argparse.Namespace) -> None:
     files = [str(Path(d) / f"b{a.bucket:02d}.parquet") for d in a.dirs]
     occ = pl.concat([pl.read_parquet(f) for f in files]).join(sig.drop("setting"), on=["anchor", "gap"])
     acc = pl.concat([pl.read_parquet(f) for f in a.accessions])
-    occ = occ.join(acc, on=["species_idx", "protein_idx"], how="left")
+    occ = occ.join(acc, on=["species_idx", "protein_idx"], how="left").with_columns(pl.col("accession").cast(pl.String))
     seqs_needed = occ.select("species_idx", "protein_idx").unique()
     by_species = defaultdict(set)
     for s, p in seqs_needed.iter_rows():
@@ -758,9 +758,9 @@ def cmd_occurrences(a: argparse.Namespace) -> None:
         window.append((seq[pos0:pos0 + k], seq[pos0 + k:pos0 + k + gap], seq[pos0 + k + gap:pos0 + k + gap + TARGET_LENGTH],
                        len(seq)))
     occ = occ.with_columns(
-        pl.Series("anchor_residues", [w[0] for w in window]),
-        pl.Series("gap_residues", [w[1] for w in window]),
-        pl.Series("target_residues", [w[2] for w in window]),
+        pl.Series("anchor_residues", [w[0] for w in window], dtype=pl.String),
+        pl.Series("gap_residues", [w[1] for w in window], dtype=pl.String),
+        pl.Series("target_residues", [w[2] for w in window], dtype=pl.String),
         pl.Series("protein_length", [w[3] for w in window], dtype=pl.Int32),
         pl.lit(a.setting).alias("setting"),
     )

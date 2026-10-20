@@ -383,7 +383,7 @@ process hmmalign {
       [ -s ${dir}/\$tag.fa ] || continue
       acc=\$(grep -m1 "^ACC   \$fam\\." ${hmm} | awk '{print \$2}')
       hmmfetch ${hmm} "\$acc" > fam.hmm
-      hmmalign --outformat Stockholm --trim fam.hmm ${dir}/\$tag.fa > sto/\$tag.sto
+      hmmalign --outformat Stockholm fam.hmm ${dir}/\$tag.fa > sto/\$tag.sto
     done
     """
 
