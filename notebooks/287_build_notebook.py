@@ -482,7 +482,13 @@ the real queries (checked: on the real Ced9 and P66 calls it reproduces every nu
 sections 2 and 3). Its first run (job 48677545) stopped at Ced9_shuf08, which has a call in
 gbmr4 k21 or hp_lehninger_hpc3 k25, two fitted settings that no real query reached; it now
 takes N for every fitted setting from the index logs. It writes `287_shuffle_chains.csv`,
-which this cell reads."""
+which this cell reads.
+
+284's run scores the real queries the same way 241's did: all 1_055_265 calls that have an
+E-value in both runs have the same E-value, in every setting
+(`287_check_284_matches_241.csv`, from `scripts/287_check_284_matches_241.py`). The one
+difference: hp_lehninger_hpc3 k21 gave no call an E-value in 284's run (6 real-query calls
+had one in 241's), so the shuffled copies are scored without that setting."""
 
 S6 = r"""shuf_path = Path("287_shuffle_chains.csv")
 if shuf_path.exists():

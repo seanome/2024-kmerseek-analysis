@@ -74,6 +74,15 @@ def main() -> None:
     files = sorted((NB284 / "regions").glob("*.parquet"))
     if not files:
         sys.exit(f"no regions in {NB284 / 'regions'}; run 284's search step first")
+    # 284 writes a search that found nothing as a table with only its KEEP columns, all
+    # strings (21 of 218 files on 2026-10-20, 0 rows); they hold no calls, so skip them
+    # rather than scan files whose columns differ
+    full = [f for f in files if "alphabet" in pl.read_parquet_schema(f)]
+    empty = [f for f in files if f not in full]
+    if any(pl.scan_parquet(f).select(pl.len()).collect().item() for f in empty):
+        sys.exit(f"a file without an alphabet column has rows: {empty}")
+    files = full
+    print(f"{len(files)} region tables, {len(empty)} empty ones skipped", flush=True)
     rows = []
     for q in queries:
         case = q.split("_shuf")[0]
