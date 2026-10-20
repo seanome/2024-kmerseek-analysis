@@ -992,10 +992,37 @@ def coverage_markdown(results: pl.DataFrame) -> str:
     return "\n".join(lines)
 
 
+def timetree_mya(results: pl.DataFrame, table: Path) -> pl.DataFrame:
+    """Replace every QfO target's divergence time with TimeTree's.
+
+    The QfO runs carry divergence times typed by hand at commit a47ea25, with no source
+    (mouse 100 Mya, after dog and cow at 95). `table` is TimeTree's pairwise age of human
+    against each QfO species, written by scripts/fetch_timetree_human_pairwise.py. A QfO
+    target with no TimeTree age (E. coli) gets null, never the typed value; rows whose
+    target is not a QfO species keep what they had.
+    """
+    tt = pl.read_csv(table, separator="\t", schema_overrides={"mya": pl.Float64})
+    mya = dict(zip(tt["label"].to_list(), tt["mya"].to_list()))
+    is_qfo = pl.col("target_db").str.starts_with("QfO ")
+    label = pl.col("target_db").str.strip_prefix("QfO ")
+    return results.with_columns(
+        pl.when(is_qfo)
+        .then(label.replace_strict(mya, default=None, return_dtype=pl.Float64))
+        .otherwise(pl.col("target_mya_to_human"))
+        .alias("target_mya_to_human")
+    )
+
+
 def main() -> None:
     ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     ap.add_argument("--data", type=Path, required=True)
     ap.add_argument("--outdir", type=Path, default=Path("results/leaderboard"))
+    ap.add_argument(
+        "--timetree",
+        type=Path,
+        default=Path("results/leaderboard/timetree_human_pairwise.tsv"),
+        help="TimeTree's divergence time from human per QfO species label",
+    )
     args = ap.parse_args()
     data = args.data
 
@@ -1093,6 +1120,7 @@ def main() -> None:
         "stratum_bin",
         "metric",
     )
+    results = timetree_mya(results, args.timetree)
     dup = (
         results.group_by(
             "experiment",
@@ -1228,6 +1256,7 @@ def main() -> None:
             n: sha256(args.outdir / n)
             for n in ("results.parquet", "compute.parquet", "coverage.md")
         },
+        "timetree": {str(args.timetree): sha256(args.timetree)},
     }
     (args.outdir / "provenance.json").write_text(
         json.dumps(provenance, indent=1) + "\n"

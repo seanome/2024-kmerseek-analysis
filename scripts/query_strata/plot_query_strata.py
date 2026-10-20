@@ -32,25 +32,45 @@ AXES = [
     ("busco", "BUSCO, primates_odb12", ["complete", "fragmented", "not a BUSCO gene"]),
 ]
 IDENT = ["no hit", "<30%", "30-50%", "50-90%", ">=90%"]
-# Order of the targets: QfO registry divergence from human where it has one (Mya), else
-# grouped with their clade (assets/qfo_species.tsv has no time for these six).
-TARGETS = [
-    ("ptroglodytes", "chimpanzee"),
-    ("mouse", "mouse (100 Mya)"),
-    ("rnorvegicus", "rat"),
-    ("clupus", "dog"),
-    ("btaurus", "cow"),
-    ("mdomestica", "opossum"),
-    ("chicken", "chicken (300)"),
-    ("xtropicalis", "frog"),
-    ("zebrafish", "zebrafish (430)"),
-    ("ciona", "sea squirt (550)"),
-    ("fly", "fly (600)"),
-    ("worm", "worm (650)"),
-    ("yeast", "yeast (900)"),
-    ("arabidopsis", "arabidopsis (1500)"),
-    ("ecoli", "E. coli (2000)"),
-]
+# Target names. Each label gets the target's divergence from human in millions of years
+# from TimeTree 5 (results/leaderboard/timetree_human_pairwise.tsv), and the rows are
+# ordered by it; E. coli has no TimeTree age with human and goes last.
+NAMES = {
+    "ptroglodytes": "chimpanzee",
+    "mouse": "mouse",
+    "rnorvegicus": "rat",
+    "clupus": "dog",
+    "btaurus": "cow",
+    "mdomestica": "opossum",
+    "chicken": "chicken",
+    "xtropicalis": "frog",
+    "zebrafish": "zebrafish",
+    "ciona": "sea squirt",
+    "fly": "fly",
+    "worm": "worm",
+    "yeast": "yeast",
+    "arabidopsis": "arabidopsis",
+    "ecoli": "E. coli",
+}
+TIMETREE = (
+    Path(__file__).resolve().parents[2]
+    / "results"
+    / "leaderboard"
+    / "timetree_human_pairwise.tsv"
+)
+
+
+def targets(table: Path = TIMETREE) -> list[tuple[str, str]]:
+    """(label, display name with TimeTree Mya) for every target, oldest split last."""
+    tt = pl.read_csv(table, separator="\t", schema_overrides={"mya": pl.Float64})
+    mya = dict(zip(tt["label"].to_list(), tt["mya"].to_list()))
+    order = sorted(
+        NAMES, key=lambda sp: (mya[sp] is None, mya[sp] or 0.0, list(NAMES).index(sp))
+    )
+    return [
+        (sp, f"{NAMES[sp]} ({'no date' if mya[sp] is None else f'{mya[sp]:.0f}'})")
+        for sp in order
+    ]
 
 
 def main() -> None:
@@ -61,6 +81,7 @@ def main() -> None:
     args = ap.parse_args()
     q = pl.read_csv(args.strata / "query_strata.tsv", separator="\t")
     h = pl.read_csv(args.strata / "query_nearest_hits.tsv", separator="\t")
+    TARGETS = targets()
 
     pf.use_style()
     fig, (a, b) = pf.figure(

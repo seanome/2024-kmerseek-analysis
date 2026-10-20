@@ -224,3 +224,35 @@ def test_coverage_counts_an_instance_once_across_settings():
     # target species, identity, then three more fixed axes and the query-side axes: blank.
     cells = ["", "7"] + [""] * (3 + len(bll.QUERY_STRATUM_AXES))
     assert line == "| t | " + " | ".join(cells) + " |"
+
+
+def test_timetree_mya_replaces_typed_values(tmp_path):
+    """QfO targets take TimeTree's age; a QfO target TimeTree has no age for becomes null,
+    never the typed value; a non-QfO target keeps what it had."""
+    table = tmp_path / "tt.tsv"
+    table.write_text("label\tmya\nmouse\t83.51\nrnorvegicus\t83.51\necoli\t\n")
+    rows = pl.DataFrame(
+        {
+            "target_db": [
+                "QfO mouse",
+                "QfO rnorvegicus",
+                "QfO ecoli",
+                "QfO dodo",
+                "SCOPe40",
+            ],
+            "target_mya_to_human": [100.0, 90.0, 2000.0, 5.0, 7.0],
+        }
+    )
+    got = bll.timetree_mya(rows, table)["target_mya_to_human"].to_list()
+    assert got == [83.51, 83.51, None, None, 7.0]
+
+
+def test_committed_timetree_table_orders_mammals():
+    """Rodents split from human at one node, before dog and cow (Laurasiatheria)."""
+    table = (
+        SCRIPT.parents[1] / "results" / "leaderboard" / "timetree_human_pairwise.tsv"
+    )
+    tt = pl.read_csv(table, separator="\t", schema_overrides={"mya": pl.Float64})
+    mya = dict(zip(tt["label"].to_list(), tt["mya"].to_list()))
+    assert mya["mouse"] == mya["rnorvegicus"] < mya["btaurus"] == mya["clupus"]
+    assert mya["ecoli"] is None
