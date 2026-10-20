@@ -37,8 +37,9 @@ md(r"""
 # 295. Does any kmerseek setting reach ice-binding proteins of other lineages from one query?
 
 This notebook holds the whole convergence test. Sections 1-7 are the ice-binding
-proteins, the one class searched so far. Section 8 is the truth sets for three more
-classes, adhesive, shell-matrix and silk proteins, built but not yet searched.
+proteins, the one class searched as a benchmark. Section 8 is the truth sets for three
+more classes, adhesive, shell-matrix and silk proteins. Section 11 searches one adhesive
+protein, mussel foot protein 1, as a case study.
 
 Ice-binding proteins, also called antifreeze proteins, stop ice crystals growing in an
 animal, plant or microbe that lives below freezing. They arose separately several times:
@@ -990,6 +991,398 @@ pf.save(fig, FIGURES / "295_SF7_shell_shared_kmer_ceiling_swissprot_2026_03")
 """)
 
 md(r"""
+## 11. Case study: mussel foot protein 1 as the query
+
+Section 8 left the adhesive class too small to be a benchmark: 6 mussel entries, 2
+sandcastle worm and 2 barnacle. So it is run here as one case study, with the same
+pipeline and the same comparison as the ice-binding test.
+
+**The query** is mussel foot protein 1, Q25460 (*Mytilus edulis*, 875 residues): the
+glue protein of the byssus threads. Most of it is about 80 copies of a 10-residue repeat
+such as AKPSYPPTYK, where the tyrosines become DOPA after translation. The sandcastle
+worm *Phragmatopoma californica* glues sand grains with cement proteins that are also
+rich in DOPA and lysine but have no known common ancestor with the mussel protein. The
+barnacle *Megabalanus rosa* glues with cement proteins of a different chemistry and is
+the control.
+
+**What a search should do, if it reads the glue pattern.** Rank the two sandcastle worm
+cement proteins above every protein that is not an adhesive, and not the two barnacle
+ones. The other mussel proteins come first for any search that reads ancestry: two are
+foot protein 1 of other *Mytilus* species, two are foot protein 1 of the green mussel
+*Perna viridis*, and one is a different protein, foot protein 2.
+
+**The decision this informs.** Whether the adhesive class is worth a benchmark built from
+unreviewed (TrEMBL) entries, which is the only way to get more than 2 worm proteins. This
+rule was written on 2026-10-20 after the first look at the scores, so it describes the
+result rather than testing it: if any kmerseek setting ranks a worm cement protein above
+its first false positive while its 40 null draws do not reach it at the same score, the
+class is worth that benchmark; otherwise it is not.
+
+**The data.** Run `adhesive-q25460` of the same pipeline (`make adhesive_q25460`,
+2026-10-19, kmerseek 0.4 at 3c353d4, all 230 settings; phmmer, jackhmmer, MMseqs2,
+Foldseek and the scans). The target database is Swiss-Prot 2026_03 plus the 3 truth
+entries found only in TrEMBL, 575_751 entries. The query also got 20 null A draws
+(residues shuffled) and 20 null B draws (the 10-residue repeat kept, its word changed).
+Scored with `bin/score.py --no-decide` and `scripts/convergence_adhesive_q25460_detail.py`
+(commit 3b810625, Sherlock job 48633802); the tables are in
+[data/convergence_adhesive/q25460_run](../data/convergence_adhesive/q25460_run). phmmer
+and jackhmmer outputs were recovered chunk by chunk from the run's work folders
+(`scripts/convergence_recover_hmmer_chunks.sh`), since the published files kept one chunk
+of two (fixed in main.nf, commit 6c7487a0).
+
+**How to read the figure.** Panel a has one row per adhesive protein and one dot per
+method: how many proteins outside the adhesive set that method ranked above it, in the
+method's best list (for kmerseek, its best of 171 searched settings). 0 means the method
+found it before any wrong protein; lower is better. A cross means no list of that method
+reported the protein at all. Panel b is every kmerseek setting, so the best one in panel a
+can be seen against the rest.
+""")
+
+code(r"""
+# Print whole tables in this section: they are the evidence for the text.
+pl.Config.set_tbl_rows(60)
+pl.Config.set_fmt_str_lengths(60)
+pl.Config.set_tbl_width_chars(200)
+ADH_DIR = Path("../data/convergence_adhesive")
+Q_RUN = ADH_DIR / "q25460_run"
+QUERY_ACC = "Q25460"
+adh_truth = pl.read_csv(ADH_DIR / "truth_set.tsv", separator="\t")
+settings = pl.read_csv(
+    "../nextflow-runs/convergence-afp/assets/kmerseek_settings.tsv", separator="\t"
+)
+status = pl.read_csv(Q_RUN / "kmerseek_status.tsv", separator="\t")
+ranks = pl.read_csv(Q_RUN / "truth_ranks.tsv", separator="\t")
+first_fp = pl.read_csv(Q_RUN / "first_false_positive.tsv", separator="\t")
+top_hits = pl.read_csv(Q_RUN / "top_hits.tsv", separator="\t")
+at_cut = pl.read_csv(Q_RUN / "truth_at_threshold.tsv.gz", separator="\t")
+
+assert status.height == settings.height, "a setting has no status row"
+print(status["status"].value_counts().sort("status"))
+
+# Short names a biologist reads: species and protein, by accession.
+ADH_LABEL = {
+    "Q25434": "Mytilus coruscus foot protein 1",
+    "Q27409": "Mytilus galloprovincialis foot protein 1",
+    "A1X158": "Perna viridis foot protein 1, variant 1",
+    "A1X159": "Perna viridis foot protein 1, variant 2",
+    "Q25464": "Mytilus galloprovincialis foot protein 2",
+    "Q7M3Q2": "Phragmatopoma californica cement protein Pc-2",
+    "Q7M3Q3": "Phragmatopoma californica cement protein Pc-1",
+    "Q9GRC4": "Megabalanus rosa cement protein 20",
+    "Q9TWD7": "Megabalanus rosa cement peptide 1",
+}
+MYTILUS_FP1 = ["Q25434", "Q27409"]
+others = adh_truth.filter(pl.col("Entry") != QUERY_ACC).select("Entry", "lineage", "Length")
+assert set(others["Entry"]) == set(ADH_LABEL), "a truth entry has no label"
+
+# Wrong proteins above each truth entry: proteins outside the adhesive set that score at
+# least as well in that list (a tie counts against the truth entry, since the order inside
+# a tie is arbitrary). Computed in scripts/convergence_adhesive_q25460_detail.py.
+wrong_above = ranks.filter(pl.col("target") != QUERY_ACC).rename(
+    {"n_wrong_at_or_above": "n_wrong_above"}
+)
+best = (
+    wrong_above.sort("n_wrong_above", "setting_label")
+    .group_by("method", "target")
+    .head(1)
+    .select("method", "target", "setting_label", "rank", "n_wrong_above")
+)
+n_lists = first_fp.group_by("method").len().rename({"len": "n_lists"})
+methods_run = [m for m in METHOD_ORDER if m in n_lists["method"].to_list()]
+not_reported = (
+    pl.DataFrame({"method": methods_run})
+    .join(others.select("Entry"), how="cross")
+    .join(best.select("method", pl.col("target").alias("Entry")), on=["method", "Entry"], how="anti")
+)
+print()
+print("Lists per method:", dict(zip(n_lists["method"], n_lists["n_lists"])))
+print()
+print("Each method's best rank for each adhesive protein, Q25460 as the query.")
+print("n_wrong_above = proteins outside the adhesive set ranked above it in that list.")
+print(
+    others.join(best, left_on="Entry", right_on="target", how="left")
+    .with_columns(pl.col("method").cast(pl.Enum(METHOD_ORDER)))
+    .sort("lineage", "Entry", "method")
+    .select("lineage", "Entry", "method", "setting_label", "rank", "n_wrong_above")
+)
+print()
+print("Never reported by any list of the method:")
+print(not_reported.group_by("method").agg(pl.col("Entry").sort().str.join(", ")).sort("method"))
+
+# Per kmerseek setting: how many of the two Mytilus foot protein 1 entries score above the
+# first wrong protein, and whether the setting gave Q25460's hits any E-value at all.
+real_rows = ranks.filter(
+    (pl.col("method") == "kmerseek") & pl.col("target").is_in(MYTILUS_FP1)
+).with_columns(
+    above=(pl.col("cutoff").is_null() | (pl.col("score") > pl.col("cutoff")))
+    & (pl.col("score") > float("-inf"))
+)
+no_evalue = (
+    top_hits.filter(pl.col("method") == "kmerseek")
+    .group_by("setting_label")
+    .agg((pl.col("score") == float("-inf")).all().alias("no_evalue"))
+)
+per_setting = (
+    settings.select("setting_label", "alphabet", "ksize", "scaled")
+    .join(status, on="setting_label")
+    .join(real_rows.group_by("setting_label").agg(pl.col("above").sum().alias("n_mytilus")),
+          on="setting_label", how="left")
+    .join(no_evalue, on="setting_label", how="left")
+    .with_columns(
+        outcome=pl.when(pl.col("status") == "nofit").then(pl.lit("fit refused"))
+        .when(pl.col("no_evalue")).then(pl.lit("no E-value"))
+        .when(pl.col("n_mytilus") == 2).then(pl.lit("both"))
+        .when(pl.col("n_mytilus") == 1).then(pl.lit("one"))
+        .otherwise(pl.lit("wrong first"))
+    )
+)
+print()
+print("kmerseek settings by what Q25460 reaches before its first wrong protein:")
+print(per_setting.group_by("outcome").len().sort("len", descending=True))
+
+ROW_ORDER = [
+    ("B1 mussels and other bivalves", ["Q27409", "Q25434", "A1X158", "A1X159", "Q25464"]),
+    ("B2 tube-building polychaetes", ["Q7M3Q2", "Q7M3Q3"]),
+    ("B3 barnacles (control)", ["Q9GRC4", "Q9TWD7"]),
+]
+rows, row_y, group_top, y = [], {}, {}, 0.0
+for lineage, entries in ROW_ORDER:
+    y += 0.7  # room for the lineage heading
+    group_top[lineage] = y - 0.55
+    for e in entries:
+        row_y[e] = y
+        rows.append((y, e))
+        y += 1.0
+NOT_REPORTED_X = 3e6
+
+# Placed by hand: constrained layout left an empty band between the header and the
+# legends, or collapsed the axes when a legend was wide.
+fig = plt.figure(figsize=(pf.TWO_COLUMN_MM * pf.MM, 100 * pf.MM))
+axs = [fig.add_axes([0.335, 0.10, 0.32, 0.64]), fig.add_axes([0.815, 0.10, 0.18, 0.64])]
+ax = axs[0]
+for y0, _ in rows:
+    ax.axhline(y0, color="#dddddd", linewidth=0.3, zorder=0)
+for j, m in enumerate(methods_run):
+    dy = (j - (len(methods_run) - 1) / 2) * 0.085
+    b = best.filter(pl.col("method") == m)
+    ax.plot([max(0, v) for v in b["n_wrong_above"]], [row_y[t] + dy for t in b["target"]],
+            "o", color=METHOD_COLOUR[m], markersize=2.5, markeredgecolor="black",
+            markeredgewidth=0.2, linestyle="none", label=m, zorder=3)
+    nr = not_reported.filter(pl.col("method") == m)
+    ax.plot([NOT_REPORTED_X] * nr.height, [row_y[e] + dy for e in nr["Entry"]], "x",
+            color=METHOD_COLOUR[m], markersize=2.2, linestyle="none", zorder=3)
+ax.set_xscale("symlog", linthresh=1, linscale=0.6)
+ax.set_xticks([0, 10, 1_000, 100_000, NOT_REPORTED_X])
+ax.set_xticklabels(["0", "10", "1,000", "100,000", "never\nreported"])
+ax.set_xticks([1, 100, 10_000], minor=True)
+ax.set_xlim(-0.3, NOT_REPORTED_X * 2.2)
+ax.set_yticks([r[0] for r in rows])
+ax.set_yticklabels([f"{ADH_LABEL[e]} ({e})" for _, e in rows])
+ax.invert_yaxis()
+ax.set_xlabel("Proteins outside the adhesive set ranked above it\n"
+              "(best list of each method; 0 = found before any wrong protein)")
+for lineage, top in group_top.items():
+    ax.text(1.0, top, lineage.split(" ", 1)[1].capitalize(), transform=ax.get_yaxis_transform(),
+            ha="right", va="center", fontsize=5, fontweight="bold")
+handles, labels = ax.get_legend_handles_labels()
+handles.append(mpl.lines.Line2D([], [], marker="x", color="black", linestyle="none", markersize=2.2))
+labels.append("never reported (in the method's colour)")
+ax.legend(handles, labels, loc="lower left", bbox_to_anchor=(0.0, 1.0), ncol=3, frameon=False,
+          fontsize=5, handletextpad=0.3, columnspacing=0.8)
+
+ax = axs[1]
+ALPHABET_GROUPS = [
+    ["hp_kyte_doolittle2", "hp_lehninger2", "hp_lehninger_c_nonpolar2", "hp_pbotc_1st_ed2",
+     "hp_thomas_dill2", "hp_thomas_dill_no_c2", "hp_lehninger_hpc3"],
+    ["polarity4", "gbmr4", "wwmj5", "dayhoff6", "gbmr7", "funcgroups8"],
+    ["mmseqs12", "sdm12", "wass14", "hsdm17", "uniprot18"],
+    ["protein20"],
+]
+present = set(per_setting["alphabet"])
+alph_y, yy = {}, 0.0
+for g in ALPHABET_GROUPS:
+    for a in g:
+        if a in present:
+            alph_y[a] = yy
+            yy += 1.0
+    yy += 0.6
+assert present == set(alph_y), f"alphabets not placed: {present - set(alph_y)}"
+blue = METHOD_COLOUR["kmerseek"]
+OUTCOME_STYLE = {
+    "both": dict(marker="o", color=blue, mec=blue,
+                 label="both Mytilus foot protein 1 entries first"),
+    "one": dict(marker="o", color="#8fbfe0", mec=blue, label="one of them first"),
+    "no E-value": dict(marker="o", color="#d7e8f5", mec="#8fbfe0",
+                       label="no hit given an E-value (E = infinity)"),
+    "wrong first": dict(marker="o", color="white", mec=blue, label="a wrong protein first"),
+    "fit refused": dict(marker="x", color=pf.GREY, mec=pf.GREY,
+                        label="E-value fit refused, not searched"),
+}
+for a, y0 in alph_y.items():
+    ax.axhline(y0, color="#dddddd", linewidth=0.3, zorder=0)
+for scaled, dy in [(1, -0.17), (10, 0.17)]:
+    g = per_setting.filter(pl.col("scaled") == scaled)
+    for outcome, st in OUTCOME_STYLE.items():
+        s = g.filter(pl.col("outcome") == outcome)
+        ax.plot(s["ksize"], [alph_y[a] + dy for a in s["alphabet"]], st["marker"],
+                color=st["color"], markeredgecolor=st["mec"], markeredgewidth=0.4,
+                markersize=2.6 if st["marker"] == "o" else 2, linestyle="none",
+                label=st["label"] if scaled == 1 else None)
+ax.set_yticks(list(alph_y.values()))
+ax.set_yticklabels(list(alph_y.keys()))
+ax.invert_yaxis()
+ax.set_xlabel("k (residues per k-mer)")
+ax.legend(loc="lower left", bbox_to_anchor=(-0.55, 1.06), ncol=1, frameon=False, fontsize=5,
+          title="kmerseek settings (two marks per k:\nscaled 1 above, scaled 10 below)",
+          title_fontsize=5, alignment="left", handletextpad=0.3)
+for a_, letter in zip(axs, "ab"):
+    pf.panel_label(a_, letter)
+
+n_both = per_setting.filter(pl.col("outcome") == "both").height
+lines = []
+for label, text in [
+    ("TOOLS", "query mussel foot protein 1 (Q25460, Mytilus edulis); target reviewed "
+              "Swiss-Prot 2026_03 plus 3 TrEMBL cement entries; kmerseek 0.4 (3c353d4), "
+              "230 settings; phmmer, jackhmmer, MMseqs2, Foldseek, and scans with no search"),
+    ("HYPOTHESIS", "a method that reads the shared glue pattern ranks the sandcastle worm "
+                   "cement proteins near 0 in panel a and the barnacle control far right; "
+                   "lower is better"),
+    ("CONCLUSION", "no kmerseek setting and no sequence tool reports a worm or barnacle "
+                   f"protein at all; {n_both} of {per_setting.height} kmerseek settings put "
+                   "both Mytilus foot protein 1 entries first with an E-value, as every "
+                   "sequence tool does"),
+]:
+    # Wrapped to 70% of the width, so the header clears panel b's legend.
+    lines += textwrap.wrap(f"{label}: {text}", int(0.7 * fig.get_figwidth() * 25.4 / 1.3))
+fig.text(0.0, 1.0, "\n".join(lines), ha="left", va="top", fontsize=6)
+pf.save(fig, FIGURES / "295_SF8_q25460_adhesive_ranks_swissprot_2026_03")
+""")
+
+md(r"""
+### 11b. Do the null draws reach the same proteins, and what are the wrong ones?
+
+A null draw is judged at its real query's score cutoff, as in section 4: the score of the
+real Q25460 query's first wrong protein in the same list. If shuffled copies of Q25460
+reach a protein as often as the real one, that reach comes from composition, not from the
+order of residues.
+""")
+
+code(r"""
+groups = at_cut.with_columns(
+    group=pl.when(pl.col("target_lineage").str.starts_with("B1")).then(pl.lit("mussels"))
+    .when(pl.col("target_lineage").str.starts_with("B2")).then(pl.lit("sandcastle worm"))
+    .otherwise(pl.lit("barnacles"))
+)
+# Q25460's own entry is not in these counts, for the real query or any draw
+# (scripts/convergence_adhesive_q25460_detail.py).
+real_reach = groups.filter(pl.col("kind") == "real").with_columns(n=pl.col("n_above_real_cutoff"))
+both_settings = per_setting.filter(pl.col("outcome") == "both")["setting_label"]
+null_reach = (
+    groups.filter(pl.col("kind") != "real")
+    .group_by("method", "kind", "group")
+    .agg(
+        (pl.col("n_above_real_cutoff") > 0).sum().alias("draw_lists_reaching"),
+        pl.len().alias("draw_lists"),
+    )
+    .sort("method", "group", "kind")
+)
+print("Null draws that reach any protein of each group at the real query's cutoff, summed")
+print("over every list of the method (draw_lists = 20 draws x the method's lists):")
+print(null_reach.filter(pl.col("draw_lists_reaching") > 0))
+print()
+print("Worm and barnacle proteins reached above the cutoff, every list, real or null:",
+      int(groups.filter(pl.col("group") != "mussels")["n_above_real_cutoff"].sum()))
+ks_null = (
+    groups.filter((pl.col("kind") != "real") & (pl.col("group") == "mussels")
+                  & (pl.col("method") == "kmerseek") & pl.col("setting_label").is_in(both_settings.implode()))
+    .group_by("kind")
+    .agg((pl.col("n_above_real_cutoff") > 0).sum().alias("draws_reaching"), pl.len().alias("draws"))
+    .sort("kind")
+)
+print()
+print(f"In the {len(both_settings)} kmerseek settings that put both Mytilus foot protein 1")
+print("entries first, null draws reaching any mussel protein at the same cutoff:")
+print(ks_null)
+
+# Share of each method's lists in which a query reaches at least one other mussel protein
+# above the real query's cutoff: the real query, and the 20 draws of each null pooled.
+share = (
+    pl.concat([
+        real_reach.filter(pl.col("group") == "mussels")
+        .select("method", "kind", (pl.col("n") > 0).alias("reached")),
+        groups.filter((pl.col("kind") != "real") & (pl.col("group") == "mussels"))
+        .select("method", "kind", (pl.col("n_above_real_cutoff") > 0).alias("reached")),
+    ])
+    .group_by("method", "kind")
+    .agg(pl.col("reached").mean().alias("share"), pl.len().alias("n_lists"))
+    .with_columns(pl.col("method").cast(pl.Enum(METHOD_ORDER)))
+    .sort("method", "kind")
+)
+print()
+print("Share of lists reaching at least one other mussel protein above the real cutoff:")
+print(share)
+
+# Placed by hand, for the same reason as the figure above.
+fig = plt.figure(figsize=(pf.ONE_COLUMN_MM * pf.MM, 88 * pf.MM))
+ax = fig.add_axes([0.17, 0.16, 0.81, 0.47])
+KIND_STYLE = {
+    "real": dict(marker="o", fill=True, label="real Q25460"),
+    "nullA": dict(marker="o", fill=False, label="null A: residues shuffled (20 draws)"),
+    "nullB": dict(marker="s", fill=False, label="null B: 10-residue repeat kept, word changed (20 draws)"),
+}
+xs = {m: i for i, m in enumerate(methods_run)}
+for k, (kind, st) in enumerate(KIND_STYLE.items()):
+    sub = share.filter(pl.col("kind") == kind)
+    for m, v in zip(sub["method"], sub["share"]):
+        c = METHOD_COLOUR[str(m)]
+        ax.plot(xs[str(m)] + (k - 1) * 0.22, v, st["marker"], color=c,
+                markerfacecolor=c if st["fill"] else "white", markeredgecolor=c,
+                markersize=3, linestyle="none")
+for kind, st in KIND_STYLE.items():
+    ax.plot([], [], st["marker"], color="black", markerfacecolor="black" if st["fill"] else "white",
+            markersize=3, linestyle="none", label=st["label"])
+ax.set_xticks(range(len(methods_run)))
+ax.set_xticklabels(methods_run, rotation=30, ha="right")
+ax.set_ylim(-0.03, 1.12)
+ax.set_ylabel("Share of lists reaching another\nmussel protein above the cutoff")
+ax.grid(axis="x", which="major")
+ax.set_axisbelow(True)
+ax.legend(loc="lower left", bbox_to_anchor=(-0.05, 1.01), frameon=False, fontsize=5,
+          handletextpad=0.3)
+null_header = [
+    "query Q25460 and its 40 null draws against Swiss-Prot 2026_03 plus 3 TrEMBL entries; "
+    "kmerseek 0.4, 171 searched settings; colour = method, as in the figure above",
+    "a method that reads the order of residues reaches the mussel proteins from the real "
+    "query and not from shuffled copies (filled dot high, open circle near 0)",
+    "the composition scans reach them from shuffled copies as often as from the real query "
+    "(55% of lists); kmerseek from shuffled copies in "
+    f"{float(share.filter((pl.col('method') == 'kmerseek') & (pl.col('kind') == 'nullA'))['share'][0]):.1%}"
+    " of lists, against 44% from the real query; MMseqs2, whose first wrong hit scores "
+    "only 31 bits, in 30%",
+]
+lines = []
+for label, text in zip(["TOOLS", "HYPOTHESIS", "CONCLUSION"], null_header):
+    lines += textwrap.wrap(f"{label}: {text}", int(fig.get_figwidth() * 25.4 / 1.3))
+fig.text(0.0, 1.0, "\n".join(lines), ha="left", va="top", fontsize=6)
+pf.save(fig, FIGURES / "295_SF9_q25460_null_draws_mussel_reach_swissprot_2026_03")
+
+print()
+print("The first wrong protein of each non-kmerseek list (the Q25460 query):")
+print(
+    first_fp.filter(pl.col("method") != "kmerseek")
+    .with_columns(pl.col("method").cast(pl.Enum(METHOD_ORDER)))
+    .sort("method", "setting_label")
+    .select("method", "setting_label", "first_fp_rank", "first_fp_target", "first_fp_name")
+)
+print()
+print("Top 20 of the Dayhoff composition scan, the list that ranks the worm cement highest:")
+print(
+    top_hits.filter(pl.col("setting_label") == "composition_dayhoff6")
+    .select("rank", "target", "truth_lineage", "protein_name")
+)
+""")
+
+md(r"""
 ## Summary and conclusions
 
 **Verdict: FAIL.** No kmerseek setting reaches ice-binding proteins of another lineage
@@ -1055,7 +1448,46 @@ ice-binding proteins no more often than random proteins. The settings run were t
 dark-set ones, whose shortest hydrophobic-polar k is 17, but shorter k does not help
 either.
 
-**Next.** The ice-binding test is the only class with a search run. Section 8 shows the
+**phmmer and jackhmmer in sections 1-7 were scored on 24 of the 246 queries.** The
+pipeline wrote each chunk of 25 queries to the same file name, so each chunk overwrote
+the last; the scoring counted the other 222 queries as finding nothing. The file names are
+fixed (main.nf, commit 6c7487a0) and every chunk's output is still on Sherlock, but
+sections 1-7 have not been rescored. Their phmmer and jackhmmer numbers are lower bounds.
+The verdict compares kmerseek with the scans that need no search, so it does not use them.
+
+**Adhesive case study: mussel foot protein 1 (section 11).** Q25460 as the query, all
+230 kmerseek settings, every other method, and 40 null draws.
+
+7. No kmerseek setting, and no sequence tool (phmmer, jackhmmer, MMseqs2), reported
+   either sandcastle worm cement protein or either barnacle cement protein at any score.
+   Foldseek did not either. The only lists that rank a worm cement protein near the top
+   are composition scans: the Dayhoff 6-letter composition ranks Pc-2 27th and Pc-1
+   59th, behind 21 and 52 proteins that are not adhesives. 15 of those are in its top 20,
+   all bradykinin peptides (9 residues, rich in proline and arginine) and one
+   bradykinin-like earthworm peptide, megascoliakinin; Dayhoff's alphabet puts arginine and
+   lysine in one group. A shuffle keeps composition, so the null A draws rank them the same
+   way.
+8. Every sequence tool, Foldseek and 39 of the 230 kmerseek settings put the two
+   *Mytilus* foot protein 1 entries (Q25434, Q27409) first, before any protein that is
+   not an adhesive. In those 39 settings no shuffled draw reached a mussel protein at the
+   same score (0 of 780), and draws that keep the 10-residue repeat reached one in 39 of
+   780. So kmerseek's reach there depends on the order of the residues, as a homolog
+   search's should.
+9. 36 more settings gave none of Q25460's hits an E-value (E = infinity, a region score
+   of 0 bits), so they rank nothing; 27 of them reported only the three foot protein 1
+   entries. 59 had the E-value fit
+   refused. kmerseek reports the *Perna viridis* foot protein 1 variants only with no
+   E-value, tied with about 12,800 proteins that are not adhesives (hp_kyte_doolittle2,
+   k = 33), while Foldseek on the AlphaFold models and the hydrophobic-moment period scan
+   each rank variant 1 behind 4. Foot protein 2 comes no closer than 1,684 wrong proteins
+   in any kmerseek setting (the 20 amino acids, k = 5).
+
+**What this decides.** By the rule in section 11, the adhesive class is not worth a
+benchmark built from TrEMBL entries: nothing kmerseek ranks reaches the worm cement
+proteins. The case study adds a second pattern class where kmerseek finds the homologs
+any search finds and nothing further.
+
+**Next.** The ice-binding test is the only class run as a benchmark. Section 8 shows the
 truth sets for the other three classes: only the shell-matrix class has enough reviewed
 entries to be scored as a benchmark; adhesive and silk proteins can only be case studies.
 
