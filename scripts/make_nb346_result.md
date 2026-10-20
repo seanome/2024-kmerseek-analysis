@@ -13,5 +13,6 @@ crystallised domain as the query the randstrobe ranks BCL-2 1,058 (decoy rate 0.
 the best family member, MCL1, ranks 1,774 for full-length CED-9. Against Swiss-Prot (572,970
 proteins), none of the four Pfam pairs keeps a decoy rate at or below 0.001 under the linked
 key (prediction P5 held); the closest, PF18196, ranks 1,421 with a decoy rate of 0.003, and B3
-does better on it (rank 986, 0.002). kmerseek's own chained search waits on a Sherlock job
-whose first run ran out of memory; it cannot change the verdict.
+does better on it (rank 986, 0.002). kmerseek's own search with extension and chaining agrees:
+BCL-2 ranks 16,071, 4,395 and 3,972 by `region_evalue` at k = 6, 8 and 10, and the search
+reports a region for every human protein at k = 6 (19,731 at k = 8, 19,720 at k = 10).

@@ -22,6 +22,8 @@ BCL-2 and CED-9, searched in both directions.
   Swiss-Prot word frequencies predict for their search area (median 41,720 per protein).
 * Against Swiss-Prot, none of the four Pfam pairs reaches a linked-key decoy rate of 0.001;
   the best, PF18196, ranks 1,421 of 572,971 at 0.003, and B3 ranks it 986 at 0.002.
+* kmerseek's own chained search (hp_thomas_dill2, extension and chaining on) ranks BCL-2 at
+  16,071, 4,395 and 3,972 of the human proteome at k = 6, 8 and 10; its top hit is RNASE2 at all three.
 * P66 shares fewer exact 6-letter HP words with CD47 (2,771) than 74% of 1,000 human
   proteins of CD47's length do.
 * The top 20 human proteins for CED-9 under the linked key are unrelated to BCL-2 and
@@ -68,8 +70,9 @@ MCL1 ranks 1,774 for full-length CED-9 (linked score 44, decoy rate 0.08) and BC
 - Results: `tables/346_ranks_and_decoy_rates.tsv`.
 - Swiss-Prot scan: `scripts/346_swissprot_scan.sbatch`, Sherlock job 48524101 (16 tasks of 7 to
   17 minutes, 1.8 to 3.2 GB each, plus a merge), 2026-10-19.
-- Waiting on Sherlock: `scripts/346_kmerseek_ced9_human.sbatch`. Its first run (job 48524104)
-  ran out of memory at 128 GB in kmerseek's in-index K fit; the job now skips that fit.
+- kmerseek search: `scripts/346_kmerseek_ced9_human.sbatch`, Sherlock job 48547689 (1 to 6
+  minutes, 3 to 14 GB per k). Its first run (job 48524104) ran out of memory at 128 GB in
+  kmerseek's in-index K fit, which the job now skips; K = 0.018 is given instead.
 - Launch and copy-back: `make run-kmerseek` (Sherlock) and `make pull-results` (Mac) in
   `nextflow-runs/linked-pairs-known-pairs/`.
 - The SCOPe rescue numbers and the phmmer and jackhmmer E-values in the task brief come from

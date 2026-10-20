@@ -911,13 +911,13 @@ md(r"""
 kmerseek v0.4.0, `hp_thomas_dill2`, scaled 1, extension (mismatch penalty 2, X-drop 8) and
 chaining (`--chain-max-gap 32 --chain-max-shift 32`) on, at k = 6 (the linked key's anchor
 length), 8 (B2's word) and 10. kmerseek accepts any k from 1, but at k = 1 every residue pair
-of a two-letter alphabet is a seed, so k = 1 was not run. kmerseek indexes each distinct
-sequence once (it skips proteins whose sequence it has already indexed), so "every protein
-hit" is judged against the indexed count. Karlin-Altschul K is given (0.018, notebook 245),
+of a two-letter alphabet is a seed, so k = 1 was not run. "Saturated" means kmerseek
+reports a region for every one of the 19,732 human proteins. Karlin-Altschul K is given (0.018, notebook 245),
 not fitted: the in-index fit ran out of memory at 128 GB on the first run, and with one query
 and one database K scales every `region_evalue` alike, so BCL-2's rank does not depend on it.
 Runs on Sherlock
-(`scripts/346_kmerseek_ced9_human.sbatch`); this cell reads its output when present. BCL-2's
+(`scripts/346_kmerseek_ced9_human.sbatch`); this cell reads its output when present. **Figure 8** plots BCL-2's
+rank at each k, with the rule's rank-10 line for scale. BCL-2's
 rank is by `region_evalue`, the best region per human protein, ties counted against BCL-2.
 """)
 
@@ -929,28 +929,40 @@ for k in [6, 8, 10]:
     if not f.exists():
         krows.append({"k": k, "status": "not run yet"})
         continue
-    d = pl.read_csv(f, schema_overrides={"region_evalue": pl.Float64}).group_by("target_name").agg(pl.col("region_evalue").min())
+    d = pl.read_csv(f, columns=["target_name", "region_evalue"], schema_overrides={"region_evalue": pl.Float64}).group_by(
+        "target_name").agg(pl.col("region_evalue").min())
     b = d.filter(pl.col("target_name") == bcl2_name)["region_evalue"]
     e = float(b[0]) if b.len() else float("inf")
     settings = dict(l.split("=", 1) for l in f.with_name(f.name.replace(".csv.gz", ".settings.txt")).read_text().splitlines() if "=" in l)
-    n_indexed = 19_732 - int(settings.get("n_skipped_already_indexed", 0))  # kmerseek indexes each distinct sequence once
-    krows.append({"k": k, "status": "done", "kmerseek": settings.get("kmerseek_version"), "human proteins indexed": n_indexed,
-                  "human proteins hit": d.height, "saturated (every indexed protein hit)": d.height >= n_indexed, "BCL-2 region_evalue": e,
+    top = d.sort(["region_evalue", "target_name"]).head(5)["target_name"].str.split("|").list.get(6).to_list()
+    krows.append({"k": k, "status": "done", "kmerseek": settings.get("kmerseek_version"),
+                  "human proteins hit": d.height, "saturated (all 19,732 hit)": d.height == 19_732,
+                  "top 5 hits": ", ".join(top), "BCL-2 region_evalue": e,
                   "BCL-2 rank": 1 + int((d.filter(pl.col("target_name") != bcl2_name)["region_evalue"] <= e).sum())})
 KMERSEEK = pl.DataFrame(krows, infer_schema_length=None)
 if (KMERSEEK["status"] == "done").any():
     print(KMERSEEK)
     done = KMERSEEK.filter(pl.col("status") == "done")
-    fig, ax = pf.figure(pf.ONE_COLUMN_MM, 55, layout=None)
-    fig.subplots_adjust(left=0.18, right=0.97, top=0.8, bottom=0.18)
-    ax.scatter(done["k"], done["BCL-2 rank"], color=ku.COLOR["partner"], s=12)
+    fig, ax = pf.figure(pf.ONE_COLUMN_MM, 60, layout=None)
+    fig.subplots_adjust(left=0.18, right=0.97, top=0.78, bottom=0.18)
+    ax.axhline(10, color=ku.COLOR["real"], lw=0.6, ls=(0, (3, 2)))
+    ax.text(5.6, 14, "rank 10 (the rule's PASS line)", fontsize=5, va="top")
+    ax.scatter(done["k"], done["BCL-2 rank"], color=ku.COLOR["partner"], s=14)
+    for k_, r_ in zip(done["k"], done["BCL-2 rank"]):
+        ax.annotate(f"{r_:,}", (k_, r_), xytext=(5, 0), textcoords="offset points", fontsize=5, va="center")
     ax.set_yscale("log")
+    ax.set_ylim(19_732 * 1.3, 0.8)
+    ax.set_yticks([1, 10, 100, 1000, 10_000], ["1", "10", "100", "1,000", "10,000"])
+    ax.minorticks_off()
+    ax.set_xlim(5.5, 10.8)
     ax.set_xticks([6, 8, 10])
-    ax.set_xlabel("k (hp_thomas_dill2 word length)")
-    ax.set_ylabel("BCL-2 rank by region_evalue")
+    ax.set_xlabel("k, word length in hp_thomas_dill2")
+    ax.set_ylabel("BCL-2 rank by region_evalue\n(of 19,732; up is better)")
     hc.finish_figure(fig, FIG / "346_kmerseek_bcl2_rank_by_k_human.png",
-                     tools="kmerseek " + str(done["kmerseek"][0]) + ", hp_thomas_dill2, scaled 1, extension + chaining (gap 32, shift 32)",
-                     hypothesis="kmerseek's own chaining finds BCL-2 from CED-9.", conclusion="Lower rank is better.",
+                     tools=str(done["kmerseek"][0]) + ", hp_thomas_dill2, scaled 1, extension (penalty 2, X-drop 8) + chaining (gap 32, shift 32); query CED-9, database GENCODE v49 human",
+                     hypothesis="kmerseek's own extension and chaining find BCL-2 from CED-9 in the human proteome.",
+                     conclusion=("BCL-2 ranks " + ", ".join(f"{r_:,} at k = {k_}" for k_, r_ in zip(done["k"], done["BCL-2 rank"]))
+                                 + f"; the top hit is {done['top 5 hits'][0].split(',')[0]} at every k. A smaller rank is better."),
                      title="Figure 8. kmerseek's own search, CED-9 against human", wrap=70, tight_layout=False)
 else:
     for r in krows:
