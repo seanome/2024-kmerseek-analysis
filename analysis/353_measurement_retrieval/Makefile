@@ -16,7 +16,7 @@ test:
 # Real evidence collection: ELM + Sanborn 2021 tiles, with UniProt sequence versions.
 evidence:
 	$(M) --work $(WORK) import-evidence --raw $(DATA)/raw
-	mkdir -p results/evidence && cat $(WORK)/evidence/manifest.json > results/evidence/manifest.json
+	mkdir -p outputs/evidence && cat $(WORK)/evidence/manifest.json > outputs/evidence/manifest.json
 
 # The steps below need the analyst's queue at $(QUEUE). There is none yet.
 queries:
@@ -49,10 +49,10 @@ synthetic-run:
 	$(PY) fixtures/make_synthetic.py --work $(SYN) --step fill-review
 	$(M) --work $(SYN) score --review $(SYN)/review_filled.csv --session $(SYN)/session_filled.csv
 	$(M) --work $(SYN) viewer --out $(SYN)/viewer.html --banner "SYNTHETIC FIXTURES, not data."
-	mkdir -p results/synthetic_fixture_run
+	mkdir -p outputs/synthetic_fixture_run
 	for f in results/verdict.json results/per_query_outcomes.csv tuning_table.csv tuning_choice.json \
 	         evaluation_plan.lock.json compute_log.jsonl viewer.html review/session_order.csv \
-	         review/blind_review.csv; do cat $(SYN)/$$f > results/synthetic_fixture_run/$$(basename $$f); done
+	         review/blind_review.csv; do cat $(SYN)/$$f > outputs/synthetic_fixture_run/$$(basename $$f); done
 
 # Machine cost of workflow B on the real evidence collection, with synthetic queries.
 cost-probe:
@@ -63,4 +63,4 @@ cost-probe:
 	$(M) --work $(DATA)/work_cost_probe make-controls
 	$(M) --work $(DATA)/work_cost_probe search-b --blast-bin $(BLAST) --threads $(THREADS)
 	$(M) --work $(DATA)/work_cost_probe cards
-	mkdir -p results/cost_probe && cat $(DATA)/work_cost_probe/compute_log.jsonl > results/cost_probe/compute_log.jsonl
+	mkdir -p outputs/cost_probe && cat $(DATA)/work_cost_probe/compute_log.jsonl > outputs/cost_probe/compute_log.jsonl

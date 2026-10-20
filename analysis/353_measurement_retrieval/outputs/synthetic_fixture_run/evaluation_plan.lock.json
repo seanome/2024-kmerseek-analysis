@@ -1,0 +1,31 @@
+{
+ "frozen_at": "2026-10-20T14:16:32",
+ "checksums": {
+  "code:evaluation_plan.yaml": "6fb30c14c2675794b50cb22d785ea739b067382f3771649d05d003c5d268c159",
+  "code:mr353.py": "c01af5a57c0a055b8f8e9bad75b9a7a0859ffd5459820a593215f2c0aa42264e",
+  "work:evidence/manifest.json": "c1dfa60a44be5f1b1dc83d7f31eb3dda2dad94be849d1290bc66c309621205ca",
+  "work:evidence/evidence.parquet": "ec6b021f014339266f4241c1070e7a985d1763f51141cf35e2380ed652ad91ae",
+  "work:evidence/evidence_proteins.fasta": "3dbd21f03915e0d93c08cb9db11fb701fb8773dc0864561adf7a697dfc62e4f0",
+  "work:queries/queries.csv": "5569cfb21a429fbb55d37586d953f2c1d3380df6e70ef9e03a0ba5d45726d382",
+  "work:tuning_choice.json": "2bc8bf366d1501b0b9465bf666e382fe29eb5759fabad01fb431cc951dfae0d8"
+ },
+ "missing": [],
+ "choice": {
+  "A": {
+   "setting": "hp_lehninger2_k10",
+   "max_shuffle_cards": 0.25,
+   "dev_useful_queries": 10,
+   "control_cards_per_shuffle": 0.19,
+   "alphabet": "hp_lehninger2",
+   "ksize": 10
+  },
+  "B": {
+   "setting": "exact+blast",
+   "max_shuffle_cards": 0.25,
+   "dev_useful_queries": 13,
+   "control_cards_per_shuffle": 0.23
+  }
+ },
+ "queue_file": "/Users/olga/data/353_measurement_retrieval/synthetic_run/synthetic_queue.csv",
+ "queue_sha256": "e4f39718394f6a142c8a426c3045923b9907ccb686d987e1e443c6865517b303"
+}

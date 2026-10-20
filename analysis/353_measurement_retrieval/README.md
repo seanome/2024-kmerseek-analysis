@@ -26,9 +26,9 @@ measurement too.
 | `sherlock/` | workflow A (kmerseek index and search) as Slurm jobs; prepared, not submitted |
 | `fixtures/make_synthetic.py` | made-up proteins, queries, judgments and times, used only to test the software |
 | `tests/` | 16 tests; one runs every step end to end on the synthetic fixtures |
-| `results/evidence/` | checksums and counts of the real evidence collection |
-| `results/cost_probe/` | machine time and memory of workflow B on the real collection, with synthetic queries |
-| `results/synthetic_fixture_run/` | the end-to-end synthetic run: verdict, per-query table, viewer page. Not data. |
+| `outputs/evidence/` | checksums and counts of the real evidence collection |
+| `outputs/cost_probe/` | machine time and memory of workflow B on the real collection, with synthetic queries |
+| `outputs/synthetic_fixture_run/` | the end-to-end synthetic run: verdict, per-query table, viewer page. Not data. |
 | `make_figures.py`, `figures/` | the figure above |
 
 ## Steps

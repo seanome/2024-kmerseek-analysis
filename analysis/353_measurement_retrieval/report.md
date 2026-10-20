@@ -21,7 +21,7 @@ the rule cannot be applied. Exact reasons, each enough on its own:
 
 No query, judgment or timing was invented. The software was tested end to end on
 synthetic fixtures, and on those it returns INSUFFICIENT_EVIDENCE as it must
-(`results/synthetic_fixture_run/verdict.json`).
+(`outputs/synthetic_fixture_run/verdict.json`).
 
 ## What exists and what was built
 
@@ -40,7 +40,7 @@ synthetic fixtures, and on those it returns INSUFFICIENT_EVIDENCE as it must
 | tuning on development queries, freeze with checksums | built: `tune`, `freeze` |
 | balanced session order, blind review sheet and sealed key | built: `session-pack`, `review-pack` |
 | scoring with uncertainty and carry-over | built: `score` |
-| local HTML viewer | built: `viewer`; example on synthetic data in `results/synthetic_fixture_run/viewer.html` |
+| local HTML viewer | built: `viewer`; example on synthetic data in `outputs/synthetic_fixture_run/viewer.html` |
 
 ## The evidence collection
 
