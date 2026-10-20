@@ -426,7 +426,7 @@ process totals {
     publishDir "${params.outdir}", mode: 'copy'
 
     input:
-    path fstats, stageAs: 'fetch/*'
+    path fstats, stageAs: 'fetch???/*'
     path astats, stageAs: 'anchor/*'
 
     output:
@@ -435,7 +435,7 @@ process totals {
 
     script:
     """
-    clade_splash.py totals --fetch-stats fetch/* --anchor-stats anchor/* \\
+    clade_splash.py totals --fetch-stats fetch*/fetch_stats.tsv --anchor-stats anchor/* \\
         --stats-out fetch_stats.tsv --out residue_totals.json
     """
 
