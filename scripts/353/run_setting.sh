@@ -58,10 +58,11 @@ set +e
   apptainer exec --bind /scratch "$img" kmerseek search --query "$out/queries.fasta" --target "$idx/collection.db" \
     --alphabet "$alphabet" --ksize "$k" \
     --extend-mismatch-penalty $penalty --extend-xdrop $xdrop 2> "$out/search.log" \
-  | run python3 "$here/filter_regions.py" $max_e "$out/regions.tsv.gz" "$out/filter_summary.tsv"
+  | awk -v max_e=$max_e -v summary="$out/filter_summary.tsv" -f "$here/filter_regions.awk" \
+  | gzip > "$out/regions.tsv.gz"
 status=("${PIPESTATUS[@]}")
 set -e
-if [ "${status[0]}" -ne 0 ] || [ "${status[1]}" -ne 0 ]; then
+if [ "${status[0]}" -ne 0 ] || [ "${status[1]}" -ne 0 ] || [ "${status[2]}" -ne 0 ]; then
   echo "353: search pipeline failed, exit codes ${status[*]}" >&2
   tail -20 "$out/search.log" >&2
   exit 1

@@ -9,8 +9,8 @@
 #SBATCH --partition=hns,normal
 #SBATCH --array=0-9
 #SBATCH --cpus-per-task=4
-#SBATCH --mem=16G
-#SBATCH --time=02:00:00
+#SBATCH --mem=8G
+#SBATCH --time=04:00:00
 #SBATCH --output=/scratch/users/olgabot/nb353/logs/%x.%A_%a.out
 set -euo pipefail
 SETTINGS=(dayhoff6:5 dayhoff6:6 dayhoff6:7 dayhoff6:8 sdm12:4 sdm12:5 sdm12:6 mmseqs12:4 mmseqs12:5 mmseqs12:6)
