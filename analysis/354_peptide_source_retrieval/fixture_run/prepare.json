@@ -1,0 +1,28 @@
+{
+  "data_origin": "synthetic_fixture",
+  "problems": [],
+  "n_proteins": 460,
+  "n_contaminants": 15,
+  "n_calls_in": 500,
+  "excluded_no_accepted_peptide": 0,
+  "excluded_qvalue_above_0.01": 10,
+  "excluded_peptide_not_in_collection": 5,
+  "n_calls_used": 485,
+  "n_by_side_and_kind": {
+    "development/present": 230,
+    "development/absent": 57,
+    "evaluation/present": 159,
+    "evaluation/absent": 39
+  },
+  "controls_dropped_still_in_collection": {
+    "composition": 0,
+    "pairs": 62
+  },
+  "checksums": {
+    "proteins_human.fasta": "bf569c406acf86ef7579b421ad46fe236506f272ae917f48d15189dc835edd8b",
+    "proteins_contaminants.fasta": "0bc2413397f3ed199bd26be03a8ad8df9259ae5048338021d461a61e02bbbb93",
+    "calls.tsv": "2017aaddf3f38de4dc8b1b078268dd84fcc794e88a275f6ebc040622f23ba6f6",
+    "accepted.tsv": "e965ce823f277ea2e77fccad6cd61aeccd1d6efa449fa7384bf8417d2f098be0"
+  },
+  "frozen_plan_sha256": "f8bbff8d77e34bb07df943fb858cb60289c57400a0b7115a8642b5499bcc4465"
+}
