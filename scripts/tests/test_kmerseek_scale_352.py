@@ -21,6 +21,21 @@ def test_hash_unit_is_in_unit_interval_repeatable_and_keyed():
     assert a != ks.hash_unit("UPI0000000001", ks.QUERY_HASH_KEY)
 
 
+def test_hash_is_the_first_8_bytes_of_the_default_keyed_blake2b():
+    # The preregistration: "the first 8 bytes of BLAKE2b(UPI accession, key ...)".
+    import hashlib
+
+    digest = hashlib.blake2b(b"UPI0000000001", key=b"nb352-subset").digest()
+    assert len(digest) == 64
+    assert ks.hash_first_8_bytes("UPI0000000001", ks.SUBSET_HASH_KEY) == int.from_bytes(digest[:8], "big")
+    assert digest[:8].hex() == "8a00ef657e6ecbf3"
+
+
+def test_maxrss_is_kib_on_linux_and_bytes_on_macos():
+    assert ks.maxrss_bytes(1_000, platform="linux") == 1_024_000
+    assert ks.maxrss_bytes(1_000, platform="darwin") == 1_000
+
+
 def test_hash_bin_is_the_top_bits_of_hash_unit():
     for acc in ("UPI0000000001", "UPI00000ABCDE", "UPI0029FFFFFF"):
         assert ks.hash_bin(acc) == int(ks.hash_unit(acc, ks.SUBSET_HASH_KEY) * ks.N_BINS)
@@ -200,7 +215,7 @@ def size_args(tmp_path, database, queries, budget_left_h):
     args.local_dir, args.out_dir = str(tmp_path / "local"), str(tmp_path / "out")
     args.size_residues, args.subsets_json = n_res, str(tmp_path / "subsets.json")
     args.slice_root, args.queries_fasta = str(tmp_path / "slices"), str(tmp_path / "q.fasta")
-    args.kmerseek, args.budget_left_h = str(stub), budget_left_h
+    args.kmerseek, args.budget_left_h, args.job_end_epoch = str(stub), budget_left_h, 0.0
     return args
 
 
@@ -223,6 +238,21 @@ def test_run_size_with_a_stand_in_kmerseek(tmp_path, monkeypatch):
     rows = [r.split("\t") for r in (tmp_path / "out" / "queries.tsv").read_text().splitlines()]
     assert rows[1][:3] == ["0", "UPI1", "0"] and rows[1][-1] == "20"
     assert rows[2][2] == "3"
+
+
+def test_run_size_stops_before_the_jobs_slurm_end_time(tmp_path):
+    import time
+
+    args = size_args(
+        tmp_path,
+        database=[("UPI1", "ACDEFGHIKLMNPQRSTVWY")],
+        queries=[("UPI1", "ACDEFGHIKLMNPQRSTVW")],
+        budget_left_h=10.0,
+    )
+    args.job_end_epoch = time.time() + ks.JOB_END_MARGIN_S - 60  # ends inside the margin
+    ks.run_size(args)
+    summary = json.loads((tmp_path / "out" / "summary.json").read_text())
+    assert summary["n_queries_not_run"] == 1
 
 
 def test_run_size_stops_starting_queries_when_the_budget_is_gone(tmp_path):

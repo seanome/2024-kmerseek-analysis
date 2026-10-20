@@ -106,6 +106,10 @@ GATE_MARGIN = 1.2
 GATE_MEMORY_GB = 950.0
 GATE_LOCAL_DISK_TB = 2.8
 
+# Time kept free before the job's Slurm end time: the longest query at the anchor run took
+# far less, and this leaves room to write the tables.
+JOB_END_MARGIN_S = 1_800
+
 GPU_MODULES = ("torch", "cupy", "jax", "tensorflow", "numba.cuda", "pycuda")
 
 
@@ -132,16 +136,24 @@ def check_cpu_only() -> None:
 # ---------------------------------------------------------------- hashes
 
 
+def hash_first_8_bytes(accession: str, key: bytes) -> int:
+    """The first 8 bytes of keyed BLAKE2b (default 64-byte digest) as an unsigned integer.
+
+    This is the hash the preregistration names. hashlib.blake2b(digest_size=8) would be a
+    different hash, not a prefix of this one.
+    """
+    digest = hashlib.blake2b(accession.encode(), key=key).digest()
+    return int.from_bytes(digest[:8], "big")
+
+
 def hash_unit(accession: str, key: bytes) -> float:
-    """Return a number in [0, 1) from the first 8 bytes of BLAKE2b(accession, key)."""
-    digest = hashlib.blake2b(accession.encode(), digest_size=8, key=key).digest()
-    return int.from_bytes(digest, "big") / 2.0**64
+    """Return a number in [0, 1): hash_first_8_bytes divided by 2^64."""
+    return hash_first_8_bytes(accession, key) / 2.0**64
 
 
 def hash_bin(accession: str) -> int:
     """Histogram bin of a sequence's subset hash: the top HISTOGRAM_BITS bits."""
-    digest = hashlib.blake2b(accession.encode(), digest_size=8, key=SUBSET_HASH_KEY).digest()
-    return int.from_bytes(digest, "big") >> (64 - HISTOGRAM_BITS)
+    return hash_first_8_bytes(accession, SUBSET_HASH_KEY) >> (64 - HISTOGRAM_BITS)
 
 
 # ---------------------------------------------------------------- FASTA
@@ -384,11 +396,16 @@ def pick_queries(candidate_dir: Path, out_fasta: Path, out_tsv: Path) -> None:
 # ---------------------------------------------------------------- timing
 
 
+def maxrss_bytes(ru_maxrss: int, platform: str = sys.platform) -> int:
+    """ru_maxrss in bytes: Linux reports KiB (1,024 bytes), macOS reports bytes."""
+    return ru_maxrss if platform == "darwin" else ru_maxrss * 1024
+
+
 def timed_run(cmd: list[str], env: dict, stderr_path: Path, count_stdout: bool) -> dict:
     """Run one process; return wall seconds, peak RSS (GB), exit status and output counts.
 
     Wall time is from just before the process starts to its exit, read with
-    time.perf_counter. Peak RSS is ru_maxrss from os.wait4 (kilobytes on Linux). When
+    time.perf_counter. Peak RSS is ru_maxrss from os.wait4, converted to GB (1e9 bytes). When
     count_stdout is true, stdout is read in 4 MB blocks and only its bytes and line breaks
     are counted, then discarded.
     """
@@ -406,7 +423,7 @@ def timed_run(cmd: list[str], env: dict, stderr_path: Path, count_stdout: bool) 
     proc.returncode = os.waitstatus_to_exitcode(status)
     return {
         "wall_s": wall,
-        "peak_rss_gb": usage.ru_maxrss / 1e6,
+        "peak_rss_gb": maxrss_bytes(usage.ru_maxrss) / 1e9,
         "exit": proc.returncode,
         "stdout_bytes": n_bytes,
         "stdout_lines": n_lines,
@@ -443,14 +460,18 @@ def split_queries(queries_fasta: Path, out_dir: Path) -> list[tuple[int, str, Pa
 def run_size(args) -> None:
     """One size: copy its subset to local disk, build the index, run the queries.
 
-    Stops launching queries at the deadline (the remaining budget); queries cut off by it
-    are recorded with exit "not_run", and the size then counts as incomplete.
+    Stops starting queries at the deadline: the earlier of the remaining 48 h budget and
+    the job's Slurm end time less JOB_END_MARGIN_S, so queries.tsv and summary.json are
+    written before Slurm stops the job. Queries cut off by it are recorded with exit
+    "not_run", and the size then counts as incomplete.
     """
     check_cpu_only()
     local = Path(args.local_dir)
     out = Path(args.out_dir)
     out.mkdir(parents=True, exist_ok=True)
     deadline = time.time() + args.budget_left_h * 3600.0
+    if args.job_end_epoch:
+        deadline = min(deadline, args.job_end_epoch - JOB_END_MARGIN_S)
     info = {
         "setting": SETTING_NAME,
         "size_residues": args.size_residues,
@@ -461,6 +482,8 @@ def run_size(args) -> None:
         "query_processes": QUERY_PROCESSES,
         "threads_per_query": THREADS_PER_QUERY,
         "budget_left_h_at_start": args.budget_left_h,
+        "job_end_epoch": args.job_end_epoch,
+        "deadline_epoch": deadline,
     }
     subsets = {s["size_residues"]: s for s in json.loads(Path(args.subsets_json).read_text())}
     subset = subsets[args.size_residues]
@@ -503,6 +526,7 @@ def run_size(args) -> None:
     rows: dict[int, dict] = {}
     lock = threading.Lock()
     stop = threading.Event()
+    n_done = [0]
 
     def one(order, accession, path):
         if stop.is_set() or time.time() > deadline:
@@ -512,7 +536,8 @@ def run_size(args) -> None:
         result = timed_run(qcmd, qenv, out / "query_stderr" / f"q{order:04d}.log", count_stdout=True)
         result["accession"] = accession
         with lock:
-            done = len(rows) + 1
+            n_done[0] += 1
+            done = n_done[0]
         if done % 50 == 0:
             print(f"{time.strftime('%F %T')} {done} queries done", flush=True)
         return order, result
@@ -701,6 +726,7 @@ def main(argv=None) -> None:
     r.add_argument("--out-dir", required=True)
     r.add_argument("--kmerseek", default="kmerseek")
     r.add_argument("--budget-left-h", type=float, required=True)
+    r.add_argument("--job-end-epoch", type=float, default=0.0, help="Slurm end time of this job (0: none)")
     g = sub.add_parser("gate")
     g.add_argument("summary_10", type=Path)
     g.add_argument("budget_tsv", type=Path)

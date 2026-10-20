@@ -58,6 +58,11 @@ fi
 } | tee "$OUT/node.tsv"
 "${PY[@]}" check-cpu
 
+# The job's Slurm end time: run-size stops starting queries 30 min before it, so its
+# tables are written before Slurm stops the job.
+JOB_END=$(date -d "$(squeue -h -j "$SLURM_JOB_ID" -o %e)" +%s)
+echo "job ends at $(date -d "@$JOB_END")"
+
 "${PY[@]}" run-size \
     --size-residues "$SIZE" \
     --subsets-json "$WORK/results/subsets.json" \
@@ -65,5 +70,6 @@ fi
     --queries-fasta "$WORK/results/queries.fasta" \
     --local-dir "$LOCAL" \
     --out-dir "$OUT" \
-    --budget-left-h "$LEFT"
+    --budget-left-h "$LEFT" \
+    --job-end-epoch "$JOB_END"
 echo "size $SIZE done"
