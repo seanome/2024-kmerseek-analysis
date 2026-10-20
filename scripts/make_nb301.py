@@ -71,8 +71,8 @@ Higher recall is better. Lower boundary error is better. A method whose recall e
 decoy hit rate is no better than chance.
 
 **Status, 2026-10-20.** Step 1 (the scans) is done and below. Step 2 (the 2,000 real queries,
-the 500 chimeras and their UniRef90 clusters) is built by `scripts/301_step2.sbatch` on
-Sherlock; its tables are not in this notebook yet. Steps 3 to 8 have not run. The last
+the 500 chimeras, their UniRef90 clusters and the Swiss-Prot search database) is done and
+in section 2. Steps 3 to 8 have not run. The last
 section lists what was found while preparing them and the decisions taken.
 """)
 
@@ -460,9 +460,96 @@ md(r"""
 """)
 
 md(r"""
-## 2. Steps 2 to 8: what was found while preparing them
+## 2. Step 2: the query set
 
-These steps have not run. Six things in the task brief do not match the repository as it
+Built on Sherlock by `scripts/301_step2.sbatch` (job 48677933, 2026-10-20, 24 minutes)
+from Swiss-Prot release 2026_03 (02-Sep-2026, `uniprot_sprot.dat.gz` SHA-256 c8720882...)
+and the ELM true-positive table from closed PR 181 (`data/301_short_feature_boundaries/SOURCES.md`).
+The tables read here are in `data/301_short_feature_boundaries/step2/`.
+
+- **Real queries.** 1,000 human and 1,000 microbial (Bacteria or Archaea) Swiss-Prot
+  proteins, drawn at random (seed 301) from every protein with at least one feature: a
+  SIGNAL, TRANSIT or TRANSMEM span with experimental evidence (ECO:0000269) shorter than
+  60 residues, or an ELM true-positive instance. Every feature of a chosen protein is
+  recorded.
+- **Chimeras.** 500 host proteins with no SIGNAL or TRANSIT feature and no ELM degron,
+  100 to 1,000 residues, half human and half microbial. Each gets `GGGGSGGGGS` and then one
+  insert at a random position at least 10 residues from either end. The inserts are every
+  ELM degron instance on a Swiss-Prot entry (177) and 323 experimental signal peptides, none
+  used twice.
+- **Leave-self-out.** Each real query, chimera host and insert source was looked up in
+  UniRef90 (2,843 accessions, 2,778 clusters), and every Swiss-Prot member of those clusters
+  was left out of the search database.
+""")
+
+code(r"""
+S2 = DATA / "step2"
+truth = pl.read_csv(S2 / "truth.tsv", separator="\t")
+counts2 = pl.read_csv(S2 / "feature_type_counts.tsv", separator="\t")
+filt = pl.read_csv(S2 / "filter_counts.tsv", separator="\t")
+uref = pl.read_csv(S2 / "uniref90_counts.tsv", separator="\t")
+print(counts2)
+print(filt)
+print(uref)
+
+plan241 = pl.read_json("241_plan.json")
+ks = plan241["ksize"].to_numpy()
+TYPE_ORDER = ["SIGNAL", "TRANSIT", "TRANSMEM", "ELM"]
+TYPE_COLOUR = {
+    "SIGNAL": pf.OKABE_ITO["blue"],
+    "TRANSIT": pf.OKABE_ITO["reddish_purple"],
+    "TRANSMEM": pf.OKABE_ITO["bluish_green"],
+    "ELM": pf.OKABE_ITO["orange"],
+}
+fig, axs = pf.figure(pf.TWO_COLUMN_MM, 60, ncols=2, gridspec_kw={"width_ratios": [1, 1.6]})
+ax = axs[0]
+groups = [("real", "human"), ("real", "microbial"), ("chimera", "human"), ("chimera", "microbial")]
+y = np.arange(len(groups))
+left = np.zeros(len(groups))
+for t in TYPE_ORDER:
+    v = np.array([
+        counts2.filter((pl.col("query_kind") == k) & (pl.col("organism_group") == g) & (pl.col("feature_type") == t))["n_features"].sum()
+        for k, g in groups
+    ])
+    ax.barh(y, v, left=left, color=TYPE_COLOUR[t], label=t if t != "ELM" else "ELM motif")
+    left += v
+for yi, tot in zip(y, left):
+    ax.text(tot + 15, yi, f"{int(tot)}", va="center")
+ax.set_yticks(y, [f"{k} queries, {g}" for k, g in groups])
+ax.invert_yaxis()
+ax.set_xlabel("features (n)")
+ax.set_xlim(0, left.max() * 1.18)
+ax = axs[1]
+bins = np.arange(0, 61, 2)
+for t in TYPE_ORDER:
+    L = truth.filter(pl.col("feature_type") == t)["length_aa"].to_numpy()
+    ax.hist(L, bins=bins, histtype="step", color=TYPE_COLOUR[t], lw=1)
+kq = np.percentile(ks, [0, 50, 100])
+ax.axvspan(kq[0], kq[2], color="#eeeeee", zorder=0, label="k of the 152 settings (5 to 47)")
+ax.axvline(kq[1], color="black", ls=":", lw=0.8, label=f"median k ({kq[1]:.0f})")
+ax.set_xlabel("feature length (aa)")
+ax.set_ylabel("features (n)")
+for ax, letter in zip(axs, "ab"):
+    pf.panel_label(ax, letter)
+pf.shared_legend(fig, ncol=6, title=(
+    "Step 2 query set: Swiss-Prot 2026_03 features and ELM true-positive motifs (queries: 2,000 real proteins and 500 chimeras)\n"
+    "Most ELM motifs are shorter than the k of most settings, so a region on them must reach outside the feature"
+), alignment="left")
+pf.save(fig, FIG / "301_step2_query_set_swissprot_elm", formats=("png", "pdf"))
+
+by_len = truth.with_columns(
+    shorter_than_median_k=pl.col("length_aa") < float(np.median(ks))
+).group_by("feature_type").agg(
+    n=pl.len(), median_length_aa=pl.col("length_aa").median(),
+    frac_shorter_than_median_k=pl.col("shorter_than_median_k").mean().round(3),
+).sort("feature_type")
+print(by_len)
+""")
+
+md(r"""
+## 3. Steps 3 to 8: what was found while preparing them
+
+Steps 3 to 8 have not run. Six things in the task brief do not match the repository as it
 stands on 2026-10-20. Each needs a decision before compute is spent.
 
 1. **The decoys put the feature back into its real flanks.** Step 3 splices each decoy
@@ -557,7 +644,10 @@ md(r"""
    boundary errors of 2, 39 and 49 residues, while hitting 7 of 100 decoys (SF2b).
 4. Step 1 sets no scan bar for kmerseek on these cases: neither scan passes, so kmerseek is
    compared with HMMER and MMseqs2.
-5. Steps 2 to 8 are not run. The three decisions above fix how decoy hits are counted, which
+5. The step 2 query set holds 2,000 real Swiss-Prot proteins and 500 chimeras with 4,602
+   features. Leaving out every query's UniRef90 cluster removes 6,786 of 575,748 Swiss-Prot
+   entries, so the search database holds 568,962 (section 2).
+6. Steps 3 to 8 are not run. The three decisions above fix how decoy hits are counted, which
    settings run, and that Swiss-Prot runs before UniRef90.
 """)
 
