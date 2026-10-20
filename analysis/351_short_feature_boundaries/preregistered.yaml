@@ -1,0 +1,91 @@
+# Notebook 351: can kmerseek place the start and end of a short feature
+# more accurately than a profile search or a whole-protein alignment?
+# Written 2026-10-20, before any data was downloaded or any result was made.
+# This file is not to be edited after its first commit. Deviations go in report.md.
+
+question: >
+  When a short feature (under 60 residues) is present in a protein, can kmerseek
+  report its start and end coordinates more accurately than a profile search
+  (hmmscan against Pfam-A) or a whole-protein alignment (blastp)?
+
+data:
+  features:
+    primary_source: ELM instance table, true-positive instances only
+    fallback_source: UniProt feature entries with experimental evidence (ECO:0000269), used only if ELM gives fewer than 500
+    keep: instance length (end - start + 1) < 60, both start and end present, coordinates inside the current UniProt sequence
+    stop_gate: if fewer than 500 instances survive, stop and report to Olga before any search
+  index:
+    database: UniRef50, current release on the download date
+    exclusion: >
+      Remove from the index every sequence that has at least 90% identity (MMseqs2 fident >= 0.90)
+      to any query protein over an alignment covering at least 50% of either sequence,
+      and the query proteins themselves (by UniProt accession and by identical sequence).
+      One index serves all queries, so each query loses its own neighbours and those of every other query.
+    exclusion_check: >
+      After exclusion, search every query against the final index with MMseqs2 at high sensitivity (-s 7.5)
+      and print the highest fident among alignments covering >= 50% of either sequence. Must be < 0.90.
+
+methods:
+  coordinates: all placements are on the query protein, 1-based, inclusive
+  kmerseek:
+    version: kmerseek v0.4.0 (git tag v0.4.0), scaled 1, every other option at its default
+    settings:
+      - {name: protein20_k5, alphabet: protein20, ksize: 5}
+      - {name: dayhoff6_k7, alphabet: dayhoff6, ksize: 7}
+      - {name: hp_lehninger2_k12, alphabet: hp_lehninger2, ksize: 12}
+    placement: one per reported region; start and end from the query-side matched window positions (converted from 0-based)
+    score_for_ranking: region_evalue
+  profile:
+    tool: hmmscan (HMMER 3.4) against current Pfam-A, --cut_ga not used, E-value cutoff below
+    placement: one per reported domain; envelope start (env from) and end (env to)
+    score_for_ranking: independent E-value (i-Evalue)
+  alignment:
+    tool: blastp (BLAST+ 2.16 or the current conda-forge/bioconda build), against the same excluded UniRef50
+    placement: query start and end of the best-scoring HSP of each target; one placement per target
+    score_for_ranking: HSP E-value
+  reporting_cutoff: E-value <= 0.01 for every method (the method's own E-value, as named above)
+
+choosing_the_scored_placement:
+  primary: >
+    For each instance, among the method's placements on that protein that pass the cutoff, score the one whose
+    midpoint is closest to the true feature midpoint (ties: lower E-value, then lower start). This uses the truth
+    only to say which reported placement belongs to which feature, the same way for every method.
+  secondary_truth_blind: >
+    The single lowest-E-value placement on the protein is scored against every feature on that protein.
+    Reported, not used for pass/fail.
+  no_placement: an instance with no placement passing the cutoff is unplaced; its start and end errors are infinite
+
+score:
+  per_instance: abs(start_placed - start_true) and abs(end_placed - end_true), in residues
+  median_error: median of the pooled start and end errors over all instances (two values per instance), unplaced = infinite
+  within_10: fraction of instances whose start error <= 10 AND end error <= 10
+
+controls:
+  shuffles: >
+    10 shuffles per query protein preserving its amino-acid composition (seeded, seed recorded).
+    Each shuffled protein is searched exactly like the real one.
+  false_placement_rate_primary: >
+    Fraction of shuffled proteins with at least one placement passing the same E-value cutoff
+    (any placement on a shuffle is a false placement).
+  false_placement_rate_secondary: >
+    Fraction of (instance, shuffle) pairs where the closest placement on the shuffle has start and end
+    within 10 residues of the true feature's coordinates. Reported, not used for pass/fail.
+  uniform_random: >
+    For each instance, one placement drawn uniformly at random inside the real protein, with its length drawn from
+    the length distribution of the true features (seeded). Reported separately, with its own median and within_10.
+    Secondary: nearest of n random placements, n = the method's placement count on that protein.
+
+pass_fail:
+  applies_to: each kmerseek setting separately; the answer is PASS if at least one setting meets all four
+  PASS_requires_all:
+    a: median_error <= 5 residues
+    b: within_10 >= 0.80
+    c: false_placement_rate_primary <= 0.05
+    d: profile method median_error >= 3 x this setting's median_error
+  DROP_THE_IDEA: >
+    if median_error > ksize for every kmerseek setting tried. Then the second and third tests are not run.
+  otherwise: FAIL
+
+compute:
+  cpu_only: true, asserted in code
+  budget: total wall time under 48 hours summed over all jobs, printed as a running total
