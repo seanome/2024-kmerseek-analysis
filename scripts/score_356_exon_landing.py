@@ -383,19 +383,26 @@ def kmerseek_best_of_all(sc: pl.DataFrame) -> pl.DataFrame:
 
 
 def random_protein_null(
-    calls: pl.DataFrame, exons: pl.DataFrame, n_draws: int, seed: int
+    calls: pl.DataFrame,
+    exons: pl.DataFrame,
+    n_draws: int,
+    seed: int,
+    arm: str | None = None,
+    require_place: bool = False,
 ) -> np.ndarray:
-    """Best-of-all kmerseek landing rate on decoy exons, one value per draw.
+    """kmerseek landing rate on decoy exons, one value per draw.
 
-    lands[e, j] is whether any kmerseek call of pair j lands on exon e's interval placed at
+    lands[e, j] is whether a kmerseek call of pair j lands on exon e's interval placed at
     the same coordinates on pair j's target. Each draw picks, per exon, one other pair of the
-    same species whose target is long enough."""
+    same species whose target is long enough. With arm=None every setting's calls count
+    (best of all settings); otherwise only that setting's. With require_place, a landing
+    call also needs p_place < 0.05, computed on the decoy protein's length. The same seed
+    gives the same decoy choices for every variant."""
     ev = exons.filter("verdict_set")
-    km = (
-        calls.filter(pl.col("tool") == "kmerseek")
-        .select("species", "query_acc", "target_acc", "tstart", "tend")
-        .unique()
-    )
+    km = calls.filter(pl.col("tool") == "kmerseek")
+    if arm is not None:
+        km = km.filter(pl.col("arm") == arm)
+    km = km.select("species", "query_acc", "target_acc", "tstart", "tend").unique()
     rng = np.random.default_rng(seed)
     total = 0  # exons with at least one long-enough other pair to move onto
     landed = np.zeros(n_draws)
@@ -428,7 +435,16 @@ def random_protein_null(
             ov = np.clip(np.minimum(t, b[:, None]) - np.maximum(s, a[:, None]), 0, None)
             L = np.maximum(t - s, 1)
             E = (b - a)[:, None]
-            lands[:, j] = ((ov >= INSIDE_MIN * L) & (ov >= COVER_MIN * E)).any(axis=1)
+            hit = (ov >= INSIDE_MIN * L) & (ov >= COVER_MIN * E)
+            if require_place:
+                need = np.maximum(np.ceil(INSIDE_MIN * L), np.ceil(COVER_MIN * E))
+                lo = np.maximum(a[:, None] + need - L, 0)
+                hi = np.minimum(b[:, None] - need, tlen[j] - L)
+                count = np.where(
+                    need <= np.minimum(L, E), np.maximum(hi - lo + 1, 0), 0
+                )
+                hit &= count / (tlen[j] - L + 1) < P_PLACE_MAX
+            lands[:, j] = hit.any(axis=1)
         eligible = (tlen[None, :] >= b[:, None]) & (
             np.array(names)[None, :] != np.array(own)[:, None]
         )
@@ -538,6 +554,20 @@ def main():
     )
 
     null = random_protein_null(calls, exons, args.n_null, SEED)
+    # Added after Stop 0 (not in the pre-registration): the same null for the two other
+    # kmerseek numbers the verdict quotes, so each has its own chance level.
+    null_place = random_protein_null(
+        calls, exons, args.n_null, SEED, require_place=True
+    )
+    null_single = random_protein_null(calls, exons, args.n_null, SEED, arm=best_arm)
+    pl.DataFrame(
+        {
+            "draw": np.arange(len(null)),
+            "best_of_all": null,
+            "best_of_all_p_place_lt_0.05": null_place,
+            f"single_{best_arm}": null_single,
+        }
+    ).write_csv(out / "null_kmerseek_variants.csv")
     pl.DataFrame({"draw": np.arange(len(null)), "land_rate": null}).write_csv(
         out / "null_kmerseek_best.csv"
     )
@@ -587,6 +617,18 @@ def main():
             "observed_above_0.999": km_rate is not None
             and null_999 is not None
             and km_rate > null_999,
+        },
+        "random_protein_null_added_after_stop0": {
+            "best_of_all_p_place_lt_0.05": {
+                "observed": km_place_rate,
+                "median": float(np.median(null_place)),
+                "quantile_0.999": float(np.quantile(null_place, 0.999)),
+            },
+            "best_single_setting": {
+                "observed": r[KM_SINGLE][2],
+                "median": float(np.median(null_single)),
+                "quantile_0.999": float(np.quantile(null_single, 0.999)),
+            },
         },
         "kmerseek_best_single_setting": {"arm": best_arm, "lands": list(r[KM_SINGLE])},
         "other_tools_land": {

@@ -190,7 +190,7 @@ inside the null, landing on an exon is something kmerseek's short matches do any
 """)
     code(r"""
 null_tab = el.settings_and_null(d, FIG / "356_kmerseek_settings_and_random_protein_null_midi_plus")
-print(null_tab.with_columns(pl.col("landing_rate").round(3)))
+print(null_tab.with_columns(pl.col(pl.Float64).round(3)))
 print(d["settings"].head(10))
 """)
     md(

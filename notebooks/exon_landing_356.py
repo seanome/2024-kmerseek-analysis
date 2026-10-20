@@ -60,6 +60,7 @@ def load(tables: Path) -> dict:
         "by_length": pl.read_csv(tables / "summary_by_length.csv"),
         "by_disorder": pl.read_csv(tables / "summary_by_disorder.csv"),
         "null": pl.read_csv(tables / "null_kmerseek_best.csv"),
+        "null_variants": pl.read_csv(tables / "null_kmerseek_variants.csv"),
         "verdict": json.loads((tables / "verdict.json").read_text()),
     }
 
@@ -105,7 +106,15 @@ def landing_by_length(d: dict, out: Path, tools_line: str) -> pl.DataFrame:
     ax.axvspan(
         0, 60.5, color="#f2f2f2", zorder=0, label="Exons the rules use (<= 60 aa)"
     )
-    for t in present(tab["tool"].unique()):
+    # Tools at 0 in every bin overlap on the x axis; draw them first and name them in a
+    # note, so the reader does not have to find hidden lines (clear-figures rule 7b).
+    all_zero = [
+        t
+        for t in present(tab["tool"].unique())
+        if tab.filter(pl.col("tool") == t)["rate"].max() == 0
+    ]
+    order = all_zero + [t for t in present(tab["tool"].unique()) if t not in all_zero]
+    for t in order:
         lab, col, mk = TOOLS[t]
         s = tab.filter(pl.col("tool") == t)
         ax.plot(
@@ -116,6 +125,15 @@ def landing_by_length(d: dict, out: Path, tools_line: str) -> pl.DataFrame:
             ms=3,
             label=lab,
             **UNDERLAY.get(t, {}),
+        )
+    if all_zero:
+        ax.text(
+            0.99,
+            0.97,
+            "0 in every length bin: " + ", ".join(TOOLS[t][0] for t in all_zero),
+            transform=ax.transAxes,
+            ha="right",
+            va="top",
         )
     ax.set_xscale("log")
     ticks = sorted(x_of_bin["x"].to_list())
@@ -259,13 +277,29 @@ def landing_by_disorder(d: dict, out: Path) -> pl.DataFrame:
 
 
 def settings_and_null(d: dict, out: Path) -> pl.DataFrame:
-    """kmerseek: every setting's landing rate on the verdict exons (grey points), the best
-    single setting and the best of all settings (blue), and the random-protein null of
-    the best of all (histogram)."""
+    """(a) every kmerseek setting's landing rate on the verdict exons, the best of all
+    settings as a line; (b) each kmerseek number the verdict quotes (blue dot) against its
+    random-protein null (grey: every draw as a tick, the 0.1-99.9 percentile range as a
+    bar, the median as a white notch)."""
     st = d["settings"].sort("rate")
-    null = d["null"]["land_rate"].to_numpy()
+    nv = d["null_variants"]
     v = d["verdict"]
+    extra = v["random_protein_null_added_after_stop0"]
     best_all = v["rule_1"]["kmerseek_best_of_all_lands"][2]
+    single_col = [c for c in nv.columns if c.startswith("single_")][0]
+    rows = [
+        ("best of all settings", "best_of_all", best_all),
+        (
+            "best of all, p_place < 0.05",
+            "best_of_all_p_place_lt_0.05",
+            extra["best_of_all_p_place_lt_0.05"]["observed"],
+        ),
+        (
+            f"best single setting ({single_col.removeprefix('single_')})",
+            single_col,
+            extra["best_single_setting"]["observed"],
+        ),
+    ]
     pf.use_style()
     fig, (a, b) = pf.figure(pf.TWO_COLUMN_MM, 60, ncols=2)
     a.plot(
@@ -276,37 +310,44 @@ def settings_and_null(d: dict, out: Path) -> pl.DataFrame:
         color=pf.GREY,
         label="one kmerseek setting (alphabet, k, mask)",
     )
-    a.axhline(best_all, color=pf.OKABE_ITO["blue"], lw=1, label="best of all settings")
+    a.axhline(
+        best_all,
+        color=pf.OKABE_ITO["blue"],
+        lw=1,
+        label="best of all settings, real exons",
+    )
     a.set_xlabel(f"kmerseek settings, sorted by landing rate (n = {st.height})")
     a.set_ylabel("Share of verdict exons a call lands on")
     a.set_ylim(0, 1)
-    b.hist(
-        null, bins=30, color=pf.GREY, label="random-protein null, best of all settings"
+    out_rows = []
+    for i, (lab, col, obs) in enumerate(rows[::-1]):
+        x = nv[col].to_numpy()
+        lo, med, hi = np.quantile(x, [0.001, 0.5, 0.999])
+        b.plot(x, np.full(len(x), i), "|", color=pf.GREY, ms=4, alpha=0.3)
+        b.plot([lo, hi], [i, i], color=pf.GREY, lw=3, solid_capstyle="butt")
+        b.plot(med, i, "|", color="white", ms=5, mew=1)
+        b.plot(obs, i, "o", color=pf.OKABE_ITO["blue"], ms=4)
+        out_rows.append((lab, obs, med, lo, hi))
+    b.plot(
+        [], [], "s", color=pf.GREY, label="null: exon moved to another pair's target"
     )
-    b.axvline(best_all, color=pf.OKABE_ITO["blue"], lw=1)
-    b.set_xlabel("Share of exons landed (null: exon moved to another pair's target)")
-    b.set_ylabel(f"Draws (of {len(null)})")
+    b.set_yticks(range(len(rows)), [r[0] for r in rows[::-1]])
+    b.set_xlim(0, 1)
+    b.set_xlabel(f"Share of verdict exons landed (null: {len(nv)} draws)")
     pf.shared_legend(fig, ncol=3)
     pf.panel_label(a, "a")
     pf.panel_label(b, "b")
     pf.save(fig, out)
     return pl.DataFrame(
-        {
-            "what": [
-                "best of all settings",
-                "null median",
-                "null 99.9th percentile",
-                "best single setting",
-                "median setting",
-            ],
-            "landing_rate": [
-                best_all,
-                float(np.median(null)),
-                float(np.quantile(null, 0.999)),
-                float(st["rate"].max()),
-                float(st["rate"].median()),
-            ],
-        }
+        out_rows[::-1],
+        schema=[
+            "kmerseek number",
+            "real exons",
+            "null median",
+            "null 0.1%",
+            "null 99.9%",
+        ],
+        orient="row",
     )
 
 
