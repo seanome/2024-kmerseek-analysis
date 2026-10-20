@@ -187,9 +187,10 @@ def compare(
             (pl.col("diff") > TOL).sum().alias("n_rows_differ"),
         )
         .with_columns(
-            pl.col("metric")
-            .map_elements(tie_order_dependent, return_dtype=pl.Boolean)
-            .alias("tie_order_dependent")
+            (
+                pl.col("metric").str.ends_with("_threshold")
+                | pl.col("metric").str.starts_with("sens_first_fp")
+            ).alias("tie_order_dependent")
         )
         .sort("stratum_axis", "metric")
     )

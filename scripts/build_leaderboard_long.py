@@ -1134,7 +1134,7 @@ def main() -> None:
         full_rel = f"{QFO}/data/{sub}/results/pfamn_rescored_metrics.parquet"
         rs_rel = f"{QFO}/data/{sub}/results/pfamn_rescored_whole_set.csv"
         if (data / full_rel).exists():
-            frame, commit = pfamn_rescored_full(data / full_rel)
+            rescored, commit = pfamn_rescored_full(data / full_rel)
             parts.append(
                 qfo_metrics(
                     data / full_rel,
@@ -1142,7 +1142,7 @@ def main() -> None:
                     exp,
                     f"human Pfam-annotated proteins, {label} set",
                     tool_images(traces[exp], mapper("metrics")),
-                    frame=frame,
+                    frame=rescored,
                     commit=commit,
                 )
             )
