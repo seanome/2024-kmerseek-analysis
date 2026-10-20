@@ -11,7 +11,8 @@ Every file used by this analysis, where it came from, and when.
 | ELM download format | version 1.4, 4,277 instances in the header and in the file |
 | Local file | `raw_elm/elm_instances.tsv` |
 | Size | 944,144 bytes |
-| SHA-256 | 68c1832950fc3ed30399a247059979a60c4e95974a5d18c9dbc291c8ee578592 |
+| SHA-256 | 68c1832950fc3ed30399a247059979a60c4e95974a5d18c9dbc291c8ee578592 (as downloaded, CRLF line ends) |
+| SHA-256 in git | c4279592ff4a2c0c9d7c2d971a087b4b36c417262389cf6ef999e430513004db (git stores it with LF line ends) |
 
 The URL with `&instance_logic=true+positive` returned HTTP 500 on 2026-10-20, so the full
 table was downloaded and filtered to true positives locally.

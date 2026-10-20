@@ -15,7 +15,9 @@ import urllib.request
 from pathlib import Path
 
 MAX_LEN = 60  # keep features with length < 60 residues
-UNIPROT_FASTA = "https://rest.uniprot.org/uniprotkb/accessions?accessions={}&format=fasta"
+UNIPROT_FASTA = (
+    "https://rest.uniprot.org/uniprotkb/accessions?accessions={}&format=fasta"
+)
 UNIPROT_ISOFORM = "https://rest.uniprot.org/uniprotkb/{}.fasta"
 
 
@@ -54,7 +56,9 @@ def fetch_sequences(accessions):
     isoforms = sorted(a for a in accessions if "-" in a)
     seqs = {}
     for i in range(0, len(canonical), 100):
-        seqs.update(parse_fasta(fetch(UNIPROT_FASTA.format(",".join(canonical[i : i + 100])))))
+        seqs.update(
+            parse_fasta(fetch(UNIPROT_FASTA.format(",".join(canonical[i : i + 100]))))
+        )
     for acc in isoforms:
         seqs.update(parse_fasta(fetch(UNIPROT_ISOFORM.format(acc))))
     return seqs
@@ -68,7 +72,9 @@ def main(elm_path, out_dir):
     rows = [r for r in rows if r["InstanceLogic"] == "true positive"]
     steps.append(("true positive", len(rows)))
 
-    rows = [r for r in rows if r["Start"].strip().isdigit() and r["End"].strip().isdigit()]
+    rows = [
+        r for r in rows if r["Start"].strip().isdigit() and r["End"].strip().isdigit()
+    ]
     steps.append(("start and end both present", len(rows)))
 
     for r in rows:
@@ -82,15 +88,41 @@ def main(elm_path, out_dir):
     rows = [r for r in rows if r["Primary_Acc"] in seqs]
     steps.append(("sequence found in UniProt today", len(rows)))
 
-    rows = [r for r in rows if r["start"] >= 1 and r["end"] <= len(seqs[r["Primary_Acc"]])]
+    rows = [
+        r for r in rows if r["start"] >= 1 and r["end"] <= len(seqs[r["Primary_Acc"]])
+    ]
     steps.append(("coordinates inside the sequence", len(rows)))
 
     proteins = sorted({r["Primary_Acc"] for r in rows})
     steps.append(("distinct proteins", len(proteins)))
 
-    cols = ["Accession", "ELMIdentifier", "ELMType", "Primary_Acc", "start", "end", "length", "Organism"]
+    cols = [
+        "Accession",
+        "ELMIdentifier",
+        "ELMType",
+        "Primary_Acc",
+        "start",
+        "end",
+        "length",
+        "Organism",
+    ]
     with open(out_dir / "instances_kept.tsv", "w") as fh:
-        fh.write("\t".join(["instance_id", "elm_class", "elm_type", "protein", "start", "end", "length", "organism", "feature_residues"]) + "\n")
+        fh.write(
+            "\t".join(
+                [
+                    "instance_id",
+                    "elm_class",
+                    "elm_type",
+                    "protein",
+                    "start",
+                    "end",
+                    "length",
+                    "organism",
+                    "feature_residues",
+                ]
+            )
+            + "\n"
+        )
         for r in rows:
             residues = seqs[r["Primary_Acc"]][r["start"] - 1 : r["end"]]
             fh.write("\t".join(str(r[c]) for c in cols) + "\t" + residues + "\n")
