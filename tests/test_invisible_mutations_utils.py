@@ -237,3 +237,88 @@ def test_kmer_sets_identical_for_colliding_sequences():
     ea, eb = im.encode(a, "hp_lehninger2"), im.encode(b, "hp_lehninger2")
     assert ea == eb and im.kmer_set(ea, 3) == im.kmer_set(eb, 3)
     assert im.kmer_set(a, 3) != im.kmer_set(b, 3)
+
+
+# --- all kmerseek alphabets and k-mer set keys ---------------------------------------
+
+KMERSEEK_RS = Path(__file__).parents[2] / "kmerseek" / "src" / "rust" / "alphabets.rs"
+
+
+@pytest.mark.parametrize("name", im.KMERSEEK_ALPHABETS)
+def test_every_alphabet_covers_the_20_residues_once(name):
+    mapping = im.alphabet_mapping(name)
+    assert sorted(mapping) == sorted(im.STANDARD_AA)
+    # the size is the number kmerseek's name ends in (20 for protein20)
+    import re
+
+    size = int(re.search(r"(\d+)$", name).group(1)) if name != "identity" else 20
+    assert im.alphabet_size(name) == size
+
+
+def test_clusters_match_kmerseek_source():
+    """Each cluster table equals the one in kmerseek's alphabets.rs (needs a kmerseek
+    checkout next to this repository)."""
+    import re
+
+    if not KMERSEEK_RS.exists():
+        pytest.skip(f"no kmerseek checkout at {KMERSEEK_RS}")
+    src = KMERSEEK_RS.read_text()
+    found = {}
+    for m in re.finditer(r"const (\w+)_CLUSTERS: &\[&str\] =\s*&\[(.*?)\];", src, re.S):
+        found[m.group(1).lower()] = sorted(re.findall(r'"(\w+)"', m.group(2)))
+    hp = {
+        "THOMAS_DILL_HP": "hp_thomas_dill2", "KYTE_DOOLITTLE_HP": "hp_kyte_doolittle2",
+        "THOMAS_DILL_NO_C_HP": "hp_thomas_dill_no_c2",
+        "LEHNINGER_C_NONPOLAR_HP": "hp_lehninger_c_nonpolar2",
+        "LEHNINGER_HPC": "hp_lehninger_hpc3", "PBOTC_1ST_ED_HP": "hp_pbotc_1st_ed2",
+    }  # fmt: skip
+    for m in re.finditer(
+        r"static (\w+): LazyLock<HashMap<u8, u8>> =\s*LazyLock::new\(\|\| build_hpc?\((.*?)\)\);",
+        src, re.S,
+    ):  # fmt: skip
+        if m.group(1) in hp:
+            found[hp[m.group(1)]] = sorted(re.findall(r'b"(\w+)"', m.group(2)))
+    for name, clusters in im.KMERSEEK_CLUSTERS.items():
+        assert found[name] == sorted(clusters.values()), name
+
+
+@pytest.mark.parametrize("name", ["hp_lehninger2", "dayhoff6", "sdm12", "identity"])
+@pytest.mark.parametrize("k", [1, 2, 3, 5, 9])
+def test_kmer_set_keys_equal_exactly_when_kmer_sets_equal(name, k):
+    """Against brute force: every single substitution of a short repetitive sequence."""
+    ref = "MKLAVDLLAKMAVDKLLA"
+    pos, alts = [], []
+    for i, r in enumerate(ref, 1):
+        for a in im.STANDARD_AA:
+            if a != r:
+                pos.append(i)
+                alts.append(a)
+    keys = im.kmer_set_keys(ref, np.array(pos), alts, name, k)
+    sets = [
+        frozenset(im.kmer_set(im.encode(im.apply_substitution(ref, p, a), name), k))
+        for p, a in zip(pos, alts)
+    ]
+    g_keys, g_sets = im.group_ids(keys), im.group_ids([(s,) for s in sets])
+    for i, j in combinations(range(0, len(pos), 7), 2):
+        assert (g_keys[i] == g_keys[j]) == (g_sets[i] == g_sets[j]), (
+            pos[i],
+            alts[i],
+            pos[j],
+            alts[j],
+        )
+
+
+def test_kmer_set_groups_are_never_finer_than_sequence_groups():
+    """Same encoded sequence means same k-mer set, so a k-mer set group is a union of
+    sequence groups."""
+    ref = "MKLAVDLLAKMAVDKLLA"
+    pos = [2, 2, 5, 9, 9, 12]
+    alts = ["R", "H", "I", "L", "V", "D"]
+    keys = im.kmer_set_keys(ref, np.array(pos), alts, "hp_lehninger2", 4)
+    seqs = [
+        im.encode(im.apply_substitution(ref, p, a), "hp_lehninger2")
+        for p, a in zip(pos, alts)
+    ]
+    for i, j in combinations(range(len(pos)), 2):
+        if seqs[i] == seqs[j]:
+            assert keys[i] == keys[j]

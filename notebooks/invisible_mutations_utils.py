@@ -12,7 +12,10 @@ puts together, so they can be tested on small hand-made cases:
   copies them from sourmash's encodings.rs (the tables kmerseek uses for dayhoff6 and
   hp_lehninger2); tests/test_invisible_mutations_utils.py checks them against sourmash's
   own hashes
+- the residue clusters of kmerseek's other 16 reduced alphabets, copied from kmerseek's
+  alphabets.rs
 - parsing of HGVS protein notation and rebuilding of each variant's full sequence
+- keys that group single substitutions by their encoded k-mer sets at one k-mer size
 - grouping of variants by encoded sequence, and the floor, total variance and expected
   measurement-noise sums of squares, all with per-variant weights so a bootstrap over
   positions can reuse them
@@ -40,6 +43,47 @@ AA3_TO_1 = {
 # kmerseek alphabet name -> name of the same grouping in ALPHABET_AA_GROUPS
 _GROUP_NAMES = {"dayhoff6": "dayhoff", "hp_lehninger2": "hp_lehninger"}
 
+# Every other alphabet kmerseek can index with, as residue clusters, copied from
+# kmerseek's src/rust/alphabets.rs (seanome/kmerseek main at 00395d74, 2026-10-20). The
+# symbol of a cluster is the one kmerseek writes: h/p (and c) for the HP family, else the
+# cluster's first residue in lower case. tests/test_invisible_mutations_utils.py compares
+# these with that file when a kmerseek checkout is next to this repository.
+KMERSEEK_SOURCE_COMMIT = "00395d7432c8099755716108d39362118a4b57b1"
+KMERSEEK_CLUSTERS: dict[str, dict[str, str]] = {
+    "hp_thomas_dill2": {"h": "ACFILMVWY", "p": "DEGHKNPQRST"},
+    "hp_kyte_doolittle2": {"h": "ACFILMV", "p": "DEGHKNPQRSTWY"},
+    "hp_thomas_dill_no_c2": {"h": "AFILMVWY", "p": "CDEGHKNPQRST"},
+    "hp_lehninger_c_nonpolar2": {"h": "ACFGILMPVWY", "p": "DEHKNQRST"},
+    "hp_lehninger_hpc3": {"h": "AFGILMPVWY", "p": "DEHKNQRST", "c": "C"},
+    "hp_pbotc_1st_ed2": {"h": "ACFILMPVWY", "p": "DEGHKNQRST"},
+    **{
+        name: {c[0].lower(): c for c in clusters}
+        for name, clusters in {
+            "gbmr4": ["ADKERNTSQ", "YFLIVMCWH", "G", "P"],
+            "polarity4": ["GAVLIFWMP", "STCYNQ", "DE", "HKR"],
+            "wwmj5": ["CMFILVWY", "ATH", "GP", "DE", "SNQRK"],
+            "gbmr7": ["DN", "AEFIKLMQRVWY", "CH", "T", "S", "G", "P"],
+            "funcgroups8": ["GVALI", "ST", "CM", "FY", "WHP", "NQ", "DE", "KR"],
+            "sdm12": ["A", "D", "KER", "N", "TSQ", "YF", "LIVM", "C", "W", "H", "G", "P"],
+            "mmseqs12": ["AST", "LM", "IV", "KR", "EQ", "ND", "FY", "C", "G", "H", "P", "W"],
+            "wass14": ["WM", "DI", "P", "C", "AV", "K", "T", "RE", "G", "L", "Y", "SH",
+                       "F", "NQ"],
+            "hsdm17": ["A", "D", "KE", "R", "N", "T", "S", "Q", "Y", "F", "LIV", "M", "C",
+                       "W", "H", "G", "P"],
+            "uniprot18": ["A", "R", "N", "D", "C", "Q", "EP", "G", "HL", "I", "K", "M", "F",
+                          "S", "T", "W", "Y", "V"],
+        }.items()
+    },
+}  # fmt: skip
+
+# kmerseek's own order (Alphabet::all()); "identity" is protein20.
+KMERSEEK_ALPHABETS = ["identity", "dayhoff6", "hp_lehninger2", *KMERSEEK_CLUSTERS]
+
+
+def alphabet_size(name: str) -> int:
+    return len(set(alphabet_mapping(name).values()))
+
+
 # Standard genetic code, codons in TCAG order.
 _BASES = "TCAG"
 _CODE = "FFLLSSSSYY**CC*WLLLLPPPPHHQQRRRRIIIMTTTTNNKKSSRRVVVVAAAADDEEGGGG"
@@ -58,7 +102,10 @@ def alphabet_mapping(name: str) -> dict[str, str]:
     so encoding anything else raises instead of guessing a class."""
     if name == "identity":
         return {aa: aa for aa in STANDARD_AA}
-    groups = ALPHABET_AA_GROUPS[_GROUP_NAMES[name]]
+    if name in KMERSEEK_CLUSTERS:
+        groups = KMERSEEK_CLUSTERS[name]
+    else:
+        groups = ALPHABET_AA_GROUPS[_GROUP_NAMES[name]]
     mapping = {aa: symbol for symbol, aas in groups.items() for aa in aas}
     if sorted(mapping) != sorted(STANDARD_AA):
         raise ValueError(f"{name} does not cover exactly the 20 standard residues")
@@ -297,3 +344,31 @@ def floor_summary(
 
 def kmer_set(encoded: str, k: int) -> set[str]:
     return {encoded[i : i + k] for i in range(len(encoded) - k + 1)}
+
+
+def kmer_set_keys(
+    reference: str, positions: np.ndarray, alts: list[str], name: str, k: int
+) -> list[tuple]:
+    """For each single substitution of `reference`, a key that is equal for two variants
+    exactly when their encoded k-mer sets are equal (which is what a scaled=1 sketch
+    without abundances keeps).
+
+    A substitution at position p changes only the k-mers whose window covers p. The key is
+    (k-mers of the reference set that disappear, k-mers new to the reference set), which
+    pins down the variant's set because set = (reference set - lost) | gained.
+    positions are 1-based.
+    """
+    ref_enc = encode(reference, name)
+    mapping = alphabet_mapping(name)
+    counts = Counter(ref_enc[i : i + k] for i in range(len(ref_enc) - k + 1))
+    keys = []
+    for p, alt in zip(positions, alts):
+        i = int(p) - 1
+        var_enc = ref_enc[:i] + mapping[alt] + ref_enc[i + 1 :]
+        lo, hi = max(0, i - k + 1), min(i, len(ref_enc) - k)
+        old = Counter(ref_enc[j : j + k] for j in range(lo, hi + 1))
+        new = Counter(var_enc[j : j + k] for j in range(lo, hi + 1))
+        lost = frozenset(x for x, c in old.items() if counts[x] - c + new[x] == 0)
+        gained = frozenset(x for x in new if counts[x] == 0)
+        keys.append((lost, gained))
+    return keys

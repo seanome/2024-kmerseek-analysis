@@ -20,6 +20,10 @@ NAMES = {
 }
 
 
+def name(enc):
+    return NAMES.get(enc, enc)
+
+
 def row(summary, enc, grouping="full", scope="all"):
     return summary.filter(
         (pl.col("encoding") == enc)
@@ -91,7 +95,7 @@ def residues_example(variants, groups_df, enc):
 
 
 def write(path: Path, *, cfg, summary, groups_df, variants, excl, disc, syn_check, sens, kmer,
-          examples, score_check, n_boot, n_positions):  # fmt: skip
+          examples, score_check, n_boot, n_positions, kmer_floors):  # fmt: skip
     N = int(summary["N"][0])
     sd_all = float(np.sqrt(summary["total_variance"][0]))
     syn_ratio = syn_check["ratio_var_to_mean_se2"]
@@ -154,6 +158,9 @@ def write(path: Path, *, cfg, summary, groups_df, variants, excl, disc, syn_chec
     w("| dayhoff6 | `C`, `AGPST`, `DENQ`, `HKR`, `ILMV`, `FWY` |")
     w("| protein20 (control) | the 20 residues themselves |")
     w("| amino-acid counts (control) | the count of each residue, order ignored |\n")
+    w("kmerseek's other 16 alphabets (added 2026-10-20, see below) are copied from "
+      "kmerseek's `src/rust/alphabets.rs` into `KMERSEEK_CLUSTERS` in "
+      "`notebooks/invisible_mutations_utils.py`; a test compares the two.\n")  # fmt: skip
 
     w("## Where the variants fall\n")
     w("![Collision groups](../figures/347_SF1_collision_groups_pten_vamp_seq.png)\n")
@@ -312,7 +319,7 @@ def write(path: Path, *, cfg, summary, groups_df, variants, excl, disc, syn_chec
     )
     for r in disc.iter_rows(named=True):
         w(
-            f"| {NAMES[r['encoding']]} | {r['n_collision_groups']} | {r['n_groups_low_and_wt_like']} | {r['n_variants_in_those_groups']} |"
+            f"| {name(r['encoding'])} | {r['n_collision_groups']} | {r['n_groups_low_and_wt_like']} | {r['n_variants_in_those_groups']} |"
         )
     w("")
 
@@ -354,6 +361,7 @@ def write(path: Path, *, cfg, summary, groups_df, variants, excl, disc, syn_chec
         )
     w("")
 
+    w(all_alphabets_section(cfg, summary, kmer_floors, syn_ratio))
     w("## Conclusion\n")
     w("Rule (from the config): inconclusive if fewer than 30 collision groups or 100 "
       "variants in them; detectable if the lower end of the noise-ratio interval is above "
@@ -388,6 +396,12 @@ def write(path: Path, *, cfg, summary, groups_df, variants, excl, disc, syn_chec
         )
         else ""
     )
+    sec = [e for e in summary["encoding"].unique(maintain_order=True).to_list()
+           if e not in PRIMARY + ["composition", "identity"]]  # fmt: skip
+    n_det = sum(verdict(row(summary, e), None).startswith("Detectable") for e in sec)
+    w(f"- Not planned (added 2026-10-20): {n_det} of kmerseek's {len(sec)} other reduced "
+      "alphabets show detectable information loss by the same rule; see the table in "
+      "\"All kmerseek alphabets and k-mer sizes\".\n")  # fmt: skip
     w("What this does not show:\n")
     w(
         "- The floor uses the measured scores themselves to set each group mean. It is an "
@@ -419,6 +433,67 @@ def write(path: Path, *, cfg, summary, groups_df, variants, excl, disc, syn_chec
     w("Outputs: `tables/347_invisible_mutations_*.tsv` (variants, collision groups, summary "
       "with intervals, exclusions, class counts, examples, k-mer check, sensitivity), "
       "`tables/347_invisible_mutations_provenance.json` (config, checksums, versions, git "
-      "commit), `figures/347_SF1-3_*`.\n")  # fmt: skip
+      "commit), `tables/347_invisible_mutations_kmer_set_floors.tsv` (every alphabet and "
+      "k), `figures/347_SF1-4_*`.\n")  # fmt: skip
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text("\n".join(L))
+
+
+def all_alphabets_section(cfg, summary, kmer_floors, syn_ratio) -> str:
+    """Every kmerseek alphabet, whole sequence and k-mer sets (added 2026-10-20)."""
+    extra = cfg["more_alphabets_and_ksizes"]
+    L = []
+    w = L.append
+    w("## All kmerseek alphabets and k-mer sizes (not planned)\n")
+    w(f"Added {extra['_added']}\n")
+    w(
+        "![All alphabets and k-mer sizes](../figures/347_SF4_all_alphabets_ksizes_pten_vamp_seq.png)\n"
+    )
+    w("### Whole encoded sequence\n")
+    w("Same statistics as above, groups = same encoded sequence, coarsest alphabet first. "
+      "The verdict uses the planned rule, but was not planned for these alphabets.\n")  # fmt: skip
+    w(f"The last column divides the lower end of the noise-ratio interval by the synonymous "
+      f"factor {syn_ratio:.2f} (see \"Check of the noise model\"); below 1 means the loss "
+      "is no longer detectable if replicate se understates the noise that much.\n")  # fmt: skip
+    w("| Alphabet | Letters | Variants in a group of 2+ | Floor RMSE (95% interval) | "
+      "Floor / total variance (95% interval) | Noise ratio (95% interval) | Verdict | "
+      "Lower end / synonymous factor |\n|---|---|---|---|---|---|---|---|")  # fmt: skip
+    sizes = dict(kmer_floors.select("encoding", "alphabet_size").unique().iter_rows())
+    for enc in sorted(sizes, key=lambda e: (sizes[e], e)):
+        r = row(summary, enc)
+        v = (
+            "no collisions"
+            if r["n_groups_collided"] == 0
+            else verdict(r, None).split(",")[0].rstrip(".")
+        )
+        w(f"| {name(enc)} | {sizes[enc]} | {pct(r['fraction_collided'])} | "
+          f"{f3(r['floor_rmse'])} ({f3(r['floor_rmse_lo'])}-{f3(r['floor_rmse_hi'])}) | "
+          f"{f2(r['floor_fraction'])} ({f2(r['floor_fraction_lo'])}-{f2(r['floor_fraction_hi'])}) | "
+          f"{f2(r['noise_ratio'])} ({f2(r['noise_ratio_lo'])}-{f2(r['noise_ratio_hi'])}) | {v} | "
+          f"{f2(r['noise_ratio_lo'] / syn_ratio) if r['noise_ratio_lo'] is not None else 'n/a'} |")  # fmt: skip
+    w("")
+    w("### Only the set of encoded k-mers\n")
+    w(f"{extra['kmer_set_grouping']} Two single substitutions can have the same k-mer set "
+      "without the same sequence when every k-mer they change also occurs elsewhere in "
+      "PTEN, which happens at small k and with few letters. Value: floor / total "
+      "variance (share of score variance hidden). Every alphabet and k, with intervals: "
+      "`tables/347_invisible_mutations_kmer_set_floors.tsv`.\n")  # fmt: skip
+    ks = sorted(kmer_floors["k"].unique().to_list())
+    shown = [k for k in (3, 5, 10, 20, 30) if k in ks]
+    w("| Alphabet | Whole sequence | " + " | ".join(f"k={k}" for k in shown)
+      + " | From this k on, exactly the whole-sequence value |\n|---|---|"
+      + "---|" * len(shown) + "---|")  # fmt: skip
+    kf = kmer_floors.filter(pl.col("scope") == "all")
+    for enc in sorted(sizes, key=lambda e: (sizes[e], e)):
+        seq_floor = row(summary, enc)["floor_mse"]
+        sub = kf.filter(pl.col("encoding") == enc).sort("k")
+        vals = dict(zip(sub["k"], sub["floor_fraction"]))
+        same = [
+            k for k, m in zip(sub["k"], sub["floor_mse"]) if abs(m - seq_floor) < 1e-12
+        ]
+        first = next((k for k in ks if all(kk in same for kk in ks if kk >= k)), None)
+        w(f"| {name(enc)} | {f2(row(summary, enc)['floor_fraction'])} | "
+          + " | ".join(f2(vals[k]) for k in shown)
+          + f" | {first if first is not None else f'above {ks[-1]}'} |")  # fmt: skip
+    w("")
+    return "\n".join(L) + "\n"

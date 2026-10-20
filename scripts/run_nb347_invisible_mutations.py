@@ -28,7 +28,9 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "notebooks"))
 import invisible_mutations_utils as im  # noqa: E402
 
-ENCODINGS = ["hp_lehninger2", "dayhoff6", "composition", "identity"]
+# The four planned encodings first, then kmerseek's other alphabets (added 2026-10-20).
+ENCODINGS = ["hp_lehninger2", "dayhoff6", "composition", "identity",
+             *im.KMERSEEK_CLUSTERS]  # fmt: skip
 GROUPINGS = ["full", "same_position"]
 SCOPES = ["all", "reference_group", "other_groups"]
 
@@ -154,7 +156,7 @@ def main(argv=None):
 
     # ---- mappings -------------------------------------------------------------------
     map_rows = []
-    for name in ["identity", "dayhoff6", "hp_lehninger2"]:
+    for name in im.KMERSEEK_ALPHABETS:
         m = im.alphabet_mapping(name)
         for aa in im.STANDARD_AA:
             map_rows.append({"encoding": name, "residue": aa, "symbol": m[aa]})
@@ -230,11 +232,32 @@ def main(argv=None):
     )
     assert (ident["floor_mse"] == 0).all() and (ident["n_groups_collided"] == 0).all()
 
+    # ---- groups by encoded k-mer set, per alphabet and k --------------------------------
+    ksizes = cfg["more_alphabets_and_ksizes"]["ksizes"]
+    kmer_setup, kmer_rows_floor = {}, []
+    var_pos, var_alt = variants["position"].to_numpy(), variants["alt"].to_list()
+    for enc_name in im.KMERSEEK_ALPHABETS:
+        seq_groups = setup[(enc_name, "full")][0]
+        for k in ksizes:
+            keys = im.kmer_set_keys(reference, var_pos, var_alt, enc_name, k)
+            g = im.group_ids(keys)
+            # same encoded sequence must mean same k-mer set
+            assert len(set(zip(seq_groups, g))) == len(set(seq_groups))
+            is_ref = np.zeros(int(g.max()) + 1, dtype=bool)
+            is_ref[
+                [gi for gi, key in zip(g, keys) if key == (frozenset(), frozenset())]
+            ] = True
+            kmer_setup[(enc_name, k)] = (g, is_ref)
+            for scope, s_ in summaries(y, v, g, is_ref).items():
+                kmer_rows_floor.append({"encoding": enc_name, "alphabet_size": im.alphabet_size(enc_name),
+                                        "k": k, "scope": scope, **s_})  # fmt: skip
+    kmer_floors = pl.DataFrame(kmer_rows_floor)
+
     # ---- bootstrap over positions -------------------------------------------------------
     bcfg = cfg["bootstrap"]
     n_boot = args.n_boot or bcfg["replicates"]
     rng = np.random.default_rng(bcfg["seed"])
-    boot = []
+    boot, kboot = [], []
     for b in range(n_boot):
         counts = np.bincount(
             rng.integers(0, len(positions), len(positions)), minlength=len(positions)
@@ -249,7 +272,19 @@ def main(argv=None):
                                                   "floor_fraction", "noise_ratio",
                                                   "noise_adjusted_floor_mse",
                                                   "fraction_collided")}})  # fmt: skip
+        for (enc_name, k), (g, _) in kmer_setup.items():
+            s_ = im.floor_summary(y, g, v, w)
+            kboot.append({"rep": b, "encoding": enc_name, "k": k,
+                          **{m: s_[m] for m in ("floor_rmse", "floor_fraction", "noise_ratio")}})  # fmt: skip
     boot = pl.DataFrame(boot)
+    kboot = pl.DataFrame(kboot)
+    kci = kboot.group_by(["encoding", "k"]).agg(
+        [pl.col(m).quantile(q, "linear").alias(f"{m}_{tag}")
+         for m in ("floor_rmse", "floor_fraction", "noise_ratio")
+         for q, tag in ((0.025, "lo"), (0.975, "hi"))]
+    ).with_columns(pl.lit("all").alias("scope"))  # fmt: skip
+    kmer_floors = kmer_floors.join(kci, on=["encoding", "k", "scope"], how="left")
+    kmer_floors.write_csv(tables / f"{T}_kmer_set_floors.tsv", separator="\t")
     metrics = ["floor_mse", "floor_rmse", "collided_rmse", "floor_fraction", "noise_ratio",
                "noise_adjusted_floor_mse", "fraction_collided"]  # fmt: skip
     ci = boot.group_by(["encoding", "grouping", "scope"]).agg(
@@ -393,6 +428,7 @@ def main(argv=None):
         },
         "reference_length": len(reference),
         "reference_matches_uniprot": True,
+        "kmerseek_alphabets_from_commit": im.KMERSEEK_SOURCE_COMMIT,
         "score_definition_check": score_check,
         "synonymous_noise_check": syn_check,
         "n_bootstrap": n_boot,
@@ -408,7 +444,8 @@ def main(argv=None):
 
     import nb347_figures
 
-    nb347_figures.make_all(summary, groups_df, variants, examples, figures, T_FIG="347")
+    nb347_figures.make_all(summary, groups_df, variants, examples, figures, T_FIG="347",
+                           kmer_floors=kmer_floors)  # fmt: skip
     import nb347_report
 
     nb347_report.write(
@@ -417,6 +454,7 @@ def main(argv=None):
             tables / f"{T}_exclusion_counts.tsv", separator="\t"),
         disc=disc, syn_check=syn_check, sens=sens, kmer=kmer, examples=examples,
         score_check=score_check, n_boot=n_boot, n_positions=len(positions),
+        kmer_floors=kmer_floors,
     )  # fmt: skip
     print("done")
 

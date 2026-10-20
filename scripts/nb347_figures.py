@@ -241,9 +241,96 @@ def fig_examples(groups_df, variants, examples, out, max_members=8, seed=347):
     pf.save(fig, out)
 
 
-def make_all(summary, groups_df, variants, examples, figures: Path, T_FIG="347"):
-    """Draw the three figures. A rerun writes the same bytes: fixed PDF/SVG dates and
-    SVG ids, and PNGs cut to 256 colours here (the pre-commit hook skips this folder).
+def alphabet_label(enc: str, size: int) -> str:
+    if enc == "identity":
+        return "protein20 (identity)"
+    if enc == "composition":
+        return "amino-acid counts only"
+    return f"{enc} ({size} letter{'s' if size > 1 else ''})"
+
+
+def fig_all_alphabets_and_ksizes(summary, kmer_floors, out):
+    """a: whole-sequence floor for every kmerseek alphabet; b: the floor when only the set
+    of encoded k-mers is kept, per k. Both as the share of score variance hidden."""
+    import matplotlib as mpl
+    import seaborn as sns
+
+    full = summary.filter((pl.col("grouping") == "full") & (pl.col("scope") == "all"))
+    sizes = dict(kmer_floors.select("encoding", "alphabet_size").unique().iter_rows())
+    sizes["composition"] = 0
+    # coarsest at the top: 2-letter HP alphabets first, protein20 last, counts at the end
+    order = sorted(sizes, key=lambda e: (e == "composition", sizes[e], e))
+    ksizes = sorted(kmer_floors["k"].unique().to_list())
+    fig, (a, b) = pf.figure(pf.TWO_COLUMN_MM, 120, ncols=2,
+                            gridspec_kw={"width_ratios": [0.9, 2.2]})  # fmt: skip
+    y = np.arange(len(order))[::-1]
+    total = float(full["total_variance"][0])
+    for yi, enc in zip(y, order):
+        r = full.filter(pl.col("encoding") == enc).row(0, named=True)
+        if r["floor_fraction_lo"] is not None and not np.isnan(r["floor_fraction_lo"]):
+            a.plot([r["floor_fraction_lo"], r["floor_fraction_hi"]], [yi + 0.15] * 2,
+                   color="black", lw=1)  # fmt: skip
+        a.plot(r["floor_fraction"], yi + 0.15, "o", color="black", ms=3)
+        a.plot(
+            r["expected_noise_mse"] / total,
+            yi - 0.15,
+            "o",
+            mfc="white",
+            mec="black",
+            ms=3,
+        )
+        a.axhline(yi, color="#e0e0e0", lw=0.3, zorder=-1)
+    a.set_yticks(y, [alphabet_label(e, sizes[e]) for e in order])
+    a.set_ylim(-0.6, len(order) - 0.4)
+    a.set_xlim(-0.02, 1)
+    a.set_xlabel(
+        "Share of score variance no predictor\nreading the whole encoded sequence can explain"
+    )
+    a.legend(handles=[
+        Line2D([], [], marker="o", color="black", lw=1, ms=3,
+               label="floor (95% interval: resampling positions)"),
+        Line2D([], [], marker="o", mfc="white", mec="black", lw=0, ms=3,
+               label="expected from replicate noise alone"),
+    ], frameon=False, loc="lower center", bbox_to_anchor=(0.5, 1.0))  # fmt: skip
+
+    rows = [e for e in order if e != "composition"]
+    piv = (kmer_floors.filter(pl.col("scope") == "all")
+           .pivot(on="k", index="encoding", values="floor_fraction"))  # fmt: skip
+    mat = np.array(
+        [[piv.filter(pl.col("encoding") == e)[str(k)][0] for k in ksizes] for e in rows]
+    )
+    cmap = sns.color_palette("mako", as_cmap=True)
+    norm = mpl.colors.Normalize(0, 1)
+    im_ = b.imshow(mat, cmap=cmap, norm=norm, aspect="auto",
+                   extent=(-0.5, len(ksizes) - 0.5, 0.5, len(order) - 0.5))  # fmt: skip
+    # rows of b line up with rows of a (composition, the bottom row of a, has no k-mers)
+    for i, e in enumerate(rows):
+        yi = len(order) - 1 - i
+        for j, k in enumerate(ksizes):
+            val = mat[i, j]
+            b.text(j, yi, f"{val:.2f}", ha="center", va="center", fontsize=5,
+                   color="white" if val < 0.55 else "black")  # fmt: skip
+    b.set_ylim(-0.6, len(order) - 0.4)
+    b.set_yticks([])
+    b.spines["left"].set_visible(False)
+    b.set_xticks(range(len(ksizes)), [str(k) for k in ksizes])
+    b.set_xlabel("k-mer size (k)")
+    b.set_title("Same share when a predictor sees only which encoded k-mers occur\n"
+                "(the set, as in a scaled=1 sketch without abundances)", fontsize=6, loc="left")  # fmt: skip
+    cb = fig.colorbar(im_, ax=b, fraction=0.03, pad=0.01)
+    cb.set_label("Share of score variance hidden (0 = none, 1 = all)")
+    for ax, letter in zip((a, b), "ab"):
+        pf.panel_label(ax, letter)
+    header(fig, "All 19 kmerseek alphabets, PTEN VAMP-seq abundance, "
+                f"{int(full['N'][0])} single missense variants. Added after the planned "
+                "hp_lehninger2 / dayhoff6 analysis.")  # fmt: skip
+    pf.save(fig, out)
+
+
+def make_all(summary, groups_df, variants, examples, figures: Path, T_FIG="347",
+             kmer_floors=None):  # fmt: skip
+    """Draw the four figures. A rerun writes the same bytes: fixed PDF/SVG dates and
+    SVG ids, and PNGs (but SF4's) cut to 256 colours here (the pre-commit hook skips this folder).
     """
     import os
 
@@ -258,6 +345,11 @@ def make_all(summary, groups_df, variants, examples, figures: Path, T_FIG="347")
     fig_error_floors(summary, figures / f"{T_FIG}_SF2_error_floors_pten_vamp_seq")
     fig_examples(groups_df, variants, examples,
                  figures / f"{T_FIG}_SF3_example_groups_pten_vamp_seq")  # fmt: skip
+    if kmer_floors is not None:
+        fig_all_alphabets_and_ksizes(
+            summary, kmer_floors,
+            figures / f"{T_FIG}_SF4_all_alphabets_ksizes_pten_vamp_seq",
+        )  # fmt: skip
     import importlib.util
 
     spec = importlib.util.spec_from_file_location(
@@ -265,5 +357,6 @@ def make_all(summary, groups_df, variants, examples, figures: Path, T_FIG="347")
     )
     shrink_png = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(shrink_png)
-    for png in sorted(figures.glob(f"{T_FIG}_SF*_pten_vamp_seq.png")):
+    # SF4 has a continuous colour bar, which 256 colours would put steps in; it stays full colour.
+    for png in sorted(figures.glob(f"{T_FIG}_SF[123]_*_pten_vamp_seq.png")):
         shrink_png.process(png, check=False)
