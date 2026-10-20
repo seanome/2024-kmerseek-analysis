@@ -4,8 +4,8 @@
 #SBATCH --partition=hns
 #SBATCH --array=0-17
 #SBATCH --cpus-per-task=32
-#SBATCH --mem=128G
-#SBATCH --time=24:00:00
+#SBATCH --mem=16G
+#SBATCH --time=06:00:00
 #SBATCH --output=299-search-%A_%a.out
 #
 # Notebook 299, step 3b: search all 2_289 queries (109 real, 2_180 shuffled copies), one
@@ -28,9 +28,13 @@
 #      Otherwise the shuffled-hit rate comes from (b) and is marked as estimated.
 # manysearch output never touches disk: it streams through 299_reduce_manysearch.awk.
 #
-# Sizing: guesses until step 1 gives sketch sizes; re-size from `du -sh catalog_sketch/s*`.
-# The writer streams at about 70 MB/s (laptop test: 17 GB in about 4 min), about 300 bytes
-# per row, so FULL_ROW_CAP = 2e9 rows is about 600 GB and 2.5 h of streaming.
+# Sizing, measured (array 48667936, 2026-10-20): the 1% gene sample search (about 2.6
+# chunks' worth of genes, all nine settings) took 14 s and peaked at 4.7 GB at scaled 100,
+# 2.5 GB at scaled 1000; the search against DIAMOND's hit genes, 1 s and 0.15 GB. Searching
+# the catalog one chunk at a time keeps memory near 2 GB; 256 chunks at about 6 s each is
+# about 30 min. 16 G and 6 h leave room for rows streaming through the reducer (FULL_ROW_CAP
+# = 2e9 rows, about 600 GB of text). Scaled 10 sketches hold about 10 times the hashes; its
+# gate asks 64 G.
 set -euo pipefail
 
 REPO=${SLURM_SUBMIT_DIR:?submit from the repo root}
@@ -41,6 +45,12 @@ read -r ALPHABET K SCALED < <("$E/python" "$REPO/notebooks/299_omrgc_sketch_pilo
 SID=$ALPHABET.k$K.s$SCALED
 OUT=$WORK/search/$SID
 mkdir -p "$OUT"
+# A setting that already finished (done marker and the gather table) is not searched again,
+# so the whole array can be resubmitted after a partial failure.
+if [ -e "$OUT/done" ] && [ -s "$OUT/fastmultigather.csv" ]; then
+    echo "$SID already done; skipping"
+    exit 0
+fi
 rm -f "$OUT/done"
 echo "host $(hostname); $(lscpu | grep 'Model name'); setting $SID"
 P="$ALPHABET,k=$K,scaled=$SCALED,noabund"
@@ -66,17 +76,14 @@ awk -F'\t' '{print $1"\t"$2"\t"$9}' "$WORK/diamond/hits.tsv" > "$OUT/diamond_pai
 # search NAME QUERIES AGAINST_LIST: manysearch streamed through the reducer; writes
 # NAME.counts.tsv, NAME.pairs.tsv, NAME.bad.txt and NAME.time.
 search() {
+    # One manysearch per .zip in the list (299_manysearch_chunks.sh), all streamed into the
+    # reducer: memory stays at one chunk's size instead of the whole catalog's.
     local name=$1 queries=$2 against=$3
-    rm -f "$OUT/$name.fifo"; mkfifo "$OUT/$name.fifo"
     : > "$OUT/$name.pairs.tsv"; : > "$OUT/$name.counts.tsv"
-    awk -v diamond="$OUT/diamond_pairs.tsv" -v counts="$OUT/$name.counts.tsv" -v pairs="$OUT/$name.pairs.tsv" \
-        -v bad="$OUT/$name.bad.txt" -f "$REPO/notebooks/299_reduce_manysearch.awk" < "$OUT/$name.fifo" &
-    local reducer=$!
-    /usr/bin/time -v -o "$OUT/$name.time" \
-        "$E/sourmash" scripts manysearch "$queries" "$against" "${SEL[@]}" -c 32 --ignore-abundance -N \
-        -o "$OUT/$name.fifo"
-    wait "$reducer"
-    rm -f "$OUT/$name.fifo"
+    /usr/bin/time -v -o "$OUT/$name.time" bash "$REPO/notebooks/299_manysearch_chunks.sh" \
+        "$E/sourmash" "$queries" "$against" "$K" "$ALPHABET" "$SCALED" 32 \
+        | awk -v diamond="$OUT/diamond_pairs.tsv" -v counts="$OUT/$name.counts.tsv" -v pairs="$OUT/$name.pairs.tsv" \
+            -v bad="$OUT/$name.bad.txt" -f "$REPO/notebooks/299_reduce_manysearch.awk"
     echo "$name: $(awk -F'\t' '{s += $2} END {print s + 0}' "$OUT/$name.counts.tsv") rows, bad lines $(cat "$OUT/$name.bad.txt")"
 }
 
@@ -108,13 +115,13 @@ printf '{"count_source": "%s", "sample_rows": %s, "predicted_full_rows": %s, "fu
     "$COUNT_SOURCE" "$SAMPLE_ROWS" "$PREDICTED" "$FULL_ROW_CAP" > "$OUT/status.json"
 touch "$OUT/done"
 
-# BHF regions and their copies through gather, beside the rule. A failure here (memory, for
-# example) does not lose the results above; it is logged and reported as not done.
+# BHF regions and their copies through gather, beside the rule, against the 1% gene sample:
+# fastmultigather holds every sketch it searches in memory and the whole catalog did not fit
+# in 128 GB (array 48667936). A failure here does not lose the results above.
 "$E/sourmash" sig grep -i BHF_ "$OUT/queries.sig.zip" -o "$OUT/bhf.sig.zip"
-ls "$WORK/catalog_sketch/s$SCALED"/chunk*.sig.zip > "$OUT/catalog.txt"
 set +e
 /usr/bin/time -v -o "$OUT/fastmultigather.time" \
-    "$E/sourmash" scripts fastmultigather "$OUT/bhf.sig.zip" "$OUT/catalog.txt" "${SEL[@]}" -c 32 -t 0 \
+    "$E/sourmash" scripts fastmultigather "$OUT/bhf.sig.zip" "$OUT/sample.txt" "${SEL[@]}" -c 32 -t 0 \
     -o "$OUT/fastmultigather.csv"
 echo "fastmultigather exit $?"
 set -e

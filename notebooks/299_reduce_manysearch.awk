@@ -15,7 +15,7 @@ BEGIN {
     while ((getline line < diamond) > 0) { split(line, f, "\t"); ev[f[1] SUBSEP f[2]] = f[3] }
     nbad = 0
 }
-NR == 1 { next }
+$1 == "query_name" { next }  # a header line; chunked searches send one per chunk
 NF != 16 { nbad++; next }
 {
     q = $1; t = $3; sub(/ .*/, "", t)

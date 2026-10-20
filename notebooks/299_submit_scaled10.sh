@@ -17,7 +17,10 @@ AFTER=${1:-}
 SUB=(sbatch --parsable --kill-on-invalid-dep=yes)
 [ -s "$WORK/catalog_stats.json" ] || { echo "no $WORK/catalog_stats.json: run 299_submit_all.sh first"; exit 1; }
 
-STEP1=$("${SUB[@]}" --array=18-26 notebooks/299_step1_sketch_timing.sbatch)
+# 40 G: at scaled 10 the sketch step reached the 8 G limit (7.8-8.0 GB peak, three settings
+# killed inside it; array 48668306). Scaled 100 peaked at 2.6 GB, and scaled 10 keeps about
+# 10 times the hashes, so about 26 GB; 40 G leaves room.
+STEP1=$("${SUB[@]}" --mem=40G --array=18-26 notebooks/299_step1_sketch_timing.sbatch)
 STEP1=${STEP1%%;*}
 GATE=$("${SUB[@]}" --dependency=afterok:"$STEP1" --export=ALL,ONLY_SCALED=10,AFTER_FINISH="$AFTER" \
     notebooks/299_gate.sbatch)

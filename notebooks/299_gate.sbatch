@@ -71,7 +71,11 @@ if [ -n "${ONLY_SCALED:-}" ]; then
 else
     ARRAY=$("$E/python" notebooks/299_omrgc_sketch_pilot.py indices --scaled 100 1000)
 fi
-SEARCH=$("${SUB[@]}" --array="$ARRAY" --dependency=afterok:"$DEPS" notebooks/299_step3_search.sbatch)
+# Scaled 10 sketches hold about 10 times the hashes of scaled 100, whose sample search peaked
+# at 4.7 GB (array 48667936): 64 G instead of the job's 16 G.
+MEMARG=()
+if [ "${ONLY_SCALED:-}" = 10 ]; then MEMARG=(--mem=64G); fi
+SEARCH=$("${SUB[@]}" "${MEMARG[@]}" --array="$ARRAY" --dependency=afterok:"$DEPS" notebooks/299_step3_search.sbatch)
 SEARCH=${SEARCH%%;*}
 # afterany: a setting whose search failed is left out of the score and named in the log.
 FINISH=$("${SUB[@]}" --dependency=afterany:"$SEARCH${AFTER_FINISH:+:$AFTER_FINISH}" notebooks/299_finish.sbatch)
