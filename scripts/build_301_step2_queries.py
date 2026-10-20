@@ -355,7 +355,9 @@ def main() -> None:
     write_fasta(a.out / "queries.fasta", fasta)
     for name, rows in (("truth.tsv", truth), ("chimeras.tsv", chim_rows)):
         with open(a.out / name, "w", newline="") as fh:
-            w = csv.DictWriter(fh, fieldnames=list(rows[0]), delimiter="\t")
+            w = csv.DictWriter(
+                fh, fieldnames=list(rows[0]), delimiter="\t", lineterminator="\n"
+            )
             w.writeheader()
             w.writerows(rows)
 
