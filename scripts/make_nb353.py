@@ -352,6 +352,8 @@ Budget: two compute-days."""
 
 S7 = r'''
 acct = pl.read_csv(RES / "sacct.tsv", separator="|", infer_schema_length=0)
+# One row per job (array task); its TotalCPU already sums its steps (.batch, .extern).
+acct = acct.filter(~pl.col("JobID").str.contains(r"\."))
 def hms(s):
     s = s.strip()
     days = 0

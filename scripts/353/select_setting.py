@@ -4,8 +4,8 @@ notebooks/353_prereg.md, and freeze it.
 
     select_setting.py <dev results dir> <out dir>
 
-<dev results dir> holds one folder per setting (<alphabet>.k<k>/) with real_scores.tsv and
-shuffle_scores.tsv from score.py. Writes <out dir>/dev_selection.tsv (every setting's score,
+<dev results dir> holds one folder per setting (<alphabet>.k<k>/) with real_scores.tsv.gz and
+shuffle_scores.tsv.gz (score.py output, gzipped by pull_results.sh). Writes <out dir>/dev_selection.tsv (every setting's score,
 shuffle rate and whether it was excluded) and <out dir>/frozen_setting.json.
 
 Rule: score = mean over the 36 (window length x substitution level) combinations of the
@@ -34,11 +34,11 @@ N_CELLS = 36
 def main(dev_dir: str, out_dir: str) -> int:
     rows = []
     for d in sorted(Path(dev_dir).iterdir()):
-        if not (d / "real_scores.tsv").exists():
+        if not (d / "real_scores.tsv.gz").exists():
             continue
         alphabet, k = d.name.rsplit(".k", 1)
-        real = pl.read_csv(d / "real_scores.tsv", separator="\t")
-        shuf = pl.read_csv(d / "shuffle_scores.tsv", separator="\t")
+        real = pl.read_csv(d / "real_scores.tsv.gz", separator="\t")
+        shuf = pl.read_csv(d / "shuffle_scores.tsv.gz", separator="\t")
         cells = real.group_by("length", "n_within", "n_cross").agg(pl.col(f"found_{E_STAR:g}").mean().alias("recall"))
         assert cells.height == N_CELLS, (d, cells.height)
         rate = (shuf[f"n_other_{E_STAR:g}"] >= 1).mean()

@@ -18,5 +18,5 @@ ssh sherlock 'cd /scratch/users/olgabot/nb353 && \
                dev/*/search.time held_out/*/chunks/*.search.time held_out/*/examples.tsv.gz \
                index/*/index.log index/*/index.time index/*/ka_fit_stored 2>/dev/null)' \
   | tar xf - -C "$dest"
-ssh sherlock "sacct -u olgabot -S 2026-10-20 --name=nb353-pilot,nb353-dev,nb353-heldout-prep,nb353-heldout-search,nb353-heldout-score -X -P --format=JobID,JobName,State,Elapsed,TotalCPU,CPUTimeRAW,AllocCPUS,Start,End" > "$dest/sacct.tsv"
+ssh sherlock "sacct -u olgabot -S 2026-10-20 --name=nb353-pilot,nb353-dev,nb353-heldout-prep,nb353-heldout-search,nb353-heldout-score -P --format=JobID,JobName,State,Elapsed,TotalCPU,CPUTimeRAW,AllocCPUS,Start,End" > "$dest/sacct.tsv"
 find "$dest" -type f | sort
