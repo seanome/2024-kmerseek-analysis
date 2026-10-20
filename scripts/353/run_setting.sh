@@ -108,7 +108,10 @@ case $step in
     n=$(grep -c '^>' "$out/queries.fasta")
     per=$(( (n + N_CHUNKS - 1) / N_CHUNKS ))
     awk -v per=$per -v dir="$out/chunks" '/^>/{c=int(i++/per)} {printf "%s\n", $0 > sprintf("%s/chunk_%02d.fasta", dir, c)}' "$out/queries.fasta"
-    ls "$out/chunks" | wc -l > "$out/chunks/n_chunks"
+    # Count first: in `ls | wc -l > n_chunks` the redirect creates n_chunks before ls runs,
+    # so it counted itself (held-out prep 48693636 wrote 15 for 14 chunks).
+    n_files=$(ls "$out"/chunks/chunk_*.fasta | wc -l)
+    echo "$n_files" > "$out/chunks/n_chunks"
     ;;
   search)
     c=$(printf '%02d' "$chunk")
