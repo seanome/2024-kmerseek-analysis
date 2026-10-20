@@ -26,7 +26,7 @@ Steps (each resumes where it stopped):
   check          Ced9's and P66's best E-value on each human protein must equal notebook
                  241's (regions.parquet) to 1e-9 relative, or the run is not 241's search.
   pilot          step 2 on a fixed sample of human proteins at every setting, with the
-                 wall time and peak memory of every kmerseek process. <OUT>/pilot.csv
+                 wall time and peak memory of every kmerseek process. <OUT>/pilot.jsonl
   plan           predicted time and memory per setting for the whole proteome, from the
                  pilot. Writes <OUT>/step2_plan.csv; --submit also submits the step 2 arrays
                  and the score job.
@@ -56,6 +56,7 @@ import concurrent.futures as cf
 import importlib.util
 import json
 import math
+import multiprocessing
 import os
 import random
 import shutil
@@ -303,21 +304,26 @@ def one_chunk(
     return row | dict(status="ok")
 
 
-def run_jobs(jobs: list[tuple], workers: int, timing_csv: Path) -> int:
-    """Run (tag, recs, arm, folder, keep_genes) jobs `workers` at a time; append the timing
-    rows to `timing_csv`; return the number that failed."""
-    rows, failed = [], 0
-    with cf.ProcessPoolExecutor(workers) as ex:
+def run_jobs(jobs: list[tuple], workers: int, timing: Path) -> int:
+    """Run (tag, recs, arm, folder, keep_genes) jobs `workers` at a time; return the number
+    that failed.
+
+    Each finished chunk's timing row is appended to `timing` (JSON lines) as it arrives, so
+    a job stopped part way keeps the measurements it made. Workers start with spawn, not
+    fork: a pool forked after the parent has used polars can hang on Linux (Sherlock) with
+    no error, and macOS, which spawns by default, never shows it.
+    """
+    failed = 0
+    ctx = multiprocessing.get_context("spawn")
+    with cf.ProcessPoolExecutor(workers, mp_context=ctx) as ex, open(
+        timing, "a"
+    ) as log:
         for row in ex.map(one_chunk, *zip(*jobs)):
             print(json.dumps(row), file=sys.stderr, flush=True)
             failed += row["status"] == "FAILED"
             if row["status"] != "cached":
-                rows.append(row)
-    if rows:
-        new = pl.DataFrame(rows, infer_schema_length=None)
-        if timing_csv.exists():
-            new = pl.concat([pl.read_csv(timing_csv), new], how="diagonal_relaxed")
-        new.write_csv(timing_csv)
+                log.write(json.dumps(row) + "\n")
+                log.flush()
     return failed
 
 
@@ -355,7 +361,7 @@ def step1(workers: int) -> None:
                 (f"{arm_tag(arm)}.c{i:02d}", c, arm, folder, tuple(PARTNERS.values()))
             )
     print(f"step1: {len(qs)} queries, {len(jobs)} chunks", file=sys.stderr, flush=True)
-    if run_jobs(jobs, workers, OUT / "step1_timing.csv"):
+    if run_jobs(jobs, workers, OUT / "step1_timing.jsonl"):
         sys.exit("step1: some chunks failed; rerun to retry them")
     pl.scan_parquet(folder / "*.parquet").sink_parquet(
         OUT / "step1" / "regions.parquet"
@@ -445,7 +451,7 @@ def pilot(workers: int) -> None:
         file=sys.stderr,
         flush=True,
     )
-    run_jobs(jobs, workers, OUT / "pilot.csv")
+    run_jobs(jobs, workers, OUT / "pilot.jsonl")
 
 
 # Sizing margins: the pilot's sample is 1.3% of the proteome, so its rate per residue is
@@ -459,7 +465,7 @@ NODE_MEM_GB = 500  # largest hns memory most nodes have; above it a setting is n
 
 def plan(workers: int, cpus: int, submit: bool) -> pl.DataFrame:
     """Per setting: predicted wall time and memory for step 2 over the whole proteome."""
-    p = pl.read_csv(OUT / "pilot.csv")
+    p = pl.read_ndjson(OUT / "pilot.jsonl", infer_schema_length=None)
     failed = p.filter(pl.col("status") == "FAILED")
     if failed.height:
         print(f"plan: {failed.height} pilot chunks failed:\n{failed}", file=sys.stderr)
@@ -612,7 +618,7 @@ def step2(task: int, workers: int) -> None:
         file=sys.stderr,
         flush=True,
     )
-    if run_jobs(jobs, workers, OUT / "step2" / f"{tag}.timing.csv"):
+    if run_jobs(jobs, workers, OUT / "step2" / f"{tag}.timing.jsonl"):
         sys.exit(f"step2 {tag}: some chunks failed; rerun to retry them")
     (
         pl.scan_parquet(folder / "*.parquet")

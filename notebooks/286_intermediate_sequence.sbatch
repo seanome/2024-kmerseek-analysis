@@ -34,7 +34,7 @@
 #
 # Copy back only the small tables (after the score job):
 #   ssh sherlock-dtn mkdir -p /scratch/users/olgabot/286-intermediate-sequence/results
-#   pixi exec rsync -av sherlock-dtn:/scratch/users/olgabot/286-intermediate-sequence/{results,pilot.csv,step2_plan.csv,step1_timing.csv} \
+#   pixi exec rsync -av sherlock-dtn:/scratch/users/olgabot/286-intermediate-sequence/{results,pilot.jsonl,step2_plan.csv,step1_timing.jsonl} \
 #       /Users/olga/data/botryllus/alphabet-ranking-three-cases/286/
 set -euo pipefail
 

@@ -106,7 +106,7 @@ pl.Config.set_tbl_cols(30)
 pl.Config.set_fmt_str_lengths(60)
 
 DATA = Path.home() / "data/botryllus/alphabet-ranking-three-cases"
-# copied back from Sherlock: results/, pilot.csv, step2_plan.csv
+# copied back from Sherlock: results/, pilot.jsonl, step2_plan.csv
 RUN = Path(os.environ.get("NB286_RUN", DATA / "286"))
 HUMAN = Path.home() / "data/gencode/human/v49/gencode.v49.pc_translations.canonical.fa"
 FIG = Path("../figures")
