@@ -130,7 +130,10 @@ print(f"BHF: {len(BHF)} aa")
 status = {name: lc.run_finished(run) for name, run in lc.NULLS.items()}
 for name, (done, total) in status.items():
     print(f"{name}: {done} of {total} search tables")
-ALL_DONE = all(d == t for d, t in status.values())
+# Sections 4 and 5 read the nulls whose searches are finished and copied back; the
+# others print a waiting line.
+DONE = [name for name, (d, t) in status.items() if d == t]
+COPIES_DONE = all(name in DONE for name in list(lc.NULLS)[:3])
 """),
     md(r"""
 ## 1. BHF's low-complexity stretches
@@ -295,6 +298,13 @@ else:
     print("the Sherlock run has not been copied back yet")
 """),
     md(r"""
+The rebuilt indexes give notebook 256's tables back: 18_567 rows compared, no real
+difference. In 101 E-value or bit score rows the top 10 proteins come in a different
+order, and in 2 the count of tied proteins differs; the script checks that these are
+near-equal values, not different hits. So nulls 2 and 3 below are searched on the same
+indexes as null 1.
+"""),
+    md(r"""
 ## 4. BHF against each set of copies
 
 For each score, the settings where BHF beats 95% of the null's 300 queries, as a share of
@@ -303,8 +313,8 @@ the decision line (10%, twice chance). A score whose null-2 point sits right of 
 line has a BHF signal that the stretches do not explain.
 """),
     code(r"""
-if ALL_DONE:
-    p = lc.best_score_p_all()
+if COPIES_DONE:
+    p = lc.best_score_p_all(DONE)
     w = lc.wins_by_null(p)
     print(w)
     over = w.filter((pl.col("null") == "null 2: stretches kept in place") & (pl.col("n_beats_95pct") > pl.col("twice_chance")))
@@ -312,16 +322,30 @@ if ALL_DONE:
         w, FIG / "283_bhf_beats_copies_by_null_human_gencode",
         hypothesis="if BHF's wins come from its low-complexity stretches, copies that keep the stretches (null 2) "
                    "bring every score back to the 5% chance line.",
-        conclusion=(f"{over.height} of {len(lc.SCORES)} scores beat null 2 in more than twice the settings chance predicts."),
+        conclusion=(f"{over.height} of {len(lc.SCORES)} scores beat null 2 in more than twice the settings chance predicts; "
+                    "every score falls to between 3.8% and 6.6%."),
     )
-else:
-    print("waiting for the Sherlock run:", status)
+waiting = [name for name in lc.NULLS if name not in DONE]
+if waiting:
+    print("waiting for the Sherlock run:", {name: status[name] for name in waiting})
+"""),
+    md(r"""
+Copies that keep BHF's low-complexity stretches (null 2) take away almost all of BHF's
+lead. Under null 1, BHF beat 95% of its copies in 27 of 106 settings by tf-idf, 25 by
+containment, 23 by shared k-mers and 19 by mean IDF. Under null 2 the counts are 4 to 6
+of 106 for every score other than the E-value, around the 5.3 chance predicts, and 4 of 61
+for the E-value. The prediction written before the run holds.
+
+BHF without its stretches against its own shuffles (null 3) is near the line rather than
+at chance: 7 of 61 settings for the E-value, 10 of 86 for tf-idf and 10 of 86 for mean IDF
+sit just above twice chance (6.1, 8.6 and 8.6). Section 5 looks at those settings. Nulls 4
+and 5 (other proteins) are still running on Sherlock.
 """),
     md(r"""
 ## 5. The decision rule
 """),
     code(r"""
-if ALL_DONE:
+if COPIES_DONE:
     if over.height == 0:
         print("verdict: BHF: no kmerseek signal beyond its low-complexity stretches")
     else:
@@ -331,7 +355,7 @@ if ALL_DONE:
         kept = lc.NULLS["null 2: stretches kept in place"]
         reg = pl.read_parquet(sorted((kept / "regions").glob("*.parquet"))).filter(pl.col("query_name") == "BHF")
         won = p.filter((pl.col("null") == "null 2: stretches kept in place") & (pl.col("p") <= lc.ALPHA)
-                       & pl.col("metric").is_in(over["metric"]))
+                       & pl.col("metric").is_in(over["metric"].to_list()))
         for row in won.sort("metric", "alphabet", "k").iter_rows(named=True):
             hit = reg.filter((pl.col("metric") == row["metric"]) & (pl.col("alphabet") == row["alphabet"])
                              & (pl.col("k") == row["k"]) & (pl.col("gene") == row["bhf_top_gene"])).row(0, named=True)
@@ -341,16 +365,37 @@ if ALL_DONE:
                   f"BHF's top human protein {row['bhf_top_gene']} (tied with {row['bhf_n_tied'] - 1} others)")
             print(lc.show_alignment(q, hit["region_start"], t, hit["target_start"], hit["gene"], row["alphabet"]))
 
+    # Null 3, read against the same line (rule written 2026-10-13). A copy that found
+    # nothing at a setting counts as worse than BHF, so at high k, where most copies find
+    # nothing, BHF wins by finding anything. The second count leaves those copies out.
+    n3 = "null 3: stretches removed"
+    o3 = w.filter((pl.col("null") == n3) & (pl.col("n_beats_95pct") > pl.col("twice_chance")))
+    print(f"\n{n3}: {o3.height} of {len(lc.SCORES)} scores above the decision line: {o3['metric'].to_list()}")
+    p3 = p.filter(pl.col("null") == n3).with_columns(
+        ((1 + pl.col("n_as_good")) / (1 + pl.col("n_copies") - pl.col("n_copies_no_hit"))).alias("p_copies_with_a_hit"))
+    print(p3.group_by("metric").agg(
+        pl.len().alias("n_settings"), (pl.col("p") <= lc.ALPHA).sum().alias("n_beats_95pct"),
+        (pl.col("p_copies_with_a_hit") <= lc.ALPHA).sum().alias("n_beats_95pct_of_copies_with_a_hit"),
+        (lc.ALPHA * 2 * pl.len()).round(1).alias("twice_chance")).filter(pl.col("metric").is_in(o3["metric"].to_list())).sort("metric"))
+    reg3 = pl.read_parquet(sorted((lc.NULLS[n3] / "regions").glob("*.parquet"))).filter(pl.col("query_name") == "BHF")
+    won3 = p3.filter((pl.col("p") <= lc.ALPHA) & pl.col("metric").is_in(o3["metric"].to_list())).join(
+        reg3, left_on=["metric", "alphabet", "k", "bhf_top_gene"], right_on=["metric", "alphabet", "k", "gene"], how="left")
+    print(won3.select("metric", "alphabet", "k", pl.col("bhf").alias("bhf_best_value"), "bhf_top_gene",
+                      "n_as_good", "n_copies_no_hit", "region_start", "region_end").sort("metric", "alphabet", "k"))
+    e3 = p3.filter(pl.col("metric") == "E-value")
+    print(f"BHF without its stretches, best E-value over {e3.height} settings: {e3['bhf'].min():.3f}; "
+          f"settings with E < 0.05: {(e3['bhf'] < 0.05).sum()}")
+
     # Nulls 4 and 5: scores above the decision line, and how many of their winning
     # settings take BHF's region from the low-complexity stretches.
-    for name in list(lc.NULLS)[3:]:
+    for name in [n for n in list(lc.NULLS)[3:] if n in DONE]:
         o = w.filter((pl.col("null") == name) & (pl.col("n_beats_95pct") > pl.col("twice_chance")))
         print(f"\n{name}: {o.height} of {len(lc.SCORES)} scores above the decision line")
         if o.height == 0:
             continue
         run = lc.NULLS[name]
         reg = pl.read_parquet(sorted((run / "regions").glob("*.parquet"))).filter(pl.col("query_name") == "BHF")
-        won = p.filter((pl.col("null") == name) & (pl.col("p") <= lc.ALPHA) & pl.col("metric").is_in(o["metric"]))
+        won = p.filter((pl.col("null") == name) & (pl.col("p") <= lc.ALPHA) & pl.col("metric").is_in(o["metric"].to_list()))
         top = won.join(reg, left_on=["metric", "alphabet", "k", "bhf_top_gene"],
                        right_on=["metric", "alphabet", "k", "gene"], how="left")
         top = top.with_columns(pl.struct("region_start", "region_end").map_elements(
@@ -358,6 +403,28 @@ if ALL_DONE:
             return_dtype=pl.Boolean).alias("bhf_region_in_a_stretch"))
         print(top.group_by("metric").agg(pl.len().alias("winning_settings"),
                                          pl.col("bhf_region_in_a_stretch").sum().alias("bhf_region_overlaps_a_stretch")))
+"""),
+    md(r"""
+BHF passes the decision rule against null 2: no score beats copies that keep its
+low-complexity stretches in more than twice the settings chance predicts. The verdict
+written before the run applies: **BHF has no kmerseek signal beyond its low-complexity
+stretches** against copies of itself.
+
+Null 3 sits just over the line for three scores, and the margin does not hold up:
+
+- **One or two settings over.** 7 of 61 against a line of 6.1 (E-value), 10 of 86
+  against 8.6 (tf-idf and mean IDF).
+- **Some wins are settings where the copies found nothing.** A copy with no hit counts as
+  worse than BHF. At hp_lehninger_hpc3 k25, 296 of 300 copies found nothing; at
+  uniprot18 k9 and k10, 256 and 295. Counting only the copies that found something, the
+  wins are 6 (E-value), 8 (tf-idf) and 7 (mean IDF), each at or under the line.
+- **Neighbouring k-mer sizes repeat one match.** uniprot18 k7-10 all put ZNF770 on BHF
+  residues 45-54 (of the 190 left); hp_thomas_dill2 k17, 21 and 29 all put PSD2 on 59-145;
+  hp_lehninger2 k16 and k17 put DNAH10 on 11-189. These are not independent settings.
+- **No E-value reaches 0.05.** The best is 0.069 (DNAH10, hp_lehninger2 k17).
+
+So nothing in nulls 2 and 3 supports a BHF match to a human protein. Nulls 4 and 5 (other
+*Botryllus* proteins) will be added when their search finishes.
 """),
 ]
 

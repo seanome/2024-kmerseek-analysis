@@ -245,15 +245,18 @@ def run_finished(run: Path) -> tuple[int, int]:
         su.RUN = before
 
 
-def best_score_p_all() -> "pl.DataFrame":
+def best_score_p_all(names: list[str] | None = None) -> "pl.DataFrame":
     """One row per (null, score, setting): BHF's best value against its copies' best
     values, with p = (1 + copies at least as good) / (1 + copies), from notebook 256's code.
+    `names` limits it to those nulls (default: all of NULLS).
     """
     import polars as pl
     import bhf_shuffle_null_utils as su
 
     out, before = [], su.RUN
     for name, run in NULLS.items():
+        if names is not None and name not in names:
+            continue
         su.RUN = run
         out.append(su.best_score_p(su.load()).with_columns(pl.lit(name).alias("null")))
     su.RUN = before
@@ -315,7 +318,10 @@ def fig_wins_by_null(
         ax.axhline(y, color="#dddddd", lw=0.3, zorder=0)
     ax.axvline(100 * ALPHA, color=pf.GREY, lw=1, zorder=1)
     ax.axvline(200 * ALPHA, color=pf.GREY, lw=1, ls="--", zorder=1)
+    present = set(w["null"].to_list())
     for j, (null, c, s) in enumerate(zip(NULLS, colours, shapes)):
+        if null not in present:
+            continue
         d = w.filter(w["null"] == null)
         ys = [rows[m] + (j - (len(NULLS) - 1) / 2) * 0.16 for m in d["metric"]]
         ax.scatter(
@@ -341,6 +347,7 @@ def fig_wins_by_null(
     handles = [
         Line2D([], [], color=c, marker=s, ls="none", label=n)
         for n, c, s in zip(NULLS, colours, shapes)
+        if n in present
     ]
     handles += [
         Line2D([], [], color=pf.GREY, lw=1, label="chance: 5%"),
