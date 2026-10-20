@@ -28,7 +28,7 @@ printf 'score-3settings (rerun)\t%s\n' "$early" | tee -a "$JOBS"
 score=$(awk -F'\t' '$1 == "score" { id = $2 } END { print id }' "$JOBS")
 search=$(awk -F'\t' '$1 == "search-protein20" { id = $2 } END { print id }' "$JOBS")
 state=$(squeue -h -j "$score" -o %T 2>/dev/null || true)
-if [ "$state" = PENDING ] && scontrol update JobId="$score" MinMemoryNode="${mem}G" TimeLimit="$(printf %02d "$hours"):00:00"; then
+if [ "$state" = PENDING ] && scontrol update JobId="$score" MinMemoryNode=$((mem * 1024)) TimeLimit="$(printf %02d "$hours"):00:00"; then
     echo "score $score: now ${mem}G, ${hours} h"
 else
     [ -n "$state" ] && scancel "$score"
