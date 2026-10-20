@@ -404,8 +404,26 @@ def one_arm(
             "no Karlin-Altschul fit; searched with exact regions\n"
         )
 
+    # A search CSV left by an earlier run that extended its regions does not match an
+    # arm that is now unfitted. hp_lehninger_hpc3 k=21 was fitted by the retry on
+    # 2026-09-23 and searched with extension; the run after it skipped the retry (the
+    # dense-curves rule above) and kept that CSV, so E-values stayed finite on an arm
+    # recorded as having none. Move the old CSV and log to search/extended/ (out of reach
+    # of any search/*.csv glob) and search again.
+    search_log = logs / f"{tag}.search.log"
+    if (
+        fit is not True
+        and search_csv.exists()
+        and search_log.exists()
+        and "Seed extension: off" not in search_log.read_text()
+    ):
+        old = out / "search" / "extended"
+        old.mkdir(exist_ok=True)
+        search_csv.rename(old / search_csv.name)
+        search_log.rename(old / search_log.name)
+
     if not search_csv.exists():
-        rc, dt = run(search_cmd, logs / f"{tag}.search.log")
+        rc, dt = run(search_cmd, search_log)
         rec["search_rc"], rec["search_s"] = rc, round(dt, 1)
     else:
         rec["search_rc"], rec["search_s"] = 0, 0.0
@@ -446,6 +464,11 @@ def main() -> None:
     ap.add_argument(
         "--plan-only", action="store_true", help="print the ladder and exit"
     )
+    ap.add_argument(
+        "--only",
+        default="",
+        help="run only these settings, as alphabet.kN tags (comma-separated)",
+    )
     args = ap.parse_args()
 
     # A fresh output folder (a first run on Sherlock) has none of these yet.
@@ -482,6 +505,14 @@ def main() -> None:
         for a, k, c, x in plan:
             print(f"{a:26s} k={k:2d}  bits={k * hbits[a]:5.1f}  C={c} X={x}")
         return
+
+    # plan.json above always lists the whole ladder; --only narrows what is run.
+    only = {t for t in args.only.split(",") if t}
+    if only:
+        plan = [p for p in plan if f"{p[0]}.k{p[1]}" in only]
+        missing = only - {f"{a}.k{k}" for a, k, _, _ in plan}
+        if missing:
+            sys.exit(f"--only: not in the plan: {sorted(missing)}")
 
     results = []
     with cf.ThreadPoolExecutor(max_workers=args.workers) as ex:
