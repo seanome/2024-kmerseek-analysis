@@ -73,6 +73,12 @@ reads only the tables copied back from there to
 (tag `nb241-kmerseek-982a055`). `ranks.csv` was rebuilt on 2026-10-16 from
 `regions.parquet` with `241_alphabet_ranking_collect.py --from-regions`, which adds
 `n_finite` and names the alphabetically first of tied top proteins; no rank changed.
+On 2026-10-20 one setting was searched again (PR 194): hp_lehninger_hpc3 k=21 is
+recorded as having no Karlin-Altschul fit, but its search had been run with region
+extension under a fit an earlier run made, so its regions were longer than exact runs and
+six of them had a finite E-value. It is now searched with exact regions, like the other 81
+settings with no fit, and `arms.csv`, `ranks.csv` and `regions.parquet` were rebuilt; only
+that setting's rows changed.
 
 **Before kmerseek PR 136.** Three of the eleven metrics, containment, protein enrichment
 and protein Poisson p-value, are computed once per protein pair. kmerseek 982a055 is from
@@ -691,10 +697,10 @@ the smallest of many tries: 102 setting and metric combinations for BCL2, 957 fo
 family. Random human proteins, scored over the same combinations, do as well as BCL2's
 213 in 97.7% of draws under the uniform null and 59.1% under the real-protein null (section
 7 says how the two differ). For the family, 10 random human proteins reach a best rank as
-good as MCL1's 1 in 26.8% of draws, and a best percent of the list as good as MCL1's
+good as MCL1's 1 in 27.2% of draws, and a best percent of the list as good as MCL1's
 0.012% in 12.5% (uniform null: 6.4%). The best rank favours settings that rank few
 proteins, which is why the family's rank 1 is so easy to match; the percent is the fairer
-of the two and still misses 95%. For CD47 the numbers are 99.7% and 75.3%.
+of the two and still misses 95%. For CD47 the numbers are 99.7% and 75.2%.
 
 **P66/CD47 does no better.** CD47 is among the hits for 16 of 19 alphabets when P66 is the
 query. Its best rank over the five metrics is 413 of 3_064 (hsdm17, enrichment, k=6, 55
@@ -720,10 +726,10 @@ the same H/P class, 16.6 bits, E = 29_482. The best E-values the partners ever g
 1_955 (BCL2, wwmj5 k=9, rank 1_352 of the 2_175 proteins with an E-value) and 899 (CD47,
 sdm12 k=6).
 
-**BHF: the E-values are too cautious, so nothing can beat chance.** 61 of the 71 fitted
+**BHF: the E-values are too cautious, so nothing can beat chance.** 61 of the 70 fitted
 settings give BHF any finite E-value. If the E-values were right, the best hit of one
 search would fall below E = 1 by chance with probability 1 − e⁻¹ = 0.63, so about 39 of
-those 61 (45 of all 71) would. Three do: SCN10A 0.61 (polarity4 k=13), SFI1 0.84
+those 61 (44 of all 70) would. Three do: SCN10A 0.61 (polarity4 k=13), SFI1 0.84
 (hp_lehninger_c_nonpolar2 k=28) and FXYD5 0.99 (gbmr7 k=8, an alphabet that cannot have
 an E-value). Without the three alphabets that cannot have an E-value, 2 of 54 against
 about 34 expected. These E-values understate how often chance reaches a given score, so
@@ -737,7 +743,7 @@ regions and 88 to 98% for the 12- to 20-class alphabets, and the regions it remo
 the same or a higher median identity than the ones it keeps. (2) The kappa-optimal
 penalty assumes equal class shares; on this proteome gbmr7, hp_lehninger_hpc3 and gbmr4
 have a chance match rate high enough that a chance position scores at or above zero, so
-no lambda exists for them at any k. 81 of 152 settings ended without a Karlin-Altschul
+no lambda exists for them at any k. 82 of 152 settings ended without a Karlin-Altschul
 fit.
 
 **What this changes.** The E-value, mean IDF, tf-idf, enrichment and Poisson p-value all
