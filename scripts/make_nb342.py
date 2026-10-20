@@ -984,7 +984,7 @@ md(r"""
 Stop 3 has scored three of its four kmerseek settings. protein20 k = 5 is still running: its
 whole-protein index refused the E-value fit on 500 queries and is being rebuilt with 2_500
 (Sherlock jobs 48685828 and 48685830, [PR 152](https://github.com/seanome/2024-kmerseek-analysis/pull/152)).
-The four-setting score (job 48689206) is what Stop 4 reads. This section reads the three-setting
+The four-setting score (job 48690977) is what Stop 4 reads. This section reads the three-setting
 score: job 48689195, `scripts/342_kind4_features.py` at commit 59762371, copied to
 `tables/342/score_3settings/` and checked against the md5 sums in its `provenance.tsv`.
 
@@ -1263,7 +1263,7 @@ md(r"""
 * The strongest hit in each setting is on an annotated folded domain (a protein kinase domain, a
   PIPK domain, a fibronectin type III domain), with 66 of 77, 83 of 91 and 96 of 127 residues
   identical (76% to 91%).
-* Next: the four-setting score (job 48689206) after protein20's search, then Stop 4, the test.
+* Next: the four-setting score (job 48690977) after protein20's search, then Stop 4, the test.
 """)
 
 nb = {
