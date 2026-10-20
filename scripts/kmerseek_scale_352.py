@@ -66,6 +66,11 @@ THIRD_SIZE_CHOICES = (
     20_000_000_000,
 )
 N_QUERIES = 1_000
+# A size counts (enters the fit and the gate) when at least 99% of its queries finish:
+# 990 of 1,000. The preregistration did not say how many must finish. Olga set this on
+# 2026-10-20, after the preregistration and before any measurement; the notebook lists it
+# as a stated change. `complete` still records whether all of them finished.
+MIN_PERCENT_OK = 99
 KSIZE = 19
 
 # The kmerseek setting (preregistration, kmerseek_setting).
@@ -457,13 +462,18 @@ def split_queries(queries_fasta: Path, out_dir: Path) -> list[tuple[int, str, Pa
     return rows
 
 
+def min_queries_ok() -> int:
+    """Fewest finished queries for a size to count: MIN_PERCENT_OK % of N_QUERIES, rounded up."""
+    return -(-N_QUERIES * MIN_PERCENT_OK // 100)
+
+
 def run_size(args) -> None:
     """One size: copy its subset to local disk, build the index, run the queries.
 
     Stops starting queries at the deadline: the earlier of the remaining 48 h budget and
     the job's Slurm end time less JOB_END_MARGIN_S, so queries.tsv and summary.json are
     written before Slurm stops the job. Queries cut off by it are recorded with exit
-    "not_run", and the size then counts as incomplete.
+    "not_run". The size counts only if at least MIN_PERCENT_OK % of its queries finish.
     """
     check_cpu_only()
     local = Path(args.local_dir)
@@ -559,6 +569,7 @@ def run_size(args) -> None:
     info["n_queries_failed"] = sum(1 for r in rows.values() if r["exit"] not in (0, "not_run"))
     info["n_queries_not_run"] = sum(1 for r in rows.values() if r["exit"] == "not_run")
     info["complete"] = len(ok) == N_QUERIES
+    info["counted"] = len(ok) >= min_queries_ok()
     if ok:
         info["query_wall_s_median"] = float(np.median(ok))
         info["query_wall_s_p95"] = float(np.percentile(ok, 95))
@@ -761,8 +772,8 @@ def main(argv=None) -> None:
         run_size(a)
     elif a.cmd == "gate":
         measured = json.loads(a.summary_10.read_text())
-        if not measured.get("complete"):
-            decision = {"chosen_size_residues": None, "reason": "the 10 billion residue step is not complete"}
+        if not measured.get("counted"):
+            decision = {"chosen_size_residues": None, "reason": f"fewer than {min_queries_ok()} of the 10 billion residue step's {N_QUERIES} queries finished"}
         else:
             available = [s["size_residues"] for s in json.loads(a.subsets_json.read_text())]
             job_h = job_hours(a.budget_tsv, "size-10000000000")

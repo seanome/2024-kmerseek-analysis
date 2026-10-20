@@ -72,6 +72,20 @@ Sources and checksums: [data/SOURCES.md]({REPO}/blob/main/data/SOURCES.md).
 """
 )
 
+md(
+    r"""
+**Stated change to the preregistration (2026-10-20).** The preregistration did not say how
+many of the 1,000 queries must finish for a size to count. As first written, the code
+dropped a size if even one query failed. Olga set the rule on 2026-10-20, after the
+preregistration was committed and before any job ran: a size counts when at least 990 of
+its 1,000 queries finish (exit 0). Queries that fail or are cut off by the time limit are
+left out of the median and 95th percentile, and their number is printed in the table. If
+the slow queries are the ones that fail, the counted times are lower than the true ones;
+`n_queries_failed` and `n_queries_not_run` show how many were left out. The fit and the
+rule are otherwise unchanged.
+"""
+)
+
 code(
     r"""
 import json
@@ -107,8 +121,9 @@ Every number in this table was measured on Sherlock; the column names are the on
 `scripts/kmerseek_scale_352.py run-size` writes. `index_bytes_apparent` is the index size
 on disk (sum of file sizes, bytes). `query_wall_s_median` and `query_wall_s_p95` are the
 median and 95th percentile of the 1,000 per-query wall times (seconds, from process start
-to exit, opening the index included). A size whose queries did not all finish is marked
-`complete = false` and left out of the fit.
+to exit, opening the index included). `complete` says whether all 1,000 queries
+finished. `counted` says whether at least 990 did; only counted sizes enter the fit (see
+"Stated change" above). The median and 95th percentile are over the queries that finished.
 
 Figure SF1 (below the table): x, index size on disk; y, per-query wall time; both axes
 spaced by ratio, so equal steps are equal factors. Filled circles are measured sizes. The
@@ -125,12 +140,12 @@ if summaries:
     measured = pl.DataFrame(rows).select(
         "setting", "size_residues", "n_residues", "n_sequences", "index_build_wall_s",
         "index_build_peak_rss_gb", "index_bytes_apparent", "index_bytes_allocated",
-        "n_queries_ok", "n_queries_failed", "n_queries_not_run", "complete",
+        "n_queries_ok", "n_queries_failed", "n_queries_not_run", "complete", "counted",
         "query_wall_s_median", "query_wall_s_p95", "query_peak_rss_gb_max", "host",
     ).sort("size_residues")
     with pl.Config(tbl_cols=-1, tbl_width_chars=250):
         print(measured)
-    full = measured.filter(pl.col("complete"))
+    full = measured.filter(pl.col("counted"))
     if full.height >= 3:
         import scale_352_figure as sf
 
@@ -145,7 +160,7 @@ if summaries:
         print(fits)
         print(f"Rule fires (lower end of the 95% interval of the median exponent > 1): {ks.rule_fires(fit_median)}")
     else:
-        print(f"{full.height} complete sizes: a slope with an interval needs three; no fit.")
+        print(f"{full.height} counted sizes: a slope with an interval needs three; no fit.")
 """
 )
 

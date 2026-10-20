@@ -234,7 +234,7 @@ def test_run_size_with_a_stand_in_kmerseek(tmp_path, monkeypatch):
     assert summary["index_bytes_apparent"] == 5000
     assert summary["database_fasta_bytes"] == len(">UPI1\nACDEFGHIKLMNPQRSTVWYACDEF\n")
     assert summary["n_queries_ok"] == 1 and summary["n_queries_failed"] == 1
-    assert not summary["complete"]
+    assert not summary["complete"] and not summary["counted"]
     rows = [r.split("\t") for r in (tmp_path / "out" / "queries.tsv").read_text().splitlines()]
     assert rows[1][:3] == ["0", "UPI1", "0"] and rows[1][-1] == "20"
     assert rows[2][2] == "3"
@@ -265,3 +265,11 @@ def test_run_size_stops_starting_queries_when_the_budget_is_gone(tmp_path):
     ks.run_size(args)
     summary = json.loads((tmp_path / "out" / "summary.json").read_text())
     assert summary["n_queries_not_run"] == 1 and summary["n_queries_ok"] == 0
+
+
+def test_a_size_counts_when_99_percent_of_queries_finish(monkeypatch):
+    assert ks.min_queries_ok() == 990
+    monkeypatch.setattr(ks, "N_QUERIES", 2)
+    assert ks.min_queries_ok() == 2
+    monkeypatch.setattr(ks, "N_QUERIES", 101)
+    assert ks.min_queries_ok() == 100
