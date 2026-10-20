@@ -1,0 +1,71 @@
+{
+ "tool": "diamond_besthit",
+ "setting": "ultra-sensitive",
+ "name": "DIAMOND best hit",
+ "group": "best-hit transfer",
+ "graded_on": "Pfam domains of the best Swiss-Prot hit (Mammalia removed), placed on the query through the alignment",
+ "version": "diamond version 2.2.8",
+ "container": "quay.io/biocontainers/diamond@sha256:e02013280712f1295e59339dc6ea162adf8a6bbdd730e73a9c00700c03c3e556",
+ "command": "diamond blastp --query UP000005640_9606.fasta --db reference.dmnd --ultra-sensitive --threads 8 --out hits.tsv --outfmt 6 qseqid sseqid qstart qend sstart send bitscore evalue pident qseq_gapped sseq_gapped",
+ "cpu_model": "AMD EPYC 7543 32-Core Processor",
+ "needs_gpu": false,
+ "has_query_coordinates": true,
+ "query_set": "midi-plus",
+ "target_db": "Swiss-Prot minus Mammalia",
+ "target_db_version": "UniProtKB/Swiss-Prot 2026_03",
+ "truth": "Pfam-A domain instances, Pfam 38.2",
+ "queries": {
+  "n_queries": 998,
+  "n_queries_with_hit": 840,
+  "n_best_hits_with_pfam_domain": 837,
+  "n_queries_with_call": 820,
+  "n_calls": 2209
+ },
+ "scores_split_all": {
+  "fmax": 0.7637153867148232,
+  "fmax_precision": 0.80935268523069,
+  "fmax_recall": 0.7229501055451706,
+  "fmax_threshold": 41.6,
+  "auprc": 0.4848404611063839,
+  "recall_reachable": 0.6353182751540041,
+  "median_iou_tp": 1.0,
+  "family_fmax": 0.7876390635862421,
+  "n_truth_instances": 2435,
+  "grey": false
+ },
+ "cost_this_setting": {
+  "steps": [
+   "diamondBestHitSearch",
+   "placeBestHitDomains",
+   "scoreAnnotatorTool"
+  ],
+  "cpu_h": 0.15215555555555554,
+  "wall_s": 71.75999999999999,
+  "peak_ram_gb": 2.0
+ },
+ "cost_database_build_shared_by_tool_settings": {
+  "steps": [
+   "diamondMakedb"
+  ],
+  "cpu_h": 0.003333333333333333,
+  "wall_s": 3.0,
+  "peak_ram_gb": 0.2201171875
+ },
+ "cost_shared_by_all_tools_in_run": {
+  "steps": [
+   "cladeExcludedReference",
+   "hitTargets",
+   "hmmscanHitTargets"
+  ],
+  "cpu_h": 0.7284722222222222,
+  "wall_s": 361.5,
+  "peak_ram_gb": 0.76572265625
+ },
+ "author_check": {
+  "authors": "Benjamin Buchfink (DIAMOND)",
+  "status": "not sent: draft waiting for Olga",
+  "draft": "docs/tool_author_messages/diamond_besthit.md"
+ },
+ "public": false,
+ "source_commit": "c4cdc33"
+}

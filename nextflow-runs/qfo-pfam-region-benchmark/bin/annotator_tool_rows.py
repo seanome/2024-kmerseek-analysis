@@ -218,6 +218,28 @@ def tidy(df: pl.DataFrame, schema: dict) -> pl.DataFrame:
     return df.select([pl.col(c).cast(t) for c, t in schema.items()])
 
 
+def module_containers(modules: Path) -> list[str]:
+    """Every `container '...'` reference pinned in the modules."""
+    refs = []
+    for nf in sorted(modules.glob("*.nf")):
+        for line in nf.read_text().splitlines():
+            line = line.strip()
+            if line.startswith("container '"):
+                refs.append(line.split("'")[1])
+    return refs
+
+
+def container_ref(container: str, refs: list[str]) -> str:
+    """On Sherlock the trace's `container` is the Apptainer cache file, named by
+    `make prefetch-images` as the reference with '/' and ':' turned into '-' plus '.img'.
+    Map it back to the reference the module pins; anything else is kept as written."""
+    name = Path(container).name
+    for ref in refs:
+        if ref.replace("/", "-").replace(":", "-") + ".img" == name:
+            return ref
+    return container
+
+
 def read_run_info(path: Path) -> dict:
     """<tool>.<setting>.run.txt: 'command: ...', 'version: ...', 'cpu_model: ...'."""
     info = {}
@@ -605,7 +627,10 @@ def main() -> None:
                 .to_list()
             )
             if imgs:
-                images[tool] = "; ".join(imgs)
+                refs = module_containers(
+                    Path(__file__).resolve().parents[1] / "modules"
+                )
+                images[tool] = "; ".join(sorted({container_ref(i, refs) for i in imgs}))
 
     frames, pile, cards = [], [], {}
     n_queries = None

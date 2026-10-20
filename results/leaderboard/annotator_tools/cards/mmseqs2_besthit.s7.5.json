@@ -1,0 +1,71 @@
+{
+ "tool": "mmseqs2_besthit",
+ "setting": "s7.5",
+ "name": "MMseqs2 best hit",
+ "group": "best-hit transfer",
+ "graded_on": "Pfam domains of the best Swiss-Prot hit (Mammalia removed), placed on the query through the alignment",
+ "version": "18.8cc5c",
+ "container": "quay.io/biocontainers/mmseqs2@sha256:3503bfe576d560e550df2872af86a1ad1bcc1c06cfb7caadd3e7a95649f5f0ef",
+ "command": "mmseqs search query_db/db reference_db/db result tmp -s 7.5 -a --threads 16 && mmseqs convertalis query_db/db reference_db/db result hits.tsv --format-output query,target,qstart,qend,tstart,tend,bits,evalue,pident,qaln,taln --threads 16",
+ "cpu_model": "AMD EPYC 7543 32-Core Processor",
+ "needs_gpu": false,
+ "has_query_coordinates": true,
+ "query_set": "midi-plus",
+ "target_db": "Swiss-Prot minus Mammalia",
+ "target_db_version": "UniProtKB/Swiss-Prot 2026_03",
+ "truth": "Pfam-A domain instances, Pfam 38.2",
+ "queries": {
+  "n_queries": 998,
+  "n_queries_with_hit": 855,
+  "n_best_hits_with_pfam_domain": 852,
+  "n_queries_with_call": 840,
+  "n_calls": 2679
+ },
+ "scores_split_all": {
+  "fmax": 0.7732633230041195,
+  "fmax_precision": 0.7976801433700433,
+  "fmax_recall": 0.7502968938768944,
+  "fmax_threshold": 43.0,
+  "auprc": 0.5140976324199144,
+  "recall_reachable": 0.7125256673511293,
+  "median_iou_tp": 1.0,
+  "family_fmax": 0.7940048179710604,
+  "n_truth_instances": 2435,
+  "grey": false
+ },
+ "cost_this_setting": {
+  "steps": [
+   "mmseqsBestHitSearch",
+   "placeBestHitDomains",
+   "scoreAnnotatorTool"
+  ],
+  "cpu_h": 0.058805555555555555,
+  "wall_s": 16.7,
+  "peak_ram_gb": 2.4
+ },
+ "cost_database_build_shared_by_tool_settings": {
+  "steps": [
+   "mmseqsBestHitDb"
+  ],
+  "cpu_h": 0.0022222222222222222,
+  "wall_s": 4.0,
+  "peak_ram_gb": 0.18837890625
+ },
+ "cost_shared_by_all_tools_in_run": {
+  "steps": [
+   "cladeExcludedReference",
+   "hitTargets",
+   "hmmscanHitTargets"
+  ],
+  "cpu_h": 0.7284722222222222,
+  "wall_s": 361.5,
+  "peak_ram_gb": 0.76572265625
+ },
+ "author_check": {
+  "authors": "Martin Steinegger, Johannes S\u00f6ding (MMseqs2)",
+  "status": "not sent: draft waiting for Olga",
+  "draft": "docs/tool_author_messages/mmseqs2_besthit.md"
+ },
+ "public": false,
+ "source_commit": "c4cdc33"
+}
