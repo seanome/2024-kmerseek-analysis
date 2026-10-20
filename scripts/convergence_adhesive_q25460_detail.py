@@ -11,6 +11,8 @@ setting, a sequence tool, a Foldseek mode or a scan):
                           each lineage score above the real query's first false positive:
                           the same cutoff for the real query and its 40 null draws
   first_false_positive.tsv  the real query's first false positive: target, name, score
+  truth_ranks.tsv         the real query's rank and score for every truth entry in the
+                          whole list; an entry the list never reported gets no row
 
 A list with no false positive for the real query gets no cutoff, and its rows in
 truth_at_threshold.tsv count every reported row instead (`cutoff` is empty there).
@@ -74,7 +76,7 @@ def main() -> int:
     sources += list(score.lists_from_tools(args.hits))
     sources += list(score.lists_from_kmerseek(args.hits))
 
-    top_rows, count_rows, fp_rows = [], [], []
+    top_rows, count_rows, fp_rows, rank_rows = [], [], [], []
     for method, setting, _, frame in sources:
         ranked = frame.sort(["query_id", "score"], descending=[False, True])
         real = ranked.filter(pl.col("query_id") == QUERY).with_columns(
@@ -93,6 +95,21 @@ def main() -> int:
                 "cutoff": cutoff,
             }
         )
+        for r in real.filter(pl.col("target").is_in(list(truth_lineage))).iter_rows(
+            named=True
+        ):
+            rank_rows.append(
+                {
+                    "method": method,
+                    "setting_label": setting,
+                    "target": r["target"],
+                    "truth_lineage": truth_lineage[r["target"]],
+                    "rank": r["rank"],
+                    "score": r["score"],
+                    "n_reported": real.height,
+                    "cutoff": cutoff,
+                }
+            )
         for r in real.head(args.top).iter_rows(named=True):
             top_rows.append(
                 {
@@ -153,6 +170,7 @@ def main() -> int:
     pl.DataFrame(count_rows).write_csv(
         args.outdir / "truth_at_threshold.tsv", separator="\t"
     )
+    pl.DataFrame(rank_rows).write_csv(args.outdir / "truth_ranks.tsv", separator="\t")
     pl.DataFrame(fp_rows).write_csv(
         args.outdir / "first_false_positive.tsv", separator="\t"
     )
