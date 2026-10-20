@@ -9,7 +9,8 @@ setting, a sequence tool, a Foldseek mode or a scan):
                           the UniProt protein name
   truth_at_threshold.tsv  for every query (real and null), how many truth entries of
                           each lineage score above the real query's first false positive:
-                          the same cutoff for the real query and its 40 null draws
+                          the same cutoff for the real query and its 40 null draws. Q25460's
+                          own entry is not counted, for any query
   first_false_positive.tsv  the real query's first false positive: target, name, score
   truth_ranks.tsv         the real query's rank and score for every truth entry in the
                           whole list; an entry the list never reported gets no row. A
@@ -129,7 +130,12 @@ def main() -> int:
         for qid, g in ranked.group_by("query_id"):
             qid = qid[0] if isinstance(qid, tuple) else qid
             kept = g if cutoff is None else g.filter(pl.col("score") > cutoff)
-            found = kept.filter(pl.col("target").is_in(list(truth_lineage)))
+            # The query's own Swiss-Prot entry is left out for every query: a null draw
+            # that matches the protein it was shuffled from has not reached another one.
+            found = kept.filter(
+                pl.col("target").is_in(list(truth_lineage))
+                & (pl.col("target") != QUERY.split("__")[0])
+            )
             by = dict(
                 zip(
                     *(
