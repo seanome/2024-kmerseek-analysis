@@ -82,7 +82,8 @@ it.
 
 On 2026-10-19, still before any search, Olga chose to keep this rule as written, knowing
 from the cell below and from a synthetic check (`scripts/344_synthetic_calibrated_regions.py`)
-that it fails an exactly calibrated E-value about half the time.
+that it fails an exactly calibrated E-value at least about half the time (if regions are
+independent; more if they are not).
 
 1. **Strata.** 4 length bins (the leaderboard's RULES.md edges, in residues: [0, 100),
    [100, 300), [300, 1000], (1000, ∞)) × 3 bins of the share of residues SEG masks as
