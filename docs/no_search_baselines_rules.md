@@ -66,3 +66,29 @@ cell is "not applicable" (null value, `applicable = False`), never zero.
   that are not disordered.
 - The Pfam family frequency baseline on Sherlock equals the laptop check (0.035): same
   code, same inputs. No prediction is made for it beyond that, since its value was seen.
+
+## Outcome (added 2026-10-19, after the run)
+
+Run: head job 48547674 on Sherlock, commit 923258f9, 2 min 6 s, head peak 6.2 GB of
+16 GB asked. Numbers printed by `scripts/build_no_search_baseline_table.py`.
+
+- **Prediction 1, WRONG by a small margin.** Sherlock gives Kyte-Doolittle TRANSMEM Fmax
+  0.7775 (1359 calls); the laptop gave 0.7781 (1361 calls). The cause is windows whose
+  mean is exactly 1.6: the test compared floating-point means, and numpy 2.5.2 (the image)
+  and numpy 2.3.5 (the laptop) round those ties differently (16 calls differ out of about
+  1580). The scan now tests sums of whole tenths, which is exact; on the laptop that gives
+  0.7776. All three round to 0.778, and rule 1 reads the same with any of them. The
+  leaderboard holds the Sherlock value until `kdScan` is rerun with the exact test.
+- **Prediction 2, HOLDS.** On `swissprot_disordered` IUPred scores 0.717 and metapredict
+  0.500; on the main REGION stratum 0.617 and 0.431.
+- **Prediction 3, HOLDS for Pfam.** The frequency baseline's calls and bins on Sherlock are
+  identical to the laptop's, and its Pfam Fmax is 0.0354 on both. Its Pfam-N row (0.002)
+  was scored against the whole-proteome Pfam-N table (44315 regions on 18724 proteins),
+  the denominator error PR 165 fixes; against the queries' own 2218 regions on 966
+  proteins it is 0.035 (laptop, same calls). The workflow now cuts Pfam-N to the queries
+  (`restrictBaselineTruth`), and the leaderboard leaves this run's Pfam-N row out.
+- **Rule 1, holds on TRANSMEM:** 0 of 450 kmerseek rows reach the scan (best 0.505).
+  INTRAMEM (9 instances) is grey.
+- **Rule 3:** 1301 of the 1302 Disordered REGION features and all 1445 COMPBIAS features
+  carry MobiDB-lite evidence. Every disorder score on those two truth sets is a comparison
+  with a consensus that includes IUPred.

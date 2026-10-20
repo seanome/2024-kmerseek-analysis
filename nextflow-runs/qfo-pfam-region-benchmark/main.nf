@@ -5105,6 +5105,42 @@ MANIFEST_EOF
     """
 }
 
+process restrictBaselineTruth {
+    /*
+     * The Pfam-N truth table is built from the whole human annotation: 44_315 regions on
+     * 18_724 proteins, of which the 998 midi-plus queries hold 2_218 on 966. Scored as it
+     * stands, recall is divided by regions nobody searched (memory note and PR 165, which
+     * adds restrictTruthToQueries to the main workflow). The 2026-10-19 run of this entry
+     * scored the Pfam family frequency baseline against the whole table and got Fmax 0.002;
+     * against the queries' own rows it is 0.035.
+     */
+    tag "${truth_set}"
+    label 'no_search'
+    container params.kmerseek_image
+    cpus 1
+    memory { 4.GB * task.attempt }
+    time   { 1.h * task.attempt }
+    errorStrategy { retryOnKill(task) }
+    maxRetries 2
+
+    input:
+    tuple val(truth_set), path(truth, stageAs: 'full/*'), path(query_fasta)
+
+    output:
+    tuple val(truth_set), path("human_${truth_set}_truth.queries.parquet")
+
+    script:
+    """
+    no_search_baselines.py restrict --truth ${truth} --fasta ${query_fasta} \\
+        --out human_${truth_set}_truth.queries.parquet
+    """
+
+    stub:
+    """
+    touch human_${truth_set}_truth.queries.parquet
+    """
+}
+
 process aggregateNoSearch {
     tag "no-search baselines"
     label 'no_search'
@@ -5154,10 +5190,13 @@ workflow noSearchBaselines {
         tuple('swissprot', must("${run_dir}/truth_swissprot/human_swissprot_truth.parquet",
                                 'Swiss-Prot truth')),
     ]
-    if (params.pfamn_dir) {
-        truth_list << tuple('pfamn', must("${params.pfamn_dir}/human_pfamn_truth.parquet",
-                                          'Pfam-N truth'))
-    }
+    // Pfam-N's table covers the whole proteome, so it is cut to the queries first; the Pfam
+    // and Swiss-Prot tables of the finished run already hold only the queries.
+    pfamn_truth = params.pfamn_dir
+        ? restrictBaselineTruth(Channel.of(tuple(
+              'pfamn', must("${params.pfamn_dir}/human_pfamn_truth.parquet", 'Pfam-N truth'),
+              query_fasta)))
+        : Channel.empty()
 
     dis = buildDisorderTruth(
         Channel.of(tuple(must(params.swissprot_dat, 'Swiss-Prot flat file'), query_fasta)))
@@ -5194,7 +5233,7 @@ workflow noSearchBaselines {
             sets.collect { ts -> tuple(ts, tool, variant, f) }
         }
         .groupTuple()
-        .join(Channel.fromList(truth_list).mix(disorder_truth))
+        .join(Channel.fromList(truth_list).mix(disorder_truth, pfamn_truth))
         .map { ts, tools, variants, files, truth ->
             tuple(ts, truth, tools, variants, files, covariates) }
 

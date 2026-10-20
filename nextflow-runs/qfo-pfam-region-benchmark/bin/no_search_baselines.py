@@ -110,19 +110,29 @@ def write_calls(calls: pl.DataFrame, out: Path) -> None:
 
 def kd_calls(seqs: dict[str, str], label: str, window: int = KD_WINDOW,
              threshold: float = KD_THRESHOLD) -> pl.DataFrame:
-    """Notebook 231's scan, unchanged except that the label is a parameter.
+    """Notebook 231's scan, with the label a parameter and the window test made exact.
 
     Windows whose mean hydropathy exceeds `threshold`, merged into segments spanning the
     full windows. Score is the segment's best window mean.
+
+    The test is done in whole tenths: every Kyte-Doolittle value has one decimal, so ten
+    times a window's sum is an integer and "mean above 1.6" is "sum of tenths above
+    16 x 19". Notebook 231 compared floating-point means, and a window whose mean is
+    exactly 1.6 then fell either side by rounding. The 2026-10-19 Sherlock run (numpy
+    2.5.2) and the laptop (numpy 2.3.5) disagreed on 16 such calls out of about 1580 and
+    gave TRANSMEM Fmax 0.7775 against 0.7781; the exact test agrees with neither on 3
+    calls each. Scores are still the float mean, which only orders calls.
     """
     rows = []
     for acc, s in seqs.items():
         h = np.array([KYTE_DOOLITTLE.get(c, 0.0) for c in s.upper()])
         if h.size < window:
             continue
+        tenths = np.rint(h * 10).astype(np.int64)
         # Window starting at residue i (0-based) covers residues i..i+window-1.
-        means = np.convolve(h, np.ones(window) / window, mode="valid")
-        for a, b in segments(means > threshold):
+        sums = np.convolve(tenths, np.ones(window, dtype=np.int64), mode="valid")
+        means = sums / (10 * window)
+        for a, b in segments(sums > round(threshold * 10) * window):
             rows.append({"query": acc, "label": label, "qstart": a + 1,
                          "qend": b - 1 + window, "score": float(means[a:b].max())})
     return to_frame(rows)
@@ -295,6 +305,11 @@ def main() -> None:
     f.add_argument("--table-out", required=True, type=Path)
     f.add_argument("--out", required=True, type=Path)
 
+    r2 = sub.add_parser("restrict", help="keep the truth rows of the query proteins only")
+    r2.add_argument("--truth", required=True, type=Path)
+    r2.add_argument("--fasta", required=True, type=Path, help="query FASTA")
+    r2.add_argument("--out", required=True, type=Path)
+
     c = sub.add_parser("concat", help="join the per-baseline metrics into one table")
     c.add_argument("--metrics-dir", required=True, type=Path)
     c.add_argument("--applies", required=True, type=Path)
@@ -325,6 +340,18 @@ def main() -> None:
         table.write_csv(a.table_out, separator="\t")
         print(table, file=sys.stderr)
         write_calls(frequency_calls(queries, table), a.out)
+    elif a.cmd == "restrict":
+        # The Pfam-N truth table covers the whole human proteome (44_315 regions on 18_724
+        # proteins). Scored as it stands, recall is divided by regions of proteins nobody
+        # searched; the midi-plus run's queries hold 2_218 of them on 966 proteins. Same
+        # fix as restrictTruthToQueries in PR 165.
+        queries = set(read_fasta(a.fasta))
+        t = pl.read_parquet(a.truth)
+        out = t.filter(pl.col("accession").is_in(list(queries)))
+        out.write_parquet(a.out)
+        print(f"{a.truth.name}: kept {out.height} of {t.height} rows, "
+              f"{out['accession'].n_unique()} of {t['accession'].n_unique()} proteins",
+              file=sys.stderr)
     elif a.cmd == "concat":
         files = sorted(a.metrics_dir.glob("*.metrics.parquet"))
         if not files:

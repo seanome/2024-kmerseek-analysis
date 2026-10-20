@@ -146,11 +146,18 @@ def long_rows(m: pl.DataFrame, source_path: str, commit: str | None) -> pl.DataF
     ).select([pl.col(c).cast(t) for c, t in SCHEMA.items()])
 
 
-def fill_not_applicable(rows: pl.DataFrame, results: pl.DataFrame | None) -> pl.DataFrame:
-    """A not-applicable row for every cell the search tools have and a baseline lacks."""
+def fill_not_applicable(rows: pl.DataFrame, results: pl.DataFrame | None,
+                        skip_truth_sets: list[str] = ()) -> pl.DataFrame:
+    """A not-applicable row for every cell the search tools have and a baseline lacks.
+
+    A truth set left out with --drop-truth-set gets no rows at all: the baseline was not
+    scored there correctly, which is "not run", not "not applicable".
+    """
     if results is None:
         return rows
-    cells = (results.filter(pl.col("experiment") == EXPERIMENT)
+    skip = [TRUTH[t][0] for t in skip_truth_sets]
+    cells = (results.filter((pl.col("experiment") == EXPERIMENT)
+                            & ~pl.col("truth_source").is_in(skip))
              .select("truth_source", "truth_version", "stratum_axis", "stratum_bin",
                      "metric", "n_instances")
              .unique(["truth_source", "stratum_axis", "stratum_bin", "metric"]))
@@ -258,6 +265,28 @@ def check_kd(m: pl.DataFrame, results: pl.DataFrame) -> pl.DataFrame:
     return pl.DataFrame(out)
 
 
+def check_feature_types(m: pl.DataFrame, results: pl.DataFrame) -> pl.DataFrame:
+    """Each baseline's Fmax on a Swiss-Prot feature type (TRANSMEM, REGION, REPEAT, ...)
+    beside every search tool's rows on the same stratum of the same run."""
+    out = []
+    b = m.filter(pl.col("applicable") & (pl.col("split") == "all")
+                 & (pl.col("truth_set") == "swissprot")
+                 & (pl.col("stratum_axis") == "feature_type"))
+    for r in b.sort("stratum", "tool", "variant").iter_rows(named=True):
+        s = results.filter(
+            (pl.col("experiment") == EXPERIMENT) & (pl.col("metric") == "fmax")
+            & (pl.col("truth_source") == TRUTH["swissprot"][0])
+            & (pl.col("stratum_axis") == "feature_type") & (pl.col("stratum_bin") == r["stratum"]))
+        for (tool,), g in s.group_by("tool", maintain_order=True):
+            out.append({"feature_type": r["stratum"], "n_truth_instances": r["n_truth_instances"],
+                        "grey_below_30": r["n_truth_instances"] < MIN_N,
+                        "baseline": r["tool"], "baseline_fmax": r["fmax"], "tool": tool,
+                        "n_rows": g.height, "best_fmax": g["value"].max(),
+                        "rows_at_or_above_baseline": int((g["value"] >= r["fmax"]).sum())})
+    return pl.DataFrame(out).sort("feature_type", "baseline", "best_fmax",
+                                  descending=[False, False, True])
+
+
 def check_frequency(m: pl.DataFrame, results: pl.DataFrame) -> pl.DataFrame:
     """Check 2: the frequency floor beside each search tool's Fmax, per Pfam truth set."""
     out = []
@@ -288,16 +317,25 @@ def main() -> None:
     p.add_argument("--metrics", required=True, type=Path)
     p.add_argument("--results", type=Path, help="PR 148 results/leaderboard/results.parquet")
     p.add_argument("--trace", type=Path)
+    p.add_argument("--trace-source-path", default=None,
+                   help="where the trace lives on Sherlock, written as the cost rows' source")
     p.add_argument("--source-path", default="")
     p.add_argument("--source-commit", default=None)
     p.add_argument("--n-queries", type=int, default=N_QUERIES)
     p.add_argument("--outdir", type=Path)
+    p.add_argument("--drop-truth-set", action="append", default=[],
+                   help="leave a truth set's rows out, e.g. pfamn when the run scored it "
+                        "against the whole-proteome table (before restrictBaselineTruth)")
     a = p.parse_args()
 
     pl.Config.set_tbl_rows(100)
     pl.Config.set_tbl_cols(20)
     pl.Config.set_tbl_width_chars(200)
     m = read_metrics(a.metrics)
+    if a.drop_truth_set:
+        print(f"leaving out truth sets {a.drop_truth_set}: "
+              f"{m.filter(pl.col('truth_set').is_in(a.drop_truth_set)).height} metric rows")
+        m = m.filter(~pl.col("truth_set").is_in(a.drop_truth_set))
     results = pl.read_parquet(a.results) if a.results else None
 
     print("Applicable baseline cells (split all), Fmax with n:")
@@ -313,15 +351,21 @@ def main() -> None:
               "(stratum all; rows = setting x target x dedup mode):")
         print(check_frequency(m, results).with_columns(
             pl.col(pl.Float64).round(4)))
+        print("\nEvery baseline on a Swiss-Prot feature type the search tools were also "
+              "scored on, against each search tool's rows:")
+        print(check_feature_types(m, results).with_columns(pl.col(pl.Float64).round(4)))
 
     if a.outdir:
         a.outdir.mkdir(parents=True, exist_ok=True)
-        rows = fill_not_applicable(long_rows(m, a.source_path, a.source_commit), results)
+        rows = fill_not_applicable(long_rows(m, a.source_path, a.source_commit), results,
+                                   a.drop_truth_set)
         rows.write_parquet(a.outdir / "no_search_baselines.parquet")
         print(f"\nwrote {a.outdir / 'no_search_baselines.parquet'}: {rows.height} rows, "
               f"{int(rows['applicable'].sum())} applicable")
         if a.trace:
             c = compute_rows(a.trace, a.n_queries)
+            if a.trace_source_path:
+                c = c.with_columns(pl.lit(a.trace_source_path).alias("source"))
             c.write_parquet(a.outdir / "no_search_compute.parquet")
             print(c)
 

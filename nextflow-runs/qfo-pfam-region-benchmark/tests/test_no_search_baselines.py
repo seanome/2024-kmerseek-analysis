@@ -24,21 +24,43 @@ def random_protein(rng, n):
     return "".join(rng.choice("ACDEFGHIKLMNPQRSTVWY") for _ in range(n))
 
 
-def test_kd_matches_notebook_231_exactly():
-    """The scan is notebook 231's kd_transmem_calls with only the label made a parameter."""
+def has_tie_window(seq, window=19):
+    """A window whose mean is exactly 1.6: the one place the exact test and notebook 231's
+    floating-point test may disagree."""
+    t = [round(nsb.KYTE_DOOLITTLE.get(c, 0.0) * 10) for c in seq]
+    return any(sum(t[i:i + window]) == 16 * window for i in range(len(t) - window + 1))
+
+
+def test_kd_matches_notebook_231_away_from_ties():
+    """Notebook 231's kd_transmem_calls, with the label a parameter: the same calls on every
+    protein that has no window of mean exactly 1.6."""
     scu = pytest.importorskip("swissprot_control_utils")
     rng = random.Random(231)
     seqs = {f"P{i}": random_protein(rng, rng.randint(10, 400)) for i in range(200)}
     # Hydrophobic stretches, so there are calls to compare.
     seqs.update({f"TM{i}": random_protein(rng, 40) + "L" * 22 + random_protein(rng, 40)
                  for i in range(20)})
+    seqs = {k: v for k, v in seqs.items() if not has_tie_window(v)}
+    assert len(seqs) > 150
     ours = nsb.kd_calls(seqs, "TRANSMEM").rename({"query": "query_acc",
                                                   "label": "pfam_id"})
     theirs = scu.kd_transmem_calls(seqs)
-    cols = ["query_acc", "pfam_id", "qstart", "qend", "score"]
+    cols = ["query_acc", "pfam_id", "qstart", "qend"]
     assert ours.height > 20
     assert ours.select(cols).sort(cols).equals(theirs.select(cols).sort(cols))
+    j = ours.join(theirs, on=cols)
+    assert (j["score"] - j["score_right"]).abs().max() < 1e-9
     assert set(nsb.kd_calls(seqs, "INTRAMEM")["label"]) == {"INTRAMEM"}
+
+
+def test_kd_window_of_mean_exactly_threshold_is_not_called():
+    # In tenths: 13 A (13 x 18) + 2 I (2 x 45) + 3 G (3 x -4) + 1 S (-8) = 304 = 16 x 19,
+    # a mean of exactly 1.6. Swapping the S for a fourth G gives 308, mean 1.62. D (-35)
+    # on both sides keeps every other window far below.
+    tie = "D" * 25 + "A" * 13 + "II" + "GGG" + "S" + "D" * 25
+    above = "D" * 25 + "A" * 13 + "II" + "GGGG" + "D" * 25
+    assert nsb.kd_calls({"X": above}, "TRANSMEM").height == 1
+    assert nsb.kd_calls({"X": tie}, "TRANSMEM").height == 0
 
 
 def test_kd_call_spans_whole_windows():
