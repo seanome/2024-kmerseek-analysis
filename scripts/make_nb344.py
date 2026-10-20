@@ -82,7 +82,7 @@ it.
 
 On 2026-10-19, still before any search, Olga chose to keep this rule as written, knowing
 from the cell below and from a synthetic check (`scripts/344_synthetic_calibrated_regions.py`)
-that it fails an exactly calibrated E-value about half the time.
+that it fails a correct E-value about half the time.
 
 1. **Strata.** 4 length bins (the leaderboard's RULES.md edges, in residues: [0, 100),
    [100, 300), [300, 1000], (1000, ∞)) × 3 bins of the share of residues SEG masks as
@@ -118,7 +118,7 @@ that it fails an exactly calibrated E-value about half the time.
    `region_evalue`, the column users filter on, is reported too and is not judged.
 
 The cell below prints these values from `region_evalue_calibration_utils.py`, and the
-chance that an E-value that is exactly right passes this rule.
+chance that a correct E-value passes this rule.
 """)
 
 code(r"""
@@ -146,7 +146,7 @@ print("expected chance regions per stratum:", u.TARGETS, "| pass band: factor", 
 print("judged columns:", u.GATE_COLUMNS, "on", u.GATE_KIND, "decoys")
 
 # If chance regions arrived independently, the observed count in a stratum would be
-# Poisson with mean equal to the expected count. Then an E-value that is exactly right
+# Poisson with mean equal to the expected count. Then a correct E-value
 # passes one stratum at expected 10 with this chance, and at 100 with the next.
 p10, p100 = u.chance_inside_factor(10), u.chance_inside_factor(100)
 per_column = (p10 * p100) ** len(u.STRATA)
@@ -156,7 +156,7 @@ print(f"... both columns, if they were independent: {per_column ** 2:.2f}")
 """)
 
 md(r"""
-The rule fails an exactly calibrated E-value about half the time on Poisson noise alone,
+The rule fails a correct E-value about half the time on Poisson noise alone,
 mostly at expected 10, where a count of 4 or 21 fails. Chance regions are not independent
 (one decoy rich in a repeat can hit many targets), which makes the counts spread more and
 the chance of a false fail higher. So a fail at expected 10 in one stratum, with expected
@@ -258,19 +258,22 @@ else:
 """)
 
 md(r"""
-## 3. SF1 and SF2: observed / expected chance regions, one figure per column
+**SF1 and SF2: observed / expected chance regions, one figure per column.**
 
 **a**, each of the 12 strata (grouped by length, gaps between groups) at the two cutoffs.
 The grey band is the pass band, a factor of two either way; a point inside it passes. A
 stratum with no region at the cutoff is drawn on the row marked "0 found". **b**, all
 strata together, at every cutoff from expected 1 to expected 100_000 regions. The
 dipeptide decoys (vermillion) decide the verdict; the other two show how much the choice
-of null matters.
+of null matters. In SF2 b the composition and dipeptide lines lie on top of each other.
 """)
 
 code(r"""
-FLOOR, CEIL = 1 / 32, 32
-TICKS = [1 / 16, 1 / 4, 1 / 2, 1, 2, 4, 16]
+# Ratios run from 1 found where 100 were expected (1/100) to about 18,000 times too many,
+# so the axis covers 1/256 to 32,768 and a stratum with none found sits below it.
+FLOOR, CEIL = 1 / 1024, 32_768
+TICKS = [1 / 256, 1 / 16, 1 / 2, 1, 2, 16, 256, 4096, 32_768]
+TICK_LABELS = ["1/256", "1/16", "1/2", "1", "2", "16", "256", "4,096", "32,768"]
 
 
 def ratio_for_plot(r):
@@ -290,7 +293,7 @@ def draw_sf(column, sf):
         ax.axhspan(1 / u.FACTOR, u.FACTOR, color="#e6e6e6", zorder=0, lw=0)
         ax.axhline(1, color=pf.GREY, lw=0.5, zorder=1)
         ax.set_yscale("log", base=2)
-        ax.set_yticks([FLOOR] + TICKS, ["0 found"] + ["1/16", "1/4", "1/2", "1", "2", "4", "16"])
+        ax.set_yticks([FLOOR] + TICKS, ["0 found"] + TICK_LABELS)
         ax.set_ylim(FLOOR / 1.5, CEIL * 1.5)
     t = table.filter(pl.col("column") == column)
     for ki, k in enumerate(u.KINDS):
@@ -343,50 +346,88 @@ else:
 """)
 
 md(r"""
-## 4. The worst-calibrated stratum, shown as one decoy region
-
-For each judged column: the dipeptide stratum and cutoff whose observed / expected is
-furthest from 1 (a stratum with none found counts as furthest), and in it the decoy region
-with the smallest E-value. Both sequences are printed with 1-based coordinates, a match
-line for identical residues (`|`), and the `hp_lehninger2` classes with their own match
-line. Every region here is a chance match: the query is a shuffled protein.
+All strata together: regions at or below each cutoff for the three kinds of decoy, and how
+many times the dipeptide count the other two kinds give. `expected` is all decoys of a kind
+(after the exclusions) times the cutoff.
 """)
 
 code(r"""
-def worst(column):
-    g = table.filter((pl.col("kind") == u.GATE_KIND) & (pl.col("column") == column))
-    g = g.with_columns(pl.when(pl.col("observed") == 0).then(math.inf)
-                       .otherwise((pl.col("ratio")).log(2).abs()).alias("distance"))
-    return g.sort("distance", descending=True).row(0, named=True)
-
-
 if HAVE_RESULTS:
-    d = decoys.filter(pl.col("kind") == u.GATE_KIND)
     for column in u.GATE_COLUMNS:
-        w = worst(column)
-        print(f"{column}: worst stratum {w['stratum']!r} at expected {w['expected']:.0f}: "
-              f"{w['observed']} observed in {w['n_decoys']:_} decoys (E <= {w['cutoff']:.3g}), ratio {w['ratio']:.2f}")
-        ids = d.filter(pl.col("stratum") == w["stratum"]).select(pl.col("decoy_id").alias("query_name"), "source_id")
-        cand = regions[u.GATE_KIND].join(ids, on="query_name").filter(pl.col(column).is_not_null()).sort(column)
-        if cand.height == 0:
-            print("  no decoy in this stratum got a region with this E-value at E <= 1\n")
-            continue
-        r = cand.row(0, named=True)
-        a = u.AlignedRegion(r["region_subseq"], r["target_subseq"], r["region_start"] + 1, r["target_start"] + 1)
-        c = a.counts()
-        print(f"  decoy {r['query_name']} (a dipeptide shuffle of {r['source_id']}) against {r['target_name']}")
-        print(f"  decoy {r['region_start'] + 1}-{r['region_end']}, target {r['target_start'] + 1}-{r['target_end']}; "
-              f"{c['identical']} of {c['length']} identical, {c['same_class']} of {c['length']} same class, "
-              f"longest same-class run {c['longest_same_class_run']}, {r['region_n_mismatches']} class mismatches")
-        print(f"  region_run_evalue {r['region_run_evalue']}, region_ka_evalue {r['region_ka_evalue']}, "
-              f"Pr(same class) {r['region_pr_same']}")
-        print("\n".join("  " + line for line in a.lines()))
+        parts = [u.observed_curve(decoys, regions[k], k, column, [1e-4, 1e-3, 1e-2, 1e-1, 1.0])
+                 .select("cutoff", "expected", pl.col("observed").alias(k)) for k in u.KINDS]
+        pooled = (parts[1].join(parts[0].drop("expected"), on="cutoff").join(parts[2].drop("expected"), on="cutoff")
+                  .with_columns((pl.col("composition") / pl.col("dipeptide")).round(2).alias("composition / dipeptide"),
+                                (pl.col("window10") / pl.col("dipeptide")).round(1).alias("window10 / dipeptide")))
+        print(column)
+        print(pooled)
 else:
     print("No results yet.")
 """)
 
 md(r"""
-## 5. Go / no-go for kmerseek 0.4.0
+## 3. The worst-calibrated stratum, shown as one decoy region
+
+For each judged column, two strata on the dipeptide decoys:
+
+- the one the rule calls worst: observed / expected furthest from 1 in either direction
+  (a stratum with none found counts as furthest);
+- the one where the E-values are most too small (largest observed / expected), because
+  those are the chance regions a user would take for real hits.
+
+In each, the decoy region with the smallest E-value, after the same exclusions as the
+count. Both sequences are printed with 1-based coordinates, a match line for identical
+residues (`|`), and the `hp_lehninger2` classes (h hydrophobic `AFGILMPVWY`, p polar
+`CDEHKNQRST`) with their own match line. Every region here is a chance match: the query is
+a shuffled protein.
+""")
+
+code(r"""
+def strata_to_show(column):
+    g = table.filter((pl.col("kind") == u.GATE_KIND) & (pl.col("column") == column))
+    g = g.with_columns(pl.when(pl.col("observed") == 0).then(math.inf)
+                       .otherwise(pl.col("ratio").log(2).abs()).alias("distance"))
+    rule_worst = g.sort("distance", descending=True).row(0, named=True)
+    too_many = g.sort("ratio", descending=True).row(0, named=True)
+    out = [("the rule's worst", rule_worst)]
+    if (too_many["stratum"], too_many["expected"]) != (rule_worst["stratum"], rule_worst["expected"]):
+        out.append(("most too small (most chance regions)", too_many))
+    return out
+
+
+def show_region(column, w):
+    t = u.tag_regions(decoys, regions[u.GATE_KIND], u.GATE_KIND)
+    cand = (t.filter((pl.col("stratum") == w["stratum"]) & ~pl.col("not_a_decoy") & ~pl.col("own_source"))
+             .filter(pl.col(column).is_not_null()).sort(column))
+    if cand.height == 0:
+        print("  no decoy in this stratum got a region with this E-value at E <= 1\n")
+        return
+    r = cand.row(0, named=True)
+    source = decoys.filter(pl.col("decoy_id") == r["query_name"])["source_id"][0]
+    a = u.AlignedRegion(r["region_subseq"], r["target_subseq"], r["region_start"] + 1, r["target_start"] + 1)
+    c = a.counts()
+    print(f"  decoy {r['query_name']} (a dipeptide shuffle of {source}) against {r['target_name'].split()[0]}")
+    print(f"  decoy {r['region_start'] + 1}-{r['region_end']}, target {r['target_start'] + 1}-{r['target_end']}; "
+          f"{c['identical']} of {c['length']} identical, {c['same_class']} of {c['length']} same class, "
+          f"longest same-class run {c['longest_same_class_run']}")
+    print(f"  region_run_evalue {r['region_run_evalue']:.3g}, region_ka_evalue {r['region_ka_evalue']}, "
+          f"Pr(same class) {r['region_pr_same']:.3f}")
+    print("\n".join("  " + line for line in a.lines()))
+
+
+if HAVE_RESULTS:
+    for column in u.GATE_COLUMNS:
+        for why, w in strata_to_show(column):
+            print(f"{column}, {why}: {w['stratum']!r} at expected {w['expected']:.0f}: "
+                  f"{w['observed']:_} observed in {w['n_decoys']:_} decoys (E <= {w['cutoff']:.3g}), "
+                  f"ratio {w['ratio']:.2f}")
+            show_region(column, w)
+else:
+    print("No results yet.")
+""")
+
+md(r"""
+## 4. Go / no-go for kmerseek 0.4.0
 """)
 
 code(r"""
@@ -404,7 +445,51 @@ else:
 md(r"""
 ## Summary and conclusions
 
-Written after the run, from the numbers above.
+Run on Sherlock on 2026-10-19: all 156 searches (52 chunks × 3 kinds of decoy) finished
+on their first attempt, and the index stored its Karlin-Altschul fit (r_database 0.738,
+K 0.0008; `results/index/index.log`). Every number below is printed in sections 1 to 4.
+
+**Verdict: NO-GO for kmerseek 0.4.0.** Under the pre-registered rule both columns fail on
+the dipeptide decoys: `region_run_evalue` in 7 of 24 stratum-cutoffs, `region_ka_evalue`
+in 22 of 24. This is not the Poisson false-fail the first cell warned about. The worst
+ratios are 53 and 113 at expected 100, where a calibrated E-value lands between 50 and 200
+almost every time.
+
+1. **Both E-values are far too small for proteins that SEG marks as at least 15%
+   low-complexity, once the protein is 300 residues or longer.** At expected 100,
+   dipeptide decoys of 300-1000-residue proteins gave 1_058 regions at or below E\* by
+   `region_run_evalue` (10.6 times expected) and 11_266 by `region_ka_evalue` (113 times).
+   For proteins over 1000 residues the counts were 5_341 (53 times) and 10_346 (103 times).
+   In those strata, chance regions turn up 10 to 113 times more often than the E-value
+   says. Chance matches between low-complexity stretches would be reported as hits.
+2. **Elsewhere `region_run_evalue` is close to calibrated and `region_ka_evalue` is too
+   large.** In the 8 strata below 15% SEG, `region_run_evalue` falls inside a factor of two
+   at expected 100 in 7 (ratios 0.62 to 0.99); the exception is proteins under 100 residues
+   with less than 5% SEG (0.3). `region_ka_evalue` gives 1 to 33 regions where 100 are
+   expected in those same 8 strata: safe, but it would hide real hits.
+3. **The two examples in section 3 show why.** A dipeptide shuffle of DSPP matched a
+   KE-repeat in TBC1D10B over 60 positions, all 60 in the same class (58 polar on each
+   side), with 2 of 60 residues identical; `region_run_evalue` 4.2e-10. A dipeptide shuffle
+   of elastin matched the proline-rich stretch of FMN2 over 407 positions, 358 in the same
+   class, 56 identical; `region_ka_evalue` 1.6e-18. kmerseek computes Pr(same class) from
+   the two whole proteins: 0.48 and 0.57 here. Inside the regions, 58 of 60 positions are
+   polar on both sides, and 367 and 388 of 407 are hydrophobic.
+4. **The window null finds the most chance regions; the dipeptide null does not find more
+   than plain composition.** Over all strata together, at cutoffs from E = 0.0001 to 1,
+   window10 decoys gave 11 to 121 times as many regions as dipeptide decoys by
+   `region_run_evalue`, and 20 to 25 times by `region_ka_evalue`. In one stratum they gave
+   18_390 times the expected count. Composition decoys gave 0.89 to 2.05 times as many as dipeptide
+   decoys, the most at the strictest cutoff. So the task's expectation that the dipeptide
+   null "bites" hardest does not hold: holding neighbouring-residue pairs adds no chance
+   regions here, and holding local composition (window10) adds many. Both E-values fail
+   already under the dipeptide null, so the verdict does not depend on this.
+
+**What this decides.** Neither column can ship in 0.4.0 as an E-value without a fix for
+low-complexity regions. The data point to two fixes, neither tested here. One computes
+Pr(same class) from the region's own stretch instead of the whole proteins. The other masks
+SEG regions before searching. Either change is a new kmerseek commit, and this notebook
+reruns on it unchanged: rebuild the image from the new commit, then `make pilot`,
+`make measure`, `make run`.
 """)
 
 nb = {

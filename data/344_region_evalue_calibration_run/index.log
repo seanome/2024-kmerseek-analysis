@@ -1,0 +1,66 @@
+kmerseek 0.3.1
+0a229700bc9dbf3d04f9e4f141024ff33b5c4e7e
+kmerseek 0.3.1
+Indexing FASTA file: UP000005640_9606.fasta
+Output database: human.db
+
+-------
+K-mer size: 19
+Scaled: 1
+Alphabet: hp_lehninger2
+Progress interval: 10000
+Remove low-complexity k-mers: false
+-------
+
+Processing FASTA file...
+Reading FASTA file with automatic compression detection and parallel processing...
+Processed 10000 sequences...
+Processed 20000 sequences...
+Done reading FASTA (20600 sequences total). Building inverted index...
+[save] Merging 1 posting runs into 1024 inverted index shards...
+[save] Inverted index written: 524363 unique k-mers in 0.5s
+[save] Skipped 222 sequences whose signature key was already indexed
+Optimizing database for read operations...
+[save] K-mer frequency histogram: 10833811 total k-mers found, 524363 unique (mean 20.66, median 19.0, mode 17 sequences per k-mer)
+[save]              1 occurrences:         76 k-mers  #
+[save]            2-3 occurrences:         41 k-mers  #
+[save]            4-7 occurrences:       3602 k-mers  #
+[save]           8-15 occurrences:     137270 k-mers  ###############
+[save]          16-31 occurrences:     344550 k-mers  ########################################
+[save]          32-63 occurrences:      35516 k-mers  ####
+[save]         64-127 occurrences:       2754 k-mers  #
+[save]        128-255 occurrences:        444 k-mers  #
+[save]        256-511 occurrences:         87 k-mers  #
+[save]       512-1023 occurrences:         23 k-mers  #
+[save] 10 most common k-mers (encoded k-mer: occurrences):
+[save]   hhhhhhhhhhhhhhhhhhp: 1006
+[save]   phhhhhhhhhhhhhhhhhh: 984
+[save]   hphhhhhhhhhhhhhhhhh: 901
+[save]   hhhhhhhhhhhhhhhhhph: 853
+[save]   hhhhhhhhhhhhhhhhphh: 816
+[save]   hhphhhhhhhhhhhhhhhh: 795
+[save]   hhhhhhhhhhhhhhhhhhh: 768
+[save]   hhhhhhhhhhhhhhhphhh: 739
+[save]   hhhphhhhhhhhhhhhhhh: 704
+[save]   hhhhhhhhhhhhhhphhhh: 694
+[save] 10 least common k-mers (encoded k-mer: occurrences):
+[save]   hhhhhpphhpXhhhhphXh: 1
+[save]   hphphhhhhpphhpXhhhh: 1
+[save]   Xpphpphhphhhhphpphp: 1
+[save]   Xpphhppphphhphpphph: 1
+[save]   Xpphpphhphhphpphphp: 1
+[save]   Xppphphphhhhpphphph: 1
+[save]   hpphphphhhhhpphhpXh: 1
+[save]   phhpXhhhhphXhphhhhp: 1
+[save]   hphhhhhpphhpXhhhhph: 1
+[save]   Xpphhhphhhphpphhhpp: 1
+[save]   (76 k-mers occur 1x; showing an arbitrary sample)
+[save] Flushing RocksDB...
+[save] Index saved in 0.0s
+Fitting r_database and K on 200 database sequences (mismatch penalty 2, give-up margin 8); the fit stops where their counts rise above the same sequences shuffled-dipeptide...
+  Closed form at the database's own match probability 0.500: K 0.1630 (independent positions, no seed, one lambda for every pair)
+  fitted now: 200 database queries, 1414997 regions; r_database 0.738 per nat of lambda_pair S (1 = closed form holds; closed form 0.481 at the database's match probability 0.500), K 0.0008, fit on x 10.0..14.0, relatives from x 14.0, rms 0.021; shuffled-dipeptide reference slope 0.831 over the same bins
+  Stored in the index for --extend-mismatch-penalty 2 --extend-xdrop 8
+  Survival curve written to ka_survival.csv
+Indexing completed successfully!
+Database saved to: human.db
