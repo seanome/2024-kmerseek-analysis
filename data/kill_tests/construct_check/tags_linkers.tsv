@@ -1,0 +1,13 @@
+name	category	sequence	length_aa	source_kind	source_accession	source_coords_1based	source_id	provenance
+His6	affinity tag	HHHHHH	6	synthetic			hochuli1988	synthetic; polyhistidine affinity tag
+His8	affinity tag	HHHHHHHH	8	synthetic			hochuli1988	synthetic; length variant of the polyhistidine tag, same principle as His6 in the cited paper, which used His6
+FLAG	epitope tag	DYKDDDDK	8	synthetic			hopp1988	synthetic; designed as a marker peptide, not taken from a protein
+HA	epitope tag	YPYDVPDYA	9	UniProt subsequence	P03437	114-122	field1988	subsequence of influenza A hemagglutinin; the cited paper is its use as an epitope tag
+Myc	epitope tag	EQKLISEEDL	10	UniProt subsequence	P01106	425-434	evan1985	subsequence of human MYC; the cited paper is the 9E10 antibody this epitope is detected with
+Strep-tag II	affinity tag	WSHPQFEK	8	synthetic			schmidt1993	synthetic; selected from a random peptide library
+GS linker G4S	linker	GGGGS	5	synthetic			huston1988	synthetic; one repeat of the glycine-serine linker used in the cited single-chain Fv
+GS linker (G4S)x3	linker	GGGGSGGGGSGGGGS	15	synthetic			huston1988	synthetic; the 15-residue glycine-serine linker of the cited single-chain Fv
+GS linker GSG	linker	GSG	3	synthetic				synthetic; short glycine-serine linker in common use, with no single originating publication to cite
+GS linker GGSGGS	linker	GGSGGS	6	synthetic				synthetic; short glycine-serine linker in common use, with no single originating publication to cite
+GST (sj26)	fusion partner	MSPILGYWKIKGLVQPTRLLLEYLEEKYEEHLYERDEGDKWRNKKFELGLEFPNLPYYIDGDVKLTQSMAIIRYIADKHNMLGGCPKERAEISMLEGAVLDIRYGVSRIAYSKDFETLKVDFLSKLPEMLKMFEDRLCHKTYLNGDHVTHPDFMLYDALDVVLYMDPMCLDAFPKLVCFKKRIEAIPQIDKYLKSSKYIAWPLQGWQATFGGGDHPPK	218	UniProt record	P08515	1-218	smith1988	full Schistosoma japonicum GST sequence, the pGEX fusion partner
+MBP (MalE mature chain)	fusion partner	KIEEGKLVIWINGDKGYNGLAEVGKKFEKDTGIKVTVEHPDKLEEKFPQVAATGDGPDIIFWAHDRFGGYAQSGLLAEITPDKAFQDKLYPFTWDAVRYNGKLIAYPIAVEALSLIYNKDLLPNPPKTWEEIPALDKELKAKGKSALMFNLQEPYFTWPLIAADGGYAFKYENGKYDIKDVGVDNAGAKAGLTFLVDLIKNKHMNADTDYSIAEAAFNKGETAMTINGPWAWSNIDTSKVNYGVTVLPTFKGQPSKPFVGVLSAGINAASPNKELAKEFLENYLLTDEGLEAVNKDKPLGAVALKSYEEELAKDPRIAATMENAQKGEIMPNIPQMSAFWYAVRTAVINAASGRQTVDEALKDAQTRITK	370	UniProt record	P0AEX9	27-396	diguan1988	mature chain (UniProt Chain 27-396) of E. coli MalE, the pMAL fusion partner; the signal peptide is not part of the fusion
