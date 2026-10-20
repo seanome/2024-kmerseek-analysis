@@ -283,7 +283,16 @@ def main():
                 args.min_overlap,
                 args.strict_iou,
                 sorted(cut["accession"].unique().to_list()),
-                [(f.name, f.stat().st_size, f.stat().st_mtime_ns) for f in key_files],
+                # An optional input that is absent (covariates, disorder) is keyed as
+                # missing rather than stat()ed, which would raise.
+                [
+                    (
+                        (f.name, f.stat().st_size, f.stat().st_mtime_ns)
+                        if f.exists()
+                        else (f.name, None, None)
+                    )
+                    for f in key_files
+                ],
             )
         ).encode()
     )
