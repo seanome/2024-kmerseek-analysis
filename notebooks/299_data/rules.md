@@ -50,6 +50,14 @@ are kept as `tables/299_step1_run1_*`. Run 2 uses the same rule and budget and t
 `sketch translate` to `.sig.gz` plus writing a `.zip` of the non-empty sketches (what step 3
 reads). Dropping empty sketches changes no hit.
 
+The first attempt at run 2 (jobs 48632260, 2026-10-20 06:01) was cancelled at 09:19: four
+settings with many identical non-empty sketches (hp k = 7 at scaled 100; dayhoff k = 7 and
+hp k = 10 and 13 at scaled 1000) sat for over 3 h writing the `.zip`, the same slowdown for
+sketches that are identical but not empty. The `.zip` is now written with each sketch under
+its own position number (3.2 s vs 12.5 s on 39_000 genes, identical manysearch hits), and
+the `.zip` step has its own time limit counted as a lower bound. Run 2 was resubmitted with
+all 18 settings (jobs 48647076).
+
 ## Step 3 rule: the kill test
 
 - A true hit is a (real query, catalog gene) pair DIAMOND reports at E < 1e-5.
