@@ -221,7 +221,9 @@ def test_coverage_counts_an_instance_once_across_settings():
     ]
     md = bll.coverage_markdown(pl.DataFrame(rows, schema=bll.SCHEMA))
     line = next(ln for ln in md.splitlines() if ln.startswith("| t |"))
-    assert line == "| t |  | 7 |  |  |  |"
+    # target species, identity, then three more fixed axes and the query-side axes: blank.
+    cells = ["", "7"] + [""] * (3 + len(bll.QUERY_STRATUM_AXES))
+    assert line == "| t | " + " | ".join(cells) + " |"
 
 
 def test_timetree_mya_replaces_typed_values(tmp_path):
