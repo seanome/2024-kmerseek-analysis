@@ -1,0 +1,139 @@
+{
+  "stage": "full",
+  "n_pairs": 546,
+  "n_verdict_exons": 1669,
+  "verdict_set": "internal coding exons of <= 60 residues, both proteins with an AlphaFold model in the run",
+  "rule_1": {
+    "kmerseek_best_of_all_lands": [
+      1129,
+      1669,
+      0.6764529658478131
+    ],
+    "threshold": 0.5,
+    "pass": true
+  },
+  "rule_2": {
+    "structure_tools_land": {
+      "foldseek": [
+        0,
+        1669,
+        0.0
+      ],
+      "reseek": [
+        0,
+        1669,
+        0.0
+      ],
+      "prostt5": [
+        0,
+        1669,
+        0.0
+      ]
+    },
+    "threshold": 0.15,
+    "pass": true
+  },
+  "rule_3": {
+    "kmerseek_lands_with_p_place_lt_0.05": [
+      675,
+      1669,
+      0.40443379269023366
+    ],
+    "kd_scan_lands": [
+      82,
+      1669,
+      0.04913121629718394
+    ],
+    "ratio": 8.231707317073171,
+    "threshold_ratio": 2.0,
+    "pass": true
+  },
+  "random_protein_null": {
+    "n_draws": 1000,
+    "median": 0.6195326542840024,
+    "quantile_0.999": 0.6512899940083882,
+    "observed_above_0.999": true
+  },
+  "random_protein_null_added_after_stop0": {
+    "best_of_all_p_place_lt_0.05": {
+      "observed": 0.40443379269023366,
+      "median": 0.37567405632115036,
+      "quantile_0.999": 0.408629718394248
+    },
+    "best_single_setting": {
+      "observed": 0.30317555422408626,
+      "median": 0.27142001198322346,
+      "quantile_0.999": 0.3007819053325344
+    }
+  },
+  "kmerseek_best_single_setting": {
+    "arm": "sdm12_k6_lcTrue",
+    "lands": [
+      506,
+      1669,
+      0.30317555422408626
+    ]
+  },
+  "other_tools_land": {
+    "kmerseek_best_single": [
+      506,
+      1669,
+      0.30317555422408626
+    ],
+    "hmmer3_phmmer": [
+      0,
+      1669,
+      0.0
+    ],
+    "mmseqs2_seqseq": [
+      0,
+      1669,
+      0.0
+    ],
+    "mmseqs2_iterative": [
+      0,
+      1669,
+      0.0
+    ],
+    "hmmer3_jackhmmer": [
+      0,
+      1669,
+      0.0
+    ],
+    "hhblits": [
+      68,
+      1669,
+      0.04074295985620132
+    ],
+    "kd_scan": [
+      82,
+      1669,
+      0.04913121629718394
+    ]
+  },
+  "kill_condition_kd_at_kmerseek_rate": false,
+  "empty_question_kmerseek_below_0.10": false,
+  "notes": {
+    "reseek_chicken_before_fix": {
+      "n_rows": 108,
+      "n_past_end": 1,
+      "n_past_end_F_digit_accession": 1
+    },
+    "reseek_chicken_after_fix": {
+      "n_rows": 108,
+      "n_past_end": 0,
+      "n_past_end_F_digit_accession": 0
+    },
+    "reseek_zebrafish_before_fix": {
+      "n_rows": 228,
+      "n_past_end": 3,
+      "n_past_end_F_digit_accession": 3
+    },
+    "reseek_zebrafish_after_fix": {
+      "n_rows": 228,
+      "n_past_end": 0,
+      "n_past_end_F_digit_accession": 0
+    }
+  },
+  "pass": true
+}
