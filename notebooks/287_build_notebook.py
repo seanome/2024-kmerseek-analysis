@@ -37,8 +37,8 @@ finds once its calls are combined.
 **Data.** Notebook 241's search ([PR 46](https://github.com/seanome/2024-kmerseek-analysis/pull/46)):
 queries Ced9 (280 aa), P66 (597 aa) and BHF (252 aa) against the GENCODE v49 canonical human
 proteome (one protein per gene), kmerseek 982a055, 152 alphabet-k settings, every region
-kept (`/Users/olga/data/botryllus/alphabet-ranking-three-cases/regions.parquet`). 69 of the
-152 settings have a fitted E-value; the other 83 report E = infinity and cannot join a chain.
+kept (`/Users/olga/data/botryllus/alphabet-ranking-three-cases/regions.parquet`). 71 of the
+152 settings have a fitted E-value; the other 81 report E = infinity and cannot join a chain.
 Coordinates are kmerseek's: 0-based, end-exclusive; tables below print 1-based.
 
 **The formula** (Karlin & Altschul 1993, equation 4; Altschul & Gish 1996 for the order rule;
@@ -79,10 +79,16 @@ call gets back kmerseek's own E-value.
    chance distribution. A chain may also be all from one setting; that version (what
    kmerseek's existing `--chain-max-gap` does inside one search, with BLAST's order rule
    here) is reported beside it.
-4. *Search space.* Each call is the best of 69 searches (one per setting with an E-value).
-   So every call's E-value is multiplied by 69 before it joins a chain ($y_i - \ln 69$), and
-   the lowest single E-value is multiplied by 69 too. This is the **main score**. The same
-   numbers without the factor of 69 are reported beside it.
+4. *Search space.* Each call is the best of 71 searches (one per setting with an E-value).
+   So every call's E-value is multiplied by 71 before it joins a chain ($y_i - \ln 71$), and
+   the lowest single E-value is multiplied by 71 too. This is the **main score**. The same
+   numbers without the factor of 71 are reported beside it.
+
+   *Corrected 2026-10-20:* this rule first said 69, the settings in which one of the three
+   real queries got a finite E-value. 71 settings have an E-value fit (notebook 241's
+   `arms.csv`); gbmr4 k21 and hp_lehninger_hpc3 k25 gave none of the real queries a finite
+   E-value, but a shuffled copy of Ced9 got one. The factor counts every setting searched
+   with a fit, so it is 71. It raises every main-score E-value by 71/69, about 3%.
 5. *A protein's score* is its lowest chain E-value; a chain may be one call.
 
 **Decision rule.** Ced9 → BCL2 is rescued if, with the main score:
@@ -126,7 +132,7 @@ pl.Config.set_float_precision(3)
 D = Path("/Users/olga/data/botryllus/alphabet-ranking-three-cases")
 HUMAN = Path("/Users/olga/data/gencode/human/v49/gencode.v49.pc_translations.canonical.fa")
 FIG = Path("../figures")
-TOOLS = "kmerseek 982a055 (notebook 241's search), 152 alphabet-k settings, 69 with an E-value"
+TOOLS = "kmerseek 982a055 (notebook 241's search), 152 alphabet-k settings, 71 with an E-value fit"
 SINGLE = dict(marker="o", color=pf.OKABE_ITO["blue"], label="lowest single-call E-value")
 CHAIN = dict(marker="D", color=pf.OKABE_ITO["vermillion"], label="chain E-value (sum statistic)")
 
@@ -195,7 +201,7 @@ named.select("variant", "settings_factor", "e_bh4", "e_bh1", "chain_e")'''
 
 S1_MD2 = r"""The figure draws both proteins as a line with UniProt's BH motifs as boxes, and each call
 as a bar joined to its partner stretch. The third call (hp_pbotc_1st_ed2, k = 16) is the one
-the search itself picks to join BH4 when the factor of 69 is left out (section 2): it is not
+the search itself picks to join BH4 when the factor of 71 is left out (section 2): it is not
 on any BH motif on either protein, and it overlaps the BH1 call on BCL2, so the two cannot
 be in one chain."""
 
@@ -248,18 +254,18 @@ S2_MD = r"""## 2. Where BCL2 and CD47 rank among 19_732 human proteins
 For each way of counting, the partner's rank by its lowest single-call E-value and by its
 chain E-value (rank 1 is the lowest E-value; ties share the best rank, and `n_tied_*` counts
 them). `chain_e_of_rank_20` is the E-value the 20th protein reaches: what BCL2 or CD47
-would need to be in the top 20. The main score is "across settings, x69"."""
+would need to be in the top 20. The main score is "across settings, x71"."""
 
 S2 = r"""ranks = pl.read_csv("287_partner_rank_human.csv")
-main4 = ["across settings, x69", "across settings, no factor", "one setting, x69", "one setting, no factor"]
+main4 = ["across settings, x71", "across settings, no factor", "one setting, x71", "one setting, no factor"]
 show = ranks.select("query", "partner", "variant", "chain_e", "chain_r", "rank_chain", "n_tied_chain",
                     "single_e", "rank_single", "n_tied_single", "chain_e_of_rank_20")
 print(show.filter(pl.col("variant").is_in(main4)))
 print(show.filter(~pl.col("variant").is_in(main4)).select("query", "variant", "chain_e", "rank_chain"))
 
 fig, axs = pf.figure(pf.TWO_COLUMN_MM, 50, ncols=2, sharey=True)
-label_of = {"across settings, x69": "across settings, x69 (main)", "across settings, no factor": "across settings, no factor",
-            "one setting, x69": "one setting, x69", "one setting, no factor": "one setting, no factor"}
+label_of = {"across settings, x71": "across settings, x71 (main)", "across settings, no factor": "across settings, no factor",
+            "one setting, x71": "one setting, x71", "one setting, no factor": "one setting, no factor"}
 for ax, (q, p), letter in zip(axs, [("Ced9", "BCL2"), ("P66", "CD47")], "ab"):
     t = ranks.filter((pl.col("query") == q) & pl.col("variant").is_in(main4))
     yy = {v: i for i, v in enumerate(main4[::-1])}
@@ -292,7 +298,7 @@ fig, axs = pf.figure(pf.TWO_COLUMN_MM, 75, ncols=2)
 ticks = [1e-6, 1e-3, 1, 1e3, 1e6]
 tick_labels = ["0.000001", "0.001", "1", "1,000", "1,000,000"]
 summary = []
-for ax, v, letter in zip(axs, ["across settings, no factor", "across settings, x69"], "ab"):
+for ax, v, letter in zip(axs, ["across settings, no factor", "across settings, x71"], "ab"):
     s = scores.filter((pl.col("query_name") == "Ced9") & (pl.col("variant") == v)).with_columns(
         family=pl.col("gene").is_in(list(fam)))
     other, f = s.filter(~pl.col("family")), s.filter(pl.col("family"))
@@ -318,7 +324,7 @@ pf.shared_legend(fig, ncol=3, title=f"{TOOLS}. Dotted lines: E-value 1; solid li
 pf.save(fig, FIG / "287_ced9_single_vs_chain_evalue_human_gencode")
 print(pl.DataFrame(summary))
 # every BCL-2 family member with a call, both ways of counting
-print(scores.filter((pl.col("query_name") == "Ced9") & pl.col("variant").is_in(["across settings, x69", "across settings, no factor"])
+print(scores.filter((pl.col("query_name") == "Ced9") & pl.col("variant").is_in(["across settings, x71", "across settings, no factor"])
                     & pl.col("gene").is_in(list(fam)))
       .select("variant", "gene", "single_e", "rank_single", "chain_e", "chain_r", "rank_chain").sort("variant", "rank_chain"))"""
 
@@ -369,7 +375,7 @@ for (q, p, v), g in partners.filter(pl.col("variant").is_in(main4)).group_by(["q
         show_call(q, queries[q], c["query_start"], p, human[p], c["target_start"], c["query_end"] - c["query_start"] + 1, c["setting"])"""
 
 S4B_MD = r"""The other BCL-2 family members whose best chain has two or more calls. All are from the
-uncounted version (no factor of 69). BAK1 gains most: three calls take it from rank 468 to
+uncounted version (no factor of 71). BAK1 gains most: three calls take it from rank 468 to
 rank 60, chain E-value 0.44."""
 
 S4B = r"""others = members.filter(~pl.col("partner").is_in(["BCL2", "CD47"]))
@@ -382,7 +388,7 @@ for (p, v), g in others.group_by(["partner", "variant"], maintain_order=True):
 S4_MD2 = r"""P66 on CD47 drawn the same way: CD47 with UniProt Q08722's Ig-like V-type domain and its
 five transmembrane helices, P66 (mature protein, UniProt H7C7N8 without its 21-residue signal
 peptide) with the loop Tal et al. 2024 proposed as a CD47 mimic (UniProt 202-208, query
-181-187). The four calls are the chain picked without the factor of 69."""
+181-187). The four calls are the chain picked without the factor of 71."""
 
 S4_FIG = r"""cd47_boxes = {"IgV": (19, 127)}
 for i, f in enumerate([f for f in uniprot["Q08722"]["features"] if f["type"] == "Transmembrane"]):
@@ -469,11 +475,14 @@ S6_MD = r"""## 6. Shuffled copies of Ced9 and P66
 
 The decision rule's parts (b) and (c) need the dipeptide-shuffled copies: 20 of each query
 searched against the human proteome at all 152 settings with every region kept. That search
-is notebook 284's (`notebooks/284_shuffle_agreement.sbatch`). It failed on 2026-10-13 at
-07:09 because notebook 283 has not yet rebuilt the 152 human indexes it needs. When it has
-run, `scripts/287_shuffle_chains.sbatch` scores the copies with the same code as the real
-queries (checked: on the real Ced9 and P66 calls it reproduces every number in sections 2
-and 3) and writes `287_shuffle_chains.csv`, which this cell reads."""
+is notebook 284's (`notebooks/284_shuffle_agreement.sbatch`). It ran on 2026-10-20 (job
+48677540) on notebook 283's rebuilt indexes, whose k-mer totals equal the N used here for
+every setting. `scripts/287_shuffle_chains.sbatch` scores the copies with the same code as
+the real queries (checked: on the real Ced9 and P66 calls it reproduces every number in
+sections 2 and 3). Its first run (job 48677545) stopped at Ced9_shuf08, which has a call in
+gbmr4 k21 or hp_lehninger_hpc3 k25, two fitted settings that no real query reached; it now
+takes N for every fitted setting from the index logs. It writes `287_shuffle_chains.csv`,
+which this cell reads."""
 
 S6 = r"""shuf_path = Path("287_shuffle_chains.csv")
 if shuf_path.exists():
@@ -490,26 +499,26 @@ SUMMARY = r"""## Summary and conclusions
 the pair, under any way of counting the search tried here. The shuffled-copy test was not
 needed to reach that answer, and has not run yet.
 
-- With the main score (each call's E-value times 69, for the 69 settings that have one),
-  BCL2's best chain is the BH4 call alone, E-value 134_870, rank 12_906 of 19_732. Its
-  BH4 + BH1 chain scores 409_616, worse than BH4 alone, because each call's E-value times 69
+- With the main score (each call's E-value times 71, for the 71 settings that have an E-value fit),
+  BCL2's best chain is the BH4 call alone, E-value 138_779, rank 12_906 of 19_732. Its
+  BH4 + BH1 chain scores 422_827, worse than BH4 alone, because each call's E-value times 71
   is above the pair's chance level and adding it only adds to the count of chances taken.
-  The 20th protein has E-value 90, so BCL2 is about 1_500 times short of the top 20.
-- Without the factor of 69, BCL2's best chain is BH4 plus a hp_pbotc_1st_ed2 call off the
+  The 20th protein has E-value 93, so BCL2 is about 1_500 times short of the top 20.
+- Without the factor of 71, BCL2's best chain is BH4 plus a hp_pbotc_1st_ed2 call off the
   BH motifs, E-value 1_204, rank 12_262. The BH4 + BH1 chain itself scores 1_280. Ced9 and
   BCL2 share two short, weak calls: a search of the proteome expects about 1_955 and
   11_173 calls that good by chance. Adding two weak scores gives a weak score.
 - The family member chaining helps most is BAK1: three calls take it from rank 468 to 60
-  (chain E-value 0.44), but only without the factor of 69, where 111 unrelated proteins
+  (chain E-value 0.44), but only without the factor of 71, where 111 unrelated proteins
   also reach E-value below 1. MCL1, the family member with the best single call (E-value
   17, rank 321), gains nothing.
 - P66 → CD47 behaves the same: rank 8_648 with the main score; rank 673 (E-value 5.4)
   without the factor, from a chain of four calls on four diagonals 165 residues apart, which
   is not one alignment.
-- Chaining across settings without the factor of 69 is not calibrated: 111 proteins outside
+- Chaining across settings without the factor of 71 is not calibrated: 111 proteins outside
   the BCL-2 family (Ced9), 190 (P66) and 34 (BHF) reach chain E-value below 1 in one search,
   against about 1 for a calibrated E-value. With the factor, none do (0 for all three
-  queries), so the main score is conservative: the 69 settings are not independent, and it
+  queries), so the main score is conservative: the 71 settings are not independent, and it
   counts them as if they were.
 - On the Pfam 998 all-against-all, the chain score is worse than the lowest single
   E-value by notebook 284's placement label (average precision 0.571 against 0.604), and
@@ -528,7 +537,7 @@ makes. No kmerseek issue was filed: the rule for filing one ("if it works") was 
 
 **Not tested.** The shuffled copies (decision rule parts b and c), which wait on notebook
 283's index rebuild. Chains with gaps inside a call (BLAST's gapped extension), and an
-effective number of settings between 1 and 69, fitted on shuffled copies."""
+effective number of settings between 1 and 71, fitted on shuffled copies."""
 
 CELLS = [("md", INTRO)] + [
     ("code", SETUP),
