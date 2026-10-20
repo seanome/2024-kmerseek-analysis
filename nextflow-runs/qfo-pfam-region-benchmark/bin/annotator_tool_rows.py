@@ -142,6 +142,41 @@ TOOL_INFO = {
         "target_db": "eggNOG 5.0 (emapperdb 5.0.2)",
         "target_db_version": "emapperdb 5.0.2",
     },
+    # Embedding search runs once per QfO target proteome: target_db is "QfO <species>",
+    # as in the main run's rows (PR 148), so the rows sit beside them.
+    "tmvec": {
+        "name": "TM-Vec (+ DeepBLAST alignment)",
+        "group": "embedding search",
+        "graded_on": "Pfam domains of the best hit in the target proteome, placed through "
+        "DeepBLAST's structural alignment",
+        "has_query_coordinates": True,
+        "needs_gpu": True,
+        "authors": "Tymor Hamamsy, Jamie Morton, Richard Bonneau (TM-Vec, DeepBLAST)",
+        "search_step": "tmvecSearch",
+        "db_steps": [],
+        "per_target": True,
+    },
+    "plmsearch": {
+        "name": "PLMSearch (embedding search)",
+        "group": "embedding search",
+        "graded_on": "Pfam families of the best hit in the target proteome; PLMSearch "
+        "reports no alignment, so no position",
+        "has_query_coordinates": False,
+        "needs_gpu": True,
+        "authors": "Wei Liu, Hong-Bin Shen and colleagues (PLMSearch)",
+        "search_step": "plmsearchSearch",
+        "db_steps": [],
+        "per_target": True,
+    },
+}
+QFO_TARGET_VERSION = "QfO 2020_04 (UP000008143 updated)"
+# Steps that hold one GPU per task (-G 1): their wall time is GPU time.
+GPU_STEPS = {"tmvecSearch", "plmsearchEmbed", "plmsearchSearch"}
+# Embedding steps, tagged "<tool> <species>" or "plmsearch embed <name>".
+EMBEDDING_STEPS = {
+    "tmvecSearch": "tmvec",
+    "plmsearchEmbed": "plmsearch",
+    "plmsearchSearch": "plmsearch",
 }
 # Steps every tool of one run uses once. Their cost is reported once, as its own rows,
 # and on each card as "shared", never split among the tools by a made-up rule.
@@ -154,6 +189,7 @@ PER_SETTING_STEPS = {
     "eggnogMapperSearch",
     "eggnogCalls",
 }
+SHARED_EMBEDDING_STEPS = {"shortHeaders"}
 
 _DURATION = re.compile(r"(\d+(?:\.\d+)?)(ms|d|h|m|s)")
 _SECONDS = {"ms": 1e-3, "s": 1.0, "m": 60.0, "h": 3600.0, "d": 86400.0}
@@ -216,7 +252,7 @@ def read_run_info(path: Path) -> dict:
 def task_setting(step: str, tag: str | None) -> tuple[str, str] | None:
     """(tool, setting) a trace row belongs to, or None for a shared step."""
     tag = tag or ""
-    if step in SHARED_STEPS:
+    if step in SHARED_STEPS or step in SHARED_EMBEDDING_STEPS:
         return None
     if step == "diamondMakedb":
         return ("diamond_besthit", "database build")
@@ -228,11 +264,28 @@ def task_setting(step: str, tag: str | None) -> tuple[str, str] | None:
         return ("diamond_besthit", tag.removeprefix("diamond ").strip())
     if step == "mmseqsBestHitSearch":
         return ("mmseqs2_besthit", tag.removeprefix("mmseqs2 ").strip())
+    if step in EMBEDDING_STEPS:
+        return (EMBEDDING_STEPS[step], None)
+    if step == "embeddingCalls":
+        return (tag.partition(" ")[0], None)
     if step in PER_SETTING_STEPS:
         # "<tool> <setting>", or "<tool> <setting> <target>" for scoring.
         parts = tag.split()
         return (parts[0], parts[1] if len(parts) > 1 else "")
     return None
+
+
+def task_target(step: str, tag: str | None) -> str | None:
+    """The target proteome a task searched or scored, from its tag; None when the tag
+    names none (one-target tools) or names the query set."""
+    words = (tag or "").split()
+    if step in EMBEDDING_STEPS or step == "embeddingCalls":
+        t = words[-1] if words else None
+    elif step == "scoreAnnotatorTool" and len(words) == 3:
+        t = words[2]
+    else:
+        t = None
+    return None if t == "query" else t
 
 
 def read_trace(path: Path) -> pl.DataFrame:
@@ -241,14 +294,26 @@ def read_trace(path: Path) -> pl.DataFrame:
 
 
 def compute_rows(
-    trace: pl.DataFrame, experiment: str, n_queries: int | None, source: str
+    trace: pl.DataFrame,
+    experiment: str,
+    n_queries: int | None,
+    source: str,
+    settings: dict[str, list[str]] | None = None,
 ) -> pl.DataFrame:
-    """Per (tool, setting, step): the newest COMPLETED attempt of each task, summed."""
+    """Per (tool, setting, step): the newest COMPLETED attempt of each task, summed.
+
+    `settings` maps a tool to the settings its metrics hold; an embedding step's tag
+    names the target, not the setting, so a tool with one setting gets it from there.
+    """
+    settings = settings or {}
     done = trace.filter(pl.col("status") == "COMPLETED")
     rows = []
     for r in done.iter_rows(named=True):
         key = task_setting(r["step"], r.get("tag"))
         tool, setting = key if key else ("annotator_shared", "shared")
+        if setting is None:
+            known = settings.get(tool, [])
+            setting = known[0] if len(known) == 1 else "all settings"
         wall = duration_seconds(r.get("realtime"))
         cores = int(r["cpus"]) if r.get("cpus") not in (None, "", "-") else None
         rows.append(
@@ -261,6 +326,10 @@ def compute_rows(
                 "wall_s": wall,
                 "cores": cores,
                 "peak_ram_gb": size_gb(r.get("peak_rss")),
+                "target": task_target(r["step"], r.get("tag")),
+                "gpu_h": (
+                    wall / 3600 if r["step"] in GPU_STEPS and wall is not None else None
+                ),
             }
         )
     if not rows:
@@ -283,7 +352,7 @@ def compute_rows(
                 "setting": setting,
                 "step": step,
                 "n_tasks": g.height,
-                "n_target_dbs": 1,
+                "n_target_dbs": max(1, g["target"].drop_nulls().n_unique()),
                 "wall_s": (
                     float(g["wall_s"].sum()) if g["wall_s"].null_count() == 0 else None
                 ),
@@ -296,8 +365,16 @@ def compute_rows(
                     float((g["cores"] * g["wall_s"] / 3600).sum()) if complete else None
                 ),
                 "peak_ram_gb": g["peak_ram_gb"].max(),
-                "gpu_type": "none",
-                "gpu_h": None,
+                "gpu_type": (
+                    "1 GPU per task (-G 1); model in run.txt"
+                    if step in GPU_STEPS
+                    else "none"
+                ),
+                "gpu_h": (
+                    float(g["gpu_h"].sum())
+                    if step in GPU_STEPS and g["gpu_h"].null_count() == 0
+                    else None
+                ),
                 "n_queries": n_queries,
                 "n_targets": None,
                 "source": source,
@@ -306,12 +383,17 @@ def compute_rows(
     return tidy(pl.DataFrame(out, infer_schema_length=None), COMPUTE_SCHEMA)
 
 
-def target_db(tool: str, a) -> str:
-    """The best-hit tools search --target-db; a reference-database tool its own."""
+def target_db(tool: str, a, species: str | None = None) -> str:
+    """The best-hit tools search --target-db; a reference-database tool its own; an
+    embedding search one QfO proteome per row."""
+    if TOOL_INFO[tool].get("per_target"):
+        return f"QfO {species}"
     return TOOL_INFO[tool].get("target_db", a.target_db)
 
 
 def target_db_version(tool: str, a) -> str:
+    if TOOL_INFO[tool].get("per_target"):
+        return QFO_TARGET_VERSION
     return TOOL_INFO[tool].get("target_db_version", a.target_db_version)
 
 
@@ -363,7 +445,7 @@ def metric_rows(
             .alias("container_digest"),
             pl.col("variant").alias("setting"),
             pl.lit(a.query_set).alias("query_set"),
-            pl.lit(target_db(m["tool"][0], a)).alias("target_db"),
+            pl.lit(target_db(m["tool"][0], a, m["species"][0])).alias("target_db"),
             pl.lit(target_db_version(m["tool"][0], a)).alias("target_db_version"),
             pl.lit(None, dtype=pl.Float64).alias("target_mya_to_human"),
             pl.col("stratum").cast(pl.String).alias("stratum_bin"),
@@ -381,9 +463,12 @@ def metric_rows(
     )
 
 
-def pileup_calls(calls_path: Path, tool: str, setting: str) -> pl.DataFrame:
+def pileup_calls(
+    calls_path: Path, tool: str, setting: str, target: str
+) -> pl.DataFrame:
     """PR 146's load_calls() for a non-kmerseek tool: coordinates kept as they are
-    (1-based, end included)."""
+    (1-based, end included), plus the target the tool searched, so a tool run against
+    several proteomes keeps each set of calls apart."""
     c = pl.read_parquet(calls_path)
     return c.select(
         pl.lit(tool).alias("tool"),
@@ -394,6 +479,7 @@ def pileup_calls(calls_path: Path, tool: str, setting: str) -> pl.DataFrame:
         pl.col("qend").cast(pl.Int64).alias("call_end"),
         pl.col("score").cast(pl.Float64),
         "is_tp",
+        pl.lit(target).alias("target"),
     )
 
 
@@ -408,22 +494,31 @@ def card(
     a: argparse.Namespace,
 ) -> dict:
     info = TOOL_INFO[tool]
-    row = m.filter(
-        (pl.col("split") == "all")
-        & (pl.col("stratum_axis") == "all")
-        & (~pl.col("dedup_transfers").fill_null(False))
+    by_target = {}
+    for species, mt in m.group_by("species", maintain_order=True):
+        row = mt.filter(
+            (pl.col("split") == "all")
+            & (pl.col("stratum_axis") == "all")
+            & (~pl.col("dedup_transfers").fill_null(False))
+        )
+        scores = {}
+        if row.height:
+            r = row.row(0, named=True)
+            n = r["n_truth_instances"]
+            for k in METRICS:
+                if k in POSITION_METRICS and not info["has_query_coordinates"]:
+                    scores[k] = "not applicable"
+                elif k in r:
+                    scores[k] = r[k]
+            scores["n_truth_instances"] = n
+            scores["grey"] = n is None or n < GREY_BELOW
+        by_target[species[0]] = scores
+    # One target (best-hit and reference-database tools): its scores directly.
+    scores = (
+        next(iter(by_target.values()))
+        if len(by_target) == 1
+        else "one set per target: see scores_by_target"
     )
-    scores = {}
-    if row.height:
-        r = row.row(0, named=True)
-        n = r["n_truth_instances"]
-        for k in METRICS:
-            if k in POSITION_METRICS and not info["has_query_coordinates"]:
-                scores[k] = "not applicable"
-            elif k in r:
-                scores[k] = r[k]
-        scores["n_truth_instances"] = n
-        scores["grey"] = n is None or n < GREY_BELOW
     # Three cost parts, never summed into one: the setting's own search and scoring, the
     # tool's database build (shared by the tool's settings), and the steps every tool of
     # the run shares. Summing the last two into each card would count them once per card.
@@ -462,13 +557,19 @@ def card(
         "needs_gpu": info["needs_gpu"],
         "has_query_coordinates": info["has_query_coordinates"],
         "query_set": a.query_set,
-        "target_db": target_db(tool, a),
+        "target_db": (
+            sorted(f"QfO {t}" for t in m["species"].unique().to_list())
+            if info.get("per_target")
+            else target_db(tool, a)
+        ),
         "target_db_version": target_db_version(tool, a),
         "truth": f"Pfam-A domain instances, {a.truth_version}",
         # The step's own QC counts, as written (place_qc.json or calls_qc.json).
         "queries": {k: v for k, v in qc.items() if k not in ("tool", "setting")},
+        "gpu_model": run.get("gpu_model"),
         "database_size": run.get("database_size"),
         "scores_split_all": scores,
+        "scores_by_target": by_target,
         "cost_this_setting": cost(own),
         "cost_database_build_shared_by_tool_settings": cost(db),
         "cost_shared_by_all_tools_in_run": cost(shared),
@@ -535,7 +636,7 @@ def main() -> None:
     n_queries = None
     for f in metric_files:
         m = pl.read_parquet(f)
-        tool, setting = m["tool"][0], m["variant"][0]
+        tool, setting, species = m["tool"][0], m["variant"][0], m["species"][0]
         if tool not in TOOL_INFO:
             raise SystemExit(f"{f.name}: tool {tool!r} has no TOOL_INFO entry")
         rel = f.relative_to(a.results).as_posix()
@@ -543,16 +644,34 @@ def main() -> None:
         frames.append(metric_rows(m, a, images, rel, version))
         calls = a.results / "calls" / f.name.replace(".metrics.", ".calls.")
         if TOOL_INFO[tool]["has_query_coordinates"] and calls.exists():
-            pile.append(pileup_calls(calls, tool, setting))
-        qc_paths = sorted((a.results / "regions").glob(f"{tool}.{setting}.*qc.json"))
+            pile.append(pileup_calls(calls, tool, setting, target_db(tool, a, species)))
+        # QC: <tool>.<setting>.<species>.calls_qc.json for a per-target tool, else the
+        # step's one json (place_qc or calls_qc).
+        own = a.results / "regions" / f"{tool}.{setting}.{species}.calls_qc.json"
+        qc_paths = (
+            [own]
+            if own.exists()
+            else sorted((a.results / "regions").glob(f"{tool}.{setting}.*qc.json"))
+        )
         qc = json.loads(qc_paths[0].read_text()) if qc_paths else {}
         n_queries = n_queries or qc.get("n_queries")
-        run_path = a.results / "hits" / f"{tool}.{setting}.run.txt"
-        run = read_run_info(run_path) if run_path.exists() else {}
-        cards[(tool, setting)] = (m, qc, run)
+        runs = [
+            a.results / "hits" / f"{tool}.{setting}.run.txt",
+            a.results / "hits" / tool / f"{tool}.{species}.run.txt",
+        ]
+        run = next((read_run_info(r) for r in runs if r.exists()), {})
+        entry = cards.setdefault((tool, setting), {"m": [], "qc": {}, "run": {}})
+        entry["m"].append(m)
+        entry["qc"][species] = qc
+        entry["run"] = entry["run"] or run
 
+    settings = {}
+    for tool, setting in cards:
+        settings.setdefault(tool, []).append(setting)
     compute = (
-        compute_rows(trace, a.experiment, n_queries, "; ".join(map(str, a.trace)))
+        compute_rows(
+            trace, a.experiment, n_queries, "; ".join(map(str, a.trace)), settings
+        )
         if trace is not None
         else pl.DataFrame(schema=COMPUTE_SCHEMA)
     )
@@ -563,8 +682,18 @@ def main() -> None:
     if pile:
         pl.concat(pile).write_parquet(a.out / "pileup_calls.parquet")
     (a.out / "cards").mkdir(exist_ok=True)
-    for (tool, setting), (m, qc, run) in cards.items():
-        c = card(tool, setting, m, qc, run, images.get(tool), compute, a)
+    for (tool, setting), e in cards.items():
+        qc = next(iter(e["qc"].values())) if len(e["qc"]) == 1 else e["qc"]
+        c = card(
+            tool,
+            setting,
+            pl.concat(e["m"], how="diagonal_relaxed"),
+            qc,
+            e["run"],
+            images.get(tool),
+            compute,
+            a,
+        )
         (a.out / "cards" / f"{tool}.{setting}.json").write_text(
             json.dumps(c, indent=1, default=str) + "\n"
         )

@@ -223,6 +223,19 @@ def place_domains(
 
 
 def read_domains(path: Path) -> pl.DataFrame:
+    """Target domains: the six-column hmmscan table, or a main-run domain map
+    (<species>_domain_map.parquet: accession, pfam_id, domain_start, domain_end)."""
+    if path.suffix == ".parquet":
+        return (
+            pl.read_parquet(path)
+            .select(
+                pl.col("accession").cast(pl.String).alias("target"),
+                pl.col("pfam_id").cast(pl.String).str.split(".").list.get(0),
+                pl.col("domain_start").cast(pl.Int64).alias("dstart"),
+                pl.col("domain_end").cast(pl.Int64).alias("dend"),
+            )
+            .sort("target", "dstart", "dend", "pfam_id")
+        )
     opener = gzip.open if path.suffix == ".gz" else open
     with opener(path, "rt") as fh:
         if not fh.read(1):
