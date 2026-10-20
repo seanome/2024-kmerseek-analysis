@@ -195,10 +195,12 @@ def main() -> int:
                     }
                 )
 
-    pl.DataFrame(top_rows).write_csv(args.outdir / "top_hits.tsv", separator="\t")
-    pl.DataFrame(count_rows).write_csv(
-        args.outdir / "truth_at_threshold.tsv", separator="\t"
+    pl.DataFrame(top_rows).sort("method", "setting_label", "rank").write_csv(
+        args.outdir / "top_hits.tsv", separator="\t"
     )
+    pl.DataFrame(count_rows).sort(
+        "method", "setting_label", "query_id", "target_lineage"
+    ).write_csv(args.outdir / "truth_at_threshold.tsv", separator="\t")
     # A scan's true rank over the whole reference, in place of the position among kept rows.
     scan = (
         pl.read_parquet(args.hits / "scans" / "scans.parquet")
@@ -245,8 +247,10 @@ def main() -> int:
         )
         .drop("scan_rank", "truth_better")
     )
-    rank_rows.write_csv(args.outdir / "truth_ranks.tsv", separator="\t")
-    pl.DataFrame(fp_rows).write_csv(
+    rank_rows.sort("method", "setting_label", "target").write_csv(
+        args.outdir / "truth_ranks.tsv", separator="\t"
+    )
+    pl.DataFrame(fp_rows).sort("method", "setting_label").write_csv(
         args.outdir / "first_false_positive.tsv", separator="\t"
     )
     print(
