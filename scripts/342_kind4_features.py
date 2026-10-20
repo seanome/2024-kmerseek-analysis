@@ -95,7 +95,8 @@ def read_calls(calls_dir: Path) -> pl.DataFrame:
 
 def check_memory(calls_dir: Path) -> None:
     """Stop before reading if PR 114's rule predicts more memory than this job was given."""
-    gz_gb = sum(f.stat().st_size for f in calls_dir.rglob("*.calls.tsv.gz")) / 1e9
+    # The files read_calls reads. Not rglob: before Python 3.13 it skips linked folders.
+    gz_gb = sum(f.stat().st_size for f in calls_dir.glob("*/chunk_*.calls.tsv.gz")) / 1e9
     predicted = MEMORY_BASE_GB + MEMORY_PER_CALL_GB * gz_gb
     asked = int(os.environ.get("SLURM_MEM_PER_NODE", "0")) / 1024
     print(
