@@ -15,6 +15,10 @@
  *                                                   ▼
  *                         place hit domains on the query ──► score ──► rows, cards
  *
+ * G2, reference-database tools: InterProScan (every member database) and eggNOG-mapper
+ * (default DIAMOND search) annotate the queries against their own databases, which
+ * contain human. Their rows are "graded on their own models", as hmmscan's is.
+ *
  * Launch: `make run-annotator-tools` (Sherlock); `make stub` checks the wiring on a
  * laptop. Rows and cards: `make annotator-rows` after the run.
  */
@@ -35,8 +39,12 @@ params.mmseqs_sensitivity = 7.5
 // The pipeline's transfer rule: a hit must cover half of a target domain to transfer it.
 params.min_overlap = 0.5
 params.strict_iou  = 0.8
+// G2, reference-database tools. Each runs only when named in --tools, and needs its data.
+params.interproscan_dir = null   // unpacked interproscan-5.78-109.0 (make interproscan-data)
+params.eggnog_data_dir  = null   // emapperdb 5.0.2 (make eggnog-data)
+params.refdb_label      = 'own_models'
 // Which tools run (comma-separated).
-params.tools = 'diamond,mmseqs2'
+params.tools = 'diamond,mmseqs2,interproscan,eggnog'
 
 // After the params, not before: a module reads params when it is included, so a param
 // set below an include is undefined inside it (the stub run caught --min-overlap null).
@@ -44,6 +52,8 @@ include { cladeExcludedReference; hitTargets; hmmscanHitTargets;
           placeBestHitDomains; scoreAnnotatorTool } from './modules/annotator_common'
 include { DIAMOND_BEST_HIT } from './modules/diamond_best_hit'
 include { MMSEQS_BEST_HIT }  from './modules/mmseqs_best_hit'
+include { INTERPROSCAN }     from './modules/interproscan'
+include { EGGNOG_MAPPER }    from './modules/eggnog_mapper'
 
 def required(name) {
     if (params[name] == null) {
@@ -64,7 +74,7 @@ workflow {
         error "expected 4 hmmpress files beside ${params.pfam_hmm}, found ${hmm_aux.size()}"
     }
     tools = params.tools.tokenize(',')
-    def unknown = tools - ['diamond', 'mmseqs2']
+    def unknown = tools - ['diamond', 'mmseqs2', 'interproscan', 'eggnog']
     if (unknown) error "unknown --tools: ${unknown}"
 
     ref = cladeExcludedReference(dat, params.exclude_clade)
@@ -82,5 +92,22 @@ workflow {
     domains = hmmscanHitTargets(targets.map { [it, hmm, hmm_aux] })
 
     placed = placeBestHitDomains(hits.combine(domains).combine(queries))
-    scoreAnnotatorTool(placed.regions.combine(truth).combine(covariates))
+    regions = placed.regions
+        .map { tool, setting, r -> [tool, setting, params.species_label, r] }
+
+    // Reference-database tools: their calls are already on the query, from their own
+    // models, so there is no reference, no best hit and no placement step.
+    if ('interproscan' in tools) {
+        if (params.interproscan_dir == null) error "--interproscan_dir is required for interproscan"
+        file("${params.interproscan_dir}/data", checkIfExists: true)
+        regions = regions.mix(INTERPROSCAN(queries).regions
+            .map { tool, setting, r -> [tool, setting, params.refdb_label, r] })
+    }
+    if ('eggnog' in tools) {
+        def edir = required('eggnog_data_dir')
+        regions = regions.mix(EGGNOG_MAPPER(queries, Channel.value(edir), Channel.value(hmm)).regions
+            .map { tool, setting, r -> [tool, setting, params.refdb_label, r] })
+    }
+
+    scoreAnnotatorTool(regions.combine(truth).combine(covariates))
 }
