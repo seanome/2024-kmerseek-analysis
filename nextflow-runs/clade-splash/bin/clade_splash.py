@@ -265,7 +265,9 @@ def cmd_select(a: argparse.Namespace) -> None:
         if r["upid"] not in readme:
             dropped["not in FTP README"] += 1
             continue
-        if (r["cpd"] or "").strip().lower() == "outlier":
+        # CPD (UniProt's Complete Proteome Detector) is "Outlier (high value)" or
+        # "Outlier (low value)" for a proteome whose size is far from its relatives'.
+        if (r["cpd"] or "").strip().lower().startswith("outlier"):
             dropped["CPD outlier"] += 1
             continue
         tid = int(r["taxid"])
@@ -295,8 +297,10 @@ def cmd_select(a: argparse.Namespace) -> None:
     keep = per_class.filter(pl.col("len") >= MIN_SPECIES_PER_CLADE)["class_taxid"]
     sel = one.filter(pl.col("class_taxid").is_in(keep.implode()))
     if a.max_per_class:
-        # Pilot only: the first N species of the first M classes, by class taxid.
-        classes = sorted(sel["class_taxid"].unique().to_list())[: a.max_classes]
+        # Pilot only: the first N species (by proteome id) of the M classes with the most
+        # species, which mixes large eukaryote proteomes with bacteria and viruses.
+        top = sel.group_by("class_taxid").len().sort(["len", "class_taxid"], descending=[True, False])
+        classes = top["class_taxid"].head(a.max_classes).to_list()
         sel = (sel.filter(pl.col("class_taxid").is_in(classes))
                .sort(["class_taxid", "upid"]).group_by("class_taxid", maintain_order=True).head(a.max_per_class))
     sel = sel.sort(["domain", "phylum", "class", "family", "upid"], nulls_last=True)
