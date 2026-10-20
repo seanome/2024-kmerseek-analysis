@@ -3,6 +3,10 @@
 per tool, read from results/leaderboard/results.parquet (experiment pfam_pair_roc).
 
 Prints every plotted value with its n (positive pairs), so the PR's numbers come from here.
+Divergence times are TimeTree 5's (results/leaderboard/timetree_human_pairwise.tsv). A
+target TimeTree gives no age for (E. coli: bacteria and human share no dated node) has
+no x position, so it is printed but not plotted, and a tool with no other target is
+left out of the figure.
 
     python scripts/plot_leaderboard_pfam_pair_roc.py
 """
@@ -38,10 +42,21 @@ def main() -> None:
     )
     with pl.Config(tbl_rows=-1):
         print(r)
+    undated = r.filter(pl.col("target_mya_to_human").is_null())
+    if undated.height:
+        print(
+            "not plotted, no TimeTree age:",
+            ", ".join(sorted(set(undated["target_db"]))),
+            f"({undated.height} rows)",
+        )
+    r = r.filter(pl.col("target_mya_to_human").is_not_null())
     pf.use_style()
     fig, ax = pf.figure(pf.ONE_COLUMN_MM, 62)
     for tool, (label, colour) in TOOLS.items():
         t = r.filter(pl.col("tool") == tool)
+        if t.height == 0:
+            print(f"not plotted, no dated target: {tool}")
+            continue
         ax.plot(
             t["target_mya_to_human"],
             t["value"],
@@ -50,7 +65,15 @@ def main() -> None:
             label=f"{label} ({t.height} species)",
         )
     ax.axhline(0.5, color=pf.GREY, linewidth=0.5)
-    ax.text(2000, 0.505, "random ranking", ha="right", va="bottom", color=pf.GREY)
+    ax.text(
+        0.98,
+        0.505,
+        "random ranking",
+        ha="right",
+        va="bottom",
+        color=pf.GREY,
+        transform=ax.get_yaxis_transform(),
+    )
     ax.set_xlabel("Divergence of the target species from human (million years)")
     ax.set_ylabel("ROC AUC, protein pairs sharing a Pfam domain")
     ax.set_ylim(0.45, 0.9)

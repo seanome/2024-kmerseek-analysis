@@ -315,3 +315,35 @@ def test_kmer_spectra_reads_header_and_checks_k(tmp_path):
 def test_disprot_counts_reads_trace_statuses():
     t = pl.DataFrame({"status": ["COMPLETED"] * 3 + ["ABORTED"] * 2 + ["FAILED"]})
     assert bll.disprot_counts(t) == "3 tasks COMPLETED, 2 tasks ABORTED, 1 task FAILED"
+
+
+def test_timetree_mya_replaces_typed_values(tmp_path):
+    """QfO targets take TimeTree's age; a QfO target TimeTree has no age for becomes null,
+    never the typed value; a non-QfO target keeps what it had."""
+    table = tmp_path / "tt.tsv"
+    table.write_text("label\tmya\nmouse\t83.51\nrnorvegicus\t83.51\necoli\t\n")
+    rows = pl.DataFrame(
+        {
+            "target_db": [
+                "QfO mouse",
+                "QfO rnorvegicus",
+                "QfO ecoli",
+                "QfO dodo",
+                "SCOPe40",
+            ],
+            "target_mya_to_human": [100.0, 90.0, 2000.0, 5.0, 7.0],
+        }
+    )
+    got = bll.timetree_mya(rows, table)["target_mya_to_human"].to_list()
+    assert got == [83.51, 83.51, None, None, 7.0]
+
+
+def test_committed_timetree_table_orders_mammals():
+    """Rodents split from human at one node, before dog and cow (Laurasiatheria)."""
+    table = (
+        SCRIPT.parents[1] / "results" / "leaderboard" / "timetree_human_pairwise.tsv"
+    )
+    tt = pl.read_csv(table, separator="\t", schema_overrides={"mya": pl.Float64})
+    mya = dict(zip(tt["label"].to_list(), tt["mya"].to_list()))
+    assert mya["mouse"] == mya["rnorvegicus"] < mya["btaurus"] == mya["clupus"]
+    assert mya["ecoli"] is None
