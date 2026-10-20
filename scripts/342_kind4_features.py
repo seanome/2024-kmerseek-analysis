@@ -3,9 +3,6 @@
 Reads the call files of scripts/342_stop3.sbatch (one folder per kmerseek setting, regions
 with E <= 10, 1-based inclusive coordinates) and writes, under --out:
 
-* calls_on_exon.tsv.gz: every call whose query stretch overlaps at least one exon residue,
-  with the target's Swiss-Prot accession, feature type and gene names, and flags for decoy
-  queries, decoy targets, own-gene targets and similar-name targets.
 * cutoffs.tsv: per setting, the decoy-matched cutoff, set on the tune half: the E below
   which at most 5% of tune-half decoy queries have a call on a real target (own-gene targets
   removed). Calls at E below the cutoff count as hits.
@@ -17,6 +14,10 @@ with E <= 10, 1-based inclusive coordinates) and writes, under --out:
   does not catch).
 * best_hits.tsv: per exon and setting, the best call on another gene, with both residue
   strings, for printing aligned in the notebook.
+
+Only calls whose query stretch overlaps at least one exon residue count. The call files
+themselves are the record of every call; no copy of them is written (2026-10-20: about 470
+million calls for aro_hyd_arg_chg_pol5 k9 alone).
 
 A target is "own gene" when any of its UniProt gene names (Name= or Synonyms= on its GN line
 in the Swiss-Prot file) equals the query's gene symbol, ignoring case (Olga, 2026-10-16:
@@ -42,9 +43,8 @@ DECOY = "DECOY_"
 MAX_DECOY_RATE = 0.05
 #: P2 counts a call at E below this.
 P2_EVALUE = 1.0
-#: Peak memory = 1 GB + 30 GB per GB of the largest gzipped call file. Measured 2026-10-20
-#: (job 48677411): reading, joining and filtering one 1.1 GB aro_hyd_arg_chg_pol5 k9 chunk peaked
-#: at 32.4 GB. Files are read one at a time and reduced to one row per exon and setting.
+#: Peak memory = 1 GB + MEMORY_PER_FILE_GB per GB of the largest gzipped call file, as
+#: files are read one at a time. Set from a measured run (see tables/342/342_stop3_resources.tsv).
 MEMORY_BASE_GB = 1.0
 MEMORY_PER_FILE_GB = 30.0
 SETTING_RE = re.compile(r"^(?P<alphabet>.+)_k(?P<k>\d+)_s1$")
@@ -77,13 +77,20 @@ def gene_names(dat: Path, cache: Path) -> pl.DataFrame:
     return table
 
 
-#: Column order of calls_on_exon.tsv.gz.
-DUMP_COLUMNS = [
-    "query", "qstart", "qend", "target", "tstart", "tend", "evalue", "qseq", "tseq",
-    "setting", "query_is_decoy", "event_id", "target_is_decoy", "target_accession",
-    "feature_type", "feature_note", "gene_name", "outcome", "half", "exon_start_in_query",
-    "exon_end_in_query", "target_gene_names", "own_gene", "similar_name",
-]  # fmt: skip
+#: Columns read from a call file in the first pass; the residue strings are read only for
+#: the best calls, in a second pass.
+FIRST_PASS_COLUMNS = ["query", "qstart", "qend", "target", "tstart", "tend", "evalue"]
+CALL_SCHEMA = {
+    "query": pl.String,
+    "qstart": pl.Int32,
+    "qend": pl.Int32,
+    "target": pl.String,
+    "tstart": pl.Int32,
+    "tend": pl.Int32,
+    "evalue": pl.Float64,
+    "qseq": pl.String,
+    "tseq": pl.String,
+}
 
 
 def call_files(calls_dir: Path) -> list[tuple[str, Path]]:
@@ -99,93 +106,106 @@ def call_files(calls_dir: Path) -> list[tuple[str, Path]]:
     return out
 
 
-def label_calls(
-    f: Path, setting: str, exon: pl.DataFrame, genes: pl.DataFrame, target_genes: pl.DataFrame
-) -> tuple[pl.DataFrame, int]:
-    """The calls of one file whose query stretch overlaps at least one exon residue, labelled
-    (decoy query or target, Swiss-Prot accession and feature, own gene, similar name), and the
-    number of calls read."""
-    calls = pl.read_csv(f, separator="\t", schema_overrides={"evalue": pl.Float64})
+def query_table(queries: pl.DataFrame) -> pl.DataFrame:
+    """One row per query name, the exon and its decoy: the exon's row number in the query table,
+    whether the query is the decoy, the exon's stretch in the query, and the gene's number."""
+    exons = queries.with_row_index("event_idx").with_columns(
+        pl.col("gene_name").rank("dense").cast(pl.UInt32).alias("gene_idx")
+    )
+    cols = ["event_idx", "gene_idx", "exon_start_in_query", "exon_end_in_query"]
+    return pl.concat(
+        [
+            exons.select(pl.col("event_id").alias("query"), pl.lit(False).alias("query_is_decoy"), *cols),
+            exons.select(
+                (pl.lit(DECOY) + pl.col("event_id")).alias("query"),
+                pl.lit(True).alias("query_is_decoy"),
+                *cols,
+            ),
+        ]
+    ).with_columns(
+        pl.col("exon_start_in_query").cast(pl.Int32), pl.col("exon_end_in_query").cast(pl.Int32)
+    )
+
+
+def reduce_file(
+    f: Path, qtab: pl.DataFrame, gene_symbols: pl.DataFrame, genes: pl.DataFrame
+) -> tuple[pl.DataFrame, pl.DataFrame, int, int]:
+    """Read one call file and keep only what the outputs need: per exon and query kind (exon or
+    its decoy), the call with the smallest E on a real target of another gene (ties to the
+    smaller target name, then the earlier call), and per exon the own-gene counts. Only calls
+    whose query stretch overlaps at least one exon residue count. Returns those two tables, the
+    number of calls read and the number on the exon."""
+    calls = pl.read_csv(
+        f, separator="\t", columns=FIRST_PASS_COLUMNS, schema_overrides=CALL_SCHEMA
+    ).with_row_index("row")
     n_read = calls.height
-    calls = calls.with_columns(
-        pl.lit(setting).alias("setting"),
-        pl.col("query").str.starts_with(DECOY).alias("query_is_decoy"),
-        pl.col("query").str.strip_prefix(DECOY).alias("event_id"),
-    ).join(exon, on="event_id", how="left")
-    assert calls["gene_name"].null_count() == 0, f"a call's query in {f} is not in the query table"
-    on_exon = (
-        calls.filter(
-            (pl.col("qstart") <= pl.col("exon_end_in_query"))
-            & (pl.col("qend") >= pl.col("exon_start_in_query"))
-        )
+    calls = calls.join(qtab, on="query", how="left")
+    assert calls["event_idx"].null_count() == 0, f"a call's query in {f} is not in the query table"
+    calls = calls.filter(
+        (pl.col("qstart") <= pl.col("exon_end_in_query"))
+        & (pl.col("qend") >= pl.col("exon_start_in_query"))
+    ).drop("query", "exon_start_in_query", "exon_end_in_query")
+    n_on_exon = calls.height
+    # Targets, and own gene / similar name, per distinct value, not per call: a file holds tens
+    # of millions of calls but far fewer distinct targets and (target, query gene) pairs.
+    targets = (
+        calls.select("target")
+        .unique()
+        .with_row_index("tid")
         .with_columns(
             pl.col("target").str.starts_with(DECOY).alias("target_is_decoy"),
-            pl.col("target").str.strip_prefix(DECOY).str.split("|").alias("_t"),
+            pl.col("target").str.strip_prefix(DECOY).str.split("|").list.get(0).alias("target_accession"),
         )
-        .with_columns(
-            pl.col("_t").list.get(0).alias("target_accession"),
-            pl.col("_t").list.get(1, null_on_oob=True).alias("feature_type"),
-            pl.col("_t").list.get(2, null_on_oob=True).alias("feature_note"),
-        )
-        .drop("_t")
     )
-    del calls
-    # Own gene and similar name per distinct (target, query gene), not per call: a call file
-    # holds tens of millions of calls but far fewer such pairs.
+    calls = calls.join(targets.select("target", "tid", "target_is_decoy"), on="target", how="left")
     flags = (
-        on_exon.select("target_accession", "gene_name")
+        calls.select("tid", "gene_idx")
         .unique()
+        .join(targets.select("tid", "target_accession"), on="tid")
+        .join(gene_symbols, on="gene_idx")
         .join(
             genes.rename({"gene_name": "_name"}),
             left_on="target_accession",
             right_on="accession",
             how="left",
         )
-        .with_columns(pl.col("gene_name").str.to_uppercase().alias("_symbol"))
-        .group_by("target_accession", "gene_name")
+        .group_by("tid", "gene_idx")
         .agg(
             (pl.col("_name") == pl.col("_symbol")).any().alias("own_gene"),
             # A target gene name that starts with the query's symbol but is not equal to it.
-            (
-                (pl.col("_name") != pl.col("_symbol"))
-                & pl.col("_name").str.starts_with(pl.col("_symbol"))
-            )
+            ((pl.col("_name") != pl.col("_symbol")) & pl.col("_name").str.starts_with(pl.col("_symbol")))
             .any()
             .alias("similar_name"),
         )
     )
-    on_exon = (
-        on_exon.join(target_genes, left_on="target_accession", right_on="accession", how="left")
-        .with_columns(
-            pl.col("target_gene_names").fill_null(pl.lit([], dtype=pl.List(pl.String)))
-        )
-        .join(flags, on=["target_accession", "gene_name"], how="left")
-        .select(DUMP_COLUMNS)
-    )
-    return on_exon, n_read
-
-
-def best_per_query(calls: pl.DataFrame) -> pl.DataFrame:
-    """Per exon, setting and query kind (exon or its decoy), the call with the smallest E, ties
-    to the smaller target name, then to the earlier call."""
-    return (
-        calls.sort("evalue", "target", maintain_order=True)
-        .group_by("event_id", "setting", "query_is_decoy", maintain_order=True)
-        .first()
-    )
-
-
-def own_gene_counts(on_exon: pl.DataFrame) -> pl.DataFrame:
-    """Per setting, half and exon: calls of the exon query on real targets, of them on its own
-    gene, and on a similar-name target that is not its own gene."""
-    return (
-        on_exon.filter(~pl.col("target_is_decoy") & ~pl.col("query_is_decoy"))
-        .group_by("setting", "half", "event_id")
+    calls = calls.join(flags, on=["tid", "gene_idx"], how="left").drop("tid")
+    keys = ["event_idx", "query_is_decoy"]
+    kept = calls.filter(~pl.col("target_is_decoy") & ~pl.col("own_gene"))
+    best = best_per_query(kept.filter(pl.col("evalue") == pl.col("evalue").min().over(keys)), keys)
+    counts = (
+        calls.filter(~pl.col("target_is_decoy") & ~pl.col("query_is_decoy"))
+        .group_by("event_idx")
         .agg(
             pl.len().alias("n"),
             pl.col("own_gene").sum().alias("own"),
             (pl.col("similar_name") & ~pl.col("own_gene")).sum().alias("similar"),
         )
+    )
+    return best, counts, n_read, n_on_exon
+
+
+def best_per_query(calls: pl.DataFrame, keys: list[str]) -> pl.DataFrame:
+    """Per group of `keys`, the call with the smallest E, ties to the smaller target name, then
+    to the earlier call."""
+    return calls.sort("evalue", "target", maintain_order=True).group_by(keys, maintain_order=True).first()
+
+
+def residue_strings(f: Path, rows: pl.Series) -> pl.DataFrame:
+    """qseq and tseq of the given rows of one call file (row = 0-based line after the header)."""
+    return (
+        pl.read_csv(f, separator="\t", columns=["qseq", "tseq"], schema_overrides=CALL_SCHEMA)
+        .with_row_index("row")
+        .filter(pl.col("row").is_in(rows.implode()))
     )
 
 
@@ -232,28 +252,42 @@ def main() -> None:
     )
     genes = gene_names(args.swissprot_dat, args.out / "swissprot_gene_names.tsv")
     target_genes = genes.group_by("accession").agg(pl.col("gene_name").alias("target_gene_names"))
+    qtab = query_table(queries)
+    gene_symbols = (
+        queries.select(
+            pl.col("gene_name").rank("dense").cast(pl.UInt32).alias("gene_idx"),
+            pl.col("gene_name").str.to_uppercase().alias("_symbol"),
+        )
+        .unique()
+    )
 
     # One file at a time (2026-10-20: aro_hyd_arg_chg_pol5 k9 alone wrote 470 million calls at
-    # E <= 10, 88% of them on the exon, too many to hold). Every on-exon call goes straight to
-    # calls_on_exon.tsv.gz; what stays in memory is the best call per exon, setting and query
-    # kind, and the own-gene counts per exon, which is all the outputs below need.
+    # E <= 10, 88% of them on the exon, too many to hold). What stays in memory is the best call
+    # per exon, setting and query kind, and the own-gene counts per exon: all the outputs need.
     bests, counts, n_read, n_on_exon = [], [], 0, 0
-    with gzip.open(args.out / "calls_on_exon.tsv.gz", "wb", compresslevel=1) as fh:
-        for i, (setting, f) in enumerate(files):
-            on_exon, n = label_calls(f, setting, exon, genes, target_genes)
-            on_exon.with_columns(pl.col("target_gene_names").list.join(";")).write_csv(
-                fh, separator="\t", include_header=i == 0
-            )
-            kept = on_exon.filter(~pl.col("target_is_decoy") & ~pl.col("own_gene"))
-            bests.append(best_per_query(kept))
-            counts.append(own_gene_counts(on_exon))
-            n_read += n
-            n_on_exon += on_exon.height
-            print(f"{f}: {n} calls, {on_exon.height} on the exon", flush=True)
-            del on_exon, kept
+    for setting, f in files:
+        b, c, n, m = reduce_file(f, qtab, gene_symbols, genes)
+        bests.append(b.with_columns(pl.lit(setting).alias("setting"), pl.lit(str(f)).alias("file")))
+        counts.append(c.with_columns(pl.lit(setting).alias("setting")))
+        n_read += n
+        n_on_exon += m
+        print(f"{f}: {n} calls, {m} on the exon", flush=True)
     settings = sorted({s for s, _ in files})
     print(f"{n_read} calls at E <= 10 in {len(settings)} settings: {settings}; {n_on_exon} on the exon")
-    best = best_per_query(pl.concat(bests))
+    events = queries.with_row_index("event_idx").select("event_idx", "event_id", "gene_name", "outcome", "half")
+    best = (
+        best_per_query(pl.concat(bests), ["event_idx", "setting", "query_is_decoy"])
+        .join(events, on="event_idx")
+        .with_columns(pl.col("target").str.strip_prefix(DECOY).str.split("|").alias("_t"))
+        .with_columns(
+            pl.col("_t").list.get(1, null_on_oob=True).alias("feature_type"),
+            pl.col("_t").list.get(2, null_on_oob=True).alias("feature_note"),
+            pl.col("_t").list.get(0).alias("target_accession"),
+        )
+        .drop("_t")
+        .join(target_genes, left_on="target_accession", right_on="accession", how="left")
+        .with_columns(pl.col("target_gene_names").fill_null(pl.lit([], dtype=pl.List(pl.String))))
+    )
 
     # Decoy-matched cutoff per setting, on the tune half only.
     n_tune = queries.filter(pl.col("half") == "tune").height
@@ -327,8 +361,9 @@ def main() -> None:
 
     own = (
         pl.concat(counts)
-        .group_by("setting", "half", "event_id")
+        .group_by("setting", "event_idx")
         .sum()
+        .join(events.select("event_idx", "half"), on="event_idx")
         .group_by("setting", "half")
         .agg(
             pl.col("n").sum().alias("calls_on_real_targets"),
@@ -341,6 +376,14 @@ def main() -> None:
     own.write_csv(args.out / "own_gene_hits.tsv", separator="\t")
     print(own)
 
+    seqs = pl.concat(
+        [
+            residue_strings(Path(f), g["row"]).with_columns(pl.lit(f).alias("file"))
+            for (f,), g in real.group_by("file")
+        ]
+    )
+    real = real.join(seqs, on=["file", "row"], how="left")
+    assert real["qseq"].null_count() == 0
     best_rows = real.sort("evalue", "target", "event_id", "setting").select(
         "event_id",
         "gene_name",
