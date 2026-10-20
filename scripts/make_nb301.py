@@ -70,9 +70,10 @@ and still reports the verdict under it.
 Higher recall is better. Lower boundary error is better. A method whose recall equals its
 decoy hit rate is no better than chance.
 
-**Status, 2026-10-20.** Step 1 (the scans) is done and below. Steps 2 to 8 (the 2,000 + 500
-query set, decoys for it, the database, kmerseek and the two comparators, the second-agent
-check) have not run; the last section lists what was found while preparing them.
+**Status, 2026-10-20.** Step 1 (the scans) is done and below. Step 2 (the 2,000 real queries,
+the 500 chimeras and their UniRef90 clusters) is built by `scripts/301_step2.sbatch` on
+Sherlock; its tables are not in this notebook yet. Steps 3 to 8 have not run. The last
+section lists what was found while preparing them and the decisions taken.
 """)
 
 code(r"""
@@ -508,6 +509,39 @@ Olga's answers to points 1, 2 and 4 above. They are part of the rule from here o
 - **Database (point 4).** Swiss-Prot first, with every query's own UniRef90 cluster
   removed. Index memory and time are measured there, and UniRef90 is run only if the
   measurement shows it fits the compute left.
+""")
+
+md(r"""
+### Points carried over from closed PR 181, 2026-10-20
+
+PR 181 (notebook 351) asked the same question in another chat and was closed in favour of
+this notebook. A review of its preregistration raised five points; each is answered here.
+
+1. **Extension is off by default.** In kmerseek v0.4.0, `kmerseek search` defaults to
+   `--extend-mismatch-penalty 0.0` (`src/rust/main.rs` line 223 at tag v0.4.0), which keeps
+   regions exact, and the Karlin-Altschul E-value is computed only for extended regions.
+   Left at the default, every region would get no finite `region_evalue` and the test
+   would fail for a reason that has nothing to do with boundaries. Every search here
+   passes the setting's own `--extend-mismatch-penalty` and `--extend-xdrop`, and a few
+   proteins are searched first to check that `region_evalue` is finite.
+2. **A setting is named by all five fields.** Notebook 241's 152 settings
+   (`notebooks/241_plan.json`) are: alphabet; k; scaled 1; low-complexity mask on
+   (`--remove-low-complexity`); extension at the alphabet's own mismatch penalty and X-drop
+   (from its measured copy rate; 2 and 8 for the one alphabet without one). "81 of 152 had
+   no Karlin-Altschul fit" was counted on the human proteome. The fit is redone on the
+   Swiss-Prot index, so the settings excluded here are the ones whose fit is refused on
+   that index, listed by name.
+3. **Why boundaries are read on the query.** The true start and end exist only on the
+   query protein; the target proteins carry no annotation of the feature. kmerseek reports
+   each region's query-side positions (0-based in its output, converted to 1-based here),
+   and those are compared with the truth.
+4. **k is longer than most features.** The median ELM motif is 6 residues (4,006
+   true-positive instances under 60 residues). 140 of the 152 settings have k above 6, and
+   k runs from 5 to 47. A region holds at least one exact k-mer, so on a feature shorter
+   than k it must reach outside the feature, and its boundary error is at least k minus the
+   feature's length. Boundary error is therefore also reported by feature length against k.
+5. **What "two compute-days" means.** Read here as the wall time of all Sherlock jobs
+   summed, 48 hours, kept as a running total; CPU-hours are reported beside it.
 """)
 
 md(r"""
