@@ -11,7 +11,10 @@
 # used), rebuild notebook 241's 152 human indexes with 241's own driver, check the rebuilt
 # indexes reproduce notebook 256 on 6 settings, then search BHF and 300 copies twice:
 # copies that keep BHF's low-complexity stretches (null 2) and BHF and copies without them
-# (null 3). Every step resumes: a finished index or search chunk is not redone.
+# (null 3). Then BHF against 300 real Botryllus proteins of its length with no conventional
+# match (null 4) and 300 of any kind (null 5), read from the committed
+# notebooks/283_botryllus_same_length_proteins.tsv. Every step resumes: a finished index or
+# search chunk is not redone, so resubmitting after nulls 2 and 3 ran searches only 4 and 5.
 #
 # Submit from a checkout of olgabot/bhf-low-complexity-control:
 #
@@ -25,14 +28,14 @@
 #   indexes  241's runs.jsonl: 49 min of index time, 24 min of fit retries and 9 min of
 #            search over its 152 settings; 40 min wall on a 16-core, 128 GB laptop with 2
 #            workers, which fit in 128 GB (peak never measured, so the same ask here).
-#   searches 256's 548 search chunks took 20 min wall with 3 workers; two new nulls of the
-#            same size, 40 min, plus 6 settings for the reproduction check.
-#   About 1.5 h on the laptop; 8 h covers Sherlock cores up to 4x slower. Disk: about
+#   searches 256's 548 search chunks took 20 min wall with 3 workers; four new nulls of the
+#            same size, 80 min, plus 6 settings for the reproduction check.
+#   About 2 h on the laptop; 8 h covers Sherlock cores up to 4x slower. Disk: about
 #   55 GB of indexes in $SCRATCH. After the run, read the real peak with
 #   sacct -j <jobid> -o JobID,MaxRSS,Elapsed and shrink --mem for any rerun.
 #
 # The notebook reads only the top/ tables (about 10 MB per null). Copy them back with:
-#   rsync -av sherlock-dtn:/scratch/users/olgabot/283-bhf-low-complexity/{null_kept,null_removed,reproduce_null1} \
+#   rsync -av sherlock-dtn:/scratch/users/olgabot/283-bhf-low-complexity/{null_kept,null_removed,null_dark_proteins,null_any_proteins,reproduce_null1} \
 #       /Users/olga/data/botryllus/alphabet-ranking-three-cases/283/
 set -euo pipefail
 
@@ -57,7 +60,7 @@ export NB241_KMERSEEK=$KMERSEEK_SRC/target/release/kmerseek
 #     $HOME/venvs/nb283/bin/pip install --only-binary=:all: polars==1.34.0 'numpy<2.4' 'matplotlib<3.11'
 PY=$HOME/venvs/nb283/bin/python
 
-for f in "$NB241_HUMAN" "$NB241_KAPPA" "$NB256_RUN/queries.fa" "$NB256_RUN/arms.json" "$NB256_RUN/../queries.fa" "$PY"; do
+for f in "$NB241_HUMAN" "$NB241_KAPPA" "$REPO/notebooks/283_botryllus_same_length_proteins.tsv" "$NB256_RUN/queries.fa" "$NB256_RUN/arms.json" "$NB256_RUN/../queries.fa" "$PY"; do
     [ -s "$f" ] || { echo "283: missing input $f" >&2; exit 2; }
 done
 [ "$(ls "$NB256_RUN/top" | wc -l)" -eq 548 ] || { echo "283: $NB256_RUN/top does not hold 256's 548 tables" >&2; exit 2; }
@@ -87,5 +90,7 @@ $PY 283_bhf_low_complexity_control.py indexes --workers 2
 $PY 283_bhf_low_complexity_control.py reproduce --workers 3
 $PY 283_bhf_low_complexity_control.py search --null kept --workers 3
 $PY 283_bhf_low_complexity_control.py search --null removed --workers 3
+$PY 283_bhf_low_complexity_control.py search --null dark_proteins --workers 3
+$PY 283_bhf_low_complexity_control.py search --null any_proteins --workers 3
 
 echo "283: done. Peak memory and time: sacct -j $SLURM_JOB_ID -o JobID,MaxRSS,Elapsed"

@@ -25,6 +25,19 @@ Three sets of copies, 300 each:
           dipeptide-shuffled; the query called BHF in this run is BHF without its
           stretches (`removed`).
 
+Two more sets, added 2026-10-20 after Olga pointed out that every copy above keeps BHF's
+amino-acid composition, so none of them asks whether BHF beats a protein that is simply a
+different protein. Both are real Botryllus schlosseri proteins (the 45_339 FUN gene models
+of BOTSCH2026_30301.fasta, BHF is FUN008084) of BHF's length within 5% (239-265 aa), only
+the 20 standard amino acids, BHF itself left out, 300 drawn per set:
+  null 4  other proteins with no conventional match: phmmer, jackhmmer and MMseqs2
+          against Swiss-Prot minus Ascidiacea (the dark-set run, results-0.4) give no hit
+          at E < 0.01. BHF's own best is 0.16, so these are as dark as BHF (`dark_proteins`);
+  null 5  other proteins, any (`any_proteins`); many have human homologs, so this asks
+          whether BHF's hits are as strong as a typical Botryllus protein's.
+The 600 sequences are picked once, on the laptop (`pick`), and committed as
+283_botryllus_same_length_proteins.tsv, so the Sherlock job needs no Botryllus input.
+
 Steps (each resumes where it stopped):
   indexes      rebuild the 152 human indexes with notebook 241's own driver (same
                binary, FASTA, flags, Karlin-Altschul fit and retry), then check that
@@ -33,7 +46,8 @@ Steps (each resumes where it stopped):
   reproduce    search 256's own 301 queries on 6 settings and require the reduced tables
                to equal 256's stored ones (every best value to 1e-9 relative; 256's own
                rerun differed by up to 1.5e-12).
-  search kept|removed   the full run of null 2 or null 3.
+  pick         (laptop) draw nulls 4 and 5 and write 283_botryllus_same_length_proteins.tsv.
+  search kept|removed|dark_proteins|any_proteins   the full run of one null.
 
 Paths come from the environment so the same script runs on Sherlock and the laptop:
   NB283_DIR        output folder (default $SCRATCH/283-bhf-low-complexity)
@@ -43,7 +57,7 @@ Paths come from the environment so the same script runs on Sherlock and the lapt
                    the dark-set table at c2eaaaaf, before funcgroups8 got a row)
   NB256_RUN        256's null_bhf_dipeptide folder (queries.fa, arms.json, top/)
 
-Usage: 283_bhf_low_complexity_control.py indexes|reproduce|search [--null kept|removed]
+Usage: 283_bhf_low_complexity_control.py indexes|reproduce|pick|search [--null NULL]
                                          [--workers 3] [--n 300] [--seed 283]
 """
 
@@ -95,6 +109,27 @@ PLAN_MD5 = "9a77724514ae4e6833e773cd4b0da806"
 KAPPA_MD5 = "4c866e34919ea0590005ba75cf39860a"
 # md5 of the three-protein queries.fa 241 searched (PR 83's inputs).
 QUERIES_MD5 = "fc9ac30a7773b921c086c1684d4b631f"
+
+# Nulls 4 and 5: real Botryllus proteins of BHF's length (see the docstring).
+BOTRYLLUS = Path(
+    ENV.get(
+        "NB283_BOTRYLLUS",
+        "/Users/olga/data/quest-for-orthologs/QfO_release_2020_04_with_updated_UP000008143/"
+        "Eukaryota/BOTSCH2026_30301.fasta",
+    )
+)
+TOOL_EVALUES = Path(
+    ENV.get(
+        "NB283_TOOL_EVALUES",
+        "/Users/olga/data/invertebrate-dark-set/results-0.4/protein-evalues/"
+        "botryllus_protein_tool_min_evalue.csv.gz",
+    )
+)
+PROTEINS_TSV = HERE / "283_botryllus_same_length_proteins.tsv"
+BHF_ACCESSION = "FUN008084_FUN008084"
+LENGTH_WINDOW = 0.05  # 252 aa +/- 5%: 239-265
+DARK_EVALUE = 0.01  # no phmmer, jackhmmer or MMseqs2 hit at E below this
+PROTEIN_NULLS = {"dark_proteins": "null 4", "any_proteins": "null 5"}
 
 # segmasker -in bhf.fa -outfmt interval (BLAST+ 2.16.0, default window 12, locut 2.2,
 # hicut 2.5) prints 0-based inclusive "69 - 92" and "108 - 115".
@@ -181,6 +216,14 @@ def make_queries(null: str, n: int, seed: int) -> list[tuple[str, str]]:
     seq = bhf()
     st = stretch_union(seq)
     rng = random.Random(seed)
+    if null in PROTEIN_NULLS:
+        rows = [l.rstrip("\n").split("\t") for l in open(PROTEINS_TSV) if l.strip()]
+        head = rows[0]
+        rows = [dict(zip(head, r)) for r in rows[1:] if r[0] == null]
+        assert len(rows) == n, f"{PROTEINS_TSV} has {len(rows)} {null} rows, not {n}"
+        qs = [("BHF", seq)] + [(r["accession"], r["sequence"]) for r in rows]
+        assert len({s for _, s in qs}) == len(qs), "two queries are identical"
+        return qs
     if null == "kept":
         ref = seq
         copies = [
@@ -202,6 +245,81 @@ def make_queries(null: str, n: int, seed: int) -> list[tuple[str, str]]:
     qs = [("BHF", ref)] + [(f"{null}{i:03d}", c) for i, c in enumerate(copies)]
     assert len({s for _, s in qs}) == len(qs), "two queries are identical"
     return qs
+
+
+def gene_of(accession: str) -> str:
+    """FUN000088_FUN000088.2 -> FUN000088_FUN000088 (isoform suffix dropped)."""
+    head, dot, tail = accession.rpartition(".")
+    return head if dot and tail.isdigit() else accession
+
+
+def step_pick(n: int, seed: int) -> None:
+    """Draw nulls 4 and 5 from the Botryllus proteome and write PROTEINS_TSV."""
+    import csv
+    import gzip
+
+    seqs = dict(
+        (h.split()[0], s) for h, s in read_fasta(BOTRYLLUS)
+    )  # header's first word
+    bseq = bhf()
+    assert seqs[BHF_ACCESSION] == bseq, "FUN008084 is not BHF"
+    lo = round(len(bseq) * (1 - LENGTH_WINDOW))
+    hi = round(len(bseq) * (1 + LENGTH_WINDOW))
+    best: dict[str, float | None] = {}
+    with gzip.open(TOOL_EVALUES, "rt", newline="") as fh:
+        reader = csv.reader(fh)  # some accessions hold a quoted comma
+        head = next(reader)
+        assert head == ["accession", "phmmer", "jackhmmer", "mmseqs2"], head
+        for acc, *ev in reader:
+            ev = [float(x) for x in ev if x]
+            best[acc] = min(ev) if ev else None
+    # A protein missing from the table was never searched, so its darkness is unknown:
+    # left out of both sets, so both draw from the same proteins.
+    pool = sorted(
+        a
+        for a, s in seqs.items()
+        if a != BHF_ACCESSION
+        and lo <= len(s) <= hi
+        and set(s) <= set("ACDEFGHIKLMNPQRSTVWY")
+        and a in best
+        and gene_of(a) != gene_of(BHF_ACCESSION)
+    )
+    # One isoform per gene (FUN000088_FUN000088.1 and .2 are one gene): the first in
+    # sort order of those in the length window, so no gene is drawn twice.
+    # Different genes can also share one sequence; keep the first of each sequence.
+    first: dict[str, str] = {}
+    seen: set[str] = set()
+    for a in pool:
+        if gene_of(a) not in first and seqs[a] not in seen:
+            first[gene_of(a)] = a
+            seen.add(seqs[a])
+    n_isoforms = len(pool)
+    pool = sorted(first.values())
+    dark = [a for a in pool if best[a] is None or best[a] >= DARK_EVALUE]
+    print(
+        f"pick: {len(seqs):_} Botryllus proteins; {n_isoforms:_} of {lo}-{hi} aa, standard "
+        f"residues, searched by the dark-set run, {len(pool):_} after one isoform per gene "
+        f"and one gene per sequence; {len(dark):_} of these with no "
+        f"conventional hit at E < {DARK_EVALUE}",
+        file=sys.stderr,
+    )
+    rng = random.Random(seed)
+    picked = {
+        "dark_proteins": sorted(rng.sample(dark, n)),
+        "any_proteins": sorted(rng.sample(pool, n)),
+    }
+    out = ["null\taccession\tlength\tbest_conventional_evalue\tsequence"]
+    for null, accs in picked.items():
+        for a in accs:
+            e = "" if best[a] is None else f"{best[a]:.3g}"
+            out.append(f"{null}\t{a}\t{len(seqs[a])}\t{e}\t{seqs[a]}")
+    PROTEINS_TSV.write_text("\n".join(out) + "\n")
+    both = len(set(picked["dark_proteins"]) & set(picked["any_proteins"]))
+    print(
+        f"pick: wrote {PROTEINS_TSV.name} (md5 {md5(PROTEINS_TSV)}); {both} proteins are in "
+        f"both sets; inputs md5 {md5(BOTRYLLUS)} {md5(TOOL_EVALUES)}",
+        file=sys.stderr,
+    )
 
 
 def run_chunks(
@@ -441,8 +559,8 @@ def step_reproduce(workers: int) -> None:
 
 def main() -> None:
     ap = argparse.ArgumentParser()
-    ap.add_argument("step", choices=["indexes", "reproduce", "search"])
-    ap.add_argument("--null", choices=["kept", "removed"])
+    ap.add_argument("step", choices=["indexes", "reproduce", "pick", "search"])
+    ap.add_argument("--null", choices=["kept", "removed", *PROTEIN_NULLS])
     ap.add_argument("--workers", type=int, default=3)
     ap.add_argument("--n", type=int, default=300)
     ap.add_argument("--seed", type=int, default=283)
@@ -451,10 +569,15 @@ def main() -> None:
         step_indexes(args.workers)
     elif args.step == "reproduce":
         step_reproduce(args.workers)
+    elif args.step == "pick":
+        step_pick(args.n, args.seed)
     else:
-        assert args.null, "--null kept|removed"
+        assert args.null, "--null " + "|".join(["kept", "removed", *PROTEIN_NULLS])
         out = OUT / f"null_{args.null}"
         want = {"null": args.null, "n": args.n, "seed": args.seed}
+        if args.null in PROTEIN_NULLS:
+            # The proteins come from the committed table, not the seed.
+            want = {"null": args.null, "n": args.n, "proteins_md5": md5(PROTEINS_TSV)}
         manifest = out / "run.json"
         if manifest.exists() and json.loads(manifest.read_text()) != want:
             sys.exit(f"{out} holds a run with {manifest.read_text().strip()}")

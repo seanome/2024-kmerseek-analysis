@@ -21,7 +21,7 @@ code = lambda s: {
 
 cells = [
     md(r"""
-# 283: Do BHF's kmerseek wins come from its low-complexity stretches?
+# 283: Do BHF's kmerseek wins come from its low-complexity stretches, and does BHF beat other proteins of its length?
 
 [Notebook 256](256_bhf_dipeptide_shuffle_null.ipynb)
 ([PR 83](https://github.com/seanome/2024-kmerseek-analysis/pull/83)) searched BHF
@@ -66,6 +66,18 @@ behind notebook 256's wins (section 1).
 3. Null 3, stretches removed: the stretches are cut out of BHF, and BHF without them
    (190 aa) is compared with 300 dipeptide shuffles of itself.
 
+**Two sets of 300 other proteins (added 2026-10-20).** Every copy above keeps BHF's
+amino-acid composition, so none asks whether BHF does better than a different protein
+would. These are real *Botryllus schlosseri* proteins of BHF's length within 5% (239-265
+aa), one isoform per gene, BHF left out, drawn once and committed as
+`283_botryllus_same_length_proteins.tsv`:
+
+4. Null 4, other proteins with no conventional match: phmmer, jackhmmer and MMseqs2
+   against Swiss-Prot without sea squirts give no hit at E < 0.01 (BHF's own best is
+   0.16). These are as hard to place by conventional search as BHF.
+5. Null 5, other proteins of any kind. Many have human homologs, so this asks whether
+   BHF's hits are as strong as a typical *Botryllus* protein's.
+
 BHF "beats 95% of its copies" at a setting when (1 + copies whose best human hit scores
 at least as well as BHF's best) / 301 is at most 0.05. By chance that happens in 5% of the
 settings where BHF has the score, and sometimes more: if the settings were independent, 6
@@ -79,13 +91,22 @@ sequence and are not independent, so the real chance spread is wider.
   every score.
 - Under null 3, BHF without its stretches beats its copies no more often than chance.
 - The E-value stays at chance under all three nulls.
+- (Added 2026-10-20, before the searches of nulls 4 and 5.) Under null 4, the scores other
+  than the E-value put BHF above the 10% line at least as often as null 1 did, because
+  most same-length proteins have no lysine-rich stretch like BHF 63-105; the E-value stays
+  at chance. Under null 5, BHF beats 95% of the proteins in fewer settings than chance for
+  every score, because proteins with human homologs score better than BHF.
 
 **Decision rule, written before the searches ran.** If no score beats null 2 in more than
 twice the settings chance predicts (10%), the verdict is "BHF: no kmerseek signal beyond
 its low-complexity stretches". Otherwise, name the score, the settings and the BHF
 region, and show the aligned residues of the top human hit for each. Null 3 is read
 against the same 10% line: a score above it means BHF without its stretches still beats
-its own shuffles (this sentence added 2026-10-13, also before any search).
+its own shuffles (this sentence added 2026-10-13, also before any search). Nulls 4 and 5
+are read against the same line (added 2026-10-20, before their searches): a score above it
+under null 4 means BHF scores better than a protein of its length that conventional search
+cannot place either. Section 5 then says how many of those winning settings take their
+BHF region from the low-complexity stretches.
 """),
     code(r"""
 import json
@@ -168,19 +189,26 @@ sections 4 and 5 test. SEG calls 70-93 and 109-116 low-complexity, inside 256's 
 63-105 but shorter. The copies below use the union: 63-105, 108-117 and 208-216, 62 of 252 residues.
 """),
     md(r"""
-## 2. The three sets of copies
+## 2. The five sets of queries
 
 Each null-2 copy keeps the 62 stretch residues in place, so it matches BHF at those
-positions by construction. Null-3 copies are shuffles of BHF without its stretches.
+positions by construction. Null-3 copies are shuffles of BHF without its stretches. Nulls 4
+and 5 are other proteins, so they are compared with BHF by composition instead: the share
+of a protein's residues that would have to change to give it BHF's amino-acid counts
+(0 for every copy in nulls 1 and 2).
 """),
     code(r"""
 qs = {name: nb283.read_fasta(run / "queries.fa") if (run / "queries.fa").exists() else None
       for name, run in lc.NULLS.items()}
-if qs["null 2: stretches kept in place"] is None:
-    qs["null 2: stretches kept in place"] = nb283.make_queries("kept", 300, 283)
-    qs["null 3: stretches removed"] = nb283.make_queries("removed", 300, 283)
+for name, null in [("null 2: stretches kept in place", "kept"), ("null 3: stretches removed", "removed"),
+                   ("null 4: other Botryllus proteins, no conventional match", "dark_proteins"),
+                   ("null 5: other Botryllus proteins, any", "any_proteins")]:
+    if qs[name] is None:
+        qs[name] = nb283.make_queries(null, 300, 283)
+COPIES = list(qs)[:3]
 rows = []
-for name, q in qs.items():
+for name in COPIES:
+    q = qs[name]
     ref = q[0][1]
     for h, s in q[1:]:
         rows.append({"null": name, "copy": h, "length_aa": len(s),
@@ -210,6 +238,40 @@ ax.set_xlabel("Copy residues identical to its BHF, position by position (%)")
 fig.text(0.01, 1.0, "Each dot is one of 300 copies. Null 3 is compared with BHF without its stretches (190 aa).",
          ha="left", va="bottom")
 pf.save(fig, str(FIG / "283_copies_identity_to_bhf_three_nulls"))
+
+from collections import Counter
+AA = "ACDEFGHIKLMNPQRSTVWY"
+def composition_change(s, ref):
+    c, r = Counter(s), Counter(ref)
+    return sum(abs(c[a] / len(s) - r[a] / len(ref)) for a in AA) / 2
+k5 = {BHF[i:i + 5] for i in range(len(BHF) - 4)}
+crows = []
+for name, q in qs.items():
+    ref = q[0][1]
+    for h, s in q[1:]:
+        crows.append({"null": name, "query": h, "length_aa": len(s),
+                      "pct_residues_to_change": round(100 * composition_change(s, ref), 1),
+                      "pct_K_or_R": round(100 * sum(c in "KR" for c in s) / len(s), 1),
+                      "five_residue_words_shared_with_BHF": len(k5 & {s[i:i + 5] for i in range(len(s) - 4)})})
+comp = pl.DataFrame(crows)
+print(f"\nBHF: {100 * sum(c in 'KR' for c in BHF) / len(BHF):.1f}% K or R")
+print(comp.group_by("null", maintain_order=True).agg(
+    pl.col("length_aa").min().alias("min_aa"), pl.col("length_aa").max().alias("max_aa"),
+    pl.col("pct_residues_to_change").median().alias("median_pct_residues_to_change"),
+    pl.col("pct_K_or_R").median().alias("median_pct_K_or_R"),
+    pl.col("five_residue_words_shared_with_BHF").max().alias("max_5mers_shared_with_BHF")))
+fig, ax = pf.figure(pf.ONE_COLUMN_MM, 65)
+cols5 = cols + [pf.OKABE_ITO["orange"], pf.OKABE_ITO["reddish_purple"]]
+for j, (name, c) in enumerate(zip(qs, cols5)):
+    v = comp.filter(pl.col("null") == name)["pct_residues_to_change"].to_numpy()
+    ax.scatter(v, j + (pl.Series(range(len(v))).to_numpy() % 7 - 3) * 0.05, s=3, color=c, edgecolor="none")
+ax.set_yticks(range(5), ["null 1\nwhole BHF\nshuffled", "null 2\nstretches kept", "null 3\nstretches removed",
+                         "null 4\nother proteins,\nno conventional match", "null 5\nother proteins,\nany"])
+ax.invert_yaxis()
+ax.set_xlabel("Residues to change to match BHF's composition (%)")
+fig.text(0.01, 1.0, "Each dot is one of 300 queries. Null 3 is compared with BHF without its stretches.",
+         ha="left", va="bottom")
+pf.save(fig, str(FIG / "283_queries_composition_vs_bhf_five_nulls"))
 """),
     md(r"""
 ## 3. The rebuilt indexes give notebook 256's numbers back
@@ -235,8 +297,8 @@ else:
     md(r"""
 ## 4. BHF against each set of copies
 
-For each score, the settings where BHF beats 95% of its copies, as a share of the settings
-where BHF has that score, under each null. The grey line is chance (5%); the dashed line is
+For each score, the settings where BHF beats 95% of the null's 300 queries, as a share of
+the settings where BHF has that score, under each of the five nulls. The grey line is chance (5%); the dashed line is
 the decision line (10%, twice chance). A score whose null-2 point sits right of the dashed
 line has a BHF signal that the stretches do not explain.
 """),
@@ -278,6 +340,24 @@ if ALL_DONE:
             print(f"\n{row['metric']}, {row['alphabet']} k{row['k']}: p = {row['p']:.3f}, "
                   f"BHF's top human protein {row['bhf_top_gene']} (tied with {row['bhf_n_tied'] - 1} others)")
             print(lc.show_alignment(q, hit["region_start"], t, hit["target_start"], hit["gene"], row["alphabet"]))
+
+    # Nulls 4 and 5: scores above the decision line, and how many of their winning
+    # settings take BHF's region from the low-complexity stretches.
+    for name in list(lc.NULLS)[3:]:
+        o = w.filter((pl.col("null") == name) & (pl.col("n_beats_95pct") > pl.col("twice_chance")))
+        print(f"\n{name}: {o.height} of {len(lc.SCORES)} scores above the decision line")
+        if o.height == 0:
+            continue
+        run = lc.NULLS[name]
+        reg = pl.read_parquet(sorted((run / "regions").glob("*.parquet"))).filter(pl.col("query_name") == "BHF")
+        won = p.filter((pl.col("null") == name) & (pl.col("p") <= lc.ALPHA) & pl.col("metric").is_in(o["metric"]))
+        top = won.join(reg, left_on=["metric", "alphabet", "k", "bhf_top_gene"],
+                       right_on=["metric", "alphabet", "k", "gene"], how="left")
+        top = top.with_columns(pl.struct("region_start", "region_end").map_elements(
+            lambda r: r["region_start"] is not None and any(r["region_start"] < e and s < r["region_end"] for s, e in union),
+            return_dtype=pl.Boolean).alias("bhf_region_in_a_stretch"))
+        print(top.group_by("metric").agg(pl.len().alias("winning_settings"),
+                                         pl.col("bhf_region_in_a_stretch").sum().alias("bhf_region_overlaps_a_stretch")))
 """),
 ]
 

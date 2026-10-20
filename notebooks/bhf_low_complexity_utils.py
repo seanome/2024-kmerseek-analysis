@@ -207,6 +207,12 @@ NULLS = {
     "null 1: whole protein shuffled (notebook 256)": DATA / "null_bhf_dipeptide",
     "null 2: stretches kept in place": DATA / "283" / "null_kept",
     "null 3: stretches removed": DATA / "283" / "null_removed",
+    # Real Botryllus proteins of BHF's length (added 2026-10-20): they do not share
+    # BHF's composition, as nulls 1-3 do.
+    "null 4: other Botryllus proteins, no conventional match": DATA
+    / "283"
+    / "null_dark_proteins",
+    "null 5: other Botryllus proteins, any": DATA / "283" / "null_any_proteins",
 }
 # The same scores PR 83 reported; the bit score ranks exactly as the E-value, and the
 # Poisson p-value as the Poisson score, so each pair is one row.
@@ -299,8 +305,10 @@ def fig_wins_by_null(
         pf.OKABE_ITO["blue"],
         pf.OKABE_ITO["vermillion"],
         pf.OKABE_ITO["bluish_green"],
+        pf.OKABE_ITO["orange"],
+        pf.OKABE_ITO["reddish_purple"],
     ]
-    shapes = ["o", "s", "^"]
+    shapes = ["o", "s", "^", "D", "v"]
     fig, ax = pf.figure(pf.TWO_COLUMN_MM, 95)
     rows = {m: i for i, m in enumerate(SCORES)}
     for y in rows.values():
@@ -309,7 +317,7 @@ def fig_wins_by_null(
     ax.axvline(200 * ALPHA, color=pf.GREY, lw=1, ls="--", zorder=1)
     for j, (null, c, s) in enumerate(zip(NULLS, colours, shapes)):
         d = w.filter(w["null"] == null)
-        ys = [rows[m] + (j - 1) * 0.22 for m in d["metric"]]
+        ys = [rows[m] + (j - (len(NULLS) - 1) / 2) * 0.16 for m in d["metric"]]
         ax.scatter(
             d["pct_settings"], ys, color=c, marker=s, s=18, zorder=3, edgecolor="none"
         )
@@ -327,7 +335,7 @@ def fig_wins_by_null(
     )
     ax.invert_yaxis()
     ax.set_xlabel(
-        "Settings where BHF beats 95% of its 300 copies (% of the settings where BHF has that score)"
+        "Settings where BHF beats 95% of the null's 300 queries (% of the settings where BHF has that score)"
     )
     ax.set_xlim(0, max(30, float(w["pct_settings"].max()) + 3))
     handles = [
@@ -345,24 +353,25 @@ def fig_wins_by_null(
             label="decision line: 10% (twice chance)",
         ),
     ]
-    fig.legend(
+    # Above the axis, before the marks in reading order; with five nulls it no longer
+    # fits inside the plot above the first row.
+    ax.legend(
         handles=handles,
-        loc="upper left",
-        bbox_to_anchor=(0.01, 1.0),
-        ncol=3,
+        loc="lower left",
+        bbox_to_anchor=(-0.3, 1.01),
+        ncol=2,
         frameon=False,
     )
     fig.text(
         0.01,
         1.14,
-        "kmerseek 0.4.0 (982a055): BHF and 300 copies per null searched against 19_732 GENCODE v49 "
+        "kmerseek 0.4.0 (982a055): BHF and 300 copies or other proteins per null searched against 19_732 GENCODE v49 "
         "human proteins at the 152 settings (alphabet, k) of notebook 241.",
         ha="left",
         va="top",
     )
     fig.text(0.01, 1.10, "Hypothesis: " + hypothesis, ha="left", va="top")
     fig.text(0.01, 1.06, "Conclusion: " + conclusion, ha="left", va="top")
-    fig.subplots_adjust(top=0.80, left=0.24)
     pf.save(fig, str(path_stem))
     return fig
 
