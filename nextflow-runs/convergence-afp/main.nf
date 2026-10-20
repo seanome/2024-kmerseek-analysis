@@ -197,8 +197,12 @@ process scans {
 // tblout, not domtblout: the test ranks whole entries, and tblout's full-sequence score
 // and E-value are one row per query and target. Columns: $1 target, $3 query,
 // $5 full-sequence E-value, $6 full-sequence bit score.
+// A chunk from splitFasta is queries.<n>.fasta. Its simpleName is "queries" for every
+// chunk, so every chunk's output had one name and each publish overwrote the last: the
+// first ice-binding run kept 24 of 246 queries for phmmer and jackhmmer. baseName keeps
+// the chunk number (queries.<n>). Fixed 2026-10-20.
 process phmmerSearch {
-    tag "${chunk.simpleName}"
+    tag "${chunk.baseName}"
     container params.hmmer_image
     label 'high_cpu'
     publishDir "${params.outdir}/hits/phmmer", mode: 'copy'
@@ -208,7 +212,7 @@ process phmmerSearch {
     tuple path(chunk), path(reference)
 
     output:
-    path "${chunk.simpleName}.phmmer.tsv.gz"
+    path "${chunk.baseName}.phmmer.tsv.gz"
 
     script:
     """
@@ -217,13 +221,13 @@ process phmmerSearch {
         -E ${params.evalue_report} --cpu ${task.cpus} ${chunk} ${reference}
     { printf 'query_id\\ttarget\\tscore\\tevalue\\n'
       { grep -v '^#' hits.tbl || true; } | awk 'NF >= 18 {print \$3 "\\t" \$1 "\\t" \$6 "\\t" \$5}'; } \\
-      | gzip -c > ${chunk.simpleName}.phmmer.tsv.gz
+      | gzip -c > ${chunk.baseName}.phmmer.tsv.gz
     """
 }
 
 // jackhmmer's --tblout holds the hits of the last iteration it ran.
 process jackhmmerSearch {
-    tag "${chunk.simpleName}"
+    tag "${chunk.baseName}"
     container params.hmmer_image
     label 'high_cpu'
     publishDir "${params.outdir}/hits/jackhmmer", mode: 'copy'
@@ -234,7 +238,7 @@ process jackhmmerSearch {
     tuple path(chunk), path(reference)
 
     output:
-    path "${chunk.simpleName}.jackhmmer.tsv.gz"
+    path "${chunk.baseName}.jackhmmer.tsv.gz"
 
     script:
     """
@@ -243,7 +247,7 @@ process jackhmmerSearch {
         -E ${params.evalue_report} --cpu ${task.cpus} ${chunk} ${reference}
     { printf 'query_id\\ttarget\\tscore\\tevalue\\n'
       { grep -v '^#' hits.tbl || true; } | awk 'NF >= 18 {print \$3 "\\t" \$1 "\\t" \$6 "\\t" \$5}'; } \\
-      | gzip -c > ${chunk.simpleName}.jackhmmer.tsv.gz
+      | gzip -c > ${chunk.baseName}.jackhmmer.tsv.gz
     """
 }
 
