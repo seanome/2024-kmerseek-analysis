@@ -769,14 +769,16 @@ def cmd_logan(args: argparse.Namespace) -> None:
                 scaled=scaled_row["scaled"],
                 cpu_s_per_gene_all_nine=cpu_s_per_gene,
                 logan_cpu_hours_arithmetic=cpu_s_per_gene * logan_proteins / 3600,
+                includes_lower_bounds=scaled_row["any_lower_bound"],
             )
         )
     out = dict(
         logan_proteins=logan_proteins,
         genes_in_slice=genes_in_slice,
         per_scaled=rows,
-        note="Arithmetic, not measured. Per-gene time comes from translating DNA in six frames; "
-        "Logan's proteins need no translation, so this is an upper bound per protein.",
+        note="Arithmetic, not measured. Per-gene time includes translating DNA in six frames, "
+        "which Logan's proteins do not need. Where includes_lower_bounds is true, some settings "
+        "stopped at the step 1 time limit, so the number is not a bound in either direction.",
     )
     (DATA / "step5_logan_arithmetic.json").write_text(json.dumps(out, indent=1) + "\n")
     print(json.dumps(out, indent=1))

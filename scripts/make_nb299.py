@@ -299,8 +299,10 @@ hits better than sourmash containment alone.
 Logan's preprint (bioRxiv 2024.07.30.605881, version 2 of 2025-09-01, not peer reviewed)
 reports 109.4 billion proteins in its "other-complete" set, clustered to 3.0 billion
 non-redundant sequences, and 445.3 billion sequences over all three sets. The number on the
-Session 3 doc, 109 billion, matches the first. The cost below scales step 1's per-gene rate;
-it is an upper bound per protein, since Logan's proteins need no six-frame translation.
+Session 3 doc, 109 billion, matches the first. The cost below scales step 1's per-gene rate,
+which includes six-frame translation that Logan's proteins do not need. From step 1 run 1 it
+is not a bound in either direction: settings stopped at the time limit are lower bounds
+(one at scaled 100, all nine at scaled 1000).
 """)
 
 code("""
@@ -334,8 +336,15 @@ Named only where a page read on 2026-10-18 puts the person in the role.
   of Toronto).
 - A company that mines environmental DNA for enzymes: **Basecamp Research** (London), whose
   CEO and co-founder is Glen Gowers per its June 2025 announcement.
+""")
 
+md("""
 ## 7. Second check by an agent that has not seen this work
+
+Step 1 run 1 and the step 5 arithmetic were recomputed on 2026-10-20 by an agent that did
+not read this notebook or its code, from the 18 raw time logs and the catalog statistics:
+all 27 values held (`notebooks/299_data/second_agent_check_step1_run1.csv`). It also found
+that the run 1 Logan note wrongly called the number an upper bound (fixed).
 
 Part of the deliverable. Once steps 2 and 3 have run, a separate agent recomputes recall and
 the shuffled-hit rate for every setting from the raw tables only (DIAMOND `hits.tsv`, each
@@ -345,9 +354,23 @@ and writes a held/failed table to `notebooks/299_data/second_agent_check.csv`.
 """)
 
 code("""
+run1_check = DATA / "second_agent_check_step1_run1.csv"
+if run1_check.exists():
+    c = pl.read_csv(run1_check)
+    print(f"Step 1 run 1 and step 5, rechecked from the raw time logs: {c['held'].sum()} of {c.height} held")
+    print(c.select("quantity", "notebook_value", "checker_value", "held"))
+    pf.use_style()
+    fig, ax = pf.figure(pf.ONE_COLUMN_MM, 25)
+    held, failed = int(c["held"].sum()), int((~c["held"]).sum())
+    ax.barh([0], [held], color=pf.OKABE_ITO["bluish_green"], label="held")
+    ax.barh([0], [failed], left=[held], color=pf.OKABE_ITO["vermillion"], label="failed")
+    ax.set_yticks([0], ["step 1 run 1 + step 5"])
+    ax.set_xlabel("Values rechecked from the raw time logs (count)")
+    pf.shared_legend(fig)
+    pf.save(fig, str(FIGURES / "299_second_agent_check_step1_run1"))
 check_path = DATA / "second_agent_check.csv"
 if not check_path.exists():
-    print("Second check not run yet: it needs steps 2 and 3")
+    print("Check of recall and shuffled-hit rate not run yet: it needs steps 2 and 3")
 else:
     check = pl.read_csv(check_path)
     print(check)
