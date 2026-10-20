@@ -1,0 +1,13 @@
+{
+  "threshold": 0.06239151225379693,
+  "n_target": 23703,
+  "n_decoy": 1185,
+  "nofit": false,
+  "label": "kmerseek.pfam.w20.funcgroups8_k8_s1",
+  "calls_total": 29936616,
+  "decoy_calls_total": 13075543,
+  "max_decoy_rate": 0.05,
+  "features_found": 536,
+  "features_found_aligned": 566,
+  "features_total": 7174
+}

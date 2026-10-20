@@ -1,0 +1,13 @@
+{
+  "threshold": 0.0006704381876680715,
+  "n_target": 5275,
+  "n_decoy": 208,
+  "nofit": false,
+  "label": "kmerseek.regionsshared.w10.dayhoff6_k9_s1",
+  "calls_total": 181331227,
+  "decoy_calls_total": 85377328,
+  "max_decoy_rate": 0.05,
+  "features_found": 526,
+  "features_found_aligned": 843,
+  "features_total": 7174
+}

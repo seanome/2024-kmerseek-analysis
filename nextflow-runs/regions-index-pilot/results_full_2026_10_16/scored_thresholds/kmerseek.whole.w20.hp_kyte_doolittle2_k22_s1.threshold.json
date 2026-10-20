@@ -1,0 +1,13 @@
+{
+  "threshold": 1.972688800249151e-05,
+  "n_target": 3248,
+  "n_decoy": 162,
+  "nofit": false,
+  "label": "kmerseek.whole.w20.hp_kyte_doolittle2_k22_s1",
+  "calls_total": 46141283,
+  "decoy_calls_total": 21628687,
+  "max_decoy_rate": 0.05,
+  "features_found": 156,
+  "features_found_aligned": 912,
+  "features_total": 7174
+}

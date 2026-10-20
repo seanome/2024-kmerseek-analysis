@@ -1,0 +1,13 @@
+{
+  "threshold": 0.0019443313198128614,
+  "n_target": 917,
+  "n_decoy": 45,
+  "nofit": false,
+  "label": "kmerseek.pfam.w20.hp_thomas_dill_no_c2_k22_s1",
+  "calls_total": 4270538,
+  "decoy_calls_total": 2038481,
+  "max_decoy_rate": 0.05,
+  "features_found": 166,
+  "features_found_aligned": 165,
+  "features_total": 7174
+}

@@ -1,0 +1,13 @@
+{
+  "threshold": 9.998,
+  "n_target": 134232,
+  "n_decoy": 163,
+  "nofit": false,
+  "label": "mmseqs2.whole.w10.mmseqs2",
+  "calls_total": 134395,
+  "decoy_calls_total": 163,
+  "max_decoy_rate": 0.05,
+  "features_found": 1194,
+  "features_found_aligned": 3951,
+  "features_total": 7174
+}

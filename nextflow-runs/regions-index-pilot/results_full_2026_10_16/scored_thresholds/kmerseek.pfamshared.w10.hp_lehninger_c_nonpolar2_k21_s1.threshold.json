@@ -1,0 +1,13 @@
+{
+  "threshold": 0.13486681406610443,
+  "n_target": 1230,
+  "n_decoy": 61,
+  "nofit": false,
+  "label": "kmerseek.pfamshared.w10.hp_lehninger_c_nonpolar2_k21_s1",
+  "calls_total": 3678093,
+  "decoy_calls_total": 1746140,
+  "max_decoy_rate": 0.05,
+  "features_found": 234,
+  "features_found_aligned": 247,
+  "features_total": 7174
+}

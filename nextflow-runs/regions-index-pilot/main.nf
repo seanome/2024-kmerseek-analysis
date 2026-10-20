@@ -782,14 +782,16 @@ workflow {
             ok
         }
     own = sized.map { row -> row + [indexKind(row[0]), ''] }
-    // The regions index searched with the whole-protein index's fit for the same setting
-    // and decoy window. No row when the whole-protein fit was refused.
+    // The regions and Pfam indexes searched with the whole-protein index's fit for the same
+    // setting and decoy window. No row when the whole-protein fit was refused. combine, not
+    // join: both indexes share each key, and join pairs a key once, so the full run of
+    // 2026-10-16 searched only the regions index this way and dropped every Pfam one.
     wholeFit = sized.filter { row -> row[0].startsWith('whole') }
         .map { row -> [[row[1], row[6]], storedFit(row[7], row[4])] }
         .filter { key, fit -> fit != null }
     shared = sized.filter { row -> !row[0].startsWith('whole') }
         .map { row -> [[row[1], row[6]], row] }
-        .join(wholeFit)
+        .combine(wholeFit, by: 0)
         .map { key, row, fit -> row + [indexKind(row[0]) + 'shared', "--ka-k ${fit.k} --ka-r-database ${fit.slope}".toString()] }
     searches = params.shared_fit ? own.mix(shared) : own
     kmerseekSearch(searches.combine(splitQueries.out.chunks.flatten()))
