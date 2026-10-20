@@ -18,3 +18,5 @@ sourmash team	C. Titus Brown, Luiz Irber, N. Tessa Pierce-Ward listed as the sou
 Logan lead	"Lead: Rayan Chikhi", "co-Lead: Artem Babaian"	https://github.com/IndexThePlanet/Logan	2026-10-18
 Babaian role	assistant professor, Donnelly Centre, University of Toronto	https://aws.amazon.com/fr/solutions/case-studies/canadas-ai-innovators/logan/ (via search summary)	2026-10-18
 Basecamp Research	London company mining environmental samples for proteins; Glen Gowers described as CEO and co-founder (June 2025 announcement)	https://astrobiology.com/2025/06/11/basecamp-research-announces-breakthrough-discovery-of-over-one-million-new-species/ (via search summary)	2026-10-18
+OM-RGC v2 gene table (the file used)	OM-RGC_v2.tsv.gz, 10320406416 bytes; 14 columns with a header row, column 14 = gene DNA; passed gzip's full check (job 48546051)	https://ftp.ebi.ac.uk/biostudies/fire/S-BSST/S-BSSTxxx297/S-BSST297/Files/OM-RGC_v2.tsv.gz	2026-10-19
+OM-RGC v2 genes FASTA (not used)	two downloads of OM-RGC_v2_genes.fna.gz (jobs 48522928, 48546051) differed at byte 3621226795; the first failed gzip's check	same record	2026-10-19

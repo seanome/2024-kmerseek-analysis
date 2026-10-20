@@ -45,7 +45,7 @@ tail -n 25 "$D/blastp.time"
 # Every gene DIAMOND hit (any query, E <= 1e-3), as DNA, in 32 parts: step 3 sketches only
 # these to get recall exactly, since whether a pair shares a hash ignores all other genes.
 cut -f2 "$D/hits.tsv" | sort -u > "$D/hit_genes.txt"
-"$E/seqkit" grep -j 32 -f "$D/hit_genes.txt" "$WORK/catalog/OM-RGC_v2_genes.fna" > "$D/hit_genes.fna"
+"$E/seqkit" grep -j 32 -f "$D/hit_genes.txt" "$WORK/catalog/OM-RGC_v2_genes_from_tsv.fna" > "$D/hit_genes.fna"
 mkdir -p "$D/hit_gene_parts"
 "$E/seqkit" split2 -j 32 -p 32 -O "$D/hit_gene_parts" "$D/hit_genes.fna"
 echo "genes DIAMOND hit: $(wc -l < "$D/hit_genes.txt")"

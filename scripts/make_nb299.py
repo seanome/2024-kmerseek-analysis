@@ -319,8 +319,10 @@ queries and the jobs are fixed and committed, so the result cannot be fitted to 
 
 - Queries: 100 random arctic clam proteins (seed 299) and 9 BHF regions copied from PR 80,
   with 2_180 dipeptide-shuffled copies.
-- OM-RGC v2 as published (BioStudies S-BSST297) is gzipped DNA, 29.6 GB, with no protein
-  file; the gene count is to be read on Sherlock.
+- OM-RGC v2 as published (BioStudies S-BSST297) has no protein file. The catalog is taken
+  from the gene table `OM-RGC_v2.tsv.gz` (10.3 GB, DNA in column 14), which passed gzip's
+  full check; two downloads of the 29.6 GB `OM-RGC_v2_genes.fna.gz` differed from each
+  other. The gene count is to be read on Sherlock.
 - A laptop test on the catalog's first 39_000 genes found that hp at k = 10 and scaled 100
   matches almost every query to almost every gene (52.7 million hit rows), so step 3 counts
   such settings on a 1% gene sample.

@@ -12,11 +12,14 @@ sketches as the index.
 ## Data
 
 - Targets: OM-RGC v2 genes (BioStudies S-BSST297, released 2019-11-12, file
-  `OM-RGC_v2_genes.fna.gz`, 29_607_178_264 bytes). Gene count is counted on Sherlock; the
+  `OM-RGC_v2.tsv.gz`, 10_320_406_416 bytes, the gene table whose column 14 is each gene's
+  DNA; changed 2026-10-19 from `OM-RGC_v2_genes.fna.gz`, whose two downloads differed and
+  failed gzip's check, before any result existed). Gene count is counted on Sherlock; the
   Ocean Gene Atlas v2.0 paper gives 46.8 million. sourmash reads the DNA in six frames
   (`sketch translate`). DIAMOND reads the same genes translated in frame 1 with genetic
   code 11 (seqkit). In the laptop test of the catalog's first 39_000 genes, frame 1 gave
-  0 proteins with an internal stop.
+  0 proteins with an internal stop; the first 40_000 genes of the table did the same on
+  Sherlock.
 - Real queries (109): 100 arctic clam proteins drawn with `random.Random(299)` from the
   69_055 in `Glanz_Clam_AllModels.proteins.fasta`, and 9 BHF regions copied from PR 80's
   `hits241.BHF.json`: for each Figure 1 gene, its lowest-E region over notebook 241's

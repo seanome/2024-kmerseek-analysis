@@ -12,11 +12,11 @@
 # chains every job of the pilot.
 #
 # Catalog: BioStudies S-BSST297, "Ocean Microbial Reference Gene Catalog v2 (OM-RGC.v2)",
-# released 2019-11-12, file OM-RGC_v2_genes.fna.gz, 29_607_178_264 bytes (listing and HTTP
-# Content-Length read 2026-10-18). No md5 is published; the byte count is checked instead.
+# released 2019-11-12, file OM-RGC_v2.tsv.gz, 10_320_406_416 bytes (listing read
+# 2026-10-18). No md5 is published; gzip's full check and the byte count are used instead.
 #
-# Sizing: the download is 29.6 GB; 32 connections at the measured 1.9 MB/s each is about
-# 60 MB/s, about 9 min (a single connection would take about 4.5 h); gunzip with 8 pigz threads and a six-figure-GB catalog are minutes to an hour;
+# Sizing: the download is 10.3 GB; 32 connections took about 30 min for 29.6 GB in job
+# 48522928, so about 10 min; gunzip with 8 pigz threads and a six-figure-GB catalog are minutes to an hour;
 # seqkit translate with 8 threads on about 40 GB of DNA is under an hour. 12 h is a wide
 # margin; 32 G covers seqkit's buffers (it streams). Read the real use afterwards with
 # `sacct -j <jobid> -o JobID,MaxRSS,Elapsed`.
@@ -24,8 +24,13 @@ set -euo pipefail
 
 REPO=${SLURM_SUBMIT_DIR:?submit from the repo root}
 WORK=${OMRGC_WORK:-$SCRATCH/299-omrgc-pilot}
-URL=https://ftp.ebi.ac.uk/biostudies/fire/S-BSST/S-BSSTxxx297/S-BSST297/Files/OM-RGC_v2_genes.fna.gz
-EXPECTED_BYTES=29607178264
+# The catalog comes from OM-RGC_v2.tsv.gz (the gene table; column 14 is each gene's DNA),
+# not OM-RGC_v2_genes.fna.gz: two parallel downloads of the .fna.gz (jobs 48522928 and
+# 48546051) differed at byte 3_621_226_795 and the first failed gzip's check, while the
+# .tsv.gz passed gzip's full check. Its first 40_000 genes translate in frame 1 with no
+# internal stop.
+URL=https://ftp.ebi.ac.uk/biostudies/fire/S-BSST/S-BSSTxxx297/S-BSST297/Files/OM-RGC_v2.tsv.gz
+EXPECTED_BYTES=10320406416
 SLICE_BYTES=1000000000
 STEP1_TIME_LIMIT_S=40000
 N_PARTS=256
@@ -50,43 +55,57 @@ E=$WORK/env/bin
 "$E/sourmash" scripts manysearch --help > /dev/null
 "$E/python" -c "import polars, matplotlib, sourmash; print('polars', polars.__version__)"
 
-# 2. Download, then check the byte count. EBI serves each connection at about 1.9 MB/s
-#    (measured from Sherlock 2026-10-19), and job 48470727's single download stalled at
-#    1.1 GB after 45 min. So the file comes down as N_RANGES byte ranges in parallel; each
-#    range resumes from its own last byte when its connection stalls (under 100 kB/s for
-#    60 s), up to 50 times, and the ranges are joined in order.
-GZ=$WORK/catalog/OM-RGC_v2_genes.fna.gz
+# 2. Download as N_RANGES byte ranges in parallel (EBI serves each connection at about
+#    1.9 MB/s, measured 2026-10-19). A piece is appended only when the server answers 206
+#    (exactly the bytes asked for); a 200 would be the whole file from byte 0, which is the
+#    likely way the .fna.gz download was silently damaged. Each range resumes on a stall
+#    (under 100 kB/s for 60 s). The joined file must pass gzip's full check, which covers
+#    every byte; otherwise it is fetched again, up to 3 times.
+GZ=$WORK/catalog/OM-RGC_v2.tsv.gz
 N_RANGES=32
 fetch_range() {  # fetch_range INDEX FIRST_BYTE LAST_BYTE
-    local part=$WORK/catalog/range.$1 want=$(( $3 - $2 + 1 )) have
+    local part=$WORK/catalog/range.$1 want=$(( $3 - $2 + 1 )) have code
+    : > "$part"
     for attempt in $(seq 1 50); do
-        have=$(stat -c %s "$part" 2>/dev/null || echo 0)
-        [ "$have" -ge "$want" ] && return 0
-        curl -sfL --speed-limit 100000 --speed-time 60 -r "$(( $2 + have ))-$3" "$URL" >> "$part" || true
+        have=$(stat -c %s "$part")
+        [ "$have" -eq "$want" ] && return 0
+        code=$(curl -sL --speed-limit 100000 --speed-time 60 -r "$(( $2 + have ))-$3" \
+            -o "$part.try" -w '%{http_code}' "$URL" || true)
+        if [ "$code" = 206 ]; then cat "$part.try" >> "$part"; fi
+        rm -f "$part.try"
     done
-    echo "range $1 incomplete after 50 attempts"; return 1
+    echo "range $1: $(stat -c %s "$part") of $want bytes after 50 attempts"; return 1
 }
-if [ "$(stat -c %s "$GZ" 2>/dev/null || echo 0)" != "$EXPECTED_BYTES" ]; then
-    rm -f "$GZ"
-    STEP=$(( (EXPECTED_BYTES + N_RANGES - 1) / N_RANGES ))
-    PIDS=()
+download() {
+    rm -f "$GZ" "$WORK"/catalog/range.*
+    local step=$(( (EXPECTED_BYTES + N_RANGES - 1) / N_RANGES )) i first last pids=()
     for i in $(seq 0 $(( N_RANGES - 1 ))); do
-        FIRST=$(( i * STEP )); LAST=$(( FIRST + STEP - 1 ))
-        (( LAST >= EXPECTED_BYTES )) && LAST=$(( EXPECTED_BYTES - 1 ))
-        fetch_range "$i" "$FIRST" "$LAST" &
-        PIDS+=($!)
+        first=$(( i * step )); last=$(( first + step - 1 ))
+        (( last >= EXPECTED_BYTES )) && last=$(( EXPECTED_BYTES - 1 ))
+        fetch_range "$i" "$first" "$last" &
+        pids+=($!)
     done
-    for pid in "${PIDS[@]}"; do wait "$pid"; done
-    for i in $(seq 0 $(( N_RANGES - 1 ))); do cat "$WORK/catalog/range.$i"; done > "$GZ.tmp"
-    mv "$GZ.tmp" "$GZ"
+    for pid in "${pids[@]}"; do wait "$pid"; done
+    for i in $(seq 0 $(( N_RANGES - 1 ))); do cat "$WORK/catalog/range.$i"; done > "$GZ"
     rm -f "$WORK"/catalog/range.*
-fi
-test "$(stat -c %s "$GZ")" = "$EXPECTED_BYTES" || { echo "size mismatch on $GZ"; exit 1; }
-"$E/pigz" -t "$GZ"
+}
+gz_ok() { [ "$(stat -c %s "$GZ" 2>/dev/null || echo 0)" = "$EXPECTED_BYTES" ] && "$E/pigz" -t "$GZ"; }
+# Check job 48546051 already downloaded and verified a copy; use it if it is there.
+if [ ! -e "$GZ" ] && [ -e "$WORK/check/OM-RGC_v2.tsv.gz" ]; then mv "$WORK/check/OM-RGC_v2.tsv.gz" "$GZ"; fi
+for round in 1 2 3; do
+    gz_ok && break
+    echo "download round $round"
+    download
+done
+gz_ok || { echo "$GZ failed gzip's check after 3 downloads"; exit 1; }
 
-# 3. Decompress and count.
-FNA=$WORK/catalog/OM-RGC_v2_genes.fna
-if [ ! -s "$FNA" ]; then "$E/pigz" -dc -p 8 "$GZ" > "$FNA.tmp" && mv "$FNA.tmp" "$FNA"; fi
+# 3. FASTA from the table: name = gene (column 1) and OM-RGC_ID (column 2), sequence =
+#    column 14. The first line is the header.
+FNA=$WORK/catalog/OM-RGC_v2_genes_from_tsv.fna
+if [ ! -s "$FNA" ]; then
+    "$E/pigz" -dc -p 8 "$GZ" | awk -F'\t' 'NR > 1 { print ">" $1 " " $2; print $14 }' > "$FNA.tmp"
+    mv "$FNA.tmp" "$FNA"
+fi
 GENES=$(grep -c '^>' "$FNA")
 echo "genes in catalog: $GENES"
 
