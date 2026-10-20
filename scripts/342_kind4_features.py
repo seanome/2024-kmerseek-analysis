@@ -75,8 +75,20 @@ def gene_names(dat: Path, cache: Path) -> pl.DataFrame:
     return table
 
 
-def read_calls(calls_dir: Path) -> pl.DataFrame:
-    frames = []
+def read_calls(calls_dir: Path, queries: pl.DataFrame) -> tuple[pl.DataFrame, int]:
+    """Calls whose query stretch overlaps at least one exon residue, joined to their query's
+    row, and the number of calls read. Each file is filtered as it is read: everything after
+    this uses only calls on the exon, and the whole set did not fit in memory (2026-10-20:
+    470 million calls at E <= 10 for aro_hyd_arg_chg_pol5 k9)."""
+    exon = queries.select(
+        "event_id",
+        "gene_name",
+        "outcome",
+        "half",
+        "exon_start_in_query",
+        "exon_end_in_query",
+    )
+    frames, n_read = [], 0
     for folder in sorted(p for p in calls_dir.iterdir() if p.is_dir()):
         m = SETTING_RE.match(folder.name)
         if not m:
@@ -85,12 +97,24 @@ def read_calls(calls_dir: Path) -> pl.DataFrame:
         if not files:
             raise SystemExit(f"no call files in {folder}")
         for f in files:
+            calls = pl.read_csv(
+                f, separator="\t", schema_overrides={"evalue": pl.Float64}
+            )
+            n_read += calls.height
+            calls = calls.with_columns(
+                pl.col("query").str.strip_prefix(DECOY).alias("event_id")
+            ).join(exon, on="event_id", how="left")
+            assert (
+                calls["gene_name"].null_count() == 0
+            ), f"a call's query in {f} is not in the query table"
             frames.append(
-                pl.read_csv(
-                    f, separator="\t", schema_overrides={"evalue": pl.Float64}
+                calls.filter(
+                    (pl.col("qstart") <= pl.col("exon_end_in_query"))
+                    & (pl.col("qend") >= pl.col("exon_start_in_query"))
                 ).with_columns(pl.lit(folder.name).alias("setting"))
             )
-    return pl.concat(frames)
+            print(f"{f}: {n_read} calls read so far, {frames[-1].height} on the exon")
+    return pl.concat(frames), n_read
 
 
 def check_memory(calls_dir: Path) -> None:
@@ -131,14 +155,16 @@ def main() -> None:
     check_memory(args.calls)
     queries = pl.read_csv(args.queries, separator="\t")
     genes = gene_names(args.swissprot_dat, args.out / "swissprot_gene_names.tsv")
-    calls = read_calls(args.calls)
-    settings = sorted(calls["setting"].unique())
-    print(f"{calls.height} calls at E <= 10 in {len(settings)} settings: {settings}")
+    on_exon, n_read = read_calls(args.calls, queries)
+    settings = sorted(on_exon["setting"].unique())
+    print(
+        f"{n_read} calls at E <= 10 in {len(settings)} settings: {settings}; "
+        f"{on_exon.height} overlap the exon"
+    )
 
-    calls = (
-        calls.with_columns(
+    on_exon = (
+        on_exon.with_columns(
             pl.col("query").str.starts_with(DECOY).alias("query_is_decoy"),
-            pl.col("query").str.strip_prefix(DECOY).alias("event_id"),
             pl.col("target").str.starts_with(DECOY).alias("target_is_decoy"),
         )
         .with_columns(
@@ -150,25 +176,6 @@ def main() -> None:
             pl.col("_t").list.get(2, null_on_oob=True).alias("feature_note"),
         )
         .drop("_t")
-    )
-    calls = calls.join(
-        queries.select(
-            "event_id",
-            "gene_name",
-            "outcome",
-            "half",
-            "exon_start_in_query",
-            "exon_end_in_query",
-        ),
-        on="event_id",
-        how="left",
-    )
-    assert (
-        calls["gene_name"].null_count() == 0
-    ), "a call's query is not in the query table"
-    on_exon = calls.filter(
-        (pl.col("qstart") <= pl.col("exon_end_in_query"))
-        & (pl.col("qend") >= pl.col("exon_start_in_query"))
     )
 
     target_genes = genes.group_by("accession").agg(
