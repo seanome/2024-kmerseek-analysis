@@ -352,7 +352,7 @@ PREFETCH_CONTAINERS ?= $(ALL_CONTAINERS)
         run run-kmerseek run-baselines rannon-burstein-all status running postmortem kill-jobs clean-cache clean-indexes index-disk \
         gpu-benchmark gpu-benchmark-report \
         prefetch-images clean-image-cache fetch-structures-sherlock prostt5-weights \
-        pfamn-download pfamn-truth mcsa-truth help \
+        pfamn-download pfamn-truth mcsa-truth rescore-pfamn-from-calls help \
         bpe-tokenizer hp-bpe-diagnostic sherlock-clone test \
         fetch-structures-login \
         multiqc multiqc-local multiqc-preflight multiqc-status multiqc-partial \
@@ -1452,6 +1452,59 @@ pfamn-truth: pfamn-download
 	    --summary-out data/pfamn/pfamn_summary.json
 	@echo "Pfam-N truth built. $(PFAMN_GZ) can be deleted if disk is tight:"
 	@echo "  rm $(PFAMN_GZ)"
+
+## Rescore the Pfam-N metrics of finished runs, every split and breakdown, from their
+## published call files, against the truth cut to each run's query proteins. Runs scored
+## before restrictTruthToQueries divided Pfam-N recall and Fmax by all 44,315 human Pfam-N
+## regions; midi-plus searched proteins that carry 2,218 of them. No Nextflow run: which
+## calls are correct does not change, so the call files are enough, and
+## `evaluate_domain_calls.py --scored-calls` recomputes the metrics with the scorer's own
+## code. Each call file is also scored against the old truth and compared with the run's
+## all_domain_metrics.parquet; the job stops if the whole set does not match.
+##
+## Writes, for each run in PFAMN_RESCORE_RUNS, under $(PFAMN_RESCORE_DATA)/<run>/results/:
+##   pfamn_rescored_metrics.parquet  all_domain_metrics-shaped, plus before_matches_published
+##   pfamn_rescore_check.csv         largest old-vs-published difference per breakdown/metric
+## PFAMN_RESCORE_DATA can point at another clone's data/, so this runs from a fresh clone
+## without switching the branch of a clone that has a run going. Target disorder is read
+## from the run's own results/disorder when it has one (mini, no --db_cache) and from
+## ../results/disorder (the --db_cache of midi and midi-plus) otherwise.
+##
+## Runs as an sbatch job with a log file, not srun: job 48521254 (srun) printed only to
+## the terminal and left nothing to read after it timed out. Each finished (truth, species)
+## job is saved at once, so resubmitting the same command continues where it stopped, and
+## a run with its final output already written is skipped.
+##
+## Sizing. 48521254 cannot give a rate: its workers were forked after polars had started
+## threads and hung (35 CPU-minutes used of the 54 CPU-hours held, MaxRSS 3.9 GB, no
+## output). Measured instead on 40 midi yeast call files on the laptop (2026-10-19), one
+## polars thread per worker: 0.88 s per call file against the full truth, 0.45 s against
+## the cut one; 1.7 GB per worker. One (truth, species) job per worker, so the longest is a
+## midi species against the full truth: 830 call files x 0.88 s = 12 min, x 1.5 for slower
+## cluster cores = 18 min. midi-plus (44 per species) and mini (22) take a minute or two.
+## Predicted ~25 min in all on 18 workers; 2 h asked. Memory: 18 x 1.7 GB = 31 GB, 64 GB
+## asked.
+PFAMN_RESCORE_DATA ?= data
+PFAMN_RESCORE_RUNS ?= midi-plus midi mini
+PFAMN_RESCORE_CPUS ?= 18
+PFAMN_RESCORE_MEM  ?= 64G
+PFAMN_RESCORE_TIME ?= 2:00:00
+PFAMN_RESCORE_LOG  ?= logs/rescore-pfamn-%j.log
+
+rescore-pfamn-from-calls:
+	$(call require_cluster)
+	@mkdir -p $(dir $(PFAMN_RESCORE_LOG))
+	@jid=$$(sbatch --parsable --job-name=rescore-pfamn \
+	     --account=$(SLURM_ACCOUNT) --partition=$(SLURM_PARTITION) \
+	     --mem=$(PFAMN_RESCORE_MEM) --time=$(PFAMN_RESCORE_TIME) \
+	     --cpus-per-task=$(PFAMN_RESCORE_CPUS) \
+	     --output=$(PFAMN_RESCORE_LOG) \
+	     --wrap="apptainer exec --bind $$SCRATCH:$$SCRATCH --bind $$PWD:$$PWD --pwd $$PWD \
+	             docker://olgabot/kmerseek:$(IMAGE_TAG) \
+	             bash bin/rescore_pfamn_runs.sh $(PFAMN_RESCORE_DATA) $(PFAMN_RESCORE_CPUS) \
+	             $(shell git rev-parse --short=7 HEAD) $(PFAMN_RESCORE_RUNS)") && \
+	  echo "submitted $$jid; log: $(subst %j,$$jid,$(PFAMN_RESCORE_LOG))" && \
+	  echo "watch:  tail -f $(subst %j,$$jid,$(PFAMN_RESCORE_LOG))"
 
 
 ## ---- Sherlock side ------------------------------------------------------

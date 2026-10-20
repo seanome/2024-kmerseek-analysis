@@ -24,6 +24,7 @@ import argparse
 import hashlib
 import json
 import re
+import sys
 from pathlib import Path
 
 import polars as pl
@@ -38,6 +39,11 @@ TWILIGHT = (
     "2024-kmerseek-analysis-deep-twilight/nextflow-runs/deep-twilight-controls/run"
 )
 SCOPE_RUNS = "2024-kmerseek-scope40-v040/nextflow-runs/scope40-alphabet-ksize-v040/runs"
+
+# Commit of the Sherlock clone that ran the first `make rescore-pfamn-from-calls` (the job
+# after 48243621, 2026-10-17), which wrote every pfamn_rescored_whole_set.csv. The full
+# rescore records its own commit in pfamn_rescored_metrics.parquet (rescore_commit).
+PFAMN_RESCORE_COMMIT = "7a6e34b"
 
 # Commit of the Sherlock clone that wrote each output: HEAD at the run's launch, read from
 # that clone's `git log -g` (HEAD reflog) on 2026-10-15. dark-fmax records its own commit in
@@ -379,6 +385,88 @@ def tool_images(traces: pl.DataFrame, mapper) -> dict[str, str]:
 # Results readers
 
 
+def drop_unrestricted_truth(m: pl.DataFrame, rel: str) -> pl.DataFrame:
+    """Drop a truth set whose answer key covers proteins the run never searched.
+
+    Pfam-N (and M-CSA) truth is built once from every human Pfam protein. Runs scored
+    before restrictTruthToQueries existed (main.nf) used it whole: 44,315 Pfam-N regions
+    on 18,724 proteins, where midi-plus searched 998 proteins carrying 2,218 of them. Their
+    recall and Fmax are divided by regions no tool was asked to find, so those rows are
+    left out until the run is rescored.
+
+    The Pfam-A truth is built inside the run from the query proteins, so its whole-set
+    protein count is the query count. Any other truth set scored on more proteins than
+    that was not restricted.
+    """
+    if "n_stratum_proteins" not in m.columns:
+        return m
+    whole = m.filter(pl.col("stratum_axis") == "all")
+    n_query = whole.filter(pl.col("truth_set") == "pfam")["n_stratum_proteins"].max()
+    if n_query is None:
+        return m
+    bad = (
+        whole.filter(pl.col("n_stratum_proteins") > n_query)["truth_set"]
+        .unique()
+        .sort()
+        .to_list()
+    )
+    for ts in bad:
+        n = whole.filter(pl.col("truth_set") == ts)["n_stratum_proteins"].max()
+        print(
+            f"  {rel}: {ts} rows dropped, scored on {n:,} proteins but the run searched "
+            f"{n_query:,} (rescore with restrictTruthToQueries)",
+            file=sys.stderr,
+        )
+    return m.filter(~pl.col("truth_set").is_in(bad))
+
+
+def pfamn_rescored_full(path: Path) -> tuple[pl.DataFrame, str]:
+    """Every Pfam-N row from the full `make rescore-pfamn-from-calls`, and its commit.
+
+    Rows are kept only where the same call files scored against the old truth reproduced
+    the run's published row (before_matches_published), so a breakdown the scorer has
+    redefined since the run is left out rather than replaced by a different measurement.
+    """
+    r = pl.read_parquet(path)
+    commits = r["rescore_commit"].unique().to_list()
+    if len(commits) != 1:
+        raise SystemExit(f"{path}: expected one rescore_commit, found {commits}")
+    return r.filter(pl.col("before_matches_published")), commits[0]
+
+
+def pfamn_rescored(path: Path, metrics_path: Path) -> pl.DataFrame:
+    """Whole-set Pfam-N rows from `make rescore-pfamn-from-calls`, shaped like
+    all_domain_metrics.parquet so qfo_metrics() reads them unchanged.
+
+    That job recomputed each run's Pfam-N numbers from its call files against the truth cut
+    to the run's query proteins (PR 165). Only rows whose call file has a row in the run's
+    own metrics are kept: the midi-plus calls/ folder also holds the 77-target run's files.
+    Only the whole set is recomputed, and only the metrics the call files determine: the
+    strata, recall_reachable, auprc and fmax_threshold need a full rescore.
+    """
+    r = pl.read_csv(path).filter(pl.col("in_published_metrics"))
+    mya = (
+        pl.read_parquet(metrics_path, columns=["species", "species_mya"])
+        .unique()
+        .group_by("species")
+        .agg(pl.col("species_mya").first())
+    )
+    keep = ["fmax", "fmax_precision", "fmax_recall", "family_fmax"]
+    return r.join(mya, on="species", how="left").select(
+        pl.lit("pfamn").alias("truth_set"),
+        "tool",
+        "variant",
+        "species",
+        "species_mya",
+        pl.lit("all").alias("split"),
+        pl.lit("all").alias("stratum_axis"),
+        pl.lit("all").alias("stratum"),
+        "dedup_transfers",
+        pl.col("n_truth_instances_after").alias("n_truth_instances"),
+        *[pl.col(f"{k}_after").alias(k) for k in keep],
+    )
+
+
 def qfo_metrics(
     path: Path,
     rel: str,
@@ -390,15 +478,24 @@ def qfo_metrics(
     target_db: pl.Expr | None = None,
     target_db_version: str | None = QFO_TARGET_VERSION,
     query_from_truth_set: bool = False,
+    frame: pl.DataFrame | None = None,
+    commit: str | None = None,
 ) -> pl.DataFrame:
-    """all_domain_metrics-shaped table (evaluate_domain_calls.py) to long rows."""
-    if path.suffix == ".csv":
+    """all_domain_metrics-shaped table (evaluate_domain_calls.py) to long rows.
+
+    `frame` passes a table already in memory; `path` is then only checked for existence by
+    the caller and `rel` is still what source_path records.
+    """
+    if frame is not None:
+        m = frame
+    elif path.suffix == ".csv":
         m = pl.read_csv(path, infer_schema_length=200_000)
     else:
         m = pl.read_parquet(path)
     m = m.filter(
         (pl.col("split") == "all") & pl.col("stratum_axis").is_in(STRATUM_AXES)
     )
+    m = drop_unrestricted_truth(m, rel)
     # The region runs' identity step never matched Swiss-Prot features to a target: their
     # only identity bin is "no_homolog", and its numbers equal the whole set's (57,148 of
     # 57,148 rows, checked 2026-10-15). A label that says nothing true is left out.
@@ -478,7 +575,7 @@ def qfo_metrics(
             .otherwise(pl.lit("raw"))
             .alias("dedup_or_raw"),
             pl.lit(f"{SCRATCH}/{rel}").alias("source_path"),
-            pl.lit(COMMIT[experiment]).alias("source_commit"),
+            pl.lit(commit or COMMIT[experiment]).alias("source_commit"),
         )
     )
 
@@ -1058,6 +1155,38 @@ def main() -> None:
                 tool_images(traces[exp], mapper("metrics")),
             )
         )
+        # Pfam-N rows above were dropped (scored against every human protein); these are
+        # the same rows rescored against the run's own query proteins. The full rescore
+        # (every breakdown) is used when present, else the whole-set one.
+        full_rel = f"{QFO}/data/{sub}/results/pfamn_rescored_metrics.parquet"
+        rs_rel = f"{QFO}/data/{sub}/results/pfamn_rescored_whole_set.csv"
+        if (data / full_rel).exists():
+            rescored, commit = pfamn_rescored_full(data / full_rel)
+            parts.append(
+                qfo_metrics(
+                    data / full_rel,
+                    full_rel,
+                    exp,
+                    f"human Pfam-annotated proteins, {label} set",
+                    tool_images(traces[exp], mapper("metrics")),
+                    frame=rescored,
+                    commit=commit,
+                )
+            )
+        elif (data / rs_rel).exists():
+            parts.append(
+                qfo_metrics(
+                    data / rs_rel,
+                    rs_rel,
+                    exp,
+                    f"human Pfam-annotated proteins, {label} set",
+                    tool_images(traces[exp], mapper("metrics")),
+                    frame=pfamn_rescored(data / rs_rel, data / rel),
+                    # The rescore's own commit: the numbers come from this code, not
+                    # from the run's.
+                    commit=PFAMN_RESCORE_COMMIT,
+                )
+            )
     dark_rel = f"{DARK}/dark-fmax-2026-10-14/dark_fmax_metrics.csv"
     parts.append(
         qfo_metrics(

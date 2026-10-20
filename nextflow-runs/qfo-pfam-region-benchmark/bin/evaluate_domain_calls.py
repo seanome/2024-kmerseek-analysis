@@ -1740,6 +1740,17 @@ def score_one(args, truth, truth_lf, job, instance_axes=frozenset(),
     # Scoring that by interval IoU would measure the envelope reduction rather than the
     # prediction, so this arm is scored on coverage instead.
     semantics = "motif" if job["tool"] == "folddisco" else "alignment"
+    if job.get("scored"):
+        # --scored-calls: the calls were scored by an earlier run of this script and are
+        # read back as they are. Only the target-side counts are recomputed; everything
+        # from the strata loop on is the same code as a full score.
+        map_lf = (domain_map_lf if domain_map_lf is not None
+                  else pl.scan_parquet(args.domain_map))
+        target_families, target_anchor, target_coverage = target_side(
+            map_lf, args.domain_map, job)
+        scored = pl.read_parquet(job["regions"])
+        return score_metrics(args, truth, scored, job, semantics, instance_axes,
+                             target_families, target_anchor, target_coverage)
     # Only the arms that read AlphaFold structure files. Those are the ones whose targets
     # arrive as overlapping 1400-residue fragments, so the same alignment appears once per
     # fragment. Every other arm reads whole sequences and has nothing to collapse -- and
@@ -1782,15 +1793,8 @@ def score_one(args, truth, truth_lf, job, instance_axes=frozenset(),
         # (arm x dedup mode), and a batched task holds up to 24 arms.
         map_lf = (domain_map_lf if domain_map_lf is not None
                   else pl.scan_parquet(args.domain_map))
-        target_families = map_lf.select("pfam_id").unique().collect()
-        # Exploded once here rather than once per stratum. Present only on the Swiss-Prot
-        # maps; its absence is what puts the pfam and pfamn arms on the family join.
-        target_anchor = (
-            sprot.anchor_pairs(map_lf.select("pfam_id", sprot.ANCHOR_COL).collect())
-            if sprot.ANCHOR_COL in map_lf.collect_schema().names() else None
-        )
-        target_coverage = target_map_coverage(map_lf, target_families,
-                                              args.domain_map, job)
+        target_families, target_anchor, target_coverage = target_side(
+            map_lf, args.domain_map, job)
         calls_lf = (
             transfer_domains(regions, map_lf, args.min_overlap) if regions is not None else None
         )
@@ -1829,7 +1833,26 @@ def score_one(args, truth, truth_lf, job, instance_axes=frozenset(),
 
     scored = classify_scoreable(scored, truth, args.gray_min_annotated_fraction)
     scored.write_parquet(job["calls_out"], compression="zstd")
+    score_metrics(args, truth, scored, job, semantics, instance_axes,
+                  target_families, target_anchor, target_coverage)
 
+
+def target_side(map_lf: pl.LazyFrame, map_path, job: dict):
+    """Target families, the Swiss-Prot anchor pairs, and the transfer-table counts."""
+    target_families = map_lf.select("pfam_id").unique().collect()
+    # Exploded once here rather than once per stratum. Present only on the Swiss-Prot
+    # maps; its absence is what puts the pfam and pfamn arms on the family join.
+    target_anchor = (
+        sprot.anchor_pairs(map_lf.select("pfam_id", sprot.ANCHOR_COL).collect())
+        if sprot.ANCHOR_COL in map_lf.collect_schema().names() else None
+    )
+    target_coverage = target_map_coverage(map_lf, target_families, map_path, job)
+    return target_families, target_anchor, target_coverage
+
+
+def score_metrics(args, truth, scored, job, semantics, instance_axes,
+                  target_families, target_anchor, target_coverage):
+    """Every metrics row and curve for one arm's scored calls, written to job's paths."""
     # IC is estimated once on the whole answer key, not per stratum. A family's rarity is
     # a property of the proteome; re-estimating it inside each cut would make the same
     # family worth different amounts in different strata and break comparability.
@@ -2007,6 +2030,13 @@ def main():
                    help="Drop kmerseek regions whose Bonferroni-corrected Poisson tail "
                         "(raw p x region_search_space x db_n_targets) is at or above this. "
                         "0 disables the filter. Applies to kmerseek only.")
+    p.add_argument("--scored-calls", action="store_true",
+                   help="the --manifest rows are tool, variant, a *.calls.parquet written by "
+                        "an earlier run of this script, and its dedup mode (off/on). Region "
+                        "loading, transfer and call scoring are skipped and the calls are "
+                        "read back as they are; the metrics and curves are recomputed "
+                        "against --truth. For rescoring a finished run against a corrected "
+                        "answer key when which calls are correct does not change.")
     p.add_argument("--dedup-fragments", action="store_true",
                    help="collapse regions duplicated by AlphaFold's overlapping structure "
                         "fragments. Only for arms that read AlphaFold files -- see "
@@ -2076,6 +2106,8 @@ def main():
     if args.regions and not (args.tool and args.variant
                              and args.calls_out and args.metrics_out):
         raise SystemExit("--regions requires --tool, --variant, --calls-out and --metrics-out")
+    if args.scored_calls and not args.manifest:
+        raise SystemExit("--scored-calls reads its call files from --manifest")
 
     truth_lf, domain_map_lf = read_shared_inputs(args)
     truth = truth_lf.collect()
@@ -2131,6 +2163,16 @@ def main():
         for line in Path(args.manifest).read_text().splitlines():
             if not line.strip():
                 continue
+            if args.scored_calls:
+                tool, variant, calls, mode = line.split("\t")
+                stem = f"{args.truth_set}.{tool}.{variant}.{args.species}"
+                if mode == "on":
+                    stem += ".dedup"
+                jobs.append({"tool": tool, "variant": variant, "regions": Path(calls),
+                             "dedup": mode == "on", "scored": True, "calls_out": None,
+                             "metrics_out": Path(f"{stem}.metrics.parquet"),
+                             "curve_out": Path(f"{stem}.curve.parquet")})
+                continue
             tool, variant, regions = line.split("\t")
             for mode in modes:
                 stem = f"{args.truth_set}.{tool}.{variant}.{args.species}"
@@ -2156,7 +2198,8 @@ def main():
                   domain_map_lf=domain_map_lf)
         # Jobs for one arm are adjacent (one per dedup mode), so an arm's inflated copy is
         # dead as soon as the next job reads a different file.
-        if i == len(jobs) or jobs[i]["regions"] != job["regions"]:
+        if not job.get("scored") and (
+                i == len(jobs) or jobs[i]["regions"] != job["regions"]):
             release_inflated(job["regions"])
 
 
