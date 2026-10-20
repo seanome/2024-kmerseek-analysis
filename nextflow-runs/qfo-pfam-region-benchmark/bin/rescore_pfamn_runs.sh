@@ -7,13 +7,15 @@
 #
 # A run whose pfamn_rescored_metrics.parquet already exists is skipped. A run that stopped
 # part way resumes from the per-species parts it saved (pfamn_rescore_parts/).
-set -euo pipefail
+# A failing run does not stop the rest; the script exits 1 at the end and names them.
+set -uo pipefail
 
 data=$1 jobs=$2 commit=$3
 shift 3
 export POLARS_MAX_THREADS=1
 here=$(cd "$(dirname "$0")" && pwd)
 
+failed=()
 for r in "$@"; do
     d=$data/$r/results
     if [ -s "$d/pfamn_rescored_metrics.parquet" ]; then
@@ -31,6 +33,13 @@ for r in "$@"; do
         --pfamn-dir     "$data/pfamn" \
         --disorder-dir  "$dis" \
         --jobs          "$jobs" \
-        --source-commit "$commit"
+        --source-commit "$commit" || {
+        echo "== $r FAILED $(date '+%F %T')" >&2
+        failed+=("$r")
+    }
 done
+if [ "${#failed[@]}" -gt 0 ]; then
+    echo "== failed runs: ${failed[*]}" >&2
+    exit 1
+fi
 echo "== all done $(date '+%F %T')"
