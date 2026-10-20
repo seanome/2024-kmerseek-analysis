@@ -97,6 +97,8 @@ def score(
             "fmax_recall",
             "n_truth_instances",
             "n_calls",
+            "median_iou_tp",
+            "n_tp_calls",
         )
     }
 
