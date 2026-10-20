@@ -145,7 +145,10 @@ process SEARCH {
     if [ "\${status[0]}" -ne 0 ] || [ "\${status[1]}" -ne 0 ]; then
         echo "344: search pipeline failed, exit codes \${status[*]}; kmerseek log:" >&2
         tail -20 ${chunk.baseName}.log >&2
-        # Pass the kmerseek exit code (137 = OOM kill) through, so nextflow.config retries it.
+        # If the filter failed and kmerseek only died on the closed pipe (141, or 1/101 from
+        # a Rust binary), report the filter's code: it is the cause, and 141 would be retried.
+        case "\${status[0]}" in 0|1|101|141) if [ "\${status[1]}" -ne 0 ]; then exit "\${status[1]}"; fi;; esac
+        # Otherwise pass the kmerseek exit code (137 = OOM kill) through, so nextflow.config retries it.
         if [ "\${status[0]}" -ne 0 ]; then exit "\${status[0]}"; fi
         exit "\${status[1]}"
     fi
