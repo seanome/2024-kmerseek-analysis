@@ -22,13 +22,24 @@ Every call file with a published metrics row is scored twice:
 
 Call files without a published row (the midi-plus calls/ folder also holds the 77-target
 run's files) are skipped.
+
+Resuming. Each (truth, species) job saves its rows to pfamn_rescore_parts/ as soon as it
+finishes, and a rerun skips every job whose part file exists. Delete that folder after
+changing the scorer or the inputs, or old parts will be reused.
+
+Workers are started with "spawn", not Linux's default "fork". The parent has already run
+polars, whose thread pool does not survive a fork: on 2026-10-19 job 48521254 forked 18
+workers this way, used 35 CPU-minutes of the 54 CPU-hours it held in 3 hours, and wrote
+nothing before its time limit. macOS defaults to spawn, which is why the local tests passed.
 """
 
 import argparse
+import multiprocessing
 import subprocess
 import sys
 import tempfile
-from concurrent.futures import ProcessPoolExecutor
+import time
+from concurrent.futures import ProcessPoolExecutor, as_completed
 from pathlib import Path
 
 import polars as pl
@@ -79,8 +90,9 @@ def optional(flag: str, path: Path) -> list[str]:
     return [flag, str(path)] if path.exists() and path.stat().st_size > 0 else []
 
 
-def score_species(job: dict) -> pl.DataFrame:
-    """Score one species' call files against one truth file; return its metrics rows."""
+def score_species(job: dict) -> tuple[str, str, int, float]:
+    """Score one species' call files against one truth file and save the rows to
+    job["part"]. Returns (truth label, species, call files, seconds)."""
     sp, run_dir = job["species"], Path(job["run_dir"])
     with tempfile.TemporaryDirectory(prefix=f"rescore_{sp}_") as work:
         work = Path(work)
@@ -113,11 +125,19 @@ def score_species(job: dict) -> pl.DataFrame:
             ),
             *optional("--target-disorder", disorder),
         ]  # fmt: skip
+        t0 = time.monotonic()
         proc = subprocess.run(cmd, cwd=work, capture_output=True, text=True)
         if proc.returncode != 0:
             raise RuntimeError(f"{sp} ({job['label']}) failed:\n{proc.stderr[-3000:]}")
         files = sorted(work.glob("*.metrics.parquet"))
-        return pl.concat([pl.read_parquet(f) for f in files], how="diagonal_relaxed")
+        rows = pl.concat([pl.read_parquet(f) for f in files], how="diagonal_relaxed")
+        # Written under a temporary name and renamed, so a job killed mid-write never
+        # leaves a part that a rerun would take as finished.
+        part = Path(job["part"])
+        tmp = part.with_suffix(".partial")
+        rows.write_parquet(tmp, compression="zstd")
+        tmp.rename(part)
+        return job["label"], sp, len(job["arms"]), time.monotonic() - t0
 
 
 def compare(
@@ -237,6 +257,8 @@ def main():
     if arms.height != n_pub:
         raise SystemExit(f"{n_pub} published arms but {arms.height} have a call file")
 
+    parts = outdir / "pfamn_rescore_parts"
+    parts.mkdir(parents=True, exist_ok=True)
     with tempfile.TemporaryDirectory(prefix="rescore_truth_") as tdir:
         cut_path = Path(tdir) / "human_pfamn_truth.parquet"
         cut.write_parquet(cut_path)
@@ -247,6 +269,7 @@ def main():
                     {
                         "label": label,
                         "species": sp,
+                        "part": str(parts / f"{label}.{sp}.parquet"),
                         "truth": str(truth),
                         "domain_map": str(args.pfamn_dir / f"{sp}_domain_map.parquet"),
                         "run_dir": str(args.run_dir),
@@ -261,18 +284,32 @@ def main():
                         "arms": arms.filter(pl.col("species") == sp).to_dicts(),
                     }
                 )
+        todo = [j for j in jobs if not Path(j["part"]).exists()]
         print(
-            f"{arms.height} call files, {len(jobs)} scoring jobs on {args.jobs} workers",
+            f"{arms.height} call files, {len(jobs)} scoring jobs, {len(jobs) - len(todo)} "
+            f"already done in {parts}; {len(todo)} to run on {args.jobs} workers",
             file=sys.stderr,
+            flush=True,
         )
-        with ProcessPoolExecutor(max_workers=args.jobs) as ex:
-            results = list(ex.map(score_species, jobs))
+        t0 = time.monotonic()
+        ctx = multiprocessing.get_context("spawn")
+        with ProcessPoolExecutor(max_workers=args.jobs, mp_context=ctx) as ex:
+            futures = [ex.submit(score_species, j) for j in todo]
+            for i, fut in enumerate(as_completed(futures), 1):
+                label, sp, n, secs = fut.result()
+                print(
+                    f"  [{i}/{len(todo)}] {label} {sp}: {n} call files in {secs:.0f} s "
+                    f"({secs / max(n, 1):.2f} s each); {time.monotonic() - t0:.0f} s "
+                    "since start",
+                    file=sys.stderr,
+                    flush=True,
+                )
     before = pl.concat(
-        [r for j, r in zip(jobs, results) if j["label"] == "before"],
+        [pl.read_parquet(j["part"]) for j in jobs if j["label"] == "before"],
         how="diagonal_relaxed",
     )
     after = pl.concat(
-        [r for j, r in zip(jobs, results) if j["label"] == "after"],
+        [pl.read_parquet(j["part"]) for j in jobs if j["label"] == "after"],
         how="diagonal_relaxed",
     )
 

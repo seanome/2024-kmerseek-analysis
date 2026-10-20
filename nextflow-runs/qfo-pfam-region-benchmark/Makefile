@@ -1470,39 +1470,41 @@ pfamn-truth: pfamn-download
 ## from the run's own results/disorder when it has one (mini, no --db_cache) and from
 ## ../results/disorder (the --db_cache of midi and midi-plus) otherwise.
 ##
-## Sizing, measured 2026-10-17 on 40 midi yeast call files (80 scorings): 0.75 CPU-seconds
-## per scoring with one polars thread, 1.7 GB peak per process; the default thread pool
-## spent 8x the CPU for the same numbers (equal to 1e-12). midi is 14,940 scorings in 18
-## per-species jobs of 830 each, about 10 min per job on the laptop's cores; midi-plus is
-## 792, mini 88. 18 workers at one thread each, 64 GB for 18 x 1.7 GB with room, and 3 h,
-## several times what the measurement predicts for slower cluster cores.
+## Runs as an sbatch job with a log file, not srun: job 48521254 (srun) printed only to
+## the terminal and left nothing to read after it timed out. Each finished (truth, species)
+## job is saved at once, so resubmitting the same command continues where it stopped, and
+## a run with its final output already written is skipped.
+##
+## Sizing. 48521254 cannot give a rate: its workers were forked after polars had started
+## threads and hung (35 CPU-minutes used of the 54 CPU-hours held, MaxRSS 3.9 GB, no
+## output). Measured instead on 40 midi yeast call files on the laptop (2026-10-19), one
+## polars thread per worker: 0.88 s per call file against the full truth, 0.45 s against
+## the cut one; 1.7 GB per worker. One (truth, species) job per worker, so the longest is a
+## midi species against the full truth: 830 call files x 0.88 s = 12 min, x 1.5 for slower
+## cluster cores = 18 min. midi-plus (44 per species) and mini (22) take a minute or two.
+## Predicted ~25 min in all on 18 workers; 2 h asked. Memory: 18 x 1.7 GB = 31 GB, 64 GB
+## asked.
 PFAMN_RESCORE_DATA ?= data
 PFAMN_RESCORE_RUNS ?= midi-plus midi mini
 PFAMN_RESCORE_CPUS ?= 18
 PFAMN_RESCORE_MEM  ?= 64G
-PFAMN_RESCORE_TIME ?= 3:00:00
+PFAMN_RESCORE_TIME ?= 2:00:00
+PFAMN_RESCORE_LOG  ?= logs/rescore-pfamn-%j.log
 
 rescore-pfamn-from-calls:
 	$(call require_cluster)
-	srun --account=$(SLURM_ACCOUNT) --partition=$(SLURM_PARTITION) \
+	@mkdir -p $(dir $(PFAMN_RESCORE_LOG))
+	@jid=$$(sbatch --parsable --job-name=rescore-pfamn \
+	     --account=$(SLURM_ACCOUNT) --partition=$(SLURM_PARTITION) \
 	     --mem=$(PFAMN_RESCORE_MEM) --time=$(PFAMN_RESCORE_TIME) \
 	     --cpus-per-task=$(PFAMN_RESCORE_CPUS) \
-	  apptainer exec \
-	    --bind $$SCRATCH:$$SCRATCH --bind $$PWD:$$PWD --pwd $$PWD \
-	    docker://olgabot/kmerseek:$(IMAGE_TAG) \
-	    bash -c 'set -e; export POLARS_MAX_THREADS=1; for r in $(PFAMN_RESCORE_RUNS); do \
-	      d=$(PFAMN_RESCORE_DATA)/$$r/results; \
-	      dis=$(PFAMN_RESCORE_DATA)/../results/disorder; \
-	      [ -d $$d/disorder ] && dis=$$d/disorder; \
-	      echo "== $$r (target disorder from $$dis)"; \
-	      python3 bin/rescore_pfamn_from_calls.py \
-	        --run-dir      $$d \
-	        --annotations  $(PFAMN_RESCORE_DATA)/$$r/annotations \
-	        --pfamn-dir    $(PFAMN_RESCORE_DATA)/pfamn \
-	        --disorder-dir $$dis \
-	        --jobs         $(PFAMN_RESCORE_CPUS) \
-	        --source-commit $(shell git rev-parse --short=7 HEAD); \
-	    done'
+	     --output=$(PFAMN_RESCORE_LOG) \
+	     --wrap="apptainer exec --bind $$SCRATCH:$$SCRATCH --bind $$PWD:$$PWD --pwd $$PWD \
+	             docker://olgabot/kmerseek:$(IMAGE_TAG) \
+	             bash bin/rescore_pfamn_runs.sh $(PFAMN_RESCORE_DATA) $(PFAMN_RESCORE_CPUS) \
+	             $(shell git rev-parse --short=7 HEAD) $(PFAMN_RESCORE_RUNS)") && \
+	  echo "submitted $$jid; log: $(subst %j,$$jid,$(PFAMN_RESCORE_LOG))" && \
+	  echo "watch:  tail -f $(subst %j,$$jid,$(PFAMN_RESCORE_LOG))"
 
 
 ## ---- Sherlock side ------------------------------------------------------
