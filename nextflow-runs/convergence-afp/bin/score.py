@@ -186,6 +186,12 @@ def main() -> int:
         help="accessions.txt from the Foldseek AFDB database: one accession per model",
     )
     ap.add_argument("--max-hit-rows", type=int, default=400)
+    ap.add_argument(
+        "--no-decide",
+        action="store_true",
+        help="skip the decision rule, which is fixed to the ice-binding lineages "
+        "(IN_SAMPLE, HELD_OUT); for another class's truth set",
+    )
     ap.add_argument("--outdir", type=Path, required=True)
     args = ap.parse_args()
     args.outdir.mkdir(parents=True, exist_ok=True)
@@ -329,9 +335,12 @@ def main() -> int:
     )
     counted.write_csv(args.outdir / "grid.tsv", separator="\t")
 
-    verdict = decide(metrics, args.outdir)
-    (args.outdir / "verdict.json").write_text(json.dumps(verdict, indent=2) + "\n")
-    print(json.dumps(verdict, indent=2))
+    if args.no_decide:
+        verdict = None
+    else:
+        verdict = decide(metrics, args.outdir)
+        (args.outdir / "verdict.json").write_text(json.dumps(verdict, indent=2) + "\n")
+        print(json.dumps(verdict, indent=2))
     write_hits_residues(
         args.hits,
         metrics,
