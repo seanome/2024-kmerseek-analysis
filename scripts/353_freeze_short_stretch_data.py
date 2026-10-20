@@ -13,7 +13,7 @@ Inputs (read-only):
   Sanborn et al. 2021 eLife 10:e68068, Figure 1 source data 1, elife-68068-fig1-data1-v3.xlsx.
 
 Outputs in data/kill_tests/short_stretch/:
-  raw/                       the four raw files (the FASTA gzipped)
+  raw/                       the four raw files (the three ELM files gzipped)
   MANIFEST.tsv               one row per raw file
   records.tsv                one row per evidence record (columns described in COLUMNS)
   records.fasta              the record sequences, full 20-letter alphabet, id = record_id
@@ -229,15 +229,16 @@ def main() -> int:
     elm_text = (args.elm_dir / "elm_instances.tsv").read_text()
     cls_text = (args.elm_dir / "elm_classes.tsv").read_text()
     manifest = [
-        ("raw/elm_instances.tsv", "http://elm.eu.org/instances.tsv?q=*", header_value(elm_text, "ELM_Instance_Download_Date"), f"ELM instance export format {header_value(elm_text, 'ELM_Instance_Download_Version')}"),
-        ("raw/elm_classes.tsv", "http://elm.eu.org/elms/elms_index.tsv", header_value(cls_text, "ELM_Classes_Download_Date"), f"ELM class export format {header_value(cls_text, 'ELM_Classes_Download_Version')}"),
+        ("raw/elm_instances.tsv.gz", "http://elm.eu.org/instances.tsv?q=*", header_value(elm_text, "ELM_Instance_Download_Date"), f"ELM instance export format {header_value(elm_text, 'ELM_Instance_Download_Version')}"),
+        ("raw/elm_classes.tsv.gz", "http://elm.eu.org/elms/elms_index.tsv", header_value(cls_text, "ELM_Classes_Download_Date"), f"ELM class export format {header_value(cls_text, 'ELM_Classes_Download_Version')}"),
         ("raw/elm_proteins.fasta.gz", "https://rest.uniprot.org/uniprotkb/accessions?accessions=...&format=fasta", "2026-09-24", "UniProt sequences of every ELM true-positive protein (scripts/prep_elm_inputs.py, branch olgabot/elm-motif-transfer)"),
         ("raw/elife-68068-fig1-data1-v3.xlsx", SANBORN_URL, "2026-10-20", f"Sanborn et al. 2021 eLife 10:e68068, doi:{SANBORN_DOI}, Figure 1 source data 1"),
     ]
-    shutil.copyfile(args.elm_dir / "elm_instances.tsv", raw / "elm_instances.tsv")
-    shutil.copyfile(args.elm_dir / "elm_classes.tsv", raw / "elm_classes.tsv")
-    with open(args.elm_dir / "elm_proteins.fasta", "rb") as f, gzip.GzipFile(raw / "elm_proteins.fasta.gz", "wb", mtime=0) as g:
-        shutil.copyfileobj(f, g)
+    # Gzipped byte for byte: git's core.autocrlf=input would rewrite the ELM exports' CRLF
+    # line ends in a plain .tsv, and the checked-out file would no longer match its SHA-256.
+    for name in ("elm_instances.tsv", "elm_classes.tsv", "elm_proteins.fasta"):
+        with open(args.elm_dir / name, "rb") as f, gzip.GzipFile(raw / f"{name}.gz", "wb", mtime=0) as g:
+            shutil.copyfileobj(f, g)
     shutil.copyfile(args.sanborn_xlsx, raw / "elife-68068-fig1-data1-v3.xlsx")
 
     counts: list[tuple[str, int, str]] = []
@@ -267,9 +268,13 @@ def main() -> int:
         ("records.fasta", "scripts/353_freeze_short_stretch_data.py", "2026-10-20", "record sequences"),
     ]
     with open(OUT / "MANIFEST.tsv", "w") as f:
-        f.write("file\tsource\tdownload_or_build_date\tdescription\tsha256\n")
+        f.write("file\tsource\tdownload_or_build_date\tdescription\tsha256\tsha256_uncompressed\n")
         for path, src, date, desc in manifest:
-            f.write(f"{path}\t{src}\t{date}\t{desc}\t{sha256(OUT / path)}\n")
+            plain = ""
+            if path.endswith(".gz"):
+                with gzip.open(OUT / path, "rb") as g:
+                    plain = hashlib.sha256(g.read()).hexdigest()
+            f.write(f"{path}\t{src}\t{date}\t{desc}\t{sha256(OUT / path)}\t{plain}\n")
     print((OUT / "MANIFEST.tsv").read_text())
     return 0
 
