@@ -30,6 +30,20 @@ A public PRIDE dataset with raw human spectra would do: run a de novo caller and
 search on the same spectra, both on Sherlock. Choosing that dataset is a decision for you;
 none was downloaded.
 
+### Candidate public datasets (PRIDE API, read 2026-10-20; nothing downloaded)
+
+All three are human, trypsin-digested DDA data (one fragment spectrum per selected peptide),
+which is what de novo callers read. Sizes are PRIDE's file sizes.
+
+| Dataset | What it holds | Size to fetch | Fit for 354 |
+|---|---|---|---|
+| PXD055277, NovoBoard (bioRxiv 10.1101/2024.04.16.589668), Q Exactive | De novo calls from PEAKS, PointNovo, Casanovo and GraphNovo plus a Proteome Discoverer database search (SwissProt 2024-02-24, 1% peptide FDR), on spectra reused from earlier studies. `eval_human.zip` 0.71 GB, `eval_ABRF.zip` 1.73 GB, `2017-12-4_ABRF_200_DDA1.mgf` 0.42 GB, `pd_merged.csv.db.psms.csv` 0.01 GB (other zips are yeast, E. coli, Arabidopsis, HLA, non-tryptic) | 0.72 GB for `eval_human.zip` + PSM table | Best: calls and accepted peptides from the same spectra already exist, so nothing has to be called. Not yet checked: what is inside the zips, which study the human spectra come from, and whether the search database had contaminants. |
+| PXD022287, HeLa DDA (*J Proteome Res*, 10.1021/acs.jproteome.0c01029), Orbitrap Fusion, COMPLETE submission | 3 raw files (`HELA-DDA-60C-rep1.raw` 0.56 GB, `rep2` 0.27 GB, `Human-Protein-Training_Trypsin.raw` 0.17 GB), mzML 1.90 GB, MS-GF+ results 0.49 GB | 1.0 GB raw + 0.49 GB results | Good fallback: accepted peptides from MS-GF+ are deposited; de novo calls would be made on Sherlock (e.g. Casanovo). The runs mix HCD and ETD spectra; callers are trained on HCD, so ETD spectra must be dropped. |
+| PXD044934, InstaNovo (*Nat Mach Intell*, 10.1038/s42256-025-01019-5), Exploris 480 / Eclipse | 67 raw files, 36.8 GB, from several experiments: HLA peptides (not tryptic), nanobodies, snake venom, a human wound-fluid digest with its Proteome Discoverer result (`Wound_fluid_human.pdResult` 1.83 GB), human canonical FASTA | the wound-fluid raw subset (sample-to-file map not in the file names) | Weakest: mixed project, largest download, and which raw files are the wound fluid must be worked out first. |
+
+The table's DOIs come from PRIDE's project records, not from memory; they have not been
+checked against the publishers.
+
 ## Commands
 
 ```bash
