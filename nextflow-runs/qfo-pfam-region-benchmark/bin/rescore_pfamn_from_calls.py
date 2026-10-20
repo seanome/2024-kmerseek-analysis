@@ -24,8 +24,9 @@ Call files without a published row (the midi-plus calls/ folder also holds the 7
 run's files) are skipped.
 
 Resuming. Each (truth, species) job saves its rows to pfamn_rescore_parts/ as soon as it
-finishes, and a rerun skips every job whose part file exists. Delete that folder after
-changing the scorer or the inputs, or old parts will be reused.
+finishes, and a rerun skips every job whose part file exists. The part name carries a hash
+of --source-commit, the thresholds and the size and time of every input file, so a part
+written under other code or inputs is ignored (it stays in the folder, unused).
 
 Workers are started with "spawn", not Linux's default "fork". The parent has already run
 polars, whose thread pool does not survive a fork: on 2026-10-19 job 48521254 forked 18
@@ -34,6 +35,7 @@ nothing before its time limit. macOS defaults to spawn, which is why the local t
 """
 
 import argparse
+import hashlib
 import multiprocessing
 import subprocess
 import sys
@@ -259,6 +261,32 @@ def main():
 
     parts = outdir / "pfamn_rescore_parts"
     parts.mkdir(parents=True, exist_ok=True)
+    covariates = (
+        args.covariates or args.run_dir / "truth/human_query_covariates.parquet"
+    )
+    # Parts are reused only when this key matches: same commit, thresholds and input files.
+    key_files = [
+        full_path,
+        covariates,
+        args.run_dir / "all_domain_metrics.parquet",
+        *calls,
+    ]
+    key_files += sorted(args.pfamn_dir.glob("*_domain_map.parquet"))
+    key_files += (
+        sorted(args.disorder_dir.glob("*")) if args.disorder_dir.is_dir() else []
+    )
+    h = hashlib.sha256(
+        repr(
+            (
+                args.source_commit,
+                args.min_overlap,
+                args.strict_iou,
+                sorted(cut["accession"].unique().to_list()),
+                [(f.name, f.stat().st_size, f.stat().st_mtime_ns) for f in key_files],
+            )
+        ).encode()
+    )
+    key = h.hexdigest()[:12]
     with tempfile.TemporaryDirectory(prefix="rescore_truth_") as tdir:
         cut_path = Path(tdir) / "human_pfamn_truth.parquet"
         cut.write_parquet(cut_path)
@@ -269,14 +297,11 @@ def main():
                     {
                         "label": label,
                         "species": sp,
-                        "part": str(parts / f"{label}.{sp}.parquet"),
+                        "part": str(parts / f"{label}.{sp}.{key}.parquet"),
                         "truth": str(truth),
                         "domain_map": str(args.pfamn_dir / f"{sp}_domain_map.parquet"),
                         "run_dir": str(args.run_dir),
-                        "covariates": str(
-                            args.covariates
-                            or args.run_dir / "truth/human_query_covariates.parquet"
-                        ),
+                        "covariates": str(covariates),
                         "disorder_dir": str(args.disorder_dir),
                         "mya": mya[sp],
                         "min_overlap": args.min_overlap,
