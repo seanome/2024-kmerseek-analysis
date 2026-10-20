@@ -431,13 +431,19 @@ def cmd_anchors(a: argparse.Namespace) -> None:
 
 
 def cmd_candidates(a: argparse.Namespace) -> None:
-    """Anchors present in at least MIN_SPECIES_FOR_ANY_LABELLING species, for one bucket."""
-    files = [str(Path(d) / f"b{a.bucket:03d}.parquet") for d in a.dirs]
-    df = pl.concat([pl.read_parquet(f) for f in files])
-    g = df.group_by("anchor").agg(pl.col("species_idx").n_unique().alias("n_species"))
-    hist = g.group_by("n_species").len().sort("n_species")
-    kept = g.filter(pl.col("n_species") >= MIN_SPECIES_FOR_ANY_LABELLING)["anchor"].sort().to_numpy()
-    np.save(a.out, kept.astype(np.uint64))
+    """Anchors present in at least MIN_SPECIES_FOR_ANY_LABELLING species, for some buckets.
+
+    Buckets are done one at a time, so memory is that of the largest bucket."""
+    kept_all, hists = [], []
+    for bucket in a.bucket:
+        files = [str(Path(d) / f"b{bucket:03d}.parquet") for d in a.dirs]
+        df = pl.concat([pl.read_parquet(f) for f in files])
+        g = df.group_by("anchor").agg(pl.col("species_idx").n_unique().alias("n_species"))
+        hists.append(g.group_by("n_species").len())
+        kept_all.append(g.filter(pl.col("n_species") >= MIN_SPECIES_FOR_ANY_LABELLING)["anchor"].to_numpy())
+        del df, g
+    hist = pl.concat(hists).group_by("n_species").agg(pl.col("len").sum()).sort("n_species")
+    np.save(a.out, np.sort(np.concatenate(kept_all)).astype(np.uint64))
     hist.write_parquet(a.hist)
 
 
@@ -1004,7 +1010,7 @@ def main(argv: list[str] | None = None) -> None:
     s.set_defaults(func=cmd_anchors)
 
     s = sub.add_parser("candidates")
-    s.add_argument("--bucket", type=int, required=True)
+    s.add_argument("--bucket", type=int, nargs="+", required=True)
     s.add_argument("--dirs", nargs="+", required=True)
     s.add_argument("--out", required=True)
     s.add_argument("--hist", required=True)

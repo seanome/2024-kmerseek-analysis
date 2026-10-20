@@ -143,30 +143,33 @@ process anchors {
 
 // Anchors in at least 15 species, one hash bucket at a time.
 process candidates {
-    tag "${setting} b${bucket}"
+    tag "${setting} g${group}"
     label 'python'
     // ~1e10 residues / 256 buckets ~ 4e7 (anchor, species) rows, 12 bytes each, plus the
-    // group-by: asked at 12 GB.
+    // group-by, one bucket at a time: asked at 12 GB.
     memory { "${12 * task.attempt} GB" }
-    time { "${1 * task.attempt}h" }
+    time { "${4 * task.attempt}h" }
     publishDir "${params.outdir}/candidates/${setting.replace(':', '_')}", mode: 'copy', pattern: '*.hist.parquet'
 
     input:
-    tuple val(setting), val(bucket), path(dirs, stageAs: 'chunk???/*')
+    tuple val(setting), val(group), path(dirs, stageAs: 'chunk???/*')
 
     output:
-    tuple val(setting), path("cand_${bucket}.npy"), emit: cand
-    path "b${bucket}.hist.parquet", emit: hist
+    tuple val(setting), path("cand_${group}.npy"), emit: cand
+    path "g${group}.hist.parquet", emit: hist
 
     script:
+    // 16 of the 256 buckets per task: the scheduler's submit rate, not the work, set the
+    // pilot's time with one bucket per task.
+    def buckets = (group * 16..<(group + 1) * 16).join(' ')
     """
-    clade_splash.py candidates --bucket ${bucket} --dirs chunk*/anchors_* \\
-        --out cand_${bucket}.npy --hist b${bucket}.hist.parquet
+    clade_splash.py candidates --bucket ${buckets} --dirs chunk*/anchors_* \\
+        --out cand_${group}.npy --hist g${group}.hist.parquet
     """
 
     stub:
     """
-    touch cand_${bucket}.npy b${bucket}.hist.parquet
+    touch cand_${group}.npy g${group}.hist.parquet
     """
 }
 
@@ -476,7 +479,7 @@ workflow {
 
     an = anchors(fetched.map { c, fa, st -> [c, fa] }.combine(Channel.fromList(settings)))
 
-    buckets = Channel.fromList((0..<256).toList())
+    buckets = Channel.fromList((0..<16).toList())  // groups of 16 buckets
     candIn = an.dirs.groupTuple().combine(buckets).map { s, dirs, b -> [s, b, dirs] }
     cand = candidates(candIn)
 
