@@ -69,8 +69,7 @@ summarise:
 ## compute budget. Run on Sherlock after the last stage.
 cost:
 	@mkdir -p $(OUT)/work/results
-	sacct -u $$USER -S 2026-10-20 -X -P -o JobID,JobName,State,NCPUS,Elapsed,ElapsedRaw,TotalCPU,MaxRSS \
-	  | awk -F'|' 'NR==1 || $$2 ~ /^nb354-/' > $(OUT)/work/results/compute.tsv
+	python3 $(BIN)/collect_cost.py > $(OUT)/work/results/compute.tsv
 	@cat $(OUT)/work/results/compute.tsv
 
 ## Copy the small result tables to the notebook's data folder. Run on the laptop.

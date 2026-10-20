@@ -1,0 +1,501 @@
+method	call_id	case	recovered	list_length	n_candidates_before_check	top_score	accepted_rank	accepted_score	top_target	n_tied_at_top	confident
+massspec18_k8	scan462	present	False	0	0	0				0	
+massspec18_k8	scan862	present	True	2	2	79	1	79	O75369	1	
+massspec18_k8	scan1027	present	True	1	1	67	1	67	Q14643	1	
+massspec18_k8	scan1123	present	False	0	0	0				0	
+massspec18_k8	scan1136	present	False	0	0	0				0	
+massspec18_k8	scan1173	present	False	0	1	58	1	58	O60869	1	
+massspec18_k8	scan1311	present	True	1	1	84	1	84	P54577	1	
+massspec18_k8	scan2164	present	False	0	0	0				0	
+massspec18_k8	scan2422	present	True	1	1	73	1	73	P61981	1	
+massspec18_k8	scan2509	present	True	7	7	84	1	84	P60709	7	
+massspec18_k8	scan2862	present	False	0	2	59	1	59	P0DMV9	2	
+massspec18_k8	scan3347	present	False	0	2	54	1	54	Q9H2M9	1	
+massspec18_k8	scan3384	present	True	1	1	63	1	63	P05787	1	
+massspec18_k8	scan3464	present	False	0	1	59	1	59	P39687	1	
+massspec18_k8	scan3572	present	True	2	2	63	1	63	P26038	2	
+massspec18_k8	scan3620	present	False	0	0	0				0	
+massspec18_k8	scan3989	present	True	1	1	82	1	82	P04843	1	
+massspec18_k8	scan4103	present	False	0	0	0				0	
+massspec18_k8	scan4504	present	False	0	1	61	1	61	Q9Y263	1	
+massspec18_k8	scan4539	present	False	0	1	56	1	56	P52888	1	
+massspec18_k8	scan4699	present	True	1	1	67	1	67	Q04637	1	
+massspec18_k8	scan4732	present	False	0	0	0				0	
+massspec18_k8	scan5007	present	False	0	0	0				0	
+massspec18_k8	scan5075	present	False	0	0	0				0	
+massspec18_k8	scan5099	present	False	0	1	59	1	59	P08621	1	
+massspec18_k8	scan5299	present	False	0	0	0				0	
+massspec18_k8	scan5307	present	True	3	3	73	1	73	P68104	3	
+massspec18_k8	scan5511	present	False	0	0	0				0	
+massspec18_k8	scan5630	present	False	0	0	0				0	
+massspec18_k8	scan5755	present	False	0	0	0				0	
+massspec18_k8	scan5775	present	False	0	0	0				0	
+massspec18_k8	scan6007	present	True	1	1	62	1	62	Q8IZL8	1	
+massspec18_k8	scan6158	present	True	1	1	63	1	63	P06748	1	
+massspec18_k8	scan6294	present	False	0	0	0				0	
+massspec18_k8	scan6393	present	True	1	1	89	1	89	P61978	1	
+massspec18_k8	scan6565	present	False	0	0	0				0	
+massspec18_k8	scan6966	present	True	1	1	69	1	69	P09012	1	
+massspec18_k8	scan7143	present	True	1	1	91	1	91	Q8WWI1	1	
+massspec18_k8	scan7210	present	True	1	1	64	1	64	P20073	1	
+massspec18_k8	scan7339	present	True	1	1	106	1	106	O00566	1	
+massspec18_k8	scan7442	present	False	0	0	0				0	
+massspec18_k8	scan7445	present	True	1	1	76	1	76	Q99615	1	
+massspec18_k8	scan7924	present	True	2	2	76	1	76	P04075	2	
+massspec18_k8	scan8335	present	True	1	1	80	1	80	Q14566	1	
+massspec18_k8	scan8453	present	True	1	1	69	1	69	Q13838	1	
+massspec18_k8	scan8577	present	True	1	1	64	1	64	P09496	1	
+massspec18_k8	scan8677	present	False	0	0	0				0	
+massspec18_k8	scan8928	present	False	0	3	60	1	60	P57721	3	
+massspec18_k8	scan9394	present	True	1	1	100	1	100	P05787	1	
+massspec18_k8	scan9592	present	True	1	1	77	1	77	P26038	1	
+massspec18_k8	scan9763	present	True	1	1	81	1	81	O75390	1	
+massspec18_k8	scan9857	present	True	1	1	95	1	95	O15427	1	
+massspec18_k8	scan9878	present	False	0	0	0				0	
+massspec18_k8	scan9895	present	False	0	0	0				0	
+massspec18_k8	scan10008	present	True	1	1	62	1	62	Q02218	1	
+massspec18_k8	scan10303	present	True	1	1	70	1	70	P18124	1	
+massspec18_k8	scan10413	present	False	0	0	0				0	
+massspec18_k8	scan10427	present	False	0	0	0				0	
+massspec18_k8	scan10449	present	False	0	0	0				0	
+massspec18_k8	scan10582	present	True	2	2	63	2	63	Q9BQ39	2	
+massspec18_k8	scan10599	present	False	0	1	59			Q9UKR5	1	
+massspec18_k8	scan10673	present	False	0	0	0				0	
+massspec18_k8	scan10787	present	True	1	1	76	1	76	P05198	1	
+massspec18_k8	scan10863	present	False	0	0	0				0	
+massspec18_k8	scan10918	present	True	1	1	90	1	90	O43809	1	
+massspec18_k8	scan11135	present	True	1	1	87	1	87	P50914	1	
+massspec18_k8	scan11155	present	False	0	0	0				0	
+massspec18_k8	scan11185	present	False	0	1	52	1	52	O75369	1	
+massspec18_k8	scan11262	present	True	2	2	92	1	92	P21291	1	
+massspec18_k8	scan11419	present	True	1	1	79	1	79	P02545	1	
+massspec18_k8	scan11514	present	False	0	0	0				0	
+massspec18_k8	scan11758	present	True	2	2	73	1	73	P08754	1	
+massspec18_k8	scan12180	present	False	0	0	0				0	
+massspec18_k8	scan12665	present	False	0	0	0				0	
+massspec18_k8	scan12681	present	True	1	1	62	1	62	P11142	1	
+massspec18_k8	scan13009	present	True	1	1	65	1	65	P35659	1	
+massspec18_k8	scan13188	present	False	0	0	0				0	
+massspec18_k8	scan13254	present	True	1	1	120	1	120	P38646	1	
+massspec18_k8	scan13264	present	True	2	2	81	1	81	P67809	1	
+massspec18_k8	scan13291	present	True	1	1	85	1	85	P53621	1	
+massspec18_k8	scan13354	present	True	1	1	74	1	74	Q9Y2T3	1	
+massspec18_k8	scan13458	present	True	1	1	125	1	125	Q96PK6	1	
+massspec18_k8	scan13581	present	False	0	0	0				0	
+massspec18_k8	scan13939	present	False	0	0	0				0	
+massspec18_k8	scan14187	present	False	0	0	0				0	
+massspec18_k8	scan14211	present	False	0	0	0				0	
+massspec18_k8	scan14242	present	True	1	1	95	1	95	O14548	1	
+massspec18_k8	scan14754	present	True	1	1	101	1	101	Q13409	1	
+massspec18_k8	scan14784	present	True	1	1	78	1	78	Q07955	1	
+massspec18_k8	scan14895	present	True	1	1	83	1	83	P23526	1	
+massspec18_k8	scan14965	present	False	0	0	0				0	
+massspec18_k8	scan15220	present	True	6	7	88	1	88	P11142	1	
+massspec18_k8	scan15359	present	True	1	1	127	1	127	P63244	1	
+massspec18_k8	scan15412	present	True	11	11	80	1	80	A5A3E0	10	
+massspec18_k8	scan15484	present	True	1	1	76	1	76	P30086	1	
+massspec18_k8	scan15548	present	True	1	1	65	1	65	Q07020	1	
+massspec18_k8	scan16236	present	True	1	1	75	1	75	Q04837	1	
+massspec18_k8	scan16284	present	True	1	1	101	1	101	P05387	1	
+massspec18_k8	scan16332	present	True	1	1	74	1	74	P21926	1	
+massspec18_k8	scan16343	present	True	1	1	76	1	76	P62826	1	
+massspec18_k8	scan16531	present	True	1	2	98	1	98	P00505	1	
+massspec18_k8	scan16556	present	False	0	0	0				0	
+massspec18_k8	scan16628	present	True	1	1	90	1	90	P38646	1	
+massspec18_k8	scan16630	present	True	1	1	110	1	110	Q96LD4	1	
+massspec18_k8	scan16746	present	False	0	0	0				0	
+massspec18_k8	scan16775	present	True	1	1	96	1	96	P43897	1	
+massspec18_k8	scan16912	present	False	0	1	57	1	57	Q9Y4L1	1	
+massspec18_k8	scan17194	present	True	1	1	69	1	69	P48047	1	
+massspec18_k8	scan17295	present	False	0	1	58	1	58	Q96AE4	1	
+massspec18_k8	scan17344	present	True	1	1	99	1	99	O60841	1	
+massspec18_k8	scan17651	present	True	1	1	89	1	89	P54577	1	
+massspec18_k8	scan17842	present	True	1	1	97	1	97	P11310	1	
+massspec18_k8	scan17854	present	True	2	2	67	1	67	O00148	2	
+massspec18_k8	scan17907	present	True	2	2	74	1	74	Q16555	1	
+massspec18_k8	scan17955	present	False	0	0	0				0	
+massspec18_k8	scan18476	present	True	1	1	108	1	108	P38646	1	
+massspec18_k8	scan18638	present	True	1	1	71	1	71	Q15046	1	
+massspec18_k8	scan18830	present	True	2	2	71	1	71	Q5JWF2	1	
+massspec18_k8	scan18839	present	True	1	1	76	1	76	Q8IUD2	1	
+massspec18_k8	scan19109	present	True	1	1	124	1	124	P57740	1	
+massspec18_k8	scan19437	present	False	0	0	0				0	
+massspec18_k8	scan19447	present	False	0	0	0				0	
+massspec18_k8	scan19557	present	True	1	1	92	1	92	Q96HS1	1	
+massspec18_k8	scan19580	present	False	0	0	0				0	
+massspec18_k8	scan19918	present	False	1	1	64			Q9ULH4	1	
+massspec18_k8	scan20032	present	True	1	1	86	1	86	O75396	1	
+massspec18_k8	scan20089	present	True	1	1	88	1	88	Q6KC79	1	
+massspec18_k8	scan20281	present	True	1	1	65	1	65	P47712	1	
+massspec18_k8	scan21062	present	True	3	3	114	1	114	P04075	2	
+massspec18_k8	scan21246	present	True	1	1	110	1	110	P61313	1	
+massspec18_k8	scan21386	present	True	13	13	94	1	94	P60709	2	
+massspec18_k8	scan21753	present	False	0	1	60	1	60	Q02978	1	
+massspec18_k8	scan22023	present	True	1	1	62	1	62	Q6P2Q9	1	
+massspec18_k8	scan22110	present	True	1	1	75	1	75	P11586	1	
+massspec18_k8	scan22525	present	True	1	1	82	1	82	P78527	1	
+massspec18_k8	scan22620	present	True	1	1	91	1	91	P31327	1	
+massspec18_k8	scan22757	present	True	2	3	98	1	98	O75828	2	
+massspec18_k8	scan22762	present	True	16	17	63	2	63	A0A2R8Y619	16	
+massspec18_k8	scan22801	present	True	1	1	128	1	128	O95373	1	
+massspec18_k8	scan22823	present	True	1	1	106	1	106	P53621	1	
+massspec18_k8	scan22831	present	True	1	1	111	1	111	Q14566	1	
+massspec18_k8	scan23004	present	True	1	1	133	1	133	P04843	1	
+massspec18_k8	scan23078	present	True	1	1	88	1	88	Q14204	1	
+massspec18_k8	scan23194	present	True	1	1	98	1	98	P62805	1	
+massspec18_k8	scan23265	present	True	1	1	94	1	94	Q14204	1	
+massspec18_k8	scan23281	present	True	2	2	136	2	136	O95757	2	
+massspec18_k8	scan23615	present	True	1	1	158	1	158	P78527	1	
+massspec18_k8	scan23839	present	True	2	2	70	1	70	P09525	1	
+massspec18_k8	scan23923	present	True	2	2	85	1	85	O75874	1	
+massspec18_k8	scan24509	present	True	2	2	67	1	67	P62937	2	
+massspec18_k8	scan24543	present	True	1	1	129	1	129	Q9Y2L1	1	
+massspec18_k8	scan24686	present	True	2	2	116	1	116	P11169	2	
+massspec18_k8	scan25067	present	True	1	1	111	1	111	P60903	1	
+massspec18_k8	scan25107	present	False	0	0	0				0	
+massspec18_k8	scan25178	present	True	2	3	71	1	71	P60842	2	
+massspec18_k8	scan25185	present	True	1	1	75	1	75	Q13451	1	
+massspec18_k8	scan25317	present	True	1	1	107	1	107	P56182	1	
+massspec18_k8	scan25376	present	True	1	1	122	1	122	Q16543	1	
+massspec18_k8	scan25616	present	True	1	1	128	1	128	P48643	1	
+massspec18_k8	scan26071	present	True	1	1	95	1	95	Q9UPQ0	1	
+massspec18_k8	scan26462	present	True	1	1	96	1	96	P33992	1	
+massspec18_k8	scan26613	present	True	1	1	85	1	85	Q9BZE4	1	
+massspec18_k8	scan26681	present	True	2	3	71	1	71	P08670	1	
+massspec18_k8	scan26787	present	True	1	4	70	1	70	P05141	1	
+massspec18_k8	scan26798	present	True	4	4	147	1	147	P09972	1	
+massspec18_k8	scan26903	present	True	1	1	125	1	125	P78527	1	
+massspec18_k8	scan26970	present	True	1	1	82	1	82	Q92688	1	
+massspec18_k8	scan26989	present	True	1	2	129	1	129	Q15233	1	
+massspec18_k8	scan27012	present	True	1	1	128	1	128	Q9UIG0	1	
+massspec18_k8	scan27430	present	True	2	2	143	1	143	P50395	1	
+massspec18_k8	scan27440	present	True	1	2	112	1	112	P12956	1	
+massspec18_k8	scan27453	present	True	2	2	165	1	165	P11310	1	
+massspec18_k8	scan27516	present	True	1	1	131	1	131	P62263	1	
+massspec18_k8	scan27703	present	False	0	0	0				0	
+massspec18_k8	scan27715	present	True	4	4	100	1	100	P07910	1	
+massspec18_k8	scan27767	present	True	1	1	112	1	112	P82912	1	
+massspec18_k8	scan28177	present	True	1	1	107	1	107	Q9Y3E5	1	
+massspec18_k8	scan28242	present	True	1	2	122	1	122	P09661	1	
+massspec18_k8	scan28348	present	True	1	1	69	1	69	P49368	1	
+massspec18_k8	scan28560	present	True	1	1	121	1	121	Q8TAQ2	1	
+massspec18_k8	scan28597	present	True	1	1	104	1	104	Q8WUM0	1	
+massspec18_k8	scan28623	present	True	1	1	124	1	124	P50991	1	
+massspec18_k8	scan28906	present	False	0	0	0				0	
+massspec18_k8	scan28917	present	False	0	0	0				0	
+massspec18_k8	scan28928	present	True	1	1	94	1	94	P00492	1	
+massspec18_k8	scan29397	present	True	2	2	80	1	80	Q13619	2	
+massspec18_k8	scan29651	present	True	1	1	96	1	96	O75369	1	
+massspec18_k8	scan29749	present	True	1	1	85	1	85	Q8NCW5	1	
+massspec18_k8	scan29929	present	True	8	8	98	1	98	P60709	2	
+massspec18_k8	scan30173	present	True	1	1	128	1	128	Q04837	1	
+massspec18_k8	scan30649	present	True	1	1	131	1	131	Q00839	1	
+massspec18_k8	scan30830	present	True	1	1	97	1	97	Q8N7H5	1	
+massspec18_k8	scan31422	present	True	1	1	95	1	95	P50991	1	
+massspec18_k8	scan32311	present	True	1	1	69	1	69	P49588	1	
+massspec18_k8	scan32515	present	True	3	3	76	1	76	A6NIZ1	3	
+massspec18_k8	scan32721	present	True	1	1	124	1	124	Q8NC51	1	
+massspec18_k8	scan33344	present	True	1	1	117	1	117	P78527	1	
+massspec18_k8	scan34224	present	True	1	1	79	1	79	Q14137	1	
+massspec18_k8	scan34514	present	True	1	1	82	1	82	Q7Z4Q2	1	
+massspec18_k8	scan38947	present	False	0	0	0				0	
+massspec18_k8	scan1165	absent		0		0				0	False
+massspec18_k8	scan2566	absent		0		0				0	False
+massspec18_k8	scan3012	absent		0		0				0	False
+massspec18_k8	scan4853	absent		0		0				0	False
+massspec18_k8	scan4872	absent		0		0				0	False
+massspec18_k8	scan4887	absent		0		56			O95447	1	False
+massspec18_k8	scan5187	absent		0		0				0	False
+massspec18_k8	scan5380	absent		1		89			P04899	1	True
+massspec18_k8	scan5807	absent		0		0				0	False
+massspec18_k8	scan6464	absent		0		0				0	False
+massspec18_k8	scan6620	absent		0		0				0	False
+massspec18_k8	scan6965	absent		0		0				0	False
+massspec18_k8	scan7199	absent		0		0				0	False
+massspec18_k8	scan7592	absent		0		0				0	False
+massspec18_k8	scan7822	absent		0		0				0	False
+massspec18_k8	scan9051	absent		0		59			Q9H0E9	1	False
+massspec18_k8	scan9611	absent		0		0				0	False
+massspec18_k8	scan9769	absent		0		0				0	False
+massspec18_k8	scan11238	absent		0		0				0	False
+massspec18_k8	scan11568	absent		1		62			Q8N3F9	1	True
+massspec18_k8	scan12397	absent		0		0				0	False
+massspec18_k8	scan12479	absent		0		0				0	False
+massspec18_k8	scan13429	absent		0		0				0	False
+massspec18_k8	scan14894	absent		1		85			Q96I24	1	True
+massspec18_k8	scan14943	absent		0		0				0	False
+massspec18_k8	scan15711	absent		0		0				0	False
+massspec18_k8	scan16433	absent		0		0				0	False
+massspec18_k8	scan16438	absent		0		0				0	False
+massspec18_k8	scan17105	absent		0		0				0	False
+massspec18_k8	scan17281	absent		0		0				0	False
+massspec18_k8	scan17388	absent		0		0				0	False
+massspec18_k8	scan18187	absent		0		0				0	False
+massspec18_k8	scan18206	absent		0		0				0	False
+massspec18_k8	scan18654	absent		0		0				0	False
+massspec18_k8	scan19780	absent		0		0				0	False
+massspec18_k8	scan20534	absent		0		0				0	False
+massspec18_k8	scan22218	absent		0		0				0	False
+massspec18_k8	scan22265	absent		0		0				0	False
+massspec18_k8	scan22406	absent		0		0				0	False
+massspec18_k8	scan22643	absent		0		0				0	False
+massspec18_k8	scan23791	absent		0		0				0	False
+massspec18_k8	scan24169	absent		0		0				0	False
+massspec18_k8	scan24492	absent		0		0				0	False
+massspec18_k8	scan24806	absent		4		73			Q08752	1	True
+massspec18_k8	scan24820	absent		0		0				0	False
+massspec18_k8	scan26439	absent		0		61			Q9P281	1	False
+massspec18_k8	scan26659	absent		0		0				0	False
+massspec18_k8	scan27310	absent		0		0				0	False
+massspec18_k8	scan28825	absent		0		0				0	False
+massspec18_k8	scan29642	absent		0		0				0	False
+comparison	scan462	present	False	0	37	51			Q8IV33	1	
+comparison	scan862	present	True	3	497	79	1	79	O75369	1	
+comparison	scan1027	present	True	1	362	67	1	67	Q14643	1	
+comparison	scan1123	present	False	0	355	60	1	60	Q8TF64	1	
+comparison	scan1136	present	False	0	123	51	1	51	P50914	1	
+comparison	scan1173	present	False	0	198	58	1	58	O60869	1	
+comparison	scan1311	present	True	1	241	84	1	84	P54577	1	
+comparison	scan2164	present	False	0	500	47	1	47	P61513	1	
+comparison	scan2422	present	True	1	368	73	1	73	P61981	1	
+comparison	scan2509	present	True	7	500	84	1	84	P60709	7	
+comparison	scan2862	present	False	0	58	59	2	59	P0DMV8	3	
+comparison	scan3347	present	False	0	500	54	1	54	Q9H2M9	1	
+comparison	scan3384	present	False	0	89	63	1	63	P05787	1	
+comparison	scan3464	present	False	0	48	59	1	59	P39687	1	
+comparison	scan3572	present	False	0	108	63	1	63	P26038	2	
+comparison	scan3620	present	False	0	460	44			Q96CS3	1	
+comparison	scan3989	present	True	1	118	82	1	82	P04843	1	
+comparison	scan4103	present	False	0	447	48	2	47	Q8IWY4	1	
+comparison	scan4504	present	False	0	500	61	1	61	Q9Y263	1	
+comparison	scan4539	present	False	0	239	56	1	56	P52888	1	
+comparison	scan4699	present	True	1	71	67	1	67	Q04637	1	
+comparison	scan4732	present	False	0	302	52	19	42	Q13451	1	
+comparison	scan5007	present	False	0	407	50			Q96NL6	1	
+comparison	scan5075	present	False	0	313	51	1	51	P39023	2	
+comparison	scan5099	present	False	0	361	59	1	59	P08621	1	
+comparison	scan5299	present	False	0	203	45	5	45	P02771	8	
+comparison	scan5307	present	True	3	500	73	1	73	P68104	3	
+comparison	scan5511	present	False	0	219	53	1	53	Q99575	1	
+comparison	scan5630	present	False	0	271	43	1	43	P35637	2	
+comparison	scan5755	present	False	0	201	43	1	43	P62888	3	
+comparison	scan5775	present	False	0	460	48	2	48	O75616	4	
+comparison	scan6007	present	False	0	441	62	1	62	Q8IZL8	1	
+comparison	scan6158	present	False	0	168	63	1	63	P06748	1	
+comparison	scan6294	present	False	0	165	59	1	59	P31327	1	
+comparison	scan6393	present	True	1	246	89	1	89	P61978	1	
+comparison	scan6565	present	False	0	216	47	1	47	P68104	4	
+comparison	scan6966	present	True	1	243	69	1	69	P09012	1	
+comparison	scan7143	present	True	1	446	91	1	91	Q8WWI1	1	
+comparison	scan7210	present	False	0	449	64	1	64	P20073	1	
+comparison	scan7339	present	True	1	227	106	1	106	O00566	1	
+comparison	scan7442	present	False	0	223	52	1	52	P14866	2	
+comparison	scan7445	present	True	1	126	76	1	76	Q99615	1	
+comparison	scan7924	present	True	2	499	76	1	76	P04075	2	
+comparison	scan8335	present	True	1	67	80	1	80	Q14566	1	
+comparison	scan8453	present	True	1	500	69	1	69	Q13838	1	
+comparison	scan8577	present	False	0	120	64	1	64	P09496	1	
+comparison	scan8677	present	False	0	218	50	1	50	Q9BVL2	1	
+comparison	scan8928	present	False	0	147	60	1	60	P57721	3	
+comparison	scan9394	present	True	1	125	100	1	100	P05787	1	
+comparison	scan9592	present	True	1	367	77	1	77	P26038	1	
+comparison	scan9763	present	True	1	482	81	1	81	O75390	1	
+comparison	scan9857	present	True	1	336	95	1	95	O15427	1	
+comparison	scan9878	present	False	0	479	44			P54868	2	
+comparison	scan9895	present	False	0	166	40	9	40	A0A1B0GUW6	26	
+comparison	scan10008	present	False	0	500	62	1	62	Q02218	1	
+comparison	scan10303	present	True	1	500	70	1	70	P18124	1	
+comparison	scan10413	present	False	0	285	37	8	37	O43424	38	
+comparison	scan10427	present	False	0	200	41	11	41	A6NK89	44	
+comparison	scan10449	present	False	0	210	55	1	55	Q9P2J5	1	
+comparison	scan10582	present	False	0	195	63	2	63	Q9BQ39	2	
+comparison	scan10599	present	False	0	110	59	3	44	Q9UKR5	1	
+comparison	scan10673	present	False	0	500	46	51	34	Q5JPB2	1	
+comparison	scan10787	present	True	1	500	76	1	76	P05198	1	
+comparison	scan10863	present	False	0	404	44	14	39	O75121	6	
+comparison	scan10918	present	True	1	98	90	1	90	O43809	1	
+comparison	scan11135	present	True	1	500	87	1	87	P50914	1	
+comparison	scan11155	present	False	0	485	41	13	37	P11802	1	
+comparison	scan11185	present	False	0	344	52	1	52	O75369	1	
+comparison	scan11262	present	True	3	500	92	1	92	P21291	1	
+comparison	scan11419	present	True	1	446	79	1	79	P02545	1	
+comparison	scan11514	present	False	0	145	49	2	49	Q96HB5	2	
+comparison	scan11758	present	True	1	395	73	1	73	P08754	1	
+comparison	scan12180	present	False	0	441	42	1	42	P0CG47	9	
+comparison	scan12665	present	False	0	204	52			P28356	1	
+comparison	scan12681	present	False	0	295	62	1	62	P11142	1	
+comparison	scan13009	present	False	0	343	65	1	65	P35659	1	
+comparison	scan13188	present	False	0	79	43			P22003	3	
+comparison	scan13254	present	True	1	211	120	1	120	P38646	1	
+comparison	scan13264	present	True	2	453	81	1	81	P67809	1	
+comparison	scan13291	present	True	1	189	85	1	85	P53621	1	
+comparison	scan13354	present	True	1	500	74	1	74	Q9Y2T3	1	
+comparison	scan13458	present	False	0	394	49			O43151	1	
+comparison	scan13581	present	False	0	47	50	1	50	P68431	6	
+comparison	scan13939	present	False	0	141	43	1	43	P30405	3	
+comparison	scan14187	present	False	0	104	44			O75380	1	
+comparison	scan14211	present	False	0	278	45	1	45	P49589	2	
+comparison	scan14242	present	True	1	405	95	1	95	O14548	1	
+comparison	scan14754	present	True	1	166	101	1	101	Q13409	1	
+comparison	scan14784	present	True	1	314	78	1	78	Q07955	1	
+comparison	scan14895	present	True	1	446	83	1	83	P23526	1	
+comparison	scan14965	present	False	0	139	60	1	60	Q86VI4	1	
+comparison	scan15220	present	True	6	197	88	1	88	P11142	1	
+comparison	scan15359	present	True	1	318	127	1	127	P63244	1	
+comparison	scan15412	present	True	10	500	80	1	80	A5A3E0	10	
+comparison	scan15484	present	True	1	174	76	1	76	P30086	1	
+comparison	scan15548	present	False	0	269	65	1	65	Q07020	1	
+comparison	scan16236	present	True	1	177	75	1	75	Q04837	1	
+comparison	scan16284	present	True	1	98	101	1	101	P05387	1	
+comparison	scan16332	present	True	1	344	74	1	74	P21926	1	
+comparison	scan16343	present	True	1	239	76	1	76	P62826	1	
+comparison	scan16531	present	True	1	381	98	1	98	P00505	1	
+comparison	scan16556	present	False	0	213	58	1	58	Q9Y4L1	1	
+comparison	scan16628	present	True	1	220	90	1	90	P38646	1	
+comparison	scan16630	present	True	1	289	110	1	110	Q96LD4	1	
+comparison	scan16746	present	False	0	363	46	116	32	Q99259	1	
+comparison	scan16775	present	True	1	218	96	1	96	P43897	1	
+comparison	scan16912	present	False	0	315	57	1	57	Q9Y4L1	1	
+comparison	scan17194	present	True	1	262	69	1	69	P48047	1	
+comparison	scan17295	present	False	0	96	58	1	58	Q96AE4	1	
+comparison	scan17344	present	True	1	231	99	1	99	O60841	1	
+comparison	scan17651	present	True	1	252	89	1	89	P54577	1	
+comparison	scan17842	present	True	1	95	97	1	97	P11310	1	
+comparison	scan17854	present	True	2	73	67	1	67	O00148	2	
+comparison	scan17907	present	True	2	462	74	1	74	Q16555	1	
+comparison	scan17955	present	True	3	86	74	3	66	P09493	1	
+comparison	scan18476	present	True	1	287	108	1	108	P38646	1	
+comparison	scan18638	present	True	1	108	71	1	71	Q15046	1	
+comparison	scan18830	present	True	1	168	71	1	71	Q5JWF2	1	
+comparison	scan18839	present	True	1	79	76	1	76	Q8IUD2	1	
+comparison	scan19109	present	True	1	57	124	1	124	P57740	1	
+comparison	scan19437	present	False	0	402	51			Q13370	1	
+comparison	scan19447	present	False	0	383	54			Q99996	1	
+comparison	scan19557	present	True	1	369	92	1	92	Q96HS1	1	
+comparison	scan19580	present	True	1	135	71	1	71	P82914	1	
+comparison	scan19918	present	False	0	131	56			P78559	2	
+comparison	scan20032	present	True	1	110	86	1	86	O75396	1	
+comparison	scan20089	present	True	1	193	88	1	88	Q6KC79	1	
+comparison	scan20281	present	False	0	188	65	1	65	P47712	1	
+comparison	scan21062	present	True	4	148	114	1	114	P04075	2	
+comparison	scan21246	present	True	1	222	110	1	110	P61313	1	
+comparison	scan21386	present	True	14	265	94	1	94	P60709	2	
+comparison	scan21753	present	False	0	358	60	1	60	Q02978	1	
+comparison	scan22023	present	False	0	251	62	1	62	Q6P2Q9	1	
+comparison	scan22110	present	True	1	500	75	1	75	P11586	1	
+comparison	scan22525	present	True	1	249	82	1	82	P78527	1	
+comparison	scan22620	present	True	1	369	91	1	91	P31327	1	
+comparison	scan22757	present	True	2	133	98	1	98	O75828	2	
+comparison	scan22762	present	False	0	133	63	2	63	A0A2R8Y619	16	
+comparison	scan22801	present	True	1	188	128	1	128	O95373	1	
+comparison	scan22823	present	True	1	267	106	1	106	P53621	1	
+comparison	scan22831	present	True	1	85	111	1	111	Q14566	1	
+comparison	scan23004	present	True	1	179	133	1	133	P04843	1	
+comparison	scan23078	present	True	1	240	88	1	88	Q14204	1	
+comparison	scan23194	present	True	2	380	98	1	98	P62805	1	
+comparison	scan23265	present	True	1	172	94	1	94	Q14204	1	
+comparison	scan23281	present	True	3	197	136	2	136	O95757	2	
+comparison	scan23615	present	True	1	109	158	1	158	P78527	1	
+comparison	scan23839	present	True	1	129	70	1	70	P09525	1	
+comparison	scan23923	present	True	2	271	85	1	85	O75874	1	
+comparison	scan24509	present	True	2	195	67	1	67	P62937	2	
+comparison	scan24543	present	True	1	123	129	1	129	Q9Y2L1	1	
+comparison	scan24686	present	True	3	135	116	1	116	P11169	2	
+comparison	scan25067	present	True	1	185	111	1	111	P60903	1	
+comparison	scan25107	present	False	0	160	56	4	50	P0CG38	3	
+comparison	scan25178	present	True	2	251	71	1	71	P60842	2	
+comparison	scan25185	present	True	1	256	75	1	75	Q13451	1	
+comparison	scan25317	present	True	1	136	107	1	107	P56182	1	
+comparison	scan25376	present	True	1	334	122	1	122	Q16543	1	
+comparison	scan25616	present	True	1	443	128	1	128	P48643	1	
+comparison	scan26071	present	True	2	500	95	1	95	Q9UPQ0	1	
+comparison	scan26462	present	True	1	330	96	1	96	P33992	1	
+comparison	scan26613	present	True	1	130	85	1	85	Q9BZE4	1	
+comparison	scan26681	present	True	1	62	71	1	71	P08670	1	
+comparison	scan26787	present	True	1	476	70	1	70	P05141	1	
+comparison	scan26798	present	True	4	258	147	1	147	P09972	1	
+comparison	scan26903	present	True	1	78	125	1	125	P78527	1	
+comparison	scan26970	present	True	1	253	82	1	82	Q92688	1	
+comparison	scan26989	present	True	1	462	129	1	129	Q15233	1	
+comparison	scan27012	present	True	1	118	128	1	128	Q9UIG0	1	
+comparison	scan27430	present	True	2	174	143	1	143	P50395	1	
+comparison	scan27440	present	True	1	165	112	1	112	P12956	1	
+comparison	scan27453	present	True	2	123	165	1	165	P11310	1	
+comparison	scan27516	present	True	1	174	131	1	131	P62263	1	
+comparison	scan27703	present	False	0	160	59	1	59	Q9H4A6	1	
+comparison	scan27715	present	True	6	137	100	1	100	P07910	1	
+comparison	scan27767	present	True	1	145	112	1	112	P82912	1	
+comparison	scan28177	present	True	1	203	107	1	107	Q9Y3E5	1	
+comparison	scan28242	present	True	1	197	122	1	122	P09661	1	
+comparison	scan28348	present	True	1	132	69	1	69	P49368	1	
+comparison	scan28560	present	True	2	148	121	1	121	Q8TAQ2	1	
+comparison	scan28597	present	True	1	275	104	1	104	Q8WUM0	1	
+comparison	scan28623	present	True	1	314	124	1	124	P50991	1	
+comparison	scan28906	present	False	0	145	49			Q9H0A8	1	
+comparison	scan28917	present	True	1	118	78	1	78	P36578	1	
+comparison	scan28928	present	True	1	187	94	1	94	P00492	1	
+comparison	scan29397	present	True	2	117	80	1	80	Q13619	2	
+comparison	scan29651	present	True	1	435	96	1	96	O75369	1	
+comparison	scan29749	present	True	1	145	85	1	85	Q8NCW5	1	
+comparison	scan29929	present	True	12	303	98	1	98	P60709	2	
+comparison	scan30173	present	True	1	191	128	1	128	Q04837	1	
+comparison	scan30649	present	True	2	115	131	1	131	Q00839	1	
+comparison	scan30830	present	True	1	500	97	1	97	Q8N7H5	1	
+comparison	scan31422	present	True	1	314	95	1	95	P50991	1	
+comparison	scan32311	present	True	1	306	69	1	69	P49588	1	
+comparison	scan32515	present	True	3	219	76	1	76	A6NIZ1	3	
+comparison	scan32721	present	True	2	139	124	1	124	Q8NC51	1	
+comparison	scan33344	present	True	1	118	117	1	117	P78527	1	
+comparison	scan34224	present	True	1	103	79	1	79	Q14137	1	
+comparison	scan34514	present	True	1	95	82	1	82	Q7Z4Q2	1	
+comparison	scan38947	present	False	0	225	56			Q92674	1	
+comparison	scan1165	absent		0		45			A8MWY0	2	False
+comparison	scan2566	absent		0		45			P06737	3	False
+comparison	scan3012	absent		0		49			O00472	1	False
+comparison	scan4853	absent		0		46			Q8NCQ7	1	False
+comparison	scan4872	absent		0		45			Q96CT2	3	False
+comparison	scan4887	absent		0		60			B2RXH8	4	False
+comparison	scan5187	absent		0		38			Q9Y2R4	1	False
+comparison	scan5380	absent		2		89			P04899	1	True
+comparison	scan5807	absent		0		49			Q8N4X5	1	False
+comparison	scan6464	absent		0		45			O95782	2	False
+comparison	scan6620	absent		0		54			Q6KC79	1	False
+comparison	scan6965	absent		0		49			Q8N584	2	False
+comparison	scan7199	absent		0		49			P50570	3	False
+comparison	scan7592	absent		0		58			P12268	1	False
+comparison	scan7822	absent		0		49			Q9NQT8	1	False
+comparison	scan9051	absent		0		59			Q9H0E9	1	False
+comparison	scan9611	absent		1		67			Q8NBM8	1	True
+comparison	scan9769	absent		0		46			Q76LX8	1	False
+comparison	scan11238	absent		0		46			Q12767	1	False
+comparison	scan11568	absent		0		65			P31268	1	False
+comparison	scan12397	absent		0		49			O75970	1	False
+comparison	scan12479	absent		0		48			Q92620	1	False
+comparison	scan13429	absent		0		53			Q9NR30	1	False
+comparison	scan14894	absent		2		85			Q96I24	1	True
+comparison	scan14943	absent		0		54			Q9P2F8	1	False
+comparison	scan15711	absent		0		58			Q86TB3	1	False
+comparison	scan16433	absent		0		50			Q8WVM7	1	False
+comparison	scan16438	absent		0		57			Q6ZUG5	1	False
+comparison	scan17105	absent		0		53			O14678	2	False
+comparison	scan17281	absent		0		54			Q7Z2K8	1	False
+comparison	scan17388	absent		0		51			Q92736	1	False
+comparison	scan18187	absent		0		51			P98164	1	False
+comparison	scan18206	absent		0		52			Q15173	1	False
+comparison	scan18654	absent		0		62			O00469	2	False
+comparison	scan19780	absent		0		51			Q01668	1	False
+comparison	scan20534	absent		0		59			P17987	1	False
+comparison	scan22218	absent		0		51			Q8WXE0	1	False
+comparison	scan22265	absent		4		83			Q13885	3	True
+comparison	scan22406	absent		0		53			Q5VTH9	1	False
+comparison	scan22643	absent		0		48			Q96E35	1	False
+comparison	scan23791	absent		0		51			Q8NCL9	1	False
+comparison	scan24169	absent		1		75			P17844	1	True
+comparison	scan24492	absent		0		49			Q8IVF4	1	False
+comparison	scan24806	absent		3		73			Q08752	1	True
+comparison	scan24820	absent		0		55			Q9P032	1	False
+comparison	scan26439	absent		0		61			Q9P281	1	False
+comparison	scan26659	absent		0		62			O60890	1	False
+comparison	scan27310	absent		0		52			O95704	3	False
+comparison	scan28825	absent		0		58			Q8IYH5	1	False
+comparison	scan29642	absent		0		61			Q9H254	1	False
