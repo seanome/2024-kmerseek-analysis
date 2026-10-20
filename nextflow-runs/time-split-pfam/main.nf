@@ -447,7 +447,10 @@ process scoreTransfers {
     // The pilot's three attempts were killed at 64 GB (exit 137, jobs 47815380, 47815901,
     // 47816673); `make score-partial` on the same searches peaked at 21 GB RSS on 100 GB.
     memory '100 GB'
-    time '8h'
+    // The full run's scoring read 328 GB of kmerseek output in 3 h 47 min (87 GB an hour,
+    // 2026-10-20), and the whole input is 695 GB, so 8 h could not finish; 24 h covers it
+    // with room, doubled on retry and capped at the 48 h a hns,normal job may ask.
+    time { "${Math.min(24 * task.attempt, 48)}h" }
 
     input:
     path kmerseek_files, stageAs: 'kmerseek/*'
