@@ -4,7 +4,7 @@
 SHERLOCK_HOST ?= sherlock
 ON_CLUSTER := $(shell [ -n "$$SCRATCH" ] && [ -d "$$SCRATCH" ] && echo yes)
 
-.PHONY: help running leaderboard-tables leaderboard-fetch
+.PHONY: help running leaderboard-tables leaderboard-fetch leaderboard-timetree
 
 help:
 	@echo "Sherlock:"
@@ -59,6 +59,12 @@ leaderboard-fetch:
 	  > $(LEADERBOARD_DATA)/.fetch-list.txt
 	pixi exec rsync -a --files-from=$(LEADERBOARD_DATA)/.fetch-list.txt \
 	  "$(SHERLOCK_DTN):/scratch/users/olgabot/" $(LEADERBOARD_DATA)/
+
+## TimeTree's divergence time from human for each QfO relative; leaderboard-tables reads it.
+leaderboard-timetree:
+	$(LEADERBOARD_PYTHON) scripts/fetch_timetree_human_pairwise.py \
+	  --species nextflow-runs/qfo-pfam-region-benchmark/assets/qfo_species.tsv \
+	  --out results/leaderboard/timetree_human_pairwise.tsv
 
 leaderboard-tables:
 	$(LEADERBOARD_PYTHON) scripts/build_leaderboard_long.py \
