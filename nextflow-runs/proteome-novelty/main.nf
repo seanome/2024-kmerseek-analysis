@@ -251,7 +251,9 @@ process collect {
 import glob, json
 import polars as pl
 for name in ["curve", "last", "splits", "examples"]:
-    pl.concat([pl.read_parquet(f) for f in sorted(glob.glob(f"{name}/*.parquet"))], how="diagonal_relaxed").write_parquet(f"345_{name}.parquet")
+    files = sorted(glob.glob(f"{name}/*.parquet"))
+    if files:  # no examples in a sweep that does not count the primary setting
+        pl.concat([pl.read_parquet(f) for f in files], how="diagonal_relaxed").write_parquet(f"345_{name}.parquet")
 pl.DataFrame([json.load(open(f)) for f in sorted(glob.glob("fit/*.json"))]).write_parquet("345_fit.parquet")
 rows = []
 for f in sorted(glob.glob("summary/*.json")):
@@ -265,7 +267,8 @@ PY
 
     stub:
     """
-    touch 345_curve.parquet 345_last.parquet 345_splits.parquet 345_examples.parquet 345_fit.parquet 345_word_summary.parquet
+    touch 345_curve.parquet 345_last.parquet 345_splits.parquet 345_fit.parquet 345_word_summary.parquet
+    ${examples ? 'touch 345_examples.parquet' : ''}
     """
 }
 
@@ -315,5 +318,9 @@ workflow {
     )
 
     collect(rr.curve.collect(), rr.last.map { it[2] }.collect(), rr.splits.collect(),
-            rr.fit.collect(), cm.summary.collect(), ex.collect())
+            rr.fit.collect(), cm.summary.collect(),
+            // examples needs the primary setting's real words. A run without them (make
+            // run-sweep counts hp_pbotc_1st_ed k18-29, not k30) has no examples, and
+            // collect() on an empty channel emits nothing, so collect would never start.
+            ex.collect().ifEmpty([]))
 }
