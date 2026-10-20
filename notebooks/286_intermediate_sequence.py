@@ -347,6 +347,10 @@ def setup() -> None:
 
 def step1(workers: int) -> None:
     setup()
+    done = OUT / "step1" / "regions.parquet"
+    if done.exists():
+        print(f"step1: done before ({done})", file=sys.stderr, flush=True)
+        return
     qs = queries()
     (OUT / "queries.fa").write_text("".join(f">{h}\n{s}\n" for h, s in qs))
     folder = OUT / "step1" / "chunks"
@@ -363,9 +367,8 @@ def step1(workers: int) -> None:
     print(f"step1: {len(qs)} queries, {len(jobs)} chunks", file=sys.stderr, flush=True)
     if run_jobs(jobs, workers, OUT / "step1_timing.jsonl"):
         sys.exit("step1: some chunks failed; rerun to retry them")
-    pl.scan_parquet(folder / "*.parquet").sink_parquet(
-        OUT / "step1" / "regions.parquet"
-    )
+    pl.scan_parquet(folder / "*.parquet").sink_parquet(done.with_suffix(".tmp"))
+    done.with_suffix(".tmp").rename(done)
     shutil.rmtree(folder)
 
 
@@ -373,21 +376,55 @@ def best_per_target(lf: pl.LazyFrame) -> pl.LazyFrame:
     return lf.group_by("query_name", "target_name").agg(pl.col("region_evalue").min())
 
 
+# Settings left out of the check, because notebook 241's own table at them was not made
+# with the flags 241 recorded. hp_lehninger_hpc3 k21: 241's runs.jsonl and its .nofit
+# file say "no fit, exact regions", but its search log (2026-09-23 06:30) shows mismatch
+# penalty 0.87 / X-drop 3.46, and the driver kept that output (search_s 0.0). Notebook
+# 256's arms.json, 283's index rebuild (10-13) and this script all search it exact, and
+# 283's rebuild gives E = inf on the 4 pairs it changes here (Ced9 on GABRP and FAT1, P66
+# on VEZF1 and TEX101). The other 81 unfitted settings' logs all say "extension off".
+CHECK_SKIP_241 = {("hp_lehninger_hpc3", 21)}
+
+
 def check() -> None:
-    """Ced9's and P66's best E-value per human protein (E < 100) must equal notebook 241's."""
-    ours = best_per_target(
-        pl.scan_parquet(OUT / "step1" / "regions.parquet").filter(
+    """Ced9's and P66's best E-value per human protein (E < 100) must equal notebook 241's,
+    over every setting except CHECK_SKIP_241."""
+
+    def keep(alphabet: str, ksize: str) -> pl.Expr:
+        skip = pl.lit(False)
+        for a, k in CHECK_SKIP_241:
+            skip = skip | ((pl.col(alphabet) == a) & (pl.col(ksize) == k))
+        return (
             pl.col("query_name").is_in(list(PARTNERS))
             & (pl.col("region_evalue") < E_INCLUDE)
+            & ~skip
+        )
+
+    ours = best_per_target(
+        pl.scan_parquet(OUT / "step1" / "regions.parquet").filter(
+            keep("alphabet", "ksize")
         )
     )
     theirs = best_per_target(
         pl.scan_parquet(REGIONS_241)
+        .filter(keep("alphabet", "ksize_arm"))
+        .select("query_name", "target_name", "region_evalue")
+    )
+    n_skipped = (
+        pl.scan_parquet(REGIONS_241)
         .filter(
             pl.col("query_name").is_in(list(PARTNERS))
             & (pl.col("region_evalue") < E_INCLUDE)
+            & ~keep("alphabet", "ksize_arm")
         )
-        .select("query_name", "target_name", "region_evalue")
+        .select(pl.len())
+        .collect()
+        .item()
+    )
+    print(
+        f"check: left out {sorted(CHECK_SKIP_241)}, "
+        f"{n_skipped} of notebook 241's Ced9/P66 regions at E < {E_INCLUDE:g}",
+        file=sys.stderr,
     )
     j = ours.join(
         theirs,
