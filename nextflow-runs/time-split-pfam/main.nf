@@ -446,7 +446,11 @@ process scoreTransfers {
     cpus 4
     // The pilot's three attempts were killed at 64 GB (exit 137, jobs 47815380, 47815901,
     // 47816673); `make score-partial` on the same searches peaked at 21 GB RSS on 100 GB.
-    memory '100 GB'
+    // The full run's first attempt was killed at 100 GB (job 48631480, MaxRSS 104_840_420 KB,
+    // 2026-10-20) 319 of 342 files in: peak 55 GiB through uniprot18, then 93.5 and 97.6 GiB
+    // after wass14 k5 extend chunks 003 and 004, ~520 million rows each, five of them still
+    // to read. 256 GB is over twice the measured peak; doubled on retry, capped at 500.
+    memory { "${Math.min(256 * task.attempt, 500)} GB" }
     // The full run's scoring read 328 GB of kmerseek output in 3 h 47 min (87 GB an hour,
     // 2026-10-20), and the whole input is 695 GB, so 8 h could not finish; 24 h covers it
     // with room, doubled on retry and capped at the 48 h a hns,normal job may ask.
