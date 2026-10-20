@@ -455,6 +455,8 @@ params.prostt5_weights    = null
 // A longer protein is "not run" for ProstT5 and listed in <species>_prostt5_skipped.tsv.
 params.prostt5_max_len    = 6000
 params.prostt5_gpu        = true
+// Species whose ProstT5 3Di runs on CPU (16 cores, no GPU), comma-separated. Empty: all on GPU.
+params.prostt5_cpu_species = ''
 // Seeds every decoy (each protein's generator is seeded from this and its name).
 params.decoy_seed         = 0
 // The QfO region benchmark's --max-seqs for both tools.
@@ -2028,7 +2030,13 @@ workflow darkStructure {
 
     // ProstT5: every query under the length cap, and its dipeptide-shuffled copy.
     pfa = prostt5Fasta(proteome.map { sp, q -> tuple(sp, q, decoysPy) })
-    pdb = prostt5Db(pfa.flatMap { sp, r, d, _s -> [tuple(sp, 'real', r, weights), tuple(sp, 'decoy', d, weights)] }).db
+    // A species named in --prostt5_cpu_species runs its 3Di prediction on CPU instead of
+    // waiting for a GPU (added 2026-10-19, when the run's GPU jobs were estimated to start
+    // 18 h later).
+    def cpuSpecies = params.prostt5_cpu_species.toString().tokenize(',')*.trim().findAll { it }
+    def useGpu = { String sp -> (params.prostt5_gpu as boolean) && !(sp in cpuSpecies) }
+    pdb = prostt5Db(pfa.flatMap { sp, r, d, _s -> [tuple(sp, 'real', r, weights, useGpu(sp)),
+                                                   tuple(sp, 'decoy', d, weights, useGpu(sp))] }).db
     prostt5Search(chunks.combine(pdb, by: 0)
         .map { sp, cl, c, kind, q -> tuple(cl, sp, c, kind, q) }
         .combine(tdb, by: 0)

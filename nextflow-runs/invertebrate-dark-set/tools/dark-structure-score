@@ -139,7 +139,13 @@ def placement(struct_dir, ev_dir, out_dir, *species):
         for tool in TOOLS:
             run = ({a for a, r in cov.items() if r["has_model"] == "1"} if tool == "foldseek"
                    else set(proteome) - skipped)
-            real = read_hits(sorted(glob.glob(os.path.join(d, "%s.chunk_*.%s.tsv.gz" % (sp, tool)))))
+            real_files = sorted(glob.glob(os.path.join(d, "%s.chunk_*.%s.tsv.gz" % (sp, tool))))
+            if not real_files:
+                # Scoring Foldseek before ProstT5 has finished (or a species with no models)
+                # leaves this tool out instead of reading it as "searched, nothing found".
+                print("%s %s: no search output yet; not scored" % (sp, tool))
+                continue
+            real = read_hits(real_files)
             decoy = read_hits(sorted(glob.glob(os.path.join(d, "%s.chunk_*.%s_decoy.tsv.gz" % (sp, tool)))))
             stray = (set(real) | set(decoy)) - run
             if stray:

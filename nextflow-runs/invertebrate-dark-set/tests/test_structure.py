@@ -232,6 +232,34 @@ def _dark_set_accuracy(tmp_path):
     return out
 
 
+def test_afdb_query_models_with_placeholder_archive(tmp_path):
+    """The run's Borrelia and Botryllus tasks got archives/NO_ARCHIVE (job 48521315)."""
+    (tmp_path / "archives").mkdir()
+    (tmp_path / "archives" / "NO_ARCHIVE").write_text(open(os.path.join(PIPE, "assets", "NO_ARCHIVE")).read())
+    fa = tmp_path / "q.fasta"
+    fa.write_text(">O51076\nMGERG\n>FUN000001_FUN000001\nMKK\n")
+    extra = tmp_path / "extra"
+    extra.mkdir()
+    (extra / "AF-O51076-F1-model_v6.cif").write_text("data_x\n")
+    out = tmp_path / "out"
+    subprocess.run([sys.executable, os.path.join(PIPE, "bin", "afdb_query_models.py"),
+                    "--proteome", str(fa), "--archive", str(tmp_path / "archives" / "NO_ARCHIVE"),
+                    "--extra-dir", str(extra), "--out-dir", str(out / "models"),
+                    "--coverage", str(out / "cov.tsv"), "--summary", str(out / "sum.json"),
+                    "--species", "borrelia"], check=True)
+    assert os.listdir(out / "models") == ["AF-O51076-F1-model_v6.cif"]
+    s = json.load(open(out / "sum.json"))
+    assert (s["n_with_model"], s["archives"]) == (1, [])
+    # Botryllus: placeholder archive, placeholder (non-directory) extra
+    out2 = tmp_path / "out2"
+    subprocess.run([sys.executable, os.path.join(PIPE, "bin", "afdb_query_models.py"),
+                    "--proteome", str(fa), "--archive", str(tmp_path / "archives" / "NO_ARCHIVE"),
+                    "--extra-dir", os.path.join(PIPE, "assets", "NO_EXTRA"), "--out-dir", str(out2 / "models"),
+                    "--coverage", str(out2 / "cov.tsv"), "--summary", str(out2 / "sum.json"),
+                    "--species", "botryllus"], check=True)
+    assert json.load(open(out2 / "sum.json"))["n_with_model"] == 0
+
+
 def test_read_hits_keeps_smallest_evalue(tmp_path):
     p = tmp_path / "h.tsv.gz"
     with gzip.open(p, "wt") as fh:

@@ -279,7 +279,8 @@ process prostt5Db {
     publishDir "${params.outdir}/${species}/structure", mode: 'copy', pattern: '*.prostt5_*.log'
 
     input:
-    tuple val(species), val(kind), path(fasta), path(weights, stageAs: 'prostt5_weights')
+    // gpu: false for a species in --prostt5_cpu_species, which then runs on CPU.
+    tuple val(species), val(kind), path(fasta), path(weights, stageAs: 'prostt5_weights'), val(gpu)
 
     output:
     tuple val(species), val(kind), path("${species}_prostt5_${kind}"), emit: db
@@ -294,7 +295,7 @@ process prostt5Db {
     mkdir -p ${species}_prostt5_${kind}
     foldseek createdb ${fasta} ${species}_prostt5_${kind}/db \\
         --prostt5-model prostt5_weights \\
-        ${params.prostt5_gpu ? '--gpu 1' : ''} \\
+        ${gpu ? '--gpu 1' : ''} \\
         --threads ${task.cpus} 2>&1 | tail -n 20 >> ${species}.prostt5_${kind}.log
     test \$(wc -l < ${species}_prostt5_${kind}/db.lookup) -eq \$(grep -c '^>' ${fasta})
     """

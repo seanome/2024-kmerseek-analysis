@@ -68,6 +68,13 @@ def main():
     found = {}
 
     for arch in args.archive:
+        # A species with no proteome archive gets the pipeline's NO_ARCHIVE placeholder.
+        # The process meant to drop it, but its name check saw "archives/NO_ARCHIVE", so the
+        # placeholder reached tarfile and Borrelia and Botryllus failed with "truncated
+        # header" (run 48521315, 2026-10-19). Skipped here, where the name is certain.
+        if os.path.basename(arch) == "NO_ARCHIVE":
+            print("%s: no proteome archive for this species" % args.species)
+            continue
         n_written = 0
         with tarfile.open(arch, mode="r|*") as tf:
             for member in tf:
@@ -126,7 +133,7 @@ def main():
         "n_with_model": n_with,
         "share_with_model": (n_with / len(rows)) if rows else None,
         "model_versions": versions,
-        "archives": [os.path.basename(a) for a in args.archive],
+        "archives": [os.path.basename(a) for a in args.archive if os.path.basename(a) != "NO_ARCHIVE"],
         "extra_dir": args.extra_dir,
         "n_model_files": len(os.listdir(args.out_dir)),
     }
