@@ -113,7 +113,9 @@ def parse_gcoord(path: Path, keep: set[str]) -> dict[str, list[dict]]:
                     exons.append(
                         {
                             "exon_id": ex.get("id"),
-                            "uniprot_begin": _pos(p, "begin") if p is not None else None,
+                            "uniprot_begin": (
+                                _pos(p, "begin") if p is not None else None
+                            ),
                             "uniprot_end": _pos(p, "end") if p is not None else None,
                             "g_begin": _pos(g, "begin") if g is not None else None,
                             "g_end": _pos(g, "end") if g is not None else None,
@@ -130,9 +132,9 @@ def parse_gcoord(path: Path, keep: set[str]) -> dict[str, list[dict]]:
     return out
 
 
-def exon_rows(species: str, acc: str, seq_len: int, transcripts: list[dict]) -> tuple[
-    list[dict], str
-]:
+def exon_rows(
+    species: str, acc: str, seq_len: int, transcripts: list[dict]
+) -> tuple[list[dict], str]:
     """Rows for the kept transcript of one protein, and why one was or was not kept."""
     for tx in sorted(transcripts, key=lambda t: t["transcript"] or ""):
         ex = tx["exons"]
@@ -183,9 +185,7 @@ def main():
     ap.add_argument("--out-dir", type=Path, default=REPO / "notebooks" / "356_data")
     args = ap.parse_args()
 
-    queries = set(
-        (args.out_dir / "midi_plus_query_accessions.txt").read_text().split()
-    )
+    queries = set((args.out_dir / "midi_plus_query_accessions.txt").read_text().split())
     summary: dict = {
         "n_queries": len(queries),
         "qfo_release": str(QFO),
@@ -217,7 +217,9 @@ def main():
             "targets_by_outcome": dict(why),
         }
 
-    pl.DataFrame(pair_rows).write_csv(args.out_dir / "orthologs_1to1.tsv", separator="\t")
+    pl.DataFrame(pair_rows).write_csv(
+        args.out_dir / "orthologs_1to1.tsv", separator="\t"
+    )
     exons = pl.DataFrame(all_exons)
     # Two transcripts are never both kept, but one transcript can list the same protein
     # interval twice (a duplicated exon record); keep it once.
@@ -233,9 +235,13 @@ def main():
         summary["species"][species].update(
             n_targets_with_exons=e["target_acc"].n_unique(),
             n_exons=e.height,
-            n_internal_le60=e.filter(pl.col("internal") & (pl.col("exon_len") <= 60)).height,
+            n_internal_le60=e.filter(
+                pl.col("internal") & (pl.col("exon_len") <= 60)
+            ).height,
             n_agrees_uniprot=int(e["agrees_uniprot"].sum()),
-            n_single_exon_proteins=e.filter(pl.col("n_exons") == 1)["target_acc"].n_unique(),
+            n_single_exon_proteins=e.filter(pl.col("n_exons") == 1)[
+                "target_acc"
+            ].n_unique(),
         )
     summary["n_duplicate_intervals_dropped"] = n_before - exons.height
     (args.out_dir / "exon_inputs.json").write_text(json.dumps(summary, indent=2) + "\n")

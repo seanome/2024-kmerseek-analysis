@@ -63,8 +63,12 @@ def list_jobs(results: Path) -> list[dict]:
         if m and m["sp"] in SPECIES:
             lc = "True" if m["lc"] == "true" else "False"
             jobs.append(
-                dict(path=p, species=m["sp"], tool="kmerseek",
-                     arm=f"{m['alpha']}_k{m['k']}_lc{lc}")
+                dict(
+                    path=p,
+                    species=m["sp"],
+                    tool="kmerseek",
+                    arm=f"{m['alpha']}_k{m['k']}_lc{lc}",
+                )
             )
     for tool, variant in BASELINES.items():
         for p in sorted((results / "regions" / tool).glob("human_vs_*.tsv.gz")):
@@ -95,7 +99,10 @@ def read_cif_plddt(path: Path) -> list[tuple[int, float]]:
 
 def write_plddt(pairs: pl.DataFrame, structures: Path, out: Path) -> None:
     rows = []
-    for side, acc_col, sp_col in (("target", "target_acc", "species"), ("query", "query_acc", None)):
+    for side, acc_col, sp_col in (
+        ("target", "target_acc", "species"),
+        ("query", "query_acc", None),
+    ):
         seen = set()
         for r in pairs.iter_rows(named=True):
             sp = r[sp_col] if sp_col else "human"
@@ -105,30 +112,61 @@ def write_plddt(pairs: pl.DataFrame, structures: Path, out: Path) -> None:
             seen.add(key)
             cif = structures / sp / f"AF-{r[acc_col]}-F1.cif"
             if not cif.exists():
-                rows.append(dict(side=side, species=sp, accession=r[acc_col],
-                                 residue=None, plddt=None, has_model=False))
+                rows.append(
+                    dict(
+                        side=side,
+                        species=sp,
+                        accession=r[acc_col],
+                        residue=None,
+                        plddt=None,
+                        has_model=False,
+                    )
+                )
                 continue
             for resnum, b in read_cif_plddt(cif):
-                rows.append(dict(side=side, species=sp, accession=r[acc_col],
-                                 residue=resnum, plddt=b, has_model=True))
-    pl.DataFrame(rows, schema={"side": pl.String, "species": pl.String,
-                               "accession": pl.String, "residue": pl.Int64,
-                               "plddt": pl.Float64, "has_model": pl.Boolean}
-                 ).write_parquet(out)
+                rows.append(
+                    dict(
+                        side=side,
+                        species=sp,
+                        accession=r[acc_col],
+                        residue=resnum,
+                        plddt=b,
+                        has_model=True,
+                    )
+                )
+    pl.DataFrame(
+        rows,
+        schema={
+            "side": pl.String,
+            "species": pl.String,
+            "accession": pl.String,
+            "residue": pl.Int64,
+            "plddt": pl.Float64,
+            "has_model": pl.Boolean,
+        },
+    ).write_parquet(out)
 
 
 def main():
-    ap = argparse.ArgumentParser(description=__doc__,
-                                 formatter_class=argparse.RawDescriptionHelpFormatter)
+    ap = argparse.ArgumentParser(
+        description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter
+    )
     ap.add_argument("--results", type=Path, required=True, help="midi-plus results/")
-    ap.add_argument("--structures", type=Path, required=True, help="midi-plus structures/")
+    ap.add_argument(
+        "--structures", type=Path, required=True, help="midi-plus structures/"
+    )
     ap.add_argument("--qfo-bin", type=Path, required=True)
     ap.add_argument("--pairs", type=Path, required=True, help="orthologs_1to1.tsv")
     ap.add_argument("--out-dir", type=Path, required=True)
-    ap.add_argument("--task", type=int, default=int(os.environ.get("SLURM_ARRAY_TASK_ID", 0)))
-    ap.add_argument("--n-tasks", type=int,
-                    default=int(os.environ.get("SLURM_ARRAY_TASK_COUNT", 1)))
-    ap.add_argument("--only", default=None, help="regex on the input file name, for testing")
+    ap.add_argument(
+        "--task", type=int, default=int(os.environ.get("SLURM_ARRAY_TASK_ID", 0))
+    )
+    ap.add_argument(
+        "--n-tasks", type=int, default=int(os.environ.get("SLURM_ARRAY_TASK_COUNT", 1))
+    )
+    ap.add_argument(
+        "--only", default=None, help="regex on the input file name, for testing"
+    )
     ap.add_argument("--list", action="store_true", help="print the job count and exit")
     args = ap.parse_args()
 
@@ -158,19 +196,24 @@ def main():
         if out.exists() and status.exists():
             continue
         keep = pairs.filter(pl.col("species") == job["species"]).select(
-            "query_acc", "target_acc")
+            "query_acc", "target_acc"
+        )
         if job["tool"] == "kmerseek":
-            lf = ev.load_regions(job["path"], False, rank_by="region_enrichment",
-                                 max_bonferroni_p=0.05)
+            lf = ev.load_regions(
+                job["path"], False, rank_by="region_enrichment", max_bonferroni_p=0.05
+            )
         else:
             lf = ev.load_regions(job["path"], False)
         info = dict(job, path=str(job["path"]))
         if lf is None:
-            df = pl.DataFrame(schema={c: pl.Int64 for c in ("qstart", "qend", "tstart", "tend")})
+            df = pl.DataFrame(
+                schema={c: pl.Int64 for c in ("qstart", "qend", "tstart", "tend")}
+            )
             info["status"] = "empty table"
         else:
-            df = (lf.join(keep.lazy(), on=["query_acc", "target_acc"], how="semi")
-                  .collect(engine="streaming"))
+            df = lf.join(
+                keep.lazy(), on=["query_acc", "target_acc"], how="semi"
+            ).collect(engine="streaming")
             if job["tool"] in FRAGMENT_TOOLS and df.height:
                 n0 = df.height
                 df = ev.dedup_fragment_regions(df, 0.9)

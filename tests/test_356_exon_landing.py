@@ -27,12 +27,25 @@ def brute_p_place(start: int, end: int, a: int, b: int, n: int) -> float:
 
 @pytest.mark.parametrize(
     "start,end,a,b,n",
-    [(10, 30, 8, 40, 300), (0, 5, 0, 30, 50), (100, 160, 90, 140, 400),
-     (5, 9, 3, 60, 61), (200, 233, 198, 231, 233), (0, 300, 10, 40, 300)],
+    [
+        (10, 30, 8, 40, 300),
+        (0, 5, 0, 30, 50),
+        (100, 160, 90, 140, 400),
+        (5, 9, 3, 60, 61),
+        (200, 233, 198, 231, 233),
+        (0, 300, 10, 40, 300),
+    ],
 )
 def test_p_place_matches_brute_force(start, end, a, b, n):
-    df = pl.DataFrame({"tstart": [start], "tend": [end], "prot_start": [a],
-                       "prot_end": [b], "target_len": [n]})
+    df = pl.DataFrame(
+        {
+            "tstart": [start],
+            "tend": [end],
+            "prot_start": [a],
+            "prot_end": [b],
+            "target_len": [n],
+        }
+    )
     got = df.select(sc.p_place_expr()).item()
     assert math.isclose(got, brute_p_place(start, end, a, b, n))
 
@@ -41,9 +54,13 @@ def test_reading_frame_matches_uniprot():
     ex = pl.read_parquet(REPO / "notebooks" / "356_data" / "exons.parquet")
     assert ex["agrees_uniprot"].all()
     # Consecutive exons share a residue exactly when the codon is split (phase 1 or 2).
-    nxt = ex.sort("species", "target_acc", "exon_rank").with_columns(
-        next_start=pl.col("prot_start").shift(-1).over("species", "target_acc"),
-        next_phase=pl.col("start_phase").shift(-1).over("species", "target_acc"),
-    ).drop_nulls("next_start")
+    nxt = (
+        ex.sort("species", "target_acc", "exon_rank")
+        .with_columns(
+            next_start=pl.col("prot_start").shift(-1).over("species", "target_acc"),
+            next_phase=pl.col("start_phase").shift(-1).over("species", "target_acc"),
+        )
+        .drop_nulls("next_start")
+    )
     shared = nxt["next_start"] == nxt["prot_end"] - 1
     assert (shared == (nxt["next_phase"] != 0)).all()
