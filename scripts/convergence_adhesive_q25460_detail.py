@@ -17,7 +17,10 @@ setting, a sequence tool, a Foldseek mode or a scan):
                           scan keeps its top 2_000 rows plus every truth entry, so for a
                           scan the rank is the one scans.py computed over all of the
                           reference (its `rank` column, ties sharing the lowest rank), not
-                          the position among the rows kept
+                          the position among the rows kept. n_wrong_at_or_above is the
+                          number of proteins outside the truth set scoring at least as well
+                          (a tie counts against the truth entry); for a scan it is its true
+                          rank minus 1 minus the truth entries scoring better
 
 A list with no false positive for the real query gets no cutoff, and its rows in
 truth_at_threshold.tsv count every reported row instead (`cutoff` is empty there).
@@ -36,6 +39,7 @@ import gzip
 import sys
 from pathlib import Path
 
+import numpy as np
 import polars as pl
 
 sys.path.insert(
@@ -83,9 +87,20 @@ def main() -> int:
 
     top_rows, count_rows, fp_rows, rank_rows = [], [], [], []
     for method, setting, _, frame in sources:
-        ranked = frame.sort(["query_id", "score"], descending=[False, True])
+        # Accession breaks ties, so the order (and the top rows) is the same on every run;
+        # many kmerseek hits tie at E = inf.
+        ranked = frame.sort(
+            ["query_id", "score", "target"], descending=[False, True, False]
+        )
         real = ranked.filter(pl.col("query_id") == QUERY).with_columns(
             rank=pl.int_range(1, pl.len() + 1)
+        )
+        # For each truth entry: proteins outside the truth set scoring at least as well.
+        # A tie counts against the truth entry, since the order inside a tie is arbitrary.
+        wrong_scores = np.sort(
+            real.filter(~pl.col("target").is_in(list(truth_lineage)))[
+                "score"
+            ].to_numpy()
         )
         fp = real.filter(~pl.col("target").is_in(list(truth_lineage)))
         cutoff = float(fp["score"][0]) if fp.height else None
@@ -111,6 +126,10 @@ def main() -> int:
                     "truth_lineage": truth_lineage[r["target"]],
                     "rank": r["rank"],
                     "score": r["score"],
+                    "n_wrong_at_or_above": int(
+                        len(wrong_scores)
+                        - np.searchsorted(wrong_scores, r["score"], side="left")
+                    ),
                     "n_reported": real.height,
                     "cutoff": cutoff,
                 }
@@ -204,7 +223,27 @@ def main() -> int:
             rank=pl.coalesce("scan_rank", "rank"),
             n_ranked=pl.coalesce("n_ranked", "n_reported"),
         )
-        .drop("scan_rank")
+    )
+    # Truth entries in the same list scoring strictly better than each one.
+    truth_better = (
+        rank_rows.join(
+            rank_rows.select("method", "setting_label", pl.col("score").alias("other")),
+            on=["method", "setting_label"],
+        )
+        .group_by("method", "setting_label", "target")
+        .agg((pl.col("other") > pl.col("score")).sum().alias("truth_better"))
+    )
+    # A scan keeps only its top 2_000 rows plus the truth entries, so the wrong proteins
+    # above a truth entry further down are not in the rows: count them from its true
+    # rank, which shares the lowest rank across a tie (scans.py ranks_min).
+    rank_rows = (
+        rank_rows.join(truth_better, on=["method", "setting_label", "target"])
+        .with_columns(
+            n_wrong_at_or_above=pl.when(pl.col("scan_rank").is_not_null())
+            .then(pl.col("scan_rank") - 1 - pl.col("truth_better"))
+            .otherwise("n_wrong_at_or_above")
+        )
+        .drop("scan_rank", "truth_better")
     )
     rank_rows.write_csv(args.outdir / "truth_ranks.tsv", separator="\t")
     pl.DataFrame(fp_rows).write_csv(
