@@ -181,8 +181,12 @@ scaled 1000, writing `.zip` took 132 s and writing `.sig.gz` 2.5 s; 7_856 of the
 sketches were empty. A gene with no hash cannot share a hash with a query, so dropping empty
 sketches changes no hit (same 25 manysearch hits with and without them).
 
-**Run 2 (not yet run):** the same rule and budget, timing sketching to `.sig.gz` plus writing
-the `.zip` index of the non-empty sketches. Figure: total CPU-hours per scaled value for each
+**Run 2 (jobs 48647076, 2026-10-20): the catalog fits.** Same rule and budget, timing
+sketching to `.sig.gz` plus writing the `.zip` index of the non-empty sketches under unique
+names. All 18 settings finished in 6 to 9 minutes on the 1 GB slice; the whole catalog needs
+40.8 CPU-hours at scaled 100 and 33.6 at scaled 1000 (arithmetic), far under 1_536. (A first
+attempt at run 2, jobs 48632260, was cancelled: identical non-empty sketches slowed the
+`.zip` writer the same way; fixed by writing each sketch under its own name.) Figure: total CPU-hours per scaled value for each
 run, the nine settings stacked; an open segment stopped at the time limit (a lower bound);
 the dashed line is the budget.
 """)
@@ -214,7 +218,7 @@ if present:
     import matplotlib.lines as mlines
     import matplotlib.patches as mpatches
     pf.use_style()
-    fig, axs = pf.figure(pf.TWO_COLUMN_MM if len(present) == 2 else pf.ONE_COLUMN_MM, 45, ncols=len(present), squeeze=False)
+    fig, axs = pf.figure(pf.TWO_COLUMN_MM if len(present) == 2 else pf.ONE_COLUMN_MM, 45, ncols=len(present), squeeze=False, sharex=True)
     for ax, (title, path) in zip(axs[0], present):
         table = pl.read_csv(path)
         print(title)
@@ -379,13 +383,15 @@ else:
 md("""
 ## Summary and conclusions
 
-**Result on 2026-10-20: step 1 run 1 says dead, but that verdict measures sourmash's `.zip`
-writer, not the cost of sketching.** Under the rule as run, the catalog fits at neither
+**Result on 2026-10-20: step 1 passes (run 2): sketching the whole catalog needs about 41
+CPU-hours at scaled 100 and 34 at scaled 1000, against a budget of 1_536. Steps 2 and 3 are
+running.** Run 1 had said dead, but that verdict measured sourmash's `.zip` writer, not the
+cost of sketching. Under the rule as run, the catalog fits at neither
 scaled value: at scaled 1000 the nine settings' lower bounds reach 3_260 CPU-hours, and at
 scaled 100 the total is at least 541 with one setting unknown. Ten settings were slowed by
 the `.zip` writer's handling of identical (mostly empty) sketches; written as `.sig.gz` the
 same work took 2.5 s instead of 132 s on 20_000 genes. Step 1 run 2 keeps the rule and
-budget and times `.sig.gz` plus a `.zip` of the non-empty sketches. Steps 2 to 4 have not run.
+budget and times `.sig.gz` plus a `.zip` of the non-empty sketches.
 
 - Queries: 100 random arctic clam proteins (seed 299) and 9 BHF regions copied from PR 80,
   with 2_180 dipeptide-shuffled copies.
