@@ -1,0 +1,27 @@
+{
+  "seeds": {
+    "draw": 354,
+    "split": 3540,
+    "absent": 3541,
+    "shuffle": 3542
+  },
+  "n_peaks_calls_with_accepted_source_in_db": 22332,
+  "n_spectra_with_agreed_high_confidence_psm": 24561,
+  "peaks_to_pd_matching": {
+    "ok": 22400,
+    "no PD spectrum with an agreed match": 5338,
+    "accepted source not in the frozen database": 68
+  },
+  "eligible_denovo_equals_db_search": 13965,
+  "n_calls": 500,
+  "n_dev": 250,
+  "n_test": 250,
+  "n_test_present": 200,
+  "n_test_absent": 50,
+  "n_proteins_removed_for_absent": 59,
+  "db_full_proteins": 20734,
+  "db_source_absent_proteins": 20675,
+  "crap_entries": 116,
+  "crap_kept": 82,
+  "dev_test_protein_overlap": 0
+}
