@@ -280,6 +280,28 @@ process occurrences {
     """
 }
 
+// One copy of each protein: the same protein carries anchors of several settings and gaps.
+process dedupProteins {
+    label 'python'
+    memory '8 GB'
+
+    input:
+    path fastas, stageAs: 'prot/*'
+
+    output:
+    path 'proteins_unique.fa'
+
+    script:
+    """
+    cat prot/*.fa | awk '/^>/{keep = !seen[\$1]++} keep' > proteins_unique.fa
+    """
+
+    stub:
+    """
+    touch proteins_unique.fa
+    """
+}
+
 // hmmscan of every protein that carries a significant anchor against Pfam-A, with Pfam's own
 // gathering thresholds (--cut_ga).
 process hmmscan {
@@ -504,7 +526,7 @@ workflow {
 
     hmm = file(params.pfam_hmm)
     pressed = files("${params.pfam_hmm}.h3?")
-    parts = occ.fasta.collectFile(name: 'proteins.fa').splitFasta(by: 2000, file: true)
+    parts = dedupProteins(occ.fasta.collect()).splitFasta(by: 2000, file: true)
         .toList().flatMap { fs -> fs.withIndex().collect { f, i -> [i, f, hmm, pressed] } }
         // No significant anchor means no proteins: one empty part keeps the rest of the DAG
         // running, so the notebook still gets (empty) Pfam tables.
