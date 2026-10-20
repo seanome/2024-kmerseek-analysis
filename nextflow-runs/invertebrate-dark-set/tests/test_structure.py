@@ -244,6 +244,9 @@ def test_foldseek_scored_before_prostt5(tmp_path):
     (sd / "yeast_afdb_query_summary.json").write_text('{}')
     _gz(sd / "yeast.chunk_0000.foldseek.tsv.gz", ["P00330\tP00327\t1\t340\t1\t340\t500\t1e-60"])
     _gz(sd / "yeast.chunk_0000.foldseek_decoy.tsv.gz", [])
+    # ProstT5 real searches without their decoys (a decoy 3Di task failed and was ignored):
+    # not scored, since no decoy would mean every hit passes the cutoff.
+    _gz(sd / "yeast.chunk_0000.prostt5.tsv.gz", ["P00330\tP00327\t1\t340\t1\t340\t100\t5.0"])
     ev = tmp_path / "ev"
     ev.mkdir()
     _gz(ev / "yeast_protein_tool_min_evalue.csv.gz", ["accession,phmmer,jackhmmer,mmseqs2", "P00330,2.0,,"])

@@ -145,6 +145,14 @@ def placement(struct_dir, ev_dir, out_dir, *species):
                 # leaves this tool out instead of reading it as "searched, nothing found".
                 print("%s %s: no search output yet; not scored" % (sp, tool))
                 continue
+            decoy_files = sorted(glob.glob(os.path.join(d, "%s.chunk_*.%s_decoy.tsv.gz" % (sp, tool))))
+            if len(decoy_files) != len(real_files):
+                # Without every decoy chunk the cutoff would be set on part of the decoys,
+                # or on none (then every hit passes). E.g. a ProstT5 decoy 3Di task that
+                # failed on a GPU and was ignored.
+                print("%s %s: %d real but %d decoy search files; not scored"
+                      % (sp, tool, len(real_files), len(decoy_files)))
+                continue
             real = read_hits(real_files)
             decoy = read_hits(sorted(glob.glob(os.path.join(d, "%s.chunk_*.%s_decoy.tsv.gz" % (sp, tool)))))
             stray = (set(real) | set(decoy)) - run
