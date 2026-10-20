@@ -495,6 +495,22 @@ stands on 2026-10-20. Each needs a decision before compute is spent.
 """)
 
 md(r"""
+### Decisions, 2026-10-20, before any kmerseek run
+
+Olga's answers to points 1, 2 and 4 above. They are part of the rule from here on.
+
+- **Decoy hit (point 1).** The verdict is reported under the brief's rule: a decoy is hit
+  when any reported region overlaps its window. Beside it, labelled as not the rule, the
+  same numbers with a region counted only when at least half its residues lie inside the
+  window, for decoys and true features alike.
+- **Settings (point 2).** Notebook 241's 152 settings. Those without a Karlin-Altschul fit
+  (81 of 152 in notebook 241) are excluded and listed by name.
+- **Database (point 4).** Swiss-Prot first, with every query's own UniRef90 cluster
+  removed. Index memory and time are measured there, and UniRef90 is run only if the
+  measurement shows it fits the compute left.
+""")
+
+md(r"""
 ## Summary and conclusions
 
 1. On notebook 244's 87 cases (50 human Swiss-Prot features), the hydropathy window scan and
@@ -507,8 +523,8 @@ md(r"""
    boundary errors of 2, 39 and 49 residues, while hitting 7 of 100 decoys (SF2b).
 4. Step 1 sets no scan bar for kmerseek on these cases: neither scan passes, so kmerseek is
    compared with HMMER and MMseqs2.
-5. Steps 2 to 8 are not run. The decoy design (point 1 of section 2) is the decision that
-   most changes what the main test can show.
+5. Steps 2 to 8 are not run. The three decisions above fix how decoy hits are counted, which
+   settings run, and that Swiss-Prot runs before UniRef90.
 """)
 
 nb = nbf.v4.new_notebook()
