@@ -681,11 +681,14 @@ def cmd_test(a: argparse.Namespace) -> None:
                 "n_species": int(x.sum()), "n_clades": len(clades), "n_targets": x.shape[0],
                 "p_oasis": p, "effect_size": eff, "comp_chi2": x2, "comp_df": dfree, "p_comp": pc,
                 "clades": ";".join(clades),
+                # OASIS's column weights c (one per class, same order as `clades`): the
+                # classes at the two ends are the ones the targets split.
+                "clade_weights": ";".join(f"{v:.4f}" for v in np.asarray(c, dtype=float)),
             })
     schema = {"setting": pl.String, "labelling": pl.String, "gap": pl.Int64, "anchor": pl.UInt64,
               "n_species": pl.Int64, "n_clades": pl.Int64, "n_targets": pl.Int64, "p_oasis": pl.Float64,
               "effect_size": pl.Float64, "comp_chi2": pl.Float64, "comp_df": pl.Int64, "p_comp": pl.Float64,
-              "clades": pl.String}
+              "clades": pl.String, "clade_weights": pl.String}
     out = pl.DataFrame(rows, schema=schema) if rows else pl.DataFrame(schema=schema)
     out.write_parquet(a.out)
 
@@ -809,6 +812,15 @@ def cmd_pfam_overlap(a: argparse.Namespace) -> None:
         .mode().first().alias("main_pfam"))
     per_anchor = per_anchor.with_columns((pl.col("n_occ_in_pfam") == 0).alias("outside_pfam"))
     per_anchor.write_parquet(a.out)
+    # Residues of the top anchors' occurrences, for the per-anchor figures: the a.top anchors
+    # with the smallest q (then p) in each (setting, gap), real labels.
+    sig = pl.read_parquet(a.significant).filter(pl.col("labelling") == "real")
+    top = (sig.sort("q_oasis", "p_oasis", "anchor").group_by("setting", "gap", maintain_order=True)
+           .head(a.top).select("setting", "gap", "anchor"))
+    occ_top = occ.join(top, on=["setting", "gap", "anchor"]).join(
+        per_occ.select("setting", "gap", "anchor", "species_idx", "protein_idx", "pos0", "in_pfam", "pfam_overlapping"),
+        on=["setting", "gap", "anchor", "species_idx", "protein_idx", "pos0"], how="left")
+    occ_top.drop("query", "k", "win_from", "win_to").write_parquet(a.top_out)
 
 
 def cmd_align_input(a: argparse.Namespace) -> None:
@@ -1041,6 +1053,9 @@ def main(argv: list[str] | None = None) -> None:
     s.add_argument("--domtblout", nargs="+", required=True)
     s.add_argument("--occ-out", required=True)
     s.add_argument("--out", required=True)
+    s.add_argument("--significant", required=True)
+    s.add_argument("--top", type=int, default=50)
+    s.add_argument("--top-out", required=True)
     s.set_defaults(func=cmd_pfam_overlap)
 
     s = sub.add_parser("align-input")

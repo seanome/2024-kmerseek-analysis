@@ -316,20 +316,23 @@ process pfamOverlap {
     input:
     path occ, stageAs: 'occ/*'
     path dom, stageAs: 'dom/*'
+    path sig
 
     output:
     path 'pfam_by_anchor.parquet', emit: anchors
     path 'pfam_by_occurrence.parquet', emit: occ
+    path 'top_occurrences.parquet', emit: top
 
     script:
     """
     clade_splash.py pfam-overlap --occurrences occ/*.parquet --domtblout dom/* \\
-        --occ-out pfam_by_occurrence.parquet --out pfam_by_anchor.parquet
+        --occ-out pfam_by_occurrence.parquet --out pfam_by_anchor.parquet \\
+        --significant ${sig} --top 50 --top-out top_occurrences.parquet
     """
 
     stub:
     """
-    touch pfam_by_anchor.parquet pfam_by_occurrence.parquet
+    touch pfam_by_anchor.parquet pfam_by_occurrence.parquet top_occurrences.parquet
     """
 }
 
@@ -505,7 +508,7 @@ workflow {
         .ifEmpty { [0, file("${projectDir}/assets/empty.fa"), hmm, pressed] }
     dom = hmmscan(parts)
 
-    po = pfamOverlap(occ.occ.collect(), dom.collect())
+    po = pfamOverlap(occ.occ.collect(), dom.collect(), col.sig)
     ai = alignInput(po.anchors, occ.occ.collect(), dom.collect(), occ.fasta.collect())
     sto = hmmalign(ai.dir, ai.manifest, hmm)
     alignControl(sto, ai.manifest, col.sig, sel.species, oasis)

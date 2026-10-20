@@ -83,8 +83,8 @@ stop:
 	 scancel --signal=TERM --batch $$jid && echo "asked job $$jid to shut down"
 
 # The notebook reads only these; the per-bucket tables stay on Sherlock.
-RESULT_FILES := counts.tsv significant.parquet pfam_by_anchor.parquet pfam_by_occurrence.parquet \
-                alignment_control.parquet residue_totals.json fetch_stats.tsv species/ candidates/ provenance/
+RESULT_FILES := counts.tsv significant.parquet pfam_by_anchor.parquet \
+                alignment_control.parquet top_occurrences.parquet residue_totals.json fetch_stats.tsv species/ candidates/ provenance/
 
 pull-results:
 	mkdir -p $(MAKEFILE_DIR)/../../tables/357
