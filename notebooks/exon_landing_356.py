@@ -416,3 +416,206 @@ def verdict_figure(d: dict, out: Path) -> pl.DataFrame:
     pf.shared_legend(fig, ncol=3)
     pf.save(fig, out)
     return tab
+
+
+#: Residue classes of the two alphabets the hero calls use, from kmerseek's README
+#: (alphabet table). One letter per class, in the order listed there.
+ALPHABET_CLASSES = {
+    "dayhoff6": ["C", "AGPST", "DENQ", "HKR", "ILMV", "FWY"],
+    "polarity4": ["GAVLIFWMP", "STCYNQ", "DE", "HKR"],
+}
+EXON_COLOUR = "#555555"
+
+
+def encode(seq: str, alphabet: str) -> str:
+    """Each residue replaced by its class number (1-based) in the alphabet."""
+    lookup = {
+        aa: str(i + 1) for i, cls in enumerate(ALPHABET_CLASSES[alphabet]) for aa in cls
+    }
+    return "".join(lookup.get(aa, "?") for aa in seq)
+
+
+def match_line(a: str, b: str) -> str:
+    return "".join("|" if x == y else " " for x, y in zip(a, b))
+
+
+def residue_block(call: dict, label: str) -> tuple[str, int, int]:
+    """Aligned residues of a gapless kmerseek call, 1-based coordinates, with the
+    alphabet's classes underneath."""
+    alpha = call["arm"].split("_k")[0]
+    q, t = call["query_residues"], call["target_residues"]
+    qc, tc = encode(q, alpha), encode(t, alpha)
+    w = max(len(str(call["qend"])), len(str(call["tend"])))
+    qs, ts = str(call["qstart"] + 1).rjust(w), str(call["tstart"] + 1).rjust(w)
+    pad = " " * (w + 9)
+    n_class = sum(x == y for x, y in zip(qc, tc))
+    lines = [
+        label,
+        f"human   {qs} {q} {call['qend']}",
+        f"{pad}{match_line(q, t)}  {call['n_identical']} of {len(q)} identical",
+        f"chicken {ts} {t} {call['tend']}",
+        f"{pad}{qc}  human, {alpha} class",
+        f"{pad}{match_line(qc, tc)}  {n_class} of {len(q)} same class",
+        f"{pad}{tc}  chicken, {alpha} class",
+    ]
+    return "\n".join(lines), n_class, len(q)
+
+
+def hero_figure(hero: dict, exon_tool: pl.DataFrame, exons: pl.DataFrame, out: Path):
+    """Hero exon: chicken F1NQ20 exon 14 and every tool's call on it (a: whole protein,
+    b: around the exon), and the residues of the two kmerseek calls that land on it (c).
+    """
+    on, off = hero["hero_on_position"], hero["rule_first_pick"]
+    sp, tacc, eid = on["species"], on["target_acc"], on["exon_id"]
+    a0, a1, n = (
+        on["exon_start_0based"],
+        on["exon_end_0based_exclusive"],
+        on["target_len"],
+    )
+    rows = exon_tool.filter(
+        (pl.col("target_acc") == tacc)
+        & (pl.col("exon_id") == eid)
+        & pl.col("tool").is_in(
+            [
+                "foldseek",
+                "reseek",
+                "prostt5",
+                "hmmer3_phmmer",
+                "mmseqs2_seqseq",
+                "mmseqs2_iterative",
+                "hmmer3_jackhmmer",
+                "hhblits",
+                "kd_scan",
+            ]
+        )
+    )
+    bars = [
+        (
+            f"kmerseek {on['arm'].replace('_lcFalse', '').replace('_', ' ')}, on position",
+            on["tstart"],
+            on["tend"],
+            TOOLS["kmerseek_best_of_all"][1],
+        ),
+        (
+            f"kmerseek {off['arm'].replace('_lcFalse', '').replace('_', ' ')}, off position",
+            off["tstart"],
+            off["tend"],
+            TOOLS["kmerseek_best_single"][1],
+        ),
+    ]
+    for t in [t for t in TOOLS if t in set(rows["tool"])]:
+        r = rows.filter(pl.col("tool") == t).row(0, named=True)
+        bars.append((TOOLS[t][0], r["best_tstart"], r["best_tend"], TOOLS[t][1]))
+    ex = exons.filter(pl.col("target_acc") == tacc).sort("exon_rank")
+
+    pf.use_style()
+    # Fixed panel positions: the residue text in c is wide, and constrained layout
+    # shrinks the bar panels to nothing to make room for it.
+    fig = plt.figure(figsize=(pf.TWO_COLUMN_MM * pf.MM, 130 * pf.MM))
+    axa = fig.add_axes([0.25, 0.47, 0.33, 0.42])
+    axb = fig.add_axes([0.63, 0.47, 0.33, 0.42])
+    axc = fig.add_axes([0.03, 0.0, 0.94, 0.36])
+    for ax, (lo, hi) in ((axa, (0, n)), (axb, (a0 - 30, a1 + 30))):
+        y_prot = len(bars) + 0.8
+        ax.plot([0, n], [y_prot, y_prot], color="k", lw=1)
+        for r in ex.iter_rows(named=True):
+            ax.plot(
+                [r["prot_start"]] * 2,
+                [y_prot - 0.25, y_prot + 0.25],
+                color=pf.GREY,
+                lw=0.3,
+            )
+        ax.add_patch(
+            plt.Rectangle((a0, y_prot - 0.35), a1 - a0, 0.7, color=EXON_COLOUR)
+        )
+        ax.axvspan(a0, a1, color="#eeeeee", zorder=0)
+        for i, (lab, s, e, col) in enumerate(bars):
+            y = len(bars) - 1 - i
+            if s is not None:
+                ax.add_patch(plt.Rectangle((s, y - 0.3), e - s, 0.6, color=col))
+            else:
+                ax.text(lo + 0.01 * (hi - lo), y, "no call", va="center", color=pf.GREY)
+        ax.set_xlim(lo, hi)
+        ax.set_ylim(-0.8, len(bars) + 1.5)
+        ax.set_yticks(
+            [*range(len(bars)), y_prot],
+            [b[0] for b in bars][::-1] + [f"chicken {tacc} ({n} aa)"],
+        )
+        ax.set_xlabel(f"Position on chicken {tacc} (aa)")
+    axb.set_yticklabels([])
+    axb.text(
+        a0 + 0.5 * (a1 - a0),
+        len(bars) + 1.3,
+        f"exon {ex.filter(pl.col('exon_id') == eid)['exon_rank'][0]} of {len(ex)}, "
+        f"residues {a0 + 1}-{a1}, mean pLDDT {on['exon_plddt']:.0f}",
+        ha="center",
+        va="bottom",
+    )
+    axa.plot([], [], "s", color=EXON_COLOUR, label="the exon")
+    axa.plot([], [], "|", color=pf.GREY, label="exon boundaries")
+    axa.plot([], [], "s", color="#eeeeee", label="exon span, for reading the bars")
+    blk_on, _, _ = residue_block(
+        on,
+        "kmerseek call on position (a global alignment of the "
+        "two proteins pairs these same residues)",
+    )
+    blk_off, _, _ = residue_block(
+        off,
+        "kmerseek call off position (IoU 1.0 with the exon): a global alignment puts these "
+        f"human residues\nat chicken {off['aligned_target_start_1based']}-"
+        f"{off['aligned_target_end_1based']}, not on this exon; they are another copy of "
+        "the Gly-X-Y collagen repeat",
+    )
+    axc.axis("off")
+    axc.text(
+        0,
+        1,
+        blk_on + "\n\n" + blk_off,
+        family="monospace",
+        va="top",
+        ha="left",
+        transform=axc.transAxes,
+    )
+    axa.set_xticks([0, 250, 500, 750, n])
+    # Residue i (1-based) spans [i - 1, i) on this axis, so the exon's first residue
+    # starts at a0 and its last ends at a1.
+    axb.set_xticks([a0 - 20, a0, a1, a1 + 20], [a0 - 19, a0 + 1, a1, a1 + 20])
+    fig.legend(
+        *axa.get_legend_handles_labels(), loc="upper center", ncol=3, frameon=False
+    )
+    for ax, letter in zip((axa, axb, axc), "abc"):
+        pf.panel_label(ax, letter)
+    pf.save(fig, out)
+    return bars
+
+
+def on_position_figure(onpos: pl.DataFrame, out: Path) -> pl.DataFrame:
+    """Per verdict exon kmerseek lands on: how many of its settings land, split by whether
+    any landing call is at the position the global alignment gives (filled blue) or none
+    is (open bars, drawn on top)."""
+    pf.use_style()
+    fig, ax = pf.figure(pf.ONE_COLUMN_MM, 60)
+    bins = np.arange(0, onpos["n_settings_landing"].max() + 10, 10)
+    on = onpos.filter(pl.col("any_on_position"))["n_settings_landing"]
+    off = onpos.filter(~pl.col("any_on_position"))["n_settings_landing"]
+    ax.hist(
+        on,
+        bins=bins,
+        color=pf.OKABE_ITO["blue"],
+        label=f"a landing call is on position (n = {len(on)})",
+    )
+    ax.hist(
+        off,
+        bins=bins,
+        histtype="step",
+        color="k",
+        lw=0.8,
+        label=f"no landing call is on position (n = {len(off)})",
+    )
+    ax.set_xlabel("kmerseek settings (of 404) with a call landing on the exon")
+    ax.set_ylabel("Exons")
+    pf.shared_legend(fig, ncol=1)
+    pf.save(fig, out)
+    return onpos.group_by("any_on_position").agg(
+        exons=pl.len(), median_settings=pl.col("n_settings_landing").median()
+    )

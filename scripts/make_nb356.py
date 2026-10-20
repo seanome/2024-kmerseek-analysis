@@ -193,6 +193,40 @@ null_tab = el.settings_and_null(d, FIG / "356_kmerseek_settings_and_random_prote
 print(null_tab.with_columns(pl.col(pl.Float64).round(3)))
 print(d["settings"].head(10))
 """)
+    if stage == "full":
+        md(r"""
+## 7. Are the landing calls at the aligned position? (added after Stop 1)
+
+Not in the pre-registration. For every verdict exon kmerseek lands on, each landing call
+is checked against a global alignment of the human query and its ortholog (Biopython,
+BLOSUM62, gap open -11, extend -1). A call is *on position* when at least half of its
+residue pairs are pairs the global alignment also makes. This catches a call that lands
+on the exon but pairs it with the wrong stretch of the human protein, as in a repeat.
+""")
+        code(r"""
+onpos = pl.read_parquet(TABLES / "landing_on_position.parquet")
+hero = json.loads((TABLES / "hero.json").read_text())
+print(f"verdict exons kmerseek lands on: {hero['n_verdict_exons_landed']}")
+print(f"  with at least one landing call on position: {hero['n_landed_with_a_call_on_position']}")
+print(el.on_position_figure(onpos, FIG / "356_landing_on_position_global_alignment_midi_plus"))
+""")
+        md(r"""
+## 8. Hero exon
+
+Rule, written before looking: a verdict exon that is disordered (mean pLDDT < 70), where
+kmerseek's best of all lands with p_place < 0.05 and Foldseek, Reseek, ProstT5, phmmer,
+MMseqs2 and MMseqs2 iterative all spill; highest landing IoU, then smallest p_place.
+Its first pick is shown with both kmerseek calls that land on it: the one with IoU 1.0
+pairs the exon with the wrong copy of the collagen repeat, and a second setting pairs it
+with the aligned residues. (a) the whole chicken protein, every tool's call on the pair;
+(b) the same around the exon; (c) the residues of both kmerseek calls, classes underneath.
+""")
+        code(r"""
+exons = pl.read_parquet("356_data/exons.parquet")
+el.hero_figure(hero, et, exons, FIG / "356_hero_col9a1_chicken_exon14_midi_plus")
+print(pl.DataFrame([{k: v for k, v in hero[c].items() if not k.endswith("residues")}
+                    for c in ("hero_on_position", "rule_first_pick")]))
+""")
     md(
         results_md
         or "## Summary\n\nNot written yet: the numbers above have not been read."
