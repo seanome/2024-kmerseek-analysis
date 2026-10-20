@@ -1,0 +1,14 @@
+step	n	note
+elm: instances in the export	4277	
+elm: true positive	4047	other InstanceLogic values dropped
+elm: no UniProt sequence	41	dropped
+elm: coordinates outside the sequence	0	dropped
+elm: records	4006	
+tiles: rows named A_tiles_ in the sheet	7457	controls and random sequences are other rows
+tiles: activation empty (too few cells)	87	dropped: no measurement
+tiles: sequence differs from the TF sequence sheet at its position	0	kept; checked only
+tiles: records	7370	
+dev: elm records (1251 proteins)	1996	
+dev: yeast_tile records (81 proteins)	3723	
+held_out: elm records (1292 proteins)	2010	
+held_out: yeast_tile records (83 proteins)	3647	
