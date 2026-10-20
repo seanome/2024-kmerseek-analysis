@@ -629,7 +629,7 @@ full toxin share was 3 to 7 times too low for `cys_hp3`, so it cannot be used to
    phmmer: 0.70, 0.81 and 0.74 at k 11, 13 and 15, against 0.47 for phmmer, with the
    per-query differences +0.24, +0.35 and +0.28 and every interval above 0.** On
    Mollusca queries phmmer is ahead of every setting (phmmer 1.76, `cys_hp3` k11 0.92). On
-   Arthropoda queries it is ahead of k13 and k15 and level with k11 (difference -0.122,
+   Arthropoda queries it is ahead of k13 and k15 and not clearly different from k11 (difference -0.122,
    interval -0.259 to 0.013). Pooled, phmmer leads `cys_hp3` k11 by 0.62.
 4. **The pilot's estimate at the full toxin share (notebook 296, section 2b) was 3.1 to 7.1
    times too low for `cys_hp3` on the same 59 Cnidaria queries, 2.1 times too low for
