@@ -118,7 +118,7 @@ LADDER_HEAD_TIME  ?= 7-00:00:00
 LADDER_HEAD_MEM   ?= 32G
 LADDER_HEAD_XMX   ?= 24g
 
-.PHONY: help check-species check-run check-inputs check-python sherlock-clone sync run-dark-set relaunch-at \
+.PHONY: help check-species check-run check-inputs check-python check-config sherlock-clone sync run-dark-set relaunch-at \
         run-dark-set-sbatch watch-dark-set stop-dark-set status-dark-set run-dark-set-mini queue-note \
         measure-resources multiqc-dark-set run-ladder-sweep-sbatch run-ladder-sweep ladder-plan cancel-orphan-tasks \
         lock-indexes unlock-indexes run-ladder-0.4-sbatch ladder-0.4-plan \
@@ -200,6 +200,20 @@ check-python:
 	       echo "params.kmerseek_image. It only matters for running bin/ scripts by hand:"; \
 	       echo "  make <target> PYTHON=\"apptainer exec \$$SCRATCH/containers/kmerseek.sif python3\""; \
 	       exit 1; }
+
+# A withName block in a profile REPLACES the top-level block of the same name instead of
+# merging with it, so a rule set at the top level can vanish under one profile and nothing
+# says so. On 2026-10-20 the sherlock profile's kmerseekIndex block (time only) had dropped
+# the 'ignore' rule, and a failed index fell back to 'finish', which stops the run. This
+# reads the resolved config for each profile and fails if kmerseekIndex would not end at
+# 'ignore'. It runs `nextflow config` only; nothing is launched.
+check-config:
+	@ok=1; for p in standard sherlock stub; do \
+	   rule=$$(cd $(MAKEFILE_DIR) && $(NEXTFLOW) config -profile $$p . \
+	     | awk '/^process \{/{inp=1} inp && /withName:kmerseekIndex \{/{inb=1; next} inb && /^ *\}/{inb=0} inb && /errorStrategy/' ); \
+	   case "$$rule" in *"'ignore'"*) echo "$$p: kmerseekIndex $$(echo $$rule | sed 's/^ *//')";; \
+	     *) echo "$$p: kmerseekIndex has no 'ignore' errorStrategy; one failed index stops the run"; ok=0;; esac; \
+	 done; [ "$$ok" = 1 ]
 
 sherlock-clone:
 	git push origin $(BRANCH)
