@@ -10,7 +10,8 @@
 #
 # Asks, from notebook 241's runs.jsonl (see the sizing notes in 288_two_step_search.sbatch):
 #   pairwise  210 indexes of 1-14 proteins + 210 searches of 202 queries: 8 CPU, 16 GB, 1 h
-#   heavy     70 human indexes + 202 queries x 70 settings + step 2: 16 CPU, 128 GB, 10 h
+#   heavy     202 queries x 70 settings on notebook 283's human indexes (built here if those
+#             are gone) + step 2: 16 CPU, 128 GB, 10 h (about 2.5 h expected)
 set -euo pipefail
 
 cd "$(dirname "$0")/.."

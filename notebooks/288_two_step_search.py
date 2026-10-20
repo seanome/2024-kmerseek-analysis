@@ -88,6 +88,10 @@ HUMAN = Path(
 )
 ARMS = NB241 / "null_bhf_dipeptide/arms.json"
 FAMILY_JSON = HERE.parent / "data/288/hgnc_gene_group_1057_bcl2_family.json"
+# Human indexes: notebook 283's rebuild of 241's 152 (same driver and flags) when given,
+# else built here, without a fit, in OUT/idx.
+HUMAN_IDX = Path(ENV.get("NB288_HUMAN_IDX", OUT / "idx"))
+HUMAN_ROWS = HERE.parent / "data/288/241_ced9_p66_regions_on_bcl2_family_cd47.csv.gz"
 
 PARTNER = {"Ced9": "BCL2", "P66": "CD47"}
 N_SHUFFLES = 100
@@ -376,7 +380,20 @@ def search(qfa: Path, idx: Path, s: dict, out_csv: Path, log: Path) -> int:
 
 
 def read_regions(out_csv: Path, s: dict, scale: float | None = None) -> pl.DataFrame:
-    """kmerseek's region rows with the E-value under the human fit.
+    """kmerseek's region rows from one search CSV; see regions_from_frame. A search with no
+    match writes an empty file, which gives an empty table with every column."""
+    if out_csv.stat().st_size == 0:
+        raw = pl.DataFrame(schema={c: pl.String for c in REGION_COLS})
+    else:
+        raw = pl.read_csv(out_csv, columns=REGION_COLS, infer_schema_length=0)
+    return regions_from_frame(raw, s, scale)
+
+
+def regions_from_frame(
+    raw: pl.DataFrame, s: dict, scale: float | None = None
+) -> pl.DataFrame:
+    """kmerseek's region rows (all columns read as text) with the E-value under the human
+    fit.
 
     --ka-k sets the lambda scale to 1 (search.rs, resolve_ka), so region_ka_lambda here is
     the closed-form lambda. e_value_human_fit puts the human fit's lambda scale back:
@@ -384,11 +401,9 @@ def read_regions(out_csv: Path, s: dict, scale: float | None = None) -> pl.DataF
     notebook 241's own search already carry the scaled lambda: pass scale=1.0 for those.
     """
     scale = s["lambda_scale"] if scale is None else scale
-    if out_csv.stat().st_size == 0:
-        return pl.DataFrame()
     c = float(s["penalty"])
     d = (
-        pl.read_csv(out_csv, columns=REGION_COLS, infer_schema_length=0)
+        raw.select(REGION_COLS)
         .filter(pl.col("region_start").is_not_null() & (pl.col("region_start") != ""))
         .with_columns(
             pl.col("query_name").str.strip_chars(),
@@ -429,9 +444,37 @@ def read_regions(out_csv: Path, s: dict, scale: float | None = None) -> pl.DataF
 # ---------------------------------------------------------------- step: pairwise
 
 
+def fit_outcome(idx: Path) -> bool | None:
+    """Whether kmerseek index stored a Karlin-Altschul fit, from its --ka-survival-out file:
+    True or False from the file's "fitted" column; False when the file holds only its
+    header (kmerseek refused the fit: "too few to fit; nothing stored"); None with no file.
+    """
+    surv = Path(str(idx) + ".ka_survival.csv")
+    if not surv.exists():
+        return None
+    rows = list(csv.DictReader(open(surv)))
+    return any(r["fitted"].strip().lower() == "true" for r in rows)
+
+
 def pairwise_one(s: dict, db: str) -> str:
     done = OUT / "pairwise" / f"{db}.{s['tag']}.parquet"
-    if done.exists():
+    # A file without query_name is a placeholder the 2026-10-13 version wrote for a search
+    # with no match; redo it (its index is kept, so only the search reruns).
+    fit_json = OUT / "pairwise" / f"{db}.{s['tag']}.fit.json"
+    if done.exists() and "query_name" in pl.read_parquet_schema(done):
+        if not fit_json.exists():  # written in the rows by the 2026-10-13 version
+            row = pl.read_parquet(done, columns=["fitted_here", "fit_note"])
+            fit_json.write_text(
+                json.dumps(
+                    dict(
+                        database=db,
+                        setting=s["tag"],
+                        fitted_here=row["fitted_here"][0] if row.height else None,
+                        fit_note=row["fit_note"][0] if row.height else None,
+                        n_regions=row.height,
+                    )
+                )
+            )
         return f"{db} {s['tag']} cached"
     work = OUT / "pairwise_work"
     idx = work / f"{db}.{s['tag']}.rocksdb"
@@ -447,11 +490,7 @@ def pairwise_one(s: dict, db: str) -> str:
             )
             if rc != 0:
                 return f"{db} {s['tag']} FAILED index rc={rc}"
-    surv = Path(str(idx) + ".ka_survival.csv")
-    fitted_here = None
-    if surv.exists() and surv.stat().st_size:
-        row = next(csv.DictReader(open(surv)), None)
-        fitted_here = None if row is None else row["fitted"].strip().lower() == "true"
+    fitted_here = fit_outcome(idx)
     out_csv = work / f"{db}.{s['tag']}.csv"
     rc = search(
         OUT / "queries.fa", idx, s, out_csv, work / f"{db}.{s['tag']}.search.log"
@@ -459,9 +498,22 @@ def pairwise_one(s: dict, db: str) -> str:
     if rc != 0:
         return f"{db} {s['tag']} FAILED search rc={rc}"
     d = read_regions(out_csv, s).with_columns(
-        database=pl.lit(db), fitted_here=pl.lit(fitted_here), fit_note=pl.lit(fit_note)
+        database=pl.lit(db),
+        fitted_here=pl.lit(fitted_here, dtype=pl.Boolean),
+        fit_note=pl.lit(fit_note),
     )
     d.write_parquet(done)
+    fit_json.write_text(
+        json.dumps(
+            dict(
+                database=db,
+                setting=s["tag"],
+                fitted_here=fitted_here,
+                fit_note=fit_note,
+                n_regions=d.height,
+            )
+        )
+    )
     out_csv.unlink()
     return f"{db} {s['tag']} ok {d.height} regions, small-index fit: {fitted_here}"
 
@@ -501,31 +553,36 @@ def step_pairwise(workers: int) -> None:
 
 def human_rows(sets: list[dict]) -> pl.DataFrame:
     """Ced9's and P66's region rows on the BCL-2 family and CD47 from notebook 241's
-    proteome search, to check the pairwise numbers against."""
-    family = {
-        d["symbol"] for d in json.loads(FAMILY_JSON.read_text())["response"]["docs"]
-    }
-    genes = family | {"CD47"}
-    frames = []
-    for s in sets:
-        d = pl.read_csv(
-            NB241 / "search" / f"{s['tag']}.csv",
-            columns=REGION_COLS,
-            infer_schema_length=0,
-        ).filter(pl.col("target_name").str.split("|").list.get(6).is_in(list(genes)))
-        p = OUT / "tmp_241.csv"
-        d.write_csv(p)
-        frames.append(
-            read_regions(p, s, scale=1.0).filter(
-                pl.col("query_name").is_in(list(PARTNER))
-            )
-        )
-    return pl.concat(frames, how="diagonal_relaxed")
+    proteome search, to check the pairwise numbers against. Read from the committed
+    extract of 241's search CSVs (every Ced9 and P66 row on these 15 proteins)."""
+    raw = pl.read_csv(HUMAN_ROWS, infer_schema_length=0)
+    frames = [
+        regions_from_frame(raw.filter(pl.col("setting") == s["tag"]), s, scale=1.0)
+        for s in sets
+    ]
+    return pl.concat(frames).filter(pl.col("query_name").is_in(list(PARTNER)))
 
 
 def summarise_pairwise(sets: list[dict]) -> None:
-    d = pl.read_parquet(sorted((OUT / "pairwise").glob("*.parquet")))
+    # One file per index; "fitted_here" is untyped (all null) in some files written
+    # 2026-10-13, so each is read and cast before they are stacked.
+    d = pl.concat(
+        [
+            pl.read_parquet(f).with_columns(pl.col("fitted_here").cast(pl.Boolean))
+            for f in sorted((OUT / "pairwise").glob("*.parquet"))
+        ]
+    )
     d.write_parquet(OUT / "288_pairwise_regions.parquet")
+    fits = [
+        json.loads(f.read_text()) for f in sorted((OUT / "pairwise").glob("*.fit.json"))
+    ]
+    for (
+        f
+    ) in fits:  # read again from the survival file; 2026-10-13 stored a refusal as null
+        f["fitted_here"] = fit_outcome(
+            OUT / "pairwise_work" / f"{f['database']}.{f['setting']}.rocksdb"
+        )
+    pl.DataFrame(fits).write_csv(OUT / "288_pairwise_index_fits.csv")
     keys = [
         "query_name",
         "gene",
@@ -567,13 +624,52 @@ def summarise_pairwise(sets: list[dict]) -> None:
         .first()
     )
     best.drop("moltype_seq").write_csv(OUT / "288_pairwise_best.csv")
+    # Question 1: every query's best E on its partner database, with "no region with an
+    # E-value at any setting" kept as infinity, and the shuffles' verdict.
+    queries = list(read_fasta(OUT / "queries.fa"))
+    rows, verdict = [], []
+    for case, db in [("Ced9", "BCL2"), ("Ced9", "BCL2_family"), ("P66", "CD47")]:
+        b = best.filter(pl.col("database") == db).select(
+            "query_name", "e_value_human_fit"
+        )
+        e = dict(b.iter_rows())
+        qs = [q for q in queries if q.split("_shuf")[0] == case]
+        for q in qs:
+            rows.append(
+                dict(
+                    query_name=q,
+                    case=case,
+                    database=db,
+                    real=q == case,
+                    best_e=e.get(q, float("inf")),
+                )
+            )
+        real = e.get(case, float("inf"))
+        sh = [e.get(q, float("inf")) for q in qs if q != case]
+        n_le = sum(x <= real for x in sh)
+        p = (1 + n_le) / (1 + len(sh))
+        verdict.append(
+            dict(
+                case=case,
+                database=db,
+                real_best_e=real,
+                n_shuffles=len(sh),
+                n_shuffles_at_or_below_real=n_le,
+                n_shuffles_below_pass_e=sum(x < PASS_E for x in sh),
+                empirical_p=p,
+                passes=real < PASS_E and p < PASS_E,
+            )
+        )
+    pl.DataFrame(rows).write_csv(OUT / "288_pairwise_best_all_queries.csv")
+    pl.DataFrame(verdict).write_csv(OUT / "288_pairwise_shuffle_null.csv")
+    print(pl.DataFrame(verdict), file=sys.stderr)
 
 
 # ---------------------------------------------------------------- step: indexes
 
 
 def human_index(s: dict) -> str:
-    idx = OUT / "idx" / f"human.{s['tag']}.rocksdb"
+    idx = HUMAN_IDX / f"human.{s['tag']}.rocksdb"
     if (idx / "CURRENT").exists():
         return f"{s['tag']} cached"
     shutil.rmtree(idx, ignore_errors=True)
@@ -585,6 +681,19 @@ def step_indexes(workers: int) -> None:
     for x in ("idx", "logs"):
         (OUT / x).mkdir(parents=True, exist_ok=True)
     sets = sorted(settings(), key=lambda s: s["bits"])  # slowest (fewest bits) first
+    if HUMAN_IDX != OUT / "idx":
+        # Someone else's folder: use what is there, never write into it.
+        missing = [
+            s["tag"]
+            for s in sets
+            if not (HUMAN_IDX / f"human.{s['tag']}.rocksdb" / "CURRENT").exists()
+        ]
+        if missing:
+            sys.exit(
+                f"{len(missing)} of 70 indexes missing in {HUMAN_IDX}: {missing[:5]}"
+            )
+        print(f"using the 70 human indexes in {HUMAN_IDX}", file=sys.stderr)
+        return
     failed = []
     with cf.ProcessPoolExecutor(workers) as ex:
         for msg in ex.map(human_index, sets):
@@ -604,7 +713,7 @@ def search_chunk(tag: str, chunk: list[tuple[str, str]], s: dict) -> str:
         return f"{tag} cached"
     fa, out_csv = OUT / "tmp" / f"{tag}.fa", OUT / "tmp" / f"{tag}.csv"
     write_fasta(fa, chunk)
-    idx = OUT / "idx" / f"human.{s['tag']}.rocksdb"
+    idx = HUMAN_IDX / f"human.{s['tag']}.rocksdb"
     rc = search(fa, idx, s, out_csv, OUT / "logs" / f"{tag}.search.log")
     if rc != 0:
         return f"{tag} FAILED rc={rc}"
@@ -649,6 +758,22 @@ def search_chunk(tag: str, chunk: list[tuple[str, str]], s: dict) -> str:
     return f"{tag} ok {d.height} regions, {best.height} kept"
 
 
+def check_n(sets: list[dict]) -> None:
+    """Every human index searched must hold the k-mers of notebook 241's: n is the
+    E-value's database size, so a different index would give different E-values."""
+    n = (
+        pl.scan_parquet(sorted((OUT / "proteome").glob("*.parquet")))
+        .group_by("setting")
+        .agg(pl.col("db_n_kmers").unique())
+        .collect()
+    )
+    want = {s["tag"]: s["n_human"] for s in sets}
+    bad = [(t, v) for t, v in n.iter_rows() if v != [want[t]]]
+    if bad:
+        sys.exit(f"{len(bad)} settings have n differing from notebook 241's: {bad[:5]}")
+    print(f"n matches notebook 241 at all {n.height} settings", file=sys.stderr)
+
+
 def step_search(workers: int) -> None:
     for x in ("proteome", "tmp", "logs"):
         (OUT / x).mkdir(parents=True, exist_ok=True)
@@ -658,7 +783,7 @@ def step_search(workers: int) -> None:
     missing = [
         s["tag"]
         for s in sets
-        if not (OUT / "idx" / f"human.{s['tag']}.rocksdb" / "CURRENT").exists()
+        if not (HUMAN_IDX / f"human.{s['tag']}.rocksdb" / "CURRENT").exists()
     ]
     if missing:
         sys.exit(
@@ -685,6 +810,7 @@ def step_search(workers: int) -> None:
                 failed.append(msg)
     if failed:
         sys.exit(f"{len(failed)} chunks failed; rerun to retry them")
+    check_n(sets)
 
 
 # ---------------------------------------------------------------- step: twostep

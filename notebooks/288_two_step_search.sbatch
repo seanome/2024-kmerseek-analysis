@@ -17,7 +17,8 @@
 #   cd $SCRATCH/288-two-step-repo && bash notebooks/288_submit.sh
 #
 # Sizing, from notebook 241's runs.jsonl (laptop, 3 queries, the same 70 settings):
-#   indexes  2_091 s of index time with the 200-query fit; here no fit, 2 workers.
+#   indexes  none when notebook 283's are used (below); otherwise 2_091 s of index time
+#            with the 200-query fit in 241, here no fit, 2 workers.
 #   search   199 s for 3 queries; 202 queries is about 67x, 3.7 h of one process,
 #            3 workers. 283 asked 128 GB for 2-3 such workers on this proteome; no peak
 #            was ever measured, so the same ask. Read it after with
@@ -31,6 +32,10 @@ export NB288_DIR=${NB288_DIR:-$SCRATCH/288-two-step-search}
 export NB241_DIR=${NB241_DIR:-$SCRATCH/241-alphabet-ranking}
 export NB241_KMERSEEK=${NB241_KMERSEEK:-$SCRATCH/241-alphabet-ranking-kmerseek/target/release/kmerseek}
 export NB241_HUMAN=${NB241_HUMAN:-$SCRATCH/data/gencode/human/v49/gencode.v49.pc_translations.canonical.fa}
+# Notebook 283's rebuild of 241's 152 human indexes (job 47777316, finished 2026-10-14),
+# used as they are; with NB288_HUMAN_IDX unset and that folder gone, the 70 are built here.
+H283=$SCRATCH/283-bhf-low-complexity/indexes/idx
+if [ -z "${NB288_HUMAN_IDX:-}" ] && [ -d "$H283" ]; then export NB288_HUMAN_IDX=$H283; fi
 # notebook 283's venv: polars 1.34.0 on the python/3.12.1 module (needs the module loaded)
 module load python/3.12.1
 PY=$HOME/venvs/nb283/bin/python

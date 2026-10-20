@@ -363,30 +363,117 @@ for q, d in [("Ced9", "BCL2 alone"), ("Ced9", "BCL-2 family (14)"), ("P66", "CD4
     show(q, d)
 """),
     md(r"""
-## Summary so far (2026-10-13, before the Sherlock runs)
+## 4. Question 1 on kmerseek's own runs: the small indexes and 100 shuffles
+
+The Sherlock pairwise job (2026-10-13, job 47662207, rerun 2026-10-20) built an index of
+BCL2 alone, CD47 alone and the 14 BCL-2 family proteins at each of the 70 settings, and
+searched Ced9, P66 and 100 dipeptide shuffles of each against them. **No small index
+could fit K itself**: all 210 fits were refused for too few regions, so every E-value
+below uses the human fit's K (given with `--ka-k`) and λ scale (put back from the output
+columns). 51 of the 210 searches found no region for any of the 202 queries.
+
+First, the runs against the predictions of section 2: the same region, scored by kmerseek
+against the small index, should have E = E_human × n_small / n_human, with n_small now
+kmerseek's own `db_n_kmers`.
+"""),
+    code(r"""
+v = pl.read_csv("288_pairwise_vs_241.csv")
+fits_small = pl.read_csv("288_pairwise_index_fits.csv")
+print("small indexes:", fits_small.height, "| fit stored:", fits_small.group_by("fitted_here").len().rows(),
+      "| searches with no region:", (fits_small["n_regions"] == 0).sum())
+both = v.filter(pl.col("e_value_241").is_not_null() & pl.col("e_value_241").is_finite()).with_columns(
+    predicted=pl.col("e_value_241") * pl.col("db_n_kmers") / pl.col("n_human"))
+print(f"Ced9/P66 regions on the small indexes: {v.height}; found at the same place in 241: "
+      f"{v['e_value_241'].is_not_null().sum()}; with an E-value: {both.height}")
+print(f"largest relative difference, kmerseek run vs prediction: "
+      f"{((both['e_value_human_fit'] / both['predicted']) - 1).abs().max():.1e}")
+n_chk = both.select("database", "setting", "db_n_kmers").unique().join(
+    pred.select(pl.col("database").replace({"BCL2 alone": "BCL2", "BCL-2 family (14)": "BCL2_family",
+                                            "CD47 alone": "CD47"}), "setting", "n_small").unique(),
+    on=["database", "setting"])
+print(f"n_small counted here equals kmerseek's db_n_kmers at {(n_chk['db_n_kmers'] == n_chk['n_small']).sum()} "
+      f"of {n_chk.height} (database, setting) pairs")
+"""),
+    md(r"""
+Now the decision rule. For each query, its best E-value over the 70 settings against its
+partner's index; a shuffle with no region with an E-value at any setting counts as
+infinitely bad. Empirical p = (1 + shuffles at or below the real query's best) / 101.
+Pass needs best E < 0.05 **and** p < 0.05.
+"""),
+    code(r"""
+null = pl.read_csv("288_pairwise_shuffle_null.csv")
+allq = pl.read_csv("288_pairwise_best_all_queries.csv")
+print(null)
+print(allq.filter(~pl.col("real")).group_by("case", "database").agg(
+    median_shuffle_best_e=pl.col("best_e").median(),
+    n_no_e_value=(~pl.col("best_e").is_finite()).sum()).sort("case", "database"))
+
+panels = [("Ced9", "BCL2", "Ced9 vs BCL2 alone"), ("Ced9", "BCL2_family", "Ced9 vs BCL-2 family (14)"),
+          ("P66", "CD47", "P66 vs CD47 alone")]
+fig, axs = pf.figure(pf.TWO_COLUMN_MM, 70, ncols=3, sharey=True)
+rng = np.random.default_rng(288)  # jitter only
+NO_E_ROW = 30  # row of the "no E-value" crosses, above every finite best E drawn
+assert allq.filter(pl.col("best_e").is_finite())["best_e"].max() < NO_E_ROW / 2
+for ax, (case, db, label) in zip(axs, panels):
+    a = allq.filter((pl.col("case") == case) & (pl.col("database") == db))
+    sh = a.filter(~pl.col("real"))
+    fin = sh.filter(pl.col("best_e").is_finite())
+    ax.scatter(rng.uniform(-0.3, 0.3, fin.height), fin["best_e"], s=6, lw=0, color=pf.GREY,
+               label="best E of one shuffled copy (100 copies)")
+    nofin = sh.height - fin.height
+    if nofin:
+        ax.scatter(rng.uniform(-0.3, 0.3, nofin), [NO_E_ROW] * nofin, marker="x", s=6, lw=0.5,
+                   color=pf.GREY, label="shuffled copy with no E-value at any setting")
+    r = null.filter((pl.col("case") == case) & (pl.col("database") == db)).row(0, named=True)
+    ax.scatter([0.55], [r["real_best_e"]], marker="D", s=14, color=pf.OKABE_ITO["vermillion"],
+               label=f"real query's best E", zorder=3)
+    ax.axhline(PASS_E, color="black", lw=0.5, ls="--", label="E = 0.05 (decision line)")
+    ax.set_yscale("log"); plain_log_ticks(ax)
+    ax.set_xlim(-0.6, 0.9); ax.set_xticks([])
+    ax.set_xlabel(f"{label}\n{r['n_shuffles_at_or_below_real']} of 100 copies at or below; "
+                  f"p = {r['empirical_p']:.2f}")
+axs[0].set_ylabel("best pairwise E-value over 70 settings")
+h, l = [], []
+for ax in axs:
+    for hh, ll in zip(*ax.get_legend_handles_labels()):
+        if ll not in l:
+            h.append(hh); l.append(ll)
+fig.legend(h, l, loc="outside upper left", ncol=4, frameon=False, alignment="left",
+           title="kmerseek 982a055, each small index searched with Ced9 or P66 and 100 "
+                 "dipeptide shuffles; below the dashed line is the pass side")
+pf.save(fig, FIG / "288_pairwise_evalue_vs_shuffles_ced9_bcl2_p66_cd47_gencode_v49")
+"""),
+    md(r"""
+## Summary (2026-10-20): question 1 fails for all three pairs
 
 **Measured.**
 - kmerseek's region E-value is K × m × n × exp(−λS), with m the whole query's length and n
   the database's k-mer count (`search.rs:1690-1708`). On all 309 of notebook 241's Ced9 and
   P66 regions on the BCL-2 family and CD47 that have an E-value, E = m × n × 2^(−bits) to
-  within 3e-15, and the K recovered from each row equals the fitted K of its setting.
-- n is the human index's k-mer count, 9.6 to 11.0 million, not the 11_347_201 residues.
+  within 3e-15, and the K recovered from each row equals the fitted K of its setting. n for
+  the human proteome is 9.6 to 11.0 million, not the 11_347_201 residues.
+- kmerseek's own runs on the small indexes give the E-values section 2 predicted, to within
+  7e-13 over 323 regions. No index of 1 to 14 proteins could fit K; all 210 borrowed the
+  human fit.
+- Ced9 vs BCL2 alone: best E = 0.041 (wwmj5 k = 9, Ced9 78-99 on BCL2's BH4 at 9-30).
+  42 of 100 shuffled copies reach a best E below 0.05, and 39 do at least as well as Ced9:
+  p = 0.40. **Fail.**
+- Ced9 vs the 14-protein BCL-2 family: best E = 0.0052 (dayhoff6 k = 12, MCL1's BH1).
+  64 of 100 copies get below 0.05, 8 at least as well as Ced9: p = 0.089. **Fail**, the
+  closest of the three.
+- P66 vs CD47 alone: best E = 0.020; 52 of 100 copies below 0.05, 29 at least as well:
+  p = 0.30. **Fail.**
 
-**Predicted, not yet run** (E_human × n_small / n_human, with n_small counted as kmerseek
-counts it):
-- Ced9 vs BCL2 alone: best E = 0.041 (wwmj5 k = 9, Ced9 78-99 on BCL2's BH4 at 9-30). One
-  of the 70 settings is below 0.05; at 64 settings Ced9 has no region on BCL2 with an
-  E-value.
-- Ced9 vs the 14-protein BCL-2 family: best E = 0.0052 (dayhoff6 k = 12, Ced9 168-185 on
-  MCL1's BH1 at 261-278); 4 settings below 0.05.
-- P66 vs CD47 alone: best E = 0.020 (hp_lehninger_hpc3 k = 14, P66 9-38 on CD47 10-39,
-  2 of 30 residues identical); 2 settings below 0.05.
+**What it means.** Asking "is Ced9 related to BCL2?" as a pairwise question does not make
+the Ced9 → BCL2 match significant under kmerseek. A best-of-70-settings E below 0.05 is what
+a shuffled Ced9 gets about half the time, so the paper cannot quote these pairwise E-values
+as evidence. The decision rule's outcome: no "significantly similar as a pair" claim for
+Ced9/BCL2 or P66/CD47.
 
-**Not yet decided.** Each of these is the best of 70 settings. Under the decision rule a pass
-also needs fewer than 5% of 100 shuffled copies to reach the same best E, and a best of 70
-can fall below 0.05 by chance. The shuffle searches against the small indexes (question 1)
-and the two-step test (question 2) run on Sherlock with `288_two_step_search.sbatch`; the
-sections that read their output are added when they finish.
+**Still running.** Question 2 (the two-step search) needs the proteome searches of the 202
+queries; the heavy Sherlock job runs them on notebook 283's human indexes. Its section is
+added when it finishes. With question 1 failed, the two-step rule can at most show that
+candidate selection makes chance look better; it cannot rescue Ced9 → BCL2.
 """),
 ]
 
