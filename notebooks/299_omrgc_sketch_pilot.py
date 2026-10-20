@@ -245,25 +245,48 @@ def parse_gnu_time(path: Path) -> dict | None:
 def cmd_drop_empty(args: argparse.Namespace) -> None:
     """Copy the sketches that hold at least one hash from SRC (.sig.gz) into DST (.zip).
 
-    sourmash's .zip writer slows down with every sketch whose content repeats an earlier
-    one, and all empty sketches are the same. In the first step 1 run (jobs 48551687) the
-    nine scaled 1000 settings and hp k7 scaled 100 hit the 40_000 s limit this way; on
-    20_000 catalog genes at protein k7 scaled 1000, writing .zip took 132 s and .sig.gz
-    2.5 s, and 7_856 of the 20_000 sketches were empty. A gene with no hash can share no
-    hash with any query, so dropping it changes no hit (checked: same 25 manysearch hits
-    with and without the empty sketches).
+    Two things make sourmash's own .zip writer slow here, both measured:
+    - Empty sketches: all identical. In step 1 run 1 (jobs 48551687) the nine scaled 1000
+      settings and hp k7 scaled 100 hit the 40_000 s limit; on 20_000 catalog genes at
+      protein k7 scaled 1000, writing .zip took 132 s and .sig.gz 2.5 s (7_856 of 20_000
+      empty). A gene with no hash shares no hash with any query, so it is dropped (checked:
+      same 25 manysearch hits with and without them).
+    - Identical non-empty sketches under different gene names (hp k7 scaled 100: 9_815
+      distinct among 19_914). sourmash names each file by the sketch's md5 and, when the
+      name exists with other content, tries name_1, name_2, ... reading each, so a group of
+      g identical sketches costs about g^2/2 reads; run 2's tasks for those settings ran
+      for hours here. So each sketch is written under its own position number instead,
+      with the same manifest sourmash writes.
     """
-    import sourmash
-    from sourmash.save_load import SaveSignaturesToLocation
+    from io import StringIO
 
-    kept = dropped = 0
-    with SaveSignaturesToLocation(str(args.dst)) as save:
-        for sig in sourmash.load_file_as_signatures(str(args.src)):
-            if len(sig.minhash.hashes):
-                save.add(sig)
-                kept += 1
-            else:
-                dropped += 1
+    import sourmash
+    from sourmash import signature as sigmod
+    from sourmash.manifest import CollectionManifest
+    from sourmash.sbt_storage import ZipStorage
+
+    storage = ZipStorage(str(args.dst), mode="w")
+    rows, kept, dropped = [], 0, 0
+    for sig in sourmash.load_file_as_signatures(str(args.src)):
+        if not len(sig.minhash.hashes):
+            dropped += 1
+            continue
+        buf = sigmod.save_signatures_to_json([sig], compression=1)
+        location = storage.save(f"signatures/{kept}.sig.gz", buf, overwrite=True)
+        rows.append(
+            CollectionManifest.make_manifest_row(sig, location, include_signature=False)
+        )
+        kept += 1
+    manifest_fp = StringIO()
+    CollectionManifest(rows).write_to_csv(manifest_fp, write_header=True)
+    storage.save(
+        "SOURMASH-MANIFEST.csv",
+        manifest_fp.getvalue().encode("utf-8"),
+        overwrite=True,
+        compress=True,
+    )
+    storage.flush()
+    storage.close()
     print(f"{args.src}: kept {kept} sketches, dropped {dropped} empty")
 
 
@@ -299,13 +322,22 @@ def cmd_step1_table(args: argparse.Namespace) -> None:
         zip_timing = (
             parse_gnu_time(work / "step1" / f"{sid}.zip.time") if finished else None
         )
-        if finished and (zip_timing is None or zip_timing["exit_status"] != 0):
+        if finished and (
+            zip_timing is None or zip_timing["exit_status"] not in (0, TIMEOUT_EXIT)
+        ):
             sys.exit(
                 f"{sid}: no successful .zip index step; read its log, do not score it"
             )
-        zip_cpu_s = zip_timing["cpu_s"] if zip_timing else 0.0
         # Stopped by `timeout` at limit_s: a lower bound, it needs at least limit_s.
         sketch_cpu_s = timing["cpu_s"] if finished else float(limit_s)
+        zip_stopped = (
+            zip_timing is not None and zip_timing["exit_status"] == TIMEOUT_EXIT
+        )
+        if zip_timing is None:
+            zip_cpu_s = 0.0
+        else:
+            zip_cpu_s = float(limit_s) if zip_stopped else zip_timing["cpu_s"]
+        finished = finished and not zip_stopped
         cpu_s = sketch_cpu_s + zip_cpu_s
         rows.append(
             dict(

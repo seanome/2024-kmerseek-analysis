@@ -5,7 +5,7 @@
 #SBATCH --array=0-17
 #SBATCH --cpus-per-task=1
 #SBATCH --mem=8G
-#SBATCH --time=12:00:00
+#SBATCH --time=23:00:00
 #SBATCH --output=299-step1-%A_%a.out
 #
 # Notebook 299, step 1: time `sourmash sketch translate` on one CPU on the 1 GB slice, one
@@ -17,7 +17,8 @@
 # after setup). If the catalog is near 40 GB, that allows about 4 CPU-hours per GB per
 # setting. `timeout` stops a setting at 40_000 s on the 1 GB slice: nine settings at that
 # rate exceed 1_536 CPU-hours for any catalog over 15 GB (the gzipped file alone is
-# 29.6 GB), so step1-table keeps 40_000 s as a lower bound. 12 h covers that plus start-up. A laptop rate of about 2.5-3.5 CPU-s per MB
+# 29.6 GB), so step1-table keeps 40_000 s as a lower bound. The .zip step has the same limit, so
+# 23 h covers both plus start-up. A laptop rate of about 2.5-3.5 CPU-s per MB
 # (catalog's first 2-8 MB, start-up included) suggests about 1 h per task. 8 G: a
 # --singleton sketch holds only the current record's hashes plus the output.
 set -euo pipefail
@@ -44,8 +45,15 @@ set -e
 echo "sketch exit $STATUS"
 tail -n 25 "$WORK/step1/$SID.time"
 # 124 is `timeout` stopping it: a lower bound, read as such by step1-table.
+# The .zip step gets its own time limit: if it stops, step1-table keeps the limit as a
+# lower bound instead of the task failing and cancelling the gate.
+ZIP_STATUS=0
 if [ "$STATUS" = 0 ]; then
-    /usr/bin/time -v -o "$WORK/step1/$SID.zip.time" "$E/python" "$REPO/notebooks/299_omrgc_sketch_pilot.py" \
-        drop-empty "$WORK/step1/$SID.sig.gz" "$WORK/step1/$SID.sig.zip"
+    set +e
+    /usr/bin/time -v -o "$WORK/step1/$SID.zip.time" timeout "$LIMIT" "$E/python" \
+        "$REPO/notebooks/299_omrgc_sketch_pilot.py" drop-empty "$WORK/step1/$SID.sig.gz" "$WORK/step1/$SID.sig.zip"
+    ZIP_STATUS=$?
+    set -e
+    echo "zip exit $ZIP_STATUS"
 fi
-[ "$STATUS" = 0 ] || [ "$STATUS" = 124 ]
+{ [ "$STATUS" = 0 ] || [ "$STATUS" = 124 ]; } && { [ "$ZIP_STATUS" = 0 ] || [ "$ZIP_STATUS" = 124 ]; }
