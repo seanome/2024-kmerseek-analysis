@@ -1,0 +1,4 @@
+scan,threshold_rule,threshold,n_decoy_windows,n_decoys_hit,decoy_hit_rate,n_features,n_cases,recall_features,recall_cases,median_boundary_error_aa,median_overlap_fraction,ms_per_protein_warm
+hydropathy,decoy hit rate below 1%,2.594736842105263,100,0,0.0,50,87,0.0,0.0,,,0.05212700038793541
+hydropathy,"Kyte-Doolittle 1982 cutoff 1.6 (context, not the pass rule)",1.6,100,7,0.07,50,87,0.06,0.034482758620689655,39.0,0.391304347826087,0.05212700038793541
+period,decoy hit rate below 1%,1.0000000000000002,100,0,0.0,50,87,0.0,0.0,,,0.16212997642079635

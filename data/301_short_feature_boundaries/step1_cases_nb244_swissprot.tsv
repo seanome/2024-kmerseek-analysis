@@ -1,0 +1,88 @@
+gene	query	feature_type	swissprot_description	feature_start	feature_end	feature_length_aa	species	kd_scan_landed
+ROS1	P08922	BINDING	ligand: ATP	1951	1959	9	yeast	false
+ROS1	P08922	BINDING	ligand: ATP	1951	1959	9	worm	false
+COL9A1	P20849	DOMAIN	Collagen-like 6	587	643	57	zebrafish	false
+COL12A1	Q99715	DOMAIN	Collagen-like 2	2802	2852	51	zebrafish	false
+ROS1	P08922	BINDING	ligand: ATP	1951	1959	9	zebrafish	false
+COL12A1	Q99715	DOMAIN	Collagen-like 2	2802	2852	51	chicken	false
+COL9A1	P20849	DOMAIN	Collagen-like 7	655	712	58	chicken	false
+COL12A1	Q99715	DOMAIN	Collagen-like 4	2941	2990	50	chicken	false
+PHACTR2	O75167	REPEAT	RPEL 2	477	502	26	chicken	false
+ADGRB3	O60242	DOMAIN	TSP type-1 1	291	343	53	chicken	false
+DAAM2	Q86T65	DOMAIN	DAD	1016	1048	33	chicken	false
+ROS1	P08922	BINDING	ligand: ATP	1951	1959	9	chicken	false
+MYB	P10242	DNA_BIND	H-T-H motif	115	138	24	arabidopsis	false
+EHMT2	Q96KQ7	REPEAT	ANK 7	850	879	30	arabidopsis	false
+KCNK17	Q96T54	INTRAMEM	Pore-forming; Name=Pore-forming 2	211	230	20	arabidopsis	false
+KCNK16	Q96T55	INTRAMEM	Pore-forming; Name=Pore-forming 2	202	221	20	arabidopsis	false
+SGK1	O00141	BINDING	ligand: ATP	104	112	9	arabidopsis	false
+MAP3K7	O43318	BINDING	ligand: ATP	42	50	9	arabidopsis	false
+MAP3K5	Q99683	BINDING	ligand: ATP	686	694	9	arabidopsis	false
+MAPK13	O15264	BINDING	ligand: ATP	31	39	9	arabidopsis	false
+MAPK14	Q16539	BINDING	ligand: ATP	30	38	9	arabidopsis	false
+TTK	P33981	BINDING	ligand: ATP	531	539	9	arabidopsis	false
+MAP3K5	Q99683	BINDING	ligand: ATP	686	694	9	yeast	false
+SGK1	O00141	BINDING	ligand: ATP	104	112	9	yeast	false
+MAPK13	O15264	BINDING	ligand: ATP	31	39	9	yeast	false
+MAPK14	Q16539	BINDING	ligand: ATP	30	38	9	yeast	false
+MAP3K7	O43318	BINDING	ligand: ATP	42	50	9	yeast	false
+TTK	P33981	BINDING	ligand: ATP	531	539	9	yeast	false
+MAP3K4	Q9Y6R4	BINDING	ligand: ATP	1349	1357	9	yeast	false
+HIVEP1	P15822	ZN_FING	C2H2-type 4	2116	2140	25	worm	false
+KCNK5	O95279	INTRAMEM	Pore-forming; Name=Pore-forming 2	190	215	26	worm	false
+KCNK16	Q96T55	INTRAMEM	Pore-forming; Name=Pore-forming 2	202	221	20	worm	false
+KCNK17	Q96T54	INTRAMEM	Pore-forming; Name=Pore-forming 2	211	230	20	worm	false
+KCNK16	Q96T55	INTRAMEM	Pore-forming; Name=Pore-forming 1	98	116	19	worm	false
+KCNK17	Q96T54	INTRAMEM	Pore-forming; Name=Pore-forming 1	106	124	19	worm	false
+SGK1	O00141	BINDING	ligand: ATP	104	112	9	worm	false
+ZSCAN16	Q9H4T2	ZN_FING	C2H2-type 1	236	258	23	worm	false
+ZSCAN26	Q16670	ZN_FING	C2H2-type 6	394	416	23	worm	false
+ELOVL4	Q9GZR5	TRANSMEM	Helical	127	147	21	worm	false
+MAPK13	O15264	BINDING	ligand: ATP	31	39	9	worm	false
+BRPF3	Q9ULD4	ZN_FING	C2HC pre-PHD-type	266	299	34	worm	false
+MAPK14	Q16539	BINDING	ligand: ATP	30	38	9	worm	false
+TPBG	Q13641	REPEAT	LRR 3	141	163	23	worm	false
+NFKBIL1	Q9UBC1	REPEAT	ANK 2	97	130	34	worm	false
+LATS1	O95835	BINDING	ligand: ATP	711	719	9	worm	false
+MAP3K7	O43318	BINDING	ligand: ATP	42	50	9	worm	false
+MYB	P10242	DNA_BIND	H-T-H motif	115	138	24	fly	false
+PPARD	Q03181	ZN_FING	NR C4-type	111	133	23	fly	false
+ZNF165	P49910	ZN_FING	C2H2-type 6	456	478	23	fly	false
+PRDM1	O75626	ZN_FING	C2H2-type 3	631	653	23	fly	false
+SLC35B3	Q9H1N7	TRANSMEM	Helical	324	346	23	fly	false
+KCNK16	Q96T55	INTRAMEM	Pore-forming; Name=Pore-forming 2	202	221	20	fly	false
+KCNK17	Q96T54	INTRAMEM	Pore-forming; Name=Pore-forming 2	211	230	20	fly	false
+KCNK5	O95279	INTRAMEM	Pore-forming; Name=Pore-forming 2	190	215	26	fly	false
+ZNF76	P36508	ZN_FING	C2H2-type 7	345	368	24	fly	false
+SGK1	O00141	BINDING	ligand: ATP	104	112	9	fly	false
+MAP3K5	Q99683	BINDING	ligand: ATP	686	694	9	fly	false
+KCNK17	Q96T54	INTRAMEM	Pore-forming; Name=Pore-forming 1	106	124	19	fly	false
+KCNK16	Q96T55	INTRAMEM	Pore-forming; Name=Pore-forming 1	98	116	19	fly	false
+MAPK13	O15264	BINDING	ligand: ATP	31	39	9	fly	false
+LATS1	O95835	BINDING	ligand: ATP	711	719	9	fly	false
+MAP3K4	Q9Y6R4	BINDING	ligand: ATP	1349	1357	9	fly	false
+ZBTB24	O43167	ZN_FING	C2H2-type 3	350	372	23	zebrafish	false
+LRFN2	Q9ULH4	REPEAT	LRR 7	198	219	22	zebrafish	false
+STXBP5	Q5T5C0	REPEAT	WD 5	240	272	33	zebrafish	false
+STXBP5	Q5T5C0	REPEAT	WD 7	344	378	35	zebrafish	false
+PAK1IP1	Q9NWT1	REPEAT	WD 2	73	113	41	zebrafish	false
+PPARD	Q03181	ZN_FING	NR C4-type	111	133	23	zebrafish	false
+DLL1	O00548	DOMAIN	EGF-like 7; calcium-binding	447	478	32	zebrafish	false
+ZNF165	P49910	ZN_FING	C2H2-type 6	456	478	23	zebrafish	false
+PHACTR1	Q9C0D0	REPEAT	RPEL 1	138	163	26	zebrafish	false
+EHMT2	Q96KQ7	REPEAT	ANK 4	750	780	31	zebrafish	false
+ZSCAN9	O15535	ZN_FING	C2H2-type 3	310	332	23	zebrafish	false
+KCNK16	Q96T55	INTRAMEM	Pore-forming; Name=Pore-forming 1	98	116	19	zebrafish	false
+CDC40	O60508	REPEAT	WD 1	286	326	41	zebrafish	false
+MAP3K5	Q99683	BINDING	ligand: ATP	686	694	9	zebrafish	false
+MAPK14	Q16539	BINDING	ligand: ATP	30	38	9	zebrafish	false
+MAP3K7	O43318	BINDING	ligand: ATP	42	50	9	zebrafish	false
+PAK1IP1	Q9NWT1	REPEAT	WD 5	196	235	40	chicken	false
+KCNK16	Q96T55	INTRAMEM	Pore-forming; Name=Pore-forming 2	202	221	20	chicken	false
+GABRR2	P28476	TRANSMEM	Helical	444	464	21	chicken	false
+KCNK17	Q96T54	INTRAMEM	Pore-forming; Name=Pore-forming 2	211	230	20	chicken	false
+RREB1	Q92766	ZN_FING	C2H2-type 3	125	147	23	chicken	false
+KCNK5	O95279	INTRAMEM	Pore-forming; Name=Pore-forming 1	85	112	28	chicken	false
+MAP3K5	Q99683	BINDING	ligand: ATP	686	694	9	chicken	false
+CDC40	O60508	REPEAT	WD 1	286	326	41	chicken	false
+SLC26A8	Q96RN1	TRANSMEM	Helical	393	413	21	zebrafish	true
