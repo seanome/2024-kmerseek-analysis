@@ -32,7 +32,7 @@ SB := $(RUNNING_DIR)/sbatch
 JOBENV := OUT=$(OUT),BIN=$(BIN),KMERSEEK=$(KMERSEEK),KMERSEEK_SRC=$(KMERSEEK_SRC)
 RUN := sbatch --parsable --export=ALL,$(JOBENV)
 
-.PHONY: all download build freeze dev test summarise pull test-code running
+.PHONY: all download build freeze dev test summarise cost pull test-code running
 
 ## Submit every stage as one chain. Prints the job ids.
 all:
@@ -64,6 +64,14 @@ test:
 	echo "test $$te -> summarise $$su"
 summarise:
 	@mkdir -p $(OUT)/logs && cd $(OUT)/logs && $(RUN) --job-name=nb354-summarise -c 1 --mem=8G -t 00:30:00 --export=ALL,$(JOBENV),STAGE=summarise $(SB)/run.sbatch
+
+## Every notebook 354 SLURM job since 20 Oct 2026, with elapsed and CPU time, for the
+## compute budget. Run on Sherlock after the last stage.
+cost:
+	@mkdir -p $(OUT)/work/results
+	sacct -u $$USER -S 2026-10-20 -X -P -o JobID,JobName,State,NCPUS,Elapsed,ElapsedRaw,TotalCPU,MaxRSS \
+	  | awk -F'|' 'NR==1 || $$2 ~ /^nb354-/' > $(OUT)/work/results/compute.tsv
+	@cat $(OUT)/work/results/compute.tsv
 
 ## Copy the small result tables to the notebook's data folder. Run on the laptop.
 pull:

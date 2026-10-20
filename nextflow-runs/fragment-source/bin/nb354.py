@@ -32,6 +32,12 @@ import lookup
 MASSSPEC = "massspec18"
 COARSER = ["hsdm17", "sdm12"]  # coarser alphabets that keep I = L; at most one goes to test
 KSIZES = [4, 5, 6, 7, 8, 9]
+# Settings stopped during the development run, decided before any development score was
+# read (20 Oct 2026, dev job 48682102). They are not run and cannot be chosen.
+STOPPED = {
+    "sdm12_k4": "search still writing after 40 min with 43 GB of output for 2,750 queries "
+                "(about 5,000 candidate proteins per call); cancelled",
+}
 FALSE_RATE_TARGET = 0.01  # threshold: at most 1% of shuffled development calls assigned
 MATCHED_RECOVERY_PP = 0.02  # rule 4b: "matched recovery" = within 2 points of workflow C
 RULE1_RECOVERY = 0.95
@@ -206,7 +212,8 @@ def _dev_one(args_tuple):
 
 def cmd_dev(args) -> None:
     frozen, work = args.frozen, args.work
-    jobs = [(args.kmerseek, frozen, work, a, k) for a in [MASSSPEC] + COARSER for k in KSIZES]
+    jobs = [(args.kmerseek, frozen, work, a, k) for a in [MASSSPEC] + COARSER for k in KSIZES
+            if setting_name(a, k) not in STOPPED]
     with ProcessPoolExecutor(args.workers) as ex:
         for name, status in ex.map(_dev_one, jobs):
             print(name, status, flush=True)
@@ -226,7 +233,8 @@ def cmd_choose(args) -> None:
     calls = [c for c in read_calls(frozen) if c["split"] == "dev"]
     shuffle_ids = list(lookup.read_fasta(frozen / "queries_dev_shuffled.fasta"))
     table = []
-    for name in [setting_name(a, k) for a in [MASSSPEC] + COARSER for k in KSIZES] + [COMPARISON]:
+    names = [setting_name(a, k) for a in [MASSSPEC] + COARSER for k in KSIZES]
+    for name in [n for n in names if n not in STOPPED] + [COMPARISON]:
         scores = read_scores(work / "dev" / name / "scores.tsv")
         tau = threshold_from_shuffles(scores, shuffle_ids)
         rec = sum(recovered(scores.get(c["call_id"], []), c["accepted"], tau) for c in calls) / len(calls)
@@ -247,6 +255,7 @@ def cmd_choose(args) -> None:
         "kmerseek_settings": [{"alphabet": r["alphabet"], "k": r["k"], "tau": r["tau"]} for r in frozen_settings],
         "comparison_tau": next(r["tau"] for r in table if r["setting"] == COMPARISON),
         "best_coarser_on_dev": {"alphabet": coarse["alphabet"], "k": coarse["k"], "dev_recovery": coarse["dev_recovery"]},
+        "stopped_settings": STOPPED,
         "rule": "massspec18: k with the highest dev recovery, ties to the larger k. Coarser "
                 "alphabet: best (alphabet, k) of hsdm17 and sdm12, sent to test only if its dev "
                 "recovery beats massspec18's.",
