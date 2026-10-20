@@ -5,8 +5,10 @@
 #
 #   rescore_pfamn_runs.sh DATA_DIR JOBS SOURCE_COMMIT RUN [RUN ...]
 #
-# A run whose pfamn_rescored_metrics.parquet already exists is skipped. A run that stopped
-# part way resumes from the per-species parts it saved (pfamn_rescore_parts/).
+# A run whose pfamn_rescored_metrics.parquet already exists is skipped, and the commit that
+# wrote it is printed so an out-of-date file shows; delete the file to rescore that run. A
+# run that stopped part way resumes from the per-species parts it saved
+# (pfamn_rescore_parts/), which are reused only if commit and inputs are unchanged.
 # A failing run does not stop the rest; the script exits 1 at the end and names them.
 set -uo pipefail
 
@@ -19,7 +21,9 @@ failed=()
 for r in "$@"; do
     d=$data/$r/results
     if [ -s "$d/pfamn_rescored_metrics.parquet" ]; then
-        echo "== $r: $d/pfamn_rescored_metrics.parquet exists, skipped"
+        was=$(python3 -c "import sys, polars as pl; print(pl.read_parquet(sys.argv[1], columns=['rescore_commit'])['rescore_commit'].unique().to_list())" \
+            "$d/pfamn_rescored_metrics.parquet" 2>/dev/null || echo unknown)
+        echo "== $r: $d/pfamn_rescored_metrics.parquet exists, skipped (written by commit $was; this is $commit)"
         continue
     fi
     # midi and midi-plus kept target disorder in their --db_cache (../results); mini has
