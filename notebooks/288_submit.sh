@@ -11,13 +11,14 @@
 # Asks, from notebook 241's runs.jsonl (see the sizing notes in 288_two_step_search.sbatch):
 #   pairwise  210 indexes of 1-14 proteins + 210 searches of 202 queries: 8 CPU, 16 GB, 1 h
 #   heavy     202 queries x 70 settings on notebook 283's human indexes (built here if those
-#             are gone) + step 2: 16 CPU, 128 GB, 10 h (about 2.5 h expected)
+#             are gone) + step 2: 16 CPU, 160 GB, 2 h. Job 48679491 (2026-10-20) took
+#             42 min and peaked at 126.7 GiB of 128 GB, so 1.25x the memory and about 3x the time
 set -euo pipefail
 
 cd "$(dirname "$0")/.."
 SB=notebooks/288_two_step_search.sbatch
 PAIRWISE=(--job-name=288-pairwise --export=ALL,STEP=pairwise -c 8 --mem=16G --time=01:00:00)
-HEAVY=(--job-name=288-heavy --export=ALL,STEP=heavy -c 16 --mem=128G --time=10:00:00)
+HEAVY=(--job-name=288-heavy --export=ALL,STEP=heavy -c 16 --mem=160G --time=02:00:00)
 
 if [ "${DRY:-0}" = 1 ]; then
     echo "sbatch --parsable ${PAIRWISE[*]} $SB"

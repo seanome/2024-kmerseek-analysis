@@ -90,7 +90,7 @@ pf.use_style()
 def plain_log_ticks(ax, which="y"):
     # plain numbers (0.01, 1, 1000) on a log axis instead of 10^x
     from matplotlib.ticker import FuncFormatter, LogLocator
-    fmt = FuncFormatter(lambda v, _: f"{v:,.0f}".replace(",", "_") if v >= 1 else f"{v:g}")
+    fmt = FuncFormatter(lambda v, _: f"{v:,.0f}".replace(",", "_") if v >= 1 else f"{v:.10f}".rstrip("0"))
     axes = [ax.xaxis, ax.yaxis] if which == "both" else [ax.yaxis]
     for a in axes:
         a.set_major_locator(LogLocator(base=10, numticks=12))
@@ -444,36 +444,141 @@ fig.legend(h, l, loc="outside upper left", ncol=4, frameon=False, alignment="lef
 pf.save(fig, FIG / "288_pairwise_evalue_vs_shuffles_ced9_bcl2_p66_cd47_gencode_v49")
 """),
     md(r"""
-## Summary (2026-10-20): question 1 fails for all three pairs
+## 5. Question 2: the two-step search
+
+The heavy Sherlock job (48679491, 2026-10-20, 42 min) searched Ced9, P66 and their 100
+shuffles each against notebook 283's 70 human indexes (each index's k-mer count n equals
+notebook 241's at all 70 settings). Step 1 picked candidates by the two rules fixed before
+the run: **A50**, the 50 proteins with the lowest best E-value over the 70 settings; **B**,
+every protein with a region at E < 10 at 3 or more settings. Step 2 rescored only those
+candidates, with n set to the candidates' k-mer count, so E shrinks by n_candidates /
+n_human.
+
+Check first: kmerseek itself, run on Ced9's and P66's real candidate sets, gives the step-2
+E-values computed here.
+"""),
+    code(r"""
+s2 = pl.read_csv("288_twostep_summary.csv")
+rank1 = pl.read_csv("288_partner_rank_step1.csv")
+chk2 = pl.read_csv("288_step2_check.csv")
+kc = pl.read_csv("288_kmer_count_check.csv")
+m2 = chk2.filter(pl.col("e_step2").is_not_null() & pl.col("e_kmerseek").is_finite())
+print(f"regions found by both step 2 and kmerseek on the candidate indexes: {m2.height}; "
+      f"largest relative difference in E: {((m2['e_kmerseek'] / m2['e_step2']) - 1).abs().max():.1e}")
+um = chk2.filter(pl.col("e_step2").is_null())
+print(f"regions kmerseek found that step 2 does not hold (dropped at E_human > 10_000 by the "
+      f"proteome search): {um.height}; their smallest kmerseek E: {um['e_kmerseek'].min():.3g}")
+print(f"k-mer count per protein summed over the proteome vs the human index's n: largest "
+      f"relative difference {kc['rel_diff'].abs().max():.2%} (candidate sets: exact)")
+print("\nStep 1 rank of the partner (1 = lowest E), among proteins with a kept region:")
+print(rank1.filter(pl.col("query_name").is_in(["Ced9", "P66"])).select(
+    "query_name", "gene", "best_e", "n_settings_called", "rank", "n_ranked"))
+real2 = s2.filter(pl.col("query_name").is_in(["Ced9", "P66"])).select(
+    "query_name", "rule", "n_candidate_proteins", "partner_is_candidate", "best_gene",
+    "best_setting", "best_e_step1", "best_e_step2")
+print(real2)
+sh2 = (pl.DataFrame({"query_name": [q for q in allq["query_name"].unique() if "_shuf" in q]})
+       .with_columns(case=pl.col("query_name").str.split("_shuf").list.get(0)))
+verdict2 = []
+for case in ["Ced9", "P66"]:
+    for rule in ["A50", "B"]:
+        g = sh2.filter(pl.col("case") == case).join(
+            s2.filter(pl.col("rule") == rule).select("query_name", "best_e_step2"),
+            on="query_name", how="left")
+        r = real2.filter((pl.col("query_name") == case) & (pl.col("rule") == rule)).row(0, named=True)
+        n_pass = int((g["best_e_step2"] < PASS_E).sum())
+        verdict2.append(dict(case=case, rule=rule, partner_is_candidate=r["partner_is_candidate"],
+                             n_shuffles=g.height,
+                             n_shuffles_without_candidates=int(g["best_e_step2"].is_null().sum()),
+                             n_shuffles_any_candidate_below_005=n_pass,
+                             passes=bool(r["partner_is_candidate"]) and n_pass <= 4))
+verdict2 = pl.DataFrame(verdict2)
+verdict2.write_csv("288_twostep_verdict.csv")
+print(verdict2)
+"""),
+    code(r"""
+panels2 = [("Ced9", "A50"), ("Ced9", "B"), ("P66", "A50"), ("P66", "B")]
+partner_rank = {r["query_name"]: (r["gene"], r["rank"], r["n_ranked"])
+                for r in rank1.filter(pl.col("query_name").is_in(["Ced9", "P66"])).iter_rows(named=True)}
+fig, axs = pf.figure(pf.TWO_COLUMN_MM, 75, ncols=4, sharey=True)
+rng = np.random.default_rng(288)
+for ax, (case, rule) in zip(axs, panels2):
+    g = s2.filter((pl.col("case") == case) & (pl.col("rule") == rule))
+    sh = g.filter(pl.col("query_name").str.contains("_shuf"))
+    for x, col in [(0, "best_e_step1"), (1, "best_e_step2")]:
+        ax.scatter(x + rng.uniform(-0.18, 0.18, sh.height), sh[col], s=5, lw=0, color=pf.GREY,
+                   label="shuffled copy (100 copies)")
+    real = g.filter(pl.col("query_name") == case).row(0, named=True)
+    ax.plot([0, 1], [real["best_e_step1"], real["best_e_step2"]], color=pf.OKABE_ITO["vermillion"], lw=0.6)
+    ax.scatter([0, 1], [real["best_e_step1"], real["best_e_step2"]], marker="D", s=14,
+               color=pf.OKABE_ITO["vermillion"], zorder=3, label="real query")
+    ax.axhline(PASS_E, color="black", lw=0.5, ls="--", label="E = 0.05 (decision line)")
+    ax.set_yscale("log"); plain_log_ticks(ax)
+    ax.set_xlim(-0.5, 1.5); ax.set_xticks([0, 1]); ax.set_xticklabels(["whole\nproteome", "candidates\nonly"])
+    gene, rk, nr = partner_rank[case]
+    v = verdict2.filter((pl.col("case") == case) & (pl.col("rule") == rule)).row(0, named=True)
+    ax.set_title(f"{case}, rule {rule}\n{gene}: rank {rk:_} of {nr:_}\n(not a candidate)\n"
+                 f"{v['n_shuffles_any_candidate_below_005']} of 100 copies < 0.05", loc="left")
+axs[0].set_ylabel("E-value of the best step-2 region")
+h, l = [], []
+for ax in axs:
+    for hh, ll in zip(*ax.get_legend_handles_labels()):
+        if ll not in l:
+            h.append(hh); l.append(ll)
+fig.legend(h, l, loc="outside upper left", ncol=3, frameon=False, alignment="left",
+           title="kmerseek 982a055, 70 settings, query vs 19_732 human proteins; each query's best "
+                 "step-2 region, scored against the whole proteome (left) and the candidates only (right)")
+pf.save(fig, FIG / "288_twostep_evalue_shift_ced9_p66_gencode_v49")
+"""),
+    md(r"""
+The real query's best step-2 region, with its residues. Coordinates are 1-based.
+"""),
+    code(r"""
+rb = pl.read_csv("288_twostep_real_best_regions.csv").sort("query_name", "rule")
+for r in rb.iter_rows(named=True):
+    a, b = r["region_subseq"], r["target_subseq"]
+    alph = r["setting"].split(".k")[0]
+    enc = nb288.encoder(alph)
+    line = "".join("|" if x == y else ("+" if enc.get(x) == enc.get(y) else " ") for x, y in zip(a, b))
+    print(f"{r['query_name']}, rule {r['rule']}: {r['gene']}, {alph} k = {r['setting'].split('.k')[1]}, "
+          f"{sum(x == y for x, y in zip(a, b))} of {len(a)} identical, {int(r['region_n_mismatches'])} class "
+          f"mismatches; E whole proteome {r['e_value_human_fit']:.3g}, E step 2 {r['e_step2']:.2g}")
+    q0, t0 = int(r["region_start"]) + 1, int(r["target_start"]) + 1
+    w = max(len(r["query_name"]), len(r["gene"])) + 1
+    print(f"  {r['query_name']:<{w}}{q0:>5} {a} {int(r['region_end'])}")
+    print(f"  {'':<{w}}{'':>5} {line}")
+    print(f"  {r['gene']:<{w}}{t0:>5} {b} {int(r['target_end'])}\n")
+"""),
+    md(r"""
+## Summary (2026-10-20): both questions fail
 
 **Measured.**
 - kmerseek's region E-value is K × m × n × exp(−λS), with m the whole query's length and n
   the database's k-mer count (`search.rs:1690-1708`). On all 309 of notebook 241's Ced9 and
   P66 regions on the BCL-2 family and CD47 that have an E-value, E = m × n × 2^(−bits) to
-  within 3e-15, and the K recovered from each row equals the fitted K of its setting. n for
-  the human proteome is 9.6 to 11.0 million, not the 11_347_201 residues.
-- kmerseek's own runs on the small indexes give the E-values section 2 predicted, to within
-  7e-13 over 323 regions. No index of 1 to 14 proteins could fit K; all 210 borrowed the
-  human fit.
-- Ced9 vs BCL2 alone: best E = 0.041 (wwmj5 k = 9, Ced9 78-99 on BCL2's BH4 at 9-30).
-  42 of 100 shuffled copies reach a best E below 0.05, and 39 do at least as well as Ced9:
-  p = 0.40. **Fail.**
-- Ced9 vs the 14-protein BCL-2 family: best E = 0.0052 (dayhoff6 k = 12, MCL1's BH1).
-  64 of 100 copies get below 0.05, 8 at least as well as Ced9: p = 0.089. **Fail**, the
-  closest of the three.
-- P66 vs CD47 alone: best E = 0.020; 52 of 100 copies below 0.05, 29 at least as well:
-  p = 0.30. **Fail.**
+  within 3e-15. n for the human proteome is 9.6 to 11.0 million, not the 11_347_201
+  residues.
+- Question 1, pairwise. kmerseek's runs on indexes of BCL2 alone, CD47 alone and the 14
+  BCL-2 family proteins give the predicted E-values to within 7e-13. No index that small
+  could fit K; all borrowed the human fit. Ced9 vs BCL2 alone: best E 0.041 (wwmj5 k = 9,
+  BCL2's BH4), but 39 of 100 shuffled copies do as well, p = 0.40. Ced9 vs the BCL-2
+  family: 0.0052, p = 0.089. P66 vs CD47: 0.020, p = 0.30. **No pair passes.**
+- Question 2, two-step. In step 1, BCL2 ranks 12_906th of the 17_395 proteins with a
+  region kept for Ced9 (lowest E first), and CD47 8_647th of 18_274 for P66; neither has a
+  region at E < 10 at any setting. So neither is a candidate under rule A50 or rule B. Every
+  shuffled copy gets some candidate below E = 0.05 in step 2 (100 of 100 under each rule
+  for Ced9; 100 and 99 of 100 for P66), against at most 4 allowed. Ced9's own best step-2
+  call, E = 0.000022, is on ANK3. **Neither rule passes.**
 
-**What it means.** Asking "is Ced9 related to BCL2?" as a pairwise question does not make
-the Ced9 → BCL2 match significant under kmerseek. A best-of-70-settings E below 0.05 is what
-a shuffled Ced9 gets about half the time, so the paper cannot quote these pairwise E-values
-as evidence. The decision rule's outcome: no "significantly similar as a pair" claim for
-Ced9/BCL2 or P66/CD47.
+**What it means.** Picking candidates from the same search and then shrinking the database
+to those candidates makes chance look significant almost every time: the step-2 E-values
+are biased, not honest. A two-step search of this kind is not a kmerseek mode worth
+building. And the pairwise question gives no significant Ced9 → BCL2 or P66 → CD47 match
+either. The paper cannot cite Ced9 → BCL2 as something kmerseek finds, as a pair or in a
+proteome search.
 
-**Still running.** Question 2 (the two-step search) needs the proteome searches of the 202
-queries; the heavy Sherlock job runs them on notebook 283's human indexes. Its section is
-added when it finishes. With question 1 failed, the two-step rule can at most show that
-candidate selection makes chance look better; it cannot rescue Ced9 → BCL2.
+**Compute.** Pairwise job 48679490: 16 s, 0.53 GB peak of 16 GB. Heavy job 48679491:
+42 min, 126.7 GiB peak of 128 GiB asked (99%), so a rerun asks 160 GB.
 """),
 ]
 

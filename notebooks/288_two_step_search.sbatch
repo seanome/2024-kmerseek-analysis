@@ -9,7 +9,7 @@
 #   STEP=pairwise  small indexes (BCL2, CD47, BCL-2 family) x 70 settings, 202 queries.
 #                  sbatch --export=ALL,STEP=pairwise -c 8 --mem=16G --time=01:00:00 ...
 #   STEP=heavy     the 70 human indexes, the proteome search of 202 queries, then step 2.
-#                  sbatch --export=ALL,STEP=heavy -c 16 --mem=128G --time=10:00:00 ...
+#                  sbatch --export=ALL,STEP=heavy -c 16 --mem=160G --time=02:00:00 ... (48679491: 42 min, 126.7 GiB)
 #
 # Submit both with notebooks/288_submit.sh, which holds the heavy job until the pairwise
 # one succeeds. From a clone of olgabot/two-step-search-288:

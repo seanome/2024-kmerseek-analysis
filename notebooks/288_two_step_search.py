@@ -855,6 +855,33 @@ def kmer_counts(s: dict) -> pl.DataFrame:
     )
 
 
+def real_best_step2(step2: pl.DataFrame) -> pl.DataFrame:
+    """Ced9's and P66's best step-2 region under each rule, with its residues, so the
+    notebook can print the pair it rests on."""
+    return (
+        step2.filter(pl.col("query_name").is_in(list(PARTNER)))
+        .sort("e_step2", "setting", "target_name", "region_start")
+        .group_by("query_name", "rule", maintain_order=True)
+        .first()
+        .select(
+            "query_name",
+            "rule",
+            "gene",
+            "setting",
+            "region_start",
+            "region_end",
+            "target_start",
+            "target_end",
+            "region_n_mismatches",
+            "e_value_human_fit",
+            "e_step2",
+            "n_candidates",
+            "region_subseq",
+            "target_subseq",
+        )
+    )
+
+
 def step_twostep(workers: int) -> None:
     sets = settings()
     by_tag = {s["tag"]: s for s in sets}
@@ -969,6 +996,7 @@ def step_twostep(workers: int) -> None:
         .sort("case", "rule", "query_name")
     )
     summ.write_csv(OUT / "288_twostep_summary.csv")
+    real_best_step2(step2).write_csv(OUT / "288_twostep_real_best_regions.csv")
     # Partner rank in step 1 for every query (the partner may sit below the top 50)
     ranks = per_prot.with_columns(
         rank=pl.col("best_e").rank("min").over("query_name"),
