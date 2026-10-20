@@ -421,35 +421,41 @@ def cmd_plan_step3(args: argparse.Namespace) -> None:
             TABLES / "299_step1_sketch_translate_timing_1gb_slice_omrgc_v2.csv"
         )
     }
-    target_hours = 8.0  # one array task's predicted run time; the ask is twice this
+    # One catalog part per task. sourmash holds every sketch of a task in memory until it
+    # writes the file, and a task sketches all nine settings at once, so memory grows with
+    # the genes per task times nine. Measured on Sherlock (array 48648425, 2026-10-20): about
+    # 3.8 GB per part of 182_716 genes for the nine settings at scaled 100; 43 parts per task
+    # ran out of 11 GB after three. Step 1 gives the same from one setting on the 1 GB slice.
+    n_chunks = stats["n_parts"]
+    chunk_gb = step1["catalog_fna_gb"] / n_chunks
     for scaled in SCALEDS:
         rate = sum(
             float(timing[setting_id(a, k, scaled)]["cpu_s_per_gb"])
             for a in ALPHABETS
             for k in KSIZES
         )
-        mem = max(
-            float(timing[setting_id(a, k, scaled)]["slice_max_rss_gb"] or 0)
-            for a in ALPHABETS
-            for k in KSIZES
+        rss_per_gb = (
+            max(
+                float(timing[setting_id(a, k, scaled)]["slice_max_rss_gb"] or 0)
+                for a in ALPHABETS
+                for k in KSIZES
+            )
+            / step1["slice_gb"]
         )
-        chunk_gb = target_hours * 3600 / rate
-        # Each task takes whole catalog parts, so there can be no more tasks than parts.
-        n_chunks = min(
-            stats["n_parts"], max(1, int(-(-step1["catalog_fna_gb"] // chunk_gb)))
-        )
-        hours = rate * step1["catalog_fna_gb"] / n_chunks / 3600
+        mem = rss_per_gb * len(ALPHABETS) * len(KSIZES) * chunk_gb
+        hours = rate * chunk_gb / 3600
         print(
-            f"scaled {scaled}: {rate:.0f} CPU-s per GB for all nine settings, {n_chunks} chunks of "
-            f"{step1['catalog_fna_gb'] / n_chunks:.2f} GB, predicted {hours:.1f} h and {mem:.1f} GB peak per task",
+            f"scaled {scaled}: {rate:.0f} CPU-s per GB for all nine settings, {n_chunks} tasks of "
+            f"{chunk_gb:.3f} GB, predicted {hours:.2f} h and {mem:.1f} GB per task",
             file=sys.stderr,
         )
+        # Ask: three times the predicted memory plus 2 GB; four times the time, at least 1 h.
         print(
             scaled,
             n_chunks,
             n_chunks + N_SAMPLE_PARTS - 1,
-            int(2 * hours) + 1,
-            max(4, int(4 * mem) + 1),
+            max(1, int(4 * hours) + 1),
+            int(3 * mem) + 2,
         )
 
 
@@ -606,6 +612,8 @@ def cmd_score(args: argparse.Namespace) -> None:
                 max_rss_gb=timing["max_rss_gb"] if timing else None,
             )
         )
+    if len(rows) == 1:
+        sys.exit("no sourmash setting finished its search; nothing to score")
     table = pl.DataFrame(rows, infer_schema_length=None).with_columns(
         (
             (pl.col("recall") >= PASS_RECALL)

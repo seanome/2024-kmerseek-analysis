@@ -36,8 +36,14 @@ if [ "$FITS" != "True" ]; then
     exit 0
 fi
 
-DIAMOND=$("${SUB[@]}" notebooks/299_step2_diamond.sbatch)
-DIAMOND=${DIAMOND%%;*}
+# DIAMOND writes diamond/done when it has finished everything; a resubmitted gate reuses it.
+if [ -e "$WORK/diamond/done" ]; then
+    DIAMOND=""
+    echo "DIAMOND already done ($WORK/diamond/done); not resubmitted"
+else
+    DIAMOND=$("${SUB[@]}" notebooks/299_step2_diamond.sbatch)
+    DIAMOND=${DIAMOND%%;*}
+fi
 SKETCH=()
 while read -r SCALED N_CHUNKS LAST HOURS MEM; do
     ID=$("${SUB[@]}" --export=ALL,N_CHUNKS="$N_CHUNKS",SCALED="$SCALED" --array=0-"$LAST" \
@@ -47,7 +53,7 @@ while read -r SCALED N_CHUNKS LAST HOURS MEM; do
 done < <("$E/python" notebooks/299_omrgc_sketch_pilot.py plan-step3)
 [ "${#SKETCH[@]}" = 2 ] || { echo "plan-step3 gave ${#SKETCH[@]} lines, expected 2"; exit 1; }
 
-SEARCH=$("${SUB[@]}" --dependency=afterok:"$DIAMOND":"${SKETCH[0]}":"${SKETCH[1]}" notebooks/299_step3_search.sbatch)
+SEARCH=$("${SUB[@]}" --dependency=afterok:"${DIAMOND:+$DIAMOND:}${SKETCH[0]}":"${SKETCH[1]}" notebooks/299_step3_search.sbatch)
 SEARCH=${SEARCH%%;*}
 # afterany: a setting whose search failed is left out of the score and named in the log.
 FINISH=$("${SUB[@]}" --dependency=afterany:"$SEARCH" notebooks/299_finish.sbatch)

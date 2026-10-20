@@ -1,0 +1,19 @@
+{
+ "logan_proteins": 109400000000.0,
+ "genes_in_slice": 1372957,
+ "per_scaled": [
+  {
+   "scaled": 100,
+   "cpu_s_per_gene_all_nine": 0.0031386609736350057,
+   "logan_cpu_hours_arithmetic": 95380.41958768602,
+   "includes_lower_bounds": false
+  },
+  {
+   "scaled": 1000,
+   "cpu_s_per_gene_all_nine": 0.0025853535106984617,
+   "logan_cpu_hours_arithmetic": 78566.02057511435,
+   "includes_lower_bounds": false
+  }
+ ],
+ "note": "Arithmetic, not measured. Per-gene time includes translating DNA in six frames, which Logan's proteins do not need. Where includes_lower_bounds is true, some settings stopped at the step 1 time limit, so the number is not a bound in either direction."
+}
