@@ -77,7 +77,11 @@ lineage.
 
 **The data.** The convergence-afp pipeline
 ([nextflow-runs/convergence-afp](../nextflow-runs/convergence-afp), PR 141), run on
-Sherlock 15-16 October 2026 and scored on 17 October. Every method ranked all 575_748 entries of reviewed
+Sherlock 15-16 October 2026 and scored on 17 October; rescored on 20 October (Slurm job
+48646822, `scripts/convergence_afp_rescore.sbatch`) after all 10 phmmer and 10 jackhmmer
+chunks, 246 queries, were put back by `scripts/convergence_recover_hmmer_chunks.sh`.
+Before that, those two tools held one chunk of 24 queries, because every chunk was
+published under one file name. Every method ranked all 575_748 entries of reviewed
 Swiss-Prot release 2026_03 (FASTA MD5 `bc9d398533e6df582b563c6c03093bd0`) for every
 query. kmerseek is 0.4 at commit
 [3c353d4](https://github.com/seanome/kmerseek/pull/141), with the Karlin-Altschul
@@ -343,14 +347,14 @@ pf.save(fig, FIGURES / "295_SF3_methods_run_swissprot_2026_03")
 """)
 
 md(r"""
-## 3. F1: the lineage grid. Only five squares off the diagonal are not zero
+## 3. F1: the lineage grid. Only six squares off the diagonal are not zero
 
 Rows are the query's lineage, columns the target's. A square holds how many ice-binding
 proteins of that target lineage the query reached, taking the best of that method's
 settings. The diagonal is grey because a hit on the query's own lineage is never counted:
 only off-diagonal squares test reach across lineages.
 
-Read it as a map of where any method gets out of its own lineage. Four methods reach the
+Read it as a map of where any method gets out of its own lineage. Five methods reach the
 same five fungal proteins from the bacterial query, and one scan reaches seven fish type I
 proteins from the AFGP query. Every other square is zero.
 """)
@@ -436,6 +440,16 @@ query's sequence at all.
 
 Recall is out of every ice-binding protein outside the query's own lineage, which is 40
 to 56 proteins depending on the query.
+
+phmmer and jackhmmer have no bar for the AFGP query. Each reports only 2 hits, and both are
+ice-binding proteins, so no false positive sets a cutoff and the list has no recall.
+
+For the bacterial query, the null B marks of jackhmmer, phmmer and MMseqs2 sit above 0.
+All 20 jackhmmer null B draws reach 5 ice-binding proteins of other lineages at the real
+query's cutoff, as many as the real query, and 8 of 20 phmmer draws do. This query's
+repeat unit is 5 residues, the lag of a weak hydrophobic-polar autocorrelation peak
+(r = 0.129), so a null B draw moves each residue at most 4 places. No null B draw of any
+kmerseek setting reaches one, and every null A draw of jackhmmer and phmmer reaches 0.
 """)
 
 code(r"""
@@ -515,8 +529,8 @@ md(r"""
 
 Every cross-lineage hit kmerseek makes above its threshold is the bacterial ice-binding
 protein H7FWB6 against the Arctic yeast protein C7F6X3. Both carry UniProt's "Ice-binding
-protein family" annotation, so this pair is related by ancestry, which is why jackhmmer,
-MMseqs2 and Foldseek find it as well.
+protein family" annotation, so this pair is related by ancestry, which is why phmmer,
+jackhmmer, MMseqs2 and Foldseek find it as well.
 
 The block below is the aligned residues as kmerseek reports them: no gaps, coordinates
 0-based and end-exclusive, with the hydrophobic-polar string of each sequence underneath
@@ -1402,8 +1416,8 @@ was 0.0227:
 
 1. Over 164 searchable settings and six queries, kmerseek reached an ice-binding protein
    of another lineage from one query only, the bacterial one, finding 5 of 55 (recall
-   0.091); jackhmmer, MMseqs2 and Foldseek each found the same 5, so kmerseek added
-   nothing there.
+   0.091); phmmer, jackhmmer, MMseqs2 and Foldseek each found the same 5, so kmerseek
+   added nothing there.
 2. Those 5 proteins and the query all carry UniProt's "Ice-binding protein family"
    annotation, so the one place any method crossed a lineage boundary is a family related
    by ancestry, not a pattern shared without it.
@@ -1424,7 +1438,7 @@ was 0.0227:
 
 **What this decides.** The paper cannot claim from this test that kmerseek finds proteins
 sharing a physicochemical pattern without shared ancestry. The one cross-lineage pair it
-reaches is a homolog pair that three other tools also find.
+reaches is a homolog pair that four other tools also find.
 
 **What this test cannot say.** Four limits, each visible in the data above:
 
@@ -1447,13 +1461,6 @@ fish type I proteins that carry the AFGP repeat's own letters, AATAATA. Every hy
 ice-binding proteins no more often than random proteins. The settings run were the
 dark-set ones, whose shortest hydrophobic-polar k is 17, but shorter k does not help
 either.
-
-**phmmer and jackhmmer in sections 1-7 were scored on 24 of the 246 queries.** The
-pipeline wrote each chunk of 25 queries to the same file name, so each chunk overwrote
-the last; the scoring counted the other 222 queries as finding nothing. The file names are
-fixed (main.nf, commit 6c7487a0) and every chunk's output is still on Sherlock, but
-sections 1-7 have not been rescored. Their phmmer and jackhmmer numbers are lower bounds.
-The verdict compares kmerseek with the scans that need no search, so it does not use them.
 
 **Adhesive case study: mussel foot protein 1 (section 11).** Q25460 as the query, all
 230 kmerseek settings, every other method, and 40 null draws.
