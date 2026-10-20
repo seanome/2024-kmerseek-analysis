@@ -338,8 +338,14 @@ for the E-value. The prediction written before the run holds.
 
 BHF without its stretches against its own shuffles (null 3) is near the line rather than
 at chance: 7 of 61 settings for the E-value, 10 of 86 for tf-idf and 10 of 86 for mean IDF
-sit just above twice chance (6.1, 8.6 and 8.6). Section 5 looks at those settings. Nulls 4
-and 5 (other proteins) are still running on Sherlock.
+sit just above twice chance (6.1, 8.6 and 8.6). Section 5 looks at those settings.
+
+Against 300 other *Botryllus* proteins of its length with no conventional match (null 4),
+BHF is at chance by E-value (1 of 61 settings) and over the decision line for six of the
+other eight scores: shared k-mers 24 of 106, tf-idf 23, containment 23, mean IDF 19,
+protein enrichment 16, protein Poisson p-value 11. That is about as often as against its
+whole-protein shuffles (null 1), as predicted, though not more often for every score.
+Section 5 says where on BHF those wins are. Null 5 (any other protein) is still running.
 """),
     md(r"""
 ## 5. The decision rule
@@ -396,13 +402,57 @@ if COPIES_DONE:
         run = lc.NULLS[name]
         reg = pl.read_parquet(sorted((run / "regions").glob("*.parquet"))).filter(pl.col("query_name") == "BHF")
         won = p.filter((pl.col("null") == name) & (pl.col("p") <= lc.ALPHA) & pl.col("metric").is_in(o["metric"].to_list()))
-        top = won.join(reg, left_on=["metric", "alphabet", "k", "bhf_top_gene"],
-                       right_on=["metric", "alphabet", "k", "gene"], how="left")
-        top = top.with_columns(pl.struct("region_start", "region_end").map_elements(
-            lambda r: r["region_start"] is not None and any(r["region_start"] < e and s < r["region_end"] for s, e in union),
-            return_dtype=pl.Boolean).alias("bhf_region_in_a_stretch"))
-        print(top.group_by("metric").agg(pl.len().alias("winning_settings"),
-                                         pl.col("bhf_region_in_a_stretch").sum().alias("bhf_region_overlaps_a_stretch")))
+        # BHF's region on its top human protein: does it overlap a stretch, and what share
+        # of its residues lie in one? The same over every setting is the baseline.
+        def in_stretch(r):
+            if r["region_start"] is None:
+                return None
+            n = sum(any(s <= i < e for s, e in union) for i in range(r["region_start"], r["region_end"]))
+            return n / (r["region_end"] - r["region_start"])
+        allp = p.filter((pl.col("null") == name) & pl.col("metric").is_in(o["metric"].to_list()))
+        top = allp.join(reg, left_on=["metric", "alphabet", "k", "bhf_top_gene"],
+                        right_on=["metric", "alphabet", "k", "gene"], how="left").with_columns(
+            pl.struct("region_start", "region_end").map_elements(in_stretch, return_dtype=pl.Float64)
+            .alias("share_in_stretch"), (pl.col("p") <= lc.ALPHA).alias("won"))
+        top = top.with_columns((pl.col("share_in_stretch") > 0).alias("overlaps_a_stretch"))
+        print(f"BHF's region on its top human protein ({sum(e - s for s, e in union)} of {len(BHF)} BHF residues are in a stretch):")
+        print(top.group_by("metric", "won").agg(
+            pl.len().alias("settings"), pl.col("overlaps_a_stretch").sum().alias("region_overlaps_a_stretch"),
+            pl.col("share_in_stretch").median().round(2).alias("median_share_of_region_in_stretches"),
+            pl.col("region_end").sub(pl.col("region_start")).median().alias("median_region_length"),
+        ).sort("metric", "won"))
+        wins = top.filter(pl.col("won"))
+        print(f"human proteins at the top of BHF's {wins.height} winning (score, setting) pairs:")
+        print(wins.group_by("bhf_top_gene").agg(pl.len().alias("winning_pairs"), pl.col("alphabet").unique().sort().str.join(", ").alias("alphabets"))
+              .sort("winning_pairs", descending=True).head(5))
+        hum = su.human_sequences()
+        for g in wins.group_by("bhf_top_gene").len().sort("len", descending=True).head(3)["bhf_top_gene"]:
+            r = wins.filter(pl.col("bhf_top_gene") == g).sort("share_in_stretch").row(0, named=True)
+            print(f"\n{g}, {r['alphabet']} k{r['k']} ({r['metric']}): BHF {r['region_start'] + 1}-{r['region_end']}, "
+                  f"{r['share_in_stretch']:.0%} of it in a stretch")
+            print(lc.show_alignment(BHF[r["region_start"]:r["region_end"]], r["region_start"],
+                                    hum[g][r["target_start"]:r["target_end"]], r["target_start"], g, r["alphabet"]))
+"""),
+    code(r"""
+# BHF's one match outside the stretches, ZNF770 at uniprot18, is 10 residues long. How often
+# does a protein of BHF's length have a 10-residue window that some human protein carries
+# with at most one residue changed? Asked of BHF and of null 4's 300 proteins.
+if "null 4: other Botryllus proteins, no conventional match" in DONE:
+    hum = su.human_sequences()
+    keys = set()
+    for s in hum.values():
+        for i in range(len(s) - 9):
+            w = s[i:i + 10]
+            keys.update(w[:j] + "." + w[j + 1:] for j in range(10))
+    def near_windows(s):
+        return sum(any(s[i:i + j] + "." + s[i + j + 1:i + 10] in keys for j in range(10)) for i in range(len(s) - 9))
+    q4 = nb283.read_fasta(lc.NULLS["null 4: other Botryllus proteins, no conventional match"] / "queries.fa")
+    n_bhf = near_windows(BHF)
+    others = [near_windows(s) for h, s in q4 if h != "BHF"]
+    print(f"BHF: {n_bhf} of {len(BHF) - 9} windows have a human copy with at most one residue changed")
+    print(f"null 4 proteins with at least as many such windows: {sum(o >= n_bhf for o in others)} of {len(others)}")
+    e = p.filter((pl.col("null") == "null 4: other Botryllus proteins, no conventional match") & (pl.col("alphabet") == "uniprot18") & (pl.col("metric") == "E-value"))
+    print("uniprot18 settings with an E-value:", e.select("k", "bhf", "bhf_top_gene", "p").rows())
 """),
     md(r"""
 BHF passes the decision rule against null 2: no score beats copies that keep its
@@ -423,8 +473,31 @@ Null 3 sits just over the line for three scores, and the margin does not hold up
   hp_lehninger2 k16 and k17 put DNAH10 on 11-189. These are not independent settings.
 - **No E-value reaches 0.05.** The best is 0.069 (DNAH10, hp_lehninger2 k17).
 
-So nothing in nulls 2 and 3 supports a BHF match to a human protein. Nulls 4 and 5 (other
-*Botryllus* proteins) will be added when their search finishes.
+So nothing in nulls 2 and 3 supports a BHF match to a human protein.
+
+**Null 4, other proteins with no conventional match.** BHF beats them under six scores,
+but the wins come from the same few matches. Three human proteins head 83 of the 116
+winning (score, setting) pairs:
+
+- **NFE2L1 (41 pairs), at the two-letter alphabets.** BHF's lysine-rich stretch 63-105
+  against a serine run of NFE2L1 (474-516 and beyond). 9 of 72 residues are identical; the
+  match is in the letters of the alphabet, where both sides are almost all polar (63 of 72
+  the same in hp_thomas_dill2).
+- **DEK (19 pairs), at gbmr4.** The same lysine-rich stretch against DEK's charged
+  stretch, 11 of 81 residues identical.
+- **ZNF770 (23 pairs), at uniprot18.** BHF 45-54 `ALHLKKRRTE` against ZNF770 246-255
+  `ALLLKKRRTE`, 9 of 10 identical and outside the stretches. A 10-residue match this close
+  is common: 69 of the 300 null-4 proteins also have a 10-residue window that some human
+  protein carries with at most one change. uniprot18 has an E-value only at k5 and k6,
+  where BHF's best is 20 and 25, and its top protein is not ZNF770.
+
+Where BHF wins, its matched region lies mostly in its low-complexity stretches (a median
+59% to 100% of the region, by score), against 35% to 51% where it does not win, though
+only 62 of BHF's 252 residues are in a stretch. Shared k-mers is the exception (76% and
+75%). The prediction written before the run holds: BHF beats other proteins of its length
+under the scores that reward its low-complexity stretches, and not by E-value.
+
+Null 5 (any other protein) will be added when its search finishes.
 """),
 ]
 
