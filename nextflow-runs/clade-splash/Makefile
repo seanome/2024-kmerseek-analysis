@@ -56,7 +56,7 @@ test: oasis
 
 stub:
 	mkdir -p run-stub
-	cd run-stub && $(NEXTFLOW) run ../main.nf -stub-run -profile stub --pfam_hmm $(MAKEFILE_DIR)/tests/data/Pfam-A.hmm --outdir results
+	cd run-stub && $(NEXTFLOW) run ../main.nf -stub-run -profile stub --pfam_hmm $(MAKEFILE_DIR)/tests/data/Pfam-A.hmm --outdir results --proteins_per_chunk 0 --fasta_cache $(MAKEFILE_DIR)/run-stub/fasta-cache
 
 pilot: HEAD_TIME := 0-12:00:00
 pilot: HEAD_SESSION := nb357-pilot
