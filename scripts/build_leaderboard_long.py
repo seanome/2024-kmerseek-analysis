@@ -4,7 +4,10 @@
     results/leaderboard/results.parquet  one row per (experiment, tool, setting, query set,
                                          target database, stratum, metric)
     results/leaderboard/compute.parquet  one row per (experiment, tool, setting, step), from
-                                         Nextflow traces and run logs
+                                         Nextflow traces and run logs; run_complete is
+                                         False for a run that stopped part way
+    results/leaderboard/kmer_spectra.parquet  methods table: k-mers per alphabet and k in
+                                         Swiss-Prot and two shuffled copies (index size)
     results/leaderboard/coverage.md      tool x stratum axis: instances measured
     results/leaderboard/inventory.md     every output found, with date, commit, and whether
                                          it was used and why not
@@ -12,7 +15,9 @@
 
 --data is a copy of the needed files from Sherlock, laid out exactly as under
 /scratch/users/olgabot (`make leaderboard-fetch` makes it). source_path in both tables is
-the Sherlock path, so a row can be checked against the original file.
+the Sherlock path, so a row can be checked against the original file. The few inputs that
+exist only on Olga's laptop (runs from before compute moved to Sherlock) keep their laptop
+path as source_path and sit under laptop/ in the copy.
 
 Nothing is estimated. A metric the output does not carry has no row; a compute number the
 trace does not carry is null. Strata are only the ones the outputs already hold: target
@@ -21,6 +26,7 @@ length bin, pLDDT bin.
 """
 
 import argparse
+import gzip
 import hashlib
 import json
 import re
@@ -29,6 +35,16 @@ from pathlib import Path
 import polars as pl
 
 SCRATCH = "/scratch/users/olgabot"
+# A few outputs exist only on Olga's laptop (runs from before compute moved to Sherlock).
+# Their source_path is the laptop path; the --data copy holds them under laptop/.
+LAPTOP = "/Users/olga"
+PFAM_TOOLS = f"{LAPTOP}/data/pfam-benchmark-tools/results/metrics"
+SPECTRA = "kmer-spectra-analysis/nextflow-runs/kmer-spectra"
+SPECTRA_SPROT = f"{LAPTOP}/data/kmerseek-kmer-spectra"
+DISPROT_RUN = (
+    "2024-kmerseek-disprot-region-transfer/nextflow-runs/qfo-pfam-region-benchmark/"
+    "run-disprot"
+)
 QFO = "2024-kmerseek-analysis/nextflow-runs/qfo-pfam-region-benchmark"
 DARK = "invertebrate-dark-set/results-0.4"
 DARK_CLONE = (
@@ -56,6 +72,15 @@ COMMIT = {
     "scope40_v040": "702de2c",
     "scope40_v040_below_kmin": "46dfecb",
     "scope40_v040_shuffled_k2_seed1": "80ec410",
+    # Stopped run: the clone's only HEAD reflog entry is its clone at this commit.
+    "disprot_region_transfer": "aeb08b7",
+    # kmer-spectra-analysis clone HEAD from 2026-08-20 10:59, before the run that wrote
+    # results-k2/ and results-k3/ (files dated 2026-08-20 15:39 to 16:49).
+    "kmer_spectra_shuffled": "ffc7087",
+    # Laptop runs whose commit was not recorded (the laptop clone's reflog starts
+    # later): pfam_pair_roc (2026-04), kmer_spectra_swissprot (2026-08-11).
+    "pfam_pair_roc": None,
+    "kmer_spectra_swissprot": None,
 }
 
 QFO_TARGET_VERSION = "QfO 2020_04 (UP000008143 updated)"
@@ -117,10 +142,22 @@ COMPUTE_SCHEMA = {
     "n_queries": pl.Int64,
     "n_targets": pl.Int64,
     "source": pl.String,
+    # False for a run that stopped before it finished: its rows are the tasks that did
+    # finish, not the cost of the whole experiment.
+    "run_complete": pl.Boolean,
 }
 
 # One name per tool across experiments (the dark set and deep-twilight runs say "phmmer").
 TOOL_NAME = {"phmmer": "hmmer3_phmmer", "jackhmmer": "hmmer3_jackhmmer"}
+
+
+def local_copy(data: Path, source: str) -> Path:
+    """Where the --data copy holds a Sherlock or laptop source path."""
+    if source.startswith(SCRATCH + "/"):
+        return data / Path(source).relative_to(SCRATCH)
+    if source.startswith(LAPTOP + "/"):
+        return data / "laptop" / Path(source).relative_to(LAPTOP)
+    raise ValueError(f"source path outside Sherlock scratch and the laptop: {source}")
 
 
 def sha256(path: Path) -> str:
@@ -829,6 +866,161 @@ def scope40(
     return tidy(pl.concat(frames, how="diagonal"))
 
 
+PAIR_METRICS = {
+    # evaluate_benchmark.py column -> metric name. A pair benchmark asks "is this protein
+    # pair related?", not "where is the domain?", so its metrics carry a pair_ prefix
+    # and never share a name with the region metrics.
+    "auc_roc": "pair_roc_auc",
+    "auc_pr": "pair_average_precision",  # sklearn average_precision_score
+    "sens_at_99prec": "pair_recall_at_99pct_precision",
+    "prec_at_50rec": "pair_precision_at_50pct_recall",
+    "n_found": "pair_n_with_hit",  # pairs of either label with a hit (score > 0)
+    "n_negatives": "pair_n_negatives",
+}
+PAIR_SETTING = {
+    "hmmer3_phmmer": "E<=10",
+    "mmseqs2_seqseq": "s7 E<=10",
+    "mmseqs2_iterative": "s7 3 iterations E<=10",
+    "diamond": "ultra-sensitive E<=10",
+}
+
+
+def pfam_pair_roc(data: Path) -> pl.DataFrame:
+    """pfam-benchmark-tools evaluate_benchmark.py: one metrics.parquet per (tool, species).
+
+    Pairs come from notebooks/construct_subdomain_pairs.py: a positive shares at least one
+    Pfam domain with a different architecture (at least one protein has 2+ domains); a
+    negative shares no Pfam domain. A file whose ROC AUC is NaN is left out whole: the
+    tool's hit file was empty (a 20-byte gzip), which is a search that wrote nothing, not
+    a search that found nothing (DIAMOND on zebrafish).
+    """
+    frames = []
+    for p in sorted(local_copy(data, PFAM_TOOLS).glob("*.metrics.parquet")):
+        m = pl.read_parquet(p).filter(pl.col("auc_roc").is_not_nan())
+        if m.is_empty():
+            continue
+        src = f"{PFAM_TOOLS}/{p.name}"
+        metrics = [c for c in PAIR_METRICS if c in m.columns]
+        long = (
+            m.with_columns(pl.col(c).cast(pl.Float64) for c in metrics)
+            .unpivot(
+                index=["tool", "species", "n_positives"],
+                on=metrics,
+                variable_name="metric",
+                value_name="value",
+            )
+            .filter(pl.col("value").is_not_null() & ~pl.col("value").is_nan())
+        )
+        frames.append(
+            long.select(
+                pl.lit("pfam_pair_roc").alias("experiment"),
+                pl.col("tool").replace(TOOL_NAME),
+                pl.col("tool")
+                .replace_strict(PAIR_SETTING, default="default")
+                .alias("setting"),
+                pl.lit(
+                    "human proteins in sampled Pfam pairs "
+                    "(up to 20,000 positive and 40,000 negative per species)"
+                ).alias("query_set"),
+                ("QfO " + pl.col("species")).alias("target_db"),
+                pl.lit(QFO_TARGET_VERSION).alias("target_db_version"),
+                pl.lit("all").alias("stratum_axis"),
+                pl.lit("all").alias("stratum_bin"),
+                pl.col("metric").replace_strict(PAIR_METRICS),
+                "value",
+                pl.col("n_positives").cast(pl.Int64).alias("n_instances"),
+                pl.lit(
+                    "protein pair shares a Pfam-A domain (positive) or shares none "
+                    "(negative)"
+                ).alias("truth_source"),
+                pl.lit("raw").alias("dedup_or_raw"),
+                pl.lit(src).alias("source_path"),
+                pl.lit(COMMIT["pfam_pair_roc"], dtype=pl.String).alias("source_commit"),
+            )
+        )
+    return tidy(pl.concat(frames)) if frames else tidy(pl.DataFrame())
+
+
+_SPECTRUM_HEAD = re.compile(
+    r"# total_kmers=(\d+) unique_kmers=(\d+) mean_seqs_per_kmer=([\d.]+) "
+    r"median_seqs_per_kmer=([\d.]+) moltype=(\S+) ksize=(\d+)"
+)
+SPECTRA_DATASETS = {
+    # file prefix -> (sequences indexed, experiment key for COMMIT)
+    "sprot": ("Swiss-Prot", "kmer_spectra_swissprot"),
+    "k2": (
+        "Swiss-Prot, each sequence shuffled keeping its 2-mer counts (Python ushuffle, k=2)",
+        "kmer_spectra_shuffled",
+    ),
+    "k3": (
+        "Swiss-Prot, each sequence shuffled keeping its 3-mer counts (Python ushuffle, k=3)",
+        "kmer_spectra_shuffled",
+    ),
+}
+
+
+def kmer_spectra(data: Path) -> pl.DataFrame:
+    """Index size per alphabet and k: the '#' header line of each
+    kmerseek index --kmer-stats-out spectrum file, and kmerseek's version from the
+    index log beside it where one was kept. A methods table, not tool results."""
+    sources = [
+        (f"{SPECTRA_SPROT}/{p.name}", p)
+        for p in sorted(local_copy(data, SPECTRA_SPROT).glob("*.spectrum.csv.gz"))
+    ]
+    for sub in ("results-k2", "results-k3"):
+        rel = f"{SPECTRA}/{sub}"
+        sources += [
+            (f"{SCRATCH}/{rel}/{p.name}", p)
+            for p in sorted((data / rel).glob("*.spectrum.csv.gz"))
+        ]
+    rows = []
+    for src, p in sources:
+        with gzip.open(p, "rt") as fh:
+            head = fh.readline().strip()
+        m = _SPECTRUM_HEAD.fullmatch(head)
+        if not m:
+            raise ValueError(f"{p}: unreadable header {head!r}")
+        total, unique, mean, median, moltype, k = m.groups()
+        prefix, alphabet, kname = p.name.removesuffix(".spectrum.csv.gz").split(".")
+        if kname != f"k{k}":
+            raise ValueError(f"{p}: file name says {kname}, header says k={k}")
+        log = p.with_name(p.name.replace(".spectrum.csv.gz", ".index.log"))
+        version = None
+        if log.exists():
+            first = log.read_text().splitlines()[0]
+            version = first if first.startswith("kmerseek ") else None
+        sequences, key = SPECTRA_DATASETS[prefix]
+        rows.append(
+            {
+                "sequences": sequences,
+                "alphabet": alphabet,
+                "moltype_in_file": moltype,
+                "ksize": int(k),
+                "total_kmers": int(total),
+                "unique_kmers": int(unique),
+                "mean_seqs_per_kmer": float(mean),
+                "median_seqs_per_kmer": float(median),
+                "kmerseek_version": version,
+                "source_path": src,
+                "source_commit": COMMIT[key],
+            }
+        )
+    schema = {
+        "sequences": pl.String,
+        "alphabet": pl.String,
+        "moltype_in_file": pl.String,
+        "ksize": pl.Int64,
+        "total_kmers": pl.Int64,
+        "unique_kmers": pl.Int64,
+        "mean_seqs_per_kmer": pl.Float64,
+        "median_seqs_per_kmer": pl.Float64,
+        "kmerseek_version": pl.String,
+        "source_path": pl.String,
+        "source_commit": pl.String,
+    }
+    return frame(rows, schema).sort("sequences", "alphabet", "ksize")
+
+
 # ---------------------------------------------------------------------------------------
 # Compute readers
 
@@ -887,6 +1079,14 @@ def scope_task(step: str, tag: str):
         m = re.fullmatch(r"(\S+)\.k(\d+)", tag or "")
         return ("kmerseek", f"{m[1]}.k{m[2]}", "scope40") if m else None
     return None
+
+
+def disprot_counts(traces: pl.DataFrame) -> str:
+    """'716 tasks COMPLETED, 636 ABORTED, 1 FAILED' from a stopped run's trace."""
+    counts = traces.group_by("status").len().sort("len", descending=True)
+    return ", ".join(
+        f"{n:,} {'task' if n == 1 else 'tasks'} {s}" for s, n in counts.iter_rows()
+    )
 
 
 def dark_task(step: str, tag: str):
@@ -1088,6 +1288,24 @@ def main() -> None:
     for exp, rel_dir in SCOPE_EXPERIMENTS.items():
         img = tool_images(traces[exp], scope_task).get("kmerseek")
         parts.append(scope40(data, exp, rel_dir, img))
+    # Same QfO target proteomes as the region runs, so the same divergence from human.
+    mya = dict(
+        pl.concat(parts)
+        .filter(
+            pl.col("experiment").str.starts_with("qfo_region")
+            & pl.col("target_mya_to_human").is_not_null()
+        )
+        .select("target_db", "target_mya_to_human")
+        .unique()
+        .iter_rows()
+    )
+    parts.append(
+        pfam_pair_roc(data).with_columns(
+            pl.col("target_db")
+            .replace_strict(mya, default=None, return_dtype=pl.Float64)
+            .alias("target_mya_to_human")
+        )
+    )
     results = pl.concat(parts, how="vertical").sort(
         "experiment",
         "tool",
@@ -1166,7 +1384,25 @@ def main() -> None:
             for e, t in scored_tools
         )
     ]
-    compute = frame(compute_rows + dark_rows, COMPUTE_SCHEMA)
+    # The DisProt transfer run stopped on 2026-09-29 before any truth set was built, so
+    # nothing was scored; its finished tasks are kept as cost, marked incomplete.
+    disprot_trace = read_traces(data, [DISPROT_RUN])
+    disprot_rows = [
+        r
+        | {
+            "source": f"{r['source']}: run stopped, {disprot_counts(disprot_trace)}",
+            "run_complete": False,
+        }
+        for r in summarise_tasks(
+            trace_tasks(disprot_trace, mapper("metrics")),
+            "disprot_region_transfer",
+            None,
+        )
+    ]
+    compute = frame(
+        [r | {"run_complete": True} for r in compute_rows + dark_rows] + disprot_rows,
+        COMPUTE_SCHEMA,
+    )
     # The dark-set run's last trace holds only CACHED rows (its start truncated the earlier
     # heads' traces), so its searches have a row with every number null.
     dark_trace = (
@@ -1204,18 +1440,24 @@ def main() -> None:
                         "n_queries": None,
                         "n_targets": None,
                         "source": f"{dark_trace}: only CACHED rows, no measured run",
+                        "run_complete": True,
                     }
                     for s in missing_dark
                 ],
                 COMPUTE_SCHEMA,
             ),
         ]
-    ).sort("experiment", "tool", "setting", "step")
+    )
+    # source ends the sort key: nb 241's runs.jsonl has several runs of one setting, and
+    # without it their order changed when rows were added elsewhere in the table.
+    compute = compute.sort("experiment", "tool", "setting", "step", "source")
 
     args.outdir.mkdir(parents=True, exist_ok=True)
     results.write_parquet(args.outdir / "results.parquet", statistics=False)
     compute.write_parquet(args.outdir / "compute.parquet", statistics=False)
     (args.outdir / "coverage.md").write_text(coverage_markdown(results))
+    spectra = kmer_spectra(data)
+    spectra.write_parquet(args.outdir / "kmer_spectra.parquet", statistics=False)
 
     summaries = {
         f"{SCRATCH}/{QFO}/data/{name}_testset_summary.json"
@@ -1225,16 +1467,22 @@ def main() -> None:
         {r for r in results["source_path"].unique().to_list()}
         | summaries
         | {
-            s.split(" line ")[0].split(": only")[0]
+            s.split(" line ")[0].split(": ")[0]
             for src in compute["source"].unique().to_list()
             for s in src.split("; ")
         }
+        | set(spectra["source_path"].to_list())
     )
     provenance = {
-        "inputs": {p: sha256(data / Path(p).relative_to(SCRATCH)) for p in inputs},
+        "inputs": {p: sha256(local_copy(data, p)) for p in inputs},
         "outputs": {
             n: sha256(args.outdir / n)
-            for n in ("results.parquet", "compute.parquet", "coverage.md")
+            for n in (
+                "results.parquet",
+                "compute.parquet",
+                "coverage.md",
+                "kmer_spectra.parquet",
+            )
         },
         "timetree": {str(args.timetree): sha256(args.timetree)},
     }
@@ -1244,6 +1492,7 @@ def main() -> None:
     print(results.group_by("experiment").len().sort("experiment"))
     print(f"results.parquet  {results.height:>9,} rows")
     print(f"compute.parquet  {compute.height:>9,} rows")
+    print(f"kmer_spectra.parquet {spectra.height:>5,} rows")
 
 
 if __name__ == "__main__":

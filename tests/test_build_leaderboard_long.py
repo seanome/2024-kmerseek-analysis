@@ -224,6 +224,99 @@ def test_coverage_counts_an_instance_once_across_settings():
     assert line == "| t |  | 7 |  |  |  |"
 
 
+def test_local_copy_maps_sherlock_and_laptop_paths(tmp_path):
+    assert (
+        bll.local_copy(tmp_path, "/scratch/users/olgabot/a/b.tsv")
+        == tmp_path / "a/b.tsv"
+    )
+    assert (
+        bll.local_copy(tmp_path, "/Users/olga/data/x.parquet")
+        == tmp_path / "laptop/data/x.parquet"
+    )
+    with pytest.raises(ValueError):
+        bll.local_copy(tmp_path, "/tmp/elsewhere.tsv")
+
+
+def write_pair_metrics(path, tool, species, auc, n_found):
+    pl.DataFrame(
+        {
+            "tool": [tool],
+            "species": [species],
+            "auc_roc": [auc],
+            "auc_pr": [auc],
+            "sens_at_99prec": [0.5],
+            "prec_at_50rec": [0.9],
+            "n_positives": [20000],
+            "n_negatives": [40000],
+            "n_found": [n_found],
+        }
+    ).write_parquet(path)
+
+
+def test_pfam_pair_roc_drops_empty_output_and_prefixes_metrics(tmp_path):
+    d = bll.local_copy(tmp_path, bll.PFAM_TOOLS)
+    d.mkdir(parents=True)
+    write_pair_metrics(
+        d / "mmseqs2_seqseq.mouse.metrics.parquet",
+        "mmseqs2_seqseq",
+        "mouse",
+        0.75,
+        10025,
+    )
+    write_pair_metrics(
+        d / "diamond.zebrafish.metrics.parquet", "diamond", "zebrafish", float("nan"), 0
+    )
+    out = bll.pfam_pair_roc(tmp_path)
+    assert set(out["tool"]) == {"mmseqs2_seqseq"}
+    assert all(m.startswith("pair_") for m in out["metric"])
+    assert out.filter(pl.col("metric") == "pair_roc_auc")["value"].to_list() == [0.75]
+    assert out.filter(pl.col("metric") == "pair_n_with_hit")["value"].to_list() == [
+        10025.0
+    ]
+    assert out["n_instances"].unique().to_list() == [20000]
+    assert out["target_db"].unique().to_list() == ["QfO mouse"]
+    assert out["source_commit"].null_count() == out.height
+    assert out.columns == list(bll.SCHEMA)
+
+
+def write_spectrum(path, total, unique, k):
+    import gzip
+
+    with gzip.open(path, "wt") as fh:
+        fh.write(
+            f"# total_kmers={total} unique_kmers={unique} mean_seqs_per_kmer=2.5 "
+            f"median_seqs_per_kmer=1.0 moltype=hp ksize={k}\nmoltype,ksize\n"
+        )
+
+
+def test_kmer_spectra_reads_header_and_checks_k(tmp_path):
+    d = bll.local_copy(tmp_path, bll.SPECTRA_SPROT)
+    d.mkdir(parents=True)
+    write_spectrum(d / "sprot.hp.k15.spectrum.csv.gz", 100, 7, 15)
+    k2 = tmp_path / bll.SPECTRA / "results-k2"
+    k2.mkdir(parents=True)
+    write_spectrum(k2 / "k2.hp.k16.spectrum.csv.gz", 90, 6, 16)
+    (k2 / "k2.hp.k16.index.log").write_text("kmerseek 0.3.1\nOutput database: x\n")
+    out = bll.kmer_spectra(tmp_path)
+    assert out.height == 2
+    row = out.filter(pl.col("ksize") == 16).row(0, named=True)
+    assert row["total_kmers"] == 90 and row["unique_kmers"] == 6
+    assert row["kmerseek_version"] == "kmerseek 0.3.1"
+    assert row["source_commit"] == bll.COMMIT["kmer_spectra_shuffled"]
+    assert row["source_path"].startswith("/scratch/users/olgabot/")
+    sprot = out.filter(pl.col("ksize") == 15).row(0, named=True)
+    assert sprot["sequences"] == "Swiss-Prot" and sprot["kmerseek_version"] is None
+    # A file named k17 whose header says k=18 is refused, not read.
+    write_spectrum(k2 / "k2.hp.k17.spectrum.csv.gz", 1, 1, 18)
+    with pytest.raises(ValueError):
+        bll.kmer_spectra(tmp_path)
+
+
+def test_disprot_counts_reads_trace_statuses():
+    t = pl.DataFrame({"status": ["COMPLETED"] * 3 + ["ABORTED"] * 2 + ["FAILED"]})
+    assert bll.disprot_counts(t) == "3 tasks COMPLETED, 2 tasks ABORTED, 1 task FAILED"
+
+
 def test_timetree_mya_replaces_typed_values(tmp_path):
     """QfO targets take TimeTree's age; a QfO target TimeTree has no age for becomes null,
     never the typed value; a non-QfO target keeps what it had."""
