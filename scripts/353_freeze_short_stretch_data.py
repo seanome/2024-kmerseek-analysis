@@ -43,10 +43,14 @@ OUT = REPO / "data" / "kill_tests" / "short_stretch"
 
 RECORD_LENGTH = 53  # the Sanborn tile length; ELM windows are made the same length
 SANBORN_DOI = "10.7554/eLife.68068"
-SANBORN_URL = "https://cdn.elifesciences.org/articles/68068/elife-68068-fig1-data1-v3.xlsx"
+SANBORN_URL = (
+    "https://cdn.elifesciences.org/articles/68068/elife-68068-fig1-data1-v3.xlsx"
+)
 SANBORN_SHEET = "TF tiles, see Fig 1"
 SANBORN_SEQ_SHEET = "TF sequences, see Fig 1"
-TILE_PREFIX = "A_tiles_"  # row names of the TF tiles; controls and random sequences differ
+TILE_PREFIX = (
+    "A_tiles_"  # row names of the TF tiles; controls and random sequences differ
+)
 
 COLUMNS = [
     "record_id",  # E:<ELM instance> or T:<protein ID>:<position>
@@ -83,7 +87,11 @@ def sha256(path: Path) -> str:
 
 def split_of(base_accession: str) -> str:
     """Development half when the SHA-256 of the accession, read as an integer, is even."""
-    return "dev" if int(hashlib.sha256(base_accession.encode()).hexdigest(), 16) % 2 == 0 else "held_out"
+    return (
+        "dev"
+        if int(hashlib.sha256(base_accession.encode()).hexdigest(), 16) % 2 == 0
+        else "held_out"
+    )
 
 
 def read_fasta(path: Path) -> dict[str, str]:
@@ -176,10 +184,21 @@ def tile_records(xlsx: Path, counts: list[tuple[str, int, str]]) -> list[dict]:
     header, rows = rows[0], rows[1:]
     col = {name: j for j, name in enumerate(header) if name}
     tiles = [r for r in rows if r[0] and r[0].startswith(TILE_PREFIX)]
-    counts.append(("tiles: rows named A_tiles_ in the sheet", len(tiles), "controls and random sequences are other rows"))
+    counts.append(
+        (
+            "tiles: rows named A_tiles_ in the sheet",
+            len(tiles),
+            "controls and random sequences are other rows",
+        )
+    )
     out, unmeasured, mismatch = [], 0, 0
     for r in tiles:
-        seq, name, acc, pos = r[col["protein sequence"]], r[col["protein"]], r[col["protein ID"]], int(r[col["position"]])
+        seq, name, acc, pos = (
+            r[col["protein sequence"]],
+            r[col["protein"]],
+            r[col["protein ID"]],
+            int(r[col["position"]]),
+        )
         act = r[col["activation"]]
         if act is None:
             unmeasured += 1
@@ -212,8 +231,20 @@ def tile_records(xlsx: Path, counts: list[tuple[str, int, str]]) -> list[dict]:
                 "split": split_of(acc),
             }
         )
-    counts.append(("tiles: activation empty (too few cells)", unmeasured, "dropped: no measurement"))
-    counts.append(("tiles: sequence differs from the TF sequence sheet at its position", mismatch, "kept; checked only"))
+    counts.append(
+        (
+            "tiles: activation empty (too few cells)",
+            unmeasured,
+            "dropped: no measurement",
+        )
+    )
+    counts.append(
+        (
+            "tiles: sequence differs from the TF sequence sheet at its position",
+            mismatch,
+            "kept; checked only",
+        )
+    )
     counts.append(("tiles: records", len(out), ""))
     return out
 
@@ -229,26 +260,56 @@ def main() -> int:
     elm_text = (args.elm_dir / "elm_instances.tsv").read_text()
     cls_text = (args.elm_dir / "elm_classes.tsv").read_text()
     manifest = [
-        ("raw/elm_instances.tsv.gz", "http://elm.eu.org/instances.tsv?q=*", header_value(elm_text, "ELM_Instance_Download_Date"), f"ELM instance export format {header_value(elm_text, 'ELM_Instance_Download_Version')}"),
-        ("raw/elm_classes.tsv.gz", "http://elm.eu.org/elms/elms_index.tsv", header_value(cls_text, "ELM_Classes_Download_Date"), f"ELM class export format {header_value(cls_text, 'ELM_Classes_Download_Version')}"),
-        ("raw/elm_proteins.fasta.gz", "https://rest.uniprot.org/uniprotkb/accessions?accessions=...&format=fasta", "2026-09-24", "UniProt sequences of every ELM true-positive protein (scripts/prep_elm_inputs.py, branch olgabot/elm-motif-transfer)"),
-        ("raw/elife-68068-fig1-data1-v3.xlsx", SANBORN_URL, "2026-10-20", f"Sanborn et al. 2021 eLife 10:e68068, doi:{SANBORN_DOI}, Figure 1 source data 1"),
+        (
+            "raw/elm_instances.tsv.gz",
+            "http://elm.eu.org/instances.tsv?q=*",
+            header_value(elm_text, "ELM_Instance_Download_Date"),
+            f"ELM instance export format {header_value(elm_text, 'ELM_Instance_Download_Version')}",
+        ),
+        (
+            "raw/elm_classes.tsv.gz",
+            "http://elm.eu.org/elms/elms_index.tsv",
+            header_value(cls_text, "ELM_Classes_Download_Date"),
+            f"ELM class export format {header_value(cls_text, 'ELM_Classes_Download_Version')}",
+        ),
+        (
+            "raw/elm_proteins.fasta.gz",
+            "https://rest.uniprot.org/uniprotkb/accessions?accessions=...&format=fasta",
+            "2026-09-24",
+            "UniProt sequences of every ELM true-positive protein (scripts/prep_elm_inputs.py, branch olgabot/elm-motif-transfer)",
+        ),
+        (
+            "raw/elife-68068-fig1-data1-v3.xlsx",
+            SANBORN_URL,
+            "2026-10-20",
+            f"Sanborn et al. 2021 eLife 10:e68068, doi:{SANBORN_DOI}, Figure 1 source data 1",
+        ),
     ]
     # Gzipped byte for byte: git's core.autocrlf=input would rewrite the ELM exports' CRLF
     # line ends in a plain .tsv, and the checked-out file would no longer match its SHA-256.
     for name in ("elm_instances.tsv", "elm_classes.tsv", "elm_proteins.fasta"):
-        with open(args.elm_dir / name, "rb") as f, gzip.GzipFile(raw / f"{name}.gz", "wb", mtime=0) as g:
+        with open(args.elm_dir / name, "rb") as f, gzip.GzipFile(
+            raw / f"{name}.gz", "wb", mtime=0
+        ) as g:
             shutil.copyfileobj(f, g)
     shutil.copyfile(args.sanborn_xlsx, raw / "elife-68068-fig1-data1-v3.xlsx")
 
     counts: list[tuple[str, int, str]] = []
-    records = elm_records(args.elm_dir, counts) + tile_records(raw / "elife-68068-fig1-data1-v3.xlsx", counts)
+    records = elm_records(args.elm_dir, counts) + tile_records(
+        raw / "elife-68068-fig1-data1-v3.xlsx", counts
+    )
     ids = [r["record_id"] for r in records]
     assert len(ids) == len(set(ids)), "record ids are not unique"
     for split in ("dev", "held_out"):
         for src in ("elm", "yeast_tile"):
             n = sum(r["split"] == split and r["source"] == src for r in records)
-            p = len({r["base_accession"] for r in records if r["split"] == split and r["source"] == src})
+            p = len(
+                {
+                    r["base_accession"]
+                    for r in records
+                    if r["split"] == split and r["source"] == src
+                }
+            )
             counts.append((f"{split}: {src} records ({p} proteins)", n, ""))
 
     with open(OUT / "records.tsv", "w", newline="") as f:
@@ -264,11 +325,23 @@ def main() -> int:
             f.write(f"{step}\t{n}\t{note}\n")
             print(f"{n:>7_}  {step}  {note}")
     manifest += [
-        ("records.tsv", "scripts/353_freeze_short_stretch_data.py", "2026-10-20", "evidence collection"),
-        ("records.fasta", "scripts/353_freeze_short_stretch_data.py", "2026-10-20", "record sequences"),
+        (
+            "records.tsv",
+            "scripts/353_freeze_short_stretch_data.py",
+            "2026-10-20",
+            "evidence collection",
+        ),
+        (
+            "records.fasta",
+            "scripts/353_freeze_short_stretch_data.py",
+            "2026-10-20",
+            "record sequences",
+        ),
     ]
     with open(OUT / "MANIFEST.tsv", "w") as f:
-        f.write("file\tsource\tdownload_or_build_date\tdescription\tsha256\tsha256_uncompressed\n")
+        f.write(
+            "file\tsource\tdownload_or_build_date\tdescription\tsha256\tsha256_uncompressed\n"
+        )
         for path, src, date, desc in manifest:
             plain = ""
             if path.endswith(".gz"):

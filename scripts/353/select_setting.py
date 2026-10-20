@@ -39,7 +39,9 @@ def main(dev_dir: str, out_dir: str) -> int:
         alphabet, k = d.name.rsplit(".k", 1)
         real = pl.read_csv(d / "real_scores.tsv.gz", separator="\t")
         shuf = pl.read_csv(d / "shuffle_scores.tsv.gz", separator="\t")
-        cells = real.group_by("length", "n_within", "n_cross").agg(pl.col(f"found_{E_STAR:g}").mean().alias("recall"))
+        cells = real.group_by("length", "n_within", "n_cross").agg(
+            pl.col(f"found_{E_STAR:g}").mean().alias("recall")
+        )
         assert cells.height == N_CELLS, (d, cells.height)
         rate = (shuf[f"n_other_{E_STAR:g}"] >= 1).mean()
         rows.append(
@@ -54,19 +56,34 @@ def main(dev_dir: str, out_dir: str) -> int:
                 "shuffle_rate_over_predicted": rate / PREDICTED,
             }
         )
-    table = pl.DataFrame(rows).with_columns((pl.col("shuffle_rate_over_predicted") > MAX_RATIO).alias("excluded"))
+    table = pl.DataFrame(rows).with_columns(
+        (pl.col("shuffle_rate_over_predicted") > MAX_RATIO).alias("excluded")
+    )
     eligible = table.filter(~pl.col("excluded"))
     if eligible.height:
-        pick = eligible.sort(["score_mean_recall_e0.1", "k", "n_classes"], descending=[True, False, False]).row(0, named=True)
+        pick = eligible.sort(
+            ["score_mean_recall_e0.1", "k", "n_classes"],
+            descending=[True, False, False],
+        ).row(0, named=True)
         how = "highest score among settings not excluded"
     else:
         pick = table.sort("shuffle_rate_over_predicted").row(0, named=True)
         how = "every setting excluded; smallest shuffle rate over prediction"
-    table = table.with_columns(((pl.col("alphabet") == pick["alphabet"]) & (pl.col("k") == pick["k"])).alias("picked"))
+    table = table.with_columns(
+        ((pl.col("alphabet") == pick["alphabet"]) & (pl.col("k") == pick["k"])).alias(
+            "picked"
+        )
+    )
     out = Path(out_dir)
     out.mkdir(parents=True, exist_ok=True)
     table.sort("alphabet", "k").write_csv(out / "dev_selection.tsv", separator="\t")
-    frozen = {"alphabet": pick["alphabet"], "k": pick["k"], "rule": how, "score_mean_recall_e0.1": pick["score_mean_recall_e0.1"], "shuffle_rate_e0.1": pick["shuffle_rate_e0.1"]}
+    frozen = {
+        "alphabet": pick["alphabet"],
+        "k": pick["k"],
+        "rule": how,
+        "score_mean_recall_e0.1": pick["score_mean_recall_e0.1"],
+        "shuffle_rate_e0.1": pick["shuffle_rate_e0.1"],
+    }
     (out / "frozen_setting.json").write_text(json.dumps(frozen, indent=2) + "\n")
     print(table.sort("alphabet", "k"))
     print(frozen)

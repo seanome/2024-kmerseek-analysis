@@ -41,14 +41,24 @@ N_CROSS = (0, 1, 2)
 SEED = 353
 
 
-def substitute(window: str, n_within: int, n_cross: int, classes: dict[str, str], rng: random.Random):
+def substitute(
+    window: str,
+    n_within: int,
+    n_cross: int,
+    classes: dict[str, str],
+    rng: random.Random,
+):
     """The window with n_within within-class and n_cross cross-class substitutions at
     distinct random positions, or None when the window has too few eligible residues."""
-    within_ok = [i for i, aa in enumerate(window) if aa in classes and len(classes[aa]) > 1]
+    within_ok = [
+        i for i, aa in enumerate(window) if aa in classes and len(classes[aa]) > 1
+    ]
     if len(within_ok) < n_within:
         return None
     within_pos = rng.sample(within_ok, n_within)
-    cross_ok = [i for i, aa in enumerate(window) if aa in classes and i not in within_pos]
+    cross_ok = [
+        i for i, aa in enumerate(window) if aa in classes and i not in within_pos
+    ]
     if len(cross_ok) < n_cross:
         return None
     cross_pos = rng.sample(cross_ok, n_cross)
@@ -65,7 +75,9 @@ def main() -> int:
     ap.add_argument("--records", type=Path, required=True)
     ap.add_argument("--split", choices=("dev", "held_out"), required=True)
     ap.add_argument("--alphabet", required=True)
-    ap.add_argument("--n-records", type=int, default=0, help="0 = every record of the split")
+    ap.add_argument(
+        "--n-records", type=int, default=0, help="0 = every record of the split"
+    )
     ap.add_argument("--comp-shuffles", type=int, default=0)
     ap.add_argument("--dip-shuffles", type=int, default=0)
     ap.add_argument("--out-prefix", required=True)
@@ -73,15 +85,44 @@ def main() -> int:
 
     classes = class_of(args.alphabet)
     with open(args.records) as f:
-        records = [r for r in csv.DictReader(f, delimiter="\t") if r["split"] == args.split]
+        records = [
+            r for r in csv.DictReader(f, delimiter="\t") if r["split"] == args.split
+        ]
     records.sort(key=lambda r: r["record_id"])
     if args.n_records and args.n_records < len(records):
-        records = sorted(random.Random(SEED).sample(records, args.n_records), key=lambda r: r["record_id"])
+        records = sorted(
+            random.Random(SEED).sample(records, args.n_records),
+            key=lambda r: r["record_id"],
+        )
 
-    counts = {"records": len(records), "windows": 0, "record_shorter_than_window": 0, "real_queries": 0, "real_skipped_too_few_eligible": 0, "composition_queries": 0, "dipeptide_queries": 0, "shuffles_identical_to_window_dropped": 0}
-    cols = ["query_id", "record_id", "kind", "length", "offset", "n_within", "n_cross", "sub_positions", "shuffle_index", "frac_hydrophobic", "window", "sequence"]
+    counts = {
+        "records": len(records),
+        "windows": 0,
+        "record_shorter_than_window": 0,
+        "real_queries": 0,
+        "real_skipped_too_few_eligible": 0,
+        "composition_queries": 0,
+        "dipeptide_queries": 0,
+        "shuffles_identical_to_window_dropped": 0,
+    }
+    cols = [
+        "query_id",
+        "record_id",
+        "kind",
+        "length",
+        "offset",
+        "n_within",
+        "n_cross",
+        "sub_positions",
+        "shuffle_index",
+        "frac_hydrophobic",
+        "window",
+        "sequence",
+    ]
     n = 0
-    with open(f"{args.out_prefix}.fasta", "w") as fa, open(f"{args.out_prefix}.tsv", "w", newline="") as ft:
+    with open(f"{args.out_prefix}.fasta", "w") as fa, open(
+        f"{args.out_prefix}.tsv", "w", newline=""
+    ) as ft:
         w = csv.writer(ft, delimiter="\t", lineterminator="\n")
         w.writerow(cols)
 
@@ -90,7 +131,22 @@ def main() -> int:
             qid = f"q{n:07d}"
             n += 1
             fa.write(f">{qid}\n{seq}\n")
-            w.writerow([qid, rec["record_id"], kind, L, off, nw, nc, ";".join(map(str, pos)), si, f"{frac:.4f}", window, seq])
+            w.writerow(
+                [
+                    qid,
+                    rec["record_id"],
+                    kind,
+                    L,
+                    off,
+                    nw,
+                    nc,
+                    ";".join(map(str, pos)),
+                    si,
+                    f"{frac:.4f}",
+                    window,
+                    seq,
+                ]
+            )
 
         for rec in records:
             seq = rec["sequence"]
@@ -105,16 +161,35 @@ def main() -> int:
                 frac = sum(aa in HYDROPHOBIC for aa in window) / L
                 for nw in N_WITHIN:
                     for nc in N_CROSS:
-                        rng = random.Random(f"{SEED}:{rec['record_id']}:{L}:{nw}:{nc}:{args.alphabet}")
+                        rng = random.Random(
+                            f"{SEED}:{rec['record_id']}:{L}:{nw}:{nc}:{args.alphabet}"
+                        )
                         got = substitute(window, nw, nc, classes, rng)
                         if got is None:
                             counts["real_skipped_too_few_eligible"] += 1
                             continue
                         counts["real_queries"] += 1
-                        emit(rec, "real", L, off, nw, nc, got[1], "", frac, window, got[0])
-                for kind, n_shuf in (("composition", args.comp_shuffles), ("dipeptide", args.dip_shuffles)):
+                        emit(
+                            rec,
+                            "real",
+                            L,
+                            off,
+                            nw,
+                            nc,
+                            got[1],
+                            "",
+                            frac,
+                            window,
+                            got[0],
+                        )
+                for kind, n_shuf in (
+                    ("composition", args.comp_shuffles),
+                    ("dipeptide", args.dip_shuffles),
+                ):
                     for si in range(n_shuf):
-                        rng = random.Random(f"{SEED}:{rec['record_id']}:{L}:{kind}:{si}")
+                        rng = random.Random(
+                            f"{SEED}:{rec['record_id']}:{L}:{kind}:{si}"
+                        )
                         if kind == "composition":
                             s = list(window)
                             rng.shuffle(s)

@@ -43,10 +43,49 @@ SEED = 353
 CARDS_PER_METHOD = 10
 REPORT_E = 1.0
 BLASTP_SHORT_BELOW = 30
-QUERY_LOG_COLUMNS = ["query_number", "received_at", "work_item", "protein_accession", "start", "end", "sequence", "chosen_before_results", "notes"]
-STOPWATCH_COLUMNS = ["query_number", "workflow", "used_first", "start_time", "stop_time", "seconds", "analyst", "notes"]
-CARD_COLUMNS = ["query_number", "method", "record_id", "query_start", "query_end", "query_segment", "record_segment", "match_line", "identical", "aligned", "evalue", "record_coordinates", "measurement", "reference", "record_accession"]
-JUDGE_COLUMNS = ["analyst_had_seen_it (yes/no)", "kept_for_investigation (yes/no)", "one_line_why"]
+QUERY_LOG_COLUMNS = [
+    "query_number",
+    "received_at",
+    "work_item",
+    "protein_accession",
+    "start",
+    "end",
+    "sequence",
+    "chosen_before_results",
+    "notes",
+]
+STOPWATCH_COLUMNS = [
+    "query_number",
+    "workflow",
+    "used_first",
+    "start_time",
+    "stop_time",
+    "seconds",
+    "analyst",
+    "notes",
+]
+CARD_COLUMNS = [
+    "query_number",
+    "method",
+    "record_id",
+    "query_start",
+    "query_end",
+    "query_segment",
+    "record_segment",
+    "match_line",
+    "identical",
+    "aligned",
+    "evalue",
+    "record_coordinates",
+    "measurement",
+    "reference",
+    "record_accession",
+]
+JUDGE_COLUMNS = [
+    "analyst_had_seen_it (yes/no)",
+    "kept_for_investigation (yes/no)",
+    "one_line_why",
+]
 
 
 def read_tsv(path):
@@ -56,7 +95,13 @@ def read_tsv(path):
 
 def write_tsv(path, rows, cols):
     with open(path, "w", newline="") as f:
-        w = csv.DictWriter(f, fieldnames=cols, delimiter="\t", lineterminator="\n", extrasaction="ignore")
+        w = csv.DictWriter(
+            f,
+            fieldnames=cols,
+            delimiter="\t",
+            lineterminator="\n",
+            extrasaction="ignore",
+        )
         w.writeheader()
         w.writerows(rows)
 
@@ -92,7 +137,13 @@ def card(q, method, rec, qs, qe, rs, re_, evalue):
 def cmd_order(args):
     rows = read_tsv(args.query_log)
     rng = random.Random(SEED)
-    out = [{"query_number": r["query_number"], "used_first": rng.choice(["kmerseek", "comparison"])} for r in rows]
+    out = [
+        {
+            "query_number": r["query_number"],
+            "used_first": rng.choice(["kmerseek", "comparison"]),
+        }
+        for r in rows
+    ]
     write_tsv(args.out, out, ["query_number", "used_first"])
 
 
@@ -102,14 +153,33 @@ def cmd_search(args):
     out_dir = Path(args.out_dir)
     out_dir.mkdir(parents=True, exist_ok=True)
     qfa = out_dir / "stage1_queries.fasta"
-    qfa.write_text("".join(f">Q{q['query_number']}\n{q['sequence']}\n" for q in queries))
+    qfa.write_text(
+        "".join(f">Q{q['query_number']}\n{q['sequence']}\n" for q in queries)
+    )
     byq = {f"Q{q['query_number']}": q for q in queries}
     cards = []
 
     # kmerseek, frozen setting, same flags as Stage 0.
     res = subprocess.run(
-        ["kmerseek", "search", "--query", str(qfa), "--target", args.index, "--alphabet", args.alphabet, "--ksize", str(args.k), "--extend-mismatch-penalty", "2", "--extend-xdrop", "8"],
-        check=True, capture_output=True, text=True,
+        [
+            "kmerseek",
+            "search",
+            "--query",
+            str(qfa),
+            "--target",
+            args.index,
+            "--alphabet",
+            args.alphabet,
+            "--ksize",
+            str(args.k),
+            "--extend-mismatch-penalty",
+            "2",
+            "--extend-xdrop",
+            "8",
+        ],
+        check=True,
+        capture_output=True,
+        text=True,
     )
     hits: dict[str, list] = {}
     for r in csv.DictReader(res.stdout.splitlines()):
@@ -117,17 +187,58 @@ def cmd_search(args):
             hits.setdefault(r["query_name"], []).append(r)
     for qn, rs in hits.items():
         for r in sorted(rs, key=lambda r: float(r["region_evalue"]))[:CARDS_PER_METHOD]:
-            cards.append(card(byq[qn], "kmerseek", records[r["target_name"]], int(r["region_start"]), int(r["region_end"]), int(r["target_start"]), int(r["target_end"]), r["region_evalue"]))
+            cards.append(
+                card(
+                    byq[qn],
+                    "kmerseek",
+                    records[r["target_name"]],
+                    int(r["region_start"]),
+                    int(r["region_end"]),
+                    int(r["target_start"]),
+                    int(r["target_end"]),
+                    r["region_evalue"],
+                )
+            )
 
     # BLAST: blastp-short under 30 residues, standard blastp otherwise.
     with tempfile.TemporaryDirectory() as tmp:
         db = Path(tmp) / "collection"
-        subprocess.run(["makeblastdb", "-in", args.records_fasta, "-dbtype", "prot", "-out", str(db), "-parse_seqids"], check=True, capture_output=True)
+        subprocess.run(
+            [
+                "makeblastdb",
+                "-in",
+                args.records_fasta,
+                "-dbtype",
+                "prot",
+                "-out",
+                str(db),
+                "-parse_seqids",
+            ],
+            check=True,
+            capture_output=True,
+        )
         for q in queries:
-            task = "blastp-short" if len(q["sequence"]) < BLASTP_SHORT_BELOW else "blastp"
+            task = (
+                "blastp-short" if len(q["sequence"]) < BLASTP_SHORT_BELOW else "blastp"
+            )
             res = subprocess.run(
-                ["blastp", "-task", task, "-db", str(db), "-evalue", str(REPORT_E), "-max_target_seqs", str(CARDS_PER_METHOD), "-outfmt", "6 sseqid qstart qend sstart send evalue"],
-                input=f">Q{q['query_number']}\n{q['sequence']}\n", check=True, capture_output=True, text=True,
+                [
+                    "blastp",
+                    "-task",
+                    task,
+                    "-db",
+                    str(db),
+                    "-evalue",
+                    str(REPORT_E),
+                    "-max_target_seqs",
+                    str(CARDS_PER_METHOD),
+                    "-outfmt",
+                    "6 sseqid qstart qend sstart send evalue",
+                ],
+                input=f">Q{q['query_number']}\n{q['sequence']}\n",
+                check=True,
+                capture_output=True,
+                text=True,
             )
             seen = 0
             for line in res.stdout.splitlines():
@@ -137,7 +248,18 @@ def cmd_search(args):
                 seen += 1
                 # Ungapped view of the BLAST hit for the card: the query and record segments
                 # at the hit's coordinates; the match line counts identical residues by position.
-                cards.append(card(q, "comparison:blastp", records[sid], int(qs) - 1, int(qe), int(ss) - 1, int(se), ev))
+                cards.append(
+                    card(
+                        q,
+                        "comparison:blastp",
+                        records[sid],
+                        int(qs) - 1,
+                        int(qe),
+                        int(ss) - 1,
+                        int(se),
+                        ev,
+                    )
+                )
 
     # Exact full-alphabet substring: the query inside a record, or a record inside the query.
     for q in queries:
@@ -148,12 +270,34 @@ def cmd_search(args):
                 break
             i = rec["sequence"].find(s)
             if i >= 0:
-                cards.append(card(q, "comparison:substring", rec, 0, len(s), i, i + len(s), "exact"))
+                cards.append(
+                    card(
+                        q,
+                        "comparison:substring",
+                        rec,
+                        0,
+                        len(s),
+                        i,
+                        i + len(s),
+                        "exact",
+                    )
+                )
                 n += 1
                 continue
             j = s.find(rec["sequence"])
             if j >= 0:
-                cards.append(card(q, "comparison:substring", rec, j, j + len(rec["sequence"]), 0, len(rec["sequence"]), "exact"))
+                cards.append(
+                    card(
+                        q,
+                        "comparison:substring",
+                        rec,
+                        j,
+                        j + len(rec["sequence"]),
+                        0,
+                        len(rec["sequence"]),
+                        "exact",
+                    )
+                )
                 n += 1
     write_tsv(out_dir / "cards.tsv", cards, CARD_COLUMNS)
     print(f"{len(cards)} cards for {len(queries)} queries")
@@ -167,9 +311,18 @@ def cmd_sheet(args):
     dropped_self = dropped_dup = 0
     for c in cards:
         q = queries[c["query_number"]]
-        acc, rng_ = c["record_coordinates"].split()[0].split("-")[0], c["record_coordinates"].split()[1]
+        acc, rng_ = (
+            c["record_coordinates"].split()[0].split("-")[0],
+            c["record_coordinates"].split()[1],
+        )
         a, b = (int(x) for x in rng_.split("-"))
-        if q["protein_accession"] and acc == q["protein_accession"] and q["start"] and int(q["start"]) <= b and a <= int(q["end"]):
+        if (
+            q["protein_accession"]
+            and acc == q["protein_accession"]
+            and q["start"]
+            and int(q["start"]) <= b
+            and a <= int(q["end"])
+        ):
             dropped_self += 1
             continue
         # Duplicate evidence: the same measurement on the same residues, whatever the record id.
@@ -186,38 +339,73 @@ def cmd_sheet(args):
         rng.shuffle(group)
         for i, c in enumerate(group, 1):
             bid = f"{qn}-{i:02d}"
-            sheet.append({"blind_id": bid, "query_sequence": queries[qn]["sequence"], **{k: c[k] for k in CARD_COLUMNS if k not in ("method", "evalue", "record_accession")}, **dict.fromkeys(JUDGE_COLUMNS, "")})
-            keyrows.append({"blind_id": bid, "found_by": "+".join(sorted(c["methods"]))})
-    cols = ["blind_id", "query_sequence"] + [k for k in CARD_COLUMNS if k not in ("method", "evalue", "record_accession")] + JUDGE_COLUMNS
+            sheet.append(
+                {
+                    "blind_id": bid,
+                    "query_sequence": queries[qn]["sequence"],
+                    **{
+                        k: c[k]
+                        for k in CARD_COLUMNS
+                        if k not in ("method", "evalue", "record_accession")
+                    },
+                    **dict.fromkeys(JUDGE_COLUMNS, ""),
+                }
+            )
+            keyrows.append(
+                {"blind_id": bid, "found_by": "+".join(sorted(c["methods"]))}
+            )
+    cols = (
+        ["blind_id", "query_sequence"]
+        + [k for k in CARD_COLUMNS if k not in ("method", "evalue", "record_accession")]
+        + JUDGE_COLUMNS
+    )
     write_tsv(out_dir / "review_sheet.tsv", sheet, cols)
     write_tsv(out_dir / "review_key.tsv", keyrows, ["blind_id", "found_by"])
-    print(f"{len(sheet)} cards on the sheet; dropped {dropped_self} self-records and merged {dropped_dup} duplicates")
+    print(
+        f"{len(sheet)} cards on the sheet; dropped {dropped_self} self-records and merged {dropped_dup} duplicates"
+    )
 
 
 def useful(row) -> bool:
-    return row["analyst_had_seen_it (yes/no)"].strip().lower() == "no" and row["kept_for_investigation (yes/no)"].strip().lower() == "yes" and row["one_line_why"].strip() != ""
+    return (
+        row["analyst_had_seen_it (yes/no)"].strip().lower() == "no"
+        and row["kept_for_investigation (yes/no)"].strip().lower() == "yes"
+        and row["one_line_why"].strip() != ""
+    )
 
 
 def cmd_score(args):
     sheet = read_tsv(args.sheet)
     key = {r["blind_id"]: r["found_by"].split("+") for r in read_tsv(args.key)}
     times = read_tsv(args.stopwatch)
-    qs = sorted({r["blind_id"].rsplit("-", 1)[0] for r in sheet} | {t["query_number"] for t in times})
+    qs = sorted(
+        {r["blind_id"].rsplit("-", 1)[0] for r in sheet}
+        | {t["query_number"] for t in times}
+    )
     yield_ = {"kmerseek": set(), "comparison": set()}
     for r in sheet:
         if useful(r):
             for m in key[r["blind_id"]]:
                 yield_[m].add(r["blind_id"].rsplit("-", 1)[0])
-    secs = {m: [float(t["seconds"]) for t in times if t["workflow"] == m] for m in ("kmerseek", "comparison")}
+    secs = {
+        m: [float(t["seconds"]) for t in times if t["workflow"] == m]
+        for m in ("kmerseek", "comparison")
+    }
     med = {m: statistics.median(v) if v else float("nan") for m, v in secs.items()}
     n_k, n_c = len(yield_["kmerseek"]), len(yield_["comparison"])
     c1 = n_k >= 20
     c2 = med["kmerseek"] <= 0.5 * med["comparison"]
     c3 = n_k >= n_c
     print(f"queries: {len(qs)}")
-    print(f"1. queries with a useful measurement from kmerseek: {n_k} (threshold >= 20): {'holds' if c1 else 'fails'}")
-    print(f"2. median handling time, kmerseek {med['kmerseek']:.0f} s vs comparison {med['comparison']:.0f} s; needs kmerseek <= 50% of comparison: {'holds' if c2 else 'fails'}")
-    print(f"3. useful yield, kmerseek {n_k} vs comparison {n_c}; needs kmerseek >= comparison: {'holds' if c3 else 'fails'}")
+    print(
+        f"1. queries with a useful measurement from kmerseek: {n_k} (threshold >= 20): {'holds' if c1 else 'fails'}"
+    )
+    print(
+        f"2. median handling time, kmerseek {med['kmerseek']:.0f} s vs comparison {med['comparison']:.0f} s; needs kmerseek <= 50% of comparison: {'holds' if c2 else 'fails'}"
+    )
+    print(
+        f"3. useful yield, kmerseek {n_k} vs comparison {n_c}; needs kmerseek >= comparison: {'holds' if c3 else 'fails'}"
+    )
     print("PASS" if (c1 and c2 and c3) else "FAIL")
 
 
@@ -244,7 +432,9 @@ def main() -> int:
     p.add_argument("--key", required=True)
     p.add_argument("--stopwatch", required=True)
     args = ap.parse_args()
-    {"order": cmd_order, "search": cmd_search, "sheet": cmd_sheet, "score": cmd_score}[args.cmd](args)
+    {"order": cmd_order, "search": cmd_search, "sheet": cmd_sheet, "score": cmd_score}[
+        args.cmd
+    ](args)
     return 0
 
 

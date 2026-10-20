@@ -20,13 +20,32 @@ REPO = Path(__file__).resolve().parents[1]
 NB = REPO / "notebooks" / "353_short_stretch_evidence_lookup_elm_yeast_tiles.ipynb"
 PREREG = REPO / "notebooks" / "353_prereg.md"
 
-SUMMARY = """# Summary
+# Written after the results existed; the rule (353_prereg.md) was committed first, in 641e7262.
+SUMMARY = (REPO / "notebooks" / "353_summary.md").read_text()
 
-Not run yet. This cell is written after the results exist; the rule below was committed
-first.
-"""
+S3_READ = """**How to read it.** Each line is one number of cross-class substitutions; along the
+x axis only substitutions inside a class are added. Flat lines mean contribution (a) holds:
+those substitutions cost nothing, because the query's mmseqs12 string does not change.
+The blue line at 0 in panel c is not a recall failure of the search: an unchanged
+53-residue window is the whole record, and kmerseek drops a target whose k-mer set equals
+the query's (the self-match filter in `compare()`, kmerseek `src/rust/search.rs` at
+0a22970). The decision it informs: before Stage 1, the self-match filter has to be
+switchable off for evidence lookups, or a query identical in the alphabet to a record will
+never see that record."""
 
-SETUP = r'''
+S4_READ = """**How to read it.** Circles (composition shuffles) all sit left of the grey band: kmerseek
+reports 2 to 24 times fewer chance regions than its E-value predicts, so on this null the
+E-value is too large. Squares (dipeptide shuffles) at E* = 0.1 sit right of the band for 15-
+and 30-residue windows: more chance regions than predicted. No stratum has all six of its
+marks in the band, so the pre-registered answer is 0 of 18 strata calibrated. The second
+table above (not the rule) shows that most of the dipeptide excess lands on the window's own
+record: a short window has few dipeptide orders, so its shuffles keep runs of it.
+The decision it informs: for 15-53 residue queries the region E-value cannot be quoted as
+an expected number of chance matches; Stage 1 cards should show it as a ranking score only,
+or the E-value must be refitted for short queries (notebook 344 found the same direction of
+error for long, low-complexity proteins)."""
+
+SETUP = r"""
 import gzip
 import json
 import math
@@ -65,7 +84,7 @@ records = pl.read_csv(DATA / "records.tsv", separator="\t", infer_schema_length=
 rec_by_id = {r["record_id"]: r for r in records.iter_rows(named=True)}
 print(f"frozen setting: {SETTING} ({frozen['rule']})")
 print(TOOL)
-'''
+"""
 
 S1_MD = """## 1. The evidence collection
 
@@ -74,7 +93,7 @@ one per measured Sanborn 2021 tile. The table is every step of `freeze_counts.ts
 figure shows how the records split between the two halves, and that the tiles keep their
 weak and inactive measurements (the activation axis spans the whole screen)."""
 
-S1 = r'''
+S1 = r"""
 counts = pl.read_csv(DATA / "freeze_counts.tsv", separator="\t")
 print(counts)
 manifest = pl.read_csv(DATA / "MANIFEST.tsv", separator="\t")
@@ -100,8 +119,7 @@ for src in ("elm", "yeast_tile"):
     y += 1
 a.set_yticks(range(len(ticks)), ticks)
 a.set_xlabel("Evidence records (n)")
-a.legend(loc="upper center", bbox_to_anchor=(0.5, 1.22), ncol=2, frameon=False)
-a.set_title("Records by source and half (split by source protein)", fontsize=7, pad=18)
+a.legend(loc="lower right", frameon=False, title="split by source protein", title_fontsize=6)
 act = records.filter(pl.col("source") == "yeast_tile")["activation"].cast(pl.Float64).to_numpy()
 bins = np.logspace(np.log10(act.min()), np.log10(act.max()), 50)
 b.hist(act, bins=bins, color=pf.GREY)
@@ -113,7 +131,7 @@ b.set_title(f"All {len(act):,} measured tiles are records, weak and inactive inc
 pf.panel_label(a, "a")
 pf.panel_label(b, "b")
 pf.save(fig, FIG / "353_evidence_collection_elm_sanborn2021")
-'''
+"""
 
 S2_MD = """## 2. One alphabet and k, picked on the development half
 
@@ -122,31 +140,41 @@ and substitution level, of the fraction of development queries found at E at mos
 setting is out if more than 3 times the predicted share of its dipeptide shuffles get a
 region at E at most 0.1 against another protein's record (dashed line). Higher score is
 better; further left is better. The pick is written to `frozen_setting.json`, committed
-before the held-out half was searched."""
+before the held-out half was searched. Two pairs of marks overlap (dayhoff6 k=5 and k=7;
+sdm12 k=4 and k=5): their values differ by less than 0.002 and are in the table."""
 
-S2 = r'''
+S2 = r"""
 sel = pl.read_csv(DATA / "dev_selection.tsv", separator="\t").sort("alphabet", "k")
 print(sel)
 fig, ax = pf.figure(pf.ONE_COLUMN_MM, 70)
 alpha_colour = {"dayhoff6": pf.OKABE_ITO["vermillion"], "sdm12": pf.OKABE_ITO["blue"], "mmseqs12": pf.OKABE_ITO["bluish_green"]}
+# k is the marker shape (one shape per k, legend above), so no text labels collide.
+k_marker = {4: "v", 5: "s", 6: "o", 7: "^", 8: "D"}
 for row in sel.iter_rows(named=True):
-    filled = not row["excluded"]
-    ax.scatter(row["shuffle_rate_over_predicted"], row["score_mean_recall_e0.1"], s=40 if row["picked"] else 18,
-               facecolor=alpha_colour[row["alphabet"]] if filled else "white", edgecolor=alpha_colour[row["alphabet"]],
-               linewidth=1.2 if row["picked"] else 0.8, zorder=3)
-    ax.annotate(f"k={row['k']}" + ("  (picked)" if row["picked"] else ""), (row["shuffle_rate_over_predicted"], row["score_mean_recall_e0.1"]),
-                xytext=(4, 2), textcoords="offset points", fontsize=5.5)
+    c = alpha_colour[row["alphabet"]]
+    ax.scatter(row["shuffle_rate_over_predicted"], row["score_mean_recall_e0.1"], s=22, marker=k_marker[row["k"]],
+               facecolor=c if not row["excluded"] else "white", edgecolor=c, linewidth=0.8, zorder=3)
+    if row["picked"]:
+        ax.scatter(row["shuffle_rate_over_predicted"], row["score_mean_recall_e0.1"], s=110, facecolor="none", edgecolor="black", linewidth=0.8, zorder=4)
+        ax.annotate(f"picked: {row['alphabet']} k={row['k']}", (row["shuffle_rate_over_predicted"], row["score_mean_recall_e0.1"]),
+                    xytext=(10, -14), textcoords="offset points", fontsize=5.5)
 for name, c in alpha_colour.items():
     ax.scatter([], [], color=c, s=18, label=name)
-ax.scatter([], [], facecolor="white", edgecolor="black", s=18, label="excluded (open)")
+for kk, m in k_marker.items():
+    ax.scatter([], [], color=pf.GREY, marker=m, s=18, label=f"k={kk}")
+ax.scatter([], [], facecolor="none", edgecolor="black", s=60, label="picked")
+if sel["excluded"].any():
+    ax.scatter([], [], facecolor="white", edgecolor="black", s=18, label="excluded (open)")
 ax.axvline(3, color=pf.GREY, linestyle="--", linewidth=0.8)
+ax.text(3, ax.get_ylim()[0], " exclusion line (3x)", fontsize=5.5, color=pf.GREY, va="bottom")
 ax.set_xscale("log")
+ax.set_xticks([0.1, 0.2, 0.5, 1, 2, 3], ["0.1", "0.2", "0.5", "1", "2", "3"])
 ax.set_xlabel("Dipeptide shuffles with a region at E ≤ 0.1, observed / predicted")
 ax.set_ylabel("Mean share of queries found at E ≤ 0.1")
-ax.legend(loc="outside upper center", ncol=4, frameon=False)
+fig.legend(loc="outside upper center", ncol=5, frameon=False)
 ax.set_title("kmerseek 0a22970, development half: 10 settings", fontsize=7)
 pf.save(fig, FIG / "353_setting_choice_development_half")
-'''
+"""
 
 S3_MD = """## 3. Self-retrieval on the held-out half
 
@@ -158,7 +186,7 @@ E at most the cut-off, overlapping the window's true place: this rests on (a) an
 better. The line for 0 cross-class substitutions is what a reduced alphabet should keep;
 cross-class substitutions break k-mers in every alphabet."""
 
-S3 = r'''
+S3 = r"""
 real = pl.read_csv(RES / "held_out" / SETTING / "real_scores.tsv.gz", separator="\t")
 print(f"{real.height:,} self-retrieval queries on {real['record_id'].n_unique():,} held-out records")
 agg = []
@@ -174,24 +202,44 @@ t = f"{E_SELECT:g}"
 for ax, L in zip(axs, LENGTHS):
     for c in (0, 1, 2):
         d = recall.filter((pl.col("length") == L) & (pl.col("n_cross") == c)).sort("n_within")
-        ax.plot(d["n_within"], d[f"found_E{t}"], color=cross_colour[c], marker="o", markersize=3.5, label=f"{c} cross-class, found")
-        ax.plot(d["n_within"], d[f"placed_E{t}"], color=cross_colour[c], marker="o", markersize=3.5, markerfacecolor="white", linewidth=0.6, label=f"{c} cross-class, placed")
+        # Found and placed are equal in every cell (printed above), so one line per
+        # cross-class count; a small sideways shift keeps lines that coincide visible.
+        assert (d[f"found_E{t}"] == d[f"placed_E{t}"]).all()
+        ax.plot(d["n_within"] + (c - 1) * 0.07, d[f"found_E{t}"], color=cross_colour[c], marker="o", markersize=3.5,
+                label=f"{c} cross-class substitution{'s' if c != 1 else ''}")
     ax.set_xticks([0, 1, 2, 3])
     ax.set_xlabel("Substitutions inside one class (n)")
     ax.set_title(f"{L}-residue window", fontsize=7)
     ax.set_ylim(0, 1.02)
     ax.grid(axis="y", color="#dddddd", linewidth=0.3)
 axs[0].set_ylabel(f"Share of queries, own record at E ≤ {E_SELECT:g}")
-pf.shared_legend(fig, ncol=6, frameon=False)
+pf.shared_legend(fig, ncol=3, frameon=False, title=f"{TOOL}. Query: one window of each held-out record; target: the whole collection. Found = placed (same position in the record) in every case.", title_fontsize=6)
 for ax, letter in zip(axs, "abc"):
     pf.panel_label(ax, letter)
-fig.suptitle(f"{TOOL}; {COLLECTION}", fontsize=6)
-pf.save(fig, FIG / f"353_recall_vs_substitutions_heldout_{SETTING}_elm_sanborn2021")
+pf.save(fig, FIG / f"353_recall_vs_substitutions_heldout_{SETTING.replace(".", "_")}_elm_sanborn2021")
+
+found_not_placed = sum((real[f"found_{e:g}"] & ~real[f"placed_{e:g}"]).sum() for e in E_CUTS)
+print(f"queries found but not placed, summed over the four cut-offs: {found_not_placed}")
+
+# Why the unchanged 53-residue window is not found: it is the whole record, so its k-mer
+# set equals the record's, and kmerseek skips a target whose sketch MD5 equals the query's
+# (src/rust/search.rs, compare(), at 0a22970). Within-class substitutions do not change
+# the k-mer set either, so 53-residue queries with 0 cross-class substitutions are dropped.
+r53 = real.filter((pl.col("length") == 53) & (pl.col("n_cross") == 0))
+print(f"53-residue windows with 0 cross-class substitutions: {r53.height:,} queries, {r53['found_10'].sum()} found at E <= 10")
+
+# The 30-residue unchanged windows that are missed: is their record's sequence shared by another record?
+dup = records.group_by("sequence").agg(pl.len().alias("records_with_this_sequence"))
+miss30 = (real.filter((pl.col("length") == 30) & (pl.col("n_within") == 0) & (pl.col("n_cross") == 0) & ~pl.col("found_10"))
+          .join(records.select("record_id", "sequence", "source"), on="record_id").join(dup, on="sequence"))
+print(f"30-residue unchanged windows not found at E <= 10: {miss30.height} of {real.filter((pl.col('length') == 30) & (pl.col('n_within') == 0) & (pl.col('n_cross') == 0)).height:,}; "
+      f"{(miss30['records_with_this_sequence'] > 1).sum()} of them come from a record whose 53 residues are identical to another record's")
+print(f"records in the collection sharing their sequence with another record: {records.join(dup, on='sequence').filter(pl.col('records_with_this_sequence') > 1).height}")
 
 burden = real.group_by("n_within", "n_cross").agg(*[pl.col(f"n_other_{e:g}").mean().alias(f"other-protein regions per query, E<={e:g}") for e in E_CUTS]).sort("n_cross", "n_within")
 print("Chance-match burden the E-value predicts: E* regions per query at E <= E*. Observed against other proteins' records:")
 print(burden)
-'''
+"""
 
 S4_MD = """## 4. Shuffled controls: is the E-value calibrated per stratum?
 
@@ -204,7 +252,7 @@ Above 2 the E-value is too small (it calls chance matches significant); below 0.
 too large. Strata: share of hydrophobic residues (A, C, F, I, L, M, V) in thirds, SEG
 low-complexity flag, window length."""
 
-S4 = r'''
+S4 = r"""
 shuf = pl.read_csv(RES / "held_out" / SETTING / "shuffle_scores.tsv.gz", separator="\t")
 seg = pl.read_csv(RES / "held_out" / SETTING / "seg_flags.tsv.gz", separator="\t")
 windows = real.filter((pl.col("n_within") == 0) & (pl.col("n_cross") == 0)).select("record_id", "length", "frac_hydrophobic")
@@ -232,6 +280,20 @@ verdict = cal.group_by(stratum).agg(((pl.col("ratio") >= 0.5) & (pl.col("ratio")
 print(cal.select("kind", *stratum, "E*", "shuffles", "observed_regions", "predicted_regions", "ratio", "share_with_hit", "predicted_share"))
 print(verdict)
 print(f"strata calibrated: {verdict['calibrated'].sum()} of {verdict.height}")
+by_kind = cal.group_by("kind", "E*").agg(pl.col("ratio").min().alias("min_ratio"), pl.col("ratio").median().alias("median_ratio"), pl.col("ratio").max().alias("max_ratio")).sort("kind", "E*")
+print("observed / predicted across the 18 strata, by shuffle kind and cut-off:")
+print(by_kind)
+
+# Not the pre-registered count: the same ratio counting only regions against records of a
+# protein other than the window's own. A dipeptide shuffle of a short window keeps runs of
+# the window, so some of its regions land back on its own record.
+other_rows = []
+for (kind, e), g in [((k, e), shuf.filter(pl.col("kind") == k)) for k in ("composition", "dipeptide") for e in CAL_CUTS]:
+    per = g.group_by(stratum).agg((pl.col(f"n_other_{e:g}").sum() / (pl.len() * e)).alias("ratio_other_protein_only"))
+    other_rows.append(per.with_columns(pl.lit(kind).alias("kind"), pl.lit(e).alias("E*")))
+other = pl.concat(other_rows).group_by("kind", "E*").agg(pl.col("ratio_other_protein_only").min().alias("min"), pl.col("ratio_other_protein_only").median().alias("median"), pl.col("ratio_other_protein_only").max().alias("max")).sort("kind", "E*")
+print("Not the rule: observed / predicted counting only regions on other proteins' records:")
+print(other)
 
 hord = {"low": 0, "middle": 1, "high": 2}
 labels, ypos = [], {}
@@ -248,7 +310,7 @@ for L in LENGTHS:
 fig, ax = pf.figure(pf.TWO_COLUMN_MM, 110)
 ax.axvspan(0.5, 2, color="#eeeeee", zorder=0, label="calibrated: 0.5 to 2")
 ax.axvline(1, color=pf.GREY, linewidth=0.5)
-e_colour = {0.1: pf.OKABE_ITO["sky_blue"], 1.0: pf.OKABE_ITO["blue"], 10.0: pf.OKABE_ITO["black"]}
+e_colour = {0.1: "#9ecae1", 1.0: "#3182bd", 10.0: "#08306b"}  # light to dark: larger cut-off
 kind_marker = {"composition": "o", "dipeptide": "s"}
 off = {"composition": -0.15, "dipeptide": 0.15}
 floor = 1e-3
@@ -259,17 +321,19 @@ for row in cal.iter_rows(named=True):
 for e, c in e_colour.items():
     ax.scatter([], [], color=c, marker="o", s=12, label=f"E* = {e:g}")
 for k, m in kind_marker.items():
-    ax.scatter([], [], color="black", marker=m, s=12, facecolor="none" if False else "black", label=f"{k} shuffles")
-ax.scatter([], [], color="black", marker="x", s=12, label=f"no region (ratio 0, drawn at {floor:g})")
+    ax.scatter([], [], color=pf.GREY, marker=m, s=12, label=f"{k} shuffles")
+if (cal["ratio"] == 0).any():
+    ax.scatter([], [], color=pf.GREY, marker="x", s=12, label=f"no region (ratio 0, drawn at {floor:g})")
 ax.set_yticks([ypos[k] for k in ypos], labels, fontsize=5.5)
 ax.invert_yaxis()
 ax.set_xscale("log")
+ax.set_xticks([0.05, 0.1, 0.2, 0.5, 1, 2, 5], ["0.05", "0.1", "0.2", "0.5", "1", "2", "5"])
 ax.set_xlabel("Chance regions at E ≤ E*: observed / predicted (shuffles x E*)")
 ax.grid(axis="y", color="#dddddd", linewidth=0.3)
-ax.legend(loc="outside upper center", ncol=4, frameon=False)
+fig.legend(loc="outside upper center", ncol=4, frameon=False)
 ax.set_title(f"{TOOL}; queries: shuffles of held-out windows; target: whole collection", fontsize=6)
-pf.save(fig, FIG / f"353_shuffle_calibration_by_stratum_heldout_{SETTING}_elm_sanborn2021")
-'''
+pf.save(fig, FIG / f"353_shuffle_calibration_by_stratum_heldout_{SETTING.replace(".", "_")}_elm_sanborn2021")
+"""
 
 S5_MD = """## 5. Query-hit pairs, residue by residue
 
@@ -280,7 +344,7 @@ lowest-E regions any shuffle got. Each shows both sequences, coordinates (1-base
 match line on the 20 amino acids, the same pair in the alphabet's classes with its own match
 line, and "N of M identical". kmerseek regions are gapless, so residue i faces residue i."""
 
-S5 = r'''
+S5 = r"""
 ex = pl.read_csv(RES / "held_out" / SETTING / "examples.tsv.gz", separator="\t", infer_schema_length=10000,
                  schema_overrides={"query_name": pl.String, "target_name": pl.String})
 qmeta = real.select(pl.col("query_id").alias("query_name"), "n_within", "n_cross")
@@ -318,7 +382,7 @@ for r in other.iter_rows(named=True):
 sh = ex.filter(pl.col("kind") != "real").sort("region_evalue").head(3)
 for r in sh.iter_rows(named=True):
     show(r, "shuffle, lowest-E region (a chance match by construction)")
-'''
+"""
 
 S6_MD = """## 6. Stage 1, the application test: not run
 
@@ -350,7 +414,7 @@ S7_MD = """## 7. Compute used
 From SLURM accounting (`sacct`, TotalCPU is CPU time used; elapsed is wall time per job).
 Budget: two compute-days."""
 
-S7 = r'''
+S7 = r"""
 acct = pl.read_csv(RES / "sacct.tsv", separator="|", infer_schema_length=0)
 # One row per job (array task); its TotalCPU already sums its steps (.batch, .extern).
 acct = acct.filter(~pl.col("JobID").str.contains(r"\."))
@@ -381,7 +445,7 @@ ax.set_xlabel("CPU-hours used (SLURM TotalCPU)")
 ax.set_xlim(0, tot["cpu_hours"].max() * 1.5)
 ax.set_title("Sherlock jobs for notebook 353", fontsize=7)
 pf.save(fig, FIG / "353_cpu_hours_by_job")
-'''
+"""
 
 S8_MD_FILE = Path(__file__).resolve().parents[1] / "notebooks" / "353_second_reader.md"
 
@@ -390,7 +454,9 @@ SECTIONS: list[tuple[str, str]] = [
     (S1_MD, S1),
     (S2_MD, S2),
     (S3_MD, S3),
+    (S3_READ, ""),
     (S4_MD, S4),
+    (S4_READ, ""),
     (S5_MD, S5),
     (S6_MD, ""),
     (S7_MD, S7),
@@ -410,7 +476,10 @@ def main() -> int:
         "language": "python",
         "name": "2025-kmerseek-analysis",
     }
-    cells = [nbformat.v4.new_markdown_cell(SUMMARY), nbformat.v4.new_markdown_cell(PREREG.read_text())]
+    cells = [
+        nbformat.v4.new_markdown_cell(SUMMARY),
+        nbformat.v4.new_markdown_cell(PREREG.read_text()),
+    ]
     for md, code in SECTIONS:
         cells.append(nbformat.v4.new_markdown_cell(md))
         if code:
