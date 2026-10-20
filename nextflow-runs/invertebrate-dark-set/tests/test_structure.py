@@ -232,6 +232,30 @@ def _dark_set_accuracy(tmp_path):
     return out
 
 
+def test_foldseek_scored_before_prostt5(tmp_path):
+    """Scoring with only Foldseek output: ProstT5 is left out, not read as zero hits."""
+    import polars as pl
+    sd = tmp_path / "struct" / "yeast" / "structure"
+    sd.mkdir(parents=True)
+    (sd / "yeast_afdb_query_coverage.tsv").write_text(
+        "accession\tlength\thas_model\tn_fragments\tmodel_version\tsource\nP00330\t348\t1\t1\tv6\ta\n")
+    (sd / "yeast_prostt5_skipped.tsv").write_text("accession\tlength\n")
+    (sd / "yeast_afdb_target_summary.json").write_text('{"n_reference": 1}')
+    (sd / "yeast_afdb_query_summary.json").write_text('{}')
+    _gz(sd / "yeast.chunk_0000.foldseek.tsv.gz", ["P00330\tP00327\t1\t340\t1\t340\t500\t1e-60"])
+    _gz(sd / "yeast.chunk_0000.foldseek_decoy.tsv.gz", [])
+    ev = tmp_path / "ev"
+    ev.mkdir()
+    _gz(ev / "yeast_protein_tool_min_evalue.csv.gz", ["accession,phmmer,jackhmmer,mmseqs2", "P00330,2.0,,"])
+    out = tmp_path / "out"
+    score.placement(str(tmp_path / "struct"), str(ev), str(out), "yeast")
+    s = pl.read_csv(out / "placement_summary.csv")
+    assert s["tool"].unique().to_list() == ["foldseek"]
+    score.bands_inputs(str(out))
+    assert (out / "bands" / "yeast.prostt5_placed.tsv").read_text() == "query\ttarget\tevalue\tquery_from\tquery_to\n"
+    assert (out / "bands" / "yeast.foldseek_placed.tsv").read_text().splitlines()[1] == "P00330\tP00327\t1e-60\t1\t340"
+
+
 def test_afdb_query_models_with_placeholder_archive(tmp_path):
     """The run's Borrelia and Botryllus tasks got archives/NO_ARCHIVE (job 48521315)."""
     (tmp_path / "archives").mkdir()

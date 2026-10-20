@@ -278,6 +278,16 @@ def bands_inputs(out_dir):
     cols = [pl.col("accession").alias("query"), pl.col("best_target").alias("target"),
             pl.col("best_evalue").alias("evalue"), pl.col("best_query_from").alias("query_from"),
             pl.col("best_query_to").alias("query_to")]
+    # A tool not scored yet (ProstT5 before its GPU jobs ran) gets header-only files, so
+    # score-bands, whose --source list is fixed when the jobs are submitted, still runs.
+    header = "query\ttarget\tevalue\tquery_from\tquery_to\n"
+    for sp in pp["species"].unique().to_list():
+        for tool in TOOLS:
+            if pp.filter((pl.col("species") == sp) & (pl.col("tool") == tool)).height == 0:
+                for kind in ("placed", "any"):
+                    with open(os.path.join(d, "%s.%s_%s.tsv" % (sp, tool, kind)), "w") as fh:
+                        fh.write(header)
+                print("%s %s: not scored yet, empty files written" % (sp, tool))
     for (sp, tool), g in pp.group_by(["species", "tool"], maintain_order=True):
         hit = g.filter(pl.col("best_target").is_not_null())
         hit.filter(pl.col("placed")).select(cols).write_csv(
