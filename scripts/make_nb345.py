@@ -877,6 +877,12 @@ values the QfO region benchmark sweeps (`nextflow-runs/qfo-pfam-region-benchmark
 left out because its words need 58.4 bits and the pipeline packs a word into 58. The
 splits are the same 898 as in section 4. Run with `make run-sweep` and pulled with
 `make pull-sweep` into `tables/345_sweep/`. None of this changes the pre-registered verdict.
+
+**Result (run of 2026-10-20).** No alphabet at any k comes near the 0.15 pass line. The
+lowest median error of the 182 is `gbmr4` k13, 0.40; the lowest among the two-letter H/P
+alphabets is `hp_thomas_dill2` k27, 0.49; `hp_pbotc_1st_ed` is lowest at k27, 0.495. Below
+about k23 the two-letter alphabets have so few possible words (2^k) that almost every one is
+already in two proteomes, so most splits have no newly shared word and drop out.
 """)
 
 code(r"""
@@ -928,11 +934,15 @@ if sweep_table is not None:
         t = sweep_table.filter(pl.col("alphabet") == a).sort("k")
         c = sweep_clade.filter(pl.col("alphabet") == a)
         ax.scatter(c["k"], c["median"].clip(1e-2, None), s=3, color=pf.GREY, edgecolor="none", zorder=1)
-        ax.plot(t["k"], t["weighted_median"], color="black", lw=0.8, marker="o", ms=2.5, zorder=2)
+        ax.plot(t["k"], t["weighted_median"], color="black", lw=0.8, zorder=2)
+        full = t.filter(pl.col("splits_dropped_true_0") == 0)
+        part = t.filter(pl.col("splits_dropped_true_0") > 0)
+        ax.scatter(full["k"], full["weighted_median"], s=6, color="black", zorder=3)
+        ax.scatter(part["k"], part["weighted_median"], s=6, facecolor="white", edgecolor="black", lw=0.6, zorder=3)
         ax.axhline(PASS_MAX_ERROR, color=pf.GREY, ls="--", lw=0.6, zorder=0)
         ax.set_title(f"{a} ({len(nv.ALPHABETS[a])} letters)", fontsize=6)
         ax.set_yscale("log")
-        ax.yaxis.set_major_locator(FixedLocator([0.01, 0.1, 1, 10, 100, 1000]))
+        ax.yaxis.set_major_locator(FixedLocator([0.01, 0.1, 1, 10, 100, 1000, 10000]))
         ax.yaxis.set_major_formatter(FuncFormatter(lambda v, _: f"{v:g}"))
         ax.yaxis.set_minor_locator(NullLocator())
         ax.xaxis.set_major_locator(MaxNLocator(integer=True, nbins=5))
@@ -943,10 +953,12 @@ if sweep_table is not None:
         ax.set_ylabel("Median relative error")
     for ax in axes[-1, :]:
         ax.set_xlabel("k")
-    axes.flat[0].plot([], [], color="black", lw=0.8, marker="o", ms=2.5, label="median over all splits, clades weighted equally")
+    axes.flat[0].plot([], [], color="black", lw=0.8, marker="o", ms=2.5, label="median over all 898 splits, clades weighted equally")
+    axes.flat[0].scatter([], [], s=6, facecolor="white", edgecolor="black", lw=0.6,
+                         label="median over fewer splits: in the rest the next proteome adds no newly shared word")
     axes.flat[0].scatter([], [], s=3, color=pf.GREY, label="median of one clade")
     axes.flat[0].plot([], [], color=pf.GREY, ls="--", lw=0.6, label=f"pass line, {PASS_MAX_ERROR}")
-    pf.shared_legend(fig, ncol=3)
+    pf.shared_legend(fig, ncol=2)
     pf.save(fig, FIG / "345_SF8_next_proteome_error_every_alphabet_k_region_sweep_qfo2020_04")
 """)
 
@@ -955,8 +967,10 @@ md(r"""
 for every alphabet and k of the region benchmark's sweep.** One panel per alphabet, grouped
 by letter count: hydrophobic/polar alphabets first, then 4-7 letters, 12-18 letters, and
 the 20 amino acids. Black line: the median relative error over all splits, clades weighted
-equally, the number section 4's verdict uses; grey dots: each clade's median. Lower is
-better; the dashed line is the pre-registered pass line, 0.15. Values below 0.01 are drawn
+equally, the number section 4's verdict uses. A filled circle uses all 898 splits; an open
+circle uses fewer, because in the other splits the next proteome adds no newly shared word
+(at small k almost every possible word is already in two proteomes), so its error cannot
+be computed. Grey dots: each clade's median. Lower is better; the dashed line is the pre-registered pass line, 0.15. Values below 0.01 are drawn
 at 0.01. The y axis spaces values by ratio: the step from 0.1 to 1 takes as much room as
 the step from 1 to 10.
 """)
@@ -975,17 +989,18 @@ if sweep_table is not None:
         m = sweep_table.filter((pl.col("alphabet") == HP) & (pl.col("k") == k))["weighted_median"][0]
         ax.plot([m, m], [i - 0.35, i + 0.35], color="black", lw=1.2)
     ax.axvline(PASS_MAX_ERROR, color=pf.GREY, ls="--", lw=0.8, label=f"pass line, {PASS_MAX_ERROR}")
-    ax.scatter([], [], s=6, color=COLOUR[HP], label="one split (all six clades)")
+    ax.scatter([], [], s=6, color=COLOUR[HP], label="one split, any clade")
     ax.plot([], [], color="black", lw=1.2, label="median over all splits, clades weighted equally")
     ax.set_xscale("log")
-    ax.xaxis.set_major_locator(FixedLocator([0.001, 0.01, 0.1, 1, 10, 100, 1000]))
+    ax.xaxis.set_major_locator(FixedLocator([0.001, 0.01, 0.1, 1, 10, 100, 1000, 10000]))
     ax.xaxis.set_major_formatter(FuncFormatter(lambda v, _: f"{v:g}"))
     ax.xaxis.set_minor_locator(NullLocator())
-    ax.set_yticks(range(len(hp_ks)), [str(k) for k in hp_ks])
+    used = dict(sweep_table.filter(pl.col("alphabet") == HP).select("k", "splits_used").iter_rows())
+    ax.set_yticks(range(len(hp_ks)), [f"{k}  ({used[k]} of 898)" for k in hp_ks])
     ax.set_ylim(len(hp_ks) - 0.5, -0.5)
     ax.grid(axis="y", color="#dddddd", lw=0.3)
     ax.set_xlabel("Relative error of the predicted added count")
-    ax.set_ylabel("k")
+    ax.set_ylabel("k  (splits with a newly shared word)")
     ax.set_title(f"{HP}: hydrophobic ACFILMPVWY, polar DEGHKNQRST", fontsize=6)
     pf.shared_legend(fig, ncol=1)
     pf.save(fig, FIG / "345_SF9_next_proteome_error_hp_pbotc_every_k_region_sweep_qfo2020_04")
@@ -994,8 +1009,10 @@ if sweep_table is not None:
 md(r"""
 **Supplementary Figure 9 (SF9). Section 4's test for `hp_pbotc_1st_ed` at every k of the
 region benchmark's sweep.** Same layout as SF5, one row per k instead of per clade. Blue
-dots: one split each, all six clades together; black bar: the median with clades weighted
-equally. Left is better; the dashed line is the pass line, 0.15. Errors below 0.001 are
+dots: one split each, from any clade; black bar: the median with clades weighted
+equally. The number beside each k is how many of the 898 splits have a next proteome that
+adds at least one newly shared word; below k23 most do not, so those rows rest on few
+splits and few clades. Left is better; the dashed line is the pass line, 0.15. Errors below 0.001 are
 drawn at 0.001.
 """)
 
