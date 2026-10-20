@@ -182,6 +182,28 @@ def tidy(df: pl.DataFrame, schema: dict) -> pl.DataFrame:
     return df.select([pl.col(c).cast(t) for c, t in schema.items()])
 
 
+def module_containers(modules: Path) -> list[str]:
+    """Every `container '...'` reference pinned in the modules."""
+    refs = []
+    for nf in sorted(modules.glob("*.nf")):
+        for line in nf.read_text().splitlines():
+            line = line.strip()
+            if line.startswith("container '"):
+                refs.append(line.split("'")[1])
+    return refs
+
+
+def container_ref(container: str, refs: list[str]) -> str:
+    """On Sherlock the trace's `container` is the Apptainer cache file, named by
+    `make prefetch-images` as the reference with '/' and ':' turned into '-' plus '.img'.
+    Map it back to the reference the module pins; anything else is kept as written."""
+    name = Path(container).name
+    for ref in refs:
+        if ref.replace("/", "-").replace(":", "-") + ".img" == name:
+            return ref
+    return container
+
+
 def read_run_info(path: Path) -> dict:
     """<tool>.<setting>.run.txt: 'command: ...', 'version: ...', 'cpu_model: ...'."""
     info = {}
@@ -207,8 +229,9 @@ def task_setting(step: str, tag: str | None) -> tuple[str, str] | None:
     if step == "mmseqsBestHitSearch":
         return ("mmseqs2_besthit", tag.removeprefix("mmseqs2 ").strip())
     if step in PER_SETTING_STEPS:
-        tool, _, setting = tag.partition(" ")
-        return (tool, setting)
+        # "<tool> <setting>", or "<tool> <setting> <target>" for scoring.
+        parts = tag.split()
+        return (parts[0], parts[1] if len(parts) > 1 else "")
     return None
 
 
@@ -464,7 +487,9 @@ def main() -> None:
     ap.add_argument(
         "--results", type=Path, required=True, help="annotator_tools.nf --outdir"
     )
-    ap.add_argument("--trace", type=Path, default=None)
+    # Every trace of the run: each launch (-resume) writes its own, and a task that
+    # finished in an earlier launch appears only as CACHED in the later ones.
+    ap.add_argument("--trace", type=Path, nargs="*", default=None)
     ap.add_argument("--out", type=Path, required=True)
     ap.add_argument("--experiment", default="annotator_tools_midi_plus")
     ap.add_argument("--query-set", default="midi-plus")
@@ -482,7 +507,11 @@ def main() -> None:
     metric_files = sorted((a.results / "metrics").glob("pfam.*.metrics.parquet"))
     if not metric_files:
         raise SystemExit(f"no metrics under {a.results / 'metrics'}")
-    trace = read_trace(a.trace) if a.trace else None
+    trace = (
+        pl.concat([read_trace(t) for t in a.trace], how="diagonal_relaxed")
+        if a.trace
+        else None
+    )
     images = {}
     if trace is not None and "container" in trace.columns:
         for tool, info in TOOL_INFO.items():
@@ -497,7 +526,10 @@ def main() -> None:
                 .to_list()
             )
             if imgs:
-                images[tool] = "; ".join(imgs)
+                refs = module_containers(
+                    Path(__file__).resolve().parents[1] / "modules"
+                )
+                images[tool] = "; ".join(sorted({container_ref(i, refs) for i in imgs}))
 
     frames, pile, cards = [], [], {}
     n_queries = None
@@ -520,7 +552,7 @@ def main() -> None:
         cards[(tool, setting)] = (m, qc, run)
 
     compute = (
-        compute_rows(trace, a.experiment, n_queries, str(a.trace))
+        compute_rows(trace, a.experiment, n_queries, "; ".join(map(str, a.trace)))
         if trace is not None
         else pl.DataFrame(schema=COMPUTE_SCHEMA)
     )
