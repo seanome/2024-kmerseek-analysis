@@ -66,3 +66,42 @@ def test_score_found_placed_other(tmp_path):
     shuf = pl.read_csv(tmp_path / "shuffle_scores.tsv", separator="\t")
     assert shuf["n_regions_1"].to_list() == [0] and shuf["n_regions_10"].to_list() == [1]
     assert shuf["n_other_10"].to_list() == [1]
+
+
+def test_stage1_sheet_blinds_dedups_and_scores(tmp_path):
+    stage1 = REPO / "scripts/353/stage1.py"
+    qlog = tmp_path / "query_log.tsv"
+    with open(qlog, "w") as f:
+        f.write("query_number\treceived_at\twork_item\tprotein_accession\tstart\tend\tsequence\tchosen_before_results\tnotes\n")
+        f.write("1\t2026-10-21\tx\tP1\t10\t24\tMSEYQPSLFALNPMG\tyes\t\n")
+    cols = ["query_number", "method", "record_id", "query_start", "query_end", "query_segment", "record_segment", "match_line", "identical", "aligned", "evalue", "record_coordinates", "measurement", "reference", "record_accession"]
+    rows = [
+        ["1", "kmerseek", "T:P2:0", "1", "15", "MSEYQPSLFALNPMG", "MSEYQPSLFALNPMG", "|" * 15, "15", "15", "0.01", "P2 1-15", "act 5", "doi:x", "P2"],
+        ["1", "comparison:blastp", "T:P2:0", "1", "15", "MSEYQPSLFALNPMG", "MSEYQPSLFALNPMG", "|" * 15, "15", "15", "0.02", "P2 1-15", "act 5", "doi:x", "P2"],
+        ["1", "kmerseek", "E:X", "1", "15", "MSEYQPSLFALNPMG", "MSEYQPSLFALNPMG", "|" * 15, "15", "15", "0.01", "P1 12-26", "self", "pmid", "P1"],
+        ["1", "kmerseek", "E:Y", "1", "15", "MSEYQPSLFALNPMG", "MTEYQPSLFALNPMG", "|" * 15, "14", "15", "0.05", "P3 5-19", "motif", "pmid", "P3"],
+    ]
+    cards = tmp_path / "cards.tsv"
+    with open(cards, "w") as f:
+        f.write("\t".join(cols) + "\n" + "\n".join("\t".join(r) for r in rows) + "\n")
+    subprocess.run([sys.executable, str(stage1), "sheet", "--cards", cards, "--query-log", qlog, "--out-dir", tmp_path], check=True)
+    sheet = list(csv.DictReader(open(tmp_path / "review_sheet.tsv"), delimiter="\t"))
+    key = {r["blind_id"]: r["found_by"] for r in csv.DictReader(open(tmp_path / "review_key.tsv"), delimiter="\t")}
+    assert len(sheet) == 2  # the self-record is dropped, the duplicate merged
+    assert "method" not in sheet[0] and "found_by" not in sheet[0]
+    assert sorted(key.values()) == ["comparison+kmerseek", "kmerseek"]
+    # The judge marks the kmerseek-only card useful.
+    for r in sheet:
+        only_k = key[r["blind_id"]] == "kmerseek"
+        r["analyst_had_seen_it (yes/no)"] = "no"
+        r["kept_for_investigation (yes/no)"] = "yes" if only_k else "no"
+        r["one_line_why"] = "new motif evidence" if only_k else ""
+    with open(tmp_path / "filled.tsv", "w", newline="") as f:
+        w = csv.DictWriter(f, fieldnames=list(sheet[0]), delimiter="\t")
+        w.writeheader()
+        w.writerows(sheet)
+    with open(tmp_path / "stopwatch.tsv", "w") as f:
+        f.write("query_number\tworkflow\tused_first\tstart_time\tstop_time\tseconds\tanalyst\tnotes\n1\tkmerseek\tyes\t\t\t40\tO\t\n1\tcomparison\tno\t\t\t100\tO\t\n")
+    out = subprocess.run([sys.executable, str(stage1), "score", "--sheet", tmp_path / "filled.tsv", "--key", tmp_path / "review_key.tsv", "--stopwatch", tmp_path / "stopwatch.tsv"], check=True, capture_output=True, text=True).stdout
+    assert "useful measurement from kmerseek: 1 (threshold >= 20): fails" in out
+    assert "kmerseek 40 s vs comparison 100 s" in out and out.strip().endswith("FAIL")
