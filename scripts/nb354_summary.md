@@ -41,6 +41,10 @@ What the numbers say, in plain words:
 - **The fail clause is not what failed.** Reduction did not lengthen candidate lists (median
   1 sent to the check against C's 221), and the check costs kmerseek almost nothing (0.007 s).
   The test fails on rules 1, 2 and 4b.
+- **Part of rule 1 is out of reach at k = 8.** 22 of the 200 source-present test calls are
+  shorter than 8 residues and count as abstentions; 81 hold a de novo error (their sequence
+  differs from the database-search peptide).
+- **A second reader recomputed every number** and found the FAIL holds (last section).
 
 Decision: kmerseek is not pitched for source lookup of de novo peptide calls on the strength
 of its alphabet. If a seed-and-check route is wanted, the same gain is available from an exact
@@ -62,4 +66,5 @@ is recorded in `STOPPED` in `nextflow-runs/fragment-source/bin/nb354.py` and in
 - Sherlock jobs: download 48678939, kmerseek build 48679601, freeze 48681774,
   development 48682102 (stopped) and 48689384, test 48690317, summary 48690319.
 - Builder: `scripts/make_nb354.py`; pre-registration text `scripts/make_nb354_prereg.py`,
-  committed in 3743f18a before any method ran.
+  committed in 3743f18a before any method ran on the frozen calls (a smoke test at 14:27
+  searched 10 calls of an earlier freeze, none of the final 500, and computed no score).
