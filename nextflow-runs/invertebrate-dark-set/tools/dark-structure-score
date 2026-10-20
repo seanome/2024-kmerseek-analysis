@@ -49,6 +49,7 @@ fmax-inputs  For evaluate_domain_calls.py (the QfO region benchmark's scorer, th
            with no model is left out of the denominator instead of counted as a miss.
 report     Prints the decision table of STRUCTURE-RULES.md (P1, P2) from the files above.
 """
+import csv
 import glob
 import gzip
 import json
@@ -109,6 +110,27 @@ def read_hits(paths):
     return best
 
 
+def read_tool_evalues(path):
+    """accession -> smallest phmmer, jackhmmer or MMseqs2 E-value (inf when none).
+
+    Read with the csv module, not split(","): 10 Botryllus gene names hold a comma
+    ("FUN001269_BETA1,3GLUCANBINDING") and are quoted in the file, and splitting on commas
+    shifted their E-values one column (Foldseek scoring job 48667597, 2026-10-20).
+    """
+    out = {}
+    with gzip.open(path, "rt", newline="") as fh:
+        r = csv.reader(fh)
+        head = next(r)
+        ix = [head.index(t) for t in SEQ_TOOLS]
+        for f in r:
+            if len(f) != len(head):
+                sys.exit("%s: a row has %d fields, the header %d: %r" % (path, len(f), len(head), f[:2]))
+            if f[0] in out:
+                sys.exit("%s: %s is listed twice" % (path, f[0]))
+            out[f[0]] = min(float(f[i]) if f[i] else math.inf for i in ix)
+    return out
+
+
 def read_tsv(path):
     with open(path) as fh:
         head = fh.readline().rstrip("\n").split("\t")
@@ -122,13 +144,7 @@ def placement(struct_dir, ev_dir, out_dir, *species):
     rows, summ = [], []
     for sp in species:
         d = os.path.join(struct_dir, sp, "structure")
-        tool_e = {}
-        with gzip.open(os.path.join(ev_dir, "%s_protein_tool_min_evalue.csv.gz" % sp), "rt") as fh:
-            head = fh.readline().rstrip("\n").split(",")
-            ix = [head.index(t) for t in SEQ_TOOLS]
-            for line in fh:
-                f = line.rstrip("\n").split(",")
-                tool_e[f[0]] = min(float(f[i]) if f[i] else math.inf for i in ix)
+        tool_e = read_tool_evalues(os.path.join(ev_dir, "%s_protein_tool_min_evalue.csv.gz" % sp))
         proteome = sorted(tool_e)
         cov = {r["accession"]: r for r in read_tsv(os.path.join(d, "%s_afdb_query_coverage.tsv" % sp))}
         if set(cov) != set(proteome):

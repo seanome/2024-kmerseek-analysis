@@ -287,6 +287,19 @@ def test_afdb_query_models_with_placeholder_archive(tmp_path):
     assert json.load(open(out2 / "sum.json"))["n_with_model"] == 0
 
 
+def test_read_tool_evalues_quoted_names(tmp_path):
+    """The exact rows that stopped scoring job 48667597: Botryllus names holding a comma."""
+    p = tmp_path / "botryllus_protein_tool_min_evalue.csv.gz"
+    _gz(p, ["accession,phmmer,jackhmmer,mmseqs2",
+            '"FUN001269_BETA1,3GLUCANBINDING",2.2e-115,8.3e-132,1.074e-121',
+            '"FUN001900_ACTIN,",5.1e-252,7.4e-215,2.289e-247',
+            "FUN000001_FUN000001,5.0,,",
+            "FUN000002_FUN000002,,,"])
+    e = score.read_tool_evalues(str(p))
+    assert e == {"FUN001269_BETA1,3GLUCANBINDING": 8.3e-132, "FUN001900_ACTIN,": 5.1e-252,
+                 "FUN000001_FUN000001": 5.0, "FUN000002_FUN000002": math.inf}
+
+
 def test_read_hits_keeps_smallest_evalue(tmp_path):
     p = tmp_path / "h.tsv.gz"
     with gzip.open(p, "wt") as fh:
