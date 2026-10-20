@@ -83,7 +83,9 @@ search() {
 # a. Recall: sketch the genes DIAMOND hit, 32 parts in parallel, then search real queries.
 mkdir -p "$OUT/hit_genes"
 ls "$WORK/diamond/hit_gene_parts"/*.fna* | xargs -P 32 -I{} sh -c \
-    '"$0" sketch translate --singleton -p "$1" -o "$2/hit_genes/$(basename {}).sig.zip" {}' "$E/sourmash" "$P" "$OUT"
+    '"$0" sketch translate --singleton -p "$1" -o "$2/hit_genes/$(basename {}).sig.gz" {} &&
+     "$3" "$4" drop-empty "$2/hit_genes/$(basename {}).sig.gz" "$2/hit_genes/$(basename {}).sig.zip"' \
+    "$E/sourmash" "$P" "$OUT" "$E/python" "$REPO/notebooks/299_omrgc_sketch_pilot.py"
 ls "$OUT/hit_genes"/*.sig.zip > "$OUT/hit_genes.txt"
 search recall "$OUT/real.sig.zip" "$OUT/hit_genes.txt"
 

@@ -40,6 +40,16 @@ The prompt says "two compute days". Olga set it on 2026-10-19, before the step 1
 two days of a 32-CPU node, 48 h x 32 CPUs = 1_536 CPU-hours. (The first version of this
 file, 2026-10-18, read it as 48 CPU-hours.)
 
+### Step 1 run 1 (jobs 48551687, finished 2026-10-20) and run 2
+
+Run 1 wrote sketches straight to `.zip` and reported "dead": ten settings stopped at the
+40_000 s limit (all nine at scaled 1000, and hp k = 7 at scaled 100). The slowness is the
+`.zip` writer slowing down on identical sketches (all empty sketches are identical), not
+sketching: 132 s to `.zip` vs 2.5 s to `.sig.gz` for the same 20_000 genes. Run 1's tables
+are kept as `tables/299_step1_run1_*`. Run 2 uses the same rule and budget and times
+`sketch translate` to `.sig.gz` plus writing a `.zip` of the non-empty sketches (what step 3
+reads). Dropping empty sketches changes no hit.
+
 ## Step 3 rule: the kill test
 
 - A true hit is a (real query, catalog gene) pair DIAMOND reports at E < 1e-5.

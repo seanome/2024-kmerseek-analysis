@@ -159,36 +159,75 @@ pf.save(fig, str(FIGURES / "299_query_lengths_clam_and_bhf_regions"))
 md("""
 ## 1. Step 1: does sketching the whole catalog fit in two compute days?
 
-`sourmash sketch translate` (sourmash 4.9.4) on one CPU on the catalog's first 1 GB, for each
-of 18 settings: alphabet protein, dayhoff or hp; k = 7, 10 or 13 amino acids; scaled 100 or
-1000. The whole-catalog numbers are arithmetic (rate per GB times catalog size), not
-measured. Job: `notebooks/299_step1_sketch_timing.sbatch`. The rule's budget is 1_536 CPU-hours
-for all nine settings together (two days of a 32-CPU node, set by Olga on 2026-10-19).
+`sourmash sketch translate` (sourmash 4.9.4) on one CPU on the catalog's first 1 GB
+(1_372_957 genes), for each of 18 settings: alphabet protein, dayhoff or hp; k = 7, 10 or 13
+amino acids; scaled 100 or 1000. The whole-catalog numbers are arithmetic (rate per GB times
+the catalog's 32.6 GB of DNA), not measured. The rule's budget is 1_536 CPU-hours for all
+nine settings of one scaled value together (two days of a 32-CPU node, set by Olga on
+2026-10-19).
+
+**Run 1 (jobs 48551687, 2026-10-19/20): dead under the rule, but the verdict measures a file
+format, not sketching.** Eight settings finished in 28 to 61 minutes. The other ten (all nine
+at scaled 1000, and hp k = 7 at scaled 100) ran at 98% CPU until the 40_000 s limit, so they
+count as at least 362 CPU-hours each. At scaled 100 the eight that finished add up to
+179 CPU-hours; with hp k = 7's lower bound the total is at least 541, under 1_536, so the
+rule cannot say whether scaled 100 fits and counts it as not fitting. At scaled 1000 the
+lower bounds alone reach 3_260 CPU-hours.
+
+Why they were slow: the job wrote sketches straight to sourmash's `.zip` format, whose writer
+slows down with every sketch identical to an earlier one. At scaled 1000 most genes keep no
+hash, and all empty sketches are identical. On 20_000 catalog genes at protein k = 7,
+scaled 1000, writing `.zip` took 132 s and writing `.sig.gz` 2.5 s; 7_856 of the 20_000
+sketches were empty. A gene with no hash cannot share a hash with a query, so dropping empty
+sketches changes no hit (same 25 manysearch hits with and without them).
+
+**Run 2 (not yet run):** the same rule and budget, timing sketching to `.sig.gz` plus writing
+the `.zip` index of the non-empty sketches. Figure: total CPU-hours per scaled value for each
+run, the nine settings stacked; an open segment stopped at the time limit (a lower bound);
+the dashed line is the budget.
 """)
 
 code("""
-step1_path = TABLES / "299_step1_sketch_translate_timing_1gb_slice_omrgc_v2.csv"
-if not step1_path.exists():
-    print("Step 1 has not run yet: no", step1_path.name)
-else:
-    step1 = pl.read_csv(step1_path)
-    per_scaled = pl.read_csv(TABLES / "299_step1_whole_catalog_arithmetic_omrgc_v2.csv")
-    print(step1)
-    print(per_scaled)
-    print(json.loads((DATA / "step1_verdict.json").read_text())["verdict"])
-    pf.use_style()
-    fig, ax = pf.figure(pf.ONE_COLUMN_MM, 60)
-    order = [pilot.setting_id(*s) for s in pilot.SETTINGS]
-    hours = dict(zip(step1["setting"], step1["catalog_cpu_hours_arithmetic"]))
-    lower = dict(zip(step1["setting"], step1["is_lower_bound"]))
+def step1_panel(ax, table, title):
     colour = {"protein": pf.OKABE_ITO["blue"], "dayhoff": pf.OKABE_ITO["vermillion"], "hp": pf.OKABE_ITO["bluish_green"]}
-    for i, sid in enumerate(order):
-        a = sid.split(".")[0]
-        ax.barh(i, hours[sid], color=colour[a] if not lower[sid] else "white", edgecolor=colour[a])
-    ax.set_yticks(range(len(order)), order)
+    for row_y, scaled in enumerate(pilot.SCALEDS):
+        left = 0.0
+        for r in table.filter(pl.col("scaled") == scaled).iter_rows(named=True):
+            c = colour[r["alphabet"]]
+            ax.barh(row_y, r["catalog_cpu_hours_arithmetic"], left=left, color="white" if r["is_lower_bound"] else c,
+                    edgecolor=c, linewidth=0.5)
+            left += r["catalog_cpu_hours_arithmetic"]
+    ax.axvline(pilot.COMPUTE_BUDGET_CPU_HOURS, color="black", linestyle=(0, (3, 2)), linewidth=0.8)
+    ax.set_yticks(range(len(pilot.SCALEDS)), [f"scaled {s}" for s in pilot.SCALEDS])
     ax.invert_yaxis()
-    ax.set_xlabel("CPU-hours for the whole catalog, one setting (arithmetic)")
-    pf.save(fig, str(FIGURES / "299_step1_catalog_cpu_hours_per_setting_omrgc_v2"))
+    ax.set_xlabel("Whole-catalog CPU-hours, nine settings (arithmetic)")
+    ax.set_title(title, loc="left")
+
+
+runs = [("run 1: .zip written directly", TABLES / "299_step1_run1_sketch_translate_timing_1gb_slice_omrgc_v2.csv"),
+        ("run 2: .sig.gz, then non-empty .zip", TABLES / "299_step1_sketch_translate_timing_1gb_slice_omrgc_v2.csv")]
+present = [(t, p) for t, p in runs if p.exists()]
+for t, p in runs:
+    if not p.exists():
+        print(t, "has not run yet")
+if present:
+    import matplotlib.lines as mlines
+    import matplotlib.patches as mpatches
+    pf.use_style()
+    fig, axs = pf.figure(pf.TWO_COLUMN_MM if len(present) == 2 else pf.ONE_COLUMN_MM, 45, ncols=len(present), squeeze=False)
+    for ax, (title, path) in zip(axs[0], present):
+        table = pl.read_csv(path)
+        print(title)
+        print(table.select("setting", "finished", "slice_cpu_s", "catalog_cpu_hours_arithmetic", "is_lower_bound"))
+        print(table.group_by("scaled").agg(pl.col("catalog_cpu_hours_arithmetic").sum().alias("cpu_hours_nine_settings"),
+                                           pl.col("is_lower_bound").sum().alias("settings_stopped_at_limit")).sort("scaled"))
+        step1_panel(ax, table, title)
+    handles = [mpatches.Patch(color=c, label=a) for a, c in
+               {"protein": pf.OKABE_ITO["blue"], "dayhoff": pf.OKABE_ITO["vermillion"], "hp": pf.OKABE_ITO["bluish_green"]}.items()]
+    handles += [mpatches.Patch(facecolor="white", edgecolor="black", linewidth=0.5, label="stopped at 40,000 s: lower bound"),
+                mlines.Line2D([], [], color="black", linestyle=(0, (3, 2)), label="budget, 1,536 CPU-hours")]
+    fig.legend(handles=handles, loc="outside upper center", ncol=5, frameon=False)
+    pf.save(fig, str(FIGURES / "299_step1_catalog_cpu_hours_per_scaled_omrgc_v2"))
 """)
 
 md("""
@@ -266,6 +305,9 @@ it is an upper bound per protein, since Logan's proteins need no six-frame trans
 
 code("""
 logan_path = DATA / "step5_logan_arithmetic.json"
+if not logan_path.exists() and (DATA / "step5_run1_logan_arithmetic.json").exists():
+    print("From step 1 run 1, whose scaled 1000 times are lower bounds inflated by the .zip writer:")
+    logan_path = DATA / "step5_run1_logan_arithmetic.json"
 if not logan_path.exists():
     print("Step 5 waits on step 1: no", logan_path.name)
 else:
@@ -314,8 +356,13 @@ else:
 md("""
 ## Summary and conclusions
 
-**Result on 2026-10-18: none yet.** No Sherlock job has run. The test, its two rules, the
-queries and the jobs are fixed and committed, so the result cannot be fitted to the rule.
+**Result on 2026-10-20: step 1 run 1 says dead, but that verdict measures sourmash's `.zip`
+writer, not the cost of sketching.** Under the rule as run, the catalog fits at neither
+scaled value: at scaled 1000 the nine settings' lower bounds reach 3_260 CPU-hours, and at
+scaled 100 the total is at least 541 with one setting unknown. Ten settings were slowed by
+the `.zip` writer's handling of identical (mostly empty) sketches; written as `.sig.gz` the
+same work took 2.5 s instead of 132 s on 20_000 genes. Step 1 run 2 keeps the rule and
+budget and times `.sig.gz` plus a `.zip` of the non-empty sketches. Steps 2 to 4 have not run.
 
 - Queries: 100 random arctic clam proteins (seed 299) and 9 BHF regions copied from PR 80,
   with 2_180 dipeptide-shuffled copies.

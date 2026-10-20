@@ -35,6 +35,11 @@ else
     MINE=("${ALL[$((I - N_CHUNKS))]}")
     NAME=$OUT/sample/part$((I - N_CHUNKS))
 fi
+# Sketch to .sig.gz, then keep only non-empty sketches in the .zip that manysearch reads
+# (see drop-empty in 299_omrgc_sketch_pilot.py for why).
 /usr/bin/time -v -o "$NAME.time" \
-    "$E/sourmash" sketch translate --singleton "${PARAMS[@]}" -o "$NAME.sig.zip" "${MINE[@]}"
-tail -n 25 "$NAME.time"
+    "$E/sourmash" sketch translate --singleton "${PARAMS[@]}" -o "$NAME.sig.gz" "${MINE[@]}"
+/usr/bin/time -v -o "$NAME.zip.time" \
+    "$E/python" "$REPO/notebooks/299_omrgc_sketch_pilot.py" drop-empty "$NAME.sig.gz" "$NAME.sig.zip"
+rm -f "${NAME:?}.sig.gz"
+tail -n 25 "$NAME.time" "$NAME.zip.time"

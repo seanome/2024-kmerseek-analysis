@@ -242,6 +242,31 @@ def parse_gnu_time(path: Path) -> dict | None:
     )
 
 
+def cmd_drop_empty(args: argparse.Namespace) -> None:
+    """Copy the sketches that hold at least one hash from SRC (.sig.gz) into DST (.zip).
+
+    sourmash's .zip writer slows down with every sketch whose content repeats an earlier
+    one, and all empty sketches are the same. In the first step 1 run (jobs 48551687) the
+    nine scaled 1000 settings and hp k7 scaled 100 hit the 40_000 s limit this way; on
+    20_000 catalog genes at protein k7 scaled 1000, writing .zip took 132 s and .sig.gz
+    2.5 s, and 7_856 of the 20_000 sketches were empty. A gene with no hash can share no
+    hash with any query, so dropping it changes no hit (checked: same 25 manysearch hits
+    with and without the empty sketches).
+    """
+    import sourmash
+    from sourmash.save_load import SaveSignaturesToLocation
+
+    kept = dropped = 0
+    with SaveSignaturesToLocation(str(args.dst)) as save:
+        for sig in sourmash.load_file_as_signatures(str(args.src)):
+            if len(sig.minhash.hashes):
+                save.add(sig)
+                kept += 1
+            else:
+                dropped += 1
+    print(f"{args.src}: kept {kept} sketches, dropped {dropped} empty")
+
+
 def cmd_setting(args: argparse.Namespace) -> None:
     """Print one sketch setting for a SLURM array index."""
     alphabet, ksize, scaled = SETTINGS[args.index]
@@ -270,8 +295,18 @@ def cmd_step1_table(args: argparse.Namespace) -> None:
                 f"{sid}: sourmash failed with exit {timing['exit_status']}; read its log, do not score it"
             )
         finished = timing["exit_status"] == 0
+        # Writing the .zip index of the non-empty sketches is part of the cost (drop-empty).
+        zip_timing = (
+            parse_gnu_time(work / "step1" / f"{sid}.zip.time") if finished else None
+        )
+        if finished and (zip_timing is None or zip_timing["exit_status"] != 0):
+            sys.exit(
+                f"{sid}: no successful .zip index step; read its log, do not score it"
+            )
+        zip_cpu_s = zip_timing["cpu_s"] if zip_timing else 0.0
         # Stopped by `timeout` at limit_s: a lower bound, it needs at least limit_s.
-        cpu_s = timing["cpu_s"] if finished else float(limit_s)
+        sketch_cpu_s = timing["cpu_s"] if finished else float(limit_s)
+        cpu_s = sketch_cpu_s + zip_cpu_s
         rows.append(
             dict(
                 setting=sid,
@@ -279,6 +314,8 @@ def cmd_step1_table(args: argparse.Namespace) -> None:
                 ksize=ksize,
                 scaled=scaled,
                 finished=finished,
+                sketch_cpu_s=sketch_cpu_s,
+                zip_cpu_s=zip_cpu_s,
                 slice_cpu_s=cpu_s,
                 slice_wall_s=timing["wall_s"] if timing else None,
                 slice_max_rss_gb=timing["max_rss_gb"] if timing else None,
@@ -776,6 +813,10 @@ def main() -> None:
     sub.add_parser("plan-step3").set_defaults(func=cmd_plan_step3)
     sub.add_parser("score").set_defaults(func=cmd_score)
     sub.add_parser("logan").set_defaults(func=cmd_logan)
+    d = sub.add_parser("drop-empty")
+    d.add_argument("src", type=Path)
+    d.add_argument("dst", type=Path)
+    d.set_defaults(func=cmd_drop_empty)
     args = parser.parse_args()
     args.func(args)
 

@@ -30,13 +30,22 @@ read -r ALPHABET K SCALED < <("$E/python" "$REPO/notebooks/299_omrgc_sketch_pilo
 SID=$ALPHABET.k$K.s$SCALED
 echo "host $(hostname); $(lscpu | grep 'Model name'); setting $SID"
 
+# Two timed parts, both counted: sketching to .sig.gz, then writing the .zip index of the
+# non-empty sketches (drop-empty). Writing .zip directly was the first run's mistake: the
+# .zip writer slows down on repeated sketches, and all empty sketches are the same, so all
+# nine scaled 1000 settings and hp k7 scaled 100 hit the time limit (jobs 48551687).
+rm -f "${WORK:?}/step1/${SID:?}".*
 set +e
 /usr/bin/time -v -o "$WORK/step1/$SID.time" timeout "$LIMIT" \
     "$E/sourmash" sketch translate --singleton -p "$ALPHABET,k=$K,scaled=$SCALED,noabund" \
-    -o "$WORK/step1/$SID.sig.zip" "$WORK/slice/OM-RGC_v2_genes_first_1GB.fna"
+    -o "$WORK/step1/$SID.sig.gz" "$WORK/slice/OM-RGC_v2_genes_first_1GB.fna"
 STATUS=$?
 set -e
-echo "exit $STATUS"
+echo "sketch exit $STATUS"
 tail -n 25 "$WORK/step1/$SID.time"
 # 124 is `timeout` stopping it: a lower bound, read as such by step1-table.
+if [ "$STATUS" = 0 ]; then
+    /usr/bin/time -v -o "$WORK/step1/$SID.zip.time" "$E/python" "$REPO/notebooks/299_omrgc_sketch_pilot.py" \
+        drop-empty "$WORK/step1/$SID.sig.gz" "$WORK/step1/$SID.sig.zip"
+fi
 [ "$STATUS" = 0 ] || [ "$STATUS" = 124 ]
