@@ -93,6 +93,7 @@ index)
     [ -n "$C" ] || { echo "342: no penalty for $ALPHABET" >&2; exit 2; }
     name=$([ "$INDEX" = whole ] && echo whole_protein_index || echo regions_index)
     kq=$([ "$INDEX" = whole ] && echo 500 || echo 2500)  # PR 114's --ka-queries per index
+    kq=${KA_QUERIES:-$kq}  # protein20 k5 whole: 500 left too few score bins (job 48247325)
     idx=$WORK/indexes/$INDEX.w$DECOY_WINDOW.${ALPHABET}_k${KSIZE}_s1.kmerseek.rocksdb
     [ -f "$idx/DONE" ] && { echo "342: $idx done already"; exit 0; }
     rm -rf "$idx" && mkdir -p "$(dirname "$idx")"
@@ -145,10 +146,10 @@ search)
     echo "342: $(zcat "$out" | tail -n +2 | wc -l) regions with E <= $MAX_EVALUE"
     ;;
 score)
-    $PY "$REPO/scripts/342_kind4_features.py" --calls "$WORK/calls" \
+    $PY "$REPO/scripts/342_kind4_features.py" --calls "${CALLS_DIR:-$WORK/calls}" \
         --queries "$REPO/tables/342/342_setA_exon_queries.tsv" \
         --swissprot-dat "$SCRATCH/regions-index-pilot/uniprot_sprot.2026_03.dat.gz" \
-        --out "$WORK/score"
+        --out "${SCORE_OUT:-$WORK/score}"
     ;;
 *)
     echo "342: unknown STEP $STEP" >&2; exit 2
