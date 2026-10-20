@@ -45,16 +45,17 @@ read -r ALPHABET K SCALED < <("$E/python" "$REPO/notebooks/299_omrgc_sketch_pilo
 SID=$ALPHABET.k$K.s$SCALED
 OUT=$WORK/search/$SID
 mkdir -p "$OUT"
-# A setting that already finished (done marker and the gather table) is not searched again,
-# so the whole array can be resubmitted after a partial failure.
+# A setting whose searches finished (done marker) is not searched again; only a missing BHF
+# gather table is made. So the whole array can be resubmitted after a partial failure.
 if [ -e "$OUT/done" ] && [ -s "$OUT/fastmultigather.csv" ]; then
     echo "$SID already done; skipping"
     exit 0
 fi
-rm -f "$OUT/done"
 echo "host $(hostname); $(lscpu | grep 'Model name'); setting $SID"
 P="$ALPHABET,k=$K,scaled=$SCALED,noabund"
 SEL=(-k "$K" -m "$ALPHABET" -s "$SCALED")
+
+if [ ! -e "$OUT/done" ]; then
 
 # Query sketches, and how many real queries have no hash at all at this setting.
 "$E/sourmash" sketch protein --singleton -p "$P" -o "$OUT/real.sig.zip" "$REPO/notebooks/299_data/queries_real.faa"
@@ -114,6 +115,9 @@ fi
 printf '{"count_source": "%s", "sample_rows": %s, "predicted_full_rows": %s, "full_row_cap": %s}\n' \
     "$COUNT_SOURCE" "$SAMPLE_ROWS" "$PREDICTED" "$FULL_ROW_CAP" > "$OUT/status.json"
 touch "$OUT/done"
+else
+    echo "$SID searches already done; making only the BHF gather table"
+fi
 
 # BHF regions and their copies through gather, beside the rule, against the 1% gene sample:
 # fastmultigather holds every sketch it searches in memory and the whole catalog did not fit
