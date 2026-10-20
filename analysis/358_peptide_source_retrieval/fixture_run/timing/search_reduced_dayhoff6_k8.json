@@ -1,0 +1,12 @@
+{
+  "method": "reduced_dayhoff6_k8",
+  "n_queries": 948,
+  "load_seconds": 0.0029154160292819142,
+  "cold_wall_seconds": 0.2805928750312887,
+  "cold_cpu_seconds": 0.2805299999999997,
+  "cold_verify_seconds": 0.19429431424941868,
+  "warm_wall_seconds": 0.27798745804466307,
+  "warm_cpu_seconds": 0.27786699999999964,
+  "warm_verify_seconds": 0.19476162281353027,
+  "peak_rss_bytes": 139919360
+}
