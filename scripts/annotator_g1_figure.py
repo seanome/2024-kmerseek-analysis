@@ -9,7 +9,8 @@ Both figures have the same rows, colours and shapes. Top to bottom:
     (the gbmr4 k21 setting on its tool card, and the best of its 15 settings for that
     relative, picked after seeing the result, so an upper bound). Each hit's whole aligned
     region is the call, with duplicate calls kept (filled) and merged (open). Values come
-    from PR 148's results.parquet (experiment qfo_region_midi_plus). The IoU figure's
+    from PR 148's results.parquet (experiment qfo_region_midi_plus; commit 7eca428b, whose
+    target_mya_to_human comes from TimeTree 5, orders the rows). The IoU figure's
     correct-call counts come from the run's all_domain_metrics.parquet, whose Fmax and IoU
     must equal PR 148's.
   - Swiss-Prot 2026_03 minus Mammalia, one row per PR 160 setting: the best hit, scored with
@@ -85,8 +86,11 @@ METRIC = {
     ),
     "median_iou_tp": dict(
         out="median_iou_best_hit_vs_qfo_relatives_midi_plus",
-        xlabel="Median IoU of correct calls: overlap between call and true domain, "
-        "divided by their union (higher is better)",
+        # A call is correct only at IoU 0.5 or more (evaluate_domain_calls.py --min-overlap),
+        # so every median here is at least 0.5.
+        xlabel="Median IoU of correct calls. IoU = overlap between call and true domain, divided "
+        "by their union;\na call counts as correct only when its IoU is at least 0.5, so every "
+        "median is at least 0.5 (higher is better)",
         right="correct calls\n(fewest to most\nover the row's marks)",
         count="n_tp_calls",
     ),
@@ -150,7 +154,7 @@ def build_rows(
     order = (
         qfo.select("target_db", "target_mya_to_human")
         .unique()
-        .sort("target_mya_to_human", "target_db")
+        .sort("target_mya_to_human", "target_db", nulls_last=True)
     )
     for db, mya in order.iter_rows():
         sp = db.removeprefix("QfO ")
@@ -199,7 +203,9 @@ def build_rows(
                     count("kmerseek", KMER_CARD, sp, t["dedup_or_raw"], t["value"]),
                 )
             )
-        rows.append((f"QfO {NAME.get(sp, sp)} ({mya:g} Mya)", 0, marks))
+        # Divergence time from TimeTree 5 (PR 148's target_mya_to_human); none for E. coli.
+        age = f"{mya:.1f} Mya" if mya is not None else "no TimeTree age"
+        rows.append((f"QfO {NAME.get(sp, sp)} ({age})", 0, marks))
     labels = {
         ("diamond_besthit", "sensitive"): ("DIAMOND --sensitive", "DIAMOND"),
         ("diamond_besthit", "ultra-sensitive"): (
