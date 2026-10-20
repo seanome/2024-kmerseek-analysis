@@ -325,8 +325,11 @@ def cmd_sheet(args):
         ):
             dropped_self += 1
             continue
-        # Duplicate evidence: the same measurement on the same residues, whatever the record id.
-        key = (c["query_number"], c["record_segment"], c["measurement"])
+        # One card per measurement per query, whichever workflow found it. kmerseek and BLAST
+        # report different stretches of the same record, so the stretch cannot be the key;
+        # the measurement text is unique to a record's measured feature, so two cards with
+        # the same text are the same evidence.
+        key = (c["query_number"], c["measurement"])
         if key in merged:
             merged[key]["methods"].add(c["method"].split(":")[0])
             dropped_dup += 1

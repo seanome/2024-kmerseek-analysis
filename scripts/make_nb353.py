@@ -38,8 +38,9 @@ reports 2 to 24 times fewer chance regions than its E-value predicts, so on this
 E-value is too large. Squares (dipeptide shuffles) at E* = 0.1 sit right of the band for 15-
 and 30-residue windows: more chance regions than predicted. No stratum has all six of its
 marks in the band, so the pre-registered answer is 0 of 18 strata calibrated. The second
-table above (not the rule) shows that most of the dipeptide excess lands on the window's own
-record: a short window has few dipeptide orders, so its shuffles keep runs of it.
+table above (not the rule) and the 300-shuffle sample show that most of the dipeptide
+excess lands on records of the window's own protein (its own record and overlapping
+tiles): a short window has few dipeptide orders, so its shuffles keep runs of it.
 The decision it informs: for 15-53 residue queries the region E-value cannot be quoted as
 an expected number of chance matches; Stage 1 cards should show it as a ranking score only,
 or the E-value must be refitted for short queries (notebook 344 found the same direction of
@@ -239,6 +240,23 @@ print(f"records in the collection sharing their sequence with another record: {r
 burden = real.group_by("n_within", "n_cross").agg(*[pl.col(f"n_other_{e:g}").mean().alias(f"other-protein regions per query, E<={e:g}") for e in E_CUTS]).sort("n_cross", "n_within")
 print("Chance-match burden the E-value predicts: E* regions per query at E <= E*. Observed against other proteins' records:")
 print(burden)
+burden_len = real.group_by("length").agg(pl.col(f"n_other_{E_SELECT:g}").mean().alias("other-protein regions per query, E<=0.1")).sort("length")
+print("the same, by window length (all substitution levels pooled):")
+print(burden_len)
+
+# kmerseek indexes one copy of each k-mer set ("Skipped ... sequences whose signature key was
+# already indexed" in the index log), so records with the same mmseqs12 k=4 k-mer set collapse.
+def kmer_set(seq):
+    enc = encode(seq, ALPHABET)
+    return frozenset(enc[i : i + K] for i in range(len(enc) - K + 1) if "." not in enc[i : i + K])
+kset = {rid: kmer_set(r["sequence"]) for rid, r in rec_by_id.items()}
+from collections import Counter
+kcount = Counter(kset.values())
+print(f"records sharing their {ALPHABET} k={K} k-mer set with another record: {sum(kcount[v] > 1 for v in kset.values())}; "
+      f"distinct k-mer sets: {len(kcount):,} of {len(kset):,} records")
+miss30b = real.filter((pl.col("length") == 30) & (pl.col("n_within") == 0) & (pl.col("n_cross") == 0) & ~pl.col(f"found_{E_SELECT:g}"))
+print(f"30-residue unchanged windows not found at E <= {E_SELECT:g}: {miss30b.height}; "
+      f"{sum(kcount[kset[r]] > 1 for r in miss30b['record_id'])} of them from a record whose k-mer set another record shares")
 """
 
 S4_MD = """## 4. Shuffled controls: is the E-value calibrated per stratum?
@@ -280,6 +298,15 @@ verdict = cal.group_by(stratum).agg(((pl.col("ratio") >= 0.5) & (pl.col("ratio")
 print(cal.select("kind", *stratum, "E*", "shuffles", "observed_regions", "predicted_regions", "ratio", "share_with_hit", "predicted_share"))
 print(verdict)
 print(f"strata calibrated: {verdict['calibrated'].sum()} of {verdict.height}")
+print("unchanged windows per hydrophobic bin (the cut points tie many windows, so the bins are not equal thirds):")
+print(windows.with_columns(hydro_bin(pl.col("frac_hydrophobic")).alias("hydrophobic")).group_by("hydrophobic").len().sort("hydrophobic"))
+pooled = shuf.filter(pl.col("kind") == "dipeptide")
+print(f"dipeptide shuffles with any region at E <= 0.1, pooled: {(pooled['n_regions_0.1'] > 0).mean():.3f} (calibrated prediction {1 - math.exp(-0.1):.3f})")
+# Where the dipeptide regions at E <= 0.1 land, in the 300 shuffles score.py kept every region for.
+exs = pl.read_csv(RES / "held_out" / SETTING / "examples.tsv.gz", separator="\t", infer_schema_length=10000, schema_overrides={"query_name": pl.String, "target_name": pl.String})
+exs = exs.filter((pl.col("kind") == "dipeptide") & (pl.col("region_evalue") <= 0.1))
+print("dipeptide-shuffle regions at E <= 0.1 in the 300-shuffle sample:",
+      {"own record": int(exs["own_record"].sum()), "other record, same protein": int((~exs["own_record"] & ~exs["other_protein"]).sum()), "other protein": int(exs["other_protein"].sum())})
 by_kind = cal.group_by("kind", "E*").agg(pl.col("ratio").min().alias("min_ratio"), pl.col("ratio").median().alias("median_ratio"), pl.col("ratio").max().alias("max_ratio")).sort("kind", "E*")
 print("observed / predicted across the 18 strata, by shuffle kind and cut-off:")
 print(by_kind)
@@ -407,12 +434,19 @@ Ready for Olga, in `data/kill_tests/short_stretch/stage1/` and `scripts/353/stag
 5. `stopwatch_log_template.tsv`: start and stop time per query per workflow.
 6. `stage1.py score`: the three pass-rule numbers and PASS or FAIL.
 
-`tests/test_353_scoring.py` runs steps 4 and 6 on a hand-made query."""
+`tests/test_353_scoring.py` runs steps 4 and 6 on a hand-made query. A plumbing check on
+Sherlock (job 48701987, 2026-10-20) ran steps 3 and 4 on two windows of held-out tiles, which
+are not Stage 1 queries: 31 cards (11 kmerseek, 15 blastp, 5 exact substring), 25 dropped
+as self-records, 5 left on the sheet with no method column. BLAST cards show the residues
+at the hit's coordinates without its gaps; the judge should know that."""
 
 S7_MD = """## 7. Compute used
 
 From SLURM accounting (`sacct`, TotalCPU is CPU time used; elapsed is wall time per job).
-Budget: two compute-days."""
+Budget: two compute-days. The held-out prep job wrote 15 to `chunks/n_chunks` for 14 chunks
+(a bug fixed in f8a366b1); the file on Sherlock was rewritten by hand to 14, from the same
+`ls chunk_*.fasta | wc -l`, before the score job started. The Stage 1 plumbing job
+(48701987, under a minute) is not in this table."""
 
 S7 = r"""
 acct = pl.read_csv(RES / "sacct.tsv", separator="|", infer_schema_length=0)
