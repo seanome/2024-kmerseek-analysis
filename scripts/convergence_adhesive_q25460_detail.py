@@ -12,7 +12,11 @@ setting, a sequence tool, a Foldseek mode or a scan):
                           the same cutoff for the real query and its 40 null draws
   first_false_positive.tsv  the real query's first false positive: target, name, score
   truth_ranks.tsv         the real query's rank and score for every truth entry in the
-                          whole list; an entry the list never reported gets no row
+                          whole list; an entry the list never reported gets no row. A
+                          scan keeps its top 2_000 rows plus every truth entry, so for a
+                          scan the rank is the one scans.py computed over all of the
+                          reference (its `rank` column, ties sharing the lowest rank), not
+                          the position among the rows kept
 
 A list with no false positive for the real query gets no cutoff, and its rows in
 truth_at_threshold.tsv count every reported row instead (`cutoff` is empty there).
@@ -170,7 +174,33 @@ def main() -> int:
     pl.DataFrame(count_rows).write_csv(
         args.outdir / "truth_at_threshold.tsv", separator="\t"
     )
-    pl.DataFrame(rank_rows).write_csv(args.outdir / "truth_ranks.tsv", separator="\t")
+    # A scan's true rank over the whole reference, in place of the position among kept rows.
+    scan = (
+        pl.read_parquet(args.hits / "scans" / "scans.parquet")
+        .filter(
+            (pl.col("query_id") == QUERY)
+            & pl.col("target").is_in(list(truth_lineage))
+            & (pl.col("overlap").is_null() | (pl.col("overlap") >= 0))
+        )
+        .select(
+            "method",
+            pl.col("list_name").alias("setting_label"),
+            "target",
+            pl.col("rank").alias("scan_rank"),
+            "n_ranked",
+        )
+        .unique()
+    )
+    rank_rows = (
+        pl.DataFrame(rank_rows)
+        .join(scan, on=["method", "setting_label", "target"], how="left")
+        .with_columns(
+            rank=pl.coalesce("scan_rank", "rank"),
+            n_ranked=pl.coalesce("n_ranked", "n_reported"),
+        )
+        .drop("scan_rank")
+    )
+    rank_rows.write_csv(args.outdir / "truth_ranks.tsv", separator="\t")
     pl.DataFrame(fp_rows).write_csv(
         args.outdir / "first_false_positive.tsv", separator="\t"
     )
