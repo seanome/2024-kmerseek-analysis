@@ -41,7 +41,10 @@ from shuffle_fasta import dipeptide_counts, parse_fasta, shuffle_dipeptide  # no
 
 ALPHABETS = ("protein", "dayhoff", "hp")
 KSIZES = (7, 10, 13)
-SCALEDS = (100, 1_000)
+# Scaled 10 was added by Olga on 2026-10-20, after step 1 had passed and while step 3 ran for
+# 100 and 1000. It goes last so settings 0-17 keep their array indices (running SLURM tasks
+# look their setting up by index); scaled 10 is settings 18-26.
+SCALEDS = (100, 1_000, 10)
 SETTINGS = [(a, k, s) for s in SCALEDS for a in ALPHABETS for k in KSIZES]
 
 QUERY_SEED = 299
@@ -52,7 +55,14 @@ PASS_RECALL = 0.80
 PASS_SHUFFLED_RATE = 0.01
 COMPUTE_BUDGET_CPU_HOURS = 1_536.0  # two days of a 32-CPU node (Olga, 2026-10-19)
 N_SAMPLE_PARTS = 32  # parts of the 1% random gene sample, sketched as extra array tasks
-TIMEOUT_EXIT = 124  # exit status of `timeout` when it stops a command
+TIMEOUT_EXIT = 124
+# Figure: marker fill encodes scaled (filled = 10, half = 100, open = 1000).
+FILL_BY_SCALED = {10: "full", 100: "left", 1_000: "none"}
+FILL_LABEL = {
+    "full": "filled",
+    "left": "half-filled",
+    "none": "open",
+}  # exit status of `timeout` when it stops a command
 FIG1_GENES = (
     "ZNF292",
     "RSF1",
@@ -290,6 +300,11 @@ def cmd_drop_empty(args: argparse.Namespace) -> None:
     print(f"{args.src}: kept {kept} sketches, dropped {dropped} empty")
 
 
+def cmd_indices(args: argparse.Namespace) -> None:
+    """Print the SLURM array indices (comma-separated) of the settings at the given scaled values."""
+    print(",".join(str(i) for i, (_, _, s) in enumerate(SETTINGS) if s in args.scaled))
+
+
 def cmd_setting(args: argparse.Namespace) -> None:
     """Print one sketch setting for a SLURM array index."""
     alphabet, ksize, scaled = SETTINGS[args.index]
@@ -428,7 +443,7 @@ def cmd_plan_step3(args: argparse.Namespace) -> None:
     # ran out of 11 GB after three. Step 1 gives the same from one setting on the 1 GB slice.
     n_chunks = stats["n_parts"]
     chunk_gb = step1["catalog_fna_gb"] / n_chunks
-    for scaled in SCALEDS:
+    for scaled in [x for x in SCALEDS if not args.scaled or x in args.scaled]:
         rate = sum(
             float(timing[setting_id(a, k, scaled)]["cpu_s_per_gb"])
             for a in ALPHABETS
@@ -694,14 +709,16 @@ def plot_kill_test(table) -> None:
             undrawn.append(row["setting"])
             continue
         x, y = row["recall"] * 100, y_of(row["shuffled_rate"])
-        ax.scatter(
+        ax.plot(
             x,
             y,
             marker=marker[row["ksize"]],
-            s=22,
+            markersize=5,
+            linestyle="",
             zorder=3,
-            edgecolor=colour[row["alphabet"]],
-            facecolor=colour[row["alphabet"]] if row["scaled"] == 100 else "white",
+            color=colour[row["alphabet"]],
+            markerfacecoloralt="white",
+            fillstyle=FILL_BY_SCALED[row["scaled"]],
         )
         if row["count_source"] == "sample_1pct":
             ax.scatter(
@@ -758,17 +775,17 @@ def plot_kill_test(table) -> None:
     ]
     handles += [
         mlines.Line2D(
-            [], [], color="black", marker="o", linestyle="", label="scaled 100 (filled)"
-        ),
-        mlines.Line2D(
             [],
             [],
             color="black",
             marker="o",
-            markerfacecolor="white",
             linestyle="",
-            label="scaled 1000 (open)",
-        ),
+            markerfacecoloralt="white",
+            fillstyle=FILL_BY_SCALED[scaled],
+            label=f"scaled {scaled} ({FILL_LABEL[FILL_BY_SCALED[scaled]]})",
+        )
+        for scaled in sorted(FILL_BY_SCALED)
+    ] + [
         mlines.Line2D(
             [],
             [],
@@ -852,7 +869,12 @@ def main() -> None:
     s.add_argument("index", type=int)
     s.set_defaults(func=cmd_setting)
     sub.add_parser("step1-table").set_defaults(func=cmd_step1_table)
-    sub.add_parser("plan-step3").set_defaults(func=cmd_plan_step3)
+    ps = sub.add_parser("plan-step3")
+    ps.add_argument("--scaled", type=int, nargs="*", help="only these scaled values")
+    ps.set_defaults(func=cmd_plan_step3)
+    ix = sub.add_parser("indices")
+    ix.add_argument("--scaled", type=int, nargs="+", required=True)
+    ix.set_defaults(func=cmd_indices)
     sub.add_parser("score").set_defaults(func=cmd_score)
     sub.add_parser("logan").set_defaults(func=cmd_logan)
     d = sub.add_parser("drop-empty")

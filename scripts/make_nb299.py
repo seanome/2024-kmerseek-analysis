@@ -194,7 +194,7 @@ the dashed line is the budget.
 code("""
 def step1_panel(ax, table, title):
     colour = {"protein": pf.OKABE_ITO["blue"], "dayhoff": pf.OKABE_ITO["vermillion"], "hp": pf.OKABE_ITO["bluish_green"]}
-    for row_y, scaled in enumerate(pilot.SCALEDS):
+    for row_y, scaled in enumerate(sorted(table["scaled"].unique().to_list())):
         left = 0.0
         for r in table.filter(pl.col("scaled") == scaled).iter_rows(named=True):
             c = colour[r["alphabet"]]
@@ -202,7 +202,8 @@ def step1_panel(ax, table, title):
                     edgecolor=c, linewidth=0.5)
             left += r["catalog_cpu_hours_arithmetic"]
     ax.axvline(pilot.COMPUTE_BUDGET_CPU_HOURS, color="black", linestyle=(0, (3, 2)), linewidth=0.8)
-    ax.set_yticks(range(len(pilot.SCALEDS)), [f"scaled {s}" for s in pilot.SCALEDS])
+    scaled_values = sorted(table["scaled"].unique().to_list())
+    ax.set_yticks(range(len(scaled_values)), [f"scaled {s}" for s in scaled_values])
     ax.invert_yaxis()
     ax.set_xlabel("Whole-catalog CPU-hours, nine settings (arithmetic)")
     ax.set_title(title, loc="left")

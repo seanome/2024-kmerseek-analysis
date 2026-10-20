@@ -58,6 +58,13 @@ its own position number (3.2 s vs 12.5 s on 39_000 genes, identical manysearch h
 the `.zip` step has its own time limit counted as a lower bound. Run 2 was resubmitted with
 all 18 settings (jobs 48647076).
 
+### Scaled 10 added (Olga, 2026-10-20)
+
+After step 1 had passed for scaled 100 and 1000, and while their step 3 was running, Olga
+asked to add scaled 10 (a sketch keeps about one k-mer in ten). It is nine more settings
+(18-26), run through the same step 1 budget and the same step 3 rule; nothing else changes.
+More settings give the idea more chances to pass; the notebook reports every setting.
+
 ## Step 3 rule: the kill test
 
 - A true hit is a (real query, catalog gene) pair DIAMOND reports at E < 1e-5.
