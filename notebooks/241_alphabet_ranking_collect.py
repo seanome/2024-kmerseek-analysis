@@ -119,12 +119,18 @@ def read_survival(tag: str) -> dict:
     """fitted, lambda, K from the ka_survival CSV the index build wrote."""
     # The driver retries a refused fit with more queries and shuffles and writes the
     # retry's curve beside the first one; the retry is the fit the search then used.
-    # The driver's .nofit marker wins over a retry file: hp_lehninger_hpc3 k=21 kept the
-    # retry curve of 2026-09-23 (fitted) after a later run skipped the retry and searched
-    # it with exact regions.
+    # A retry file that says fitted beside the driver's .nofit marker is stale:
+    # hp_lehninger_hpc3 k=21 kept the retry curve of 2026-09-23 after a later run skipped
+    # the retry and searched it with exact regions. Then the first curve is the record.
     nofit = (OUT / "search" / f"{tag}.nofit").exists()
     p = OUT / "ka_survival" / f"{tag}.retry.csv"
-    if nofit or not p.exists():
+    if p.exists() and nofit:
+        with open(p) as fh:
+            head = fh.readline().rstrip("\n").split(",")
+            row = fh.readline().rstrip("\n").split(",")
+        if "fitted" in head and row[head.index("fitted")].strip().lower() == "true":
+            p = OUT / "ka_survival" / f"{tag}.csv"
+    if not p.exists():
         p = OUT / "ka_survival" / f"{tag}.csv"
     if not p.exists():
         return {

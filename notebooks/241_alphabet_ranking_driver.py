@@ -474,45 +474,53 @@ def main() -> None:
     # A fresh output folder (a first run on Sherlock) has none of these yet.
     for d in ("idx", "search", "ka_survival", "pair", "logs"):
         (OUT / d).mkdir(parents=True, exist_ok=True)
-    cnt = residue_counts()
-    hbits = bits_per_position(cnt)
-    kappa = read_kappa()
-    alphabets = [a for a in args.alphabets.split(",") if a]
-
-    plan = []
-    for a in alphabets:
-        c, x = penalty_for(a, kappa)
-        for k in ladder(a, hbits[a]):
-            plan.append((a, k, c, x))
-    (OUT / "plan.json").write_text(
-        json.dumps(
-            [
-                {
-                    "alphabet": a,
-                    "ksize": k,
-                    "bits": round(k * hbits[a], 2),
-                    "penalty": c,
-                    "xdrop": x,
-                }
-                for a, k, c, x in plan
-            ],
-            indent=1,
-        )
-    )
-    (OUT / "bits_per_position.json").write_text(json.dumps(hbits, indent=1))
-    print(f"{len(plan)} arms over {len(alphabets)} alphabets", file=sys.stderr)
-    if args.plan_only:
-        for a, k, c, x in plan:
-            print(f"{a:26s} k={k:2d}  bits={k * hbits[a]:5.1f}  C={c} X={x}")
-        return
-
-    # plan.json above always lists the whole ladder; --only narrows what is run.
     only = {t for t in args.only.split(",") if t}
     if only:
-        plan = [p for p in plan if f"{p[0]}.k{p[1]}" in only]
+        # Re-running a few settings of a finished run: take each one's penalty from the
+        # run's own plan.json and leave that file alone. The kappa table changed after
+        # the run (funcgroups8 had no measured kappa on 2026-09-23 and was searched at
+        # the fallback 2 / 8; the table now gives 0.29 / 1.18), so recomputing the plan
+        # would record penalties the searches never used.
+        recorded = json.loads((OUT / "plan.json").read_text())
+        plan = [
+            (p["alphabet"], p["ksize"], p["penalty"], p["xdrop"])
+            for p in recorded
+            if f"{p['alphabet']}.k{p['ksize']}" in only
+        ]
         missing = only - {f"{a}.k{k}" for a, k, _, _ in plan}
         if missing:
-            sys.exit(f"--only: not in the plan: {sorted(missing)}")
+            sys.exit(f"--only: not in {OUT / 'plan.json'}: {sorted(missing)}")
+    else:
+        cnt = residue_counts()
+        hbits = bits_per_position(cnt)
+        kappa = read_kappa()
+        alphabets = [a for a in args.alphabets.split(",") if a]
+        plan = []
+        for a in alphabets:
+            c, x = penalty_for(a, kappa)
+            for k in ladder(a, hbits[a]):
+                plan.append((a, k, c, x))
+        (OUT / "plan.json").write_text(
+            json.dumps(
+                [
+                    {
+                        "alphabet": a,
+                        "ksize": k,
+                        "bits": round(k * hbits[a], 2),
+                        "penalty": c,
+                        "xdrop": x,
+                    }
+                    for a, k, c, x in plan
+                ],
+                indent=1,
+            )
+        )
+        (OUT / "bits_per_position.json").write_text(json.dumps(hbits, indent=1))
+        print(f"{len(plan)} arms over {len(alphabets)} alphabets", file=sys.stderr)
+        if args.plan_only:
+            for a, k, c, x in plan:
+                print(f"{a:26s} k={k:2d}  bits={k * hbits[a]:5.1f}  C={c} X={x}")
+            return
 
     results = []
     with cf.ThreadPoolExecutor(max_workers=args.workers) as ex:
