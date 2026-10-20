@@ -8,7 +8,7 @@ di Guan, Chu, Panzhi Li, Paul D. Riggs, and Hiroshi Inouye. "Vectors That Facili
 
 ## evan1985
 
-Evan, Gerard I., Gerald K. Lewis, Gregor Ramsay, and J. Michael Bishop. "Isolation of Monoclonal Antibodies Specific for Human c-myc Proto-Oncogene Product." *Molecular and Cellular Biology* 5 (1985): 3610-3616. https://doi.org/10.1128/mcb.5.12.3610-3616.1985
+Evan, Gerard I., George K. Lewis, Gary Ramsay, and J. Michael Bishop. "Isolation of Monoclonal Antibodies Specific for Human c-myc Proto-Oncogene Product." *Molecular and Cellular Biology* 5 (1985): 3610-3616. https://doi.org/10.1128/mcb.5.12.3610-3616.1985
 
 ## field1988
 
@@ -20,7 +20,7 @@ Hochuli, E., W. Bannwarth, H. Döbeli, R. Gentz, and D. Stüber. "Genetic Approa
 
 ## hopp1988
 
-Hopp, Thomas P., Kathryn S. Prickett, Virginia L. Price, Randell T. Libby, Carl J. March, Dale Pat Cerretti, Douglas L. Urdal, and Paul J. Conlon. "A Short Polypeptide Marker Sequence Useful for Recombinant Protein Identification and Purification." *Bio/Technology* 6 (1988): 1204-1210. https://doi.org/10.1038/nbt1088-1204
+Hopp, Thomas P., Kathryn S. Prickett, Virginia L. Price, Randell T. Libby, Carl J. March, Douglas Pat Cerretti, David L. Urdal, and Paul J. Conlon. "A Short Polypeptide Marker Sequence Useful for Recombinant Protein Identification and Purification." *Bio/Technology* 6 (1988): 1204-1210. https://doi.org/10.1038/nbt1088-1204
 
 ## huston1988
 

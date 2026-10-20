@@ -23,7 +23,7 @@
   },
   "fail_clauses": {
     "exact_already_catches": "exact tag matching alone recovers at least as many documented unexpected inserts as the reduced-alphabet check",
-    "cannot_separate_intended": "flags cannot tell an insert the customer ordered from one that is a mistake, measured as the fraction of flags on intended inserts being no different from the fraction on unintended ones",
+    "cannot_separate_intended": "flags cannot tell an insert the customer ordered from one that is a mistake: the share of intended inserts flagged is within 0.1 of the share of unintended inserts flagged",
     "needs_dna": "every documented error the reduced-alphabet check finds beyond the comparison workflow is also found by the DNA check, so the protein method adds nothing the DNA already gives"
   }
 }

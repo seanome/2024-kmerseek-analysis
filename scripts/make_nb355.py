@@ -87,16 +87,21 @@ check that already says something about the prior.
 
 ## The one thing the mechanics check already shows
 
-Eight of the twelve frozen tag and linker sequences are shorter than 19 amino acids. kmerseek
-runs a hydrophobic/polar alphabet at k of 19 or more, and a sequence shorter than k has no
-k-mers at all, so those eight cannot be found by a reduced-alphabet k-mer check at any
-setting kmerseek is run at. That is a property of the tag list and the method, not of any
-data that is missing. The two that are long enough are the GST and MBP fusion partners, at
-218 and 370 amino acids, and exact matching already finds both.
+Ten of the twelve frozen tag and linker sequences are shorter than 19 amino acids, and a
+sequence shorter than k has no k-mers at all, so a k-mer method cannot find it at that k
+however good the alphabet is. The pipelines in this repository run a hydrophobic/polar
+alphabet from k=15 to k=30, and across that whole range the number of the twelve sequences
+with even one k-mer is 3 at k=15 and 2 from k=16 up. The two that are always long enough are
+the GST and MBP fusion partners, at 218 and 370 amino acids. This is arithmetic about the tag
+list, not a measurement, and no amount of missing data changes it.
 
-In the other direction, at hydrophobic/polar k=19 the check flagged a clean Ced9 protein as
-containing MBP. The 19 residues in Ced9 and the 19 in MBP share 3 amino acids out of 19, and
-encode to the same 19-letter hydrophobic/polar string. Section 6 prints them.
+Where the reduced alphabet does reach, it adds one thing over exact matching and costs
+another. The thing it adds: on constructs built here, it named GST and MBP even when one
+residue had been changed, which exact matching cannot do, in 12 of 144 cases. The cost: at
+hydrophobic/polar k=19 it flagged a clean Ced9 protein as containing MBP. Those 19 residues of
+Ced9 and 19 of MBP share 3 amino acids out of 19 and encode to the same 19-letter
+hydrophobic/polar string. Sections 5 to 7 give both numbers and section 6 prints the
+residues.
 """)
 
 md(r"""
@@ -170,11 +175,14 @@ for name, clause in pass_rule["fail_clauses"].items():
 md(r"""
 ## 2. The data that is missing, and the format it must arrive in
 
-Searched before concluding it does not exist: every file in this repository, every open and
-closed pull request in `seanome/2024-kmerseek-analysis` (174 of them), and the data
-directories on this machine. The word "construct" appears in the repository only as the
-ordinary verb, in code that builds a table or a set of pairs. There is no facility submission
-record anywhere.
+Searched before concluding it does not exist: every file in this repository, the pull requests
+in `seanome/2024-kmerseek-analysis` open or closed at the time of the search on 2026-10-20
+(174 then, 179 by the end of that day), and the data directories on this machine. Outside this
+notebook's own files, "construct" appears in the repository only as the ordinary verb, in code
+that builds a table or a set of pairs. A sibling branch opened later the same day,
+`olgabot/construct-insert-check`, asks the same question with its own scaffolding; its
+submission templates are headers with no rows, so it has no submissions either. There is no
+facility submission record anywhere.
 
 The table below is the contract. It is printed from the same module that validates an
 arriving file, `construct_check_utils.load_submissions`, so the documented columns and the
@@ -220,9 +228,9 @@ print("discrepancy_class is one of:", ", ".join(sorted(cc.DISCREPANCY_CLASSES)))
 """)
 
 md(r"""
-**Figure 1. What the test needs, what it does with it, and what comes out.** Solid boxes are
-in this repository. Dashed boxes are the parts that are not available, and every one of them
-is an input: the submissions and the facility's DNA calls and review times. The four
+**Figure 1. What the test needs, what it does with it, and what comes out.** Solid black boxes are
+in this repository. Dashed purple boxes are the parts that are not available, and every one of
+them is an input: the submissions and the facility's DNA calls and review times. The four
 thresholds on the right all depend on an input that is missing, which is why none of them has
 a number.
 """)
@@ -230,8 +238,10 @@ a number.
 code(r"""
 from matplotlib.patches import FancyArrowPatch, Rectangle
 
-PRESENT = pf.OKABE_ITO["blue"]
-MISSING = pf.OKABE_ITO["vermillion"]
+# Blue, vermillion and bluish green are reserved for the three methods in figures 3 and 4,
+# so this figure marks present and missing with black and reddish purple instead.
+PRESENT = pf.OKABE_ITO["black"]
+MISSING = pf.OKABE_ITO["reddish_purple"]
 
 fig, ax = pf.figure(pf.TWO_COLUMN_MM, 78)
 ax.set_xlim(0, 100)
@@ -368,11 +378,14 @@ md(r"""
 A sequence shorter than k has no k-mers, so a k-mer method cannot find it at that k, however
 good the alphabet is. Panel **a** counts how many of the twelve frozen sequences still have at
 least one k-mer as k grows. Panel **b** puts each sequence at its own length, so the whole list
-is visible rather than a summary.
+is visible rather than a summary; the marker shape is the tag's category.
 
 Higher is better in panel **a**: it is the number of tags the method could possibly find. The
-shaded band is k of 19 to 30, the range a hydrophobic/polar alphabet is run at in this project.
-Nothing about this figure depends on the missing submissions.
+shaded band is k=15 to k=30, the range the pipelines in this repository run a hydrophobic/polar
+alphabet at (`nextflow-runs/kmer-spectra/main.nf` starts at 15, the Pfam region benchmark at
+16). The dashed line in panel **b** is k=19, the value the mechanics check uses. Across the
+whole band the count in panel **a** is 3 at k=15 and 2 from k=16 up. Nothing about this figure
+depends on the missing submissions.
 """)
 
 code(r"""
@@ -391,21 +404,34 @@ lengths = (
 print()
 print(lengths.to_pandas().to_string(index=False))
 
-HP_LOW, HP_HIGH = 19, 30
-CATEGORY_COLOUR = {
-    "affinity tag": pf.OKABE_ITO["blue"],
-    "epitope tag": pf.OKABE_ITO["vermillion"],
-    "linker": pf.OKABE_ITO["bluish_green"],
-    "fusion partner": pf.OKABE_ITO["reddish_purple"],
+# The range this repository's own pipelines run a hydrophobic/polar alphabet at, and the k
+# the mechanics check uses inside it.
+HP_LOW, HP_HIGH = 15, 30
+MECHANICS_K = 19
+# Category on marker shape, in one colour: hue is spoken for by the methods in figures 3 and
+# 4, and a tag category is not an amount, so shape is the right channel for it.
+CATEGORY_MARKER = {
+    "affinity tag": "o",
+    "epitope tag": "s",
+    "linker": "^",
+    "fusion partner": "D",
 }
+CATEGORY_COLOUR_SINGLE = pf.OKABE_ITO["black"]
 
 fig, axs = pf.figure(pf.TWO_COLUMN_MM, 62, ncols=2)
 
 ax = axs[0]
-ax.axvspan(HP_LOW, HP_HIGH, color=pf.GREY, alpha=0.25,
-           label="k a hydrophobic/polar alphabet is run at (19-30)")
+ax.axvspan(
+    HP_LOW,
+    HP_HIGH,
+    color=pf.GREY,
+    alpha=0.25,
+    label=f"k this repository runs a hydrophobic/polar alphabet at ({HP_LOW}-{HP_HIGH})",
+)
+# No marker on this line: a circle is the affinity-tag shape in panel b, and the two panels
+# share one legend.
 ax.plot(reachable["ksize"], reachable["n_tags"], color=pf.OKABE_ITO["black"],
-        marker="o", markersize=3, label="frozen tags with at least one k-mer")
+        label="frozen tags with at least one k-mer")
 ax.set_xlabel("k (amino acids per k-mer)")
 ax.set_ylabel("Tags with at least one k-mer (n of 12)")
 ax.set_ylim(-0.5, 12.5)
@@ -417,19 +443,27 @@ ordered = lengths.sort("tag_length_aa")
 positions = {}
 for index, row in enumerate(ordered.iter_rows(named=True)):
     positions[row["tag_name"]] = index
-for category, colour in CATEGORY_COLOUR.items():
+for category, marker in CATEGORY_MARKER.items():
     rows = ordered.filter(pl.col("category") == category)
     if rows.is_empty():
         continue
     axs[1].plot(
         rows["tag_length_aa"],
         [positions[name] for name in rows["tag_name"]],
-        "o", color=colour, markersize=4, linestyle="none", label=category,
+        marker=marker,
+        color=CATEGORY_COLOUR_SINGLE,
+        markersize=4,
+        linestyle="none",
+        label=category,
     )
 # Panel b's x axis is a length, not k, so the grey band of panel a would mean something
 # different here. A dashed line, its own mark with its own legend entry, instead.
-axs[1].axvline(HP_LOW, color=pf.OKABE_ITO["black"], linestyle="--",
-               label="19 aa, the smallest k this alphabet is run at")
+axs[1].axvline(
+    MECHANICS_K,
+    color=pf.OKABE_ITO["black"],
+    linestyle="--",
+    label=f"{MECHANICS_K} aa, the k the mechanics check uses",
+)
 axs[1].set_xscale("log")
 axs[1].set_xticks([3, 5, 10, 19, 30, 100, 400])
 axs[1].set_xticklabels(["3", "5", "10", "19", "30", "100", "400"])
@@ -478,7 +512,7 @@ unexpected inserts; ties break toward the larger k and then the alphabet with mo
 since both make a chance match less likely. If no pair stays inside the budget, the function
 raises instead of widening the budget, because under the fixed rule that is a fail.
 
-Twenty-one unit checks run on the frozen tag list and on constructs built from the frozen host
+Thirty-one unit checks run on the frozen tag list and on constructs built from the frozen host
 proteins: that each method finds an insert it is given, that the coordinates it reports hold
 the residues it claims, that the loader refuses a file breaking any rule of the contract, and
 that the scorer returns FAIL on a case built to fail and PASS on one built to pass, so the
@@ -522,9 +556,11 @@ Two ways of counting a recovery, both reported, because they differ:
   while naming a different tag does not tell a reviewer what is there. Local alignment names no
   tag at all, so it is counted the loose way only.
 
-The reduced-alphabet check runs at hydrophobic/polar `hp_thomas_dill` with k=19. That is the
-smallest k in the range this project runs a hydrophobic/polar alphabet at, which gives it the
-best chance of reaching a short tag; a larger k can only reach fewer of them.
+The reduced-alphabet check runs at hydrophobic/polar `hp_thomas_dill` with k=19. The pipelines
+in this repository run this alphabet from k=15 to k=30, so 19 is inside that range and not the
+lowest value available. Lowering it to 15 would add exactly one more reachable sequence, the
+15-residue glycine-serine linker, and nothing else; raising it reaches no more. So the choice
+of 19 is not what decides the result.
 """)
 
 code(r"""
@@ -562,7 +598,9 @@ the tag exactly as frozen, panel **b** the same tag with its middle residue chan
 The two methods land on the same point wherever they agree, so exact matching is drawn as the
 large pale circle and the reduced-alphabet check as the smaller solid one on top of it. A
 length with only a large pale circle at 1.0 is a tag exact matching named and the reduced
-alphabet did not.
+alphabet did not. In panel **b**, the two orange points at 1.0 with no blue under them are the
+12 constructs the reduced alphabet named and exact matching missed: GST and MBP with one
+residue changed, in all six hosts.
 
 Local alignment is on neither panel, because it names no tag at all. It flagged the inserted
 region in all 144 built constructs and said nothing about what was there. That is its row in
@@ -597,8 +635,12 @@ plotted = (
 # where they agree, both are still visible.
 fig, axs = pf.figure(pf.TWO_COLUMN_MM, 62, ncols=2, sharey=True)
 for ax, insert_kind in zip(axs, ("exact tag", "tag with one substitution")):
-    ax.axvspan(19, 500, color=pf.GREY, alpha=0.25,
-               label="length at least k=19, so the tag has a k-mer")
+    ax.axvline(
+        19,
+        color=pf.OKABE_ITO["black"],
+        linestyle="--",
+        label="19 aa: to the right of this, a tag has a k-mer at k=19",
+    )
     for method, markersize, alpha in (
         (NAMING_METHODS[0], 9, 0.55),
         (NAMING_METHODS[1], 4.5, 1.0),
@@ -785,8 +827,12 @@ fig, axs = pf.figure(pf.TWO_COLUMN_MM, 50, ncols=2, width_ratios=[1, 1.6])
 
 ax = axs[0]
 labels = [SHORT_NAME[method] for method in clean_rate["method"]]
-ax.axvline(1.0, color=pf.OKABE_ITO["black"], linestyle="--",
-           label="threshold 2: at most 1 per 100")
+ax.axvline(
+    1.0,
+    color=pf.GREY,
+    linestyle=":",
+    label="threshold 2: at most 1 per 100",
+)
 for index, (method, value) in enumerate(
     zip(clean_rate["method"], clean_rate["per_100"])
 ):
@@ -837,27 +883,30 @@ print("saved figures/355-mechanics_false_flags_per_100_clean_and_ced9_mbp_residu
 """)
 
 md(r"""
-## 7. The five comparison-missed cases: none, and why there cannot be any here
+## 7. The cases only the reduced alphabet named, and why none of them counts
 
-The task asks for the five documented errors the comparison workflow missed, shown as intended
-against received with the insert highlighted. There are none to show, and the reason is not that
-the method failed to find them: there are no documented errors at all, because there are no
-submissions. A built construct cannot supply one. The mistake in it was put there by this
-analysis, so "the comparison workflow missed it" would only mean "this analysis chose an insert
-exact matching cannot see", which is a statement about the choice, not about the method.
+Threshold 3 asks for at least five documented errors that the comparison workflow missed. No
+documented error exists here, so the threshold has no number. A built construct cannot supply
+one: the mistake in it was put there by this analysis, so "the comparison workflow missed it"
+would only say "this analysis chose an insert exact matching cannot see", which is a fact about
+the choice and not about the method.
 
-What can be said from the mechanics check, on built constructs only:
+What the mechanics check does show, on built constructs only:
 
 - Of the 144 built constructs, the reduced-alphabet check at hydrophobic/polar k=19 named the
-  inserted sequence correctly in 24, all of them GST or MBP, the only two frozen sequences at
-  least 19 residues long. Exact matching found both as well, in every case.
-- There is no built construct the reduced-alphabet check named and exact matching did not.
-  On the mechanics evidence the count that threshold 3 needs to be at least five is zero.
-- Local alignment flagged the inserted region in all 144, and in all 144 said nothing about
-  what the insert was. That is the gap a naming method could fill. Exact matching fills it for
-  every tag in the frozen list that is present exactly.
+  inserted sequence correctly in 24: GST and MBP, the only two frozen sequences long enough to
+  have a k-mer, in all six hosts, both as the exact sequence and with one residue changed.
+- In 12 of those 144, the reduced alphabet named the insert and exact matching did not. All 12
+  are GST or MBP with one residue changed, which is exactly the case an exact substring search
+  must lose. This is the one thing in the whole notebook pointing the favourable way, and it is
+  narrow: it needs an insert longer than k, and local alignment already flagged every one of
+  those 12 regions, just without naming what was in them.
+- Local alignment flagged the inserted region in all 144 and named the insert in none.
 
-Section 8's verdict does not rest on these numbers. They are mechanics.
+The cell below prints both counts. The 12 is not a count of documented errors and cannot be
+read as progress toward the five that threshold 3 asks for: these are inserts this analysis
+planted, not mistakes a facility made and resolved. Section 8's verdict does not rest on any of
+these numbers.
 """)
 
 code(r"""
@@ -900,15 +949,17 @@ repository and cannot be obtained anywhere else. Nothing was substituted for the
 
 1. No facility construct submission record exists in this repository or in any of its 174 pull
    requests. Searched before concluding it; section 2.
-2. Eight of the twelve frozen tag and linker sequences are shorter than 19 amino acids, so at
-   the k a hydrophobic/polar alphabet is run at they have no k-mer and a k-mer method cannot
-   find them at all. Section 3 table and figure 2.
+2. Ten of the twelve frozen tag and linker sequences are shorter than 19 amino acids. Across
+   k=15 to k=30, the range this repository runs a hydrophobic/polar alphabet at, the number of
+   the twelve with even one k-mer is 3 at k=15 and 2 from k=16 up. Section 3 table and
+   figure 2.
 3. On 144 constructs built by inserting a frozen tag into a clean protein, the reduced-alphabet
    check at hydrophobic/polar k=19 named the insert correctly in 24, all of them the GST or MBP
    fusion partner. Exact matching named all 72 exact-tag inserts and none of the 72 with one
    residue changed. Section 5 table and figure 3.
-4. There is no built construct the reduced-alphabet check named and exact matching did not.
-   Section 7.
+4. In 12 of the 144 built constructs the reduced-alphabet check named the insert and exact
+   matching did not; all 12 are GST or MBP with one residue changed, and local alignment had
+   already flagged all 12 regions without naming them. Section 7.
 5. Local alignment flagged the inserted region in all 144 built constructs and named the insert
    in none. Section 5 table.
 6. At hydrophobic/polar k=19 the check flags residues 216-234 of clean Ced9 as containing MBP.
@@ -924,13 +975,19 @@ The prior, written before running anything, was strongly unfavorable, for the re
 construct insert is usually known exactly while a reduced alphabet exists to find sequence that
 is not. Two things found here point the same way, and neither needs the missing data:
 
-- Most of the tag list is shorter than one k-mer at the k this alphabet is run at. That is
-  arithmetic, not a measurement, and no amount of data changes it. Anything short enough to
-  need a different method (His6, FLAG, HA, Myc, Strep, the short linkers) is also short enough
-  for an exact search to find reliably.
+- Ten of the twelve sequences are shorter than one k-mer across the whole range this alphabet
+  is run at. That is arithmetic, not a measurement, and no amount of data changes it. Anything
+  short enough to need a different method (His6, FLAG, HA, Myc, Strep, the short linkers) is
+  also short enough for an exact search to find reliably.
 - Where the reduced alphabet does reach, it matched a clean protein to a fusion partner on 3
   identical amino acids out of 19. On real submissions that is the behaviour threshold 2 is
   there to catch.
+
+One thing points the other way, and it is recorded here rather than left out: for an insert
+longer than k that is not an exact copy of the list entry, the reduced alphabet named it and
+exact matching did not, in 12 of 144 built constructs. Whether that matters depends on how
+often a real discrepancy is a long, inexact insert rather than a short exact tag, which is a
+question about the 200 submissions and cannot be answered without them.
 
 This is not the verdict. The verdict is NOT RUN. If the submissions arrive, the test runs
 against the rule committed here, and these two observations are predictions it can falsify.
@@ -951,8 +1008,8 @@ against the rule committed here, and these two observations are predictions it c
 
 | | |
 | --- | --- |
-| CPU-hours | about 0.05 (3 minutes of one core: the mechanics check runs in 7 seconds, the unit tests in 0.3 seconds, the rest is downloading 10 UniProt records) |
-| Elapsed hours | about 2.5, one session, all on the laptop |
+| CPU-hours | 0.05 or less. Measured with `/usr/bin/time -p`: the mechanics check 1.64 s user time, the 31 unit checks 1.50 s, the notebook about 25 s to execute. The rest is downloading 10 UniProt records and 8 Crossref records |
+| Elapsed hours | about 3.5, one session, all on the laptop |
 | Budget | 2 compute-days. Used well under 1% of it |
 | GPU | none |
 | kmerseek index builds | none. No index was built and no `nextflow run` was started, so nothing ran on the laptop that the house rule forbids |
@@ -972,12 +1029,39 @@ against the rule committed here, and these two observations are predictions it c
 
 ## 9. Second agent's attempt to disprove these claims
 
-A second agent, in a fresh session, went through the claims above against the code and data.
-Its held and failed list is in the pull request body and is repeated here.
-""")
+A second agent, in a fresh session, with no part of the work's reasoning, was asked to try to
+disprove each claim against the code and data. It checked ten of them, re-ran the mechanics
+check, resolved every DOI against Crossref, wrote 24 malformed submissions files against the
+loader, and built its own boundary cases for the scorer. Five claims failed. Everything below
+was fixed before this notebook was called done, and the numbers in sections 1 to 8 are the
+corrected ones.
 
-md(r"""
-_The held/failed list is filled in below once the second agent has reported._
+| Claim | Its verdict | What it found, and what was done |
+| --- | --- | --- |
+| 1. No facility submissions exist here | HELD | Grepped the whole tree and all history; the only hits are this notebook's own files and a sibling branch whose submission templates are headers with no rows. It also found the sentence "construct appears only as the ordinary verb" to be false against `git log --all`, and that a sibling pull request asks the same question. Section 2 now says both. |
+| 2. Eight sequences shorter than 19 aa | FAILED | It is ten of twelve, which this notebook's own cell prints; the prose said eight in three places. It also showed 19 is not the lowest k this repository runs a hydrophobic/polar alphabet at: the k-mer spectra pipeline starts at 15 and the Pfam region benchmark at 16. Both corrected, and figure 2's band is now the real k=15 to 30 range. |
+| 3. 24 named right, 72 and 0 for exact matching | HELD | Recomputed from the table and by re-running the script; the three tables came back byte-identical, so the run is deterministic. 432 rows, 144 per method, 144 distinct tag, host and insert-kind groups. |
+| 4. Nothing the reduced alphabet named that exact matching did not | FAILED | There are 12, which this notebook's own cell prints: GST and MBP with one residue changed, in all six hosts. The claim contradicted the cell it cited. Section 7 and summary claim 4 rewritten; this is now recorded as the one result pointing the favourable way. |
+| 5. The Ced9/MBP false flag | HELD | Verified the 1-based coordinates against the frozen FASTA, the 3 identical amino acids, the identical hydrophobic/polar strings, and that MBP 12-30 is inside the frozen mature chain. |
+| 6. Every tag source and citation is correct | HELD, two errors | Every UniProt subsequence is at its recorded accession and coordinates, and all eight DOIs resolve to the paper claimed, with matching title, journal, volume, year and pages. No invented citation. Two given names were wrong: Evan 1985 (George K. Lewis, Gary Ramsay, not Gerald and Gregor) and Hopp 1988 (Douglas Pat Cerretti, David L. Urdal, not Dale and Douglas). Both corrected against Crossref and re-frozen. |
+| 7. The scorer enforces the frozen rule | FAILED | The thresholds and boundary cases were right (19 of 20 holds, 18 of 20 fails, exactly 1 per 100 holds, and an unmeasured threshold 4 does block a PASS), and `Flag.overlaps` has no off-by-one. But the scorer computed only two of the three frozen drop clauses: `cannot_separate_intended` was never evaluated, so a method that cannot tell an ordered insert from a mistaken one could still return PASS. It also hardcoded the three thresholds instead of reading them from the frozen rule. Both fixed, with three new tests, including one that fires the clause and one that shows it staying quiet when the flags do separate. |
+| 8. The loader refuses a file that breaks the contract | FAILED | Of 24 malformed files, 11 were correctly refused and 5 kinds got through: a header-only file returned zero rows; the contract's split rule, that one intended protein stays in one split, was documented but never checked; `strip()` dropped a blank final field; a short row raised `KeyError` instead of being reported; and a repeated header column was silently accepted. All five fixed, each with its own test. |
+| 9. The checksums and the freeze | HELD | All 16 files verify, and re-running the freeze left `git status` clean. It noted that `frozen_date` is today's date, so re-running on another day changes four files; that is intended, since a re-freeze is a new freeze. |
+| 10. The figures do not mislead | FAILED | Every number checked out and no point falls outside an axis. But blue, vermillion and green each meant three different things across the four figures, and the grey band meant a k range in one and a length range in another. The colours are now reserved for the three methods, tag category moved to marker shape, present and missing to black and purple, and the 19 aa marker is one dashed line used the same way everywhere. |
+
+Other things it raised, and what was done:
+
+- The `cannot_separate_intended` clause being unenforceable was counted as a real error. Fixed,
+  as above.
+- The composition-matched control takes a stretch of EGFR, so for the EGFR host it inserts EGFR
+  into EGFR. It still controls for composition, but that one case is not a neutral stretch. Left
+  as it is, and said here, because it affects only the mechanics check.
+- `insert_was_intended` is only checked on insert rows, so a nonsense value on a clean row
+  passes. Left as it is: the column is only read for inserts.
+- The compute numbers were prose with no cell behind them. They are now measured values from
+  `/usr/bin/time -p`, stated in section 8.
+- It could not check whether the 200 submissions exist outside this repository, which is the one
+  thing that would change the verdict. Only Olga can answer that.
 """)
 
 nb = {

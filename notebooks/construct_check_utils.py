@@ -149,7 +149,10 @@ def load_submissions(path: pathlib.Path) -> list[dict[str, str]]:
     :data:`SUBMISSION_COLUMNS` in any order; the columns of
     :data:`OPTIONAL_SUBMISSION_COLUMNS` may also be present.
     """
-    lines = path.read_text().strip().split("\n")
+    # Only the trailing newline is stripped, not trailing tabs: ``strip()`` would remove the
+    # empty last field of a row whose final column is blank, and that field would then go
+    # missing instead of being reported.
+    lines = path.read_text().rstrip("\n").split("\n")
     header = lines[0].split("\t")
     problems: list[str] = []
     missing = sorted(set(SUBMISSION_COLUMNS) - set(header))
@@ -160,8 +163,29 @@ def load_submissions(path: pathlib.Path) -> list[dict[str, str]]:
     )
     if unknown:
         problems.append(f"columns not in the contract: {', '.join(unknown)}")
+    repeated = sorted({name for name in header if header.count(name) > 1})
+    if repeated:
+        # dict(zip(...)) would keep only the last of a repeated column and lose the rest.
+        problems.append(f"columns appearing more than once: {', '.join(repeated)}")
+    if len(lines) < 2:
+        problems.append(
+            "the file has a header and no submissions. An empty export is refused rather "
+            "than returned as zero rows, which would shrink the test to nothing"
+        )
     if problems:
         raise ValueError(f"{path}: " + "; ".join(problems))
+
+    # Every row must have exactly the header's fields. Without this a short row silently
+    # becomes a dict missing a key, and the first use of that key raises KeyError from
+    # somewhere else instead of being reported here.
+    for index, line in enumerate(lines[1:], start=2):
+        fields = line.split("\t")
+        if len(fields) != len(header):
+            problems.append(
+                f"{path} line {index}: {len(fields)} fields, the header has {len(header)}"
+            )
+    if problems:
+        raise ValueError("\n".join(problems))
 
     rows = [dict(zip(header, line.split("\t"))) for line in lines[1:]]
     seen: set[str] = set()
@@ -194,19 +218,50 @@ def load_submissions(path: pathlib.Path) -> list[dict[str, str]]:
                 if not row[column]:
                     problems.append(f"{where}: {column} is required for an insert")
             if row["resolved_insert_sequence"] and row["resolved_insert_start"]:
-                start = int(row["resolved_insert_start"])
-                end = int(row["resolved_insert_end"])
-                observed = row["received_protein"][start - 1 : end]
-                if observed != row["resolved_insert_sequence"]:
+                try:
+                    start = int(row["resolved_insert_start"])
+                    end = int(row["resolved_insert_end"])
+                except ValueError:
                     problems.append(
-                        f"{where}: received_protein[{start}:{end}] is {observed!r}, which "
-                        f"is not the resolved insert {row['resolved_insert_sequence']!r}"
+                        f"{where}: resolved_insert_start and resolved_insert_end must be "
+                        f"whole numbers, got {row['resolved_insert_start']!r} and "
+                        f"{row['resolved_insert_end']!r}"
                     )
+                else:
+                    observed = row["received_protein"][start - 1 : end]
+                    if observed != row["resolved_insert_sequence"]:
+                        problems.append(
+                            f"{where}: received_protein[{start}:{end}] is {observed!r}, "
+                            "which is not the resolved insert "
+                            f"{row['resolved_insert_sequence']!r}"
+                        )
             if row["insert_was_intended"].lower() not in {"true", "false"}:
                 problems.append(
                     f"{where}: insert_was_intended must be true or false, got "
                     f"{row['insert_was_intended']!r}"
                 )
+
+    # Contract rule: every submission sharing an intended protein is in the same split.
+    # Without this the alphabet and k are chosen partly on proteins the test then scores,
+    # and the test split is no longer held out. This was documented from the start and is
+    # checked here since 2026-10-20, when an adversarial pass found the loader accepting a
+    # file that broke it.
+    splits_per_protein: dict[str, set[str]] = {}
+    for row in rows:
+        splits_per_protein.setdefault(row["intended_protein"], set()).add(row["split"])
+    for protein, splits in splits_per_protein.items():
+        if len(splits) > 1:
+            ids = sorted(
+                row["submission_id"]
+                for row in rows
+                if row["intended_protein"] == protein
+            )
+            problems.append(
+                f"{path}: one intended protein ({len(protein)} aa, starting {protein[:20]!r}) "
+                f"appears in both splits ({', '.join(sorted(splits))}), in submissions "
+                f"{', '.join(ids)}. Split by intended protein, not by submission."
+            )
+
     if problems:
         raise ValueError("\n".join(problems))
     return rows
@@ -649,12 +704,16 @@ PASS_RULE = {
     },
 }
 
+# Two shares this close count as the same, for the "cannot tell an ordered insert from a
+# mistaken one" drop clause. Fixed with the rest of the rule, before any result.
+SEPARATION_TOLERANCE = 0.1
+
 FAIL_CLAUSES = {
     "exact_already_catches": "exact tag matching alone recovers at least as many "
     "documented unexpected inserts as the reduced-alphabet check",
     "cannot_separate_intended": "flags cannot tell an insert the customer ordered from "
-    "one that is a mistake, measured as the fraction of flags on intended inserts being "
-    "no different from the fraction on unintended ones",
+    "one that is a mistake: the share of intended inserts flagged is within "
+    f"{SEPARATION_TOLERANCE} of the share of unintended inserts flagged",
     "needs_dna": "every documented error the reduced-alphabet check finds beyond the "
     "comparison workflow is also found by the DNA check, so the protein method adds "
     "nothing the DNA already gives",
@@ -711,20 +770,23 @@ def evaluate_pass_rule(
         "1_recall_of_documented_inserts": {
             "value": recall,
             "threshold": PASS_RULE["1_recall_of_documented_inserts"]["threshold"],
-            "holds": bool(documented) and recall >= 0.95,
+            "holds": bool(documented)
+            and recall >= PASS_RULE["1_recall_of_documented_inserts"]["threshold"],
             "counts": f"{len(recovered)} of {len(documented)} documented unexpected "
             "inserts flagged",
         },
         "2_false_flags_per_100_clean": {
             "value": per_100,
             "threshold": PASS_RULE["2_false_flags_per_100_clean"]["threshold"],
-            "holds": bool(clean) and per_100 <= 1.0,
+            "holds": bool(clean)
+            and per_100 <= PASS_RULE["2_false_flags_per_100_clean"]["threshold"],
             "counts": f"{len(false_flags)} flags on {len(clean)} clean constructs",
         },
         "3_comparison_missed_and_found": {
             "value": len(comparison_missed),
             "threshold": PASS_RULE["3_comparison_missed_and_found"]["threshold"],
-            "holds": len(comparison_missed) >= 5,
+            "holds": len(comparison_missed)
+            >= PASS_RULE["3_comparison_missed_and_found"]["threshold"],
             "counts": "found only by the reduced alphabet: "
             + (
                 ", ".join(row["submission_id"] for row in comparison_missed)
@@ -764,12 +826,50 @@ def evaluate_pass_rule(
     dna_method = next(
         (method for method in comparison_methods if method.startswith("DNA")), None
     )
+    # Can a flag tell an insert the customer ordered from one nobody ordered? Measured as the
+    # share of intended inserts flagged against the share of unintended ones. If the method
+    # flags both at the same rate it is reporting "an insert is here", which the reviewer
+    # already knew from the order form, and the drop clause fires. A tolerance of 0.1 counts
+    # rates this close as the same; it is part of the frozen rule, not tuned to a result.
+    intended_inserts = [
+        row
+        for row in test_rows
+        if row["discrepancy_class"] == "unexpected_insert"
+        and row["insert_was_intended"].lower() == "true"
+    ]
+    intended_flagged = sum(
+        1 for row in intended_inserts if recovers(reduced_method, row)
+    )
+    share_intended = (
+        intended_flagged / len(intended_inserts) if intended_inserts else None
+    )
+    share_unintended = recall if documented else None
+    cannot_separate = (
+        share_intended is not None
+        and share_unintended is not None
+        and abs(share_intended - share_unintended) <= SEPARATION_TOLERANCE
+    )
+
     results["fail_clauses"] = {
         "exact_already_catches": bool(exact_method)
         and exact_recovered >= len(recovered),
         "needs_dna": bool(dna_method)
         and bool(comparison_missed)
         and all(recovers(dna_method, row) for row in comparison_missed),
+        "cannot_separate_intended": cannot_separate,
+    }
+    # A clause that could not be measured is recorded as such. It does not read as "the
+    # clause did not fire", because an unmeasured drop clause is not evidence of passing.
+    results["fail_clauses_not_measured"] = {
+        "exact_already_catches": not exact_method,
+        "needs_dna": not dna_method,
+        "cannot_separate_intended": not intended_inserts,
+    }
+    results["separation"] = {
+        "share_of_intended_inserts_flagged": share_intended,
+        "share_of_unintended_inserts_flagged": share_unintended,
+        "n_intended_inserts": len(intended_inserts),
+        "n_unintended_inserts": len(documented),
     }
     results["verdict"] = (
         "PASS"

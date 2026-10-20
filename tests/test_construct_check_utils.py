@@ -235,6 +235,107 @@ def test_loader_refuses_a_file_missing_a_contract_column(tmp_path):
         cc.load_submissions(path)
 
 
+def write_submissions(path, rows, extra_columns=()):
+    """Write *rows* as a contract-shaped submissions file."""
+    columns = list(cc.SUBMISSION_COLUMNS) + list(extra_columns)
+    lines = ["\t".join(columns)]
+    for row in rows:
+        lines.append("\t".join(row.get(column, "") for column in columns))
+    path.write_text("\n".join(lines) + "\n")
+    return path
+
+
+def clean_row(submission_id, protein, split="test"):
+    """One clean submission, every required column filled."""
+    return {
+        "submission_id": submission_id,
+        "intended_protein": protein,
+        "received_protein": protein,
+        "discrepancy_class": "clean",
+        "resolved_insert_name": "",
+        "resolved_insert_sequence": "",
+        "resolved_insert_start": "",
+        "resolved_insert_end": "",
+        "insert_was_intended": "false",
+        "split": split,
+    }
+
+
+# The checks below were added on 2026-10-20, after an adversarial pass found each of these
+# files getting through a loader whose README promised to refuse them.
+
+
+def test_loader_refuses_a_header_only_file(tmp_path, hosts):
+    """An export with no submissions is refused, not returned as zero rows."""
+    path = write_submissions(tmp_path / "s.tsv", [])
+    with pytest.raises(ValueError, match="header and no submissions"):
+        cc.load_submissions(path)
+
+
+def test_loader_refuses_one_intended_protein_split_across_dev_and_test(tmp_path, hosts):
+    """The contract's split rule is enforced, not only documented."""
+    protein = hosts["BAX_HUMAN"]
+    path = write_submissions(
+        tmp_path / "s.tsv",
+        [clean_row("s1", protein, "dev"), clean_row("s2", protein, "test")],
+    )
+    with pytest.raises(ValueError, match="appears in both splits"):
+        cc.load_submissions(path)
+
+    # The same two submissions, both in dev, are fine.
+    path = write_submissions(
+        tmp_path / "ok.tsv",
+        [clean_row("s1", protein, "dev"), clean_row("s2", protein, "dev")],
+    )
+    assert len(cc.load_submissions(path)) == 2
+
+
+def test_loader_refuses_a_row_with_the_wrong_number_of_fields(tmp_path, hosts):
+    """A short row is reported, not left to raise KeyError somewhere else."""
+    path = write_submissions(tmp_path / "s.tsv", [clean_row("s1", hosts["BAX_HUMAN"])])
+    path.write_text(path.read_text().rstrip("\n") + "\ns2\tAAA\n")
+    with pytest.raises(ValueError, match="fields, the header has"):
+        cc.load_submissions(path)
+
+
+def test_loader_keeps_a_blank_value_in_the_last_column(tmp_path, hosts):
+    """A blank final field is kept as empty, not silently dropped off the row."""
+    rows = [clean_row("s1", hosts["BAX_HUMAN"])]
+    path = write_submissions(tmp_path / "s.tsv", rows, extra_columns=["review_minutes"])
+    loaded = cc.load_submissions(path)
+    assert loaded[0]["review_minutes"] == ""
+
+
+def test_loader_refuses_a_repeated_column(tmp_path, hosts):
+    """A duplicated header column is refused rather than quietly keeping the last one."""
+    path = write_submissions(tmp_path / "s.tsv", [clean_row("s1", hosts["BAX_HUMAN"])])
+    text = path.read_text().split("\n")
+    text[0] = text[0] + "\tsplit"
+    text[1] = text[1] + "\tdev"
+    path.write_text("\n".join(text))
+    with pytest.raises(ValueError, match="more than once"):
+        cc.load_submissions(path)
+
+
+def test_loader_refuses_non_numeric_insert_coordinates(tmp_path, hosts):
+    """A coordinate that is not a whole number is reported, not an uncaught int() error."""
+    protein = hosts["BAX_HUMAN"]
+    row = clean_row("s1", protein)
+    row.update(
+        {
+            "received_protein": protein[:50] + "DYKDDDDK" + protein[50:],
+            "discrepancy_class": "unexpected_insert",
+            "resolved_insert_name": "FLAG",
+            "resolved_insert_sequence": "DYKDDDDK",
+            "resolved_insert_start": "fifty-one",
+            "resolved_insert_end": "58",
+        }
+    )
+    path = write_submissions(tmp_path / "s.tsv", [row])
+    with pytest.raises(ValueError, match="must be whole numbers"):
+        cc.load_submissions(path)
+
+
 def test_loader_refuses_an_insert_whose_coordinates_do_not_hold_it(tmp_path, hosts):
     """A resolved insert that is not at the coordinates given is rejected."""
     host = hosts["BAX_HUMAN"]
@@ -369,6 +470,146 @@ def test_pass_rule_passes_a_case_built_to_pass(hosts):
     assert result["3_comparison_missed_and_found"]["value"] == 6
     assert result["4_median_review_time_per_batch"]["holds"] is True
     assert result["verdict"] == "PASS"
+
+
+def test_scorer_fires_the_drop_clause_when_flags_cannot_tell_the_two_apart(hosts):
+    """A method that flags ordered and mistaken inserts alike fails, however good its recall.
+
+    Added 2026-10-20: the scorer evaluated only two of the three frozen drop clauses, so a
+    method that cannot tell an insert the customer ordered from one nobody ordered could
+    still come out PASS.
+    """
+    host = hosts["MCL1_HUMAN"]
+    reduced_method = "kmerseek reduced alphabet (hp_thomas_dill, k=20)"
+    rows, flags = [], []
+    for index in range(100):
+        rows.append(clean_row(f"clean{index}", host))
+    # Six inserts nobody ordered and six the customer asked for, all flagged: the shares are
+    # 1.0 and 1.0, so the flags say nothing about which is which.
+    for intended in ("false", "true"):
+        for index in range(6):
+            submission_id = f"{intended}{index}"
+            row = clean_row(submission_id, host)
+            row.update(
+                {
+                    "received_protein": host[:60] + "W" * 30 + host[60:],
+                    "discrepancy_class": "unexpected_insert",
+                    "resolved_insert_name": "unnamed",
+                    "resolved_insert_sequence": "W" * 30,
+                    "resolved_insert_start": "61",
+                    "resolved_insert_end": "90",
+                    "insert_was_intended": intended,
+                }
+            )
+            rows.append(row)
+            flags.append(
+                cc.Flag(submission_id, reduced_method, 61, 90, "unnamed", "test case")
+            )
+
+    result = cc.evaluate_pass_rule(
+        rows,
+        {reduced_method: flags, "exact tag match (protein20)": []},
+        reduced_method=reduced_method,
+        review_minutes_before=[30.0],
+        review_minutes_after=[29.0],
+    )
+    assert result["1_recall_of_documented_inserts"]["value"] == 1.0
+    assert result["separation"]["share_of_intended_inserts_flagged"] == 1.0
+    assert result["separation"]["share_of_unintended_inserts_flagged"] == 1.0
+    assert result["fail_clauses"]["cannot_separate_intended"] is True
+    assert result["verdict"] == "FAIL"
+
+
+def test_scorer_does_not_fire_the_drop_clause_when_flags_do_separate(hosts):
+    """The same clause stays quiet when the method flags only the unintended inserts."""
+    host = hosts["MCL1_HUMAN"]
+    reduced_method = "kmerseek reduced alphabet (hp_thomas_dill, k=20)"
+    rows, flags = [], []
+    for index in range(100):
+        rows.append(clean_row(f"clean{index}", host))
+    for intended in ("false", "true"):
+        for index in range(6):
+            submission_id = f"{intended}{index}"
+            row = clean_row(submission_id, host)
+            row.update(
+                {
+                    "received_protein": host[:60] + "W" * 30 + host[60:],
+                    "discrepancy_class": "unexpected_insert",
+                    "resolved_insert_name": "unnamed",
+                    "resolved_insert_sequence": "W" * 30,
+                    "resolved_insert_start": "61",
+                    "resolved_insert_end": "90",
+                    "insert_was_intended": intended,
+                }
+            )
+            rows.append(row)
+            if intended == "false":
+                flags.append(
+                    cc.Flag(
+                        submission_id, reduced_method, 61, 90, "unnamed", "test case"
+                    )
+                )
+
+    result = cc.evaluate_pass_rule(
+        rows,
+        {reduced_method: flags, "exact tag match (protein20)": []},
+        reduced_method=reduced_method,
+        review_minutes_before=[30.0],
+        review_minutes_after=[29.0],
+    )
+    assert result["separation"]["share_of_intended_inserts_flagged"] == 0.0
+    assert result["fail_clauses"]["cannot_separate_intended"] is False
+    assert result["verdict"] == "PASS"
+
+
+def test_scorer_records_a_drop_clause_it_could_not_measure(hosts):
+    """With no intended inserts the clause is marked unmeasured, not quietly passed."""
+    host = hosts["BAX_HUMAN"]
+    reduced_method = "kmerseek reduced alphabet (hp_thomas_dill, k=20)"
+    rows = [clean_row("clean0", host)]
+    result = cc.evaluate_pass_rule(
+        rows, {reduced_method: []}, reduced_method=reduced_method
+    )
+    assert result["fail_clauses"]["cannot_separate_intended"] is False
+    assert result["fail_clauses_not_measured"]["cannot_separate_intended"] is True
+    assert result["fail_clauses_not_measured"]["exact_already_catches"] is True
+
+
+def test_thresholds_come_from_the_frozen_pass_rule(hosts, monkeypatch):
+    """Editing the frozen rule changes the scorer, so the numbers are not hardcoded twice."""
+    host = hosts["BAX_HUMAN"]
+    reduced_method = "kmerseek reduced alphabet (hp_thomas_dill, k=20)"
+    rows, flags = [], []
+    for index in range(20):
+        row = clean_row(f"insert{index}", host)
+        row.update(
+            {
+                "received_protein": host[:60] + "W" * 30 + host[60:],
+                "discrepancy_class": "unexpected_insert",
+                "resolved_insert_name": "unnamed",
+                "resolved_insert_sequence": "W" * 30,
+                "resolved_insert_start": "61",
+                "resolved_insert_end": "90",
+            }
+        )
+        rows.append(row)
+        if index < 19:  # 19 of 20 = 0.95, exactly the threshold
+            flags.append(
+                cc.Flag(f"insert{index}", reduced_method, 61, 90, "unnamed", "case")
+            )
+    scored = cc.evaluate_pass_rule(
+        rows, {reduced_method: flags}, reduced_method=reduced_method
+    )
+    assert scored["1_recall_of_documented_inserts"]["value"] == 0.95
+    assert scored["1_recall_of_documented_inserts"]["holds"] is True
+
+    raised = dict(cc.PASS_RULE["1_recall_of_documented_inserts"])
+    raised["threshold"] = 0.99
+    monkeypatch.setitem(cc.PASS_RULE, "1_recall_of_documented_inserts", raised)
+    rescored = cc.evaluate_pass_rule(
+        rows, {reduced_method: flags}, reduced_method=reduced_method
+    )
+    assert rescored["1_recall_of_documented_inserts"]["holds"] is False
 
 
 def test_choose_alphabet_and_k_refuses_when_nothing_fits_the_budget(tags, hosts):

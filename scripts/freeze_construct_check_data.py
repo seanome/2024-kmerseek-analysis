@@ -71,7 +71,7 @@ REFERENCES = {
     },
     "hopp1988": {
         "authors": "Hopp, Thomas P., Kathryn S. Prickett, Virginia L. Price, "
-        "Randell T. Libby, Carl J. March, Dale Pat Cerretti, Douglas L. Urdal, "
+        "Randell T. Libby, Carl J. March, Douglas Pat Cerretti, David L. Urdal, "
         "and Paul J. Conlon",
         "title": "A Short Polypeptide Marker Sequence Useful for Recombinant Protein "
         "Identification and Purification",
@@ -93,7 +93,7 @@ REFERENCES = {
         "doi": "10.1128/mcb.8.5.2159",
     },
     "evan1985": {
-        "authors": "Evan, Gerard I., Gerald K. Lewis, Gregor Ramsay, and J. Michael Bishop",
+        "authors": "Evan, Gerard I., George K. Lewis, Gary Ramsay, and J. Michael Bishop",
         "title": "Isolation of Monoclonal Antibodies Specific for Human c-myc "
         "Proto-Oncogene Product",
         "journal": "Molecular and Cellular Biology",
