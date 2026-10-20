@@ -978,6 +978,294 @@ print(pl.read_csv(TABLES / "342_stop3_resources.tsv", separator="\t", comment_pr
       .select("step", "alphabet", "k", "index", "mem_gb", "hours", "measured_peak_gb", "measured_time"))
 """)
 
+md(r"""
+## 3b. Kind 4 from three of the four settings (an early look before protein20)
+
+Stop 3 has scored three of its four kmerseek settings. protein20 k = 5 is still running: its
+whole-protein index refused the E-value fit on 500 queries and is being rebuilt with 2_500
+(Sherlock jobs 48685828 and 48685830, [PR 152](https://github.com/seanome/2024-kmerseek-analysis/pull/152)).
+The four-setting score (job 48689206) is what Stop 4 reads. This section reads the three-setting
+score: job 48689195, `scripts/342_kind4_features.py` at commit 59762371, copied to
+`tables/342/score_3settings/` and checked against the md5 sums in its `provenance.tsv`.
+
+It shows each setting's decoy-matched cutoff, predictions P2 and P3, the own-gene filter and the
+strongest hit in each setting. It does not compare outcome classes on the test half; that is rule
+4, run once in Stop 4. protein20 can only add exons with a call, so every count of exons here is a
+lower bound for four settings.
+
+Words used below:
+
+* **Call**: a region kmerseek reports at E ≤ 10 whose query stretch overlaps at least one exon
+  residue, on a real Swiss-Prot entry (not a decoy entry of the index) of another gene.
+* **Decoy query**: a dipeptide-shuffled copy of an exon query (same residues and residue pairs,
+  no real match).
+* **Decoy-matched cutoff**: per setting, the E below which at most 5% of the 2_299 tune-half decoy
+  queries have a call. A **hit** is a call below that cutoff.
+""")
+
+code(r"""
+import math
+
+SCORE3 = TABLES / "score_3settings"
+score_prov = pl.read_csv(SCORE3 / "provenance.tsv", separator="\t", comment_prefix="#")
+for f, want in score_prov.iter_rows():
+    assert md5(SCORE3 / f) == want, f"{f} changed since it was copied from Sherlock"
+cutoffs3 = pl.read_csv(SCORE3 / "cutoffs.tsv", separator="\t")
+k4 = pl.read_csv(SCORE3 / "kind4_features.tsv", separator="\t", infer_schema_length=None)
+own3 = pl.read_csv(SCORE3 / "own_gene_hits.tsv", separator="\t")
+best3 = pl.read_csv(SCORE3 / "best_hits.tsv", separator="\t", infer_schema_length=None)
+assert k4.height == queries.height
+#: The three settings scored so far, in the order of the settings table, with one colour each.
+SETTINGS3 = {
+    "aro_hyd_chg_pol4_k11_s1": ("aro_hyd_chg_pol4, k = 11", pf.OKABE_ITO["blue"]),
+    "aro_hyd_arg_chg_pol5_k9_s1": ("aro_hyd_arg_chg_pol5, k = 9", pf.OKABE_ITO["vermillion"]),
+    "hp_pbotc_1st_ed2_k21_s1": ("hp_pbotc_1st_ed2, k = 21", pf.OKABE_ITO["bluish_green"]),
+}
+assert set(SETTINGS3) == set(cutoffs3["setting"])
+TOOL_LINE = ("kmerseek: set A exon queries (exon plus 20 residues each side) against the regions index "
+             "(Swiss-Prot 2026_03 annotated regions, no mammals; PR 114). protein20 k = 5 not yet scored.")
+# If the E-values were right, a decoy would have at least one call below E with probability 1 - exp(-E),
+# so 5% of decoys would fall below E = ln(1 / 0.95) = 0.051. The ratio says how far each setting is off.
+E_AT_5PCT = math.log(1 / 0.95)
+print(cutoffs3.with_columns(
+    (pl.col("tune_decoys_with_a_call") / pl.col("tune_decoy_queries")).round(3).alias("share of tune decoys with any call at E <= 10"),
+    pl.when(pl.col("cutoff_evalue") < E_AT_5PCT)
+      .then(pl.format("{} times too small", (E_AT_5PCT / pl.col("cutoff_evalue")).round(1)))
+      .otherwise(pl.format("{} times too large", (pl.col("cutoff_evalue") / E_AT_5PCT).round(1)))
+      .alias(f"E-values, against the {E_AT_5PCT:.3f} a right E would give"),
+))
+""")
+
+md(r"""
+The cutoffs show how far each setting's E-values are from right. If they were right, a decoy
+would have a call below E with probability 1 − e^(−E), and 5% of decoys would fall below
+E = 0.051. aro_hyd_arg_chg_pol5 k = 9 reaches that 5% at E = 0.0074, so its E-values are about 7
+times too small: 2_215 of its 2_299 tune-half decoys (96%) have a call at E ≤ 10.
+aro_hyd_chg_pol4 k = 11 (cutoff 1.04) and hp_pbotc_1st_ed2 k = 21 (cutoff 5.8) err the other way,
+about 20 and 113 times too large. The decoy-matched cutoff puts the three settings on the same
+footing: 5% of decoys pass in each.
+
+The figure shows, per setting, the share of the 4_513 exons whose best call is at or below each E,
+with the cutoff (dashed) and E = 1 (grey band) marked.
+""")
+
+code(r"""
+# Per exon and setting, the smallest E of a call on another gene's real Swiss-Prot entry, as the share
+# of all 4_513 exons whose best call is at or below each E. Exons with no call are never counted.
+E_MIN, E_MAX = 1e-6, 10.0
+grid = np.logspace(np.log10(E_MIN), np.log10(E_MAX), 400)
+rows = []
+fig, axs = pf.figure(pf.TWO_COLUMN_MM, 55, ncols=3, sharey=True)
+for ax, (setting, (label, colour)) in zip(axs, SETTINGS3.items()):
+    e = k4[f"k4_best_e_{setting}"].drop_nulls().to_numpy()
+    share = np.searchsorted(np.sort(e), grid, side="right") / k4.height
+    cut = cutoffs3.filter(pl.col("setting") == setting)["cutoff_evalue"].item()
+    ax.plot(grid, share, color=colour, lw=1, label="share of the 4,513 exons with a call at or below E")
+    # E = 1 first, wide and pale, so a cutoff near 1 (aro_hyd_chg_pol4: 1.04) stays visible on top of it.
+    ax.axvline(1.0, color=pf.GREY, lw=3, alpha=0.35, label="E = 1 (prediction P2)", zorder=1)
+    ax.axvline(cut, color=colour, lw=0.8, ls="--", label="decoy-matched cutoff (5% of tune-half decoys)", zorder=2)
+    ax.set_xscale("log")
+    ax.set_xlim(E_MIN, E_MAX)
+    ticks = [1e-6, 1e-4, 1e-2, 1, 10]
+    ax.set_xticks(ticks, ["≤0.000001", "0.0001", "0.01", "1", "10"])
+    ax.set_title(label)
+    ax.set_xlabel("E of the exon's best call")
+    rows.append({"setting": label, "exons with any call (E <= 10)": len(e),
+                 "below the cutoff": int((e < cut).sum()), "below E = 1": int((e < 1).sum()),
+                 "below E = 0.000001 (left edge)": int((e <= E_MIN).sum())})
+axs[0].set_ylabel("share of the 4,513 exons")
+axs[0].set_ylim(0, 1)
+pf.shared_legend(fig, ncol=3, title=TOOL_LINE, title_fontsize=5)
+save_figure(fig, FIGURES / "342_setA_kind4_3settings_best_evalue_by_exon_swissprot_regions")
+print(pl.DataFrame(rows))
+""")
+
+md(r"""
+In aro_hyd_arg_chg_pol5, 1_487 exons have a call at E < 1 but only 439 pass its cutoff. In
+aro_hyd_chg_pol4 the two counts nearly meet (601 and 606). In hp_pbotc_1st_ed2, 298 exons have a
+call at E < 1 and 603 pass its cutoff at E = 5.8. So a count at E < 1, as P2 is written, mixes
+settings whose E-values mean different things; a count at the cutoffs does not.
+""")
+
+code(r"""
+# P2: exons with a call at E < 1 in any setting (on another gene's real Swiss-Prot entry).
+n_p2 = int(k4["k4_any_call_e_below_1"].sum())
+n_hit = int(k4["k4_has_hit"].sum())
+by_half = (k4.group_by("half").agg(pl.len().alias("exons"), pl.col("k4_has_hit").sum().alias("hit at the cutoff"),
+                                   pl.col("k4_any_call_e_below_1").sum().alias("call at E < 1"))
+           .sort("half", descending=True))
+per_setting_hits = pl.DataFrame([
+    {"setting": SETTINGS3[s][0], "half": h,
+     "share with a hit at the cutoff": k4.filter(pl.col("half") == h)
+         .select((pl.col(f"k4_best_e_{s}") < cutoffs3.filter(pl.col("setting") == s)["cutoff_evalue"].item())
+                 .fill_null(False).mean()).item()}
+    for s in SETTINGS3 for h in ["tune", "test"]
+])
+print(f"P2: {n_p2} of {k4.height} exons ({n_p2 / k4.height:.1%}) have a call at E < 1; P2 predicted under 30%.")
+print(f"{n_hit} of {k4.height} exons ({n_hit / k4.height:.1%}) have a hit at their setting's decoy-matched cutoff.")
+print(by_half)
+print(per_setting_hits)
+hit_exons = k4.filter(pl.col("k4_has_hit"))
+print(hit_exons.group_by("k4_best_setting").len().sort("len", descending=True).rename({"len": "exons whose best hit is from it"}))
+print(hit_exons["k4_n_settings_with_hit"].value_counts().sort("k4_n_settings_with_hit").rename({"count": "exons"}))
+# Each setting's share of exons with a hit at its cutoff, by half (no outcome classes here).
+fig, ax = pf.figure(pf.ONE_COLUMN_MM, 40)
+names = [v[0] for v in SETTINGS3.values()] + ["any of the three"]
+y = np.arange(len(names))[::-1]
+for half, marker_fill in [("tune", True), ("test", False)]:
+    sub = k4.filter(pl.col("half") == half)
+    vals = [per_setting_hits.filter((pl.col("setting") == n) & (pl.col("half") == half))
+            ["share with a hit at the cutoff"].item() for n in names[:-1]] + [sub["k4_has_hit"].mean()]
+    colours = [v[1] for v in SETTINGS3.values()] + ["black"]
+    for yi, v, c in zip(y, vals, colours):
+        ax.scatter(v, yi + (0.12 if half == "tune" else -0.12), s=14, color=c if marker_fill else "white",
+                   edgecolors=c, lw=0.8, label=f"{half} half" if yi == y[-1] else None, zorder=3)
+ax.set_yticks(y, names)
+for yi in y:
+    ax.axhline(yi, color=pf.GREY, lw=0.3, zorder=0)
+ax.set_xlim(0, max(0.4, k4["k4_has_hit"].mean() * 1.2))
+ax.set_xlabel("share of exons with a hit at the setting's decoy-matched cutoff")
+ax.legend(loc="lower right", frameon=False)
+fig.suptitle(TOOL_LINE, fontsize=5)
+save_figure(fig, FIGURES / "342_setA_kind4_3settings_exons_with_a_hit_by_half_swissprot_regions")
+""")
+
+md(r"""
+**P2 fails.** 1_661 of 4_513 exons (36.8%) have a call at E < 1 in at least one setting; P2
+predicted under 30%, and protein20 can only raise the count. Most of the excess is
+aro_hyd_arg_chg_pol5's E-values being too small.
+
+At the decoy-matched cutoffs, 1_063 exons (23.6%) have a hit: 547 of 2_299 on the tune half and
+516 of 2_214 on the test half. Each setting gives a hit to 10% to 15% of exons in each half. The
+best hit comes from each setting about equally often (383, 350 and 330 exons), and 625 of the
+1_063 exons have a hit in one setting only.
+
+P3 asks whether the strength of a hit is mostly the kind 3 features in another form.
+""")
+
+code(r"""
+from scipy.stats import spearmanr
+
+# P3: over exons with a hit at the cutoff, Spearman correlation between -log10(best E) and three
+# kind 3 features of the exon. P3 holds if |rho| > 0.5 for at least one.
+P3_FEATURES = {
+    "k3_iupred_mean_exon": "IUPred mean of the exon (0 ordered, 1 disordered)",
+    "k3_pol4_frac_other_hydrophobic_exon": "share of A, I, L, M, V in the exon",
+    "k3_seg_fraction_exon": "share of the exon SEG calls low-complexity",
+}
+with_hit = k4.filter(pl.col("k4_has_hit")).join(labels.select("event_id", *P3_FEATURES), on="event_id")
+assert with_hit.height == n_hit
+p3 = []
+fig, axs = pf.figure(pf.TWO_COLUMN_MM, 55, ncols=3, sharey=True)
+for ax, (col, label) in zip(axs, P3_FEATURES.items()):
+    sub = with_hit.filter(pl.col(col).is_not_nan() & pl.col(col).is_not_null())
+    rho, p = spearmanr(sub[col], sub["k4_neglog10_best_e"])
+    p3.append({"feature": label, "exons": sub.height, "spearman_rho": round(float(rho), 3)})
+    for setting, (name, colour) in SETTINGS3.items():
+        part = sub.filter(pl.col("k4_best_setting") == setting)
+        ax.scatter(part[col], part["k4_neglog10_best_e"], s=2, lw=0, color=colour, alpha=0.5,
+                   label=f"best hit from {name}")
+    ax.set_xlabel(label)
+    ax.set_title(f"Spearman ρ = {rho:.2f} (n = {sub.height:,})")
+axs[0].set_ylabel("−log10 E of best hit\n(higher = stronger)")
+pf.shared_legend(fig, ncol=3, markerscale=4, title=TOOL_LINE, title_fontsize=5)
+save_figure(fig, FIGURES / "342_setA_kind4_3settings_strength_vs_kind3_swissprot_regions")
+p3 = pl.DataFrame(p3)
+print(p3)
+print("P3:", "HOLDS" if (p3["spearman_rho"].abs() > 0.5).any() else "does not hold", "on three settings")
+# Not one of the written tests: do exons with a hit lie in a Pfam domain (kind 1) more often than the rest?
+pfam = (k4.join(labels.select("event_id", "k1_domain_fraction_exon"), on="event_id")
+        .group_by("k4_has_hit").agg(pl.len().alias("exons"),
+                                    (pl.col("k1_domain_fraction_exon") > 0).mean().round(3)
+                                    .alias("share with exon residues in a Pfam domain"))
+        .sort("k4_has_hit", descending=True))
+print("Not a written test; outcome classes not used:")
+print(pfam)
+""")
+
+md(r"""
+**P3 does not hold.** Over the 1_063 exons with a hit, the Spearman correlation between −log10 E
+of the best hit and the exon's IUPred mean, AILMV share or SEG low-complexity share is 0.00,
+−0.09 and −0.01. P3 asked for at least one above 0.5 in size. How strong an exon's hit is does
+not follow its disorder, hydrophobic share or low complexity. Whether the hit adds to the kind 1
+to 3 features in predicting splicing is the question Stop 4 tests.
+
+One check that is not among the written tests, with no outcome classes: 76.3% of exons with a hit
+have residues in a Pfam domain, against 69.2% of exons without a hit. Hits lean only a little
+toward exons that kind 1 already labels.
+
+The own-gene filter (Olga, 2026-10-16) removes calls to the query's own gene in other animals.
+""")
+
+code(r"""
+own_view = own3.with_columns(pl.col("setting").replace_strict({k: v[0] for k, v in SETTINGS3.items()}))
+print(own_view)
+# Calls the own-gene filter removed, and kept calls to a target whose gene name starts with the query's.
+fig, ax = pf.figure(pf.ONE_COLUMN_MM, 40)
+names = [v[0] for v in SETTINGS3.values()]
+y = np.arange(len(names))[::-1]
+for col, marker, lab in [("removed_own_gene", "o", "calls removed: target is the query's own gene"),
+                         ("kept_similar_name", "s", "calls kept: target gene name starts with the query's")]:
+    for half, fill in [("tune", True), ("test", False)]:
+        sub = own_view.filter(pl.col("half") == half)
+        vals = [sub.filter(pl.col("setting") == n)[col].item() for n in names]
+        ax.scatter(vals, y + (0.12 if half == "tune" else -0.12), marker=marker, s=14,
+                   color="black" if fill else "white", edgecolors="black", lw=0.8,
+                   label=f"{lab}, {half} half", zorder=3)
+ax.set_yticks(y, names)
+for yi in y:
+    ax.axhline(yi, color=pf.GREY, lw=0.3, zorder=0)
+ax.set_xscale("log")
+ax.set_xticks([10, 100, 1_000, 10_000], ["10", "100", "1,000", "10,000"])
+ax.set_xticks([], minor=True)
+ax.set_xlim(10, 20_000)
+ax.set_xlabel("calls on real targets (n); the step from 10 to 100 takes as much room as 100 to 1,000")
+pf.shared_legend(fig, ncol=1, title=TOOL_LINE, title_fontsize=5)
+save_figure(fig, FIGURES / "342_setA_kind4_3settings_own_gene_calls_swissprot_regions")
+""")
+
+md(r"""
+The filter removed 512 to 9_997 calls per setting and half, from 159 to 392 exons, out of 2.3 to
+62 million calls on real targets. In every setting the test half has more removed calls from
+fewer exons than the tune half, so a few test-half genes have many own-gene calls. Calls kept to
+a target whose gene name starts with the query's symbol (a paralog the filter does not catch)
+number 22 to 2_649.
+
+The strongest hit in each setting on the tune half, with both residue strings:
+""")
+
+code(r"""
+# The tune-half exon with the smallest E at the cutoff in each setting, its query and target residues.
+examples = (best3.filter((pl.col("half") == "tune") & (pl.col("evalue") < pl.col("cutoff_evalue")))
+            .sort("evalue", "event_id").group_by("setting", maintain_order=True).first()
+            .sort("setting"))
+for r in examples.iter_rows(named=True):
+    print(f"{SETTINGS3[r['setting']][0]}: {r['gene_name']} exon {r['event_id']} ({r['outcome']}), E = {r['evalue']:.2g}")
+    print(f"  target {r['target']} (gene {r['target_gene_names']})")
+    q, t = r["qseq"], r["tseq"]
+    match = "".join("|" if a == b else " " for a, b in zip(q, t))
+    print(f"  query  {r['qstart']:>4}-{r['qend']:<4} {q}")
+    print(f"  {'':16} {match}")
+    print(f"  target {r['tstart']:>4}-{r['tend']:<4} {t}")
+    print(f"  {match.count('|')} of {min(len(q), len(t))} residues identical (no gaps; kmerseek regions are ungapped)")
+""")
+
+md(r"""
+### What the early look says
+
+* With three of four settings, prediction P2 fails (36.8% of exons have a call at E < 1, against
+  under 30% predicted) and P3 does not hold (|ρ| at most 0.09, against 0.5).
+* 1_063 of 4_513 exons (23.6%) have a hit at the decoy-matched cutoffs, in nearly equal shares on
+  the two halves.
+* The three settings' E-values are off by different factors (about 7 times too small for
+  aro_hyd_arg_chg_pol5 k = 9; about 20 and 113 times too large for aro_hyd_chg_pol4 k = 11 and
+  hp_pbotc_1st_ed2 k = 21). The decoy-matched cutoffs, set on the tune half, correct for this.
+* The strongest hit in each setting is on an annotated folded domain (a protein kinase domain, a
+  PIPK domain, a fibronectin type III domain), with 66 of 77, 83 of 91 and 96 of 127 residues
+  identical (76% to 91%).
+* Next: the four-setting score (job 48689206) after protein20's search, then Stop 4, the test.
+""")
+
 nb = {
     "cells": cells,
     "metadata": {

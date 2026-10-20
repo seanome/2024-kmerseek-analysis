@@ -1,0 +1,10 @@
+file	md5
+best_hits.tsv	593ce7d4cb4f93f15fd0f9f041a55b83
+cutoffs.tsv	dabee592646a241cef4664bac99d2628
+kind4_features.tsv	eaa5fb1e179692e35decee2b02365992
+own_gene_hits.tsv	3e1e8e066e5567b95b0c446afc702f0d
+# Made by scripts/342_kind4_features.py at commit 59762371, Sherlock job 48689195 (2026-10-20, 9 min,
+# 64 GB asked), from the call files of jobs 48247314, 48247318 and 48247321 (2026-10-17) in
+# /scratch/users/olgabot/exon-function-342/calls: aro_hyd_arg_chg_pol5 k9, aro_hyd_chg_pol4 k11 and
+# hp_pbotc_1st_ed2 k21, 10 chunks each. protein20 k5 is not in these files (its fit was refused; rerun
+# in jobs 48685828, 48685830, 48689206). Copied with scp the same day.
