@@ -424,3 +424,19 @@ def test_schema_matches_pr148_when_present():
             names[node.targets[0].id] = [k.value for k in node.value.keys]
     assert names["SCHEMA"] == list(atr.SCHEMA)
     assert names["COMPUTE_SCHEMA"] == list(atr.COMPUTE_SCHEMA)
+
+
+def test_container_digest_maps_the_apptainer_cache_file_back_to_the_image():
+    refs = atr.module_containers(BIN.parent / "modules")
+    ref = next(r for r in refs if "diamond" in r)
+    cached = (
+        "/scratch/x/apptainer-cache/" + ref.replace("/", "-").replace(":", "-") + ".img"
+    )
+    assert atr.container_ref(cached, refs) == ref
+    assert atr.container_ref("docker.io/other:1", refs) == "docker.io/other:1"
+
+
+def test_score_tasks_tagged_with_their_target_keep_their_setting():
+    assert atr.task_setting(
+        "scoreAnnotatorTool", "diamond_besthit sensitive swissprot_minus_mammalia"
+    ) == ("diamond_besthit", "sensitive")

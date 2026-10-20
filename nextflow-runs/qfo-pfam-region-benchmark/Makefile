@@ -2564,7 +2564,7 @@ run-annotator-tools: prefetch-images
 	    $(ANNOT_INPUTS) \
 	    --pfam_hmm $(PFAM_HMM_REMOTE) \
 	    --outdir $(ANNOT_OUTDIR) \
-	    --trace_file annotator_tools.trace.txt \
+	    --trace_file annotator_tools.$$(date +%Y%m%d-%H%M%S).trace.txt \
 	    --tools $(ANNOT_TOOLS) \
 	    $(NF_ARGS)
 
@@ -2574,7 +2574,7 @@ run-annotator-tools: prefetch-images
 annotator-rows:
 	python3 bin/annotator_tool_rows.py \
 	  --results data/annotator-tools/results \
-	  --trace $(ANNOT_RUN)/annotator_tools.trace.txt \
+	  --trace $(ANNOT_RUN)/annotator_tools.*.trace.txt \
 	  --source-root $$SCRATCH/2024-kmerseek-analysis/nextflow-runs/qfo-pfam-region-benchmark/data/annotator-tools/results \
 	  --source-commit $$(git rev-parse --short HEAD) \
 	  --out data/annotator-tools/leaderboard
