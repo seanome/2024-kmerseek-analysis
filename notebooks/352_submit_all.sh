@@ -8,7 +8,8 @@
 #                                                                 30 or 20 billion, or none)
 #
 # Time limits (predictions; how they were made is in the PR and in each script's header):
-# setup 12 h, 1 billion 8 h, 10 billion 30 h. Each size job also stops starting queries
+# setup 12 h, 1 billion 4 h, 10 billion 16 h (predicted 0.3 h and 3.5 h, scaled linearly
+# from the dark-set Swiss-Prot runs; the PR has the table). Each size job also stops starting queries
 # when the 48 h budget runs out. Job ids go to $SCRATCH/352-kmerseek-scale/job_ids.txt;
 # follow them with
 #   squeue --me -n 352-setup,352-size,352-gate
@@ -21,9 +22,9 @@ SUB=(sbatch --parsable --kill-on-invalid-dep=yes)
 
 SETUP=$("${SUB[@]}" notebooks/352_setup.sbatch)
 SETUP=${SETUP%%;*}
-S1=$("${SUB[@]}" --dependency=afterok:"$SETUP" --export=ALL,SIZE=1000000000 --time=08:00:00 notebooks/352_size.sbatch)
+S1=$("${SUB[@]}" --dependency=afterok:"$SETUP" --export=ALL,SIZE=1000000000 --time=04:00:00 notebooks/352_size.sbatch)
 S1=${S1%%;*}
-S10=$("${SUB[@]}" --dependency=afterok:"$S1" --export=ALL,SIZE=10000000000 --time=30:00:00 notebooks/352_size.sbatch)
+S10=$("${SUB[@]}" --dependency=afterok:"$S1" --export=ALL,SIZE=10000000000 --time=16:00:00 notebooks/352_size.sbatch)
 S10=${S10%%;*}
 GATE=$("${SUB[@]}" --dependency=afterok:"$S10" notebooks/352_gate.sbatch)
 GATE=${GATE%%;*}
