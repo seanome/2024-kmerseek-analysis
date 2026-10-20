@@ -71,9 +71,14 @@ echo "fmax inputs: $inputs"
 
 # The scorer with notebook 291's parameters (tools/dark-fmax-sbatch): min_overlap 0.5,
 # strict_iou 0.8, dedup modes off,on.
+# Sized from the 2026-10-20 13:02 round (jobs 48670719-48670767): every score job took
+# under 6 min, but human Foldseek peaked at 32.0 GiB against its 32 GB ask (48670719), and
+# that round had no human ProstT5 output yet. Human asks 64 GB for both tools; the others
+# peaked at 2.3-7.3 GB and keep 32 GB. One hour each (a 10x margin on the longest).
 for sp in human worm yeast borrelia; do
+  mem=32G; [ "$sp" = human ] && mem=64G
   for tool in foldseek prostt5; do
-    j=$($SB -c 1 --mem 32G -t 3:00:00 -J "ds-score-$sp-$tool" --dependency=afterok:"$inputs" \
+    j=$($SB -c 1 --mem "$mem" -t 1:00:00 -J "ds-score-$sp-$tool" --dependency=afterok:"$inputs" \
       -o "$OUT/logs/score-$sp-$tool.log" --wrap \
       "set -euo pipefail; d=$OUT/fmax/$sp; for set in dark_E1 dark_E10 placed; do mkdir -p \$d/scored/\$set; cd \$d/scored/\$set; \
        $AX $QFO_BIN/evaluate_domain_calls.py --manifest \$d/manifest.$tool.tsv --species $sp \
