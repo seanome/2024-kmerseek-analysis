@@ -1,0 +1,253 @@
+query,case,real,variant,partner,n_proteins_with_a_call,n_chain_e_below_1,n_single_e_below_1,partner_chain_e,partner_chain_r,partner_rank_chain,partner_single_e,partner_rank_single
+Ced9,Ced9,true,"across settings, x71",BCL2,18600,0,0,138779.17964394047,1,12906,138779.17964394047,12906
+Ced9,Ced9,true,"across settings, no factor",BCL2,18600,112,9,1203.7785684889757,2,12262,1954.6363330132458,12906
+Ced9,Ced9,true,"one setting, x71",BCL2,18600,0,0,138779.17964394047,1,12906,138779.17964394047,12906
+Ced9,Ced9,true,"one setting, no factor",BCL2,18600,10,9,1954.6363330132458,1,12991,1954.6363330132458,12906
+Ced9_shuf00,Ced9,false,"across settings, x71",BCL2,18612,0,0,3064074.9718015464,1,18474,3064074.9718015464,18474
+Ced9_shuf00,Ced9,false,"across settings, no factor",BCL2,18612,107,7,43155.985518331596,1,18476,43155.985518331596,18474
+Ced9_shuf00,Ced9,false,"one setting, x71",BCL2,18612,0,0,3064074.9718015464,1,18474,3064074.9718015464,18474
+Ced9_shuf00,Ced9,false,"one setting, no factor",BCL2,18612,9,7,43155.985518331596,1,18474,43155.985518331596,18474
+Ced9_shuf01,Ced9,false,"across settings, x71",BCL2,18721,0,0,9533.580129309,1,2665,9533.580129309,2658
+Ced9_shuf01,Ced9,false,"across settings, no factor",BCL2,18721,105,9,134.27577646914074,1,5050,134.27577646914074,2658
+Ced9_shuf01,Ced9,false,"one setting, x71",BCL2,18721,0,0,9533.580129309,1,2658,9533.580129309,2658
+Ced9_shuf01,Ced9,false,"one setting, no factor",BCL2,18721,9,9,134.27577646914074,1,2766,134.27577646914074,2658
+Ced9_shuf02,Ced9,false,"across settings, x71",BCL2,18838,0,0,58873.91564407486,1,9446,58873.91564407486,9449
+Ced9_shuf02,Ced9,false,"across settings, no factor",BCL2,18838,127,9,559.5911261137999,2,9877,829.2100794940129,9449
+Ced9_shuf02,Ced9,false,"one setting, x71",BCL2,18838,0,0,58873.91564407486,1,9446,58873.91564407486,9449
+Ced9_shuf02,Ced9,false,"one setting, no factor",BCL2,18838,10,9,829.2100794940129,1,9649,829.2100794940129,9449
+Ced9_shuf03,Ced9,false,"across settings, x71",BCL2,18669,0,0,,,,,
+Ced9_shuf03,Ced9,false,"across settings, no factor",BCL2,18669,112,8,,,,,
+Ced9_shuf03,Ced9,false,"one setting, x71",BCL2,18669,0,0,,,,,
+Ced9_shuf03,Ced9,false,"one setting, no factor",BCL2,18669,10,8,,,,,
+Ced9_shuf04,Ced9,false,"across settings, x71",BCL2,18788,0,0,237036.1870352212,1,15313,237036.1870352212,15313
+Ced9_shuf04,Ced9,false,"across settings, no factor",BCL2,18788,130,7,3338.5378455664986,1,15935,3338.5378455664986,15313
+Ced9_shuf04,Ced9,false,"one setting, x71",BCL2,18788,0,0,237036.1870352212,1,15313,237036.1870352212,15313
+Ced9_shuf04,Ced9,false,"one setting, no factor",BCL2,18788,7,7,3338.5378455664986,1,15394,3338.5378455664986,15313
+Ced9_shuf05,Ced9,false,"across settings, x71",BCL2,18541,0,0,534718.4998516147,1,16795,534718.4998516147,16795
+Ced9_shuf05,Ced9,false,"across settings, no factor",BCL2,18541,86,3,7531.246476783313,1,16941,7531.246476783313,16795
+Ced9_shuf05,Ced9,false,"one setting, x71",BCL2,18541,0,0,534718.4998516147,1,16795,534718.4998516147,16795
+Ced9_shuf05,Ced9,false,"one setting, no factor",BCL2,18541,4,3,7531.246476783313,1,16814,7531.246476783313,16795
+Ced9_shuf06,Ced9,false,"across settings, x71",BCL2,18663,0,0,3814.4088055480906,1,971,3814.4088055480906,962
+Ced9_shuf06,Ced9,false,"across settings, no factor",BCL2,18663,101,7,53.72406768377588,1,2701,53.72406768377588,962
+Ced9_shuf06,Ced9,false,"one setting, x71",BCL2,18663,0,0,3814.4088055480906,1,961,3814.4088055480906,962
+Ced9_shuf06,Ced9,false,"one setting, no factor",BCL2,18663,7,7,53.72406768377588,1,1032,53.72406768377588,962
+Ced9_shuf07,Ced9,false,"across settings, x71",BCL2,18605,0,0,168309.9893028499,1,13724,168309.9893028499,13724
+Ced9_shuf07,Ced9,false,"across settings, no factor",BCL2,18605,111,5,731.1164117243585,2,10373,2370.563229617604,13724
+Ced9_shuf07,Ced9,false,"one setting, x71",BCL2,18605,0,0,168309.9893028499,1,13724,168309.9893028499,13724
+Ced9_shuf07,Ced9,false,"one setting, no factor",BCL2,18605,5,5,2370.563229617604,1,13814,2370.563229617604,13724
+Ced9_shuf08,Ced9,false,"across settings, x71",BCL2,18665,0,0,289387.49628925807,1,15550,289387.49628925807,15552
+Ced9_shuf08,Ced9,false,"across settings, no factor",BCL2,18665,106,20,4075.880229426166,1,15982,4075.8802294261664,15552
+Ced9_shuf08,Ced9,false,"one setting, x71",BCL2,18665,0,0,289387.49628925807,1,15550,289387.49628925807,15552
+Ced9_shuf08,Ced9,false,"one setting, no factor",BCL2,18665,21,20,4075.880229426166,1,15602,4075.8802294261664,15552
+Ced9_shuf09,Ced9,false,"across settings, x71",BCL2,18676,0,0,474000.2470050558,1,16793,474000.2470050558,16793
+Ced9_shuf09,Ced9,false,"across settings, no factor",BCL2,18676,108,10,6676.059816972622,1,16975,6676.059816972622,16793
+Ced9_shuf09,Ced9,false,"one setting, x71",BCL2,18676,0,0,474000.2470050558,1,16793,474000.2470050558,16793
+Ced9_shuf09,Ced9,false,"one setting, no factor",BCL2,18676,10,10,6676.059816972622,1,16818,6676.059816972622,16793
+Ced9_shuf10,Ced9,false,"across settings, x71",BCL2,18688,0,0,415947.92142452183,1,16518,415947.92142452183,16519
+Ced9_shuf10,Ced9,false,"across settings, no factor",BCL2,18688,91,6,5858.421428514397,1,16776,5858.421428514397,16519
+Ced9_shuf10,Ced9,false,"one setting, x71",BCL2,18688,0,0,415947.92142452183,1,16518,415947.92142452183,16519
+Ced9_shuf10,Ced9,false,"one setting, no factor",BCL2,18688,7,6,5858.421428514397,1,16553,5858.421428514397,16519
+Ced9_shuf11,Ced9,false,"across settings, x71",BCL2,18766,0,0,46553.558079945375,1,8416,46553.558079945375,8415
+Ced9_shuf11,Ced9,false,"across settings, no factor",BCL2,18766,91,6,44.18070073136931,3,2413,655.683916618949,8415
+Ced9_shuf11,Ced9,false,"one setting, x71",BCL2,18766,0,0,46553.558079945375,1,8414,46553.558079945375,8415
+Ced9_shuf11,Ced9,false,"one setting, no factor",BCL2,18766,7,6,655.683916618949,1,8577,655.683916618949,8415
+Ced9_shuf12,Ced9,false,"across settings, x71",BCL2,18801,0,0,177072.99326627958,1,14408,177072.99326627958,14408
+Ced9_shuf12,Ced9,false,"across settings, no factor",BCL2,18801,110,2,1527.1755543846803,2,13738,2493.985820651825,14408
+Ced9_shuf12,Ced9,false,"one setting, x71",BCL2,18801,0,0,177072.99326627958,1,14408,177072.99326627958,14408
+Ced9_shuf12,Ced9,false,"one setting, no factor",BCL2,18801,2,2,2493.985820651825,1,14506,2493.985820651825,14408
+Ced9_shuf13,Ced9,false,"across settings, x71",BCL2,18821,0,0,9379.830455413505,1,2598,9379.830455413505,2587
+Ced9_shuf13,Ced9,false,"across settings, no factor",BCL2,18821,122,6,132.11028810441556,1,5098,132.11028810441556,2587
+Ced9_shuf13,Ced9,false,"one setting, x71",BCL2,18821,0,0,9379.830455413505,1,2587,9379.830455413505,2587
+Ced9_shuf13,Ced9,false,"one setting, no factor",BCL2,18821,7,6,132.11028810441556,1,2683,132.11028810441556,2587
+Ced9_shuf14,Ced9,false,"across settings, x71",BCL2,18682,0,0,243933.8496461996,1,14989,243933.8496461996,14991
+Ced9_shuf14,Ced9,false,"across settings, no factor",BCL2,18682,88,5,3435.688023185913,1,15555,3435.688023185913,14991
+Ced9_shuf14,Ced9,false,"one setting, x71",BCL2,18682,0,0,243933.8496461996,1,14989,243933.8496461996,14991
+Ced9_shuf14,Ced9,false,"one setting, no factor",BCL2,18682,5,5,3435.688023185913,1,15069,3435.688023185913,14991
+Ced9_shuf15,Ced9,false,"across settings, x71",BCL2,18677,0,0,1566588.2037724094,1,18299,1566588.2037724094,18299
+Ced9_shuf15,Ced9,false,"across settings, no factor",BCL2,18677,98,8,22064.622588343773,1,18306,22064.622588343773,18299
+Ced9_shuf15,Ced9,false,"one setting, x71",BCL2,18677,0,0,1566588.2037724094,1,18299,1566588.2037724094,18299
+Ced9_shuf15,Ced9,false,"one setting, no factor",BCL2,18677,8,8,22064.622588343773,1,18302,22064.622588343773,18299
+Ced9_shuf16,Ced9,false,"across settings, x71",BCL2,18723,0,0,69128.16422597614,1,10214,69128.16422597614,10214
+Ced9_shuf16,Ced9,false,"across settings, no factor",BCL2,18723,135,3,446.7858521660959,2,9139,973.6361158588198,10214
+Ced9_shuf16,Ced9,false,"one setting, x71",BCL2,18723,0,0,69128.16422597614,1,10214,69128.16422597614,10214
+Ced9_shuf16,Ced9,false,"one setting, no factor",BCL2,18723,3,3,973.6361158588198,1,10381,973.6361158588198,10214
+Ced9_shuf17,Ced9,false,"across settings, x71",BCL2,18741,0,0,149098.69652619923,1,13512,149098.69652619923,13512
+Ced9_shuf17,Ced9,false,"across settings, no factor",BCL2,18741,145,5,1580.2308556590558,2,13585,2099.9816412140754,13512
+Ced9_shuf17,Ced9,false,"one setting, x71",BCL2,18741,0,0,149098.69652619923,1,13512,149098.69652619923,13512
+Ced9_shuf17,Ced9,false,"one setting, no factor",BCL2,18741,5,5,2099.9816412140754,1,13618,2099.9816412140754,13512
+Ced9_shuf18,Ced9,false,"across settings, x71",BCL2,18653,0,0,,,,,
+Ced9_shuf18,Ced9,false,"across settings, no factor",BCL2,18653,109,7,,,,,
+Ced9_shuf18,Ced9,false,"one setting, x71",BCL2,18653,0,0,,,,,
+Ced9_shuf18,Ced9,false,"one setting, no factor",BCL2,18653,10,7,,,,,
+Ced9_shuf19,Ced9,false,"across settings, x71",BCL2,18795,0,0,,,,,
+Ced9_shuf19,Ced9,false,"across settings, no factor",BCL2,18795,121,10,,,,,
+Ced9_shuf19,Ced9,false,"one setting, x71",BCL2,18795,0,0,,,,,
+Ced9_shuf19,Ced9,false,"one setting, no factor",BCL2,18795,12,10,,,,,
+P66,P66,true,"across settings, x71",CD47,19402,0,0,50222.11837417509,1,8648,50222.11837417509,8647
+P66,P66,true,"across settings, no factor",CD47,19402,189,3,5.418095670284079,4,673,707.353779917959,8647
+P66,P66,true,"one setting, x71",CD47,19402,0,0,50222.11837417509,1,8647,50222.11837417509,8647
+P66,P66,true,"one setting, no factor",CD47,19402,4,3,707.353779917959,1,8815,707.353779917959,8647
+P66_shuf00,P66,false,"across settings, x71",CD47,19378,0,0,238448.73605522077,1,15580,238448.73605522077,15582
+P66_shuf00,P66,false,"across settings, no factor",CD47,19378,198,2,3358.432902186205,1,16346,3358.4329021862045,15582
+P66_shuf00,P66,false,"one setting, x71",CD47,19378,0,0,238448.73605522077,1,15580,238448.73605522077,15582
+P66_shuf00,P66,false,"one setting, no factor",CD47,19378,2,2,3358.432902186205,1,15656,3358.4329021862045,15582
+P66_shuf01,P66,false,"across settings, x71",CD47,19405,0,0,45629.46172456005,1,7944,45629.46172456005,7944
+P66_shuf01,P66,false,"across settings, no factor",CD47,19405,208,6,25.317813059150694,4,1859,642.6684749938036,7944
+P66_shuf01,P66,false,"one setting, x71",CD47,19405,0,0,45629.46172456005,1,7944,45629.46172456005,7944
+P66_shuf01,P66,false,"one setting, no factor",CD47,19405,6,6,642.6684749938036,1,8105,642.6684749938036,7944
+P66_shuf02,P66,false,"across settings, x71",CD47,19416,0,0,17807.080704187898,1,4107,17807.080704187898,4104
+P66_shuf02,P66,false,"across settings, no factor",CD47,19416,183,3,250.803953580111,1,7303,250.803953580111,4104
+P66_shuf02,P66,false,"one setting, x71",CD47,19416,0,0,17807.080704187898,1,4103,17807.080704187898,4104
+P66_shuf02,P66,false,"one setting, no factor",CD47,19416,3,3,250.803953580111,1,4234,250.803953580111,4104
+P66_shuf03,P66,false,"across settings, x71",CD47,19454,0,0,160971.06103205992,1,14538,160971.06103205992,14538
+P66_shuf03,P66,false,"across settings, no factor",CD47,19454,258,7,2267.1980427050694,1,15708,2267.1980427050694,14538
+P66_shuf03,P66,false,"one setting, x71",CD47,19454,0,0,160971.06103205992,1,14538,160971.06103205992,14538
+P66_shuf03,P66,false,"one setting, no factor",CD47,19454,7,7,2267.1980427050694,1,14642,2267.1980427050694,14538
+P66_shuf04,P66,false,"across settings, x71",CD47,19427,0,0,241605.65862340844,1,15960,241605.65862340844,15961
+P66_shuf04,P66,false,"across settings, no factor",CD47,19427,218,3,1090.6141547259072,3,13187,3402.8966003296932,15961
+P66_shuf04,P66,false,"one setting, x71",CD47,19427,0,0,241605.65862340844,1,15960,241605.65862340844,15961
+P66_shuf04,P66,false,"one setting, no factor",CD47,19427,3,3,3402.8966003296932,1,16025,3402.8966003296932,15961
+P66_shuf05,P66,false,"across settings, x71",CD47,19406,0,0,82729.1026597412,1,11204,82729.1026597412,11205
+P66_shuf05,P66,false,"across settings, no factor",CD47,19406,229,6,782.9076577442074,4,11891,1165.1986290104394,11205
+P66_shuf05,P66,false,"one setting, x71",CD47,19406,0,0,82729.1026597412,1,11204,82729.1026597412,11205
+P66_shuf05,P66,false,"one setting, no factor",CD47,19406,7,6,1165.1986290104394,1,11342,1165.1986290104394,11205
+P66_shuf06,P66,false,"across settings, x71",CD47,19372,0,0,5247.885025043934,1,1197,5247.885025043934,1187
+P66_shuf06,P66,false,"across settings, no factor",CD47,19372,192,3,17.87359675438618,4,1507,73.91387359216807,1187
+P66_shuf06,P66,false,"one setting, x71",CD47,19372,0,0,5247.885025043934,1,1187,5247.885025043934,1187
+P66_shuf06,P66,false,"one setting, no factor",CD47,19372,4,3,73.91387359216807,1,1245,73.91387359216807,1187
+P66_shuf07,P66,false,"across settings, x71",CD47,19413,0,0,89575.17240253757,1,11357,89575.17240253757,11357
+P66_shuf07,P66,false,"across settings, no factor",CD47,19413,189,6,732.4694658106945,3,11257,1261.6221465146136,11357
+P66_shuf07,P66,false,"one setting, x71",CD47,19413,0,0,89575.17240253757,1,11357,89575.17240253757,11357
+P66_shuf07,P66,false,"one setting, no factor",CD47,19413,6,6,1261.6221465146136,1,11486,1261.6221465146136,11357
+P66_shuf08,P66,false,"across settings, x71",CD47,19404,0,0,83799.63773747593,1,11480,83799.63773747593,11482
+P66_shuf08,P66,false,"across settings, no factor",CD47,19404,216,2,11.58410419435053,4,1291,1180.2765878517737,11482
+P66_shuf08,P66,false,"one setting, x71",CD47,19404,0,0,83799.63773747593,1,11480,83799.63773747593,11482
+P66_shuf08,P66,false,"one setting, no factor",CD47,19404,6,2,608.8585670832921,2,8143,1180.2765878517737,11482
+P66_shuf09,P66,false,"across settings, x71",CD47,19343,0,0,437457.29774852813,1,17312,437457.29774852813,17312
+P66_shuf09,P66,false,"across settings, no factor",CD47,19343,230,5,6161.370390824345,1,17654,6161.370390824345,17312
+P66_shuf09,P66,false,"one setting, x71",CD47,19343,0,0,437457.29774852813,1,17312,437457.29774852813,17312
+P66_shuf09,P66,false,"one setting, no factor",CD47,19343,6,5,6161.370390824345,1,17349,6161.370390824345,17312
+P66_shuf10,P66,false,"across settings, x71",CD47,19388,0,0,276045.4046050808,1,16278,276045.4046050808,16278
+P66_shuf10,P66,false,"across settings, no factor",CD47,19388,231,4,3887.9634451419856,1,16882,3887.9634451419856,16278
+P66_shuf10,P66,false,"one setting, x71",CD47,19388,0,0,276045.4046050808,1,16278,276045.4046050808,16278
+P66_shuf10,P66,false,"one setting, no factor",CD47,19388,4,4,3887.9634451419856,1,16345,3887.9634451419856,16278
+P66_shuf11,P66,false,"across settings, x71",CD47,19393,0,0,175234.95324309517,1,14730,175234.95324309517,14731
+P66_shuf11,P66,false,"across settings, no factor",CD47,19393,180,4,2468.09793300134,1,15800,2468.09793300134,14731
+P66_shuf11,P66,false,"one setting, x71",CD47,19393,0,0,175234.95324309517,1,14730,175234.95324309517,14731
+P66_shuf11,P66,false,"one setting, no factor",CD47,19393,4,4,2468.09793300134,1,14826,2468.09793300134,14731
+P66_shuf12,P66,false,"across settings, x71",CD47,19368,0,0,95885.13579817706,1,11955,95885.13579817706,11956
+P66_shuf12,P66,false,"across settings, no factor",CD47,19368,191,5,269.08540366272473,2,7629,1350.4948703968612,11956
+P66_shuf12,P66,false,"one setting, x71",CD47,19368,0,0,95885.13579817706,1,11955,95885.13579817706,11956
+P66_shuf12,P66,false,"one setting, no factor",CD47,19368,6,5,1350.4948703968612,1,12088,1350.4948703968612,11956
+P66_shuf13,P66,false,"across settings, x71",CD47,19431,0,0,1055697.3476058675,1,18807,1055697.3476058675,18807
+P66_shuf13,P66,false,"across settings, no factor",CD47,19431,223,4,14868.976726843217,1,18844,14868.976726843217,18807
+P66_shuf13,P66,false,"one setting, x71",CD47,19431,0,0,1055697.3476058675,1,18807,1055697.3476058675,18807
+P66_shuf13,P66,false,"one setting, no factor",CD47,19431,4,4,14868.976726843217,1,18810,14868.976726843217,18807
+P66_shuf14,P66,false,"across settings, x71",CD47,19430,0,0,94788.06001761858,1,11845,94788.06001761858,11845
+P66_shuf14,P66,false,"across settings, no factor",CD47,19430,204,3,1249.3598032000918,3,13415,1335.0430988396984,11845
+P66_shuf14,P66,false,"one setting, x71",CD47,19430,0,0,94788.06001761858,1,11845,94788.06001761858,11845
+P66_shuf14,P66,false,"one setting, no factor",CD47,19430,3,3,1335.0430988396984,1,11959,1335.0430988396984,11845
+P66_shuf15,P66,false,"across settings, x71",CD47,19382,0,0,95913.66465930652,1,11736,95913.66465930652,11736
+P66_shuf15,P66,false,"across settings, no factor",CD47,19382,174,6,55.4504563849525,5,2987,1350.8966853423453,11736
+P66_shuf15,P66,false,"one setting, x71",CD47,19382,0,0,95913.66465930652,1,11736,95913.66465930652,11736
+P66_shuf15,P66,false,"one setting, no factor",CD47,19382,6,6,1350.8966853423453,1,11877,1350.8966853423453,11736
+P66_shuf16,P66,false,"across settings, x71",CD47,19418,0,0,253637.86539467672,1,16120,253637.8653946767,16121
+P66_shuf16,P66,false,"across settings, no factor",CD47,19418,222,7,3572.3643013334777,1,16755,3572.3643013334777,16133
+P66_shuf16,P66,false,"one setting, x71",CD47,19418,0,0,253637.86539467672,1,16120,253637.8653946767,16121
+P66_shuf16,P66,false,"one setting, no factor",CD47,19418,7,7,3572.3643013334777,1,16191,3572.3643013334777,16133
+P66_shuf17,P66,false,"across settings, x71",CD47,19372,0,0,30518.14619397692,1,6038,30518.146193976918,6035
+P66_shuf17,P66,false,"across settings, no factor",CD47,19372,180,2,29.25809816256569,3,2109,429.8330449855904,6035
+P66_shuf17,P66,false,"one setting, x71",CD47,19372,0,0,30518.14619397692,1,6034,30518.146193976918,6035
+P66_shuf17,P66,false,"one setting, no factor",CD47,19372,3,2,429.8330449855904,1,6186,429.8330449855904,6035
+P66_shuf18,P66,false,"across settings, x71",CD47,19422,0,0,101235.69752982586,1,12016,101235.69752982586,12017
+P66_shuf18,P66,false,"across settings, no factor",CD47,19422,233,2,251.53043183062692,2,7528,1425.8548947862798,12017
+P66_shuf18,P66,false,"one setting, x71",CD47,19422,0,0,101235.69752982586,1,12016,101235.69752982586,12017
+P66_shuf18,P66,false,"one setting, no factor",CD47,19422,2,2,1425.8548947862798,1,12178,1425.8548947862798,12017
+P66_shuf19,P66,false,"across settings, x71",CD47,19389,0,0,136374.12358535468,1,13415,136374.12358535468,13415
+P66_shuf19,P66,false,"across settings, no factor",CD47,19389,170,6,1619.1166859641319,2,14228,1920.7623040190801,13415
+P66_shuf19,P66,false,"one setting, x71",CD47,19389,0,0,136374.12358535468,1,13415,136374.12358535468,13415
+P66_shuf19,P66,false,"one setting, no factor",CD47,19389,7,6,1920.7623040190801,1,13531,1920.7623040190801,13415
+BHF,BHF,true,"across settings, x71",,17582,0,0,,,,,
+BHF,BHF,true,"across settings, no factor",,17582,34,3,,,,,
+BHF,BHF,true,"one setting, x71",,17582,0,0,,,,,
+BHF,BHF,true,"one setting, no factor",,17582,3,3,,,,,
+BHF_shuf00,BHF,false,"across settings, x71",,18023,0,0,,,,,
+BHF_shuf00,BHF,false,"across settings, no factor",,18023,43,0,,,,,
+BHF_shuf00,BHF,false,"one setting, x71",,18023,0,0,,,,,
+BHF_shuf00,BHF,false,"one setting, no factor",,18023,2,0,,,,,
+BHF_shuf01,BHF,false,"across settings, x71",,17798,0,0,,,,,
+BHF_shuf01,BHF,false,"across settings, no factor",,17798,55,3,,,,,
+BHF_shuf01,BHF,false,"one setting, x71",,17798,0,0,,,,,
+BHF_shuf01,BHF,false,"one setting, no factor",,17798,5,3,,,,,
+BHF_shuf02,BHF,false,"across settings, x71",,17885,0,0,,,,,
+BHF_shuf02,BHF,false,"across settings, no factor",,17885,54,5,,,,,
+BHF_shuf02,BHF,false,"one setting, x71",,17885,0,0,,,,,
+BHF_shuf02,BHF,false,"one setting, no factor",,17885,5,5,,,,,
+BHF_shuf03,BHF,false,"across settings, x71",,17642,0,0,,,,,
+BHF_shuf03,BHF,false,"across settings, no factor",,17642,32,7,,,,,
+BHF_shuf03,BHF,false,"one setting, x71",,17642,0,0,,,,,
+BHF_shuf03,BHF,false,"one setting, no factor",,17642,8,7,,,,,
+BHF_shuf04,BHF,false,"across settings, x71",,17834,0,0,,,,,
+BHF_shuf04,BHF,false,"across settings, no factor",,17834,41,5,,,,,
+BHF_shuf04,BHF,false,"one setting, x71",,17834,0,0,,,,,
+BHF_shuf04,BHF,false,"one setting, no factor",,17834,5,5,,,,,
+BHF_shuf05,BHF,false,"across settings, x71",,18109,0,0,,,,,
+BHF_shuf05,BHF,false,"across settings, no factor",,18109,50,3,,,,,
+BHF_shuf05,BHF,false,"one setting, x71",,18109,0,0,,,,,
+BHF_shuf05,BHF,false,"one setting, no factor",,18109,4,3,,,,,
+BHF_shuf06,BHF,false,"across settings, x71",,18005,0,0,,,,,
+BHF_shuf06,BHF,false,"across settings, no factor",,18005,45,2,,,,,
+BHF_shuf06,BHF,false,"one setting, x71",,18005,0,0,,,,,
+BHF_shuf06,BHF,false,"one setting, no factor",,18005,4,2,,,,,
+BHF_shuf07,BHF,false,"across settings, x71",,17882,0,0,,,,,
+BHF_shuf07,BHF,false,"across settings, no factor",,17882,30,1,,,,,
+BHF_shuf07,BHF,false,"one setting, x71",,17882,0,0,,,,,
+BHF_shuf07,BHF,false,"one setting, no factor",,17882,2,1,,,,,
+BHF_shuf08,BHF,false,"across settings, x71",,17888,0,0,,,,,
+BHF_shuf08,BHF,false,"across settings, no factor",,17888,63,4,,,,,
+BHF_shuf08,BHF,false,"one setting, x71",,17888,0,0,,,,,
+BHF_shuf08,BHF,false,"one setting, no factor",,17888,5,4,,,,,
+BHF_shuf09,BHF,false,"across settings, x71",,17857,0,0,,,,,
+BHF_shuf09,BHF,false,"across settings, no factor",,17857,37,3,,,,,
+BHF_shuf09,BHF,false,"one setting, x71",,17857,0,0,,,,,
+BHF_shuf09,BHF,false,"one setting, no factor",,17857,3,3,,,,,
+BHF_shuf10,BHF,false,"across settings, x71",,17970,0,0,,,,,
+BHF_shuf10,BHF,false,"across settings, no factor",,17970,63,7,,,,,
+BHF_shuf10,BHF,false,"one setting, x71",,17970,0,0,,,,,
+BHF_shuf10,BHF,false,"one setting, no factor",,17970,8,7,,,,,
+BHF_shuf11,BHF,false,"across settings, x71",,18058,0,0,,,,,
+BHF_shuf11,BHF,false,"across settings, no factor",,18058,46,4,,,,,
+BHF_shuf11,BHF,false,"one setting, x71",,18058,0,0,,,,,
+BHF_shuf11,BHF,false,"one setting, no factor",,18058,4,4,,,,,
+BHF_shuf12,BHF,false,"across settings, x71",,17900,0,0,,,,,
+BHF_shuf12,BHF,false,"across settings, no factor",,17900,43,3,,,,,
+BHF_shuf12,BHF,false,"one setting, x71",,17900,0,0,,,,,
+BHF_shuf12,BHF,false,"one setting, no factor",,17900,3,3,,,,,
+BHF_shuf13,BHF,false,"across settings, x71",,18006,0,0,,,,,
+BHF_shuf13,BHF,false,"across settings, no factor",,18006,55,2,,,,,
+BHF_shuf13,BHF,false,"one setting, x71",,18006,0,0,,,,,
+BHF_shuf13,BHF,false,"one setting, no factor",,18006,2,2,,,,,
+BHF_shuf14,BHF,false,"across settings, x71",,17838,0,0,,,,,
+BHF_shuf14,BHF,false,"across settings, no factor",,17838,50,7,,,,,
+BHF_shuf14,BHF,false,"one setting, x71",,17838,0,0,,,,,
+BHF_shuf14,BHF,false,"one setting, no factor",,17838,7,7,,,,,
+BHF_shuf15,BHF,false,"across settings, x71",,17906,0,0,,,,,
+BHF_shuf15,BHF,false,"across settings, no factor",,17906,47,6,,,,,
+BHF_shuf15,BHF,false,"one setting, x71",,17906,0,0,,,,,
+BHF_shuf15,BHF,false,"one setting, no factor",,17906,8,6,,,,,
+BHF_shuf16,BHF,false,"across settings, x71",,18071,0,0,,,,,
+BHF_shuf16,BHF,false,"across settings, no factor",,18071,65,3,,,,,
+BHF_shuf16,BHF,false,"one setting, x71",,18071,0,0,,,,,
+BHF_shuf16,BHF,false,"one setting, no factor",,18071,4,3,,,,,
+BHF_shuf17,BHF,false,"across settings, x71",,17729,0,0,,,,,
+BHF_shuf17,BHF,false,"across settings, no factor",,17729,52,8,,,,,
+BHF_shuf17,BHF,false,"one setting, x71",,17729,0,0,,,,,
+BHF_shuf17,BHF,false,"one setting, no factor",,17729,10,8,,,,,
+BHF_shuf18,BHF,false,"across settings, x71",,17822,0,0,,,,,
+BHF_shuf18,BHF,false,"across settings, no factor",,17822,46,2,,,,,
+BHF_shuf18,BHF,false,"one setting, x71",,17822,0,0,,,,,
+BHF_shuf18,BHF,false,"one setting, no factor",,17822,4,2,,,,,
+BHF_shuf19,BHF,false,"across settings, x71",,17959,0,0,,,,,
+BHF_shuf19,BHF,false,"across settings, no factor",,17959,54,5,,,,,
+BHF_shuf19,BHF,false,"one setting, x71",,17959,0,0,,,,,
+BHF_shuf19,BHF,false,"one setting, no factor",,17959,7,5,,,,,

@@ -471,7 +471,7 @@ for ax, letter in zip(axs, "ab"):
 pf.shared_legend(fig, ncol=3, title="kmerseek 0.4.0 (notebook 243), Pfam 998 all-against-all; colour and shape: which score reports the stretch")
 pf.save(fig, FIG / "287_pfam998_stretch_by_chain_length_pfam998")"""
 
-S6_MD = r"""## 6. Shuffled copies of Ced9 and P66
+S6_MD = r"""## 6. Shuffled copies of Ced9, P66 and BHF
 
 The decision rule's parts (b) and (c) need the dipeptide-shuffled copies: 20 of each query
 searched against the human proteome at all 152 settings with every region kept. That search
@@ -490,20 +490,93 @@ E-value in both runs have the same E-value, in every setting
 difference: hp_lehninger_hpc3 k21 gave no call an E-value in 284's run (6 real-query calls
 had one in 241's), so the shuffled copies are scored without that setting."""
 
-S6 = r"""shuf_path = Path("287_shuffle_chains.csv")
-if shuf_path.exists():
-    shuf = pl.read_csv(shuf_path)
-    print(shuf.filter(~pl.col("real")).group_by("case", "variant").agg(
-        n_copies=pl.len(), mean_chain_e_below_1=pl.col("n_chain_e_below_1").mean(),
-        frac_partner_chain_e_below_1=(pl.col("partner_chain_e") < 1).mean()).sort("case", "variant"))
-else:
-    print("287_shuffle_chains.csv not here yet: the shuffled search has not run (see the text above).")"""
+S6 = r"""shuf = pl.read_csv("287_shuffle_chains.csv")
+copies, real = shuf.filter(~pl.col("real")), shuf.filter(pl.col("real"))
+# (b) and (c) of the decision rule, and where the real query sits among its copies
+rule = (
+    copies.group_by("case", "variant")
+    .agg(
+        n_copies=pl.len(),
+        mean_proteins_chain_e_below_1=pl.col("n_chain_e_below_1").mean(),
+        max_proteins_chain_e_below_1=pl.col("n_chain_e_below_1").max(),
+        frac_partner_chain_e_below_1=(pl.col("partner_chain_e") < 1).mean(),
+        n_copies_partner_without_call=pl.col("partner_chain_e").is_null().sum(),
+        copy_partner_ranks=pl.col("partner_rank_chain").sort(),
+    )
+    .join(real.select("case", "variant", real_proteins_chain_e_below_1="n_chain_e_below_1",
+                      real_partner_rank="partner_rank_chain"), on=["case", "variant"])
+    .with_columns(
+        # copies that rank the partner as high as the real query does, or higher
+        copies_ranking_partner_at_least_as_high=pl.struct("copy_partner_ranks", "real_partner_rank").map_elements(
+            lambda s: sum(r is not None and s["real_partner_rank"] is not None and r <= s["real_partner_rank"]
+                          for r in s["copy_partner_ranks"]), return_dtype=pl.Int64),
+        calibrated=pl.col("mean_proteins_chain_e_below_1").is_between(0.3, 3),
+    )
+    .drop("copy_partner_ranks")
+    .sort("case", "variant")
+)
+rule.write_csv("287_shuffle_decision_rule.csv")
+print(rule)
+
+fig, axs = pf.figure(pf.TWO_COLUMN_MM, 50, ncols=2, sharey=True)
+COPY = dict(marker="o", color=pf.GREY, s=10, label="dipeptide-shuffled copy (20 per query)")
+# hollow, so a copy with the same value stays visible underneath
+REAL = dict(marker="D", facecolor="none", edgecolor="black", linewidths=0.9, s=26, label="real query")
+yy = {v: i for i, v in enumerate(main4[::-1])}
+for ax, (q, p), letter in zip(axs, [("Ced9", "BCL2"), ("P66", "CD47")], "ab"):
+    for v in main4:
+        ax.axhline(yy[v], color="#DDDDDD", lw=0.3, zorder=0)
+    ax.axvline(20, color="black", ls="--", lw=0.8, label="top 20 (decision rule)")
+    c = copies.filter((pl.col("case") == q) & pl.col("variant").is_in(main4)).drop_nulls("partner_rank_chain")
+    ax.scatter(c["partner_rank_chain"], [yy[v] for v in c["variant"]], alpha=0.6, lw=0, zorder=2, **COPY)
+    r = real.filter((pl.col("case") == q) & pl.col("variant").is_in(main4))
+    ax.scatter(r["partner_rank_chain"], [yy[v] for v in r["variant"]], zorder=3, **REAL)
+    ax.set_xscale("log")
+    ax.set_xlim(0.7, 30_000)
+    ax.set_xticks([1, 10, 100, 1000, 10000], ["1", "10", "100", "1,000", "10,000"])
+    ax.set_yticks(list(yy.values()), [label_of[v] for v in yy])
+    ax.set_xlabel(f"rank of {p} by chain E-value (1 = best)")
+    ax.set_title(f"query {q} and its copies, partner {p}", loc="left")
+    pf.panel_label(ax, letter)
+pf.shared_legend(fig, ncol=3, title=TOOLS + "; copies from notebook 284's search (job 48677540)")
+pf.save(fig, FIG / "287_shuffled_copies_partner_rank_human_gencode")"""
+
+S6B_MD = r"""Part (c), calibration: how many human proteins reach chain E-value below 1 in one search,
+for each shuffled copy (no copy is related to any human protein, so every one of these is
+by chance) and for the real query. The grey band is the decision rule's calibrated range,
+0.3 to 3 per search."""
+
+S6B = r"""fig, axs = pf.figure(pf.TWO_COLUMN_MM, 50, ncols=3, sharey=True)
+for ax, q, letter in zip(axs, ["Ced9", "P66", "BHF"], "abc"):
+    ax.axvspan(0.3, 3, color="#EEEEEE", zorder=0, label="calibrated: 0.3 to 3 per search")
+    for v in main4:
+        ax.axhline(yy[v], color="#DDDDDD", lw=0.3, zorder=0)
+    c = copies.filter((pl.col("case") == q) & pl.col("variant").is_in(main4))
+    jitter = np.random.default_rng(287).uniform(-0.15, 0.15, c.height)
+    ax.scatter(c["n_chain_e_below_1"], [yy[v] + j for v, j in zip(c["variant"], jitter)], alpha=0.6, lw=0, zorder=2, **COPY)
+    r = real.filter((pl.col("case") == q) & pl.col("variant").is_in(main4))
+    ax.scatter(r["n_chain_e_below_1"], [yy[v] for v in r["variant"]], zorder=3, **REAL)
+    ax.set_xscale("symlog", linthresh=1)
+    ax.set_xlim(-0.2, 400)
+    ax.set_xticks([0, 1, 3, 10, 30, 100, 300], ["0", "1", "3", "10", "30", "100", "300"])
+    ax.set_yticks(list(yy.values()), [label_of[v] for v in yy])
+    ax.set_xlabel("human proteins at chain E-value < 1")
+    ax.set_title(f"{q} and its copies", loc="left")
+    pf.panel_label(ax, letter)
+pf.shared_legend(fig, ncol=3, title=TOOLS + "; copies scatter up and down within a row so they do not overlap")
+pf.save(fig, FIG / "287_shuffled_copies_chance_hits_human_gencode")
+print(copies.filter(pl.col("variant").is_in(main4)).group_by("case", "variant").agg(
+    min=pl.col("n_chain_e_below_1").min(), median=pl.col("n_chain_e_below_1").median(),
+    max=pl.col("n_chain_e_below_1").max()).sort("case", "variant"))"""
+
 
 SUMMARY = r"""## Summary and conclusions
 
 **Verdict: no.** Combining Ced9's calls on BCL2 with BLAST's sum statistic does not rescue
-the pair, under any way of counting the search tried here. The shuffled-copy test was not
-needed to reach that answer, and has not run yet.
+the pair, under any way of counting the search tried here. Decision rule: (a) fails (BCL2
+is rank 12_906, chain E-value 138_779); (b) holds (no shuffled copy gets BCL2 below
+E-value 1); (c) fails in both directions (0 chance proteins per search with the factor of
+71, 49 to 206 without it).
 
 - With the main score (each call's E-value times 71, for the 71 settings that have an E-value fit),
   BCL2's best chain is the BH4 call alone, E-value 138_779, rank 12_906 of 19_732. Its
@@ -541,8 +614,19 @@ They cannot turn calls that are each 1_000 to 10_000 times above chance into a h
 BCL2 needs longer or better calls, not a better way of adding the calls kmerseek already
 makes. No kmerseek issue was filed: the rule for filing one ("if it works") was not met.
 
-**Not tested.** The shuffled copies (decision rule parts b and c), which wait on notebook
-283's index rebuild. Chains with gaps inside a call (BLAST's gapped extension), and an
+- **Shuffled copies** (20 dipeptide-shuffled copies of each query, section 6). Ced9 looks
+  like its copies: 6 of 20 copies rank BCL2 as high as Ced9 does, or higher, with the main
+  score. P66 without the factor ranks CD47 at 673, higher than all 20 of its copies, but
+  that chain joins four calls on diagonals 165 residues apart, and P66's count of chance
+  proteins at E-value below 1 (189) sits inside its copies' range (170 to 258).
+- **Calibration.** With the factor of 71, no copy of any query reaches E-value below 1 for
+  any human protein: the main score is too conservative. Without it, copies reach 30 to 258
+  proteins per search. The best single call per protein, chosen across 71 settings with no
+  factor, gives 0 to 20 (mean 5.2): kmerseek's own single-setting E-value is itself
+  conservative, since picking the best of 71 settings would give about 71 if each setting
+  were calibrated and independent.
+
+**Not tested.** Chains with gaps inside a call (BLAST's gapped extension), and an
 effective number of settings between 1 and 71, fitted on shuffled copies."""
 
 CELLS = [("md", INTRO)] + [
@@ -569,6 +653,8 @@ CELLS = [("md", INTRO)] + [
     ("code", S5B),
     ("md", S6_MD),
     ("code", S6),
+    ("md", S6B_MD),
+    ("code", S6B),
     ("md", SUMMARY),
 ]
 
