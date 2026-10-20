@@ -18,6 +18,10 @@ SB=scripts/342_stop3.sbatch
 [ -f "$TABLE" ] && [ -f "$SB" ] || { echo "run from the repository root" >&2; exit 2; }
 WORK=${NB342_WORK:-$SCRATCH/exon-function-342}
 JOBS=$WORK/stop3_protein20_jobs.txt
+# Two early scores write the same files. On 2026-10-20 this script ran twice and a second early
+# score (48690800) ran next to 48689195 until it was cancelled, so refuse while one is queued.
+running=$(squeue -h -u "$USER" -n 342-score-3settings -o %i 2>/dev/null || true)
+[ -z "$running" ] || { echo "342: early score job $running is still queued or running; not resubmitting" >&2; exit 3; }
 read -r cpus mem hours < <(awk -F'\t' '!/^#/ && $1 == "score" { print $5, $6, $7 }' "$TABLE")
 res="--cpus-per-task=$cpus --mem=${mem}G --time=$(printf %02d "$hours"):00:00"
 
