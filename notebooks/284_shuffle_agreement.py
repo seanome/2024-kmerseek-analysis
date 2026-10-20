@@ -35,6 +35,7 @@ from __future__ import annotations
 import argparse
 import concurrent.futures as cf
 import json
+import multiprocessing
 import os
 import random
 import subprocess
@@ -247,7 +248,11 @@ def step_search(workers: int, n: int, seed: int) -> None:
         flush=True,
     )
     failed = []
-    with cf.ProcessPoolExecutor(workers) as ex:
+    # spawn, not Linux's default fork: a pool forked after polars has started its threads
+    # can hang with no CPU use (Pfam-N rescore job 48521254, 2026-10-19)
+    with cf.ProcessPoolExecutor(
+        workers, mp_context=multiprocessing.get_context("spawn")
+    ) as ex:
         for msg in ex.map(one_chunk, *zip(*[(t, c, a) for t, c, a in jobs])):
             print(msg, file=sys.stderr, flush=True)
             if "FAILED" in msg:
