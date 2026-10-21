@@ -794,6 +794,19 @@ per decoy, against the test half at the same cutoff. A cutoff that carries over 
 dashed line; points far above it let many more decoy transfers through on the test half.
 Up is spaced by ratio. MMseqs2, phmmer and hmmscan are not drawn: the scorer stores only their
 test-half rate (0.006, 0.012 and 0.003 per decoy).
+
+Why the extend points sit so high: the printed table from `bin/decoy_spread.py` counts, per
+setting and half, how the transfers spread over decoys. On the test half one or two decoys
+carry most of them: for hp_kyte_doolittle2 k25 extend, one 788 aa decoy (DECOY_A0A078GY05)
+receives 3,756 of the half's 4,542 family transfers; for gbmr7 k19 extend, one decoy receives
+718 of 821. No such decoy fell in the tune half, so the cutoff set there does not hold. The
+exact settings carry over better (41 to 107 test-half transfers against 39 to 41 on the tune
+half).
+gbmr7 k19 extend is the chosen setting because 99.9% of its decoy pairs have no finite E-value
+(kmerseek gives the region E-value inf), so its cutoff accepts every finite score and it makes
+almost no calls: 1 test instance found. The rule in the first cell picks the largest unique
+finds minus expected; with every setting below zero, that is the setting with the fewest
+decoy transfers.
 """
 
 P4_CODE = r"""
@@ -840,6 +853,90 @@ pf.save(fig, FIG / "time_split_full_p4_unique_finds_and_decoy_rates_sprot2019_08
 """
 
 
+SUMMARY_MD = r"""# Summary and Conclusions
+
+## Background
+
+Proteins with no Pfam domain in Pfam 33.1 (May 2020) that gained one by Pfam 38.2 (June 2026)
+give an answer key for uncharacterized proteins. Each tool searched them, and one
+dipeptide-shuffled decoy each, against Swiss-Prot as of 2019_08 and was scored against the
+domains Pfam later found, at a decoy-matched error rate set on the tune half and read on the
+test half.
+
+## Summary and Conclusions
+
+* Only 19.0% of 500 random instances sit below 30% identity to their closest t0 Swiss-Prot
+  domain (median 38.8% over aligned columns), so P1 fails.
+* hmmscan with the Pfam 33.1 models finds 64.2% of 4,703 test instances, ahead of phmmer
+  (51.6%) and one-round MMseqs2 (43.0%), so P2 holds.
+* The best of 38 kmerseek settings, uniprot18 k5 extend, finds 14.2% of test instances, a
+  third of MMseqs2's 43.0%, so P3 holds in every Pfam type and length bin.
+* No kmerseek setting makes more tune-half unique finds than its decoys predict: at most 5
+  against 21.9 expected among 2,203 queries with a short or Motif, Disordered or Repeat domain.
+* The tune-chosen kmerseek setting, gbmr7 k19 extend, makes 0 unique finds on the test half,
+  449 below its decoy expectation (95% interval -1,281 to -9), so P4 fails.
+* Below pLDDT 50, kmerseek with any of its 38 settings finds 27.4% of 201 test instances,
+  against 36.8% for MMseqs2 and 58.7% for hmmscan.
+* MMseqs2 searched 16,658 sequences in 0.8 CPU hours; the 38 kmerseek settings took 6.8 to
+  212 CPU hours each and found fewer domains every time.
+
+By the kill rule written before any search, this is a negative result and the test stops:
+on proteins nobody had characterized at t0, kmerseek placed no short feature that MMseqs2,
+phmmer and Pfam's own models missed, beyond what its decoys predict.
+
+## Analysis Details
+
+- Query set (Stop 1): 280,374 instances on 263,544 queries survive the funnel; 80% of the
+  domains gained by Pfam 38.2 are in families created after Pfam 33.1, which no tool could
+  transfer from a t0 reference. The approved sample is 8,329 queries (up to 2,000 per Pfam
+  type, all of the smaller types), 9,263 instances, split by SHA-1 of the accession into
+  tune (4,129 queries) and test (4,200 queries; 4,703 instances).
+- Pilot (Stop 2): 128 alphabet-k pairs, exact and extend; 27 extend settings had their
+  index-time Karlin-Altschul fit refused. Three changes after the pilot's tune half, before
+  the test half (first cell): a call is the target domain placed on the query, MMseqs2 runs
+  one round, and the exact arm is scored on region_tfidf. The full run keeps one alphabet-k
+  pair per alphabet, chosen on the pilot's tune half (38 settings).
+- Full run: every task finished; three kmerseek searches ran out of memory on their first
+  attempt and finished on the retry. Scoring read 695 GB of kmerseek output in 12 h 8 min at
+  a 133 GB peak. Its first full-run ask of 8 h would not have covered that, and an attempt
+  at 100 GB was killed for memory, so both asks were raised before the run that finished.
+- The test half was scored once, by the scorer's full run, and those scores were read once
+  by `bin/leaderboard_rows.py` (logged in `tables/full/TEST_HALF_READ`). Before that, the
+  only test-half results seen were hmmscan's calls on the 2 queries of the smoke test
+  (2026-10-12, PR 121 body), both found.
+- Matched cutoffs from the tune half do not carry over for kmerseek's extend settings: on the
+  test half one or two decoys with hundreds to thousands of family transfers push the rate to
+  0.015 to 1.08 per decoy, against the 0.01 allowed on the tune half. The other tools stay at
+  0.003 to 0.012.
+- Where kmerseek does least badly: Repeat (best setting 18.3% against MMseqs2's 63.3%) and
+  regions under 60 aa (18.5% against 50.8%).
+
+## Supplementary Information
+
+- kmerseek `docker.io/olgabot/kmerseek:0.4.0-rc5`
+  (sha256:7855826572644933e0c71926102b90174e650c144ae90b3641b760bd9f463afb); MMseqs2 and HMMER
+  biocontainers pinned by digest in `nextflow-runs/time-split-pfam/main.nf`.
+- Not tested: P5, P6 and P4 against the Pfam 33.1 seed sequences. The seed reference was built
+  and checked (Stop A) but never searched; the kill rule stops the test before it.
+- Run directory on Sherlock: `$SCRATCH/280-time-split` (launch-full, results-full). Tables
+  used here: `nextflow-runs/time-split-pfam/tables/full/`.
+- Notebook built by `scripts/make_nb280.py`; PR 121.
+
+## References
+
+- Zhou, N., et al. "The CAFA challenge reports improved protein function prediction and new
+  functional annotations for hundreds of genes through experimental screens." *Genome
+  Biology* 20 (2019): 244. https://doi.org/10.1186/s13059-019-1835-8
+- Pfam releases 33.1 and 38.2, https://ftp.ebi.ac.uk/pub/databases/Pfam/releases/
+- UniProt release 2019_08, Swiss-Prot,
+  https://ftp.uniprot.org/pub/databases/uniprot/previous_releases/release-2019_08/
+"""
+
+SUMMARY_CODE = r"""
+print(SUMMARY_MD_TEXT)
+"""
+
+
 def main() -> None:
     nb = nbf.v4.new_notebook()
     nb.cells = [nbf.v4.new_markdown_cell(INTRO), nbf.v4.new_code_cell(SETUP.strip()),
@@ -853,7 +950,9 @@ def main() -> None:
                 nbf.v4.new_markdown_cell(COST_MD), nbf.v4.new_code_cell(COST_CODE.strip()),
                 nbf.v4.new_markdown_cell(RECALL_MD), nbf.v4.new_code_cell(RECALL_CODE.strip()),
                 nbf.v4.new_markdown_cell(PLDDT_RECALL_MD), nbf.v4.new_code_cell(PLDDT_RECALL_CODE.strip()),
-                nbf.v4.new_markdown_cell(P4_MD), nbf.v4.new_code_cell(P4_CODE.strip())]
+                nbf.v4.new_markdown_cell(P4_MD), nbf.v4.new_code_cell(P4_CODE.strip()),
+                nbf.v4.new_markdown_cell(SUMMARY_MD),
+                nbf.v4.new_code_cell("SUMMARY_MD_TEXT = " + repr(SUMMARY_MD) + "\n" + SUMMARY_CODE.strip())]
     for c in nb.cells:
         if c.cell_type == "code":
             c.metadata["jupyter"] = {"source_hidden": True}
