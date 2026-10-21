@@ -265,17 +265,28 @@ else:
 md("""
 ## 3. Step 3: the kill test
 
-For each of the 18 settings, `sourmash scripts manysearch` (branchwater plugin 0.9.15) of
+For each of the 27 settings (scaled 10 added on 2026-10-20), `sourmash scripts manysearch` (branchwater plugin 0.9.15) of
 all 2_289 queries against the sketched catalog. A sourmash hit is a (query, gene) pair that
 shares at least one hash. Recall is the share of DIAMOND's real-query pairs at E < 1e-5 that
 sourmash also hits, computed exactly by searching against only the genes DIAMOND hit. The
 shuffled-hit rate is the genes hit by all shuffled copies divided by 20 times the genes hit
 by the real queries. When a setting would write more than 2 billion hit rows on the full
 catalog (low-k hp: almost every query shares a hash with almost every gene), its counts come
-from a fixed 1% random sample of genes; the figure rings those points.
+from a fixed 1% random sample of genes; the figure rings those points. The catalog is
+searched one chunk (of 256) at a time: searching it whole ran out of 128 GB.
+
+**Result (jobs 48677793, 48677798, 48681983; finished 2026-10-20 17:33): dead.** No setting
+finds at least 80% of DIAMOND's 31_865 real-query pairs while its shuffled copies hit under
+1% as many genes as the real queries. The settings that find most of DIAMOND's pairs are
+hp at k = 7 or 10 (scaled 10 or 100) and hp k = 13 at scaled 10 (91-100% found), and there a
+shuffled copy hits as many genes as a real query does (rate 0.98-1.04): an hp word of 7 to 13 letters is shared with almost every
+gene. The setting with the lowest shuffled rate, protein k = 13 at scaled 100 (1.7%), finds 5 of
+the 31_865 pairs. DIAMOND's own shuffled
+copies produced no pair at E < 1e-5.
 
 Figure: x = recall, y = shuffled-hit rate (log scale, 0 on its own line), one mark per
-setting; colour = alphabet, shape = k, filled = scaled 100, open = scaled 1000; the star is
+setting; colour = alphabet, shape = k, filled = scaled 10, half-filled = scaled 100, open =
+scaled 1000; the star is
 DIAMOND at its own measured shuffled rate. The grey box is the pass region.
 """)
 
@@ -384,10 +395,31 @@ else:
 md("""
 ## Summary and conclusions
 
-**Result on 2026-10-20: step 1 passes (run 2): sketching the whole catalog needs about 41
-CPU-hours at scaled 100 and 34 at scaled 1000, against a budget of 1_536. Steps 2 and 3 are
-running.** Run 1 had said dead, but that verdict measured sourmash's `.zip` writer, not the
-cost of sketching. Under the rule as run, the catalog fits at neither
+**Result on 2026-10-21: dead at step 3.** Sketching the whole OM-RGC v2 catalog fits easily
+(step 1 run 2: about 34-41 CPU-hours per scaled value against 1_536), but no sourmash
+setting can stand in for DIAMOND under the rule fixed before the run:
+
+- DIAMOND blastp `--very-sensitive` found 31_865 (real query, gene) pairs at E < 1e-5 and
+  none for any of the 2_180 shuffled copies (2_066 s on 32 threads, 17.2 GB).
+- High recall comes only with no specificity: hp at k = 7 and scaled 10 finds all 31_865
+  pairs, but a shuffled copy hits 0.99 times as many genes as a real query; every hp setting
+  at scaled 10 or 100 is between 0.98 and 1.05.
+- The setting with the lowest shuffled rate, protein k = 13 at scaled 100 (1.7%, still
+  above the 1% line), finds 5 of the 31_865 pairs (0.016%). At scaled 1000 most real queries
+  keep no hash at all (74 to 109 of 109).
+- Which direction is good: recall up (right on the figure) and shuffled rate down (bottom).
+  No setting reaches the grey box; the hp settings sit top right, the protein settings
+  bottom left.
+
+What this decides: hashed reduced-alphabet sketches at scaled 10 to 1000 are not the index
+for searching every sequencing run for a protein. A sketch keeps one k-mer in `scaled`, and
+a homologous gene shares few exact k-mers with the query, so the shared ones are rarely
+kept; shortening the words or reducing the alphabet until they are kept makes every gene
+match. Step 4 (kmerseek's run statistics) did not run, by the rule. An index that keeps
+every k-mer (as kmerseek does) is the next thing to test, not more sketch settings.
+
+Step 1 run 1 had said dead, but that verdict measured sourmash's `.zip` writer, not the cost
+of sketching. Under the rule as run then, the catalog fits at neither
 scaled value: at scaled 1000 the nine settings' lower bounds reach 3_260 CPU-hours, and at
 scaled 100 the total is at least 541 with one setting unknown. Ten settings were slowed by
 the `.zip` writer's handling of identical (mostly empty) sketches; written as `.sig.gz` the
