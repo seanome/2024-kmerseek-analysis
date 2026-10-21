@@ -979,19 +979,26 @@ print(pl.read_csv(TABLES / "342_stop3_resources.tsv", separator="\t", comment_pr
 """)
 
 md(r"""
-## 3b. Kind 4 from three of the four settings (an early look before protein20)
+## 3b. Kind 4 from three of the four settings
 
-Stop 3 has scored three of its four kmerseek settings. protein20 k = 5 is still running: its
-whole-protein index refused the E-value fit on 500 queries and is being rebuilt with 2_500
-(Sherlock jobs 48685828 and 48685830, [PR 152](https://github.com/seanome/2024-kmerseek-analysis/pull/152)).
-The four-setting score (job 48690977) is what Stop 4 reads. This section reads the three-setting
-score: job 48689195, `scripts/342_kind4_features.py` at commit 59762371, copied to
-`tables/342/score_3settings/` and checked against the md5 sums in its `provenance.tsv`.
+Stop 3 scored three of its four kmerseek settings: aro_hyd_chg_pol4 k = 11, aro_hyd_arg_chg_pol5
+k = 9 and hp_pbotc_1st_ed2 k = 21. **protein20 k = 5 is left out** (Olga, 2026-10-21). With
+kmerseek tag `nb342-kmerseek-9ce5865`, all three protein20 index builds compute a closed-form match
+probability of 0.000, the chance that two random residues match (the other alphabets get 0.28 to
+0.50; 20 amino acids should give about 0.06). With no match probability there is no λ, so no
+E-value fit (refused with 500 and with 2_500 fit queries, jobs 48247325 and 48685828) and every E
+is inf (a test search with a K given, job 48803101, returned 148_972 calls, all with E = inf). This
+is a kmerseek bug; Stop 0's fourth setting waits for its fix.
+
+This section reads the three-setting score: job 48804096, `scripts/342_kind4_features.py` at
+commit fa52f117, copied to `tables/342/score_3settings/` and checked against the md5 sums in its
+`provenance.tsv`. That scorer drops calls whose E is not a finite number: over 99.9% of the
+574_553_721 rows the searches wrote had E = inf, and the search step's E ≤ 10 filter had let them
+through (awk reads "inf" as 0). 113_106 calls have a finite E.
 
 It shows each setting's decoy-matched cutoff, predictions P2 and P3, the own-gene filter and the
 strongest hit in each setting. It does not compare outcome classes on the test half; that is rule
-4, run once in Stop 4. protein20 can only add exons with a call, so every count of exons here is a
-lower bound for four settings.
+4, in Stop 4 below.
 
 Words used below:
 
@@ -1023,7 +1030,7 @@ SETTINGS3 = {
 }
 assert set(SETTINGS3) == set(cutoffs3["setting"])
 TOOL_LINE = ("kmerseek: set A exon queries (exon plus 20 residues each side) against the regions index "
-             "(Swiss-Prot 2026_03 annotated regions, no mammals; PR 114). protein20 k = 5 not yet scored.")
+             "(Swiss-Prot 2026_03 annotated regions, no mammals; PR 114). protein20 k = 5 left out: no E-values in this kmerseek build.")
 # If the E-values were right, a decoy would have at least one call below E with probability 1 - exp(-E),
 # so 5% of decoys would fall below E = ln(1 / 0.95) = 0.051. The ratio says how far each setting is off.
 E_AT_5PCT = math.log(1 / 0.95)
@@ -1040,7 +1047,7 @@ md(r"""
 The cutoffs show how far each setting's E-values are from right. If they were right, a decoy
 would have a call below E with probability 1 − e^(−E), and 5% of decoys would fall below
 E = 0.051. aro_hyd_arg_chg_pol5 k = 9 reaches that 5% at E = 0.0074, so its E-values are about 7
-times too small: 2_215 of its 2_299 tune-half decoys (96%) have a call at E ≤ 10.
+times too small: 1_424 of its 2_299 tune-half decoys (62%) have a call at E ≤ 10.
 aro_hyd_chg_pol4 k = 11 (cutoff 1.04) and hp_pbotc_1st_ed2 k = 21 (cutoff 5.8) err the other way,
 about 20 and 113 times too large. The decoy-matched cutoff puts the three settings on the same
 footing: 5% of decoys pass in each.
@@ -1132,8 +1139,7 @@ save_figure(fig, FIGURES / "342_setA_kind4_3settings_exons_with_a_hit_by_half_sw
 
 md(r"""
 **P2 fails.** 1_661 of 4_513 exons (36.8%) have a call at E < 1 in at least one setting; P2
-predicted under 30%, and protein20 can only raise the count. Most of the excess is
-aro_hyd_arg_chg_pol5's E-values being too small.
+predicted under 30%. Most of the excess is aro_hyd_arg_chg_pol5's E-values being too small.
 
 At the decoy-matched cutoffs, 1_063 exons (23.6%) have a hit: 547 of 2_299 on the tune half and
 516 of 2_214 on the test half. Each setting gives a hit to 10% to 15% of exons in each half. The
@@ -1225,11 +1231,9 @@ save_figure(fig, FIGURES / "342_setA_kind4_3settings_own_gene_calls_swissprot_re
 """)
 
 md(r"""
-The filter removed 512 to 9_997 calls per setting and half, from 159 to 392 exons, out of 2.3 to
-62 million calls on real targets. In every setting the test half has more removed calls from
-fewer exons than the tune half, so a few test-half genes have many own-gene calls. Calls kept to
-a target whose gene name starts with the query's symbol (a paralog the filter does not catch)
-number 22 to 2_649.
+The filter removed 245 to 431 calls per setting and half, from 150 to 247 exons, out of 1_621 to
+14_432 calls on real targets. Calls kept to a target whose gene name starts with the query's
+symbol (a paralog the filter does not catch) number 19 to 49.
 
 The strongest hit in each setting on the tune half, with both residue strings:
 """)
@@ -1253,7 +1257,7 @@ for r in examples.iter_rows(named=True):
 md(r"""
 ### What the early look says
 
-* With three of four settings, prediction P2 fails (36.8% of exons have a call at E < 1, against
+* With the three settings that have E-values, prediction P2 fails (36.8% of exons have a call at E < 1, against
   under 30% predicted) and P3 does not hold (|ρ| at most 0.09, against 0.5).
 * 1_063 of 4_513 exons (23.6%) have a hit at the decoy-matched cutoffs, in nearly equal shares on
   the two halves.
@@ -1263,7 +1267,243 @@ md(r"""
 * The strongest hit in each setting is on an annotated folded domain (a protein kinase domain, a
   PIPK domain, a fibronectin type III domain), with 66 of 77, 83 of 91 and 96 of 127 residues
   identical (76% to 91%).
-* Next: the four-setting score (job 48690977) after protein20's search, then Stop 4, the test.
+* protein20 k = 5 has no E-values in this kmerseek build (match probability 0.000) and is left out.
+* Stop 4 below runs rule 4 on these three settings.
+""")
+
+md(r"""
+## 4. Stop 4: the kill test (rule 4), on three kmerseek settings
+
+Rule 4 as Stop 0 wrote it, with one change: kind 4 comes from the three settings that have
+E-values. protein20 k = 5 is left out because this kmerseek build gives it no E-values (section 3b;
+Olga, 2026-10-21).
+
+* Two comparisons, each a logistic regression: "included more in neurons" against "unchanged", and
+  "skipped more in neurons" against "unchanged".
+* **Model 3**: the kind 1 to 3 columns of `342_setA_exon_labels_kinds1to3.tsv`, every number and
+  0/1 column. The two text columns (Pfam family name, list of ELM classes) are left out, since they
+  are not numbers.
+* **Model 4**: model 3 plus kind 4: has a hit at the decoy-matched cutoff, −log10 E of the best hit
+  (0 when there is no hit), the number of settings with a hit, and one 0/1 column per feature type of
+  the best hit (the types seen on the tune half).
+* A missing value is set to 0 and gets its own 0/1 column. Features are standardized; the L2
+  penalty strength C is chosen from 13 values between 0.0001 and 100 by 5-fold cross-validation on
+  the tune half, with folds split by gene.
+* Each model is fitted on the tune half and scored once on the test half. AUROC is the chance that
+  a random exon of the changed class scores higher than a random unchanged exon: 0.5 is no signal,
+  higher is better.
+* **PASS** if the whole 95% interval of the gain (model 4 minus model 3, 10_000 resamples of test
+  genes) is at or above 0.02; **KILL** if it is all below 0.02; unclear otherwise.
+* "Skipped more in neurons" has 48 exons on each half, under the 100 rule 4 asks for, so that
+  comparison is unlikely to resolve a gain of 0.02 (section 1).
+""")
+
+code(r"""
+from sklearn.linear_model import LogisticRegressionCV
+from sklearn.model_selection import GroupKFold
+from sklearn.pipeline import make_pipeline
+from sklearn.preprocessing import StandardScaler
+
+#: Rule 4's threshold on the AUROC gain, model 4 minus model 3.
+MIN_GAIN = 0.02
+N_FOLDS = 5
+#: Columns of the kinds 1 to 3 table that are not features: names, positions, and two text columns
+#: (the Pfam family name and the list of ELM classes), which are not numbers.
+NOT_FEATURES = {"event_id", "gene_name", "outcome", "half", "exon_first_residue", "exon_last_residue",
+                "k1_family", "k2_elm_classes_exon"}
+KIND123 = [c for c in labels.columns if c not in NOT_FEATURES]
+FEATURE_TYPES = sorted(k4.filter((pl.col("half") == "tune") & pl.col("k4_has_hit"))["k4_best_feature_type"].unique())
+
+
+def design(df, columns):
+    # Booleans to 0/1; a missing or NaN value to 0 with its own 0/1 column (rule 4).
+    out = []
+    for c in columns:
+        x = df[c].cast(pl.Float64)
+        missing = x.is_null() | x.is_nan()
+        if missing.any():
+            out += [x.fill_nan(None).fill_null(0.0).alias(c), missing.cast(pl.Float64).alias(f"{c}_missing")]
+        else:
+            out.append(x.alias(c))
+    return pl.DataFrame(out)
+
+
+data = labels.join(k4.select("event_id", "k4_has_hit", "k4_neglog10_best_e", "k4_best_feature_type",
+                             "k4_n_settings_with_hit"), on="event_id")
+assert data.height == labels.height
+data = data.with_columns(
+    pl.col("k4_neglog10_best_e").fill_null(0.0),  # no hit: 0, and k4_has_hit says it is missing
+    *[(pl.col("k4_best_feature_type") == t).fill_null(False).alias(f"k4_best_type_{t}") for t in FEATURE_TYPES],
+)
+KIND4 = ["k4_has_hit", "k4_neglog10_best_e", "k4_n_settings_with_hit"] + [f"k4_best_type_{t}" for t in FEATURE_TYPES]
+print(f"model 3: {len(KIND123)} kind 1 to 3 columns; model 4 adds {len(KIND4)} kind 4 columns: {KIND4}")
+""")
+
+code(r"""
+def auroc(y, score):
+    # Mann-Whitney form: the chance a random positive outscores a random negative, ties count half.
+    from scipy.stats import rankdata
+    r = rankdata(score)
+    n_pos = y.sum()
+    n_neg = len(y) - n_pos
+    return (r[y == 1].sum() - n_pos * (n_pos + 1) / 2) / (n_pos * n_neg)
+
+
+def fit_and_score(changed_class, columns):
+    # Fit on the tune half (C by 5-fold cross-validation, folds split by gene), score the test half once.
+    sub = data.filter(pl.col("outcome").is_in([changed_class, "unchanged"]))
+    tune, test = sub.filter(pl.col("half") == "tune"), sub.filter(pl.col("half") == "test")
+    X_tune = design(tune, columns)
+    X_test = design(test, columns).select([c for c in X_tune.columns])  # same columns as the fit
+    y_tune = (tune["outcome"] == changed_class).cast(pl.Int8).to_numpy()
+    y_test = (test["outcome"] == changed_class).cast(pl.Int8).to_numpy()
+    folds = list(GroupKFold(n_splits=N_FOLDS).split(X_tune, y_tune, groups=tune["gene_name"].to_numpy()))
+    model = make_pipeline(StandardScaler(), LogisticRegressionCV(Cs=np.logspace(-4, 2, 13), cv=folds,
+                                                                  scoring="roc_auc", max_iter=5000))
+    model.fit(X_tune.to_numpy(), y_tune)
+    return {"score": model.predict_proba(X_test.to_numpy())[:, 1], "y": y_test, "genes": test["gene_name"].to_numpy(),
+            "C": float(model[-1].C_[0]), "n_tune": (int(y_tune.sum()), int((1 - y_tune).sum())),
+            "n_test": (int(y_test.sum()), int((1 - y_test).sum())), "columns": X_tune.columns}
+
+
+def gene_bootstrap_gain(m3, m4, n_boot=N_BOOT, seed=SEED):
+    # Resample test genes with replacement; AUROC of both models on the same resampled exons.
+    rng = np.random.default_rng(seed)
+    genes = np.unique(m3["genes"])
+    idx = {g: np.flatnonzero(m3["genes"] == g) for g in genes}
+    gains = []
+    for _ in range(n_boot):
+        rows = np.concatenate([idx[g] for g in rng.choice(genes, size=len(genes), replace=True)])
+        y = m3["y"][rows]
+        if y.min() == y.max():
+            continue
+        gains.append(auroc(y, m4["score"][rows]) - auroc(y, m3["score"][rows]))
+    return np.array(gains)
+
+
+stop4 = []
+for changed in ["included more in neurons", "skipped more in neurons"]:
+    m3, m4 = fit_and_score(changed, KIND123), fit_and_score(changed, KIND123 + KIND4)
+    assert (m3["y"] == m4["y"]).all() and (m3["genes"] == m4["genes"]).all()
+    a3, a4 = auroc(m3["y"], m3["score"]), auroc(m4["y"], m4["score"])
+    gains = gene_bootstrap_gain(m3, m4)
+    lo, hi = np.percentile(gains, [2.5, 97.5])
+    verdict = "PASS" if lo >= MIN_GAIN else "KILL" if hi < MIN_GAIN else "unclear"
+    row = {"comparison": f"{changed} vs unchanged", "tune exons (changed, unchanged)": str(m3["n_tune"]),
+           "test exons (changed, unchanged)": str(m3["n_test"]), "C model 3": m3["C"], "C model 4": m4["C"],
+           "AUROC model 3": round(a3, 3), "AUROC model 4": round(a4, 3), "gain": round(a4 - a3, 3),
+           "gain 95% low": round(lo, 3), "gain 95% high": round(hi, 3), "resamples used": len(gains),
+           "verdict": verdict}
+    if verdict == "unclear":
+        # The interval narrows as 1 / sqrt(exons); exons needed for it to clear 0.02 on one side.
+        half_width, distance = (hi - lo) / 2, abs((a4 - a3) - MIN_GAIN)
+        need = int(np.ceil(m3["y"].size * (half_width / distance) ** 2)) if distance > 0 else None
+        have = data.filter(pl.col("outcome").is_in([changed, "unchanged"])).height
+        row["test exons needed"] = need
+        row["set A has (both halves)"] = have
+    stop4.append(row)
+    stop4[-1]["_boot"] = gains
+stop4_table = pl.DataFrame([{k: v for k, v in r.items() if k != "_boot"} for r in stop4])
+with pl.Config(tbl_cols=-1, tbl_width_chars=250):
+    print(stop4_table)
+verdicts = stop4_table["verdict"].to_list()
+overall = ("kmerseek has a role in exon annotation" if "PASS" in verdicts
+           else "kmerseek has no role in exon annotation" if verdicts == ["KILL", "KILL"] else "unclear")
+print(f"Rule 4: {verdicts[0]} and {verdicts[1]}: {overall}. P4 predicted KILL in both comparisons:",
+      "holds" if verdicts == ["KILL", "KILL"] else "does not hold")
+""")
+
+code(r"""
+# AUROC of both models on the test half (a), and the gain with its 95% interval against rule 4's 0.02 (b).
+fig, (ax_a, ax_b) = pf.figure(pf.TWO_COLUMN_MM, 55, ncols=2)
+names = [r["comparison"].replace(" vs unchanged", "\nvs unchanged") for r in stop4]
+y = np.arange(len(stop4))[::-1].astype(float)
+for model, col, colour, dy in [("model 3: kinds 1 to 3", "AUROC model 3", pf.GREY, 0.1),
+                               ("model 4: kinds 1 to 4", "AUROC model 4", "black", -0.1)]:
+    ax_a.scatter(stop4_table[col], y + dy, s=16, color=colour, label=model, zorder=3)
+ax_a.axvline(0.5, color=pf.GREY, lw=0.6, ls=":", label="0.5: no better than chance")
+ax_a.set_yticks(y, names)
+ax_a.set_ylim(-0.6, len(stop4) - 0.4)
+ax_a.set_xlim(0.4, 1.0)
+ax_a.set_xlabel("AUROC on the test half (higher = better)")
+pf.panel_label(ax_a, "a")
+for yi, r in zip(y, stop4):
+    ax_b.hlines(yi, r["gain 95% low"], r["gain 95% high"], color="black", lw=1.2)
+    ax_b.scatter(r["gain"], yi, s=16, color="black", zorder=3)
+    ax_b.text(r["gain 95% high"] + 0.001, yi, r["verdict"], va="center", ha="left", fontsize=6)
+ax_b.axvline(MIN_GAIN, color=pf.OKABE_ITO["vermillion"], lw=0.8, ls="--", label="0.02: rule 4's threshold")
+ax_b.axvline(0, color=pf.GREY, lw=0.6, ls="-", alpha=0.5, label="0: no gain")
+ax_b.set_yticks(y, names)
+ax_b.set_ylim(-0.6, len(stop4) - 0.4)
+ax_b.set_xlim(min(-0.04, min(r["gain 95% low"] for r in stop4) - 0.005), 0.03)
+ax_b.set_xlabel("AUROC gain, model 4 minus model 3\n(95% interval from 10,000 resamples of test genes)")
+pf.panel_label(ax_b, "b")
+pf.shared_legend(fig, ncol=5, title=TOOL_LINE, title_fontsize=5)
+save_figure(fig, FIGURES / "342_setA_stop4_auroc_gain_model4_vs_model3_test_half")
+print(stop4_table.select("comparison", "AUROC model 3", "AUROC model 4", "gain", "gain 95% low", "gain 95% high", "verdict"))
+""")
+
+code(r"""
+from sklearn.linear_model import LogisticRegression
+from sklearn.model_selection import cross_val_predict
+
+# Not rule 4, and no verdict comes from it. (a) Kind 4 alone, scored by 5-fold cross-validation on the
+# tune half only (folds split by gene), to see whether it carries any signal on its own. (b) The test-half
+# gain with C fixed at 1 for both models, to see whether the verdict depends on the strong penalty
+# cross-validation picked (C = 0.0001 for "skipped more", the smallest value tried).
+side = []
+for changed in ["included more in neurons", "skipped more in neurons"]:
+    sub = data.filter(pl.col("outcome").is_in([changed, "unchanged"]))
+    tune = sub.filter(pl.col("half") == "tune")
+    y_tune = (tune["outcome"] == changed).cast(pl.Int8).to_numpy()
+    folds = list(GroupKFold(n_splits=N_FOLDS).split(tune, y_tune, groups=tune["gene_name"].to_numpy()))
+    cv_score = cross_val_predict(make_pipeline(StandardScaler(), LogisticRegression(C=1.0, max_iter=5000)),
+                                 design(tune, KIND4).to_numpy(), y_tune, cv=folds, method="predict_proba")[:, 1]
+    fixed = {}
+    for name, cols in [("3", KIND123), ("4", KIND123 + KIND4)]:
+        test = sub.filter(pl.col("half") == "test")
+        X_tune = design(tune, cols)
+        X_test = design(test, cols).select(X_tune.columns)
+        m = make_pipeline(StandardScaler(), LogisticRegression(C=1.0, max_iter=5000)).fit(X_tune.to_numpy(), y_tune)
+        y_test = (test["outcome"] == changed).cast(pl.Int8).to_numpy()
+        fixed[name] = auroc(y_test, m.predict_proba(X_test.to_numpy())[:, 1])
+    side.append({"comparison": f"{changed} vs unchanged",
+                 "kind 4 alone, tune-half cross-validated AUROC": round(auroc(y_tune, cv_score), 3),
+                 "test gain with C = 1": round(fixed["4"] - fixed["3"], 3),
+                 "AUROC model 3, C = 1": round(fixed["3"], 3), "AUROC model 4, C = 1": round(fixed["4"], 3)})
+with pl.Config(tbl_cols=-1, tbl_width_chars=250):
+    print(pl.DataFrame(side))
+""")
+
+md(r"""
+## Summary and conclusions
+
+**A k-mer label copied from an annotated Swiss-Prot region does not predict which brain exons
+neurons include or skip, beyond domains, motifs and composition: rule 4 gives KILL in both
+comparisons, so kmerseek has no role in exon annotation on set A.**
+
+* **Included more in neurons against unchanged** (92 and 1_572 test exons): AUROC 0.807 with kinds 1
+  to 3 and 0.799 with kind 4 added. The gain is −0.007, 95% interval −0.033 to +0.013, entirely
+  below 0.02.
+* **Skipped more in neurons against unchanged** (48 and 1_572 test exons): AUROC 0.751 and 0.752,
+  gain +0.001, interval −0.001 to +0.004. Cross-validation chose the strongest penalty tried
+  (C = 0.0001) for both models, and the class is under the 100 exons rule 4 asks for. Two checks
+  outside rule 4 point the same way. Kind 4 on its own predicts neither class on the tune half
+  (cross-validated AUROC 0.531 and 0.448). With C fixed at 1, adding kind 4 lowers the test AUROC
+  in both comparisons (by 0.012 and 0.009).
+* **Predictions.** P1 holds (changed exons are more disordered, section 2). P2 fails: 36.8% of
+  exons have a call at E < 1, against under 30% predicted. P3 does not hold: hit strength does not
+  follow IUPred, AILMV share or SEG share (|ρ| at most 0.09). P4 holds: KILL in both comparisons.
+* **What kmerseek found.** 1_063 of 4_513 exons (23.6%) have a hit at the decoy-matched cutoffs.
+  The strongest hits are folded domains of related proteins at 76% to 91% identical residues.
+* **Limits.** Kind 4 comes from three of the four settings Stop 0 named: protein20 k = 5 has no
+  E-values with kmerseek tag `nb342-kmerseek-9ce5865` (closed-form match probability 0.000). The
+  three settings' E-values are off by 7 to 113 times in different directions; the decoy-matched
+  cutoffs correct for that in the hit calls, but −log10 E of the best hit mixes settings whose E
+  means different things.
+* **Decision.** As Stop 0 set out, exon function stays with kinds 1 to 3 plus Exon Ontology. The
+  follow-up with TDP-43 loss in motor neurons and a PhaSePro/DisProt index is not started on this
+  result.
 """)
 
 nb = {
