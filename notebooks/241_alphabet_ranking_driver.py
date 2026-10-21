@@ -419,8 +419,18 @@ def one_arm(
     ):
         old = out / "search" / "extended"
         old.mkdir(exist_ok=True)
-        search_csv.rename(old / search_csv.name)
-        search_log.rename(old / search_log.name)
+
+        # A second rerun must not overwrite the first extended search (rename replaces
+        # an existing target), so number the copy when the name is taken.
+        def moved(path, n):
+            tail = f".{n}" if n else ""
+            return old / f"{path.stem}{tail}{path.suffix}"
+
+        n = 0
+        while moved(search_csv, n).exists() or moved(search_log, n).exists():
+            n += 1
+        search_csv.rename(moved(search_csv, n))
+        search_log.rename(moved(search_log, n))
 
     if not search_csv.exists():
         rc, dt = run(search_cmd, search_log)
