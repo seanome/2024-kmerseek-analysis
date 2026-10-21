@@ -5,6 +5,12 @@
  "budget_cpu_hours": 1536.0,
  "per_scaled": [
   {
+   "scaled": 10,
+   "all_nine_cpu_hours_arithmetic": 77.33183575620865,
+   "any_lower_bound": false,
+   "fits_two_compute_days": true
+  },
+  {
    "scaled": 100,
    "all_nine_cpu_hours_arithmetic": 40.78093066543537,
    "any_lower_bound": false,

@@ -3,6 +3,12 @@
  "genes_in_slice": 1372957,
  "per_scaled": [
   {
+   "scaled": 10,
+   "cpu_s_per_gene_all_nine": 0.005951762525941681,
+   "logan_cpu_hours_arithmetic": 180867.4500938944,
+   "includes_lower_bounds": false
+  },
+  {
    "scaled": 100,
    "cpu_s_per_gene_all_nine": 0.0031386609736350057,
    "logan_cpu_hours_arithmetic": 95380.41958768602,
