@@ -667,12 +667,13 @@ def score() -> None:
     # The real queries' intermediates are searched first in every setting and the copies'
     # last, so scoring an unfinished step 2 favours the real queries over their copies.
     # Refuse unless asked; a partial run writes to results_partial/, never results/.
-    missing = sorted({arm_tag(a) for a in load_arms()} - set(settings_done))
+    all_settings = {arm_tag(a) for a in load_arms()}
+    missing = sorted(all_settings - set(settings_done))
     res = OUT / "results"
     if missing:
         if ENV.get("ALLOW_PARTIAL") != "1":
             sys.exit(
-                f"score: {len(missing)} of 152 settings have no finished step 2 table "
+                f"score: {len(missing)} of {len(all_settings)} settings have no finished step 2 table "
                 f"({', '.join(missing[:8])}{' ...' if len(missing) > 8 else ''}); the copies "
                 "would be scored on less of the proteome than the real queries. Finish step 2, "
                 "or set ALLOW_PARTIAL=1 to score the real queries early into results_partial/."
