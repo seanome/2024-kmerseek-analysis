@@ -46,14 +46,21 @@ def main() -> None:
         calls = (pl.scan_parquet(a.scores / "calls" / "*.parquet")
                  .filter(pl.col("is_decoy") & (pl.col("role") == "sample"))
                  .select("setting", "query", "pfam_acc", "half", "score"))
-    finite = (calls.group_by("setting", "half")
-              .agg(decoy_rows=pl.len(), nonfinite_share=(~pl.col("score").is_finite()).mean())
-              .collect(engine="streaming"))
-    pairs = (calls.group_by("setting", "half", "query", "pfam_acc").agg(pl.col("score").max())
-             .collect(engine="streaming"))
-    pairs = (pairs.join(pl.DataFrame({"setting": list(cut), "cutoff": list(cut.values())}), on="setting")
-             .filter(pl.col("score") >= pl.col("cutoff")))
-    per_decoy = pairs.group_by("setting", "half", "query").agg(n_transfers=pl.len())
+    # One setting at a time, and only pairs at or above its cutoff are grouped: all of the
+    # full run's pairs at once ran out of memory at 64 GB (job 48805045).
+    finite_parts, decoy_parts = [], []
+    for s, c in cut.items():
+        cs = calls.filter(pl.col("setting") == s)
+        finite_parts.append(cs.group_by("setting", "half").agg(
+            decoy_rows=pl.len(), nonfinite_share=(~pl.col("score").is_finite()).mean())
+            .collect(engine="streaming"))
+        decoy_parts.append(
+            cs.filter(pl.col("score") >= c)
+            .group_by("setting", "half", "query", "pfam_acc").agg(pl.col("score").max())
+            .group_by("setting", "half", "query").agg(n_transfers=pl.len())
+            .collect(engine="streaming"))
+    finite = pl.concat(finite_parts)
+    per_decoy = pl.concat(decoy_parts)
 
     rows = []
     for (s, h), g in per_decoy.group_by(["setting", "half"]):
