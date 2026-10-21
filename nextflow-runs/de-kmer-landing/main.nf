@@ -461,9 +461,14 @@ workflow {
     }
     labellings = file(params.labellings, checkIfExists: true)
     only = params.only_settings.toString().tokenize(',')*.trim().findAll { it }
-    settings = Channel.fromPath(params.settings, checkIfExists: true)
-        .splitCsv(header: true, sep: '\t', skip: 5)
-        .filter { !only || "${it.alphabet}.k${it.ksize}" in only }
+    // Read by hand: the table opens with '#' comment lines, which splitCsv does not skip
+    // before taking the header.
+    def lines = file(params.settings, checkIfExists: true).readLines().findAll { it.trim() && !it.startsWith('#') }
+    def head = lines[0].split('\t') as List
+    def rows = lines.drop(1).collect { l -> [head, l.split('\t') as List].transpose().collectEntries { it } }
+    def unknown = only - rows.collect { "${it.alphabet}.k${it.ksize}".toString() }
+    if (unknown) error "--only_settings names ${unknown.join(', ')}, not in ${params.settings}"
+    settings = Channel.fromList(rows.findAll { !only || "${it.alphabet}.k${it.ksize}".toString() in only })
 
     reads = simulateReads(keyFiles.map { o, tx, key, db, dom, prot -> tuple(o, tx, key) }).reads
 

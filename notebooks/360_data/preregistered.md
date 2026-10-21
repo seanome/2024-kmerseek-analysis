@@ -31,11 +31,14 @@ often on real labels than on label-swapped data.
    5x the median key-domain landings on the 9 swaps.
 3. **Both paths search the same database:** Swiss-Prot proteins that have at least one
    Pfam 38.2 row, minus every protein of the organism's own genus (Ciona, or Danio).
-4. **k per alphabet is the dark set's best k,** not one k for all. Taken from notebook 291
-   (`notebooks/data/291_dark_fmax/dark_fmax_metrics.csv.gz` on branch
-   `olgabot/dark-set-kmerseek-0.4`): for each alphabet, the k (scaled 1) with the highest
-   median Fmax over the 4 species on placed proteins, with that row's mismatch penalty.
-   Table below.
+4. **One k per alphabet, with the bits of protein20 at k = 7.** Changed by Olga on
+   2026-10-21, after the answer key was built and reads were simulated but before any
+   kmerseek index or search had run, so no landing had been seen. Her words: "let's use 1
+   ksize per alphabet, use the equivalent of protein k=7 bits for each alphabet". A
+   protein20 7-mer carries 7 x log2(20) = 30.25 bits; each alphabet gets
+   k = round(30.25 / log2(letters)), so every setting has 28.6 to 31.0 bits per k-mer. This
+   replaces the first choice, the dark set's best k per alphabet (kept below for the record).
+   The mismatch penalty C stays the dark set's per-alphabet value.
 
 ## Organisms
 
@@ -104,7 +107,8 @@ samples. Every count in the score is computed for all 10.
    nt, into maximal unbranched runs (what DE-kupl calls contigs). This joins only k-mers
    that were each called changed; it is not a transcriptome assembly.
 4. Each run is translated in 6 frames and cut at stop codons; pieces of at least 5 amino
-   acids (the smallest k below) are the queries.
+   acids are the queries (5 was the smallest k of the first k choice; every k now is 7 or
+   more, and kmerseek finds nothing in a piece shorter than its k).
 5. kmerseek, image `docker.io/olgabot/kmerseek:0.4.0-pr141-3c353d4` (the 0.4.0 that ran the
    dark set, plus the fix for wrong target coordinates, kmerseek PR 141), one index per
    kmerseek setting and organism, scaled 1, low-complexity k-mers kept, with the dark
@@ -118,32 +122,42 @@ samples. Every count in the score is computed for all 10.
    and `region_poisson_score` are kept in every landing table.
 7. Changed domains = the Pfam families landed on.
 
-### kmerseek settings (alphabet, k, mismatch penalty C)
+### kmerseek settings (alphabet, k, mismatch penalty C), in force from 2026-10-21
 
-| alphabet | k | C | dark-set median Fmax |
-|---|---|---|---|
-| dayhoff6 | 9 | 0.41 | 0.390 |
-| sdm12 | 7 | 0.24 | 0.378 |
-| hsdm17 | 6 | 0.18 | 0.368 |
-| mmseqs12 | 8 | 0.22 | 0.367 |
-| wwmj5 | 9 | 0.47 | 0.364 |
-| protein20 (full alphabet) | 5 | 0.14 | 0.355 |
-| uniprot18 | 5 | 0.15 | 0.347 |
-| hp_pbotc_1st_ed2 | 19 | 1.59 | 0.342 |
-| hp_thomas_dill2 | 20 | 1.63 | 0.331 |
-| hp_thomas_dill_no_c2 | 20 | 1.62 | 0.326 |
-| wass14 | 6 | 0.17 | 0.321 |
-| hp_lehninger_c_nonpolar2 | 19 | 1.52 | 0.313 |
-| hp_lehninger2 | 17 | 1.51 | 0.310 |
-| hp_kyte_doolittle2 | 29 | 1.57 | 0.256 |
-| funcgroups8 | 9 | 0.29 | 0.241 |
-| polarity4 | 13 | 0.54 | 0.212 |
-| gbmr4 | 16 | 0.67 | 0.097 |
-| hp_lehninger_hpc3 | 17 | 0.87 | 0.014 |
-| gbmr7 | 17 | 0.32 | 0.000 |
+| alphabet | letters | k | bits per k-mer | C |
+|---|---|---|---|---|
+| protein20 (full alphabet) | 20 | 7 | 30.3 | 0.14 |
+| uniprot18 | 18 | 7 | 29.2 | 0.15 |
+| hsdm17 | 17 | 7 | 28.6 | 0.18 |
+| wass14 | 14 | 8 | 30.5 | 0.17 |
+| sdm12 | 12 | 8 | 28.7 | 0.24 |
+| mmseqs12 | 12 | 8 | 28.7 | 0.22 |
+| funcgroups8 | 8 | 10 | 30.0 | 0.29 |
+| gbmr7 | 7 | 11 | 30.9 | 0.32 |
+| dayhoff6 | 6 | 12 | 31.0 | 0.41 |
+| wwmj5 | 5 | 13 | 30.2 | 0.47 |
+| gbmr4 | 4 | 15 | 30.0 | 0.67 |
+| polarity4 | 4 | 15 | 30.0 | 0.54 |
+| hp_lehninger_hpc3 | 3 | 19 | 30.1 | 0.87 |
+| hp_pbotc_1st_ed2 | 2 | 30 | 30.0 | 1.59 |
+| hp_thomas_dill2 | 2 | 30 | 30.0 | 1.63 |
+| hp_thomas_dill_no_c2 | 2 | 30 | 30.0 | 1.62 |
+| hp_lehninger2 | 2 | 30 | 30.0 | 1.51 |
+| hp_lehninger_c_nonpolar2 | 2 | 30 | 30.0 | 1.52 |
+| hp_kyte_doolittle2 | 2 | 30 | 30.0 | 1.57 |
 
-gbmr7 scored 0 at every k in the dark set, so its "best" k17 is the smallest k among ties
-and means nothing. It runs anyway, because the request asks for every alphabet.
+A peptide shorter than an alphabet's k cannot be searched in it. At k = 30, the 2-letter
+alphabets need a stop-free piece of at least 30 amino acids, which means a run of changed
+k-mers of at least 90 nt; that is a property of this k choice, written down here before
+any search.
+
+### Replaced on 2026-10-21, never run: the dark set's best k
+
+dayhoff6 k9, sdm12 k7, hsdm17 k6, mmseqs12 k8, wwmj5 k9, protein20 k5, uniprot18 k5,
+hp_pbotc_1st_ed2 k19, hp_thomas_dill2 k20, hp_thomas_dill_no_c2 k20, wass14 k6,
+hp_lehninger_c_nonpolar2 k19, hp_lehninger2 k17, hp_kyte_doolittle2 k29, funcgroups8 k9,
+polarity4 k13, gbmr4 k16, hp_lehninger_hpc3 k17, gbmr7 k17 (the k with the highest median
+Fmax over 4 species on placed proteins in notebook 291's table).
 
 ## Score
 

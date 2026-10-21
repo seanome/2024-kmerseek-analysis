@@ -42,7 +42,7 @@ key:
 
 smoke:
 	mkdir -p $(RUN_DIR) && cd $(RUN_DIR) && ml load biology nextflow && \
-	  $(HEAD_SUBMIT) nextflow run $(NF_ARGS) --organisms ciona --only_settings protein20.k5,hp_pbotc_1st_ed2.k19
+	  $(HEAD_SUBMIT) nextflow run $(NF_ARGS) --organisms ciona --only_settings protein20.k7,hp_pbotc_1st_ed2.k30
 
 run:
 	mkdir -p $(RUN_DIR) && cd $(RUN_DIR) && ml load biology nextflow && \
