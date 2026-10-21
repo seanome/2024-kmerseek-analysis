@@ -352,7 +352,8 @@ process landings {
     script:
     def sl = slug(org, s)
     """
-    zstd -dc ${regions} > regions.csv
+    # Redirected: zstd skips a symbolic link given by name, and Nextflow stages inputs as links.
+    zstd -dc < ${regions} > regions.csv
     # A search with no region at all writes no header; give landings.py an empty table.
     [ -s regions.csv ] || printf 'query_name,target_name,target_start,target_end,region_start,region_end,region_evalue,region_ka_bits,region_poisson_score,region_n_shared_kmers\\n' > regions.csv
     landings.py --regions regions.csv --domains ${domains} --peptide-map ${pmap} --key ${key} \\
