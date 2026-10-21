@@ -19,6 +19,7 @@ HERE = Path(__file__).resolve().parent
 sys.path.insert(0, str(HERE.parent / "bin"))
 import clade_splash as cs  # noqa: E402
 import clade_splash_pfam as csp  # noqa: E402
+import clade_splash_collect as csc  # noqa: E402
 import clade_splash_test as cst  # noqa: E402
 
 OASIS = HERE.parent / "assets" / "OASIS.py"
@@ -198,9 +199,9 @@ def test_end_to_end_planted_clade_target(tmp_path):
         cst.main(["test", "--setting", "dayhoff:14", "--bucket", str(b), "--dirs", str(tmp_path / "t"),
                  "--species", str(tmp_path / "species.tsv"), "--oasis", str(OASIS), "--seed", "357", "--out", str(o)])
         outs.append(str(o))
-    cs.main(["collect", "--inputs", *outs, "--all-out", str(tmp_path / "all.parquet"),
-             "--sig-out", str(tmp_path / "sig.parquet"), "--counts-out", str(tmp_path / "counts.tsv")])
-    res = pl.read_parquet(tmp_path / "all.parquet").filter(pl.col("labelling") == "real")
+    csc.main(["--inputs", *outs, "--all-out", str(tmp_path / "all"),
+              "--sig-out", str(tmp_path / "sig.parquet"), "--counts-out", str(tmp_path / "counts.tsv")])
+    res = pl.read_parquet(tmp_path / "all" / "dayhoff_14_gap0_real.parquet")
     aa_planted, _ = cs.concat_proteome([anchor_planted])
     code_planted = int(cs.anchor_codes(aa_planted, "dayhoff", 14)[0][0])
     aa_null, _ = cs.concat_proteome([anchor_null])
@@ -346,3 +347,21 @@ def test_streaming_test_matches_the_original(tmp_path):
     assert o.height == n.height > 0
     assert o.columns == n.columns
     assert o.equals(n)
+
+
+@needs_oasis
+def test_collect_matches_the_original(tmp_path):
+    """clade_splash_collect.py gives the same significant rows and counts as the original
+    collect in clade_splash.py."""
+    test_end_to_end_planted_clade_target(tmp_path)
+    outs = [str(tmp_path / f"test{b}.parquet") for b in range(cs.N_TARGET_BUCKETS)]
+    cs.main(["collect", "--inputs", *outs, "--all-out", str(tmp_path / "old_all.parquet"),
+             "--sig-out", str(tmp_path / "old_sig.parquet"), "--counts-out", str(tmp_path / "old_counts.tsv")])
+    key = ["setting", "gap", "labelling", "anchor"]
+    old = pl.read_parquet(tmp_path / "old_sig.parquet").sort(key)
+    new = pl.read_parquet(tmp_path / "sig.parquet").sort(key)
+    assert old.height == new.height > 0
+    assert new.select(old.columns).equals(old)
+    oc = pl.read_csv(tmp_path / "old_counts.tsv", separator="\t").sort("setting", "gap", "labelling")
+    nc = pl.read_csv(tmp_path / "counts.tsv", separator="\t").sort("setting", "gap", "labelling")
+    assert oc.equals(nc)

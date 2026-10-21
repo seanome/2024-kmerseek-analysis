@@ -231,27 +231,30 @@ process test {
 
 process collect {
     label 'python'
-    memory '32 GB'
-    time '4h'
+    // The full run's 128 test tables are 5.9 GB of parquet; the first version read them all
+    // at once and was killed at 32 GB. clade_splash_collect.py reads one (setting, gap,
+    // labelling) at a time.
+    memory { "${32 * task.attempt} GB" }
+    time { "${4 * task.attempt}h" }
     publishDir "${params.outdir}", mode: 'copy'
 
     input:
     path tests, stageAs: 'tests/*'
 
     output:
-    path 'all_anchors.parquet', emit: all
+    path 'all_anchors', emit: all
     path 'significant.parquet', emit: sig
     path 'counts.tsv', emit: counts
 
     script:
     """
-    clade_splash.py collect --inputs tests/*.parquet --alpha ${params.alpha} \\
-        --all-out all_anchors.parquet --sig-out significant.parquet --counts-out counts.tsv
+    clade_splash_collect.py --inputs tests/*.parquet --alpha ${params.alpha} \\
+        --all-out all_anchors --sig-out significant.parquet --counts-out counts.tsv
     """
 
     stub:
     """
-    touch all_anchors.parquet significant.parquet counts.tsv
+    mkdir all_anchors; touch significant.parquet counts.tsv
     """
 }
 
