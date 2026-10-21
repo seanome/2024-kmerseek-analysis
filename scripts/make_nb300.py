@@ -418,10 +418,95 @@ error notebook 344
 pass rule 2 (decoy FDR crossing 1% within a factor of 2 of E = 0.01): that rule is likely to fail
 on calibration, not on recovery.
 
-**What this decides.** Steps 1-6 run, with `massspec18`, `protein20`, `uniprot18` and the four
-12-17-class alphabets at k 5 to 9 as the kmerseek settings. Kill test 3 is not killed by Step 0.
-`massspec18` has no index or stored fit yet ([kmerseek PR 156](https://github.com/seanome/kmerseek/pull/156)); Step 4 builds one on the
-UHGP-90 + human + cRAP database.
+**What this decides.** Steps 1-6 run. Kill test 3 is not killed by Step 0. Which k each
+alphabet runs at is section 9.
+""")
+
+md(r"""
+## 9. One k per alphabet: the bits of protein20 at k = 7
+
+Olga, 2026-10-21: "let's use 1 ksize per alphabet, use the equivalent of protein k=7 bits for
+each alphabet". So each alphabet runs at the one k whose k-mer carries as much information as
+a protein20 7-mer.
+
+Bits per position is the Shannon entropy of the alphabet's class frequencies measured on
+UHGP-90, the database searched: H = -sum over classes of f log2 f. Bits per k-mer is k x H.
+Protein20 at k = 7 carries 7 x 4.165 = 29.2 bits, so an alphabet runs at k = round(29.2 / H).
+The column `ksize_uniform` is the rule kmerseek's own tests use, k x log2(classes), which treats
+every class as equally common; it is shown for comparison and not used.
+
+The gate is then read again at that one k. A k above 14 cannot seed in a 14-residue window,
+and two seeds need 2k + 1 residues, so a k above 14 is dead for peptides of 30 or fewer.
+""")
+
+code(r"""
+import math
+
+uhgp = json.loads((DATA / "composition_uhgp90.json").read_text())
+sys.path.insert(0, str(Path.cwd().parent / "nextflow-runs" / "peptide-lookup" / "bin"))
+from evalue_floor import class_frequencies
+
+
+def entropy_bits(alphabet):
+    return -sum(f * math.log2(f) for f in class_frequencies(uhgp, alphabet) if f > 0)
+
+
+PROTEIN_K = 7
+target_bits = PROTEIN_K * entropy_bits("protein20")
+pair_rows = est.filter(pl.col("ka_fit_status") == "pair")
+rows = []
+for a in ALPHABET_ORDER:
+    h = entropy_bits(a)
+    k = round(target_bits / h)
+    single = est.filter((pl.col("alphabet") == a) & (pl.col("window_length") == 14)
+                        & (pl.col("ka_fit_status") != "pair"))
+    counting_14 = single["expected_hits_counting"].median() if k <= 14 and len(single) else None
+    pair_e = None
+    if 2 * k + 1 <= 30:
+        p = pair_rows.filter(pl.col("alphabet") == a).sort("ksize").row(0, named=True)
+        # the pair count scales with the number of places the unmatched residue can sit
+        pair_e = p["expected_hits_counting_pair"] * (30 - 2 * k) / (30 - 2 * p["ksize"])
+    alive = any(v is not None and v < GATE_E for v in (counting_14, pair_e))
+    rows.append({"alphabet": a, "n_classes": len(CLUSTERS[a]), "bits_per_position": round(h, 3),
+                 "ksize": k, "bits_per_kmer": round(k * h, 1),
+                 "ksize_uniform": round(PROTEIN_K * math.log2(20) / math.log2(len(CLUSTERS[a]))),
+                 "expected_hits_counting_at_14": counting_14,
+                 "expected_hits_counting_pair": pair_e,
+                 "verdict_at_this_k": "alive" if alive else "dead"})
+ksizes = pl.DataFrame(rows)
+ksizes.write_csv(DATA.parent / "settings_one_k_per_alphabet.tsv", separator="\t")
+print(f"protein20 at k = {PROTEIN_K}: {target_bits:.1f} bits")
+print(ksizes)
+
+fig, ax = pf.figure(pf.ONE_COLUMN_MM, 85)
+y = np.arange(len(ksizes))
+for yi, r in zip(y, ksizes.iter_rows(named=True)):
+    alive = r["verdict_at_this_k"] == "alive"
+    ax.scatter(r["ksize"], yi, s=16, marker="o" if alive else "X",
+               color=pf.OKABE_ITO["blue"] if alive else HIGHLIGHT_COLOUR, zorder=3)
+    ax.scatter(r["ksize_uniform"], yi, s=12, facecolors="none", edgecolors=pf.GREY,
+               linewidths=0.7, zorder=2)
+ax.scatter([], [], s=16, marker="o", color=pf.OKABE_ITO["blue"], label="k used, alive at this k")
+ax.scatter([], [], s=16, marker="X", color=HIGHLIGHT_COLOUR, label="k used, dead at this k")
+ax.scatter([], [], s=12, facecolors="none", edgecolors=pf.GREY,
+           label="k if every class were equally common (not used)")
+ax.axvline(14, color="black", lw=0.5, ls=":")
+ax.text(14.3, 0.99, "longest k that fits\na 14-residue window", va="top",
+        transform=ax.get_xaxis_transform())
+ax.set_yticks(y, [f"{a} ({n})" for a, n in ksizes.select("alphabet", "n_classes").iter_rows()])
+for yy in y:
+    ax.axhline(yy, color="#eeeeee", lw=0.4, zorder=0)
+ax.invert_yaxis()
+ax.set_xlabel(f"k-mer size carrying {target_bits:.1f} bits, as protein20 at k = 7\n"
+              "(class frequencies measured on UHGP-90)")
+ax.legend(loc="lower left", bbox_to_anchor=(0, 1.0), frameon=False)
+pf.save(fig, FIGURES / "one_ksize_per_alphabet_protein20_k7_bits_uhgp90")
+""")
+
+md(r"""
+At one k per alphabet, `gbmr7` (k 16), `polarity4` (k 17) and `gbmr4` (k 20) join the HP
+alphabets as dead: none can seed in 14 residues, and two seeds do not fit in 30. The table
+above lists the alphabets that stay alive and the k each runs at in steps 1-6.
 """)
 
 nb = {
