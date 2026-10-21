@@ -362,6 +362,12 @@ not read this notebook or its code, from the 18 raw time logs and the catalog st
 all 27 values held (`notebooks/299_data/second_agent_check_step1_run1.csv`). It also found
 that the run 1 Logan note wrongly called the number an upper bound (fixed).
 
+Step 3 was recomputed on 2026-10-21 by another agent that did not read the code, from
+`queries.tsv`, DIAMOND's hits and each setting's raw search tables: recall, shuffled-hit
+rate and pass for all 27 settings, the 31_865 truth pairs, DIAMOND's shuffled rate (0) and
+the verdict. All 87 compared values held (`notebooks/299_data/second_agent_check_step3.csv`).
+It also found that 51 of the 109 real queries have at least one DIAMOND pair at E < 1e-5.
+
 Part of the deliverable. Once steps 2 and 3 have run, a separate agent recomputes recall and
 the shuffled-hit rate for every setting from the raw tables only (DIAMOND `hits.tsv`, each
 setting's `recall.pairs.tsv`, `full.counts.tsv` or `sample.counts.tsv`, `status.json`,
@@ -370,26 +376,33 @@ and writes a held/failed table to `notebooks/299_data/second_agent_check.csv`.
 """)
 
 code("""
+groups = []
 run1_check = DATA / "second_agent_check_step1_run1.csv"
 if run1_check.exists():
-    c = pl.read_csv(run1_check)
-    print(f"Step 1 run 1 and step 5, rechecked from the raw time logs: {c['held'].sum()} of {c.height} held")
-    print(c.select("quantity", "notebook_value", "checker_value", "held"))
+    c1 = pl.read_csv(run1_check)
+    print(f"Step 1 run 1 and step 5, rechecked from the raw time logs: {int(c1['held'].sum())} of {c1.height} held")
+    print(c1.select("quantity", "notebook_value", "checker_value", "held"))
+    groups.append(("step 1 run 1 + step 5", c1))
+step3_check = DATA / "second_agent_check_step3.csv"
+if step3_check.exists():
+    c3 = pl.read_csv(step3_check, infer_schema_length=None)
+    compared = c3.filter(pl.col("held").is_not_null())
+    print(f"Step 3 recall, shuffled-hit rate, pass and verdict, rechecked from the raw tables: "
+          f"{int(compared['held'].sum())} of {compared.height} held")
+    print(c3.select("quantity", "notebook_value", "checker_value", "held"))
+    groups.append(("step 3, 27 settings", compared))
+if groups:
     pf.use_style()
-    fig, ax = pf.figure(pf.ONE_COLUMN_MM, 25)
-    held, failed = int(c["held"].sum()), int((~c["held"]).sum())
-    ax.barh([0], [held], color=pf.OKABE_ITO["bluish_green"], label="held")
-    ax.barh([0], [failed], left=[held], color=pf.OKABE_ITO["vermillion"], label="failed")
-    ax.set_yticks([0], ["step 1 run 1 + step 5"])
-    ax.set_xlabel("Values rechecked from the raw time logs (count)")
+    fig, ax = pf.figure(pf.ONE_COLUMN_MM, 30)
+    for i, (label, t) in enumerate(groups):
+        held, failed = int(t["held"].sum()), int((~t["held"]).sum())
+        ax.barh([i], [held], color=pf.OKABE_ITO["bluish_green"], label="held" if i == 0 else None)
+        ax.barh([i], [failed], left=[held], color=pf.OKABE_ITO["vermillion"], label="failed" if i == 0 else None)
+    ax.set_yticks(range(len(groups)), [g[0] for g in groups])
+    ax.invert_yaxis()
+    ax.set_xlabel("Values recomputed from raw files by a second agent (count)")
     pf.shared_legend(fig)
-    pf.save(fig, str(FIGURES / "299_second_agent_check_step1_run1"))
-check_path = DATA / "second_agent_check.csv"
-if not check_path.exists():
-    print("Check of recall and shuffled-hit rate not run yet: it needs steps 2 and 3")
-else:
-    check = pl.read_csv(check_path)
-    print(check)
+    pf.save(fig, str(FIGURES / "299_second_agent_checks"))
 """)
 
 md("""
