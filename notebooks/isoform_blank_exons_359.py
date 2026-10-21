@@ -47,7 +47,8 @@ def exon_protein_intervals(
     not counted). Codon i covers transcript bases cds_start-1+3i .. cds_start-1+3i+2
     (0-based). A codon split by a splice junction goes to the exon that holds two of its
     three bases. Returns, per exon in transcript order, the 0-based end-exclusive range of
-    codons assigned to it, or None when the exon holds no whole-or-majority codon.
+    codons assigned to it, or None when the exon holds no whole-or-majority codon. A codon
+    whose three bases lie in three different exons goes to none of them.
     """
     ordered = transcript_order(exons, strand)
     ends = []  # transcript 0-based end (exclusive) of each exon
@@ -60,6 +61,8 @@ def exon_protein_intervals(
         first = cds_start - 1 + 3 * i
         holders = [bisect.bisect_right(ends, b) for b in (first, first + 1, first + 2)]
         k = max(set(holders), key=holders.count)
+        if holders.count(k) < 2:
+            continue  # three bases in three exons: no exon holds two, so no exon gets it
         cur = out[k]
         out[k] = (i, i + 1) if cur is None else (cur[0], i + 1)
     return out
