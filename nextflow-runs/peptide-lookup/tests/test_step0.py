@@ -79,3 +79,53 @@ def test_db_composition_counts(tmp_path):
     assert result["n_residues"] == 10
     assert result["n_canonical"] == 9
     assert result["letters"]["A"] == 4
+
+
+def test_spike_peptides_swaps_are_recorded_and_in_source(tmp_path):
+    rng = np.random.default_rng(1)
+    fasta = tmp_path / "db.faa.gz"
+    seqs = {
+        f"P{i}": "".join(
+            rng.choice(list("ACDEFGHIKLMNPQRSTVWY"), size=int(rng.integers(40, 200)))
+        )
+        for i in range(50)
+    }
+    with gzip.open(fasta, "wt") as fh:
+        for name, s in seqs.items():
+            fh.write(f">{name} x\n")
+            for i in range(0, len(s), 60):
+                fh.write(s[i : i + 60] + "\n")
+    out = tmp_path / "spiked.tsv"
+    subprocess.run(
+        [
+            sys.executable,
+            str(BIN / "spike_peptides.py"),
+            str(fasta),
+            str(out),
+            "--n",
+            "40",
+        ],
+        check=True,
+    )
+    rows = [line.rstrip("\n").split("\t") for line in open(out)]
+    header, rows = rows[0], [dict(zip(rows[0], r)) for r in rows[1:]]
+    assert len(rows) == 40
+    for r in rows:
+        src = seqs[r["source_protein"]]
+        start, end = int(r["source_start_1based"]), int(r["source_end_1based"])
+        assert src[start - 1 : end] == r["source_window"]
+        assert 9 <= len(r["peptide"]) == int(r["length"]) <= 30
+        diffs = [
+            i
+            for i, (a, b) in enumerate(zip(r["peptide"], r["source_window"]))
+            if a != b
+        ]
+        assert len(diffs) == int(r["n_swaps"])
+        for swap in r["swaps"].split(","):
+            pos, change = swap.split(":")
+            a, b = change.split(">")
+            assert (
+                r["source_window"][int(pos) - 1] == a
+                and r["peptide"][int(pos) - 1] == b
+            )
+            assert {a, b} in ({"I", "L"}, {"D", "E"}, {"K", "R"})
