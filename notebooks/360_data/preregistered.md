@@ -87,7 +87,8 @@ samples. Every count in the score is computed for all 10.
 2. salmon 1.10.3 quant of each sample against the Trinity transcripts.
 3. DESeq2 1.42.0 (BioContainers; not installed in Sherlock's R) on rounded salmon read
    counts per Trinity transcript, `~ condition`, default settings, one fit per labelling.
-4. DIAMOND 2.1.23 blastx of every Trinity transcript against the search database,
+4. DIAMOND 2.2.8 (BioContainers image already in the Sherlock cache; corrected from 2.1.23,
+   the Sherlock module, on 2026-10-21 before DIAMOND ran on anything) blastx of every Trinity transcript against the search database,
    `--sensitive`, E <= 1e-5, best hit by bit score.
 5. Changed domains = every Pfam family of the best hit of each transcript with
    padj < 0.05.
@@ -175,7 +176,7 @@ Known weaknesses, written down now so they are not found later and explained awa
 
 Run in both organisms. For each key gene, the distance to Pfam is measured, not assumed:
 the highest percent identity between the gene's protein and any Pfam 38.2 seed sequence
-(`Pfam-A.seed.gz`) of its family, by DIAMOND blastp `--ultra-sensitive`. Recovery is
+(`Pfam-A.seed.gz`) of its family, by DIAMOND 2.2.8 blastp `--ultra-sensitive`. Recovery is
 reported per distance bin for each path. Zebrafish's result is reported beside Ciona's
 and does not change the verdict.
 
