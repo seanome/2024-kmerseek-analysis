@@ -6,9 +6,9 @@ table functions are used.
 
 Usage: 241_hpc3_k21_exact_impact.py <241 dir> <old tables subfolder> <GENCODE fasta>
 Output: notebooks/241_results/hpc3_k21_exact_{242_ensemble_ranks,284_agreement}_old_vs_new.csv
+(242 and 284 are the notebook numbers; the 241 table beside them was written separately).
 """
 
-"""242 ensemble and 284 agreement numbers on 241's old and new regions.parquet."""
 import sys
 from pathlib import Path
 import polars as pl
@@ -110,4 +110,10 @@ with pl.Config(tbl_rows=200, tbl_cols=20, tbl_width_chars=250):
         )
         print(f"== {nb}: {j.height} rows, {changed.height} changed")
         print(changed)
-        j.write_csv(Path(__file__).parent / f"impact_{nb}_old_vs_new.csv")
+        name = {"242": "242_ensemble_ranks", "284": "284_agreement"}[nb]
+        j.write_csv(
+            Path(__file__).parent.parent
+            / "notebooks"
+            / "241_results"
+            / f"hpc3_k21_exact_{name}_old_vs_new.csv"
+        )
