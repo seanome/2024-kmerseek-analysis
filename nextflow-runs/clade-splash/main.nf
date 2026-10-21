@@ -22,7 +22,7 @@ params.alpha       = 0.05
 // each (README column #(1)), so a chunk of eukaryotes and a chunk of bacteria cost about the
 // same.
 params.proteins_per_chunk = 400000
-params.pfam_hmm    = null       // Pfam-A.hmm, pressed (hmmpress) next to it
+params.pfam_hmm    = null       // Pfam-A.hmm (Pfam 38)
 params.oasis_commit = '00ab197550303e713343b68ea97daf36deb76946'
 params.oasis_sha256 = '8116c5c206051b254698448ed74611f64e6cc94fea11452622b544c818207125'
 // Pilot: species per class and number of classes; 0 = the full set.
@@ -302,18 +302,19 @@ process dedupProteins {
     """
 }
 
-// hmmscan of every protein that carries a significant anchor against Pfam-A, with Pfam's own
-// gathering thresholds (--cut_ga).
-process hmmscan {
+// Every protein that carries a significant anchor against Pfam-A, with Pfam's own gathering
+// thresholds (--cut_ga). hmmsearch, not hmmscan: in the pilot hmmscan read the 2 GB pressed
+// database again for every protein (1 TB read per 2,000 proteins, 11 min, 2 of 8 CPUs busy).
+process hmmsearch {
     tag "part ${part}"
     // HMMER 3.4, biocontainers tag 3.4--h7d74f8d_5 (already in the Sherlock apptainer cache).
     container 'quay.io/biocontainers/hmmer:3.4--h7d74f8d_5'
     cpus 8
-    memory '16 GB'
+    memory { "${8 * task.attempt} GB" }
     time { "${8 * task.attempt}h" }
 
     input:
-    tuple val(part), path(fasta), path(hmm), path(pressed)
+    tuple val(part), path(fasta), path(hmm)
 
     output:
     path "pfam_${part}.domtblout"
@@ -321,7 +322,7 @@ process hmmscan {
     script:
     """
     if [ -s ${fasta} ]; then
-      hmmscan --cut_ga --cpu ${task.cpus} --noali -o /dev/null --domtblout pfam_${part}.domtblout ${hmm} ${fasta}
+      hmmsearch --cut_ga --cpu ${task.cpus} --noali -o /dev/null --domtblout pfam_${part}.domtblout ${hmm} ${fasta}
     else
       touch pfam_${part}.domtblout
     fi
@@ -335,7 +336,10 @@ process hmmscan {
 
 process pfamOverlap {
     label 'python'
-    memory '16 GB'
+    // The pilot's all-at-once join was killed at 16 GB; it now reads one occurrence file at a
+    // time.
+    memory { "${16 * task.attempt} GB" }
+    time { "${4 * task.attempt}h" }
     publishDir "${params.outdir}", mode: 'copy'
 
     input:
@@ -345,25 +349,26 @@ process pfamOverlap {
 
     output:
     path 'pfam_by_anchor.parquet', emit: anchors
-    path 'pfam_by_occurrence.parquet', emit: occ
+    path 'pfam_by_occurrence', emit: occ
     path 'top_occurrences.parquet', emit: top
 
     script:
     """
     clade_splash.py pfam-overlap --occurrences occ/*.parquet --domtblout dom/* \\
-        --occ-out pfam_by_occurrence.parquet --out pfam_by_anchor.parquet \\
+        --occ-out pfam_by_occurrence --out pfam_by_anchor.parquet \\
         --significant ${sig} --top 50 --top-out top_occurrences.parquet
     """
 
     stub:
     """
-    touch pfam_by_anchor.parquet pfam_by_occurrence.parquet top_occurrences.parquet
+    mkdir pfam_by_occurrence; touch pfam_by_anchor.parquet top_occurrences.parquet
     """
 }
 
 process alignInput {
     label 'python'
-    memory '16 GB'
+    memory { "${16 * task.attempt} GB" }
+    time { "${4 * task.attempt}h" }
 
     input:
     path pfam
@@ -404,9 +409,11 @@ process hmmalign {
     """
     mkdir sto
     hmmfetch --index ${hmm} > /dev/null
+    # Versioned accession of each family (hmmfetch wants PF00001.25, the manifest has PF00001).
+    grep "^ACC   " ${hmm} | awk '{split(\$2, a, "."); print a[1] "\t" \$2}' > acc.tsv
     tail -n +2 ${manifest} | while IFS=\$'\\t' read setting gap anchor fam tag; do
       [ -s ${dir}/\$tag.fa ] || continue
-      acc=\$(grep -m1 "^ACC   \$fam\\." ${hmm} | awk '{print \$2}')
+      acc=\$(awk -v f="\$fam" '\$1 == f {print \$2; exit}' acc.tsv)
       hmmfetch ${hmm} "\$acc" > fam.hmm
       hmmalign --outformat Stockholm fam.hmm ${dir}/\$tag.fa > sto/\$tag.sto
     done
@@ -471,7 +478,7 @@ process totals {
 }
 
 workflow {
-    if (!params.pfam_hmm) { error "--pfam_hmm is required (pressed Pfam-A.hmm)" }
+    if (!params.pfam_hmm) { error "--pfam_hmm is required (Pfam-A.hmm)" }
     def settings = params.settings.tokenize(',')
     def gapsOf = params.gaps.tokenize(';').collectEntries { def kv = it.tokenize('='); [(kv[0]): kv[1].tokenize(',').collect { it as int }] }
 
@@ -525,13 +532,12 @@ workflow {
     )
 
     hmm = file(params.pfam_hmm)
-    pressed = files("${params.pfam_hmm}.h3?")
-    parts = dedupProteins(occ.fasta.collect()).splitFasta(by: 2000, file: true)
-        .toList().flatMap { fs -> fs.withIndex().collect { f, i -> [i, f, hmm, pressed] } }
+    parts = dedupProteins(occ.fasta.collect()).splitFasta(by: 20000, file: true)
+        .toList().flatMap { fs -> fs.withIndex().collect { f, i -> [i, f, hmm] } }
         // No significant anchor means no proteins: one empty part keeps the rest of the DAG
         // running, so the notebook still gets (empty) Pfam tables.
-        .ifEmpty { [0, file("${projectDir}/assets/empty.fa"), hmm, pressed] }
-    dom = hmmscan(parts)
+        .ifEmpty { [0, file("${projectDir}/assets/empty.fa"), hmm] }
+    dom = hmmsearch(parts)
 
     po = pfamOverlap(occ.occ.collect(), dom.collect(), col.sig)
     ai = alignInput(po.anchors, occ.occ.collect(), dom.collect(), occ.fasta.collect())

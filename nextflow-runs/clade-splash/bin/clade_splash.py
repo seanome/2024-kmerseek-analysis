@@ -671,6 +671,11 @@ def cmd_test(a: argparse.Namespace) -> None:
         kept = good.join(n_good.select("anchor", "gap"), on=["anchor", "gap"])
         tab = (df.join(kept.select("anchor", "gap", "clade"), on=["anchor", "gap", "clade"])
                .group_by("anchor", "gap", "target", "clade").len("n"))
+        # Distinct species in the kept classes. The table total is larger whenever a species
+        # carries the anchor with more than one target (paralogs, repeats).
+        n_carrying = {(an, g): n for an, g, n in carry.join(kept.select("anchor", "gap", "clade"),
+                                                              on=["anchor", "gap", "clade"])
+                      .group_by("anchor", "gap").agg(pl.col("species_idx").n_unique()).iter_rows()}
         for (anchor, gap), sub in tab.partition_by(["anchor", "gap"], as_dict=True).items():
             wide = sub.pivot(on="clade", index="target", values="n").fill_null(0).sort("target")
             clades = sorted(c for c in wide.columns if c != "target")
@@ -684,7 +689,8 @@ def cmd_test(a: argparse.Namespace) -> None:
             x2, dfree, pc = pearson_chi2(composition_table(tcodes, x))
             rows.append({
                 "setting": a.setting, "labelling": lab_name, "gap": int(gap), "anchor": int(anchor),
-                "n_species": int(x.sum()), "n_clades": len(clades), "n_targets": x.shape[0],
+                "n_species": int(n_carrying[(anchor, gap)]), "table_total": int(x.sum()),
+                "n_clades": len(clades), "n_targets": x.shape[0],
                 "p_oasis": p, "effect_size": eff, "comp_chi2": x2, "comp_df": dfree, "p_comp": pc,
                 "clades": ";".join(clades),
                 # OASIS's column weights c (one per class, same order as `clades`): the
@@ -692,7 +698,7 @@ def cmd_test(a: argparse.Namespace) -> None:
                 "clade_weights": ";".join(f"{v:.4f}" for v in np.asarray(c, dtype=float)),
             })
     schema = {"setting": pl.String, "labelling": pl.String, "gap": pl.Int64, "anchor": pl.UInt64,
-              "n_species": pl.Int64, "n_clades": pl.Int64, "n_targets": pl.Int64, "p_oasis": pl.Float64,
+              "n_species": pl.Int64, "table_total": pl.Int64, "n_clades": pl.Int64, "n_targets": pl.Int64, "p_oasis": pl.Float64,
               "effect_size": pl.Float64, "comp_chi2": pl.Float64, "comp_df": pl.Int64, "p_comp": pl.Float64,
               "clades": pl.String, "clade_weights": pl.String}
     out = pl.DataFrame(rows, schema=schema) if rows else pl.DataFrame(schema=schema)
@@ -777,18 +783,26 @@ def cmd_occurrences(a: argparse.Namespace) -> None:
 
 
 def read_domtblout(path: str) -> pl.DataFrame:
-    """hmmscan --domtblout: target (Pfam), query (s<species>_p<protein>), envelope coords."""
+    """hmmsearch --domtblout: target (the protein, s<species>_p<protein>), query (the Pfam
+    family), envelope coordinates on the protein (1-based, inclusive)."""
     rows = []
     with open(path) as fh:
         for line in fh:
-            if line.startswith("#"):
+            if line.startswith("#") or not line.strip():
                 continue
             f = line.split()
-            rows.append({"pfam_name": f[0], "pfam_acc": f[1].split(".")[0], "query": f[3],
+            rows.append({"query": f[0], "pfam_name": f[3], "pfam_acc": f[4].split(".")[0],
                          "env_from": int(f[19]), "env_to": int(f[20]), "dom_ievalue": float(f[12])})
-    schema = {"pfam_name": pl.String, "pfam_acc": pl.String, "query": pl.String,
+    schema = {"query": pl.String, "pfam_name": pl.String, "pfam_acc": pl.String,
               "env_from": pl.Int64, "env_to": pl.Int64, "dom_ievalue": pl.Float64}
     return pl.DataFrame(rows, schema=schema) if rows else pl.DataFrame(schema=schema)
+
+
+def read_domains(paths: list[str]) -> pl.DataFrame:
+    paths = [p for p in paths if Path(p).exists()]
+    if not paths:
+        return read_domtblout(os.devnull)
+    return pl.concat([read_domtblout(p) for p in paths])
 
 
 def cmd_pfam_overlap(a: argparse.Namespace) -> None:
@@ -797,71 +811,97 @@ def cmd_pfam_overlap(a: argparse.Namespace) -> None:
     The window is [pos0, pos0 + k + gap + 10) in 0-based protein coordinates; a domain's
     envelope [env_from, env_to] is 1-based inclusive. An anchor is outside Pfam when no
     occurrence's window overlaps any domain.
+
+    One occurrence file at a time: files are split by anchor hash, so every anchor's
+    occurrences are in one file, and memory is that of the largest file.
     """
-    occ = pl.concat([pl.read_parquet(f) for f in a.occurrences])
-    dom = pl.concat([read_domtblout(f) for f in a.domtblout])
-    occ = occ.with_columns(pl.format("s{}_p{}", "species_idx", "protein_idx").alias("query"))
-    k_of = {s: parse_setting(s)[1] for s in occ["setting"].unique().to_list()}
-    occ = occ.with_columns(pl.col("setting").replace_strict(k_of, return_dtype=pl.Int64).alias("k"))
-    occ = occ.with_columns((pl.col("pos0") + 1).alias("win_from"),
-                           (pl.col("pos0") + pl.col("k") + pl.col("gap") + TARGET_LENGTH).alias("win_to"))
-    j = occ.select("setting", "gap", "anchor", "species_idx", "protein_idx", "pos0", "query", "win_from", "win_to").join(
-        dom, on="query", how="left")
-    j = j.with_columns(((pl.col("env_from") <= pl.col("win_to")) & (pl.col("env_to") >= pl.col("win_from"))).fill_null(False).alias("overlap"))
-    per_occ = j.group_by("setting", "gap", "anchor", "species_idx", "protein_idx", "pos0").agg(
-        pl.col("overlap").any().alias("in_pfam"),
-        pl.col("pfam_acc").filter(pl.col("overlap")).unique().sort().str.join(";").alias("pfam_overlapping"))
-    per_occ.write_parquet(a.occ_out)
-    per_anchor = per_occ.group_by("setting", "gap", "anchor").agg(
-        pl.len().alias("n_occurrences"), pl.col("in_pfam").sum().alias("n_occ_in_pfam"),
-        pl.col("pfam_overlapping").filter(pl.col("pfam_overlapping") != "").str.split(";").flatten()
-        .mode().first().alias("main_pfam"))
-    per_anchor = per_anchor.with_columns((pl.col("n_occ_in_pfam") == 0).alias("outside_pfam"))
-    per_anchor.write_parquet(a.out)
-    # Residues of the top anchors' occurrences, for the per-anchor figures: the a.top anchors
-    # with the smallest q (then p) in each (setting, gap), real labels.
+    dom = read_domains(a.domtblout).select("query", "pfam_acc", "env_from", "env_to")
     sig = pl.read_parquet(a.significant).filter(pl.col("labelling") == "real")
     top = (sig.sort("q_oasis", "p_oasis", "anchor").group_by("setting", "gap", maintain_order=True)
            .head(a.top).select("setting", "gap", "anchor"))
-    occ_top = occ.join(top, on=["setting", "gap", "anchor"]).join(
-        per_occ.select("setting", "gap", "anchor", "species_idx", "protein_idx", "pos0", "in_pfam", "pfam_overlapping"),
-        on=["setting", "gap", "anchor", "species_idx", "protein_idx", "pos0"], how="left")
-    occ_top.drop("query", "k", "win_from", "win_to").write_parquet(a.top_out)
+    occ_dir = Path(a.occ_out)
+    occ_dir.mkdir(parents=True, exist_ok=True)
+    anchors_parts, top_parts = [], []
+    keys = ["setting", "gap", "anchor", "species_idx", "protein_idx", "pos0"]
+    for i, f in enumerate(a.occurrences):
+        occ = pl.read_parquet(f)
+        if not occ.height:
+            continue
+        occ = occ.with_columns(pl.format("s{}_p{}", "species_idx", "protein_idx").alias("query"))
+        k_of = {s: parse_setting(s)[1] for s in occ["setting"].unique().to_list()}
+        occ = occ.with_columns(pl.col("setting").replace_strict(k_of, return_dtype=pl.Int64).alias("k"))
+        occ = occ.with_columns((pl.col("pos0") + 1).alias("win_from"),
+                               (pl.col("pos0") + pl.col("k") + pl.col("gap") + TARGET_LENGTH).alias("win_to"))
+        j = occ.select(*keys, "query", "win_from", "win_to").join(dom, on="query", how="left")
+        j = j.with_columns(((pl.col("env_from") <= pl.col("win_to")) & (pl.col("env_to") >= pl.col("win_from")))
+                           .fill_null(False).alias("overlap"))
+        per_occ = j.group_by(keys).agg(
+            pl.col("overlap").any().alias("in_pfam"),
+            pl.col("pfam_acc").filter(pl.col("overlap")).unique().sort().str.join(";").alias("pfam_overlapping"))
+        per_occ.write_parquet(occ_dir / f"part{i:04d}.parquet")
+        anchors_parts.append(per_occ.group_by("setting", "gap", "anchor").agg(
+            pl.len().alias("n_occurrences"), pl.col("in_pfam").sum().alias("n_occ_in_pfam"),
+            pl.col("pfam_overlapping").filter(pl.col("pfam_overlapping") != "").str.split(";").flatten()
+            .mode().sort().first().alias("main_pfam")))
+        # Residues of the top anchors' occurrences, for the per-anchor figures: the a.top
+        # anchors with the smallest q (then p) in each (setting, gap), real labels.
+        top_parts.append(occ.join(top, on=["setting", "gap", "anchor"]).join(
+            per_occ.select(*keys, "in_pfam", "pfam_overlapping"), on=keys, how="left")
+            .drop("query", "k", "win_from", "win_to"))
+    schema = {"setting": pl.String, "gap": pl.Int16, "anchor": pl.UInt64, "n_occurrences": pl.UInt32,
+              "n_occ_in_pfam": pl.UInt32, "main_pfam": pl.String}
+    per_anchor = pl.concat(anchors_parts) if anchors_parts else pl.DataFrame(schema=schema)
+    per_anchor = per_anchor.with_columns((pl.col("n_occ_in_pfam") == 0).alias("outside_pfam"))
+    per_anchor.write_parquet(a.out)
+    (pl.concat(top_parts) if top_parts else pl.DataFrame()).write_parquet(a.top_out)
 
 
 def cmd_align_input(a: argparse.Namespace) -> None:
-    """FASTA of the domain envelopes to hmmalign, one per (anchor, family) of the inside-Pfam anchors."""
+    """FASTA of the domain envelopes to hmmalign, one per (anchor, family) of the anchors whose
+    window is inside one Pfam family in at least half of their occurrences."""
     anchors = pl.read_parquet(a.pfam).filter(~pl.col("outside_pfam") & (pl.col("n_occ_in_pfam") * 2 >= pl.col("n_occurrences")))
-    occ = pl.concat([pl.read_parquet(f) for f in a.occurrences]).join(
-        anchors.select("setting", "gap", "anchor", "main_pfam"), on=["setting", "gap", "anchor"])
-    dom = pl.concat([read_domtblout(f) for f in a.domtblout])
-    occ = occ.with_columns(pl.format("s{}_p{}", "species_idx", "protein_idx").alias("query"))
-    seqs = {}
+    dom = read_domains(a.domtblout).select("query", "pfam_acc", "env_from", "env_to")
+    keep = anchors.select("setting", "gap", "anchor", "main_pfam")
+    parts = []
+    for f in a.occurrences:
+        occ = pl.read_parquet(f)
+        if not occ.height:
+            continue
+        occ = occ.select("setting", "gap", "anchor", "species_idx", "protein_idx", "pos0").join(
+            keep, on=["setting", "gap", "anchor"])
+        occ = occ.with_columns(pl.format("s{}_p{}", "species_idx", "protein_idx").alias("query"))
+        parts.append(occ.join(dom, left_on=["query", "main_pfam"], right_on=["query", "pfam_acc"]))
+    j = pl.concat(parts) if parts else pl.DataFrame()
+    need = set(j["query"].to_list()) if j.height else set()
+    seqs, name = {}, None
     for f in a.fastas:
-        name = None
         for line in open(f):
             if line.startswith(">"):
                 name = line[1:].split()[0]
-                seqs[name] = []
-            else:
+                if name in need and name not in seqs:
+                    seqs[name] = []
+                else:
+                    name = None
+            elif name is not None:
                 seqs[name].append(line.strip())
     seqs = {k: "".join(v) for k, v in seqs.items()}
-    j = occ.join(dom, left_on=["query", "main_pfam"], right_on=["query", "pfam_acc"])
-    k_of = {s: parse_setting(s)[1] for s in j["setting"].unique().to_list()} if j.height else {}
     out = Path(a.outdir)
     out.mkdir(parents=True, exist_ok=True)
     manifest = []
-    for (setting, gap, anchor, fam), sub in j.group_by("setting", "gap", "anchor", "main_pfam"):
-        k = k_of[setting]
-        tag = f"{setting.replace(':', '_')}_g{gap}_{anchor}_{fam}"
-        with open(out / f"{tag}.fa", "w") as fh:
-            for r in sub.unique(["species_idx", "protein_idx", "pos0"]).iter_rows(named=True):
-                ts = r["pos0"] + k + gap  # 0-based target start
-                if not (r["env_from"] - 1 <= ts and ts + TARGET_LENGTH <= r["env_to"]):
-                    continue  # target window must lie inside the domain envelope to map to columns
-                dseq = seqs[r["query"]][r["env_from"] - 1:r["env_to"]]
-                fh.write(f">{r['query']}|{r['pos0']}|{r['env_from']}|{r['species_idx']}\n{dseq}\n")
-        manifest.append({"setting": setting, "gap": gap, "anchor": anchor, "pfam_acc": fam, "tag": tag})
+    if j.height:
+        k_of = {s: parse_setting(s)[1] for s in j["setting"].unique().to_list()}
+        for (setting, gap, anchor, fam), sub in j.group_by("setting", "gap", "anchor", "main_pfam"):
+            k = k_of[setting]
+            tag = f"{setting.replace(':', '_')}_g{gap}_{anchor}_{fam}"
+            with open(out / f"{tag}.fa", "w") as fh:
+                for r in sub.unique(["species_idx", "protein_idx", "pos0", "env_from"]).sort(
+                        "species_idx", "protein_idx", "pos0", "env_from").iter_rows(named=True):
+                    ts = r["pos0"] + k + gap  # 0-based target start
+                    if not (r["env_from"] - 1 <= ts and ts + TARGET_LENGTH <= r["env_to"]):
+                        continue  # the target must lie inside this domain envelope to map to columns
+                    dseq = seqs[r["query"]][r["env_from"] - 1:r["env_to"]]
+                    fh.write(f">{r['query']}|{r['pos0']}|{r['env_from']}|{r['species_idx']}\n{dseq}\n")
+            manifest.append({"setting": setting, "gap": gap, "anchor": anchor, "pfam_acc": fam, "tag": tag})
     pl.DataFrame(manifest, schema={"setting": pl.String, "gap": pl.Int64, "anchor": pl.UInt64,
                                    "pfam_acc": pl.String, "tag": pl.String}).write_csv(a.manifest, separator="\t")
 

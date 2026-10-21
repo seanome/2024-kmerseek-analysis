@@ -207,6 +207,7 @@ def test_end_to_end_planted_clade_target(tmp_path):
     null = res.filter(pl.col("anchor") == code_null)
     assert planted.height == 1 and null.height == 1
     assert planted["n_clades"][0] == 4 and planted["n_targets"][0] == 2
+    assert planted["n_species"][0] == 60 and planted["table_total"][0] == 60
     assert planted["q_oasis"][0] < 0.05
     assert null["q_oasis"][0] > 0.05
     # The composition scan sees it too (C0 is all C/W/H/M/Y): it is "explained by composition".
@@ -248,10 +249,11 @@ def test_occurrences_and_pfam_overlap(tmp_path):
     with open(dom, "w") as fh:
         fh.write("# fake\n")
         for s in range(15):
-            f = ["PF99999_x", "PF99999.1", "100", f"s{s}_p0", "-", "84"] + ["0"] * 6 + ["1e-10"] + ["0"] * 6 + ["31", "54", "0.9", "-"]
+            # hmmsearch layout: target (protein), accession, length, query (family), accession, ...
+            f = [f"s{s}_p0", "-", "84", "PF99999_x", "PF99999.1", "100"] + ["0"] * 6 + ["1e-10"] + ["0"] * 6 + ["31", "54", "0.9", "-"]
             fh.write(" ".join(f) + "\n")
     cs.main(["pfam-overlap", "--occurrences", *occ_out, "--domtblout", str(dom),
-             "--occ-out", str(tmp_path / "po.parquet"), "--out", str(tmp_path / "pa.parquet"),
+             "--occ-out", str(tmp_path / "po"), "--out", str(tmp_path / "pa.parquet"),
              "--significant", str(tmp_path / "sig.parquet"), "--top-out", str(tmp_path / "top.parquet")])
     pa = pl.read_parquet(tmp_path / "pa.parquet")
     assert pa.height == 1
@@ -300,10 +302,10 @@ def test_alignment_control_finds_the_planted_columns(tmp_path):
     dom = tmp_path / "fake.domtblout"
     with open(dom, "w") as fh:
         for n in seqs:
-            f = ["FAKE", "PF99999.1", "44", n, "-", "84"] + ["0"] * 6 + ["1e-10"] + ["0"] * 6 + ["21", "64", "0.9", "-"]
+            f = [n, "-", "84", "FAKE", "PF99999.1", "44"] + ["0"] * 6 + ["1e-10"] + ["0"] * 6 + ["21", "64", "0.9", "-"]
             fh.write(" ".join(f) + "\n")
     cs.main(["pfam-overlap", "--occurrences", *occ_out, "--domtblout", str(dom),
-             "--occ-out", str(tmp_path / "po.parquet"), "--out", str(tmp_path / "pa.parquet"),
+             "--occ-out", str(tmp_path / "po"), "--out", str(tmp_path / "pa.parquet"),
              "--significant", str(tmp_path / "sig.parquet"), "--top-out", str(tmp_path / "top.parquet")])
     cs.main(["align-input", "--pfam", str(tmp_path / "pa.parquet"), "--occurrences", *occ_out,
              "--domtblout", str(dom), "--fastas", *fa_out, "--outdir", str(tmp_path / "ain"),

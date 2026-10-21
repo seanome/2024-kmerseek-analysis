@@ -21,7 +21,7 @@ PYTHON ?= /Users/olga/anaconda3/envs/2025-kmerseek-analysis/bin/python3
 OASIS_COMMIT := 00ab197550303e713343b68ea97daf36deb76946
 OASIS_SHA256 := 8116c5c206051b254698448ed74611f64e6cc94fea11452622b544c818207125
 
-# Pfam-A.hmm with its hmmpress files, Pfam 38 (file dated July 2025).
+# Pfam-A.hmm, Pfam 38 (file dated July 2025).
 PFAM_HMM ?= /scratch/users/olgabot/data/pfam/Pfam-A.hmm
 
 # A clone of its own, so this branch never moves the main Sherlock checkout under a run.
