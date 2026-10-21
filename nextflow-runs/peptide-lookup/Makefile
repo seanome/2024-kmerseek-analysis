@@ -18,7 +18,7 @@ RUNNING_DIR := $(abspath $(dir $(firstword $(MAKEFILE_LIST))))
 BIN := $(RUNNING_DIR)/bin
 JOBENV := OUT=$(OUT),IMG=$(IMG),BIN=$(BIN),KA_STORE=$(KA_STORE)
 
-.PHONY: step0 floor pull-step0 test running
+.PHONY: step0 floor pull-step0 pylib pxd069517 queries pull-queries test running
 
 ## Submit Step 0 as one chain. Prints the four job ids.
 step0:
@@ -39,6 +39,31 @@ step0:
 floor:
 	@mkdir -p $(OUT)/logs
 	@cd $(OUT)/logs && sbatch --export=ALL,$(JOBENV) $(RUNNING_DIR)/sbatch/floor.sbatch
+
+## openpyxl for reading the PXD069517 xlsx inside the kmerseek image (it has pip, not openpyxl).
+pylib:
+	apptainer exec --bind /scratch $(IMG) python3 -m pip install -q --break-system-packages \
+	  --no-deps --target $(OUT)/pylib openpyxl==3.1.5 et_xmlfile==2.0.0
+
+## The PXD069517 peptide table (18 MB). Step 1 fallback source, see bin/real_peptides.py.
+PXD069517_URL := https://ftp.pride.ebi.ac.uk/pride/data/archive/2025/10/PXD069517
+pxd069517:
+	mkdir -p $(OUT)/step1/PXD069517
+	cd $(OUT)/step1/PXD069517 && for f in MGDB_peptides_intensities_tax-funct_annotations.xlsx sample_code_legend.xlsx; do \
+	  curl -fsS -o $$f $(PXD069517_URL)/$$f; done && date -u +%Y-%m-%dT%H:%M:%SZ > date_downloaded.txt
+
+## Steps 1-3: query peptides, decoys and the search database, one SLURM job.
+queries: pylib pxd069517
+	@mkdir -p $(OUT)/logs
+	@cd $(OUT)/logs && sbatch --export=ALL,$(JOBENV) $(RUNNING_DIR)/sbatch/queries.sbatch
+
+## Copy the step 1-3 tables (not the database) to the notebook's data folder. Run on the laptop.
+pull-queries:
+	mkdir -p $(NOTEBOOK_DATA)/step1
+	rsync -av --include '*.tsv' --include '*.txt' --include '*.fasta' --exclude 'search_db.fasta' \
+	  --exclude 'uhgp90_lines_with_pool_peptide.tsv' --exclude '*/' \
+	  $(SHERLOCK_HOST):$(REMOTE_OUT)/step1/ $(NOTEBOOK_DATA)/step1/
+	rsync -av $(SHERLOCK_HOST):$(REMOTE_OUT)/step1/PXD069517/date_downloaded.txt $(NOTEBOOK_DATA)/step1/pxd069517_date_downloaded.txt
 
 ## Copy the Step 0 tables (a few MB) to the notebook's data folder. Run on the laptop.
 pull-step0:

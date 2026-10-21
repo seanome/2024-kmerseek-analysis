@@ -129,3 +129,12 @@ def test_spike_peptides_swaps_are_recorded_and_in_source(tmp_path):
                 and r["peptide"][int(pos) - 1] == b
             )
             assert {a, b} in ({"I", "L"}, {"D", "E"}, {"K", "R"})
+
+
+def test_pseudo_reverse_keeps_ends_and_composition():
+    from make_queries import pseudo_reverse
+
+    pep = "AAAAALDLPLYR"
+    dec = pseudo_reverse(pep)
+    assert dec == "AYLPLDLAAAAR"
+    assert dec[0] == pep[0] and dec[-1] == pep[-1] and sorted(dec) == sorted(pep)

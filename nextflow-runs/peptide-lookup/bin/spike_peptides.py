@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 """Step 1b of notebook 300: 1,000 spiked peptides with a known source protein.
 
-Usage: spike_peptides.py <uhgp-90.faa.gz> <out.tsv> [--n 1000] [--seed 300]
+Usage: spike_peptides.py <uhgp-90.faa.gz> <out.tsv> [--length-pool real_peptide_pool.tsv]
+                         [--n 1000] [--seed 300]
 
 Each spiked peptide is a real window of 9 to 30 residues from a UHGP-90 protein, with one or
 two conservative swaps at recorded positions: I<->L, D<->E or K<->R. The protein it came from
@@ -10,8 +11,9 @@ cuts the windows from the proteins drawn.
 
 * Proteins are drawn with probability proportional to the number of 30-residue windows they
   hold, so every residue position in the catalogue is about equally likely to be picked.
-* The window length is drawn uniformly from 9 to 30 and the window start uniformly within the
-  protein.
+* The window length is drawn from the lengths of the real peptides (`--length-pool`, its
+  `length` column), so spiked and real peptides are equally short; without it, uniformly from
+  9 to 30. The window start is uniform within the protein.
 * A window with any letter outside the 20 canonical residues, or with fewer swappable
   residues than swaps drawn, is replaced by a new draw.
 * Half the peptides get one swap and half get two, at distinct positions chosen uniformly
@@ -68,8 +70,19 @@ def main():
     ap.add_argument("out")
     ap.add_argument("--n", type=int, default=1_000)
     ap.add_argument("--seed", type=int, default=300)
+    ap.add_argument(
+        "--length-pool", help="TSV with a length column to draw lengths from"
+    )
     args = ap.parse_args()
     rng = np.random.default_rng(args.seed)
+    if args.length_pool:
+        import polars as pl
+
+        pool_lengths = pl.read_csv(args.length_pool, separator="\t")[
+            "length"
+        ].to_numpy()
+    else:
+        pool_lengths = np.arange(L_MIN, L_MAX + 1)
 
     lengths = protein_lengths(args.fasta)
     weight = np.clip(lengths - L_MAX + 1, 0, None).astype(float)
@@ -91,7 +104,7 @@ def main():
         if len(rows) == args.n:
             break
         name, seq = drawn[order]
-        length = int(rng.integers(L_MIN, L_MAX + 1))
+        length = int(rng.choice(pool_lengths))
         start = int(rng.integers(0, len(seq) - length + 1))
         window = seq[start : start + length]
         n_swaps = 1 if len(rows) % 2 == 0 else 2
