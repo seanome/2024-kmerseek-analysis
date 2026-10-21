@@ -106,15 +106,24 @@ index)
     ;;
 search)
     : "${ALPHABET:?}" "${KSIZE:?}" "${SLURM_ARRAY_TASK_ID:?}"
+    N_CHUNKS=${SEARCH_CHUNKS:-$N_CHUNKS}  # more, smaller chunks for a test
     read -r C X < <(penalty "$ALPHABET")
     slug=${ALPHABET}_k${KSIZE}_s1
     regions=$WORK/indexes/regions.w$DECOY_WINDOW.$slug.kmerseek.rocksdb
     fit=$WORK/indexes/whole.w$DECOY_WINDOW.$slug.kmerseek.rocksdb/ka_survival.C$C.csv
     [ -f "$regions/DONE" ] || { echo "342: no finished index $regions" >&2; exit 2; }
-    [ -s "$fit" ] || { echo "342: the whole-protein index has no fit for $slug ($fit); no E-values" >&2; exit 4; }
-    # Every row of the survival CSV carries the fit's K and r_database.
-    read -r KA_K KA_R < <(awk -F, 'NR == 1 { for (i = 1; i <= NF; i++) c[$i] = i; next }
-                                   NR == 2 { print $c["k"], $c["r_database"]; exit }' "$fit")
+    if [ -n "${GIVEN_KA_K:-}" ]; then
+        # A K given, not fitted: protein20 k5 has no fit in either index (2026-10-20, jobs
+        # 48685828 and 48247323: fewer than 4 score bins above the peak hold 30 regions).
+        # r_database 1 is the closed-form lambda, kmerseek's default with --ka-k.
+        KA_K=$GIVEN_KA_K KA_R=1
+        echo "342: $slug has no fit; using the given K $KA_K and r_database $KA_R (closed form)"
+    else
+        [ -s "$fit" ] || { echo "342: the whole-protein index has no fit for $slug ($fit); no E-values" >&2; exit 4; }
+        # Every row of the survival CSV carries the fit's K and r_database.
+        read -r KA_K KA_R < <(awk -F, 'NR == 1 { for (i = 1; i <= NF; i++) c[$i] = i; next }
+                                       NR == 2 { print $c["k"], $c["r_database"]; exit }' "$fit")
+    fi
     chunk=$SLURM_ARRAY_TASK_ID
     out=$WORK/calls/$slug/chunk_$(printf %02d "$chunk").calls.tsv.gz
     [ -s "$out" ] && { echo "342: $out done already"; exit 0; }
