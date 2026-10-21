@@ -19,6 +19,7 @@ HERE = Path(__file__).resolve().parent
 sys.path.insert(0, str(HERE.parent / "bin"))
 import clade_splash as cs  # noqa: E402
 import clade_splash_pfam as csp  # noqa: E402
+import clade_splash_test as cst  # noqa: E402
 
 OASIS = HERE.parent / "assets" / "OASIS.py"
 needs_oasis = pytest.mark.skipif(not OASIS.exists(), reason="run `make oasis` first")
@@ -194,7 +195,7 @@ def test_end_to_end_planted_clade_target(tmp_path):
     outs = []
     for b in range(cs.N_TARGET_BUCKETS):
         o = tmp_path / f"test{b}.parquet"
-        cs.main(["test", "--setting", "dayhoff:14", "--bucket", str(b), "--dirs", str(tmp_path / "t"),
+        cst.main(["test", "--setting", "dayhoff:14", "--bucket", str(b), "--dirs", str(tmp_path / "t"),
                  "--species", str(tmp_path / "species.tsv"), "--oasis", str(OASIS), "--seed", "357", "--out", str(o)])
         outs.append(str(o))
     cs.main(["collect", "--inputs", *outs, "--all-out", str(tmp_path / "all.parquet"),
@@ -235,7 +236,7 @@ def test_occurrences_and_pfam_overlap(tmp_path):
     occ_out, fa_out = [], []
     for b in range(cs.N_TARGET_BUCKETS):
         o, f = tmp_path / f"occ{b}.parquet", tmp_path / f"prot{b}.fa"
-        cs.main(["occurrences", "--setting", "dayhoff:14", "--bucket", str(b), "--dirs", str(tmp_path / "t"),
+        cst.main(["occurrences", "--setting", "dayhoff:14", "--bucket", str(b), "--dirs", str(tmp_path / "t"),
                  "--accessions", str(tmp_path / "acc.parquet"), "--significant", str(tmp_path / "sig.parquet"),
                  "--fasta-dirs", str(tmp_path / "fasta"), "--out", str(o), "--fasta-out", str(f)])
         occ_out.append(str(o))
@@ -279,7 +280,7 @@ def test_alignment_control_finds_the_planted_columns(tmp_path):
     occ_out, fa_out = [], []
     for b in range(cs.N_TARGET_BUCKETS):
         o, f = tmp_path / f"occ{b}.parquet", tmp_path / f"prot{b}.fa"
-        cs.main(["occurrences", "--setting", "dayhoff:14", "--bucket", str(b), "--dirs", str(tmp_path / "t"),
+        cst.main(["occurrences", "--setting", "dayhoff:14", "--bucket", str(b), "--dirs", str(tmp_path / "t"),
                  "--accessions", str(tmp_path / "acc.parquet"), "--significant", str(tmp_path / "sig.parquet"),
                  "--fasta-dirs", str(tmp_path / "fasta"), "--out", str(o), "--fasta-out", str(f)])
         occ_out.append(str(o))
@@ -325,3 +326,22 @@ def test_alignment_control_finds_the_planted_columns(tmp_path):
     assert ac.height == 10  # the 10 target residues map to 10 match columns
     assert ac["n_species"].min() == 60
     assert (ac["q_column"] < 0.05).sum() >= 8  # C0 differs from the rest at every target column
+
+
+@needs_oasis
+def test_streaming_test_matches_the_original(tmp_path):
+    """clade_splash_test.py's test gives the same rows as the original cmd_test in
+    clade_splash.py on the planted data, for every labelling."""
+    test_end_to_end_planted_clade_target(tmp_path)
+    old, new = [], []
+    for b in range(cs.N_TARGET_BUCKETS):
+        args = ["test", "--setting", "dayhoff:14", "--bucket", str(b), "--dirs", str(tmp_path / "t"),
+                "--species", str(tmp_path / "species.tsv"), "--oasis", str(OASIS), "--seed", "357"]
+        cs.main(args + ["--out", str(tmp_path / f"old{b}.parquet")])
+        old.append(pl.read_parquet(tmp_path / f"old{b}.parquet"))
+        new.append(pl.read_parquet(tmp_path / f"test{b}.parquet"))
+    key = ["labelling", "gap", "anchor"]
+    o, n = pl.concat(old).sort(key), pl.concat(new).sort(key)
+    assert o.height == n.height > 0
+    assert o.columns == n.columns
+    assert o.equals(n)

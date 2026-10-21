@@ -202,8 +202,11 @@ process test {
     tag "${setting} b${bucket}"
     label 'python'
     // OASIS_pvalue is pure Python per table; the hours scale with the number of anchors in
-    // the bucket. No measurement yet: 12 h asked, doubled on retry.
-    memory { "${16 * task.attempt} GB" }
+    // the bucket. Measured 2026-10-20: the pilot (48 species) needed 0.45 GB; the full run's
+    // first attempt at 16 GB was killed within 20 s reading a 2.3 GB bucket (several hundred
+    // million occurrence rows). clade_splash_test.py now streams it; 64 GB asked until the
+    // full run's own trace gives a number.
+    memory { "${64 * task.attempt} GB" }
     time { "${12 * task.attempt}h" }
     publishDir "${params.outdir}/tests/${setting.replace(':', '_')}", mode: 'copy'
 
@@ -215,7 +218,7 @@ process test {
 
     script:
     """
-    clade_splash.py test --setting ${setting} --bucket ${bucket} --dirs chunk*/targets_* \\
+    clade_splash_test.py test --setting ${setting} --bucket ${bucket} --dirs chunk*/targets_* \\
         --species ${species} --oasis ${oasis} --seed ${params.seed} \\
         --out test_${setting.replace(':', '_')}_b${bucket}.parquet
     """
@@ -255,7 +258,7 @@ process collect {
 process occurrences {
     tag "${setting} b${bucket}"
     label 'python'
-    memory { "${16 * task.attempt} GB" }
+    memory { "${32 * task.attempt} GB" }
     time { "${2 * task.attempt}h" }
 
     input:
@@ -268,7 +271,7 @@ process occurrences {
     script:
     def tag = "${setting.replace(':', '_')}_b${bucket}"
     """
-    clade_splash.py occurrences --setting ${setting} --bucket ${bucket} --dirs chunk*/targets_* \\
+    clade_splash_test.py occurrences --setting ${setting} --bucket ${bucket} --dirs chunk*/targets_* \\
         --accessions acc/*.parquet --significant ${sig} --fasta-dirs fa*/fasta \\
         --out occ_${tag}.parquet --fasta-out prot_${tag}.fa
     """
