@@ -117,7 +117,7 @@ def main(a):
     landings = pl.DataFrame(land_rows) if land_rows else pl.DataFrame()
     landings.write_parquet(out / "landings.parquet")
 
-    def evaluate(label, landed_real, landed_decoy, best_call, threshold):
+    def evaluate(label, landed_real, landed_decoy, best_call, threshold, cap_q=None):
         rows = []
         for stratum, ids in strata.items():
             K = landed_real & ids
@@ -126,7 +126,7 @@ def main(a):
             for k in K:
                 named += named_call(best_call[k], regions)[0]
             rows.append(rules({
-                "setting": label, "stratum": stratum, "threshold": threshold,
+                "setting": label, "stratum": stratum, "threshold": threshold, "cap_q": cap_q,
                 "n_blank": len(ids), "real_landings": len(K), "decoy_landings": len(D),
                 "net_landings": len(K) - len(D), "named": named,
                 "scan_landings": len(S & ids), "scan_overlap": len(K & S),
@@ -149,7 +149,7 @@ def main(a):
         for k in Ks:
             if k not in best_u or real[s][k]["evalue"] < best_u[k]["evalue"]:
                 best_u[k] = {**real[s][k], "setting": s}
-    rows += evaluate("union_of_fitted_settings", K_u, D_u, best_u, f"per-setting cap q={union_q:.5f}")
+    rows += evaluate("union_of_fitted_settings", K_u, D_u, best_u, None, cap_q=union_q)
     for stratum, ids in strata.items():
         rows.append({"setting": "kyte_doolittle_scan", "stratum": stratum, "threshold": -scan_t if scan_t not in (math.inf, -math.inf) else scan_t,
                      "n_blank": len(ids), "real_landings": len(S & ids), "decoy_landings": len(S_decoy & ids),
