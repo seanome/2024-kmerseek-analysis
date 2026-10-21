@@ -143,7 +143,8 @@ search)
                     split("query_name target_name region_start region_end target_start target_end region_evalue region_subseq target_subseq", need, " ")
                     for (n in need) if (!(need[n] in c)) { print "missing column " need[n] > "/dev/stderr"; exit 3 }
                     print "query", "qstart", "qend", "target", "tstart", "tend", "evalue", "qseq", "tseq"; next }
-          ($c["region_evalue"] + 0) <= max {
+          # A number, not "inf" or "nan": awk reads those as 0, which passed this filter.
+          $c["region_evalue"] ~ /^[-+]?[0-9.]+([eE][-+]?[0-9]+)?$/ && ($c["region_evalue"] + 0) <= max {
                     print $c["query_name"], $c["region_start"] + 1, $c["region_end"],
                           $c["target_name"], $c["target_start"] + 1, $c["target_end"],
                           $c["region_evalue"], $c["region_subseq"], $c["target_subseq"] }' \

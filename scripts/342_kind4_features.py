@@ -15,7 +15,7 @@ with E <= 10, 1-based inclusive coordinates) and writes, under --out:
 * best_hits.tsv: per exon and setting, the best call on another gene, with both residue
   strings, for printing aligned in the notebook.
 
-Only calls whose query stretch overlaps at least one exon residue count. The call files
+Only calls with a finite E whose query stretch overlaps at least one exon residue count. The call files
 themselves are the record of every call; no copy of them is written (2026-10-20: about 470
 million calls for aro_hyd_arg_chg_pol5 k9 alone).
 
@@ -129,16 +129,21 @@ def query_table(queries: pl.DataFrame) -> pl.DataFrame:
 
 def reduce_file(
     f: Path, qtab: pl.DataFrame, gene_symbols: pl.DataFrame, genes: pl.DataFrame
-) -> tuple[pl.DataFrame, pl.DataFrame, int, int]:
+) -> tuple[pl.DataFrame, pl.DataFrame, int, int, int]:
     """Read one call file and keep only what the outputs need: per exon and query kind (exon or
     its decoy), the call with the smallest E on a real target of another gene (ties to the
     smaller target name, then the earlier call), and per exon the own-gene counts. Only calls
     whose query stretch overlaps at least one exon residue count. Returns those two tables, the
-    number of calls read and the number on the exon."""
+    number of rows read, the number with a finite E, and the number of those on the exon."""
     calls = pl.read_csv(
         f, separator="\t", columns=FIRST_PASS_COLUMNS, schema_overrides=CALL_SCHEMA
     ).with_row_index("row")
     n_read = calls.height
+    # kmerseek writes E = inf for a region with no score; awk's E <= 10 filter in the search
+    # step let those through ("inf" + 0 is 0 in awk), and they were over 99.9% of the calls of
+    # every setting (2026-10-21). They are no evidence of anything, so they are dropped here.
+    calls = calls.filter(pl.col("evalue").is_finite())
+    n_finite = calls.height
     calls = calls.join(qtab, on="query", how="left")
     assert calls["event_idx"].null_count() == 0, f"a call's query in {f} is not in the query table"
     calls = calls.filter(
@@ -191,7 +196,7 @@ def reduce_file(
             (pl.col("similar_name") & ~pl.col("own_gene")).sum().alias("similar"),
         )
     )
-    return best, counts, n_read, n_on_exon
+    return best, counts, n_read, n_finite, n_on_exon
 
 
 def best_per_query(calls: pl.DataFrame, keys: list[str]) -> pl.DataFrame:
@@ -264,16 +269,20 @@ def main() -> None:
     # One file at a time (2026-10-20: aro_hyd_arg_chg_pol5 k9 alone wrote 470 million calls at
     # E <= 10, 88% of them on the exon, too many to hold). What stays in memory is the best call
     # per exon, setting and query kind, and the own-gene counts per exon: all the outputs need.
-    bests, counts, n_read, n_on_exon = [], [], 0, 0
+    bests, counts, n_read, n_finite, n_on_exon = [], [], 0, 0, 0
     for setting, f in files:
-        b, c, n, m = reduce_file(f, qtab, gene_symbols, genes)
+        b, c, n, fin, m = reduce_file(f, qtab, gene_symbols, genes)
         bests.append(b.with_columns(pl.lit(setting).alias("setting"), pl.lit(str(f)).alias("file")))
         counts.append(c.with_columns(pl.lit(setting).alias("setting")))
         n_read += n
+        n_finite += fin
         n_on_exon += m
-        print(f"{f}: {n} calls, {m} on the exon", flush=True)
+        print(f"{f}: {n} rows, {fin} with a finite E, {m} of those on the exon", flush=True)
     settings = sorted({s for s, _ in files})
-    print(f"{n_read} calls at E <= 10 in {len(settings)} settings: {settings}; {n_on_exon} on the exon")
+    print(
+        f"{n_read} rows in {len(settings)} settings: {settings}; {n_finite} calls with a finite E "
+        f"(at most 10), {n_on_exon} of them on the exon"
+    )
     events = queries.with_row_index("event_idx").select("event_idx", "event_id", "gene_name", "outcome", "half")
     best = (
         best_per_query(pl.concat(bests), ["event_idx", "setting", "query_is_decoy"])
