@@ -476,6 +476,9 @@ def cmd_targets(a: argparse.Namespace) -> None:
             tstart = pos + k + gap
             ok = tstart < len(tcodes)
             ok[ok] &= tvalid[tstart[ok]]
+            # The gap must stay inside the anchor's protein: a gap that crosses the
+            # separator lands the target in the next protein.
+            ok[ok] &= (np.searchsorted(starts, tstart[ok], side="right") - 1) == prot[ok]
             p = pos[ok]
             if not len(p):
                 continue
