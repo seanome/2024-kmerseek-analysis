@@ -49,7 +49,14 @@ import polars as pl
 
 AMINO_ACIDS = "ACDEFGHIKLMNPQRSTVWY"
 INVALID = 255
-DAYHOFF_GROUPS = {"a": "C", "b": "AGPST", "c": "DENQ", "d": "HKR", "e": "ILMV", "f": "FWY"}
+DAYHOFF_GROUPS = {
+    "a": "C",
+    "b": "AGPST",
+    "c": "DENQ",
+    "d": "HKR",
+    "e": "ILMV",
+    "f": "FWY",
+}
 HP_GROUPS = {"h": "AFGILMPVWY", "p": "CDEHKNQRST"}
 ALPHABETS = {"dayhoff": DAYHOFF_GROUPS, "hp": HP_GROUPS}
 TARGET_LENGTH = 10
@@ -142,7 +149,9 @@ def window_all(flags: np.ndarray, width: int) -> np.ndarray:
     return (c[width:] - c[:-width]) == width
 
 
-def anchor_codes(aa: np.ndarray, alphabet: str, k: int) -> tuple[np.ndarray, np.ndarray]:
+def anchor_codes(
+    aa: np.ndarray, alphabet: str, k: int
+) -> tuple[np.ndarray, np.ndarray]:
     """Code of the reduced k-mer starting at every position, and whether it is usable.
 
     Usable means all k residues are among the 20 standard ones and the window is not
@@ -253,8 +262,16 @@ def busco_complete(s: str | None) -> float:
 
 def cmd_select(a: argparse.Namespace) -> None:
     proteomes = pl.read_csv(a.proteomes, separator="\t", infer_schema_length=0)
-    proteomes = proteomes.rename({"Proteome Id": "upid", "Organism Id": "taxid", "Organism": "organism",
-                                  "Protein count": "protein_count", "BUSCO": "busco", "CPD": "cpd"})
+    proteomes = proteomes.rename(
+        {
+            "Proteome Id": "upid",
+            "Organism Id": "taxid",
+            "Organism": "organism",
+            "Protein count": "protein_count",
+            "BUSCO": "busco",
+            "CPD": "cpd",
+        }
+    )
     readme = parse_reference_readme(a.readme)
     parent, rank, sci = read_taxdump(a.nodes, a.names)
     rows = []
@@ -277,20 +294,27 @@ def cmd_select(a: argparse.Namespace) -> None:
         if "class" not in lin or "family" not in lin:
             dropped["no class or no family"] += 1
             continue
-        rows.append({
-            "upid": r["upid"], "taxid": tid, "organism": r["organism"],
-            "protein_count": int(r["protein_count"] or 0),
-            "busco_complete": busco_complete(r["busco"]), "cpd": r["cpd"],
-            "ftp_superregnum": readme[r["upid"]]["superregnum"],
-            **{k: lin.get(k) for k in RANKS_KEPT},
-            **{f"{k}_taxid": lin.get(f"{k}_taxid") for k in RANKS_KEPT},
-        })
+        rows.append(
+            {
+                "upid": r["upid"],
+                "taxid": tid,
+                "organism": r["organism"],
+                "protein_count": int(r["protein_count"] or 0),
+                "busco_complete": busco_complete(r["busco"]),
+                "cpd": r["cpd"],
+                "ftp_superregnum": readme[r["upid"]]["superregnum"],
+                **{k: lin.get(k) for k in RANKS_KEPT},
+                **{f"{k}_taxid": lin.get(f"{k}_taxid") for k in RANKS_KEPT},
+            }
+        )
     df = pl.DataFrame(rows)
     # One species per family: highest BUSCO completeness, then CPD 'Standard', then the
     # most proteins, then the smallest proteome id, so the choice is reproducible.
     df = df.with_columns((pl.col("cpd").str.to_lowercase() == "standard").alias("_std"))
-    df = df.sort(["family_taxid", "busco_complete", "_std", "protein_count", "upid"],
-                 descending=[False, True, True, True, False])
+    df = df.sort(
+        ["family_taxid", "busco_complete", "_std", "protein_count", "upid"],
+        descending=[False, True, True, True, False],
+    )
     one = df.group_by("family_taxid", maintain_order=True).first().drop("_std")
     per_class = one.group_by("class_taxid").len()
     keep = per_class.filter(pl.col("len") >= MIN_SPECIES_PER_CLADE)["class_taxid"]
@@ -298,38 +322,70 @@ def cmd_select(a: argparse.Namespace) -> None:
     if a.max_per_class:
         # Pilot only: the first N species (by proteome id) of the M classes with the most
         # species, which mixes large eukaryote proteomes with bacteria and viruses.
-        top = sel.group_by("class_taxid").len().sort(["len", "class_taxid"], descending=[True, False])
+        top = (
+            sel.group_by("class_taxid")
+            .len()
+            .sort(["len", "class_taxid"], descending=[True, False])
+        )
         classes = top["class_taxid"].head(a.max_classes).to_list()
-        sel = (sel.filter(pl.col("class_taxid").is_in(classes))
-               .sort(["class_taxid", "upid"]).group_by("class_taxid", maintain_order=True).head(a.max_per_class))
+        sel = (
+            sel.filter(pl.col("class_taxid").is_in(classes))
+            .sort(["class_taxid", "upid"])
+            .group_by("class_taxid", maintain_order=True)
+            .head(a.max_per_class)
+        )
     sel = sel.sort(["domain", "phylum", "class", "family", "upid"], nulls_last=True)
-    sel = sel.with_row_index("species_idx").with_columns(pl.col("species_idx").cast(pl.Int32))
+    sel = sel.with_row_index("species_idx").with_columns(
+        pl.col("species_idx").cast(pl.Int32)
+    )
     sel = sel.with_columns(
-        pl.struct(["upid", "taxid", "ftp_superregnum"]).map_elements(
+        pl.struct(["upid", "taxid", "ftp_superregnum"])
+        .map_elements(
             lambda s: f"{s['ftp_superregnum']}/{s['upid']}/{s['upid']}_{s['taxid']}.fasta.gz",
-            return_dtype=pl.String).alias("ftp_path"))
+            return_dtype=pl.String,
+        )
+        .alias("ftp_path")
+    )
     sel.write_csv(a.out, separator="\t")
     summary = {
-        "n_reference_proteomes": n_in, "dropped": dict(dropped),
-        "n_with_class_and_family": df.height, "n_families": one.height,
-        "n_classes_any": per_class.height, "n_classes_kept": int(sel["class_taxid"].n_unique()),
+        "n_reference_proteomes": n_in,
+        "dropped": dict(dropped),
+        "n_with_class_and_family": df.height,
+        "n_families": one.height,
+        "n_classes_any": per_class.height,
+        "n_classes_kept": int(sel["class_taxid"].n_unique()),
         "n_species_selected": sel.height,
-        "species_per_class": {c: int(n) for c, n in sel.group_by("class").len().sort("len", descending=True).iter_rows()},
+        "species_per_class": {
+            c: int(n)
+            for c, n in sel.group_by("class")
+            .len()
+            .sort("len", descending=True)
+            .iter_rows()
+        },
         "pilot": bool(a.max_per_class),
     }
     Path(a.summary).write_text(json.dumps(summary, indent=2))
-    print(json.dumps({k: v for k, v in summary.items() if k != "species_per_class"}, indent=2))
+    print(
+        json.dumps(
+            {k: v for k, v in summary.items() if k != "species_per_class"}, indent=2
+        )
+    )
 
 
-UNIPROT_PROTEOMES_URL = ("https://rest.uniprot.org/proteomes/stream?query=reference:true"
-                         "&fields=upid,organism_id,organism,protein_count,busco,cpd&format=tsv")
-NCBI_TAXDUMP_URL = "https://ftp.ncbi.nlm.nih.gov/pub/taxonomy/new_taxdump/new_taxdump.tar.gz"
+UNIPROT_PROTEOMES_URL = (
+    "https://rest.uniprot.org/proteomes/stream?query=reference:true"
+    "&fields=upid,organism_id,organism,protein_count,busco,cpd&format=tsv"
+)
+NCBI_TAXDUMP_URL = (
+    "https://ftp.ncbi.nlm.nih.gov/pub/taxonomy/new_taxdump/new_taxdump.tar.gz"
+)
 
 
 def cmd_inputs(a: argparse.Namespace) -> None:
     """Download the reference-proteome list, the FTP README and the NCBI taxonomy, and record
     the UniProt release and the download date."""
     import tarfile
+
     out = Path(a.outdir)
     out.mkdir(parents=True, exist_ok=True)
     with urllib.request.urlopen(UNIPROT_PROTEOMES_URL) as r:
@@ -341,9 +397,16 @@ def cmd_inputs(a: argparse.Namespace) -> None:
     with tarfile.open(out / "new_taxdump.tar.gz") as t:
         for m in ("nodes.dmp", "names.dmp"):
             t.extract(m, out, filter="data")
-    meta = {"uniprot_release_rest": release, "downloaded_utc": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
-            "proteomes_url": UNIPROT_PROTEOMES_URL, "readme_url": readme_url, "taxdump_url": NCBI_TAXDUMP_URL,
-            "taxdump_md5": hashlib.md5((out / "new_taxdump.tar.gz").read_bytes()).hexdigest()}
+    meta = {
+        "uniprot_release_rest": release,
+        "downloaded_utc": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
+        "proteomes_url": UNIPROT_PROTEOMES_URL,
+        "readme_url": readme_url,
+        "taxdump_url": NCBI_TAXDUMP_URL,
+        "taxdump_md5": hashlib.md5(
+            (out / "new_taxdump.tar.gz").read_bytes()
+        ).hexdigest(),
+    }
     for line in (out / "README").read_text(errors="replace").splitlines()[:40]:
         if "Release" in line or "release" in line:
             meta.setdefault("readme_release_lines", []).append(line.strip())
@@ -369,7 +432,9 @@ def parse_reference_readme(path: str) -> dict:
 
 
 def cmd_fetch(a: argparse.Namespace) -> None:
-    species = pl.read_csv(a.species, separator="\t").filter(pl.col("species_idx").is_in(a.idx))
+    species = pl.read_csv(a.species, separator="\t").filter(
+        pl.col("species_idx").is_in(a.idx)
+    )
     outdir = Path(a.outdir)
     outdir.mkdir(parents=True, exist_ok=True)
     stats = []
@@ -381,13 +446,23 @@ def cmd_fetch(a: argparse.Namespace) -> None:
                 urllib.request.urlretrieve(url, dest)
                 names, seqs = read_fasta(dest)
                 break
-            except Exception as e:  # network or truncated gzip: try again, then fail loudly
+            except (
+                Exception
+            ) as e:  # network or truncated gzip: try again, then fail loudly
                 if attempt == 4:
                     raise SystemExit(f"{url}: {e}")
                 time.sleep(10 * (attempt + 1))
         md5 = hashlib.md5(dest.read_bytes()).hexdigest()
-        stats.append({"species_idx": r["species_idx"], "upid": r["upid"], "n_proteins": len(seqs),
-                      "n_residues": sum(len(s) for s in seqs), "md5": md5, "url": url})
+        stats.append(
+            {
+                "species_idx": r["species_idx"],
+                "upid": r["upid"],
+                "n_proteins": len(seqs),
+                "n_residues": sum(len(s) for s in seqs),
+                "md5": md5,
+                "url": url,
+            }
+        )
     pl.DataFrame(stats).write_csv(a.stats, separator="\t")
 
 
@@ -421,12 +496,28 @@ def cmd_anchors(a: argparse.Namespace) -> None:
         cuts = np.searchsorted(b, np.arange(N_ANCHOR_BUCKETS + 1))
         for bi in range(N_ANCHOR_BUCKETS):
             if cuts[bi + 1] > cuts[bi]:
-                parts[bi].append(pl.DataFrame({"anchor": u[cuts[bi]:cuts[bi + 1]],
-                                               "species_idx": np.full(cuts[bi + 1] - cuts[bi], idx, dtype=np.int32)}))
+                parts[bi].append(
+                    pl.DataFrame(
+                        {
+                            "anchor": u[cuts[bi] : cuts[bi + 1]],
+                            "species_idx": np.full(
+                                cuts[bi + 1] - cuts[bi], idx, dtype=np.int32
+                            ),
+                        }
+                    )
+                )
     for bi in range(N_ANCHOR_BUCKETS):
-        df = pl.concat(parts[bi]) if parts[bi] else pl.DataFrame(schema={"anchor": pl.UInt64, "species_idx": pl.Int32})
+        df = (
+            pl.concat(parts[bi])
+            if parts[bi]
+            else pl.DataFrame(schema={"anchor": pl.UInt64, "species_idx": pl.Int32})
+        )
         df.write_parquet(out / f"b{bi:03d}.parquet")
-    Path(a.stats).write_text(json.dumps({"setting": a.setting, "letter_counts": letter_counts.tolist(), **windows}))
+    Path(a.stats).write_text(
+        json.dumps(
+            {"setting": a.setting, "letter_counts": letter_counts.tolist(), **windows}
+        )
+    )
 
 
 def cmd_candidates(a: argparse.Namespace) -> None:
@@ -437,11 +528,22 @@ def cmd_candidates(a: argparse.Namespace) -> None:
     for bucket in a.bucket:
         files = [str(Path(d) / f"b{bucket:03d}.parquet") for d in a.dirs]
         df = pl.concat([pl.read_parquet(f) for f in files])
-        g = df.group_by("anchor").agg(pl.col("species_idx").n_unique().alias("n_species"))
+        g = df.group_by("anchor").agg(
+            pl.col("species_idx").n_unique().alias("n_species")
+        )
         hists.append(g.group_by("n_species").len())
-        kept_all.append(g.filter(pl.col("n_species") >= MIN_SPECIES_FOR_ANY_LABELLING)["anchor"].to_numpy())
+        kept_all.append(
+            g.filter(pl.col("n_species") >= MIN_SPECIES_FOR_ANY_LABELLING)[
+                "anchor"
+            ].to_numpy()
+        )
         del df, g
-    hist = pl.concat(hists).group_by("n_species").agg(pl.col("len").sum()).sort("n_species")
+    hist = (
+        pl.concat(hists)
+        .group_by("n_species")
+        .agg(pl.col("len").sum())
+        .sort("n_species")
+    )
     np.save(a.out, np.sort(np.concatenate(kept_all)).astype(np.uint64))
     hist.write_parquet(a.hist)
 
@@ -478,25 +580,43 @@ def cmd_targets(a: argparse.Namespace) -> None:
             ok[ok] &= tvalid[tstart[ok]]
             # The gap must stay inside the anchor's protein: a gap that crosses the
             # separator lands the target in the next protein.
-            ok[ok] &= (np.searchsorted(starts, tstart[ok], side="right") - 1) == prot[ok]
+            ok[ok] &= (np.searchsorted(starts, tstart[ok], side="right") - 1) == prot[
+                ok
+            ]
             p = pos[ok]
             if not len(p):
                 continue
-            df = pl.DataFrame({
-                "anchor": codes[p], "gap": np.full(len(p), gap, dtype=np.int16),
-                "species_idx": np.full(len(p), idx, dtype=np.int32),
-                "target": tcodes[tstart[ok]], "protein_idx": prot[ok].astype(np.int32),
-                "pos0": (p - starts[prot[ok]]).astype(np.int32),
-            })
+            df = pl.DataFrame(
+                {
+                    "anchor": codes[p],
+                    "gap": np.full(len(p), gap, dtype=np.int16),
+                    "species_idx": np.full(len(p), idx, dtype=np.int32),
+                    "target": tcodes[tstart[ok]],
+                    "protein_idx": prot[ok].astype(np.int32),
+                    "pos0": (p - starts[prot[ok]]).astype(np.int32),
+                }
+            )
             b = bucket_of(df["anchor"].to_numpy(), N_TARGET_BUCKETS)
             df = df.with_columns(pl.Series("bucket", b))
             for (bi,), sub in df.partition_by("bucket", as_dict=True).items():
                 parts[int(bi)].append(sub.drop("bucket"))
-        accessions.append(pl.DataFrame({"species_idx": np.full(len(names), idx, dtype=np.int32),
-                                        "protein_idx": np.arange(len(names), dtype=np.int32),
-                                        "accession": names}))
-    schema = {"anchor": pl.UInt64, "gap": pl.Int16, "species_idx": pl.Int32, "target": pl.UInt64,
-              "protein_idx": pl.Int32, "pos0": pl.Int32}
+        accessions.append(
+            pl.DataFrame(
+                {
+                    "species_idx": np.full(len(names), idx, dtype=np.int32),
+                    "protein_idx": np.arange(len(names), dtype=np.int32),
+                    "accession": names,
+                }
+            )
+        )
+    schema = {
+        "anchor": pl.UInt64,
+        "gap": pl.Int16,
+        "species_idx": pl.Int32,
+        "target": pl.UInt64,
+        "protein_idx": pl.Int32,
+        "pos0": pl.Int32,
+    }
     for bi in range(N_TARGET_BUCKETS):
         df = pl.concat(parts[bi]) if parts[bi] else pl.DataFrame(schema=schema)
         df.write_parquet(out / f"b{bi:02d}.parquet")
@@ -519,7 +639,9 @@ def labellings(species: pl.DataFrame, seed: int) -> dict[str, np.ndarray]:
     real = sp["class"].to_numpy().astype(object)
     rng = np.random.default_rng(seed)
     rand = real[rng.permutation(len(real))]
-    group = (sp["phylum"].fill_null(sp["kingdom"]).fill_null(sp["domain"]).fill_null("none")).to_numpy()
+    group = (
+        sp["phylum"].fill_null(sp["kingdom"]).fill_null(sp["domain"]).fill_null("none")
+    ).to_numpy()
     tree = real.copy()
     rng2 = np.random.default_rng(seed + 1)
     for gval in np.unique(group):
@@ -551,15 +673,22 @@ def load_oasis(path: str) -> types.ModuleType:
         try:
             import scipy  # noqa: F401
         except ImportError:
+
             def _refuse(*_a, **_k):
-                raise RuntimeError("scipy is not available; only the finite-sample OASIS p-value is used")
+                raise RuntimeError(
+                    "scipy is not available; only the finite-sample OASIS p-value is used"
+                )
+
             stub = types.ModuleType("scipy")
-            stub.stats = types.SimpleNamespace(norm=types.SimpleNamespace(cdf=_refuse),
-                                               contingency=types.SimpleNamespace(chi2_contingency=_refuse))
+            stub.stats = types.SimpleNamespace(
+                norm=types.SimpleNamespace(cdf=_refuse),
+                contingency=types.SimpleNamespace(chi2_contingency=_refuse),
+            )
             sys.modules["scipy"] = stub
             sys.modules["scipy.stats"] = stub.stats
     spec_name = "oasis_splash"
     import importlib.util
+
     spec = importlib.util.spec_from_file_location(spec_name, path)
     mod = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(mod)
@@ -665,21 +794,44 @@ def cmd_test(a: argparse.Namespace) -> None:
     rows = []
     for lab_name in LABELLINGS:
         lab = labs[lab_name]
-        df = pairs.with_columns(pl.Series("clade", lab[pairs["species_idx"].to_numpy()].astype(str)))
+        df = pairs.with_columns(
+            pl.Series("clade", lab[pairs["species_idx"].to_numpy()].astype(str))
+        )
         carry = df.select("anchor", "gap", "species_idx", "clade").unique()
         per_clade = carry.group_by("anchor", "gap", "clade").len("n_species")
         good = per_clade.filter(pl.col("n_species") >= MIN_SPECIES_PER_CLADE)
-        n_good = good.group_by("anchor", "gap").len("n_clades").filter(pl.col("n_clades") >= MIN_CLADES)
+        n_good = (
+            good.group_by("anchor", "gap")
+            .len("n_clades")
+            .filter(pl.col("n_clades") >= MIN_CLADES)
+        )
         kept = good.join(n_good.select("anchor", "gap"), on=["anchor", "gap"])
-        tab = (df.join(kept.select("anchor", "gap", "clade"), on=["anchor", "gap", "clade"])
-               .group_by("anchor", "gap", "target", "clade").len("n"))
+        tab = (
+            df.join(
+                kept.select("anchor", "gap", "clade"), on=["anchor", "gap", "clade"]
+            )
+            .group_by("anchor", "gap", "target", "clade")
+            .len("n")
+        )
         # Distinct species in the kept classes. The table total is larger whenever a species
         # carries the anchor with more than one target (paralogs, repeats).
-        n_carrying = {(an, g): n for an, g, n in carry.join(kept.select("anchor", "gap", "clade"),
-                                                              on=["anchor", "gap", "clade"])
-                      .group_by("anchor", "gap").agg(pl.col("species_idx").n_unique()).iter_rows()}
-        for (anchor, gap), sub in tab.partition_by(["anchor", "gap"], as_dict=True).items():
-            wide = sub.pivot(on="clade", index="target", values="n").fill_null(0).sort("target")
+        n_carrying = {
+            (an, g): n
+            for an, g, n in carry.join(
+                kept.select("anchor", "gap", "clade"), on=["anchor", "gap", "clade"]
+            )
+            .group_by("anchor", "gap")
+            .agg(pl.col("species_idx").n_unique())
+            .iter_rows()
+        }
+        for (anchor, gap), sub in tab.partition_by(
+            ["anchor", "gap"], as_dict=True
+        ).items():
+            wide = (
+                sub.pivot(on="clade", index="target", values="n")
+                .fill_null(0)
+                .sort("target")
+            )
             clades = sorted(c for c in wide.columns if c != "target")
             x = wide.select(clades).to_numpy().astype(np.int64)
             tcodes = wide["target"].to_numpy()
@@ -689,20 +841,46 @@ def cmd_test(a: argparse.Namespace) -> None:
             p = float(p)
             eff = float(oasis.effectSize_bin(x, np.asarray(c), np.asarray(f)))
             x2, dfree, pc = pearson_chi2(composition_table(tcodes, x))
-            rows.append({
-                "setting": a.setting, "labelling": lab_name, "gap": int(gap), "anchor": int(anchor),
-                "n_species": int(n_carrying[(anchor, gap)]), "table_total": int(x.sum()),
-                "n_clades": len(clades), "n_targets": x.shape[0],
-                "p_oasis": p, "effect_size": eff, "comp_chi2": x2, "comp_df": dfree, "p_comp": pc,
-                "clades": ";".join(clades),
-                # OASIS's column weights c (one per class, same order as `clades`): the
-                # classes at the two ends are the ones the targets split.
-                "clade_weights": ";".join(f"{v:.4f}" for v in np.asarray(c, dtype=float)),
-            })
-    schema = {"setting": pl.String, "labelling": pl.String, "gap": pl.Int64, "anchor": pl.UInt64,
-              "n_species": pl.Int64, "table_total": pl.Int64, "n_clades": pl.Int64, "n_targets": pl.Int64, "p_oasis": pl.Float64,
-              "effect_size": pl.Float64, "comp_chi2": pl.Float64, "comp_df": pl.Int64, "p_comp": pl.Float64,
-              "clades": pl.String, "clade_weights": pl.String}
+            rows.append(
+                {
+                    "setting": a.setting,
+                    "labelling": lab_name,
+                    "gap": int(gap),
+                    "anchor": int(anchor),
+                    "n_species": int(n_carrying[(anchor, gap)]),
+                    "table_total": int(x.sum()),
+                    "n_clades": len(clades),
+                    "n_targets": x.shape[0],
+                    "p_oasis": p,
+                    "effect_size": eff,
+                    "comp_chi2": x2,
+                    "comp_df": dfree,
+                    "p_comp": pc,
+                    "clades": ";".join(clades),
+                    # OASIS's column weights c (one per class, same order as `clades`): the
+                    # classes at the two ends are the ones the targets split.
+                    "clade_weights": ";".join(
+                        f"{v:.4f}" for v in np.asarray(c, dtype=float)
+                    ),
+                }
+            )
+    schema = {
+        "setting": pl.String,
+        "labelling": pl.String,
+        "gap": pl.Int64,
+        "anchor": pl.UInt64,
+        "n_species": pl.Int64,
+        "table_total": pl.Int64,
+        "n_clades": pl.Int64,
+        "n_targets": pl.Int64,
+        "p_oasis": pl.Float64,
+        "effect_size": pl.Float64,
+        "comp_chi2": pl.Float64,
+        "comp_df": pl.Int64,
+        "p_comp": pl.Float64,
+        "clades": pl.String,
+        "clade_weights": pl.String,
+    }
     out = pl.DataFrame(rows, schema=schema) if rows else pl.DataFrame(schema=schema)
     out.write_parquet(a.out)
 
@@ -714,27 +892,49 @@ def cmd_collect(a: argparse.Namespace) -> None:
     for _, sub in df.group_by("setting", "gap", "labelling", maintain_order=True):
         sub = sub.with_columns(pl.Series("q_oasis", bh(sub["p_oasis"].to_numpy())))
         parts.append(sub)
-    df = pl.concat(parts) if parts else df.with_columns(pl.lit(None, pl.Float64).alias("q_oasis"))
+    df = (
+        pl.concat(parts)
+        if parts
+        else df.with_columns(pl.lit(None, pl.Float64).alias("q_oasis"))
+    )
     sig = df.filter(pl.col("q_oasis") < a.alpha)
     # Composition scan: BH over the significant anchors of each (setting, gap, labelling).
     cparts = []
     for _, sub in sig.group_by("setting", "gap", "labelling", maintain_order=True):
-        cparts.append(sub.with_columns(pl.Series("q_comp", bh(sub["p_comp"].to_numpy()))))
-    sig = pl.concat(cparts) if cparts else sig.with_columns(pl.lit(None, pl.Float64).alias("q_comp"))
+        cparts.append(
+            sub.with_columns(pl.Series("q_comp", bh(sub["p_comp"].to_numpy())))
+        )
+    sig = (
+        pl.concat(cparts)
+        if cparts
+        else sig.with_columns(pl.lit(None, pl.Float64).alias("q_comp"))
+    )
     sig = sig.with_columns(
-        pl.struct(["anchor", "setting"]).map_elements(
-            lambda s: decode_anchor(int(s["anchor"]), *parse_setting(s["setting"])), return_dtype=pl.String
-        ).alias("anchor_letters"))
+        pl.struct(["anchor", "setting"])
+        .map_elements(
+            lambda s: decode_anchor(int(s["anchor"]), *parse_setting(s["setting"])),
+            return_dtype=pl.String,
+        )
+        .alias("anchor_letters")
+    )
     sig = sig.with_columns(
-        pl.struct(["anchor", "setting"]).map_elements(
-            lambda s: entropy_bits(int(s["anchor"]), *parse_setting(s["setting"])), return_dtype=pl.Float64
-        ).alias("anchor_entropy_bits"))
+        pl.struct(["anchor", "setting"])
+        .map_elements(
+            lambda s: entropy_bits(int(s["anchor"]), *parse_setting(s["setting"])),
+            return_dtype=pl.Float64,
+        )
+        .alias("anchor_entropy_bits")
+    )
     df.write_parquet(a.all_out)
     sig.write_parquet(a.sig_out)
-    counts = (df.group_by("setting", "gap", "labelling")
-              .agg(pl.len().alias("n_anchors_tested"),
-                   (pl.col("q_oasis") < a.alpha).sum().alias("n_significant"))
-              .sort("setting", "gap", "labelling"))
+    counts = (
+        df.group_by("setting", "gap", "labelling")
+        .agg(
+            pl.len().alias("n_anchors_tested"),
+            (pl.col("q_oasis") < a.alpha).sum().alias("n_significant"),
+        )
+        .sort("setting", "gap", "labelling")
+    )
     counts.write_csv(a.counts_out, separator="\t")
     print(counts)
 
@@ -749,28 +949,49 @@ def cmd_occurrences(a: argparse.Namespace) -> None:
 
     Writes the occurrences, and a FASTA of every protein that carries one, for hmmscan.
     """
-    sig = pl.read_parquet(a.significant).filter(pl.col("labelling") == "real").select("setting", "gap", "anchor").unique()
+    sig = (
+        pl.read_parquet(a.significant)
+        .filter(pl.col("labelling") == "real")
+        .select("setting", "gap", "anchor")
+        .unique()
+    )
     sig = sig.filter(pl.col("setting") == a.setting)
     alphabet, k = parse_setting(a.setting)
     files = [str(Path(d) / f"b{a.bucket:02d}.parquet") for d in a.dirs]
-    occ = pl.concat([pl.read_parquet(f) for f in files]).join(sig.drop("setting"), on=["anchor", "gap"])
+    occ = pl.concat([pl.read_parquet(f) for f in files]).join(
+        sig.drop("setting"), on=["anchor", "gap"]
+    )
     acc = pl.concat([pl.read_parquet(f) for f in a.accessions])
-    occ = occ.join(acc, on=["species_idx", "protein_idx"], how="left").with_columns(pl.col("accession").cast(pl.String))
+    occ = occ.join(acc, on=["species_idx", "protein_idx"], how="left").with_columns(
+        pl.col("accession").cast(pl.String)
+    )
     seqs_needed = occ.select("species_idx", "protein_idx").unique()
     by_species = defaultdict(set)
     for s, p in seqs_needed.iter_rows():
         by_species[s].add(p)
-    fasta_of = {int(p.name.split(".")[0]): p for d in a.fasta_dirs for p in Path(d).glob("*.fasta.gz")}
+    fasta_of = {
+        int(p.name.split(".")[0]): p
+        for d in a.fasta_dirs
+        for p in Path(d).glob("*.fasta.gz")
+    }
     seq_of = {}
     for s, prots in by_species.items():
         names, seqs = read_fasta(fasta_of[s])
         for p in prots:
             seq_of[(s, p)] = (names[p], seqs[p])
     window = []
-    for s, p, pos0, gap in occ.select("species_idx", "protein_idx", "pos0", "gap").iter_rows():
+    for s, p, pos0, gap in occ.select(
+        "species_idx", "protein_idx", "pos0", "gap"
+    ).iter_rows():
         seq = seq_of[(s, p)][1]
-        window.append((seq[pos0:pos0 + k], seq[pos0 + k:pos0 + k + gap], seq[pos0 + k + gap:pos0 + k + gap + TARGET_LENGTH],
-                       len(seq)))
+        window.append(
+            (
+                seq[pos0 : pos0 + k],
+                seq[pos0 + k : pos0 + k + gap],
+                seq[pos0 + k + gap : pos0 + k + gap + TARGET_LENGTH],
+                len(seq),
+            )
+        )
     occ = occ.with_columns(
         pl.Series("anchor_residues", [w[0] for w in window], dtype=pl.String),
         pl.Series("gap_residues", [w[1] for w in window], dtype=pl.String),
@@ -796,11 +1017,18 @@ def cmd_totals(a: argparse.Namespace) -> None:
     for f in a.anchor_stats:
         d = json.loads(Path(f).read_text())
         cur = letters[d["setting"]]
-        letters[d["setting"]] = np.array(d["letter_counts"]) if cur is None else cur + np.array(d["letter_counts"])
-    out = {"n_species": stats.height, "n_proteins": int(stats["n_proteins"].sum()),
-           "n_residues": int(stats["n_residues"].sum()),
-           "letter_counts": {s: v.tolist() for s, v in letters.items()},
-           "letters": {s: reduced_lookup(parse_setting(s)[0])[1] for s in letters}}
+        letters[d["setting"]] = (
+            np.array(d["letter_counts"])
+            if cur is None
+            else cur + np.array(d["letter_counts"])
+        )
+    out = {
+        "n_species": stats.height,
+        "n_proteins": int(stats["n_proteins"].sum()),
+        "n_residues": int(stats["n_residues"].sum()),
+        "letter_counts": {s: v.tolist() for s, v in letters.items()},
+        "letters": {s: reduced_lookup(parse_setting(s)[0])[1] for s in letters},
+    }
     stats.write_csv(a.stats_out, separator="\t")
     Path(a.out).write_text(json.dumps(out, indent=2))
 
@@ -809,7 +1037,9 @@ def cmd_totals(a: argparse.Namespace) -> None:
 
 
 def main(argv: list[str] | None = None) -> None:
-    p = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
+    p = argparse.ArgumentParser(
+        description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter
+    )
     sub = p.add_subparsers(dest="cmd", required=True)
 
     s = sub.add_parser("inputs")
