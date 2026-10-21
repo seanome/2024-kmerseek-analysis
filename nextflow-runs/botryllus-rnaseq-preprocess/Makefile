@@ -11,9 +11,11 @@ SHELL := /bin/bash
 
 PIPELINE  := nf-core/rnaseq
 REVISION  := 3.27.0
-# The pipeline requires Nextflow >= 25.10.4; Sherlock's newest module is 25.04.7, whose
-# launcher fetches this version on first use.
-export NXF_VER := 25.10.4
+# The pipeline requires Nextflow >= 25.10.4. Sherlock's newest module is 25.04.7, a
+# self-contained build that ignores NXF_VER, so the 25.10.4 self-contained build is fetched
+# from the Nextflow release page. The module is still loaded, for its Java 18.
+NXF_RELEASE := 25.10.4
+NEXTFLOW    := $(SCRATCH)/bin/nextflow-$(NXF_RELEASE)-dist
 export NXF_OPTS := -Xms512m -Xmx4g
 
 OUTROOT  ?= $(SCRATCH)/botryllus-rnaseq-preprocess
@@ -36,16 +38,21 @@ HEAD_SUBMIT = HEAD_ACCOUNT=$(SLURM_ACCOUNT) HEAD_PARTITION=$(SLURM_PARTITION) \
               HEAD_SESSION=$(HEAD_SESSION) HEAD_JOBNAME=$(HEAD_JOBNAME) \
               $(MAKEFILE_DIR)/../../scripts/nf-head
 
-NF_RUN = nextflow run $(PIPELINE) -r $(REVISION) -resume \
+NF_RUN = $(NEXTFLOW) run $(PIPELINE) -r $(REVISION) -resume \
            -c $(MAKEFILE_DIR)/sherlock.config -params-file $(MAKEFILE_DIR)/params.yaml
 
 .PHONY: test run watch stop
+
+$(NEXTFLOW):
+	mkdir -p $(dir $@)
+	curl -fsSL -o $@.part https://github.com/nextflow-io/nextflow/releases/download/v$(NXF_RELEASE)/nextflow-$(NXF_RELEASE)-dist
+	chmod +x $@.part && mv $@.part $@
 
 # First TEST_READS pairs of the deepest and the shallowest sample.
 test: HEAD_TIME    = 06:00:00
 test: HEAD_JOBNAME = nf-botryllus-rnaseq-test
 test: HEAD_SESSION = botryllus-rnaseq-test
-test:
+test: $(NEXTFLOW)
 	mkdir -p $(TESTROOT)/reads
 	set -e; \
 	 echo "sample,fastq_1,fastq_2,strandedness" > $(TESTROOT)/samplesheet.csv; \
@@ -58,7 +65,7 @@ test:
 	cd $(TESTROOT) && ml load biology nextflow && \
 	  $(HEAD_SUBMIT) $(NF_RUN) --input $(TESTROOT)/samplesheet.csv --outdir $(TESTROOT)/results
 
-run:
+run: $(NEXTFLOW)
 	mkdir -p $(OUTROOT)
 	cd $(OUTROOT) && ml load biology nextflow && \
 	  $(HEAD_SUBMIT) $(NF_RUN) --input $(MAKEFILE_DIR)/samplesheet.csv --outdir $(OUTROOT)/results
