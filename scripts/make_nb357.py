@@ -279,7 +279,7 @@ pf.save(fig, FIG / "357_species_per_class_uniprot_reference_proteomes")
 md(r"""
 ## 2. Why k = 14 for Dayhoff and k = 36 for HP
 
-The prompt picked each k as the smallest at which one anchor's expected number of chance
+The pre-registration picked each k as the smallest at which one anchor's expected number of chance
 occurrences, across all the residues searched, falls below 0.2 under equal letter
 frequencies:
 
