@@ -36,6 +36,25 @@ make run
 `make test` runs the same thing on the first 200 000 read pairs of the shallowest sample
 (TL3, GSC3 old) and the deepest one (TL14, STD2 young).
 
+## Test result (2026-10-21)
+
+`make test` finished in about 40 minutes (job 48803559), every task on its first attempt.
+On the first 200 000 read pairs of TL3 (GSC3 old) and TL14 (STD2 young):
+
+![Read length before and after trimming, and strand of read 1](test_results/test_read_length_and_strand.png)
+
+- **a.** Trim Galore found adapter in 77% (TL3) and 86-88% (TL14) of reads. The mean read
+  length dropped from 150 to 115-116 bases (TL3) and 99-101 bases (TL14), so many inserts
+  are shorter than 150 bases. Under 0.5% of pairs were dropped as too short (under 20 bases).
+- **b.** Salmon put read 1 on the transcript's strand for 50% (TL3) and 52% (TL14) of the
+  fragments it assigned. **The library is unstranded**: give later steps
+  `strandedness: unstranded`.
+- Salmon assigned 48% (TL3) and 72% (TL14) of the read pairs to a FullNames transcript.
+
+Numbers are in [`test_results/test_summary.tsv`](test_results/test_summary.tsv); the figure
+is drawn by `plot_test_summary.py`. The first reads of a file come from the edge of the
+flow cell, so the full run may differ a little.
+
 ## Outputs
 
 In `$SCRATCH/botryllus-rnaseq-preprocess/results/`:
@@ -49,14 +68,15 @@ In `$SCRATCH/botryllus-rnaseq-preprocess/results/`:
 
 ## Resources
 
-No earlier run on these reads to size from. The largest pair is 13.3 GB gzipped
+Sized from the 2-sample test below. The largest pair is 13.3 GB gzipped
 (TL14, about 120 million read pairs).
 
 | Step | CPUs | Memory | Time limit | Why |
 |---|---|---|---|---|
-| Trim Galore | 8 | 16 GB | 12 h | cutadapt streams the reads; 8 CPUs gives it 4 cores |
-| FastQC | 2 | 8 GB | 6 h | about 1 h per 7 GB file on one thread |
-| Salmon index, strandedness | pipeline default (12 CPUs, 72 GB) | | | one index, built once |
+| Trim Galore | 8 | 16 GB | 12 h | test: 78 MB, 3 s run time on 200 000 pairs; x600 is about 30 min. 8 CPUs gives cutadapt 4 cores |
+| FastQC | 2 | 8 GB | 6 h | test: under 1 GB, 6 s on 200 000 reads; about 1 h on 120 million |
+| Salmon index | 6 | 8 GB | 2 h | test: 3.2 GB, 4 min 46 s; built once |
+| Salmon quant (strandedness) | 6 | 6 GB | 2 h | test: 2.3 GB; always a 1 million read subsample |
 | Nextflow head | 2 | 8 GB | 2 days | |
 
 ## Choices
