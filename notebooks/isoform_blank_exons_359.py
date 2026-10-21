@@ -148,8 +148,10 @@ def threshold_at_decoy_rate(
 ) -> float:
     """Loosest threshold t (scores <= t count) at which decoy landings are at most
     floor(max_rate * n_blank) exons. `decoy_best` maps each decoy exon that has any
-    landing call to its best (lowest) score. Returns -inf when even the strongest decoy
-    landing would break the cap and the cap is 0, so nothing counts."""
+    landing call to its best (lowest) score. Returns +inf when at most `cap` decoys have
+    any landing call (every real landing counts); otherwise the float just below the
+    (cap+1)-th smallest decoy score. That value is finite, never -inf: real exons with a
+    score below it still land."""
     cap = math.floor(max_rate * n_blank)
     scores = sorted(decoy_best.values())
     if len(scores) <= cap:
