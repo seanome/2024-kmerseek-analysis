@@ -664,6 +664,25 @@ def score() -> None:
         for f in d.glob("*.parquet")
     )
     settings_partial = sorted({f.parent.name.removesuffix(".chunks") for f in partial})
+    # The real queries' intermediates are searched first in every setting and the copies'
+    # last, so scoring an unfinished step 2 favours the real queries over their copies.
+    # Refuse unless asked; a partial run writes to results_partial/, never results/.
+    missing = sorted({arm_tag(a) for a in load_arms()} - set(settings_done))
+    res = OUT / "results"
+    if missing:
+        if ENV.get("ALLOW_PARTIAL") != "1":
+            sys.exit(
+                f"score: {len(missing)} of 152 settings have no finished step 2 table "
+                f"({', '.join(missing[:8])}{' ...' if len(missing) > 8 else ''}); the copies "
+                "would be scored on less of the proteome than the real queries. Finish step 2, "
+                "or set ALLOW_PARTIAL=1 to score the real queries early into results_partial/."
+            )
+        res = OUT / "results_partial"
+        res.mkdir(exist_ok=True)
+        print(
+            f"score: PARTIAL, {len(missing)} settings unfinished; writing {res}",
+            file=sys.stderr,
+        )
     s2 = pl.scan_parquet(step2_files + partial).filter(
         pl.col("query_name") != pl.col("target_name")
     )
@@ -823,7 +842,6 @@ def score() -> None:
             file=sys.stderr,
             flush=True,
         )
-    res = OUT / "results"
     pl.concat(best_rows, how="diagonal_relaxed").write_parquet(
         res / "286_best_path_per_gene.parquet"
     )
