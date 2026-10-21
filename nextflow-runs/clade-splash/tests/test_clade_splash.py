@@ -311,9 +311,10 @@ def test_alignment_control_finds_the_planted_columns(tmp_path):
              "--significant", str(tmp_path / "sig.parquet"), "--top-out", str(tmp_path / "top.parquet")])
     csp.main(["align-input", "--pfam", str(tmp_path / "pa.parquet"), "--occurrences", *occ_out,
              "--domtblout", str(dom), "--fastas", *fa_out, "--outdir", str(tmp_path / "ain"),
-             "--manifest", str(tmp_path / "man.tsv")])
+             "--manifest", str(tmp_path / "man.tsv"), "--parts-dir", str(tmp_path / "parts")])
     man = pl.read_csv(tmp_path / "man.tsv", separator="\t")
     assert man.height == 1
+    assert pl.read_csv(tmp_path / "parts" / "manifest_0000.tsv", separator="\t").equals(man)
     tag = man["tag"][0]
     (tmp_path / "sto").mkdir()
     with open(tmp_path / "sto" / f"{tag}.sto", "w") as fh:

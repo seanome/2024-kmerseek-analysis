@@ -382,72 +382,100 @@ process alignInput {
     output:
     path 'align_in', emit: dir
     path 'align_manifest.tsv', emit: manifest
+    path 'parts/manifest_*.tsv', emit: parts
 
     script:
     """
     clade_splash_pfam.py align-input --pfam ${pfam} --occurrences occ/*.parquet --domtblout dom/* \\
-        --fastas prot/*.fa --outdir align_in --manifest align_manifest.tsv
+        --fastas prot/*.fa --outdir align_in --manifest align_manifest.tsv --parts-dir parts --part-size 500
     """
 
     stub:
     """
-    mkdir align_in; touch align_manifest.tsv
+    mkdir align_in parts; touch align_manifest.tsv; printf 'setting\\tgap\\tanchor\\tpfam_acc\\ttag\\n' > parts/manifest_0000.tsv
     """
 }
 
+// One part of the manifest (500 anchor-family pairs) at a time. The pilot ran all 38,592 of
+// its pairs in one task, about 40 minutes; the full run has many more.
 process hmmalign {
+    tag "${part.baseName}"
     container 'quay.io/biocontainers/hmmer:3.4--h7d74f8d_5'
-    memory '8 GB'
-    time '4h'
+    memory '4 GB'
+    time { "${2 * task.attempt}h" }
 
     input:
-    path dir
-    path manifest
-    path hmm
+    tuple path(part), path(dir), path(hmm)
 
     output:
-    path 'sto'
+    tuple path(part), path("sto_${part.baseName}")
 
     script:
+    def out = "sto_${part.baseName}"
     """
-    mkdir sto
+    mkdir ${out}
     hmmfetch --index ${hmm} > /dev/null
     # Versioned accession of each family (hmmfetch wants PF00001.25, the manifest has PF00001).
     grep "^ACC   " ${hmm} | awk '{split(\$2, a, "."); print a[1] "\t" \$2}' > acc.tsv
-    tail -n +2 ${manifest} | while IFS=\$'\\t' read setting gap anchor fam tag; do
+    tail -n +2 ${part} | while IFS=\$'\\t' read setting gap anchor fam tag; do
       [ -s ${dir}/\$tag.fa ] || continue
       acc=\$(awk -v f="\$fam" '\$1 == f {print \$2; exit}' acc.tsv)
       hmmfetch ${hmm} "\$acc" > fam.hmm
-      hmmalign --outformat Stockholm fam.hmm ${dir}/\$tag.fa > sto/\$tag.sto
+      hmmalign --outformat Stockholm fam.hmm ${dir}/\$tag.fa > ${out}/\$tag.sto
     done
     """
 
     stub:
     """
-    mkdir sto
+    mkdir sto_${part.baseName}
     """
 }
 
 process alignControl {
+    tag "${part.baseName}"
     label 'python'
-    memory '16 GB'
-    time '8h'
+    memory { "${8 * task.attempt} GB" }
+    time { "${4 * task.attempt}h" }
+
+    input:
+    tuple path(part), path(sto), path(sig), path(species), path(oasis)
+
+    output:
+    path "alignment_control_${part.baseName}.parquet"
+
+    script:
+    """
+    clade_splash_pfam.py align-control --manifest ${part} --sto-dir ${sto} --significant ${sig} \\
+        --species ${species} --oasis ${oasis} --seed ${params.seed} --out alignment_control_${part.baseName}.parquet
+    """
+
+    stub:
+    """
+    touch alignment_control_${part.baseName}.parquet
+    """
+}
+
+process collectAlign {
+    label 'python'
+    memory '8 GB'
     publishDir "${params.outdir}", mode: 'copy'
 
     input:
-    path sto
-    path manifest
-    path sig
-    path species
-    path oasis
+    path parts, stageAs: 'parts/*'
 
     output:
     path 'alignment_control.parquet'
 
     script:
     """
-    clade_splash_pfam.py align-control --manifest ${manifest} --sto-dir ${sto} --significant ${sig} \\
-        --species ${species} --oasis ${oasis} --seed ${params.seed} --out alignment_control.parquet
+    python3 - <<'PY'
+import glob
+import polars as pl
+fs = sorted(glob.glob("parts/*.parquet"))
+dfs = [pl.read_parquet(f) for f in fs]
+dfs = [d for d in dfs if d.width]
+(pl.concat(dfs) if dfs else pl.DataFrame()).write_parquet("alignment_control.parquet")
+PY
     """
 
     stub:
@@ -544,8 +572,9 @@ workflow {
 
     po = pfamOverlap(occ.occ.collect(), dom.collect(), col.sig)
     ai = alignInput(po.anchors, occ.occ.collect(), dom.collect(), occ.fasta.collect())
-    sto = hmmalign(ai.dir, ai.manifest, hmm)
-    alignControl(sto, ai.manifest, col.sig, sel.species, oasis)
+    sto = hmmalign(ai.parts.flatten().combine(ai.dir).combine(Channel.value(hmm)))
+    ac = alignControl(sto.combine(col.sig).combine(sel.species).combine(oasis))
+    collectAlign(ac.collect())
 
     totals(fetched.map { c, fa, st -> st }.collect(), an.stats.collect())
 }

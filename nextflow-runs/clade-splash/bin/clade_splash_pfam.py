@@ -143,8 +143,16 @@ def cmd_align_input(a: argparse.Namespace) -> None:
                     dseq = seqs[r["query"]][r["env_from"] - 1:r["env_to"]]
                     fh.write(f">{r['query']}|{r['pos0']}|{r['env_from']}|{r['species_idx']}\n{dseq}\n")
             manifest.append({"setting": setting, "gap": gap, "anchor": anchor, "pfam_acc": fam, "tag": tag})
-    pl.DataFrame(manifest, schema={"setting": pl.String, "gap": pl.Int64, "anchor": pl.UInt64,
-                                   "pfam_acc": pl.String, "tag": pl.String}).write_csv(a.manifest, separator="\t")
+    man = pl.DataFrame(manifest, schema={"setting": pl.String, "gap": pl.Int64, "anchor": pl.UInt64,
+                                         "pfam_acc": pl.String, "tag": pl.String}).sort("tag")
+    man.write_csv(a.manifest, separator="\t")
+    # Parts of a.part_size rows, so hmmalign and the column tests run in parallel. At least
+    # one part, possibly empty, so the rest of the pipeline still runs.
+    parts = Path(a.parts_dir)
+    parts.mkdir(parents=True, exist_ok=True)
+    n_parts = max(1, -(-man.height // a.part_size))
+    for i in range(n_parts):
+        man.slice(i * a.part_size, a.part_size).write_csv(parts / f"manifest_{i:04d}.tsv", separator="\t")
 
 
 def read_stockholm_match_columns(path: str) -> dict[str, list[tuple[int, str]]]:
@@ -190,15 +198,16 @@ def cmd_align_control(a: argparse.Namespace) -> None:
     labs = labellings(species, a.seed)["real"]
     sig = pl.read_parquet(a.significant).filter(pl.col("labelling") == "real")
     manifest = pl.read_csv(a.manifest, separator="\t", schema_overrides={"anchor": pl.UInt64})
+    clades_of = {(st, int(g), int(an)): c for st, g, an, c in sig.select("setting", "gap", "anchor", "clades").iter_rows()}
     rows = []
     for r in manifest.iter_rows(named=True):
         sto = Path(a.sto_dir) / f"{r['tag']}.sto"
         if not sto.exists() or sto.stat().st_size == 0:
             continue
-        clades = sig.filter((pl.col("setting") == r["setting"]) & (pl.col("gap") == r["gap"]) & (pl.col("anchor") == r["anchor"]))["clades"]
-        if clades.len() == 0:
+        key = (r["setting"], r["gap"], r["anchor"])
+        if key not in clades_of:
             continue
-        clade_list = clades[0].split(";")
+        clade_list = clades_of[key].split(";")
         k = parse_setting(r["setting"])[1]
         cols = read_stockholm_match_columns(str(sto))
         per_col = defaultdict(lambda: defaultdict(set))  # column -> (residue, clade) -> species
@@ -252,6 +261,8 @@ def main(argv: list[str] | None = None) -> None:
     s.add_argument("--fastas", nargs="+", required=True)
     s.add_argument("--outdir", required=True)
     s.add_argument("--manifest", required=True)
+    s.add_argument("--parts-dir", required=True)
+    s.add_argument("--part-size", type=int, default=500)
     s.set_defaults(func=cmd_align_input)
 
     s = sub.add_parser("align-control")
