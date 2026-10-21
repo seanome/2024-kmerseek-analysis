@@ -393,10 +393,27 @@ def step_summarise(species: str, only: list[str] | None) -> None:
         pl.scan_parquet(files)
         .filter(pl.col("region_evalue").is_finite())
         .join(lengths.lazy(), on="target_name", how="inner")
+        # Two kinds of E-value (kmerseek 982a055, search.rs). A single region's E is for the
+        # whole database, K m N exp(-lambda S) with N its residues, so log2(E) + bits is the
+        # same for every target and the protein's own share is E * L / N. A chained region's
+        # E is its pair-level sum P-value times the number of indexed proteins, and its bits
+        # are -log2 P, so log2(E) + bits = log2(number of indexed proteins) and the protein's
+        # own chance is E divided by that number. Added 2026-10-21, after the chained run's
+        # search-space check failed (s.d. 5.1): the first version used E * L / N for both.
+        .with_columns(
+            n_index=((pl.col("region_evalue").log(2) + pl.col("region_ka_bits")) * math.log(2)).exp()
+        )
+        .with_columns(
+            chained=pl.col("n_index").is_finite()
+            & pl.col("n_index").is_between(0.9 * n_targets, 1.001 * n_targets)
+        )
         # kmerseek writes E = 0 when the E-value underflows (notebook 287); floor it so
         # p stays above 0 and the score finite.
         .with_columns(
-            x=(pl.col("region_evalue") * pl.col("L") / l_db).clip(lower_bound=1e-300)
+            x=pl.when(pl.col("chained"))
+            .then(pl.col("region_evalue") / pl.col("n_index"))
+            .otherwise(pl.col("region_evalue") * pl.col("L") / l_db)
+            .clip(lower_bound=1e-300)
         )
         # p = 1 - exp(-x); below 1e-8 that subtraction loses every digit, and p = x there.
         .with_columns(
@@ -408,9 +425,10 @@ def step_summarise(species: str, only: list[str] | None) -> None:
         .collect()
     )
     # The search space must not depend on the target: log2(E) + bits constant per query and setting.
+    print(f"chained calls (E from the sum statistic): {int(calls['chained'].sum()):_} of {calls.height:_}")
     space = (
         calls.filter(
-            pl.col("region_ka_bits").is_not_null() & (pl.col("region_evalue") > 0)
+            pl.col("region_ka_bits").is_not_null() & (pl.col("region_evalue") > 0) & ~pl.col("chained")
         )
         .with_columns(c=pl.col("region_evalue").log(2) + pl.col("region_ka_bits"))
         .group_by("query_name", "alphabet", "ksize")
