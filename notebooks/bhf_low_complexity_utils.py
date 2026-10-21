@@ -343,7 +343,7 @@ def fig_wins_by_null(
     ax.set_xlabel(
         "Settings where BHF beats 95% of the null's 300 queries (% of the settings where BHF has that score)"
     )
-    ax.set_xlim(0, max(30, float(w["pct_settings"].max()) + 3))
+    ax.set_xlim(-1, max(30, float(w["pct_settings"].max()) + 3))  # room for marks at 0
     handles = [
         Line2D([], [], color=c, marker=s, ls="none", label=n)
         for n, c, s in zip(NULLS, colours, shapes)

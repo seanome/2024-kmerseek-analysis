@@ -322,8 +322,8 @@ if COPIES_DONE:
         w, FIG / "283_bhf_beats_copies_by_null_human_gencode",
         hypothesis="if BHF's wins come from its low-complexity stretches, copies that keep the stretches (null 2) "
                    "bring every score back to the 5% chance line.",
-        conclusion=(f"{over.height} of {len(lc.SCORES)} scores beat null 2 in more than twice the settings chance predicts; "
-                    "every score falls to between 3.8% and 6.6%."),
+        conclusion=(f"{over.height} of {len(lc.SCORES)} scores beat null 2 in more than twice the settings chance predicts. "
+                    "Against other Botryllus proteins (nulls 4, 5) the E-value stays at chance; null 4's wins sit on the same stretches."),
     )
 waiting = [name for name in lc.NULLS if name not in DONE]
 if waiting:
@@ -345,7 +345,13 @@ BHF is at chance by E-value (1 of 61 settings) and over the decision line for si
 other eight scores: shared k-mers 24 of 106, tf-idf 23, containment 23, mean IDF 19,
 protein enrichment 16, protein Poisson p-value 11. That is about as often as against its
 whole-protein shuffles (null 1), as predicted, though not more often for every score.
-Section 5 says where on BHF those wins are. Null 5 (any other protein) is still running.
+Section 5 says where on BHF those wins are.
+
+Against 300 other *Botryllus* proteins of any kind (null 5), BHF is at or under chance for
+eight of the nine scores: E-value 0 of 61, shared k-mers and both Poisson scores 0 of 106,
+containment and protein enrichment 3, enrichment 4, tf-idf 5. Mean IDF is the exception,
+14 of 106. The prediction written before the run said every score would fall under what
+chance predicts (3.1 of 61, 5.3 of 106); that holds for every score but mean IDF.
 """),
     md(r"""
 ## 5. The decision rule
@@ -399,6 +405,14 @@ if COPIES_DONE:
         print(f"\n{name}: {o.height} of {len(lc.SCORES)} scores above the decision line")
         if o.height == 0:
             continue
+        # As for null 3: the count again with only the proteins that found something.
+        print(p.filter((pl.col("null") == name) & pl.col("metric").is_in(o["metric"].to_list())).with_columns(
+            ((1 + pl.col("n_as_good")) / (1 + pl.col("n_copies") - pl.col("n_copies_no_hit"))).alias("p_hit")
+        ).group_by("metric").agg(
+            pl.len().alias("n_settings"), (pl.col("p") <= lc.ALPHA).sum().alias("n_beats_95pct"),
+            (pl.col("p_hit") <= lc.ALPHA).sum().alias("n_beats_95pct_of_proteins_with_a_hit"),
+            (pl.col("p") <= lc.ALPHA).and_(pl.col("n_copies_no_hit") > 100).sum().alias("wins_where_over_100_found_nothing"),
+            (lc.ALPHA * 2 * pl.len()).round(1).alias("twice_chance")).sort("metric"))
         run = lc.NULLS[name]
         reg = pl.read_parquet(sorted((run / "regions").glob("*.parquet"))).filter(pl.col("query_name") == "BHF")
         won = p.filter((pl.col("null") == name) & (pl.col("p") <= lc.ALPHA) & pl.col("metric").is_in(o["metric"].to_list()))
@@ -491,13 +505,31 @@ winning (score, setting) pairs:
   protein carries with at most one change. uniprot18 has an E-value only at k5 and k6,
   where BHF's best is 20 and 25, and its top protein is not ZNF770.
 
+Some of these wins are at settings where most proteins found nothing (tf-idf: 11 of 23
+wins where more than 100 of the 300 found nothing). Counting only the proteins that found
+something, four scores stay over the line: shared k-mers 15, containment 14, tf-idf 13,
+mean IDF 12 (line 10.6). That count is strict, since a setting where few proteins found
+anything cannot reach 5%.
+
 Where BHF wins, its matched region lies mostly in its low-complexity stretches (a median
 59% to 100% of the region, by score), against 35% to 51% where it does not win, though
 only 62 of BHF's 252 residues are in a stretch. Shared k-mers is the exception (76% and
 75%). The prediction written before the run holds: BHF beats other proteins of its length
 under the scores that reward its low-complexity stretches, and not by E-value.
 
-Null 5 (any other protein) will be added when its search finishes.
+**Null 5, other proteins of any kind.** Only mean IDF is over the line (14 of 106; 10 when
+counting only the proteins that found something, under the line of 10.6). Its 14 wins put
+13 different human proteins on top (SPICE1 twice), at 8 alphabets, so they do not point to
+one match. Proteins with real human homologs score at least as well as BHF under every
+other score, as expected.
+
+**Verdict across the five nulls.** BHF's kmerseek hits are no better than chance by
+E-value under every null. Under the other scores, BHF beats other proteins of its length
+that conventional search cannot place, but only through its low-complexity stretches:
+copies that keep those stretches (null 2) bring every score back to chance, and the human
+proteins behind the wins against other proteins are the same serine and charged stretches
+(NFE2L1, DEK) plus one ordinary 10-residue match (ZNF770). Nothing here supports BHF as a
+homolog of any human protein.
 """),
 ]
 
