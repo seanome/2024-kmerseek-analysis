@@ -8,14 +8,27 @@ cells = []
 
 
 def md(source):
-    cells.append({"cell_type": "markdown", "id": f"md-{len(cells):02d}", "metadata": {},
-                  "source": source.strip().splitlines(keepends=True)})
+    cells.append(
+        {
+            "cell_type": "markdown",
+            "id": f"md-{len(cells):02d}",
+            "metadata": {},
+            "source": source.strip().splitlines(keepends=True),
+        }
+    )
 
 
 def code(source):
-    cells.append({"cell_type": "code", "id": f"code-{len(cells):02d}", "execution_count": None,
-                  "metadata": {"jupyter": {"source_hidden": True}}, "outputs": [],
-                  "source": source.strip("\n").splitlines(keepends=True)})
+    cells.append(
+        {
+            "cell_type": "code",
+            "id": f"code-{len(cells):02d}",
+            "execution_count": None,
+            "metadata": {"jupyter": {"source_hidden": True}},
+            "outputs": [],
+            "source": source.strip("\n").splitlines(keepends=True),
+        }
+    )
 
 
 md(r"""
@@ -147,12 +160,10 @@ Lower is better: E < 0.01 means a chance match of that window is rare enough to 
 """)
 
 code(r"""
-est = pl.read_csv(DATA / "floor_estimates.tsv", separator="\t", infer_schema_length=None)
+est = pl.read_csv(DATA / "floor_estimates.tsv.gz", separator="\t", infer_schema_length=None)
 settings = pl.read_csv(DATA / "settings.tsv", separator="\t", infer_schema_length=None)
 gate = pl.read_csv(DATA / "gate_uhgp90.tsv", separator="\t", infer_schema_length=None)
 min_len = pl.read_csv(DATA / "floor_min_length.tsv", separator="\t", infer_schema_length=None)
-print(f"{len(settings)} kmerseek settings:")
-print(settings.group_by("ka_fit_status").len())
 """)
 
 md(r"""
@@ -188,7 +199,7 @@ ax.scatter([], [], marker="x", s=10, color=pf.GREY, lw=0.6,
 for a, verdict, k_min in gate.select("alphabet", "verdict", "smallest_ksize").iter_rows():
     if all(gate.filter(pl.col("alphabet") == a)[c][0] is None for c, *_ in MARKS):
         ax.scatter([GATE_E], [y[a]], marker="x", s=10, color=pf.GREY, lw=0.6, zorder=3)
-        ax.annotate(f"smallest k is {k_min}", (GATE_E, y[a]), xytext=(6, 0),
+        ax.annotate(f"smallest k {k_min}", (GATE_E, y[a]), xytext=(6, 0),
                     textcoords="offset points", ha="left", va="center", color="#555555")
     ax.text(1.02, y[a], verdict, transform=ax.get_yaxis_transform(), va="center",
             color=HIGHLIGHT_COLOUR if verdict == "dead" else "black",
@@ -198,14 +209,13 @@ for yy in range(len(rows)):
     ax.axhline(yy, color="#eeeeee", lw=0.4, zorder=0)
 ax.invert_yaxis()
 ax.set_xscale("log")
-ax.set_xlim(1e-32, 1e5)
+ax.set_xlim(1e-32, 1e10)
 ax.xaxis.set_major_locator(mpl.ticker.FixedLocator([1e-30, 1e-20, 1e-10, 1e-2, 1e4]))
 ax.xaxis.set_minor_locator(mpl.ticker.NullLocator())
 ax.set_xlabel("smallest estimated E against UHGP-90, ticks spaced by ratio\n"
               "(left of the line at E = 0.01 is rare enough to call)")
-fig.suptitle("Step 0 gate: an alphabet is alive if any mark is left of E = 0.01",
-             x=0.02, ha="left")
-pf.shared_legend(fig, ncol=2, frameon=False)
+pf.shared_legend(fig, ncol=2, frameon=False,
+                 title="Step 0 gate: an alphabet is alive if any mark is left of E = 0.01")
 pf.save(fig, FIGURES / "step0_gate_alphabets_uhgp90")
 """)
 
@@ -294,8 +304,8 @@ for ax, suffix, title in [(axs[0], "counting", "counting estimate"),
         ax.scatter([v for v in col if v is not None], ys, s=10, color=colours[db],
                    label=DATABASES[db], zorder=3)
         miss = [y[a] + (k - 1) * 0.22 for a, v in zip(table["alphabet"], col) if v is None]
-        ax.scatter([61.5] * len(miss), miss, marker="x", s=8, color=pf.GREY, lw=0.6,
-                   label="no L up to 60 reaches it" if k == 0 else None, zorder=3)
+        ax.scatter([61.5] * len(miss), miss, marker="x", s=8, color=pf.GREY, lw=0.6, zorder=3)
+    ax.scatter([], [], marker="x", s=8, color=pf.GREY, lw=0.6, label="no L up to 60 reaches it")
     ax.axvline(14, color="black", lw=0.4, ls=":")
     ax.axvline(30, color="black", lw=0.4, ls=":")
     ax.set_xlim(8, 63)
@@ -336,10 +346,16 @@ for i, a in enumerate(order):
     ax.scatter(v, np.full(len(v), i) + np.random.default_rng(i).uniform(-0.25, 0.25, len(v)),
                s=3, color=GROUP_TINT[group_of(a)], edgecolors="#555555", linewidths=0.2)
 ax.axvspan(1 / 3, 3, color="#eeeeee", zorder=0, label="within a factor of 3")
+for name, *_ in GROUPS:
+    if any(group_of(a) == name for a in order):
+        ax.scatter([], [], s=6, color=GROUP_TINT[name], edgecolors="#555555", linewidths=0.2,
+                   label=name)
 ax.set_xscale("log")
 ax.set_yticks(range(len(order)), order)
-ax.set_xlabel("expected_hits_counting / region_evalue_ka_fit at L = 14, UHGP-90\n(one dot per setting; ticks spaced by ratio)")
-ax.legend(loc="lower left", bbox_to_anchor=(0, 1.0), frameon=False)
+ax.set_xlabel("expected_hits_counting / region_evalue_ka_fit at L = 14, UHGP-90\n"
+              "one dot per setting, ticks spaced by ratio. Left of the band:\n"
+              "kmerseek's K and r call the match less significant than chance says")
+ax.legend(loc="lower left", bbox_to_anchor=(0, 1.0), frameon=False, ncol=2)
 pf.save(fig, FIGURES / "step0_counting_vs_ka_fit_uhgp90")
 """)
 
@@ -351,6 +367,8 @@ estimate is still in every table above.
 """)
 
 code(r"""
+print(f"{len(settings)} kmerseek settings:")
+print(settings.group_by("ka_fit_status").len())
 nofit = settings.filter(pl.col("ka_fit_status") != "fitted")
 print(nofit.group_by("alphabet", "ka_fit_status").agg(
     n_settings=pl.len(), ksizes=pl.col("ksize").unique().sort()).sort("alphabet"))
@@ -371,14 +389,57 @@ pf.save(fig, FIGURES / "step0_settings_with_and_without_fit")
 """)
 
 md(r"""
-## 8. Step 0 verdict
+## 8. Step 0 verdict (run of 2026-10-20, databases read that day)
 
-Filled in from section 3 once the run on the real databases finishes.
+**Dead: all 7 HP alphabets.** `hp_lehninger2`, `hp_thomas_dill2`, `hp_kyte_doolittle2`,
+`hp_thomas_dill_no_c2`, `hp_lehninger_c_nonpolar2`, `hp_lehninger_hpc3` and `hp_pbotc_1st_ed2`.
+The smallest k any of them was indexed at is 15 to 19, longer than a 14-residue window, and two
+seeds of 15 need 31 residues, more than the longest peptide. Even ignoring the seed, one exact
+window needs 38 to 41 residues to reach `expected_hits_counting` < 0.01 against UHGP-90
+(section 5). Peptide lookup is not possible with a two- or three-class alphabet.
+
+**Alive: the other 12**, `massspec18` among them. Against UHGP-90 (4.37 billion residues):
+
+* `protein20`, `uniprot18` and `massspec18` reach `expected_hits_counting` < 0.01 with one exact
+  window of 10 residues, and a 14-residue window gives 1.3e-8 to 1.4e-7.
+* `wass14`, `hsdm17`, `mmseqs12` and `sdm12` need 11 to 13 residues.
+* `funcgroups8`, `dayhoff6`, `wwmj5`, `gbmr7`, `polarity4` and `gbmr4` need 15 to 26 residues for
+  one window, so a 14-residue window does not pass; they pass the gate only through a pair of
+  windows inside a 30-residue peptide. Most de novo peptides are shorter than 30, so these six are
+  alive only for the longest peptides.
+
+**The two estimates do not agree.** At L = 14 against UHGP-90, every fitted setting but 6 gives a
+`region_evalue_ka_fit` more than 3 times `expected_hits_counting`, and for `protein20` the
+median ratio is 3e9: kmerseek's stored K and r call an exact 14-residue match far less
+significant than its chance count says. With K and r alone, only `protein20` (3.3e-3),
+`uniprot18`, `hsdm17`, `wass14` and `mmseqs12` reach E < 0.01 at 14 residues. This is the size of
+error notebook 344
+([PR 174](https://github.com/seanome/2024-kmerseek-analysis/pull/174)) found for region E-values, in the conservative direction here, and it bears on
+pass rule 2 (decoy FDR crossing 1% within a factor of 2 of E = 0.01): that rule is likely to fail
+on calibration, not on recovery.
+
+**What this decides.** Steps 1-6 run, with `massspec18`, `protein20`, `uniprot18` and the four
+12-17-class alphabets at k 5 to 9 as the kmerseek settings. Kill test 3 is not killed by Step 0.
+`massspec18` has no index or stored fit yet ([kmerseek PR 156](https://github.com/seanome/kmerseek/pull/156)); Step 4 builds one on the
+UHGP-90 + human + cRAP database.
 """)
 
-nb = {"cells": cells, "metadata": {"kernelspec": {"display_name": "Python 3", "language": "python",
-                                                  "name": "python3"}},
-      "nbformat": 4, "nbformat_minor": 5}
-out = Path(__file__).resolve().parents[1] / "notebooks" / "300_mass_spec_peptide_source_lookup_uhgp90.ipynb"
+nb = {
+    "cells": cells,
+    "metadata": {
+        "kernelspec": {
+            "display_name": "Python 3",
+            "language": "python",
+            "name": "python3",
+        }
+    },
+    "nbformat": 4,
+    "nbformat_minor": 5,
+}
+out = (
+    Path(__file__).resolve().parents[1]
+    / "notebooks"
+    / "300_mass_spec_peptide_source_lookup_uhgp90.ipynb"
+)
 out.write_text(json.dumps(nb, indent=1) + "\n")
 print(out)

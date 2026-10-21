@@ -26,12 +26,17 @@ def count(path: str) -> dict:
     unzip = "pigz -dc" if shutil.which("pigz") else "gzip -dc"
     reader = f"{unzip} '{path}'" if path.endswith(".gz") else f"cat '{path}'"
     headers = subprocess.Popen(
-        f"set -o pipefail; {reader} | grep -c '^>'", shell=True, executable="/bin/bash",
-        stdout=subprocess.PIPE, text=True,
+        f"set -o pipefail; {reader} | grep -c '^>'",
+        shell=True,
+        executable="/bin/bash",
+        stdout=subprocess.PIPE,
+        text=True,
     )
     proc = subprocess.Popen(
-        f"set -o pipefail; {reader} | grep -v '^>' | tr -d '\\n\\r'", shell=True,
-        executable="/bin/bash", stdout=subprocess.PIPE,
+        f"set -o pipefail; {reader} | grep -v '^>' | tr -d '\\n\\r'",
+        shell=True,
+        executable="/bin/bash",
+        stdout=subprocess.PIPE,
     )
     counts = np.zeros(256, dtype=np.int64)
     while chunk := proc.stdout.read(CHUNK):
@@ -40,7 +45,9 @@ def count(path: str) -> dict:
         raise RuntimeError(f"reading {path} failed with exit {proc.returncode}")
     n_sequences = int(headers.communicate()[0])
     if headers.returncode != 0:
-        raise RuntimeError(f"counting headers of {path} failed with exit {headers.returncode}")
+        raise RuntimeError(
+            f"counting headers of {path} failed with exit {headers.returncode}"
+        )
     letters = {chr(i): int(c) for i, c in enumerate(counts) if c}
     return {
         "n_sequences": n_sequences,
@@ -56,7 +63,9 @@ def main() -> None:
     result.update(count(path))
     with open(out, "w") as fh:
         json.dump(result, fh, indent=1)
-    print(f"{name}: {result['n_sequences']:_} sequences, {result['n_residues']:_} residues")
+    print(
+        f"{name}: {result['n_sequences']:_} sequences, {result['n_residues']:_} residues"
+    )
 
 
 if __name__ == "__main__":

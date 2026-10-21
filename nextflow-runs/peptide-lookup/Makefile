@@ -45,6 +45,7 @@ pull-step0:
 	mkdir -p $(NOTEBOOK_DATA)/step0
 	rsync -av --exclude '*.n_headers' $(SHERLOCK_HOST):$(REMOTE_OUT)/step0/ $(NOTEBOOK_DATA)/step0/
 	rsync -av $(SHERLOCK_HOST):$(REMOTE_OUT)/db/manifest.tsv $(NOTEBOOK_DATA)/step0/db_manifest.tsv
+	gzip -9f $(NOTEBOOK_DATA)/step0/floor_estimates.tsv
 
 test:
 	python3 -m pytest -q tests

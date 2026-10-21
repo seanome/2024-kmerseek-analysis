@@ -18,8 +18,20 @@ NAME = re.compile(
     r"^(?P<database>[^.]+)\.(?P<alphabet>[a-z0-9_]+)\.k(?P<ksize>\d+)(?:\.s(?P<scaled>\d+))?"
     r"\.lc(?P<lowcomplexity>true|false)\.kmerseek\.rocksdb$"
 )
-KEEP = ["slope", "k", "lambda_analytic", "match_probability", "null", "reference",
-        "mismatch_penalty", "xdrop", "n_queries", "query_residues", "database_kmers", "fitted"]
+KEEP = [
+    "slope",
+    "k",
+    "lambda_analytic",
+    "match_probability",
+    "null",
+    "reference",
+    "mismatch_penalty",
+    "xdrop",
+    "n_queries",
+    "query_residues",
+    "database_kmers",
+    "fitted",
+]
 
 
 def main() -> None:

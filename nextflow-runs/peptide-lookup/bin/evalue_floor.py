@@ -84,10 +84,12 @@ def sample_windows(path: str, n: int, length: int, seed: int) -> pl.DataFrame:
         flat = int(rng.integers(cumulative[-1]))
         i = int(np.searchsorted(cumulative, flat, side="right"))
         start = flat - (int(cumulative[i - 1]) if i else 0)
-        window = seqs[i][start:start + length]
+        window = seqs[i][start : start + length]
         if set(window) <= canonical:
             rows.append((names[i], start, window))
-    return pl.DataFrame(rows, schema=["accession", "start_0based", "window"], orient="row")
+    return pl.DataFrame(
+        rows, schema=["accession", "start_0based", "window"], orient="row"
+    )
 
 
 def class_frequencies(composition: dict, alphabet: str) -> np.ndarray:
@@ -139,24 +141,35 @@ def settings_table(ka_fits: pl.DataFrame) -> pl.DataFrame:
             ka_k_min=pl.col("k").filter(pl.col("fitted")).min(),
             ka_k_max=pl.col("k").filter(pl.col("fitted")).max(),
         )
-        .with_columns(ka_fit_status=pl.when(pl.col("n_indexes_fitted") > 0)
-                      .then(pl.lit("fitted")).otherwise(pl.lit("no fit stored")))
+        .with_columns(
+            ka_fit_status=pl.when(pl.col("n_indexes_fitted") > 0)
+            .then(pl.lit("fitted"))
+            .otherwise(pl.lit("no fit stored"))
+        )
     )
-    massspec = pl.DataFrame({
-        "alphabet": ["massspec18"] * len(MASSSPEC_KSIZES),
-        "ksize": MASSSPEC_KSIZES,
-        "scaled": [1] * len(MASSSPEC_KSIZES),
-        "mismatch_penalty": [None] * len(MASSSPEC_KSIZES),
-        "xdrop": [None] * len(MASSSPEC_KSIZES),
-        "lowcomplexity": ["false"] * len(MASSSPEC_KSIZES),
-        "n_indexes": [0] * len(MASSSPEC_KSIZES),
-        "n_indexes_fitted": [0] * len(MASSSPEC_KSIZES),
-        "ka_fit_status": ["no index: alphabet not in kmerseek"] * len(MASSSPEC_KSIZES),
-    })
+    massspec = pl.DataFrame(
+        {
+            "alphabet": ["massspec18"] * len(MASSSPEC_KSIZES),
+            "ksize": MASSSPEC_KSIZES,
+            "scaled": [1] * len(MASSSPEC_KSIZES),
+            "mismatch_penalty": [None] * len(MASSSPEC_KSIZES),
+            "xdrop": [None] * len(MASSSPEC_KSIZES),
+            "lowcomplexity": ["false"] * len(MASSSPEC_KSIZES),
+            "n_indexes": [0] * len(MASSSPEC_KSIZES),
+            "n_indexes_fitted": [0] * len(MASSSPEC_KSIZES),
+            "ka_fit_status": ["no index: alphabet not in kmerseek"]
+            * len(MASSSPEC_KSIZES),
+        }
+    )
     table = pl.concat([table, massspec], how="diagonal_relaxed")
     return table.sort(by, nulls_last=True).with_columns(
-        setting=pl.format("{}.k{}.s{}.C{}", "alphabet", "ksize", "scaled",
-                          pl.col("mismatch_penalty").cast(pl.Utf8).fill_null("-"))
+        setting=pl.format(
+            "{}.k{}.s{}.C{}",
+            "alphabet",
+            "ksize",
+            "scaled",
+            pl.col("mismatch_penalty").cast(pl.Utf8).fill_null("-"),
+        )
     )
 
 
@@ -164,7 +177,9 @@ def main() -> None:
     ap = argparse.ArgumentParser(description=__doc__.split("\n")[0])
     ap.add_argument("--swissprot", required=True)
     ap.add_argument("--ka-fits", required=True)
-    ap.add_argument("--composition", action="append", required=True, help="name=path.json")
+    ap.add_argument(
+        "--composition", action="append", required=True, help="name=path.json"
+    )
     ap.add_argument("--n-windows", type=int, default=1_000)
     ap.add_argument("--seed", type=int, default=300)
     ap.add_argument("--out-dir", required=True)
@@ -181,10 +196,14 @@ def main() -> None:
     windows.write_csv(out / "windows_swissprot.tsv", separator="\t")
     lengths = np.arange(L_MIN, L_MAX + 1)
 
-    ka_fits = pl.read_csv(args.ka_fits, separator="\t", infer_schema_length=0).with_columns(
-        pl.col("ksize", "scaled").cast(pl.Int64),
-        pl.col("mismatch_penalty", "xdrop", "slope", "k").cast(pl.Float64),
-    ).filter(pl.col("alphabet").is_in(KMERSEEK_ALPHABETS))
+    ka_fits = (
+        pl.read_csv(args.ka_fits, separator="\t", infer_schema_length=0)
+        .with_columns(
+            pl.col("ksize", "scaled").cast(pl.Int64),
+            pl.col("mismatch_penalty", "xdrop", "slope", "k").cast(pl.Float64),
+        )
+        .filter(pl.col("alphabet").is_in(KMERSEEK_ALPHABETS))
+    )
     settings = settings_table(ka_fits)
     settings.write_csv(out / "settings.tsv", separator="\t")
 
@@ -201,7 +220,9 @@ def main() -> None:
             counting = np.exp(log_pr[:, lengths - 1] + np.log(n_start))  # [window, L]
             # class composition of each window's first L residues, for u
             onehot = np.eye(len(freq))[encoded]  # [window, 60, class]
-            comp_prefix = np.cumsum(onehot, axis=1)[:, lengths - 1, :] / lengths[None, :, None]
+            comp_prefix = (
+                np.cumsum(onehot, axis=1)[:, lengths - 1, :] / lengths[None, :, None]
+            )
             u = comp_prefix @ freq  # [window, L]
             for s in alphabet_settings.iter_rows(named=True):
                 k = s["ksize"]
@@ -210,42 +231,67 @@ def main() -> None:
                 if s["ka_fit_status"] == "fitted":
                     n_db = (n_res - n_seq * (k - 1)) / s["scaled"]
                     lam = karlin_altschul_lambda(u, s["mismatch_penalty"])
-                    ka = (s["ka_k_median"] * lengths[None, :] * n_db
-                          * np.exp(-s["ka_r_database_median"] * lam * lengths[None, :]))
+                    ka = (
+                        s["ka_k_median"]
+                        * lengths[None, :]
+                        * n_db
+                        * np.exp(-s["ka_r_database_median"] * lam * lengths[None, :])
+                    )
                 for j, L in enumerate(lengths):
                     if not ok[j]:
                         continue
-                    rows.append({
-                        "setting": s["setting"], "alphabet": alphabet, "ksize": k,
-                        "scaled": s["scaled"], "mismatch_penalty": s["mismatch_penalty"],
-                        "database": db, "window_length": int(L),
-                        "expected_hits_counting": float(np.median(counting[:, j])),
-                        "expected_hits_counting_q25": float(np.quantile(counting[:, j], 0.25)),
-                        "expected_hits_counting_q75": float(np.quantile(counting[:, j], 0.75)),
-                        "region_evalue_ka_fit": (float(np.median(ka[:, j]))
-                                                 if s["ka_fit_status"] == "fitted" else None),
-                        "ka_fit_status": s["ka_fit_status"],
-                    })
+                    rows.append(
+                        {
+                            "setting": s["setting"],
+                            "alphabet": alphabet,
+                            "ksize": k,
+                            "scaled": s["scaled"],
+                            "mismatch_penalty": s["mismatch_penalty"],
+                            "database": db,
+                            "window_length": int(L),
+                            "expected_hits_counting": float(np.median(counting[:, j])),
+                            "expected_hits_counting_q25": float(
+                                np.quantile(counting[:, j], 0.25)
+                            ),
+                            "expected_hits_counting_q75": float(
+                                np.quantile(counting[:, j], 0.75)
+                            ),
+                            "region_evalue_ka_fit": (
+                                float(np.median(ka[:, j]))
+                                if s["ka_fit_status"] == "fitted"
+                                else None
+                            ),
+                            "ka_fit_status": s["ka_fit_status"],
+                        }
+                    )
             # pair of windows inside one 30-residue peptide, per k of this alphabet
             for k in sorted(set(alphabet_settings["ksize"].to_list())):
                 n_splits = GATE_PEPTIDE - 2 * k
                 if n_splits < 1:
                     continue
                 a = GATE_L
-                pr_pair = (log_pr[:, a - 1]
-                           + (log_pr[:, GATE_PEPTIDE - 1] - log_pr[:, a]))
+                pr_pair = log_pr[:, a - 1] + (
+                    log_pr[:, GATE_PEPTIDE - 1] - log_pr[:, a]
+                )
                 n_start = n_res - n_seq * (GATE_PEPTIDE - 1)
                 pair = np.exp(pr_pair + np.log(n_start) + np.log(n_splits))
-                rows.append({
-                    "setting": f"{alphabet}.k{k}.pair", "alphabet": alphabet, "ksize": k,
-                    "scaled": None, "mismatch_penalty": None, "database": db,
-                    "window_length": GATE_PEPTIDE,
-                    "expected_hits_counting_pair": float(np.median(pair)),
-                    "ka_fit_status": "pair",
-                })
+                rows.append(
+                    {
+                        "setting": f"{alphabet}.k{k}.pair",
+                        "alphabet": alphabet,
+                        "ksize": k,
+                        "scaled": None,
+                        "mismatch_penalty": None,
+                        "database": db,
+                        "window_length": GATE_PEPTIDE,
+                        "expected_hits_counting_pair": float(np.median(pair)),
+                        "ka_fit_status": "pair",
+                    }
+                )
     est = pl.DataFrame(rows, infer_schema_length=None)
     est = est.with_columns(
-        counting_over_ka=pl.col("expected_hits_counting") / pl.col("region_evalue_ka_fit"),
+        counting_over_ka=pl.col("expected_hits_counting")
+        / pl.col("region_evalue_ka_fit"),
     ).with_columns(
         estimates_disagree=(pl.col("counting_over_ka") > DISAGREE_FACTOR)
         | (pl.col("counting_over_ka") < 1 / DISAGREE_FACTOR),
@@ -253,44 +299,86 @@ def main() -> None:
     est.write_csv(out / "floor_estimates.tsv", separator="\t")
 
     single = est.filter(pl.col("ka_fit_status") != "pair")
-    min_l = single.group_by(["setting", "alphabet", "ksize", "scaled", "mismatch_penalty",
-                             "database", "ka_fit_status"]).agg(
-        min_length_counting=pl.col("window_length")
-        .filter(pl.col("expected_hits_counting") < GATE_E).min(),
-        min_length_ka_fit=pl.col("window_length")
-        .filter(pl.col("region_evalue_ka_fit") < GATE_E).min(),
-        expected_hits_counting_at_14=pl.col("expected_hits_counting")
-        .filter(pl.col("window_length") == GATE_L).first(),
-        region_evalue_ka_fit_at_14=pl.col("region_evalue_ka_fit")
-        .filter(pl.col("window_length") == GATE_L).first(),
-    ).sort(["alphabet", "ksize", "scaled", "mismatch_penalty", "database"], nulls_last=True)
+    min_l = (
+        single.group_by(
+            [
+                "setting",
+                "alphabet",
+                "ksize",
+                "scaled",
+                "mismatch_penalty",
+                "database",
+                "ka_fit_status",
+            ]
+        )
+        .agg(
+            min_length_counting=pl.col("window_length")
+            .filter(pl.col("expected_hits_counting") < GATE_E)
+            .min(),
+            min_length_ka_fit=pl.col("window_length")
+            .filter(pl.col("region_evalue_ka_fit") < GATE_E)
+            .min(),
+            expected_hits_counting_at_14=pl.col("expected_hits_counting")
+            .filter(pl.col("window_length") == GATE_L)
+            .first(),
+            region_evalue_ka_fit_at_14=pl.col("region_evalue_ka_fit")
+            .filter(pl.col("window_length") == GATE_L)
+            .first(),
+        )
+        .sort(
+            ["alphabet", "ksize", "scaled", "mismatch_penalty", "database"],
+            nulls_last=True,
+        )
+    )
     min_l.write_csv(out / "floor_min_length.tsv", separator="\t")
 
     gate_db = "uhgp90"
     gate = []
     for alphabet in CLUSTERS:
-        rows_a = min_l.filter((pl.col("alphabet") == alphabet) & (pl.col("database") == gate_db))
-        pair_a = est.filter((pl.col("alphabet") == alphabet) & (pl.col("database") == gate_db)
-                            & (pl.col("ka_fit_status") == "pair"))
+        rows_a = min_l.filter(
+            (pl.col("alphabet") == alphabet) & (pl.col("database") == gate_db)
+        )
+        pair_a = est.filter(
+            (pl.col("alphabet") == alphabet)
+            & (pl.col("database") == gate_db)
+            & (pl.col("ka_fit_status") == "pair")
+        )
         single_counting = rows_a["expected_hits_counting_at_14"].drop_nulls()
         single_ka = rows_a["region_evalue_ka_fit_at_14"].drop_nulls()
         pair_vals = pair_a["expected_hits_counting_pair"].drop_nulls()
         best = {
             "alphabet": alphabet,
             "database": gate_db,
-            "best_expected_hits_counting_at_14": single_counting.min() if len(single_counting) else None,
-            "best_region_evalue_ka_fit_at_14": single_ka.min() if len(single_ka) else None,
-            "best_expected_hits_counting_pair": pair_vals.min() if len(pair_vals) else None,
+            "best_expected_hits_counting_at_14": (
+                single_counting.min() if len(single_counting) else None
+            ),
+            "best_region_evalue_ka_fit_at_14": (
+                single_ka.min() if len(single_ka) else None
+            ),
+            "best_expected_hits_counting_pair": (
+                pair_vals.min() if len(pair_vals) else None
+            ),
         }
         ksizes = settings.filter(pl.col("alphabet") == alphabet)["ksize"]
         best["smallest_ksize"] = int(ksizes.min())
-        alive = any(v is not None and v < GATE_E for k, v in best.items() if k.startswith("best"))
+        alive = any(
+            v is not None and v < GATE_E
+            for k, v in best.items()
+            if k.startswith("best")
+        )
         best["verdict"] = "alive" if alive else "dead"
         if alive:
-            best["reason"] = f"a 14-residue window or a pair in 30 residues reaches E < {GATE_E}"
-        elif best["smallest_ksize"] > GATE_L and 2 * best["smallest_ksize"] + 1 > GATE_PEPTIDE:
-            best["reason"] = (f"smallest k {best['smallest_ksize']} is longer than {GATE_L}, and "
-                              f"two seeds do not fit in {GATE_PEPTIDE} residues")
+            best["reason"] = (
+                f"a 14-residue window or a pair in 30 residues reaches E < {GATE_E}"
+            )
+        elif (
+            best["smallest_ksize"] > GATE_L
+            and 2 * best["smallest_ksize"] + 1 > GATE_PEPTIDE
+        ):
+            best["reason"] = (
+                f"smallest k {best['smallest_ksize']} is longer than {GATE_L}, and "
+                f"two seeds do not fit in {GATE_PEPTIDE} residues"
+            )
         else:
             best["reason"] = f"every estimate is >= {GATE_E}"
         gate.append(best)

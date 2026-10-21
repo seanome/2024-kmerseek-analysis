@@ -30,28 +30,37 @@ def test_massspec18_merges_only_il_and_qk():
     assert len({classes[aa] for aa in others}) == 16
 
 
-@pytest.mark.skipif(not (KMERSEEK / "src/rust/alphabets.rs").exists(), reason="no kmerseek")
+@pytest.mark.skipif(
+    not (KMERSEEK / "src/rust/alphabets.rs").exists(), reason="no kmerseek"
+)
 def test_cluster_lists_match_kmerseek_source():
     """Every multi-letter cluster list equals the one in kmerseek's alphabets.rs."""
     source = (KMERSEEK / "src/rust/alphabets.rs").read_text()
-    for const, body in re.findall(r"const (\w+)_CLUSTERS: &\[&str\] =\s*&\[(.*?)\];", source,
-                                  flags=re.S):
+    for const, body in re.findall(
+        r"const (\w+)_CLUSTERS: &\[&str\] =\s*&\[(.*?)\];", source, flags=re.S
+    ):
         name = const.lower()
         if name == "funcgroups8" or name in CLUSTERS:
             assert re.findall(r'"([A-Z]+)"', body) == CLUSTERS[name], name
     for name, hydrophobic, polar in re.findall(
-            r'static (\w+)_HP: LazyLock<HashMap<u8, u8>> =\s*LazyLock::new\(\|\| build_hp\('
-            r'b"([A-Z]+)", b"([A-Z]+)"\)\);', source):
+        r"static (\w+)_HP: LazyLock<HashMap<u8, u8>> =\s*LazyLock::new\(\|\| build_hp\("
+        r'b"([A-Z]+)", b"([A-Z]+)"\)\);',
+        source,
+    ):
         matches = [a for a, c in CLUSTERS.items() if c == [hydrophobic, polar]]
         assert matches, f"{name}_HP {hydrophobic}/{polar} has no copy in alphabets.py"
 
 
 def test_lambda_matches_closed_form_and_kmerseek_log():
     # u = 1/4, penalty 1: 0.25 e^x + 0.75 e^-x = 1 has root ln 3.
-    assert karlin_altschul_lambda(np.array([0.25]), 1.0)[0] == pytest.approx(math.log(3))
+    assert karlin_altschul_lambda(np.array([0.25]), 1.0)[0] == pytest.approx(
+        math.log(3)
+    )
     # kmerseek printed "closed form 0.339 at the database's match probability 0.513" for
     # hp_thomas_dill2 at penalty 1.63 (dark-set calibrate log, 2026-09-21).
-    assert karlin_altschul_lambda(np.array([0.513]), 1.63)[0] == pytest.approx(0.339, abs=2e-3)
+    assert karlin_altschul_lambda(np.array([0.513]), 1.63)[0] == pytest.approx(
+        0.339, abs=2e-3
+    )
     # No positive root once u >= C / (1 + C).
     assert karlin_altschul_lambda(np.array([0.5, 0.9]), 1.0).tolist() == [0.0, 0.0]
 
@@ -61,8 +70,10 @@ def test_db_composition_counts(tmp_path):
     with gzip.open(fasta, "wt") as fh:
         fh.write(">a x\nACDE\nFGX\n>b\nAAA\n")
     out = tmp_path / "t.json"
-    subprocess.run([sys.executable, str(BIN / "db_composition.py"), str(fasta), "t", str(out)],
-                   check=True)
+    subprocess.run(
+        [sys.executable, str(BIN / "db_composition.py"), str(fasta), "t", str(out)],
+        check=True,
+    )
     result = json.loads(out.read_text())
     assert result["n_sequences"] == 2
     assert result["n_residues"] == 10
