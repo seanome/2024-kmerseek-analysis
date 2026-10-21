@@ -68,6 +68,18 @@ def exon_protein_intervals(
     return out
 
 
+def usable_orf(orf_seq: str, cds_start, cds_end) -> str | None:
+    """The protein SQANTI3's ORF_seq gives, or None when it cannot be used: the CDS length
+    must be 3 x protein length (plus 3 for a stop codon) and the protein has no internal
+    stop. One filter for build_exons.py and write_orfs.py, so InterProScan and the exon
+    table cover the same isoforms."""
+    prot = orf_seq.rstrip("*")
+    s, e = int(float(cds_start)), int(float(cds_end))
+    if (e - s + 1) not in (3 * len(prot), 3 * len(prot) + 3) or "*" in prot:
+        return None
+    return prot
+
+
 def exon_transcript_intervals(exons: list[Exon], strand: str) -> list[tuple[int, int]]:
     """0-based end-exclusive transcript interval of each exon, in transcript order."""
     out, pos = [], 0

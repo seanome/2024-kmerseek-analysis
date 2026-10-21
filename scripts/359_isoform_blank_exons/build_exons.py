@@ -157,13 +157,12 @@ def main(a):
     summary["isoforms_pass_coding"] = coding.height
     proteins, cds_start, bad_frame = {}, {}, 0
     for r in coding.iter_rows(named=True):
-        prot = r["ORF_seq"].rstrip("*")
-        s, e = int(float(r["CDS_start"])), int(float(r["CDS_end"]))
-        if (e - s + 1) not in (3 * len(prot), 3 * len(prot) + 3) or "*" in prot:
+        prot = ib.usable_orf(r["ORF_seq"], r["CDS_start"], r["CDS_end"])
+        if prot is None:
             bad_frame += 1
             continue
         proteins[r["isoform"]] = prot
-        cds_start[r["isoform"]] = s
+        cds_start[r["isoform"]] = int(float(r["CDS_start"]))
     summary["isoforms_dropped_orf_length_mismatch"] = bad_frame
     summary["isoforms_coding_used"] = len(proteins)
 
