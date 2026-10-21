@@ -354,7 +354,7 @@ process pfamOverlap {
 
     script:
     """
-    clade_splash.py pfam-overlap --occurrences occ/*.parquet --domtblout dom/* \\
+    clade_splash_pfam.py pfam-overlap --occurrences occ/*.parquet --domtblout dom/* \\
         --occ-out pfam_by_occurrence --out pfam_by_anchor.parquet \\
         --significant ${sig} --top 50 --top-out top_occurrences.parquet
     """
@@ -382,7 +382,7 @@ process alignInput {
 
     script:
     """
-    clade_splash.py align-input --pfam ${pfam} --occurrences occ/*.parquet --domtblout dom/* \\
+    clade_splash_pfam.py align-input --pfam ${pfam} --occurrences occ/*.parquet --domtblout dom/* \\
         --fastas prot/*.fa --outdir align_in --manifest align_manifest.tsv
     """
 
@@ -443,7 +443,7 @@ process alignControl {
 
     script:
     """
-    clade_splash.py align-control --manifest ${manifest} --sto-dir ${sto} --significant ${sig} \\
+    clade_splash_pfam.py align-control --manifest ${manifest} --sto-dir ${sto} --significant ${sig} \\
         --species ${species} --oasis ${oasis} --seed ${params.seed} --out alignment_control.parquet
     """
 

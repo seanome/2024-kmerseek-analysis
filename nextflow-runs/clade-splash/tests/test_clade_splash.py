@@ -18,6 +18,7 @@ import pytest
 HERE = Path(__file__).resolve().parent
 sys.path.insert(0, str(HERE.parent / "bin"))
 import clade_splash as cs  # noqa: E402
+import clade_splash_pfam as csp  # noqa: E402
 
 OASIS = HERE.parent / "assets" / "OASIS.py"
 needs_oasis = pytest.mark.skipif(not OASIS.exists(), reason="run `make oasis` first")
@@ -220,7 +221,7 @@ def test_end_to_end_planted_clade_target(tmp_path):
 def test_stockholm_match_columns(tmp_path):
     sto = tmp_path / "x.sto"
     sto.write_text("# STOCKHOLM 1.0\n\nseq1  AC-Dk..E\nseq2  ACGDk..E\n#=GC RF xxxx...x\n//\n")
-    cols = cs.read_stockholm_match_columns(str(sto))
+    cols = csp.read_stockholm_match_columns(str(sto))
     assert cols["seq1"] == [(0, "A"), (1, "C"), (-1, "-"), (2, "D"), (4, "E")]
     assert cols["seq2"] == [(0, "A"), (1, "C"), (2, "G"), (3, "D"), (5, "E")]
 
@@ -252,7 +253,7 @@ def test_occurrences_and_pfam_overlap(tmp_path):
             # hmmsearch layout: target (protein), accession, length, query (family), accession, ...
             f = [f"s{s}_p0", "-", "84", "PF99999_x", "PF99999.1", "100"] + ["0"] * 6 + ["1e-10"] + ["0"] * 6 + ["31", "54", "0.9", "-"]
             fh.write(" ".join(f) + "\n")
-    cs.main(["pfam-overlap", "--occurrences", *occ_out, "--domtblout", str(dom),
+    csp.main(["pfam-overlap", "--occurrences", *occ_out, "--domtblout", str(dom),
              "--occ-out", str(tmp_path / "po"), "--out", str(tmp_path / "pa.parquet"),
              "--significant", str(tmp_path / "sig.parquet"), "--top-out", str(tmp_path / "top.parquet")])
     pa = pl.read_parquet(tmp_path / "pa.parquet")
@@ -304,10 +305,10 @@ def test_alignment_control_finds_the_planted_columns(tmp_path):
         for n in seqs:
             f = [n, "-", "84", "FAKE", "PF99999.1", "44"] + ["0"] * 6 + ["1e-10"] + ["0"] * 6 + ["21", "64", "0.9", "-"]
             fh.write(" ".join(f) + "\n")
-    cs.main(["pfam-overlap", "--occurrences", *occ_out, "--domtblout", str(dom),
+    csp.main(["pfam-overlap", "--occurrences", *occ_out, "--domtblout", str(dom),
              "--occ-out", str(tmp_path / "po"), "--out", str(tmp_path / "pa.parquet"),
              "--significant", str(tmp_path / "sig.parquet"), "--top-out", str(tmp_path / "top.parquet")])
-    cs.main(["align-input", "--pfam", str(tmp_path / "pa.parquet"), "--occurrences", *occ_out,
+    csp.main(["align-input", "--pfam", str(tmp_path / "pa.parquet"), "--occurrences", *occ_out,
              "--domtblout", str(dom), "--fastas", *fa_out, "--outdir", str(tmp_path / "ain"),
              "--manifest", str(tmp_path / "man.tsv")])
     man = pl.read_csv(tmp_path / "man.tsv", separator="\t")
@@ -317,7 +318,7 @@ def test_alignment_control_finds_the_planted_columns(tmp_path):
     with open(tmp_path / "sto" / f"{tag}.sto", "w") as fh:
         subprocess.run([str(HMMER_BIN / "hmmalign"), "--outformat", "Stockholm", str(tmp_path / "fam.hmm"),
                         str(tmp_path / "ain" / f"{tag}.fa")], check=True, stdout=fh)
-    cs.main(["align-control", "--manifest", str(tmp_path / "man.tsv"), "--sto-dir", str(tmp_path / "sto"),
+    csp.main(["align-control", "--manifest", str(tmp_path / "man.tsv"), "--sto-dir", str(tmp_path / "sto"),
              "--significant", str(tmp_path / "sig.parquet"), "--species", str(tmp_path / "species.tsv"),
              "--oasis", str(OASIS), "--seed", "357", "--out", str(tmp_path / "ac.parquet")])
     ac = pl.read_parquet(tmp_path / "ac.parquet")

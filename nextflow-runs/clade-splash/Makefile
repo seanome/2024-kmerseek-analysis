@@ -24,8 +24,11 @@ OASIS_SHA256 := 8116c5c206051b254698448ed74611f64e6cc94fea11452622b544c818207125
 # Pfam-A.hmm, Pfam 38 (file dated July 2025).
 PFAM_HMM ?= /scratch/users/olgabot/data/pfam/Pfam-A.hmm
 
-# A clone of its own, so this branch never moves the main Sherlock checkout under a run.
-REMOTE_DIR ?= /scratch/users/olgabot/2024-kmerseek-analysis-nb357/nextflow-runs/clade-splash
+# Clones of their own, so this branch never moves the main Sherlock checkout under a run.
+# The full run has its own clone too: a running head reads bin/ at task time, so the pilot's
+# clone could not take later commits while the full run was going.
+REMOTE_DIR ?= /scratch/users/olgabot/2024-kmerseek-analysis-nb357-run/nextflow-runs/clade-splash
+PILOT_DIR ?= /scratch/users/olgabot/2024-kmerseek-analysis-nb357/nextflow-runs/clade-splash
 
 SLURM_ACCOUNT   ?= ayeletv
 SLURM_PARTITION ?= hns,normal
@@ -94,7 +97,7 @@ pull-results:
 pull-pilot:
 	mkdir -p $(MAKEFILE_DIR)/../../tables/357_pilot
 	cd $(MAKEFILE_DIR)/../../tables/357_pilot && for f in $(RESULT_FILES); do \
-	  rsync -av sherlock:$(REMOTE_DIR)/run-pilot/results/$$f ./$$f || exit 1; done
+	  rsync -av sherlock:$(PILOT_DIR)/run-pilot/results/$$f ./$$f || exit 1; done
 
 running:
 	@python3 $(MAKEFILE_DIR)/../../scripts/nf-running --jobs "$(MAKEFILE_DIR)"
