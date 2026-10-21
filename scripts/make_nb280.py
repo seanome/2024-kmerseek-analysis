@@ -592,6 +592,254 @@ pf.save(fig, FIG / "time_split_instance_plddt_by_type_afdb_v4", formats=("png", 
 """
 
 
+FULL_SETUP = r"""
+FULL = Path("../nextflow-runs/time-split-pfam/tables/full")
+SUMM = pl.read_csv(FULL / "setting_summary.csv")
+LB = pl.read_parquet(FULL / "leaderboard/time_split_pfam33_38.test.results.parquet")
+COMP = pl.read_parquet(FULL / "leaderboard/time_split_pfam33_38.test.compute.parquet")
+P4 = __import__("json").loads((FULL / "p4.json").read_text())
+UT = pl.read_csv(FULL / "unique_finds_tune.csv")
+COMPARATORS = {"hmmscan Pfam 33.1": ("hmmscan, Pfam 33.1 models", pf.OKABE_ITO["reddish_purple"], "D"),
+               "phmmer": ("phmmer", pf.OKABE_ITO["bluish_green"], "s"),
+               "MMseqs2": ("MMseqs2, one round", pf.OKABE_ITO["vermillion"], "^")}
+KMER_COLOR = pf.OKABE_ITO["blue"]
+TOOL_OF = {"hmmscan": "hmmscan Pfam 33.1", "hmmer3_phmmer": "phmmer", "mmseqs2": "MMseqs2"}
+
+
+def setting_name(tool, setting):
+    # leaderboard row -> the setting name setting_summary.csv uses
+    if tool == "kmerseek":
+        a, k, arm = setting.split(".")
+        return f"kmerseek {a} {k} {arm}"
+    return TOOL_OF[tool]
+
+
+LB = LB.with_columns(name=pl.struct("tool", "setting").map_elements(
+    lambda r: setting_name(r["tool"], r["setting"]), return_dtype=pl.String))
+print(f"test half: {SUMM['instances_test'][0]:,} instances, {SUMM['decoys_test'][0]:,} decoys; "
+      f"{SUMM.filter(pl.col('setting').str.starts_with('kmerseek')).height} kmerseek settings")
+print((FULL / "TEST_HALF_READ").read_text())
+"""
+
+COST_MD = r"""## The full run: what ran, and what it cost
+
+The approved sample, 8,329 queries and one decoy each, in 9 chunks of up to 2,000 sequences,
+searched against Swiss-Prot 2019_08 by every tool: 38 kmerseek settings (one alphabet and k
+per alphabet, each searched exact and extend; first cell, "The full run as a leaderboard
+dataset"), MMseqs2 one round, phmmer, and hmmscan with the Pfam 33.1 models. Every task
+finished: 342 kmerseek searches and 9 chunks of each other tool, none ignored. Three kmerseek
+searches ran out of memory on their first try and finished on the retry (dayhoff6 k10 exact
+chunk 5 at 96 GB, wass14 k5 exact and extend chunk 6 at 225 and 195 GB). Scoring all calls
+took 12 h 8 min and peaked at 133 GB.
+
+How to read the figure: one point per tool and setting. Across, the CPU hours its 9 search
+chunks used (the axis is spaced by ratio: each step of ten takes the same room); up, its recall
+on the test half at its matched cutoff (the share of the 4,703 test instances it found, with
+decoys held to at most 1 family transfer per 100 on the tune half). Higher is better at any
+cost. kmerseek index builds are not in the CPU hours: the full run took its 19 indexes from
+the pilot's store.
+"""
+
+COST_CODE = r"""
+search = COMP.filter(pl.col("step") == "search").with_columns(
+    name=pl.struct("tool", "setting").map_elements(lambda r: setting_name(r["tool"], r["setting"]), return_dtype=pl.String))
+rec = LB.filter((pl.col("stratum_axis") == "all") & (pl.col("metric") == "recall")).select("name", "value", "n_instances")
+cost = search.join(rec, on="name").select("name", "n_tasks", "cpu_h", "wall_s", "peak_ram_gb", pl.col("value").alias("recall_test")).sort("recall_test", descending=True)
+with pl.Config(tbl_rows=50, tbl_width_chars=200):
+    print(cost.with_columns((pl.col("wall_s") / 3600).round(1).alias("wall_h_sum"), pl.col("cpu_h").round(1), pl.col("recall_test").round(4)).drop("wall_s"))
+print(COMP.filter(pl.col("step") == "score").select("wall_s", "cpu_h", "peak_ram_gb"))
+
+fig, ax = pf.figure(pf.ONE_COLUMN_MM, 70)
+k = cost.filter(pl.col("name").str.starts_with("kmerseek"))
+for arm, marker in (("exact", "o"), ("extend", "v")):
+    kk = k.filter(pl.col("name").str.ends_with(arm))
+    ax.scatter(kk["cpu_h"], kk["recall_test"], s=10, marker=marker, color=KMER_COLOR, alpha=0.75,
+               linewidths=0, label=f"kmerseek {arm} (one point per alphabet and k)")
+for name, (label, color, marker) in COMPARATORS.items():
+    r = cost.filter(pl.col("name") == name)
+    ax.scatter(r["cpu_h"], r["recall_test"], s=22, marker=marker, color=color, label=label, zorder=3)
+ax.set_xscale("log")
+ax.xaxis.set_major_formatter(FuncFormatter(lambda v, _p: f"{v:g}"))
+ax.xaxis.set_minor_formatter(NullFormatter())
+ax.set_xlabel("CPU hours, 9 search chunks (8,329 queries + 8,329 decoys)")
+ax.set_ylabel("Recall, test half (of 4,703 instances)")
+ax.set_ylim(0, 0.7)
+fig.legend(loc="outside upper center", ncol=2)
+pf.save(fig, FIG / "time_split_full_recall_vs_cpu_hours_sprot2019_08", formats=("png", "pdf"))
+"""
+
+RECALL_MD = r"""## P2 and P3: recall at the matched error rate, by Pfam type and length
+
+Test half, 4,703 instances. Each tool found an instance when it transferred the instance's
+family with at least half of the placed domain inside the t1 domain, at its own matched
+cutoff. P2 predicted that hmmscan with the Pfam 33.1 models finds the largest share; P3, that
+kmerseek finds fewer than MMseqs2.
+
+How to read the figure: one column per Pfam type at t1 (panel a) and per length of the t1
+domain (panel b). The small blue dots are the 38 kmerseek settings, spread sideways so they
+do not cover each other; the larger marks are the other three tools. The number under each
+column is how many test instances it holds. Higher is better; 0 means the tool placed none of
+that column's domains.
+"""
+
+RECALL_CODE = r"""
+r = LB.filter(pl.col("metric") == "recall")
+TYPE_ORDER = ["Domain", "Family", "Repeat", "Motif", "Disordered", "Coiled-coil"]
+LEN_ORDER = ["<60 aa", ">=60 aa"]
+tab = (r.filter(pl.col("stratum_axis") != "all")
+       .with_columns(kmerseek=pl.col("name").str.starts_with("kmerseek"))
+       .group_by("stratum_axis", "stratum_bin", "n_instances")
+       .agg(*[pl.col("value").filter(pl.col("name") == n).first().alias(COMPARATORS[n][0]) for n in COMPARATORS],
+            kmerseek_best=pl.col("value").filter(pl.col("kmerseek")).max(),
+            kmerseek_median=pl.col("value").filter(pl.col("kmerseek")).median())
+       .sort("stratum_axis", "stratum_bin"))
+allrow = (r.filter(pl.col("stratum_axis") == "all").with_columns(kmerseek=pl.col("name").str.starts_with("kmerseek"))
+          .select(*[pl.col("value").filter(pl.col("name") == n).first().alias(COMPARATORS[n][0]) for n in COMPARATORS],
+                  kmerseek_best=pl.col("value").filter(pl.col("kmerseek")).max(),
+                  kmerseek_median=pl.col("value").filter(pl.col("kmerseek")).median()))
+with pl.Config(tbl_rows=20, tbl_width_chars=220, float_precision=4):
+    print(allrow)
+    print(tab)
+best_k = r.filter((pl.col("stratum_axis") == "all") & pl.col("name").str.starts_with("kmerseek")).sort("value", descending=True)["name"][0]
+print(f"kmerseek setting with the highest test recall: {best_k}")
+
+rng = np.random.default_rng(280)
+fig, axs = pf.figure(pf.TWO_COLUMN_MM, 62, ncols=2, gridspec_kw={"width_ratios": [3, 1]})
+for ax, axis, order in ((axs[0], "feature_type", TYPE_ORDER), (axs[1], "feature_length_bin", LEN_ORDER)):
+    rr = r.filter(pl.col("stratum_axis") == axis)
+    for i, b in enumerate(order):
+        g = rr.filter(pl.col("stratum_bin") == b)
+        kk = g.filter(pl.col("name").str.starts_with("kmerseek"))
+        ax.scatter(i + rng.uniform(-0.25, 0.05, kk.height), kk["value"], s=5, color=KMER_COLOR, alpha=0.6, linewidths=0,
+                   label="kmerseek, one dot per setting (38)" if i == 0 else None)
+        for j, (n, (label, color, marker)) in enumerate(COMPARATORS.items()):
+            v = g.filter(pl.col("name") == n)["value"]
+            ax.scatter([i + 0.15 + 0.07 * j], v, s=20, marker=marker, color=color, label=label if i == 0 else None, zorder=3)
+        ax.axvline(i, color="#dddddd", lw=0.3, zorder=0)
+    ns = [rr.filter(pl.col("stratum_bin") == b)["n_instances"][0] for b in order]
+    ax.set_xticks(range(len(order)), [f"{b}\nn = {n:,}" for b, n in zip(order, ns)])
+    ax.set_ylim(-0.02, 1)
+axs[0].set_ylabel("Recall, test half")
+axs[0].set_xlabel("Pfam type of the gained domain at t1")
+axs[1].set_xlabel("Length of the t1 domain")
+pf.shared_legend(fig, ncol=4)
+for ax, letter in zip(axs, "ab"):
+    pf.panel_label(ax, letter)
+pf.save(fig, FIG / "time_split_full_recall_by_type_and_length_sprot2019_08", formats=("png", "pdf"))
+"""
+
+PLDDT_RECALL_MD = r"""## Recall by AlphaFold confidence of the region
+
+The pLDDT stratum the first cell asked for: each test instance placed at the mean pLDDT of the
+query's residues inside its t1 domain. Across is pLDDT; up is the share found among the 150
+instances nearest that pLDDT (a moving window over the instances sorted by pLDDT, plotted at
+the window's median pLDDT). The blue line is kmerseek with any of its 38 settings (an instance
+counts once if any setting found it), so it is the most kmerseek could reach here, not one
+setting. Instances with no AlphaFold model of the query's sequence are in the printed table
+only.
+"""
+
+PLDDT_RECALL_CODE = r"""
+ic = pl.read_parquet(FULL / "instance_calls.parquet")
+cut = pl.DataFrame({"setting": SUMM["setting"], "cutoff": SUMM["cutoff_tune"]})
+KEY = ["query", "pfam_acc", "t1_start", "t1_end"]
+found = ic.join(cut, on="setting").filter(pl.col("score") >= pl.col("cutoff")).select(["setting"] + KEY).unique()
+q = pl.read_csv(FULL / "inputs/queries.tsv", separator="\t")
+inst = (pl.read_csv(FULL / "inputs/instances.tsv", separator="\t").filter(pl.col("role") == "sample")
+        .join(q.filter(~pl.col("is_decoy") & (pl.col("half") == "test")).select("query"), on="query", how="semi"))
+pld = pl.read_csv("../nextflow-runs/time-split-pfam/tables/plddt/instance_plddt.tsv", separator="\t").select(KEY + ["mean_plddt_region", "plddt_band"])
+inst = inst.join(pld, on=KEY, how="left")
+assert inst.height == SUMM["instances_test"][0], inst.height
+groups = {**{n: found.filter(pl.col("setting") == n) for n in COMPARATORS},
+          "kmerseek, any of 38 settings": found.filter(pl.col("setting").str.starts_with("kmerseek"))}
+for name, f in groups.items():
+    inst = inst.join(f.select(KEY).unique().with_columns(pl.lit(True).alias(name)), on=KEY, how="left").with_columns(pl.col(name).fill_null(False))
+band_tab = (inst.group_by("plddt_band").agg(pl.len().alias("n"), *[pl.col(n).mean().round(4) for n in groups])
+            .with_columns(pl.col("plddt_band").cast(pl.Enum(["< 50", "50-70", ">= 70", "no model"]))).sort("plddt_band"))
+with pl.Config(tbl_width_chars=220):
+    print(band_tab)
+
+W = 150
+have = inst.filter(pl.col("mean_plddt_region").is_not_null()).sort("mean_plddt_region")
+x = have["mean_plddt_region"].rolling_median(W, center=True)
+fig, ax = pf.figure(pf.ONE_COLUMN_MM, 65)
+for name, f in groups.items():
+    y = have[name].cast(pl.Float64).rolling_mean(W, center=True)
+    if name in COMPARATORS:
+        label, color, _m = COMPARATORS[name]
+    else:
+        label, color = name, KMER_COLOR
+    ax.plot(x, y, color=color, lw=1, label=label)
+ax.set_xlabel("Mean pLDDT of the query's residues inside the t1 domain")
+ax.set_ylabel(f"Share found, {W} nearest instances")
+ax.set_ylim(0, 1)
+ax.set_xlim(float(x.drop_nulls().min()) - 2, 100)
+fig.legend(loc="outside upper center", ncol=2)
+pf.save(fig, FIG / "time_split_full_recall_by_plddt_sprot2019_08", formats=("png", "pdf"))
+"""
+
+P4_MD = r"""## P4: kmerseek's unique finds against what its decoys predict
+
+P4 needs kmerseek to place short features (Motif, Disordered or Repeat at t1, or under 60 aa)
+that MMseqs2, phmmer and hmmscan all miss, more often than its decoys predict. The setting was
+chosen on the tune half by the rule in the first cell, and only that setting was read on the
+test half.
+
+How to read panel a: one point per kmerseek setting, tune half. Across, the number of unique
+finds its decoys predict (its decoy transfer rate times the 2,203 tune queries that carry a P4
+instance); up, the unique finds it made. A setting above the dashed line found more than
+chance predicts, which is what P4 needs; every point sits below it. Panel b: the same
+settings' decoy transfer rate on the tune half, where the cutoff was set to allow at most 0.01
+per decoy, against the test half at the same cutoff. A cutoff that carries over sits on the
+dashed line; points far above it let many more decoy transfers through on the test half.
+Up is spaced by ratio. MMseqs2, phmmer and hmmscan are not drawn: the scorer stores only their
+test-half rate (0.006, 0.012 and 0.003 per decoy).
+"""
+
+P4_CODE = r"""
+print(__import__("json").dumps(P4, indent=1))
+with pl.Config(tbl_rows=40, tbl_width_chars=200, float_precision=4):
+    print(UT.sort("unique_minus_expected", descending=True))
+k_summ = SUMM.filter(pl.col("setting").str.starts_with("kmerseek")).select("setting", "cutoff_tune", "decoy_rate_test")
+rates = UT.select("setting", pl.col("decoy_rate").alias("decoy_rate_tune")).join(k_summ, on="setting")
+spread_f = FULL / "decoy_spread/decoy_spread.csv"
+if spread_f.exists():
+    sp = pl.read_csv(spread_f).filter(pl.col("setting").str.starts_with("kmerseek"))
+    with pl.Config(tbl_rows=80, tbl_width_chars=220, float_precision=3):
+        print(sp.select("setting", "half", "decoys_with_transfer", "transfers", "most_on_one_decoy", "top10_share", "nonfinite_share"))
+
+fig, axs = pf.figure(pf.TWO_COLUMN_MM, 70, ncols=2)
+ax = axs[0]
+for arm, marker in (("exact", "o"), ("extend", "v")):
+    u = UT.filter(pl.col("setting").str.ends_with(arm))
+    ax.scatter(u["expected"], u["unique_finds"], s=12, marker=marker, color=KMER_COLOR, alpha=0.8, linewidths=0,
+               label=f"kmerseek {arm}, one point per alphabet and k")
+ch = UT.filter(pl.col("setting") == P4["chosen"])
+ax.scatter(ch["expected"], ch["unique_finds"], s=60, facecolors="none", edgecolors="black", lw=0.8,
+           label=f"chosen on the tune half: {P4['chosen'].removeprefix('kmerseek ')}")
+lim = max(UT["expected"].max(), UT["unique_finds"].max()) * 1.1
+ax.plot([0, lim], [0, lim], color="black", lw=0.5, ls="--", label="unique finds = expected by chance")
+ax.set_xlim(0, lim); ax.set_ylim(0, lim)
+ax.set_xlabel("Unique finds expected from decoys, tune half")
+ax.set_ylabel("Unique finds, tune half")
+ax = axs[1]
+for arm, marker in (("exact", "o"), ("extend", "v")):
+    u = rates.filter(pl.col("setting").str.ends_with(arm))
+    ax.scatter(u["decoy_rate_tune"], u["decoy_rate_test"], s=12, marker=marker, color=KMER_COLOR, alpha=0.8, linewidths=0)
+ax.plot([0, 0.012], [0, 0.012], color="black", lw=0.5, ls="--")
+ax.set_yscale("log")
+ax.set_yticks([0.01, 0.03, 0.1, 0.3, 1], ["0.01", "0.03", "0.1", "0.3", "1"])
+ax.yaxis.set_minor_formatter(NullFormatter())
+ax.set_xlabel("Decoy transfers per decoy, tune half (cutoff allows 0.01)")
+ax.set_ylabel("Decoy transfers per decoy, test half, same cutoff")
+ax.set_xlim(0.006, 0.0105)
+pf.shared_legend(fig, ncol=3)
+for ax, letter in zip(axs, "ab"):
+    pf.panel_label(ax, letter)
+pf.save(fig, FIG / "time_split_full_p4_unique_finds_and_decoy_rates_sprot2019_08", formats=("png", "pdf"))
+"""
+
+
 def main() -> None:
     nb = nbf.v4.new_notebook()
     nb.cells = [nbf.v4.new_markdown_cell(INTRO), nbf.v4.new_code_cell(SETUP.strip()),
@@ -600,7 +848,12 @@ def main() -> None:
                 nbf.v4.new_markdown_cell(EXAMPLES_MD), nbf.v4.new_code_cell(EXAMPLES_CODE.strip()),
                 nbf.v4.new_markdown_cell(SEED_MD), nbf.v4.new_code_cell(SEED_CODE.strip()),
                 nbf.v4.new_markdown_cell(SELF_MD), nbf.v4.new_code_cell(SELF_CODE.strip()),
-                nbf.v4.new_markdown_cell(PLDDT_MD), nbf.v4.new_code_cell(PLDDT_CODE.strip())]
+                nbf.v4.new_markdown_cell(PLDDT_MD), nbf.v4.new_code_cell(PLDDT_CODE.strip()),
+                nbf.v4.new_code_cell(FULL_SETUP.strip()),
+                nbf.v4.new_markdown_cell(COST_MD), nbf.v4.new_code_cell(COST_CODE.strip()),
+                nbf.v4.new_markdown_cell(RECALL_MD), nbf.v4.new_code_cell(RECALL_CODE.strip()),
+                nbf.v4.new_markdown_cell(PLDDT_RECALL_MD), nbf.v4.new_code_cell(PLDDT_RECALL_CODE.strip()),
+                nbf.v4.new_markdown_cell(P4_MD), nbf.v4.new_code_cell(P4_CODE.strip())]
     for c in nb.cells:
         if c.cell_type == "code":
             c.metadata["jupyter"] = {"source_hidden": True}
