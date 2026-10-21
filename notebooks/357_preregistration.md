@@ -127,3 +127,22 @@ reported and do not change the verdict.
 - The composition scan counts 10 residues per species-target pair, which makes it reject
   easily; that makes "explained by composition" more common and the rule harder to pass.
 - One shuffle of each kind is run (seeds fixed above), not a distribution of shuffles.
+
+## Amendment, 2026-10-21 (Olga), before any full-run result was read
+
+One k per alphabet, each with about the information of a protein k-mer of k = 7, measured
+with `ortholog_analysis_utils.bits_per_kmer` (k times the Shannon entropy of the alphabet's
+letters, from human and mouse amino-acid frequencies):
+
+| Setting | Alphabet | k | bits per k-mer | Gaps |
+|---|---|---|---|---|
+| primary | Dayhoff, 6 letters | 13 (was 14) | 29.61 | 0, 5, 10 |
+| second | HP, 2 letters | 29 (was 36) | 29.00 | 0 |
+
+Protein k = 7 is 29.23 bits. Everything else in the rule is unchanged, and "Dayhoff k = 14,
+gap 0" in the pass/fail section now reads "Dayhoff k = 13, gap 0". The expected chance count
+of one anchor is above 0.2 at these k (the notebook gives the numbers); the reason for the
+first k no longer holds and is reported, not used.
+
+What had been seen when this was decided: the pilot (48 species, Dayhoff k = 14) and no full
+run number. The full run at k = 14 and 36 was stopped during its tests, before collect.

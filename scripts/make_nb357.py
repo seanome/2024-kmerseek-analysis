@@ -83,12 +83,12 @@ md(f"""
 **Summary.** We took {n_species:,} UniProt reference proteomes (release
 {d["inputs"]["uniprot_release_rest"]}), one species per NCBI family, in {n_classes} NCBI classes
 with at least 5 species each ({L / 1e9:.2f} billion residues). For every protein k-mer written
-in the Dayhoff alphabet (6 letters, k = 14), called the anchor, we built a table of the 10
+in the Dayhoff alphabet (6 letters, k = 13), called the anchor, we built a table of the 10
 residues that follow it (the target, full 20-letter alphabet) against the class of each
 species that carries it, and asked with the OASIS test (from the SPLASH software) whether the
 target depends on the class. {v["n_tested"].get("real", 0):,} anchors were carried by at least
 5 species in each of at least 3 classes and were tested. The four pre-registered numbers
-(Dayhoff k = 14, gap 0):
+(Dayhoff k = 13, gap 0):
 
 1. {rule_line("n_significant", "anchors significant on the real class labels (q < 0.05)")}
 2. {rule_line("n_tree_shuffle", "anchors significant when class labels are shuffled within each phylum")}
@@ -110,13 +110,17 @@ md(
 md(r"""
 ## Changes from the rule, made after the pilot and before the full run
 
+- **k = 13 for Dayhoff and k = 29 for HP, instead of 14 and 36** (Olga, 2026-10-21; the
+  amendment at the end of the rule above). One k per alphabet with about the information of a
+  protein k-mer of k = 7 (29.23 bits): Dayhoff k = 13 is 29.61 bits, HP k = 29 is 29.00. The
+  full run at k = 14 and 36 was stopped during its tests, before any count was collected.
 - **hmmsearch instead of hmmscan** for the Pfam domains (control 4 and the Pfam position used
   by numbers 3 and 4). Same Pfam-A HMM file, same gathering thresholds (`--cut_ga`), same
   envelope coordinates. In the pilot (48 species), hmmscan re-read the 2 GB pressed database
   for every protein: 1 TB read and 11 minutes per 2,000 proteins, with 2 of 8 CPUs busy.
   hmmsearch reads each model once. Gathering thresholds are bit scores, which do not depend on
   the database size, so the two programs call the same domains.
-- No change to the test, the settings, the filter, the controls or the thresholds.
+- No other change to the test, the filter, the controls or the thresholds.
 
 The pilot (8 species from each of the 6 largest classes, run before the full run) is not
 part of the verdict. It showed that the within-phylum shuffle leaves nearly as many anchors
@@ -277,20 +281,29 @@ pf.save(fig, FIG / "357_species_per_class_uniprot_reference_proteomes")
 """)
 
 md(r"""
-## 2. Why k = 14 for Dayhoff and k = 36 for HP
+## 2. Why k = 13 for Dayhoff and k = 29 for HP
 
-The pre-registration picked each k as the smallest at which one anchor's expected number of chance
-occurrences, across all the residues searched, falls below 0.2 under equal letter
-frequencies:
+One k per alphabet, each carrying about the same information per k-mer as a protein k-mer of
+k = 7 (Olga's amendment of 2026-10-21; the rule as first committed used Dayhoff k = 14 and HP
+k = 36). Information is measured with the repo's `ortholog_analysis_utils.bits_per_kmer`: k
+times the Shannon entropy of the alphabet's letters, from amino-acid frequencies counted in the
+human and mouse proteomes. Protein k = 7 is 29.23 bits; Dayhoff k = 13 is 29.61 bits and HP
+k = 29 is 29.00 bits, the closest of each alphabet.
+
+The first rule picked each k so that one anchor's expected number of chance occurrences,
+across all the residues searched, falls below 0.2 under equal letter frequencies:
 
 $$\lambda_{\text{chance}}(k, \Sigma) = \frac{L_{\text{total residues}}}{|\Sigma|^{k}}.$$
 
-$L$ below is the real residue total of the species set. Real letters are not equally common,
-so two more lines use the measured letter frequencies $p_i$: an anchor of typical probability,
-$L \cdot 2^{-k H}$ with $H = -\sum_i p_i \log_2 p_i$ bits per letter, and an anchor made of the two
-commonest letters, $L (p_1 p_2)^{k/2}$, close to the most likely anchor the mask keeps. Lower is
-better: below 0.2, an anchor seen in many species is very unlikely to be there by chance.
+The figure still shows that number, now at the amended k, against the real residue total $L$
+of the species set, and with the measured letter frequencies $p_i$: an anchor of typical
+probability, $L \cdot 2^{-k H}$ with $H = -\sum_i p_i \log_2 p_i$ bits per letter, and an anchor
+made of the two commonest letters, $L (p_1 p_2)^{k/2}$. Lower is better: at 1 or more, a given
+anchor is expected to turn up somewhere in the species set by chance alone, so a shared anchor
+is weaker evidence of a shared ancestor. The filter (at least 5 species in each of at least 3
+classes) still has to be met.
 """)
+
 
 code(r"""
 ch = u.chance_table(d["totals"])
@@ -299,10 +312,14 @@ print(f"L = {L:,} residues in {d['totals']['n_proteins']:,} proteins of {d['tota
 for s, c in d["totals"]["letter_counts"].items():
     p = np.array(c) / sum(c)
     print(s, dict(zip(d["totals"]["letters"][s], np.round(p, 3))))
-show = ch.filter(pl.col("k").is_in([12, 13, 14, 15, 16, 30, 34, 35, 36, 37, 40]))
+show = ch.filter(pl.col("k").is_in([11, 12, 13, 14, 15, 27, 28, 29, 30, 31, 36]))
 print(show.with_columns(pl.col("uniform", "typical", "commonest_pair").round(4)))
 for col in ("uniform", "typical", "commonest_pair"):
     print(f"smallest k with {col} < {u.CHANCE_TARGET}:", u.smallest_k(ch, col))
+import ortholog_analysis_utils as ou
+for enc, k in (("protein", 7), ("dayhoff", 13), ("hp", 29)):
+    print(f"{enc} k = {k}: {ou.bits_per_kmer(enc, k):.2f} bits per k-mer (measured letter frequencies)")
+print(ch.filter(pl.col("chosen")).select("setting", "k", "uniform", "typical", "commonest_pair"))
 
 fig, axs = pf.figure(pf.TWO_COLUMN_MM, 60, ncols=2)
 # Drawn widest first, so a line that lies under another (HP's two letters are close to
@@ -452,7 +469,7 @@ pf.save(fig, FIG / "357_significant_real_vs_shuffled_labels")
 """)
 
 md(r"""
-## 6. The four pre-registered numbers (Dayhoff k = 14, gap 0)
+## 6. The four pre-registered numbers (Dayhoff k = 13, gap 0)
 
 Each panel is one number of the rule: the dot is the observed count, the line the threshold.
 Green circle means met; red cross means missed. A count of 0 is drawn at 0.5.
@@ -483,14 +500,14 @@ for ax, key in zip(axs, u.RULE):
     ax.spines["left"].set_visible(False)
     ax.set_title(LABEL[key], fontsize=6)
     ax.set_xlabel("Anchors")
-pf.save(fig, FIG / "357_verdict_four_numbers_dayhoff_k14_gap0")
+pf.save(fig, FIG / "357_verdict_four_numbers_dayhoff_k13_gap0")
 """)
 
 md(r"""
 ## 7. Composition scan
 
 For each significant anchor, does the amino-acid composition of the target window alone
-separate the classes? Each dot is a significant anchor (Dayhoff k = 14, gap 0, real labels).
+separate the classes? Each dot is a significant anchor (Dayhoff k = 13, gap 0, real labels).
 Right means a stronger class split in the OASIS test; up means a stronger split in composition
 alone. Anchors above the dotted line (composition q < 0.05) are "explained by composition"
 and are not counted in number 4.
@@ -510,11 +527,11 @@ ax.axhline(-np.log10(u.ALPHA), color=pf.GREY, linewidth=0.5, linestyle=":")
 ax.set_xlabel("OASIS class split, -log10 q")
 ax.set_ylabel("Composition split, -log10 q")
 pf.shared_legend(fig, ncol=1)
-pf.save(fig, FIG / "357_composition_scan_dayhoff_k14_gap0")
+pf.save(fig, FIG / "357_composition_scan_dayhoff_k13_gap0")
 """)
 
 md(r"""
-## 8. Do gaps 5 and 10 find the same anchors? (Dayhoff k = 14)
+## 8. Do gaps 5 and 10 find the same anchors? (Dayhoff k = 13)
 
 The target starts 0, 5 or 10 residues after the anchor. Each bar is a set of anchors
 significant on the real labels at exactly the gaps listed under it. Mostly "all three" means
@@ -522,7 +539,7 @@ the class split covers a stretch longer than one target; mostly one gap means it
 """)
 
 code(r"""
-real_d = sig.filter((pl.col("setting") == "dayhoff:14") & (pl.col("labelling") == "real"))
+real_d = sig.filter((pl.col("setting") == "dayhoff:13") & (pl.col("labelling") == "real"))
 sets = {g: set(real_d.filter(pl.col("gap") == g)["anchor"].to_list()) for g in (0, 5, 10)}
 combos = {}
 for a in set().union(*sets.values()):
@@ -541,7 +558,7 @@ for i, n_ in enumerate(tab["n_anchors"]):
     ax.text(i, n_, f"{n_:,}", ha="center", va="bottom", fontsize=6)
 ax.set_xticks(range(tab.height), [f"gap {g}" for g in tab["gaps"]])
 ax.set_ylabel("Significant anchors (real labels)")
-pf.save(fig, FIG / "357_gap_overlap_dayhoff_k14")
+pf.save(fig, FIG / "357_gap_overlap_dayhoff_k13")
 """)
 
 md(r"""
@@ -579,7 +596,7 @@ pf.save(fig, FIG / "357_alignment_control")
 """)
 
 md(r"""
-## 10. Which class pairs, inside and outside Pfam (Dayhoff k = 14, gap 0)
+## 10. Which class pairs, inside and outside Pfam (Dayhoff k = 13, gap 0)
 
 Each significant anchor is assigned the two classes its targets separate most (largest and
 smallest OASIS class weight). Bars count anchors per class pair, split by whether the window
@@ -602,7 +619,7 @@ ax.barh(y, top["inside"], left=top["outside"], color=pf.GREY, label="inside a Pf
 ax.set_yticks(y, top["class_pair"].to_list())
 ax.set_xlabel("Significant anchors")
 pf.shared_legend(fig, ncol=2)
-pf.save(fig, FIG / "357_survivors_by_class_pair_pfam_dayhoff_k14_gap0")
+pf.save(fig, FIG / "357_survivors_by_class_pair_pfam_dayhoff_k13_gap0")
 """)
 
 md(r"""
@@ -632,7 +649,7 @@ pf.save(fig, FIG / "357_anchor_entropy_significant")
 """)
 
 md(r"""
-## 12. The top 20 anchors (Dayhoff k = 14, gap 0), residue by residue
+## 12. The top 20 anchors (Dayhoff k = 13, gap 0), residue by residue
 
 Ranked by q, then p. For each: the anchor in Dayhoff letters (a = C; b = A G P S T;
 c = D E N Q; d = H K R; e = I L M V; f = F W Y), the count table (targets as rows, classes as
@@ -656,7 +673,7 @@ def anchor_figure(rank, row):
     a_cl, b_cl = u.clade_ends(row)
     pfam = ("outside every Pfam domain" if row["outside_pfam"] else
             f"inside Pfam {row['main_pfam']} in {row['n_occ_in_pfam']} of {row['n_occurrences']} occurrences")
-    header = (f"kmerseek Dayhoff k = 14 anchor {row['anchor_letters']}, target = next 10 residues | "
+    header = (f"kmerseek Dayhoff k = 13 anchor {row['anchor_letters']}, target = next 10 residues | "
               f"OASIS q = {u.fmt_p(row['q_oasis'])}, effect {row['effect_size']:.2f} | "
               f"composition q = {u.fmt_p(row['q_comp'])} | {pfam}")
     print(f"#{rank}  {header}")
@@ -692,7 +709,7 @@ def anchor_figure(rank, row):
     ax2.text(0, 1, "\n".join(lines), family="monospace", fontsize=5.5, va="top", ha="left", transform=ax2.transAxes)
     pf.panel_label(ax2, "b", dx_pt=0)
     fig.suptitle(header, fontsize=5.5, ha="left", x=0.01)
-    pf.save(fig, FIG / f"357_anchor_{rank:02d}_dayhoff_k14_gap0_uniprot")
+    pf.save(fig, FIG / f"357_anchor_{rank:02d}_dayhoff_k13_gap0_uniprot")
 
 top20 = prim.sort("q_oasis", "p_oasis", "anchor").head(20)
 print(f"{top20.height} anchors to show")
@@ -701,16 +718,16 @@ for rank, row in enumerate(top20.iter_rows(named=True), start=1):
 """)
 
 md(r"""
-## 13. HP k = 36
+## 13. HP k = 29
 
 The same counts for the second setting, HP (2 letters: h = A F G I L M P V W Y; p = C D E H
-K N Q R S T) at k = 36, gap 0. Reported; it does not change the verdict.
+K N Q R S T) at k = 29, gap 0. Reported; it does not change the verdict.
 """)
 
 code(r"""
-hv = u.verdict(d, setting="hp:36", gap=0)
+hv = u.verdict(d, setting="hp:29", gap=0)
 print({k: hv[k] for k in u.RULE}, "random-shuffle:", hv["n_random_shuffle"], "tested:", hv["n_tested"])
-hp_top = sig.filter((pl.col("setting") == "hp:36") & (pl.col("labelling") == "real")).sort("q_oasis").head(10)
+hp_top = sig.filter((pl.col("setting") == "hp:29") & (pl.col("labelling") == "real")).sort("q_oasis").head(10)
 print(hp_top.select("anchor_letters", "n_species", "n_clades", "q_oasis", "q_comp", "outside_pfam", "main_pfam"))
 fig, ax = pf.figure(pf.ONE_COLUMN_MM, 40)
 keys = list(u.RULE)
@@ -721,8 +738,8 @@ for i, x_ in zip(range(4)[::-1], vals):
 ax.set_yticks(range(4)[::-1], ["1. significant", "2. within-phylum shuffle", "3. of 1, outside Pfam", "4. of 3, not composition"])
 ax.set_xscale("log")
 u.plain_log_axis(ax, "x")
-ax.set_xlabel("Anchors (HP k = 36, gap 0; 0 drawn at 0.5)")
-pf.save(fig, FIG / "357_hp_k36_four_numbers")
+ax.set_xlabel("Anchors (HP k = 29, gap 0; 0 drawn at 0.5)")
+pf.save(fig, FIG / "357_hp_k29_four_numbers")
 """)
 
 md(r"""

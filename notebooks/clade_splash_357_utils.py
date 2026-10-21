@@ -23,11 +23,11 @@ ROOT = Path(__file__).resolve().parents[1]
 PIPELINE_BIN = ROOT / "nextflow-runs" / "clade-splash" / "bin"
 DATA = Path(os.environ.get("NB357_DIR", ROOT / "tables" / "357"))
 
-PRIMARY = ("dayhoff:14", 0)
-SETTINGS = {"dayhoff:14": (0, 5, 10), "hp:36": (0,)}
+PRIMARY = ("dayhoff:13", 0)
+SETTINGS = {"dayhoff:13": (0, 5, 10), "hp:29": (0,)}
 SETTING_LABEL = {
-    "dayhoff:14": "Dayhoff (6 letters), k = 14",
-    "hp:36": "HP (2 letters), k = 36",
+    "dayhoff:13": "Dayhoff (6 letters), k = 13",
+    "hp:29": "HP (2 letters), k = 29",
 }
 LABELLING_LABEL = {
     "real": "real class labels",

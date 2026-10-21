@@ -1,7 +1,7 @@
 // Notebook 357: clade-grouped SPLASH on reduced-alphabet protein k-mers (kill test).
 //
 // UniProt reference proteomes, one species per family, NCBI classes with at least 5 species
-// as the samples. For each reduced-alphabet anchor (Dayhoff k=14, HP k=36) the count table
+// as the samples. For each reduced-alphabet anchor (Dayhoff k=13, HP k=29: each about the 29 bits of a protein k-mer of k=7) the count table
 // is targets (the next 10 residues) x classes, with species counts in the cells. The OASIS
 // test (refresh-bio/SPLASH) asks whether the target distribution depends on the class. The
 // rule, the controls and the pass/fail numbers are notebooks/357_preregistration.md.
@@ -13,9 +13,9 @@ params.base_url    = 'https://ftp.uniprot.org/pub/databases/uniprot/current_rele
 // Downloaded FASTA files are kept here across runs (storeDir), so a second run with the
 // same species does not download them again.
 params.fasta_cache = "${System.getenv('SCRATCH') ?: launchDir}/nb357-clade-splash-fasta"
-params.settings    = 'dayhoff:14,hp:36'
+params.settings    = 'dayhoff:13,hp:29'
 // Gaps between anchor and target. Gap 5 and 10 only for Dayhoff, as the rule says.
-params.gaps        = 'dayhoff:14=0,5,10;hp:36=0'
+params.gaps        = 'dayhoff:13=0,5,10;hp:29=0'
 params.seed        = 357
 params.alpha       = 0.05
 // Chunks of species for download, anchors and targets: about this many canonical proteins
@@ -204,9 +204,10 @@ process test {
     // OASIS_pvalue is pure Python per table; the hours scale with the number of anchors in
     // the bucket. Measured 2026-10-20: the pilot (48 species) needed 0.45 GB; the full run's
     // first attempt at 16 GB was killed within 20 s reading a 2.3 GB bucket (several hundred
-    // million occurrence rows). clade_splash_test.py now streams it; 64 GB asked until the
-    // full run's own trace gives a number.
-    memory { "${64 * task.attempt} GB" }
+    // million occurrence rows). clade_splash_test.py now streams it. At Dayhoff k=14 with 64
+    // buckets the streamed tasks took a median 4.3 h, at most 7.9 h and 14.8 GB (HP k=36: 42
+    // min, 7 GB). Now 256 buckets, and k=13 / k=29 have more anchors: asked 24 GB and 12 h.
+    memory { "${24 * task.attempt} GB" }
     time { "${12 * task.attempt}h" }
     publishDir "${params.outdir}/tests/${setting.replace(':', '_')}", mode: 'copy'
 
@@ -552,7 +553,7 @@ workflow {
             .map { c, fa, s, cs -> [c, fa, s, gapsOf[s], cs] }
     )
 
-    tbuckets = Channel.fromList((0..<64).toList())
+    tbuckets = Channel.fromList((0..<256).toList())
     tests = test(tg.dirs.groupTuple().combine(tbuckets).map { s, dirs, b -> [s, b, dirs] }
                  .combine(sel.species).combine(oasis))
     col = collect(tests.collect())

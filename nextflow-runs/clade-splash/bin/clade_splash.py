@@ -66,7 +66,7 @@ MIN_SPECIES_PER_CLADE = 5
 MIN_CLADES = 3
 MIN_SPECIES_FOR_ANY_LABELLING = MIN_SPECIES_PER_CLADE * MIN_CLADES
 N_ANCHOR_BUCKETS = 256
-N_TARGET_BUCKETS = 64
+N_TARGET_BUCKETS = 256  # 64 at first; Dayhoff k=14 tests took up to 7.9 h per bucket
 LABELLINGS = ("real", "shuffle_random", "shuffle_tree")
 # Golden-ratio multiplier, so bucket numbers do not follow the low digits of a base-6 code.
 _HASH_MULT = np.uint64(0x9E3779B97F4A7C15)
