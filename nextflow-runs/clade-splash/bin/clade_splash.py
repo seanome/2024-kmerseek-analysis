@@ -714,7 +714,7 @@ def cmd_collect(a: argparse.Namespace) -> None:
     for _, sub in df.group_by("setting", "gap", "labelling", maintain_order=True):
         sub = sub.with_columns(pl.Series("q_oasis", bh(sub["p_oasis"].to_numpy())))
         parts.append(sub)
-    df = pl.concat(parts)
+    df = pl.concat(parts) if parts else df.with_columns(pl.lit(None, pl.Float64).alias("q_oasis"))
     sig = df.filter(pl.col("q_oasis") < a.alpha)
     # Composition scan: BH over the significant anchors of each (setting, gap, labelling).
     cparts = []
