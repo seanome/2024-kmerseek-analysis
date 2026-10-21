@@ -547,7 +547,75 @@ print(by_len)
 """)
 
 md(r"""
-## 3. Steps 3 to 8: what was found while preparing them
+## 3. Step 3 decoys and the kmerseek pilot
+
+**Decoys** (`scripts/build_301_step3_decoys.py`, run by `scripts/301_build.sbatch`, job
+48688371, 2026-10-20). Two per feature, 9,204 in all. A decoy that cannot differ from the
+real window is left out of every count: 90 pair shuffles (87 ELM motifs of 3 residues or
+fewer or made of repeated pairs, and 3 transmembrane spans) and 17 reversals (ELM motifs
+that read the same backwards). 9,097 decoys are used.
+
+**Pilot** (`scripts/301_pilot_submit.sh`, jobs 48688374-48688376, 2026-10-20). kmerseek
+v0.4.0 built from its tag (commit 0aed5ca), three of notebook 241's settings, the step 2
+Swiss-Prot database (568,962 proteins; kmerseek indexes each distinct sequence once, which
+is 482,426), and 9 queries (one per organism group and feature type, plus a signal-peptide
+and a degron chimera) with their 34 decoys. Each search passed the setting's own
+`--extend-mismatch-penalty` and `--extend-xdrop`. The table is
+`data/301_short_feature_boundaries/pilot/pilot_summary.tsv`, column names as
+`scripts/collect_301_pilot.py` wrote them.
+
+- `region_evalue` is finite on all but 51 of 7,334,783 rows for protein20 k5 and
+  hp_lehninger2 k19. The extension flags work; point 1 above is settled.
+- `region_subseq` equals the query's residues at `region_start`..`region_end` on every row,
+  so the 0-based, end-exclusive reading is right.
+- dayhoff6 k12's Karlin-Altschul fit was refused on this index, and kmerseek v0.4.0 then
+  refuses to search. Such a setting is excluded and listed, as decided.
+- One query (P12241, hp_lehninger2 k19, 4 cores) took 61.5 s the first time this node read
+  the index and 2.5 s the second time. The rule asks for under 0.1 s. Under the pass rule
+  the timing condition fails, so the verdict can only be FAIL or DROP; the run decides which.
+""")
+
+code(r"""
+pilot = pl.read_csv(DATA / "pilot" / "pilot_summary.tsv", separator="\t")
+print(pilot.select([c for c in pilot.columns if not c.startswith("rows_region_subseq")]))
+
+settings = pilot.filter(pl.col("index_wall_s").is_not_null())
+one = pilot.filter(pl.col("search_1_query_4_cores_wall_s").is_not_null())
+fig, axs = pf.figure(pf.TWO_COLUMN_MM, 55, ncols=2)
+ax = axs[0]
+y = np.arange(settings.height)
+ax.barh(y - 0.2, settings["index_wall_s"] / 60, height=0.4, color=pf.GREY, label="index (min)")
+srch = settings["search_43_sequences_wall_s"].fill_null(0).to_numpy() / 60
+ax.barh(y + 0.2, srch, height=0.4, color=pf.OKABE_ITO["blue"], label="search, 43 sequences (min)")
+for yi, (fit, sv) in enumerate(zip(settings["karlin_altschul_fit"], srch)):
+    if fit == "refused":
+        ax.text(0.3, yi + 0.2, "fit refused: no search", va="center")
+ax.set_yticks(y, [f"{a} k{k}" for a, k in zip(settings["alphabet"], settings["ksize"])])
+ax.invert_yaxis()
+ax.set_xlabel("wall time (min), 16 cores")
+ax = axs[1]
+labels = ["first read of the index", "index already in memory"]
+ax.barh([0, 1], one["search_1_query_4_cores_wall_s"], color=pf.OKABE_ITO["vermillion"],
+        height=0.5, label="one query, hp_lehninger2 k19, 4 cores (s)")
+ax.axvline(0.1, color="black", ls=":", lw=0.8, label="pass rule: under 0.1 s")
+ax.set_xscale("log")
+ax.set_xticks([0.1, 1, 10, 60], ["0.1", "1", "10", "60"])
+ax.set_yticks([0, 1], labels)
+ax.invert_yaxis()
+ax.set_xlabel("wall time per query (s); equal steps are equal ratios")
+for v, yy in zip(one["search_1_query_4_cores_wall_s"], [0, 1]):
+    ax.text(v * 1.1, yy, f"{v:g} s", va="center")
+for ax, letter in zip(axs, "ab"):
+    pf.panel_label(ax, letter)
+pf.shared_legend(fig, ncol=4, title=(
+    "kmerseek v0.4.0 pilot on Swiss-Prot 2026_03 minus the queries' UniRef90 clusters (query: 9 proteins and 34 decoys)\n"
+    "One query takes 25 times the pass rule's limit even with the index in memory"
+), alignment="left")
+pf.save(fig, FIG / "301_pilot_kmerseek_time_swissprot", formats=("png", "pdf"))
+""")
+
+md(r"""
+## 4. What was found while preparing steps 3 to 8
 
 Steps 3 to 8 have not run. Six things in the task brief do not match the repository as it
 stands on 2026-10-20. Each needs a decision before compute is spent.
