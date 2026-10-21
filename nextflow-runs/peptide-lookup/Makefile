@@ -60,8 +60,8 @@ queries: pylib pxd069517
 ## Copy the step 1-3 tables (not the database) to the notebook's data folder. Run on the laptop.
 pull-queries:
 	mkdir -p $(NOTEBOOK_DATA)/step1
-	rsync -av --include '*.tsv' --include '*.txt' --include '*.fasta' --exclude 'search_db.fasta' \
-	  --exclude 'uhgp90_lines_with_pool_peptide.tsv' --exclude '*/' \
+	rsync -av --exclude 'search_db.fasta' --exclude 'uhgp90_lines_with_pool_peptide.tsv' \
+	  --include '*.tsv' --include '*.txt' --include '*.fasta' --exclude '*' \
 	  $(SHERLOCK_HOST):$(REMOTE_OUT)/step1/ $(NOTEBOOK_DATA)/step1/
 	rsync -av $(SHERLOCK_HOST):$(REMOTE_OUT)/step1/PXD069517/date_downloaded.txt $(NOTEBOOK_DATA)/step1/pxd069517_date_downloaded.txt
 

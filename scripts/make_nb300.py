@@ -509,6 +509,160 @@ alphabets as dead: none can seed in 14 residues, and two seeds do not fit in 30.
 above lists the alphabets that stay alive and the k each runs at in steps 1-6.
 """)
 
+md(r"""
+## 10. Steps 1-3: the query peptides, their decoys and the search database
+
+**No public de novo list.** The task asked for a human gut metaproteomics dataset on PRIDE that
+ships a de novo peptide list (PEAKS, Novor or Casanovo) with a confidence score.
+`bin/pride_denovo_search.py` (run 2026-10-21) found 477 gut microbiome projects. Eight have
+a file whose name suggests de novo output, and none is a human gut de novo peptide list with a
+score. The table below says what each is.
+
+**So this is the fallback, and a weaker test.** The real peptides are database-search hits
+from PXD069517 (stool of celiac disease patients; Sequest-HT and Percolator against a
+collection of human gut metagenomes, "MGDB"; Confidence "High"). Every UHGP-90 protein that
+contains one of them exactly, with I and L read as the same letter, is hidden from the
+database kmerseek searches. It is weaker than the planned test in three ways:
+
+1. A database-search peptide has no sequencing errors: the search engine reports the residues
+   of the protein it matched. A de novo peptide carries swaps (I/L, Q/K, N/D) and can have two
+   residues in the wrong order. Only the spiked peptides test swaps here.
+2. Every real peptide matched a protein in the study's database, so a close relative of its
+   source very likely remains in UHGP-90 after the exact matches are hidden. Peptides no
+   database explains, which is what de novo lists are used for, would be harder.
+3. All are tryptic peptides that passed a 1% FDR search, so they are short and clean.
+
+Pass rule 1 compares kmerseek with `diamond` on these real peptides. That comparison stays
+fair, because both tools search the same database with the same proteins hidden.
+
+**Spiked peptides.** 1,000 windows of UHGP-90 proteins (`bin/spike_peptides.py`, seed 300).
+Their lengths are drawn from the real peptides' lengths, so the two sets are equally short. Each
+has one or two conservative swaps (I<->L, D<->E, K<->R) at recorded positions, and its source
+protein stays in the database.
+
+**Decoys.** One per peptide: the first and last residue kept, the rest reversed
+(`bin/make_queries.py`). Same length, mass and residue counts.
+
+**Database.** UHGP-90 minus the hidden proteins, the human reference proteome UP000005640 with
+its isoforms, and cRAP.
+""")
+
+code(r"""
+S1 = DATA.parent / "step1"
+print(pl.read_csv(S1 / "pride_denovo_files_checked.tsv", separator="\t")
+      .select("accession", "organism", "usable_as_de_novo_list"))
+filt = pl.read_csv(S1 / "real_peptide_filter_counts.tsv", separator="\t")
+real = pl.read_csv(S1 / "real_peptides.tsv", separator="\t")
+spiked = pl.read_csv(S1 / "spiked_peptides.tsv", separator="\t")
+queries = pl.read_csv(S1 / "queries.tsv", separator="\t")
+dbc = pl.read_csv(S1 / "search_db_counts.tsv", separator="\t")
+hidden = (S1 / "uhgp90_hidden_proteins.txt").read_text().split()
+
+steps = [("peptides in the PXD069517 table", filt["rows_in_file"][0]),
+         ("MGDB, Confidence High", filt["mgdb_high_confidence"][0]),
+         ("9-30 canonical residues", filt["length_9_30_canonical"][0]),
+         ("not in human or cRAP, unique", filt["unique_pool"][0]),
+         ("drawn for the test", len(real))]
+funnel = pl.DataFrame(steps, schema=["step", "n_peptides"], orient="row")
+print(funnel)
+n_exact = int((real["n_uhgp90_proteins_with_exact_match"] > 0).sum())
+print(f"{n_exact} of {len(real)} real peptides occur exactly (I = L) in UHGP-90; "
+      f"{len(hidden):_} UHGP-90 proteins hidden")
+print(dbc)
+
+fig, axs = pf.figure(pf.TWO_COLUMN_MM, 55, ncols=2)
+ax = axs[0]
+yy = np.arange(len(funnel))
+ax.barh(yy, funnel["n_peptides"], color=pf.OKABE_ITO["blue"])
+for y_, n in zip(yy, funnel["n_peptides"]):
+    ax.text(n, y_, f" {n:,}", va="center")
+ax.set_yticks(yy, funnel["step"])
+ax.invert_yaxis()
+ax.set_xlim(0, funnel["n_peptides"].max() * 1.3)
+ax.xaxis.set_major_formatter(mpl.ticker.FuncFormatter(lambda v, _: f"{v:,.0f}"))
+ax.set_xlabel("peptides")
+ax.set_title("Real peptides from PXD069517, filter by filter", loc="left")
+ax = axs[1]
+lengths = np.arange(9, 31)
+for name, table, colour, marker in [("real (PXD069517)", real, pf.OKABE_ITO["blue"], "o"),
+                                    ("spiked (UHGP-90)", spiked, HIGHLIGHT_COLOUR, "s")]:
+    counts = table["length"].value_counts()
+    frac = [counts.filter(pl.col("length") == L)["count"].sum() / len(table) for L in lengths]
+    ax.plot(lengths, frac, marker=marker, ms=3, lw=0.8, color=colour, label=name)
+ax.axvline(14, color="black", lw=0.4, ls=":")
+ax.set_xlabel("peptide length (residues; line at 14)")
+ax.set_ylabel("fraction of peptides")
+ax.legend(frameon=False)
+ax.set_title("Lengths of the two query sets", loc="left")
+for a_, letter in zip(axs, "ab"):
+    pf.panel_label(a_, letter)
+pf.save(fig, FIGURES / "step1_real_peptide_filters_and_lengths_pxd069517_uhgp90")
+""")
+
+code(r"""
+swaps = (spiked.select("peptide_id", "n_swaps", pl.col("swaps").str.split(","))
+         .explode("swaps")
+         .with_columns(pair=pl.col("swaps").str.extract(r":(\w)>(\w)", 1) + "<->"
+                       + pl.col("swaps").str.extract(r":(\w)>(\w)", 2)))
+swaps = swaps.with_columns(pair=pl.col("pair").replace(
+    {"L<->I": "I<->L", "E<->D": "D<->E", "R<->K": "K<->R"}))
+print(spiked.group_by("n_swaps").len().sort("n_swaps"))
+print(swaps.group_by("pair").len().sort("pair"))
+print(queries.group_by("set", "is_decoy").agg(n=pl.len(), decoy_equals_target=pl.col(
+    "decoy_equals_target").sum()).sort("set", "is_decoy"))
+
+fig, axs = pf.figure(pf.TWO_COLUMN_MM, 45, ncols=2)
+pairs = swaps.group_by("pair").len().sort("pair")
+axs[0].bar(pairs["pair"], pairs["len"], color=pf.GREY)
+for x_, n in enumerate(pairs["len"]):
+    axs[0].text(x_, n, f"{n}", ha="center", va="bottom")
+axs[0].set_ylabel("swaps")
+axs[0].set_title("Swaps in the 1,000 spiked peptides", loc="left")
+labels = {"uhgp90_kept": "UHGP-90, kept", "human_with_isoforms": "human proteome with isoforms",
+          "crap": "cRAP contaminants", "uhgp90_hidden": "UHGP-90, hidden (left out)"}
+parts = dbc.filter(pl.col("part") != "total").with_columns(
+    order=pl.col("part").replace_strict({k: i for i, k in enumerate(labels)}, return_dtype=pl.Int64)
+).sort("order")
+for y_, (part, n) in enumerate(parts.select("part", "n_sequences").iter_rows()):
+    hidden_part = part == "uhgp90_hidden"
+    axs[1].barh(y_, n, color="#dddddd" if hidden_part else pf.OKABE_ITO["blue"],
+                edgecolor="#555555" if hidden_part else "none", lw=0.5,
+                label=("left out of the database" if hidden_part else "in the database")
+                if part in ("uhgp90_hidden", "uhgp90_kept") else None)
+    axs[1].text(n, y_, f" {n:,}", va="center")
+axs[1].set_yticks(range(len(parts)), [labels[p] for p in parts["part"]])
+axs[1].invert_yaxis()
+axs[1].set_xscale("log")
+axs[1].set_xlim(50, 1e9)
+axs[1].xaxis.set_major_locator(mpl.ticker.FixedLocator([1e2, 1e4, 1e6, 1e8]))
+axs[1].xaxis.set_major_formatter(mpl.ticker.FuncFormatter(lambda v, _: f"{v:,.0f}"))
+axs[1].xaxis.set_minor_locator(mpl.ticker.NullLocator())
+axs[1].set_xlabel("proteins (ticks spaced by ratio)")
+axs[1].legend(frameon=False, loc="lower left", bbox_to_anchor=(0.55, 0.35))
+total = dbc.filter(pl.col("part") == "total")["n_sequences"][0]
+axs[1].set_title(f"Search database: {total:,} proteins", loc="left")
+for a_, letter in zip(axs, "ab"):
+    pf.panel_label(a_, letter)
+pf.save(fig, FIGURES / "step1_spiked_swaps_and_search_database_uhgp90")
+""")
+
+md(r"""
+Five peptides of each kind, with their source. For a spiked peptide the source window and the
+peptide are aligned residue by residue; `|` marks a residue that is the same, a space a swap.
+""")
+
+code(r"""
+for r in spiked.head(5).iter_rows(named=True):
+    match = "".join("|" if a == b else " " for a, b in zip(r["source_window"], r["peptide"]))
+    n_same = match.count("|")
+    print(f"{r['peptide_id']}  {r['source_protein']} {r['source_start_1based']}-"
+          f"{r['source_end_1based']}  swaps {r['swaps']}  {n_same} of {r['length']} identical")
+    print(f"  source   {r['source_window']}\n           {match}\n  peptide  {r['peptide']}")
+print()
+print(real.head(5).select("peptide_id", "Sequence", "Master Protein Accessions", "genus",
+                          "n_uhgp90_proteins_with_exact_match"))
+""")
+
 nb = {
     "cells": cells,
     "metadata": {
