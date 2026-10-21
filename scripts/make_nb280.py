@@ -524,7 +524,8 @@ usually means no fixed structure) of the query's residues inside the t1 domain, 
 the query's AlphaFold model with `read_plddt()` of the QfO benchmark
 (`bin/instance_plddt.py`). Models are AlphaFold DB version 4, copied from AlphaFold's Google
 Cloud bucket on 2026-10-14 (AlphaFold DB's own file server refused downloads that week).
-7,846 of the 8,349 real queries have a model; a sample of 12 of the other 503 have no
+7,839 of the 8,349 real queries have a model of their own sequence and 7 a model of a
+different sequence; a sample of 12 of the other 503 have no
 AlphaFold DB entry at all. A model counts only when its residues are the query's Pfam 33.1
 sequence; otherwise the instance is "no model". The models that the QfO benchmark had
 already downloaded covered 64 of these queries.
@@ -791,22 +792,25 @@ instance); up, the unique finds it made. A setting above the dashed line found m
 chance predicts, which is what P4 needs; every point sits below it. Panel b: the same
 settings' decoy transfer rate on the tune half, where the cutoff was set to allow at most 0.01
 per decoy, against the test half at the same cutoff. A cutoff that carries over sits on the
-dashed line; points far above it let many more decoy transfers through on the test half.
-Up is spaced by ratio. MMseqs2, phmmer and hmmscan are not drawn: the scorer stores only their
-test-half rate (0.006, 0.012 and 0.003 per decoy).
+dotted line; points far above it let many more decoy transfers through on the test half.
+Up is spaced by ratio. MMseqs2, phmmer and hmmscan are drawn from `decoy_spread.csv`, which
+has both halves for every tool.
 
 Why the extend points sit so high: the printed table from `bin/decoy_spread.py` counts, per
-setting and half, how the transfers spread over decoys. On the test half one or two decoys
-carry most of them: for hp_kyte_doolittle2 k25 extend, one 788 aa decoy (DECOY_A0A078GY05)
-receives 3,756 of the half's 4,542 family transfers; for gbmr7 k19 extend, one decoy receives
-718 of 821. No such decoy fell in the tune half, so the cutoff set there does not hold. The
+setting and half, how the transfers spread over decoys. On the test half, one decoy carries
+more than half of them in 12 of the 19 extend settings, and the top two in 15 of 19: for
+hp_kyte_doolittle2 k25 extend, one 788 aa decoy (DECOY_A0A078GY05) receives 3,756 of the
+half's 4,542 family transfers; for gbmr7 k19 extend, one decoy receives 718 of 821. On the
+tune half no decoy receives more than 17, so the cutoff set there does not hold. The
 exact settings carry over better (41 to 107 test-half transfers against 39 to 41 on the tune
 half).
-gbmr7 k19 extend is the chosen setting because 99.9% of its decoy pairs have no finite E-value
-(kmerseek gives the region E-value inf), so its cutoff accepts every finite score and it makes
-almost no calls: 1 test instance found. The rule in the first cell picks the largest unique
-finds minus expected; with every setting below zero, that is the setting with the fewest
-decoy transfers.
+gbmr7 k19 extend makes 123.5 million calls, but 99.9% of its decoy pairs, and nearly all its
+calls, have no finite E-value (kmerseek gives the region E-value inf). Its cutoff accepts
+every finite score, and only 3 of its calls on an instance have one: 1 test instance found.
+The rule in the first cell picks the largest unique finds minus expected. Unique finds are 0
+to 5 for every setting while the expected numbers are 16 to 22, so the expected number
+decides, and gbmr7 k19 extend, with the fewest tune-half decoy transfers (30, the next 39),
+has the smallest.
 """
 
 P4_CODE = r"""
@@ -831,7 +835,7 @@ ch = UT.filter(pl.col("setting") == P4["chosen"])
 ax.scatter(ch["expected"], ch["unique_finds"], s=60, facecolors="none", edgecolors="black", lw=0.8,
            label=f"chosen on the tune half: {P4['chosen'].removeprefix('kmerseek ')}")
 lim = max(UT["expected"].max(), UT["unique_finds"].max()) * 1.1
-ax.plot([0, lim], [0, lim], color="black", lw=0.5, ls="--", label="unique finds = expected by chance")
+ax.plot([0, lim], [0, lim], color="black", lw=0.5, ls="--", label="a: unique finds = expected by chance")
 ax.set_xlim(0, lim); ax.set_ylim(0, lim)
 ax.set_xlabel("Unique finds expected from decoys, tune half")
 ax.set_ylabel("Unique finds, tune half")
@@ -839,13 +843,21 @@ ax = axs[1]
 for arm, marker in (("exact", "o"), ("extend", "v")):
     u = rates.filter(pl.col("setting").str.ends_with(arm))
     ax.scatter(u["decoy_rate_tune"], u["decoy_rate_test"], s=12, marker=marker, color=KMER_COLOR, alpha=0.8, linewidths=0)
-ax.plot([0, 0.012], [0, 0.012], color="black", lw=0.5, ls="--")
+if spread_f.exists():
+    spa = pl.read_csv(spread_f)
+    for n, (label, color, marker) in COMPARATORS.items():
+        tt = spa.filter(pl.col("setting") == n)
+        tune_r = tt.filter(pl.col("half") == "tune")["transfers_per_decoy"]
+        test_r = tt.filter(pl.col("half") == "test")["transfers_per_decoy"]
+        ax.scatter(tune_r, test_r, s=20, marker=marker, color=color, zorder=3, label=label)
+# y = x, the rate a cutoff that carries over would give; starts above 0, which a ratio axis cannot draw
+ax.plot([0.004, 0.0105], [0.004, 0.0105], color="black", lw=0.6, ls=":", label="b: same rate on both halves")
 ax.set_yscale("log")
-ax.set_yticks([0.01, 0.03, 0.1, 0.3, 1], ["0.01", "0.03", "0.1", "0.3", "1"])
+ax.set_yticks([0.003, 0.01, 0.03, 0.1, 0.3, 1], ["0.003", "0.01", "0.03", "0.1", "0.3", "1"])
 ax.yaxis.set_minor_formatter(NullFormatter())
 ax.set_xlabel("Decoy transfers per decoy, tune half (cutoff allows 0.01)")
 ax.set_ylabel("Decoy transfers per decoy, test half, same cutoff")
-ax.set_xlim(0.006, 0.0105)
+ax.set_xlim(0.004, 0.0105)
 pf.shared_legend(fig, ncol=3)
 for ax, letter in zip(axs, "ab"):
     pf.panel_label(ax, letter)
@@ -870,13 +882,18 @@ test half.
 * hmmscan with the Pfam 33.1 models finds 64.2% of 4,703 test instances, ahead of phmmer
   (51.6%) and one-round MMseqs2 (43.0%), so P2 holds.
 * The best of 38 kmerseek settings, uniprot18 k5 extend, finds 14.2% of test instances, a
-  third of MMseqs2's 43.0%, so P3 holds in every Pfam type and length bin.
+  third of MMseqs2's 43.0%, so P3 holds.
+* In every Pfam type and length bin, even the best kmerseek setting for that bin finds fewer
+  than MMseqs2; the closest is Motif, 11.3% against 21.7%.
 * No kmerseek setting makes more tune-half unique finds than its decoys predict: at most 5
   against 21.9 expected among 2,203 queries with a short or Motif, Disordered or Repeat domain.
 * The tune-chosen kmerseek setting, gbmr7 k19 extend, makes 0 unique finds on the test half,
   449 below its decoy expectation (95% interval -1,281 to -9), so P4 fails.
-* Below pLDDT 50, kmerseek with any of its 38 settings finds 27.4% of 201 test instances,
-  against 36.8% for MMseqs2 and 58.7% for hmmscan.
+* Below pLDDT 50, kmerseek with any of its 38 settings together finds 27.4% of 201 test
+  instances, against 36.8% for MMseqs2, 42.3% for phmmer and 58.7% for hmmscan.
+
+The union of 38 kmerseek settings is not held to the matched decoy rate, which favours
+kmerseek, so the real gap below pLDDT 50 is wider than shown.
 * MMseqs2 searched 16,658 sequences in 0.8 CPU hours; the 38 kmerseek settings took 6.8 to
   212 CPU hours each and found fewer domains every time.
 
@@ -905,11 +922,13 @@ phmmer and Pfam's own models missed, beyond what its decoys predict.
   only test-half results seen were hmmscan's calls on the 2 queries of the smoke test
   (2026-10-12, PR 121 body), both found.
 - Matched cutoffs from the tune half do not carry over for kmerseek's extend settings: on the
-  test half one or two decoys with hundreds to thousands of family transfers push the rate to
-  0.015 to 1.08 per decoy, against the 0.01 allowed on the tune half. The other tools stay at
-  0.003 to 0.012.
-- Where kmerseek does least badly: Repeat (best setting 18.3% against MMseqs2's 63.3%) and
-  regions under 60 aa (18.5% against 50.8%).
+  test half their rate is 0.015 to 1.08 family transfers per decoy, against the 0.01 allowed
+  on the tune half. In 12 of the 19 extend settings one test decoy carries more than half of
+  them, and in 11 of 19 one decoy carries 100 to 3,756. The other tools stay at 0.003 to
+  0.012.
+- kmerseek's highest recalls are on Repeat domains (best setting 18.3% against MMseqs2's
+  63.3%) and regions under 60 aa (18.5% against 50.8%). It comes nearest MMseqs2 on Motif
+  (11.3% against 21.7%) and Disordered (12.6% against 26.1%).
 
 ## Supplementary Information
 
