@@ -47,7 +47,7 @@ NF_SEED   = $(MAKEFILE_DIR)/main.nf -profile sherlock \
 HEAD = HEAD_ACCOUNT=ayeletv HEAD_PARTITION=hns HEAD_QOS=normal HEAD_TIME=7-00:00:00 \
        HEAD_CPUS=2 HEAD_MEM=16G HEAD_HINT_WATCH="tmux attach" HEAD_HINT_STOP="scancel"
 
-.PHONY: download stop1 controls inputs stub smoke pilot score-partial mmseqs-one-round full choose-settings seed-reference hash-check seed-pilot seed-self-check seed-spectrum plddt running
+.PHONY: leaderboard download stop1 controls inputs stub smoke pilot score-partial mmseqs-one-round full choose-settings seed-reference hash-check seed-pilot seed-self-check seed-spectrum plddt running
 
 download:
 	@mkdir -p $(RUN_DIR)/data
@@ -239,6 +239,21 @@ plddt:
 	    bash $(MAKEFILE_DIR)/../qfo-pfam-region-benchmark/bin/fetch_alphafold_structures.sh $$P/structures $$P/acc timesplit; \
 	  $(PY) $(MAKEFILE_DIR)/bin/instance_plddt.py --structures $$P/structures/timesplit \
 	    --inputs inputs/pilot inputs/full --out $$P/instance_plddt.tsv'
+
+# Leaderboard rows of the full run (bin/leaderboard_rows.py). It reads the test half once,
+# logging the read in results-full/scores/TEST_HALF_READ, so the script is first run on the
+# pilot's scores in tune mode (no test half there) and the test-half read is chained to
+# start only if that check succeeded.
+leaderboard:
+	@c=$$(cd $(MAKEFILE_DIR) && git rev-parse HEAD); \
+	  check=$$($(SB) --parsable --job-name=280-leaderboard-check --cpus-per-task=2 --mem=16G --time=1:00:00 \
+	    --wrap "$(PY) $(MAKEFILE_DIR)/bin/leaderboard_rows.py --scores results-pilot/scores --inputs inputs/pilot \
+	      --settings inputs/settings.tsv --commit $$c --half tune --out leaderboard-check"); \
+	  echo "check $$check"; \
+	  $(SB) --parsable --dependency=afterok:$$check --job-name=280-leaderboard --cpus-per-task=2 --mem=32G --time=2:00:00 \
+	    --wrap "$(PY) $(MAKEFILE_DIR)/bin/leaderboard_rows.py --scores results-full/scores --inputs inputs/full \
+	      --trace launch-full/trace.full.txt --index-cache kmerseek_index --settings $(LEADERBOARD_SETTINGS) \
+	      --commit $$c --half test --out leaderboard"
 
 ## Read TIME carefully. squeue formats it [DD-[HH:]]MM:SS, so `4:03` is four minutes.
 running:
