@@ -544,6 +544,14 @@ def main() -> None:
             with open(OUT / "runs.jsonl", "a") as fh:
                 fh.write(json.dumps(rec) + "\n")
     print(f"done: {len(results)} arms", file=sys.stderr)
+    if only:
+        # A rerun is followed by the collector, which rebuilds every table; do not let it
+        # run on a setting whose index or search failed.
+        bad = [r for r in results if r.get("index_rc") or r.get("search_rc")]
+        if bad:
+            sys.exit(
+                f"--only: index or search failed for {len(bad)} setting(s); see runs.jsonl"
+            )
 
 
 if __name__ == "__main__":
