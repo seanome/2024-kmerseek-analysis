@@ -88,3 +88,22 @@ running:
 	  exit 1; \
 	fi
 	@python3 $(RUNNING_DIR)/../../scripts/nf-running --jobs "$(RUNNING_DIR)"
+
+# PR 156 head, pinned rather than following its branch during a run.
+KMERSEEK_SHA := 799272cabcb6a31ffb4b9f593ce7e3f05818612e
+KMERSEEK_SRC ?= $(SCRATCH)/nb300-kmerseek-$(KMERSEEK_SHA)
+STEP4ENV := $(JOBENV),KMERSEEK_SHA=$(KMERSEEK_SHA),KMERSEEK_SRC=$(KMERSEEK_SRC),SETTINGS=$(OUT)/step4/settings.tsv
+
+.PHONY: index-pilots
+# Compile, then measure all ten settings. Comparator indexes run independently.
+index-pilots:
+	@test -s $(OUT)/step1/search_db.fasta
+	@test -d $(KMERSEEK_SRC)/.git
+	@mkdir -p $(OUT)/logs $(OUT)/step4
+	@awk -F '\t' 'NR>1 && $$9=="alive" {print $$1 "\t" $$4}' $(NOTEBOOK_DATA)/settings_one_k_per_alphabet.tsv > $(OUT)/step4/settings.tsv
+	@test "$$(wc -l < $(OUT)/step4/settings.tsv)" -eq 10
+	@cd $(OUT)/logs && \
+	build=$$(sbatch --parsable --export=ALL,$(STEP4ENV) $(RUNNING_DIR)/sbatch/build.sbatch) && \
+	pilot=$$(sbatch --parsable --dependency=afterok:$$build --export=ALL,$(STEP4ENV) $(RUNNING_DIR)/sbatch/index_pilot.sbatch) && \
+	compare=$$(sbatch --parsable --export=ALL,$(STEP4ENV) $(RUNNING_DIR)/sbatch/comparator_indexes.sbatch) && \
+	printf 'build %s -> pilots %s; comparator indexes %s\n' $$build $$pilot $$compare
