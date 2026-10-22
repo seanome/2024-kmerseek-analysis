@@ -104,3 +104,23 @@ Sherlock allocated 11-12 CPUs to the first six full builds because of the memory
 requests. Requested CPUs and allocated CPUs are separate fields in Slurm accounting.
 Index construction may use the allocated cores; timed peptide searches explicitly set
 eight application threads even if the allocation contains more cores.
+
+## Search resource plan
+
+No full-query search is submitted from these estimates. First measure 100- and
+500-query sets on the completed full databases, with targets and decoys equally
+represented and lengths sampled from the fixed queries. Two sizes distinguish index
+startup from the time added by more queries. Keep those pilot hits separate from the
+final hit tables. Final memory and time requests are regenerated from these measurements.
+
+| search stage | application threads | provisional memory | provisional time limit | basis |
+|---|---:|---:|---:|---|
+| kmerseek full-database query pilot, each setting | 8 | 661-689 GiB, by setting | 4 h | 1.5x scaled 100,000-protein search RSS; startup and added-query cost unmeasured at full scale |
+| DIAMOND full-database query pilot | 8 | 16 GiB | 2 h | full database build peaked at 2.27 GiB; query workspace allowance is a model estimate |
+| BLAST full-database query pilot | 8 | 16 GiB | 2 h | full database build peaked at 2.10 GiB; query workspace allowance is a model estimate |
+| final 20,000 real target/decoy queries and 2,000 spike queries | 8 | determined from full-database query pilots | determined from the two-size query pilot | no final request issued before measurement |
+
+The four-hour kmerseek pilot limit is a scheduling allowance, not a measured query
+runtime. The 60-second pass rule is evaluated only on the final specified query set.
+The pilot may show that startup alone exceeds that rule; report the measured number
+without changing the rule.
