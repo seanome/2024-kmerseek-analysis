@@ -101,7 +101,7 @@ index-pilots:
 	@test -s $(OUT)/step1/search_db.fasta
 	@test -d $(KMERSEEK_SRC)/.git
 	@mkdir -p $(OUT)/logs $(OUT)/step4
-	@awk -F '\t' 'NR>1 && $$9=="alive" {print $$1 "\t" $$4}' $(NOTEBOOK_DATA)/settings_one_k_per_alphabet.tsv > $(OUT)/step4/settings.tsv
+	@tail -n +2 $(RUNNING_DIR)/settings.tsv > $(OUT)/step4/settings.tsv
 	@test "$$(wc -l < $(OUT)/step4/settings.tsv)" -eq 10
 	@cd $(OUT)/logs && \
 	build=$$(sbatch --parsable --export=ALL,$(STEP4ENV) $(RUNNING_DIR)/sbatch/build.sbatch) && \

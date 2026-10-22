@@ -57,3 +57,45 @@ def test_unsafe_plan_never_submits(tmp_path):
     )
     assert result.returncode != 0 and "No jobs submitted" in result.stderr
     assert not (tmp_path / "out/full_jobs.tsv").exists()
+
+
+def test_submission_manifest_prevents_duplicates(tmp_path):
+    import os
+
+    f = tmp_path / "resources.tsv"
+    with f.open("w") as fh:
+        w = csv.DictWriter(
+            fh,
+            fieldnames=["alphabet", "ksize", "full_linear_gb", "full_time_limit_hours"],
+            delimiter="\t",
+        )
+        w.writeheader()
+        for i in range(10):
+            w.writerow(
+                dict(
+                    alphabet=f"a{i}",
+                    ksize=7,
+                    full_linear_gb=20,
+                    full_time_limit_hours=1,
+                )
+            )
+    fake = tmp_path / "sbatch"
+    fake.write_text('#!/bin/sh\nprintf "12345\\n"\n')
+    fake.chmod(0o755)
+    env = dict(os.environ, PATH=str(tmp_path) + os.pathsep + os.environ["PATH"])
+    command = [
+        sys.executable,
+        str(BIN / "plan_full_indexes.py"),
+        str(f),
+        str(tmp_path / "out"),
+        "--script",
+        str(tmp_path / "job.sh"),
+        "--submit",
+    ]
+    first = subprocess.run(command, env=env, capture_output=True, text=True)
+    assert first.returncode == 0, first.stderr
+    manifest = tmp_path / "out/full_jobs.tsv"
+    assert len(manifest.read_text().splitlines()) == 11
+    second = subprocess.run(command, env=env, capture_output=True, text=True)
+    assert second.returncode != 0 and "manifest already exists" in second.stderr
+    assert len(manifest.read_text().splitlines()) == 11
