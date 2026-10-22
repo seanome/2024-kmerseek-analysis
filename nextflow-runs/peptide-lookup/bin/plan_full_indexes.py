@@ -16,6 +16,8 @@ a = p.parse_args()
 rows = list(csv.DictReader(a.resources.open(), delimiter="\t"))
 if len(rows) != 10 or len({r["alphabet"] for r in rows}) != 10:
     raise SystemExit("All ten paired pilots are required")
+priority = {name: i for i, name in enumerate(("massspec18", "protein20", "uniprot18"))}
+rows.sort(key=lambda r: (priority.get(r["alphabet"], 3), r["alphabet"]))
 planned = []
 for r in rows:
     memory = max(32, math.ceil(1.5 * float(r["full_calibration_linear_gb"])))
