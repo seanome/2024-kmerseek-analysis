@@ -36,6 +36,7 @@ HEAD_QOS     ?= normal
 HEAD_TIME    ?= 2-00:00:00  # the normal QOS limit; 3 days is refused
 HEAD_CPUS    ?= 2
 HEAD_MEM     ?= 8G
+SHERLOCK_NEXTFLOW ?= /share/software/user/open/nextflow/25.04.7/bin/nextflow
 HEAD_SESSION ?= nb357-splash
 HEAD_JOBNAME ?= nf-nb357-splash
 export NXF_OPTS := -Xms512m -Xmx6g
@@ -47,7 +48,7 @@ HEAD_SUBMIT = HEAD_ACCOUNT=$(SLURM_ACCOUNT) HEAD_PARTITION=$(SLURM_PARTITION) \
               HEAD_SESSION=$(HEAD_SESSION) HEAD_JOBNAME=$(HEAD_JOBNAME) \
               $(MAKEFILE_DIR)/../../scripts/nf-head
 
-.PHONY: test oasis pilot run watch stop pull-results pull-pilot running stub
+.PHONY: test oasis pilot run watch stop pull-results pull-pilot running stub measure-resources
 
 oasis: $(MAKEFILE_DIR)/assets/OASIS.py
 $(MAKEFILE_DIR)/assets/OASIS.py:
@@ -70,10 +71,13 @@ pilot:
 	  $(HEAD_SUBMIT) nextflow run ../main.nf -profile sherlock -resume --pfam_hmm $(PFAM_HMM) \
 	    --max_per_class 8 --max_classes 6 --proteins_per_chunk 200000
 
-run:
+measure-resources:
+	python3 bin/measure_resources.py --history 'run/clade_splash.*.trace.txt' '$(PILOT_DIR)/run-pilot/clade_splash.*.trace.txt' --outdir run/measured
+
+run: measure-resources
 	mkdir -p run
 	cd run && if command -v ml >/dev/null 2>&1; then ml load biology nextflow; fi; \
-	  $(HEAD_SUBMIT) nextflow run ../main.nf -profile sherlock -resume --pfam_hmm $(PFAM_HMM)
+	  $(HEAD_SUBMIT) $(SHERLOCK_NEXTFLOW) -c measured/resources.config run ../main.nf -profile sherlock -resume --pfam_hmm $(PFAM_HMM)
 
 watch:
 	@jid=$$(squeue -u $$USER -h -n $(HEAD_JOBNAME) -o "%i %T" | awk '$$2=="RUNNING"{print $$1; exit}'); \

@@ -390,7 +390,7 @@ process alignInput {
 
     script:
     """
-    clade_splash_pfam.py align-input --pfam ${pfam} --occurrences occ/*.parquet --domtblout dom/* \\
+    clade_splash_align_input.py --pfam ${pfam} --occurrences occ/*.parquet --domtblout dom/* \\
         --fastas prot/*.fa --outdir align_in --manifest align_manifest.tsv --parts-dir parts --part-size 500
     """
 
@@ -567,7 +567,8 @@ workflow {
     )
 
     hmm = file(params.pfam_hmm)
-    parts = dedupProteins(occ.fasta.collect()).splitFasta(by: 20000, file: true)
+    uniqueProteins = dedupProteins(occ.fasta.collect())
+    parts = uniqueProteins.splitFasta(by: 20000, file: true)
         .toList().flatMap { fs -> fs.withIndex().collect { f, i -> [i, f, hmm] } }
         // No significant anchor means no proteins: one empty part keeps the rest of the DAG
         // running, so the notebook still gets (empty) Pfam tables.
@@ -575,7 +576,7 @@ workflow {
     dom = hmmsearch(parts)
 
     po = pfamOverlap(occ.occ.collect(), dom.collect(), col.sig)
-    ai = alignInput(po.anchors, occ.occ.collect(), dom.collect(), occ.fasta.collect())
+    ai = alignInput(po.anchors, occ.occ.collect(), dom.collect(), uniqueProteins)
     sto = hmmalign(ai.parts.flatten().combine(ai.dir).combine(Channel.value(hmm)))
     ac = alignControl(sto.combine(col.sig).combine(sel.species).combine(oasis))
     collectAlign(ac.collect())
