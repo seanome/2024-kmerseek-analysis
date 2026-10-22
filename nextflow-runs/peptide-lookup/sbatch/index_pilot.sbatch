@@ -8,7 +8,7 @@
 set -euo pipefail
 : "${OUT:?}" "${BIN:?}" "${KMERSEEK_SHA:?}" "${SETTINGS:?}"
 module purge
-module load devel gcc/14.2.0 biology diamond/2.1.23 ncbi-blast+/2.16.0
+module load system ncurses/6.4 devel gcc/14.2.0 python/3.12.1 biology diamond/2.1.23 ncbi-blast+/2.16.0
 export RAYON_NUM_THREADS=$SLURM_CPUS_PER_TASK OMP_NUM_THREADS=$SLURM_CPUS_PER_TASK
 KMERSEEK=$GROUP_HOME/opt/nb300-kmerseek/$KMERSEEK_SHA/kmerseek
 PILOT=$OUT/step4/pilot

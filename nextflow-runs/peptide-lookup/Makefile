@@ -1,3 +1,4 @@
+SHELL := /bin/bash
 # Notebook 300: can kmerseek find the source protein of a short mass-spec peptide?
 #
 # Step 0 (the E-value floor) runs as four SLURM jobs chained by dependencies:
@@ -107,3 +108,15 @@ index-pilots:
 	pilot=$$(sbatch --parsable --dependency=afterok:$$build --export=ALL,$(STEP4ENV) $(RUNNING_DIR)/sbatch/index_pilot.sbatch) && \
 	compare=$$(sbatch --parsable --export=ALL,$(STEP4ENV) $(RUNNING_DIR)/sbatch/comparator_indexes.sbatch) && \
 	printf 'build %s -> pilots %s; comparator indexes %s\n' $$build $$pilot $$compare
+
+.PHONY: measure-indexes plan-indexes full-indexes
+measure-indexes:
+	apptainer exec --bind /scratch $(IMG) python3 $(BIN)/measure_indexes.py $(OUT)/step4/pilot $(OUT)/step4/resource_estimates.tsv
+
+plan-indexes: measure-indexes
+	apptainer exec --bind /scratch $(IMG) python3 $(BIN)/plan_full_indexes.py $(OUT)/step4/resource_estimates.tsv $(OUT)/step4 --script $(RUNNING_DIR)/sbatch/full_index.sbatch
+
+# Remeasure on every launch; never submit from an old table.
+full-indexes: measure-indexes
+	@module load devel python/3.12.1 && cd $(OUT)/logs && OUT=$(OUT) KMERSEEK_SHA=$(KMERSEEK_SHA) \
+	  python3 $(BIN)/plan_full_indexes.py $(OUT)/step4/resource_estimates.tsv $(OUT)/step4 --script $(RUNNING_DIR)/sbatch/full_index.sbatch --submit

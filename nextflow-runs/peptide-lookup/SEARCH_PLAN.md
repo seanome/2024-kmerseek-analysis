@@ -89,7 +89,8 @@ GNU time records elapsed seconds and peak RSS. Spectra and index disk sizes are 
 
 Full kmerseek requests are generated from pilot measurements. Extrapolation to 13.86
 million proteins is uncertain; report the factor and reject a build whose predicted
-memory exceeds available nodes or whose CPU-hours exceed the remaining budget. Two
-compute-days are conservatively accounted as 48 CPU-hours until otherwise clarified.
+memory exceeds available nodes or whose CPU-hours exceed the remaining budget. The user clarified on 2026-10-22 that the larger allowance applies: 48 hours of
+cluster wall time, with CPU-hours reported alongside it. Parallel builds may therefore
+use more than 48 CPU-hours.
 Search memory must also be measured on short real and decoy queries; build memory alone
 does not size a search. No unmeasured full search is launched from this plan.
