@@ -8,7 +8,7 @@
 set -euo pipefail
 : "${OUT:?}" "${KMERSEEK_SRC:?}" "${KMERSEEK_SHA:?}"
 module purge
-module load devel rust/1.90.0 llvm/17.0.6 cmake/3.31.4 gcc/14.2.0
+module load system ncurses/6.4 devel rust/1.90.0 llvm/17.0.6 cmake/3.31.4 gcc/14.2.0
 CPATH=$(printf '%s' "${CPATH:-}" | tr ':' '\n' | { grep -v '/llvm/17.0.6' || true; } | paste -sd: -)
 export CPATH LIBCLANG_PATH=/share/software/user/open/llvm/17.0.6/lib CC=gcc CXX=g++
 export CARGO_BUILD_JOBS=$SLURM_CPUS_PER_TASK
