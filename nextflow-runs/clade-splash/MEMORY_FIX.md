@@ -34,6 +34,21 @@ preparer's first ask is 96 GB (twice the largest killed ask) and 24 hours. The t
 is a conservative allowance for the new implementation, not a completion estimate.
 The full input still needs runtime and memory measurement.
 
+The real-input check (Sherlock job 48999084) completed successfully in 8 min 49 s.
+It used all 946 domain files (7.45 GB), the 8.2 GB unique-protein FASTA, the complete
+eligible-anchor table and one 546 MB occurrence file. It produced 44,136 manifest
+rows. Slurm reported 29,430,620 KiB (28.07 GiB) peak memory for the batch;
+/usr/bin/time reported 3,687,832 KiB (3.52 GiB) for the command. These readings
+cover different accounting scopes; use the larger one for sizing. This was one
+of 512 occurrence files, not a completed full preparation.
+
+The resume was submitted as driver job 49000133 on 2026-10-22, using the same
+launch directory, Nextflow 25.04.7 and `-resume`. Existing counts, significant
+anchors, top occurrences and Pfam mappings can be inspected while alignment runs.
+The node-local scratch/container wiring was also tested inside the check's Slurm
+allocation: the probe completed under `/lscratch/olgabot/48999084/nxf.*` with
+Polars 1.43.2.
+
 Validation: 24 pipeline tests pass locally, including comparison of every FASTA,
 manifest and manifest part against the original on fixtures with empty inputs,
 unsigned anchor IDs, repeated occurrences, repeated protein FASTAs, multiple domain
