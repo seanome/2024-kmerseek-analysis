@@ -45,6 +45,11 @@ def main():
         inc = max(0, hi[0] - lo[0]) / 80000
         affine = hi[0] + inc * (a.full_proteins - 100000)
         upper = hi[0] * factor
+        search_path = (
+            a.pilot_dir / f"{alphabet}.k{k}.n100000.search_memory_only.time.txt"
+        )
+        search_memory, search_seconds = read_time(search_path)
+        calibration_upper = max(hi[0], search_memory) * factor
         hours = hi[1] * factor * 2 / 3600
         rows.append(
             dict(
@@ -55,6 +60,9 @@ def main():
                 extrapolation_factor=factor,
                 full_affine_gb=affine,
                 full_linear_gb=upper,
+                pilot_search_peak_gb=search_memory,
+                pilot_search_seconds=search_seconds,
+                full_calibration_linear_gb=calibration_upper,
                 full_time_limit_hours=hours,
                 predicted_disk_gb=hi[2] * factor / 1e9,
                 conservative_cpu_hours=hours * 8,

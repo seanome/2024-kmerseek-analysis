@@ -29,7 +29,12 @@ def test_unsafe_plan_never_submits(tmp_path):
     with f.open("w") as fh:
         w = csv.DictWriter(
             fh,
-            fieldnames=["alphabet", "ksize", "full_linear_gb", "full_time_limit_hours"],
+            fieldnames=[
+                "alphabet",
+                "ksize",
+                "full_calibration_linear_gb",
+                "full_time_limit_hours",
+            ],
             delimiter="\t",
         )
         w.writeheader()
@@ -38,7 +43,7 @@ def test_unsafe_plan_never_submits(tmp_path):
                 dict(
                     alphabet=f"a{i}",
                     ksize=7,
-                    full_linear_gb=2000,
+                    full_calibration_linear_gb=2000,
                     full_time_limit_hours=1,
                 )
             )
@@ -66,7 +71,12 @@ def test_submission_manifest_prevents_duplicates(tmp_path):
     with f.open("w") as fh:
         w = csv.DictWriter(
             fh,
-            fieldnames=["alphabet", "ksize", "full_linear_gb", "full_time_limit_hours"],
+            fieldnames=[
+                "alphabet",
+                "ksize",
+                "full_calibration_linear_gb",
+                "full_time_limit_hours",
+            ],
             delimiter="\t",
         )
         w.writeheader()
@@ -75,7 +85,7 @@ def test_submission_manifest_prevents_duplicates(tmp_path):
                 dict(
                     alphabet=f"a{i}",
                     ksize=7,
-                    full_linear_gb=20,
+                    full_calibration_linear_gb=20,
                     full_time_limit_hours=1,
                 )
             )

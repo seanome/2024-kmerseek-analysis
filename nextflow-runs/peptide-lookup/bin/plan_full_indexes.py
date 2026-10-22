@@ -18,7 +18,7 @@ if len(rows) != 10 or len({r["alphabet"] for r in rows}) != 10:
     raise SystemExit("All ten paired pilots are required")
 planned = []
 for r in rows:
-    memory = max(32, math.ceil(1.5 * float(r["full_linear_gb"])))
+    memory = max(32, math.ceil(1.5 * float(r["full_calibration_linear_gb"])))
     # Calibration requires a separate allowance: pilot time covers indexing only.
     hours = max(2, math.ceil(float(r["full_time_limit_hours"]) + 4))
     status = "ready" if memory <= 1536 and hours <= 24 else "needs_larger_pilot"
@@ -30,7 +30,7 @@ for r in rows:
             requested_hours=hours,
             requested_cpus=8,
             status=status,
-            basis="1.5x linear pilot memory; 2x linear time plus 4h fit allowance",
+            basis="1.5x linear maximum of build and search memory; 2x linear time plus 4h fit allowance",
         )
     )
 a.out_dir.mkdir(parents=True, exist_ok=True)

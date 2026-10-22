@@ -94,3 +94,8 @@ cluster wall time, with CPU-hours reported alongside it. Parallel builds may the
 use more than 48 CPU-hours.
 Search memory must also be measured on short real and decoy queries; build memory alone
 does not size a search. No unmeasured full search is launched from this plan.
+
+The first 100,000-protein wwmj5 pilot measured 0.91 GiB to build but 3.23 GiB
+for search startup and 100 short queries. Full-build requests therefore use the larger
+of measured build and search memory, since index-time calibration opens the index for
+search. A request based on build memory alone would understate this cost.
