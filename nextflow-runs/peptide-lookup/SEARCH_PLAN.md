@@ -99,3 +99,8 @@ The first 100,000-protein wwmj5 pilot measured 0.91 GiB to build but 3.23 GiB
 for search startup and 100 short queries. Full-build requests therefore use the larger
 of measured build and search memory, since index-time calibration opens the index for
 search. A request based on build memory alone would understate this cost.
+
+Sherlock allocated 11-12 CPUs to the first six full builds because of the memory
+requests. Requested CPUs and allocated CPUs are separate fields in Slurm accounting.
+Index construction may use the allocated cores; timed peptide searches explicitly set
+eight application threads even if the allocation contains more cores.

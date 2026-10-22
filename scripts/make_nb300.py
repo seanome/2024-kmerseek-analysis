@@ -405,18 +405,16 @@ window needs 38 to 41 residues to reach `expected_hits_counting` < 0.01 against 
 * `wass14`, `hsdm17`, `mmseqs12` and `sdm12` need 11 to 13 residues.
 * `funcgroups8`, `dayhoff6`, `wwmj5`, `gbmr7`, `polarity4` and `gbmr4` need 15 to 26 residues for
   one window, so a 14-residue window does not pass; they pass the gate only through a pair of
-  windows inside a 30-residue peptide. Most de novo peptides are shorter than 30, so these six are
-  alive only for the longest peptides.
+  windows inside a 30-residue peptide. Section 10 shows the lengths of the actual query set;
+  passing this gate does not establish sensitivity on shorter peptides.
 
 **The two estimates do not agree.** At L = 14 against UHGP-90, every fitted setting but 6 gives a
 `region_evalue_ka_fit` more than 3 times `expected_hits_counting`, and for `protein20` the
 median ratio is 3e9: kmerseek's stored K and r call an exact 14-residue match far less
 significant than its chance count says. With K and r alone, only `protein20` (3.3e-3),
-`uniprot18`, `hsdm17`, `wass14` and `mmseqs12` reach E < 0.01 at 14 residues. This is the size of
-error notebook 344
-([PR 174](https://github.com/seanome/2024-kmerseek-analysis/pull/174)) found for region E-values, in the conservative direction here, and it bears on
-pass rule 2 (decoy FDR crossing 1% within a factor of 2 of E = 0.01): that rule is likely to fail
-on calibration, not on recovery.
+`uniprot18`, `hsdm17`, `wass14` and `mmseqs12` reach E < 0.01 at 14 residues. These fits were
+borrowed from other proteomes. They do not measure calibration on the search database.
+Step 4 must fit that database and search the peptide decoys before pass rule 2 can be scored.
 
 **What this decides.** Steps 1-6 run. Kill test 3 is not killed by Step 0. Which k each
 alphabet runs at is section 9.
@@ -512,11 +510,13 @@ above lists the alphabets that stay alive and the k each runs at in steps 1-6.
 md(r"""
 ## 10. Steps 1-3: the query peptides, their decoys and the search database
 
-**No public de novo list.** The task asked for a human gut metaproteomics dataset on PRIDE that
+The PRIDE search did not find a usable public de novo list. The task asked for a human gut metaproteomics dataset on PRIDE that
 ships a de novo peptide list (PEAKS, Novor or Casanovo) with a confidence score.
 `bin/pride_denovo_search.py` (run 2026-10-21) found 477 gut microbiome projects. Eight have
 a file whose name suggests de novo output, and none is a human gut de novo peptide list with a
-score. The table below says what each is.
+score. The search relies on project descriptions and file names; it does not inspect every
+archive. A de novo list with an uninformative name could have been missed. The table below
+records the candidates checked.
 
 **So this is the fallback, and a weaker test.** The real peptides are database-search hits
 from PXD069517 (stool of celiac disease patients; Sequest-HT and Percolator against a
@@ -524,13 +524,14 @@ collection of human gut metagenomes, "MGDB"; Confidence "High"). Every UHGP-90 p
 contains one of them exactly, with I and L read as the same letter, is hidden from the
 database kmerseek searches. It is weaker than the planned test in three ways:
 
-1. A database-search peptide has no sequencing errors: the search engine reports the residues
-   of the protein it matched. A de novo peptide carries swaps (I/L, Q/K, N/D) and can have two
-   residues in the wrong order. Only the spiked peptides test swaps here.
-2. Every real peptide matched a protein in the study's database, so a close relative of its
-   source very likely remains in UHGP-90 after the exact matches are hidden. Peptides no
-   database explains, which is what de novo lists are used for, would be harder.
-3. All are tryptic peptides that passed a 1% FDR search, so they are short and clean.
+1. A database search reports the sequence of its matched protein. This tests sequencing
+   errors differently from de novo sequencing, where letters or their order can be wrong.
+   Incorrect database identifications can still occur. Only the spiked set has deliberately
+   introduced swaps here.
+2. Removing exact matches can leave close relatives in UHGP-90. Thus these queries may be
+   easier than peptides for which the study found no database explanation.
+3. Confidence "High" is a database-search category, not an ALC score of 90. This is the
+   fallback query set, rather than the requested de novo confidence filter.
 
 Pass rule 1 compares kmerseek with `diamond` on these real peptides. That comparison stays
 fair, because both tools search the same database with the same proteins hidden.
@@ -662,6 +663,134 @@ print()
 print(real.head(5).select("peptide_id", "Sequence", "Master Protein Accessions", "genus",
                           "n_uhgp90_proteins_with_exact_match"))
 """)
+
+md(r"""
+## 12. Step 4 build measurements
+
+The kmerseek binary comes from [PR 156](https://github.com/seanome/kmerseek/pull/156),
+commit `799272c`. Its version string is 0.3.1; the source SHA identifies the build.
+DIAMOND 2.1.23 and BLAST+ 2.16.0 come from Sherlock modules. All jobs use CPUs.
+
+Two nested samples of 20,000 and 100,000 proteins measure how index construction grows
+with database size. Samples are selected by a SHA256 of each accession. The 100,000-protein
+index is also opened for 50 targets and 50 decoys on 8 cores. That measurement includes
+startup and uses K=1 only to measure memory; its hits are discarded. These are build and
+memory measurements, with no peptide-recovery or FDR result yet.
+
+The table contains successful GNU time records only. For compilation, peak RSS is the
+largest process, rather than the sum of concurrent compiler processes. The figures show indexing time and
+memory separately from the memory needed to open and search an index. Less is better.
+Predictions for the full database are in the next section, in a separate table.
+""")
+code(r"""
+S4 = DATA.parent / "step4"
+build_measurements = pl.read_csv(S4 / "build_measurements.tsv", separator="\t")
+print(build_measurements)
+other_builds = build_measurements.filter(pl.col("operation").is_in(["compile", "full_database_build"]))
+fig, axs = pf.figure(pf.TWO_COLUMN_MM, 55, ncols=2, sharey=True)
+other_names = {"kmerseek": "kmerseek compilation", "diamond": "DIAMOND database", "blast": "BLAST database"}
+other_labels = [other_names[t] for t in other_builds["tool"]]
+for ax, column, xlabel in zip(axs, ["elapsed_seconds", "peak_rss_gib"],
+                             ["Elapsed time (seconds)", "Peak process memory (GiB)"]):
+    ax.scatter(other_builds[column], range(len(other_labels)), s=12,
+               color=pf.OKABE_ITO["blue"], label="measured; startup included")
+    ax.set_xlabel(xlabel)
+    ax.set_xlim(0, float(other_builds[column].max()) * 1.1)
+axs[0].set_yticks(range(len(other_labels)), other_labels)
+axs[0].invert_yaxis()
+pf.shared_legend(fig, frameon=False,
+                 title="Compilation and full database builds: UHGP-90 + human + cRAP")
+pf.save(fig, FIGURES / "step4_compile_and_comparator_builds_uhgp90_human_crap")
+pilot_rows = build_measurements.filter(pl.col("operation").str.starts_with("pilot"))
+labels = []
+for name in pilot_rows["record"]:
+    prefix = name.split(".n")[0]
+    if prefix not in labels:
+        labels.append(prefix)
+labels = sorted(labels, key=lambda s: (len(CLUSTERS[s.split(".k")[0]]), s))
+fig, axs = pf.figure(pf.TWO_COLUMN_MM, 100, ncols=2, sharey=True)
+series = [("pilot_index", ".n20000.", "20,000 proteins: build", "o", False, pf.OKABE_ITO["blue"]),
+          ("pilot_index", ".n100000.", "100,000 proteins: build", "o", True, pf.OKABE_ITO["blue"]),
+          ("pilot_search_memory_only", ".n100000.", "100,000 proteins: open and search", "s", True,
+           pf.OKABE_ITO["vermillion"])]
+for op, fragment, legend, marker, filled, colour in series:
+    rows = pilot_rows.filter((pl.col("operation") == op) & pl.col("record").str.contains(fragment, literal=True))
+    offset = 0.12 if op == "pilot_search_memory_only" else (-0.12 if "20000" in fragment else 0)
+    ys = [labels.index(s.split(".n")[0]) + offset for s in rows["record"]]
+    for ax, column in zip(axs, ["elapsed_seconds", "peak_rss_gib"]):
+        ax.scatter(rows[column], ys, marker=marker, s=12, edgecolors=colour,
+                   facecolors=colour if filled else "none", label=legend)
+axs[0].set_yticks(range(len(labels)), labels)
+axs[0].invert_yaxis()
+axs[0].set_xlabel("Elapsed time (seconds)")
+axs[1].set_xlabel("Peak process memory (GiB)")
+for ax in axs:
+    column = "elapsed_seconds" if ax is axs[0] else "peak_rss_gib"
+    ax.set_xlim(0, float(pilot_rows[column].max()) * 1.08)
+    for y in range(len(labels)):
+        ax.axhline(y, color="#eeeeee", zorder=0, lw=0.3)
+pf.shared_legend(fig, ncol=1, frameon=False,
+                 title="kmerseek pilots sampled from UHGP-90 + human + cRAP; 8 CPU cores")
+pf.save(fig, FIGURES / "step4_pilot_index_time_and_memory_uhgp90_human_crap")
+""")
+
+md(r"""
+## 13. Full-database build requests
+
+These are predictions based on the paired pilots, not full-database measurements.
+Memory requests use 1.5 times the larger of build and search memory, scaled by protein
+count. Time requests use twice the scaled build time plus four hours for the
+index-time E-value fit. That fit allowance has not been measured on this database.
+The extrapolation spans about 139-fold in protein count, so the requests are uncertain.
+
+The user clarified the budget as 48 hours of cluster wall time on 2026-10-22. CPU-hours
+are recorded separately. The launcher rejects requests above 1,536 GiB or 24 hours and
+writes submitted job IDs before another launch can duplicate them. Sherlock allocated
+11-12 CPUs to the first six full builds because of their memory requests; the raw
+accounting snapshot is `step4/slurm_build_jobs.psv`. This allocation affects build costs.
+Timed peptide searches will explicitly use eight threads.
+""")
+code(r"""
+requests = pl.read_csv(S4 / "full_requests.tsv", separator="\t")
+print(requests)
+fig, axs = pf.figure(pf.TWO_COLUMN_MM, 90, ncols=2, sharey=True)
+request_labels = [f"{a}.k{k}" for a, k in requests.select("alphabet", "ksize").iter_rows()]
+y = np.arange(len(request_labels))
+for ax, column, xlabel in zip(axs, ["requested_memory_gb", "requested_hours"],
+                             ["Requested memory (GiB)", "Requested time limit (hours)"]):
+    ax.scatter(requests[column], y, marker="D", s=12, color=pf.OKABE_ITO["blue"],
+               label="predicted full build plus E-value fit")
+    ax.set_xlabel(xlabel)
+    ax.set_xlim(0, float(requests[column].max()) * 1.08)
+axs[0].set_yticks(y, request_labels)
+axs[0].invert_yaxis()
+pf.shared_legend(fig, frameon=False, title="kmerseek: 13,859,294 proteins; 8 CPU cores requested per job")
+pf.save(fig, FIGURES / "step4_predicted_full_index_resources_uhgp90_human_crap")
+""")
+
+md(r"""
+## 14. Search plan
+
+All searches use 8 CPU cores and the same database. Targets and decoys are searched
+together with identical settings. For kmerseek, the fixed settings are scaled=1,
+mismatch penalty=2, X-drop=8, and no low-complexity mask or chaining. The alphabet and k
+pairs are in section 9 and the pipeline's `settings.tsv`.
+
+The real timing set has 10,000 targets plus 10,000 decoys. Spikes add 1,000 targets and
+1,000 decoys. Both the real-set time and the complete 22,000-query time are recorded.
+Index construction and calibration precede timing. kmerseek cannot refit inside a timed
+search. Missing fits are reported as unfitted.
+
+DIAMOND uses `--ultra-sensitive`. BLAST uses `-task blastp-short`, PAM30, and composition
+adjustment off. Both retain hits up to E=1,000 so that FDR curves can be computed later.
+Each peptide contributes at most one target or decoy hit at a cut. Spiked recovery also
+checks the recorded source accession. Tied best hits are reported.
+
+The reproducible commands, resource model, and timing conventions are in
+[`SEARCH_PLAN.md`](../nextflow-runs/peptide-lookup/SEARCH_PLAN.md). Recovery, empirical
+calibration, runtime pass/fail, and the second-agent check are still pending.
+""")
+
 
 nb = {
     "cells": cells,
