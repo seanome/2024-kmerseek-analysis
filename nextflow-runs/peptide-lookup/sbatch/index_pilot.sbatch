@@ -16,6 +16,7 @@ mkdir -p "$PILOT"
 # RocksDB temporary files stay on this job's local disk.
 TASK_TMP=$L_SCRATCH_JOB/nb300-pilot
 mkdir -p "$TASK_TMP"
+{ head -n 100 "$OUT/step1/queries_targets.fasta"; head -n 100 "$OUT/step1/queries_decoys.fasta"; } > "$TASK_TMP/queries.fasta"
 export TMPDIR=$TASK_TMP
 trap 'command rm -rf "$TASK_TMP"' EXIT
 apptainer exec --bind /scratch "$IMG" python3 "$BIN/index_pilot_inputs.py" "$OUT/step1/search_db.fasta" "$PILOT"
@@ -28,6 +29,16 @@ while IFS=$'\t' read -r alphabet k; do
       --extend-mismatch-penalty 2 --extend-xdrop 8 --ka-queries 0 \
       --kmer-stats-out "$stem.spectrum.csv" > "$stem.log" 2>&1
     du -sb "$TASK_TMP/index" > "$stem.disk.txt"
+    if [ "$n" -eq 100000 ]; then
+      # K=1 is for memory measurement only. These hits are discarded; they are never
+      # calibration or recovery results, and cannot enter any empirical FDR table.
+      /usr/bin/time -v -o "$stem.search_memory_only.time.txt" "$KMERSEEK" search \
+        --query "$TASK_TMP/queries.fasta" --target "$TASK_TMP/index" \
+        --alphabet "$alphabet" --ksize "$k" --output /dev/null \
+        --min-shared-kmers 1 --max-query-pvalue 1 --min-region-score 0 \
+        --extend-mismatch-penalty 2 --extend-xdrop 8 --ka-k 1 --batch-size 8 \
+        > "$stem.search_memory_only.log" 2>&1
+    fi
     command rm -rf "$TASK_TMP/index"
     touch "$stem.complete"
   done
