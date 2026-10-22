@@ -23,3 +23,9 @@ Added 2026-10-22 after the full run's alignInput was killed at 16, 32 and 48 GB.
 - Run make measure-resources before the resume; make run includes it. Generated
   sizing files live in run/measured, not tracked configuration. Keep the same launch
   directory and -resume session. Confirm upstream tasks appear as CACHED.
+
+- Nextflow's Apptainer wrapper clears most host environment variables. Selecting a
+  directory from L_SCRATCH_JOB inside Python alone is insufficient. The Sherlock
+  alignInput selector uses scratch '$L_SCRATCH_JOB' and binds that directory into
+  Apptainer. A Nextflow probe inside allocation 48999084 confirmed the resulting
+  working directory was node-local. Inspect the generated .command.run after launch.

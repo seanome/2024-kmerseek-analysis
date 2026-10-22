@@ -42,9 +42,13 @@ rows. Slurm reported 29,430,620 KiB (28.07 GiB) peak memory for the batch;
 cover different accounting scopes; use the larger one for sizing. This was one
 of 512 occurrence files, not a completed full preparation.
 
-The resume was submitted as driver job 49000133 on 2026-10-22, using the same
+The resume is running as driver job 49000133, with alignment preparation job
+49000241, on 2026-10-22. It uses the same
 launch directory, Nextflow 25.04.7 and `-resume`. Existing counts, significant
 anchors, top occurrences and Pfam mappings can be inspected while alignment runs.
+Both the Nextflow log and the new trace confirm 2,200 cached tasks, including all
+946 hmmsearch tasks and the completed pfamOverlap task. The task wrapper requests
+96 GB and 24 h and binds the Slurm task's node-local scratch directory.
 The node-local scratch/container wiring was also tested inside the check's Slurm
 allocation: the probe completed under `/lscratch/olgabot/48999084/nxf.*` with
 Polars 1.43.2.
