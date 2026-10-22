@@ -1,0 +1,25 @@
+Review of the pre-run snapshot, 2026-10-22. I ran all 12 existing unit tests; all passed. I also ran independent enumeration and two additional counterexamples. No biological PASS appears in this report.
+
+- UNVERIFIABLE — Claim 1, speed. Neither route timing nor CPU-hours were measured. The entries in report.md:99–100 correctly say “not measured.”
+- UNVERIFIABLE — Claim 2, concordance. No ranked units, answer-key genes or enrichment results exist. Report.md:106–107 correctly withholds a verdict.
+- UNVERIFIABLE — Claim 3, tagging. No domain-labelled predictions, non-protein predictions or hmmscan timings exist. Report.md:113–115 correctly withholds a verdict.
+- UNVERIFIABLE — Claim 4, alphabet advantage. No calibration or alphabet comparison was run. Report.md:121 correctly says “not measured”; neither retaining nor dropping the reduced alphabet is supported.
+- UNVERIFIABLE — Claim 5, biological label-swap result. Enumerating assignments does not measure SPLASH results. Report.md:130–131 correctly withholds a verdict.
+
+Technical claims:
+
+- HOLDS — Current rule files match their saved fingerprints, and report.md contains decision_rules.md verbatim. I ran check_rules() and independently tested exact inclusion. This establishes consistency of the supplied snapshot.
+- UNVERIFIABLE — The rules were never changed historically. A file and a neighbouring fingerprint cannot establish their history or when either was written.
+- HOLDS — The preflight function checks calibration before opening the mouse sample manifest. The existing mocked test exercises the missing-calibration path and passes.
+- UNVERIFIABLE — No mouse manifest was opened elsewhere before calibration. The supplied files provide no comprehensive access record. The preflight ordering cannot establish this historical claim.
+- HOLDS — Eight samples divided four against four produce 70 labelled assignments, 69 alternatives, 35 splits ignoring exchanged condition names, and 34 alternative splits. I independently enumerated all 256 binary strings and obtained the identical set of 70 balanced assignments.
+- HOLDS — Including the exchanged condition names makes a tied significant-unit count fail the strict primary swap rule. The executable complement-count test passes. This remains a mathematical consequence, not a measured biological failure.
+- HOLDS — Missing measurements do not become zero or PASS. Calling score_claims({}) returns “not measured” for all five claims and for alphabet selection. The recorded evidence agrees. Zero true significant units also avoid division by zero and fail the strict comparison.
+- WRONG — The scoring helpers reject all boolean values masquerading as measurements. Executable counterexample: score_claims({"4": {"recall_gain_at_equal_false_family_rate": True}}) returns PASS. The recall-gain branch converts True to 1.0 without the boolean rejection used by finite_number(); see protocol.py:273–274 in the formatted snapshot. Reject booleans before this conversion.
+- HOLDS — The tested numerical boundaries follow the stated strict and inclusive comparisons: equality fails the speed limits and the median-swap ratio limit; equality passes the gene, GO, accuracy and recall-gain thresholds. The existing boundary tests pass.
+- WRONG — The index-member audit alone establishes complete held-out-lineage exclusion. Executable counterexample: a row with taxid 9606, lineage_taxids "1;9606", and an otherwise valid record passes exclusion of taxon 7742. The audit checks the supplied ancestor list without establishing its completeness; see protocol.py:151–156 in the formatted snapshot. README.md:24–26 acknowledges this limitation. A taxonomy-backed check and correspondence between audited records and built index sequences are still required.
+- HOLDS — The overlap helper counts each answer-key gene once and rejects a 19-base overlap in the supplied test. It consumes reported overlap lengths; it does not independently establish exon coordinates or that an overlap came from the hidden-reference scoring stage.
+- UNVERIFIABLE — The pinned SPLASH binary produces the required corrected condition-test column. No binary execution or output demonstrating this was supplied; report.md:175 explicitly records that it remains untested.
+- WRONG — The report writer guarantees it will never overwrite biological measurements. Its protection checks only whether the existing report contains “The implementation is incomplete.” A report containing that sentence and newly added biological measurements would still be replaced; see write_status.py:163–170. The comment promises stronger protection than the condition provides.
+
+The requested overall implementation is incomplete. README.md:73–100 lists missing data acquisition, biological workflows, calibration, synthetic controls, actual label-swap runs, timing instrumentation, cluster launch checks and figures. The supplied work supports a preliminary protocol-checking utility and an honest pre-run report. It does not perform the RNA-seq kill test.
