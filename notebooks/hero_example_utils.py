@@ -839,6 +839,14 @@ CASE_TOOLS = [
 ]
 
 
+def notebook_rows(df: pl.DataFrame) -> pl.DataFrame:
+    """Drop the bonus rows (tier = "bonus") that scripts/export_244_bonus_cases.py adds after
+    the notebook's own rows. Those cases are not in the landing tables."""
+    if "tier" not in df.columns:
+        return df
+    return df.filter(pl.col("tier").is_null() | (pl.col("tier") != "bonus"))
+
+
 def load_cases(
     landing: pl.DataFrame | None = None,
     instances: pl.DataFrame | None = None,
@@ -854,7 +862,7 @@ def load_cases(
     """
     L = load_landing() if landing is None else landing
     inst = load_instances() if instances is None else instances
-    csv_df = pl.read_csv(csv, infer_schema_length=None)
+    csv_df = notebook_rows(pl.read_csv(csv, infer_schema_length=None))
     c = csv_df.with_row_index("case_id").select(
         pl.col("case_id").cast(pl.Int64),
         pl.col("query").alias("accession"),

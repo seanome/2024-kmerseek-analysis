@@ -85,6 +85,8 @@ def main():
     cases = cases.with_row_index("case_id").with_columns(
         pl.col("case_id").cast(pl.Int64)
     )
+    if "tier" in cases.columns:  # bonus rows are not notebook-244 search calls
+        cases = cases.filter(pl.col("tier").is_null())
     calls = pl.read_csv(TAB / "244_case_calls.csv", infer_schema_length=None).filter(
         pl.col("tool") == "kmerseek chosen arm"
     )

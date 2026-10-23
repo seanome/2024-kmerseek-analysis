@@ -42,6 +42,8 @@ def main():
     args.out_dir.mkdir(parents=True, exist_ok=True)
 
     c = pl.read_csv(args.candidates, infer_schema_length=None)
+    if "tier" in c.columns:  # bonus rows are not calls of the run's arms
+        c = c.filter(pl.col("tier").is_null())
     want: dict[str, set[str]] = {}
     for arm, sp, q in c.select("kmerseek_chosen_arm", "species", "query").iter_rows():
         want.setdefault(table_name(arm, sp), set()).add(q)
