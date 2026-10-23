@@ -10,7 +10,7 @@ domains of a labelling are the families its peptides land on.
         --peptide-map peptide_map.tsv --key answer_key.tsv --labellings labellings.tsv \
         --organism ciona --setting dayhoff6.k9 --status fitted --out-prefix ciona.dayhoff6.k9
 
-Writes <out-prefix>.landings.tsv (one row per region x domain landed on, scores kept)
+Writes <out-prefix>.landings.tsv.gz (one row per region x domain landed on, scores kept)
 and <out-prefix>.summary.tsv: one row per labelling and E-value cutoff. The cutoff 1 row
 is the preregistered one (`primary` true); the others are reported, not used in the rule.
 """
@@ -18,6 +18,11 @@ is the preregistered one (`primary` true); the others are reported, not used in 
 from __future__ import annotations
 
 import argparse
+import contextlib
+import csv
+import gzip
+import itertools
+import sys
 
 import polars as pl
 
@@ -28,7 +33,17 @@ EVALUE_CUTOFFS = [1e-6, 1e-4, 1e-2, 1.0, 10.0, 100.0]
 
 def main() -> None:
     ap = argparse.ArgumentParser()
-    for a in ("--regions", "--domains", "--peptide-map", "--key", "--labellings", "--organism", "--setting", "--status", "--out-prefix"):
+    for a in (
+        "--regions",
+        "--domains",
+        "--peptide-map",
+        "--key",
+        "--labellings",
+        "--organism",
+        "--setting",
+        "--status",
+        "--out-prefix",
+    ):
         ap.add_argument(a, required=True)
     args = ap.parse_args()
 
@@ -36,53 +51,130 @@ def main() -> None:
     key_fams = set(key.filter(pl.col("status") != "unchanged")["pfam_acc"].to_list())
     assert len(key_fams) == 100, len(key_fams)
     labellings = pl.read_csv(args.labellings, separator="\t")["labelling"].to_list()
-    pmap = pl.read_csv(args.peptide_map, separator="\t").select("peptide_id", "labelling").unique()
-    n_queries = pmap.group_by("labelling").agg(pl.col("peptide_id").n_unique().alias("n_queries"))
-
-    cols = ["query_name", "target_name", "target_start", "target_end", "region_start", "region_end",
-            "region_evalue", "region_ka_bits", "region_poisson_score", "region_n_shared_kmers"]
-    regions = pl.read_csv(args.regions, columns=None, infer_schema_length=0)
-    missing = [c for c in cols if c not in regions.columns]
-    if missing and regions.height:
-        raise SystemExit(f"columns missing from kmerseek output: {missing}")
-    if regions.height:
-        regions = regions.select(cols).with_columns(
-            pl.col("target_start", "target_end", "region_start", "region_end", "region_n_shared_kmers").cast(pl.Int64),
-            pl.col("region_evalue", "region_ka_bits", "region_poisson_score").cast(pl.Float64),
-        )
-    else:
-        ints = ("target_start", "target_end", "region_start", "region_end", "region_n_shared_kmers")
-        regions = pl.DataFrame(schema={c: pl.Utf8 if c in ("query_name", "target_name") else pl.Int64 if c in ints else pl.Float64 for c in cols})
-
-    dom = pl.read_csv(args.domains, separator="\t").rename({"target": "target_name", "start0": "dom_start", "end": "dom_end"})
-    hit = regions.join(dom, on="target_name", how="inner").with_columns(
-        (pl.min_horizontal("target_end", "dom_end") - pl.max_horizontal("target_start", "dom_start")).clip(lower_bound=0).alias("overlap"),
-        (pl.col("target_end") - pl.col("target_start")).alias("region_target_length"),
-    ).with_columns((pl.col("overlap") / pl.col("region_target_length")).alias("inside"))
-    landed = hit.filter(pl.col("inside") >= MIN_INSIDE)
-    landed = landed.join(pmap.rename({"peptide_id": "query_name"}), on="query_name", how="inner").with_columns(
-        pl.col("pfam_acc").is_in(list(key_fams)).alias("in_key"),
-        pl.lit(args.organism).alias("organism"),
-        pl.lit(args.setting).alias("setting"),
+    pmap = (
+        pl.read_csv(args.peptide_map, separator="\t")
+        .select("peptide_id", "labelling")
+        .unique()
     )
-    landed.sort("labelling", "query_name", "target_name", "target_start", "pfam_acc").write_csv(
-        f"{args.out_prefix}.landings.tsv", separator="\t"
+    n_queries = pmap.group_by("labelling").agg(
+        pl.col("peptide_id").n_unique().alias("n_queries")
     )
 
+    cols = [
+        "query_name",
+        "target_name",
+        "target_start",
+        "target_end",
+        "region_start",
+        "region_end",
+        "region_evalue",
+        "region_ka_bits",
+        "region_poisson_score",
+        "region_n_shared_kmers",
+    ]
+    dom = pl.read_csv(args.domains, separator="\t").rename(
+        {"target": "target_name", "start0": "dom_start", "end": "dom_end"}
+    )
+    # All state is bounded by the number of families and label splits, not region rows.
+    fams_by_cut = {(cut, lab): set() for cut in EVALUE_CUTOFFS for lab in labellings}
+    rows_by_cut = {(cut, lab): 0 for cut in EVALUE_CUTOFFS for lab in labellings}
+    src = (
+        contextlib.nullcontext(sys.stdin) if args.regions == "-" else open(args.regions)
+    )
+    wrote_header = False
+    with src as stream, gzip.open(
+        f"{args.out_prefix}.landings.tsv.gz", "wt", compresslevel=1
+    ) as dst:
+        reader = csv.DictReader(stream)
+        if reader.fieldnames is None:
+            reader.fieldnames = cols
+        missing = set(cols) - set(reader.fieldnames)
+        if missing:
+            raise SystemExit(f"columns missing from kmerseek output: {sorted(missing)}")
+        while True:
+            chunk = list(itertools.islice(reader, 25_000))
+            if not chunk:
+                # An empty search still needs an output with the full schema.
+                if wrote_header:
+                    break
+                regions = pl.DataFrame(schema={c: pl.Utf8 for c in cols})
+            else:
+                regions = pl.DataFrame([{c: r[c] for c in cols} for r in chunk])
+            regions = regions.with_columns(
+                pl.col(
+                    "target_start",
+                    "target_end",
+                    "region_start",
+                    "region_end",
+                    "region_n_shared_kmers",
+                ).cast(pl.Int64),
+                pl.col("region_evalue", "region_ka_bits", "region_poisson_score").cast(
+                    pl.Float64
+                ),
+            )
+            hit = (
+                regions.join(dom, on="target_name", how="inner")
+                .with_columns(
+                    (
+                        pl.min_horizontal("target_end", "dom_end")
+                        - pl.max_horizontal("target_start", "dom_start")
+                    )
+                    .clip(lower_bound=0)
+                    .alias("overlap"),
+                    (pl.col("target_end") - pl.col("target_start")).alias(
+                        "region_target_length"
+                    ),
+                )
+                .with_columns(
+                    (pl.col("overlap") / pl.col("region_target_length")).alias("inside")
+                )
+            )
+            landed = (
+                hit.filter(pl.col("inside") >= MIN_INSIDE)
+                .join(
+                    pmap.rename({"peptide_id": "query_name"}),
+                    on="query_name",
+                    how="inner",
+                )
+                .with_columns(
+                    pl.col("pfam_acc").is_in(list(key_fams)).alias("in_key"),
+                    pl.lit(args.organism).alias("organism"),
+                    pl.lit(args.setting).alias("setting"),
+                )
+            )
+            dst.write(landed.write_csv(separator="\t", include_header=not wrote_header))
+            wrote_header = True
+            for cut in EVALUE_CUTOFFS:
+                for lab in labellings:
+                    sub = landed.filter(
+                        (pl.col("region_evalue") <= cut) & (pl.col("labelling") == lab)
+                    )
+                    fams_by_cut[cut, lab].update(sub["pfam_acc"].to_list())
+                    rows_by_cut[cut, lab] += sub.height
+            if not chunk:
+                break
     rows = []
     for cut in EVALUE_CUTOFFS:
-        sub = landed.filter(pl.col("region_evalue") <= cut)
         for lab in labellings:
-            fams = set(sub.filter(pl.col("labelling") == lab)["pfam_acc"].to_list())
+            fams = fams_by_cut[cut, lab]
             nq = n_queries.filter(pl.col("labelling") == lab)["n_queries"]
-            rows.append(dict(
-                organism=args.organism, path="kmerseek", setting=args.setting, status=args.status,
-                labelling=lab, evalue_cutoff=cut, primary=cut == PRIMARY_EVALUE,
-                recovered=len(fams & key_fams), recovery_fraction=len(fams & key_fams) / 100,
-                outside=len(fams - key_fams), n_changed_domains=len(fams),
-                n_queries=int(nq[0]) if nq.len() else 0,
-                n_landing_rows=sub.filter(pl.col("labelling") == lab).height,
-            ))
+            rows.append(
+                dict(
+                    organism=args.organism,
+                    path="kmerseek",
+                    setting=args.setting,
+                    status=args.status,
+                    labelling=lab,
+                    evalue_cutoff=cut,
+                    primary=cut == PRIMARY_EVALUE,
+                    recovered=len(fams & key_fams),
+                    recovery_fraction=len(fams & key_fams) / 100,
+                    outside=len(fams - key_fams),
+                    n_changed_domains=len(fams),
+                    n_queries=int(nq[0]) if nq.len() else 0,
+                    n_landing_rows=rows_by_cut[cut, lab],
+                )
+            )
     pl.DataFrame(rows).write_csv(f"{args.out_prefix}.summary.tsv", separator="\t")
 
 

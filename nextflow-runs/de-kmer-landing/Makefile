@@ -35,16 +35,16 @@ HEAD_SUBMIT = HEAD_ACCOUNT=$(SLURM_ACCOUNT) HEAD_PARTITION=$(SLURM_PARTITION) \
               $(MAKEFILE_DIR)/../../scripts/nf-head
 NF_ARGS = $(MAKEFILE_DIR)/main.nf -profile sherlock -resume --key_dir $(KEY_DIR) --pfam_seed $(PFAM_SEED)
 
-.PHONY: key smoke run watch stop running preview
+.PHONY: key smoke run watch stop running preview measure-resources
 
 key:
 	cd $(MAKEFILE_DIR)/../.. && sbatch scripts/nb360/build_answer_key.sbatch
 
-smoke:
+smoke: measure-resources
 	mkdir -p $(RUN_DIR) && cd $(RUN_DIR) && ml load biology nextflow && \
 	  $(HEAD_SUBMIT) nextflow run $(NF_ARGS) --organisms ciona --only_settings protein20.k7,hp_pbotc_1st_ed2.k30
 
-run:
+run: measure-resources
 	mkdir -p $(RUN_DIR) && cd $(RUN_DIR) && ml load biology nextflow && \
 	  $(HEAD_SUBMIT) nextflow run $(NF_ARGS)
 
@@ -63,3 +63,10 @@ running:
 
 preview:
 	nextflow run $(MAKEFILE_DIR)/main.nf -preview --key_dir $(KEY_DIR) --pfam_seed $(PFAM_SEED)
+
+measure-resources:
+	python3 $(MAKEFILE_DIR)/bin/measure_landing_resources.py $(RUN_DIR) $(MAKEFILE_DIR)/assets/kmerseek_settings.tsv
+
+repair-landings: measure-resources
+	mkdir -p $(RUN_DIR) && cd $(RUN_DIR) && ml load biology nextflow && \
+	  $(HEAD_SUBMIT) nextflow run $(MAKEFILE_DIR)/repair_landings.nf -profile sherlock -resume --key_dir $(KEY_DIR)

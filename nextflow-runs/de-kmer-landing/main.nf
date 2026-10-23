@@ -334,13 +334,23 @@ process kmerseekSearch {
     """
 }
 
+// The Makefile measures history before starting the head; tasks read only that snapshot.
+def landingAsk(org, setting, column) {
+    def tag = "${org}.${setting.alphabet}.k${setting.ksize}"
+    def resourceFile = file("${launchDir}/measured/landings.tsv")
+    if (!resourceFile.exists()) error "Run make measure-resources before launch"
+    def row = resourceFile.readLines().find { it.startsWith(tag + "\t") }
+    if (row == null) error "No measured resources for ${tag}"
+    row.split('\t')[column] as int
+}
+
 process landings {
     tag "${org}.${s.alphabet}.k${s.ksize}"
     label 'python'
     publishDir "${params.outdir}/${org}/landings", mode: 'copy'
     cpus 2
-    memory { 16.GB * task.attempt }
-    time   { 2.h * task.attempt }
+    memory { Math.min(500, landingAsk(org, s, 1) * task.attempt).GB }
+    time   { landingAsk(org, s, 2).h * task.attempt }
 
     input:
     tuple val(org), val(s), path(regions), path(status), path(pmap), path(domains), path(key), path(labellings)
@@ -352,15 +362,11 @@ process landings {
     script:
     def sl = slug(org, s)
     """
-    # Redirected: zstd skips a symbolic link given by name, and Nextflow stages inputs as links.
-    zstd -dc < ${regions} > regions.csv
-    # A search with no region at all writes no header; give landings.py an empty table.
-    [ -s regions.csv ] || printf 'query_name,target_name,target_start,target_end,region_start,region_end,region_evalue,region_ka_bits,region_poisson_score,region_n_shared_kmers\\n' > regions.csv
-    landings.py --regions regions.csv --domains ${domains} --peptide-map ${pmap} --key ${key} \\
+    set -o pipefail
+    # Read bounded batches from stdin; never inflate the full compressed CSV in memory.
+    zstd -dc < ${regions} | landings.py --regions - --domains ${domains} --peptide-map ${pmap} --key ${key} \\
         --labellings ${labellings} --organism ${org} --setting ${s.alphabet}.k${s.ksize} \\
         --status \$(cat ${status}) --out-prefix ${sl}
-    gzip -n ${sl}.landings.tsv
-    rm regions.csv
     """
 }
 
