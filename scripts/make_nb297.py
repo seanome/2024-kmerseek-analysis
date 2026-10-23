@@ -290,6 +290,11 @@ The figure shows the mean over queries with a 95% bootstrap interval (queries re
 with replacement, 10,000 draws), one panel per query phylum and one for all 5,121 queries
 together. In the pooled panel each query keeps its own phylum's reference, and chance is
 the mean of the queries' chance levels; Mollusca has 71% of the queries, so it weighs most.
+
+
+These intervals resample individual queries. Related toxin peptides are not independent,
+so these intervals do not measure uncertainty across independent protein families.
+The means describe this query set; generalization to new families needs family-level resampling.
 """)
 
 code(r"""

@@ -4,7 +4,7 @@ A disulfide-rich peptide is a short secreted peptide, 10 to 40 residues in most 
 held in shape by two or more disulfide bonds rather than by a hydrophobic core. Its
 **cysteine framework** is the pattern of cysteine positions along the sequence, written by
 convention as runs of cysteine separated by dashes, so `C-C-CC-C-C` means six cysteines in
-four runs: one, one, two adjacent, one, one. Conotoxin families are named by that pattern
+five runs: one, one, two adjacent, one, one. Conotoxin families are named by that pattern
 (framework VI/VII is `C-C-CC-C-C`), and the residues between the cysteines change fast
 between species while the pattern holds.
 
