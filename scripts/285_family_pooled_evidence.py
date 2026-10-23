@@ -22,8 +22,8 @@ Rule, fixed before any group was scored (this file is committed before it is fir
      covers i. A protein with no call over i has p = 1 there.
   3. Group score at residue i: Fisher's method over all n members of the group,
      X = -2 * sum(ln p_m), compared with a chi-squared distribution with 2n degrees of
-     freedom. Members with no call count, with p = 1, so a large group is not rewarded for
-     its size. The group's score is its lowest Fisher p over all query residues.
+     freedom. Members with no call count, with p = 1. The reference distribution includes group size, but
+     dependence among related copies can still favour large groups. The group's score is its lowest Fisher p over all query residues.
   4. The same score with each protein as its own group (n = 1) is the single-protein
      baseline: the protein's lowest per-protein p.
   5. Nulls. (a) 1_000 random sets of proteins of the same size as the case group, drawn
@@ -43,6 +43,12 @@ Added after the first run, reported as post-hoc and not used for the decision:
     query start) is within 1 residue of the one that puts Ced9's BH1 on the member's BH1
     (UniProt motif features, the rule of scripts/284_ced9_bcl2_family_hits.py).
   - the case group's rank among groups of its own size.
+
+The Fisher-derived values are ranking scores, not calibrated probabilities here. Group
+members are related, and each value is selected across settings and query residues.
+These violate the independent, uniformly distributed p-values assumed by the chi-squared
+reference. Random-set comparisons describe this score; the shuffled-query control is
+still needed before interpreting it as evidence above chance.
 
 Writes notebooks/285_*.csv (small tables the notebook reads and plots).
 """

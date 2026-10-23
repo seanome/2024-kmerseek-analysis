@@ -54,7 +54,8 @@ reach of kmerseek's region evidence, and we stop trying score combinations on th
    that residue, and 1 where there is no call.
 4. *Group score.* Fisher's method over **all** $n$ members at each query residue,
    $X = -2\sum_m \ln p_m$ against a χ² distribution with $2n$ degrees of freedom; members
-   with no call count with $p = 1$, so a big group is not rewarded for its size. The group's
+   with no call count with $p = 1$. The reference distribution includes group size, but
+   related copies can still favour large groups. The group's
    score is its lowest Fisher $p$ over the query's residues. **Lower is better**; $p$ near 1
    means no evidence.
 5. *Nulls.* (a) 1_000 random sets of human proteins with the same number of members, scored
@@ -63,6 +64,13 @@ reach of kmerseek's region evidence, and we stop trying score combinations on th
 
 **Pass** if the partner's group ranks in the **top 10 of the 7_212 groups**, AND scores
 better than **95% of the random sets**, AND better than **95% of the shuffled queries**.
+
+
+The Fisher-derived values are ranking scores, not calibrated probabilities here. Group
+members are related, and each value is selected across settings and query residues.
+These violate the independent, uniformly distributed p-values assumed by the chi-squared
+reference. Random-set comparisons describe this score; the shuffled-query control is
+still needed before interpreting it as evidence above chance.
 """)
 
 md(r"""
