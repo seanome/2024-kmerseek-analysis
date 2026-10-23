@@ -1,0 +1,13 @@
+{
+  "threshold": 0.9773966829942349,
+  "n_target": 29639,
+  "n_decoy": 1481,
+  "nofit": false,
+  "label": "kmerseek.regions.w10.protein20_k5_s1",
+  "calls_total": 3555595,
+  "decoy_calls_total": 1444530,
+  "max_decoy_rate": 0.05,
+  "features_found": 1132,
+  "features_found_aligned": 1600,
+  "features_total": 7174
+}

@@ -1,0 +1,13 @@
+{
+  "threshold": 127.39607932670918,
+  "n_target": 489,
+  "n_decoy": 24,
+  "nofit": false,
+  "label": "kmerseek.regions.w20.wwmj5_k10_s1",
+  "calls_total": 4150526,
+  "decoy_calls_total": 1946993,
+  "max_decoy_rate": 0.05,
+  "features_found": 259,
+  "features_found_aligned": 233,
+  "features_total": 7174
+}

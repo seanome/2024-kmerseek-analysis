@@ -1,0 +1,13 @@
+{
+  "threshold": 3.9324874686256563e-07,
+  "n_target": 27,
+  "n_decoy": 1,
+  "nofit": false,
+  "label": "kmerseek.pfam.w10.hp_lehninger_hpc3_k19_s1",
+  "calls_total": 11343049,
+  "decoy_calls_total": 5400723,
+  "max_decoy_rate": 0.05,
+  "features_found": 5,
+  "features_found_aligned": 10,
+  "features_total": 7174
+}

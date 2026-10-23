@@ -1,0 +1,22 @@
+# First memory ask (GB) for kmerseekIndex, per setting. The index task also runs the
+# Karlin-Altschul fit, a search of 500 (whole-protein) or 2_500 (regions) of the index's own
+# entries, so its peak is a search's. Rows not listed ask the default in main.nf
+# (params.kmerseek_index_memory_default_gb). Retries double the ask, up to 500 GB.
+#
+# Sources, 2026-10-13:
+#   laptop     measured peak RSS on the laptop, whole-protein index + decoys, 2026-10-07
+#              (test_20_queries/index_build_costs.txt), x 1.4
+#   dark set   olgabot/dark-set-kmerseek-0.4 assets/kmerseek_search_memory_measured.tsv,
+#              Swiss-Prot minus Mammalia WITHOUT decoys (this index is twice as large), the
+#              search ask that built or twice the largest killed ask; nearest k listed
+alphabet	ksize	first_ask_gb	basis
+polarity4	11	240	Sherlock 2026-10-13: whole-protein index killed at 120 GB on both decoy windows (exit 137, 139); the regions index peaked at 80 GB. Twice the killed ask
+protein20	5	120	laptop: 81 GB
+hp_pbotc_1st_ed2	21	120	laptop: 77 GB
+hp_lehninger2	21	120	laptop: 78 GB
+hp_kyte_doolittle2	22	220	dark set: hp_kyte_doolittle2 k21 search 218 GB
+gbmr4	14	300	dark set: gbmr4 k14 search 304 GB (Mammalia), 320 GB (Saccharomycetes)
+dayhoff6	9	250	dark set: dayhoff6 k9 search 245 GB (Mammalia), 260 GB (Chromadorea)
+mmseqs12	6	270	dark set: mmseqs12 k6 search 265 GB
+hsdm17	6	300	dark set: hsdm17 k5 search 394 GB; k6 has more keys, so less
+gbmr7	16	210	dark set: gbmr7 k16 search 205 GB

@@ -1,0 +1,221 @@
+landing_rule	tool	index	window	setting	identity_bin	features	found	recall
+aligned piece	composition	regions	w10	composition	30-50%	17	0	0.0
+whole call	composition	regions	w10	composition	30-50%	17	0	0.0
+aligned piece	composition	regions	w20	composition	30-50%	17	0	0.0
+whole call	composition	regions	w20	composition	30-50%	17	0	0.0
+aligned piece	kmerseek	regions	w10	hp_lehninger2_k21_s1	30-50%	17	0	0.0
+whole call	kmerseek	regions	w10	hp_lehninger2_k21_s1	30-50%	17	0	0.0
+whole call	kmerseek	whole	w10	hp_lehninger2_k21_s1	30-50%	17	3	0.17647058823529413
+aligned piece	kmerseek	whole	w10	hp_lehninger2_k21_s1	30-50%	17	5	0.29411764705882354
+aligned piece	kmerseek	regions	w20	hp_lehninger2_k21_s1	30-50%	17	0	0.0
+whole call	kmerseek	regions	w20	hp_lehninger2_k21_s1	30-50%	17	0	0.0
+whole call	kmerseek	whole	w20	hp_lehninger2_k21_s1	30-50%	17	3	0.17647058823529413
+aligned piece	kmerseek	whole	w20	hp_lehninger2_k21_s1	30-50%	17	5	0.29411764705882354
+whole call	kmerseek	regions	w10	hp_pbotc_1st_ed2_k21_s1	30-50%	17	0	0.0
+aligned piece	kmerseek	regions	w10	hp_pbotc_1st_ed2_k21_s1	30-50%	17	0	0.0
+aligned piece	kmerseek	whole	w10	hp_pbotc_1st_ed2_k21_s1	30-50%	17	3	0.17647058823529413
+whole call	kmerseek	whole	w10	hp_pbotc_1st_ed2_k21_s1	30-50%	17	2	0.11764705882352941
+aligned piece	kmerseek	regions	w20	hp_pbotc_1st_ed2_k21_s1	30-50%	17	0	0.0
+whole call	kmerseek	regions	w20	hp_pbotc_1st_ed2_k21_s1	30-50%	17	0	0.0
+aligned piece	kmerseek	whole	w20	hp_pbotc_1st_ed2_k21_s1	30-50%	17	3	0.17647058823529413
+whole call	kmerseek	whole	w20	hp_pbotc_1st_ed2_k21_s1	30-50%	17	2	0.11764705882352941
+aligned piece	kmerseek	regions	w10	polarity4_k11_s1	30-50%	17	0	0.0
+whole call	kmerseek	regions	w10	polarity4_k11_s1	30-50%	17	0	0.0
+aligned piece	kmerseek	whole	w10	polarity4_k11_s1	30-50%	17	0	0.0
+whole call	kmerseek	whole	w10	polarity4_k11_s1	30-50%	17	0	0.0
+aligned piece	kmerseek	regions	w20	polarity4_k11_s1	30-50%	17	0	0.0
+whole call	kmerseek	regions	w20	polarity4_k11_s1	30-50%	17	0	0.0
+aligned piece	kmerseek	whole	w20	polarity4_k11_s1	30-50%	17	1	0.058823529411764705
+whole call	kmerseek	whole	w20	polarity4_k11_s1	30-50%	17	0	0.0
+aligned piece	kmerseek	regions	w10	protein20_k5_s1	30-50%	17	3	0.17647058823529413
+whole call	kmerseek	regions	w10	protein20_k5_s1	30-50%	17	5	0.29411764705882354
+whole call	kmerseek	whole	w10	protein20_k5_s1	30-50%	17	6	0.35294117647058826
+aligned piece	kmerseek	whole	w10	protein20_k5_s1	30-50%	17	7	0.4117647058823529
+aligned piece	kmerseek	regions	w20	protein20_k5_s1	30-50%	17	7	0.4117647058823529
+whole call	kmerseek	regions	w20	protein20_k5_s1	30-50%	17	8	0.47058823529411764
+aligned piece	kmerseek	whole	w20	protein20_k5_s1	30-50%	17	8	0.47058823529411764
+whole call	kmerseek	whole	w20	protein20_k5_s1	30-50%	17	7	0.4117647058823529
+whole call	mmseqs2	regions	w10	mmseqs2	30-50%	17	14	0.8235294117647058
+aligned piece	mmseqs2	regions	w10	mmseqs2	30-50%	17	15	0.8823529411764706
+whole call	mmseqs2	whole	w10	mmseqs2	30-50%	17	10	0.5882352941176471
+aligned piece	mmseqs2	whole	w10	mmseqs2	30-50%	17	17	1.0
+aligned piece	mmseqs2	regions	w20	mmseqs2	30-50%	17	15	0.8823529411764706
+whole call	mmseqs2	regions	w20	mmseqs2	30-50%	17	14	0.8235294117647058
+aligned piece	mmseqs2	whole	w20	mmseqs2	30-50%	17	17	1.0
+whole call	mmseqs2	whole	w20	mmseqs2	30-50%	17	10	0.5882352941176471
+aligned piece	composition	regions	w10	composition	50-90%	27	0	0.0
+whole call	composition	regions	w10	composition	50-90%	27	0	0.0
+whole call	composition	regions	w20	composition	50-90%	27	0	0.0
+aligned piece	composition	regions	w20	composition	50-90%	27	0	0.0
+aligned piece	kmerseek	regions	w10	hp_lehninger2_k21_s1	50-90%	27	1	0.037037037037037035
+whole call	kmerseek	regions	w10	hp_lehninger2_k21_s1	50-90%	27	1	0.037037037037037035
+whole call	kmerseek	whole	w10	hp_lehninger2_k21_s1	50-90%	27	5	0.18518518518518517
+aligned piece	kmerseek	whole	w10	hp_lehninger2_k21_s1	50-90%	27	14	0.5185185185185185
+aligned piece	kmerseek	regions	w20	hp_lehninger2_k21_s1	50-90%	27	0	0.0
+whole call	kmerseek	regions	w20	hp_lehninger2_k21_s1	50-90%	27	0	0.0
+aligned piece	kmerseek	whole	w20	hp_lehninger2_k21_s1	50-90%	27	14	0.5185185185185185
+whole call	kmerseek	whole	w20	hp_lehninger2_k21_s1	50-90%	27	4	0.14814814814814814
+aligned piece	kmerseek	regions	w10	hp_pbotc_1st_ed2_k21_s1	50-90%	27	2	0.07407407407407407
+whole call	kmerseek	regions	w10	hp_pbotc_1st_ed2_k21_s1	50-90%	27	2	0.07407407407407407
+whole call	kmerseek	whole	w10	hp_pbotc_1st_ed2_k21_s1	50-90%	27	3	0.1111111111111111
+aligned piece	kmerseek	whole	w10	hp_pbotc_1st_ed2_k21_s1	50-90%	27	14	0.5185185185185185
+aligned piece	kmerseek	regions	w20	hp_pbotc_1st_ed2_k21_s1	50-90%	27	2	0.07407407407407407
+whole call	kmerseek	regions	w20	hp_pbotc_1st_ed2_k21_s1	50-90%	27	2	0.07407407407407407
+whole call	kmerseek	whole	w20	hp_pbotc_1st_ed2_k21_s1	50-90%	27	3	0.1111111111111111
+aligned piece	kmerseek	whole	w20	hp_pbotc_1st_ed2_k21_s1	50-90%	27	14	0.5185185185185185
+whole call	kmerseek	regions	w10	polarity4_k11_s1	50-90%	27	0	0.0
+aligned piece	kmerseek	regions	w10	polarity4_k11_s1	50-90%	27	0	0.0
+whole call	kmerseek	whole	w10	polarity4_k11_s1	50-90%	27	0	0.0
+aligned piece	kmerseek	whole	w10	polarity4_k11_s1	50-90%	27	5	0.18518518518518517
+whole call	kmerseek	regions	w20	polarity4_k11_s1	50-90%	27	0	0.0
+aligned piece	kmerseek	regions	w20	polarity4_k11_s1	50-90%	27	0	0.0
+aligned piece	kmerseek	whole	w20	polarity4_k11_s1	50-90%	27	5	0.18518518518518517
+whole call	kmerseek	whole	w20	polarity4_k11_s1	50-90%	27	0	0.0
+whole call	kmerseek	regions	w10	protein20_k5_s1	50-90%	27	16	0.5925925925925926
+aligned piece	kmerseek	regions	w10	protein20_k5_s1	50-90%	27	15	0.5555555555555556
+aligned piece	kmerseek	whole	w10	protein20_k5_s1	50-90%	27	21	0.7777777777777778
+whole call	kmerseek	whole	w10	protein20_k5_s1	50-90%	27	18	0.6666666666666666
+aligned piece	kmerseek	regions	w20	protein20_k5_s1	50-90%	27	18	0.6666666666666666
+whole call	kmerseek	regions	w20	protein20_k5_s1	50-90%	27	20	0.7407407407407407
+whole call	kmerseek	whole	w20	protein20_k5_s1	50-90%	27	18	0.6666666666666666
+aligned piece	kmerseek	whole	w20	protein20_k5_s1	50-90%	27	21	0.7777777777777778
+aligned piece	mmseqs2	regions	w10	mmseqs2	50-90%	27	20	0.7407407407407407
+whole call	mmseqs2	regions	w10	mmseqs2	50-90%	27	17	0.6296296296296297
+aligned piece	mmseqs2	whole	w10	mmseqs2	50-90%	27	21	0.7777777777777778
+whole call	mmseqs2	whole	w10	mmseqs2	50-90%	27	10	0.37037037037037035
+whole call	mmseqs2	regions	w20	mmseqs2	50-90%	27	17	0.6296296296296297
+aligned piece	mmseqs2	regions	w20	mmseqs2	50-90%	27	20	0.7407407407407407
+aligned piece	mmseqs2	whole	w20	mmseqs2	50-90%	27	21	0.7777777777777778
+whole call	mmseqs2	whole	w20	mmseqs2	50-90%	27	10	0.37037037037037035
+whole call	composition	regions	w10	composition	<30%	1	0	0.0
+aligned piece	composition	regions	w10	composition	<30%	1	0	0.0
+aligned piece	composition	regions	w20	composition	<30%	1	0	0.0
+whole call	composition	regions	w20	composition	<30%	1	0	0.0
+whole call	kmerseek	regions	w10	hp_lehninger2_k21_s1	<30%	1	0	0.0
+aligned piece	kmerseek	regions	w10	hp_lehninger2_k21_s1	<30%	1	0	0.0
+whole call	kmerseek	whole	w10	hp_lehninger2_k21_s1	<30%	1	0	0.0
+aligned piece	kmerseek	whole	w10	hp_lehninger2_k21_s1	<30%	1	0	0.0
+aligned piece	kmerseek	regions	w20	hp_lehninger2_k21_s1	<30%	1	0	0.0
+whole call	kmerseek	regions	w20	hp_lehninger2_k21_s1	<30%	1	0	0.0
+aligned piece	kmerseek	whole	w20	hp_lehninger2_k21_s1	<30%	1	0	0.0
+whole call	kmerseek	whole	w20	hp_lehninger2_k21_s1	<30%	1	0	0.0
+whole call	kmerseek	regions	w10	hp_pbotc_1st_ed2_k21_s1	<30%	1	0	0.0
+aligned piece	kmerseek	regions	w10	hp_pbotc_1st_ed2_k21_s1	<30%	1	0	0.0
+whole call	kmerseek	whole	w10	hp_pbotc_1st_ed2_k21_s1	<30%	1	0	0.0
+aligned piece	kmerseek	whole	w10	hp_pbotc_1st_ed2_k21_s1	<30%	1	0	0.0
+aligned piece	kmerseek	regions	w20	hp_pbotc_1st_ed2_k21_s1	<30%	1	0	0.0
+whole call	kmerseek	regions	w20	hp_pbotc_1st_ed2_k21_s1	<30%	1	0	0.0
+aligned piece	kmerseek	whole	w20	hp_pbotc_1st_ed2_k21_s1	<30%	1	0	0.0
+whole call	kmerseek	whole	w20	hp_pbotc_1st_ed2_k21_s1	<30%	1	0	0.0
+whole call	kmerseek	regions	w10	polarity4_k11_s1	<30%	1	0	0.0
+aligned piece	kmerseek	regions	w10	polarity4_k11_s1	<30%	1	0	0.0
+aligned piece	kmerseek	whole	w10	polarity4_k11_s1	<30%	1	0	0.0
+whole call	kmerseek	whole	w10	polarity4_k11_s1	<30%	1	0	0.0
+whole call	kmerseek	regions	w20	polarity4_k11_s1	<30%	1	0	0.0
+aligned piece	kmerseek	regions	w20	polarity4_k11_s1	<30%	1	0	0.0
+aligned piece	kmerseek	whole	w20	polarity4_k11_s1	<30%	1	0	0.0
+whole call	kmerseek	whole	w20	polarity4_k11_s1	<30%	1	0	0.0
+whole call	kmerseek	regions	w10	protein20_k5_s1	<30%	1	0	0.0
+aligned piece	kmerseek	regions	w10	protein20_k5_s1	<30%	1	0	0.0
+aligned piece	kmerseek	whole	w10	protein20_k5_s1	<30%	1	0	0.0
+whole call	kmerseek	whole	w10	protein20_k5_s1	<30%	1	0	0.0
+whole call	kmerseek	regions	w20	protein20_k5_s1	<30%	1	0	0.0
+aligned piece	kmerseek	regions	w20	protein20_k5_s1	<30%	1	0	0.0
+whole call	kmerseek	whole	w20	protein20_k5_s1	<30%	1	0	0.0
+aligned piece	kmerseek	whole	w20	protein20_k5_s1	<30%	1	0	0.0
+whole call	mmseqs2	regions	w10	mmseqs2	<30%	1	1	1.0
+aligned piece	mmseqs2	regions	w10	mmseqs2	<30%	1	1	1.0
+whole call	mmseqs2	whole	w10	mmseqs2	<30%	1	1	1.0
+aligned piece	mmseqs2	whole	w10	mmseqs2	<30%	1	1	1.0
+whole call	mmseqs2	regions	w20	mmseqs2	<30%	1	1	1.0
+aligned piece	mmseqs2	regions	w20	mmseqs2	<30%	1	1	1.0
+aligned piece	mmseqs2	whole	w20	mmseqs2	<30%	1	1	1.0
+whole call	mmseqs2	whole	w20	mmseqs2	<30%	1	1	1.0
+aligned piece	composition	regions	w10	composition	>=90%	1	0	0.0
+whole call	composition	regions	w10	composition	>=90%	1	0	0.0
+aligned piece	composition	regions	w20	composition	>=90%	1	0	0.0
+whole call	composition	regions	w20	composition	>=90%	1	0	0.0
+whole call	kmerseek	regions	w10	hp_lehninger2_k21_s1	>=90%	1	0	0.0
+aligned piece	kmerseek	regions	w10	hp_lehninger2_k21_s1	>=90%	1	0	0.0
+whole call	kmerseek	whole	w10	hp_lehninger2_k21_s1	>=90%	1	0	0.0
+aligned piece	kmerseek	whole	w10	hp_lehninger2_k21_s1	>=90%	1	1	1.0
+aligned piece	kmerseek	regions	w20	hp_lehninger2_k21_s1	>=90%	1	0	0.0
+whole call	kmerseek	regions	w20	hp_lehninger2_k21_s1	>=90%	1	0	0.0
+aligned piece	kmerseek	whole	w20	hp_lehninger2_k21_s1	>=90%	1	1	1.0
+whole call	kmerseek	whole	w20	hp_lehninger2_k21_s1	>=90%	1	0	0.0
+aligned piece	kmerseek	regions	w10	hp_pbotc_1st_ed2_k21_s1	>=90%	1	0	0.0
+whole call	kmerseek	regions	w10	hp_pbotc_1st_ed2_k21_s1	>=90%	1	0	0.0
+aligned piece	kmerseek	whole	w10	hp_pbotc_1st_ed2_k21_s1	>=90%	1	1	1.0
+whole call	kmerseek	whole	w10	hp_pbotc_1st_ed2_k21_s1	>=90%	1	0	0.0
+whole call	kmerseek	regions	w20	hp_pbotc_1st_ed2_k21_s1	>=90%	1	0	0.0
+aligned piece	kmerseek	regions	w20	hp_pbotc_1st_ed2_k21_s1	>=90%	1	0	0.0
+whole call	kmerseek	whole	w20	hp_pbotc_1st_ed2_k21_s1	>=90%	1	0	0.0
+aligned piece	kmerseek	whole	w20	hp_pbotc_1st_ed2_k21_s1	>=90%	1	1	1.0
+whole call	kmerseek	regions	w10	polarity4_k11_s1	>=90%	1	0	0.0
+aligned piece	kmerseek	regions	w10	polarity4_k11_s1	>=90%	1	0	0.0
+aligned piece	kmerseek	whole	w10	polarity4_k11_s1	>=90%	1	0	0.0
+whole call	kmerseek	whole	w10	polarity4_k11_s1	>=90%	1	0	0.0
+whole call	kmerseek	regions	w20	polarity4_k11_s1	>=90%	1	0	0.0
+aligned piece	kmerseek	regions	w20	polarity4_k11_s1	>=90%	1	0	0.0
+aligned piece	kmerseek	whole	w20	polarity4_k11_s1	>=90%	1	0	0.0
+whole call	kmerseek	whole	w20	polarity4_k11_s1	>=90%	1	0	0.0
+whole call	kmerseek	regions	w10	protein20_k5_s1	>=90%	1	0	0.0
+aligned piece	kmerseek	regions	w10	protein20_k5_s1	>=90%	1	1	1.0
+aligned piece	kmerseek	whole	w10	protein20_k5_s1	>=90%	1	1	1.0
+whole call	kmerseek	whole	w10	protein20_k5_s1	>=90%	1	1	1.0
+whole call	kmerseek	regions	w20	protein20_k5_s1	>=90%	1	1	1.0
+aligned piece	kmerseek	regions	w20	protein20_k5_s1	>=90%	1	1	1.0
+whole call	kmerseek	whole	w20	protein20_k5_s1	>=90%	1	1	1.0
+aligned piece	kmerseek	whole	w20	protein20_k5_s1	>=90%	1	1	1.0
+aligned piece	mmseqs2	regions	w10	mmseqs2	>=90%	1	1	1.0
+whole call	mmseqs2	regions	w10	mmseqs2	>=90%	1	0	0.0
+aligned piece	mmseqs2	whole	w10	mmseqs2	>=90%	1	1	1.0
+whole call	mmseqs2	whole	w10	mmseqs2	>=90%	1	0	0.0
+whole call	mmseqs2	regions	w20	mmseqs2	>=90%	1	0	0.0
+aligned piece	mmseqs2	regions	w20	mmseqs2	>=90%	1	1	1.0
+whole call	mmseqs2	whole	w20	mmseqs2	>=90%	1	0	0.0
+aligned piece	mmseqs2	whole	w20	mmseqs2	>=90%	1	1	1.0
+aligned piece	composition	regions	w10	composition	no same-type entry found	54	1	0.018518518518518517
+whole call	composition	regions	w10	composition	no same-type entry found	54	1	0.018518518518518517
+whole call	composition	regions	w20	composition	no same-type entry found	54	1	0.018518518518518517
+aligned piece	composition	regions	w20	composition	no same-type entry found	54	1	0.018518518518518517
+aligned piece	kmerseek	regions	w10	hp_lehninger2_k21_s1	no same-type entry found	54	0	0.0
+whole call	kmerseek	regions	w10	hp_lehninger2_k21_s1	no same-type entry found	54	0	0.0
+whole call	kmerseek	whole	w10	hp_lehninger2_k21_s1	no same-type entry found	54	0	0.0
+aligned piece	kmerseek	whole	w10	hp_lehninger2_k21_s1	no same-type entry found	54	3	0.05555555555555555
+whole call	kmerseek	regions	w20	hp_lehninger2_k21_s1	no same-type entry found	54	0	0.0
+aligned piece	kmerseek	regions	w20	hp_lehninger2_k21_s1	no same-type entry found	54	0	0.0
+aligned piece	kmerseek	whole	w20	hp_lehninger2_k21_s1	no same-type entry found	54	2	0.037037037037037035
+whole call	kmerseek	whole	w20	hp_lehninger2_k21_s1	no same-type entry found	54	0	0.0
+whole call	kmerseek	regions	w10	hp_pbotc_1st_ed2_k21_s1	no same-type entry found	54	0	0.0
+aligned piece	kmerseek	regions	w10	hp_pbotc_1st_ed2_k21_s1	no same-type entry found	54	0	0.0
+whole call	kmerseek	whole	w10	hp_pbotc_1st_ed2_k21_s1	no same-type entry found	54	0	0.0
+aligned piece	kmerseek	whole	w10	hp_pbotc_1st_ed2_k21_s1	no same-type entry found	54	6	0.1111111111111111
+whole call	kmerseek	regions	w20	hp_pbotc_1st_ed2_k21_s1	no same-type entry found	54	0	0.0
+aligned piece	kmerseek	regions	w20	hp_pbotc_1st_ed2_k21_s1	no same-type entry found	54	0	0.0
+aligned piece	kmerseek	whole	w20	hp_pbotc_1st_ed2_k21_s1	no same-type entry found	54	6	0.1111111111111111
+whole call	kmerseek	whole	w20	hp_pbotc_1st_ed2_k21_s1	no same-type entry found	54	0	0.0
+whole call	kmerseek	regions	w10	polarity4_k11_s1	no same-type entry found	54	0	0.0
+aligned piece	kmerseek	regions	w10	polarity4_k11_s1	no same-type entry found	54	0	0.0
+aligned piece	kmerseek	whole	w10	polarity4_k11_s1	no same-type entry found	54	0	0.0
+whole call	kmerseek	whole	w10	polarity4_k11_s1	no same-type entry found	54	0	0.0
+aligned piece	kmerseek	regions	w20	polarity4_k11_s1	no same-type entry found	54	0	0.0
+whole call	kmerseek	regions	w20	polarity4_k11_s1	no same-type entry found	54	0	0.0
+whole call	kmerseek	whole	w20	polarity4_k11_s1	no same-type entry found	54	0	0.0
+aligned piece	kmerseek	whole	w20	polarity4_k11_s1	no same-type entry found	54	0	0.0
+aligned piece	kmerseek	regions	w10	protein20_k5_s1	no same-type entry found	54	4	0.07407407407407407
+whole call	kmerseek	regions	w10	protein20_k5_s1	no same-type entry found	54	7	0.12962962962962962
+aligned piece	kmerseek	whole	w10	protein20_k5_s1	no same-type entry found	54	18	0.3333333333333333
+whole call	kmerseek	whole	w10	protein20_k5_s1	no same-type entry found	54	9	0.16666666666666666
+aligned piece	kmerseek	regions	w20	protein20_k5_s1	no same-type entry found	54	16	0.2962962962962963
+whole call	kmerseek	regions	w20	protein20_k5_s1	no same-type entry found	54	11	0.2037037037037037
+aligned piece	kmerseek	whole	w20	protein20_k5_s1	no same-type entry found	54	19	0.35185185185185186
+whole call	kmerseek	whole	w20	protein20_k5_s1	no same-type entry found	54	12	0.2222222222222222
+aligned piece	mmseqs2	regions	w10	mmseqs2	no same-type entry found	54	11	0.2037037037037037
+whole call	mmseqs2	regions	w10	mmseqs2	no same-type entry found	54	3	0.05555555555555555
+aligned piece	mmseqs2	whole	w10	mmseqs2	no same-type entry found	54	22	0.4074074074074074
+whole call	mmseqs2	whole	w10	mmseqs2	no same-type entry found	54	0	0.0
+whole call	mmseqs2	regions	w20	mmseqs2	no same-type entry found	54	3	0.05555555555555555
+aligned piece	mmseqs2	regions	w20	mmseqs2	no same-type entry found	54	11	0.2037037037037037
+whole call	mmseqs2	whole	w20	mmseqs2	no same-type entry found	54	0	0.0
+aligned piece	mmseqs2	whole	w20	mmseqs2	no same-type entry found	54	21	0.3888888888888889
