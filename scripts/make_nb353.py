@@ -432,7 +432,8 @@ Ready for Olga, in `data/kill_tests/short_stretch/stage1/` and `scripts/353/stag
 4. `stage1.py sheet`: drops self-records, merges duplicate evidence, shuffles cards, and
    writes `review_sheet.tsv` with no method column and `review_key.tsv` kept apart.
 5. `stopwatch_log_template.tsv`: start and stop time per query per workflow.
-6. `stage1.py score`: the three pass-rule numbers and PASS or FAIL.
+6. `stage1.py score`: the three pass-rule numbers; PASS or FAIL only for 100 queries with
+   paired timings and completed review decisions. Otherwise INSUFFICIENT_EVIDENCE.
 
 `tests/test_353_scoring.py` runs steps 4 and 6 on a hand-made query. A plumbing check on
 Sherlock (job 48701987, 2026-10-20) ran steps 3 and 4 on two windows of held-out tiles, which

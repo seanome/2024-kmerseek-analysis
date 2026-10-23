@@ -255,4 +255,42 @@ def test_stage1_sheet_blinds_dedups_and_scores(tmp_path):
         text=True,
     ).stdout
     assert "useful measurement from kmerseek: 1 (threshold >= 20): fails" in out
-    assert "kmerseek 40 s vs comparison 100 s" in out and out.strip().endswith("FAIL")
+    assert "kmerseek 40 s vs comparison 100 s" in out and "INSUFFICIENT_EVIDENCE" in out
+
+
+def test_stage1_partial_queue_cannot_pass(tmp_path, capsys):
+    """Twenty useful queries cannot stand in for the registered 100-query work queue."""
+    from types import SimpleNamespace
+    import stage1
+
+    sheet = [
+        {
+            "blind_id": f"{i}-1",
+            "analyst_had_seen_it (yes/no)": "no",
+            "kept_for_investigation (yes/no)": "yes",
+            "one_line_why": "useful",
+        }
+        for i in range(20)
+    ]
+    key = [{"blind_id": f"{i}-1", "found_by": "kmerseek"} for i in range(20)]
+    for name, rows in [("sheet", sheet), ("key", key)]:
+        stage1.write_tsv(tmp_path / f"{name}.tsv", rows, list(rows[0]))
+    args = SimpleNamespace(
+        sheet=tmp_path / "sheet.tsv",
+        key=tmp_path / "key.tsv",
+        stopwatch=tmp_path / "times.tsv",
+    )
+    for n, expected in [(20, "INSUFFICIENT_EVIDENCE"), (100, "PASS")]:
+        times = [
+            {"query_number": str(i), "workflow": m, "seconds": str(sec)}
+            for i in range(n)
+            for m, sec in [("kmerseek", 40), ("comparison", 100)]
+        ]
+        stage1.write_tsv(args.stopwatch, times, list(times[0]))
+        stage1.cmd_score(args)
+        assert capsys.readouterr().out.strip().splitlines()[-1].startswith(expected)
+    # Even with 100 query IDs, a duplicated timing cannot replace a missing one.
+    times[-1] = dict(times[-3])
+    stage1.write_tsv(args.stopwatch, times, list(times[0]))
+    stage1.cmd_score(args)
+    assert "INSUFFICIENT_EVIDENCE" in capsys.readouterr().out

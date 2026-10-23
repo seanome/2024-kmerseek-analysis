@@ -32,6 +32,7 @@ from __future__ import annotations
 
 import argparse
 import csv
+import math
 import random
 import statistics
 import subprocess
@@ -409,7 +410,23 @@ def cmd_score(args):
     print(
         f"3. useful yield, kmerseek {n_k} vs comparison {n_c}; needs kmerseek >= comparison: {'holds' if c3 else 'fails'}"
     )
-    print("PASS" if (c1 and c2 and c3) else "FAIL")
+    complete_timing = all(
+        len(secs[m]) == len(qs)
+        and {t["query_number"] for t in times if t["workflow"] == m} == set(qs)
+        and all(math.isfinite(t) and t >= 0 for t in secs[m])
+        for m in ("kmerseek", "comparison")
+    )
+    complete_review = all(
+        r["analyst_had_seen_it (yes/no)"].strip().lower() in ("yes", "no")
+        and r["kept_for_investigation (yes/no)"].strip().lower() in ("yes", "no")
+        for r in sheet
+    )
+    if len(qs) != 100 or not complete_timing or not complete_review:
+        print(
+            "INSUFFICIENT_EVIDENCE: need 100 queries, paired finite timings and completed review decisions"
+        )
+    else:
+        print("PASS" if (c1 and c2 and c3) else "FAIL")
 
 
 def main() -> int:
