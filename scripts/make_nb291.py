@@ -312,6 +312,38 @@ save_figure(fig, "kmerseek_top_settings_fmax_placed_vs_tools_midi_pfam38")
 """)
 
 md(r"""
+## Does duplicate-call merging change the placed-protein comparison?
+
+Fmax depends on whether repeated transferred calls are counted separately. The main panels
+use the unmerged default. Here the same stored scoring outputs are compared under both
+modes; each kmerseek point is the highest Fmax over 230 settings for that species, so it
+is a descriptive maximum selected on the evaluation proteins, not a held-out estimate.
+""")
+
+code(r"""
+raw = pl.read_csv(DATA / "dark_fmax_metrics.csv.gz", infer_schema_length=10_000)
+compare = (raw.filter(pl.col("truth_set") == "placed")
+           .filter(pl.col("tool").is_in(["kmerseek", "phmmer"]))
+           .group_by("species", "dedup_transfers", "tool")
+           .agg(pl.col("fmax").max()).sort("dedup_transfers", "species", "tool"))
+print(compare)
+compare.write_csv(DATA / "291_placed_fmax_dedup_comparison.csv")
+fig, axs = pf.figure(pf.TWO_COLUMN_MM, 65, ncols=2)
+for ax, dedup in zip(axs, [False, True]):
+    for tool, colour, marker, label in [("kmerseek", KMERSEEK_COLOUR, "o", "kmerseek: best of 230 settings"),
+                                        ("phmmer", TOOL_COLOUR["phmmer"], "^", "phmmer")]:
+        vals=[compare.filter((pl.col("species")==sp)&(pl.col("tool")==tool)&(pl.col("dedup_transfers")==dedup))["fmax"][0] for sp in SPECIES]
+        ax.scatter(vals, range(len(SPECIES)), color=colour, marker=marker, label=label)
+    ax.set_yticks(range(len(SPECIES)), [SPECIES_LABEL[sp] for sp in SPECIES])
+    ax.invert_yaxis()
+    ax.set_xlim(0, .6)
+    ax.set_xlabel("Interval Fmax on placed proteins")
+    ax.set_title("Duplicate transfers merged" if dedup else "Duplicate transfers kept separately")
+pf.shared_legend(fig, ncol=2)
+save_figure(fig, "placed_fmax_dedup_sensitivity_midi_pfam38")
+""")
+
+md(r"""
 ## Summary & conclusions
 
 **kmerseek finds almost no known domains on dark proteins** (section 1). Over all 230
@@ -324,14 +356,19 @@ tool and every kmerseek setting is at or near 0. The decision rule (kmerseek's b
 setting at least phmmer's Fmax in 3 of 4 species) is not met in any species. The paper
 cannot claim kmerseek finds known domains the sequence tools miss.
 
-**On placed proteins kmerseek places domains more precisely than the tools, but names
-fewer families** (section 2). Its best setting reaches Fmax 0.344 (human), 0.252 (worm),
+**On placed proteins the best kmerseek settings have higher interval Fmax but lower
+family Fmax than phmmer when duplicate transfers are counted separately** (section 2). Its best setting reaches Fmax 0.344 (human), 0.252 (worm),
 0.334 (yeast) and 0.249 (*Borrelia*), against phmmer's 0.231, 0.195, 0.222 and 0.178. On
 family Fmax, which ignores placement, the tools lead: phmmer 0.753-0.828 against
-kmerseek's best 0.464-0.681. So kmerseek's calls are tighter where they exist, and fewer
-proteins get one. The median setting is far lower (Fmax 0.069-0.194).
+kmerseek's best 0.464-0.681. These two Fmax measures do not by themselves isolate boundary accuracy or the
+number of proteins receiving calls; those need direct boundary and call-count measurements. The median setting is far lower (Fmax 0.069-0.194).
 
-**Best alphabets and k** (section 3, placed proteins, median of four species): mmseqs12
+With duplicate calls merged, the comparison reverses in every species: kmerseek maxima
+are 0.436, 0.338, 0.430 and 0.356, below phmmer at 0.467, 0.491, 0.524 and 0.506
+(human, worm, yeast, Borrelia). The apparent Fmax advantage is therefore sensitive to
+call-counting semantics; it is not evidence of a robust placement advantage.
+
+**Best alphabets and k in this evaluated panel** (section 3, placed proteins, median of four species): mmseqs12
 k8 (0.289), hsdm17 k6 (0.286), sdm12 k7 and dayhoff6 k9 (0.278), protein20 k5 (0.277).
 The best two-letter H/P settings are hp_pbotc_1st_ed2 k19 and hp_thomas_dill_no_c2 k20
 (0.259). Every top setting is scaled 1, and most alphabets do best at or near the smallest k
@@ -351,6 +388,9 @@ right domain. gbmr7 makes almost no calls that survive transfer and the Bonferro
 - IoU for kmerseek is about one residue short, because its coordinates are 0-based and
   Pfam's 1-based, as in the QfO benchmark.
 
+Settings and score thresholds were selected and evaluated on these same proteins. The
+best-of-230 comparisons are descriptive and do not provide held-out performance estimates.
+
 **Next.** Rank kmerseek by region E-value and rescore; check whether the placed-protein
 advantage holds on the held-out half used by the QfO benchmark.
 """)
@@ -358,11 +398,11 @@ advantage holds on the held-out half used by the QfO benchmark.
 nb = nbformat.v4.new_notebook()
 nb["cells"] = cells
 nb["metadata"]["kernelspec"] = {
-    "name": "python3",
-    "display_name": "Python 3",
+    "name": "2025-kmerseek-analysis",
+    "display_name": "Python (2025-kmerseek-analysis)",
     "language": "python",
 }
-ExecutePreprocessor(timeout=600, kernel_name="python3").preprocess(
+ExecutePreprocessor(timeout=600, kernel_name="2025-kmerseek-analysis").preprocess(
     nb, {"metadata": {"path": str(NB.parent)}}
 )
 nbformat.write(nb, NB)

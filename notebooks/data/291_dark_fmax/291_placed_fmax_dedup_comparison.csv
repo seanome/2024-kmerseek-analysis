@@ -1,0 +1,17 @@
+species,dedup_transfers,tool,fmax
+borrelia,false,kmerseek,0.24910542385160464
+borrelia,false,phmmer,0.17768490008372093
+human,false,kmerseek,0.34435911368089117
+human,false,phmmer,0.23129807190019352
+worm,false,kmerseek,0.25191765988744974
+worm,false,phmmer,0.19534175021811
+yeast,false,kmerseek,0.3341477564137696
+yeast,false,phmmer,0.22164255165678434
+borrelia,true,kmerseek,0.3560238952699126
+borrelia,true,phmmer,0.5061722283596138
+human,true,kmerseek,0.4359974972364788
+human,true,phmmer,0.4671943281469518
+worm,true,kmerseek,0.3379006945802942
+worm,true,phmmer,0.4911657500619903
+yeast,true,kmerseek,0.43018050689326853
+yeast,true,phmmer,0.5237855791823955

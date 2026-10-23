@@ -408,11 +408,11 @@ the regions behind the settings that reach dark proteins more often than placed 
 nb = nbformat.v4.new_notebook()
 nb["cells"] = cells
 nb["metadata"]["kernelspec"] = {
-    "name": "python3",
-    "display_name": "Python 3",
+    "name": "2025-kmerseek-analysis",
+    "display_name": "Python (2025-kmerseek-analysis)",
     "language": "python",
 }
-ExecutePreprocessor(timeout=600, kernel_name="python3").preprocess(
+ExecutePreprocessor(timeout=600, kernel_name="2025-kmerseek-analysis").preprocess(
     nb, {"metadata": {"path": str(NB.parent)}}
 )
 nbformat.write(nb, NB)
