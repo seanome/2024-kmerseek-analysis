@@ -448,8 +448,9 @@ md(r"""
   is not held to a scan's bar on these cases; it is held to HMMER and MMseqs2 as planned.
 - The scans fail for one reason. A feature's best window scores no higher than the best
   window of its own residues reversed or pair-shuffled. In SF1a, recall is never more than
-  0.05 (hydropathy) or 0.10 (period) above the decoy hit rate at any threshold. A scan that reads composition over a window cannot pass a test whose decoys
-  keep the composition.
+  0.05 (hydropathy) or 0.10 (period) above the decoy hit rate at any threshold. On these 50 features, composition-preserving decoys leave little separation for
+  either scan. This does not establish that every composition scan must fail every
+  composition-preserving control.
 - At Kyte and Doolittle's own cutoff of 1.6 the hydropathy scan calls 3 of 50 features and
   hits 7 of 100 decoy windows. Its boundary errors on those 3 are 2, 39 and 49 residues
   (SF2b). These cases are mostly not membrane features, which is why notebook 244 chose them.
