@@ -13,8 +13,9 @@ search (score_scope40_setting.score_column and band_rows):
   union_upper_limit   a true pair counts if any search ranks it above that search's own first
                       false positive (a different-fold hit; for class pairs a different-class
                       hit). No single ranking can be made from this, so it is reported on the
-                      database scale (auc_ref_db) only: the most that combining these
-                      rankings could find before the first false positive.
+                      database scale (auc_ref_db) only. The legacy method name is not a general
+                      upper bound: fusion can promote a true pair hidden behind different
+                      false positives in the individual lists.
 
 With --truncate, each search keeps, per query, only its hits up to and including its first
 different-class hit (all hits when the query has none), plus every same-family hit (see the

@@ -761,15 +761,23 @@ better on the database scale.
 - *best of N*: a pair's smallest `region_evalue` over the eight searches;
 - *rank fusion*: the sum over searches of 1 / (60 + the pair's rank in that search's list for
   the query), reciprocal rank fusion;
-- *union upper limit*: a true pair counts if any search ranks it above that search's own first
-  false positive. No single ranked list gives this; it is the most that combining these eight
-  lists could find before the first false positive, so it has only a database-scale value.
+- *union of single-search true hits* (stored as `union_upper_limit`): a true pair counts if
+  any search ranks it above that search's own first false positive. It has a database-scale
+  value but no single ranked list. It is not an upper bound on all ways to combine the lists.
+  Rank fusion can promote a true pair ranked behind different false positives in every
+  individual list.
 
 All AUCs here are on the database scale (section 6). A shuffled-query value is the chance level
-of the same method. Decision, written before the run: if the union upper limit is close to the
-best single search, combining cannot help; if it is clearly higher, best of N or rank fusion is
-worth keeping only if it beats the best single search at any k (0.149, hsdm17 k4, section 7) with
-a shuffled-query value near zero.
+of the same method. The decision written before the run was:
+
+> If the union upper limit is close to the best single search, combining cannot help; if it
+> is clearly higher, best of N or rank fusion is worth keeping only if it beats the best
+> single search at any k (0.149, hsdm17 k4, section 7) with a shuffled-query value near zero.
+
+The first implication is not valid for every combination method: the union counts only pairs
+already above a first false positive in a single list. That diagnostic cannot rule out gains
+from reranking. The measured best-of-N and rank-fusion comparisons are retained; no threshold
+or input was changed after the run.
 """)
 
 code(r"""
@@ -813,7 +821,7 @@ print(comb_bands.filter(pl.col("identity_band") == "0-20%")
       .pivot(on="category", index="method", values="real_shuffled")
       .select(["method"] + list(CATEGORY_LABEL)))
 
-METHOD_LABEL = {"union_upper_limit": "union upper limit", "best_of_n": "best of N",
+METHOD_LABEL = {"union_upper_limit": "union of single-search true hits", "best_of_n": "best of N",
                 "rank_fusion": "rank fusion"}
 order = (comb_auc.filter(pl.col("level") == "family").sort("auc_ref_db", descending=True)["method"].to_list())
 mpos = {m: i for i, m in enumerate(order)}
@@ -943,7 +951,7 @@ and uses theirs.
    search at any k (hsdm17 k4) and 0.122 and 0.045 for the best of the eight. On shuffled queries
    best of N stays at 0.00004, so it adds almost no chance pairs. Under 20% identity it ranks 232
    same-family pairs above the first false positive (shuffled: 0), against 151 for hsdm17 k5.
-   The union upper limit is 0.195 (family), so a better way of merging these lists could find
+   The union of single-search true hits is 0.195 (family); this is a diagnostic, not a general bound. A different way of merging these lists might find
    more. Rank fusion (0.105) does worse than the best single search. This differs from the Pfam
    domain benchmark, where no combination won (notebooks 261-264). These eight searches are at
    k_min or above; section 6 shows the best single searches are below k_min, so the next test
