@@ -1,0 +1,43 @@
+HGNC ID	Approved symbol	Approved name	Status	Locus type	Previous symbols	Alias symbols	Chromosome	NCBI Gene ID	Ensembl gene ID	Vega gene ID	Group ID	Group name
+HGNC:910	AZGP1	alpha-2-glycoprotein 1, zinc-binding	Approved	gene with protein product		ZA2G, ZAG	7q22.1	563	ENSG00000160862	OTTHUMG00000023066	591	C1-set domain containing
+HGNC:914	B2M	beta-2-microglobulin	Approved	gene with protein product			15q21.1	567	ENSG00000166710	OTTHUMG00000131247	591	C1-set domain containing
+HGNC:1634	CD1A	CD1a molecule	Approved	gene with protein product	CD1		1q23.1	909	ENSG00000158477	OTTHUMG00000017512	591	C1-set domain containing
+HGNC:1635	CD1B	CD1b molecule	Approved	gene with protein product	CD1		1q23.1	910	ENSG00000158485	OTTHUMG00000017513	591	C1-set domain containing
+HGNC:1636	CD1C	CD1c molecule	Approved	gene with protein product	CD1		1q23.1	911	ENSG00000158481	OTTHUMG00000017514	591	C1-set domain containing
+HGNC:1637	CD1D	CD1d molecule	Approved	gene with protein product			1q23.1	912	ENSG00000158473	OTTHUMG00000022436	591	C1-set domain containing
+HGNC:1638	CD1E	CD1e molecule	Approved	gene with protein product			1q23.1	913	ENSG00000158488	OTTHUMG00000017515	591	C1-set domain containing
+HGNC:3621	FCGRT	Fc gamma receptor and transporter	Approved	gene with protein product		FcgammaRn, FcRn	19q13.33	2217	ENSG00000104870	OTTHUMG00000183155	591	C1-set domain containing
+HGNC:4886	HFE	homeostatic iron regulator	Approved	gene with protein product		HLA-H, HFE1	6p22.2	3077	ENSG00000010704	OTTHUMG00000016348	591	C1-set domain containing
+HGNC:4905	HHLA2	HHLA2 member of B7 family	Approved	gene with protein product		B7H7, B7-H5, B7y, B7-H7	3q13.13	11148	ENSG00000114455	OTTHUMG00000159224	591	C1-set domain containing
+HGNC:4931	HLA-A	major histocompatibility complex, class I, A	Approved	gene with protein product			6p22.1	3105	ENSG00000206503	OTTHUMG00000130501	591	C1-set domain containing
+HGNC:4932	HLA-B	major histocompatibility complex, class I, B	Approved	gene with protein product	AS		6p21.33	3106	ENSG00000234745	OTTHUMG00000031153	591	C1-set domain containing
+HGNC:4933	HLA-C	major histocompatibility complex, class I, C	Approved	gene with protein product	HLA-JY3, D6S204, PSORS1		6p21.33	3107	ENSG00000204525	OTTHUMG00000031154	591	C1-set domain containing
+HGNC:4934	HLA-DMA	major histocompatibility complex, class II, DM alpha	Approved	gene with protein product		D6S222E, RING6	6p21.32	3108	ENSG00000204257	OTTHUMG00000031173	591	C1-set domain containing
+HGNC:4935	HLA-DMB	major histocompatibility complex, class II, DM beta	Approved	gene with protein product		D6S221E, RING7	6p21.32	3109	ENSG00000242574	OTTHUMG00000031176	591	C1-set domain containing
+HGNC:4936	HLA-DOA	major histocompatibility complex, class II, DO alpha	Approved	gene with protein product	HLA-DZA, HLA-DNA	HLA-D0-alpha	6p21.32	3111	ENSG00000204252	OTTHUMG00000031211	591	C1-set domain containing
+HGNC:4937	HLA-DOB	major histocompatibility complex, class II, DO beta	Approved	gene with protein product			6p21.32	3112	ENSG00000241106	OTTHUMG00000031213	591	C1-set domain containing
+HGNC:4938	HLA-DPA1	major histocompatibility complex, class II, DP alpha 1	Approved	gene with protein product	HLA-DP1A		6p21.32	3113	ENSG00000231389	OTTHUMG00000031058	591	C1-set domain containing
+HGNC:4940	HLA-DPB1	major histocompatibility complex, class II, DP beta 1	Approved	gene with protein product	HLA-DP1B		6p21.32	3115	ENSG00000223865	OTTHUMG00000031076	591	C1-set domain containing
+HGNC:4942	HLA-DQA1	major histocompatibility complex, class II, DQ alpha 1	Approved	gene with protein product	HLA-DQA	CELIAC1	6p21.32	3117	ENSG00000196735	OTTHUMG00000031106	591	C1-set domain containing
+HGNC:4943	HLA-DQA2	major histocompatibility complex, class II, DQ alpha 2	Approved	gene with protein product	HLA-DXA		6p21.32	3118	ENSG00000237541	OTTHUMG00000031108	591	C1-set domain containing
+HGNC:4944	HLA-DQB1	major histocompatibility complex, class II, DQ beta 1	Approved	gene with protein product	HLA-DQB	IDDM1, CELIAC1	6p21.32	3119	ENSG00000179344	OTTHUMG00000031124	591	C1-set domain containing
+HGNC:4945	HLA-DQB2	major histocompatibility complex, class II, DQ beta 2	Approved	gene with protein product	HLA-DXB		6p21.32	3120	ENSG00000232629	OTTHUMG00000031125	591	C1-set domain containing
+HGNC:4947	HLA-DRA	major histocompatibility complex, class II, DR alpha	Approved	gene with protein product	HLA-DRA1		6p21.32	3122	ENSG00000204287	OTTHUMG00000031269	591	C1-set domain containing
+HGNC:4948	HLA-DRB1	major histocompatibility complex, class II, DR beta 1	Approved	gene with protein product	HLA-DR1B		6p21.32	3123	ENSG00000196126	OTTHUMG00000031196	591	C1-set domain containing
+HGNC:4951	HLA-DRB3	major histocompatibility complex, class II, DR beta 3	Approved	gene with protein product	HLA-DR3B		6p21.3 alternate reference locus	3125	ENSG00000196101	OTTHUMG00000012609	591	C1-set domain containing
+HGNC:4952	HLA-DRB4	major histocompatibility complex, class II, DR beta 4	Approved	gene with protein product	HLA-DR4B		6p21.3 alternate reference locus	3126	ENSG00000227357	OTTHUMG00000138996	591	C1-set domain containing
+HGNC:4953	HLA-DRB5	major histocompatibility complex, class II, DR beta 5	Approved	gene with protein product			6p21.32	3127	ENSG00000198502	OTTHUMG00000031027	591	C1-set domain containing
+HGNC:4962	HLA-E	major histocompatibility complex, class I, E	Approved	gene with protein product			6p22.1	3133	ENSG00000204592	OTTHUMG00000031155	591	C1-set domain containing
+HGNC:4963	HLA-F	major histocompatibility complex, class I, F	Approved	gene with protein product			6p22.1	3134	ENSG00000204642	OTTHUMG00000031156	591	C1-set domain containing
+HGNC:4964	HLA-G	major histocompatibility complex, class I, G	Approved	gene with protein product			6p22.1	3135	ENSG00000204632	OTTHUMG00000031157	591	C1-set domain containing
+HGNC:5870	IGLL1	immunoglobulin lambda like polypeptide 1	Approved	gene with protein product	IGLL	IGVPB, IGL5, 14.1, CD179B	22q11.23	3543	ENSG00000128322	OTTHUMG00000150673	591	C1-set domain containing
+HGNC:38476	IGLL5	immunoglobulin lambda like polypeptide 5	Approved	gene with protein product			22q11.22	100423062	ENSG00000254709	OTTHUMG00000165670	591	C1-set domain containing
+HGNC:7090	MICA	MHC class I polypeptide-related sequence A	Approved	gene with protein product		PERB11.1	6p21.33	100507436	ENSG00000204520	OTTHUMG00000031073	591	C1-set domain containing
+HGNC:7091	MICB	MHC class I polypeptide-related sequence B	Approved	gene with protein product		PERB11.2	6p21.33	4277	ENSG00000204516	OTTHUMG00000031074	591	C1-set domain containing
+HGNC:4975	MR1	major histocompatibility complex, class I-related	Approved	gene with protein product	HLALS		1q25.3	3140	ENSG00000153029	OTTHUMG00000035175	591	C1-set domain containing
+HGNC:42400	NCR3LG1	natural killer cell cytotoxicity receptor 3 ligand 1	Approved	gene with protein product		DKFZp686O24166, B7-H6	11p15.1	374383	ENSG00000188211	OTTHUMG00000165913	591	C1-set domain containing
+HGNC:9662	SIRPA	signal regulatory protein alpha	Approved	gene with protein product	PTPNS1	SHPS1, SIRP, MYD-1, BIT, P84, SHPS-1, SIRPalpha, CD172a, SIRPalpha2, MFR, SIRP-ALPHA-1	20p13	140885	ENSG00000198053	OTTHUMG00000031682	591	C1-set domain containing
+HGNC:15928	SIRPB1	signal regulatory protein beta 1	Approved	gene with protein product		SIRP-BETA-1, CD172b, SIRB1	20p13	10326	ENSG00000101307	OTTHUMG00000031676	591	C1-set domain containing
+HGNC:15757	SIRPG	signal regulatory protein gamma	Approved	gene with protein product	SIRPB2	bA77C3.1, SIRP-B2, SIRPgamma, CD172g	20p13	55423	ENSG00000089012	OTTHUMG00000031680	591	C1-set domain containing
+HGNC:11566	TAPBP	TAP binding protein	Approved	gene with protein product		TAPA, TPN, TPSN, NGS17	6p21.32	6892	ENSG00000231925	OTTHUMG00000031090	591	C1-set domain containing
+HGNC:30683	TAPBPL	TAP binding protein like	Approved	gene with protein product		TAPBP-R, FLJ10143, TAPBPR	12p13.31	55080	ENSG00000139192	OTTHUMG00000168317	591	C1-set domain containing
