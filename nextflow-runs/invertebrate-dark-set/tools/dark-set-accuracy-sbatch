@@ -1,0 +1,65 @@
+#!/bin/bash
+# Sherlock job script for tools/dark-set-accuracy. Two modes:
+#
+#   sbatch tools/dark-set-accuracy-sbatch score
+#       Scores phmmer, jackhmmer, MMseqs2 and every kmerseek setting with best-target files
+#       in $ACC/best-targets/<species>/ for human, worm, yeast and Borrelia. One CPU,
+#       minutes per species.
+#
+#   sbatch --array=1-N%P --time=... tools/dark-set-accuracy-sbatch best-targets <file list>
+#       One region file per array task (line $SLURM_ARRAY_TASK_ID of <file list>, a path
+#       per line), written to $ACC/best-targets/<species>/<name>.best.tsv.gz. Measured
+#       2026-10-13: 1.36 GB of zstd region file in 40 s, so about 34 MB per second.
+#
+# Paths are the 0.4 midi run's. Added 2026-10-13 for the dark-set summary page.
+#SBATCH --job-name=dark-accuracy
+#SBATCH --time=01:00:00
+#SBATCH --mem=24G
+#SBATCH --cpus-per-task=1
+#SBATCH --partition=hns,normal
+#SBATCH --output=%x.%A_%a.out
+set -euo pipefail
+
+TOOLS=${TOOLS_DIR:?set TOOLS_DIR to the tools/ folder of a checkout of this branch}
+ACC=$SCRATCH/invertebrate-dark-set/results-0.4/accuracy
+RESULTS=/scratch/users/olgabot/invertebrate-dark-set/results-0.4
+W=/scratch/users/olgabot/2024-kmerseek-invertebrate-dark-set-0.4/nextflow-runs/invertebrate-dark-set/runs/ladder-0.4-midi
+IMG=$SCRATCH/apptainer-cache/docker.io-olgabot-kmerseek-0.4.0-rc5.img
+ANN=/scratch/users/olgabot/2024-kmerseek-analysis/nextflow-runs/qfo-pfam-region-benchmark/data/annotations
+REF=/scratch/users/olgabot/invertebrate-dark-set/reference
+EV=$RESULTS/protein-evalues-repaired
+CLANS=/scratch/users/olgabot/pfam-candidates/Pfam-A.clans.tsv.gz
+
+case "$1" in
+best-targets)
+    f=$(sed -n "${SLURM_ARRAY_TASK_ID}p" "$2")
+    sp=$(basename "$(dirname "$(dirname "$f")")")
+    mkdir -p "$ACC/best-targets/$sp"
+    out="$ACC/best-targets/$sp/$(basename "$f" .regions.csv.zst).best.tsv.gz"
+    [ -s "$out" ] && { echo "already done: $out"; exit 0; }
+    /usr/bin/time -f "%e s, %M kB" python3 "$TOOLS/dark-set-accuracy" best-targets "$f" "$out"
+    ;;
+score)
+    for spec in human:Mammalia:$ANN/human_pfam_domains.parquet \
+                worm:Chromadorea:$ANN/worm_pfam_domains.parquet \
+                yeast:Saccharomycetes:$ANN/yeast_pfam_domains.parquet \
+                borrelia:Spirochaetia:$ACC/query-pfam/borrelia_pfam.tsv; do
+        IFS=: read -r sp clade qpfam <<< "$spec"
+        # computeDarkSet's work folder, from the newest trace (literal match, no regex)
+        hash=$(awk -F'\t' -v want="computeDarkSet ($sp)" '
+            NR == 1 { for (i = 1; i <= NF; i++) h[$i] = i; next }
+            index($h["name"], want) { print $h["hash"] }' "$W/trace.ladder-0.4-midi.txt")
+        dirs=( $W/work/$hash* )
+        if [ -z "$hash" ] || [ ${#dirs[@]} -ne 1 ]; then
+            echo "$sp: computeDarkSet work folder not found once (hash '$hash')" >&2; exit 1
+        fi
+        mkdir -p "$ACC/best-targets/$sp"
+        apptainer exec "$IMG" python3 "$TOOLS/dark-set-accuracy" score "$sp" "$qpfam" \
+            "$REF/minus_$clade/reference_pfam.parquet" "$CLANS" "$EV" "${dirs[0]}/hits" \
+            "$ACC/best-targets/$sp" "$ACC/${sp}_accuracy.json"
+    done
+    ;;
+*)
+    echo "usage: sbatch $0 score | sbatch --array=1-N $0 best-targets <file list>" >&2; exit 2
+    ;;
+esac

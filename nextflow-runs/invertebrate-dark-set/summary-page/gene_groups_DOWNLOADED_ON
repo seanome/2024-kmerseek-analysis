@@ -1,0 +1,6 @@
+downloaded 2026-10-13T10:58:39
+hgnc_complete_set.txt	https://storage.googleapis.com/public-download-files/hgnc/tsv/tsv/hgnc_complete_set.txt	16982276 bytes	45277 rows	md5 9bc1eac00b48493d3be45d794df2b469
+uniprot_keyword_categories.tsv	https://rest.uniprot.org/keywords/stream?query=*&format=tsv&fields=id,name,category	53745 bytes	1201 rows	md5 6d49bb1c13aee2db094a79fccd94ab2a
+uniprot_keywords_UP000001807.tsv	https://rest.uniprot.org/uniprotkb/stream?query=proteome:UP000001807&format=tsv&fields=accession,keyword,keywordid	138582 bytes	1291 rows	md5 652e51be712130db053ef9abe1a5af9a
+uniprot_keywords_UP000001940.tsv	https://rest.uniprot.org/uniprotkb/stream?query=proteome:UP000001940&format=tsv&fields=accession,keyword,keywordid	3243212 bytes	26629 rows	md5 cf5d2c634ea9fdbf0fccc7895b8ab819
+uniprot_keywords_UP000002311.tsv	https://rest.uniprot.org/uniprotkb/stream?query=proteome:UP000002311&format=tsv&fields=accession,keyword,keywordid	1082749 bytes	6067 rows	md5 af800a9504fa9761e62712bd82b69cca
