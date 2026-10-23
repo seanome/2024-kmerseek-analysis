@@ -544,7 +544,7 @@ beat the slack-2 regex, and on this pilot it does not.
    cysteines one residue apart, a third 14 residues later) and few other residues
    (section 4).
 3. **`cys_hp3` (cysteine, hydrophobic, polar) is below `cys2` at every k: 3.77, 4.00, 3.47
-   and 2.08 at k 9, 11, 13 and 15.** At k15 it is below chance. Most of `cys_hp3`'s hits
+   and 2.08 at k 9, 11, 13 and 15.** At k15 it is the weakest setting and not clearly different from chance (2.08, 95% interval 1.23 to 3.03, against 2.75). Most of `cys_hp3`'s hits
    are non-toxins: toxins are 12-21% of its hits in a reference that is 27.5% toxins.
 4. **phmmer finds no toxin in its top 10 for 27 of the 59 queries; `cys2` k16 finds at
    least one for 21 of those 27, and at least 5 for 8.** Its mean on those 27 is 4.04

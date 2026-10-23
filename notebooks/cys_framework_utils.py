@@ -590,6 +590,37 @@ def bootstrap_ci(
     )
 
 
+def bootstrap_mean_ci(
+    values, n_draws: int = 10_000, seed: int = 0, level: float = 0.95
+) -> tuple[float, float, float]:
+    """`bootstrap_ci` for thousands of queries: the same percentile interval, with numpy.
+
+    `bootstrap_ci` draws one query at a time in Python, which takes minutes at 3_655
+    queries and 10_000 draws. This draws all resamples at once. The random draws differ
+    from `bootstrap_ci`'s, so the two give slightly different intervals on the same values.
+    For a paired comparison of two methods on the same queries, pass the per-query
+    difference: resampling queries and then subtracting is the same as resampling the
+    differences.
+
+    >>> bootstrap_mean_ci([1.0, 1.0, 1.0])
+    (1.0, 1.0, 1.0)
+    """
+    import numpy as np
+
+    arr = np.asarray(values, dtype=float)
+    rng = np.random.default_rng(seed)
+    means = np.empty(n_draws)
+    # In blocks, so 10_000 x 5_000 queries does not hold 50 million floats at once.
+    block = max(1, 2_000_000 // max(1, arr.size))
+    for start in range(0, n_draws, block):
+        stop = min(n_draws, start + block)
+        idx = rng.integers(0, arr.size, size=(stop - start, arr.size))
+        means[start:stop] = arr[idx].mean(axis=1)
+    tail = (1 - level) / 2
+    low, high = np.quantile(means, [tail, 1 - tail])
+    return float(arr.mean()), float(low), float(high)
+
+
 if __name__ == "__main__":
     import doctest
 
