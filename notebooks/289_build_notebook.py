@@ -317,7 +317,7 @@ bs = b.filter(pl.col("shuffled"))
 print(f"P66's rank for CD47: {cd['partner_rank']} of {cd['n_targets']:_} B31 proteins "
       f"(ties {cd['partner_n_tied']}), 10^{cd['partner_log10_p']:.2f}. Shuffled CD47: best rank "
       f"{bs['partner_rank'].min()}, median {bs['partner_rank'].median():.0f}; "
-      f"{int((bs['partner_log10_p'] < cd['partner_log10_p']).sum())} of 20 rank P66 better.")
+      f"{int((bs['partner_log10_p'] < cd['partner_log10_p']).sum())} of 20 score P66 better.")
 cb = calls["borrelia"].filter(pl.col("query_name") == "CD47").sort("neg_ln_p", descending=True)
 
 
@@ -418,7 +418,8 @@ B31, with 20 shuffled copies of every query as the null.
   database; BCL2 alone ranks Ced9 13_287th.
 * MCL1, BAK1, BCL2L2 and BCL2A1 each rank Ced9 above at least 19 of their own 20 shuffled
   copies; BCL2, BAX, BOK and BCL2L10 do not (14 to 17 of 20 shuffles do better).
-* CD47 ranks P66 381st of 1_291 B31 proteins, and 8 of its 20 shuffled copies rank P66 higher,
+* CD47 ranks P66 381st of 1_291 B31 proteins, and 8 of its 20 shuffled copies give P66 a better score
+  (9 of 20 give it a better rank),
   so the reverse search gives no evidence for CD47 → P66; its best call (E = 16.3) joins CD47's
   Ig-like V domain (86-105) to P66 123-142, 5 of 20 residues identical.
 

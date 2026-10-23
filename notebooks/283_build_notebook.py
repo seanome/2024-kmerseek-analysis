@@ -164,8 +164,8 @@ kmerseek's own mask finds a stretch in BHF at only 9 of the 152 settings, and on
 notebook 256's 153 winning (score, setting) pairs are at one of them (both gbmr4 k18). So
 at the settings of 151 of the 153 wins, kmerseek's mask, which was on during notebook
 256's searches, removed nothing from BHF. Whether the wins come from 63-105 is what
-sections 4 and 5 test. SEG calls 70-93 and 109-116 low-complexity, inside 256's region
-63-105 but shorter. The copies below use the union: 63-105, 108-117 and 208-216, 62 of 252 residues.
+sections 4 and 5 test. SEG calls 70-93 and 109-116 low-complexity. The first lies inside notebook 256's
+region 63-105; the second lies beyond it. The copies below use the union: 63-105, 108-117 and 208-216, 62 of 252 residues.
 """),
     md(r"""
 ## 2. The three sets of copies
