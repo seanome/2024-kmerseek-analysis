@@ -256,6 +256,11 @@ shows the mean over the 59 queries with a 95% bootstrap interval (queries resamp
 replacement, 10,000 draws). Higher is better. The grey line is chance, 2.75. kmerseek is
 drawn against k; phmmer and the two regexes have no k and are drawn as flat lines across
 the panel.
+
+
+These intervals resample individual queries. Related toxin peptides are not independent,
+so these intervals do not measure uncertainty across independent protein families.
+The means describe this query set; generalization to new families needs family-level resampling.
 """)
 
 code(r"""
