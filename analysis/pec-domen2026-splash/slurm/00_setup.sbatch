@@ -17,7 +17,7 @@ ENV=$PEC_ROOT/env
 mkdir -p versions
 if [ ! -e env.done ]; then
   rm -rf "$ENV"
-  $MM create -y -p "$ENV" -f "$PEC_CODE/env/pec361.yml"
+  $MM create -y -p "$ENV" -f "$PEC_CODE/environment-pec361.yml"
   $MM list -p "$ENV" --explicit --md5 > versions/env_explicit.txt
   $MM list -p "$ENV" > versions/env_list.txt
   touch env.done

@@ -1,0 +1,27 @@
+# Tool environment for notebook 361 (Domen et al. 2026 PEC reproduction, reference-free).
+# SPLASH itself is the upstream GitHub release binary (v2.11.9), installed by slurm/00_setup.sbatch,
+# because bioconda only has 2.11.0 and 2.11.5-2.11.9 carry upstream bug fixes.
+name: pec361
+channels: [conda-forge, bioconda]
+dependencies:
+  - python=3.12
+  - fastp=1.4.0
+  - sourmash=4.9.4
+  - sourmash_plugin_branchwater=0.9.15
+  - pydeseq2=0.5.4
+  - diamond=2.2.8
+  - hmmer=3.4
+  - seqkit=2.14.0
+  - biopython
+  - polars
+  - pandas
+  - pyarrow
+  - openpyxl
+  - matplotlib
+  - numpy
+  - scipy
+  - statsmodels
+  - rust=1.90
+  - time
+  - pigz
+  - curl

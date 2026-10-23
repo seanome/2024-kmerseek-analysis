@@ -15,7 +15,7 @@ Status: in progress. Results and the report are added as stages finish.
 |---|---|
 | `handoff/` | the starting package as received on 2026-10-23 (inferred design, capped downloader, first runner). Kept unchanged for provenance. |
 | `design/` | the frozen sample-to-contrast table, taken from SI Dataset S1, written before any analysis |
-| `env/pec361.yml` | pinned tools |
+| `environment-pec361.yml` | pinned tools |
 | `pec-tools/` | Rust: six-frame translation with coordinates, and the read simulator for the known-answer control |
 | `control/` | known-answer control design (3,000 transcripts, planted changes) |
 | `scripts/`, `slurm/` | stage scripts; every stage writes a done-marker and is restartable |
