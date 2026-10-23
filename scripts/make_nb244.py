@@ -72,9 +72,7 @@ notebook 231 reads (`truth_swissprot/human_swissprot_truth.parquet`, built by
 
 **Query halves.** Notebook 231's held-out split is by feature type (composition types:
 TRANSMEM, INTRAMEM, COILED, REGION, REPEAT, against the rest). It carries no split of the
-queries, so this notebook makes one. Query proteins are grouped by HGNC gene group, and a
-protein with no group is its own unit. Each group goes to the "choose" half or the "report"
-half by the parity of the SHA-1 of its name. Arms are chosen on the choose half.
+queries, so this notebook makes one. Query proteins are assigned by the complete HGNC group-annotation string, with a gene-symbol or accession fallback. Different strings may share an individual group across the choose/report halves, so gene-family independence is not guaranteed. Arms are chosen on the choose half.
 Every number shown after Stage 0, and every candidate, comes from the report half. 231's
 feature-type split is carried as a label on each row.
 """)
