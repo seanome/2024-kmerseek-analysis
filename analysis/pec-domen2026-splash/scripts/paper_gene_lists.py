@@ -48,7 +48,8 @@ for sheet in ("annotated DE all groups young", "annotated DE all groups old"):
     # columns come in (gi, "<group n- ... DE up|down n=NN>") pairs
     for j in range(0, len(header) - 1):
         h = header[j + 1]
-        if header[j] != "gi" or not isinstance(h, str):
+        # the ID column's header is "gi", except one list whose ID column header is blank
+        if header[j] not in ("gi", None) or not isinstance(h, str) or "DE" not in h:
             continue
         m = re.search(r"group\s*(\d)\D.*DE\s+(up|down)\s+n\s*=\s*(\d+)", h, re.I)
         if not m:
