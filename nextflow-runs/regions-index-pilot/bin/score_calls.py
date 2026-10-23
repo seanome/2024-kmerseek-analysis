@@ -98,6 +98,9 @@ def decoy_threshold(target_ev: pl.Series, decoy_ev: pl.Series, max_rate: float) 
     Takes only the E-values of the target calls and of the decoy calls. Both are sorted,
     and the counts at or below each E-value are found by binary search.
     """
+    for values in (target_ev, decoy_ev):
+        if values.null_count() or not values.is_finite().all() or (values < 0).any():
+            raise ValueError("E-values must be finite, nonnegative numbers")
     if target_ev.len() + decoy_ev.len() == 0:
         return {"threshold": None, "n_target": 0, "n_decoy": 0}
     t, d = target_ev.sort(), decoy_ev.sort()
@@ -314,6 +317,8 @@ def main() -> None:
                 (pl.col("qstart") < 1)
                 | (pl.col("qend") < pl.col("qstart"))
                 | pl.col("evalue").is_null()
+                | ~pl.col("evalue").is_finite()
+                | (pl.col("evalue") < 0)
             )
             if bad.height and first_bad is None:
                 first_bad = bad.row(0)

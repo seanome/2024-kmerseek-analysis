@@ -87,8 +87,10 @@ on K.
 The regions index lowers the bar by 1.94 bits (log2 of 3.83, the residue ratio), not the
 3.3 a tenfold smaller index would give. The 0.157 bits per aligned position is the value
 given in the pilot's design for the H/P alphabet at 20–30% identity. It is not measured
-here. At that value an H/P hit needs about 180 aligned positions against either index, so
-a feature under 60 aa cannot reach E = 1 in either one.
+here. At that assumed rate, an H/P hit needs about 180 aligned positions against either
+index. This estimate does not bound the evidence in an individual feature: a short
+feature can have a higher rate of matching than the assumed average. It does not
+prove that every feature under 60 aa must fail to reach E = 1.
 
 Other designs, estimated from the same representatives without re-clustering:
 
