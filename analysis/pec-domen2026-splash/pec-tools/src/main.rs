@@ -78,7 +78,11 @@ fn six_frame(dna: &[u8], min_aa: usize) -> Vec<Peptide> {
                 if brk {
                     if i - start >= min_aa {
                         let (s, e) = (off + start * 3, off + i * 3);
-                        let (ns, ne) = if strand == '+' { (s, e) } else { (n - e, n - s) };
+                        let (ns, ne) = if strand == '+' {
+                            (s, e)
+                        } else {
+                            (n - e, n - s)
+                        };
                         out.push(Peptide {
                             strand,
                             frame: off as u8 + 1,
@@ -112,7 +116,11 @@ fn read_fasta(path: &str) -> Res<Vec<Record>> {
             if let Some(r) = cur.take() {
                 recs.push(r);
             }
-            cur = Some(Record { id: h.split_whitespace().next().unwrap_or("").to_string(), seq: Vec::new(), extra: vec![] });
+            cur = Some(Record {
+                id: h.split_whitespace().next().unwrap_or("").to_string(),
+                seq: Vec::new(),
+                extra: vec![],
+            });
         } else if let Some(r) = cur.as_mut() {
             r.seq.extend(line.trim().bytes());
         }
@@ -127,8 +135,16 @@ fn read_fasta(path: &str) -> Res<Vec<Record>> {
 fn read_compactor_tsv(path: &str, seq_col: &str) -> Res<Vec<Record>> {
     let f = BufReader::new(File::open(path)?);
     let mut lines = f.lines();
-    let header: Vec<String> = lines.next().ok_or("empty TSV")??.split('\t').map(|s| s.to_string()).collect();
-    let si = header.iter().position(|h| h == seq_col).ok_or(format!("no column {seq_col}"))?;
+    let header: Vec<String> = lines
+        .next()
+        .ok_or("empty TSV")??
+        .split('\t')
+        .map(|s| s.to_string())
+        .collect();
+    let si = header
+        .iter()
+        .position(|h| h == seq_col)
+        .ok_or(format!("no column {seq_col}"))?;
     let mut recs = Vec::new();
     for (i, line) in lines.enumerate() {
         let line = line?;
@@ -137,10 +153,24 @@ fn read_compactor_tsv(path: &str, seq_col: &str) -> Res<Vec<Record>> {
         }
         let f: Vec<&str> = line.split('\t').collect();
         if f.len() != header.len() {
-            return Err(format!("line {} has {} fields, header has {}", i + 2, f.len(), header.len()).into());
+            return Err(format!(
+                "line {} has {} fields, header has {}",
+                i + 2,
+                f.len(),
+                header.len()
+            )
+            .into());
         }
-        let extra = header.iter().cloned().zip(f.iter().map(|s| s.to_string())).collect();
-        recs.push(Record { id: format!("c{}", i + 1), seq: f[si].as_bytes().to_vec(), extra });
+        let extra = header
+            .iter()
+            .cloned()
+            .zip(f.iter().map(|s| s.to_string()))
+            .collect();
+        recs.push(Record {
+            id: format!("c{}", i + 1),
+            seq: f[si].as_bytes().to_vec(),
+            extra,
+        });
     }
     Ok(recs)
 }
@@ -151,33 +181,88 @@ fn cmd_translate(args: &[String]) -> Res<()> {
         return Err("usage: pec-tools translate <compactors.tsv|seqs.fa> <out_prefix> [min_aa] [seq_column]".into());
     }
     let min_aa: usize = args.get(2).map(|s| s.parse()).transpose()?.unwrap_or(20);
-    let seq_col = args.get(3).cloned().unwrap_or_else(|| "compactor".to_string());
-    let recs = if args[0].ends_with(".tsv") { read_compactor_tsv(&args[0], &seq_col)? } else { read_fasta(&args[0])? };
+    if min_aa == 0 {
+        return Err("min_aa must be positive".into());
+    }
+    let seq_col = args
+        .get(3)
+        .cloned()
+        .unwrap_or_else(|| "compactor".to_string());
+    let recs = if args[0].ends_with(".tsv") {
+        read_compactor_tsv(&args[0], &seq_col)?
+    } else {
+        read_fasta(&args[0])?
+    };
     let mut fa = BufWriter::new(File::create(format!("{}.peptides.faa", args[1]))?);
     let mut tsv = BufWriter::new(File::create(format!("{}.peptides.tsv", args[1]))?);
     let mut dna_len = BufWriter::new(File::create(format!("{}.dna_lengths.tsv", args[1]))?);
-    let extra_cols: Vec<String> = recs.first().map(|r| r.extra.iter().map(|(k, _)| k.clone()).collect()).unwrap_or_default();
-    writeln!(tsv, "peptide_id\tseq_id\tdna_length\tstrand\tframe\tnt_start\tnt_end\taa_length\tpeptide{}",
-        extra_cols.iter().map(|c| format!("\t{c}")).collect::<String>())?;
-    writeln!(dna_len, "seq_id\tdna_length\tn_peptides\tlongest_peptide_aa")?;
+    let extra_cols: Vec<String> = recs
+        .first()
+        .map(|r| r.extra.iter().map(|(k, _)| k.clone()).collect())
+        .unwrap_or_default();
+    writeln!(
+        tsv,
+        "peptide_id\tseq_id\tdna_length\tstrand\tframe\tnt_start\tnt_end\taa_length\tpeptide{}",
+        extra_cols
+            .iter()
+            .map(|c| format!("\t{c}"))
+            .collect::<String>()
+    )?;
+    writeln!(
+        dna_len,
+        "seq_id\tdna_length\tn_peptides\tlongest_peptide_aa"
+    )?;
     let (mut n_pep, mut n_seq_with) = (0usize, 0usize);
     for r in &recs {
         let peps = six_frame(&r.seq, min_aa);
         let longest = peps.iter().map(|p| p.aa.len()).max().unwrap_or(0);
-        writeln!(dna_len, "{}\t{}\t{}\t{}", r.id, r.seq.len(), peps.len(), longest)?;
+        writeln!(
+            dna_len,
+            "{}\t{}\t{}\t{}",
+            r.id,
+            r.seq.len(),
+            peps.len(),
+            longest
+        )?;
         if !peps.is_empty() {
             n_seq_with += 1;
         }
         for (j, p) in peps.iter().enumerate() {
-            let pid = format!("{}|{}{}|{}-{}", r.id, p.strand, p.frame, p.nt_start, p.nt_end);
+            let pid = format!(
+                "{}|{}{}|{}-{}",
+                r.id, p.strand, p.frame, p.nt_start, p.nt_end
+            );
             writeln!(fa, ">{pid}\n{}", p.aa)?;
-            writeln!(tsv, "{pid}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}{}", r.id, r.seq.len(), p.strand, p.frame, p.nt_start, p.nt_end, p.aa.len(), p.aa,
-                r.extra.iter().map(|(_, v)| format!("\t{v}")).collect::<String>())?;
+            writeln!(
+                tsv,
+                "{pid}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}{}",
+                r.id,
+                r.seq.len(),
+                p.strand,
+                p.frame,
+                p.nt_start,
+                p.nt_end,
+                p.aa.len(),
+                p.aa,
+                r.extra
+                    .iter()
+                    .map(|(_, v)| format!("\t{v}"))
+                    .collect::<String>()
+            )?;
             n_pep += 1;
             let _ = j;
         }
     }
-    eprintln!("sequences: {}  with >= {} aa peptide: {}  peptides: {}", recs.len(), min_aa, n_seq_with, n_pep);
+    fa.flush()?;
+    tsv.flush()?;
+    dna_len.flush()?;
+    eprintln!(
+        "sequences: {}  with >= {} aa peptide: {}  peptides: {}",
+        recs.len(),
+        min_aa,
+        n_seq_with,
+        n_pep
+    );
     Ok(())
 }
 
@@ -247,6 +332,9 @@ fn cmd_simulate(args: &[String]) -> Res<()> {
     }
     let tx = read_fasta(&args[0])?;
     let by_id: HashMap<&str, &Record> = tx.iter().map(|r| (r.id.as_str(), r)).collect();
+    if by_id.len() != tx.len() {
+        return Err("duplicate transcript FASTA IDs".into());
+    }
     let mut design: Vec<(String, f64, f64)> = Vec::new();
     for (i, line) in BufReader::new(File::open(&args[1])?).lines().enumerate() {
         let line = line?;
@@ -254,16 +342,30 @@ fn cmd_simulate(args: &[String]) -> Res<()> {
             continue;
         }
         let f: Vec<&str> = line.split('\t').collect();
+        if f.len() != 3 {
+            return Err(format!("design line {} needs three fields", i + 1).into());
+        }
         if !by_id.contains_key(f[0]) {
             return Err(format!("design transcript {} not in FASTA", f[0]).into());
         }
-        design.push((f[0].to_string(), f[1].parse()?, f[2].parse()?));
+        let tpm: f64 = f[1].parse()?;
+        let fc: f64 = f[2].parse()?;
+        if !tpm.is_finite() || tpm < 0.0 || !fc.is_finite() || fc <= 0.0 {
+            return Err(format!("invalid abundance or fold change on line {}", i + 1).into());
+        }
+        if design.iter().any(|(id, _, _)| id == f[0]) {
+            return Err("duplicate design transcript".into());
+        }
+        design.push((f[0].to_string(), tpm, fc));
     }
     std::fs::create_dir_all(&args[2])?;
     let pairs: usize = args[3].parse()?;
     let seed: u64 = args[4].parse()?;
     let read_len = 150usize;
-    let samples: Vec<(String, bool)> = (1..=6).map(|i| (format!("ctrl{i}"), false)).chain((1..=6).map(|i| (format!("pec{i}"), true))).collect();
+    let samples: Vec<(String, bool)> = (1..=6)
+        .map(|i| (format!("ctrl{i}"), false))
+        .chain((1..=6).map(|i| (format!("pec{i}"), true)))
+        .collect();
     let mut truth = BufWriter::new(File::create(format!("{}/truth_counts.tsv", args[2]))?);
     write!(truth, "transcript")?;
     for (s, _) in &samples {
@@ -282,6 +384,9 @@ fn cmd_simulate(args: &[String]) -> Res<()> {
             })
             .collect();
         let tot: f64 = expect.iter().sum();
+        if !tot.is_finite() || tot <= 0.0 {
+            return Err("total expected abundance must be positive and finite".into());
+        }
         for e in expect.iter_mut() {
             *e = *e / tot * pairs as f64;
             let g = rng.gamma(10.0) / 10.0; // mean 1, dispersion 0.1
@@ -304,7 +409,11 @@ fn cmd_simulate(args: &[String]) -> Res<()> {
                 let start = rng.below(seq.len() - insert + 1);
                 let frag = &seq[start..start + insert];
                 let fwd = rng.uniform() < 0.5; // unstranded library
-                let (a, b) = if fwd { (frag.to_vec(), revcomp(frag)) } else { (revcomp(frag), frag.to_vec()) };
+                let (a, b) = if fwd {
+                    (frag.to_vec(), revcomp(frag))
+                } else {
+                    (revcomp(frag), frag.to_vec())
+                };
                 let mut r1 = a[..read_len.min(a.len())].to_vec();
                 let mut r2 = b[..read_len.min(b.len())].to_vec();
                 // 0.3 % substitution errors
@@ -316,10 +425,22 @@ fn cmd_simulate(args: &[String]) -> Res<()> {
                     }
                 }
                 rid += 1;
-                writeln!(w1, "@{name}.{rid}/1\n{}\n+\n{}", String::from_utf8_lossy(&r1), &qual[..r1.len()])?;
-                writeln!(w2, "@{name}.{rid}/2\n{}\n+\n{}", String::from_utf8_lossy(&r2), &qual[..r2.len()])?;
+                writeln!(
+                    w1,
+                    "@{name}.{rid}/1\n{}\n+\n{}",
+                    String::from_utf8_lossy(&r1),
+                    &qual[..r1.len()]
+                )?;
+                writeln!(
+                    w2,
+                    "@{name}.{rid}/2\n{}\n+\n{}",
+                    String::from_utf8_lossy(&r2),
+                    &qual[..r2.len()]
+                )?;
             }
         }
+        w1.flush()?;
+        w2.flush()?;
         eprintln!("{name}: {rid} pairs");
     }
     for (ti, (id, _, _)) in design.iter().enumerate() {
@@ -329,6 +450,7 @@ fn cmd_simulate(args: &[String]) -> Res<()> {
         }
         writeln!(truth)?;
     }
+    truth.flush()?;
     Ok(())
 }
 
@@ -429,12 +551,23 @@ mod tests {
         let dna = b"ATGGCCGAATAA";
         let peps = six_frame(dna, 3);
         let f: Vec<_> = peps.iter().filter(|p| p.strand == '+').collect();
-        assert!(f.iter().any(|p| p.aa == "MAE" && p.nt_start == 0 && p.nt_end == 9 && p.frame == 1));
+        assert!(f
+            .iter()
+            .any(|p| p.aa == "MAE" && p.nt_start == 0 && p.nt_end == 9 && p.frame == 1));
         // every reported window re-translates to the reported peptide
         for p in &peps {
             let sub = &dna[p.nt_start..p.nt_end];
-            let s = if p.strand == '+' { sub.to_vec() } else { revcomp(sub) };
-            assert_eq!(String::from_utf8(translate_frame(&s)).unwrap(), p.aa, "{:?}", p);
+            let s = if p.strand == '+' {
+                sub.to_vec()
+            } else {
+                revcomp(sub)
+            };
+            assert_eq!(
+                String::from_utf8(translate_frame(&s)).unwrap(),
+                p.aa,
+                "{:?}",
+                p
+            );
         }
     }
     #[test]
@@ -442,7 +575,10 @@ mod tests {
         let fwd = b"ATGTTTGGGAAACCCTAA"; // MFGKP*
         let rc = revcomp(fwd);
         let peps = six_frame(&rc, 5);
-        let hit = peps.iter().find(|p| p.strand == '-' && p.aa == "MFGKP").expect("reverse ORF");
+        let hit = peps
+            .iter()
+            .find(|p| p.strand == '-' && p.aa == "MFGKP")
+            .expect("reverse ORF");
         let sub = revcomp(&rc[hit.nt_start..hit.nt_end]);
         assert_eq!(translate_frame(&sub), b"MFGKP");
     }
@@ -460,6 +596,8 @@ mod tests {
     #[test]
     fn ambiguous_bases_break_peptides() {
         let peps = six_frame(b"ATGGCCNAAGCCGCCGCC", 3);
-        assert!(peps.iter().all(|p| !p.aa.contains('X') && !p.aa.contains('*')));
+        assert!(peps
+            .iter()
+            .all(|p| !p.aa.contains('X') && !p.aa.contains('*')));
     }
 }

@@ -21,4 +21,8 @@ for run, r in e.items():
     if hh is None or hh["md5_1"] != m.get("1.fastq.gz") or hh["md5_2"] != m.get("2.fastq.gz") or int(hh["read_pairs"]) != int(r["read_count"]):
         bad += 1; print("MISMATCH", run)
 print(f"ENA runs {len(e)}, handoff runs {len(h)}, mismatches {bad}")
+if set(e) != set(h):
+    raise SystemExit("ENA and handoff run sets differ")
+if bad:
+    raise SystemExit("ENA metadata differs from the handoff")
 PY
