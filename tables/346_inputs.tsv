@@ -1,0 +1,41 @@
+quantity	value	unit	kind	source	cell
+kappa_hp_thomas_dill2_pfam_20_30	0.463	none	measured	tables/245_inputs.tsv (nb 230 section 2, Pfam seed pairs at 20-30% identity)	""
+best_rank_BCL2	213.0	rank	measured	tables/245_inputs.tsv (nb 241 section 6, best rank over every alphabet, k and metric)	""
+n_targets_at_best_BCL2	18064.0	proteins	measured	tables/245_inputs.tsv (nb 241 section 6, human proteins hit at the arm of the best rank)	""
+best_rank_CD47	166.0	rank	measured	tables/245_inputs.tsv (nb 241 section 6, best rank over every alphabet, k and metric)	""
+n_targets_at_best_CD47	18775.0	proteins	measured	tables/245_inputs.tsv (nb 241 section 6, human proteins hit at the arm of the best rank)	""
+K_proteome	0.018	none	approximate	tables/245_inputs.tsv (kmerseek docs Part 1, DB table (one proteome))	""
+n_residues_proteome	11000000.0	residues	approximate	tables/245_inputs.tsv (kmerseek docs Part 1, DB table (one proteome))	""
+pr_match_unrelated_hp_thomas_dill2	0.524	probability	measured	tables/245_chance_score_by_alphabet.tsv (nb 241)	""
+evalue_rank_BCL2_wwmj5_k9	1352.0	rank	measured	nb 241, Ced9 -> human, wwmj5 k = 9, rank by region_evalue	17
+n_hit_wwmj5_k9	2175.0	proteins	measured	nb 241, Ced9 -> human, wwmj5 k = 9, human proteins hit	17
+gain_linked_minus_B2_20_30	6.7	points of recall	measured	nb 294 section 4b, report half, exact FPR 0.001, families resampled	11
+gain_linked_minus_B2_20_30_ci_low	3.2	points of recall	measured	nb 294 section 4b, report half, exact FPR 0.001, families resampled	11
+gain_linked_minus_B2_20_30_ci_high	8.9	points of recall	measured	nb 294 section 4b, report half, exact FPR 0.001, families resampled	11
+gain_linked_minus_B3_20_30	-1.7	points of recall	measured	nb 294 section 4b, report half, exact FPR 0.001, families resampled	11
+gain_linked_minus_B3_20_30_ci_low	-3.0	points of recall	measured	nb 294 section 4b, report half, exact FPR 0.001, families resampled	11
+gain_linked_minus_B3_20_30_ci_high	0.5	points of recall	measured	nb 294 section 4b, report half, exact FPR 0.001, families resampled	11
+gain_B3_minus_B2_20_30	8.4	points of recall	measured	nb 294 section 4b, report half, exact FPR 0.001, families resampled	11
+gain_B3_minus_B2_20_30_ci_low	4.0	points of recall	measured	nb 294 section 4b, report half, exact FPR 0.001, families resampled	11
+gain_B3_minus_B2_20_30_ci_high	10.9	points of recall	measured	nb 294 section 4b, report half, exact FPR 0.001, families resampled	11
+chance_keys_linked_per_131	3896.1	key matches per comparison	measured	nb 294 section 4d, Swiss-Prot word frequencies, one diagonal of two unrelated sequences	38
+chance_keys_B2_per_131	70.4	key matches per comparison	measured	nb 294 section 4d, Swiss-Prot word frequencies, one diagonal of two unrelated sequences	38
+chance_keys_B1_per_131	17.9	key matches per comparison	measured	nb 294 section 4d, Swiss-Prot word frequencies, one diagonal of two unrelated sequences	38
+chance_keys_pair_length	131.0	residues	measured	nb 294 section 4d, Swiss-Prot word frequencies, one diagonal of two unrelated sequences	38
+false_pairs_per_query_swissprot_at_0.001	573.0	proteins	computed	nb 294 section 4f	40
+threshold_B2_report_half	22.0	score	recomputed here	nb 294 section 4a rule, on 294_linked_pairs_scores.parquet	""
+threshold_linked_report_half	30.0	score	recomputed here	nb 294 section 4a rule, on 294_linked_pairs_scores.parquet	""
+n_linked_only_not_aligners_20_30	139.0	pairs	recomputed here	nb 294 section 4c rule, report half, 20-30% identity	""
+length_CED-9	280.0	residues	counted here	UP000001940_6239.fasta.gz (file date 2026-10-13): sp|P41958|CED9_CAEEL Apoptosis regulator ced-9 OS=Caenorhabditis elegans OX=6239	""
+length_d1ohua_	172.0	residues	counted here	astral-scopedom-seqres-gd-sel-gs-bib-40-2.08.fa (file date 2021-11-01): d1ohua_ f.1.4.1 (A:) Apoptosis regulator ced-9 {Nematode (Caenorhabditis elegans	""
+length_BCL-2	239.0	residues	counted here	gencode.v49.pc_translations.canonical.fa (file date 2026-02-20): ENSP00000329623.3|ENST00000333681.5|ENSG00000171791.14|OTTHUMG00000132791.5|OTTH	""
+length_CD47	323.0	residues	counted here	gencode.v49.pc_translations.canonical.fa (file date 2026-02-20): ENSP00000355361.5|ENST00000361309.6|ENSG00000196776.18|OTTHUMG00000044216.4|OTTH	""
+length_P66_precursor	618.0	residues	counted here	UP000001807_224326.fasta.gz (file date 2026-10-13): tr|H7C7N8|H7C7N8_BORBU Integral outer membrane protein P66 OS=Borreliella burgdo	""
+d1ohua_start_in_CED9	71.0	residue	counted here	best gapless match of d1ohua_ to P41958; differences: C107S, C135S, C164S	""
+d1ohua_n_differences_from_CED9	3.0	residues	counted here	C107S, C135S, C164S (CED-9 residue, position, d1ohua_ residue)	""
+length_P66_mature	597.0	residues	counted here	notebooks/241_queries.fa (H7C7N8 residues 22-618)	""
+P66_signal_peptide_length	21.0	residues	from the 241 search setup	notebooks/241_alphabet_ranking.sbatch comment; checked: 241's P66 = H7C7N8[22:618]	""
+phmmer_evalue_BCL2_from_CED9_human	0.000079	E	from notes, not reproduced here	task brief 2026-10-18; from notes, not reproduced here	""
+jackhmmer_evalue_BCL2_from_CED9_human	7.7e-41	E	from notes, not reproduced here	task brief 2026-10-18; from notes, not reproduced here	""
+sw_blosum62_rank_BCL2_scope40	2.0	rank	from notes, not reproduced here	task brief 2026-10-18; from notes, not reproduced here	""
+sw_blosum62_n_scope40	14280.0	domains	from notes, not reproduced here	task brief 2026-10-18; from notes, not reproduced here	""

@@ -1,0 +1,10 @@
+pair	query	partner	query_db	expected
+pair 1	CED-9	ENSP00000329623.3|ENST00000333681.5|ENSG00000171791.14|OTTHUMG00000132791.5|OTTHUMT00000450052.2|BCL2-201|BCL2|239	human GENCODE v49 canonical	true homologs (SCOP fold f.1); expected negative for an HP key
+pair 1, SCOPe domain	d1ohua_	ENSP00000329623.3|ENST00000333681.5|ENSG00000171791.14|OTTHUMG00000132791.5|OTTHUMT00000450052.2|BCL2-201|BCL2|239	human GENCODE v49 canonical	as pair 1, CED-9's SCOPe domain as query
+pair 1, reverse	BCL-2	sp|P41958|CED9_CAEEL Apoptosis regulator ced-9 OS=Caenorhabditis elegans OX=6239 GN=ced-9 PE=1 SV=1	C. elegans UniProt UP000001940	as pair 1, other direction
+pair 2	P66_mature	ENSP00000355361.5|ENST00000361309.6|ENSG00000196776.18|OTTHUMG00000044216.4|OTTHUMT00000102793.1|CD47-202|CD47|323	human GENCODE v49 canonical	no significant similarity reported; negative control
+pair 2, reverse	CD47	tr|H7C7N8|H7C7N8_BORBU Integral outer membrane protein P66 OS=Borreliella burgdorferi (strain ATCC 35210 / DSM 4680 / CIP 102532 / B31) OX=224326 GN=p66 PE=4 SV=1	B. burgdorferi B31 UniProt UP000001807	as pair 2, other direction
+pair 3	Q6CDI0_YARLI/923-1032	I2H6B0_HENB6/1030-1151	Swiss-Prot	Pfam PF18196 pair at 28.2% identity; largest linked minus B2 gain, B2 missed
+pair 4	M4ENH7_BRACM/307-451	E1VIX3_9GAMM/308-454	Swiss-Prot	Pfam PF06974 pair at 22.4% identity; largest linked minus B2 gain, B2 missed
+pair 5	A0A8R2A477_ACYPI/34-109	B4II96_DROSE/57-131	Swiss-Prot	Pfam PF02192 pair at 26.7% identity; largest linked minus B2 gain, B2 missed
+pair 6	F6Y4X0_MONDO/884-1155	M4A2J9_XIPMA/902-1147	Swiss-Prot	Pfam PF08703 pair at 21.2% identity; highest linked score, found by neither phmmer nor MMseqs2
