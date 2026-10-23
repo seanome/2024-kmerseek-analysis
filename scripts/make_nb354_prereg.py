@@ -35,7 +35,8 @@ differences that usually tell one source protein from another.
   a human UniProt file `U507_human_fw_2015_07_22.fasta` of 20,163 proteins; Percolator). A spectrum counts when every engine with a
   rank-1 match at Percolator confidence "High" (q < 0.01) gives the same peptide. Its
   accepted sources are all the proteins that peptide maps to, kept if the frozen database
-  has them. This search never sees the de novo call, so the two are independent.
+  has them. This search never sees the de novo call. Both analyses still use the same spectrum,
+  so their errors need not be statistically independent.
 - 22,332 de novo calls have an accepted source in the database (joined to their PD spectrum
   on charge, precursor mass within 10 ppm and retention time within 0.02 min, because the two
   programs number spectra differently). **500**

@@ -5,9 +5,9 @@ found the accepted source of 140 of 200 test de novo calls in its top five, and 
 confident source to 4 of the 50 calls whose source had been removed. The rule asked for at
 least 95% and at most 1%, so the test fails. The comparison (exact full-alphabet index plus
 blastp-short, with the same full-alphabet check) did worse on both counts: 128 of 200 and 6
-of 50. Neither workflow comes near the bar, because about 40% of these de novo calls hold
-sequencing errors (rule 1) and some removed sources have a close paralog left in the
-database (rule 2).
+of 50. Neither workflow reaches the bar. About 40% of these de novo calls differ from the
+accepted database-search peptide (rule 1), and some removed sources have a close paralog
+left in the database (rule 2). These observations do not isolate the cause of every failure.
 
 | Rule | Needed | kmerseek massspec18, k = 8 | Holds | Comparison C | Section |
 |---|---|---|---|---|---|
@@ -40,10 +40,11 @@ What the numbers say, in plain words:
   34-36% of them (section 7). The composition shuffles behave: 1.0% (kmerseek) and 1.5% (C).
 - **The fail clause is not what failed.** Reduction did not lengthen candidate lists (median
   1 sent to the check against C's 221), and the check costs kmerseek almost nothing (0.007 s).
-  The test fails on rules 1, 2 and 4b.
+  The test fails on rules 1 and 2. Rule 4 passes through the recovery-gain alternative
+  (4a); the speed alternative (4b) fails.
 - **Part of rule 1 is out of reach at k = 8.** 22 of the 200 source-present test calls are
-  shorter than 8 residues and count as abstentions; 81 hold a de novo error (their sequence
-  differs from the database-search peptide).
+  shorter than 8 residues and count as abstentions; 81 differ from the database-search peptide; this can reflect a de novo error or an
+  incorrect accepted match.
 - **A second reader recomputed every number** and found the FAIL holds (last section).
 
 Decision: kmerseek is not pitched for source lookup of de novo peptide calls on the strength

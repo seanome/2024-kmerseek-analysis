@@ -90,8 +90,8 @@ md(r"""
 
 What the 500 calls look like before any method sees them: length, PEAKS's average local
 confidence (ALC), and whether the de novo sequence equals the database-search peptide of
-the same spectrum (I read as L, Q as K). A call that differs holds at least one de novo
-error, which is where merging residues could help.
+the same spectrum (I read as L, Q as K). A call that differs is a disagreement between the two sequence assignments; this alone
+does not identify which assignment is wrong.
 """)
 
 code(r'''
