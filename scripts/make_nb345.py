@@ -639,14 +639,14 @@ pf.save(fig, FIG / "345_SF5b_heaps_fit_error_floor_vs_real_synthetic_hp30_qfo202
 
 md(r"""
 **Supplementary Figure 5b (SF5b). In Vertebrata and Mammalia the real proteomes miss by
-far more than the model's shape or composition explains; in Archaea and Bacteria they miss
+more than this illustrative curve or the fitted Markov null predicts; in Archaea and Bacteria they miss
 by less than their synthetic copies.** Per clade, from left to right in most rows: black tick, the error
 Heaps' law makes on a curve with no noise at all, $U(n) = n(n-1)/2$; open blue circle, the
 median error on the synthetic copies; filled blue circle, the median error on the real
 proteomes (`hp_pbotc_1st_ed` k = 30, the same splits as SF5). Left is better; the dashed
 line is the pre-registered pass line. A filled circle far right of both the tick and the open
-circle means the real words, not the model's shape or the composition, make the
-prediction miss.
+circle shows a larger error in real data than in these two references. It does not isolate
+residue order from all effects of composition, model fit and phylogeny.
 """)
 
 md(r"""
@@ -1036,7 +1036,7 @@ committed before the run (first cell).
 * 20-letter k7 words miss by 57%: the reduced alphabet predicts better overall, but in
   only 3 of 6 clades.
 * Heaps' law misses even a noise-free curve by 12–21%, above the 15% pass line in 5 of 6
-  clades, so those clades could not pass with any data.
+  clades for this illustrative quadratic curve. This is not a lower bound on error for other data.
 * In Mammalia and Vertebrata, real proteomes miss by 114% and 85%, against 23% and 26%
   for synthetic copies with the same composition.
 * Only Archaea passes the sequencing rule: one more proteome adds a predicted 11,342
@@ -1047,8 +1047,9 @@ committed before the run (first cell).
 ## Analysis Details
 
 The pipeline (`nextflow-runs/proteome-novelty`) counted every k-mer window in each
-proteome and in one synthetic copy per proteome, a first-order Markov chain that keeps the
-proteome's amino-acid and residue-pair frequencies. $U(n)$, the number of words shared by
+proteome and in one synthetic copy per proteome, a first-order Markov chain fitted to the
+proteome's initial-residue and adjacent-residue frequencies. It preserves lengths exactly,
+but not realized residue or residue-pair counts. $U(n)$, the number of words shared by
 at least two of $n$ proteomes, was averaged exactly over every order of adding proteomes
 (section 2). Real proteomes share 2 to 31 times more 30-bit words than their synthetic
 copies when two proteomes are compared, and the excess shrinks as proteomes are added
@@ -1064,7 +1065,7 @@ methods miss by more than half the true value. Section 4b shows that part of the
 the model's shape: a curve where every pair of proteomes shares the same number of words
 already gives 12–21% error, and the pass line of 15% sits inside that range. In Archaea,
 Bacteria, Eukaryota and Fungi the real error (41–57%) is close to the synthetic error
-(30–51%), so composition and the model's shape explain most of it. In Vertebrata and
+(30–51%), but this agreement does not establish which effects cause the real-data error. In Vertebrata and
 Mammalia the real error is three to five times the synthetic error: closely related
 proteomes share long identical stretches, and how much the next one adds depends on which
 species it is, not on a smooth curve.
