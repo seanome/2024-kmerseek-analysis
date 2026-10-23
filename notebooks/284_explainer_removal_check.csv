@@ -1,0 +1,91 @@
+query,removed,removed_alphabets,e_cut,count,proteins_with_a_call,partner_value,proteins_with_more,proteome_max
+Ced9,protein20,protein20,-1.0,n_alphabets,19720,4,4345,17
+Ced9,protein20,protein20,-1.0,n_families,19720,2,11683,12
+Ced9,protein20,protein20,-1.0,n_families_identity_as_one,19720,2,11683,12
+Ced9,protein20,protein20,10000.0,n_alphabets,17392,1,7898,8
+Ced9,protein20,protein20,10000.0,n_families,17392,1,2615,6
+Ced9,protein20,protein20,10000.0,n_families_identity_as_one,17392,1,2615,6
+Ced9,protein20,protein20,100.0,n_alphabets,2032,0,2032,4
+Ced9,protein20,protein20,100.0,n_families,2032,0,2032,3
+Ced9,protein20,protein20,100.0,n_families_identity_as_one,2032,0,2032,3
+Ced9,wwmj5,wwmj5,-1.0,n_alphabets,19713,3,8855,17
+Ced9,wwmj5,wwmj5,-1.0,n_families,19713,2,10598,12
+Ced9,wwmj5,wwmj5,-1.0,n_families_identity_as_one,19713,2,10034,9
+Ced9,wwmj5,wwmj5,10000.0,n_alphabets,17040,0,17040,8
+Ced9,wwmj5,wwmj5,10000.0,n_families,17040,0,17040,6
+Ced9,wwmj5,wwmj5,10000.0,n_families_identity_as_one,17040,0,17040,6
+Ced9,wwmj5,wwmj5,100.0,n_alphabets,1926,0,1926,4
+Ced9,wwmj5,wwmj5,100.0,n_families,1926,0,1926,4
+Ced9,wwmj5,wwmj5,100.0,n_families_identity_as_one,1926,0,1926,2
+Ced9,hp_lehninger2,hp_lehninger2,-1.0,n_alphabets,19720,3,7657,17
+Ced9,hp_lehninger2,hp_lehninger2,-1.0,n_families,19720,2,11641,13
+Ced9,hp_lehninger2,hp_lehninger2,-1.0,n_families_identity_as_one,19720,2,11171,10
+Ced9,hp_lehninger2,hp_lehninger2,10000.0,n_alphabets,17139,1,5970,8
+Ced9,hp_lehninger2,hp_lehninger2,10000.0,n_families,17139,1,2599,7
+Ced9,hp_lehninger2,hp_lehninger2,10000.0,n_families_identity_as_one,17139,1,2421,6
+Ced9,hp_lehninger2,hp_lehninger2,100.0,n_alphabets,1927,0,1927,4
+Ced9,hp_lehninger2,hp_lehninger2,100.0,n_families,1927,0,1927,4
+Ced9,hp_lehninger2,hp_lehninger2,100.0,n_families_identity_as_one,1927,0,1927,2
+Ced9,all seven H/P,"hp_kyte_doolittle2,hp_lehninger2,hp_lehninger_c_nonpolar2,hp_lehninger_hpc3,hp_pbotc_1st_ed2,hp_thomas_dill2,hp_thomas_dill_no_c2",-1.0,n_alphabets,19716,2,10302,12
+Ced9,all seven H/P,"hp_kyte_doolittle2,hp_lehninger2,hp_lehninger_c_nonpolar2,hp_lehninger_hpc3,hp_pbotc_1st_ed2,hp_thomas_dill2,hp_thomas_dill_no_c2",-1.0,n_families,19716,2,10302,12
+Ced9,all seven H/P,"hp_kyte_doolittle2,hp_lehninger2,hp_lehninger_c_nonpolar2,hp_lehninger_hpc3,hp_pbotc_1st_ed2,hp_thomas_dill2,hp_thomas_dill_no_c2",-1.0,n_families_identity_as_one,19716,2,9704,9
+Ced9,all seven H/P,"hp_kyte_doolittle2,hp_lehninger2,hp_lehninger_c_nonpolar2,hp_lehninger_hpc3,hp_pbotc_1st_ed2,hp_thomas_dill2,hp_thomas_dill_no_c2",10000.0,n_alphabets,15340,1,2261,7
+Ced9,all seven H/P,"hp_kyte_doolittle2,hp_lehninger2,hp_lehninger_c_nonpolar2,hp_lehninger_hpc3,hp_pbotc_1st_ed2,hp_thomas_dill2,hp_thomas_dill_no_c2",10000.0,n_families,15340,1,2261,7
+Ced9,all seven H/P,"hp_kyte_doolittle2,hp_lehninger2,hp_lehninger_c_nonpolar2,hp_lehninger_hpc3,hp_pbotc_1st_ed2,hp_thomas_dill2,hp_thomas_dill_no_c2",10000.0,n_families_identity_as_one,15340,1,2076,5
+Ced9,all seven H/P,"hp_kyte_doolittle2,hp_lehninger2,hp_lehninger_c_nonpolar2,hp_lehninger_hpc3,hp_pbotc_1st_ed2,hp_thomas_dill2,hp_thomas_dill_no_c2",100.0,n_alphabets,1180,0,1180,4
+Ced9,all seven H/P,"hp_kyte_doolittle2,hp_lehninger2,hp_lehninger_c_nonpolar2,hp_lehninger_hpc3,hp_pbotc_1st_ed2,hp_thomas_dill2,hp_thomas_dill_no_c2",100.0,n_families,1180,0,1180,4
+Ced9,all seven H/P,"hp_kyte_doolittle2,hp_lehninger2,hp_lehninger_c_nonpolar2,hp_lehninger_hpc3,hp_pbotc_1st_ed2,hp_thomas_dill2,hp_thomas_dill_no_c2",100.0,n_families_identity_as_one,1180,0,1180,2
+Ced9,everything but the seven H/P,"gbmr4,polarity4,wwmj5,dayhoff6,gbmr7,funcgroups8,sdm12,mmseqs12,wass14,hsdm17,uniprot18,protein20",-1.0,n_alphabets,19069,3,2976,7
+Ced9,everything but the seven H/P,"gbmr4,polarity4,wwmj5,dayhoff6,gbmr7,funcgroups8,sdm12,mmseqs12,wass14,hsdm17,uniprot18,protein20",-1.0,n_families,19069,1,0,1
+Ced9,everything but the seven H/P,"gbmr4,polarity4,wwmj5,dayhoff6,gbmr7,funcgroups8,sdm12,mmseqs12,wass14,hsdm17,uniprot18,protein20",-1.0,n_families_identity_as_one,19069,1,0,1
+Ced9,everything but the seven H/P,"gbmr4,polarity4,wwmj5,dayhoff6,gbmr7,funcgroups8,sdm12,mmseqs12,wass14,hsdm17,uniprot18,protein20",10000.0,n_alphabets,13675,0,13675,6
+Ced9,everything but the seven H/P,"gbmr4,polarity4,wwmj5,dayhoff6,gbmr7,funcgroups8,sdm12,mmseqs12,wass14,hsdm17,uniprot18,protein20",10000.0,n_families,13675,0,13675,1
+Ced9,everything but the seven H/P,"gbmr4,polarity4,wwmj5,dayhoff6,gbmr7,funcgroups8,sdm12,mmseqs12,wass14,hsdm17,uniprot18,protein20",10000.0,n_families_identity_as_one,13675,0,13675,1
+Ced9,everything but the seven H/P,"gbmr4,polarity4,wwmj5,dayhoff6,gbmr7,funcgroups8,sdm12,mmseqs12,wass14,hsdm17,uniprot18,protein20",100.0,n_alphabets,974,0,974,4
+Ced9,everything but the seven H/P,"gbmr4,polarity4,wwmj5,dayhoff6,gbmr7,funcgroups8,sdm12,mmseqs12,wass14,hsdm17,uniprot18,protein20",100.0,n_families,974,0,974,1
+Ced9,everything but the seven H/P,"gbmr4,polarity4,wwmj5,dayhoff6,gbmr7,funcgroups8,sdm12,mmseqs12,wass14,hsdm17,uniprot18,protein20",100.0,n_families_identity_as_one,974,0,974,1
+P66,protein20,protein20,-1.0,n_alphabets,19728,3,13243,18
+P66,protein20,protein20,-1.0,n_families,19728,3,8347,12
+P66,protein20,protein20,-1.0,n_families_identity_as_one,19728,3,8347,12
+P66,protein20,protein20,10000.0,n_alphabets,18273,2,2945,9
+P66,protein20,protein20,10000.0,n_families,18273,1,3815,7
+P66,protein20,protein20,10000.0,n_families_identity_as_one,18273,1,3815,7
+P66,protein20,protein20,100.0,n_alphabets,1740,0,1740,5
+P66,protein20,protein20,100.0,n_families,1740,0,1740,3
+P66,protein20,protein20,100.0,n_families_identity_as_one,1740,0,1740,3
+P66,wwmj5,wwmj5,-1.0,n_alphabets,19726,3,12818,18
+P66,wwmj5,wwmj5,-1.0,n_families,19726,3,7528,12
+P66,wwmj5,wwmj5,-1.0,n_families_identity_as_one,19726,3,5569,8
+P66,wwmj5,wwmj5,10000.0,n_alphabets,17979,2,2974,9
+P66,wwmj5,wwmj5,10000.0,n_families,17979,1,3468,7
+P66,wwmj5,wwmj5,10000.0,n_families_identity_as_one,17979,1,3028,5
+P66,wwmj5,wwmj5,100.0,n_alphabets,1630,0,1630,5
+P66,wwmj5,wwmj5,100.0,n_families,1630,0,1630,4
+P66,wwmj5,wwmj5,100.0,n_families_identity_as_one,1630,0,1630,3
+P66,hp_lehninger2,hp_lehninger2,-1.0,n_alphabets,19728,3,11739,18
+P66,hp_lehninger2,hp_lehninger2,-1.0,n_families,19728,3,8344,13
+P66,hp_lehninger2,hp_lehninger2,-1.0,n_families_identity_as_one,19728,3,6597,9
+P66,hp_lehninger2,hp_lehninger2,10000.0,n_alphabets,18130,1,8246,10
+P66,hp_lehninger2,hp_lehninger2,10000.0,n_families,18130,1,3862,8
+P66,hp_lehninger2,hp_lehninger2,10000.0,n_families_identity_as_one,18130,1,3431,6
+P66,hp_lehninger2,hp_lehninger2,100.0,n_alphabets,1637,0,1637,4
+P66,hp_lehninger2,hp_lehninger2,100.0,n_families,1637,0,1637,4
+P66,hp_lehninger2,hp_lehninger2,100.0,n_families_identity_as_one,1637,0,1637,3
+P66,all seven H/P,"hp_kyte_doolittle2,hp_lehninger2,hp_lehninger_c_nonpolar2,hp_lehninger_hpc3,hp_pbotc_1st_ed2,hp_thomas_dill2,hp_thomas_dill_no_c2",-1.0,n_alphabets,19728,3,7913,12
+P66,all seven H/P,"hp_kyte_doolittle2,hp_lehninger2,hp_lehninger_c_nonpolar2,hp_lehninger_hpc3,hp_pbotc_1st_ed2,hp_thomas_dill2,hp_thomas_dill_no_c2",-1.0,n_families,19728,3,7913,12
+P66,all seven H/P,"hp_kyte_doolittle2,hp_lehninger2,hp_lehninger_c_nonpolar2,hp_lehninger_hpc3,hp_pbotc_1st_ed2,hp_thomas_dill2,hp_thomas_dill_no_c2",-1.0,n_families_identity_as_one,19728,3,6024,9
+P66,all seven H/P,"hp_kyte_doolittle2,hp_lehninger2,hp_lehninger_c_nonpolar2,hp_lehninger_hpc3,hp_pbotc_1st_ed2,hp_thomas_dill2,hp_thomas_dill_no_c2",10000.0,n_alphabets,16906,1,3506,7
+P66,all seven H/P,"hp_kyte_doolittle2,hp_lehninger2,hp_lehninger_c_nonpolar2,hp_lehninger_hpc3,hp_pbotc_1st_ed2,hp_thomas_dill2,hp_thomas_dill_no_c2",10000.0,n_families,16906,1,3506,7
+P66,all seven H/P,"hp_kyte_doolittle2,hp_lehninger2,hp_lehninger_c_nonpolar2,hp_lehninger_hpc3,hp_pbotc_1st_ed2,hp_thomas_dill2,hp_thomas_dill_no_c2",10000.0,n_families_identity_as_one,16906,1,3064,6
+P66,all seven H/P,"hp_kyte_doolittle2,hp_lehninger2,hp_lehninger_c_nonpolar2,hp_lehninger_hpc3,hp_pbotc_1st_ed2,hp_thomas_dill2,hp_thomas_dill_no_c2",100.0,n_alphabets,913,0,913,4
+P66,all seven H/P,"hp_kyte_doolittle2,hp_lehninger2,hp_lehninger_c_nonpolar2,hp_lehninger_hpc3,hp_pbotc_1st_ed2,hp_thomas_dill2,hp_thomas_dill_no_c2",100.0,n_families,913,0,913,4
+P66,all seven H/P,"hp_kyte_doolittle2,hp_lehninger2,hp_lehninger_c_nonpolar2,hp_lehninger_hpc3,hp_pbotc_1st_ed2,hp_thomas_dill2,hp_thomas_dill_no_c2",100.0,n_families_identity_as_one,913,0,913,3
+P66,everything but the seven H/P,"gbmr4,polarity4,wwmj5,dayhoff6,gbmr7,funcgroups8,sdm12,mmseqs12,wass14,hsdm17,uniprot18,protein20",-1.0,n_alphabets,19552,3,7445,7
+P66,everything but the seven H/P,"gbmr4,polarity4,wwmj5,dayhoff6,gbmr7,funcgroups8,sdm12,mmseqs12,wass14,hsdm17,uniprot18,protein20",-1.0,n_families,19552,1,0,1
+P66,everything but the seven H/P,"gbmr4,polarity4,wwmj5,dayhoff6,gbmr7,funcgroups8,sdm12,mmseqs12,wass14,hsdm17,uniprot18,protein20",-1.0,n_families_identity_as_one,19552,1,0,1
+P66,everything but the seven H/P,"gbmr4,polarity4,wwmj5,dayhoff6,gbmr7,funcgroups8,sdm12,mmseqs12,wass14,hsdm17,uniprot18,protein20",10000.0,n_alphabets,14836,2,2362,6
+P66,everything but the seven H/P,"gbmr4,polarity4,wwmj5,dayhoff6,gbmr7,funcgroups8,sdm12,mmseqs12,wass14,hsdm17,uniprot18,protein20",10000.0,n_families,14836,1,0,1
+P66,everything but the seven H/P,"gbmr4,polarity4,wwmj5,dayhoff6,gbmr7,funcgroups8,sdm12,mmseqs12,wass14,hsdm17,uniprot18,protein20",10000.0,n_families_identity_as_one,14836,1,0,1
+P66,everything but the seven H/P,"gbmr4,polarity4,wwmj5,dayhoff6,gbmr7,funcgroups8,sdm12,mmseqs12,wass14,hsdm17,uniprot18,protein20",100.0,n_alphabets,944,0,944,5
+P66,everything but the seven H/P,"gbmr4,polarity4,wwmj5,dayhoff6,gbmr7,funcgroups8,sdm12,mmseqs12,wass14,hsdm17,uniprot18,protein20",100.0,n_families,944,0,944,1
+P66,everything but the seven H/P,"gbmr4,polarity4,wwmj5,dayhoff6,gbmr7,funcgroups8,sdm12,mmseqs12,wass14,hsdm17,uniprot18,protein20",100.0,n_families_identity_as_one,944,0,944,1
