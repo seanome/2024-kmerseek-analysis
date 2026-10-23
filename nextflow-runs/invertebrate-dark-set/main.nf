@@ -430,6 +430,43 @@ params.report_only        = false
 // added, and a report process defined here would put three sets of edits in one hunk.
 include { darkReportFrom } from './modules/report'
 
+// --- Foldseek and ProstT5 (-entry darkStructure) -------------------------------------------
+// Added 2026-10-16. How many dark proteins does a structure search place, at what precision,
+// and at what cost? Both tools search the same clade-excluded Swiss-Prot reference as the
+// sequence tools: Foldseek's AlphaFold DB Swiss-Prot database cut to the reference's
+// accessions. See modules/structure.nf and STRUCTURE-RULES.md.
+//
+// Foldseek 10.941cd33, the QfO region benchmark's pin: 9.427df8a has no --gpu flag, which
+// ProstT5 needs to run on a GPU.
+params.foldseek_image     = 'quay.io/biocontainers/foldseek@sha256:1156a052f31b2afb85257c02e83a962f559c9752273fe1064ab735f90ac29d1a'
+// A directory holding `foldseek databases Alphafold/Swiss-Prot <dir>/db` output. On Sherlock
+// the convergence-afp run (PR 141) built one with the same image on 2026-10-14: 590_183
+// entries, every one model_v6 and F1.
+params.afdb_swissprot_db  = null
+// AlphaFold DB proteome archives (UP<id>_<taxon>_<code>_v<k>.tar). The highest version
+// present for a species' qfo_proteome is used and its version is recorded per protein.
+params.afdb_archive_dir   = null
+// <dir>/<species>/AF-<acc>-F<n>-model_v<k>.cif[.gz], fetched one accession at a time by
+// tools/fetch-afdb-models (`make fetch-afdb-models`): Borrelia B31 has no proteome archive.
+params.afdb_extra_models  = null
+// A directory from `foldseek databases ProstT5 <dir> tmp` (prostt5-f16.gguf).
+params.prostt5_weights    = null
+// ProstT5 runs each sequence whole; the QfO region benchmark capped it at 6_000 residues.
+// A longer protein is "not run" for ProstT5 and listed in <species>_prostt5_skipped.tsv.
+params.prostt5_max_len    = 6000
+params.prostt5_gpu        = true
+// Species whose ProstT5 3Di runs on CPU (16 cores, no GPU), comma-separated. Empty: all on GPU.
+params.prostt5_cpu_species = ''
+// Seeds every decoy (each protein's generator is seeded from this and its name).
+params.decoy_seed         = 0
+// The QfO region benchmark's --max-seqs for both tools.
+params.structure_max_seqs = 1000
+// Where foldseekTargetDb stores the cut target databases (one per clade removed).
+params.structure_cache    = null
+
+include { foldseekTargetDb; afdbQueryModels; foldseekQueryDb; foldseekDecoyFasta; foldseekDecoyDb;
+          prostt5Fasta; prostt5Db; foldseekSearch; prostt5Search; structureCoverage } from './modules/structure'
+
 HMMER   = 'quay.io/biocontainers/hmmer@sha256:7a2b317b8d2fd3650b4924a8482cddeb940d4a0746c6a1501ff03ac1b7439e0c'
 MMSEQS  = 'quay.io/biocontainers/mmseqs2@sha256:3503bfe576d560e550df2872af86a1ad1bcc1c06cfb7caadd3e7a95649f5f0ef'
 
@@ -1913,6 +1950,104 @@ workflow calibrateStore {
              (skipped ? " (${skipped} left alone: not in --calibrate_clades or matching --calibrate_exclude)" : '')
     items.groupBy { it[1] }.each { a, l -> log.info "  ${a}: ${l.size()} index(es), C = ${l[0][4].join(', ')}" }
     calibrateStoredIndex(Channel.fromList(items))
+}
+
+/*
+ * Foldseek and ProstT5 on every query, against the clade-excluded reference.
+ *
+ * The sequence searches are not rerun: this entry builds (or finds in --reference_cache)
+ * the same references and the same 2_000-protein chunks, and adds the structure tools. Each
+ * search runs twice, on the real queries and on decoys (modules/structure.nf), so the
+ * scoring step (tools/dark-structure-score) can set each tool's E-value cutoff at a 5%
+ * decoy rate. `make run-structure-sbatch` is this entry.
+ */
+workflow darkStructure {
+    def SPECIES = resolveSpecies()
+    ['afdb_swissprot_db', 'prostt5_weights'].each { p ->
+        if (!params[p]) error "--${p} is required for -entry darkStructure"
+        if (!file(params[p]).exists()) error "--${p}: ${params[p]} does not exist"
+    }
+    if (!file("${params.afdb_swissprot_db}/db.lookup").exists()) {
+        error "--afdb_swissprot_db ${params.afdb_swissprot_db} has no db.lookup; it should hold " +
+              "`foldseek databases Alphafold/Swiss-Prot <dir>/db tmp` output"
+    }
+    def reg      = loadRegistry()
+    def noArch   = file("${projectDir}/assets/NO_ARCHIVE")
+    def noExtra  = file("${projectDir}/assets/NO_EXTRA")
+    def decoysPy = file("${projectDir}/../shared/decoys.py")
+    def afdb     = file(params.afdb_swissprot_db)
+    def weights  = file(params.prostt5_weights)
+
+    // The proteome archive for a species, by its UniProt proteome id; the highest version
+    // AlphaFold DB has published that the archive directory holds.
+    def archivesFor = { String sp ->
+        def up = reg[sp]?.qfo_proteome
+        def dir = params.afdb_archive_dir ? file(params.afdb_archive_dir) : null
+        if (!up || !dir?.isDirectory()) return [noArch]
+        def hits = dir.listFiles().findAll { it.name ==~ /${up}_[0-9]+_[A-Z0-9]+_v[0-9]+\.tar/ }
+        if (!hits) return [noArch]
+        [hits.max { (it.name =~ /_v([0-9]+)\.tar$/)[0][1] as int }]
+    }
+    def extraFor = { String sp ->
+        def d = params.afdb_extra_models ? file("${params.afdb_extra_models}/${sp}") : null
+        (d && d.isDirectory()) ? d : noExtra
+    }
+    def cladeOf = SPECIES.collectEntries { [(it.label): it.clade] }
+    SPECIES.each { s ->
+        log.info "  ${s.label}: reference minus ${s.clade}; AlphaFold DB archive " +
+                 "${archivesFor(s.label)*.name.join(', ')}; per-accession models ${extraFor(s.label).name}"
+    }
+    def outName = { String sp, chunk, String tool, String kind ->
+        "${sp}.${chunk.simpleName}.${tool}${kind == 'decoy' ? '_decoy' : ''}.tsv.gz".toString()
+    }
+    def nWithModel = { dir ->
+        new groovy.json.JsonSlurper().parse(dir.resolve('summary.json').toFile()).n_with_model as int
+    }
+
+    ref_ch = buildReference(
+        Channel.fromList(SPECIES*.clade.unique().collect { cl -> tuple(cl, file(params.swissprot_dat)) }))
+    staged   = splitQuery(Channel.fromList(SPECIES.collect { s -> tuple(s.label, s.clade, s.query) }))
+    proteome = staged.proteome.map { sp, _cl, q -> tuple(sp, q) }
+    chunks   = staged.chunks.flatMap { sp, cl, cs -> asList(cs).collect { c -> tuple(sp, cl, c) } }
+
+    // (clade, cut target database)
+    tdb = foldseekTargetDb(ref_ch.map { cl, r -> tuple(cl, r, afdb) })
+
+    // Foldseek: real models and their decoys. A species with no model at all (Botryllus's
+    // FUN gene models have no UniProt accession) runs ProstT5 only.
+    models = afdbQueryModels(proteome.map { sp, q -> tuple(sp, q, archivesFor(sp), extraFor(sp)) })
+    qdb    = foldseekQueryDb(models.filter { sp, d ->
+        def n = nWithModel(d)
+        if (n == 0) log.warn "${sp}: no query protein has an AlphaFold DB model; Foldseek is not run for ${sp}"
+        n > 0
+    })
+    ddb    = foldseekDecoyDb(foldseekDecoyFasta(qdb.map { sp, d -> tuple(sp, d, decoysPy) }))
+    fs_dbs = qdb.map { sp, d -> tuple(sp, 'real', d) }.mix(ddb.map { sp, d -> tuple(sp, 'decoy', d) })
+    foldseekSearch(chunks.combine(fs_dbs, by: 0)
+        .map { sp, cl, c, kind, q -> tuple(cl, sp, c, kind, q) }
+        .combine(tdb, by: 0)
+        .map { cl, sp, c, kind, q, t -> tuple(sp, kind, outName(sp, c, 'foldseek', kind), c, q, t) })
+
+    // ProstT5: every query under the length cap, and its dipeptide-shuffled copy.
+    pfa = prostt5Fasta(proteome.map { sp, q -> tuple(sp, q, decoysPy) })
+    // A species named in --prostt5_cpu_species runs its 3Di prediction on CPU instead of
+    // waiting for a GPU (added 2026-10-19, when the run's GPU jobs were estimated to start
+    // 18 h later).
+    def cpuSpecies = params.prostt5_cpu_species.toString().tokenize(',')*.trim().findAll { it }
+    def useGpu = { String sp -> (params.prostt5_gpu as boolean) && !(sp in cpuSpecies) }
+    pdb = prostt5Db(pfa.flatMap { sp, r, d, _s -> [tuple(sp, 'real', r, weights, useGpu(sp)),
+                                                   tuple(sp, 'decoy', d, weights, useGpu(sp))] }).db
+    prostt5Search(chunks.combine(pdb, by: 0)
+        .map { sp, cl, c, kind, q -> tuple(cl, sp, c, kind, q) }
+        .combine(tdb, by: 0)
+        .map { cl, sp, c, kind, q, t -> tuple(sp, kind, outName(sp, c, 'prostt5', kind), c, q, t) })
+
+    // What was run and what was not, beside the hits.
+    structureCoverage(models
+        .map { sp, d -> tuple(cladeOf[sp], sp, d.resolve('coverage.tsv'), d.resolve('summary.json')) }
+        .combine(tdb, by: 0)
+        .map { cl, sp, qc, qs, t -> tuple(sp, qc, qs, t.resolve('coverage.tsv'), t.resolve('summary.json')) }
+        .join(pfa.map { sp, _r, _d, s -> tuple(sp, s) }))
 }
 
 workflow { darkSet() }

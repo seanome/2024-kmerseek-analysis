@@ -1,0 +1,145 @@
+#!/usr/bin/env python3
+"""Download AlphaFold DB models one accession at a time, for -entry darkStructure.
+
+    tools/fetch-afdb-models --registry data/species_metadata.json --qfo-dir <QfO dir> \
+        --out <dir> [--parallel 1] species [species ...]
+
+For each species, reads the query proteome named in the registry (staged_fasta, or the QfO
+<subdir>/<proteome>_<taxon>.fasta), takes the UniProt accession of every record (the same
+rule as bin/split_query_fasta.py), and asks https://alphafold.ebi.ac.uk/api/prediction/<acc>
+for the model's mmCIF URL. The URL names the version the server holds; nothing here assumes
+one. Each model is written to <out>/<species>/AF-<acc>-F<n>-model_v<k>.cif, and
+<out>/<species>/fetch_log.tsv lists every accession: fetched, already present, or no model
+(HTTP 404), with the URL. A rerun skips accessions whose file is already there.
+
+For species with no AlphaFold DB proteome archive (Borrelia burgdorferi B31,
+UP000001807). Sherlock compute nodes have no outbound internet, so run it on a login node,
+one request at a time with a pause (the API answers 429 to faster use). Python 3.6 standard library only.
+"""
+import argparse
+import concurrent.futures
+import json
+import os
+import re
+import sys
+import time
+import urllib.error
+import urllib.request
+
+UNIPROT = re.compile(r"^(?:sp|tr)\|([^|\s]+)\|\S*")
+API = "https://alphafold.ebi.ac.uk/api/prediction/%s"
+NAME = re.compile(r"(AF-[A-Za-z0-9]+-F\d+-model_v\d+\.cif)$")
+
+
+def accessions(path):
+    out = []
+    with open(path) as fh:
+        for line in fh:
+            if line.startswith(">"):
+                tok = line[1:].split()[0]
+                m = UNIPROT.match(tok)
+                out.append(m.group(1) if m else tok)
+    return out
+
+
+DELAY = 0.5   # seconds between requests of one worker
+
+
+def get(url, tries=8):
+    """The body, None on 404. HTTP 429 (too many requests) waits Retry-After or longer.
+
+    The AlphaFold DB API answered 429 after ~100 requests at two at a time with no pause
+    (2026-10-16), so every request waits DELAY first and a 429 backs off.
+    """
+    for i in range(tries):
+        time.sleep(DELAY)
+        try:
+            with urllib.request.urlopen(url, timeout=60) as r:
+                return r.read()
+        except urllib.error.HTTPError as e:
+            if e.code == 404:
+                return None
+            if i == tries - 1:
+                raise
+            wait = 30 * (i + 1)
+            if e.code == 429:
+                try:
+                    wait = max(wait, int(e.headers.get("Retry-After", "0")))
+                except ValueError:
+                    pass
+            time.sleep(wait)
+        except (urllib.error.URLError, OSError):
+            if i == tries - 1:
+                raise
+            time.sleep(10 * (i + 1))
+
+
+def fetch_one(acc, out_dir, present):
+    if acc in present:
+        return acc, "present", present[acc]
+    body = get(API % acc)
+    if body is None:
+        return acc, "no_model", API % acc
+    entries = json.loads(body.decode())
+    # Only the accession's own models (AF-<acc>-F<n>-model_v<k>). The API can also list
+    # other entries for an accession, such as AF-0000000005900734-model_v1 for O50745
+    # (2026-10-16), which are not the UniProt model this pipeline searches.
+    urls = [e["cifUrl"] for e in entries
+            if e.get("uniprotAccession", acc) == acc and e.get("cifUrl")
+            and NAME.search(e["cifUrl"]) and ("/AF-%s-F" % acc) in e["cifUrl"]]
+    if not urls:
+        return acc, "no_model", API % acc
+    names = []
+    for url in urls:
+        m = NAME.search(url)
+        if not m:
+            raise SystemExit("%s: cannot parse a model name from %s" % (acc, url))
+        data = get(url)
+        if data is None:
+            return acc, "no_model", url
+        tmp = os.path.join(out_dir, m.group(1) + ".part")
+        with open(tmp, "wb") as fh:
+            fh.write(data)
+        os.rename(tmp, os.path.join(out_dir, m.group(1)))
+        names.append(url)
+    return acc, "fetched", ";".join(names)
+
+
+def main():
+    ap = argparse.ArgumentParser(description=__doc__,
+                                 formatter_class=argparse.RawDescriptionHelpFormatter)
+    ap.add_argument("--registry", required=True)
+    ap.add_argument("--qfo-dir", required=True)
+    ap.add_argument("--out", required=True)
+    ap.add_argument("--parallel", type=int, default=1)
+    ap.add_argument("species", nargs="+")
+    args = ap.parse_args()
+    reg = json.load(open(args.registry))
+    for sp in args.species:
+        row = reg[sp]
+        if row.get("staged_fasta"):
+            fasta = os.path.join(args.qfo_dir, row["staged_fasta"])
+        else:
+            fasta = os.path.join(args.qfo_dir, row["qfo_subdir"],
+                                 "%s_%s.fasta" % (row["qfo_proteome"], row["taxon_id"]))
+        accs = accessions(fasta)
+        out_dir = os.path.join(args.out, sp)
+        os.makedirs(out_dir, exist_ok=True)
+        present = {}
+        for f in os.listdir(out_dir):
+            m = re.match(r"^AF-([A-Za-z0-9]+)-F\d+-model_v\d+\.cif$", f)
+            if m:
+                present[m.group(1)] = f
+        counts = {}
+        rows = []
+        with concurrent.futures.ThreadPoolExecutor(max_workers=args.parallel) as ex:
+            for acc, status, where in ex.map(lambda a: fetch_one(a, out_dir, present), accs):
+                counts[status] = counts.get(status, 0) + 1
+                rows.append("%s\t%s\t%s" % (acc, status, where))
+        with open(os.path.join(out_dir, "fetch_log.tsv"), "w") as fh:
+            fh.write("accession\tstatus\tsource\n" + "\n".join(rows) + "\n")
+        print("%s: %d accessions from %s: %s" % (sp, len(accs), fasta, counts))
+
+
+if __name__ == "__main__":
+    sys.exit(main())

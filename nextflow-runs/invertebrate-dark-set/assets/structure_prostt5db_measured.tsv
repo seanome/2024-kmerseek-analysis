@@ -1,0 +1,9 @@
+job_id	task	partition	gpu	start	elapsed_s	predicted_s	note
+48522211	borrelia.decoy	hns	NVIDIA L40S	2026-10-20T00:00:25	51	30	predicted = tools/structure-resource-table (0.000117 s per residue from job 42503753) / 2 for real or decoy
+48522214	borrelia.real	hns	NVIDIA L40S	2026-10-20T00:04:06	50	30
+48522605	yeast.decoy	hns	NVIDIA L40S	2026-10-20T00:07:16	350	330
+48522616	yeast.real	hns	NVIDIA L40S	2026-10-20T00:15:07	355	330
+48522625	human.real	hns	NVIDIA L40S	2026-10-20T00:23:10	1382	1350
+48522631	human.decoy	hns	NVIDIA L40S	2026-10-20T00:48:17	1380	1350
+48522636	worm.real	hns	NVIDIA L40S	2026-10-20T01:12:04	913	960
+48522665	worm.decoy	hns	NVIDIA L40S	2026-10-20T01:28:34	908	960
