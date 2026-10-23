@@ -118,8 +118,7 @@ md(r"""
 ## 1. The regions, and why a structure tool has little to align
 
 Three numbers per human region: its length; AlphaFold's confidence over its residues
-(pLDDT, 0-100; under 70 the backbone should not be trusted, under 50 there is usually no
-structure at all); and the share of its residues metapredict 3.0.1 calls disordered
+(pLDDT, 0-100; lower values indicate less reliable predicted coordinates, not proof that the protein lacks structure); and the share of its residues metapredict 3.0.1 calls disordered
 (score >= 0.5). The regions were chosen for experimental disorder, so low pLDDT and high
 disorder are expected by construction. What matters for this benchmark is how complete
 that is: a region with a confident structure is one a structure tool can align.
@@ -190,15 +189,29 @@ md(r"""
 
 The kmerseek arm is picked on one half and every number after this section is reported on
 the other. The unit is the HGNC gene group (notebook 244's rule: the parity of the first
-byte of the SHA-1 of the group's name), so paralogs never sit on both sides. The second
+byte of the SHA-1 of the group's name), so proteins assigned the same complete HGNC group label stay together; this does not guarantee that all paralogs share a half. The second
 split holds out whole function terms: the arm is picked on regions of the choose-half
 terms, and scored only on terms it never saw.
+
+Among476 scored human proteins,53 individual HGNC group labels occur in both halves. The code hashes the complete group string; proteins sharing only one of several labels can cross halves. These original-split counts are exploratory, not a fully held-out paralog test. A corrected split must be declared before a confirmatory comparison. See `tables/251_split_group_overlap_audit.json`.
 """)
 
 code(r"""
 print(R.group_by("query_half").agg(regions=pl.len(), proteins=pl.col("query_acc").n_unique(),
                                   gene_groups=pl.col("split_unit").n_unique()).sort("query_half"))
 print(R.group_by("term_half").agg(regions=pl.len(), terms=pl.col("term_id").n_unique()).sort("term_half"))
+
+import pubfig as pf
+pf.use_style()
+fig, axes = pf.figure(pf.TWO_COLUMN_MM, 65, ncols=2)
+for ax, column, title in zip(axes, ["query_half", "term_half"], ["Complete HGNC group string", "DisProt function term"]):
+    counts = R.group_by(column).len().sort(column)
+    ax.bar(counts[column].to_list(), counts["len"].to_list(), color=pf.OKABE_ITO["blue"])
+    ax.set_title(title)
+    ax.set_ylabel("Scored human regions")
+fig.suptitle("Original choose/report split; shared HGNC labels can cross halves")
+pf.save(fig, FIG / "251_original_split_region_counts")
+
 """)
 
 md(r"""

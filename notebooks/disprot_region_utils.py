@@ -36,6 +36,8 @@ LANDING_DIR = Path(
 )
 #: The HGNC table the midi-plus run used, copied next to its data.
 HGNC_FILE = he.MIDI / "hgnc_complete_set.txt"
+if not HGNC_FILE.exists():
+    HGNC_FILE = he.MIDI.parent / "qfo-pfam-region-midi" / "hgnc_complete_set.txt"
 QFO_DIR = he.QFO_DIR
 HUMAN_TAXON = 9606
 
@@ -145,7 +147,8 @@ def sha1_half(name: str) -> str:
 def query_halves() -> pl.DataFrame:
     """Each human query protein's half, by HGNC gene group (notebook 244's rule).
 
-    The unit is the HGNC gene group, so paralogs in one group never sit on both sides; a
+    The unit is the complete HGNC gene-group string. Individual labels can cross
+    halves when their full group strings differ. A
     protein with no group is its own unit, named by its symbol or, with no HGNC entry,
     its accession.
     """

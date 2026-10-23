@@ -123,6 +123,18 @@ def overlaps(a0: int, a1: int, b0: int, b1: int) -> bool:
     return a0 <= b1 and b0 <= a1
 
 
+def check_entry_ids(entries):
+    """Reject repeated pages or missing IDs before exporting benchmark truth."""
+    seen = set()
+    for entry in entries:
+        identifier = entry.get("disprot_id")
+        if not identifier:
+            raise ValueError("DisProt entry has no disprot_id")
+        if identifier in seen:
+            raise ValueError(f"Repeated DisProt entry: {identifier}")
+        seen.add(identifier)
+
+
 def main():
     ap = argparse.ArgumentParser(
         description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter
@@ -148,6 +160,7 @@ def main():
     out.mkdir(parents=True, exist_ok=True)
     payload = fetch(url, out / "raw" / f"disprot_{args.release}.json")
     entries = payload["data"]
+    check_entry_ids(entries)
 
     with open(args.registry, newline="") as fh:
         registry = {r["label"]: r for r in csv.DictReader(fh, delimiter="\t")}
