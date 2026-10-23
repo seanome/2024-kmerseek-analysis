@@ -1,0 +1,10 @@
+{
+  "source": "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/checkpoints/pilot/results/pilot.after_correction.all_anchors.tsv",
+  "source_sha256": "7e8c9f30a681588390424c0d6dc8efbf147692f965a4706d5773d9a646c51170",
+  "tested_anchors": 85627,
+  "selected_anchors": 13669,
+  "rule": "pval_opt_corrected < 0.05",
+  "extension_cap": null,
+  "ordering": "adjusted P, then anchor",
+  "note": "Use the complete after_correction.all_anchors.tsv as the tested population."
+}

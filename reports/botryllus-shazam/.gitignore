@@ -1,0 +1,4 @@
+sources/*
+!sources/ena-runs.tsv
+!sources/sample-metadata.json
+!sources/retrieval.json

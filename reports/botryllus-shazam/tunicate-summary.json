@@ -1,0 +1,34 @@
+{
+  "query": "tax_tree(7712) AND library_strategy=\"RNA-Seq\"",
+  "taxon": 7712,
+  "taxonomy_source": "https://www.ncbi.nlm.nih.gov/datasets/taxonomy/7712/",
+  "url": "https://www.ebi.ac.uk/ena/portal/api/search?result=read_run&query=tax_tree%287712%29+AND+library_strategy%3D%22RNA-Seq%22&format=tsv&fields=run_accession%2Cstudy_accession%2Csecondary_study_accession%2Csample_accession%2Cexperiment_accession%2Cscientific_name%2Ctax_id%2Csample_title%2Cstudy_title%2Clibrary_layout%2Clibrary_strategy%2Clibrary_source%2Cinstrument_platform%2Cread_count%2Cbase_count%2Cfastq_bytes%2Cfastq_ftp%2Cfastq_md5%2Cfirst_public&limit=0",
+  "count_url": "https://www.ebi.ac.uk/ena/portal/api/count?result=read_run&query=tax_tree%287712%29+AND+library_strategy%3D%22RNA-Seq%22&format=tsv",
+  "expected_runs": 5776,
+  "runs": 5776,
+  "bases": 17696514130180,
+  "listed_fastq_bytes": 9432590269958,
+  "missing_fastq_urls": 8,
+  "missing_fastq_sizes": 8,
+  "studies": 195,
+  "biosamples": 5467,
+  "taxon_ids": 94,
+  "platforms": {
+    "ILLUMINA": 5668,
+    "ION_TORRENT": 47,
+    "OXFORD_NANOPORE": 11,
+    "LS454": 12,
+    "DNBSEQ": 21,
+    "BGISEQ": 9,
+    "ABI_SOLID": 3,
+    "PACBIO_SMRT": 5
+  },
+  "layouts": {
+    "SINGLE": 3443,
+    "PAIRED": 2333
+  },
+  "uncompressed_sha256": "066f294b1a37f4d5441277876fc38f5d94358e529bca259adad49fb7026ec174",
+  "indexed_runs": 0,
+  "indexing_status": "not run",
+  "snapshot_date": "2026-10-23"
+}
