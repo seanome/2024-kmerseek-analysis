@@ -1,0 +1,909 @@
+[
+  {
+    "number": 199,
+    "head": "483246105b980b4387ed82a99fe28c813df05738",
+    "complete": false,
+    "comment_url": "https://github.com/seanome/2024-kmerseek-analysis/pull/199#issuecomment-6364886216",
+    "tests": "9 peptide-lookup, 25 scripts; notebook hooks passed",
+    "fixes": [
+      "13 alive not 12",
+      "Limit impossibility claim to fixed gate",
+      "Correct snapshot-date heading"
+    ],
+    "blockers": [
+      "Recovery, empirical calibration, runtime and fresh-kernel rerun pending"
+    ],
+    "reviewer_status": "partial_scientific_review_fixes_pushed"
+  },
+  {
+    "number": 195,
+    "head": "e83bbaa3b97f3b9d79b78f24e0f7f7e9082643a8",
+    "complete": false,
+    "comment_url": "https://github.com/seanome/2024-kmerseek-analysis/pull/195#issuecomment-6364973018",
+    "tests": "15 focused tests, notebook checker and hooks passed",
+    "fixes": [
+      "Zero-survivor figure crash",
+      "Deterministic tied E-value target selection"
+    ],
+    "blockers": [
+      "Preregistered WTC11 experiment not run; no application result"
+    ],
+    "reviewer_status": "focused_review_fixes_pushed"
+  },
+  {
+    "number": 183,
+    "head": "270c7caae9904a6f4f6807bde40e54046e2976e4",
+    "complete": false,
+    "comment_url": "https://github.com/seanome/2024-kmerseek-analysis/pull/183#issuecomment-6365029550",
+    "tests": "20 tests; notebook checker; scipy independent slope/SE/t agreement",
+    "fixes": [
+      "Active query deadline now enforced with timeout exit124"
+    ],
+    "blockers": [
+      "No measured scaling experiment yet"
+    ],
+    "reviewer_status": "focused_review_fix_pushed"
+  },
+  {
+    "number": 189,
+    "head": "2b58c0affbc6c2903a8d318507e1b628b5bb660e",
+    "complete": false,
+    "comment_url": "https://github.com/seanome/2024-kmerseek-analysis/pull/189#issuecomment-6365030064",
+    "tests": "31 tests; mechanics rerun byte-identical TSVs; notebook hooks",
+    "fixes": [
+      "Cannot PASS with missing intended controls or local alignment/DNA comparator; now INSUFFICIENT_EVIDENCE",
+      "Narrow unavailable-data claims"
+    ],
+    "blockers": [
+      "Actual 200 facility submissions missing, NOT RUN"
+    ],
+    "reviewer_status": "focused_review_fix_pushed"
+  },
+  {
+    "number": 193,
+    "head": "1347c33472480fbeb26a5ade5bc9c623be656860",
+    "complete": false,
+    "comment_url": "https://github.com/seanome/2024-kmerseek-analysis/pull/193#issuecomment-6365103012",
+    "tests": "25 scripts tests, notebook checker/hooks; independent CSV counts match",
+    "fixes": [
+      "Rule4a OR4b interpretation corrected",
+      "Disagreement is not proven de novo error or statistical independence"
+    ],
+    "blockers": [
+      "parasail1.3.4 native tests unavailable; isolated autotools build failed"
+    ],
+    "reviewer_status": "focused_review_fixes_pushed"
+  },
+  {
+    "number": 191,
+    "head": "f82b3d662959af5dd14da30fab315da5a237a874",
+    "complete": false,
+    "comment_url": "https://github.com/seanome/2024-kmerseek-analysis/pull/191#issuecomment-6365145228",
+    "tests": "25 scripts; checker/hooks; 10,000 gene bootstraps reproduce; CSV counts; FASTA writer88records",
+    "fixes": [
+      "Narrow length interpretation",
+      "Entry date is not database update date",
+      "54% means more often, not universal absence"
+    ],
+    "blockers": [
+      "Stop1 biological application not measured",
+      "PR191 and PR196 own the same notebook357 preregistration/builder paths for different experiments; scope decision required before merge"
+    ],
+    "reviewer_status": "focused_review_fixes_pushed"
+  },
+  {
+    "number": 194,
+    "head": "4c29bb9a4a7e95c826e3b8c6526d05b6bc973587",
+    "complete": false,
+    "comment_url": "https://github.com/seanome/2024-kmerseek-analysis/pull/194#issuecomment-6365246072",
+    "tests": "25scripts tests; notebook checker/hooks; 8affected cells rerun; all33ranking rows across11fields match; exact3225regions/zero mismatches/zero finiteE",
+    "fixes": [
+      "BHF counts do not prove calibration or partner",
+      "Poisson comparison is model assumption",
+      "Two nulls are not probability bounds",
+      "gbmr4 negative drift root mathematically positive; retained existing heuristic guard"
+    ],
+    "blockers": [
+      "Historical whole-protein metrics predate kmerseek136; current rerun needed",
+      "Complete fresh-kernel notebook and family nulls not rerun"
+    ],
+    "reviewer_status": "focused_review_fixes_pushed"
+  },
+  {
+    "number": 196,
+    "head": "8a3cf7f3b0a664f85918892f3c1a5205834d21e4",
+    "complete": false,
+    "comment_url": "https://github.com/seanome/2024-kmerseek-analysis/pull/196#issuecomment-6365335031",
+    "tests": "27clade-splash tests; pinnedOASIS SHA256; BH and alternate partition counterexamples; compile/hooks",
+    "fixes": [
+      "Missing annotations/controls -> INSUFFICIENT_EVIDENCE",
+      "BH may reject above Bonferroni cutoff",
+      "One-v-rest is not global p floor",
+      "Prior-art search is not universal novelty proof"
+    ],
+    "blockers": [
+      "Stopped at user request; no completed final notebook; not restarted",
+      "PR191 and PR196 own the same notebook357 preregistration/builder paths for different experiments; scope decision required before merge"
+    ],
+    "reviewer_status": "focused_builder_review_fixes_pushed"
+  },
+  {
+    "number": 198,
+    "head": "f55f4f45bf2a39fffbefcc2cceb32484de9520cf",
+    "complete": false,
+    "comment_url": null,
+    "tests": "",
+    "fixes": [],
+    "blockers": [],
+    "reviewer_status": "outside_notebook_review_scope"
+  },
+  {
+    "number": 197,
+    "head": "6eb203a3205bf559b49dbcf41af9533b19ee7e45",
+    "complete": false,
+    "comment_url": null,
+    "tests": "",
+    "fixes": [],
+    "blockers": [],
+    "reviewer_status": "outside_notebook_review_scope"
+  },
+  {
+    "number": 192,
+    "head": "098ca1126212c089f8d7d9f92ac61dd80c2a6b15",
+    "complete": false,
+    "comment_url": null,
+    "tests": "",
+    "fixes": [],
+    "blockers": [],
+    "reviewer_status": "outside_notebook_review_scope"
+  },
+  {
+    "number": 188,
+    "head": "74eaecbbf448616bb070f14e0be7cec6e56f6a8b",
+    "complete": false,
+    "comment_url": null,
+    "tests": "",
+    "fixes": [],
+    "blockers": [],
+    "reviewer_status": "outside_notebook_review_scope"
+  },
+  {
+    "number": 186,
+    "head": "c46680c45527a6a84b5d16f939a019842ba83814",
+    "complete": false,
+    "comment_url": null,
+    "tests": "",
+    "fixes": [],
+    "blockers": [],
+    "reviewer_status": "outside_notebook_review_scope"
+  },
+  {
+    "number": 185,
+    "head": "b8cb80fecdd9f54380240bf330afdd484ed59eee",
+    "complete": false,
+    "comment_url": null,
+    "tests": "",
+    "fixes": [],
+    "blockers": [],
+    "reviewer_status": "outside_notebook_review_scope"
+  },
+  {
+    "number": 180,
+    "head": "3c7ed6359be994013c453e7d7fe000b2d9e2f14c",
+    "complete": false,
+    "comment_url": null,
+    "tests": "",
+    "fixes": [],
+    "blockers": [],
+    "reviewer_status": "outside_notebook_review_scope"
+  },
+  {
+    "number": 179,
+    "head": "08acd38be6cb7562b2d406c6f3549b78de3c23b0",
+    "complete": false,
+    "comment_url": null,
+    "tests": "",
+    "fixes": [],
+    "blockers": [],
+    "reviewer_status": "outside_notebook_review_scope"
+  },
+  {
+    "number": 177,
+    "head": "663766ddb8fba0f9f4e9d7324f72f535c1272e57",
+    "complete": false,
+    "comment_url": null,
+    "tests": "",
+    "fixes": [],
+    "blockers": [],
+    "reviewer_status": "outside_notebook_review_scope"
+  },
+  {
+    "number": 190,
+    "head": "f8cf7039e8700f65e59224c99cf285653930d0fd",
+    "complete": false,
+    "comment_url": "https://github.com/seanome/2024-kmerseek-analysis/pull/190#issuecomment-6365373497",
+    "tests": "7focused tests; checker/hooks; independent toolgroup aggregation; nullsubset counts and finite-draw p",
+    "fixes": [
+      "Nulls score1544and1664exons, not all1669; print actual counts/rates",
+      "Low pLDDT is model confidence, proxy for disorder"
+    ],
+    "blockers": [
+      "Structure-tool residue-level mapping not tested; full bootstrap not rerun"
+    ],
+    "reviewer_status": "focused_review_fixes_pushed"
+  },
+  {
+    "number": 174,
+    "head": "56596430acb843c18d482c799fc926e7227395ee",
+    "complete": false,
+    "comment_url": "https://github.com/seanome/2024-kmerseek-analysis/pull/174#issuecomment-6365409999",
+    "tests": "162 focused tests; checker/hooks; independent 216-row summary reproduces 7/24 and 22/24 failed cutoffs",
+    "fixes": [
+      "Dipeptide effects vary across tested settings"
+    ],
+    "blockers": [
+      "Historical NO-GO unchanged"
+    ],
+    "reviewer_status": "focused_review_fix_pushed"
+  },
+  {
+    "number": 184,
+    "head": "11861c5efbcb98aab39b460e16efee2efa0a0cfd",
+    "complete": false,
+    "comment_url": "https://github.com/seanome/2024-kmerseek-analysis/pull/184#issuecomment-6365571990",
+    "tests": "6 focused tests; checker/hooks; independent 203616 scores and 11376 sequence records",
+    "fixes": [
+      "Partial stage1 queue now INSUFFICIENT_EVIDENCE"
+    ],
+    "blockers": [
+      "Stage1 real review queue incomplete"
+    ],
+    "reviewer_status": "focused_review_fix_pushed"
+  },
+  {
+    "number": 182,
+    "head": "c85c20fe0f7b96031c72d46ac5bf096f456305d3",
+    "complete": false,
+    "comment_url": "https://github.com/seanome/2024-kmerseek-analysis/pull/182#issuecomment-6365572546",
+    "tests": "15 focused tests; checker/hooks; actual raw subset rescored reproduces 0/685 across 3 settings",
+    "fixes": [
+      "Narrow universal composition claim to actual tested set"
+    ],
+    "blockers": [
+      "16 recovery settings and required timing pending"
+    ],
+    "reviewer_status": "focused_review_fix_pushed"
+  },
+  {
+    "number": 178,
+    "head": "9fdd7898a214430b1be44e848392996efcdcd805",
+    "complete": false,
+    "comment_url": "https://github.com/seanome/2024-kmerseek-analysis/pull/178#issuecomment-6365678933",
+    "tests": "14 focused tests; checker/hooks; independent recall and AUC from saved pair scores",
+    "fixes": [
+      "Precision curve groups tied scores together",
+      "Narrow all-linear-scoring impossibility claim"
+    ],
+    "blockers": [
+      "Origin literature and full independent alignment not audited"
+    ],
+    "reviewer_status": "focused_review_fixes_pushed"
+  },
+  {
+    "number": 126,
+    "head": "c217915c18117d11ce87357b6ceaca48960d2a81",
+    "complete": false,
+    "comment_url": "https://github.com/seanome/2024-kmerseek-analysis/pull/126#issuecomment-6364897146",
+    "tests": "25 scripts/tests passed; notebook checker and all commit hooks passed",
+    "fixes": [],
+    "blockers": [
+      "Full execution and every subsidiary statistic not tested; binomial family-independence limitation disclosed"
+    ],
+    "reviewer_status": "reviewed_fixed"
+  },
+  {
+    "number": 122,
+    "head": "f89fdfdf10b9c2e3d10906699777c4add0225aaa",
+    "complete": false,
+    "comment_url": "https://github.com/seanome/2024-kmerseek-analysis/pull/122#issuecomment-6365037445",
+    "tests": "Read nb282, ohnolog_family_utils.py and its tests. Notebook checker passed;18 helper tests passed. Independently parsed OrthoFinder TSV and strict OHNOLOGS pairs using csv and Python sets, without the helper.",
+    "fixes": [],
+    "blockers": [
+      "New OrthoFinder run, unavailable Stage2 cell-type expression, independent retrieval of cited papers, complete Stage0 reconstruction from original per-gene expression (not publicly present per notebook)."
+    ],
+    "reviewer_status": "reviewed"
+  },
+  {
+    "number": 124,
+    "head": "3126e5597a0386c6aba4f73ac05daa4f73b59b21",
+    "complete": false,
+    "comment_url": "https://github.com/seanome/2024-kmerseek-analysis/pull/124#issuecomment-6365036794",
+    "tests": "Read nb283 and the BHF null helpers. Recounted raw top-score parquet records without the notebook helper. Current main notebook checker passes nb283; builder compiles. The branch predates scripts/check_notebooks.py, scripts/tests and pre-commit config, so its missing-config commit hook was explicitly allowed after using the current checker. Executed the added image-display code in a fresh kernel.",
+    "fixes": [],
+    "blockers": [
+      "Full notebook execution, the memory-intensive 10-residue human-window index, new kmerseek searches, complete null4/5 recount, all inherited notebook versions. Mechanical gaps in inherited nb256/258 are tracked separately."
+    ],
+    "reviewer_status": "reviewed_fixed_nb283_historical_pending"
+  },
+  {
+    "number": 121,
+    "head": "43d6526ae5b9fd0aeb8d5d77365bd7c146697e53",
+    "complete": false,
+    "comment_url": "https://github.com/seanome/2024-kmerseek-analysis/pull/121#issuecomment-6365043480",
+    "tests": "Read nb280, builder and transfer scorer. Executed test_score_transfers.py as a script: all checks passed (pytest finds no test functions in that executable fixture). Notebook checker and commit hooks passed. Independently recounted the committed instance_calls.parquet with Python sets, SHA-1 split and saved cutoffs.",
+    "fixes": [],
+    "blockers": [
+      "Full scorer on695GB search outputs, new searches/Sherlock execution, independent bootstrap interval recreation, all subsidiary figures, Pfam-seed reference search (explicitly not run)."
+    ],
+    "reviewer_status": "reviewed_fixed"
+  },
+  {
+    "number": 169,
+    "head": "369a51d312e48939af217457beeb4bd367519319",
+    "complete": false,
+    "comment_url": "",
+    "tests": "",
+    "fixes": [],
+    "blockers": [],
+    "reviewer_status": "scope_inventory_only"
+  },
+  {
+    "number": 166,
+    "head": "898d4e034722b75a97ea05799ca8b8a986c928cc",
+    "complete": false,
+    "comment_url": "",
+    "tests": "",
+    "fixes": [],
+    "blockers": [],
+    "reviewer_status": "scope_inventory_only"
+  },
+  {
+    "number": 165,
+    "head": "e29efee4aa48d1f78634a4afde9d7878ff78f4da",
+    "complete": false,
+    "comment_url": "",
+    "tests": "",
+    "fixes": [],
+    "blockers": [],
+    "reviewer_status": "scope_inventory_only"
+  },
+  {
+    "number": 164,
+    "head": "275e195e230a2a808881d320b036365af41beee9",
+    "complete": false,
+    "comment_url": "",
+    "tests": "",
+    "fixes": [],
+    "blockers": [],
+    "reviewer_status": "scope_inventory_only"
+  },
+  {
+    "number": 163,
+    "head": "cc33016e578f4cf2440f249b10992670347978cb",
+    "complete": false,
+    "comment_url": "",
+    "tests": "",
+    "fixes": [],
+    "blockers": [],
+    "reviewer_status": "scope_inventory_only"
+  },
+  {
+    "number": 162,
+    "head": "db747e424265a12d618adfbd63a3b27a2351ffb9",
+    "complete": false,
+    "comment_url": "",
+    "tests": "",
+    "fixes": [],
+    "blockers": [],
+    "reviewer_status": "scope_inventory_only"
+  },
+  {
+    "number": 161,
+    "head": "715275a8925b35732d796eb35af552405755e57a",
+    "complete": false,
+    "comment_url": "",
+    "tests": "",
+    "fixes": [],
+    "blockers": [],
+    "reviewer_status": "scope_inventory_only"
+  },
+  {
+    "number": 160,
+    "head": "f0802ebe12a15d752580798f37a32c0033d6a81a",
+    "complete": false,
+    "comment_url": "",
+    "tests": "",
+    "fixes": [],
+    "blockers": [],
+    "reviewer_status": "scope_inventory_only"
+  },
+  {
+    "number": 159,
+    "head": "c2f151497ccca98d7cf2f96f8509a0df1f6d5308",
+    "complete": false,
+    "comment_url": "",
+    "tests": "",
+    "fixes": [],
+    "blockers": [],
+    "reviewer_status": "scope_inventory_only"
+  },
+  {
+    "number": 158,
+    "head": "5b644dc8195cba4535d06d59c6b15748a30874b0",
+    "complete": false,
+    "comment_url": "",
+    "tests": "",
+    "fixes": [],
+    "blockers": [],
+    "reviewer_status": "scope_inventory_only"
+  },
+  {
+    "number": 156,
+    "head": "cd2bc2f6f2d010537264a15f53a0f05be6d12eaa",
+    "complete": false,
+    "comment_url": "",
+    "tests": "",
+    "fixes": [],
+    "blockers": [],
+    "reviewer_status": "scope_inventory_only"
+  },
+  {
+    "number": 155,
+    "head": "02ba2be7ac0145aaaec642453acbd8f84cab9e85",
+    "complete": false,
+    "comment_url": "",
+    "tests": "",
+    "fixes": [],
+    "blockers": [],
+    "reviewer_status": "scope_inventory_only"
+  },
+  {
+    "number": 154,
+    "head": "08a099b5d9b6d566036072f19d2152b2544571a1",
+    "complete": false,
+    "comment_url": "",
+    "tests": "",
+    "fixes": [],
+    "blockers": [],
+    "reviewer_status": "scope_inventory_only"
+  },
+  {
+    "number": 150,
+    "head": "8cfada34b7834bc04d4de9d88ea84a066219e971",
+    "complete": false,
+    "comment_url": "",
+    "tests": "",
+    "fixes": [],
+    "blockers": [],
+    "reviewer_status": "scope_inventory_only"
+  },
+  {
+    "number": 149,
+    "head": "f7e0946de258cb8d94aeb7a7bbc6dbacfc76f275",
+    "complete": false,
+    "comment_url": "",
+    "tests": "",
+    "fixes": [],
+    "blockers": [],
+    "reviewer_status": "scope_inventory_only"
+  },
+  {
+    "number": 148,
+    "head": "7eca428b763ccb5b4209d5b76ca2f7db1e0f6ab0",
+    "complete": false,
+    "comment_url": "",
+    "tests": "",
+    "fixes": [],
+    "blockers": [],
+    "reviewer_status": "scope_inventory_only"
+  },
+  {
+    "number": 147,
+    "head": "49a889af1d176cf459f546557047ef15f47fc99f",
+    "complete": false,
+    "comment_url": "",
+    "tests": "",
+    "fixes": [],
+    "blockers": [],
+    "reviewer_status": "scope_inventory_only"
+  },
+  {
+    "number": 146,
+    "head": "0bfe25a744854efceaa3c0e0940e83ed79b95761",
+    "complete": false,
+    "comment_url": "",
+    "tests": "",
+    "fixes": [],
+    "blockers": [],
+    "reviewer_status": "scope_inventory_only"
+  },
+  {
+    "number": 145,
+    "head": "e985f7d49cb30a86abee7a308c6d68ed229788c4",
+    "complete": false,
+    "comment_url": "",
+    "tests": "",
+    "fixes": [],
+    "blockers": [],
+    "reviewer_status": "scope_inventory_only"
+  },
+  {
+    "number": 144,
+    "head": "825554892c009f2a1e84f8edb8f6a23a8d6d52ec",
+    "complete": false,
+    "comment_url": "",
+    "tests": "",
+    "fixes": [],
+    "blockers": [],
+    "reviewer_status": "scope_inventory_only"
+  },
+  {
+    "number": 135,
+    "head": "1118194478f295509acbd8872e83d2145a33150b",
+    "complete": false,
+    "comment_url": "",
+    "tests": "",
+    "fixes": [],
+    "blockers": [],
+    "reviewer_status": "scope_inventory_only"
+  },
+  {
+    "number": 127,
+    "head": "09abbb4cb5baa7f8d84a2c7c412f479500ab5957",
+    "complete": false,
+    "comment_url": "",
+    "tests": "",
+    "fixes": [],
+    "blockers": [],
+    "reviewer_status": "scope_inventory_only"
+  },
+  {
+    "number": 134,
+    "head": "f1018ecde08db6f1ee1aaf26590acf5b3c8d11de",
+    "complete": false,
+    "comment_url": "https://github.com/seanome/2024-kmerseek-analysis/pull/134#issuecomment-6365129127",
+    "tests": "Read the notebook, builder and shuffle-control test paths.29 tests passed in test_290_shuffle_chunks.py and test_290_tasks.py; notebook checker and commit hooks passed.",
+    "fixes": [],
+    "blockers": [
+      "Sherlock run completion, actual shuffled search outcomes, original nb279 source counts and resource measurements."
+    ],
+    "reviewer_status": "reviewed_plan_fixed"
+  },
+  {
+    "number": 167,
+    "head": "5e2bacf447af07ff7763ffdb0f580dd0f77dd1c8",
+    "complete": false,
+    "comment_url": "https://github.com/seanome/2024-kmerseek-analysis/pull/167#issuecomment-6365129755",
+    "tests": "Read nb296, builder, reduction/tie logic and cysteine framework helpers. Independent pure-Python grouping of raw pilot pairs reproduces cys2k16 mean5.034439632. Helper doctests5/5 passed on the shared updated version; notebook checks and commit hooks passed.",
+    "fixes": [],
+    "blockers": [
+      "Full notebook execution, new160GB raw-hit reductions/searches, family-aware intervals, complete phmmer/regex recount and all subsidiary statistics."
+    ],
+    "reviewer_status": "reviewed_fixed"
+  },
+  {
+    "number": 168,
+    "head": "bd1098972d7277a44feade236b92a75427fd398b",
+    "complete": false,
+    "comment_url": "https://github.com/seanome/2024-kmerseek-analysis/pull/168#issuecomment-6365130411",
+    "tests": "Read both notebooks, builders, helper, top-group reducer and tie arithmetic. Independently streamed reduced parquet records and grouped with Python dictionaries; helper doctests5/5 passed, notebook checker and all commit hooks passed.",
+    "fixes": [],
+    "blockers": [
+      "Full notebook execution, new raw-hit reduction/searches, family-aware intervals, all bootstrap bounds, every subsidiary statistic and the still-running cys2 full run."
+    ],
+    "reviewer_status": "reviewed_fixed"
+  },
+  {
+    "number": 139,
+    "head": "5df91935fd77e79f1ac72f8dcb048ae82d6fe371",
+    "complete": false,
+    "comment_url": "https://github.com/seanome/2024-kmerseek-analysis/pull/139#issuecomment-6365179316",
+    "tests": "Read nb284 and builder. Independently recomputed the main counts from raw seed alignment rows using Python loops for exact runs and ungapped segments, then Biopython gapped scoring. Notebook checker and commit hooks passed.",
+    "fixes": [],
+    "blockers": [
+      "Full notebook execution, all shuffled replicates, figure rerender/font repair, independent statistical calibration of the24-bit threshold and new external benchmark data."
+    ],
+    "reviewer_status": "reviewed_scientific_fixed_style_pending"
+  },
+  {
+    "number": 125,
+    "head": "30388f443f1ac6c7bffaa5833b42308b87c58635",
+    "complete": false,
+    "comment_url": "https://github.com/seanome/2024-kmerseek-analysis/pull/125#issuecomment-6365180965",
+    "tests": "Read alphabet_agreement_utils.py and page builder. Rebuilt the page successfully. Independent csv count reproduces four versus4848. Ran helper on a synthetic same-diagonal overlap chain and touching intervals. The existing JavaScript/CSV pytest is skipped because284_explainer_files is absent; it did not pass.",
+    "fixes": [],
+    "blockers": [
+      "Interactive rendering/click behavior, absent284_explainer_files JavaScript/CSV test, full raw-region recomputation and shuffled-query searches."
+    ],
+    "reviewer_status": "reviewed_helper_fixed"
+  },
+  {
+    "number": 140,
+    "head": "6018587813736958cd4e74db5f203c48664cf4e8",
+    "complete": false,
+    "comment_url": "https://github.com/seanome/2024-kmerseek-analysis/pull/140#issuecomment-6365293236",
+    "tests": "Read nb341 and exon pair helpers;4 cached real-data tests passed and notebook checker passed. Independently compared the two cached Ensembl protein strings without the helper.",
+    "fixes": [],
+    "blockers": [
+      "Full notebook execution, localCIDER/IUPred revalidation, every full-set exon event and new dataset downloads."
+    ],
+    "reviewer_status": "reviewed"
+  },
+  {
+    "number": 142,
+    "head": "48adc4f81dbf981ecd218b8aa78437204a6c73cd",
+    "complete": false,
+    "comment_url": "https://github.com/seanome/2024-kmerseek-analysis/pull/142#issuecomment-6365294010",
+    "tests": "Read nb292, adaptive_sampling_utils.py, decision/table logic and the saved control caveats. Notebook checker passed. Independently read current raw score parquets for real reads,holdoutii,hpk30 and counted the second of the three nominal chunk rows, joining raw truth labels with a Python dictionary.",
+    "fixes": [],
+    "blockers": [
+      "Full notebook execution, newly generated read scores, new DIAMOND/minimap2 searches, every control statistic, independent reads/family uncertainty or real nanopore hardware timing."
+    ],
+    "reviewer_status": "reviewed"
+  },
+  {
+    "number": 141,
+    "head": "1b00d6f1da1eb19e99b9578082e17a41f4296080",
+    "complete": false,
+    "comment_url": "https://github.com/seanome/2024-kmerseek-analysis/pull/141#issuecomment-6365350145",
+    "tests": "Read nb295, scorer, builders and cached scored tables.5 new regression tests passed: reordered ties,missing positives,own-lineage exclusion,empty lists and negative-infinity ties. Notebook checker and commit hooks passed.",
+    "fixes": [],
+    "blockers": [
+      "Full notebook execution,new searches,external full metrics rescore and independent raw-ranked-hit replay. Existing AP columns are not certified."
+    ],
+    "reviewer_status": "reviewed_fixed_auprc_rescore_pending"
+  },
+  {
+    "number": 143,
+    "head": "80c4b8cd22f2ce7ff9c3d0d1f4e0791a5e071899",
+    "complete": false,
+    "comment_url": "https://github.com/seanome/2024-kmerseek-analysis/pull/143#issuecomment-6365350892",
+    "tests": "Read nb294, linked_pairs_utils.py and builders;23 helper tests passed,notebook checker and commit hooks passed. Independently calculated exact-FPR tie fractions and report-half recall from score parquet using Python sorting/counts.",
+    "fixes": [],
+    "blockers": [
+      "Full notebook execution,new score generation,new Sherlock searches,all bootstrap bounds and a family-held-out reanalysis."
+    ],
+    "reviewer_status": "reviewed_fixed"
+  },
+  {
+    "number": 128,
+    "head": "1896ef683096f042edb0e7c8d4c2d17e9568b8bf",
+    "complete": false,
+    "comment_url": "https://github.com/seanome/2024-kmerseek-analysis/pull/128#issuecomment-6365451088",
+    "tests": "Read nb285,pooling implementation and summary/group score inputs. Notebook checker and commit hooks passed. Independently counted lower scores across the7212group rows in285_posthoc_copies_once.csv.",
+    "fixes": [],
+    "blockers": [
+      "Full notebook execution,full pooling from original region calls,shuffled-query rescore and all secondary tables."
+    ],
+    "reviewer_status": "reviewed_fixed"
+  },
+  {
+    "number": 129,
+    "head": "8ee9cc607083a1078cb3226c445d2d85047cc8b6",
+    "complete": false,
+    "comment_url": "https://github.com/seanome/2024-kmerseek-analysis/pull/129#issuecomment-6365451651",
+    "tests": "Read nb288 and two-step driver/scoring paths. Notebook checker passed. Independently recounted all-query pairwise best-score CSV with Python comparisons,including ties and infinite E-values.",
+    "fixes": [],
+    "blockers": [
+      "New index/search runs,full raw-region rescoring,all two-step summary values and every plotting output."
+    ],
+    "reviewer_status": "reviewed"
+  },
+  {
+    "number": 130,
+    "head": "a2db7d80daa4f1eb8d2ebeb16a82c053dd91dcaf",
+    "complete": false,
+    "comment_url": "https://github.com/seanome/2024-kmerseek-analysis/pull/130#issuecomment-6365452371",
+    "tests": "Read nb286 and the conditional result-loading sections,driver/residue formatting interfaces. The decisive local286/results files are absent and no search was launched. Review scope is preparation and interpretation,not a completed outcome.",
+    "fixes": [],
+    "blockers": [
+      "Sherlock job status,actual two-step output,path null calibration,full notebook execution and driver runtime."
+    ],
+    "reviewer_status": "reviewed_plan_pending_run"
+  },
+  {
+    "number": 131,
+    "head": "09eb2f140272c67ed27af535ad0a5c6e2a01c08a",
+    "complete": false,
+    "comment_url": "https://github.com/seanome/2024-kmerseek-analysis/pull/131#issuecomment-6365453148",
+    "tests": "Read nb287 and sum_statistics_utils.py.10tests passed,including the numerical probability tables/single-chain behavior. Notebook checker passed. Independently counted strict-lower logEvalues from current chain_scores.parquet.",
+    "fixes": [],
+    "blockers": [
+      "Full notebook execution,new raw-call chain generation,all shuffled-control/Pfam998figures and independent upstream citation revalidation."
+    ],
+    "reviewer_status": "reviewed"
+  },
+  {
+    "number": 118,
+    "head": "cf19eaa2eb382e90f1598c6ad8bb7a08294ddfc8",
+    "complete": false,
+    "comment_url": "https://github.com/seanome/2024-kmerseek-analysis/pull/118#issuecomment-6364920571",
+    "tests": [
+      "25 tests",
+      "notebook checker",
+      "precommit all hooks",
+      "fresh kernel all72 cells"
+    ],
+    "fixes": [
+      "correct false p<0.002 bound",
+      "related immunoglobulin controls",
+      "rank25 wording and limited window-selection inference",
+      "follow-up selection timing"
+    ],
+    "blockers": [
+      "upstream structural calculations not independently regenerated; review scope stated"
+    ],
+    "reviewer_status": ""
+  },
+  {
+    "number": 83,
+    "head": "a3bde39118a07fb0f578675ca0cd24f07c62ebc3",
+    "complete": false,
+    "comment_url": "https://github.com/seanome/2024-kmerseek-analysis/pull/83#issuecomment-6365050342",
+    "tests": [
+      "242 full fresh kernel",
+      "256 full fresh kernel",
+      "modern checker",
+      "black5 files",
+      "20 tie-order shuffles",
+      "20 dipeptide conservation tests",
+      "builder source AST match",
+      "258 full fresh kernel",
+      "2 input-provenance regression cases"
+    ],
+    "fixes": [
+      "missing242 composition figure",
+      "missing256 recurrence figure",
+      "stable gene tie selection",
+      "state nominal shuffle-reference limits",
+      "258 relocated-input validation",
+      "258 encoded-residue alignment figure"
+    ],
+    "blockers": [
+      "inherited241/243 independent audit incomplete (shared versions under other review)"
+    ],
+    "reviewer_status": ""
+  },
+  {
+    "number": 119,
+    "head": "19f45af9",
+    "complete": false,
+    "comment_url": "https://github.com/seanome/2024-kmerseek-analysis/pull/119#issuecomment-6365157276",
+    "tests": [
+      "39 scripts tests",
+      "full13cells fresh kernel",
+      "notebook checker",
+      "all precommit hooks",
+      "independent1204 raw-alignment divergence ratio1.77850332 matches1.78"
+    ],
+    "fixes": [
+      "SyntaxError in hp_conservation_utils merge",
+      "restore tight_layout flag",
+      "scope unresolved BLOSUM differences and model expectation claims"
+    ],
+    "blockers": [],
+    "reviewer_status": ""
+  },
+  {
+    "number": 113,
+    "head": "817fbfa9",
+    "complete": false,
+    "comment_url": "https://github.com/seanome/2024-kmerseek-analysis/pull/113#issuecomment-6365257373",
+    "tests": [
+      "19cells freshkernel",
+      "25tests",
+      "allprecommit hooks",
+      "independent cap10 reach1.617861%",
+      "all4 nullfractions independently reweighted from20000draws"
+    ],
+    "fixes": [
+      "round exact-run guarantee down",
+      "limit memory/sensitivity claims to measured entries and reach"
+    ],
+    "blockers": [
+      "seed-scanner unit suite requires missingnumba"
+    ],
+    "reviewer_status": ""
+  },
+  {
+    "number": 107,
+    "head": "aa1e30d9",
+    "complete": false,
+    "comment_url": "https://github.com/seanome/2024-kmerseek-analysis/pull/107#issuecomment-6365406544",
+    "tests": [
+      "27cells freshkernel",
+      "25tests",
+      "allprecommit hooks",
+      "RRFcounterexample disproves oldbound",
+      "232vs151 committed count check"
+    ],
+    "fixes": [
+      "unionofindividualpre-FPtruehits is not generalupperbound; originalfixedrule quoted+limited",
+      "combination figure label corrected"
+    ],
+    "blockers": [
+      "perqueryAUCnotindependentlyrebuilt fromrawpairs; reviewscope explicit"
+    ],
+    "reviewer_status": ""
+  },
+  {
+    "number": 138,
+    "head": "c6754372fa18228381b461c6e9f9d61249702de9",
+    "complete": true,
+    "comment_url": "https://github.com/seanome/2024-kmerseek-analysis/pull/138#issuecomment-6365309484",
+    "tests": "107 tests passed. Independently enumerated all AC/D sequences of lengths 0 through 7 under three seeds (9,840 cases); all retained length, end residues and every adjacent-pair count.",
+    "fixes": [],
+    "blockers": [],
+    "reviewer_status": ""
+  },
+  {
+    "number": 115,
+    "head": "e38fca581769f5efbb1ade733fc1bdfcccedbca6",
+    "complete": true,
+    "comment_url": "https://github.com/seanome/2024-kmerseek-analysis/pull/115#issuecomment-6365310228",
+    "tests": "Both new repeated-page tests failed at the original head and pass after the fix. All 10 DisProt tests pass. Ran the full cached June 2026 release through the parser: 3,337 entries, 1,339 human records. Black and whitespace checks pass.",
+    "fixes": [
+      "CONFIRMED and fixed: fetch_disprot_json and the --local path accepted repeated entries when row count equalled size. Regression tests cover both paths and confirm no TSV is written for a duplicate local file."
+    ],
+    "blockers": [
+      "No live API request, Nextflow benchmark rerun, or full execution of notebooks 081/251. The cached release is pinned evidence, not a claim about the current live release."
+    ],
+    "reviewer_status": ""
+  },
+  {
+    "number": 91,
+    "head": "aa62ff92f43f6604d976d246281b20829d028a24",
+    "complete": true,
+    "comment_url": "https://github.com/seanome/2024-kmerseek-analysis/pull/91#issuecomment-6365310904",
+    "tests": "All 11 new regression cases failed at the original head and pass after the fix (9 registry names and 2 empty-axis directions). Black and whitespace checks pass. The old branch has no pre-commit configuration; these checks were run directly.",
+    "fixes": [
+      "CONFIRMED and fixed in notebooks/figure_utils.py: the registry uses names such as protein, dayhoff and hp_pbotc_1st_ed, which have no class-count suffix; alphabet_size rejected them. alphabet_axis also crashed on []."
+    ],
+    "blockers": [
+      "Did not re-execute all 20 importing notebooks or inspect every regenerated header. This is a utility review, not scientific sign-off for those notebooks. The pre-existing merge conflict remains."
+    ],
+    "reviewer_status": ""
+  },
+  {
+    "number": 123,
+    "head": "c2943fe336b1dba44d75a50ba1d79229c6605a4f",
+    "complete": true,
+    "comment_url": "https://github.com/seanome/2024-kmerseek-analysis/pull/123#issuecomment-6365311758",
+    "tests": "The new transparency regression failed before the fix and now passes. All 9 PNG tests pass; Black, whitespace, and commit hooks pass.",
+    "fixes": [
+      "CONFIRMED and fixed in notebooks/pubfig.py: a figure with alpha 0, 128 and 255 became fully opaque. The new test compares all RGBA bytes, checks the 450 dpi tag, and checks a second conversion is byte-identical."
+    ],
+    "blockers": [
+      "Not every changed scientific figure was inspected visually, and the global publication-figures skill copy still needs the matching code fix. Notebook scientific results were not rerun."
+    ],
+    "reviewer_status": ""
+  },
+  {
+    "number": 153,
+    "head": "7ced25210b8318105ecc4a26a0ad735227ff99e1",
+    "complete": true,
+    "comment_url": "https://github.com/seanome/2024-kmerseek-analysis/pull/153#issuecomment-6365312436",
+    "tests": "Read the failed GitHub job log: the sole failure was the swatch PNG. Reproduced it locally. All 8 PNG tests pass; --check on the original swatches now exits 0. Verified importing pubfig registers both maps and sets the default to crest.",
+    "fixes": [
+      "CONFIRMED and fixed: the older hook tried to shrink a colour-scale reference image. A visual check of that quantized candidate showed visible bands, so it was not committed. Original pixels are preserved; the detector finds 255 continuous shades."
+    ],
+    "blockers": [
+      "The new GitHub CI run was not finished at comment time. Did not regenerate every notebook figure using the changed default map."
+    ],
+    "reviewer_status": ""
+  },
+  {
+    "number": 52,
+    "head": "aedd739e1b200279972fe5622b0d0831fef89233",
+    "complete": true,
+    "comment_url": "https://github.com/seanome/2024-kmerseek-analysis/pull/52#issuecomment-6365687196",
+    "tests": "321 Python tests passed, one skipped; Groovy regression tests pass; Nextflow inspect compiles 34 definitions; four profiles resolve.",
+    "fixes": [
+      "Extended fit cache identity and search settings provenance guard."
+    ],
+    "blockers": [
+      "Actual container/search/storeDir execution requires a small Sherlock run."
+    ],
+    "reviewer_status": ""
+  }
+]
