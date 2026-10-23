@@ -260,8 +260,9 @@ quoted. TM-score at or above 0.5 is the usual line for "the same fold".
 
 **The background.** 20 domains were drawn at random, with a fixed seed, from the 239
 immunoglobulin-like domains of SCOPe 2.08 superfamily b.1.1 in the ASTRAL 40% set, which
-holds one domain per 40%-identity cluster, so they are unrelated to each other as well as
-to CD47. Each is aligned to the same CD47 domain the same way. These are the scores a
+holds representatives at a 40% sequence-identity threshold. These domains share an
+immunoglobulin superfamily; that threshold does not make them unrelated to each other
+or to CD47. Each is aligned to the same CD47 domain the same way. These are the scores a
 genuine immunoglobulin relative of CD47 earns.
 """)
 
@@ -764,8 +765,9 @@ md(r"""
 **Figure 276l panel a** is this result; panel b belongs to the next section.
 
 **The lead survives its prespecified test.** 0 of 437 length- and acid-matched human
-proteins reach CD47's score of 6.0, so p < 1/437 = 0.002, well inside the 0.05 the rule
-asked for. Only 12 of the 437 produce a segment covering the loop at all; the median score
+proteins reach CD47's score of 6.0. The observed background fraction is 0/437,
+which passes the fixed 0.05 rule. Zero observed exceedances do not establish
+p < 0.002; one background protein would change the fraction by 1/437 = 0.00229. Only 12 of the 437 produce a segment covering the loop at all; the median score
 is 0 and the best is 5.5. On the statistic fixed in advance, CD47 is the single best match
 P66's loop region has among 437 proteins of its own length and acidity.
 
@@ -1311,8 +1313,8 @@ background instead of a sweep.
 
 So the answer to the question has three parts, and only the second one is about biology.
 There is one setting where CD47 is the unique best human match for a P66 query; that query
-was defined by its match to CD47; and for the stretch the claim is actually about, no
-setting puts CD47 anywhere near the top without tying most of the proteome with it.
+was defined by its match to CD47; and for the stretch the claim is actually about, the best loop rank is 25 of 19_705 (0.127%), shared with 897 proteins. This is
+a high rank with many ties; it does not establish a unique match.
 """)
 
 md(r"""
@@ -1327,8 +1329,8 @@ against the entry.
 
 Hold CD47 out. Score every one of P66's 583 windows of 36 residues against the 437
 matched human proteins that are not CD47, take the window that scores highest, and only
-then ask where CD47 ranks for it. Alphabet `hsdm17`, window 36, match count, all fixed
-in advance, and the script asserts CD47 is absent from the discovery set before it runs.
+then ask where CD47 ranks for it. Alphabet `hsdm17`, window 36 and match count are fixed for this follow-up, after the earlier
+CD47 comparison selected this setting, and the script asserts CD47 is absent from the discovery set before it runs.
 """)
 
 code(r"""
@@ -1350,16 +1352,16 @@ reaches for it.
 
 Both halves of that matter, and they point in opposite directions:
 
-* **Discovery is circular, confirmed.** The window cannot be found without CD47. Held out,
+* **The original window was selected against CD47.** In this follow-up, with CD47 held out,
   the data picks a different part of the protein entirely, and CD47 is rank 4_696 for it.
-  Nothing that searches P66 against a database would ever surface this window.
+  This particular window-selection procedure does not select it.
 * **Given the window, the match is specific to CD47.** A window that is merely
   generically matchable would score well against the held-out set too. This one is median
   there and maximal on CD47, and section 6d already showed 0 of 437 matched proteins reach
   its score.
 
 So this is a hypothesis-confirming result and not a hypothesis-generating one. If you
-already suspect CD47, the segment is unusually good. No search would have handed it to you.
+already suspect CD47, the segment is unusually good. This window-selection procedure did not select it.
 """)
 
 md(r"""
@@ -1456,7 +1458,7 @@ Claim sentences:
   do**: 1.91 Å backbone RMSD against a median of 1.07 Å for 10 other 7-residue P66 loops,
   and in the whole-fold superposition its centre lands 55 Å from the centre of the face,
   off a domain only 45 Å across at its widest.
-* **No alphabet, k-size or metric puts CD47 at the top of the human proteome for the loop.**
+* **No tested setting makes CD47 the unique top hit for the loop.**
   Over 76 settings, CD47's best rank for a P66 202-208 query is 25 of 19_705 once settings
   that tie more than 100 proteins at the top are excluded, and the settings that do rank it
   first tie 15_409 or 19_028 proteins there. One setting makes CD47 the unique best hit for
@@ -1478,7 +1480,7 @@ Claim sentences:
   non-identical residue pairs and the segment's signal over chance is carried by one of
   them, `K` against `E`. It
   passes a prespecified test: 0 of 437 human proteins matched to CD47 on length and acidic
-  fraction reach its score, p < 0.002. But splitting the same background by column, CD47
+  fraction reach its score (observed background fraction 0/437, not a bound p < 0.002). But splitting the same background by column, CD47
   scores 5.0 on the 29 flanking columns where no matched protein reaches it, and 1.0 on the
   loop's 7 columns where **all 12 matched proteins that reach the loop beat it**, median
   3.5. CD47 is the best of 438 on the part of the segment the claim is not about and the
