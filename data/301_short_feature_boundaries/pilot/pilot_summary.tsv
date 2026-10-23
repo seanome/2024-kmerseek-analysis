@@ -1,0 +1,6 @@
+setting	alphabet	ksize	karlin_altschul_fit	targets_loaded	index_wall_s	index_peak_rss_gb	search_43_sequences_wall_s	search_peak_rss_gb	rows_real	rows_finite_region_evalue_real	rows_region_subseq_matches_query_real	rows_chimera	rows_finite_region_evalue_chimera	rows_region_subseq_matches_query_chimera	rows_decoy	rows_finite_region_evalue_decoy	rows_region_subseq_matches_query_decoy	rows_kept_by_filter_e10_on_window	search_1_query_4_cores_wall_s
+dayhoff6.k12.s1.lctrue.c0.41.x1.65	dayhoff6	12	refused	456730	243.88	40.3													
+hp_lehninger2.k19.s1.lctrue.c1.51.x6.03	hp_lehninger2	19	fitted	446754	267.93	41.5	281.62	39.2	720026	719992	720026	127405	127405	127405	3714278	3714267	3714278	429	
+protein20.k5.s1.lctrue.c0.14.x0.57	protein20	5	fitted	482286	659.15	45.0	270.67	37.5	457847	457845	457847	150656	150656	150656	2164571	2164567	2164571	376	
+hp_lehninger2.k19 one query (P12241), 4 cores, run 1	hp_lehninger2	19						3.1											61.54
+hp_lehninger2.k19 one query (P12241), 4 cores, run 2	hp_lehninger2	19						3.1											2.5
