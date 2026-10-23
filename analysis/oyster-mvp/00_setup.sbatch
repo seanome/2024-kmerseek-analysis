@@ -26,12 +26,14 @@ if [ ! -f "$SHAZAM_ENV/.complete" ]; then
   "$SHAZAM_ENV/bin/python" -m pip install --no-cache-dir -e "$CODE/clam-context"
   touch "$SHAZAM_ENV/.complete"
 fi
+# BLAST+ for the near-reference check of sequences with no exact 31-mer match.
+[ -x "$SHAZAM_ENV/bin/blastn" ] || "$MAMBA" install -y -p "$SHAZAM_ENV" -c conda-forge -c bioconda blast=2.16
 
 if [ ! -f "$DEKUPL_ENV/.complete" ]; then
   rm -rf "$DEKUPL_ENV"
   "$MAMBA" create -y -p "$DEKUPL_ENV" --strict-channel-priority -c conda-forge -c bioconda \
     python=3.11 r-base=4.3 bioconductor-deseq2=1.42 r-data.table r-pheatmap r-foreach \
-    r-doparallel r-rcolorbrewer kmer-jellyfish=2.3 pigz cmake make zlib wget coreutils
+    r-doparallel r-rcolorbrewer kmer-jellyfish=2.3 pigz cmake make zlib wget coreutils datrie
   "$DEKUPL_ENV/bin/python" -m pip install --no-cache-dir --prefer-binary snakemake==7.32.4 "pulp<2.8"
   touch "$DEKUPL_ENV/.complete"
 fi
@@ -46,17 +48,24 @@ if [ ! -x "$SPLASH_DIR/splash" ]; then
   rm -rf "$SPLASH_DIR" splash.tar.gz
   wget -q -O splash.tar.gz https://github.com/refresh-bio/SPLASH/releases/download/v2.11.9/splash-2.11.9.linux.x64.tar.gz
   sha256sum splash.tar.gz > "$ROOT/software/splash-2.11.9.tar.gz.sha256"
-  mkdir -p "$SPLASH_DIR" && tar -xzf splash.tar.gz -C "$SPLASH_DIR" --strip-components=1
+  mkdir -p "$SPLASH_DIR" && tar -xzf splash.tar.gz -C "$SPLASH_DIR"
+  tar -tzf splash.tar.gz > "$ROOT/software/splash-2.11.9.contents.txt"
+  test -x "$SPLASH_DIR/splash"
   rm splash.tar.gz
 fi
 
 if [ ! -f "$DEKUPL_SRC/.complete" ]; then
   rm -rf "$DEKUPL_SRC"
-  git clone https://github.com/Transipedia/dekupl-run.git "$DEKUPL_SRC"
+  git clone -q https://github.com/Transipedia/dekupl-run.git "$DEKUPL_SRC"
   cd "$DEKUPL_SRC"
   git checkout "$DEKUPL_COMMIT"
   git submodule update --init
-  for d in joinCounts mergeTags computeNF TtestFilter; do make -C "share/$d"; done
+  for d in joinCounts mergeTags computeNF; do make -C "share/$d"; done
+  # TtestFilter includes Boost.Math, which needs a newer C++ compiler than
+  # Sherlock's gcc 4.8; build it with conda's g++ and Boost headers.
+  [ -x "$DEKUPL_ENV/bin/x86_64-conda-linux-gnu-g++" ] && [ -d "$DEKUPL_ENV/include/boost" ] || \
+    "$MAMBA" install -y -p "$DEKUPL_ENV" -c conda-forge gxx_linux-64 libboost-headers
+  make -C share/TtestFilter CC="$DEKUPL_ENV/bin/x86_64-conda-linux-gnu-g++ -I$DEKUPL_ENV/include -L$DEKUPL_ENV/lib -Wl,-rpath,$DEKUPL_ENV/lib"
   touch .complete
   cd "$OPT/sw"
 fi
@@ -74,9 +83,9 @@ EOF
   "$DEKUPL_ENV/bin/jellyfish" --version
   "$DEKUPL_ENV/bin/snakemake" --version
   "$DEKUPL_ENV/bin/Rscript" -e 'cat("DESeq2", as.character(packageVersion("DESeq2")), "\n")'
-  echo "dekupl-run $(git -C "$DEKUPL_SRC" rev-parse HEAD)"
-  git -C "$DEKUPL_SRC" submodule status
-  "$SPLASH_DIR/splash" --version 2>&1 | head -3
+  echo "dekupl-run $(cd "$DEKUPL_SRC" && git rev-parse HEAD)"
+  (cd "$DEKUPL_SRC" && git submodule status)
+  "$SPLASH_DIR/splash" --help 2>&1 | grep -m1 "Version" || true
 } | tee "$ROOT/software/versions.txt"
 "$MAMBA" list -p "$SHAZAM_ENV" --explicit > "$ROOT/software/shazam-explicit.txt"
 "$MAMBA" list -p "$DEKUPL_ENV" --explicit > "$ROOT/software/dekupl-explicit.txt"

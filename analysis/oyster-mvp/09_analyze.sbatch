@@ -24,6 +24,16 @@ timed "grade-$depth" "$PY" "$CODE/grade_genes.py" \
   --sequences "$w/splash_sequences.tsv" "$w/dekupl_sequences.tsv" \
   --rna "$ROOT/references/rna.fna.gz" --feature-table "$ROOT/references/feature_table.txt.gz" \
   --out "$w/grades.tsv"
+db="$ROOT/references/blast/rna"
+if [ ! -f "$db.complete" ]; then
+  mkdir -p "$(dirname "$db")"
+  zcat "$ROOT/references/rna.fna.gz" > "$db.fna"
+  "$SHAZAM_ENV/bin/makeblastdb" -in "$db.fna" -dbtype nucl -out "$db" -parse_seqids
+  touch "$db.complete"
+fi
+timed "near-reference-$depth" env PATH="$SHAZAM_ENV/bin:$PATH" "$PY" "$CODE/near_reference.py" --work "$w" \
+  --rna "$ROOT/references/rna.fna.gz" --feature-table "$ROOT/references/feature_table.txt.gz" \
+  --blastdb "$db" --threads "$SLURM_CPUS_PER_TASK"
 timed "compare-$depth" "$PY" "$CODE/compare.py" --work "$w" --baseline "$ROOT/baseline/$depth" \
   --published "$CODE/sources/published_degs.json"
 timed "select-$depth" "$PY" "$CODE/select_review.py" --work "$w"

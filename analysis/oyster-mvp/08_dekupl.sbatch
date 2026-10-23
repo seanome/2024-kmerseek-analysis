@@ -22,11 +22,41 @@ base="$ROOT/dekupl/$depth"
 for s in "${SAMPLES[@]}"; do
   [ -f "$reads/$s.validated.json" ] || { echo "trimmed $s $depth not validated" >&2; exit 1; }
 done
-mkdir -p "$base/tmp"
+# dekupl-run sorts into <tmp_dir>/dekupl_tmp but does not create it.
+mkdir -p "$base/tmp/dekupl_tmp"
 [ -d "$base/dekupl-run" ] || cp -a "$DEKUPL_SRC" "$base/dekupl-run"
 export PATH="$DEKUPL_ENV/bin:$PATH"
 
-"$DEKUPL_ENV/bin/python" - "$base" "$reads" "$ROOT/references/rna.fna.gz" "$CODE/sources/transcript_gene.tsv" <<'EOF'
+# DE-kupl's gene-level side output needs a gene for every transcript in
+# rna.fna; the mRNA-only table stops at the first noncoding XR_ transcript.
+# All RNA features of the NCBI feature table, and any transcript without a
+# GeneID maps to itself.
+t2g="$ROOT/references/transcript_gene_all.tsv"
+if [ ! -s "$t2g" ]; then
+  "$DEKUPL_ENV/bin/python" - "$ROOT/references/feature_table.txt.gz" "$ROOT/references/rna.fna.gz" "$t2g" <<'EOF'
+import csv, gzip, sys
+ft, rna, out = sys.argv[1:]
+gene = {}
+with gzip.open(ft, "rt") as f:
+    for row in csv.DictReader(f, delimiter="\t"):
+        if row["product_accession"] and row["GeneID"] and row["# feature"] != "CDS":
+            gene[row["product_accession"]] = row["GeneID"]
+n = own = 0
+with gzip.open(rna, "rt") as f, open(out + ".part", "w") as o:
+    o.write("transcript\tgene\n")
+    for line in f:
+        if line.startswith(">"):
+            t = line[1:].split()[0]
+            g = gene.get(t)
+            own += g is None
+            o.write(f"{t}\t{g or t}\n")
+            n += 1
+print(f"{n} transcripts, {own} without a GeneID mapped to themselves")
+EOF
+  mv "$t2g.part" "$t2g"
+fi
+
+"$DEKUPL_ENV/bin/python" - "$base" "$reads" "$ROOT/references/rna.fna.gz" "$t2g" <<'EOF'
 import json, math, sys
 base, reads, rna, t2g = sys.argv[1:]
 config = {

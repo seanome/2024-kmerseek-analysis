@@ -135,6 +135,23 @@ def main():
     pd.DataFrame(pairs).to_csv(w / "aligned_pairs.tsv", sep="\t", index=False)
     seq_to_group = dict(zip(sp_seqs.seq_id, sp_seqs.group_id))
 
+    # Split "absent" by BLASTN to oyster_v9 transcripts (near_reference.py).
+    near_path = w / "near_reference.tsv"
+    near_split = {}
+    if near_path.exists():
+        near = pd.read_csv(near_path, sep="\t", dtype={"gene": str})
+        order = {"near_copy": 0, "partial_match": 1, "no_close_match": 2}
+        near_cls = dict(zip(near.seq_id, near["class"]))
+        contigs["near_reference"] = contigs.contig_id.map(near_cls)
+        sp_near = sp_seqs.assign(c=sp_seqs.seq_id.map(near_cls)).dropna(subset=["c"])
+        best = sp_near.assign(o=sp_near.c.map(order)).sort_values("o").drop_duplicates("group_id")
+        anchors["near_reference"] = anchors.group_id.map(dict(zip(best.group_id, best.c)))
+        for name, df, col in (("dekupl_contigs", contigs, "log2FC"),
+                              ("splash_anchors", anchors, "log2_breed_over_wild_descriptive")):
+            ab = df[df.status == "absent"]
+            near_split[name] = {k: dict(n=int(len(g)), abs_log2=describe(g[col].abs()))
+                                for k, g in ab.groupby("near_reference")}
+
     status_counts = dict(
         dekupl_contigs=dict(Counter(contigs.status)),
         splash_anchors=dict(Counter(anchors.status)))
@@ -157,6 +174,7 @@ def main():
             pairs=len(pairs), dekupl_contigs=len({p["dekupl"] for p in pairs}),
             splash_anchors=len({seq_to_group[p["splash"]] for p in pairs})),
         absent_from_reference=absent,
+        absent_split_by_blastn=near_split,
         kallisto=dict(tested_genes=int(len(de)), significant=int(len(kal_sig)),
                       p_pseudoaligned={s: agg["sample_counts"][s]["p_pseudoaligned"] for s in SAMPLES},
                       not_pseudoaligned_percent={s: round(100 - agg["sample_counts"][s]["p_pseudoaligned"], 2)

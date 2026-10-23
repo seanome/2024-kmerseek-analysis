@@ -21,18 +21,18 @@ for s in "${SAMPLES[@]}"; do
   [ -f "$reads/$s.validated.json" ] || { echo "trimmed $s $depth not validated" >&2; exit 1; }
 done
 rm -rf "$out"; mkdir -p "$out"; cd "$out"
-: > input.txt; : > Cjs.tsv
+: > input.txt; : > Cjs.csv
 for s in "${SAMPLES[@]}"; do
   printf '%s %s\n' "$s" "$reads/${s}_val_1.fq.gz" >> input.txt
   if [ "${CONDITION[$s]}" = breed ]; then cj=+1; else cj=-1; fi
-  printf '%s\t%s\n' "$s" "$cj" >> Cjs.tsv
+  printf '%s,%s\n' "$s" "$cj" >> Cjs.csv  # comma-separated, as in SPLASH's example sheet
 done
-mkdir -p "$L_SCRATCH_JOB/splash-tmp"
+# SPLASH creates its temp folder itself and stops if it already exists.
 timed "splash-$depth" "$SPLASH_DIR/splash" --bin_path "$SPLASH_DIR" \
   --anchor_len 31 --target_len 31 --gap_len 0 \
   --kmc_max_mem_GB "$kmc_gb" --n_threads_stage_1 6 --n_threads_stage_2 "$cpus" \
   --tmp_dir "$L_SCRATCH_JOB/splash-tmp" \
-  --Cjs_samplesheet Cjs.tsv --dump_sample_anchor_target_count_txt --dump_Cjs \
+  --Cjs_samplesheet Cjs.csv --dump_sample_anchor_target_count_txt --dump_Cjs \
   --outname_prefix oyster input.txt 2>&1 | tee splash.stdout.log
 test -s oyster.after_correction.scores.tsv
 touch complete

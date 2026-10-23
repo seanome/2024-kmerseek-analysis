@@ -55,12 +55,18 @@ def splash(splash_dir, pairs, out):
     dumps = sorted((d / "oyster_dumps").glob("*.satc.dump")) or sorted(d.glob("*dumps/*.satc.dump"))
     if not dumps:
         raise SystemExit(f"no SATC dumps under {d}")
-    awk = ("NR==FNR{s[$1]=1;next} ($2 in s){c[$2\"\\t\"$1]+=$4} "
+    # Dump lines are "count anchor+target sample" (--satc_merge_dump_format
+    # splash, the default) or "sample anchor target count" (satc format).
+    awk = ("NR==FNR{s[$1]=1;next} "
+           "NF==3{a=substr($2,1,31); if(a in s) c[a\"\\t\"$3]+=$1; next} "
+           "NF==4{if($2 in s) c[$2\"\\t\"$1]+=$4} "
            "END{for(k in c) print k\"\\t\"c[k]}")
-    res = subprocess.run(["awk", "-F", "\t", awk, anchor_list, *map(str, dumps)],
+    res = subprocess.run(["awk", awk, anchor_list, *map(str, dumps)],
                          check=True, capture_output=True, text=True)
     rows = [line.split("\t") for line in res.stdout.splitlines()]
     counts = pd.DataFrame(rows, columns=["anchor", "sample", "count"]).astype({"count": "int64"})
+    if counts.empty or not set(counts["sample"]) <= set(SAMPLES):
+        raise SystemExit(f"anchor counts did not parse from {dumps[0]}")
     counts = counts.pivot_table(index="anchor", columns="sample", values="count", fill_value=0)
     counts = counts.reindex(columns=SAMPLES, fill_value=0)
     sig = sig.merge(counts.add_prefix("count_"), left_on="anchor", right_index=True, how="left")
@@ -76,18 +82,36 @@ def splash(splash_dir, pairs, out):
     sig["rank"] = range(1, len(sig) + 1)
     sig.to_csv(out / "splash_anchors.tsv", sep="\t", index=False)
 
-    comp_files = [p for p in d.glob("*compactor*.tsv") if "summary" not in p.name] or list(d.glob("*compactor*"))
-    comp_path = sorted(comp_files)[0]
-    comp = pd.read_csv(comp_path, sep="\t")
-    comp = comp[comp["anchor"].isin(set(sig["anchor"]))].copy()
+    # SPLASH 2.11.9 runs Compactors (by default) on two subsets of the
+    # significant anchors: the top 20,000 by effect_size_bin and the top
+    # 10,000 by target entropy. The union of both files is kept.
+    comp_paths = sorted((d / "oyster_compactors").glob("*.tsv"))
+    comp = pd.concat([pd.read_csv(p, sep="\t") for p in comp_paths], ignore_index=True)
+    comp = comp.drop_duplicates(["anchor", "compactor"]).copy()
+    comp = comp[comp["anchor"].isin(set(sig["anchor"]))]
     comp["group_id"] = "splash:" + comp["anchor"]
-    comp["seq_id"] = "splash:" + comp["anchor"] + ":" + comp["id"].astype(str)
+    comp["seq_id"] = "splash:" + comp["anchor"] + ":c" + comp.groupby("anchor").cumcount().add(1).astype(str)
+    comp["sequence_kind"] = "compactor"
     comp = comp.rename(columns={"compactor": "dna"})
-    comp[["seq_id", "group_id", "anchor", "dna", "support", "exact_support"]].to_csv(
-        out / "splash_sequences.tsv", sep="\t", index=False)
+    # Anchors without a compactor are still graded, from anchor + each of
+    # its two most frequent targets (62 nt, gap 0).
+    have = set(comp["anchor"])
+    rest = []
+    for row in sig[~sig["anchor"].isin(have)].itertuples(index=False):
+        for j, t in enumerate([row.most_freq_target_1, row.most_freq_target_2], 1):
+            if isinstance(t, str) and set(t) <= set("ACGT"):
+                rest.append(dict(seq_id=f"splash:{row.anchor}:t{j}", group_id=f"splash:{row.anchor}",
+                                 anchor=row.anchor, dna=row.anchor + t, support=None, exact_support=None,
+                                 sequence_kind="anchor+target"))
+    seqs = pd.concat([comp[["seq_id", "group_id", "anchor", "dna", "support", "exact_support", "sequence_kind"]],
+                      pd.DataFrame(rest)], ignore_index=True)
+    seqs.to_csv(out / "splash_sequences.tsv", sep="\t", index=False)
+    sig["has_compactor"] = sig["anchor"].isin(have)
+    sig.to_csv(out / "splash_anchors.tsv", sep="\t", index=False)
     return dict(splash_tested_anchors=tested, splash_scored_anchors=len(scores),
-                splash_significant_anchors=len(sig), splash_compactor_file=comp_path.name,
-                splash_compactors=len(comp), splash_anchors_with_compactor=int(comp["anchor"].nunique()))
+                splash_significant_anchors=len(sig), splash_compactor_files=[p.name for p in comp_paths],
+                splash_compactors=len(comp), splash_anchors_with_compactor=len(have),
+                splash_anchor_target_sequences=len(rest))
 
 
 def dekupl(dekupl_dir, out):

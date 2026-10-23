@@ -22,12 +22,17 @@ lines=${DEPTH_LINES[$depth]}
 out="$ROOT/trimmed/$depth"
 done_marker="$out/$sample.validated.json"
 [ -f "$done_marker" ] && { echo "already done $sample $depth"; exit 0; }
-[ -f "$ROOT/raw/$sample.verified.tsv" ] || { echo "raw $sample not verified" >&2; exit 1; }
 export PATH="$SHAZAM_ENV/bin:$PATH"
 work="$out/.work-$sample"
 rm -rf "$work"; mkdir -p "$work"
 
-if [ "$lines" -gt 0 ]; then
+if [ "$depth" = 1m ] && [ -f "$ROOT/prefix/1m/complete" ]; then
+  # Checked 1M prefixes (01b_pilot_prefix.sbatch); compared with the full
+  # files by check_prefix.sbatch once those are verified.
+  in1="$ROOT/prefix/1m/${sample}_1.fastq.gz"; in2="$ROOT/prefix/1m/${sample}_2.fastq.gz"
+elif [ ! -f "$ROOT/raw/$sample.verified.tsv" ]; then
+  echo "raw $sample not verified" >&2; exit 1
+elif [ "$lines" -gt 0 ]; then
   for m in 1 2; do
     # head closes the pipe early; that SIGPIPE in zcat is expected.
     set +o pipefail
