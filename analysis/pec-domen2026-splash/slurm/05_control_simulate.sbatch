@@ -8,7 +8,8 @@
 #SBATCH --output=%x.%j.out
 # Known-answer control: simulate 6 control + 6 PEC samples (1 M pairs each, seed 11) from the
 # planted design, trim them with the same fastp settings as the real reads, and lay out the
-# contrast folder contrasts/control/ exactly like a real contrast.
+# contrast folder contrasts/control/ exactly like a real contrast (paired files for DE-kupl,
+# interleaved copy for SPLASH).
 set -euo pipefail
 : "${PEC_ROOT:?}" "${PEC_CODE:?}"
 export PATH=$PEC_ROOT/env/bin:$PATH
@@ -25,13 +26,18 @@ fi
 SAMPLES="ctrl1 ctrl2 ctrl3 ctrl4 ctrl5 ctrl6 pec1 pec2 pec3 pec4 pec5 pec6"
 for s in $SAMPLES; do
   [ -e "trimmed/$s.done" ] && continue
-  fastp -i "reads/${s}_1.fastq.gz" -I "reads/${s}_2.fastq.gz" --stdout \
-    --detect_adapter_for_pe --trim_poly_g --length_required 50 --thread 6 \
-    -j "trimmed/$s.fastp.json" -h "trimmed/$s.fastp.html" 2> "trimmed/$s.fastp.log" \
-    | pigz -p 2 -1 > "trimmed/$s.il.fastq.gz.part"
-  N=$(pigz -dc "trimmed/$s.il.fastq.gz.part" | awk 'END{print NR/4}')
+  P1=trimmed/${s}_1.fastq.gz; P2=trimmed/${s}_2.fastq.gz
+  fastp -i "reads/${s}_1.fastq.gz" -I "reads/${s}_2.fastq.gz" -o "$P1.part" -O "$P2.part" --compression 4 \
+    --detect_adapter_for_pe --trim_poly_g --length_required 50 --thread 8 \
+    -j "trimmed/$s.fastp.json" -h "trimmed/$s.fastp.html" 2> "trimmed/$s.fastp.log"
   WANT=$(python -c "import json;print(json.load(open('trimmed/$s.fastp.json'))['summary']['after_filtering']['total_reads'])")
-  [ "$N" = "$WANT" ] || { echo "$s: records $N != fastp $WANT"; exit 3; }
+  N1=$(pigz -dc "$P1.part" | awk 'END{print NR/4}'); N2=$(pigz -dc "$P2.part" | awk 'END{print NR/4}')
+  [ "$N1" = "$N2" ] && [ $(( N1 + N2 )) = "$WANT" ] || { echo "$s: R1 $N1 R2 $N2 fastp $WANT"; exit 3; }
+  mv "$P1.part" "$P1"; mv "$P2.part" "$P2"
+  paste <(pigz -dc "$P1" | paste - - - -) <(pigz -dc "$P2" | paste - - - -) | tr '\t' '\n' \
+    | pigz -p 8 -1 > "trimmed/$s.il.fastq.gz.part"
+  N=$(pigz -dc "trimmed/$s.il.fastq.gz.part" | awk 'END{print NR/4}')
+  [ "$N" = "$WANT" ] || { echo "$s: interleaved $N != fastp $WANT"; exit 3; }
   mv "trimmed/$s.il.fastq.gz.part" "trimmed/$s.il.fastq.gz"
   echo "$N" > "trimmed/$s.done"
 done

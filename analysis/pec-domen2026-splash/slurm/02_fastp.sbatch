@@ -6,8 +6,8 @@
 #SBATCH --mem=8G
 #SBATCH --time=06:00:00
 #SBATCH --output=%x.%A_%a.out
-# fastp on one run (line N+1 of meta/runs.txt); interleaved output named by sample, so
-# SPLASH sees one file per sample. Writes trimmed/<sample>.done after the record count
+# fastp on one run (line N+1 of meta/runs.txt); paired output named by sample (for DE-kupl)
+# plus an interleaved copy (SPLASH sees one file per sample). Writes trimmed/<sample>.done after the record count
 # in the output equals fastp's own count of reads passing filters.
 set -euo pipefail
 : "${PEC_ROOT:?}"
@@ -27,13 +27,21 @@ if [ -e "trimmed/$SAMPLE.done" ]; then
   rm -f "trimmed/$SAMPLE.done"
 fi
 [ -e "reads/$RUN.done" ] || { echo "reads for $RUN not verified"; exit 2; }
-rm -f "$OUT.part"
-/usr/bin/time -v -o "logs/fastp_$SAMPLE.time" bash -c "set -o pipefail; fastp -i reads/${RUN}_1.fastq.gz -I reads/${RUN}_2.fastq.gz --stdout \
-  --detect_adapter_for_pe --trim_poly_g --length_required 50 --thread 6 \
-  -j trimmed/$SAMPLE.fastp.json -h trimmed/$SAMPLE.fastp.html 2> trimmed/$SAMPLE.fastp.log \
-  | pigz -p 2 -1 > $OUT.part"
-N=$(pigz -dc "$OUT.part" | awk 'END{print NR/4}')
+P1=trimmed/${SAMPLE}_1.fastq.gz; P2=trimmed/${SAMPLE}_2.fastq.gz
+rm -f "$OUT.part" "$P1.part" "$P2.part"
+# paired output for DE-kupl (it reads <sample>_1/_2.fastq.gz)
+/usr/bin/time -v -o "logs/fastp_$SAMPLE.time" fastp -i reads/${RUN}_1.fastq.gz -I reads/${RUN}_2.fastq.gz \
+  -o "$P1.part" -O "$P2.part" --compression 4 \
+  --detect_adapter_for_pe --trim_poly_g --length_required 50 --thread 8 \
+  -j trimmed/$SAMPLE.fastp.json -h trimmed/$SAMPLE.fastp.html 2> trimmed/$SAMPLE.fastp.log
 WANT=$(python -c "import json;print(json.load(open('trimmed/$SAMPLE.fastp.json'))['summary']['after_filtering']['total_reads'])")
-[ "$N" = "$WANT" ] || { echo "records $N != fastp after_filtering $WANT"; exit 3; }
+N1=$(pigz -dc "$P1.part" | awk 'END{print NR/4}'); N2=$(pigz -dc "$P2.part" | awk 'END{print NR/4}')
+[ "$N1" = "$N2" ] && [ $(( N1 + N2 )) = "$WANT" ] || { echo "R1 $N1 R2 $N2 fastp $WANT"; exit 3; }
+mv "$P1.part" "$P1"; mv "$P2.part" "$P2"
+# interleaved copy for SPLASH, which wants one file per sample name: R1 record then its R2 record
+paste <(pigz -dc "$P1" | paste - - - -) <(pigz -dc "$P2" | paste - - - -) | tr '\t' '\n' \
+  | pigz -p 8 -1 > "$OUT.part"
+N=$(pigz -dc "$OUT.part" | awk 'END{print NR/4}')
+[ "$N" = "$WANT" ] || { echo "interleaved records $N != fastp after_filtering $WANT"; exit 3; }
 mv "$OUT.part" "$OUT"
 echo "$N" > "trimmed/$SAMPLE.done"

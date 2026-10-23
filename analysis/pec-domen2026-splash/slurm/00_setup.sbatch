@@ -15,12 +15,14 @@ export MAMBA_ROOT_PREFIX=$PEC_ROOT/mamba
 MM=$PEC_ROOT/bin/micromamba
 ENV=$PEC_ROOT/env
 mkdir -p versions
-if [ ! -e env.done ]; then
+# the environment is rebuilt whenever the YAML changes (stamp = its sha256)
+YML_HASH=$(sha256sum "$PEC_CODE/environment-pec361.yml" | cut -d' ' -f1)
+if [ "$(cat env.done 2>/dev/null)" != "$YML_HASH" ]; then
   rm -rf "$ENV"
   $MM create -y -p "$ENV" -f "$PEC_CODE/environment-pec361.yml"
   $MM list -p "$ENV" --explicit --md5 > versions/env_explicit.txt
   $MM list -p "$ENV" > versions/env_list.txt
-  touch env.done
+  echo "$YML_HASH" > env.done
 fi
 if [ ! -e splash.done ]; then
   V=2.11.9
@@ -50,7 +52,7 @@ if [ "$(cat pectools.done 2>/dev/null)" != "$SRC_HASH" ]; then
   sha256sum pec-tools/target/release/pec-tools > versions/pec-tools.sha256
   echo "$SRC_HASH" > pectools.done
 fi
-{ for t in fastp sourmash diamond hmmscan seqkit python; do echo "== $t"; "$ENV/bin/$t" --version 2>&1 | head -2; done
-  "$ENV/bin/python" -c 'import importlib.metadata as m; print({p: m.version(p) for p in ["pydeseq2","sourmash","sourmash_plugin_branchwater","polars","pandas","biopython","matplotlib","numpy","scipy"]})'
+{ for t in fastp sourmash hmmscan seqkit python; do echo "== $t"; "$ENV/bin/$t" --version 2>&1 | head -2; done
+  "$ENV/bin/python" -c 'import importlib.metadata as m; print({p: m.version(p) for p in ["pydeseq2","parasail","sourmash","sourmash_plugin_branchwater","polars","pandas","biopython","matplotlib","numpy","scipy"]})'
 } > versions/tool_versions.txt 2>&1
 cat versions/tool_versions.txt versions/splash_version.txt

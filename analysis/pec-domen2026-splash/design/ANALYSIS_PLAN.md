@@ -115,3 +115,24 @@ the stated thresholds.
   2.11.9 source (`src/satc_merge/satc_merge.cpp`, header `"Cjs_" << i << "_pval"`). SPLASH fixes
   the sample weights c to the Cjs values, picks target weights f on the training split
   (`--opt_train_fraction` 0.25) and computes the p-value on the remaining counts.
+* 2026-10-23, before any run, at Olga's request: **no DIAMOND anywhere.** Sketch matches
+  (sourmash) are checked instead by a local Smith-Waterman alignment of each proposed
+  query-target pair only (parasail, BLOSUM62, gap open 11, extend 1). Reported per pair:
+  identity, query and target coverage, raw score, bit score and E-value computed with BLAST's
+  published BLOSUM62 11/1 constants (lambda 0.267, K 0.041) and the database's total residues.
+  A sketch match is supported when E ≤ 1e-5 and query coverage ≥ 50 %. This is an alignment of
+  pairs sourmash already proposed, not a database search, so it cannot find what sourmash missed.
+  The proteome annotation and the control's "right protein" use the same rule (right protein =
+  best-supported sourmash + alignment match of the transcript's longest stop-free peptide).
+* 2026-10-23, before any run, at Olga's request: **DE-kupl added as a third channel**
+  (Audoux et al. 2017, Genome Biology 18:243, PMC5747171). dekupl-run 1.3.5 container, on the
+  same fastp-trimmed pairs and the same samples per contrast. Settings: k = 31, `lib_type`
+  unstranded, `data_type` WGS (only the k-mer path; no Kallisto, which would need a reference
+  transcriptome), `masking` nomask (no Botryllus reference to mask with), `diff_method` DESeq2,
+  `min_recurrence` 2, `min_recurrence_abundance` 5, adjusted p ≤ 0.05, |log2FC| ≥ 1 (the paper's
+  fold-change cutoff, instead of DE-kupl's default 2). DE-kupl's test is condition only (no
+  pairing). Its DE k-mers are assembled into contigs by its own merge step.
+  Compared with the other channels by shared canonical 31-mers (DE-kupl k-mers vs SPLASH anchors
+  and anchor-count anchors), and its contigs are translated and matched like compactors.
+  In the control, DE-kupl's recall per class and false positives among unchanged transcripts are
+  scored the same way as the other channels.
