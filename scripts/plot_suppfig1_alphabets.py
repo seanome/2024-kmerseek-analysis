@@ -10,7 +10,7 @@ needs a longer seed. One row per kmerseek alphabet (19), ordered by letter count
   c  the k-sizes to test, k_min to k_max (notebook 274), with k* = ceil(log2(N) / B)
 
 Seed-reach figure (one column): share of Pfam-A 38.2 seed pairs at 20-30% identity whose
-longest run of same-class aligned columns is at least the alphabet's k*, Wilson 95%
+longest run of same-class aligned columns is at least the alphabet's k*, family/query-cluster bootstrap 95%
 interval. Cohen's kappa and the SCOPe 2.08 same-superfamily version are in the values table
 and the caption, not drawn.
 
@@ -222,7 +222,7 @@ def wilson(k: int, n: int, z: float = 1.959964) -> tuple[float, float]:
 
 
 def pair_columns(pairs: pl.DataFrame, kstar: dict[str, int], tag: str) -> pl.DataFrame:
-    """Kappa (mean, bootstrap 95%) and share of pairs reaching k* (Wilson 95%) per alphabet."""
+    """Kappa and aligned-run shares with family/query-cluster bootstrap intervals."""
     kap = hc.summarise(pairs, ["alphabet"], "kappa")
     rows = []
     for a, g in pairs.group_by("alphabet"):
@@ -230,7 +230,14 @@ def pair_columns(pairs: pl.DataFrame, kstar: dict[str, int], tag: str) -> pl.Dat
         n = g.height
         k = int((g["longest_run"] >= kstar[a]).sum())
         k_minus1 = int((g["longest_run"] >= kstar[a] - 1).sum())
-        lo, hi = wilson(k, n)
+        cluster = "family" if "family" in g.columns else "query"
+        _, lo, hi = hc.cluster_mean_ci(
+            g.with_columns(
+                (pl.col("longest_run") >= kstar[a]).cast(pl.Float64).alias("reach")
+            ),
+            "reach",
+            cluster,
+        )
         rows.append(
             {
                 "alphabet": a,
@@ -674,7 +681,10 @@ def draw_seed_reach(t: pl.DataFrame, stem: Path) -> None:
         ax,
         [
             (_mark(marker="o", ms=2.6, color=PURPLE), "measured share of pairs"),
-            (Line2D([], [], color=PURPLE, lw=0.8), "Wilson 95% interval"),
+            (
+                Line2D([], [], color=PURPLE, lw=0.8),
+                "family bootstrap 95% interval",
+            ),
             (_mark(), "run: aligned columns in a row, no gap, same class in both"),
         ],
         block_mm,
@@ -809,7 +819,7 @@ All numbers, including both k_min estimates and k_max: `tables/suppfig1_values.c
     hp = small.sort("pfam_share_reach_kstar")
     reach = f"""**Seed reach at k* | At its own seed length k*, no alphabet shares a seed along the alignment in more than {100 * top["pfam"]["pfam_share_reach_kstar"]:.1f}% of Pfam seed pairs at 20–30% identity.**
 
-One row per kmerseek alphabet, in the order of Supplementary Figure 1; k* is from its panel c. Pairs are two sequences from the same Pfam-A 38.2 seed alignment, 20–30% identity over at least {MIN_COLS} aligned columns ({row["protein20"]["pfam_n_pairs"]:,} pairs from {meta["pfam_n_families"]:,} families). A run is a stretch of consecutive aligned columns with no gap in either sequence and the same class in both: an exact seed the two sequences share along their alignment. A seed shared elsewhere, off the alignment, is not counted. Dot: share of pairs whose longest run is at least k*; line: Wilson 95% interval. The highest is {top["pfam"]["alphabet"]}, {pct2(top["pfam"]["pfam_share_reach_kstar"])} ({top["pfam"]["pfam_n_reach_kstar"]:,} pairs); protein20 {pct2(row["protein20"]["pfam_share_reach_kstar"])}; the 2–3 letter alphabets {pct2(hp["pfam_share_reach_kstar"][0])} ({hp["alphabet"][0]}) to {pct2(hp["pfam_share_reach_kstar"][-1])} ({hp["alphabet"][-1]}); gbmr7 {pct2(row["gbmr7"]["pfam_share_reach_kstar"])}.
+One row per kmerseek alphabet, in the order of Supplementary Figure 1; k* is from its panel c. Pairs are two sequences from the same Pfam-A 38.2 seed alignment, 20–30% identity over at least {MIN_COLS} aligned columns ({row["protein20"]["pfam_n_pairs"]:,} pairs from {meta["pfam_n_families"]:,} families). A run is a stretch of consecutive aligned columns with no gap in either sequence and the same class in both: an exact seed the two sequences share along their alignment. A seed shared elsewhere, off the alignment, is not counted. Dot: share of pairs whose longest run is at least k*; line: family bootstrap 95% interval. The highest is {top["pfam"]["alphabet"]}, {pct2(top["pfam"]["pfam_share_reach_kstar"])} ({top["pfam"]["pfam_n_reach_kstar"]:,} pairs); protein20 {pct2(row["protein20"]["pfam_share_reach_kstar"])}; the 2–3 letter alphabets {pct2(hp["pfam_share_reach_kstar"][0])} ({hp["alphabet"][0]}) to {pct2(hp["pfam_share_reach_kstar"][-1])} ({hp["alphabet"][-1]}); gbmr7 {pct2(row["gbmr7"]["pfam_share_reach_kstar"])}.
 
 The share depends on rounding k* up to a whole letter. At one letter less, it is {ratio.min():.1f} to {ratio.max():.1f} times higher, and the highest is {m1["alphabet"]}, {pct2(m1["pfam_share_reach_kstar_minus1"])}.
 

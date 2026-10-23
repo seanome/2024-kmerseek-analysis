@@ -12,8 +12,8 @@ sequences and three numbers are read off the columns where both have a residue:
 And one number read off the whole alignment:
 
 * ``longest_run``: the longest stretch of consecutive columns with no gap in either
-  sequence and the same class in both. This is the longest k-mer the pair shares
-  exactly in that alphabet, which is what an exact-match k-mer search can see.
+  sequence and the same class in both. This counts runs along the supplied
+  alignment; shared k-mers at other offsets are not counted.
   ``longest_run_null`` is the same after shuffling the target's residues.
 
 Alphabet tables are copied from kmerseek's ``src/rust/alphabets.rs`` (dayhoff6 from
@@ -233,13 +233,47 @@ def bootstrap_mean_ci(
     )
 
 
+def cluster_mean_ci(df, value, cluster, n_boot=500, seed=0):
+    """Pair-weighted mean, resampling whole families or query domains."""
+    totals = (
+        df.filter(pl.col(value).is_not_null())
+        .group_by(cluster)
+        .agg(pl.col(value).sum().alias("total"), pl.col(value).count().alias("count"))
+        .sort(cluster)
+    )
+    sums = totals["total"].to_numpy()
+    counts = totals["count"].to_numpy()
+    if len(sums) == 0:
+        return np.nan, np.nan, np.nan
+    rng = np.random.default_rng(seed)
+    # One replicate at a time avoids a bootstrap-by-family matrix for large data.
+    means = []
+    for _ in range(n_boot):
+        idx = rng.integers(0, len(sums), size=len(sums))
+        means.append(sums[idx].sum() / counts[idx].sum())
+    return float(sums.sum() / counts.sum()), *np.percentile(means, [2.5, 97.5])
+
+
 def summarise(
     df: pl.DataFrame, by: list[str], value: str, n_boot: int = 500
 ) -> pl.DataFrame:
-    """Mean with a bootstrap 95% CI of `value`, grouped by `by`."""
+    """Mean with family- or query-cluster bootstrap intervals when available.
+
+    Query resampling preserves within-query dependence but not shared-target
+    dependence; these intervals do not establish independent biological samples.
+    """
     rows = []
     for keys, g in df.group_by(by, maintain_order=True):
-        m, lo, hi = bootstrap_mean_ci(g[value].to_numpy(), n_boot)
+        cluster = (
+            "family"
+            if "family" in g.columns
+            else "query" if "query" in g.columns else None
+        )
+        m, lo, hi = (
+            cluster_mean_ci(g, value, cluster, n_boot)
+            if cluster
+            else bootstrap_mean_ci(g[value].to_numpy(), n_boot)
+        )
         rows.append(
             {
                 **dict(zip(by, keys)),

@@ -148,7 +148,9 @@ hc.finish_figure(
 md(r"""
 ## 2. Class agreement above chance, by identity
 
-Kappa per pair, averaged within identity bin, with a bootstrap 95% CI on the mean. Zero is
+Kappa per pair, averaged within identity bin. Intervals resample whole Pfam families or SCOPe query domains.
+Query-domain resampling preserves within-query dependence but does not account for shared targets;
+the intervals do not establish independent biological samples. Zero is
 the composition-shuffle null. The 20-letter alphabet's kappa is the residue identity
 itself, chance-corrected, so it is the reference the reduced alphabets have to beat.
 """)
@@ -555,8 +557,8 @@ md(r"""
 
 Two structurally aligned residues can share an HP class because they descend from one
 ancestral residue, or because both sit buried in the same place of a similar fold. The
-different-fold control separates the two: those pairs have no common ancestor and no common
-fold, only a superposition. Same-fold/different-superfamily pairs are the ambiguous middle
+different-fold control measures class agreement in a different structural category. The
+classification does not prove absence of common ancestry or isolate packing as its cause. Same-fold/different-superfamily pairs are the ambiguous middle
 (SCOP does not assert homology across superfamilies). This panel restricts to pairs under 20%
 identity so the categories are compared at the same identity.
 """)
@@ -590,19 +592,20 @@ hc.finish_figure(
     hypothesis="HP agreement between structurally aligned residues is a homology signal, not only a consequence of both residues being buried in similar places.",
     conclusion=(f"Under 20% identity, hp_thomas_dill2 kappa is {kk('same_family'):.2f} (same family), {kk('same_superfamily_diff_family'):.2f} (same superfamily), "
                 f"{kk('same_fold_diff_superfamily'):.2f} (same fold only) and {kk('diff_fold_same_class'):.2f} (different fold). "
-                f"Non-homologous superposition explains about {100 * share:.0f}% of the cross-family signal; the rest is ancestry. "
+                "These categories do not partition agreement into ancestry and packing. "
                 f"protein20 in the different-fold control: {kk('diff_fold_same_class', 'protein20'):.2f}."),
     title="Same measure, four relationships, all under 20% identity",
 )
 """)
 
 md(r"""
-## 4. The longest exact run: what an exact k-mer index can see
+## 4. The longest exact run along the supplied alignment
 
-Kappa is about single columns. An exact-match index needs k consecutive columns with no gap
-and no class change on either side. The longest such run per pair is the longest k-mer the
-two share; if it is shorter than the index's k, the pair is invisible to that index no matter
-how strong the per-column signal is.
+Kappa is about single columns. Here we count consecutive columns with no gap and the same
+class on both sides of the supplied alignment. A run of length k supplies an exact seed
+at those aligned positions. Shorter runs do not exclude a seed at another offset.
+For example, AADD and DDAA encode as HHPP and PPHH under hp_lehninger2: they have no
+aligned class matches, but share the two-letter strings HH and PP at different offsets.
 
 The null here is the same pair with the target's residues shuffled (composition kept, gaps
 kept), which shows how long a run two unrelated sequences of this composition produce by
@@ -644,21 +647,21 @@ def rr(r, a, b):
     return r.filter((pl.col("alphabet") == a) & (pl.col("identity_bin") == b))["longest_run_mean"][0]
 hc.finish_figure(
     fig, FIG / "230_longest_run_by_identity.png", tools=hc.NO_TOOL,
-    hypothesis="Below 40% identity the longest exact HP run is shorter than the k the alphabet sweep chose (23-30), so exact seeds cannot use the HP conservation that section 2 shows.",
+    hypothesis="Below 40% identity the longest exact HP run is shorter than the k the alphabet sweep chose (23-30), so aligned exact runs may miss the class agreement that section 2 shows.",
     conclusion=(f"Mean longest hp_thomas_dill2 run at 20-30% identity: {rr(runs_p, 'hp_thomas_dill2', '20-30%'):.1f} (Pfam), {rr(runs_s, 'hp_thomas_dill2', '20-30%'):.1f} (SCOPe), "
                 f"against a shuffled null of {null_p.filter((pl.col('alphabet') == 'hp_thomas_dill2') & (pl.col('identity_bin') == '20-30%'))['longest_run_null_mean'][0]:.1f}. "
                 f"At 30-40%: {rr(runs_p, 'hp_thomas_dill2', '30-40%'):.1f}. It crosses 23 only in the 40-60% bin ({rr(runs_p, 'hp_thomas_dill2', '40-60%'):.1f}). "
                 f"protein20 at 20-30%: {rr(runs_p, 'protein20', '20-30%'):.1f}."),
-    title="Longest exact shared k-mer per pair, by alphabet and identity",
+    title="Longest exact run along each alignment, by alphabet and identity",
 )
 """)
 
 md(r"""
-## 5. The fraction of pairs an exact index of size k can reach
+## 5. The fraction of alignments containing an exact run of length k
 
 Same quantity as a survival curve: for each k, the fraction of pairs whose longest exact run
-is at least k. This is the ceiling on recall for an exact-match index in that alphabet at
-that k, before any scoring, thresholding or database noise. The three marked k values are
+is at least k. This measures seeds on the supplied alignment. It is not a recall ceiling
+for an index, which can find seeds at other offsets. The three marked k values are
 the ones the QfO Pfam sweep chose for the 2-letter arms (19 for hp_pbotc_1st_ed, 23 and 26 for
 hp_thomas_dill).
 """)
@@ -684,7 +687,7 @@ for row, (fr, title) in enumerate([(fr_p, "Pfam seed"), (fr_s, "SCOPe cross-fami
         if row == 1:
             ax.set_xlabel("k")
         if j == 0:
-            ax.set_ylabel("fraction of pairs with an exact shared k-mer")
+            ax.set_ylabel("fraction of alignments with an exact class run")
 axes[0, -1].legend(fontsize=7.5)
 
 pick = pl.concat([fr_p.with_columns(pl.lit("Pfam").alias("dataset")), fr_s.with_columns(pl.lit("SCOPe cross-family").alias("dataset"))], how="diagonal_relaxed") \
@@ -695,11 +698,11 @@ def ff(fr, a, b, k):
     return fr.filter((pl.col("alphabet") == a) & (pl.col("identity_bin") == b) & (pl.col("k") == k))["frac"][0]
 hc.finish_figure(
     fig, FIG / "230_reachable_fraction_vs_k.png", tools=hc.NO_TOOL,
-    hypothesis="At the k values the sweep selected for 2-letter alphabets, most pairs under 40% identity share no exact k-mer at all, so the identity panel's zeros are a property of the primitive, not of the biology.",
+    hypothesis="At the k values the sweep selected for 2-letter alphabets, many pairs under 40% identity lack an exact run along their alignment. Seeds at other offsets are not counted.",
     conclusion=(f"Pfam 20-30%: hp_thomas_dill2 reaches {100 * ff(fr_p, 'hp_thomas_dill2', '20-30%', 19):.0f}% of pairs at k=19, {100 * ff(fr_p, 'hp_thomas_dill2', '20-30%', 23):.0f}% at k=23, {100 * ff(fr_p, 'hp_thomas_dill2', '20-30%', 26):.0f}% at k=26. "
                 f"30-40%: {100 * ff(fr_p, 'hp_thomas_dill2', '30-40%', 19):.0f}% / {100 * ff(fr_p, 'hp_thomas_dill2', '30-40%', 23):.0f}% / {100 * ff(fr_p, 'hp_thomas_dill2', '30-40%', 26):.0f}%. "
                 f"SCOPe cross-family 20-30%: {100 * ff(fr_s, 'hp_thomas_dill2', '20-30%', 23):.0f}% at k=23. For comparison protein20 at k=5 reaches {100 * ff(fr_p, 'protein20', '20-30%', 5):.0f}% of Pfam 20-30% pairs."),
-    title="Ceiling on recall for an exact-match index, by k",
+    title="Fraction of alignments containing an exact run, by k",
 )
 """)
 
@@ -725,7 +728,7 @@ for j, b in enumerate(bins_shown):
     ax.set_title(f"Pfam seed, identity {b}", fontsize=10)
     ax.set_xlabel("bits per k-mer  (k x log2 alphabet size)")
     ax.grid(alpha=0.3)
-axes[0].set_ylabel("fraction of pairs with an exact shared k-mer")
+axes[0].set_ylabel("fraction of alignments with an exact class run")
 axes[-1].legend(fontsize=7.5)
 
 # Nearest-k comparison at ~26 bits: protein20 k=6 (25.9 bits), sdm12 k=7 (25.1), dayhoff6 k=10 (25.8),
@@ -744,8 +747,8 @@ hc.finish_figure(
     hypothesis="At matched bits per k-mer, alphabets reach similar fractions of remote-homolog pairs, so the alphabet does not matter once k is long enough to carry the same information.",
     conclusion=(f"At about 26 bits in the 20-30% bin, the best alphabet is {best['alphabet']} (k={best['k']}, {100 * best['20-30%']:.0f}% of pairs); "
                 f"hp_thomas_dill2 k=26 reaches {100 * t26.filter(pl.col('alphabet') == 'hp_thomas_dill2')['20-30%'][0]:.0f}%, protein20 k=6 reaches {100 * t26.filter(pl.col('alphabet') == 'protein20')['20-30%'][0]:.0f}%. "
-                f"Read the gap between curves inside the grey band (23-32 bits) as the value of the alphabet at fixed cost."),
-    title="Reachable fraction vs bits per k-mer, Pfam seed",
+                f"Read the gap between curves inside the grey band (23-32 bits) as the value of the alphabet at fixed nominal information."),
+    title="Aligned-run fraction vs nominal bits per k-mer, Pfam seed",
 )
 """)
 
@@ -793,7 +796,7 @@ Written from the numbers above; see each figure's footer for the exact values.
 1. The biology is real. Between homologs at 20-30% identity, the HP class of aligned
    residues agrees far above the composition null (kappa about 0.45 in both Pfam seed and
    SCOPe cross-family pairs), and about twice the chance-corrected agreement of the residues
-   themselves. Below 20% identity, where sequence methods have nothing, HP kappa is still
+   themselves. Below 20% identity, where these pairs have low residue identity, HP kappa is still
    0.25-0.36 in homologs.
 1b. Kappa is agreement corrected for chance: (agreement - chance) / (1 - chance). At 20-30%
    identity hp_thomas_dill2 agrees on 74% of aligned columns where a shuffled partner gives 51%,
@@ -806,16 +809,14 @@ Written from the numbers above; see each figure's footer for the exact values.
    k=5, gbmr4 29% at k=13, protein20 25% at k=5). For every alphabet the last k that still reaches
    5% of those pairs is 1 to 5 above k_min (hp_thomas_dill2: k_min 18, last 21, notebook 274 lists
    up to 36). For remote homologs, test k_min to k_min + 5, not the whole range.
-2. Part of it is packing rather than ancestry. Structurally aligned pairs from different
-   folds show HP kappa around 0.1, so roughly a third of the cross-family signal under 20%
-   identity would appear between any two well-superposed sequences. That fraction is a
-   false-positive source for any HP-based search and a reason the null model has to be
-   composition- and structure-aware, not just composition-aware.
-3. An exact k-mer cannot use it. The longest exact HP run between 20-30% homologs is about
+2. Structurally aligned pairs from different folds show HP kappa around 0.1. This is
+   class agreement in a control category, not a causal estimate of packing or ancestry.
+   Structural alignment and composition both matter when interpreting class agreement.
+3. Long exact runs along the supplied alignment are uncommon. The longest exact HP run between 20-30% homologs is about
    12 residues on average (null 6), and only a few percent of pairs share a 23-mer. The
    sweep chose k=23-30 for the 2-letter arms because shorter k drowns in the null's own
    6-residue runs. That is the identity panel's zeros below 40%: not a refutation of the
-   hypothesis, a ceiling on the primitive.
+   hypothesis, a limitation of aligned exact runs; seeds elsewhere are not counted.
 4. At matched bits per k-mer the 2-letter alphabets are the worst choice, not the best.
    At about 26 bits in the 20-30% bin, gbmr4 k=13 reaches 29% of pairs and sdm12 k=7
    reaches 26%, protein20 k=6 reaches 11%, and hp_thomas_dill2 k=26 reaches 2%. A long
