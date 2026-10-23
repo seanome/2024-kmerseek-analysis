@@ -475,27 +475,29 @@ def attach_arm_scores(
 
 def threshold_at_fpr(pairs: pl.DataFrame, arm_name: str, fpr: float) -> float:
     """
-    Score threshold placing exactly ``fpr`` of the *negative* pairs above it.
+    Score threshold placing at most ``fpr`` of the negative pairs above it.
 
     Non-detections count as negatives that were correctly rejected, which is what makes
     this comparable across arms with wildly different hit counts.  If an arm produces
     fewer above-threshold negatives than the budget allows, the threshold falls to the
-    lowest score it reported (its "any hit" operating point).
+    negative infinity (its "any finite reported hit" operating point).
     """
+    if not 0 <= fpr < 1:
+        raise ValueError("fpr must be in [0, 1)")
     col = f"score_{arm_name}"
     neg = (
         pairs.filter(~pl.col("label"))
         .select(col)
-        .drop_nulls()
+        .filter(pl.col(col).is_finite())
         .get_column(col)
         .to_numpy()
     )
     n_neg = pairs.filter(~pl.col("label")).height
+    if n_neg == 0:
+        raise ValueError("no negative benchmark pairs; cannot calibrate FPR")
     budget = int(np.floor(fpr * n_neg))
-    if neg.size == 0:
-        return np.inf
     if neg.size <= budget:
-        return float(neg.min())
+        return -np.inf
     neg_sorted = np.sort(neg)[::-1]
     return float(neg_sorted[budget])
 
@@ -516,7 +518,9 @@ def add_calls(
         thr = threshold_at_fpr(pairs, name, fpr)
         thresholds[name] = thr
         exprs.append(
-            (pl.col(col).is_not_null() & (pl.col(col) > thr)).alias(f"call_{name}")
+            (pl.col(col).is_finite().fill_null(False) & (pl.col(col) > thr)).alias(
+                f"call_{name}"
+            )
         )
     out = pairs.with_columns(exprs)
 

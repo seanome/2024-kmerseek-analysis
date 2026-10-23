@@ -34,7 +34,9 @@ The HHblits files under `~/data/pfam-benchmark-tools/results/hhblits/` are **not
 run with `params.hhblits_db = null`, which makes `hhblitsBuildDB` fall back to
 single-sequence a3m profiles with `-n 0` iterations. The arm has never actually run.
 
-## Handoff commands
+## Historical commands, not current launch instructions
+
+Do not run the old local examples below on the laptop. A new run requires a cluster profile, verified inputs and resource requests based on earlier traces. This notebook review launches no work.
 
 Nextflow: `/Users/olga/anaconda3/envs/nf-core-v2/bin/nextflow`. Resume is `-resume`
 (single dash — `--resume` would be parsed as a pipeline parameter).
