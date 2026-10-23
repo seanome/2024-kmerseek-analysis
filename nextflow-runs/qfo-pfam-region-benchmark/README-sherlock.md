@@ -1260,3 +1260,17 @@ comparable numbers.
 
 `roc_auc` is null, not 0.0, when a tool produced only correct calls or only incorrect
 ones -- there is no ranking question to answer, and 0.0 would rank it below a coin flip.
+
+
+## Cache provenance for extended searches
+
+An extended index name records the mismatch penalty, X-drop, calibration-query count,
+and a hash of the container image reference. Changing one of those settings selects a
+separate index. An unextended index keeps its existing name. Image tags should remain
+pinned: hashing a tag does not establish that its underlying image has stayed unchanged.
+
+An extended search writes a `*.search-settings.json` file next to its region table.
+Before reusing that table, the workflow checks its index name and search filters.
+A missing or different settings record stops the workflow rather than treating old
+results as a new experiment. Use a new output directory for a changed experiment or
+for legacy extended results without this record; preserve the old results for comparison.

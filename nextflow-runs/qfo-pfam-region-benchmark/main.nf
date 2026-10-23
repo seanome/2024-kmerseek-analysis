@@ -339,8 +339,9 @@ params.min_region_score = 1.3
 //
 // The E-value's lambda and K are fitted when the index is built, on --kmerseek_ka_queries
 // of the target's own sequences, and stored in the index. Such an index is not the index an
-// unextended run builds, so its name gains `.ka-c<C>`: the two can share one store without
-// one run picking up the other's index. Searches then pass --ka-queries 0, so a search
+// unextended run builds, so its name includes C, X-drop, fit query count and image reference:
+// two fits cannot share an entry merely because their penalties match. Searches pass
+// --ka-queries 0, so a search
 // against an index whose fit was refused fails loudly instead of refitting.
 params.kmerseek_extend = false
 params.kmerseek_extend_xdrop_per_penalty = 4
@@ -1730,11 +1731,11 @@ process kmerseekIndex {
           val(lowcomp), val(image), val(ka)
 
     output:
-    path "${species}.${label}.k${ksize}.lc${lowcomp}${ka ? '.ka-c' + ka : ''}.kmerseek.rocksdb"
+    path "${species}.${label}.k${ksize}.lc${lowcomp}${FitCache.indexSuffix(ka, ka ? extendXdrop(ka) : '', kaQueries(label, ksize), image)}.kmerseek.rocksdb"
 
     script:
     def slug      = "${label}.k${ksize}.lc${lowcomp}"
-    def index_dir = "${species}.${slug}${ka ? '.ka-c' + ka : ''}.kmerseek.rocksdb"
+    def index_dir = "${species}.${slug}${FitCache.indexSuffix(ka, ka ? extendXdrop(ka) : '', kaQueries(label, ksize), image)}.kmerseek.rocksdb"
     def spectrum  = "spectrum.${species}.${slug}.csv.gz"
     // The new CLI treats --remove-low-complexity as a presence-only index flag. Search
     // inherits the index setting when the option is omitted, so false emits nothing and
@@ -1841,6 +1842,8 @@ process kmerseekSearch {
     path "spectrum.${species}.${label}.k${ksize}.lc${lowcomp}.csv.gz",           emit: spectrum
     path "human_vs_${species}.${label}.k${ksize}.lc${lowcomp}.timings.jsonl",
          optional: true, emit: timing
+    path "human_vs_${species}.${label}.k${ksize}.lc${lowcomp}.search-settings.json",
+         optional: true
 
     script:
     def slug      = "${label}.k${ksize}.lc${lowcomp}"
@@ -1854,6 +1857,8 @@ process kmerseekSearch {
     // search rather than refit when that fit is missing. See params.kmerseek_extend.
     def ext_flags = ka ? "--extend-mismatch-penalty ${ka} --extend-xdrop ${extendXdrop(ka)} " +
                          "--ka-queries 0" : ""
+    def search_settings = FitCache.json(FitCache.searchSettings(index_dir.name,
+        params.threshold, params.min_shared_kmers, params.max_query_pvalue, params.min_region_score))
     """
     set -euo pipefail
     ${KMERSEEK_TIMER_SH}
@@ -1990,6 +1995,11 @@ PYEOF
     printf '{"process":"kmerseekSearch","tag":"%s","cpus":%s,"realtime_s":%s,"command_s":%s,"n_queries_all":%s,"extension_fit_refused":%s}\\n' \\
         "${species}_${label}_k${ksize}_lc${lowcomp}" "${task.cpus}" \\
         "\$(_elapsed_s \$_task_t0)" "\$_cmd_s" "\$n_queries" "\$fit_refused" >> ${timings}
+    if [ -n "${ext_flags}" ]; then
+        cat > human_vs_${species}.${slug}.search-settings.json <<'SEARCH_SETTINGS_EOF'
+${search_settings}
+SEARCH_SETTINGS_EOF
+    fi
     """
 }
 
@@ -4100,8 +4110,18 @@ workflow {
                 comboKey(species, label, ksize, lowcomp) in keep
             }
             .map { species, fasta, cli_flag, label, ksize, lowcomp ->
+                def ka = extendPenalty(label)
+                if (ka) {
+                    def indexName = "${species}.${label}.k${ksize}.lc${lowcomp}" +
+                        FitCache.indexSuffix(ka, extendXdrop(ka), kaQueries(label, ksize), imageFor(cli_flag)) +
+                        '.kmerseek.rocksdb'
+                    FitCache.checkSearch(java.nio.file.Paths.get("${params.outdir}/kmerseek"),
+                        "human_vs_${species}.${label}.k${ksize}.lc${lowcomp}",
+                        FitCache.searchSettings(indexName, params.threshold, params.min_shared_kmers,
+                            params.max_query_pvalue, params.min_region_score))
+                }
                 tuple(species, fasta, cli_flag, label, ksize, lowcomp, imageFor(cli_flag),
-                      extendPenalty(label))
+                      ka)
             }
         if (params.kmerseek_extend) {
             def labels = combos.collect { it[1] }.unique()
@@ -4130,12 +4150,18 @@ workflow {
         search_in = idx_out
             .map { d ->
                 // The optional .ka-c<C> is the extension fit; see params.kmerseek_extend.
-                def m = (d.name =~ /^(.+?)\.(.+)\.k(\d+)\.lc(true|false)(?:\.ka-c[0-9.]+)?\.kmerseek\.rocksdb$/)
+                def m = (d.name =~ /^(.+?)\.(.+)\.k(\d+)\.lc(true|false)(?:\.ka-c[0-9.]+(?:\.x[0-9.]+\.q\d+\.i[0-9a-f]{64})?)?\.kmerseek\.rocksdb$/)
                 if (!m) error "cannot parse kmerseek index directory name: ${d.name}"
                 tuple(comboKey(m[0][1], m[0][2], m[0][3], m[0][4]), d)
             }
             .join(combo_meta)
             .map { _key, d, species, cli_flag, label, ksize, lowcomp, target_bytes, image, ka ->
+                if (ka) {
+                    def settings = FitCache.searchSettings(d.name, params.threshold,
+                        params.min_shared_kmers, params.max_query_pvalue, params.min_region_score)
+                    FitCache.checkSearch(java.nio.file.Paths.get("${params.outdir}/kmerseek"),
+                        "human_vs_${species}.${label}.k${ksize}.lc${lowcomp}", settings)
+                }
                 tuple(species, cli_flag, label, ksize, lowcomp, target_bytes, d, human_fasta,
                       image, ka)
             }

@@ -78,6 +78,13 @@ jobs:
           java-version: '17'
 
       - uses: nf-core/setup-nextflow@v2
+        with:
+          version: '25.04.7'
+
+      - name: Fitted-index and cached-search identity
+        run: |
+          nextflow -version
+          java -cp "${NXF_HOME:-$HOME/.nextflow}/framework/25.04.7/nextflow-25.04.7-one.jar" groovy.ui.GroovyMain tests/test_fit_cache.groovy
 
       # Catches a syntax error or a broken profile without pulling a single container. The
       # profiles are checked separately because a layered profile that fails to resolve is

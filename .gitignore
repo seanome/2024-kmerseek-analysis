@@ -199,3 +199,7 @@ results-test/
 # whichever one it opens -- including throwaway merge-resolution checkouts -- so the folder
 # is per-checkout scratch, not shared project config.
 .idea/
+
+# Pipeline Groovy source, rather than a generated Python packaging directory.
+!nextflow-runs/qfo-pfam-region-benchmark/lib/
+!nextflow-runs/qfo-pfam-region-benchmark/lib/*.groovy
