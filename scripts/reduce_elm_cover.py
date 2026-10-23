@@ -303,10 +303,10 @@ def score_arm(path: Path, arm: str, args) -> dict:
     return summary
 
 
-def arm_files(results: Path, species: str) -> list[tuple[str, Path]]:
+def arm_files(results: Path, species: str, kmerseek_subdir: str = "kmerseek") -> list[tuple[str, Path]]:
     """(arm name, region file) for every arm of one target species, sorted by name."""
     arms = []
-    for f in sorted((results / "kmerseek").glob(f"human_vs_{species}.*.regions.parquet")):
+    for f in sorted((results / kmerseek_subdir).glob(f"human_vs_{species}.*.regions.parquet")):
         arms.append((f.name.removeprefix(f"human_vs_{species}.").removesuffix(".regions.parquet"), f))
     for d in sorted((results / "regions").iterdir()):
         for f in sorted(d.glob(f"human_vs_{species}.{d.name}.tsv.gz")):
@@ -318,6 +318,8 @@ def main() -> None:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--results", type=Path, required=True, help="data/elm-cover/results")
     ap.add_argument("--species", default="chicken")
+    ap.add_argument("--kmerseek-subdir", default="kmerseek",
+                    help="kmerseek's store under --results: kmerseek_top<N> for a --kmerseek_top_targets run")
     ap.add_argument("--instances", type=Path, required=True, help="assets/elm_cover_instances.tsv")
     ap.add_argument("--orthologs", type=Path, required=True, help="assets/elm_cover_orthologs.tsv")
     ap.add_argument("--projections", type=Path, required=True, help="assets/elm_cover_projections.tsv")
@@ -336,7 +338,7 @@ def main() -> None:
     ap.add_argument("--list-arms", action="store_true")
     args = ap.parse_args()
 
-    arms = arm_files(args.results, args.species)
+    arms = arm_files(args.results, args.species, args.kmerseek_subdir)
     if args.list_arms:
         for a, f in arms:
             print(a, f.stat().st_size, sep="\t")
