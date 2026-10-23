@@ -99,6 +99,40 @@ from matplotlib.patches import Patch, Rectangle
 
 sys.path.insert(0, str(Path.cwd()))
 import hp_conservation_utils as hc
+import seaborn as sns
+import pubfig as pf
+import textwrap
+
+pf.use_style()
+
+
+def finish_figure(fig, path, tools, hypothesis, conclusion, title=None, **_):
+    # Fixed printed width; captions sit outside the axes and their legend.
+    fig.set_size_inches(pf.TWO_COLUMN_MM * pf.MM, 165 * pf.MM)
+    fig.subplots_adjust(left=0.18, right=0.96, bottom=0.43, top=0.82)
+    header = "\n".join(textwrap.wrap("TOOLS: " + tools, 115))
+    if title:
+        header += "\n" + "\n".join(textwrap.wrap(title, 115))
+    fig.text(0.03, 0.97, header, ha="left", va="top")
+    footer = "\n".join(textwrap.wrap("Hypothesis: " + hypothesis, 115))
+    footer += "\n" + "\n".join(textwrap.wrap("Conclusion: " + conclusion, 115))
+    fig.canvas.draw()
+    renderer = fig.canvas.get_renderer()
+    bottom = min(ax.get_tightbbox(renderer).transformed(fig.transFigure.inverted()).y0
+                 for ax in fig.axes)
+    fig.text(0.03, bottom - 0.035, footer, ha="left", va="top")
+    pf.save(fig, path.with_suffix(""))
+    svg = path.with_suffix(".svg")
+    svg.write_text("\n".join(line.rstrip() for line in svg.read_text().splitlines()) + "\n")
+    if not any(ax.get_label() == "<colorbar>" for ax in fig.axes):
+        from PIL import Image
+        with Image.open(path) as image:
+            assert image.convert("RGBA").getextrema()[3] == (255, 255)
+            dpi = image.info.get("dpi")
+            palette = image.convert("RGB").quantize(colors=256, dither=Image.Dither.NONE)
+        palette.save(path, dpi=dpi)
+
+
 
 pl.Config.set_tbl_rows(60)
 pl.Config.set_tbl_cols(20)
@@ -171,7 +205,7 @@ KIND_COLOR = {
     "same H/P class, different residue": "#534AB7",
     "different H/P class": "#D85A30",
 }
-fig, ax = plt.subplots(figsize=(7.5, 3.6))
+fig, ax = pf.figure(pf.TWO_COLUMN_MM, 165, layout=None)
 x = np.arange(3)
 ax.bar(
     x,
@@ -186,7 +220,6 @@ for i, r in enumerate(t1.iter_rows(named=True)):
         f"{r['mean_blosum62_bits']:+.2f} bits\n{r['share_of_positions']:.0%} of positions",
         ha="center",
         va="bottom" if r["mean_blosum62_bits"] >= 0 else "top",
-        fontsize=9.5,
     )
 ax.axhline(0, color="black", lw=0.8)
 ax.set_xticks(
@@ -205,11 +238,10 @@ ax.legend(
     handles=[Patch(color=KIND_COLOR[k], label=k) for k in KIND_COLOR],
     loc="lower left",
     bbox_to_anchor=(0, 1.02),
-    fontsize=8.5,
     frameon=False,
-    ncol=3,
+    ncol=1,
 )
-hc.finish_figure(
+finish_figure(
     fig,
     FIG / "284_blosum62_bits_by_residue_relation_pfam_seed_le20pct.png",
     tools="no kmerseek; Pfam-A 38.2 seed pairs from notebook 230 at 20% identity or less; BLOSUM62 (Biopython), hp_thomas_dill2 classes",
@@ -330,21 +362,21 @@ def kind_of(a, b):
 
 
 cols = list(range(s, e))
-fig, ax = plt.subplots(figsize=(13, 4.6))
+fig, ax = pf.figure(pf.TWO_COLUMN_MM, 165, layout=None)
 W = 1.0
 for i, c in enumerate(cols):
     a, b = qa[c], ta[c]
     k = kind_of(a, b)
-    ax.text(i + 0.5, 5.0, a, ha="center", va="center", fontsize=10, family="monospace")
+    ax.text(i + 0.5, 5.0, a, ha="center", va="center", family="monospace")
     ax.add_patch(Rectangle((i + 0.1, 4.3), 0.8, 0.45, color=KIND[k], lw=0))
-    ax.text(i + 0.5, 3.8, b, ha="center", va="center", fontsize=10, family="monospace")
+    ax.text(i + 0.5, 3.8, b, ha="center", va="center", family="monospace")
     v = col_bits[c]
     if not np.isnan(v):
         ax.add_patch(Rectangle((i + 0.15, 2.2), 0.7, v * 0.35, color=KIND[k], lw=0))
     hq = lines["query_class"][i]
     ht = lines["target_class"][i]
-    ax.text(i + 0.5, 0.9, hq, ha="center", va="center", fontsize=10, family="monospace")
-    ax.text(i + 0.5, 0.4, ht, ha="center", va="center", fontsize=10, family="monospace")
+    ax.text(i + 0.5, 0.9, hq, ha="center", va="center", family="monospace")
+    ax.text(i + 0.5, 0.4, ht, ha="center", va="center", family="monospace")
 ax.axhline(2.2, xmin=0, xmax=1, color="black", lw=0.6)
 r0, r1 = c0 - s, c1 - s + 1
 ax.plot([r0, r0, r1, r1], [0.05, -0.1, -0.1, 0.05], color=KIND["same class"], lw=1.5)
@@ -354,7 +386,6 @@ ax.text(
     f"one exact H/P {L}-mer: {L} × {-np.log2(ex_chance):.2f} = {run_bits_ex:.1f} bits",
     ha="center",
     va="top",
-    fontsize=10,
     color=KIND["same class"],
 )
 ax.plot([r0, r0, r1, r1], [3.45, 3.55, 3.55, 3.45], color="black", lw=0.6)
@@ -364,7 +395,6 @@ ax.text(
     f"BLOSUM62 over the same {L} columns: {seg_bits_ex:.1f} bits",
     ha="center",
     va="top",
-    fontsize=10,
 )
 for y, lab in [
     (5.0, "query, residues"),
@@ -373,7 +403,7 @@ for y, lab in [
     (0.9, "query, H/P"),
     (0.4, "target, H/P"),
 ]:
-    ax.text(-0.4, y, lab, ha="right", va="center", fontsize=10)
+    ax.text(-0.4, y, lab, ha="right", va="center",)
 ax.set_xlim(-5.5, len(cols) + 0.5)
 ax.set_ylim(-1.3, 5.6)
 ax.axis("off")
@@ -381,11 +411,10 @@ ax.legend(
     handles=[Patch(color=v, label=k) for k, v in KIND.items()],
     loc="lower left",
     bbox_to_anchor=(0, 1.0),
-    ncol=3,
+    ncol=1,
     frameon=False,
-    fontsize=9.5,
 )
-hc.finish_figure(
+finish_figure(
     fig,
     FIG / "284_one_pair_hp_run_vs_blosum62_segment_v_snare.png",
     tools="no kmerseek; Pfam-A 38.2 seed alignment of PF05008 (V-SNARE), BLOSUM62 (Biopython), hp_thomas_dill2 classes",
@@ -515,7 +544,7 @@ print(
 """)
 
 code(r"""
-fig, ax = plt.subplots(figsize=(8.5, 7))
+fig, ax = pf.figure(pf.TWO_COLUMN_MM, 165, layout=None)
 sel = low
 xb, yb = seg[sel], run_best[sel]
 h = ax.hist2d(
@@ -523,18 +552,20 @@ h = ax.hist2d(
     np.clip(yb, 0, 60),
     bins=[100, 60],
     range=[[-20, 80], [0, 60]],
-    cmap="Greys",
+    cmap=sns.color_palette("mako", as_cmap=True),
     norm="log",
     zorder=1,
 )
-plt.colorbar(h[3], ax=ax, label="pairs per bin (log scale)", shrink=0.7)
+cbar = plt.colorbar(h[3], ax=ax, label="Pairs per bin", shrink=0.7)
+from matplotlib.ticker import FuncFormatter
+cbar.ax.yaxis.set_major_formatter(FuncFormatter(lambda value, _: f"{value:g}"))
 ax.axvline(BAR, color="black", lw=1, ls=(0, (4, 3)))
 ax.axhline(BAR, color="black", lw=1, ls=(0, (4, 3)))
 ax.scatter(
     seg[hp_only],
     runs[HP][hp_only],
     marker="D",
-    s=34,
+    s=8,
     color="#a50f15",
     zorder=3,
     label=f"H/P run reaches {BAR:.0f} bits, segment does not ({int(hp_only.sum())} pairs)",
@@ -557,20 +588,19 @@ for (x_, y_, lab), ha in [
         lab,
         ha=ha,
         va="bottom" if y_ < 30 else "top",
-        fontsize=10,
         bbox=dict(facecolor="white", edgecolor="none", alpha=0.85, pad=2),
     )
 ax.set_xlabel(
-    "best ungapped BLOSUM62 segment on the alignment's diagonal (bits; above 80 drawn at 80)"
+    "Best ungapped BLOSUM62 segment (bits; values above 80 at 80)"
 )
 ax.set_ylabel(
-    "best exact run, protein20 or H/P, on the same diagonal (bits; above 60 drawn at 60)"
+    "Best aligned exact run, protein20 or H/P (bits; above 60 at 60)"
 )
 ax.set_xlim(-20, 80)
 ax.set_ylim(0, 60)
 ax.spines[["top", "right"]].set_visible(False)
-ax.legend(loc="lower left", bbox_to_anchor=(0, 1.0), frameon=False, fontsize=9.5)
-hc.finish_figure(
+ax.legend(loc="lower left", bbox_to_anchor=(0, 1.0), frameon=False,)
+finish_figure(
     fig,
     FIG / "284_exact_run_bits_vs_blosum62_segment_bits_pfam_seed_le30pct.png",
     tools="no kmerseek; Pfam-A 38.2 seed pairs from notebook 230 at 30% identity or less, 20 or more aligned positions; BLOSUM62 (Biopython)",
@@ -672,10 +702,10 @@ print(
 """)
 
 code(r"""
-fig, ax = plt.subplots(figsize=(13, 5.2))
+fig, ax = pf.figure(pf.TWO_COLUMN_MM, 165, layout=None)
 xs = np.arange(hp_tab.height)
 ax.axhline(BAR, color="black", lw=1, ls=(0, (4, 3)))
-ax.text(-0.4, BAR + 0.4, f"{BAR:.0f} bits", fontsize=9, va="bottom")
+ax.text(-0.4, BAR + 0.4, f"{BAR:.0f} bits", va="bottom")
 for i, r in enumerate(hp_tab.iter_rows(named=True)):
     ax.plot(
         [i, i],
@@ -688,17 +718,16 @@ ax.scatter(
     xs,
     hp_tab["segment_bits"],
     marker="o",
-    s=30,
+    s=7,
     facecolor="white",
     edgecolor="#444444",
     zorder=2,
 )
-ax.scatter(xs, hp_tab["gapped_sw_bits"], marker="o", s=34, color="#444444", zorder=3)
-ax.scatter(xs, hp_tab["hp_run_bits"], marker="D", s=34, color="#a50f15", zorder=4)
+ax.scatter(xs, hp_tab["gapped_sw_bits"], marker="o", s=8, color="#444444", zorder=3)
+ax.scatter(xs, hp_tab["hp_run_bits"], marker="D", s=8, color="#a50f15", zorder=4)
 ax.set_xticks(
     xs,
     [f"{r['family_id']}\n{r['seqid_ali']:.0%}" for r in hp_tab.iter_rows(named=True)],
-    fontsize=7.5,
     rotation=90,
 )
 ax.set_ylabel("bits")
@@ -712,7 +741,7 @@ ax.legend(
             marker="D",
             color="#a50f15",
             ls="",
-            ms=6,
+            ms=3,
             label="exact H/P run on the seed alignment's diagonal",
         ),
         Line2D(
@@ -723,7 +752,7 @@ ax.legend(
             mec="#444444",
             color="#444444",
             ls="",
-            ms=6,
+            ms=3,
             label="best ungapped BLOSUM62 segment on that diagonal",
         ),
         Line2D(
@@ -732,18 +761,17 @@ ax.legend(
             marker="o",
             color="#444444",
             ls="",
-            ms=6,
+            ms=3,
             label="gapped Smith-Waterman, BLOSUM62 11/1, whole domains",
         ),
     ],
     loc="lower left",
     bbox_to_anchor=(0, 1.0),
     frameon=False,
-    fontsize=9,
-    ncol=3,
+    ncol=1,
 )
 n_left = int((hp_tab["gapped_sw_bits"] < BAR).sum())
-hc.finish_figure(
+finish_figure(
     fig,
     FIG / "284_hp_run_only_pairs_vs_gapped_smith_waterman.png",
     tools="no kmerseek; Pfam-A 38.2 seed pairs; BLOSUM62 and PairwiseAligner from Biopython",
