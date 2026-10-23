@@ -56,7 +56,8 @@ if [ "$(cat pectools.done 2>/dev/null)" != "$SRC_HASH" ]; then
   sha256sum pec-tools/target/release/pec-tools > versions/pec-tools.sha256
   echo "$SRC_HASH" > pectools.done
 fi
-{ for t in fastp sourmash hmmscan seqkit python; do echo "== $t"; "$ENV/bin/$t" --version 2>&1 | head -2; done
+{ for t in fastp sourmash seqkit python; do echo "== $t"; "$ENV/bin/$t" --version 2>&1 | head -2 || true; done
+  echo "== hmmscan"; "$ENV/bin/hmmscan" -h 2>&1 | sed -n 2p || true
   "$ENV/bin/python" -c 'import importlib.metadata as m; print({p: m.version(p) for p in ["pydeseq2","parasail","sourmash","sourmash_plugin_branchwater","polars","pandas","biopython","matplotlib","numpy","scipy"]})'
 } > versions/tool_versions.txt 2>&1
 cat versions/tool_versions.txt versions/splash_version.txt
