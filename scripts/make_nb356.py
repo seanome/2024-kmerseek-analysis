@@ -174,7 +174,9 @@ print(sf1.with_columns(pl.col("median_iou").round(3)))
 ## 5. Ordered against disordered exons (SF3)
 
 Exons split by the mean AlphaFold pLDDT of their residues on the target (ordered >= 70,
-disordered < 70). Structure tools are expected to do worse on disordered exons.
+disordered < 70). These are model-confidence groups, used as a proxy for disorder;
+low pLDDT alone is not a direct measurement of structural disorder. Structure tools are
+expected to do worse in the low-confidence group.
 """)
     code(r"""
 sf3 = el.landing_by_disorder(d, FIG / "356_sf3_landing_by_exon_disorder_midi_plus")

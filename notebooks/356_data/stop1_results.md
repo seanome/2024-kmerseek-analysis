@@ -29,13 +29,15 @@ have both proteins with an AlphaFold model (the verdict set). The Stop 0 pilot (
 **What is left: a small excess over chance.** Each exon's interval was moved to a decoy
 position and scored against the same kind of kmerseek calls (1,000 draws each):
 
-| null (where the decoy interval goes) | real exons | null median | excess exons | 95% interval, resampling whole pairs |
-|---|---|---|---|---|
-| another pair of the same species, same coordinates (pre-registered) | 67.6% | 62.0% | 95 | 40 to 151 |
-| as above, decoy protein within 20% of the length and calls per residue within 0.8-1.25x | 68.9% | 65.4% | 55 | 7 to 108 |
-| the same protein, a same-length window not touching the exon | 67.6% | 64.3% | 55 | 22 to 89 |
+| null (where the decoy interval goes) | exons scored | real landings | null median | excess exons | 95% interval, resampling whole pairs |
+|---|---|---|---|---|---|---|
+| another pair of the same species, same coordinates (pre-registered) | 1,669 | 1,129 (67.6%) | 62.0% | 95 | 40 to 151 |
+| as above, decoy protein within 20% of the length and calls per residue within 0.8-1.25x | 1,544 | 1,064 (68.9%) | 65.4% | 55 | 7 to 108 |
+| the same protein, a same-length window not touching the exon | 1,664 | 1,124 (67.5%) | 64.3% | 55 | 22 to 89 |
 
 The last two rows are from the second-agent check (`356_data/adversarial_check/`).
+Their denominators differ because an eligible decoy is unavailable for some exons; each
+real rate is computed on that row's retained subset.
 Against the matched nulls, about 50 to 55 of the 1,129 landings (3 percentage points of
 1,669 exons) are above chance; the rest happen at the same rate on an interval that is
 not the exon. The placement-filtered rate (40.4% against a null median of 37.6%; 11 of
@@ -56,7 +58,7 @@ Kyte-Doolittle scan makes no call there.
 **Conclusion.** On 1,669 short internal exons of chicken and zebrafish orthologs of the
 midi-plus queries, kmerseek's calls land on the exon about 3 percentage points more often
 than on a matched decoy interval (about 55 exons; 95% interval 22 to 89 when the decoy
-window moves along the same protein). The pre-registered rule passes, but its 50% bar is
+window moves along the same protein, retaining 1,664 of the 1,669 exons). The pre-registered rule passes, but its 50% bar is
 met mostly by chance landings, and its structure-tool bar could not have failed. The
 evidence does not support "kmerseek places calls on single exons where structure search
 cannot"; it supports, at most, a small exon-specific excess for kmerseek, with the
