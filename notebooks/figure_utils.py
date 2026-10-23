@@ -146,6 +146,10 @@ def finish_figure(
     dpi: int = 200,
     wrap: int | None = None,
     header_pad_pt: float = 8.0,
+    subtitle: str | None = None,
+    font_scale: float = 1.0,
+    footer_box: dict | None = None,
+    tight_layout: bool | None = None,
 ) -> None:
     """Stamp TOOLS / hypothesis / conclusion on `fig`, then save it to `path`.
 
@@ -155,7 +159,11 @@ def finish_figure(
     ``bbox_inches="tight"``. Pass ``header_y`` to place it by hand. ``footer_y`` moves the
     footer down when a legend hangs below the axes. ``layout=False`` skips
     `tight_layout` for figures whose colorbars or gridspec margins it would undo.
+    The HP helper's `tight_layout` keyword is an alias for `layout` and takes precedence
+    when supplied. Its subtitle, scaled fonts and custom footer box remain supported.
     """
+    if tight_layout is not None:
+        layout = tight_layout
     if layout:
         try:
             fig.tight_layout()
@@ -166,7 +174,7 @@ def finish_figure(
 
     def line(pt: float) -> float:
         """Height of one text line of size `pt`, in figure fraction."""
-        return pt / 72.0 / h_in * 1.45
+        return pt * font_scale / 72.0 / h_in * 1.45
 
     y = content_top(fig) + header_pad_pt / 72.0 / h_in if header_y is None else header_y
 
@@ -178,7 +186,7 @@ def finish_figure(
         "\n".join(tool_lines),
         ha="left",
         va="bottom",
-        fontsize=9.5,
+        fontsize=9.5 * font_scale,
         fontweight="bold",
         color="#8B1A1A" if is_km else "#1F3B73",
         bbox=dict(
@@ -188,9 +196,18 @@ def finish_figure(
         ),
     )
     y += line(9.5) * len(tool_lines) + line(9.5) * 0.9
+    if subtitle:
+        fig.text(0.5, y, subtitle, ha="center", va="bottom", fontsize=9 * font_scale)
+        y += line(9) * 1.1
     if title:
         fig.text(
-            0.5, y, title, ha="center", va="bottom", fontsize=12.5, fontweight="bold"
+            0.5,
+            y,
+            title,
+            ha="center",
+            va="bottom",
+            fontsize=12.5 * font_scale,
+            fontweight="bold",
         )
 
     foot = textwrap.wrap("Hypothesis: " + hypothesis, wrap) + textwrap.wrap(
@@ -202,9 +219,10 @@ def finish_figure(
         "\n".join(foot),
         ha="left",
         va="top",
-        fontsize=9,
+        fontsize=9 * font_scale,
         color="#222222",
         linespacing=1.35,
-        bbox=dict(boxstyle="round,pad=0.4", facecolor="#F6F6F6", edgecolor="#DDDDDD"),
+        bbox=footer_box
+        or dict(boxstyle="round,pad=0.4", facecolor="#F6F6F6", edgecolor="#DDDDDD"),
     )
     fig.savefig(path, dpi=dpi, bbox_inches="tight")

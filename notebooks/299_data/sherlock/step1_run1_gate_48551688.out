@@ -1,0 +1,58 @@
+shape: (18, 11)
+┌─────────────┬──────────┬───────┬────────┬───┬─────────────┬────────────┬────────────┬────────────┐
+│ setting     ┆ alphabet ┆ ksize ┆ scaled ┆ … ┆ slice_max_r ┆ cpu_s_per_ ┆ catalog_cp ┆ is_lower_b │
+│ ---         ┆ ---      ┆ ---   ┆ ---    ┆   ┆ ss_gb       ┆ gb         ┆ u_hours_ar ┆ ound       │
+│ str         ┆ str      ┆ i64   ┆ i64    ┆   ┆ ---         ┆ ---        ┆ ithmetic   ┆ ---        │
+│             ┆          ┆       ┆        ┆   ┆ f64         ┆ f64        ┆ ---        ┆ bool       │
+│             ┆          ┆       ┆        ┆   ┆             ┆            ┆ f64        ┆            │
+╞═════════════╪══════════╪═══════╪════════╪═══╪═════════════╪════════════╪════════════╪════════════╡
+│ protein.k7. ┆ protein  ┆ 7     ┆ 100    ┆ … ┆ 3.760113    ┆ 1705.74906 ┆ 15.44451   ┆ false      │
+│ s100        ┆          ┆       ┆        ┆   ┆             ┆ 7          ┆            ┆            │
+│ protein.k10 ┆ protein  ┆ 10    ┆ 100    ┆ … ┆ 3.763557    ┆ 2078.48886 ┆ 18.81944   ┆ false      │
+│ .s100       ┆          ┆       ┆        ┆   ┆             ┆ 3          ┆            ┆            │
+│ protein.k13 ┆ protein  ┆ 13    ┆ 100    ┆ … ┆ 3.758312    ┆ 2627.03856 ┆ 23.78622   ┆ false      │
+│ .s100       ┆          ┆       ┆        ┆   ┆             ┆ 3          ┆            ┆            │
+│ dayhoff.k7. ┆ dayhoff  ┆ 7     ┆ 100    ┆ … ┆ 3.761406    ┆ 1982.96891 ┆ 17.954565  ┆ false      │
+│ s100        ┆          ┆       ┆        ┆   ┆             ┆ 5          ┆            ┆            │
+│ dayhoff.k10 ┆ dayhoff  ┆ 10    ┆ 100    ┆ … ┆ 3.763252    ┆ 2101.46885 ┆ 19.027509  ┆ false      │
+│ .s100       ┆          ┆       ┆        ┆   ┆             ┆            ┆            ┆            │
+│ …           ┆ …        ┆ …     ┆ …      ┆ … ┆ …           ┆ …          ┆ …          ┆ …          │
+│ dayhoff.k10 ┆ dayhoff  ┆ 10    ┆ 1000   ┆ … ┆ 0.418716    ┆ 39999.9781 ┆ 362.175228 ┆ true       │
+│ .s1000      ┆          ┆       ┆        ┆   ┆             ┆ 2          ┆            ┆            │
+│ dayhoff.k13 ┆ dayhoff  ┆ 13    ┆ 1000   ┆ … ┆ 0.409504    ┆ 39999.9781 ┆ 362.175228 ┆ true       │
+│ .s1000      ┆          ┆       ┆        ┆   ┆             ┆ 2          ┆            ┆            │
+│ hp.k7.s1000 ┆ hp       ┆ 7     ┆ 1000   ┆ … ┆ 0.210682    ┆ 39999.9781 ┆ 362.175228 ┆ true       │
+│             ┆          ┆       ┆        ┆   ┆             ┆ 2          ┆            ┆            │
+│ hp.k10.s100 ┆ hp       ┆ 10    ┆ 1000   ┆ … ┆ 0.508236    ┆ 39999.9781 ┆ 362.175228 ┆ true       │
+│ 0           ┆          ┆       ┆        ┆   ┆             ┆ 2          ┆            ┆            │
+│ hp.k13.s100 ┆ hp       ┆ 13    ┆ 1000   ┆ … ┆ 0.457897    ┆ 39999.9781 ┆ 362.175228 ┆ true       │
+│ 0           ┆          ┆       ┆        ┆   ┆             ┆ 2          ┆            ┆            │
+└─────────────┴──────────┴───────┴────────┴───┴─────────────┴────────────┴────────────┴────────────┘
+shape: (2, 4)
+┌────────┬───────────────────────────────┬─────────────────┬───────────────────────┐
+│ scaled ┆ all_nine_cpu_hours_arithmetic ┆ any_lower_bound ┆ fits_two_compute_days │
+│ ---    ┆ ---                           ┆ ---             ┆ ---                   │
+│ i64    ┆ f64                           ┆ bool            ┆ bool                  │
+╞════════╪═══════════════════════════════╪═════════════════╪═══════════════════════╡
+│ 100    ┆ 540.910785                    ┆ true            ┆ null                  │
+│ 1000   ┆ 3259.577051                   ┆ true            ┆ false                 │
+└────────┴───────────────────────────────┴─────────────────┴───────────────────────┘
+DEAD at step 1: the whole catalog does not fit in two compute days at either scaled
+{
+ "logan_proteins": 109400000000.0,
+ "genes_in_slice": 1372957,
+ "per_scaled": [
+  {
+   "scaled": 100,
+   "cpu_s_per_gene_all_nine": 0.041630623547286666,
+   "logan_cpu_hours_arithmetic": 1265108.393353656
+  },
+  {
+   "scaled": 1000,
+   "cpu_s_per_gene_all_nine": 0.25086988243974284,
+   "logan_cpu_hours_arithmetic": 7623656.983029963
+  }
+ ],
+ "note": "Arithmetic, not measured. Per-gene time comes from translating DNA in six frames; Logan's proteins need no translation, so this is an upper bound per protein."
+}
+Step 1 says dead: the catalog does not fit the budget at either scaled. Nothing more submitted.

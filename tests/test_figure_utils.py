@@ -28,3 +28,50 @@ def test_empty_filtered_alphabet_axis_has_no_ticks(axis):
         assert len(ticks) == 0
     finally:
         plt.close(fig)
+
+
+def test_merged_reexports_keep_main_hp_keywords(tmp_path, monkeypatch):
+    from unittest.mock import Mock
+    import figure_utils as fu
+    import hp_conservation_utils as hp
+    import mhc_region_utils as mhc
+
+    assert hp.finish_figure is fu.finish_figure
+    assert mhc.finish_figure is fu.finish_figure
+    fig, ax = plt.subplots()
+    layout = Mock()
+    monkeypatch.setattr(fig, "tight_layout", layout)
+    try:
+        ax.plot([0, 1], [0, 1], label="observed")
+        ax.legend()
+        hp.finish_figure(
+            fig,
+            tmp_path / "legacy.png",
+            tools="cached check",
+            hypothesis="Keyword compatibility holds.",
+            conclusion="Image written.",
+            title="Compatibility",
+            subtitle="Main branch subtitle",
+            font_scale=0.5,
+            footer_box={"facecolor": "white"},
+            tight_layout=False,
+        )
+        layout.assert_not_called()
+        labels = {t.get_text(): t for t in fig.texts}
+        assert labels["Main branch subtitle"].get_fontsize() == 4.5
+        assert labels["Compatibility"].get_fontsize() == 6.25
+        assert (tmp_path / "legacy.png").stat().st_size > 0
+    finally:
+        plt.close(fig)
+
+
+def test_main_probability_helpers_survive_merge():
+    import numpy as np
+    import hp_conservation_utils as hp
+
+    # Enumerating all eight length-three binary strings gives three with adjacent 1s.
+    assert hp.aligned_stretches("AA-AA", "AAAAA").tolist() == [2, 2]
+    got = hp.pr_longest_run_at_least(
+        np.array([0.5, 0.5]), [np.array([3]), np.array([2, 2])], [2]
+    )
+    assert got[0].tolist() == pytest.approx([3 / 8, 7 / 16])
