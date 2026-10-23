@@ -1,0 +1,10 @@
+gene,n_arms,best_E,n_arms_E,at_E,null_median_E,p_random_as_good_E,best_idf,n_arms_idf,at_idf,null_median_idf,p_random_as_good_idf,best_tfidf,n_arms_tfidf,at_tfidf,null_median_tfidf,p_random_as_good_tfidf
+ZNF292,42,9,42,hp_lehninger2 k28 (of 11),4.0,0.905,2,42,hp_lehninger2 k28 (of 11),4.0,0.283,4,42,hp_lehninger2 k28 (of 11),4.0,0.538
+RSF1,55,6,55,hp_lehninger2 k28 (of 11),2.0,0.996,1,55,hp_lehninger2 k28 (of 11),1.0,0.821,1,55,hp_thomas_dill_no_c2 k34 (of 39),1.0,0.628
+TSHZ1,33,73,33,hp_lehninger2 k24 (of 124),41.0,0.76,60,33,uniprot18 k6 (of 577),40.0,0.667,64,33,uniprot18 k6 (of 577),40.0,0.702
+TSHZ2,35,32,35,hp_lehninger_hpc3 k25 (of 36),11.0,0.961,6,35,hp_lehninger_hpc3 k25 (of 36),11.0,0.308,14,35,hp_lehninger_hpc3 k25 (of 36),11.0,0.617
+TSHZ3,32,48,32,"polarity4 k11 (of 4,263)",47.0,0.517,77,32,hp_lehninger2 k24 (of 124),47.0,0.747,72,32,hp_lehninger2 k24 (of 124),46.0,0.708
+RNMT,37,3,37,"hp_lehninger_hpc3 k14 (of 14,424); hp_lehninger_hpc3 k18 (of 2,955); hp_lehninger_hpc3 k21 (of 466); hp_lehninger_hpc3 k25 (of 36); hp_lehninger_hpc3 k28 (of 10)",3.0,0.65,6,37,hp_lehninger2 k28 (of 11); hp_lehninger_c_nonpolar2 k28 (of 16),1.0,0.92,3,37,hp_lehninger_hpc3 k21 (of 466); hp_lehninger_hpc3 k25 (of 36),2.0,0.652
+SFI1,38,1,38,"hp_lehninger_hpc3 k14 (of 14,424); hp_lehninger_hpc3 k18 (of 2,955); hp_lehninger_hpc3 k21 (of 466); hp_lehninger_hpc3 k25 (of 36); hp_lehninger_hpc3 k28 (of 10)",3.0,0.279,1,38,hp_lehninger_hpc3 k28 (of 10),1.0,0.684,1,38,hp_lehninger_hpc3 k21 (of 466),2.0,0.272
+TRAPPC10,29,40,29,hp_lehninger2 k24 (of 124),42.0,0.481,59,29,hp_lehninger_hpc3 k21 (of 466),42.0,0.646,74,29,hp_lehninger2 k24 (of 124),42.0,0.758
+NDNF,29,20,29,hp_lehninger_hpc3 k25 (of 36),12.0,0.739,14,29,hp_lehninger_hpc3 k25 (of 36),12.0,0.581,21,29,hp_lehninger_hpc3 k21 (of 466),12.0,0.763
