@@ -15,6 +15,8 @@ def select(source, output):
     with source.open() as stream:
         for row in csv.DictReader(stream, delimiter="\t"):
             anchor = row["anchor"]
+            if not anchor or set(anchor) - set("ACGT"):
+                raise ValueError("Invalid DNA anchor")
             q = float(row["pval_opt_corrected"])
             if anchor in seen or not math.isfinite(q) or not 0 <= q <= 1:
                 raise ValueError("Duplicate anchor or invalid adjusted P-value")
@@ -28,9 +30,11 @@ def select(source, output):
         writer = csv.writer(stream, delimiter="\t", lineterminator="\n")
         writer.writerow(["anchor"])
         writer.writerows([anchor] for _, anchor in selected)
+    with source.open("rb") as stream:
+        source_sha256 = hashlib.file_digest(stream, "sha256").hexdigest()
     report = dict(
         source=str(source),
-        source_sha256=hashlib.file_digest(source.open("rb"), "sha256").hexdigest(),
+        source_sha256=source_sha256,
         tested_anchors=tested,
         selected_anchors=len(selected),
         rule="pval_opt_corrected < 0.05",
