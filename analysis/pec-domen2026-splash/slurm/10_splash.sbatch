@@ -16,7 +16,7 @@ export PATH=$PEC_ROOT/env/bin:$PATH
 while read -r s p; do [ -s "$p" ] || { echo "missing input $p"; exit 2; }; done < input.txt
 rm -rf splash_out && mkdir splash_out && cd splash_out
 TMP=${L_SCRATCH:-$D/splash_out}/splash_tmp_$SLURM_JOB_ID
-mkdir -p "$TMP"
+rm -rf "$TMP"  # SPLASH makes this folder itself and stops if it exists
 N=$SLURM_CPUS_PER_TASK
 MEM_GB=$(( SLURM_MEM_PER_NODE / 1024 ))
 KMC_GB=$(( MEM_GB / 3 ))
