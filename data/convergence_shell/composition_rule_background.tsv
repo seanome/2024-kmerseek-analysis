@@ -1,0 +1,4 @@
+rule	n_background	n_pass	frac_pass
+Asp+Glu share >= 0.2	5000	97	0.0194
+low-complexity fraction >= 0.3	5000	137	0.0274
+either (the class C rule)	5000	226	0.0452
