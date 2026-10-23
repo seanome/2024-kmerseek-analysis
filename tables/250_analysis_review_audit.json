@@ -1,0 +1,11 @@
+{
+  "instance_species_rows_independently_reconstructed": 3871,
+  "cached_pair_alignments": 2394,
+  "mismatched_longest_covering_runs": 0,
+  "source_sha256": {
+    "stage0_pairs.parquet": "5cb03e7703c469b076fc5199f8bbd422b82513a823b357839a9f15ef6f2eb975",
+    "stage0_instances.parquet": "d71a7f3728eace1eab457be6e22b120fb812978ecd00a75a28076473e85b9eeb"
+  },
+  "rule": "gap-free same-class columns along supplied alignment; run covers at least80% of motif; original19-run10%gate unchanged",
+  "outcome": "Original gate not met: chicken49.8%,zebrafish27.4%; lower values in later species do not rescue original all-species gate."
+}

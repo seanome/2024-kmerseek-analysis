@@ -91,12 +91,12 @@ ortholog.
 
 **Longest HP run covering the motif.** The longest run of consecutive alignment columns,
 with no gap on either side, where every column has the same HP class on both proteins,
-among runs that contain at least 80% of the motif's residues. An exact seed of length $k$
-covering the motif can exist only if this run is at least $k$ long.
+among runs that contain at least 80% of the motif's residues. An exact seed of length $k$ along this supplied alignment
+covering the motif requires such a run of at least $k$. Seeds at other offsets are not counted.
 
 **Gate.** If fewer than 10% of instances have a run of 19 or more in chicken and every
-species beyond it, exact 19-mers cannot carry this benchmark, and the mismatch-tolerant
-extension arms have to.
+species beyond it, the aligned-run criterion favors testing extension arms. This gate
+does not measure index recall or prove that extension is necessary.
 """)
 
 code(r"""
@@ -282,25 +282,7 @@ ax.legend(loc="lower center", bbox_to_anchor=(0.5, 1.02), ncol=2, frameon=False)
 fig.savefig(FIG / "250_stage0_longest_hp_run.png", dpi=200)
 """)
 
-code(r"""
-# Verdict, computed, species by species from chicken outward (300 Mya and beyond).
-far = runs.filter((pl.col("mya") >= 300) & (pl.col("n_instances") > 0)).sort("mya")
-under = far.filter(pl.col("share_run_ge_19") < 0.10)
-over = far.filter(pl.col("share_run_ge_19") >= 0.10)
-print("Share of instances with an identical-HP-class run of 19 or more covering the motif:")
-for r in far.iter_rows(named=True):
-    print(f"  {r['species']:12s} {r['mya']:>5} Mya  {100 * r['share_run_ge_19']:5.1f}%  "
-          f"(run of 10 or more: {100 * r['share_run_ge_10']:5.1f}%, n = {r['n_instances']})")
-if over.is_empty():
-    print("VERDICT: under 10% in chicken and every species beyond it. Exact 19-mers cannot carry this "
-          "benchmark; the extension arms are load-bearing.")
-else:
-    print(f"VERDICT: the gate as written (under 10% in chicken AND every species beyond) is not met: "
-          f"{', '.join(over['species'])} are at or above 10%. It is met from "
-          f"{under['species'][0] if under.height else 'no species'} outward "
-          f"({', '.join(under['species'])}): there, exact 19-mers cannot carry the benchmark and the "
-          f"extension arms are load-bearing.")
-""")
+code('# Verdict, computed, species by species from chicken outward (300 Mya and beyond).\nfar = runs.filter((pl.col("mya") >= 300) & (pl.col("n_instances") > 0)).sort("mya")\nunder = far.filter(pl.col("share_run_ge_19") < 0.10)\nover = far.filter(pl.col("share_run_ge_19") >= 0.10)\nprint(\n    "Share of instances with an identical-HP-class run of 19 or more covering the motif:"\n)\nfor r in far.iter_rows(named=True):\n    print(\n        f"  {r[\'species\']:12s} {r[\'mya\']:>5} Mya  {100 * r[\'share_run_ge_19\']:5.1f}%  "\n        f"(run of 10 or more: {100 * r[\'share_run_ge_10\']:5.1f}%, n = {r[\'n_instances\']})"\n    )\nif over.is_empty():\n    print("GATE: the original under-10% aligned-run criterion is met in every tested species from chicken onward.")\nelse:\n    print(f"GATE: the original criterion is not met; {\', \'.join(over[\'species\'])} are at or above 10%.")\nprint(f"Descriptively below 10%: {\', \'.join(under[\'species\'])}.")\nprint("These are runs along supplied alignments, not all possible index seeds. Actual recall of exact or extension arms is not measured by this gate.")\n')
 
 code(r"""
 # The residues behind the numbers: one instance per species group, the one whose longest
