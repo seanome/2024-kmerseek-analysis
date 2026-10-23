@@ -1,0 +1,37 @@
+# make hash-check OLD=3a12009 (job 47714792) and the -dump-hashes rerun (job 47722053), 2026-10-13.
+# Smoke set, hp_pbotc_1st_ed2 k29, real Swiss-Prot 2019_08 reference, launch dir hashcheck/ with its own index cache.
+# old = 3a12009 (the pilot checkout), new = 503ebad (this branch).
+== trace.old.txt: name, hash, status, attempt
+hmmscanSearch (chunk)	0f/02b848	COMPLETED	1
+kmerseekIndex (hp_pbotc_1st_ed2.k29)	c8/19ebc8	COMPLETED	1
+kmerseekSearch (hp_pbotc_1st_ed2.k29.exact.chunk)	2f/4f6415	COMPLETED	1
+kmerseekSearch (hp_pbotc_1st_ed2.k29.extend.chunk)	bb/174870	COMPLETED	1
+mmseqsSearch (chunk)	e6/48b241	COMPLETED	1
+phmmerSearch (chunk)	1d/e08394	COMPLETED	1
+scoreTransfers	2b/b63147	FAILED	1
+scoreTransfers	31/b06cc5	FAILED	3
+scoreTransfers	92/737201	FAILED	2
+== trace.new.txt: name, hash, status, attempt
+hmmscanSearch (chunk)	0f/02b848	CACHED	1
+kmerseekSearch (hp_pbotc_1st_ed2.k29.exact.chunk)	2f/4f6415	CACHED	1
+kmerseekSearch (hp_pbotc_1st_ed2.k29.extend.chunk)	bb/174870	CACHED	1
+mmseqsSearch (chunk)	e6/48b241	CACHED	1
+phmmerSearch (chunk)	1d/e08394	CACHED	1
+scoreTransfers	54/744e83	FAILED	2
+scoreTransfers	61/693004	FAILED	1
+scoreTransfers	f6/7cdbf5	FAILED	3
+== .nextflow.log of the new run: storeDir and cache
+[skipping] Stored process > hmmpressPfam
+[skipping] Stored process > kmerseekIndex (1)
+[1d/e08394] Cached process > phmmerSearch (chunk)
+[e6/48b241] Cached process > mmseqsSearch (chunk)
+[0f/02b848] Cached process > hmmscanSearch (chunk)
+[bb/174870] Cached process > kmerseekSearch (hp_pbotc_1st_ed2.k29.extend.chunk)
+[2f/4f6415] Cached process > kmerseekSearch (hp_pbotc_1st_ed2.k29.exact.chunk)
+== scoreTransfers base hash (-dump-hashes), old then new
+[scoreTransfers] cache hash: 5ce8ef951ccdbe39faeaee87a60aded3
+[scoreTransfers] cache hash: 5ce8ef951ccdbe39faeaee87a60aded3
+== scoreTransfers error (both runs)
+polars.exceptions.SchemaError: datatypes of join keys don't match - `setting`: str on left does not match `setting`: null on right (and no other type was available to cast to)
+== index the new run used (its name comes from reference_tag, default sprot2019_08)
+sprot2019_08.hp_pbotc_1st_ed2.k29.kmerseek.rocksdb

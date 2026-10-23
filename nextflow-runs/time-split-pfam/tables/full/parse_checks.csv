@@ -1,0 +1,42 @@
+setting,n_calls,unknown_query,start_below_1,end_past_query,start_after_end
+MMseqs2,307263,0,0,0,0
+hmmscan Pfam 33.1,16580,0,0,0,0
+kmerseek dayhoff6 k10 exact,387761052,0,0,0,0
+kmerseek dayhoff6 k10 extend,452082649,0,0,0,0
+kmerseek funcgroups8 k11 exact,50976724,0,0,0,0
+kmerseek funcgroups8 k11 extend,53296187,0,0,0,0
+kmerseek gbmr4 k23 exact,3352828,0,0,0,0
+kmerseek gbmr4 k23 extend,7332387,0,0,0,0
+kmerseek gbmr7 k19 exact,96355777,0,0,0,0
+kmerseek gbmr7 k19 extend,123478748,0,0,0,0
+kmerseek hp_kyte_doolittle2 k25 exact,115149299,0,0,0,0
+kmerseek hp_kyte_doolittle2 k25 extend,206216761,0,0,0,0
+kmerseek hp_lehninger2 k25 exact,10844688,0,0,0,0
+kmerseek hp_lehninger2 k25 extend,11544635,0,0,0,0
+kmerseek hp_lehninger_c_nonpolar2 k31 exact,410466,0,0,0,0
+kmerseek hp_lehninger_c_nonpolar2 k31 extend,496529,0,0,0,0
+kmerseek hp_lehninger_hpc3 k29 exact,630647,0,0,0,0
+kmerseek hp_lehninger_hpc3 k29 extend,932830,0,0,0,0
+kmerseek hp_pbotc_1st_ed2 k23 exact,36738799,0,0,0,0
+kmerseek hp_pbotc_1st_ed2 k23 extend,40494250,0,0,0,0
+kmerseek hp_thomas_dill2 k26 exact,20244433,0,0,0,0
+kmerseek hp_thomas_dill2 k26 extend,30782055,0,0,0,0
+kmerseek hp_thomas_dill_no_c2 k26 exact,30199922,0,0,0,0
+kmerseek hp_thomas_dill_no_c2 k26 extend,45934528,0,0,0,0
+kmerseek hsdm17 k7 exact,15259476,0,0,0,0
+kmerseek hsdm17 k7 extend,15582485,0,0,0,0
+kmerseek mmseqs12 k6 exact,1701136947,0,0,0,0
+kmerseek mmseqs12 k6 extend,1735762193,0,0,0,0
+kmerseek polarity4 k19 exact,16760764,0,0,0,0
+kmerseek polarity4 k19 extend,18836968,0,0,0,0
+kmerseek protein20 k5 exact,233222214,0,0,0,0
+kmerseek protein20 k5 extend,235737438,0,0,0,0
+kmerseek sdm12 k7 exact,430255750,0,0,0,0
+kmerseek sdm12 k7 extend,443065851,0,0,0,0
+kmerseek uniprot18 k5 exact,835921957,0,0,0,0
+kmerseek uniprot18 k5 extend,847547546,0,0,0,0
+kmerseek wass14 k5 exact,287854774,0,0,0,0
+kmerseek wass14 k5 extend,316290137,0,0,0,0
+kmerseek wwmj5 k13 exact,2276116,0,0,0,0
+kmerseek wwmj5 k13 extend,2423210,0,0,0,0
+phmmer,1058086,0,0,0,0
