@@ -184,6 +184,9 @@ for r in ("exact", "decoy"):
     other = u.load_instances(r)
     assert other.sort(other.columns).equals(inst.sort(inst.columns)), r
 print("truth instances identical in exact, extend and decoy runs")
+import scaled_270_review_figures as rf
+rf.run_status_figure(u.DATA, FIG / "270_run_extension_status")
+
 """)
 
 md(r"""
@@ -217,6 +220,9 @@ print(EXT_OK)
 EXT_ARMS = [a for a in u.ARM_ORDER if a in set(EXT_OK["alphabet"])]
 _sp = EXT_OK.group_by("alphabet").agg(pl.col("species").sort())
 SPN = {a: ", ".join(sp) + " only" for a, sp in _sp.iter_rows() if len(sp) < len(u.SPECIES)}
+from IPython.display import Image, display
+display(Image(filename="../figures/270_run_extension_status.png"))
+
 """)
 
 md(r"""
@@ -301,6 +307,9 @@ ABS = ABS.sort("alphabet", "length_bin", "scaled")
 print("Share of all instances, by arm, length bin and scaled")
 print(ABS.with_columns(pl.selectors.float().round(4)))
 ABS.write_csv(TAB / "270_reach_absolute.csv")
+from IPython.display import Image, display
+display(Image(filename="../figures/270_reach_seed_vs_scaled.png"))
+
 """)
 
 md(r"""
@@ -580,6 +589,9 @@ BE_FIXED = (land.filter("reached").join(both, on=["alphabet"] + u.INSTANCE_KEY, 
             .sort("alphabet", "scaled"))
 print("Instances landed at all four scaled values: median error of the best call at each scaled")
 print(BE_FIXED)
+from IPython.display import Image, display
+display(Image(filename="../figures/270_boundary_error_vs_scaled.png"))
+
 """)
 
 md(r"""
@@ -617,6 +629,9 @@ C = (cost.join(EXT_OK, on=["alphabet", "species"], how="semi")
      .sort("alphabet", "scaled"))
 print(C.with_columns(pl.selectors.float().round(4)))
 C.write_csv(TAB / "270_cost.csv")
+from IPython.display import Image, display
+display(Image(filename="../figures/270_boundary_error_vs_scaled.png"))
+
 """)
 
 md(r"""
@@ -748,6 +763,9 @@ def largest_within(Ltab, label):
 ANS = pl.concat([largest_within(L1, "all pairs"), largest_within(L1h, "Pfam-homolog pairs")])
 print(ANS.with_columns(pl.selectors.float().round(3)))
 ANS.write_csv(TAB / "270_largest_scaled_within_5pp.csv")
+from IPython.display import Image, display
+display(Image(filename="../figures/270_calls_per_query_real_and_decoy.png"))
+
 """)
 
 md(r"""
