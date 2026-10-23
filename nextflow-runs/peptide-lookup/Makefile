@@ -120,3 +120,11 @@ plan-indexes: measure-indexes
 full-indexes: measure-indexes
 	@module load devel python/3.12.1 && cd $(OUT)/logs && OUT=$(OUT) KMERSEEK_SHA=$(KMERSEEK_SHA) \
 	  python3 $(BIN)/plan_full_indexes.py $(OUT)/step4/resource_estimates.tsv $(OUT)/step4 --script $(RUNNING_DIR)/sbatch/full_index.sbatch --submit
+
+.PHONY: plan-failed-indexes resume-failed-indexes
+plan-failed-indexes:
+	@module load devel python/3.12.1 && python3 $(BIN)/resume_failed_indexes.py $(OUT) --script $(RUNNING_DIR)/sbatch/retry_index.sbatch
+
+resume-failed-indexes:
+	@module load devel python/3.12.1 && cd $(OUT)/logs && OUT=$(OUT) KMERSEEK_SHA=$(KMERSEEK_SHA) INDEX_SCRIPT_DIR=$(RUNNING_DIR)/sbatch \
+	  python3 $(BIN)/resume_failed_indexes.py $(OUT) --script $(RUNNING_DIR)/sbatch/retry_index.sbatch --submit
