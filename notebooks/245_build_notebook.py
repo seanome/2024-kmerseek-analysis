@@ -137,6 +137,9 @@ print(f"{n_arms} arms over {n_alphabets} alphabets; "
 print(ann.filter(pl.col("feature_type") == "PUBLISHED")
       .select("protein", "name", "start_uniprot", "end_uniprot",
               "start_mature", "end_mature", "sequence", "source"))
+from IPython.display import Image, display
+display(Image(filename="../figures/245_p66_cd47_shared_kmer_map.png"))
+
 """),
     md(r"""
 ## 1. Where the shared k-mers sit
@@ -257,6 +260,9 @@ print(sig.select("alphabet", "ksize", "n_shared_kmers",
                  "expected_touching_p66_loop", "p66_loop_binomial_p"))
 n_survive = sig.filter(pl.col("cd47_contact_binomial_p") < bonferroni).height
 print(f"{n_survive} arm(s) stay below {bonferroni:.5f}")
+from IPython.display import Image, display
+display(Image(filename="../figures/245_p66_cd47_controls.png"))
+
 """),
     md(r"""
 ## 4. Control 2: does CD47 stand out among 300 human proteins of its length
