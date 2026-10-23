@@ -1,0 +1,22 @@
+item	value	source	read
+OM-RGC v2 record	BioStudies S-BSST297, "Ocean Microbial Reference Gene Catalog v2 (OM-RGC.v2)", released 2019-11-12	https://www.ebi.ac.uk/biostudies/files/S-BSST297/S-BSST297.json	2026-10-18
+OM-RGC v2 gene sequences file	OM-RGC_v2_genes.fna.gz, 29607178264 bytes (gzipped DNA FASTA); no protein file in the record	https://ftp.ebi.ac.uk/biostudies/fire/S-BSST/S-BSSTxxx297/S-BSST297/Files/OM-RGC_v2_genes.fna.gz (HTTP Content-Length)	2026-10-18
+OM-RGC v2 README	last change 07 March 2019; no gene count given	https://ftp.ebi.ac.uk/biostudies/fire/S-BSST/S-BSSTxxx297/S-BSST297/Files/_README	2026-10-18
+OM-RGC v2 gene count	46.8 million non-redundant genes (Ocean Gene Atlas v2.0); counted again on Sherlock by the setup job	https://academic.oup.com/nar/article/50/W1/W516/6605321 (via search summary)	2026-10-18
+OM-RGC v2 md5	not found	BioStudies listing gives sizes only	2026-10-18
+OM-RGC v1 (not used)	OM-RGC_seq.release.tsv.gz, 7.8 GB, 40154822 genes	https://ocean-microbiome.embl.de/companion.html	2026-10-18
+Logan proteins	109.4 billion "other-complete" proteins clustered into 3.0 billion non-redundant sequences; 445.3 billion sequences in all three subsets	https://pmc.ncbi.nlm.nih.gov/articles/PMC12424806/ (bioRxiv 2024.07.30.605881 v2, 2025-09-01, not peer reviewed)	2026-10-18
+Logan contigs	0.9 petabases of contigs from 44.1 petabases of raw reads; 27.3 million accessions assembled into unitigs	https://pmc.ncbi.nlm.nih.gov/articles/PMC12424806/	2026-10-18
+Logan mean protein length	not found	-	2026-10-18
+DIAMOND version	2.2.8 (2026-09-20)	https://github.com/bbuchfink/diamond/releases/tag/v2.2.8	2026-10-18
+sourmash version	4.9.4 (2025-08-07)	https://pypi.org/project/sourmash/	2026-10-18
+sourmash_plugin_branchwater version	0.9.15 (2026-04-26)	https://pypi.org/project/sourmash_plugin_branchwater/	2026-10-18
+seqkit version	2.14.0 (2026-09-24)	https://github.com/shenwei356/seqkit/releases/tag/v2.14.0	2026-10-18
+micromamba version	2.9.0-0 (2026-08-07)	https://github.com/mamba-org/micromamba-releases/releases	2026-10-18
+Sherlock glibc	2.17 (sourmash 4.9.4's Linux wheel needs 2.28, so the conda-forge/bioconda build is used)	ldd --version on sh03-ln06	2026-10-18
+sourmash team	C. Titus Brown, Luiz Irber, N. Tessa Pierce-Ward listed as the sourmash team; branchwater credited to UC Davis Data Intensive Biology lab, USDA-ARS and JGI	https://branchwater.jgi.doe.gov/contact and /about (via search summary)	2026-10-18
+Logan lead	"Lead: Rayan Chikhi", "co-Lead: Artem Babaian"	https://github.com/IndexThePlanet/Logan	2026-10-18
+Babaian role	assistant professor, Donnelly Centre, University of Toronto	https://aws.amazon.com/fr/solutions/case-studies/canadas-ai-innovators/logan/ (via search summary)	2026-10-18
+Basecamp Research	London company mining environmental samples for proteins; Glen Gowers described as CEO and co-founder (June 2025 announcement)	https://astrobiology.com/2025/06/11/basecamp-research-announces-breakthrough-discovery-of-over-one-million-new-species/ (via search summary)	2026-10-18
+OM-RGC v2 gene table (the file used)	OM-RGC_v2.tsv.gz, 10320406416 bytes; 14 columns with a header row, column 14 = gene DNA; passed gzip's full check (job 48546051)	https://ftp.ebi.ac.uk/biostudies/fire/S-BSST/S-BSSTxxx297/S-BSST297/Files/OM-RGC_v2.tsv.gz	2026-10-19
+OM-RGC v2 genes FASTA (not used)	two downloads of OM-RGC_v2_genes.fna.gz (jobs 48522928, 48546051) differed at byte 3621226795; the first failed gzip's check	same record	2026-10-19

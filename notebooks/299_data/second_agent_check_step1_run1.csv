@@ -1,0 +1,28 @@
+quantity,notebook_value,checker_value,held,note
+protein.k7.s100 catalog CPU-hours,15.444509876235875,15.444509876235875,true,finished (exit 0); user+sys in log 1705.75 s; notebook lower-bound flag false
+protein.k7.s1000 catalog CPU-hours,362.1752279345947,362.1752279345947,true,stopped at 40000 s (exit 124); lower bound; user+sys in log 39250.71 s; notebook lower-bound flag true
+protein.k10.s100 catalog CPU-hours,18.819439737744396,18.819439737744396,true,finished (exit 0); user+sys in log 2078.49 s; notebook lower-bound flag false
+protein.k10.s1000 catalog CPU-hours,362.1752279345947,362.1752279345947,true,stopped at 40000 s (exit 124); lower bound; user+sys in log 39978.67 s; notebook lower-bound flag true
+protein.k13.s100 catalog CPU-hours,23.786220269832448,23.786220269832448,true,finished (exit 0); user+sys in log 2627.04 s; notebook lower-bound flag false
+protein.k13.s1000 catalog CPU-hours,362.1752279345947,362.1752279345947,true,stopped at 40000 s (exit 124); lower bound; user+sys in log 39984.74 s; notebook lower-bound flag true
+dayhoff.k7.s100 catalog CPU-hours,17.954565293436584,17.954565293436584,true,finished (exit 0); user+sys in log 1982.97 s; notebook lower-bound flag false
+dayhoff.k7.s1000 catalog CPU-hours,362.1752279345947,362.1752279345947,true,stopped at 40000 s (exit 124); lower bound; user+sys in log 39973.88 s; notebook lower-bound flag true
+dayhoff.k10.s100 catalog CPU-hours,19.027509406192827,19.027509406192827,true,finished (exit 0); user+sys in log 2101.47 s; notebook lower-bound flag false
+dayhoff.k10.s1000 catalog CPU-hours,362.1752279345947,362.1752279345947,true,stopped at 40000 s (exit 124); lower bound; user+sys in log 39981.85 s; notebook lower-bound flag true
+dayhoff.k13.s100 catalog CPU-hours,24.042187612175216,24.042187612175216,true,finished (exit 0); user+sys in log 2655.31 s; notebook lower-bound flag false
+dayhoff.k13.s1000 catalog CPU-hours,362.1752279345947,362.1752279345947,true,stopped at 40000 s (exit 124); lower bound; user+sys in log 39982.00 s; notebook lower-bound flag true
+hp.k7.s100 catalog CPU-hours,362.1752279345947,362.1752279345947,true,stopped at 40000 s (exit 124); lower bound; user+sys in log 39979.82 s; notebook lower-bound flag true
+hp.k7.s1000 catalog CPU-hours,362.1752279345947,362.1752279345947,true,stopped at 40000 s (exit 124); lower bound; user+sys in log 39973.42 s; notebook lower-bound flag true
+hp.k10.s100 catalog CPU-hours,33.36131840216028,33.36131840216028,true,finished (exit 0); user+sys in log 3684.55 s; notebook lower-bound flag false
+hp.k10.s1000 catalog CPU-hours,362.1752279345947,362.1752279345947,true,stopped at 40000 s (exit 124); lower bound; user+sys in log 39984.53 s; notebook lower-bound flag true
+hp.k13.s100 catalog CPU-hours,26.299806895505515,26.299806895505515,true,finished (exit 0); user+sys in log 2904.65 s; notebook lower-bound flag false
+hp.k13.s1000 catalog CPU-hours,362.1752279345947,362.1752279345947,true,stopped at 40000 s (exit 124); lower bound; user+sys in log 39989.18 s; notebook lower-bound flag true
+scaled 100 sum of nine catalog CPU-hours,540.9107854278778,540.9107854278778,true,1 of 9 settings are lower bounds; any_lower_bound notebook True checker True
+scaled 1000 sum of nine catalog CPU-hours,3259.5770514113524,3259.5770514113524,true,9 of 9 settings are lower bounds; any_lower_bound notebook True checker True
+scaled 100 fits 1536 CPU-hours,unknown,unknown,true,"notebook stores null; checker: sum 540.9 vs 1536, lower bound True; unknown counts as not fitting"
+scaled 1000 fits 1536 CPU-hours,does not fit,does not fit,true,"notebook stores false; checker: sum 3259.6 vs 1536, lower bound True; unknown counts as not fitting"
+verdict,dead,dead,true,"fits at neither scaled: 100 unknown (counts as not fitting), 1000 over budget"
+"scaled 100 CPU-seconds per gene, all nine",0.041630623547286666,0.041630623547286666,true,sum x 3600 / catalog_genes 46775154
+scaled 100 Logan CPU-hours,1265108.393353656,1265108.393353656,true,"per gene x 109.4e9 / 3600; includes stopped settings at 40000 s, so a lower bound on that part"
+"scaled 1000 CPU-seconds per gene, all nine",0.25086988243974284,0.25086988243974284,true,sum x 3600 / catalog_genes 46775154
+scaled 1000 Logan CPU-hours,7623656.983029963,7623656.983029963,true,"per gene x 109.4e9 / 3600; includes stopped settings at 40000 s, so a lower bound on that part"
