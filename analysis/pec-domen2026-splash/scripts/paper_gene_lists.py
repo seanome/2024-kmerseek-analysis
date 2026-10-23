@@ -16,8 +16,20 @@ import re
 import sys
 from pathlib import Path
 
+import datetime
+
 import openpyxl
 import polars as pl
+
+
+def text(v):
+    """Cell as text. Excel turns some gene names (SEPT7, MARCH1, ...) into dates; those come back
+    as datetime objects and are written as ISO dates, flagged by `excel_date_name` below."""
+    if v is None:
+        return None
+    if isinstance(v, (datetime.datetime, datetime.date)):
+        return v.isoformat()[:10]
+    return str(v)
 
 xlsx, out = sys.argv[1], Path(sys.argv[2])
 out.mkdir(parents=True, exist_ok=True)
@@ -48,7 +60,7 @@ for sheet in ("annotated DE all groups young", "annotated DE all groups old"):
                 continue
             named.append(dict(contrast=contrast_of[g], direction=direction.lower(), list_header=h.strip(),
                               list_n_in_header=int(n), gene_id=str(gid).strip(),
-                              gene_name="" if r[j + 1] is None else str(r[j + 1]).strip()))
+                              gene_name="" if r[j + 1] is None else text(r[j + 1]).strip()))
 named_df = pl.DataFrame(named)
 named_df.write_csv(out / "paper_named_lists.tsv", separator="\t")
 
@@ -56,17 +68,19 @@ frames = []
 for sheet, contrast in deseq_sheets.items():
     rows = list(wb[sheet].iter_rows(values_only=True))
     cols = [c for c in rows[0] if c is not None]
-    data = [dict(zip(cols, r[: len(cols)])) for r in rows[1:] if r[0] is not None]
-    df = pl.DataFrame(data, infer_schema_length=None).with_columns(pl.lit(contrast).alias("contrast"))
+    data = [dict(zip(cols, map(text, r[: len(cols)]))) for r in rows[1:] if r[0] is not None]
+    df = pl.DataFrame(data, schema={c: pl.Utf8 for c in cols}).with_columns(pl.lit(contrast).alias("contrast"))
     df = df.with_columns([pl.col(c).cast(pl.Float64, strict=False) for c in
                           ("ControlMean", "TreatmentMean", "baseMean", "log2FoldChange", "lfcSE", "stat",
                            "pvalue", "padj")])
     frames.append(df.with_columns(pl.col("Gene_ID").cast(pl.Utf8), pl.col("Gene_Name").cast(pl.Utf8),
                                   pl.col("Gene_Note").cast(pl.Utf8)))
-deseq = pl.concat(frames, how="diagonal_relaxed")
+deseq = pl.concat(frames, how="diagonal_relaxed").with_columns(
+    pl.col("Gene_Name").str.contains(r"^\d{4}-\d{2}-\d{2}$").fill_null(False).alias("excel_date_name"))
 deseq.write_parquet(out / "paper_deseq_all.parquet")
 
-summary = {}
+summary = {"excel_date_gene_names": deseq.filter(pl.col("excel_date_name"))
+           .select("Gene_ID", "Gene_Name", "Gene_Note").unique().sort("Gene_ID").rows()}
 for contrast in contrast_of.values():
     d = deseq.filter(pl.col("contrast") == contrast)
     nominal = d.filter((pl.col("pvalue") <= 0.05) & (pl.col("log2FoldChange").abs() > 1))
