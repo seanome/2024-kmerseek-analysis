@@ -30,54 +30,7 @@ def code(source):
 NARRATIVE_FILE = Path(__file__).with_name("make_nb244_narrative.json")
 NARRATIVE = json.loads(NARRATIVE_FILE.read_text()) if NARRATIVE_FILE.exists() else {}
 
-md(r"""
-# 244. Hero example candidates on the Swiss-Prot feature key
-
-The question is where a short human Swiss-Prot feature is placed and labelled in another
-species by kmerseek and not by the structure tools. A case is one human protein, one of its
-Swiss-Prot feature instances, one target species and the target protein kmerseek took the
-label from. These are benchmark true positives with a known Swiss-Prot label; the notebook
-reports what each tool did on them.
-
-**Run.** midi-plus (998 human queries, nine target proteomes), the Swiss-Prot truth set that
-notebook 231 reads (`truth_swissprot/human_swissprot_truth.parquet`, built by
-`bin/build_swissprot_truth.py`). No search was run for this notebook.
-
-**Where each number comes from.**
-
-| quantity | function |
-|---|---|
-| each tool's calls, with the target protein kept | `scripts/reduce_swissprot_instance_landing.py`: the pipeline's own `load_regions` (Bonferroni p < 0.05 for kmerseek, ranked by `region_enrichment`), `dedup_fragment_regions` (Foldseek, Reseek) and its transfer rule (a region takes the type of a target feature it covers by at least half), run on Sherlock over every region table. On zebrafish it reproduces the pipeline's own call tables row for row for kmerseek hp_pbotc_1st_ed2 k19, Foldseek and phmmer. |
-| inside, cover, IoU | the same script, with the pipeline's `overlap_expr` |
-| Swiss-Prot description of each feature | `scripts/prep_244_instance_covariates.py`, `/note` of the same `uniprot_sprot.dat.gz` release the truth key was built from |
-| pLDDT over a feature | `bin/build_query_covariates.py` `read_plddt` + `domain_plddt` on the pipeline's own human AlphaFold models |
-| disorder over a feature | `bin/predict_disorder_metapredict.py` (metapredict 3.0.1, threshold 0.5) with the Swiss-Prot features as `--domains` |
-| Kyte-Doolittle scan | notebook 231's `swissprot_control_utils.kd_transmem_calls` (window 19, mean hydropathy > 1.6) |
-| identity in the matched region | residues of the kmerseek region on both proteins, counted position by position (`hero_example_utils.identity`); the region is gapless, so residue *i* of the human region faces residue *i* of the target region |
-| identity of the enclosing Pfam domain | `bin/parse_domain_identity.py` output (`identity/<species>.domain_identity.parquet`) |
-
-**Definitions used throughout.**
-
-- *Lands*: at least 80% of the called region is inside the feature instance, and the region
-  covers at least 30% of the instance.
-- *IoU*: overlap between the call and the instance divided by their union. Recorded, never
-  thresholded.
-- For each comparison tool on the same instance, one of four outcomes: *no call* of that
-  feature type overlaps it; the call *spills* (less than 50% of the call is inside the
-  instance); a call is *inside with lower IoU* than kmerseek; or a call reaches *equal or
-  higher IoU* than kmerseek.
-- Point features (BINDING, ACT_SITE, SITE, METAL written as one or two residues) are left
-  out: an instance that short cannot hold 80% of any call. BINDING and SITE features written
-  as a range stay in.
-
-**Query halves.** Notebook 231's held-out split is by feature type (composition types:
-TRANSMEM, INTRAMEM, COILED, REGION, REPEAT, against the rest). It carries no split of the
-queries, so this notebook makes one. Query proteins are grouped by HGNC gene group, and a
-protein with no group is its own unit. Each group goes to the "choose" half or the "report"
-half by the parity of the SHA-1 of its name. Arms are chosen on the choose half.
-Every number shown after Stage 0, and every candidate, comes from the report half. 231's
-feature-type split is carried as a label on each row.
-""")
+md('# 244. Hero example candidates on the Swiss-Prot feature key\n\nThe question is where a short human Swiss-Prot feature is placed and labelled in another\nspecies by kmerseek and not by the structure tools. A case is one human protein, one of its\nSwiss-Prot feature instances, one target species and the target protein kmerseek took the\nlabel from. These are positional benchmark matches to a known Swiss-Prot label; that label alone does not establish functional equivalence. The notebook\nreports what each tool did on them.\n\n**Run.** midi-plus (998 human queries, nine target proteomes), the Swiss-Prot truth set that\nnotebook 231 reads (`truth_swissprot/human_swissprot_truth.parquet`, built by\n`bin/build_swissprot_truth.py`). No search was run for this notebook.\n\n**Where each number comes from.**\n\n| quantity | function |\n|---|---|\n| each tool\'s calls, with the target protein kept | `scripts/reduce_swissprot_instance_landing.py`: the pipeline\'s own `load_regions` (Bonferroni p < 0.05 for kmerseek, ranked by `region_enrichment`), `dedup_fragment_regions` (Foldseek, Reseek) and its transfer rule (a region takes the type of a target feature it covers by at least half), run on Sherlock over every region table. On zebrafish it reproduces the pipeline\'s own call tables row for row for kmerseek hp_pbotc_1st_ed2 k19, Foldseek and phmmer. |\n| inside, cover, IoU | the same script, with the pipeline\'s `overlap_expr` |\n| Swiss-Prot description of each feature | `scripts/prep_244_instance_covariates.py`, `/note` of the same `uniprot_sprot.dat.gz` release the truth key was built from |\n| pLDDT over a feature | `bin/build_query_covariates.py` `read_plddt` + `domain_plddt` on the pipeline\'s own human AlphaFold models |\n| disorder over a feature | `bin/predict_disorder_metapredict.py` (metapredict 3.0.1, threshold 0.5) with the Swiss-Prot features as `--domains` |\n| Kyte-Doolittle scan | notebook 231\'s `swissprot_control_utils.kd_transmem_calls` (window 19, mean hydropathy > 1.6) |\n| identity in the matched region | residues of the kmerseek region on both proteins, counted position by position (`hero_example_utils.identity`); the region is gapless, so residue *i* of the human region faces residue *i* of the target region |\n| identity of the enclosing Pfam domain | `bin/parse_domain_identity.py` output (`identity/<species>.domain_identity.parquet`) |\n\n**Definitions used throughout.**\n\n- *Lands*: at least 80% of the called region is inside the feature instance, and the region\n  covers at least 30% of the instance.\n- *IoU*: overlap between the call and the instance divided by their union. Recorded, never\n  thresholded.\n- For each comparison tool on the same instance, one of four outcomes: *no call* of that\n  feature type overlaps it; the call *spills* (less than 50% of the call is inside the\n  instance); a call is *inside with lower IoU* than kmerseek; or a call reaches *equal or\n  higher IoU* than kmerseek.\n- Point features (BINDING, ACT_SITE, SITE, METAL written as one or two residues) are left\n  out: an instance that short cannot hold 80% of any call. BINDING and SITE features written\n  as a range stay in.\n\n**Query halves.** Notebook 231\'s held-out split is by feature type (composition types:\nTRANSMEM, INTRAMEM, COILED, REGION, REPEAT, against the rest). It carries no split of the\nqueries, so this notebook makes one. Query proteins are grouped by HGNC gene group, and a\nprotein with no group is its own unit. Each group goes to the "choose" half or the "report"\nhalf by the parity of the SHA-1 of its name. Arms are chosen on the choose half.\nEvery number shown after Stage 0, and every candidate, comes from the report half. 231\'s\nfeature-type split is carried as a label on each row.\n\nThe split hashes complete HGNC group strings. Shared individual memberships may cross halves, so this is not guaranteed to hold out every paralog family. The source query mapping and landing inputs are unavailable locally at their recorded midi-plus paths; full recomputation remains blocked.')
 
 code(r"""
 import sys
@@ -220,44 +173,7 @@ print(f"wrote {TAB / '244_arm_by_feature_type.csv'}: {out.height} rows "
       f"{out['species'].n_unique()} species)")
 """)
 
-code(r"""
-# Readout: the arm chosen per feature type on the choose half, and its report-half numbers.
-rep = POOLED.filter(pl.col("half") == "report")
-READOUT = (
-    CHOSEN_TBL.select("pfam_id", chosen_arm="arm", choose_half_frac="frac")
-    .join(rep.select("pfam_id", "arm", report_half_frac="frac", report_n="n",
-                     report_landed="n_landed", scan_report_half="scan"),
-          left_on=["pfam_id", "chosen_arm"], right_on=["pfam_id", "arm"], how="left")
-    .join(BEST_ANY.select("pfam_id", best_arm_any_mask="arm", best_any_choose_frac="frac"),
-          on="pfam_id")
-    .with_columns(beats_scan=pl.col("report_half_frac") > pl.col("scan_report_half"))
-    .join(DEN.filter(pl.col("half") == "report").select("pfam_id", "n_instances"), on="pfam_id")
-    .sort("report_half_frac", descending=True)
-)
-show = READOUT.select(
-    "pfam_id",
-    pl.col("chosen_arm").map_elements(he.arm_short, return_dtype=pl.String).alias("chosen arm (mask on)"),
-    pl.col("choose_half_frac").round(3),
-    pl.col("report_half_frac").round(3),
-    pl.col("scan_report_half").round(3).alias("scan, report half"),
-    "beats_scan",
-    pl.col("best_arm_any_mask").map_elements(he.arm_short, return_dtype=pl.String).alias("best arm, either mask"),
-    pl.col("best_any_choose_frac").round(3),
-    (pl.col("n_instances") * 9).alias("report-half instance x species"),
-)
-print("Fraction landed, pooled over the nine species (landed / (instances x 9)):")
-print(show)
-no_arm = READOUT.filter(~pl.col("beats_scan"))["pfam_id"].to_list()
-beats = READOUT.filter(pl.col("beats_scan"))["pfam_id"].to_list()
-print()
-print(f"feature types where the chosen arm beats the scan on the report half: {beats}")
-print(f"feature types where it does not: {no_arm}")
-# Is any arm at all (either mask) above the scan on the report half, for those types?
-for t in no_arm:
-    best_rep = rep.filter(pl.col("pfam_id") == t).sort("frac", descending=True).row(0, named=True)
-    print(f"  {t}: best report-half arm of all {len(KM_ARMS)} is {he.arm_short(best_rep['arm'])} "
-          f"at {best_rep['frac']:.3f}, scan {best_rep['scan']:.3f}")
-""")
+code('\n# Readout: the arm chosen per feature type on the choose half, and its report-half numbers.\nrep = POOLED.filter(pl.col("half") == "report")\nREADOUT = (\n    CHOSEN_TBL.select("pfam_id", chosen_arm="arm", choose_half_frac="frac")\n    .join(rep.select("pfam_id", "arm", report_half_frac="frac", report_n="n",\n                     report_landed="n_landed", scan_report_half="scan"),\n          left_on=["pfam_id", "chosen_arm"], right_on=["pfam_id", "arm"], how="left")\n    .join(BEST_ANY.select("pfam_id", best_arm_any_mask="arm", best_any_choose_frac="frac"),\n          on="pfam_id")\n    .with_columns(beats_scan=pl.col("report_half_frac") > pl.col("scan_report_half"))\n    .join(DEN.filter(pl.col("half") == "report").select("pfam_id", "n_instances"), on="pfam_id")\n    .sort("report_half_frac", descending=True)\n)\nshow = READOUT.select(\n    "pfam_id",\n    pl.col("chosen_arm").map_elements(he.arm_short, return_dtype=pl.String).alias("chosen arm (mask on)"),\n    pl.col("choose_half_frac").round(3),\n    pl.col("report_half_frac").round(3),\n    pl.col("scan_report_half").round(3).alias("scan, report half"),\n    "beats_scan",\n    pl.col("best_arm_any_mask").map_elements(he.arm_short, return_dtype=pl.String).alias("best arm, either mask"),\n    pl.col("best_any_choose_frac").round(3),\n    (pl.col("n_instances") * 9).alias("report-half instance x species"),\n)\nprint("Fraction landed, pooled over the nine species (landed / (instances x 9)):")\nprint(show)\nno_arm = READOUT.filter(~pl.col("beats_scan"))["pfam_id"].to_list()\nbeats = READOUT.filter(pl.col("beats_scan"))["pfam_id"].to_list()\nprint()\nprint(f"feature types where the chosen arm beats the scan on the report half: {beats}")\nprint(f"feature types where it does not: {no_arm}")\n# Is any arm at all (either mask) above the scan on the report half, for those types?\nfor t in no_arm:\n    best_rep = rep.filter(pl.col("pfam_id") == t).sort("frac", descending=True).row(0, named=True)\n    print(f"  {t}: best report-half arm of all {len(KM_ARMS)} is {he.arm_short(best_rep[\'arm\'])} "\n          f"at {best_rep[\'frac\']:.3f}, scan {best_rep[\'scan\']:.3f}")\n\nimport hero_review_figures as reviewfig\nreviewfig.finish_figure(\'stage0\')\n')
 
 md(NARRATIVE.get("stage0_readout", ""))
 
@@ -542,41 +458,7 @@ kmerseek arms that land on the instance, then the feature-type class of criterio
 kmerseek's IoU.
 """)
 
-code(r"""
-POOL = P.filter(pl.col("admitted_under").is_in(allowed))
-
-
-def one_per_instance(d):
-    # Keep each human feature once, at its highest-ranked species; list the others.
-    others = d.group_by(KEY, maintain_order=True).agg(
-        n_species_passing=pl.col("species").n_unique(),
-        species_passing=pl.col("species").str.join(", "),
-    )
-    return d.unique(subset=KEY, keep="first", maintain_order=True).join(others, on=KEY, how="left")
-
-
-TOP = one_per_instance(POOL.filter(~pl.col("kd_landed"))).head(10)
-SCAN_FOUND = one_per_instance(POOL.filter(pl.col("kd_landed")))
-print(f"passing rows not landed on by the scan: {POOL.filter(~pl.col('kd_landed')).height}, "
-      f"on {POOL.filter(~pl.col('kd_landed')).select(KEY).n_unique()} distinct human features")
-view = lambda d: d.select(
-    pl.col("hgnc_symbol").alias("gene"), "accession", "pfam_id", pl.col("note").str.slice(0, 28),
-    pl.col("feature_length").alias("len"), "species", pl.col("land_target_acc").alias("target"),
-    pl.col("chosen_arm").map_elements(he.arm_short, return_dtype=pl.String).alias("chosen arm"),
-    pl.col("land_iou").round(2).alias("km IoU"), pl.col("identity_pct").round(0).alias("id %"),
-    pl.col("n_arms_landed").alias("arms"),
-    *[pl.col(f"{lab}|category").alias(lab) for lab in he.STRUCTURE_ARMS.values()],
-    pl.col("phmmer|category").alias("phmmer"),
-    pl.col("mean_plddt_region").round(0).alias("pLDDT"),
-    pl.col("disorder_fraction_region").round(2).alias("disorder"),
-    "admitted_under", "species_passing",
-)
-print(f"Top {TOP.height} (the Kyte-Doolittle scan did not land on these):")
-print(view(TOP))
-print()
-print(f"Found by a scan that searches nothing: {SCAN_FOUND.height} cases, first 10:")
-print(view(SCAN_FOUND.head(10)))
-""")
+code('\nPOOL = P.filter(pl.col("admitted_under").is_in(allowed))\n\n\ndef one_per_instance(d):\n    # Keep each human feature once, at its highest-ranked species; list the others.\n    others = d.group_by(KEY, maintain_order=True).agg(\n        n_species_passing=pl.col("species").n_unique(),\n        species_passing=pl.col("species").str.join(", "),\n    )\n    return d.unique(subset=KEY, keep="first", maintain_order=True).join(others, on=KEY, how="left")\n\n\nTOP = one_per_instance(POOL.filter(~pl.col("kd_landed"))).head(10)\nSCAN_FOUND = one_per_instance(POOL.filter(pl.col("kd_landed")))\nprint(f"passing rows not landed on by the scan: {POOL.filter(~pl.col(\'kd_landed\')).height}, "\n      f"on {POOL.filter(~pl.col(\'kd_landed\')).select(KEY).n_unique()} distinct human features")\nview = lambda d: d.select(\n    pl.col("hgnc_symbol").alias("gene"), "accession", "pfam_id", pl.col("note").str.slice(0, 28),\n    pl.col("feature_length").alias("len"), "species", pl.col("land_target_acc").alias("target"),\n    pl.col("chosen_arm").map_elements(he.arm_short, return_dtype=pl.String).alias("chosen arm"),\n    pl.col("land_iou").round(2).alias("km IoU"), pl.col("identity_pct").round(0).alias("id %"),\n    pl.col("n_arms_landed").alias("arms"),\n    *[pl.col(f"{lab}|category").alias(lab) for lab in he.STRUCTURE_ARMS.values()],\n    pl.col("phmmer|category").alias("phmmer"),\n    pl.col("mean_plddt_region").round(0).alias("pLDDT"),\n    pl.col("disorder_fraction_region").round(2).alias("disorder"),\n    "admitted_under", "species_passing",\n)\nprint(f"Top {TOP.height} (the Kyte-Doolittle scan did not land on these):")\nprint(view(TOP))\nprint()\nprint(f"Found by a scan that searches nothing: {SCAN_FOUND.height} cases, first 10:")\nprint(view(SCAN_FOUND.head(10)))\n\nimport hero_review_figures as reviewfig\nreviewfig.finish_figure(\'cases\')\n')
 
 md(r"""
 ## Alignments of the top 10
@@ -646,54 +528,7 @@ description, without its number, differs from the hero's (so a second copy of th
 repeat family is skipped and listed).
 """)
 
-code(r"""
-NAMED6 = ["ZN_FING", "MOTIF", "DOMAIN", "REPEAT", "DNA_BIND", "COILED", "TRANSMEM", "INTRAMEM", "REGION (named)"]
-ALL_TOOLS = [f"{lab}|category" for lab in he.COMPARISON_ARMS.values()]
-T = TOP.with_row_index("rank", offset=1).with_columns(
-    rule=pl.col("feature_label").is_in(NAMED6)
-    & pl.all_horizontal([pl.col(c) != "equal or higher IoU" for c in ALL_TOOLS]),
-    family=pl.col("note").str.replace(r"\s*\d+$", ""),
-)
-print(T.select("rank", pl.col("hgnc_symbol").alias("gene"), "pfam_id", "note", "species", "rule",
-               *[pl.col(c).alias(c.split("|")[0]) for c in ALL_TOOLS]))
-ok = T.filter("rule")
-HERO = ok.row(0, named=True)
-rest = ok.filter(pl.col("rank") > HERO["rank"])
-skipped = rest.filter(pl.col("family") == HERO["family"])
-BACKUP = rest.filter(pl.col("family") != HERO["family"]).row(0, named=True)
-print(f"\nskipped as the same family as the hero: {[(r['rank'], r['hgnc_symbol'], r['note'], r['species']) for r in skipped.iter_rows(named=True)]}")
-for tag, r in (("HERO", HERO), ("BACKUP", BACKUP)):
-    print(f"\n{tag}: rank {r['rank']}, human {r['hgnc_symbol']} ({r['accession']}) {r['pfam_id']} "
-          f"\"{r['note']}\" {r['domain_start']}-{r['domain_end']} ({r['feature_length']} aa)")
-    print(f"  target: {r['species']} {r['land_target_acc']} = {he.protein_name(r['species'], r['land_target_acc'])}")
-    print(f"  kmerseek {he.arm_short(r['chosen_arm'])}: call {r['land_qstart'] + 1}-{r['land_qend']}, IoU {r['land_iou']:.2f}, "
-          f"{r['n_identical']} of {r['region_length']} residues identical; {r['n_arms_landed']} mask-on arms in "
-          f"{r['n_alphabets_landed']} alphabets land on it")
-    for lab in he.COMPARISON_ARMS.values():
-        cat = r[f"{lab}|category"]
-        where = "" if cat == "no call" else (f", call {r[f'{lab}|best_qstart']}-{r[f'{lab}|best_qend']} "
-                                            f"({r[f'{lab}|best_qend'] - r[f'{lab}|best_qstart'] + 1} aa), IoU {r[f'{lab}|best_iou']:.2f}")
-        print(f"  {lab}: {cat}{where}")
-    print(f"  Kyte-Doolittle scan landed: {r['kd_landed']}")
-    pl_ = None if r["mean_plddt_region"] is None else round(r["mean_plddt_region"], 1)
-    dis_ = None if r["disorder_fraction_region"] is None else round(r["disorder_fraction_region"], 2)
-    print(f"  mean pLDDT over the feature: {pl_}, fraction of residues metapredict calls disordered: {dis_}")
-    print(f"  species passing: {r['species_passing']}")
-
-# Criterion 7 ranks before species distance, so the farthest cases of each named type can sit
-# below the top 10. The farthest one per type, among cases passing every criterion:
-far = (one_per_instance(POOL.filter(~pl.col("kd_landed") & pl.col("feature_label").is_in(NAMED6)))
-       .with_columns(no_tool_higher=pl.all_horizontal([pl.col(c) != "equal or higher IoU" for c in ALL_TOOLS]))
-       .sort(["mya", "no_tool_higher", "n_arms_landed"], descending=True)
-       .group_by("feature_label", maintain_order=True).first())
-print("\nFarthest passing case per named feature type:")
-print(far.select(pl.col("hgnc_symbol").alias("gene"), "feature_label", "note", pl.col("feature_length").alias("len"),
-                 "species", pl.col("land_target_acc").alias("target"),
-                 pl.col("land_iou").round(2).alias("km IoU"), pl.col("identity_pct").round(0).alias("id %"),
-                 pl.col("n_arms_landed").alias("arms"), "no_tool_higher", "low_confidence",
-                 *[pl.col(f"{lab}|category").alias(lab) for lab in he.STRUCTURE_ARMS.values()],
-                 pl.col("species_passing")).sort("feature_label"))
-""")
+code('\nNAMED6 = ["ZN_FING", "MOTIF", "DOMAIN", "REPEAT", "DNA_BIND", "COILED", "TRANSMEM", "INTRAMEM", "REGION (named)"]\nALL_TOOLS = [f"{lab}|category" for lab in he.COMPARISON_ARMS.values()]\nT = TOP.with_row_index("rank", offset=1).with_columns(\n    rule=pl.col("feature_label").is_in(NAMED6)\n    & pl.all_horizontal([pl.col(c) != "equal or higher IoU" for c in ALL_TOOLS]),\n    family=pl.col("note").str.replace(r"\\s*\\d+$", ""),\n)\nprint(T.select("rank", pl.col("hgnc_symbol").alias("gene"), "pfam_id", "note", "species", "rule",\n               *[pl.col(c).alias(c.split("|")[0]) for c in ALL_TOOLS]))\nok = T.filter("rule")\nHERO = ok.row(0, named=True)\nrest = ok.filter(pl.col("rank") > HERO["rank"])\nskipped = rest.filter(pl.col("family") == HERO["family"])\nBACKUP = rest.filter(pl.col("family") != HERO["family"]).row(0, named=True)\nprint(f"\\nskipped as the same family as the hero: {[(r[\'rank\'], r[\'hgnc_symbol\'], r[\'note\'], r[\'species\']) for r in skipped.iter_rows(named=True)]}")\nfor tag, r in (("HERO", HERO), ("BACKUP", BACKUP)):\n    print(f"\\n{tag}: rank {r[\'rank\']}, human {r[\'hgnc_symbol\']} ({r[\'accession\']}) {r[\'pfam_id\']} "\n          f"\\"{r[\'note\']}\\" {r[\'domain_start\']}-{r[\'domain_end\']} ({r[\'feature_length\']} aa)")\n    print(f"  target: {r[\'species\']} {r[\'land_target_acc\']} = {he.protein_name(r[\'species\'], r[\'land_target_acc\'])}")\n    print(f"  kmerseek {he.arm_short(r[\'chosen_arm\'])}: call {r[\'land_qstart\'] + 1}-{r[\'land_qend\']}, IoU {r[\'land_iou\']:.2f}, "\n          f"{r[\'n_identical\']} of {r[\'region_length\']} residues identical; {r[\'n_arms_landed\']} mask-on arms in "\n          f"{r[\'n_alphabets_landed\']} alphabets land on it")\n    for lab in he.COMPARISON_ARMS.values():\n        cat = r[f"{lab}|category"]\n        where = "" if cat == "no call" else (f", call {r[f\'{lab}|best_qstart\']}-{r[f\'{lab}|best_qend\']} "\n                                            f"({r[f\'{lab}|best_qend\'] - r[f\'{lab}|best_qstart\'] + 1} aa), IoU {r[f\'{lab}|best_iou\']:.2f}")\n        print(f"  {lab}: {cat}{where}")\n    print(f"  Kyte-Doolittle scan landed: {r[\'kd_landed\']}")\n    pl_ = None if r["mean_plddt_region"] is None else round(r["mean_plddt_region"], 1)\n    dis_ = None if r["disorder_fraction_region"] is None else round(r["disorder_fraction_region"], 2)\n    print(f"  mean pLDDT over the feature: {pl_}, fraction of residues metapredict calls disordered: {dis_}")\n    print(f"  species passing: {r[\'species_passing\']}")\n\n# Criterion 7 ranks before species distance, so the farthest cases of each named type can sit\n# below the top 10. The farthest one per type, among cases passing every criterion:\nfar = (one_per_instance(POOL.filter(~pl.col("kd_landed") & pl.col("feature_label").is_in(NAMED6)))\n       .with_columns(no_tool_higher=pl.all_horizontal([pl.col(c) != "equal or higher IoU" for c in ALL_TOOLS]))\n       .sort(["mya", "no_tool_higher", "n_arms_landed"], descending=True)\n       .group_by("feature_label", maintain_order=True).first())\nprint("\\nFarthest passing case per named feature type:")\nprint(far.select(pl.col("hgnc_symbol").alias("gene"), "feature_label", "note", pl.col("feature_length").alias("len"),\n                 "species", pl.col("land_target_acc").alias("target"),\n                 pl.col("land_iou").round(2).alias("km IoU"), pl.col("identity_pct").round(0).alias("id %"),\n                 pl.col("n_arms_landed").alias("arms"), "no_tool_higher", "low_confidence",\n                 *[pl.col(f"{lab}|category").alias(lab) for lab in he.STRUCTURE_ARMS.values()],\n                 pl.col("species_passing")).sort("feature_label"))\n\nimport hero_review_figures as reviewfig\nreviewfig.finish_figure(\'verdict\')\n')
 
 md(NARRATIVE.get("verdict", ""))
 

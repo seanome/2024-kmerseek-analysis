@@ -134,8 +134,8 @@ def query_halves() -> pl.DataFrame:
     """Split the 998 query proteins into a "choose" half and a "report" half.
 
     Notebook 231 has no query split (its held-out split is by feature type), so this one is
-    new. The unit is the HGNC gene group, so paralogs in one group (the HLA class I genes,
-    the KIR receptors, the butyrophilins) never sit on both sides; a protein with no group
+    new. The unit is the HGNC gene group, as a complete string; proteins sharing only one of several labels
+    may cross halves; a protein with no group
     is its own unit. The half is the parity of the first byte of the SHA-1 of the group
     name, so it is the same on every run and on every machine.
     """
