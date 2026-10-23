@@ -24,7 +24,7 @@ is no calibrate retry (this build has no calibrate subcommand, and does not need
 
 Each alphabet-ksize pair's CSV is reduced to KEEP and written as
 <out>/regions/<alphabet>.k<k>.parquet; the CSV and index are then deleted. Resumes pair by
-pair. The kmerseek binary and its commit are written to <out>/run.json and checked on a
+pair. The kmerseek binary path, SHA-256 digest and checkout commit are written to <out>/run.json and checked on a
 resume, so two builds cannot mix in one folder.
 
 Usage: 257_pfam998_search_kmerseek_preview.py [--workers 3] [--alphabets a,b] [--out DIR]
@@ -37,6 +37,7 @@ import argparse
 import concurrent.futures as cf
 import importlib.util
 import json
+import hashlib
 import shutil
 import subprocess
 import sys
@@ -207,7 +208,11 @@ def main() -> None:
     OUT = args.out
     for d in ("regions", "tmp", "logs", "ka_survival"):
         (OUT / d).mkdir(parents=True, exist_ok=True)
-    want = {"kmerseek": str(args.kmerseek), "commit": build_commit(args.kmerseek)}
+    want = {
+        "kmerseek": str(args.kmerseek),
+        "binary_sha256": hashlib.file_digest(args.kmerseek.open("rb"), "sha256").hexdigest(),
+        "commit": build_commit(args.kmerseek),
+    }
     manifest = OUT / "run.json"
     if manifest.exists() and json.loads(manifest.read_text()) != want:
         sys.exit(
