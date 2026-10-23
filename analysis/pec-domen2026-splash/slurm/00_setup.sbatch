@@ -34,18 +34,21 @@ if [ ! -e splash.done ]; then
   ./splash/splash --version > versions/splash_version.txt 2>&1 || true
   touch splash.done
 fi
-if [ ! -e pectools.done ]; then
+# pec-tools is rebuilt whenever its source changes (stamp = sha256 of the source files)
+SRC_HASH=$(cat "$PEC_CODE/pec-tools/Cargo.toml" "$PEC_CODE/pec-tools/src/main.rs" | sha256sum | cut -d' ' -f1)
+if [ "$(cat pectools.done 2>/dev/null)" != "$SRC_HASH" ]; then
   rm -rf pec-tools && cp -r "$PEC_CODE/pec-tools" pec-tools
   cd pec-tools
   export CARGO_HOME=$PEC_ROOT/cargo
   # conda compilers set CC/CFLAGS that break cargo builds; this crate has no C deps, but unset them anyway
   unset CC CXX CFLAGS CXXFLAGS LDFLAGS
   "$ENV/bin/cargo" test --release 2>&1 | tee ../versions/pec-tools_cargo_test.txt
+  grep -q "test result: ok" ../versions/pec-tools_cargo_test.txt
   "$ENV/bin/cargo" build --release
   cd ..
   "$ENV/bin/rustc" --version > versions/rustc.txt
   sha256sum pec-tools/target/release/pec-tools > versions/pec-tools.sha256
-  touch pectools.done
+  echo "$SRC_HASH" > pectools.done
 fi
 { for t in fastp sourmash diamond hmmscan seqkit python; do echo "== $t"; "$ENV/bin/$t" --version 2>&1 | head -2; done
   "$ENV/bin/python" -c 'import importlib.metadata as m; print({p: m.version(p) for p in ["pydeseq2","sourmash","sourmash_plugin_branchwater","polars","pandas","biopython","matplotlib","numpy","scipy"]})'

@@ -332,12 +332,85 @@ fn cmd_simulate(args: &[String]) -> Res<()> {
     Ok(())
 }
 
+// ---------------- anchor counts from SATC text ----------------
+
+/// Sum target counts per (anchor, sample) from `satc_dump` text output.
+///
+/// Input lines are `sample<TAB>anchor<TAB>target<TAB>count` (SATC text format, SPLASH 2.11.9,
+/// no barcode column). Samples are output in the order of `samples`; a sample name not in
+/// that list is an error. Returns rows sorted by anchor: (anchor, per-sample counts, number of
+/// distinct targets).
+fn sum_anchor_counts<R: BufRead>(input: R, samples: &[String], keep: Option<&std::collections::HashSet<String>>)
+    -> Res<Vec<(String, Vec<u64>, u32)>> {
+    let col: HashMap<&str, usize> = samples.iter().enumerate().map(|(i, s)| (s.as_str(), i)).collect();
+    let mut acc: HashMap<String, (Vec<u64>, std::collections::HashSet<String>)> = HashMap::new();
+    for (ln, line) in input.lines().enumerate() {
+        let line = line?;
+        if line.is_empty() {
+            continue;
+        }
+        let f: Vec<&str> = line.split('\t').collect();
+        if f.len() != 4 {
+            return Err(format!("line {}: expected 4 tab-separated fields, got {}", ln + 1, f.len()).into());
+        }
+        if let Some(k) = keep {
+            if !k.contains(f[1]) {
+                continue;
+            }
+        }
+        let si = *col.get(f[0]).ok_or(format!("line {}: sample {} not in sample list", ln + 1, f[0]))?;
+        let c: u64 = f[3].parse()?;
+        let e = acc.entry(f[1].to_string()).or_insert_with(|| (vec![0; samples.len()], Default::default()));
+        e.0[si] += c;
+        e.1.insert(f[2].to_string());
+    }
+    let mut rows: Vec<_> = acc.into_iter().map(|(a, (v, t))| (a, v, t.len() as u32)).collect();
+    rows.sort_by(|x, y| x.0.cmp(&y.0));
+    Ok(rows)
+}
+
+fn cmd_anchor_counts(args: &[String]) -> Res<()> {
+    // anchor-counts <samples.txt> [anchor_list.tsv|-]   (SATC text on stdin, matrix on stdout)
+    if args.is_empty() {
+        return Err("usage: pec-tools anchor-counts <samples.txt> [anchors.tsv with an 'anchor' column] < satc.txt".into());
+    }
+    let samples: Vec<String> = std::fs::read_to_string(&args[0])?.split_whitespace().map(String::from).collect();
+    let keep = match args.get(1) {
+        Some(p) if p != "-" => {
+            let mut lines = BufReader::new(File::open(p)?).lines();
+            let header: Vec<String> = lines.next().ok_or("empty anchor list")??.split('\t').map(String::from).collect();
+            let ai = header.iter().position(|h| h == "anchor").ok_or("anchor list has no 'anchor' column")?;
+            let mut set = std::collections::HashSet::new();
+            for l in lines {
+                let l = l?;
+                if let Some(a) = l.split('\t').nth(ai) {
+                    set.insert(a.to_string());
+                }
+            }
+            Some(set)
+        }
+        _ => None,
+    };
+    let rows = sum_anchor_counts(std::io::stdin().lock(), &samples, keep.as_ref())?;
+    let mut out = BufWriter::new(std::io::stdout().lock());
+    for (a, v, t) in &rows {
+        write!(out, "{a}\t{t}")?;
+        for c in v {
+            write!(out, "\t{c}")?;
+        }
+        writeln!(out)?;
+    }
+    eprintln!("anchors written: {}", rows.len());
+    Ok(())
+}
+
 fn main() -> Res<()> {
     let args: Vec<String> = std::env::args().collect();
     match args.get(1).map(String::as_str) {
         Some("translate") => cmd_translate(&args[2..]),
         Some("simulate") => cmd_simulate(&args[2..]),
-        _ => Err("usage: pec-tools <translate|simulate> ...".into()),
+        Some("anchor-counts") => cmd_anchor_counts(&args[2..]),
+        _ => Err("usage: pec-tools <translate|simulate|anchor-counts> ...".into()),
     }
 }
 
@@ -372,6 +445,17 @@ mod tests {
         let hit = peps.iter().find(|p| p.strand == '-' && p.aa == "MFGKP").expect("reverse ORF");
         let sub = revcomp(&rc[hit.nt_start..hit.nt_end]);
         assert_eq!(translate_frame(&sub), b"MFGKP");
+    }
+    #[test]
+    fn anchor_counts_sum_targets_per_sample() {
+        let satc = "pec1\tAAAC\tGG\t3\nctrl1\tAAAC\tGT\t2\npec1\tAAAC\tGT\t4\npec1\tCCCA\tTT\t1\n";
+        let samples = vec!["ctrl1".to_string(), "pec1".to_string()];
+        let rows = sum_anchor_counts(satc.as_bytes(), &samples, None).unwrap();
+        assert_eq!(rows, vec![("AAAC".to_string(), vec![2, 7], 2), ("CCCA".to_string(), vec![0, 1], 1)]);
+        let keep: std::collections::HashSet<String> = ["CCCA".to_string()].into_iter().collect();
+        let rows = sum_anchor_counts(satc.as_bytes(), &samples, Some(&keep)).unwrap();
+        assert_eq!(rows.len(), 1);
+        assert!(sum_anchor_counts("x\tA\tC\t1\n".as_bytes(), &samples, None).is_err());
     }
     #[test]
     fn ambiguous_bases_break_peptides() {
