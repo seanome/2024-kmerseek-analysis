@@ -494,7 +494,6 @@ def draw_alignment_rows(
     ax.tick_params(axis="y", length=0)
 
 
-
 PROTEIN20_ORDER = "".join(ALPHABET_CLUSTERS["protein20"])
 
 
@@ -674,7 +673,6 @@ def score_pairs(
     return pl.concat(out)
 
 
-
 TICK_BASE = 1.55  # every tick rises from here (just above the target strip), in rows
 TICK_TALL = 1.1  # height of the identical-residue tick
 TICK_SHORT = 0.4  # height of the tick for different residues, both H or both P
@@ -752,7 +750,6 @@ def draw_hp_pair(
         "same_class": n_tall + n_short,
         "gap_columns": n_col - n_al,
     }
-
 
 
 IDENTITY_BINS = [0.0, 0.2, 0.3, 0.4, 0.6, 1.01]
@@ -907,10 +904,12 @@ def finish_figure(
     `subtitle` is one line under the title. `font_scale` multiplies every header and footer
     font size, for figures drawn at their printed size. `footer_box` replaces the default
     light grey box behind the hypothesis and conclusion.
-    """    try:
-        fig.tight_layout()
-    except Exception:  # noqa: BLE001
-        pass
+    """
+    if tight_layout:
+        try:
+            fig.tight_layout()
+        except Exception:  # noqa: BLE001
+            pass
     # A legend placed above the axes can reach past the top of the figure; start the header
     # above the highest legend so the two never overlap.
     fig.canvas.draw()

@@ -122,3 +122,24 @@ def test_cluster_bootstrap_diff_of_means_spans_zero_for_equal_groups():
         x[:300], c[:300], x[300:], c[300:], n_boot=500, seed=3
     )
     assert lo < 0 < hi
+
+
+@pytest.mark.parametrize("use_tight_layout", [False, True])
+def test_finish_figure_respects_layout_option(tmp_path, monkeypatch, use_tight_layout):
+    """A caller can keep a manually arranged plot while still adding figure text."""
+    import matplotlib.pyplot as plt
+
+    fig, ax = plt.subplots()
+    ax.plot([0, 1], [0, 1])
+    calls = []
+    monkeypatch.setattr(fig, "tight_layout", lambda: calls.append(True))
+    hc.finish_figure(
+        fig,
+        tmp_path / "layout_check.png",
+        tools="none",
+        hypothesis="A manual layout can be retained.",
+        conclusion="The layout option is respected.",
+        tight_layout=use_tight_layout,
+    )
+    assert len(calls) == int(use_tight_layout)
+    plt.close(fig)

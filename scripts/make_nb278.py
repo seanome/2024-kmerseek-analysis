@@ -212,8 +212,7 @@ md(r"""
 
 For each scoring, the table gives $\lambda$ (bits per BLOSUM score unit) and the scoring's own
 relative entropy: the mean bits per aligned position that a pair gets when it is exactly as
-diverged as the pairs the matrix was built from. It is the most that scoring can give per
-position on its own kind of pair. The H/P scorings from BLOSUM have less, as they must: summing
+diverged as the pairs the matrix was built from. This is an expectation under that model; individual pairs can score higher or lower. The H/P scorings from BLOSUM have less, as they must: summing
 pair frequencies into two classes can only lose information. The question in sections 2 and 3
 is whether real distant pairs follow BLOSUM62's pair frequencies closely enough for that to
 hold on them too.
@@ -506,8 +505,8 @@ identities; and Pfam seed pairs under 20% identity.
 **Decision rule, written before this section was run.** An alphabet beats BLOSUM62 if either
 of its scorings has higher mean bits per aligned position than BLOSUM62 in one of the three
 SCOPe groups, with the 95% interval of the difference above zero (resampling query domains).
-If none does, no kmerseek alphabet keeps more evidence per aligned position than BLOSUM62, and
-the reason to use a reduced alphabet has to be something other than evidence per position.
+If none does, these data provide no statistically resolved lead over BLOSUM62 under this
+rule. They do not establish that every alphabet has lower evidence per position.
 
 The figure has one panel per group. Each row is an alphabet, ordered by number of letters and
 grouped by size (2-3, 4-8, 12-18 letters, then protein20). The dashed line is BLOSUM62. Filled
@@ -872,7 +871,7 @@ the 20 amino acids in Pfam pairs under 20% identity, with the 20 amino acids sco
 identity. Does H/P still give more when the 20 amino acids are scored with BLOSUM62? And does
 any kmerseek alphabet?
 
-**Answer.** No alphabet keeps more evidence per aligned position than BLOSUM62. But BLOSUM62
+**Answer.** No alphabet has a lead over BLOSUM62 whose 95% difference interval is above zero. But BLOSUM62
 cannot be used for exact k-mer matching, and among exact-match scorings H/P is the best of all
 19 kmerseek alphabets for the most distant pairs, the SCOPe fold level. That second result was
 found after looking, not tested by a rule written beforehand.
