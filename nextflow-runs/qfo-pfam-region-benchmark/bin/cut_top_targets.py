@@ -4,12 +4,12 @@
 Each --rank-by is COLUMN:max (higher is better) or COLUMN:min (lower is better). A target's
 score under a ranking is its best region's value. For each query and each ranking, the
 targets whose score is at least as good as the query's N-th best are kept, so targets tied
-at the cut all stay. A target stays if any ranking keeps it: with two rankings a query keeps
-between N and 2N targets. Values that are not finite are left out of a ranking; an arm whose
+at the cut all stay. A target stays if any ranking keeps it: with two rankings the union can exceed 2N when targets tie at a boundary.
+It can contain fewer than N when fewer targets have finite scores. Values that are not finite are left out of a ranking; an arm whose
 Karlin-Altschul fit was refused has region_evalue = inf on every row, and counting those
 would tie every target at the cut and keep them all. That makes the cut safe to apply before any
 scoring step that cuts to the same N with its own tie-break: that step picks from the same
-targets it would have seen in the uncut table. Queries with N or fewer targets keep them all.
+targets it would have seen in the uncut table. Queries with N or fewer finite-score targets retain those finite-score targets.
 
 Why: kmerseekSearch keeps every match (--max-query-pvalue 1.0 in the ELM cover search), and
 on the chicken dry run that was 717 GB of regions for 272 arms, while the cover score reads
