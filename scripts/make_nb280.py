@@ -186,11 +186,11 @@ pass mark.
 the test stops. No kmerseek settings are added, no cutoffs changed and "found" is not
 redefined after the test half has been read.
 
-**The decision this informs.** If P4 holds, the paper can claim that on proteins nobody had
-characterized, kmerseek placed short features (Motif, Disordered, Repeat, or under 60 aa)
-that no other tool placed, more often than chance. This is the Figure 4 candidate. If P4
-fails, kmerseek adds nothing over MMseqs2 and Pfam's own models on uncharacterized proteins,
-and Figure 4 reports that.
+**The decision this informs.** If P4 holds, the paper can claim that on this sample of
+proteins without a Pfam 33.1 domain, the tune-selected kmerseek setting placed short
+features missed by all three comparator tools, with more unique finds than decoys predict.
+If P4 fails, Figure 4 reports that this test did not support that added value. Absence of
+a Pfam annotation at t0 does not establish absence of biological characterization.
 """
 
 
@@ -783,8 +783,8 @@ P4_MD = r"""## P4: kmerseek's unique finds against what its decoys predict
 
 P4 needs kmerseek to place short features (Motif, Disordered or Repeat at t1, or under 60 aa)
 that MMseqs2, phmmer and hmmscan all miss, more often than its decoys predict. The setting was
-chosen on the tune half by the rule in the first cell, and only that setting was read on the
-test half.
+chosen on the tune half by the rule in the first cell. Only that setting receives the
+confirmatory P4 test; descriptive recall and decoy-rate results use all settings.
 
 How to read panel a: one point per kmerseek setting, tune half. Across, the number of unique
 finds its decoys predict (its decoy transfer rate times the 2,203 tune queries that carry a P4
@@ -870,7 +870,7 @@ SUMMARY_MD = r"""# Summary and Conclusions
 ## Background
 
 Proteins with no Pfam domain in Pfam 33.1 (May 2020) that gained one by Pfam 38.2 (June 2026)
-give an answer key for uncharacterized proteins. Each tool searched them, and one
+give an answer key for later Pfam annotation. Each tool searched them, and one
 dipeptide-shuffled decoy each, against Swiss-Prot as of 2019_08 and was scored against the
 domains Pfam later found, at a decoy-matched error rate set on the tune half and read on the
 test half.
@@ -893,13 +893,14 @@ test half.
   instances, against 36.8% for MMseqs2, 42.3% for phmmer and 58.7% for hmmscan.
 
 The union of 38 kmerseek settings is not held to the matched decoy rate, which favours
-kmerseek, so the real gap below pLDDT 50 is wider than shown.
+kmerseek. Enforcing that error rate could lower its recall and leave the gap unchanged or wider.
 * MMseqs2 searched 16,658 sequences in 0.8 CPU hours; the 38 kmerseek settings took 6.8 to
   212 CPU hours each and found fewer domains every time.
 
 By the kill rule written before any search, this is a negative result and the test stops:
-on proteins nobody had characterized at t0, kmerseek placed no short feature that MMseqs2,
-phmmer and Pfam's own models missed, beyond what its decoys predict.
+on this sample without a Pfam domain at t0, the tune-selected setting produced no unique
+short-feature finds on the test half. This does not test every kmerseek setting or every
+uncharacterized protein.
 
 ## Analysis Details
 
