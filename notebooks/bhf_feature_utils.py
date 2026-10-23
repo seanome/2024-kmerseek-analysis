@@ -272,9 +272,24 @@ REGIONS_RUN = Path(
 MAIN = ["zinc finger", "membrane", "extracellular"]
 
 
+def regions_input(run: Path = REGIONS_RUN) -> Path:
+    """Find moved region batches only when their queries and arm settings match."""
+    if (run / "regions").is_dir():
+        return run
+    moved = run.parent / "287" / run.name
+    reference = run.parent / "null_bhf_dipeptide"
+    if run != REGIONS_RUN or not (moved / "regions").is_dir():
+        raise FileNotFoundError(f"Missing region batches: {run / 'regions'}")
+    for name in ("queries.fa", "arms.json"):
+        if (moved / name).read_bytes() != (reference / name).read_bytes():
+            raise ValueError(f"Moved BHF inputs differ from the original run: {name}")
+    return moved
+
+
 def load_regions(run: Path = REGIONS_RUN) -> pl.DataFrame:
     """Top-10 regions of BHF and its 300 copies (256_bhf_dipeptide_shuffle_null.py
     --keep-regions), one row per (query, alphabet-ksize pair, metric, human protein)."""
+    run = regions_input(run)
     return pl.read_parquet(sorted((run / "regions").glob("*.parquet"))).with_columns(
         (pl.col("query_name") == "BHF").alias("is_bhf")
     )
