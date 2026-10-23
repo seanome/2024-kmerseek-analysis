@@ -152,3 +152,17 @@ def test_ena_comparison_fails_on_changed_or_missing_runs(tmp_path, mode):
         capture_output=True,
     )
     assert result.returncode != 0
+
+
+def test_control_truth_uses_same_all_tested_anchor_bh_family(monkeypatch):
+    import numpy as np
+
+    monkeypatch.syspath_prepend(str(ROOT / "scripts"))
+    spec = importlib.util.spec_from_file_location(
+        "control_truth", ROOT / "scripts/control_truth.py"
+    )
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    q = module.bh([0.01, float("nan"), 0.04])
+    assert np.allclose(q[[0, 2]], [0.03, 0.06])
+    assert np.isnan(q[1])

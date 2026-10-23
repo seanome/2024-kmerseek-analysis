@@ -15,6 +15,7 @@ Channels:
 
 A gene is found by a channel if at least one of its anchors is significant in that channel.
 """
+
 import json
 import sys
 from collections import Counter, defaultdict
@@ -43,21 +44,18 @@ def gene_of(t):
 
 
 def bh(p):
-    p = np.asarray(p, dtype=float)
-    q = np.full_like(p, np.nan)
-    ok = ~np.isnan(p)
-    n = ok.sum()
-    order = np.argsort(p[ok])
-    r = p[ok][order] * n / (np.arange(n) + 1)
-    r = np.minimum.accumulate(r[::-1])[::-1]
-    tmp = np.empty(n)
-    tmp[order] = np.minimum(r, 1)
-    q[ok] = tmp
-    return q
+    from pec_analysis_utils import bh_over_fitted_anchors
+
+    return bh_over_fitted_anchors(p)
 
 
 def main():
-    fa, truth_p, cdir, out = sys.argv[1], sys.argv[2], Path(sys.argv[3]), Path(sys.argv[4])
+    fa, truth_p, cdir, out = (
+        sys.argv[1],
+        sys.argv[2],
+        Path(sys.argv[3]),
+        Path(sys.argv[4]),
+    )
     out.mkdir(parents=True, exist_ok=True)
     tx = read_fasta(fa)
     truth = pl.read_csv(truth_p, separator="\t")
@@ -70,8 +68,11 @@ def main():
     # transcripts that the simulator could not sample (shorter than 170 nt) are listed apart
     expressed = {gene_of(t) for t in truth["transcript"]}
 
-    all_anchors = pl.read_csv(cdir / "splash_out/result.after_correction.all_anchors.tsv", separator="\t",
-                              infer_schema_length=0)
+    all_anchors = pl.read_csv(
+        cdir / "splash_out/result.after_correction.all_anchors.tsv",
+        separator="\t",
+        infer_schema_length=0,
+    )
     anchors = set(all_anchors["anchor"].to_list())
     kmer_genes = defaultdict(set)
     for t, s in tx.items():
@@ -79,7 +80,7 @@ def main():
         rc = s.translate(COMP)[::-1]
         for seq in (s, rc):
             for i in range(len(seq) - K + 1):
-                k = seq[i:i + K]
+                k = seq[i : i + K]
                 if k in anchors:
                     kmer_genes[k].add(g)
 
@@ -93,26 +94,42 @@ def main():
         raise SystemExit(f"{sup_col} not in all_anchors columns: {cols}")
     corr = [c for c in cols if c.startswith(sup_col) and "corrected" in c]
     tab = all_anchors.select(["anchor", sup_col, "pval_opt", *corr]).with_columns(
-        pl.col(sup_col).cast(pl.Float64), pl.col("pval_opt").cast(pl.Float64))
+        pl.col(sup_col).cast(pl.Float64), pl.col("pval_opt").cast(pl.Float64)
+    )
     if corr:
         sup_q = tab[corr[0]].cast(pl.Float64).to_numpy()
     else:
         sup_q = bh(tab[sup_col].to_numpy())
     sig = {
         "splash": set(np.array(tab["anchor"].to_list())[sup_q <= 0.05]),
-        "splash_opt": set(np.array(tab["anchor"].to_list())[bh(tab["pval_opt"].to_numpy()) <= 0.05]),
+        "splash_opt": set(
+            np.array(tab["anchor"].to_list())[bh(tab["pval_opt"].to_numpy()) <= 0.05]
+        ),
     }
-    scores_n = pl.read_csv(cdir / "splash_out/result.after_correction.scores.tsv", separator="\t",
-                           infer_schema_length=0).height
-    for name, design in (("abundance", "pair_condition"), ("abundance_condition_only", "condition")):
+    scores_n = pl.read_csv(
+        cdir / "splash_out/result.after_correction.scores.tsv",
+        separator="\t",
+        infer_schema_length=0,
+    ).height
+    for name, design in (
+        ("abundance", "pair_condition"),
+        ("abundance_condition_only", "condition"),
+    ):
         d = pl.read_parquet(cdir / f"deseq/deseq_{design}.parquet")
-        hit = d.filter((pl.col("q_bh_all") <= 0.05) & (pl.col("log2FoldChange").abs() > 1))
+        hit = d.filter(
+            (pl.col("q_bh_all") <= 0.05) & (pl.col("log2FoldChange").abs() > 1)
+        )
         sig[name] = set(hit["anchor"].to_list())
 
-    rows, summary = [], dict(tested_anchors=len(anchors), splash_scores_rows=scores_n,
-                             supervised_q_column=corr[0] if corr else "BH(Cjs_0_pval) computed here",
-                             channels={})
-    placement = Counter(place(a) if place(a) in ("multi", "none") else "one_gene" for a in anchors)
+    rows, summary = [], dict(
+        tested_anchors=len(anchors),
+        splash_scores_rows=scores_n,
+        supervised_q_column=corr[0] if corr else "BH(Cjs_0_pval) computed here",
+        channels={},
+    )
+    placement = Counter(
+        place(a) if place(a) in ("multi", "none") else "one_gene" for a in anchors
+    )
     summary["tested_anchor_placement"] = dict(placement)
     classes = sorted(set(gene_class.values()))
     class_n = Counter(gene_class.values())
@@ -129,17 +146,22 @@ def main():
             genes_found.add(p)
         for g in genes_found:
             found[gene_class[g]] += 1
-        anchors_by_class = Counter(gene_class[place(a)] for a in s if place(a) not in ("multi", "none"))
+        anchors_by_class = Counter(
+            gene_class[place(a)] for a in s if place(a) not in ("multi", "none")
+        )
         summary["channels"][ch] = dict(
-            significant_anchors=len(s), placement=dict(place_counts),
-            genes_found={c: found[c] for c in classes}, genes_in_class={c: class_n[c] for c in classes},
+            significant_anchors=len(s),
+            placement=dict(place_counts),
+            genes_found={c: found[c] for c in classes},
+            genes_in_class={c: class_n[c] for c in classes},
             recall={c: round(found[c] / class_n[c], 4) for c in classes},
             significant_anchors_by_class={c: anchors_by_class[c] for c in classes},
         )
         for g in genes_found:
             rows.append(dict(channel=ch, gene=g, truth_class=gene_class[g]))
-    pl.DataFrame(rows, schema={"channel": pl.Utf8, "gene": pl.Utf8, "truth_class": pl.Utf8}).write_csv(
-        out / "control_genes_found.tsv", separator="\t")
+    pl.DataFrame(
+        rows, schema={"channel": pl.Utf8, "gene": pl.Utf8, "truth_class": pl.Utf8}
+    ).write_csv(out / "control_genes_found.tsv", separator="\t")
     (out / "control_truth_summary.json").write_text(json.dumps(summary, indent=1))
     print(json.dumps(summary, indent=1))
 
