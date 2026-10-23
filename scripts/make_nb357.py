@@ -70,9 +70,13 @@ missed_words = {
     "n_outside_not_composition": "too few of those are left once composition is accounted for",
 }
 summary_verdict = (
-    "**PASS**: all four numbers met the pre-registered thresholds."
-    if v["verdict"] == "PASS"
-    else "**FAIL**: " + "; ".join(missed_words[m] for m in v["missed"]) + "."
+    "**INSUFFICIENT_EVIDENCE**: required test or annotation tables are incomplete."
+    if v["verdict"] == "INSUFFICIENT_EVIDENCE"
+    else (
+        "**PASS**: all four numbers met the pre-registered thresholds."
+        if v["verdict"] == "PASS"
+        else "**FAIL**: " + "; ".join(missed_words[m] for m in v["missed"]) + "."
+    )
 )
 
 md(f"""
@@ -136,9 +140,9 @@ Searched Consensus ("SPLASH anchor target k-mer statistical test applied to prot
 sequences"; "reference-free statistical test for lineage-specific amino acid substitutions
 using k-mers across taxa"), PubMed (`SPLASH[Title/Abstract] AND (k-mer OR kmer) AND (protein
 OR "amino acid")`, one hit, sc-SPLASH; every Salzman-lab SPLASH or OASIS paper, 11 records,
-all on DNA or RNA reads) and the web. Nobody has run SPLASH, OASIS or another anchor-target
-test on amino-acid k-mers, or tested whether the residues after a shared protein motif depend
-on the clade. The only "Splash" on proteins is an unrelated motif finder (Califano 2000). The
+all on DNA or RNA reads) and the web. The searches found no documented use of SPLASH or OASIS to test whether the residues
+after a shared amino-acid motif depend on the clade. This search is not proof that no
+such prior work exists. The only "Splash" on proteins is an unrelated motif finder (Califano 2000). The
 closest work:
 
 - Derelle, Romain, and others. 2026. "kamino: Fast Proteome-Wide Variant Calling for Amino
@@ -349,14 +353,14 @@ pf.save(fig, FIG / "357_chance_occurrences_vs_k_uniprot_reference_proteomes")
 """)
 
 md(r"""
-## 3. What OASIS can and cannot detect
+## 3. OASIS on one family of separated tables
 
-OASIS's p-value is a bound that holds for any table size, so a small table cannot reach a
-small p-value even when it is perfectly clean. Each point is a table where one class has only
-target A and every other class only target B: no real table of that size can do better. The
-grey band is where a p-value can no longer survive Benjamini-Hochberg at q < 0.05 across the
-number of anchors tested in the primary setting (the smallest q for a single anchor is about
-p times that number). Anchors left of the band cannot be called, whatever their residues show.
+Each point is a table where one class has only target A and all other classes only target B.
+It illustrates one pattern; it is not the minimum p-value over all tables of that size.
+The grey band is above the Bonferroni threshold, 0.05 divided by the number of tests.
+Benjamini-Hochberg can still reject points in that band when many anchors have small p-values.
+It is not an impossibility boundary for detection. This corrects the power claim in the
+historical preregistration's caveat, without changing its test or decision thresholds.
 """)
 
 code(r"""
@@ -370,14 +374,14 @@ for colour, ((j,), sub) in zip(colours, bp.sort("n_clades").group_by("n_clades",
     ax.plot(sub["n_species"], sub["best_p"], "o-", color=colour, markersize=3, label=f"{j} classes")
 if n_tested:
     ax.axhspan(u.ALPHA / n_tested, 1, color="#e6e6e6", zorder=0,
-               label=f"p too large to reach q < 0.05 over {n_tested:,} anchors")
+               label=f"above Bonferroni threshold 0.05 / {n_tested:,}; BH may still reject")
 ax.set_ylim(top=1)
 ax.set_yscale("log")
 u.plain_log_axis(ax)
 ax.set_xscale("log")
 ax.set_xticks([15, 30, 60, 120, 240], ["15", "30", "60", "120", "240"])
 ax.set_xlabel("Species in the table (equal numbers per class)")
-ax.set_ylabel("Best possible OASIS p-value")
+ax.set_ylabel("OASIS p-value, one class versus the rest")
 pf.shared_legend(fig, ncol=2)
 pf.save(fig, FIG / "357_oasis_best_p_vs_table_size")
 """)

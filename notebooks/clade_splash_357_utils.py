@@ -162,8 +162,8 @@ def best_p_table(
     oasis, n_clades=(3, 4, 6), per_clade=(5, 6, 8, 10, 15, 20, 30, 40, 60)
 ) -> pl.DataFrame:
     """OASIS p-value of a perfectly separated table: one class has only target A, the
-    others only target B, n species in each class. No real table of that size can do
-    better, so this is the floor."""
+    others only target B, n species in each class. This is one illustrative pattern,
+    not a lower bound over all possible target partitions."""
     rows = []
     for j in n_clades:
         for n in per_clade:
@@ -234,10 +234,22 @@ def verdict(d: dict, setting: str = PRIMARY[0], gap: int = PRIMARY[1]) -> dict:
     n_tested = {
         r["labelling"]: r["n_anchors_tested"] for r in tested.iter_rows(named=True)
     }
+    incomplete = (
+        any(
+            label not in n_tested
+            for label in ("real", "shuffle_tree", "shuffle_random")
+        )
+        or n_missing_pfam > 0
+        or outside.filter(pl.col("explained_by_composition").is_null()).height > 0
+    )
     return {
         **nums,
         "passed": passed,
-        "verdict": "PASS" if all(passed.values()) else "FAIL",
+        "verdict": (
+            "INSUFFICIENT_EVIDENCE"
+            if incomplete
+            else "PASS" if all(passed.values()) else "FAIL"
+        ),
         "missed": [k for k, v in passed.items() if not v],
         "n_random_shuffle": rand.height,
         "n_tested": n_tested,
