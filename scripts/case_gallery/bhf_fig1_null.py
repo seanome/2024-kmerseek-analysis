@@ -1,7 +1,10 @@
 """For BHF: each Figure 1 draft gene's best rank over notebook 241's 152 alphabet/k values,
 under E-value, mean IDF and tf-idf, against notebook 241's random-protein null: at each
 alphabet/k where the gene was ranked, draw one human protein from that hit list at random,
-keep the best of those ranks, repeat 20,000 times. p = share of draws as good or better.
+keep the best of those ranks, repeat 20,000 times. The saved p_random_as_good columns are simulated tail fractions.
+Each arm draws a different random protein independently; correlations of one protein
+across arms and selection of the candidate genes are not preserved. These fractions
+are descriptive under that simulation, not calibrated gene-level probabilities.
 A protein's score is its best region; rank = 1 + number strictly better (notebook 241).
 Writes tables/case_gallery/bhf_fig1_ranks.csv."""
 import numpy as np
