@@ -24,15 +24,18 @@ if [ "$(cat env.done 2>/dev/null)" != "$YML_HASH" ]; then
   $MM list -p "$ENV" > versions/env_list.txt
   echo "$YML_HASH" > env.done
 fi
-if [ ! -e splash.done ]; then
+if [ ! -e splash.done ] || [ ! -x splash/splash ]; then
   V=2.11.9
   mkdir -p splash-$V && cd splash-$V
   curl -fsSL -o splash.tar.gz https://github.com/refresh-bio/SPLASH/releases/download/v$V/splash-$V.linux.x64.tar.gz
   sha256sum splash.tar.gz > ../versions/splash-$V.tar.gz.sha256
   tar xzf splash.tar.gz
   cd ..
-  ln -sfn splash-$V/$(ls splash-$V | grep -v tar.gz | head -1) splash
+  # the release unpacks flat: the splash wrapper and every binary sit in one folder
+  rm -f splash && ln -sfn splash-$V splash
+  test -x splash/splash && test -x splash/compactors && test -x splash/satc_dump
   ls -la splash/ > versions/splash_files.txt
+  sha256sum splash/splash splash/compactors splash/satc_dump splash/satc_merge splash/sig_anch > versions/splash_binaries.sha256
   ./splash/splash --version > versions/splash_version.txt 2>&1 || true
   touch splash.done
 fi

@@ -18,7 +18,7 @@ if [ ! -e anchor_counts.done ]; then
   rm -f anchor_counts.tsv.part
   start=$(date +%s)
   for b in splash_out/result_satc/bin*.satc; do
-    "$PEC_ROOT/splash/bin/satc_dump" --sample_names "$MAP" "$b" /dev/stdout \
+    "$PEC_ROOT/splash/satc_dump" --sample_names "$MAP" "$b" /dev/stdout \
       | "$PT" anchor-counts samples.txt "$ALL" >> anchor_counts.tsv.part 2>> anchor_counts.log
   done
   echo "seconds $(( $(date +%s) - start ))" >> anchor_counts.log

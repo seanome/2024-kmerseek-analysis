@@ -17,7 +17,7 @@ cut -d' ' -f2 input.txt > compactors/input_list.txt
 SIG=splash_out/result.after_correction.scores.tsv
 echo "significant anchors: $(( $(wc -l < $SIG) - 1 ))" > compactors/n_input_anchors.txt
 cd compactors
-/usr/bin/time -v -o ../compactors.time "$PEC_ROOT/splash/bin/compactors" --keep_temp \
+/usr/bin/time -v -o ../compactors.time "$PEC_ROOT/splash/compactors" --keep_temp \
   --max_length 186 --num_threads "$SLURM_CPUS_PER_TASK" --epsilon 0.001 --beta 0.5 --num_kmers 2 \
   --input_format fastq input_list.txt "../$SIG" compactors.tsv > compactors.log 2>&1
 [ -s compactors.tsv ] || { echo "no compactors output"; exit 3; }

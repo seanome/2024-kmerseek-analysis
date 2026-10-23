@@ -21,7 +21,7 @@ N=$SLURM_CPUS_PER_TASK
 MEM_GB=$(( SLURM_MEM_PER_NODE / 1024 ))
 KMC_GB=$(( MEM_GB / 3 ))
 /usr/bin/time -v -o ../splash.time "$PEC_ROOT/splash/splash" \
-  --bin_path "$PEC_ROOT/splash/bin" \
+  --bin_path "$PEC_ROOT/splash" \
   --Cjs_samplesheet ../cjs.csv \
   --pvals_correction_col_name "$PVAL_COL" \
   --with_effect_size_cts --n_most_freq_targets 4 \

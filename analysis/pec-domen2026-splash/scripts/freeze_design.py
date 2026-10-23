@@ -113,13 +113,46 @@ for name in names.values():
     treatments = {r["treatment"] for r in rows if r["contrast"] == name}
     if treatments != {"control", "PEC"}:
         raise SystemExit(f"contrast {name} lacks control or PEC samples")
+# Pairs: within one contrast, a PEC and a control sample of the same genotype whose ages differ
+# by at most 1 day. Matched one-to-one, closest age first; a tie or a second candidate at the
+# same distance stops the script. Samples left over are singletons (pair = single_<sample>).
+pair_notes = []
+for name in names.values():
+    members = [r for r in rows if r["contrast"] == name]
+    pec = [r for r in members if r["treatment"] == "PEC"]
+    con = [r for r in members if r["treatment"] == "control"]
+    cands = sorted(
+        (abs(int(p["age_days"]) - int(c["age_days"])), p["sample"], c["sample"])
+        for p in pec
+        for c in con
+        if p["genotype"] == c["genotype"] and abs(int(p["age_days"]) - int(c["age_days"])) <= 1
+    )
+    used = set()
+    for d, ps, cs in cands:
+        if ps in used or cs in used:
+            continue
+        rivals = [x for x in cands if x[0] == d and (x[1] == ps) != (x[2] == cs) and x[1] not in used and x[2] not in used]
+        if rivals:
+            raise SystemExit(f"{name}: ambiguous pairing for {ps}/{cs}: {rivals}")
+        used |= {ps, cs}
+        for r in members:
+            if r["sample"] in (ps, cs):
+                r["pair"] = f"{name}:{cs}+{ps}"
+        pair_notes.append(dict(contrast=name, control=cs, pec=ps, age_difference_days=d))
+    for r in members:
+        if "pair" not in r:
+            r["pair"] = f"single_{r['sample']}"
+            pair_notes.append(dict(contrast=name, singleton=r["sample"], treatment=r["treatment"]))
+for r in rows:
+    r.setdefault("pair", "")
 manifest = {
     "sources": {
         str(p): hashlib.sha256(Path(p).read_bytes()).hexdigest() for p in [xlsx, ena]
     },
     "runs": len(rows),
     "assigned_runs": sum(r["contrast"] != "not_in_SI" for r in rows),
-    "pair_ids": "not constructed by this script; must be validated before fitting a paired model",
+    "pair_rule": "same contrast and genotype, ages differ by <= 1 day, one-to-one, closest first",
+    "pairs": pair_notes,
 }
 (out / "freeze_manifest.json").write_text(json.dumps(manifest, indent=2) + "\n")
 cols = list(rows[0])
@@ -132,6 +165,10 @@ for name in names.values():
     with open(out / f"contrast_{name}.cjs", "w") as f:
         for r in members:
             f.write(f"{r['sample']},{1 if r['treatment'] == 'PEC' else -1}\n")
+    with open(out / f"contrast_{name}.design.tsv", "w") as f:
+        f.write("sample\tcondition\tpair\tgenotype\n")
+        for r in members:
+            f.write(f"{r['sample']}\t{r['treatment']}\t{r['pair']}\t{r['genotype']}\n")
     print(
         name,
         len(members),
