@@ -427,22 +427,22 @@ md(r"""
   have mean IUPred ≥ 0.5, against 21% of unchanged exons.
 * **Exons that neurons include more are shorter (a3):** median 25 aa, against 34.5 (skipped
   more) and 37 (unchanged).
-* **Length does not explain the Pfam gap (check not in the rule).** Within each length third
+* **The Pfam gap remains within broad length groups (check not in the rule).** Within each length third
   of all exons, both changed classes have a higher share with no Pfam residue than unchanged
   exons. Five of the six intervals are above 0. The exception is skipped-more exons of
   10-28 aa (33 exons): +0.16, interval −0.013 to +0.341.
 * **The condensate index will be small.** After removing human and mouse proteins and six
   regions whose coordinates run past the stored sequence, 105 regions on 72 proteins are left
   (65 PhaSePro, 40 DisProt GO:0140693), 88 distinct sequences with flanks. The spec expected
-  "a few hundred". PhaSePro has not been updated since 2019-09-11. DisProt is release
-  2026_06. PhaSePro regions are long (median 265 aa; three are over 1,900 aa), while the exon
+  "a few hundred". The newest PhaSePro entry date is 2019-09-11; the newest DisProt region release tag
+  is 2026_06. These entry dates do not establish when each entire database was last updated. PhaSePro regions are long (median 265 aa; three are over 1,900 aa), while the exon
   queries have a median length of 25-37 aa. A call still has to land on the exon by the
   nb 356 rule, so a long target region does not change what counts as a call.
 * **Inputs check.** nb 342's labels table (md5 `7fe6f6f3…`) and its query FASTA (9,026 records,
   md5 `fb388f25…`) match their recorded md5s.
 
-**Decision.** Panel a goes into Figure 1 with the sentence "exons that neurons switch on sit
-where domain annotation finds nothing". Next: Stop 1, building the four condensate indexes and
+**Decision.** Panel a goes into Figure 1 with the sentence "exons included more in neurons have no residues in a Pfam domain
+more often than unchanged exons". Next: Stop 1, building the four condensate indexes and
 running the search on Sherlock.
 """)
 
