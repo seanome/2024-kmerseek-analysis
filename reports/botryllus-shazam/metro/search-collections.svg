@@ -75,7 +75,7 @@
 <text x="535" y="845" font-size="14" font-weight="400" text-anchor="middle">HP30; scaled 5</text>
 <circle cx="760" cy="780" r="7" fill="white" stroke="#0072B2" stroke-width="3"/>
 <text x="760" y="710" font-size="16" font-weight="600" text-anchor="middle">Sourmash / Branchwater</text>
-<text x="760" y="729" font-size="16" font-weight="600" text-anchor="middle">multisearch</text>
+<text x="760" y="729" font-size="16" font-weight="600" text-anchor="middle">manysearch</text>
 <path d="M1016,757 h25 l13,13 v33 h-38 Z M1041,757 v13 h13" class="file"/>
 <text x="1035" y="784" font-size="11" font-weight="600" text-anchor="middle">CSV</text>
 <text x="1035" y="828" font-size="14" font-weight="400" text-anchor="middle">Swiss-Prot protein</text>

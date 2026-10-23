@@ -131,7 +131,7 @@ file(80, 740, "FASTA.gz", "Swiss-Prot proteins")
 file(80, 825, "FASTA", "Peptide queries")
 station(300, 780, "Sourmash / Branchwater sketching", "protein")
 file(535, 780, "SIG.zip", "Protein7 / Dayhoff12 / HP30; scaled 5")
-station(760, 780, "Sourmash / Branchwater multisearch", "protein")
+station(760, 780, "Sourmash / Branchwater manysearch", "protein")
 file(1035, 780, "CSV", "Swiss-Prot protein candidate matches")
 for x in [215, 420, 655, 900]:
     parts.append(

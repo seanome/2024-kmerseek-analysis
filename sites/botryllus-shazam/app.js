@@ -40,7 +40,7 @@ const files=[
 ['JSON · indexing validation','Sourmash 4.9.4 / four modes / three scales','indexing-pilot-validated.json','Completed representative full-run checks'],
 ['SBT.zip · historical pilot only','sourmash index; replaced in archive design','indexing-pilot/<run>/<mode>/scaled*.sbt.zip','Sherlock; completion marker required'],
 ['RocksDB · index directory','Branchwater index; optional for repeated SRA searches','archive/<mode>/scaled<10-or-100>.rocksdb/','New storage benchmark; full archive pending'],
-['CSV · search results','Sourmash / Branchwater multisearch; search for validation','*.self-search.csv / protein-match CSVs','New full-depth protein results pending'],
+['CSV · search results','Sourmash / Branchwater manysearch; search for validation','*.self-search.csv / protein-match CSVs','New full-depth protein results pending'],
 ['TSV · pilot matches','Sourmash; control rows explicitly labeled','peptide_search_hits.tsv','10,064 supplied rows; 3,984 real Botryllus rows independently recomputed'],
 ['TSV · alignment evidence','DIAMOND 2.1.23; follow-up only','annotation-maskX-20261023/diamond.tsv','Completed job; interpretation not yet audited'],
 ['DOMTBL · domain evidence','HMMER 3.4 / Pfam','annotation-maskX-20261023/pfam.domtbl','Completed job; interpretation not yet audited'],

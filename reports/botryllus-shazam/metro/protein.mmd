@@ -9,7 +9,6 @@
 %%metro file: bot | FASTA | Original Botryllus reference proteins
 %%metro file: swiss | FASTA.gz | Reviewed Swiss-Prot reference proteins
 %%metro file: sig | SIG.zip | Swiss-Prot scaled 5; Botryllus scaled 5, 10, 100
-%%metro file: sbt | SBT.zip | Searchable sketch indexes
 %%metro file: hits | CSV | Sourmash containment matches
 %%metro file: evidence | TSV | Match evidence, ties, empty queries
 %%metro file: diamond | TSV | DIAMOND alignments
@@ -32,16 +31,12 @@ graph LR
   swiss[ ]
   sk[Sourmash 4.9.4 / protein k7 / Dayhoff k12 / HP k30]
   sig[ ]
-  ix[sourmash index]
-  sbt[ ]
   bot -->|primary| sk
   swiss -->|primary| sk
   sk -->|primary| sig
-  sig -->|primary| ix
-  ix -->|primary| sbt
  end
  subgraph search [Protein retrieval]
-  ss[Sourmash / Branchwater 0.9.15 multisearch]
+  ss[Sourmash / Branchwater 0.9.15 manysearch]
   hits[ ]
   ev[Validate sampled hashes / preserve no hits]
   evidence[ ]
@@ -66,4 +61,3 @@ graph LR
  end
  peptide -->|primary| sk
  sig -->|primary| ss
- sbt -->|primary| ss

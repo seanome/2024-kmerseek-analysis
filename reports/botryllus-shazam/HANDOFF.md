@@ -210,3 +210,14 @@ The default map now includes SPLASH in an nf-metro Seqera overview. Detailed map
 and file tables show Branchwater RocksDB directories; streaming ZIP search is also
 authorized. Sequence extensions show support, translated peptides, and retained match
 counts instead of raw anchor descriptions. New native primary matches remain unvalidated.
+
+## Shared search command, 23 October 2026
+
+Use Branchwater manysearch for both Swiss-Prot protein references and public SRA
+collections. Both manysearch and the historical multisearch are multithreaded.
+Manysearch supports signature ZIP collections and RocksDB targets; it can load
+target sketches on demand instead of holding the whole collection in memory.
+The completed multisearch pilot is preserved. Comparison job 49215765 reuses the
+same sketches, encodings, scales, and query-containment threshold before its new
+match tables can replace historical results. No new biological validation is
+claimed from engine agreement alone. Swiss-Prot production remains scaled 5.

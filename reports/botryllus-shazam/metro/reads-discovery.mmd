@@ -3,8 +3,8 @@
 %%metro legend: tl
 %%metro line: reads | Read preparation - solid | #0072B2
 %%metro line: discovery | SPLASH / Compactors - dashed | #D55E00 | dashed
-%%metro file: raw1 | FASTQ.gz | Focal SRA read 1
-%%metro file: raw2 | FASTQ.gz | Focal SRA read 2
+%%metro file: raw1 | FASTQ.gz | Botryllus experiment SRA read 1
+%%metro file: raw2 | FASTQ.gz | Botryllus experiment SRA read 2
 %%metro file: marker | JSON | Per-run validation
 %%metro file: trim1 | FQ.gz | Trimmed read 1
 %%metro file: trim2 | FQ.gz | Trimmed read 2
@@ -16,11 +16,12 @@
 %%metro file: dumps | TXT | Sample-anchor-target counts
 %%metro file: selected | TSV | Every adjusted P < 0.05 anchor
 %%metro file: compact | TSV | Extensions, parent IDs, support
+%%metro file: noextension | TSV | Anchors without emitted extension
 %%metro file: dna | FASTA | Extended DNA sequences
 
 graph LR
  subgraph raw [Archive retrieval]
-  ena[Focal SRA study / ENA / curl]
+  ena[Botryllus experiment SRA study / ENA / curl]
   raw1[ ]
   raw2[ ]
   ena -->|reads| raw1
@@ -57,11 +58,13 @@ graph LR
   selected[ ]
   co[Compactors 2.11.9]
   compact[ ]
+  noextension[ ]
   export[DNA FASTA export]
   dna[ ]
   sel -->|discovery| selected
   selected -->|discovery| co
   co -->|discovery| compact
+  export -->|discovery| noextension
   compact -->|discovery| export
   export -->|discovery| dna
  end

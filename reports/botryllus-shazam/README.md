@@ -131,3 +131,14 @@ listed FASTQ URLs or sizes. Missing file sizes are not counted as measured zero.
 These are metadata totals, not downloaded sequence data. Continue with tunicates
 and consider selected independent chordate studies rather than indexing the full
 chordate collection. No chordate sequence indexing was launched.
+
+## Shared search command, 23 October 2026
+
+Use Branchwater manysearch for both Swiss-Prot protein references and public SRA
+collections. Both manysearch and the historical multisearch are multithreaded.
+Manysearch supports signature ZIP collections and RocksDB targets; it can load
+target sketches on demand instead of holding the whole collection in memory.
+The completed multisearch pilot is preserved. Comparison job 49215765 reuses the
+same sketches, encodings, scales, and query-containment threshold before its new
+match tables can replace historical results. No new biological validation is
+claimed from engine agreement alone. Swiss-Prot production remains scaled 5.

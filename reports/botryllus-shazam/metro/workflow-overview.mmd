@@ -64,7 +64,7 @@ graph LR
   pubtrim -->|archive| runsigs
  end
  subgraph retrieval [Sequence search]
-  multisearch[Branchwater multisearch]
+  manysearch[Branchwater manysearch]
   manysearch[Branchwater manysearch]
  end
  subgraph matches [Results]
@@ -78,8 +78,8 @@ graph LR
  extend -->|focal| dna
  swiss -->|protein| refsketch
  publicreads -->|archive| pubtrim
- refsigs -->|protein| multisearch
+ refsigs -->|protein| manysearch
  runsigs -->|archive| manysearch
- multisearch -->|protein| proteinscsv
- peptide -->|protein| multisearch
+ manysearch -->|protein| proteinscsv
+ peptide -->|protein| manysearch
  manysearch -->|archive| occurrencecsv

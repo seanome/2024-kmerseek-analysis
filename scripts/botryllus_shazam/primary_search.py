@@ -131,7 +131,7 @@ def run(root, out, query):
                 call(
                     [
                         "scripts",
-                        "multisearch",
+                        "manysearch",
                         out / f"queries.{mode}.scaled5.sig.zip",
                         out / f"{db}.{mode}.scaled5.sig.zip",
                         "-c",
@@ -144,6 +144,8 @@ def run(root, out, query):
                         str(scaled),
                         "-t",
                         "0.1",
+                        "-N",
+                        "--ignore-abundance",
                         "-o",
                         output,
                     ],
