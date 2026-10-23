@@ -4,7 +4,7 @@ A disulfide-rich peptide is a short secreted peptide, 10 to 40 residues in most 
 held in shape by two or more disulfide bonds rather than by a hydrophobic core. Its
 **cysteine framework** is the pattern of cysteine positions along the sequence, written by
 convention as runs of cysteine separated by dashes, so `C-C-CC-C-C` means six cysteines in
-four runs: one, one, two adjacent, one, one. Conotoxin families are named by that pattern
+five runs: one, one, two adjacent, one, one. Conotoxin families are named by that pattern
 (framework VI/VII is `C-C-CC-C-C`), and the residues between the cysteines change fast
 between species while the pattern holds.
 
@@ -466,9 +466,10 @@ def held_out_reference(
     """`sequences` with every entry from `exclude` at `level` ('genus' or 'phylum') removed.
 
     An entry whose taxid has no value at that level stays in, since nothing says it
-    belongs to the excluded group. That is the cautious direction for this benchmark: a
-    kept entry can only ever be scored as a hit or a miss, whereas dropping entries we
-    cannot place would quietly shrink the search space and inflate recall.
+    belongs to the excluded group. Unknown lineages can therefore retain relatives of
+    the query. This is exclusion of known taxa, not proof of a fully lineage-held-out
+    reference. Removing or retaining unknown entries can change the measured precision
+    and recall; neither direction is uniformly conservative.
     """
     if level not in ("genus", "phylum"):
         raise ValueError(f"level must be 'genus' or 'phylum', not {level!r}")
@@ -570,8 +571,9 @@ def bootstrap_ci(
     """Mean of `values` and a percentile bootstrap interval over them, resampling queries.
 
     The queries are the unit, so a draw is a sample of queries with replacement, and the
-    interval says how much the mean would move with a different set of queries of the same
-    size. Returns (mean, low, high), all None for an empty list.
+    interval treats queries as independent units. Duplicate peptides and related toxin
+    families can violate that assumption; this does not measure uncertainty for
+    independent new families. Returns (mean, low, high), all None for an empty list.
     """
     clean = [v for v in values if v is not None]
     if not clean:
