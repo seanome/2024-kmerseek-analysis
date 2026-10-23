@@ -48,7 +48,7 @@ tested, each at several sizes, in hp_thomas_dill2 and hp_lehninger2:
 Chained seeds are the "several k = 12 next to each other" or "k = 5 at consecutive
 positions" idea. A window seed is the most permissive rule with the same number of
 required matches. It cannot be looked up in an index directly, but a window of L with at
-most j mismatches always holds an exact run of L/(j + 1) or more, so it can be found by
+most j mismatches always holds an exact run of at least L/(j + 1) rounded down, so it can be found by
 indexing that exact run and checking the window around it.
 
 Scaled 2 keeps the half of the seed keys whose hash is even, the rule kmerseek's
@@ -288,9 +288,9 @@ cover exactly half the positions. Reach falls to between 0.68 and 0.82 of its sc
 value (median per alphabet and kind of seed), because a homolog pair usually has more than one seed
 position and losing some of them does not lose the pair. In Section 2 the scaled-2 points
 (triangles) sit on the same curve as the scaled-1 points (circles): halving the seeds
-trades reach for chance hits at the same rate as making k a little longer. It saves half
-the memory and costs nothing in sensitivity at a given number of chance hits, but it does
-not move the curve.
+trades reach for chance hits at the same rate as making k a little longer. It halves index entries. The observed reach-versus-chance curve is similar, but this
+prototype does not measure index memory or establish equal sensitivity at every chance-hit
+level.
 """)
 
 md(r"""
@@ -312,18 +312,17 @@ firing by chance 10 times or fewer per search.
    (hp_lehninger2), with hundreds to thousands of proteins tied at the same score. A random
    human protein does as well in 41% to 85% of draws.
 4. Scaled 2 halves the index (median 0.50 of the entries) and keeps 68-82% of the reach. It
-   stays on the same curve, so it is a free memory saving at a given chance-hit level, not a
-   gain in sensitivity.
+   stays near the same observed curve. This measures index entries and reach; runtime
+   and memory savings still need measurement in an implementation.
 
 **Decision.** Neither condition of the rule is met: the best partner rank is 472, not 10,
 and the best reach at ≤ 10 chance seeds per search is 1.6%, not 10%. A mismatch-tolerant
 H/P seed is not worth building into kmerseek for this purpose. The reason is the one
-notebook 245 gives: two letters carry too little information per position for any rule
-that looks at 60 positions or fewer. Seed shape changes which homologs a seed catches,
+notebook 245 gives: two letters carry too little information per position for the seed shapes tested here, which span at most 60 positions. Seed shape changes which homologs a seed catches,
 not how much information each position carries. Of the three ways out that notebook 245
-named, this rules out the first for H/P; the remaining two are more letters per position
-or a smaller database. Scaled 2 is worth keeping on its own merits, as a way to halve
-index memory at no cost in the reach-for-chance trade-off.
+named, these tested mismatch-tolerant seeds do not meet the rule for H/P; the remaining two are more letters per position
+or a smaller database. Scaled 2 is worth testing in the implementation because it
+halves index entries here; equal memory savings and sensitivity have not been measured.
 
 **What this does not show.** The scan scores a protein by its single best diagonal and
 does no extension or E-value; kmerseek's own scoring could rank differently, though the
