@@ -459,9 +459,27 @@ def test_pass_rule_passes_a_case_built_to_pass(hosts):
         reduced_flags.append(
             cc.Flag(f"insert{index}", reduced_method, 61, 90, "unnamed", "test case")
         )
-    result = cc.evaluate_pass_rule(
+    # All four thresholds can hold while required controls are still missing.
+    incomplete = cc.evaluate_pass_rule(
         rows,
         {reduced_method: reduced_flags, "exact tag match (protein20)": []},
+        reduced_method,
+        [30.0],
+        [29.0],
+    )
+    assert all(incomplete[key]["holds"] for key in cc.PASS_RULE)
+    assert incomplete["verdict"] == "INSUFFICIENT_EVIDENCE"
+    rows.append(
+        {**rows[-1], "submission_id": "intended0", "insert_was_intended": "true"}
+    )
+    result = cc.evaluate_pass_rule(
+        rows,
+        {
+            reduced_method: reduced_flags,
+            "exact tag match (protein20)": [],
+            "local alignment (BLOSUM62)": [],
+            "DNA check (facility)": [],
+        },
         reduced_method=reduced_method,
         review_minutes_before=[30.0, 32.0, 31.0],
         review_minutes_after=[29.0, 31.0, 30.0],
@@ -508,7 +526,12 @@ def test_scorer_fires_the_drop_clause_when_flags_cannot_tell_the_two_apart(hosts
 
     result = cc.evaluate_pass_rule(
         rows,
-        {reduced_method: flags, "exact tag match (protein20)": []},
+        {
+            reduced_method: flags,
+            "exact tag match (protein20)": [],
+            "local alignment (BLOSUM62)": [],
+            "DNA check (facility)": [],
+        },
         reduced_method=reduced_method,
         review_minutes_before=[30.0],
         review_minutes_after=[29.0],
@@ -552,7 +575,12 @@ def test_scorer_does_not_fire_the_drop_clause_when_flags_do_separate(hosts):
 
     result = cc.evaluate_pass_rule(
         rows,
-        {reduced_method: flags, "exact tag match (protein20)": []},
+        {
+            reduced_method: flags,
+            "exact tag match (protein20)": [],
+            "local alignment (BLOSUM62)": [],
+            "DNA check (facility)": [],
+        },
         reduced_method=reduced_method,
         review_minutes_before=[30.0],
         review_minutes_after=[29.0],

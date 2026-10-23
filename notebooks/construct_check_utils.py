@@ -865,18 +865,32 @@ def evaluate_pass_rule(
         "needs_dna": not dna_method,
         "cannot_separate_intended": not intended_inserts,
     }
+    results["comparison_methods_missing"] = [
+        label
+        for label, prefix in (
+            ("exact tag matching", "exact"),
+            ("local alignment", "local alignment"),
+            ("DNA check", "DNA"),
+        )
+        if not any(method.startswith(prefix) for method in comparison_methods)
+    ]
     results["separation"] = {
         "share_of_intended_inserts_flagged": share_intended,
         "share_of_unintended_inserts_flagged": share_unintended,
         "n_intended_inserts": len(intended_inserts),
         "n_unintended_inserts": len(documented),
     }
-    results["verdict"] = (
-        "PASS"
-        if all(results[key]["holds"] for key in PASS_RULE)  # type: ignore[index]
-        and not any(results["fail_clauses"].values())  # type: ignore[union-attr]
-        else "FAIL"
+    thresholds_hold = all(results[key]["holds"] for key in PASS_RULE)
+    measured_failure = any(results["fail_clauses"].values())
+    missing_controls = any(results["fail_clauses_not_measured"].values()) or bool(
+        results["comparison_methods_missing"]
     )
+    if measured_failure:
+        results["verdict"] = "FAIL"
+    elif missing_controls:
+        results["verdict"] = "INSUFFICIENT_EVIDENCE"
+    else:
+        results["verdict"] = "PASS" if thresholds_hold else "FAIL"
     return results
 
 

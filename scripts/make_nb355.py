@@ -50,8 +50,7 @@ documented construct mistakes that exact matching and local alignment miss. It n
 historical construct submissions from a protein-production facility: what was ordered, what
 came back, and what the discrepancy turned out to be.
 
-Those 200 submissions are not in this repository, are not in any other repository or data
-directory on this machine, and cannot be obtained from a public database. They are a
+The historical submissions needed here have not been supplied to this analysis. They are a
 facility's own records. Nothing stands in for them: a published construct has no discrepancy
 record, and a construct this notebook builds by putting a tag into a clean protein contains
 only the mistakes that were put there on purpose, which is the one thing the test must not
@@ -182,7 +181,7 @@ notebook's own files, "construct" appears in the repository only as the ordinary
 that builds a table or a set of pairs. A sibling branch opened later the same day,
 `olgabot/construct-insert-check`, asks the same question with its own scaffolding; its
 submission templates are headers with no rows, so it has no submissions either. There is no
-facility submission record anywhere.
+facility submission record in the files examined for that search.
 
 The table below is the contract. It is printed from the same module that validates an
 arriving file, `construct_check_utils.load_submissions`, so the documented columns and the
@@ -934,7 +933,8 @@ md(r"""
 
 **Verdict: NOT RUN, missing data.** The kill test was not run and no part of its pass rule was
 measured, because the 200 historical facility construct submissions do not exist in this
-repository and cannot be obtained anywhere else. Nothing was substituted for them.
+repository. A facility may hold them, but they have not been supplied here. Nothing was
+substituted for them.
 
 ### Each threshold, with its number
 
@@ -947,8 +947,9 @@ repository and cannot be obtained anywhere else. Nothing was substituted for the
 
 ### Claims, each with the cell that produced it
 
-1. No facility construct submission record exists in this repository or in any of its 174 pull
-   requests. Searched before concluding it; section 2.
+1. No facility construct submission record was found in the repository and pull requests
+   examined on 2026-10-20. This does not establish whether a facility holds such records;
+   section 2.
 2. Ten of the twelve frozen tag and linker sequences are shorter than 19 amino acids. Across
    k=15 to k=30, the range this repository runs a hydrophobic/polar alphabet at, the number of
    the twelve with even one k-mer is 3 at k=15 and 2 from k=16 up. Section 3 table and
