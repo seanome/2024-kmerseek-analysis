@@ -1187,21 +1187,20 @@ def _identity_key_is_joinable(truth: pl.DataFrame, identity: pl.DataFrame) -> bo
     return bool(set(truth["pfam_id"].unique()) & set(identity["pfam_id"].unique()))
 
 
-def _anchor_identity_by_overlap(truth: pl.DataFrame,
-                                identity: pl.DataFrame,
-                                cols: list[str]) -> pl.DataFrame:
+def _anchor_identity_by_overlap(
+    truth: pl.DataFrame, identity: pl.DataFrame, cols: list[str]
+) -> pl.DataFrame:
     """Identity for a truth interval that is not itself a Pfam domain, via the one it sits in.
 
-    A Swiss-Prot feature has no identity of its own to measure: it is a binding site or a
-    transmembrane helix, not an alignable unit, and extract_domain_sequences never emitted
-    it as a query. What it does have is a position, and the Pfam domain covering that
+    This pipeline did not measure sequence identity for Swiss-Prot feature intervals:
+    extract_domain_sequences emitted Pfam domains, not these feature intervals. What it does have is a position, and the Pfam domain covering that
     position was measured. So the feature inherits the identity of the domain it lies in,
     which is the quantity the twilight-zone claim is actually stated on -- how diverged is
     the domain this site sits in.
 
     The anchor is the domain covering the most of the feature, so a feature straddling two
     domains takes the one it is mostly in. Ties fall to the closer homolog and then to the
-    anchor's own accession and start, which is a total order over the candidate rows: a
+    anchor's family, start, end and target accession, which fix the selected output: a
     partial one leaves the pick to polars' row order and the bins move between identical
     runs.
 
@@ -1215,18 +1214,25 @@ def _anchor_identity_by_overlap(truth: pl.DataFrame,
     anchor_cols = [c for c in cols if c not in key]
     want = truth.select(key).unique()
 
-    overlap = (pl.min_horizontal("domain_end", "anchor_end")
-               - pl.max_horizontal("domain_start", "anchor_start"))
+    overlap = pl.min_horizontal("domain_end", "anchor_end") - pl.max_horizontal(
+        "domain_start", "anchor_start"
+    )
     span = pl.col("domain_end") - pl.col("domain_start")
 
     cand = (
         want.join(
             identity.select(
-                ["accession"] + anchor_cols
-                + [pl.col("pfam_id").alias("anchor_pfam"),
-                   pl.col("domain_start").alias("anchor_start"),
-                   pl.col("domain_end").alias("anchor_end")]),
-            on="accession", how="inner")
+                ["accession"]
+                + anchor_cols
+                + [
+                    pl.col("pfam_id").alias("anchor_pfam"),
+                    pl.col("domain_start").alias("anchor_start"),
+                    pl.col("domain_end").alias("anchor_end"),
+                ]
+            ),
+            on="accession",
+            how="inner",
+        )
         .with_columns(overlap.alias("_overlap"))
         # span is at least 1 on every truth interval this project builds, point features
         # included -- build_swissprot_truth writes end = start + 1 for those -- so the
@@ -1236,11 +1242,17 @@ def _anchor_identity_by_overlap(truth: pl.DataFrame,
     )
     if cand.height == 0:
         return truth.with_columns(
-            [pl.lit(None, dtype=identity.schema[c]).alias(c) for c in anchor_cols])
+            [pl.lit(None, dtype=identity.schema[c]).alias(c) for c in anchor_cols]
+        )
 
     best = (
-        cand.sort(["_overlap", "best_pident", "anchor_pfam", "anchor_start"],
-                  descending=[True, True, False, False], nulls_last=True)
+        cand.sort(
+            ["_overlap", "best_pident", "anchor_pfam", "anchor_start", "anchor_end"]
+            + (["best_target"] if "best_target" in cand.columns else []),
+            descending=[True, True, False, False, False]
+            + ([False] if "best_target" in cand.columns else []),
+            nulls_last=True,
+        )
         .group_by(key, maintain_order=True)
         .agg([pl.col(c).first() for c in anchor_cols])
     )
@@ -1252,8 +1264,10 @@ def attach_identity(truth: pl.DataFrame, identity: pl.DataFrame | None) -> pl.Da
 
     Instances with no same-family match in the target get a distinct `no_homolog` label
     rather than being dropped or lumped into the lowest bin. They are unreachable by any
-    transfer-based method, so mixing them into "<20%" would make every tool look worse in
-    the bin the hypothesis cares most about.
+    transfer-based method under the Pfam-domain interpretation. For anchored Swiss-Prot
+    features, the label can instead mean that no measured Pfam domain covers half the
+    feature; it is not evidence that the feature has no homolog. Keep these missing
+    identities separate from the measured "<20%" bin.
 
     Two ways in. A truth set whose instances ARE Pfam domains joins on the full key and
     reads its own measured identity. A truth set whose instances are something else --

@@ -134,3 +134,16 @@ def test_an_identity_table_with_no_overlapping_row_keeps_every_column():
     out = ev.attach_identity(truth([("P9", "REGION", 10, 60)]), IDENT)
     assert {"best_pident", "best_target", "stratum_identity"} <= set(out.columns)
     assert out["best_target"].to_list() == [None]
+
+
+def test_equal_overlap_identity_family_start_keeps_target_stable():
+    # Distinct measured domain instances can share a start. Their selected target
+    # covariate must not depend on input ordering, even when identity bins agree.
+    candidates = ident(
+        [("P4", "PF00001", 0, 100, 82.0, "Z"), ("P4", "PF00001", 0, 120, 82.0, "A")]
+    )
+    t = truth([("P4", "REGION", 20, 80)])
+    a = ev.attach_identity(t, candidates)
+    b = ev.attach_identity(t, candidates.reverse())
+    assert a["best_target"].to_list() == b["best_target"].to_list() == ["Z"]
+
