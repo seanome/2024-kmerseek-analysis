@@ -14,9 +14,10 @@ were committed before any contrast was run, and are not edited afterwards. Log: 
 | young_132d | 6 | 3 | 0 (ages 2 or more days apart) | 6990b, 6996m, 6996n |
 | old_41_93d | 5 | 3 | 2 (+1 unpaired) | 944aXBYd196-4 |
 
-47 of the 64 runs are in a contrast, the same 47 the paper analysed. The other 17 are the
-14 libraries with under 10,000 read pairs and 3 that the SI leaves out (JA132 is under 10,000; check
-`samples.tsv`, column `contrast` = `not_in_SI`).
+47 of the 64 runs are in a contrast, the same 47 the paper analysed. The other 17 (`contrast` =
+`not_in_SI` in `samples.tsv`): 14 libraries with under 10,000 read pairs (278 to 9,077), JA146
+(15,422 pairs) and JA147 (21,166), and the old-colony control 5553 (11.1 M pairs), which the SI
+counts table includes but no DE group uses.
 
 ## Where the SI differs from the handoff's guess from sample names
 
