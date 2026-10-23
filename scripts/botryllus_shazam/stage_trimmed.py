@@ -56,7 +56,10 @@ for record in records:
             link.symlink_to(source["path"])
 marker = root / "trimmed-inputs.validated.json"
 if marker.exists():
-    raise ValueError("Completed validation exists; compare it before revalidating")
+    if json.loads(marker.read_text()) != records:
+        raise ValueError("Completed trimmed inputs differ from the saved validation")
+    print("Reused validated complete trimmed runs:", len(records))
+    sys.exit(0)
 partial = marker.with_suffix(".json.partial")
 partial.write_text(json.dumps(records, indent=2) + "\n")
 partial.rename(marker)
