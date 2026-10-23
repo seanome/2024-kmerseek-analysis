@@ -13,7 +13,10 @@ echo "runs: $(wc -l < runs.txt)"
 python3 - "$PEC_CODE/handoff/samples_all64.tsv" ena_filereport.tsv <<'PY'
 import sys, csv
 h = {r["run"]: r for r in csv.DictReader(open(sys.argv[1]), delimiter="\t")}
-e = {r["run_accession"]: r for r in csv.DictReader(open(sys.argv[2]), delimiter="\t")}
+rows = list(csv.DictReader(open(sys.argv[2]), delimiter="\t"))
+e = {r["run_accession"]: r for r in rows}
+if len(e) != len(rows):
+    raise SystemExit("ENA report repeats run accessions")
 bad = 0
 for run, r in e.items():
     m = dict(zip([u.rsplit("_", 1)[1] for u in r["fastq_ftp"].split(";")], r["fastq_md5"].split(";")))

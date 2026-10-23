@@ -115,3 +115,40 @@ def test_freeze_rejects_missing_contrast_before_writing_samples(tmp_path):
     result, out = design_fixture(tmp_path, missing_last=True)
     assert result.returncode != 0
     assert not (out / "samples.tsv").exists()
+
+
+def test_bh_keeps_missing_fitted_anchors_in_declared_test_family():
+    import numpy as np
+
+    spec = importlib.util.spec_from_file_location(
+        "pec_analysis_utils", ROOT / "scripts/pec_analysis_utils.py"
+    )
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    q = module.bh_over_fitted_anchors([0.01, float("nan"), 0.04])
+    assert np.allclose(q[[0, 2]], [0.03, 0.06])
+    assert np.isnan(q[1])
+
+
+@pytest.mark.parametrize("mode", ["mismatch", "missing", "duplicate"])
+def test_ena_comparison_fails_on_changed_or_missing_runs(tmp_path, mode):
+    handoff = tmp_path / "handoff.tsv"
+    handoff.write_text("run\tmd5_1\tmd5_2\tread_pairs\nR1\ta\tb\t1\n")
+    row = "R1\tu_1.fastq.gz;u_2.fastq.gz\ta;b\t1\n"
+    if mode == "mismatch":
+        row = row.replace("a;b", "a;c")
+    if mode == "missing":
+        row = row.replace("R1", "R2")
+    if mode == "duplicate":
+        row += row
+    report = tmp_path / "ena.tsv"
+    report.write_text("run_accession\tfastq_ftp\tfastq_md5\tread_count\n" + row)
+    shell = (ROOT / "scripts/fetch_ena_report.sh").read_text()
+    code = shell.split("<<'PY'\n", 1)[1].rsplit("\nPY", 1)[0]
+    result = subprocess.run(
+        [sys.executable, "-", str(handoff), str(report)],
+        input=code,
+        text=True,
+        capture_output=True,
+    )
+    assert result.returncode != 0
