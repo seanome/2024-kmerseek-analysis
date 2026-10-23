@@ -46,7 +46,7 @@ if hits.height:
 hits.write_parquet(out_hits)
 pairs = hits.select("query", "target", "db").unique() if hits.height else pl.DataFrame(
     schema={"query": pl.Utf8, "target": pl.Utf8, "db": pl.Utf8})
-for db in ("proteome", "swissprot"):
+for db in ("proteome", "swissprot", "botznik"):
     pairs.filter(pl.col("db") == db).select("query", "target").write_csv(
         out_pairs.replace(".tsv", f".{db}.tsv"), separator="\t")
 print(f"hits kept {hits.height}, pairs {pairs.height}")

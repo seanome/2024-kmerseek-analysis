@@ -25,7 +25,7 @@ cat translate.log
 if [ -s pep.peptides.faa ]; then
   sourmash scripts manysketch <(printf 'name,genome_filename,protein_filename\npep,,%s\n' "$PWD/pep.peptides.faa") \
     --singleton -p protein,k=7,scaled=5 -p dayhoff,k=12,scaled=5 -p hp,k=30,scaled=5 -c "$N" -o pep.scaled5.zip
-  for db in proteome swissprot; do
+  for db in proteome swissprot botznik; do
     for spec in protein:7 dayhoff:12 hp:30; do
       m=${spec%:*}; k=${spec#*:}
       for s in 10 100 5; do
@@ -38,7 +38,7 @@ if [ -s pep.peptides.faa ]; then
     done
   done
   python "$PEC_CODE/scripts/make_pairs.py" pairs.tsv hits.parquet ms.*.csv
-  for db in proteome swissprot; do
+  for db in proteome swissprot botznik; do
     python "$PEC_CODE/scripts/pair_align.py" pairs.$db.tsv pep.peptides.faa "$PEC_ROOT/db/$db.faa" \
       align.$db.parquet "$N"
   done

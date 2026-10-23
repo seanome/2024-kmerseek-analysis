@@ -7,7 +7,8 @@
 #SBATCH --time=06:00:00
 #SBATCH --output=%x.%j.out
 # Protein databases for the sketch search: the new Botryllus proteome (stable IDs BSP######)
-# and UniProtKB/Swiss-Prot 2026_03 (stable IDs SPR######). One sketch per protein
+# UniProtKB/Swiss-Prot 2026_03 (stable IDs SPR######), and the old gene-model proteins whose
+# g##### IDs the paper's DE tables use (stable IDs BZP######). One sketch per protein
 # (--singleton) at scaled 5 for each setting; searches downsample to scaled 10 and 100.
 # Searches use multisearch -p (in memory), so no RocksDB index is built.
 set -euo pipefail
@@ -15,10 +16,11 @@ set -euo pipefail
 export PATH=$PEC_ROOT/env/bin:$PATH
 cd "$PEC_ROOT/db"
 N=$SLURM_CPUS_PER_TASK
-for db in proteome swissprot; do
+for db in proteome swissprot botznik; do
   case $db in
     proteome)  src=botryllus_new_genome_protein.fasta; pre=BSP;;
     swissprot) src=uniprot_sprot.fasta.gz; pre=SPR;;
+    botznik)   src=botznik_proteins.fa; pre=BZP;;
   esac
   [ -s $db.faa ] || python "$PEC_CODE/scripts/stable_ids.py" $src $pre $db.faa $db.id_map.tsv
   if [ ! -e $db.sketch.done ]; then

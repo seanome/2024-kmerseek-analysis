@@ -136,3 +136,8 @@ the stated thresholds.
   and anchor-count anchors), and its contigs are translated and matched like compactors.
   In the control, DE-kupl's recall per class and false positives among unchanged transcripts are
   scored the same way as the other channels.
+* 2026-10-23, before any run: a third search database, the old gene-model proteins
+  (`Bs_proteins.fa`, 72,617 records, 72,614 with g##### IDs, sha256 899cb892…1d9c04). The paper's
+  DE tables and its named gene lists (SI sheet "annotated DE all groups young/old") use these
+  g##### IDs, so a peptide's match to an old protein links it to the paper's gene directly. Same
+  settings and the same alignment rule as the other databases.
