@@ -462,9 +462,19 @@ fn cmd_simulate(args: &[String]) -> Res<()> {
 /// no barcode column). Samples are output in the order of `samples`; a sample name not in
 /// that list is an error. Returns rows sorted by anchor: (anchor, per-sample counts, number of
 /// distinct targets).
-fn sum_anchor_counts<R: BufRead>(input: R, samples: &[String], keep: Option<&std::collections::HashSet<String>>)
-    -> Res<Vec<(String, Vec<u64>, u32)>> {
-    let col: HashMap<&str, usize> = samples.iter().enumerate().map(|(i, s)| (s.as_str(), i)).collect();
+fn sum_anchor_counts<R: BufRead>(
+    input: R,
+    samples: &[String],
+    keep: Option<&std::collections::HashSet<String>>,
+) -> Res<Vec<(String, Vec<u64>, u32)>> {
+    let col: HashMap<&str, usize> = samples
+        .iter()
+        .enumerate()
+        .map(|(i, s)| (s.as_str(), i))
+        .collect();
+    if col.len() != samples.len() || samples.is_empty() {
+        return Err("sample list must be nonempty with unique names".into());
+    }
     let mut acc: HashMap<String, (Vec<u64>, std::collections::HashSet<String>)> = HashMap::new();
     for (ln, line) in input.lines().enumerate() {
         let line = line?;
@@ -473,20 +483,34 @@ fn sum_anchor_counts<R: BufRead>(input: R, samples: &[String], keep: Option<&std
         }
         let f: Vec<&str> = line.split('\t').collect();
         if f.len() != 4 {
-            return Err(format!("line {}: expected 4 tab-separated fields, got {}", ln + 1, f.len()).into());
+            return Err(format!(
+                "line {}: expected 4 tab-separated fields, got {}",
+                ln + 1,
+                f.len()
+            )
+            .into());
         }
         if let Some(k) = keep {
             if !k.contains(f[1]) {
                 continue;
             }
         }
-        let si = *col.get(f[0]).ok_or(format!("line {}: sample {} not in sample list", ln + 1, f[0]))?;
+        let si = *col.get(f[0]).ok_or(format!(
+            "line {}: sample {} not in sample list",
+            ln + 1,
+            f[0]
+        ))?;
         let c: u64 = f[3].parse()?;
-        let e = acc.entry(f[1].to_string()).or_insert_with(|| (vec![0; samples.len()], Default::default()));
-        e.0[si] += c;
+        let e = acc
+            .entry(f[1].to_string())
+            .or_insert_with(|| (vec![0; samples.len()], Default::default()));
+        e.0[si] = e.0[si].checked_add(c).ok_or("anchor count exceeds u64")?;
         e.1.insert(f[2].to_string());
     }
-    let mut rows: Vec<_> = acc.into_iter().map(|(a, (v, t))| (a, v, t.len() as u32)).collect();
+    let mut rows: Vec<_> = acc
+        .into_iter()
+        .map(|(a, (v, t))| (a, v, t.len() as u32))
+        .collect();
     rows.sort_by(|x, y| x.0.cmp(&y.0));
     Ok(rows)
 }
@@ -496,12 +520,23 @@ fn cmd_anchor_counts(args: &[String]) -> Res<()> {
     if args.is_empty() {
         return Err("usage: pec-tools anchor-counts <samples.txt> [anchors.tsv with an 'anchor' column] < satc.txt".into());
     }
-    let samples: Vec<String> = std::fs::read_to_string(&args[0])?.split_whitespace().map(String::from).collect();
+    let samples: Vec<String> = std::fs::read_to_string(&args[0])?
+        .split_whitespace()
+        .map(String::from)
+        .collect();
     let keep = match args.get(1) {
         Some(p) if p != "-" => {
             let mut lines = BufReader::new(File::open(p)?).lines();
-            let header: Vec<String> = lines.next().ok_or("empty anchor list")??.split('\t').map(String::from).collect();
-            let ai = header.iter().position(|h| h == "anchor").ok_or("anchor list has no 'anchor' column")?;
+            let header: Vec<String> = lines
+                .next()
+                .ok_or("empty anchor list")??
+                .split('\t')
+                .map(String::from)
+                .collect();
+            let ai = header
+                .iter()
+                .position(|h| h == "anchor")
+                .ok_or("anchor list has no 'anchor' column")?;
             let mut set = std::collections::HashSet::new();
             for l in lines {
                 let l = l?;
@@ -587,7 +622,13 @@ mod tests {
         let satc = "pec1\tAAAC\tGG\t3\nctrl1\tAAAC\tGT\t2\npec1\tAAAC\tGT\t4\npec1\tCCCA\tTT\t1\n";
         let samples = vec!["ctrl1".to_string(), "pec1".to_string()];
         let rows = sum_anchor_counts(satc.as_bytes(), &samples, None).unwrap();
-        assert_eq!(rows, vec![("AAAC".to_string(), vec![2, 7], 2), ("CCCA".to_string(), vec![0, 1], 1)]);
+        assert_eq!(
+            rows,
+            vec![
+                ("AAAC".to_string(), vec![2, 7], 2),
+                ("CCCA".to_string(), vec![0, 1], 1)
+            ]
+        );
         let keep: std::collections::HashSet<String> = ["CCCA".to_string()].into_iter().collect();
         let rows = sum_anchor_counts(satc.as_bytes(), &samples, Some(&keep)).unwrap();
         assert_eq!(rows.len(), 1);
@@ -599,5 +640,13 @@ mod tests {
         assert!(peps
             .iter()
             .all(|p| !p.aa.contains('X') && !p.aa.contains('*')));
+    }
+    #[test]
+    fn anchor_counts_reject_duplicate_samples_and_overflow() {
+        let duplicate = vec!["s".to_string(), "s".to_string()];
+        assert!(sum_anchor_counts(&b"s\tAAA\tCCC\t1\n"[..], &duplicate, None).is_err());
+        let samples = vec!["s".to_string()];
+        let data = b"s\tAAA\tCCC\t18446744073709551615\ns\tAAA\tGGG\t1\n";
+        assert!(sum_anchor_counts(&data[..], &samples, None).is_err());
     }
 }

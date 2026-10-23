@@ -8,7 +8,10 @@ sample sheet, control = -1, PEC = +1). The contrast membership comes ONLY from t
 sheet "DEseq group annotation"; the alias-based guess in the handoff is reported next
 to it for comparison and is not used.
 """
+
 import csv
+import hashlib
+import json
 import re
 import sys
 from pathlib import Path
@@ -32,7 +35,14 @@ for row in wb[sheet].iter_rows(values_only=True):
 for g, members in groups.items():
     print(g, len(members))
 
-names = {"1": "young_2h", "2": "young_24h", "3": "old_24h", "4": "young_13_49d", "5": "young_132d", "6": "old_41_93d"}
+names = {
+    "1": "young_2h",
+    "2": "young_24h",
+    "3": "old_24h",
+    "4": "young_13_49d",
+    "5": "young_132d",
+    "6": "old_41_93d",
+}
 ena_rows = list(csv.DictReader(open(ena), delimiter="\t"))
 
 
@@ -43,7 +53,13 @@ def vial(alias):
 
 by_vial = {}
 for r in ena_rows:
-    v = vial(r["sample_alias"]) or vial(r["library_name"]) or vial(r["experiment_alias"])
+    v = (
+        vial(r["sample_alias"])
+        or vial(r["library_name"])
+        or vial(r["experiment_alias"])
+    )
+    if v is None:
+        raise SystemExit(f"cannot identify vial in ENA run {r['run_accession']}")
     by_vial.setdefault(v, []).append(r)
 dups = {v: len(rs) for v, rs in by_vial.items() if len(rs) != 1}
 if dups:
@@ -51,9 +67,13 @@ if dups:
 
 assign = {}
 for g, members in groups.items():
-    num = re.search(r"\d", g).group(0)
+    num = re.search(r"\d+", g).group(0)
+    if num not in names:
+        raise SystemExit(f"unknown SI group {g}")
     for m in members:
         v = vial(m)
+        if v is None or not ("PaceMakerTre" in m or "PaceMakerCon" in m):
+            raise SystemExit(f"unknown SI sample name: {m}")
         if v in assign:
             raise SystemExit(f"{v} in two SI groups")
         assign[v] = (names[num], "PEC" if "PaceMakerTre" in m else "control", m)
@@ -64,13 +84,44 @@ rows = []
 for v, (r,) in sorted(by_vial.items()):
     alias = r["sample_alias"]
     parts = alias.split("_")
-    contrast, treat, si_name = assign.get(v, ("not_in_SI", "PEC" if "PaceMakerTre" in alias else "control", ""))
-    ena_treat = "PEC" if "PaceMakerTre" in alias else ("control" if "PaceMakerCon" in alias else "unknown")
+    contrast, treat, si_name = assign.get(
+        v, ("not_in_SI", "PEC" if "PaceMakerTre" in alias else "control", "")
+    )
+    ena_treat = (
+        "PEC"
+        if "PaceMakerTre" in alias
+        else ("control" if "PaceMakerCon" in alias else "unknown")
+    )
     if v in assign and treat != ena_treat:
         raise SystemExit(f"{v}: SI says {treat}, ENA alias says {ena_treat}")
-    rows.append(dict(sample=v, run=r["run_accession"], treatment=ena_treat, genotype=parts[2],
-                     age_days=next((p[:-1] for p in parts if re.fullmatch(r"\d+d", p)), ""),
-                     contrast=contrast, read_pairs=r["read_count"], si_name=si_name, ena_alias=alias))
+    rows.append(
+        dict(
+            sample=v,
+            run=r["run_accession"],
+            treatment=ena_treat,
+            genotype=parts[2],
+            age_days=next((p[:-1] for p in parts if re.fullmatch(r"\d+d", p)), ""),
+            contrast=contrast,
+            read_pairs=r["read_count"],
+            si_name=si_name,
+            ena_alias=alias,
+        )
+    )
+if not rows:
+    raise SystemExit("ENA report contains no runs")
+for name in names.values():
+    treatments = {r["treatment"] for r in rows if r["contrast"] == name}
+    if treatments != {"control", "PEC"}:
+        raise SystemExit(f"contrast {name} lacks control or PEC samples")
+manifest = {
+    "sources": {
+        str(p): hashlib.sha256(Path(p).read_bytes()).hexdigest() for p in [xlsx, ena]
+    },
+    "runs": len(rows),
+    "assigned_runs": sum(r["contrast"] != "not_in_SI" for r in rows),
+    "pair_ids": "not constructed by this script; must be validated before fitting a paired model",
+}
+(out / "freeze_manifest.json").write_text(json.dumps(manifest, indent=2) + "\n")
 cols = list(rows[0])
 with open(out / "samples.tsv", "w") as f:
     f.write("\t".join(cols) + "\n")
@@ -81,5 +132,11 @@ for name in names.values():
     with open(out / f"contrast_{name}.cjs", "w") as f:
         for r in members:
             f.write(f"{r['sample']},{1 if r['treatment'] == 'PEC' else -1}\n")
-    print(name, len(members), "PEC", sum(r["treatment"] == "PEC" for r in members),
-          "genotypes", sorted({r["genotype"] for r in members}))
+    print(
+        name,
+        len(members),
+        "PEC",
+        sum(r["treatment"] == "PEC" for r in members),
+        "genotypes",
+        sorted({r["genotype"] for r in members}),
+    )

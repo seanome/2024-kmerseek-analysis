@@ -16,9 +16,16 @@ export PATH=$PEC_ROOT/env/bin:$PATH
 RUN=$(sed -n "$((SLURM_ARRAY_TASK_ID + 1))p" meta/runs.txt)
 SAMPLE=$(awk -F'\t' -v r="$RUN" '$2==r{print $1}' design/samples.tsv)
 [ -n "$SAMPLE" ] || { echo "no sample for $RUN"; exit 1; }
-mkdir -p trimmed
+mkdir -p trimmed logs
 OUT=trimmed/$SAMPLE.il.fastq.gz
-[ -e "trimmed/$SAMPLE.done" ] && { echo "$SAMPLE done"; exit 0; }
+if [ -e "trimmed/$SAMPLE.done" ]; then
+  if [ -s "$OUT" ] && [ -s "trimmed/$SAMPLE.fastp.json" ]; then
+    N=$(pigz -dc "$OUT" | awk 'END{print NR/4}')
+    WANT=$(python -c "import json;print(json.load(open('trimmed/$SAMPLE.fastp.json'))['summary']['after_filtering']['total_reads'])")
+    [ "$N" = "$WANT" ] && { echo "$SAMPLE existing output reverified"; exit 0; }
+  fi
+  rm -f "trimmed/$SAMPLE.done"
+fi
 [ -e "reads/$RUN.done" ] || { echo "reads for $RUN not verified"; exit 2; }
 rm -f "$OUT.part"
 /usr/bin/time -v -o "logs/fastp_$SAMPLE.time" bash -c "set -o pipefail; fastp -i reads/${RUN}_1.fastq.gz -I reads/${RUN}_2.fastq.gz --stdout \
