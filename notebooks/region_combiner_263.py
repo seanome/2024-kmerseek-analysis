@@ -194,10 +194,16 @@ def vote_at_target(sw: pl.DataFrame) -> pl.DataFrame:
     else:
         ts = (
             "swissprot"
-            if (sw["precision_swissprot"].is_finite() & (sw["precision_swissprot"] >= TARGET_PRECISION)).any()
+            if (
+                sw["precision_swissprot"].is_finite()
+                & (sw["precision_swissprot"] >= TARGET_PRECISION)
+            ).any()
             else "pfam"
         )
-        ok = sw.filter(pl.col(f"precision_{ts}").is_finite() & (pl.col(f"precision_{ts}") >= TARGET_PRECISION))
+        ok = sw.filter(
+            pl.col(f"precision_{ts}").is_finite()
+            & (pl.col(f"precision_{ts}") >= TARGET_PRECISION)
+        )
         rule = f"tune {ts} precision >= {TARGET_PRECISION:g} (no shuffled-query calls)"
     return (
         ok.sort("v_min")

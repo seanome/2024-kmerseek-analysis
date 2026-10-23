@@ -1100,4 +1100,5 @@ OUT.write_text(json.dumps(nb, indent=1) + "\n")
 print(f"wrote {OUT}")
 
 from combiner_review_figures import apply_to_path
+
 apply_to_path(OUT)
