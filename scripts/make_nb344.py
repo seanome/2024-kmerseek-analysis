@@ -504,14 +504,14 @@ almost every time.
    class, 56 identical; `region_ka_evalue` 1.6e-18. kmerseek computes Pr(same class) from
    the two whole proteins: 0.48 and 0.57 here. Inside the regions, 58 of 60 positions are
    polar on both sides, and 367 and 388 of 407 are hydrophobic.
-4. **The window null finds the most chance regions; the dipeptide null does not find more
-   than plain composition.** Over all strata together, at cutoffs from E = 0.0001 to 1,
+4. **The window null finds the most chance regions; dipeptide shuffling does not consistently
+   increase the count over composition shuffling.** Over all strata together, at cutoffs from E = 0.0001 to 1,
    window10 decoys gave 11 to 121 times as many regions as dipeptide decoys by
    `region_run_evalue`, and 20 to 25 times by `region_ka_evalue`. In one stratum they gave
    18_390 times the expected count. Composition decoys gave 0.89 to 2.05 times as many as dipeptide
    decoys, the most at the strictest cutoff. So the task's expectation that the dipeptide
-   null "bites" hardest does not hold: holding neighbouring-residue pairs adds no chance
-   regions here, and holding local composition (window10) adds many. Both E-values fail
+   null "bites" hardest does not hold: holding neighbouring-residue pairs does not consistently increase the pooled count
+   here, while holding local composition (window10) adds many. Both E-values fail
    already under the dipeptide null, so the verdict does not depend on this.
 
 5. **Counting each decoy-target pair once shrinks the excess but does not remove it.**
