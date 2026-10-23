@@ -104,8 +104,9 @@ comes back at the other alphabet-ksize pairs.
 ## 2. BHF's best score against its copies' best scores
 
 For each metric and alphabet-ksize pair: the share of copies whose best human hit scores at least as well
-as BHF's best hit, (1 + copies at least as good) / 301. If BHF's best hit is chance, this
-share is spread evenly between 0 and 1, and about 5% of alphabet-ksize pairs fall at or below 0.05.
+as BHF's best hit, (1 + copies at least as good) / 301. The 0.05 cutoff is a nominal reference, not an exact expected fraction here.
+Ties make these values discrete, and the pairs were selected because BHF had a hit.
+The pairs also share sequences, so their counts are not independent tests.
 """),
     code(r"""
 bp = u.best_score_p(df)
@@ -201,6 +202,14 @@ sticky = u.sticky_top_hits(df)
 print(u.sticky_summary(sticky))
 print("\nproteins most often #1 for the copies (share of copy x alphabet-ksize pair cells), with the number of alphabet-ksize pairs where each is #1 for BHF:")
 print(u.top_gene_recurrence(df, 5).filter(pl.col("metric").is_in(["E-value", "mean IDF", "shared k-mers", "containment", "protein Poisson p-value"])))
+from bhf_review_figures import recurrence_figure
+
+recurrence = u.top_gene_recurrence(df, 5).filter(
+    pl.col("metric").is_in(["E-value", "mean IDF", "shared k-mers", "containment", "protein Poisson p-value"])
+)
+print("Table plotted below (top five copy proteins per selected metric):")
+print(recurrence)
+recurrence_figure(recurrence, u.bhf_arms(df), u.FIG / "256_top_protein_recurrence_bhf_copies_gencode_v49")
 """),
     md(r"""
 Under containment and protein enrichment, BHF's #1 protein is also in the top 10 of at least
@@ -209,6 +218,7 @@ is the #1 hit in 27.4% of all copy × alphabet-ksize pair cells under containmen
 alphabet-ksize pairs. These metrics favour very long proteins, so for them BHF's #1 hit is what any sequence
 of BHF's make-up gets. Under the region-level metrics (E-value, mean IDF, tf-idf, shared
 k-mers) no protein is #1 for more than 0.9% of the copy × alphabet-ksize pair cells.
+
 """),
     md(r"""
 ## Summary

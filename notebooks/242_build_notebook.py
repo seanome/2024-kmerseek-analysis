@@ -196,6 +196,11 @@ print()
 print(summary.filter(pl.col("partner") == "CD47").select(
     "query", "metric", "best_single_rank", "best_single_arm", "ens_rank_by_alphabet", "pct_by_alphabet_among_peers").sort("query", "metric"))
 print("\nFigure: section 1, grey rows.")
+
+from bhf_review_figures import hydrophobic_windows_figure
+
+hydrophobic_windows_figure(seqs, FIG / "242_bcl2_cd47_hydrophobic_windows_gencode_v49")
+
 """),
     md(r"""
 ## 5. Only three alphabets: hp_lehninger2, polarity4, funcgroups8

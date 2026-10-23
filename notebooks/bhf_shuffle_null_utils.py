@@ -238,7 +238,7 @@ def top_gene_recurrence(df: pl.DataFrame, n: int = 8) -> pl.DataFrame:
     bh = g.filter(pl.col("is_bhf")).group_by("metric", "top_gene").len("n_bhf_arms")
     j = cop.join(bh, on=["metric", "top_gene"], how="full", coalesce=True).fill_null(0)
     return (
-        j.sort("metric", "n_copy_arm", descending=[False, True])
+        j.sort("metric", "n_copy_arm", "top_gene", descending=[False, True, False])
         .group_by("metric", maintain_order=True)
         .head(n)
     )
