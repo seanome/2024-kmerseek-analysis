@@ -34,7 +34,7 @@ transfers through the authenticated login alias succeeded.
 | 49189184 | Initial audit and annotation attempt | Audit and 500-protein pilot passed; failed on dot in input |
 | 49191037 | Separate masked search copy and annotation | Running |
 | 49189785 | Initial archive inventory | Tunicate complete; chordate parser failed |
-| 49191136 | Chordate-only inventory after parser fix | Running |
+| 49191136 | Chordate-only inventory after parser fix | Completed |
 | 49192465 | Four-encoding representative Sourmash pilot | Running |
 | 49191258 | Full-depth nf-core preprocessing | Pending successful downloads |
 
@@ -105,3 +105,11 @@ The small SRR32233927 indexing check validated 12 signatures and 12 searchable i
 
 Scratch is purged after 90 days without content modification. Preserve important
 derived results on durable authorized storage; never refresh timestamps to evade purge.
+
+The chordate inventory completed at 6,311,627 runs and 13.15 PB of listed FASTQs.
+Its compressed metadata and SQLite identities are on Sherlock in the retry folder;
+only the compact summary is committed. Chordate indexing remains unlaunched.
+The representative Sourmash pilot had completed its DNA scaled-5 sketch in
+5:18.83 at 2,522,944 KB peak RSS when checked; other encodings were still running.
+The optional DIAMOND full search finished; Pfam was still running. These incomplete
+annotation outputs have not been promoted to biological candidate claims.

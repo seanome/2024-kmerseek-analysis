@@ -79,7 +79,7 @@ The tunicate inventory completed: 5,776 runs, 195 studies, 5,467 BioSamples,
 94 taxon IDs, and 9,432,590,269,958 listed compressed FASTQ bytes.
 Eight runs lack ENA FASTQ URLs. Taxon IDs are not a species count.
 The chordate inventory stopped on a title containing an unmatched quotation mark.
-The parser regression check passed; job 49191136 continues that inventory separately.
+The parser regression check passed; job 49191136 completed that inventory separately.
 The completed tunicate inventory was not rerun.
 
 A small real-input Sourmash check built and searched all four encodings at all
@@ -110,3 +110,10 @@ Source URLs and retrieved-file fingerprints are in [sources/retrieval.json](sour
 New full-depth extension rule, requested by Olga on 2026-10-23: send every SPLASH
 anchor with `pval_opt_corrected < 0.05` to upstream Compactors. No top-300 cap.
 The existing top-300 pilot remains unchanged.
+
+The completed chordate inventory contains 6,311,627 runs across 145,871 studies.
+Listed FASTQs total 13,149,391,201,931,341 bytes (13.15 PB); 419,631 runs have no
+listed FASTQ URLs or sizes. Missing file sizes are not counted as measured zero.
+These are metadata totals, not downloaded sequence data. Continue with tunicates
+and consider selected independent chordate studies rather than indexing the full
+chordate collection. No chordate sequence indexing was launched.
