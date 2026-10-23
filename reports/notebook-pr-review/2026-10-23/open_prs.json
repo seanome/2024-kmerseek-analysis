@@ -1,5 +1,5 @@
 {
-  "captured_at": "2026-10-23T13:13:43.852338+00:00",
+  "captured_at": "2026-10-23T14:22:42.350888+00:00",
   "repository": "seanome/2024-kmerseek-analysis",
   "pull_requests": [
     {
@@ -174,7 +174,7 @@
     },
     {
       "number": 196,
-      "title": "Notebook 357: clade-grouped SPLASH on reduced-alphabet protein k-mers (kill test, run in progress)",
+      "title": "Notebook 357: clade-grouped SPLASH experiment stopped; results preserved",
       "url": "https://github.com/seanome/2024-kmerseek-analysis/pull/196",
       "head": "8a3cf7f3b0a664f85918892f3c1a5205834d21e4",
       "github_state": "CLEAN",
@@ -927,7 +927,7 @@
     },
     {
       "number": 182,
-      "title": "Notebook 301: kill test 1, short-feature boundaries; step 1 scans recall 0 at 1% decoy rate",
+      "title": "Notebook 301: three short-feature settings give partial DROP; resume 16 memory failures",
       "url": "https://github.com/seanome/2024-kmerseek-analysis/pull/182",
       "head": "c85c20fe0f7b96031c72d46ac5bf096f456305d3",
       "github_state": "UNSTABLE",
@@ -1314,7 +1314,7 @@
       "number": 176,
       "title": "nb346: linked HP word pairs at database scale on known pairs: KILL",
       "url": "https://github.com/seanome/2024-kmerseek-analysis/pull/176",
-      "head": "fc86c695770d5d90ccefadf5f607bb2ef1d53a94",
+      "head": "cecdc35de5243460dd987007c299611adab1c918",
       "github_state": "UNSTABLE",
       "base": "main",
       "notebooks": [
@@ -1400,7 +1400,7 @@
       "number": 175,
       "title": "Notebook 298: linked word pairs do not reach ice-binding proteins of other lineages",
       "url": "https://github.com/seanome/2024-kmerseek-analysis/pull/175",
-      "head": "e0e48563ceba4d56107e9d1e084fb6261c370301",
+      "head": "07143577732823049e71378c253c24f33eff20fc",
       "github_state": "CLEAN",
       "base": "convergence-afp",
       "notebooks": [
@@ -1537,7 +1537,7 @@
       "number": 172,
       "title": "nb345: does one more proteome add new sequence? Pipeline and pre-registered rule",
       "url": "https://github.com/seanome/2024-kmerseek-analysis/pull/172",
-      "head": "73dda97bdf710ce01b2feaf8de7368860a5299cd",
+      "head": "78894d268cf7acc78e785999c6c5ffddffa66e9c",
       "github_state": "UNSTABLE",
       "base": "main",
       "notebooks": [
@@ -1611,7 +1611,7 @@
       "number": 171,
       "title": "Weekly PR status, 2026-W42 (Oct 12-18)",
       "url": "https://github.com/seanome/2024-kmerseek-analysis/pull/171",
-      "head": "65108ae531f2ccbfac3f7682c5e08e1a7984ce8a",
+      "head": "c6cab9fbd8888a9d2f1e0d7c98725bf7123febc1",
       "github_state": "CLEAN",
       "base": "main",
       "notebooks": [],
@@ -2146,7 +2146,7 @@
       "number": 152,
       "title": "nb342: exon function kill test, Stops 0-4: KILL on three kmerseek settings",
       "url": "https://github.com/seanome/2024-kmerseek-analysis/pull/152",
-      "head": "9ceb51027a7d9c2499fb8bb361e15728a4a65a22",
+      "head": "99ce8af799545e4bae2e6d4c4a8d570bdfb91884",
       "github_state": "CLEAN",
       "base": "olgabot/condensate-exons-341",
       "notebooks": [
@@ -2406,7 +2406,7 @@
       "number": 143,
       "title": "nb294: linked HP word pairs (strobemers) kill test: KILL; gain comes from a second segment",
       "url": "https://github.com/seanome/2024-kmerseek-analysis/pull/143",
-      "head": "80c4b8cd22f2ce7ff9c3d0d1f4e0791a5e071899",
+      "head": "d5b6c873830fc906549dc01c303294ca955fcff4",
       "github_state": "CLEAN",
       "base": "main",
       "notebooks": [
@@ -3385,7 +3385,7 @@
       "number": 139,
       "title": "Notebook 284: what an exact k-mer counts that BLOSUM62 does not, on Pfam seed pairs",
       "url": "https://github.com/seanome/2024-kmerseek-analysis/pull/139",
-      "head": "5df91935fd77e79f1ac72f8dcb048ae82d6fe371",
+      "head": "3e397a001fa84cf0fd25c4e9f2c8327b8337034c",
       "github_state": "CLEAN",
       "base": "olgabot/hp-agreement-per-100",
       "notebooks": [
@@ -3655,7 +3655,7 @@
       "number": 132,
       "title": "289: reverse search: the BCL-2 family ranks Ced9 30th of 19,792 worm proteins; CD47 ranks P66 381st of 1,291",
       "url": "https://github.com/seanome/2024-kmerseek-analysis/pull/132",
-      "head": "e1b314a34867ff6e6744bc3f576963161b1d4a5d",
+      "head": "5ea72d4d1d997dc09e3ed2e9e51891b8a669a14c",
       "github_state": "UNKNOWN",
       "base": "olgabot/bhf-low-complexity-control",
       "notebooks": [
@@ -4087,7 +4087,7 @@
       "number": 124,
       "title": "283: does BHF beat copies that keep its low-complexity stretches? (and the E-value qualifier for 256)",
       "url": "https://github.com/seanome/2024-kmerseek-analysis/pull/124",
-      "head": "3126e5597a0386c6aba4f73ac05daa4f73b59b21",
+      "head": "d5dd2a6a46805777378cc81e3add315b305ea77c",
       "github_state": "UNKNOWN",
       "base": "olgabot/bhf-dipeptide-shuffle-null",
       "notebooks": [
@@ -4679,7 +4679,7 @@
       "number": 120,
       "title": "Notebook 279: dark proteins kmerseek reaches at E < 1 and E < 10",
       "url": "https://github.com/seanome/2024-kmerseek-analysis/pull/120",
-      "head": "acdf245e6d56515d7da155df7eee494b10fc2cfa",
+      "head": "59aeb87274ee343475a7928c56d7f1c36be6bb7a",
       "github_state": "CLEAN",
       "base": "main",
       "notebooks": [
@@ -4880,7 +4880,7 @@
       "number": 117,
       "title": "Notebook 247: BCL-2 query panel vs CED-9 alone (stopped: 2 non-chordate queries in Swiss-Prot)",
       "url": "https://github.com/seanome/2024-kmerseek-analysis/pull/117",
-      "head": "91be446d50174c4dbbd9ab41522a8457f40156bf",
+      "head": "6b76956ac26ed80d9b6e33d88b09af6db64d57e9",
       "github_state": "CLEAN",
       "base": "main",
       "notebooks": [
@@ -4916,7 +4916,7 @@
       "number": 114,
       "title": "Regions-index pilot: three indexes, full run, Pfam result",
       "url": "https://github.com/seanome/2024-kmerseek-analysis/pull/114",
-      "head": "0522033449310fbbd709da3bd8e6fab84c6fe8e8",
+      "head": "8c60f59482b089cceb8ef9f5df0b132a5a8f3428",
       "github_state": "CLEAN",
       "base": "main",
       "notebooks": [],
@@ -5241,7 +5241,7 @@
       "number": 113,
       "title": "Notebook 246: seeds that allow mismatches, on CED-9/BCL2 and P66/CD47",
       "url": "https://github.com/seanome/2024-kmerseek-analysis/pull/113",
-      "head": "817fbfa988aa16bb9c37854492a3dd284082e204",
+      "head": "113ca7f8a5610b99b8df2fb150579745de1867c1",
       "github_state": "CLEAN",
       "base": "main",
       "notebooks": [
@@ -5353,7 +5353,7 @@
       "number": 106,
       "title": "Supplementary Figure 1 (alphabets, bits, k-sizes to test) and seed reach at k*",
       "url": "https://github.com/seanome/2024-kmerseek-analysis/pull/106",
-      "head": "30c714e225bcaddf979d1f26fc373972a8369c43",
+      "head": "d3790304d28ead13f90d82b691f0a470110f828f",
       "github_state": "DIRTY",
       "base": "olgabot/nb230-kappa-all-alphabets",
       "notebooks": [
@@ -5388,7 +5388,7 @@
       "number": 104,
       "title": "Notebook 264: the three combiners, the single best pair, phmmer and a Kyte-Doolittle scan on test",
       "url": "https://github.com/seanome/2024-kmerseek-analysis/pull/104",
-      "head": "fdb74a76dce322cd6d243ba12eb5a5dc16193cf3",
+      "head": "657770e71c8efad735f9984fa3cac1a25277ffb4",
       "github_state": "DIRTY",
       "base": "olgabot/combiner-c-consensus-vote",
       "notebooks": [
@@ -5497,8 +5497,8 @@
       "number": 103,
       "title": "Notebook 263: combiner C, a consensus vote across alphabet-ksize pairs",
       "url": "https://github.com/seanome/2024-kmerseek-analysis/pull/103",
-      "head": "5c53ac93eb557dd64fc30fd59d1cd2aad12763aa",
-      "github_state": "CLEAN",
+      "head": "1dc6ec2e4d8a12f4458d772cc9b5d7a343fcb50a",
+      "github_state": "DIRTY",
       "base": "olgabot/combiner-b-best-of-n",
       "notebooks": [
         "notebooks/244_hero_example_candidates.ipynb",
@@ -5604,8 +5604,8 @@
       "number": 102,
       "title": "Notebook 262: combiner B, best of n alphabet-ksize pairs",
       "url": "https://github.com/seanome/2024-kmerseek-analysis/pull/102",
-      "head": "6fc4ee94276608ced0bbdda7b55b02aab463823a",
-      "github_state": "CLEAN",
+      "head": "1871f457651f9a9e9e26a26198d8f0edf739ec38",
+      "github_state": "UNSTABLE",
       "base": "olgabot/combiner-a-intersection",
       "notebooks": [
         "notebooks/244_hero_example_candidates.ipynb",
@@ -5667,7 +5667,7 @@
       "number": 101,
       "title": "274: the k-sizes to test per alphabet, from k_min to k_max (print version of explainer Figure 12)",
       "url": "https://github.com/seanome/2024-kmerseek-analysis/pull/101",
-      "head": "2df1f3b3474cbb803b0c43fe89bb7759500a7a5a",
+      "head": "7b3f2bfddc0351d6e43a3d42c0b258bc25aa87b1",
       "github_state": "DIRTY",
       "base": "main",
       "notebooks": [
@@ -5690,8 +5690,8 @@
       "number": 98,
       "title": "Notebook 261: combiner A, intersection of a fixed panel of alphabet-ksize pairs",
       "url": "https://github.com/seanome/2024-kmerseek-analysis/pull/98",
-      "head": "9a8b61ae8a74c585b9269b1e3482ab10ec82d1c9",
-      "github_state": "CLEAN",
+      "head": "2d4d949b10fb8f99b507562bacf673ed19511fff",
+      "github_state": "DIRTY",
       "base": "olgabot/midi-plus-0.4-decoy",
       "notebooks": [
         "notebooks/244_hero_example_candidates.ipynb",
@@ -5767,7 +5767,7 @@
       "number": 96,
       "title": "245: where the P66/CD47 shared k-mers sit, and whether they touch the SIRP-alpha residues",
       "url": "https://github.com/seanome/2024-kmerseek-analysis/pull/96",
-      "head": "e24fc1b568853201620780b1a05e1b8e3dd389c1",
+      "head": "3531f388ba95feca5deed9eda34e3e5440faed48",
       "github_state": "DIRTY",
       "base": "olgabot/alphabet-ensemble",
       "notebooks": [
@@ -5830,7 +5830,7 @@
       "number": 93,
       "title": "Nb 271: which kmerseek region score to filter on (mini set, Pfam truth)",
       "url": "https://github.com/seanome/2024-kmerseek-analysis/pull/93",
-      "head": "ac043af512ac9b629184921a46fc097caf6e43c6",
+      "head": "92a590d1a19b7ffe7602b42429d2baade6ad6102",
       "github_state": "CLEAN",
       "base": "main",
       "notebooks": [
@@ -5857,7 +5857,7 @@
       "title": "Figure: bits of information per letter for all 19 alphabets",
       "url": "https://github.com/seanome/2024-kmerseek-analysis/pull/92",
       "head": "017d49e7172147eb34cf6ecfac00d84aa93a9982",
-      "github_state": "CLEAN",
+      "github_state": "DIRTY",
       "base": "olgabot/elm-motif-transfer",
       "notebooks": [
         "notebooks/244_hero_example_candidates.ipynb",
@@ -5897,8 +5897,8 @@
       "number": 91,
       "title": "Shared figure helpers: header placement, alphabet axis, missing-value mark",
       "url": "https://github.com/seanome/2024-kmerseek-analysis/pull/91",
-      "head": "aa62ff92f43f6604d976d246281b20829d028a24",
-      "github_state": "DIRTY",
+      "head": "da211eb3a5f96d384f280eb12a1752cbe16c0e45",
+      "github_state": "CLEAN",
       "base": "main",
       "notebooks": [],
       "changed_paths": [
@@ -5959,8 +5959,8 @@
       "number": 87,
       "title": "Notebook 270: --scaled 1-10 on the mini set, with decoy queries",
       "url": "https://github.com/seanome/2024-kmerseek-analysis/pull/87",
-      "head": "26f1f75e555e21eea998ff70579a3b9e80c3d142",
-      "github_state": "CLEAN",
+      "head": "be4f2e91a2186d9bea7ddbd3b85c0e656baec624",
+      "github_state": "UNSTABLE",
       "base": "olgabot/elm-cover-all-species",
       "notebooks": [
         "notebooks/244_hero_example_candidates.ipynb",
@@ -6022,7 +6022,7 @@
       "number": 85,
       "title": "257: rerun the 998-protein search with a newer kmerseek (every row gets an E-value)",
       "url": "https://github.com/seanome/2024-kmerseek-analysis/pull/85",
-      "head": "09027b4f5b72e38053d0f4df202c76479e656faa",
+      "head": "68cc4fb9bc4eea5271dc38e76c1713e88e048387",
       "github_state": "DIRTY",
       "base": "olgabot/alphabet-ensemble",
       "notebooks": [
@@ -6072,7 +6072,7 @@
       "number": 84,
       "title": "Notebook 255: kmerseek ranking metrics against human Pfam, with region length as the control",
       "url": "https://github.com/seanome/2024-kmerseek-analysis/pull/84",
-      "head": "3fc493288ed9a6d07634ab2108901ab558db1675",
+      "head": "523b986d36825fc7ffe46d5bf08de8f1b57d71bc",
       "github_state": "CLEAN",
       "base": "main",
       "notebooks": [
@@ -6108,7 +6108,7 @@
       "number": 83,
       "title": "256: BHF against 300 dipeptide-shuffled copies of itself",
       "url": "https://github.com/seanome/2024-kmerseek-analysis/pull/83",
-      "head": "a3bde39118a07fb0f578675ca0cd24f07c62ebc3",
+      "head": "3d0232bd748743b891cd1417e642556d8ef5bbf5",
       "github_state": "DIRTY",
       "base": "olgabot/alphabet-ranking-three-cases",
       "notebooks": [
@@ -6175,8 +6175,8 @@
       "number": 82,
       "title": "244: two bonus cases, Ced-9/BCL2 and BHF",
       "url": "https://github.com/seanome/2024-kmerseek-analysis/pull/82",
-      "head": "944ded897186329c81a0e8b3d7a33d496050c77e",
-      "github_state": "CLEAN",
+      "head": "7acf5705c4a81403ce4cd6d54ebc3b0782df4031",
+      "github_state": "DIRTY",
       "base": "olgabot/244-all-case-figures",
       "notebooks": [
         "notebooks/244_hero_example_candidates.ipynb"
@@ -6589,8 +6589,8 @@
       "number": 80,
       "title": "Case gallery: reference pairs, other tools, and every shared k-mer",
       "url": "https://github.com/seanome/2024-kmerseek-analysis/pull/80",
-      "head": "3e3767c1211736f9eb0a755f199fd0de95c42897",
-      "github_state": "CLEAN",
+      "head": "1d9c68890a065568a21a40451f40cc1013fc342a",
+      "github_state": "DIRTY",
       "base": "olgabot/244-all-case-figures",
       "notebooks": [
         "notebooks/244_hero_example_candidates.ipynb"
@@ -7028,7 +7028,7 @@
       "number": 78,
       "title": "Notebook 244: figures, call coordinates, kmerseek pair and hits pages for all 183 cases",
       "url": "https://github.com/seanome/2024-kmerseek-analysis/pull/78",
-      "head": "e39faf036dc390dbb65bb8b58a5157047ba2d222",
+      "head": "ceb28507ed5528456feaa26dd0a92bc8739b4038",
       "github_state": "DIRTY",
       "base": "olgabot/hero-example-244",
       "notebooks": [
@@ -8154,8 +8154,8 @@
       "number": 77,
       "title": "Notebook 254: seed extension loses notebook 244's short placements",
       "url": "https://github.com/seanome/2024-kmerseek-analysis/pull/77",
-      "head": "c79f84a4536d6d4814594bb213feb825f8954edc",
-      "github_state": "CLEAN",
+      "head": "9028608aadc1962ac95728f20a97fa3e86a7b929",
+      "github_state": "UNSTABLE",
       "base": "olgabot/hero-example-244",
       "notebooks": [
         "notebooks/244_hero_example_candidates.ipynb",
@@ -8302,7 +8302,7 @@
       "number": 71,
       "title": "kmerseek search: keep each query's best N targets, and pin one arm per alphabet",
       "url": "https://github.com/seanome/2024-kmerseek-analysis/pull/71",
-      "head": "d3e558adcb0809933adda03615ef4bafb39ab6f6",
+      "head": "50314bc82905a3adc2d3a89d8892cd3c89266673",
       "github_state": "CLEAN",
       "base": "olgabot/elm-cover-scoring",
       "notebooks": [
@@ -8341,8 +8341,8 @@
       "number": 69,
       "title": "Notebook 253: are ELM motifs put on position on the chicken ortholog?",
       "url": "https://github.com/seanome/2024-kmerseek-analysis/pull/69",
-      "head": "53dd71f90fd97b67f4f00c4f30be09646e6ebaff",
-      "github_state": "CLEAN",
+      "head": "613a323cdeef2c41d843c816d3e2f63d296504e9",
+      "github_state": "UNSTABLE",
       "base": "olgabot/elm-cover-scoring",
       "notebooks": [
         "notebooks/244_hero_example_candidates.ipynb",
@@ -8415,8 +8415,8 @@
       "number": 67,
       "title": "Notebook 220: BCL2/Bcl-xL vs Ced9 across all six HP alphabets, k=15-25",
       "url": "https://github.com/seanome/2024-kmerseek-analysis/pull/67",
-      "head": "e09f97fc6941c742588df9cf795e46235d4ba128",
-      "github_state": "UNSTABLE",
+      "head": "d48f02674017c9bc268268ea29f7e59e842f5260",
+      "github_state": "CLEAN",
       "base": "main",
       "notebooks": [
         "notebooks/220_scope40_bcl2_ced9_all_hp_alphabets_k15_25.ipynb"
@@ -8433,7 +8433,7 @@
       "number": 66,
       "title": "Pfam subdomain benchmark: split positive pairs into DIAMOND-hard and DIAMOND-easy",
       "url": "https://github.com/seanome/2024-kmerseek-analysis/pull/66",
-      "head": "eac40d03ff3abc0bd75001dfa509711f559bb081",
+      "head": "7bcfc0e75c0fe67b38fd1b01587e466af91b1916",
       "github_state": "DIRTY",
       "base": "main",
       "notebooks": [
@@ -8592,8 +8592,8 @@
       "number": 65,
       "title": "Notebook 24: k-mer spectra across all alphabets, with nine saved figures",
       "url": "https://github.com/seanome/2024-kmerseek-analysis/pull/65",
-      "head": "e55f0314932ba2b7dd417bd80e790f1b525a766c",
-      "github_state": "UNSTABLE",
+      "head": "0a236dac125b83b67633c0a2c5729e965e64b0dd",
+      "github_state": "DIRTY",
       "base": "main",
       "notebooks": [
         "notebooks/24-kmer-frequency-spectra-across-alphabets-ksizes.ipynb"
@@ -8617,7 +8617,7 @@
       "number": 64,
       "title": "Run the family-AUC, RBH-F1 and leaderboard sweeps on Sherlock",
       "url": "https://github.com/seanome/2024-kmerseek-analysis/pull/64",
-      "head": "bb4a625656022ce6f45dbf17f6e4d6b8f887b0ec",
+      "head": "9187c8d6b07ce4eb5ae4ce7fe53013cad91946ed",
       "github_state": "DIRTY",
       "base": "main",
       "notebooks": [
@@ -8796,8 +8796,8 @@
       "number": 63,
       "title": "E3 detection-gap benchmark: notebook 340 and a pipeline for the missing baseline arms",
       "url": "https://github.com/seanome/2024-kmerseek-analysis/pull/63",
-      "head": "7b86f4e6ef4dac635d6949702b17e3313073ce22",
-      "github_state": "CLEAN",
+      "head": "898e6c8aeff8fe12f30d7054881481adea59b2a2",
+      "github_state": "UNSTABLE",
       "base": "main",
       "notebooks": [
         "notebooks/340_e3_detection_gap_baselines.ipynb"
@@ -8817,7 +8817,7 @@
       "number": 59,
       "title": "Give the Swiss-Prot identity axis a Pfam anchor",
       "url": "https://github.com/seanome/2024-kmerseek-analysis/pull/59",
-      "head": "52186fd097740ced2545950fe0e0bda330e6053e",
+      "head": "4b65ac0a516fdc7f724548d89baa21d1a9a91706",
       "github_state": "DIRTY",
       "base": "main",
       "notebooks": [
@@ -8991,8 +8991,8 @@
       "number": 58,
       "title": "Score the ELM cover search: motif cover per arm, placement null, chicken dry run",
       "url": "https://github.com/seanome/2024-kmerseek-analysis/pull/58",
-      "head": "95f1649de31cab7bae4f90d4da0fedf5334e3693",
-      "github_state": "CLEAN",
+      "head": "7e1ee5c36818b7e0d5b9aea0772619329201c0ee",
+      "github_state": "DIRTY",
       "base": "olgabot/elm-motif-transfer",
       "notebooks": [
         "notebooks/244_hero_example_candidates.ipynb",
@@ -9034,7 +9034,7 @@
       "number": 57,
       "title": "Dark set with kmerseek 0.4: the midi run, and a failed index no longer stops it",
       "url": "https://github.com/seanome/2024-kmerseek-analysis/pull/57",
-      "head": "ee0a0d7d0dfd5ebde4f709e6f1a15cd4faa72ff8",
+      "head": "bf65a1b9dbf0f8288efb651153ed913ea6da7996",
       "github_state": "DIRTY",
       "base": "olgabot/invertebrate-dark-set",
       "notebooks": [
@@ -9275,8 +9275,8 @@
       "number": 54,
       "title": "Notebook 245: bits an exact reduced-alphabet seed carries against bits a proteome search needs",
       "url": "https://github.com/seanome/2024-kmerseek-analysis/pull/54",
-      "head": "e85889f4df18973408e20211ec4e5bf5c8f25871",
-      "github_state": "CLEAN",
+      "head": "385267ccd083873990e07a796a75ebabb06e10e7",
+      "github_state": "UNSTABLE",
       "base": "main",
       "notebooks": [
         "notebooks/245_bits_ceiling_exact_seed.ipynb"
@@ -9305,8 +9305,8 @@
       "number": 53,
       "title": "DisProt functional-region transfer benchmark: data, scoring with controls, notebook 251",
       "url": "https://github.com/seanome/2024-kmerseek-analysis/pull/53",
-      "head": "3c04f7f315ee790af86ba617f03e54612ece6c85",
-      "github_state": "CLEAN",
+      "head": "4cd6caad6adaaed3041477f8908c437eab99f615",
+      "github_state": "UNSTABLE",
       "base": "olgabot/region-kmerseek-extend",
       "notebooks": [
         "notebooks/251_disprot_region_transfer.ipynb"
@@ -9358,8 +9358,8 @@
       "number": 51,
       "title": "Add the ELM motif benchmark (notebook 250): Stage 0, target labels, seed lengths, provenance",
       "url": "https://github.com/seanome/2024-kmerseek-analysis/pull/51",
-      "head": "31eb205d5da81939ff79c3980e133baf725cd842",
-      "github_state": "UNSTABLE",
+      "head": "ee79b792ff1e9368acac76c2c9532772172f0f2f",
+      "github_state": "CLEAN",
       "base": "main",
       "notebooks": [
         "notebooks/244_hero_example_candidates.ipynb",
@@ -9426,8 +9426,8 @@
       "number": 49,
       "title": "Add notebook 244: hero example candidates on the Swiss-Prot feature key",
       "url": "https://github.com/seanome/2024-kmerseek-analysis/pull/49",
-      "head": "2d88d11e97220cbefe1b3ab561ae38848dff1849",
-      "github_state": "UNSTABLE",
+      "head": "e35fbbff1cc1854f7651067c33e306e8584b1c86",
+      "github_state": "CLEAN",
       "base": "main",
       "notebooks": [
         "notebooks/244_hero_example_candidates.ipynb"
@@ -9459,10 +9459,10 @@
     },
     {
       "number": 47,
-      "title": "Pfam on the dark set: are these real proteins?",
+      "title": "Add Pfam profile annotations to the dark set",
       "url": "https://github.com/seanome/2024-kmerseek-analysis/pull/47",
-      "head": "cb86b46c87beb3a227da23e08a8d529547e1a55c",
-      "github_state": "CLEAN",
+      "head": "93b5ecda88128cd9f0162fa7be7523a90d081259",
+      "github_state": "UNSTABLE",
       "base": "olgabot/dark-set-kmerseek-0.4",
       "notebooks": [
         "notebooks/013-compute-all-sensitivity-to-first-fp.ipynb",
@@ -9637,7 +9637,7 @@
       "number": 30,
       "title": "Measure the dark set: what conventional sequence search misses on an invertebrate proteome",
       "url": "https://github.com/seanome/2024-kmerseek-analysis/pull/30",
-      "head": "5a1d3735460fad5886ef208abb269a8605e99ab0",
+      "head": "f66a0c342ad257acadcf0ad759a44d1a26b60268",
       "github_state": "UNSTABLE",
       "base": "olgabot/botryllus-run-fixes",
       "notebooks": [
@@ -9833,6 +9833,59 @@
         "scripts/nf-postmortem"
       ],
       "initial_head": "5a1d3735460fad5886ef208abb269a8605e99ab0"
+    },
+    {
+      "number": 201,
+      "title": "nb361: Domen et al. 2026 PEC RNA-seq without a genome (SPLASH, anchor counts, proteome matches)",
+      "url": "https://github.com/seanome/2024-kmerseek-analysis/pull/201",
+      "head": "442f2d017ec8471404d2fa58d0b9a29a65082cd9",
+      "github_state": "CLEAN",
+      "base": "main",
+      "notebooks": [],
+      "changed_paths": [
+        "analysis/pec-domen2026-splash/README.md",
+        "analysis/pec-domen2026-splash/control/control_transcripts.fa",
+        "analysis/pec-domen2026-splash/control/design.tsv",
+        "analysis/pec-domen2026-splash/control/samples_all64.tsv",
+        "analysis/pec-domen2026-splash/control/truth_design.tsv",
+        "analysis/pec-domen2026-splash/design/ANALYSIS_PLAN.md",
+        "analysis/pec-domen2026-splash/environment-pec361.yml",
+        "analysis/pec-domen2026-splash/handoff/README.md",
+        "analysis/pec-domen2026-splash/handoff/compactors_config.json",
+        "analysis/pec-domen2026-splash/handoff/download_prefix.py",
+        "analysis/pec-domen2026-splash/handoff/ena_runs.tsv",
+        "analysis/pec-domen2026-splash/handoff/run_contrast.sh",
+        "analysis/pec-domen2026-splash/handoff/samples_all64.tsv",
+        "analysis/pec-domen2026-splash/handoff/sketch_swissprot.sh",
+        "analysis/pec-domen2026-splash/handoff/swissprot.gz.md5",
+        "analysis/pec-domen2026-splash/pec-tools/Cargo.toml",
+        "analysis/pec-domen2026-splash/pec-tools/src/main.rs",
+        "analysis/pec-domen2026-splash/scripts/download_run.py",
+        "analysis/pec-domen2026-splash/scripts/fetch_ena_report.sh",
+        "analysis/pec-domen2026-splash/scripts/freeze_design.py",
+        "analysis/pec-domen2026-splash/scripts/oracle_translate_check.py",
+        "analysis/pec-domen2026-splash/slurm/00_setup.sbatch",
+        "analysis/pec-domen2026-splash/slurm/01_download.sbatch",
+        "analysis/pec-domen2026-splash/slurm/02_fastp.sbatch"
+      ],
+      "initial_head": "994e3cf4c87ebe65c4502a049c0395d38979cde1"
+    },
+    {
+      "number": 202,
+      "title": "Extend all significant trimmed oyster SPLASH anchors",
+      "url": "https://github.com/seanome/2024-kmerseek-analysis/pull/202",
+      "head": "3e58019a914638cf027ca4738682d56611835f58",
+      "github_state": "CLEAN",
+      "base": "main",
+      "notebooks": [],
+      "changed_paths": [
+        "analysis/oyster-shazam/FULL-EXTENSION.md",
+        "analysis/oyster-shazam/extend-all.sbatch",
+        "analysis/oyster-shazam/extend_all_significant.py",
+        "analysis/oyster-shazam/run_splash.py",
+        "analysis/oyster-shazam/test_extend_all.py"
+      ],
+      "initial_head": "3e58019a914638cf027ca4738682d56611835f58"
     }
   ]
 }

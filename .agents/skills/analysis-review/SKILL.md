@@ -327,3 +327,46 @@ instead, with the same sections. Remove the review worktree when done:
 
 When a review finds a mistake that no rule here covers, add the rule to this file with the
 date and the notebook it came from.
+
+### Resolve the execution kernel, not only the display name
+
+Added 2026-10-23 after PR 117 selected the broken base Python despite being launched
+through the analysis environment. A notebook display name does not select its
+interpreter. Resolve the kernelspec argv and explicitly use the installed
+`2025-kmerseek-analysis` kernel when executing these notebooks. Check the interpreter
+inside the kernel before a long rerun. Do not repair or replace the user's base
+environment to make a notebook execute.
+
+### Reject undefined eligibility values and unsupported lower bounds
+
+Added 2026-10-23 after PRs 102–104, 172 and 173. In Polars, NaN can pass a comparison
+such as `precision >= 0.5`. Require finite values before threshold eligibility or a
+fallback decision; test empty data and NaN explicitly. Count all equal-score rows
+together before declaring an attainable threshold.
+
+A measured error on one simulated curve is not a lower bound for all possible data.
+Try a counterexample from the model's own function class before claiming that no
+experiment can pass. Likewise, uniqueness of full word counts does not prove uniqueness
+of a sampled sketch. Test the representation the experiment actually uses.
+
+### Audit overlapping groups, counting rules and legitimate zeroes
+
+Added 2026-10-23 after PRs 47, 53 and 57. Hashing a whole list of family labels does
+not keep each individual family on one side of a split. Check the intersection of
+individual labels across the actual scored partitions. For a future disjoint split,
+assign connected components of overlapping group memberships together. Do not replace
+a frozen split after seeing its performance; report the leakage and freeze a new test.
+
+Duplicate-call and unique-instance counts can reverse an Fmax comparison. Recompute
+both counting rules before attributing an advantage to boundary placement. A table of
+counts alone cannot establish the cause of the difference.
+
+A zero-hit file is a result only after input and process success are established. Catch
+only the specific empty-input exception, refuse malformed rows and unknown query IDs,
+and exercise a comments-only tool output under `bash -ue -o pipefail`. A filtering grep
+can return exit status 1 for a valid zero. A gathering-score cutoff and an E-value
+ceiling are different filters; test whether the advertised default adds the latter.
+
+Matching chunk sets across every arm do not prove coverage: every arm can omit the
+same chunk. Require an independent expected chunk count from the input manifest,
+and reject equal but incomplete sets. Added 2026-10-23 after PRs 30 and 57.

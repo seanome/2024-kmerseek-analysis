@@ -1,0 +1,534 @@
+[
+  {
+    "url": "https://raw.githubusercontent.com/seanome/2024-kmerseek-analysis/017d49e7172147eb34cf6ecfac00d84aa93a9982/figures/bits_per_letter_by_alphabet_swissprot_human.png",
+    "status": 200
+  },
+  {
+    "url": "https://raw.githubusercontent.com/seanome/2024-kmerseek-analysis/07143577732823049e71378c253c24f33eff20fc/figures/298_F1_linked_pair_reach_vs_random_swissprot_2026_03.png",
+    "status": 200
+  },
+  {
+    "url": "https://raw.githubusercontent.com/seanome/2024-kmerseek-analysis/07143577732823049e71378c253c24f33eff20fc/figures/298_SF1_chosen_setting_real_vs_null_draws_swissprot_2026_03.png",
+    "status": 200
+  },
+  {
+    "url": "https://raw.githubusercontent.com/seanome/2024-kmerseek-analysis/07143577732823049e71378c253c24f33eff20fc/figures/298_SF2_linked_pair_chance_cost_swissprot_2026_03.png",
+    "status": 200
+  },
+  {
+    "url": "https://raw.githubusercontent.com/seanome/2024-kmerseek-analysis/07143577732823049e71378c253c24f33eff20fc/figures/298_SF4_decision_held_out_lineages_swissprot_2026_03.png",
+    "status": 200
+  },
+  {
+    "url": "https://raw.githubusercontent.com/seanome/2024-kmerseek-analysis/08acd38be6cb7562b2d406c6f3549b78de3c23b0/figures/350/350_candidate_recall_heldout.png",
+    "status": 200
+  },
+  {
+    "url": "https://raw.githubusercontent.com/seanome/2024-kmerseek-analysis/08acd38be6cb7562b2d406c6f3549b78de3c23b0/figures/350/350_positives_by_stage_lost_heldout.png",
+    "status": 200
+  },
+  {
+    "url": "https://raw.githubusercontent.com/seanome/2024-kmerseek-analysis/08acd38be6cb7562b2d406c6f3549b78de3c23b0/figures/350/350_precision_recall_heldout.png",
+    "status": 200
+  },
+  {
+    "url": "https://raw.githubusercontent.com/seanome/2024-kmerseek-analysis/08acd38be6cb7562b2d406c6f3549b78de3c23b0/figures/350/350_recall_at_false_hit_budget_heldout.png",
+    "status": 200
+  },
+  {
+    "url": "https://raw.githubusercontent.com/seanome/2024-kmerseek-analysis/08acd38be6cb7562b2d406c6f3549b78de3c23b0/figures/350/350_recall_by_origin_framework_class.png",
+    "status": 200
+  },
+  {
+    "url": "https://raw.githubusercontent.com/seanome/2024-kmerseek-analysis/08acd38be6cb7562b2d406c6f3549b78de3c23b0/figures/350/350_reduced_only_seed_matches.png",
+    "status": 200
+  },
+  {
+    "url": "https://raw.githubusercontent.com/seanome/2024-kmerseek-analysis/08acd38be6cb7562b2d406c6f3549b78de3c23b0/figures/350/350_runtime_memory_candidates.png",
+    "status": 200
+  },
+  {
+    "url": "https://raw.githubusercontent.com/seanome/2024-kmerseek-analysis/098ca1126212c089f8d7d9f92ac61dd80c2a6b15/analysis/358_peptide_source_retrieval/fixture_run/results/figures/358_recovery_candidates_runtime.png",
+    "status": 200
+  },
+  {
+    "url": "https://raw.githubusercontent.com/seanome/2024-kmerseek-analysis/113ca7f8a5610b99b8df2fb150579745de1867c1/figures/246_seed_reach_vs_chance_pfam_human.png",
+    "status": 200
+  },
+  {
+    "url": "https://raw.githubusercontent.com/seanome/2024-kmerseek-analysis/11861c5efbcb98aab39b460e16efee2efa0a0cfd/notebooks/figures/353/353_recall_vs_substitutions_heldout_mmseqs12_k4_elm_sanborn2021.png",
+    "status": 200
+  },
+  {
+    "url": "https://raw.githubusercontent.com/seanome/2024-kmerseek-analysis/11861c5efbcb98aab39b460e16efee2efa0a0cfd/notebooks/figures/353/353_shuffle_calibration_by_stratum_heldout_mmseqs12_k4_elm_sanborn2021.png",
+    "status": 200
+  },
+  {
+    "url": "https://raw.githubusercontent.com/seanome/2024-kmerseek-analysis/1347c33472480fbeb26a5ade5bc9c623be656860/figures/354_accepted_source_score_kmerseek_vs_comparison_PXD005280.png",
+    "status": 200
+  },
+  {
+    "url": "https://raw.githubusercontent.com/seanome/2024-kmerseek-analysis/1347c33472480fbeb26a5ade5bc9c623be656860/figures/354_candidate_list_length_PXD005280.png",
+    "status": 200
+  },
+  {
+    "url": "https://raw.githubusercontent.com/seanome/2024-kmerseek-analysis/1347c33472480fbeb26a5ade5bc9c623be656860/figures/354_recovery_vs_false_assignment_PXD005280.png",
+    "status": 200
+  },
+  {
+    "url": "https://raw.githubusercontent.com/seanome/2024-kmerseek-analysis/1347c33472480fbeb26a5ade5bc9c623be656860/figures/354_runtime_build_search_verify_PXD005280.png",
+    "status": 200
+  },
+  {
+    "url": "https://raw.githubusercontent.com/seanome/2024-kmerseek-analysis/1896ef683096f042edb0e7c8d4c2d17e9568b8bf/figures/285/285_ced9_bcl2_family_pfam_columns.png",
+    "status": 200
+  },
+  {
+    "url": "https://raw.githubusercontent.com/seanome/2024-kmerseek-analysis/1896ef683096f042edb0e7c8d4c2d17e9568b8bf/figures/285/285_ced9_bcl2_family_residues_at_168.png",
+    "status": 200
+  },
+  {
+    "url": "https://raw.githubusercontent.com/seanome/2024-kmerseek-analysis/1896ef683096f042edb0e7c8d4c2d17e9568b8bf/figures/285/285_decision_ced9_p66.png",
+    "status": 200
+  },
+  {
+    "url": "https://raw.githubusercontent.com/seanome/2024-kmerseek-analysis/1896ef683096f042edb0e7c8d4c2d17e9568b8bf/figures/285/285_reverse_direction_dark_set_landmarks.png",
+    "status": 200
+  },
+  {
+    "url": "https://raw.githubusercontent.com/seanome/2024-kmerseek-analysis/1b00d6f1da1eb19e99b9578082e17a41f4296080/figures/295_F1_lineage_grid_swissprot_2026_03.png",
+    "status": 200
+  },
+  {
+    "url": "https://raw.githubusercontent.com/seanome/2024-kmerseek-analysis/1b00d6f1da1eb19e99b9578082e17a41f4296080/figures/295_F2_cross_lineage_recall_swissprot_2026_03.png",
+    "status": 200
+  },
+  {
+    "url": "https://raw.githubusercontent.com/seanome/2024-kmerseek-analysis/1b00d6f1da1eb19e99b9578082e17a41f4296080/figures/295_SF4_decision_swissprot_2026_03.png",
+    "status": 200
+  },
+  {
+    "url": "https://raw.githubusercontent.com/seanome/2024-kmerseek-analysis/1b00d6f1da1eb19e99b9578082e17a41f4296080/figures/295_SF5_other_classes_truth_sets_uniprot_2026_03.png",
+    "status": 200
+  },
+  {
+    "url": "https://raw.githubusercontent.com/seanome/2024-kmerseek-analysis/1b00d6f1da1eb19e99b9578082e17a41f4296080/figures/295_SF6_shared_kmer_ceiling_swissprot_2026_03.png",
+    "status": 200
+  },
+  {
+    "url": "https://raw.githubusercontent.com/seanome/2024-kmerseek-analysis/1b00d6f1da1eb19e99b9578082e17a41f4296080/figures/295_SF7_shell_shared_kmer_ceiling_swissprot_2026_03.png",
+    "status": 200
+  },
+  {
+    "url": "https://raw.githubusercontent.com/seanome/2024-kmerseek-analysis/1b00d6f1da1eb19e99b9578082e17a41f4296080/figures/295_SF8_q25460_adhesive_ranks_swissprot_2026_03.png",
+    "status": 200
+  },
+  {
+    "url": "https://raw.githubusercontent.com/seanome/2024-kmerseek-analysis/1b00d6f1da1eb19e99b9578082e17a41f4296080/figures/295_SF9_q25460_null_draws_mussel_reach_swissprot_2026_03.png",
+    "status": 200
+  },
+  {
+    "url": "https://raw.githubusercontent.com/seanome/2024-kmerseek-analysis/2b58c0affbc6c2903a8d318507e1b628b5bb660e/figures/355-frozen_tag_lengths_vs_ksize_reachability.png",
+    "status": 200
+  },
+  {
+    "url": "https://raw.githubusercontent.com/seanome/2024-kmerseek-analysis/2b58c0affbc6c2903a8d318507e1b628b5bb660e/figures/355-mechanics_false_flags_per_100_clean_and_ced9_mbp_residues.png",
+    "status": 200
+  },
+  {
+    "url": "https://raw.githubusercontent.com/seanome/2024-kmerseek-analysis/2b58c0affbc6c2903a8d318507e1b628b5bb660e/figures/355-mechanics_named_right_by_length_built_constructs.png",
+    "status": 200
+  },
+  {
+    "url": "https://raw.githubusercontent.com/seanome/2024-kmerseek-analysis/2b58c0affbc6c2903a8d318507e1b628b5bb660e/figures/355-what_the_kill_test_needs_and_what_is_missing.png",
+    "status": 200
+  },
+  {
+    "url": "https://raw.githubusercontent.com/seanome/2024-kmerseek-analysis/369a51d312e48939af217457beeb4bd367519319/figures/edna_market_unassigned_at_genus_marine_studies.png",
+    "status": 200
+  },
+  {
+    "url": "https://raw.githubusercontent.com/seanome/2024-kmerseek-analysis/385267ccd083873990e07a796a75ebabb06e10e7/figures/245_bits_have_vs_need.png",
+    "status": 200
+  },
+  {
+    "url": "https://raw.githubusercontent.com/seanome/2024-kmerseek-analysis/385267ccd083873990e07a796a75ebabb06e10e7/figures/245_conservation_vs_reach.png",
+    "status": 200
+  },
+  {
+    "url": "https://raw.githubusercontent.com/seanome/2024-kmerseek-analysis/3c7ed6359be994013c453e7d7fe000b2d9e2f14c/figures/venom_retrieval_candidate_loss_swissprot_conoserver.png",
+    "status": 200
+  },
+  {
+    "url": "https://raw.githubusercontent.com/seanome/2024-kmerseek-analysis/3c7ed6359be994013c453e7d7fe000b2d9e2f14c/figures/venom_retrieval_cys2_collisions_swissprot_conoserver.png",
+    "status": 200
+  },
+  {
+    "url": "https://raw.githubusercontent.com/seanome/2024-kmerseek-analysis/3c7ed6359be994013c453e7d7fe000b2d9e2f14c/figures/venom_retrieval_precision_by_endpoint_swissprot_conoserver.png",
+    "status": 200
+  },
+  {
+    "url": "https://raw.githubusercontent.com/seanome/2024-kmerseek-analysis/3d0232bd748743b891cd1417e642556d8ef5bbf5/figures/258_bhf_human_membrane_encoded_alignments_gencode_v49.png",
+    "status": 200
+  },
+  {
+    "url": "https://raw.githubusercontent.com/seanome/2024-kmerseek-analysis/43d6526ae5b9fd0aeb8d5d77365bd7c146697e53/notebooks/figures_280/time_split_full_p4_unique_finds_and_decoy_rates_sprot2019_08.png",
+    "status": 200
+  },
+  {
+    "url": "https://raw.githubusercontent.com/seanome/2024-kmerseek-analysis/43d6526ae5b9fd0aeb8d5d77365bd7c146697e53/notebooks/figures_280/time_split_full_recall_by_type_and_length_sprot2019_08.png",
+    "status": 200
+  },
+  {
+    "url": "https://raw.githubusercontent.com/seanome/2024-kmerseek-analysis/43d6526ae5b9fd0aeb8d5d77365bd7c146697e53/notebooks/figures_280/time_split_full_recall_vs_cpu_hours_sprot2019_08.png",
+    "status": 200
+  },
+  {
+    "url": "https://raw.githubusercontent.com/seanome/2024-kmerseek-analysis/43d6526ae5b9fd0aeb8d5d77365bd7c146697e53/notebooks/figures_280/time_split_funnel_pfam33-1_to_38-2_sprot2019_08.png",
+    "status": 200
+  },
+  {
+    "url": "https://raw.githubusercontent.com/seanome/2024-kmerseek-analysis/43d6526ae5b9fd0aeb8d5d77365bd7c146697e53/notebooks/figures_280/time_split_identity_500_instances_sprot2019_08.png",
+    "status": 200
+  },
+  {
+    "url": "https://raw.githubusercontent.com/seanome/2024-kmerseek-analysis/4cd6caad6adaaed3041477f8908c437eab99f615/figures/251_disprot_landing_by_tool.png",
+    "status": 200
+  },
+  {
+    "url": "https://raw.githubusercontent.com/seanome/2024-kmerseek-analysis/4cd6caad6adaaed3041477f8908c437eab99f615/figures/251_original_split_region_counts.png",
+    "status": 200
+  },
+  {
+    "url": "https://raw.githubusercontent.com/seanome/2024-kmerseek-analysis/56596430acb843c18d482c799fc926e7227395ee/notebooks/figures/344/344_sf1_region_run_evalue_observed_vs_expected_dipeptide_decoys_human_proteome.png",
+    "status": 200
+  },
+  {
+    "url": "https://raw.githubusercontent.com/seanome/2024-kmerseek-analysis/56596430acb843c18d482c799fc926e7227395ee/notebooks/figures/344/344_sf2_region_ka_evalue_observed_vs_expected_dipeptide_decoys_human_proteome.png",
+    "status": 200
+  },
+  {
+    "url": "https://raw.githubusercontent.com/seanome/2024-kmerseek-analysis/5b644dc8195cba4535d06d59c6b15748a30874b0/figures/no_search_baselines_midi_plus.png",
+    "status": 200
+  },
+  {
+    "url": "https://raw.githubusercontent.com/seanome/2024-kmerseek-analysis/5e2bacf447af07ff7763ffdb0f580dd0f77dd1c8/figures/296_example_P0DUG3_top10_regions_cys2_k16_cnidaria_pilot_swissprot.png",
+    "status": 200
+  },
+  {
+    "url": "https://raw.githubusercontent.com/seanome/2024-kmerseek-analysis/5e2bacf447af07ff7763ffdb0f580dd0f77dd1c8/figures/296_per_query_phmmer_vs_kmerseek_cys2_k16_cnidaria_pilot_swissprot.png",
+    "status": 200
+  },
+  {
+    "url": "https://raw.githubusercontent.com/seanome/2024-kmerseek-analysis/5e2bacf447af07ff7763ffdb0f580dd0f77dd1c8/figures/296_toxins_in_top10_at_full_reference_toxin_share_cnidaria_pilot_swissprot.png",
+    "status": 200
+  },
+  {
+    "url": "https://raw.githubusercontent.com/seanome/2024-kmerseek-analysis/5e2bacf447af07ff7763ffdb0f580dd0f77dd1c8/figures/296_toxins_in_top10_by_tool_cnidaria_pilot_swissprot.png",
+    "status": 200
+  },
+  {
+    "url": "https://raw.githubusercontent.com/seanome/2024-kmerseek-analysis/5ea72d4d1d997dc09e3ed2e9e51891b8a669a14c/figures/289/289_bcl2_family_evidence_along_ced9_celegans.png",
+    "status": 200
+  },
+  {
+    "url": "https://raw.githubusercontent.com/seanome/2024-kmerseek-analysis/5ea72d4d1d997dc09e3ed2e9e51891b8a669a14c/figures/289/289_cd47_to_p66_borrelia_b31.png",
+    "status": 200
+  },
+  {
+    "url": "https://raw.githubusercontent.com/seanome/2024-kmerseek-analysis/5ea72d4d1d997dc09e3ed2e9e51891b8a669a14c/figures/289/289_ced9_rank_per_bcl2_family_query_celegans.png",
+    "status": 200
+  },
+  {
+    "url": "https://raw.githubusercontent.com/seanome/2024-kmerseek-analysis/657770e71c8efad735f9984fa3cac1a25277ffb4/figures/264_calls_domains_boundary_per_method_midi_plus_zebrafish_test.png",
+    "status": 200
+  },
+  {
+    "url": "https://raw.githubusercontent.com/seanome/2024-kmerseek-analysis/657770e71c8efad735f9984fa3cac1a25277ffb4/figures/264_domains_landed_merged_vs_unmerged_kmerseek_phmmer_midi_plus_zebrafish_test.png",
+    "status": 200
+  },
+  {
+    "url": "https://raw.githubusercontent.com/seanome/2024-kmerseek-analysis/657770e71c8efad735f9984fa3cac1a25277ffb4/figures/264_precision_recall_per_method_swissprot_pfam_midi_plus_zebrafish_test.png",
+    "status": 200
+  },
+  {
+    "url": "https://raw.githubusercontent.com/seanome/2024-kmerseek-analysis/663766ddb8fba0f9f4e9d7324f72f535c1272e57/figures/347_SF1_collision_groups_pten_vamp_seq.png",
+    "status": 200
+  },
+  {
+    "url": "https://raw.githubusercontent.com/seanome/2024-kmerseek-analysis/663766ddb8fba0f9f4e9d7324f72f535c1272e57/figures/347_SF2_error_floors_pten_vamp_seq.png",
+    "status": 200
+  },
+  {
+    "url": "https://raw.githubusercontent.com/seanome/2024-kmerseek-analysis/663766ddb8fba0f9f4e9d7324f72f535c1272e57/figures/347_SF3_example_groups_pten_vamp_seq.png",
+    "status": 200
+  },
+  {
+    "url": "https://raw.githubusercontent.com/seanome/2024-kmerseek-analysis/663766ddb8fba0f9f4e9d7324f72f535c1272e57/figures/347_SF4_all_alphabets_ksizes_pten_vamp_seq.png",
+    "status": 200
+  },
+  {
+    "url": "https://raw.githubusercontent.com/seanome/2024-kmerseek-analysis/6a05dd10cac5684a674e3d71b68c6910560413cd/figures/343_SF1_same_reduced_kmers_new_order_pass_fraction_gencode_v49_human.png",
+    "status": 200
+  },
+  {
+    "url": "https://raw.githubusercontent.com/seanome/2024-kmerseek-analysis/6a05dd10cac5684a674e3d71b68c6910560413cd/figures/343_SF2_longest_repeated_reduced_word_gencode_v49_human.png",
+    "status": 200
+  },
+  {
+    "url": "https://raw.githubusercontent.com/seanome/2024-kmerseek-analysis/6eb203a3205bf559b49dbcf41af9533b19ee7e45/nextflow-runs/botryllus-rnaseq-preprocess/test_results/test_read_length_and_strand.png",
+    "status": 200
+  },
+  {
+    "url": "https://raw.githubusercontent.com/seanome/2024-kmerseek-analysis/74eaecbbf448616bb070f14e0be7cec6e56f6a8b/analysis/353_measurement_retrieval/figures/353_evidence_collection_elm_sanborn2021.png",
+    "status": 200
+  },
+  {
+    "url": "https://raw.githubusercontent.com/seanome/2024-kmerseek-analysis/78894d268cf7acc78e785999c6c5ffddffa66e9c/figures/345/345_SF5_next_proteome_prediction_error_hp30_protein7_mmseqs_qfo2020_04.png",
+    "status": 200
+  },
+  {
+    "url": "https://raw.githubusercontent.com/seanome/2024-kmerseek-analysis/78894d268cf7acc78e785999c6c5ffddffa66e9c/figures/345/345_SF5b_heaps_fit_error_floor_vs_real_synthetic_hp30_qfo2020_04.png",
+    "status": 200
+  },
+  {
+    "url": "https://raw.githubusercontent.com/seanome/2024-kmerseek-analysis/78894d268cf7acc78e785999c6c5ffddffa66e9c/figures/345/345_SF6_newly_shared_words_if_sequenced_last_hp30_qfo2020_04.png",
+    "status": 200
+  },
+  {
+    "url": "https://raw.githubusercontent.com/seanome/2024-kmerseek-analysis/78894d268cf7acc78e785999c6c5ffddffa66e9c/figures/345/345_SF8_next_proteome_error_every_alphabet_k_region_sweep_qfo2020_04.png",
+    "status": 200
+  },
+  {
+    "url": "https://raw.githubusercontent.com/seanome/2024-kmerseek-analysis/78894d268cf7acc78e785999c6c5ffddffa66e9c/figures/345/345_SF9_next_proteome_error_hp_pbotc_every_k_region_sweep_qfo2020_04.png",
+    "status": 200
+  },
+  {
+    "url": "https://raw.githubusercontent.com/seanome/2024-kmerseek-analysis/7b3f2bfddc0351d6e43a3d42c0b258bc25aa87b1/figures/274_ksizes_to_test_per_alphabet_human_swissprot.png",
+    "status": 200
+  },
+  {
+    "url": "https://raw.githubusercontent.com/seanome/2024-kmerseek-analysis/7ced25210b8318105ecc4a26a0ad735227ff99e1/figures/seanome_style_swatches.png",
+    "status": 200
+  },
+  {
+    "url": "https://raw.githubusercontent.com/seanome/2024-kmerseek-analysis/7e1ee5c36818b7e0d5b9aea0772619329201c0ee/figures/250_stage0_longest_hp_run.png",
+    "status": 200
+  },
+  {
+    "url": "https://raw.githubusercontent.com/seanome/2024-kmerseek-analysis/7e1ee5c36818b7e0d5b9aea0772619329201c0ee/figures/250_step4_truth_by_species.png",
+    "status": 200
+  },
+  {
+    "url": "https://raw.githubusercontent.com/seanome/2024-kmerseek-analysis/8c60f59482b089cceb8ef9f5df0b132a5a8f3428/nextflow-runs/regions-index-pilot/build_summary/score_calls_memory.png",
+    "status": 200
+  },
+  {
+    "url": "https://raw.githubusercontent.com/seanome/2024-kmerseek-analysis/8c60f59482b089cceb8ef9f5df0b132a5a8f3428/nextflow-runs/regions-index-pilot/results_full_2026_10_16/pfam_index_recall.png",
+    "status": 200
+  },
+  {
+    "url": "https://raw.githubusercontent.com/seanome/2024-kmerseek-analysis/8ee9cc607083a1078cb3226c445d2d85047cc8b6/figures/288_pairwise_evalue_vs_shuffles_ced9_bcl2_p66_cd47_gencode_v49.png",
+    "status": 200
+  },
+  {
+    "url": "https://raw.githubusercontent.com/seanome/2024-kmerseek-analysis/8ee9cc607083a1078cb3226c445d2d85047cc8b6/figures/288_twostep_evalue_shift_ced9_p66_gencode_v49.png",
+    "status": 200
+  },
+  {
+    "url": "https://raw.githubusercontent.com/seanome/2024-kmerseek-analysis/92a590d1a19b7ffe7602b42429d2baade6ad6102/figures/271_mini_pfam_evalue_calibration_shuffled_queries.png",
+    "status": 200
+  },
+  {
+    "url": "https://raw.githubusercontent.com/seanome/2024-kmerseek-analysis/92a590d1a19b7ffe7602b42429d2baade6ad6102/figures/271_mini_pfam_same_family_kept_at_fixed_false_rate.png",
+    "status": 200
+  },
+  {
+    "url": "https://raw.githubusercontent.com/seanome/2024-kmerseek-analysis/99ce8af799545e4bae2e6d4c4a8d570bdfb91884/figures/342/342_setA_delta_psi_min_max_by_class_patowary2024.png",
+    "status": 200
+  },
+  {
+    "url": "https://raw.githubusercontent.com/seanome/2024-kmerseek-analysis/99ce8af799545e4bae2e6d4c4a8d570bdfb91884/figures/342/342_setA_exon_funnel_and_classes_patowary2024.png",
+    "status": 200
+  },
+  {
+    "url": "https://raw.githubusercontent.com/seanome/2024-kmerseek-analysis/99ce8af799545e4bae2e6d4c4a8d570bdfb91884/figures/342/342_setA_iupred_by_outcome_tune_half_patowary2024.png",
+    "status": 200
+  },
+  {
+    "url": "https://raw.githubusercontent.com/seanome/2024-kmerseek-analysis/99ce8af799545e4bae2e6d4c4a8d570bdfb91884/figures/342/342_setA_kind4_3settings_best_evalue_by_exon_swissprot_regions.png",
+    "status": 200
+  },
+  {
+    "url": "https://raw.githubusercontent.com/seanome/2024-kmerseek-analysis/99ce8af799545e4bae2e6d4c4a8d570bdfb91884/figures/342/342_setA_kind4_3settings_exons_with_a_hit_by_half_swissprot_regions.png",
+    "status": 200
+  },
+  {
+    "url": "https://raw.githubusercontent.com/seanome/2024-kmerseek-analysis/99ce8af799545e4bae2e6d4c4a8d570bdfb91884/figures/342/342_setA_kind4_3settings_strength_vs_kind3_swissprot_regions.png",
+    "status": 200
+  },
+  {
+    "url": "https://raw.githubusercontent.com/seanome/2024-kmerseek-analysis/99ce8af799545e4bae2e6d4c4a8d570bdfb91884/figures/342/342_setA_stop4_auroc_gain_model4_vs_model3_test_half.png",
+    "status": 200
+  },
+  {
+    "url": "https://raw.githubusercontent.com/seanome/2024-kmerseek-analysis/99ce8af799545e4bae2e6d4c4a8d570bdfb91884/figures/342/342_znf207_exon9_residues_by_alphabet_ensembl116.png",
+    "status": 200
+  },
+  {
+    "url": "https://raw.githubusercontent.com/seanome/2024-kmerseek-analysis/9fdd7898a214430b1be44e848392996efcdcd805/figures/349_F3_headline_recall_and_shuffles_eval_swissprot_2026_03.png",
+    "status": 200
+  },
+  {
+    "url": "https://raw.githubusercontent.com/seanome/2024-kmerseek-analysis/9fdd7898a214430b1be44e848392996efcdcd805/figures/349_F4_scores_by_target_kind_eval_swissprot_2026_03.png",
+    "status": 200
+  },
+  {
+    "url": "https://raw.githubusercontent.com/seanome/2024-kmerseek-analysis/9fdd7898a214430b1be44e848392996efcdcd805/figures/349_F6_subgroups_swissprot_2026_03.png",
+    "status": 200
+  },
+  {
+    "url": "https://raw.githubusercontent.com/seanome/2024-kmerseek-analysis/a2db7d80daa4f1eb8d2ebeb16a82c053dd91dcaf/figures/286_step1_evalue_by_rank_Ced9_P66_human_gencode.png",
+    "status": 200
+  },
+  {
+    "url": "https://raw.githubusercontent.com/seanome/2024-kmerseek-analysis/aa1e30d9ce724c79b61291a6f4c06b21f3b7d6c2/figures/277_scope40_kmerseek_v040_best_per_alphabet.png",
+    "status": 200
+  },
+  {
+    "url": "https://raw.githubusercontent.com/seanome/2024-kmerseek-analysis/bd1098972d7277a44feade236b92a75427fd398b/figures/297_example_Q9BPH4_top10_regions_cys_hp3_k11_phylum_run_swissprot.png",
+    "status": 200
+  },
+  {
+    "url": "https://raw.githubusercontent.com/seanome/2024-kmerseek-analysis/bd1098972d7277a44feade236b92a75427fd398b/figures/297_per_query_difference_cys_hp3_vs_regex_slack2_and_phmmer_phylum_run_swissprot.png",
+    "status": 200
+  },
+  {
+    "url": "https://raw.githubusercontent.com/seanome/2024-kmerseek-analysis/bd1098972d7277a44feade236b92a75427fd398b/figures/297_pilot_estimate_vs_full_run_cnidaria_phylum_run_swissprot.png",
+    "status": 200
+  },
+  {
+    "url": "https://raw.githubusercontent.com/seanome/2024-kmerseek-analysis/bd1098972d7277a44feade236b92a75427fd398b/figures/297_toxins_in_top10_by_tool_and_phylum_phylum_run_swissprot.png",
+    "status": 200
+  },
+  {
+    "url": "https://raw.githubusercontent.com/seanome/2024-kmerseek-analysis/bf65a1b9dbf0f8288efb651153ed913ea6da7996/notebooks/figures/291_dark_fmax/placed_fmax_dedup_sensitivity_midi_pfam38.png",
+    "status": 200
+  },
+  {
+    "url": "https://raw.githubusercontent.com/seanome/2024-kmerseek-analysis/c46680c45527a6a84b5d16f939a019842ba83814/figures/construct_insert_check_paired_workflows_synthetic.png",
+    "status": 200
+  },
+  {
+    "url": "https://raw.githubusercontent.com/seanome/2024-kmerseek-analysis/c6cab9fbd8888a9d2f1e0d7c98725bf7123febc1/reports/weekly-pr-status/2026-W42_pr_counts_by_review_state.png",
+    "status": 200
+  },
+  {
+    "url": "https://raw.githubusercontent.com/seanome/2024-kmerseek-analysis/c85c20fe0f7b96031c72d46ac5bf096f456305d3/figures/301_partial_scores_recovery_swissprot.png",
+    "status": 200
+  },
+  {
+    "url": "https://raw.githubusercontent.com/seanome/2024-kmerseek-analysis/cecdc35de5243460dd987007c299611adab1c918/figures/346_bcl2_ced9_best_key_vs_structure_alignment.png",
+    "status": 200
+  },
+  {
+    "url": "https://raw.githubusercontent.com/seanome/2024-kmerseek-analysis/cecdc35de5243460dd987007c299611adab1c918/figures/346_chance_key_matches_vs_length_human.png",
+    "status": 200
+  },
+  {
+    "url": "https://raw.githubusercontent.com/seanome/2024-kmerseek-analysis/cecdc35de5243460dd987007c299611adab1c918/figures/346_score_distributions_proteomes.png",
+    "status": 200
+  },
+  {
+    "url": "https://raw.githubusercontent.com/seanome/2024-kmerseek-analysis/cecdc35de5243460dd987007c299611adab1c918/figures/346_verdict_rank_vs_decoy_rate.png",
+    "status": 200
+  },
+  {
+    "url": "https://raw.githubusercontent.com/seanome/2024-kmerseek-analysis/d3790304d28ead13f90d82b691f0a470110f828f/figures/seed_reach_at_kstar_pfam_seed_20-30pct.png",
+    "status": 200
+  },
+  {
+    "url": "https://raw.githubusercontent.com/seanome/2024-kmerseek-analysis/d3790304d28ead13f90d82b691f0a470110f828f/figures/suppfig1.png",
+    "status": 200
+  },
+  {
+    "url": "https://raw.githubusercontent.com/seanome/2024-kmerseek-analysis/d5b6c873830fc906549dc01c303294ca955fcff4/figures/294_decision_paired_gain_vs_10_points_pfam_seed.png",
+    "status": 200
+  },
+  {
+    "url": "https://raw.githubusercontent.com/seanome/2024-kmerseek-analysis/d5b6c873830fc906549dc01c303294ca955fcff4/figures/294_hp_keys_vs_phmmer_mmseqs2_pfam_seed.png",
+    "status": 200
+  },
+  {
+    "url": "https://raw.githubusercontent.com/seanome/2024-kmerseek-analysis/d5dd2a6a46805777378cc81e3add315b305ea77c/figures/283_bhf_beats_copies_by_null_human_gencode.png",
+    "status": 200
+  },
+  {
+    "url": "https://raw.githubusercontent.com/seanome/2024-kmerseek-analysis/d5dd2a6a46805777378cc81e3add315b305ea77c/figures/283_queries_composition_vs_bhf_five_nulls.png",
+    "status": 200
+  },
+  {
+    "url": "https://raw.githubusercontent.com/seanome/2024-kmerseek-analysis/e35fbbff1cc1854f7651067c33e306e8584b1c86/figures/244_review_cases_committed_tables.png",
+    "status": 200
+  },
+  {
+    "url": "https://raw.githubusercontent.com/seanome/2024-kmerseek-analysis/e35fbbff1cc1854f7651067c33e306e8584b1c86/figures/244_review_verdict_committed_tables.png",
+    "status": 200
+  },
+  {
+    "url": "https://raw.githubusercontent.com/seanome/2024-kmerseek-analysis/ee243b388ea7227fe6f916cf267701a4aaba97f4/notebooks/figures/300/step1_real_peptide_filters_and_lengths_pxd069517_uhgp90.png",
+    "status": 200
+  },
+  {
+    "url": "https://raw.githubusercontent.com/seanome/2024-kmerseek-analysis/ee243b388ea7227fe6f916cf267701a4aaba97f4/notebooks/figures/300/step4_pilot_index_time_and_memory_uhgp90_human_crap.png",
+    "status": 200
+  },
+  {
+    "url": "https://raw.githubusercontent.com/seanome/2024-kmerseek-analysis/ee243b388ea7227fe6f916cf267701a4aaba97f4/notebooks/figures/300/step4_predicted_full_index_resources_uhgp90_human_crap.png",
+    "status": 200
+  },
+  {
+    "url": "https://raw.githubusercontent.com/seanome/2024-kmerseek-analysis/ee79b792ff1e9368acac76c2c9532772172f0f2f/figures/250_stage0_longest_hp_run.png",
+    "status": 200
+  },
+  {
+    "url": "https://raw.githubusercontent.com/seanome/2024-kmerseek-analysis/ee79b792ff1e9368acac76c2c9532772172f0f2f/figures/250_step4_truth_by_species.png",
+    "status": 200
+  },
+  {
+    "url": "https://raw.githubusercontent.com/seanome/2024-kmerseek-analysis/f82b3d662959af5dd14da30fab315da5a237a874/figures/357/357_condensate_regions_phasepro_disprot.png",
+    "status": 200
+  },
+  {
+    "url": "https://raw.githubusercontent.com/seanome/2024-kmerseek-analysis/f82b3d662959af5dd14da30fab315da5a237a874/figures/357/357_no_pfam_by_length_bin_setA.png",
+    "status": 200
+  },
+  {
+    "url": "https://raw.githubusercontent.com/seanome/2024-kmerseek-analysis/f82b3d662959af5dd14da30fab315da5a237a874/figures/357/357_panel_a_pfam_disorder_length_setA.png",
+    "status": 200
+  },
+  {
+    "url": "https://raw.githubusercontent.com/seanome/2024-kmerseek-analysis/f89fdfdf10b9c2e3d10906699777c4add0225aaa/figures/282_families_by_botryllus_copies_and_human_ohnologs_orthofinder_ohnologs_v2.png",
+    "status": 200
+  },
+  {
+    "url": "https://raw.githubusercontent.com/seanome/2024-kmerseek-analysis/f89fdfdf10b9c2e3d10906699777c4add0225aaa/figures/282_marletaz2018_fig6d_fates_from_published_counts.png",
+    "status": 200
+  },
+  {
+    "url": "https://raw.githubusercontent.com/seanome/2024-kmerseek-analysis/f89fdfdf10b9c2e3d10906699777c4add0225aaa/figures/282_tunicate_gene_loss_botryllus_ciona_orthofinder_ohnologs_v2.png",
+    "status": 200
+  },
+  {
+    "url": "https://raw.githubusercontent.com/seanome/2024-kmerseek-analysis/f8cf7039e8700f65e59224c99cf285653930d0fd/figures/356/356_hero_col9a1_chicken_exon14_midi_plus.png",
+    "status": 200
+  },
+  {
+    "url": "https://raw.githubusercontent.com/seanome/2024-kmerseek-analysis/f8cf7039e8700f65e59224c99cf285653930d0fd/figures/356/356_kmerseek_settings_and_random_protein_null_midi_plus.png",
+    "status": 200
+  },
+  {
+    "url": "https://raw.githubusercontent.com/seanome/2024-kmerseek-analysis/f8cf7039e8700f65e59224c99cf285653930d0fd/figures/356/356_verdict_rules_midi_plus_chicken_zebrafish.png",
+    "status": 200
+  }
+]

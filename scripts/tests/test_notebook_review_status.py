@@ -62,3 +62,16 @@ def test_duplicate_or_out_of_scope_records_are_rejected():
         review_status.render(snapshot(), [review, review])
     with pytest.raises(ValueError, match="absent from snapshot"):
         review_status.render(snapshot(), [{**review, "number": 2}])
+
+
+def test_scope_inventory_does_not_approve_science():
+    from render_notebook_review_status import review_state
+
+    review = {"head": "same", "reviewer_status": "scoped_not_scientifically_reviewed"}
+    assert (
+        review_state({"head": "same"}, review)
+        == "Scope recorded; further review pending"
+    )
+    assert (
+        review_state({"head": "new"}, review) == "Head changed; review needs updating"
+    )

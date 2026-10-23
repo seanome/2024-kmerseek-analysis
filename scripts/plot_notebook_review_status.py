@@ -8,6 +8,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "notebooks"))
 import pubfig as pf
 from render_notebook_review_status import review_state
+from shrink_png import process
 
 
 def main():
@@ -22,6 +23,7 @@ def main():
     labels = [
         "Not reviewed",
         "Head changed; review needs updating",
+        "Scope recorded; further review pending",
         "Partial review",
         "Reviewed; blockers remain",
         "Reviewed; no recorded blockers",
@@ -61,6 +63,11 @@ def main():
         "Source: open_prs.json and reviews.json. A clean CI result is not scientific review.",
     )
     pf.save(fig, directory / "review_coverage")
+    process(directory / "review_coverage.png", check=False)
+    svg = directory / "review_coverage.svg"
+    svg.write_text(
+        "\n".join(line.rstrip() for line in svg.read_text().splitlines()) + "\n"
+    )
 
 
 if __name__ == "__main__":

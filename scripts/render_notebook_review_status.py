@@ -13,6 +13,12 @@ def review_state(pr, review):
         return "Not reviewed"
     if review["head"] != pr["head"]:
         return "Head changed; review needs updating"
+    if review.get("reviewer_status") in {
+        "outside_notebook_review_scope",
+        "scoped_not_scientifically_reviewed",
+        "scope_inventory_only",
+    }:
+        return "Scope recorded; further review pending"
     if not review.get("complete", False):
         return "Partial review"
     if review.get("blockers"):
@@ -44,11 +50,16 @@ def render(snapshot, reviews):
         "  C --> D[Test, push, and record remaining blockers]",
         "```",
         "",
-        "This is an ongoing review of every open analysis PR. A mechanical check",
+        "This records checks and fixes for every open analysis PR in the snapshot. A mechanical check",
         "does not establish that a scientific claim is correct. A review only applies",
         "to its recorded commit; a newer head needs another check.",
         "",
         f"Snapshot taken: {snapshot['captured_at']}.",
+        "",
+        "The initial scope contained 120 open PRs. Newly opened PRs 201 and 202 are included;",
+        "PR 200 contains this report and is excluded from its own review counts.",
+        "See [merge recommendations](MERGE_QUEUE.md) and the",
+        "[other public PR inventory](OTHER_REPOSITORIES.md). The latter is not a code review.",
         "",
         "| Review coverage | PRs |",
         "|---|---:|",
