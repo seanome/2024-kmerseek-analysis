@@ -79,14 +79,13 @@ on the same Sherlock partition and thread count.
    alphabet and k settings at one scaled value, needs more than 1_536 CPU-hours (two days of a 32-CPU node) at both scaled
    100 and 1000 (arithmetic from a 1 GB slice, one CPU).
 2. Step 3 passes if some setting finds at least 80% of DIAMOND's (real query, gene) pairs at
-   E < 1e-5 while each shuffled copy hits fewer than 1% as many genes as a real query does.
+   E < 1e-5 while the mean shuffled-copy hit count is less than 1% of the mean real-query hit count.
    Higher recall is good; a lower shuffled-hit rate is good.
 
-**Status on 2026-10-18.** Queries, rules and the Sherlock jobs are ready. One command,
-`bash notebooks/299_submit_all.sh`, submits every job with SLURM dependencies (setup, step 1,
-then a job that reads step 1's verdict and, only if the catalog fits, submits DIAMOND, the
-sketching, the searches and the scoring). No Sherlock job
-has run yet, so steps 1 to 4 have no result. Sections below fill in as each job finishes.
+Status on 2026-10-22: all 27 settings have results. None passes the fixed step 3
+rule. Step 4 did not run because no setting passed. Scaled 10 was added on
+2026-10-20 after step 1 passed for scaled 100 and 1000; its addition is recorded
+in the rules file.
 
 **Facts read 2026-10-18** (`notebooks/299_data/sources_read_2026-10-18.tsv`):
 
@@ -151,7 +150,7 @@ ax.set_xticks([5, 10, 20, 50, 100, 200, 500, 1000, 2000], ["5", "10", "20", "50"
 ax.minorticks_off()
 ax.set_yticks([0, 1], ["clam", "BHF"])
 ax.set_ylim(-0.6, 1.6)
-ax.set_xlabel("Query length (aa, log scale); dashed lines at k = 7, 10, 13")
+ax.set_xlabel("Query length (aa); dashed lines at k = 7, 10, 13")
 pf.shared_legend(fig)
 pf.save(fig, str(FIGURES / "299_query_lengths_clam_and_bhf_regions"))
 """)
@@ -299,6 +298,12 @@ else:
     table = pl.read_csv(TABLES / "299_kill_test_recall_vs_shuffled_rate_omrgc_v2.csv")
     print(table.select("setting", "count_source", "recall", "shuffled_rate", "real_hits", "shuffled_hits",
                        "real_queries_with_no_hash", "wall_s", "cpu_s", "max_rss_gb", "passes"))
+    stats = json.loads((DATA / "sherlock" / "catalog_stats.json").read_text())
+    print("Catalog genes:", stats["catalog_genes"])
+    diamond = pl.read_csv(DATA / "sherlock" / "diamond_hits.tsv", separator="\\t", has_header=False)
+    real_ids = real["query_id"]
+    truth = diamond.filter(pl.col("column_1").is_in(real_ids.implode()) & (pl.col("column_9") < pilot.TRUTH_EVALUE))
+    print("Real queries with DIAMOND truth:", truth["column_1"].n_unique(), "of", real.height)
     print(verdict["result"], verdict["passing_settings"])
     pilot.plot_kill_test(table)
 """)
@@ -368,11 +373,11 @@ rate and pass for all 27 settings, the 31_865 truth pairs, DIAMOND's shuffled ra
 the verdict. All 87 compared values held (`notebooks/299_data/second_agent_check_step3.csv`).
 It also found that 51 of the 109 real queries have at least one DIAMOND pair at E < 1e-5.
 
-Part of the deliverable. Once steps 2 and 3 have run, a separate agent recomputes recall and
+The completed step 3 check recomputes recall and
 the shuffled-hit rate for every setting from the raw tables only (DIAMOND `hits.tsv`, each
 setting's `recall.pairs.tsv`, `full.counts.tsv` or `sample.counts.tsv`, `status.json`,
 `queries.tsv`, `catalog_stats.json`), following `notebooks/299_data/second_agent_check.md`,
-and writes a held/failed table to `notebooks/299_data/second_agent_check.csv`.
+and records its comparisons in `notebooks/299_data/second_agent_check_step3.csv`.
 """)
 
 code("""
@@ -409,7 +414,7 @@ md("""
 ## Summary and conclusions
 
 **Result on 2026-10-21: dead at step 3.** Sketching the whole OM-RGC v2 catalog fits easily
-(step 1 run 2: about 34-41 CPU-hours per scaled value against 1_536), but no sourmash
+(step 1 run 2: about 34-77 CPU-hours per scaled value against 1_536), but no sourmash
 setting can stand in for DIAMOND under the rule fixed before the run:
 
 - DIAMOND blastp `--very-sensitive` found 31_865 (real query, gene) pairs at E < 1e-5 and
@@ -424,11 +429,11 @@ setting can stand in for DIAMOND under the rule fixed before the run:
   No setting reaches the grey box; the hp settings sit top right, the protein settings
   bottom left.
 
-What this decides: hashed reduced-alphabet sketches at scaled 10 to 1000 are not the index
-for searching every sequencing run for a protein. A sketch keeps one k-mer in `scaled`, and
-a homologous gene shares few exact k-mers with the query, so the shared ones are rarely
-kept; shortening the words or reducing the alphabet until they are kept makes every gene
-match. Step 4 (kmerseek's run statistics) did not run, by the rule. An index that keeps
+What this decides: none of the 27 tested sketch settings meets both thresholds
+for these OM-RGC v2 queries. This test does not establish performance on every
+sequencing run or on other sketch settings. A sketch keeps one k-mer in `scaled`, and
+keeping fewer shared k-mers can reduce recall. In this test, the HP settings
+with high recall also give shuffled queries nearly as many hits as real queries. Step 4 (kmerseek's run statistics) did not run, by the rule. An index that keeps
 every k-mer (as kmerseek does) is the next thing to test, not more sketch settings.
 
 Step 1 run 1 had said dead, but that verdict measured sourmash's `.zip` writer, not the cost
@@ -444,7 +449,7 @@ budget and times `.sig.gz` plus a `.zip` of the non-empty sketches.
 - OM-RGC v2 as published (BioStudies S-BSST297) has no protein file. The catalog is taken
   from the gene table `OM-RGC_v2.tsv.gz` (10.3 GB, DNA in column 14), which passed gzip's
   full check; two downloads of the 29.6 GB `OM-RGC_v2_genes.fna.gz` differed from each
-  other. The gene count is to be read on Sherlock.
+  other. The committed catalog statistics record 46_775_154 genes.
 - A laptop test on the catalog's first 39_000 genes found that hp at k = 10 and scaled 100
   matches almost every query to almost every gene (52.7 million hit rows), so step 3 counts
   such settings on a 1% gene sample.

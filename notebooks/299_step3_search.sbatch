@@ -1,6 +1,5 @@
 #!/bin/bash
 #SBATCH --job-name=299-search
-#SBATCH --account=ayeletv
 #SBATCH --partition=hns
 #SBATCH --array=0-17
 #SBATCH --cpus-per-task=32
@@ -39,7 +38,7 @@ set -euo pipefail
 
 REPO=${SLURM_SUBMIT_DIR:?submit from the repo root}
 WORK=${OMRGC_WORK:-$SCRATCH/299-omrgc-pilot}
-E=$WORK/env/bin
+E=${OMRGC_ENV_PREFIX:-${GROUP_HOME:?}/conda/envs/omrgc299}/bin
 FULL_ROW_CAP=2000000000
 read -r ALPHABET K SCALED < <("$E/python" "$REPO/notebooks/299_omrgc_sketch_pilot.py" setting "$SLURM_ARRAY_TASK_ID")
 SID=$ALPHABET.k$K.s$SCALED

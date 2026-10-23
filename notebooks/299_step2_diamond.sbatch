@@ -1,6 +1,5 @@
 #!/bin/bash
 #SBATCH --job-name=299-diamond
-#SBATCH --account=ayeletv
 #SBATCH --partition=hns
 #SBATCH --cpus-per-task=32
 #SBATCH --mem=128G
@@ -25,7 +24,7 @@ set -euo pipefail
 
 REPO=${SLURM_SUBMIT_DIR:?submit from the repo root}
 WORK=${OMRGC_WORK:-$SCRATCH/299-omrgc-pilot}
-E=$WORK/env/bin
+E=${OMRGC_ENV_PREFIX:-${GROUP_HOME:?}/conda/envs/omrgc299}/bin
 D=$WORK/diamond
 echo "host $(hostname); $(lscpu | grep 'Model name'); $("$E/diamond" version)"
 

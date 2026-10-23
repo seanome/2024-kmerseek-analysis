@@ -504,6 +504,13 @@ def cmd_score(args: argparse.Namespace) -> None:
     import polars as pl
 
     work = work_dir()
+    missing = [
+        setting_id(a, k, scaled)
+        for a, k, scaled in SETTINGS
+        if not (work / "search" / setting_id(a, k, scaled) / "done").exists()
+    ]
+    if missing:
+        sys.exit("incomplete search; no verdict written: " + ", ".join(missing))
     queries = pl.read_csv(DATA / "queries.tsv", separator="\t")
     is_shuffled = dict(zip(queries["query_id"], queries["shuffled"]))
     kind = dict(zip(queries["query_id"], queries["kind"]))
@@ -552,12 +559,6 @@ def cmd_score(args: argparse.Namespace) -> None:
     for alphabet, ksize, scaled in SETTINGS:
         sid = setting_id(alphabet, ksize, scaled)
         out = work / "search" / sid
-        if not (out / "done").exists():
-            print(
-                f"{sid}: search did not finish (no {out / 'done'}); left out",
-                file=sys.stderr,
-            )
-            continue
         status = json.loads((out / "status.json").read_text())
         source = status["count_source"]  # "full" or "sample_1pct"
         runs = ["recall", "sample"] + (["full"] if source == "full" else [])
@@ -663,7 +664,7 @@ def cmd_score(args: argparse.Namespace) -> None:
 def plot_kill_test(table) -> None:
     """Figure 1: recall of DIAMOND's hits (x) against shuffled-hit rate (y), one mark per setting.
 
-    Colour = alphabet, shape = k, filled = scaled 100 and open = scaled 1000, a ring = the
+    Colour = alphabet, shape = k, fill = scaled 10/100/1000, a ring = the
     y value was estimated on the 1% gene sample. The y axis is logarithmic; a rate of 0 sits
     on its own line at the bottom. The grey box is the pass region fixed before the run.
     """
@@ -751,7 +752,7 @@ def plot_kill_test(table) -> None:
     )
     ax.set_xlim(-3, 103)
     ax.set_xlabel("DIAMOND hits found (% of real-query pairs at E < 1e-5)")
-    ax.set_ylabel("Shuffled-copy hits per copy\n(% of real-query hits, log scale)")
+    ax.set_ylabel("Shuffled-copy hits per copy\n(% of real-query hits)")
     handles = [
         mpatches.Patch(
             facecolor=pf.GREY, alpha=0.3, label="pass: >= 80% found, < 1% shuffled"

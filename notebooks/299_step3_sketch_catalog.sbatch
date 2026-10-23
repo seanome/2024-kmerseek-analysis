@@ -1,6 +1,5 @@
 #!/bin/bash
 #SBATCH --job-name=299-sketch
-#SBATCH --account=ayeletv
 #SBATCH --partition=hns
 #SBATCH --cpus-per-task=1
 #SBATCH --output=299-sketch-%A_%a.out
@@ -14,7 +13,7 @@ set -euo pipefail
 
 REPO=${SLURM_SUBMIT_DIR:?submit from the repo root}
 WORK=${OMRGC_WORK:-$SCRATCH/299-omrgc-pilot}
-E=$WORK/env/bin
+E=${OMRGC_ENV_PREFIX:-${GROUP_HOME:?}/conda/envs/omrgc299}/bin
 : "${N_CHUNKS:?}" "${SCALED:?}"
 I=$SLURM_ARRAY_TASK_ID
 echo "host $(hostname); $(lscpu | grep 'Model name'); chunk $I of $N_CHUNKS, scaled $SCALED"

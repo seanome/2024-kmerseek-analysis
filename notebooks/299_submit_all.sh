@@ -4,8 +4,8 @@
 #
 #   bash notebooks/299_submit_all.sh
 #
-#   setup ─► step 1 (18 tasks) ─► gate ─┬─ dead: stops, step 1 verdict written
-#                                       └─ fits: DIAMOND + 2 sketch arrays ─► search ─► finish
+#   setup ─► step 1 (27 tasks) ─► gate ─┬─ dead: stops, step 1 verdict written
+#                                       └─ fits: DIAMOND + 3 sketch arrays ─► search ─► finish
 #
 # The gate submits the later jobs itself, because the sketch arrays are sized from step
 # 1's measured rates. Job ids go to $SCRATCH/299-omrgc-pilot/job_ids.txt; follow them with

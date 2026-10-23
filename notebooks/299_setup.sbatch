@@ -1,6 +1,5 @@
 #!/bin/bash
 #SBATCH --job-name=299-setup
-#SBATCH --account=ayeletv
 #SBATCH --partition=hns
 #SBATCH --cpus-per-task=8
 #SBATCH --mem=32G
@@ -38,16 +37,19 @@ mkdir -p "$WORK"/{bin,catalog,slice,parts,sample,step1,diamond,search,catalog_sk
 echo "host $(hostname); $(lscpu | grep 'Model name')"
 
 # 1. Tools: micromamba 2.9.0-0 (GitHub release, 2026-08-07) and the pinned env.
-if [ ! -x "$WORK/bin/micromamba" ]; then
-    curl -fsSL -o "$WORK/bin/micromamba" \
+SOFTWARE=${OMRGC_SOFTWARE_DIR:-${GROUP_HOME:?}/software/omrgc299}
+ENV_PREFIX=${OMRGC_ENV_PREFIX:-${GROUP_HOME:?}/conda/envs/omrgc299}
+mkdir -p "$SOFTWARE"
+if [ ! -x "$SOFTWARE/micromamba" ]; then
+    curl -fsSL -o "$SOFTWARE/micromamba" \
         https://github.com/mamba-org/micromamba-releases/releases/download/2.9.0-0/micromamba-linux-64
-    chmod +x "$WORK/bin/micromamba"
+    chmod +x "$SOFTWARE/micromamba"
 fi
-export MAMBA_ROOT_PREFIX=$WORK/mamba
-if [ ! -x "$WORK/env/bin/sourmash" ]; then
-    "$WORK/bin/micromamba" create -y -p "$WORK/env" -f "$REPO/notebooks/299_environment.yml"
+export MAMBA_ROOT_PREFIX=$SOFTWARE/mamba
+if [ ! -x "$ENV_PREFIX/bin/sourmash" ]; then
+    "$SOFTWARE/micromamba" create -y -p "$ENV_PREFIX" -f "$REPO/notebooks/299_environment.yml"
 fi
-E=$WORK/env/bin
+E=${OMRGC_ENV_PREFIX:-${GROUP_HOME:?}/conda/envs/omrgc299}/bin
 # A solve proves nothing about running: run every tool once.
 "$E/diamond" version
 "$E/seqkit" version

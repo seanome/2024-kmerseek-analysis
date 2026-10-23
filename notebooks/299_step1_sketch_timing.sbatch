@@ -1,15 +1,14 @@
 #!/bin/bash
 #SBATCH --job-name=299-step1
-#SBATCH --account=ayeletv
 #SBATCH --partition=hns
-#SBATCH --array=0-17
+#SBATCH --array=0-26
 #SBATCH --cpus-per-task=1
-#SBATCH --mem=8G
+#SBATCH --mem=40G
 #SBATCH --time=23:00:00
 #SBATCH --output=299-step1-%A_%a.out
 #
 # Notebook 299, step 1: time `sourmash sketch translate` on one CPU on the 1 GB slice, one
-# array task per setting (protein, dayhoff, hp x k 7, 10, 13 x scaled 100, 1000).
+# array task per setting (protein, dayhoff, hp x k 7, 10, 13 x scaled 10, 100, 1000).
 # Submitted by notebooks/299_submit_all.sh to start when 299_setup.sbatch succeeds.
 #
 # Sizing: the rule's budget is 1_536 CPU-hours (two days of a 32-CPU node) for all nine
@@ -19,13 +18,13 @@
 # rate exceed 1_536 CPU-hours for any catalog over 15 GB (the gzipped file alone is
 # 29.6 GB), so step1-table keeps 40_000 s as a lower bound. The .zip step has the same limit, so
 # 23 h covers both plus start-up. A laptop rate of about 2.5-3.5 CPU-s per MB
-# (catalog's first 2-8 MB, start-up included) suggests about 1 h per task. 8 G: a
-# --singleton sketch holds only the current record's hashes plus the output.
+# (catalog's first 2-8 MB, start-up included) suggests about 1 h per task.
+# 40 G covers scaled 10, whose earlier 8 G attempts were killed (array 48668306).
 set -euo pipefail
 
 REPO=${SLURM_SUBMIT_DIR:?submit from the repo root}
 WORK=${OMRGC_WORK:-$SCRATCH/299-omrgc-pilot}
-E=$WORK/env/bin
+E=${OMRGC_ENV_PREFIX:-${GROUP_HOME:?}/conda/envs/omrgc299}/bin
 LIMIT=$("$E/python" -c "import json; print(json.load(open('$WORK/catalog_stats.json'))['step1_time_limit_s'])")
 read -r ALPHABET K SCALED < <("$E/python" "$REPO/notebooks/299_omrgc_sketch_pilot.py" setting "$SLURM_ARRAY_TASK_ID")
 SID=$ALPHABET.k$K.s$SCALED

@@ -1,6 +1,5 @@
 #!/bin/bash
 #SBATCH --job-name=299-check
-#SBATCH --account=ayeletv
 #SBATCH --partition=hns
 #SBATCH --cpus-per-task=8
 #SBATCH --mem=8G
@@ -21,7 +20,7 @@
 set -uo pipefail
 
 WORK=${OMRGC_WORK:-$SCRATCH/299-omrgc-pilot}
-E=$WORK/env/bin
+E=${OMRGC_ENV_PREFIX:-${GROUP_HOME:?}/conda/envs/omrgc299}/bin
 BASE=https://ftp.ebi.ac.uk/biostudies/fire/S-BSST/S-BSSTxxx297/S-BSST297/Files
 GZ=$WORK/catalog/OM-RGC_v2_genes.fna.gz
 CHECK=$WORK/check
