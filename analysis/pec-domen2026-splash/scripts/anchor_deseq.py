@@ -78,6 +78,15 @@ inference = DefaultInference(n_cpus=n_cpus)
 for name, factors in designs.items():
     meta = design[factors].copy()
     formula = "~ " + " + ".join(factors)
+    # a design is fitted only if its model matrix has full column rank and leaves residual df
+    mm = pd.get_dummies(meta, drop_first=True).astype(float)
+    mm.insert(0, "intercept", 1.0)
+    rank = np.linalg.matrix_rank(mm.to_numpy())
+    if rank < mm.shape[1] or rank >= len(samples):
+        summary["designs"][name] = dict(formula=formula, fitted=False,
+                                        reason=f"model matrix rank {rank}, columns {mm.shape[1]}, samples {len(samples)}")
+        print(name, "not estimable", summary["designs"][name]["reason"])
+        continue
     dds = DeseqDataSet(
         counts=counts_df,
         metadata=meta,
