@@ -148,3 +148,10 @@ the stated thresholds.
   and shared hashes but not the overlap probability. The alignment check of every proposed pair is
   unchanged. The control's multisearch output against the new proteome is kept
   (`contrasts/control/multisearch_check_*`) to compare the two.
+* 2026-10-23, at Olga's request ("a faster DE-kupl"), before any real DE-kupl run: DE-kupl's
+  k-mer test is `limma` (its moderated linear-model option) instead of DESeq2. The DESeq2 in the
+  dekupl-run 1.3.5 image is 1.18.1, from before the speed-up DE-kupl's README refers to. limma
+  rather than the plain t-test, because with 2 to 6 samples per condition the moderated variance
+  is steadier. On the control, DE-kupl with DESeq2 was run first (17 min) and is kept and scored
+  as `dekupl_DESeq2`, so the two tests can be compared on known answers. The PyDESeq2 fit on
+  SPLASH anchor counts stays as its own channel.

@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Write a dekupl-run config.json for one contrast, with the settings fixed in the analysis plan.
 
-Usage: dekupl_config.py <design.tsv> <fastq_dir> <tmp_dir> <out config.json>
+Usage: dekupl_config.py <design.tsv> <fastq_dir> <tmp_dir> <out config.json> [diff_method]
 
 design.tsv: header with sample and condition (control|PEC). Condition A = control,
 B = PEC, so DE-kupl's log2FC is log2(PEC / control), the same direction as the other channels.
@@ -11,6 +11,9 @@ import json
 import sys
 
 design, fastq_dir, tmp_dir, out = sys.argv[1:5]
+method = sys.argv[5] if len(sys.argv) > 5 else "limma"
+if method not in ("limma", "DESeq2", "Ttest"):
+    raise SystemExit(f"unknown diff_method {method}")
 rows = list(csv.DictReader(open(design), delimiter="\t"))
 conds = {r["condition"] for r in rows}
 if conds != {"control", "PEC"}:
@@ -20,7 +23,7 @@ cfg = {
     "output_dir": "DEkupl_result",
     "tmp_dir": tmp_dir,
     "kmer_length": 31,
-    "diff_method": "DESeq2",
+    "diff_method": method,
     "lib_type": "unstranded",
     "data_type": "WGS",
     "masking": "nomask",

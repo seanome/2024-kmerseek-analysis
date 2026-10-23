@@ -14,11 +14,12 @@ cd "$D"
 export PATH=$PEC_ROOT/env/bin:$PATH
 PT=$PEC_ROOT/pec-tools/target/release/pec-tools
 N=$SLURM_CPUS_PER_TASK
-mkdir -p search_$SRC && cd search_$SRC
+OUTSRC=$SRC; [ "$SRC" = dekupl ] && OUTSRC=dekupl_${DEKUPL_METHOD:-limma}
+mkdir -p search_$OUTSRC && cd search_$OUTSRC
 [ -e search.done ] && { echo "search $SRC already done"; exit 0; }
 case $SRC in
   compactors) IN=../compactors/compactors.tsv; COL=${SEQ_COL:-compactor};;
-  dekupl) zcat ../dekupl/DEkupl_result/control_vs_PEC_kmer_counts/merged-diff-counts.tsv.gz > dekupl_contigs.tsv
+  dekupl) zcat ../dekupl_${DEKUPL_METHOD:-limma}/DEkupl_result/control_vs_PEC_kmer_counts/merged-diff-counts.tsv.gz > dekupl_contigs.tsv
           IN=dekupl_contigs.tsv; COL=contig;;
 esac
 "$PT" translate "$IN" pep 20 "$COL" 2> translate.log
