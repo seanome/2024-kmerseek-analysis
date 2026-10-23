@@ -340,13 +340,36 @@ def identity(a: str, b: str) -> tuple[int, int]:
 # ---------------------------------------------------------------------------
 # Alignment printout.
 # ---------------------------------------------------------------------------
-HP_CLASSES = {"hp_pbotc_1st_ed2": ["ACFILMPVWY", "DEGHKNQRST"]}
+#: Residue classes per alphabet, copied from kmerseek src/rust/alphabets.rs (90c581a). A
+#: two-class alphabet is written H (hydrophobic) and P (polar); a larger one names each
+#: class by its first residue, as kmerseek's own encoding does.
+HP_CLASSES = {
+    "hp_pbotc_1st_ed2": ["ACFILMPVWY", "DEGHKNQRST"],
+    "hp_thomas_dill_no_c2": ["AFILMVWY", "CDEGHKNPQRST"],
+    "hp_kyte_doolittle2": ["ACFILMV", "DEGHKNPQRSTWY"],
+    "hp_lehninger_c_nonpolar2": ["ACFGILMPVWY", "DEHKNQRST"],
+    "sdm12": ["A", "D", "KER", "N", "TSQ", "YF", "LIVM", "C", "W", "H", "G", "P"],
+    "mmseqs12": ["AST", "LM", "IV", "KR", "EQ", "ND", "FY", "C", "G", "H", "P", "W"],
+}
+
+
+def class_letters(alphabet: str) -> str:
+    groups = HP_CLASSES[alphabet]
+    return "HP" if len(groups) == 2 else "".join(g[0] for g in groups)
+
+
+def class_legend(alphabet: str) -> str:
+    """'H = ACFILMPVWY, P = DEGHKNQRST' for the alphabet's classes."""
+    return ", ".join(
+        f"{c} = {g}" for c, g in zip(class_letters(alphabet), HP_CLASSES[alphabet])
+    )
 
 
 def class_string(
-    seq: str, alphabet: str = "hp_pbotc_1st_ed2", letters: str = "HP"
+    seq: str, alphabet: str = "hp_pbotc_1st_ed2", letters: str | None = None
 ) -> str:
     groups = HP_CLASSES[alphabet]
+    letters = letters or class_letters(alphabet)
     table = {r: letters[i] for i, g in enumerate(groups) for r in g}
     return "".join(table.get(c, "?") for c in seq)
 
@@ -376,8 +399,9 @@ def format_alignment(
     tstart: int,
     tend: int,
     width: int = 60,
+    alphabet: str = "hp_pbotc_1st_ed2",
 ) -> str:
-    """The residues of a gapless region, one above the other, then the HP class strings.
+    """The residues of a gapless region, one above the other, then the class strings.
 
     Coordinates printed are 1-based and inclusive on both proteins. The match line puts
     '|' under an identical residue. The class block marks the longest run of identical
@@ -385,9 +409,9 @@ def format_alignment(
     """
     qa, ta = region_residues(q_seq, t_seq, qstart, qend, tstart, tend)
     n_id, n = identity(qa, ta)
-    qc, tc = class_string(qa), class_string(ta)
+    qc, tc = class_string(qa, alphabet), class_string(ta, alphabet)
     run_start, run_len = longest_equal_run(qc, tc)
-    lab = max(len(q_name), len(t_name), len("hp_pbotc_1st_ed2")) + 1
+    lab = max(len(q_name), len(t_name), len(alphabet)) + 1
     out = [
         f"{n_id} of {n} residues identical ({100 * n_id / n:.0f}%); "
         f"query {qstart + 1}-{qend}, target {tstart + 1}-{tend}"
@@ -402,7 +426,7 @@ def format_alignment(
             "",
         ]
     out.append(
-        f"hp_pbotc_1st_ed2 classes (H = ACFILMPVWY, P = DEGHKNQRST); longest run of "
+        f"{alphabet} classes ({class_legend(alphabet)}); longest run of "
         f"identical classes: {run_len} positions, query {qstart + 1 + run_start}-"
         f"{qstart + run_start + run_len}"
     )

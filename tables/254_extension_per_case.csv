@@ -1,0 +1,88 @@
+gene,feature,species,feature aa,identity %,old exact,new exact,extended,call aa,inside,whole target,region_evalue,region_ka_evalue,best tool,best_tool,setting,query,target
+ROS1,ligand: ATP,worm,9,88.9,0.889,0.889,0.0,,,false,,,0.118,phmmer,sdm12_k6_lcTrue,P08922,Q11112
+COL9A1,Collagen-like 6,zebrafish,57,53.3,0.458,0.458,0.0,,,false,,,0.683,phmmer,hp_thomas_dill_no_c2_k19_lcTrue,P20849,Q5U3G1
+COL12A1,Collagen-like 2,zebrafish,51,51.7,0.58,0.58,0.0,,,false,,,0.633,phmmer,hp_thomas_dill_no_c2_k19_lcTrue,Q99715,A5PN28
+ROS1,ligand: ATP,zebrafish,9,88.9,0.889,0.889,0.0,,,false,,,0.667,MMseqs2 iterative,sdm12_k6_lcTrue,P08922,Q8JFR5
+PHACTR2,RPEL 2,chicken,26,76.0,0.786,0.786,0.0,,,false,,,0.191,Reseek,hp_kyte_doolittle2_k19_lcTrue,O75167,Q801X6
+ROS1,ligand: ATP,chicken,9,80.0,0.8,0.8,0.0,,,false,,,0.073,phmmer,sdm12_k6_lcTrue,P08922,Q9PUF6
+SGK1,ligand: ATP,arabidopsis,9,55.6,0.889,0.889,0.0,,,false,,,0.308,MMseqs2 iterative,sdm12_k6_lcTrue,O00141,P25859
+TTK,ligand: ATP,arabidopsis,9,88.9,0.889,0.889,0.0,,,false,,,0.167,MMseqs2 iterative,sdm12_k6_lcTrue,P33981,Q84VX4
+SGK1,ligand: ATP,yeast,9,77.8,0.889,0.889,0.0,,,false,,,0.286,phmmer,sdm12_k6_lcTrue,O00141,P06782
+MAP3K7,ligand: ATP,yeast,9,55.6,0.889,0.889,0.0,,,false,,,0.242,phmmer,sdm12_k6_lcTrue,O43318,Q03785
+TTK,ligand: ATP,yeast,9,88.9,0.889,0.889,0.0,,,false,,,0.364,phmmer,sdm12_k6_lcTrue,P33981,P47116
+SGK1,ligand: ATP,worm,9,77.8,0.889,0.889,0.0,,,false,,,0.167,phmmer,sdm12_k6_lcTrue,O00141,H2L099
+ZSCAN16,C2H2-type 1,worm,23,56.0,0.741,0.714,0.0,,,false,,,0.917,MMseqs2 iterative,hp_thomas_dill_no_c2_k19_lcTrue,Q9H4T2,Q9XW26
+ZSCAN26,C2H2-type 6,worm,23,50.0,0.913,0.913,0.0,,,false,,,0.449,phmmer,hp_thomas_dill_no_c2_k19_lcTrue,Q16670,A0A5E4M3Q4
+TPBG,LRR 3,worm,23,50.0,0.692,0.692,0.0,,,false,,,0.478,phmmer,hp_kyte_doolittle2_k19_lcTrue,Q13641,G5EFX6
+ZNF165,C2H2-type 6,fly,23,50.0,0.917,0.917,0.0,,,false,,,0.44,phmmer,hp_thomas_dill_no_c2_k19_lcTrue,P49910,Q9VQ56
+PRDM1,C2H2-type 3,fly,23,54.2,0.917,0.917,0.0,,,false,,,0.955,phmmer,hp_thomas_dill_no_c2_k19_lcTrue,O75626,Q9VLK8
+SGK1,ligand: ATP,fly,9,66.7,0.889,0.889,0.0,,,false,,,0.14,phmmer,sdm12_k6_lcTrue,O00141,Q9NI63
+LATS1,ligand: ATP,fly,9,77.8,0.889,0.889,0.0,,,false,,,0.114,phmmer,sdm12_k6_lcTrue,O95835,P04412
+ZNF165,C2H2-type 6,zebrafish,23,50.0,0.917,0.917,0.0,,,false,,,0.786,phmmer,hp_thomas_dill_no_c2_k19_lcTrue,P49910,Q25C93
+EHMT2,ANK 4,zebrafish,31,52.4,0.7,0.7,0.0,,,false,,,0.652,phmmer,hp_kyte_doolittle2_k19_lcTrue,Q96KQ7,Q502K3
+ZSCAN9,C2H2-type 3,zebrafish,23,51.9,0.815,0.815,0.0,,,false,,,0.786,phmmer,hp_thomas_dill_no_c2_k19_lcTrue,O15535,Q7T3H2
+PAK1IP1,WD 5,chicken,40,69.2,0.667,0.0,0.0,,,false,,,0.247,phmmer,hp_kyte_doolittle2_k19_lcTrue,Q9NWT1,Q5ZKU8
+GABRR2,Helical,chicken,21,66.7,0.708,0.708,0.0,,,false,,,0.655,phmmer,hp_lehninger_c_nonpolar2_k18_lcTrue,P28476,P24045
+KCNK5,Pore-forming; Name=Pore-forming 1,chicken,28,60.0,0.37,0.37,0.0,,,false,,,0.65,phmmer,mmseqs12_k7_lcTrue,O95279,Q9PT84
+CDC40,WD 1,chicken,41,57.1,0.525,0.525,0.0,,,false,,,0.805,phmmer,hp_kyte_doolittle2_k19_lcTrue,O60508,Q9PTR5
+SLC26A8,Helical,zebrafish,21,66.7,0.833,0.833,0.0,,,false,,,0.175,Reseek,hp_lehninger_c_nonpolar2_k18_lcTrue,Q96RN1,Q7T2C4
+MAPK14,ligand: ATP,zebrafish,9,80.0,0.8,0.8,0.031,258,0.031,false,4.2382306825804385e-38,4.2382306825804385e-38,0.123,phmmer,sdm12_k6_lcTrue,Q16539,O42376
+COL12A1,Collagen-like 4,chicken,50,90.0,0.612,0.461,0.037,1324,0.037,false,9.086677594993098e-81,9.086677594993098e-81,0.161,phmmer,hp_thomas_dill_no_c2_k19_lcTrue,Q99715,P13944
+COL12A1,Collagen-like 2,chicken,51,90.0,0.6,0.657,0.038,1324,0.038,false,9.086677594993098e-81,9.086677594993098e-81,0.658,phmmer,hp_thomas_dill_no_c2_k19_lcTrue,Q99715,P13944
+LATS1,ligand: ATP,worm,9,66.7,0.889,0.889,0.044,182,0.044,false,3.78956232396704e-36,3.78956232396704e-36,0.195,phmmer,sdm12_k6_lcTrue,O95835,O45797
+DLL1,EGF-like 7; calcium-binding,zebrafish,32,72.0,0.75,0.781,0.067,460,0.067,false,0.22548577283681262,0.22548577283681262,1.0,MMseqs2,hp_thomas_dill_no_c2_k19_lcTrue,O00548,Q8UWJ4
+SLC35B3,Helical,fly,23,66.7,0.84,0.84,0.075,292,0.075,false,5.6066382397741655e-8,5.6066382397741655e-8,0.242,Reseek,hp_lehninger_c_nonpolar2_k18_lcTrue,Q9H1N7,Q9VVD9
+ZBTB24,C2H2-type 3,zebrafish,23,80.0,0.808,0.808,0.077,286,0.077,false,0.5307002676630882,0.5307002676630882,0.431,phmmer,hp_thomas_dill_no_c2_k19_lcTrue,O43167,Q52KB5
+COL9A1,Collagen-like 7,chicken,58,78.1,0.561,0.561,0.082,696,0.082,false,38.57830564061762,,0.463,Reseek,hp_thomas_dill_no_c2_k19_lcTrue,P20849,P12106
+MAPK13,ligand: ATP,fly,9,88.9,0.889,0.889,0.086,93,0.086,false,3.940797056794122e-8,3.940797056794122e-8,0.131,phmmer,sdm12_k6_lcTrue,O15264,O62618
+LRFN2,LRR 7,zebrafish,22,73.9,0.833,0.833,0.094,211,0.095,false,9.703406118922155e-8,9.703406118922155e-8,0.223,MMseqs2 iterative,hp_kyte_doolittle2_k19_lcTrue,Q9ULH4,Q6PGX3
+HIVEP1,C2H2-type 4,worm,25,78.3,0.88,0.88,0.136,176,0.136,false,214.02470280438916,214.02470280438916,0.686,phmmer,hp_thomas_dill_no_c2_k19_lcTrue,P15822,Q7JM44
+MYB,H-T-H motif,arabidopsis,24,88.0,0.92,0.719,0.14,164,0.14,false,68.59110169577214,68.59110169577214,0.488,MMseqs2,hp_kyte_doolittle2_k19_lcTrue,P10242,Q6R032
+MYB,H-T-H motif,fly,24,78.6,0.821,0.657,0.14,164,0.14,false,2749.0247758496293,2749.0247758496293,0.184,Reseek,hp_kyte_doolittle2_k19_lcTrue,P10242,P04197
+PAK1IP1,WD 2,zebrafish,41,73.1,0.65,0.65,0.14,286,0.14,false,2.697926081235262e-9,2.697926081235262e-9,0.9,phmmer,hp_kyte_doolittle2_k19_lcTrue,Q9NWT1,Q6TNS2
+STXBP5,WD 7,zebrafish,35,77.3,0.647,0.647,0.145,235,0.145,false,8.694114089270654e-7,8.694114089270654e-7,0.166,Reseek,hp_kyte_doolittle2_k19_lcTrue,Q5T5C0,Q5SQE2
+STXBP5,WD 5,zebrafish,33,70.0,0.824,0.824,0.152,210,0.152,false,0.00002915820506527636,0.00002915820506527636,0.879,phmmer,hp_kyte_doolittle2_k19_lcTrue,Q5T5C0,Q5SQE2
+ZNF76,C2H2-type 7,fly,24,52.2,0.704,0.543,0.173,106,0.179,false,8288.952742683368,8288.952742683368,0.767,phmmer,hp_thomas_dill_no_c2_k19_lcTrue,P36508,Q9VQU9
+PHACTR1,RPEL 1,zebrafish,26,56.7,0.833,0.833,0.202,124,0.202,false,369707.5336629049,369707.5336629049,0.281,phmmer,hp_kyte_doolittle2_k19_lcTrue,Q9C0D0,Q6PEI3
+PPARD,NR C4-type,fly,23,50.0,0.846,0.846,0.324,68,0.324,false,129.94356534147596,129.94356534147596,0.319,MMseqs2 iterative,hp_thomas_dill_no_c2_k19_lcTrue,Q03181,P16376
+KCNK16,Pore-forming; Name=Pore-forming 1,zebrafish,19,80.0,0.556,0.556,0.333,54,0.333,false,0.00011679796451117682,0.00011679796451117682,0.138,phmmer,mmseqs12_k7_lcTrue,Q96T55,Q5VSE6
+KCNK5,Pore-forming; Name=Pore-forming 2,fly,26,77.8,0.36,0.36,0.357,51,0.392,false,1.7767591149681143,1.7767591149681143,0.106,phmmer,mmseqs12_k7_lcTrue,O95279,Q94526
+KCNK17,Pore-forming; Name=Pore-forming 2,chicken,20,60.0,0.526,0.526,0.388,49,0.388,false,1.286875890136787,1.286875890136787,0.432,MMseqs2,mmseqs12_k7_lcTrue,Q96T54,O73606
+KCNK16,Pore-forming; Name=Pore-forming 1,worm,19,70.0,0.556,0.556,0.435,15,0.667,false,33.6780981966405,33.6780981966405,0.621,MMseqs2 iterative,mmseqs12_k7_lcTrue,Q96T55,Q9XXD1
+MAPK14,ligand: ATP,yeast,9,55.6,0.889,0.889,0.444,18,0.444,false,503.48953239854615,503.48953239854615,0.364,phmmer,sdm12_k6_lcTrue,Q16539,P15442
+DAAM2,DAD,chicken,33,88.9,0.838,0.838,0.457,70,0.457,false,28.147872773323737,28.147872773323737,0.416,Reseek,hp_thomas_dill_no_c2_k19_lcTrue,Q86T65,A0A1D5P556
+PPARD,NR C4-type,zebrafish,23,50.0,0.846,0.846,0.468,47,0.468,false,433.8059919934047,433.8059919934047,0.297,phmmer,hp_thomas_dill_no_c2_k19_lcTrue,Q03181,Q06726
+MAP3K7,ligand: ATP,arabidopsis,9,77.8,0.889,0.889,0.471,17,0.471,false,991.9311711556128,991.9311711556128,0.211,MMseqs2 iterative,sdm12_k6_lcTrue,O43318,Q39202
+EHMT2,ANK 7,arabidopsis,30,51.7,0.812,0.812,0.483,60,0.483,false,40.95763254012407,40.95763254012407,0.967,phmmer,hp_kyte_doolittle2_k19_lcTrue,Q96KQ7,Q38898
+MAPK13,ligand: ATP,worm,9,90.0,0.8,0.8,0.5,16,0.5,false,250.45357112032448,250.45357112032448,0.333,phmmer,sdm12_k6_lcTrue,O15264,Q8I113
+MAP3K5,ligand: ATP,chicken,9,70.0,0.8,0.8,0.5,16,0.5,false,6007.625691134387,6007.625691134387,0.104,phmmer,sdm12_k6_lcTrue,Q99683,P13863
+ADGRB3,TSP type-1 1,chicken,53,57.1,0.509,0.482,0.525,70,0.6,false,7468.512772904896,7468.512772904896,0.788,MMseqs2 iterative,hp_thomas_dill_no_c2_k19_lcTrue,O60242,P35440
+KCNK17,Pore-forming; Name=Pore-forming 2,worm,20,76.9,0.684,0.684,0.531,30,0.567,false,0.22219429094025103,0.22219429094025103,0.783,phmmer,mmseqs12_k7_lcTrue,Q96T54,O17185
+MAP3K5,ligand: ATP,yeast,9,70.0,0.8,0.8,0.533,15,0.533,false,733.4558273608055,733.4558273608055,0.296,phmmer,sdm12_k6_lcTrue,Q99683,P00546
+KCNK16,Pore-forming; Name=Pore-forming 2,worm,20,84.6,0.684,0.684,0.548,29,0.586,false,0.3841594773508461,0.3841594773508461,0.292,phmmer,mmseqs12_k7_lcTrue,Q96T55,O17185
+MAP3K5,ligand: ATP,arabidopsis,9,70.0,0.8,0.8,0.571,14,0.571,false,6465.41703829774,6465.41703829774,0.348,MMseqs2 iterative,sdm12_k6_lcTrue,Q99683,P24100
+KCNK16,Pore-forming; Name=Pore-forming 2,chicken,20,50.0,0.526,0.526,0.576,33,0.576,false,2.9444442060108154,2.9444442060108154,0.442,MMseqs2,mmseqs12_k7_lcTrue,Q96T55,O73606
+KCNK5,Pore-forming; Name=Pore-forming 2,worm,26,80.0,0.4,0.4,0.583,32,0.656,false,2.3612024471125226,2.3612024471125226,0.417,phmmer,mmseqs12_k7_lcTrue,O95279,O17185
+NFKBIL1,ANK 2,worm,34,54.5,0.667,0.667,0.595,26,0.846,false,6013.335131131073,6013.335131131073,0.767,MMseqs2,hp_kyte_doolittle2_k19_lcTrue,Q9UBC1,Q18297
+CDC40,WD 1,zebrafish,41,57.1,0.525,0.525,0.6,24,1.0,false,33832.010026570366,33832.010026570366,0.952,phmmer,hp_kyte_doolittle2_k19_lcTrue,O60508,Q7T394
+MAP3K5,ligand: ATP,fly,9,70.0,0.8,0.8,0.615,13,0.615,false,11316.24161052887,11316.24161052887,0.129,phmmer,sdm12_k6_lcTrue,Q99683,P23572
+MAP3K7,ligand: ATP,zebrafish,9,77.8,0.889,0.889,0.615,13,0.615,false,4338.74944422091,4338.74944422091,0.113,Reseek,sdm12_k6_lcTrue,O43318,Q9DGE0
+KCNK16,Pore-forming; Name=Pore-forming 2,fly,20,50.0,0.526,0.526,0.625,20,0.75,false,44.250447261380785,44.250447261380785,0.092,Foldseek,mmseqs12_k7_lcTrue,Q96T55,P08510
+KCNK17,Pore-forming; Name=Pore-forming 2,fly,20,60.0,0.526,0.526,0.625,20,0.75,false,44.991014517020915,44.991014517020915,0.209,MMseqs2,mmseqs12_k7_lcTrue,Q96T54,P08510
+KCNK17,Pore-forming; Name=Pore-forming 2,arabidopsis,20,70.0,0.526,0.526,0.652,19,0.789,false,8.842117833193127,8.842117833193127,0.655,phmmer,mmseqs12_k7_lcTrue,Q96T54,P92960
+KCNK16,Pore-forming; Name=Pore-forming 2,arabidopsis,20,60.0,0.526,0.526,0.652,19,0.789,false,9.270169636012259,9.270169636012259,0.543,MMseqs2 iterative,mmseqs12_k7_lcTrue,Q96T55,P92960
+MAPK13,ligand: ATP,yeast,9,55.6,0.889,0.889,0.667,12,0.667,false,1485.2816881097137,1485.2816881097137,0.296,phmmer,sdm12_k6_lcTrue,O15264,P15442
+MAP3K7,ligand: ATP,worm,9,55.6,0.889,0.889,0.667,12,0.667,false,1925.3130634862896,1925.3130634862896,0.333,phmmer,sdm12_k6_lcTrue,O43318,P39745
+KCNK17,Pore-forming; Name=Pore-forming 1,worm,19,70.0,0.556,0.556,0.692,26,0.692,false,5.4135094121066984,5.4135094121066984,0.52,MMseqs2,mmseqs12_k7_lcTrue,Q96T54,Q9XXD1
+KCNK16,Pore-forming; Name=Pore-forming 1,fly,19,60.0,0.556,0.556,0.692,26,0.692,false,26.59570246148227,26.59570246148227,0.474,MMseqs2 iterative,mmseqs12_k7_lcTrue,Q96T55,P08510
+MAPK14,ligand: ATP,arabidopsis,9,66.7,0.889,0.889,0.727,11,0.727,false,1663.506337484886,1663.506337484886,0.286,MMseqs2 iterative,sdm12_k6_lcTrue,Q16539,Q8GYF5
+ELOVL4,Helical,worm,21,54.5,0.826,0.826,0.769,26,0.769,false,11038.491435641185,11038.491435641185,0.165,Reseek,hp_lehninger_c_nonpolar2_k18_lcTrue,Q9GZR5,Q20303
+RREB1,C2H2-type 3,chicken,23,58.3,0.769,0.769,0.769,24,0.833,false,101586.02187889224,101586.02187889224,0.44,phmmer,hp_thomas_dill_no_c2_k19_lcTrue,Q92766,Q90850
+ROS1,ligand: ATP,yeast,9,60.0,0.8,0.8,0.8,10,0.8,false,1132.015230845102,1132.015230845102,0.084,phmmer,sdm12_k6_lcTrue,P08922,P38070
+MAP3K5,ligand: ATP,zebrafish,9,60.0,0.8,0.8,0.8,10,0.8,false,18464.494950867225,18464.494950867225,0.296,phmmer,sdm12_k6_lcTrue,Q99683,Q32PP3
+BRPF3,C2HC pre-PHD-type,worm,34,60.0,0.657,0.657,0.846,39,0.846,false,14880.447089575662,14880.447089575662,0.359,MMseqs2 iterative,hp_thomas_dill_no_c2_k19_lcTrue,Q9ULD4,P34447
+MAPK13,ligand: ATP,arabidopsis,9,66.7,0.889,0.889,0.889,9,0.889,false,3611.341217254182,3611.341217254182,0.286,MMseqs2 iterative,sdm12_k6_lcTrue,O15264,Q8GYF5
+MAP3K4,ligand: ATP,yeast,9,66.7,0.889,0.889,0.889,9,0.889,false,2062.29114043946,2062.29114043946,0.421,phmmer,sdm12_k6_lcTrue,Q9Y6R4,P06782
+MAPK14,ligand: ATP,worm,9,88.9,0.889,0.889,0.889,9,0.889,false,1249.149667621015,1249.149667621015,0.235,phmmer,sdm12_k6_lcTrue,Q16539,Q8I113
+MAP3K4,ligand: ATP,fly,9,55.6,0.889,0.889,0.889,9,0.889,false,7364.897243768754,7364.897243768754,0.14,phmmer,sdm12_k6_lcTrue,Q9Y6R4,P05130
+KCNK17,Pore-forming; Name=Pore-forming 1,fly,19,60.0,0.556,0.556,0.947,19,0.947,false,13.256671731657962,13.256671731657962,0.474,MMseqs2 iterative,mmseqs12_k7_lcTrue,Q96T54,P08510
