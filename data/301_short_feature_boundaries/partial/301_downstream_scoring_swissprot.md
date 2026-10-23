@@ -21,3 +21,5 @@ Expected files:
 All 16 recovery jobs were pending at the latest check in this turn. The dependent job
 has not run. Failed or missing settings remain incomplete. Comparators, full timing,
 remaining figures and the independent second-agent check remain unfinished.
+
+Latest check: 2026-10-23 13:06:06 UTC. All sixteen recovery jobs and scorer 49182992 are still pending. No new completed settings or scoring files exist. Current coverage is in 301_current_coverage_swissprot.tsv.
