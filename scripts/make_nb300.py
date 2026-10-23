@@ -389,16 +389,17 @@ pf.save(fig, FIGURES / "step0_settings_with_and_without_fit")
 """)
 
 md(r"""
-## 8. Step 0 verdict (run of 2026-10-20, databases read that day)
+## 8. Step 0 verdict (composition snapshots dated 2026-10-20)
 
 **Dead: all 7 HP alphabets.** `hp_lehninger2`, `hp_thomas_dill2`, `hp_kyte_doolittle2`,
 `hp_thomas_dill_no_c2`, `hp_lehninger_c_nonpolar2`, `hp_lehninger_hpc3` and `hp_pbotc_1st_ed2`.
 The smallest k any of them was indexed at is 15 to 19, longer than a 14-residue window, and two
 seeds of 15 need 31 residues, more than the longest peptide. Even ignoring the seed, one exact
 window needs 38 to 41 residues to reach `expected_hits_counting` < 0.01 against UHGP-90
-(section 5). Peptide lookup is not possible with a two- or three-class alphabet.
+(section 5). These two- and three-class settings fail the fixed Step 0 gate; this does not
+rule out every longer single seed or every peptide composition.
 
-**Alive: the other 12**, `massspec18` among them. Against UHGP-90 (4.37 billion residues):
+**Alive: the other 13**, `massspec18` among them. Against UHGP-90 (4.37 billion residues):
 
 * `protein20`, `uniprot18` and `massspec18` reach `expected_hits_counting` < 0.01 with one exact
   window of 10 residues, and a 14-residue window gives 1.3e-8 to 1.4e-7.
