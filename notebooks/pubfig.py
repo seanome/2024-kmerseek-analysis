@@ -131,9 +131,21 @@ def to_256_colours(path):
     from PIL import Image
 
     with Image.open(path) as image:
+        if image.mode == "P":
+            return
         if colour_bar_shades(image) >= MIN_COLOUR_BAR_SHADES:
             return
         dpi = image.info.get("dpi")
-        palette = image.convert("RGB").quantize(colors=256, dither=Image.Dither.NONE)
+        rgba = image.convert("RGBA")
+        if rgba.getextrema()[3][0] == 255:
+            palette = rgba.convert("RGB").quantize(
+                colors=256, method=Image.Quantize.MEDIANCUT, dither=Image.Dither.NONE
+            )
+        else:
+            # Median cut cannot quantize RGBA. Keep alpha with the same method as the
+            # PNG hook, rather than turning a transparent figure background opaque.
+            palette = rgba.quantize(
+                colors=256, method=Image.Quantize.FASTOCTREE, dither=Image.Dither.NONE
+            )
     # quantize() drops the 450 dpi tag; without it the PNG opens at 72 dpi, 6x too large.
     palette.save(path, optimize=True, **({"dpi": dpi} if dpi else {}))
