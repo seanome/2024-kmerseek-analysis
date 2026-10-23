@@ -72,7 +72,7 @@ decoy hit rate is no better than chance.
 
 **Status, 2026-10-20.** Step 1 (the scans) is done and below. Step 2 (the 2,000 real queries,
 the 500 chimeras, their UniRef90 clusters and the Swiss-Prot search database) is done and
-in section 2. Steps 3 to 8 have not run. The last
+in section 2. Step 3 and the pilot are complete; section 5 scores three completed settings and records recovery of 16 memory failures. The last
 section lists what was found while preparing them and the decisions taken.
 """)
 
@@ -571,8 +571,8 @@ and a degron chimera) with their 34 decoys. Each search passed the setting's own
 - dayhoff6 k12's Karlin-Altschul fit was refused on this index, and kmerseek v0.4.0 then
   refuses to search. Such a setting is excluded and listed, as decided.
 - One query (P12241, hp_lehninger2 k19, 4 cores) took 61.5 s the first time this node read
-  the index and 2.5 s the second time. The rule asks for under 0.1 s. Under the pass rule
-  the timing condition fails, so the verdict can only be FAIL or DROP; the run decides which.
+  the index and 2.5 s the second time. The rule asks for under 0.1 s as a cold-cache median over 100 queries. This
+  pilot is slower, but does not measure that median or the other settings.
 """)
 
 code(r"""
@@ -617,7 +617,7 @@ pf.save(fig, FIG / "301_pilot_kmerseek_time_swissprot", formats=("png", "pdf"))
 md(r"""
 ## 4. What was found while preparing steps 3 to 8
 
-Steps 3 to 8 have not run. Six things in the task brief do not match the repository as it
+The complete benchmark is still unfinished. Six things in the task brief differ from the repository as it
 stands on 2026-10-20. Each needs a decision before compute is spent.
 
 1. **The decoys put the feature back into its real flanks.** Step 3 splices each decoy
@@ -700,6 +700,91 @@ this notebook. A review of its preregistration raised five points; each is answe
 """)
 
 md(r"""
+## 5. Three completed settings and recovery of the other 16 (2026-10-23)
+
+The fixed pass rule gives DROP for each of the three completed settings on the subset:
+360 queries, 685 features and 1,356 usable decoy windows. Recall is 0 at the admissible
+cutoff; median boundary error is undefined because no feature is recalled. These are
+partial results, not a verdict across the planned settings.
+
+Scores come from `scripts/score_301_completed.py`. Raw filtered hits, the subset IDs and
+expected chunk counts are committed under `data/301_short_feature_boundaries/partial/raw`.
+The cutoff uses only decoys, pooled across feature types. A hit requires
+`region_evalue < region_evalue_threshold`, so ties enter together; the cutoff is capped
+at 10 because only E-values up to 10 were retained. With 1,356 decoys, at most 13 can hit.
+The output has E-value zero on 55 protein20, 45 uniprot18 and 35 wass14 decoy queries.
+Admitting the zero group therefore exceeds 1%; cutoff 0 rejects all hits. With an inclusive
+comparison there is no admissible nonnegative cutoff. The zero values cannot be ordered
+using this output. The pass rule itself remains unchanged.
+
+The half-inside diagnostic, requested before the run and not used for the verdict,
+recalls 100, 95 and 84 of 685 features, with median boundary errors 15.5, 17 and 16 aa.
+Boundary error is conditional on recall. When several regions overlap one feature, choose
+largest overlap, then lower E-value, then target name and coordinates. Overlap fraction
+is residues in common divided by feature length. Per-type results and E=10 context are
+in the summary table. Thresholds are not fitted separately per feature type.
+
+Seven jobs hit 96 GiB during the 200-query Karlin–Altschul calibration; nine hit it during
+search. Failed RSS is a lower bound because Slurm killed each process at its memory limit.
+The recovery requests are 256 GiB for calibration failures and 192 GiB for search failures,
+with 12 h limits except hp_thomas_dill2 (10 h, seven chunks already complete). These are
+requests, not measured successful peaks. `scripts/measure_301_recovery.py` recomputes them
+from accounting and GNU time logs at submission. Original accounting and logs are committed.
+
+The recovery also fixes index reuse: RocksDB's CURRENT exists before calibration ends,
+so reuse now requires the index log's final success line. Interrupted builds are retained
+and rebuilt. Completed chunks are checked with gzip and reused with the original
+100-sequence boundaries. Tests simulate a killed index with CURRENT present and a finished
+chunk; the index is rebuilt and the chunk is reused.
+
+Jobs 49182599–49182614 were submitted on 2026-10-23. Their success and peak memory are not
+yet measured. The one-query pilot (2.5 s warm) is not the required 100-query cold-cache
+median. It cannot by itself establish a timing verdict for all settings. Comparators,
+full timing and the independent second-agent check remain outstanding. The earlier
+statement that the pilot ruled out PASS for every setting was too strong.
+""")
+
+code(r"""
+partial = pl.read_csv(DATA / "partial" / "301_partial_summary_swissprot.tsv", separator="\t", null_values="NA")
+shown = partial.filter((pl.col("feature_type") == "all") & (pl.col("cutoff_kind") == "decoy_threshold"))
+print(shown)
+resources = pl.read_csv(DATA / "partial" / "301_recovery_resources_swissprot.tsv", separator="\t")
+print(resources)
+labels = ["protein20 k5", "uniprot18 k5", "wass14 k6"]
+fig, axs = pf.figure(pf.TWO_COLUMN_MM, 65, ncols=2)
+for rule, colour, marker, label in [
+    ("any_overlap", pf.OKABE_ITO["blue"], "o", "fixed rule: any overlap"),
+    ("half_region_inside", pf.OKABE_ITO["vermillion"], "s", "diagnostic: half the region inside"),
+]:
+    vals = shown.filter(pl.col("rule") == rule).sort("setting")
+    axs[0].plot(vals["recall_features"].to_numpy() * 100, np.arange(3), marker=marker, ls="none", color=colour, label=label)
+axs[0].set_yticks(np.arange(3), labels)
+axs[0].invert_yaxis()
+axs[0].set_xlim(-1, 17)
+axs[0].set_xlabel("recalled features (%) of 685; higher is better")
+axs[0].grid(axis="y")
+r = resources.filter(pl.col("previous_state") == "OUT_OF_MEMORY").sort("failure_stage", "alphabet")
+for stage, colour, marker, label in [
+    ("index", pf.OKABE_ITO["bluish_green"], "^", "calibration failure: recovery request"),
+    ("search", pf.OKABE_ITO["reddish_purple"], "D", "search failure: recovery request"),
+]:
+    idx=[i for i,x in enumerate(r["failure_stage"]) if x==stage]
+    axs[1].plot([r["requested_memory_gib"][i] for i in idx],idx,ls="none",marker=marker,color=colour,label=label)
+axs[1].axvline(96,color=pf.GREY,ls=":",label="previous request: all 16 killed")
+axs[1].set_yticks(np.arange(r.height), r["alphabet"])
+axs[1].invert_yaxis()
+axs[1].set_xlim(75,280)
+axs[1].set_xlabel("memory request (GiB), not measured need")
+axs[1].grid(axis="y")
+for ax, letter in zip(axs,"ab"): pf.panel_label(ax,letter)
+pf.shared_legend(fig,ncol=2,title=(
+    "kmerseek v0.4.0: 360 Swiss-Prot/chimera queries against Swiss-Prot minus query clusters\n"
+    "Three completed settings give DROP under the fixed rule; 16 memory failures resumed with larger requests"
+),alignment="left")
+pf.save(fig, FIG / "301_partial_scores_recovery_swissprot", formats=("png","pdf"))
+""")
+
+md(r"""
 ## Summary and conclusions
 
 1. On notebook 244's 87 cases (50 human Swiss-Prot features), the hydropathy window scan and
@@ -715,8 +800,7 @@ md(r"""
 5. The step 2 query set holds 2,000 real Swiss-Prot proteins and 500 chimeras with 4,602
    features. Leaving out every query's UniRef90 cluster removes 6,786 of 575,748 Swiss-Prot
    entries, so the search database holds 568,962 (section 2).
-6. Steps 3 to 8 are not run. The three decisions above fix how decoy hits are counted, which
-   settings run, and that Swiss-Prot runs before UniRef90.
+6. Three completed settings each recall 0 of 685 features at the decoy-set cutoff: partial DROP. The other 16 settings were resumed after memory failures (section 5). Comparators and the required timing and independent check remain outstanding.
 """)
 
 nb = nbf.v4.new_notebook()

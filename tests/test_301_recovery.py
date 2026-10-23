@@ -87,3 +87,22 @@ exit $rc
     assert (d / "idx.failed.test/CURRENT").exists()
     assert "fitted" in (d.parent / "status.tsv").read_text()
     assert gzip.open(d / "regions_filtered.chunk000.tsv.gz", "rt").read() == "kept\n"
+
+
+def test_real_snapshot_zero_evalue_groups_exceed_one_percent():
+    import csv
+    import gzip
+
+    raw = ROOT / "data/301_short_feature_boundaries/partial/raw/step5"
+    for alphabet, expected in [("protein20", 55), ("uniprot18", 45), ("wass14", 35)]:
+        queries = set()
+        for path in (raw / alphabet).glob("*/regions_filtered.chunk*.tsv.gz"):
+            with gzip.open(path, "rt") as f:
+                for row in csv.DictReader(f, delimiter="\t"):
+                    if (
+                        row["query_id"].startswith("decoy_")
+                        and float(row["region_evalue"]) == 0
+                    ):
+                        queries.add(row["query_id"])
+        assert len(queries) == expected
+        assert len(queries) / 1356 > 0.01

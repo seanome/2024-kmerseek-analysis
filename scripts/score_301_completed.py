@@ -171,6 +171,7 @@ def main():
                             recall_features=rec,
                             n_decoy_windows=len(ds),
                             n_decoys_hit=sum(s < cutoff for s in ds),
+                            n_decoys_zero_evalue=sum(s == 0 for s in ds),
                             decoy_hit_rate=(
                                 sum(s < cutoff for s in ds) / len(ds) if ds else ""
                             ),
