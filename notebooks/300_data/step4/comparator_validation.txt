@@ -1,0 +1,24 @@
+diamond v2.1.23.177 (C) Max Planck Society for the Advancement of Science, Benjamin J. Buchfink, University of Tuebingen
+Documentation, support and updates available at http://www.diamondsearch.org
+Please cite: http://dx.doi.org/10.1038/s41592-021-01101-x Nature Methods (2021)
+
+[1;33mWarning: This version of DIAMOND is more than 180 days old. It is recommended to always use the latest version.
+[0;39m          Database type  Diamond database
+Database format version  3
+          Diamond build  177
+              Sequences  13859294
+                Letters  4387083384
+Database: nb300_search_db
+	13,859,294 sequences; 4,387,083,384 total residues
+
+Date: Oct 22, 2026  9:51 AM	Longest sequence: 42,508 residues
+
+BLASTDB Version: 5
+
+Volumes:
+	/scratch/users/olgabot/peptide-lookup-300/step4/comparators/blast.00
+	/scratch/users/olgabot/peptide-lookup-300/step4/comparators/blast.01
+MGYG000276714_01980 1196
+Error: [blastdbcmd] Entry not found: MGYG000029077_00369
+Error: [blastdbcmd] Entry or entries not found in BLAST database
+Checked hidden accession MGYG000029077_00369: absent
