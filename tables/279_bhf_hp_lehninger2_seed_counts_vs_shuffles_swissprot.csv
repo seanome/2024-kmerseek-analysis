@@ -1,0 +1,13 @@
+k,measure,BHF,copies_median,copies_5th_pct,copies_95th_pct,BHF_vs_median_pct,p
+11,(a) proteins sharing at least 2 k-mers,558126,557902.0,555955.0,559716.0,0.0,0.406
+11,(b) most k-mers shared with one protein,218,220.0,207.0,228.0,-0.9,0.634
+12,(a) proteins sharing at least 2 k-mers,531447,528577.0,522739.0,532390.0,0.5,0.158
+12,(b) most k-mers shared with one protein,224,228.0,217.0,234.0,-1.8,0.772
+13,(a) proteins sharing at least 2 k-mers,464634,454400.0,443200.0,463735.0,2.3,0.04
+13,(b) most k-mers shared with one protein,211,221.0,211.0,228.0,-4.5,0.95
+14,(a) proteins sharing at least 2 k-mers,354126,339258.0,327060.0,351307.0,4.4,0.04
+14,(b) most k-mers shared with one protein,176,187.5,175.0,200.0,-6.1,0.941
+15,(a) proteins sharing at least 2 k-mers,235642,220813.0,210258.0,230981.0,6.7,0.04
+15,(b) most k-mers shared with one protein,124,137.0,121.0,156.0,-9.5,0.921
+16,(a) proteins sharing at least 2 k-mers,140586,128862.0,121730.0,138185.0,9.1,0.05
+16,(b) most k-mers shared with one protein,85,91.0,75.0,110.0,-6.6,0.713
