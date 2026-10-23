@@ -4,7 +4,8 @@
 #SBATCH --account=ayeletv
 #SBATCH --output=%x.%j.out
 # Translate one sequence source of a contrast (compactors or DE-kupl contigs), sketch the
-# peptides, search the new proteome and Swiss-Prot at every setting (multisearch -p), then align
+# peptides, search the new proteome, Swiss-Prot and the old gene models at every setting
+# (manysearch against RocksDB indexes), then align
 # each proposed pair (parasail). SRC=compactors|dekupl. Resources are set at submission.
 set -euo pipefail
 : "${PEC_ROOT:?}" "${PEC_CODE:?}" "${CONTRAST:?}" "${SRC:?}"
@@ -31,8 +32,8 @@ if [ -s pep.peptides.faa ]; then
       for s in 10 100 5; do
         out=ms.$db.$m.k$k.s$s.csv
         [ -s "$out" ] && continue
-        sourmash scripts multisearch pep.scaled5.zip "$PEC_ROOT/db/$db.scaled5.zip" -m $m -k $k -s $s \
-          -t 0.000001 -p -c "$N" -o "$out.part" 2>> multisearch.log
+        sourmash scripts manysearch pep.scaled5.zip "$PEC_ROOT/db/$db.$m.k$k.s$s.rocksdb" -m $m -k $k -s $s \
+          -t 0.000001 -N -c "$N" -o "$out.part" 2>> manysearch.log
         mv "$out.part" "$out"
       done
     done

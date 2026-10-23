@@ -141,3 +141,10 @@ the stated thresholds.
   DE tables and its named gene lists (SI sheet "annotated DE all groups young/old") use these
   g##### IDs, so a peptide's match to an old protein links it to the paper's gene directly. Same
   settings and the same alignment rule as the other databases.
+* 2026-10-23, after the control's first search, before any real result: sketch searches use
+  `manysearch` against RocksDB indexes instead of `multisearch -p`. On the control, multisearch
+  took about 48 min for 60,195 peptides against the new proteome at all 9 settings; Swiss-Prot
+  has about 12 times the residues, so about 10 h per contrast. manysearch gives containment
+  and shared hashes but not the overlap probability. The alignment check of every proposed pair is
+  unchanged. The control's multisearch output against the new proteome is kept
+  (`contrasts/control/multisearch_check_*`) to compare the two.
