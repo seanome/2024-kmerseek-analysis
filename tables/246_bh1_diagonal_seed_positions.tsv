@@ -1,0 +1,221 @@
+alphabet	scheme	ced9_position	bcl2_position
+hp_thomas_dill2	chained 2 x k=5 in 40	77	53
+hp_thomas_dill2	exact k=8	172	148
+hp_thomas_dill2	chained 2 x k=5 in 40	178	154
+hp_thomas_dill2	chained 2 x k=5 in 40, scaled 2	178	154
+hp_thomas_dill2	chained 2 x k=5 in 40	179	155
+hp_thomas_dill2	window 16 of 20	179	155
+hp_thomas_dill2	chained 2 x k=5 in 40	180	156
+hp_thomas_dill2	window 16 of 20	180	156
+hp_thomas_dill2	exact k=8	181	157
+hp_thomas_dill2	spaced 11011011011011011	181	157
+hp_thomas_dill2	chained 2 x k=5 in 40	181	157
+hp_thomas_dill2	chained 2 x k=8 in 40	181	157
+hp_thomas_dill2	chained 2 x k=8 in 40, scaled 2	181	157
+hp_thomas_dill2	window 16 of 20	181	157
+hp_thomas_dill2	exact k=8	182	158
+hp_thomas_dill2	exact k=8, scaled 2	182	158
+hp_thomas_dill2	spaced 111010010100110111	182	158
+hp_thomas_dill2	chained 2 x k=5 in 40	182	158
+hp_thomas_dill2	chained 2 x k=5 in 40, scaled 2	182	158
+hp_thomas_dill2	chained 2 x k=8 in 40	182	158
+hp_thomas_dill2	window 18 of 20	182	158
+hp_thomas_dill2	window 16 of 20	182	158
+hp_thomas_dill2	exact k=8	183	159
+hp_thomas_dill2	exact k=8, scaled 2	183	159
+hp_thomas_dill2	exact k=10	183	159
+hp_thomas_dill2	chained 2 x k=5 in 40	183	159
+hp_thomas_dill2	chained 2 x k=5 in 40, scaled 2	183	159
+hp_thomas_dill2	chained 3 x k=5 in 40	183	159
+hp_thomas_dill2	chained 3 x k=5 in 40, scaled 2	183	159
+hp_thomas_dill2	chained 2 x k=8 in 40	183	159
+hp_thomas_dill2	window 18 of 20	183	159
+hp_thomas_dill2	window 16 of 20	183	159
+hp_thomas_dill2	exact k=8	184	160
+hp_thomas_dill2	exact k=8, scaled 2	184	160
+hp_thomas_dill2	exact k=10	184	160
+hp_thomas_dill2	spaced 11011011011011011	184	160
+hp_thomas_dill2	spaced 111010010100110111	184	160
+hp_thomas_dill2	chained 2 x k=5 in 40	184	160
+hp_thomas_dill2	chained 3 x k=5 in 40	184	160
+hp_thomas_dill2	chained 2 x k=8 in 40	184	160
+hp_thomas_dill2	window 18 of 20	184	160
+hp_thomas_dill2	window 16 of 20	184	160
+hp_thomas_dill2	window 18 of 20	186	162
+hp_thomas_dill2	window 16 of 20	186	162
+hp_thomas_dill2	spaced 11011011011011011	187	163
+hp_thomas_dill2	spaced 11011011011011011011011	187	163
+hp_thomas_dill2	window 18 of 20	187	163
+hp_thomas_dill2	window 16 of 20	187	163
+hp_thomas_dill2	spaced 10101010101010101010101	188	164
+hp_thomas_dill2	spaced 10101010101010101010101, scaled 2	188	164
+hp_thomas_dill2	window 18 of 20	188	164
+hp_thomas_dill2	window 16 of 20	188	164
+hp_thomas_dill2	window 24 of 30	188	164
+hp_thomas_dill2	window 24 of 30	192	168
+hp_thomas_dill2	chained 2 x k=5 in 40	202	178
+hp_thomas_dill2	chained 3 x k=5 in 40	202	178
+hp_thomas_dill2	chained 4 x k=5 in 40	202	178
+hp_thomas_dill2	chained 2 x k=5 in 40	203	179
+hp_thomas_dill2	chained 3 x k=5 in 40	203	179
+hp_thomas_dill2	chained 4 x k=5 in 40	203	179
+hp_thomas_dill2	chained 2 x k=5 in 40	204	180
+hp_thomas_dill2	chained 2 x k=5 in 40, scaled 2	204	180
+hp_thomas_dill2	chained 3 x k=5 in 40	204	180
+hp_thomas_dill2	chained 3 x k=5 in 40, scaled 2	204	180
+hp_thomas_dill2	chained 4 x k=5 in 40	204	180
+hp_thomas_dill2	chained 4 x k=5 in 40, scaled 2	204	180
+hp_thomas_dill2	exact k=8	205	181
+hp_thomas_dill2	chained 2 x k=5 in 40	205	181
+hp_thomas_dill2	chained 3 x k=5 in 40	205	181
+hp_thomas_dill2	chained 4 x k=5 in 40	205	181
+hp_thomas_dill2	chained 2 x k=8 in 40	205	181
+hp_thomas_dill2	chained 3 x k=8 in 60	205	181
+hp_lehninger2	exact k=8	105	81
+hp_lehninger2	exact k=8	106	82
+hp_lehninger2	exact k=8, scaled 2	106	82
+hp_lehninger2	chained 2 x k=5 in 40	130	106
+hp_lehninger2	exact k=8	170	146
+hp_lehninger2	exact k=8, scaled 2	170	146
+hp_lehninger2	exact k=8	171	147
+hp_lehninger2	exact k=8	172	148
+hp_lehninger2	exact k=8, scaled 2	172	148
+hp_lehninger2	exact k=10	172	148
+hp_lehninger2	chained 2 x k=5 in 40	172	148
+hp_lehninger2	exact k=8	173	149
+hp_lehninger2	exact k=10	173	149
+hp_lehninger2	chained 2 x k=5 in 40	173	149
+hp_lehninger2	chained 2 x k=5 in 40, scaled 2	173	149
+hp_lehninger2	exact k=8	174	150
+hp_lehninger2	exact k=8, scaled 2	174	150
+hp_lehninger2	exact k=10	174	150
+hp_lehninger2	exact k=12	174	150
+hp_lehninger2	chained 2 x k=5 in 40	174	150
+hp_lehninger2	chained 2 x k=5 in 40, scaled 2	174	150
+hp_lehninger2	exact k=8	175	151
+hp_lehninger2	exact k=8, scaled 2	175	151
+hp_lehninger2	exact k=10	175	151
+hp_lehninger2	exact k=12	175	151
+hp_lehninger2	chained 2 x k=5 in 40	175	151
+hp_lehninger2	chained 2 x k=5 in 40, scaled 2	175	151
+hp_lehninger2	exact k=8	176	152
+hp_lehninger2	exact k=8, scaled 2	176	152
+hp_lehninger2	exact k=10	176	152
+hp_lehninger2	exact k=12	176	152
+hp_lehninger2	exact k=12, scaled 2	176	152
+hp_lehninger2	exact k=14	176	152
+hp_lehninger2	chained 2 x k=5 in 40	176	152
+hp_lehninger2	window 16 of 20	176	152
+hp_lehninger2	exact k=8	177	153
+hp_lehninger2	exact k=10	177	153
+hp_lehninger2	exact k=12	177	153
+hp_lehninger2	exact k=14	177	153
+hp_lehninger2	exact k=14, scaled 2	177	153
+hp_lehninger2	chained 2 x k=5 in 40	177	153
+hp_lehninger2	chained 3 x k=5 in 40	177	153
+hp_lehninger2	window 16 of 20	177	153
+hp_lehninger2	exact k=8	178	154
+hp_lehninger2	exact k=10	178	154
+hp_lehninger2	exact k=10, scaled 2	178	154
+hp_lehninger2	exact k=12	178	154
+hp_lehninger2	exact k=14	178	154
+hp_lehninger2	exact k=16	178	154
+hp_lehninger2	chained 2 x k=5 in 40	178	154
+hp_lehninger2	chained 3 x k=5 in 40	178	154
+hp_lehninger2	chained 2 x k=8 in 40	178	154
+hp_lehninger2	window 16 of 20	178	154
+hp_lehninger2	exact k=8	179	155
+hp_lehninger2	exact k=10	179	155
+hp_lehninger2	exact k=10, scaled 2	179	155
+hp_lehninger2	exact k=12	179	155
+hp_lehninger2	exact k=12, scaled 2	179	155
+hp_lehninger2	exact k=14	179	155
+hp_lehninger2	exact k=16	179	155
+hp_lehninger2	exact k=16, scaled 2	179	155
+hp_lehninger2	spaced 11011011011011011	179	155
+hp_lehninger2	chained 2 x k=5 in 40	179	155
+hp_lehninger2	chained 2 x k=5 in 40, scaled 2	179	155
+hp_lehninger2	chained 3 x k=5 in 40	179	155
+hp_lehninger2	chained 3 x k=5 in 40, scaled 2	179	155
+hp_lehninger2	chained 2 x k=8 in 40	179	155
+hp_lehninger2	chained 2 x k=8 in 40, scaled 2	179	155
+hp_lehninger2	window 18 of 20	179	155
+hp_lehninger2	window 16 of 20	179	155
+hp_lehninger2	exact k=8	180	156
+hp_lehninger2	exact k=10	180	156
+hp_lehninger2	exact k=12	180	156
+hp_lehninger2	exact k=12, scaled 2	180	156
+hp_lehninger2	exact k=14	180	156
+hp_lehninger2	exact k=16	180	156
+hp_lehninger2	exact k=16, scaled 2	180	156
+hp_lehninger2	exact k=18	180	156
+hp_lehninger2	spaced 11011011011011011	180	156
+hp_lehninger2	spaced 11011011011011011, scaled 2	180	156
+hp_lehninger2	spaced 111010010100110111	180	156
+hp_lehninger2	spaced 111010010100110111, scaled 2	180	156
+hp_lehninger2	chained 2 x k=5 in 40	180	156
+hp_lehninger2	chained 2 x k=5 in 40, scaled 2	180	156
+hp_lehninger2	chained 3 x k=5 in 40	180	156
+hp_lehninger2	chained 3 x k=5 in 40, scaled 2	180	156
+hp_lehninger2	chained 2 x k=8 in 40	180	156
+hp_lehninger2	chained 2 x k=8 in 40, scaled 2	180	156
+hp_lehninger2	window 18 of 20	180	156
+hp_lehninger2	window 16 of 20	180	156
+hp_lehninger2	exact k=8	181	157
+hp_lehninger2	exact k=8, scaled 2	181	157
+hp_lehninger2	exact k=10	181	157
+hp_lehninger2	exact k=10, scaled 2	181	157
+hp_lehninger2	exact k=12	181	157
+hp_lehninger2	exact k=14	181	157
+hp_lehninger2	exact k=14, scaled 2	181	157
+hp_lehninger2	exact k=16	181	157
+hp_lehninger2	exact k=16, scaled 2	181	157
+hp_lehninger2	exact k=18	181	157
+hp_lehninger2	exact k=18, scaled 2	181	157
+hp_lehninger2	spaced 11011011011011011	181	157
+hp_lehninger2	spaced 111010010100110111	181	157
+hp_lehninger2	chained 2 x k=5 in 40	181	157
+hp_lehninger2	chained 2 x k=5 in 40, scaled 2	181	157
+hp_lehninger2	chained 3 x k=5 in 40	181	157
+hp_lehninger2	chained 3 x k=5 in 40, scaled 2	181	157
+hp_lehninger2	chained 2 x k=8 in 40	181	157
+hp_lehninger2	chained 2 x k=8 in 40, scaled 2	181	157
+hp_lehninger2	window 18 of 20	181	157
+hp_lehninger2	window 16 of 20	181	157
+hp_lehninger2	window 18 of 20	183	159
+hp_lehninger2	window 16 of 20	183	159
+hp_lehninger2	spaced 11011011011011011	184	160
+hp_lehninger2	window 18 of 20	184	160
+hp_lehninger2	window 16 of 20	184	160
+hp_lehninger2	window 18 of 20	186	162
+hp_lehninger2	window 16 of 20	186	162
+hp_lehninger2	window 24 of 30	186	162
+hp_lehninger2	spaced 11011011011011011	187	163
+hp_lehninger2	spaced 11011011011011011, scaled 2	187	163
+hp_lehninger2	spaced 11011011011011011011011	187	163
+hp_lehninger2	window 18 of 20	187	163
+hp_lehninger2	window 16 of 20	187	163
+hp_lehninger2	window 24 of 30	187	163
+hp_lehninger2	spaced 111010010100110111	188	164
+hp_lehninger2	window 18 of 20	188	164
+hp_lehninger2	window 16 of 20	188	164
+hp_lehninger2	window 24 of 30	188	164
+hp_lehninger2	window 24 of 30	193	169
+hp_lehninger2	chained 2 x k=5 in 40	202	178
+hp_lehninger2	chained 3 x k=5 in 40	202	178
+hp_lehninger2	chained 4 x k=5 in 40	202	178
+hp_lehninger2	chained 2 x k=5 in 40	203	179
+hp_lehninger2	chained 3 x k=5 in 40	203	179
+hp_lehninger2	chained 4 x k=5 in 40	203	179
+hp_lehninger2	chained 2 x k=5 in 40	204	180
+hp_lehninger2	chained 2 x k=5 in 40, scaled 2	204	180
+hp_lehninger2	chained 3 x k=5 in 40	204	180
+hp_lehninger2	chained 3 x k=5 in 40, scaled 2	204	180
+hp_lehninger2	chained 4 x k=5 in 40	204	180
+hp_lehninger2	chained 4 x k=5 in 40, scaled 2	204	180
+hp_lehninger2	exact k=8	205	181
+hp_lehninger2	chained 2 x k=5 in 40	205	181
+hp_lehninger2	chained 3 x k=5 in 40	205	181
+hp_lehninger2	chained 4 x k=5 in 40	205	181
+hp_lehninger2	chained 2 x k=8 in 40	205	181
+hp_lehninger2	chained 3 x k=8 in 60	205	181
