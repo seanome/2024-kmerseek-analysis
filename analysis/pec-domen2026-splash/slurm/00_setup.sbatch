@@ -14,6 +14,7 @@ cd "$PEC_ROOT"
 export MAMBA_ROOT_PREFIX=$PEC_ROOT/mamba
 MM=$PEC_ROOT/bin/micromamba
 ENV=$PEC_ROOT/env
+export PATH=$ENV/bin:$PATH  # cargo calls rustc from PATH
 mkdir -p versions
 # the environment is rebuilt whenever the YAML changes (stamp = its sha256)
 YML_HASH=$(sha256sum "$PEC_CODE/environment-pec361.yml" | cut -d' ' -f1)
