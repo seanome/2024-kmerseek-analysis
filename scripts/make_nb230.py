@@ -777,7 +777,7 @@ md(r"""
 ## 5. The fraction of pairs an exact index of size k can reach
 
 Same quantity as a survival curve: for each k, the fraction of pairs whose longest exact run
-is at least k. This is the ceiling on recall for an exact-match index in that alphabet at
+is at least k. This measures exact runs at corresponding alignment positions in that alphabet at
 that k, before any scoring, thresholding or database noise. The three marked k values are
 the ones the QfO Pfam sweep chose for the 2-letter arms (19 for hp_pbotc_1st_ed, 23 and 26 for
 hp_thomas_dill).
@@ -815,7 +815,7 @@ def ff(fr, a, b, k):
     return fr.filter((pl.col("alphabet") == a) & (pl.col("identity_bin") == b) & (pl.col("k") == k))["frac"][0]
 hc.finish_figure(
     fig, FIG / "230_reachable_fraction_vs_k.png", tools=hc.NO_TOOL,
-    hypothesis="At the k values the sweep selected for 2-letter alphabets, most pairs under 40% identity share no exact k-mer at all, so the identity panel's zeros are a property of the primitive, not of the biology.",
+    hypothesis="At the k values the sweep selected for 2-letter alphabets, most pairs under 40% identity have no exact k-mer at corresponding alignment positions; shared words at other offsets are not measured.",
     conclusion=(f"Pfam 20-30%: hp_thomas_dill2 reaches {100 * ff(fr_p, 'hp_thomas_dill2', '20-30%', 19):.0f}% of pairs at k=19, {100 * ff(fr_p, 'hp_thomas_dill2', '20-30%', 23):.0f}% at k=23, {100 * ff(fr_p, 'hp_thomas_dill2', '20-30%', 26):.0f}% at k=26. "
                 f"30-40%: {100 * ff(fr_p, 'hp_thomas_dill2', '30-40%', 19):.0f}% / {100 * ff(fr_p, 'hp_thomas_dill2', '30-40%', 23):.0f}% / {100 * ff(fr_p, 'hp_thomas_dill2', '30-40%', 26):.0f}%. "
                 f"SCOPe cross-family 20-30%: {100 * ff(fr_s, 'hp_thomas_dill2', '20-30%', 23):.0f}% at k=23. For comparison protein20 at k=5 reaches {100 * ff(fr_p, 'protein20', '20-30%', 5):.0f}% of Pfam 20-30% pairs."),
@@ -935,7 +935,7 @@ Written from the numbers above; see each figure's footer for the exact values.
    12 residues on average (null 6), and only a few percent of pairs share a 23-mer. The
    sweep chose k=23-30 for the 2-letter arms because shorter k drowns in the null's own
    6-residue runs. That is the identity panel's zeros below 40%: not a refutation of the
-   hypothesis, a ceiling on the primitive.
+   hypothesis, a limit on corresponding-position exact runs in these supplied alignments. Shared words at other offsets can still seed a search, so this is not a ceiling on search recall.
 4. At matched bits per k-mer the 2-letter alphabets are the worst choice, not the best.
    At about 26 bits in the 20-30% bin, gbmr4 k=13 reaches 29% of pairs and sdm12 k=7
    reaches 26%, protein20 k=6 reaches 11%, and hp_thomas_dill2 k=26 reaches 2%. A long
