@@ -1,10 +1,9 @@
 #!/usr/bin/env python3
 """Generate notebooks/279_dark_set_kmerseek_reach_at_E1_E10.ipynb.
 
-Inputs are the per-protein E-value tables that
-nextflow-runs/invertebrate-dark-set/tools/export-protein-evalues (branch
-olgabot/dark-set-kmerseek-0.4, PR 57) writes from the finished midi run, copied to
-/Users/olga/data/invertebrate-dark-set/results-0.4/protein-evalues/.
+Inputs are repaired summaries from the completed PR 57 run, exported by
+scripts/export_nb279_repaired_queries.py without new searches. The dated input
+folder and source manifest are recorded in the notebook.
 """
 
 import json
@@ -27,15 +26,14 @@ def code(source):
 md(r"""
 # 279. Dark proteins kmerseek puts a region on, at E < 1 and E < 10
 
-> **Undercount in sections 2-6 (found 2026-10-12, after these sections were written).**
-> The per-protein kmerseek E-values come from the run's `queries.tsv` files, which the
-> search step's awk built wrongly: it read a region E-value of "inf" as 0, so a protein with
-> one "inf" region was stored as "inf" even when it had finite E-values (about 30% of
-> extended regions say "inf"). So sections 2-6 count too few reached proteins, dark and
-> placed alike. Section 7 reads the region files themselves and is right; where it recounts
-> section 3's settings it finds more dark proteins reached (545 against 444 in human at
-> E < 1). The files are being repaired in the run (PR 57, commit 0dad375); sections 2-6 will
-> be rebuilt from the repaired files.
+> **Query-summary repair completed 2026-10-23.** Sections 2-6 now read the repaired
+> summaries from the completed Sherlock run. The old awk reduction could keep `inf`
+> instead of a finite minimum. Human hp_lehninger2 k17 at scaled 1 now reaches 545 dark
+> proteins at E < 1, matching the independent region-file count; the original export
+> counted 444. Section 9 retains that original export only to show the correction.
+> `scripts/export_nb279_repaired_queries.py` rebuilds the tables from the repaired
+> query summaries without new searches. Input/output hashes and source directories are
+> in `tables/279_repaired_export_manifest.json.gz`.
 
 **Question.** A protein is *dark* when phmmer, jackhmmer (3 iterations) and mmseqs2 all fail
 to find a hit for it in Swiss-Prot with the query species' own clade removed. For each
@@ -50,8 +48,8 @@ the first code cell; change them there and re-run to try others. Nothing is sear
 
 **How to read it.** Reaching a protein is not the same as finding its homolog: at E < 10
 chance alone puts a region on most proteins. So a setting's dark share means something only
-next to its placed share. Placed proteins have a homolog in the reference, so a setting that
-finds homologs reaches them more often than dark ones. A setting that reaches both at the
+next to its placed share. Placed proteins have a conventional-tool hit at the same cutoff; weak hits may be false.
+A useful setting should reach this comparator-positive group more often than dark proteins. A setting that reaches both at the
 same rate is reporting something for everything.
 
 **Decision.** Whether the dark set has candidates worth the structure check (the expensive
@@ -80,10 +78,10 @@ commit e3808d1), image `olgabot/kmerseek:0.4.0-rc5`.
   minus the pairs dropped in PR 57), at scaled 1 and 10, each extended through mismatches at
   its alphabet's own mismatch penalty, so every region has a Karlin-Altschul E-value.
   Settings whose index holds no Karlin-Altschul fit have no E-values and are left out.
-* The per-protein tables come from `tools/export-protein-evalues` (PR 57, commit ac5e4f9),
-  which reads the run's own files: each protein's smallest hit E-value per tool (the tools
-  ran with a reporting cutoff of E = 10, so every hit below 10 is there) and its smallest
-  kmerseek region E-value per setting.
+* The repaired kmerseek minima come from `scripts/export_nb279_repaired_queries.py`,
+  reading completed repaired query summaries from PR 57. Conventional-tool minima are
+  copied byte-for-byte from the original export at ac5e4f9; those searches did not change.
+  Their reporting cutoff was E = 10, so every reported hit below 10 is retained.
 * The low-complexity mask was off for every kmerseek search in this run.
 """)
 
@@ -112,38 +110,80 @@ pl.Config.set_tbl_width_chars(200)
 pl.Config.set_tbl_hide_dataframe_shape(True)
 pl.Config.set_tbl_cols(-1)
 
-DATA = Path("/Users/olga/data/invertebrate-dark-set/results-0.4/protein-evalues")
+DATA = Path("/Users/olga/data/invertebrate-dark-set/results-0.4/protein-evalues-repaired-2026-10-23")
+import json
+
+export_manifest = json.loads((DATA / "manifest.json").read_text())
+print("Repaired source settings:", {s: {k: v for k, v in r.items() if k.startswith("n_")} for s, r in export_manifest["species"].items()})
 FIG = Path("../figures")
 TABLES = Path("../tables")
 SPECIES = ["human", "worm", "yeast", "borrelia", "botryllus"]
-SPECIES_NAME = {"human": "Human", "worm": "C. elegans", "yeast": "S. cerevisiae",
-                "borrelia": "B. burgdorferi", "botryllus": "B. schlosseri"}
+SPECIES_NAME = {
+    "human": "Human",
+    "worm": "C. elegans",
+    "yeast": "S. cerevisiae",
+    "borrelia": "B. burgdorferi",
+    "botryllus": "B. schlosseri",
+}
 TOOLS = ["phmmer", "jackhmmer", "mmseqs2"]
 
-missing = [s for s in SPECIES if not (DATA / f"{s}_protein_tool_min_evalue.csv.gz").exists()]
+missing = [
+    s for s in SPECIES if not (DATA / f"{s}_protein_tool_min_evalue.csv.gz").exists()
+]
 if missing:
-    raise SystemExit(f"Copy the export for {missing} from Sherlock into {DATA} first "
-                     "(see tools/export-protein-evalues on PR 57).")
+    raise SystemExit(
+        f"Copy the export for {missing} from Sherlock into {DATA} first "
+        "(see tools/export-protein-evalues on PR 57)."
+    )
 
-tool = pl.concat([
-    pl.read_csv(DATA / f"{s}_protein_tool_min_evalue.csv.gz", infer_schema_length=0)
-      .with_columns(pl.col(TOOLS).cast(pl.Float64), pl.lit(s).alias("species"))
-    for s in SPECIES])
+tool = pl.concat(
+    [
+        pl.read_csv(
+            DATA / f"{s}_protein_tool_min_evalue.csv.gz", infer_schema_length=0
+        ).with_columns(pl.col(TOOLS).cast(pl.Float64), pl.lit(s).alias("species"))
+        for s in SPECIES
+    ]
+)
 # Smallest E-value over the three tools; null when no tool reported any hit
 tool = tool.with_columns(pl.min_horizontal(TOOLS).alias("best_tool_evalue"))
-km = pl.concat([
-    pl.read_csv(DATA / f"{s}_protein_kmerseek_min_evalue.csv.gz",
-                schema_overrides={"accession": pl.String})
-      .with_columns(pl.lit(s).alias("species"))
-    for s in SPECIES])
-unfitted = pl.concat([pl.read_csv(DATA / f"{s}_kmerseek_unfitted.csv").with_columns(pl.lit(s).alias("species"))
-                      for s in SPECIES])
-print(tool.group_by("species").agg(pl.len().alias("proteins"),
-                                   pl.col("best_tool_evalue").is_null().sum().alias("no_tool_hit_at_all"))
-      .sort(pl.col("species").replace_strict({s: i for i, s in enumerate(SPECIES)})))
-print(km.group_by("species", "scaled").agg(pl.struct("alphabet", "ksize").n_unique().alias("settings_with_evalues"),
-                                           pl.len().alias("protein_setting_rows")).sort("species", "scaled"))
-print(unfitted.filter(pl.col("scaled") == SCALED).group_by("species").agg(pl.len().alias(f"settings_without_fit_scaled_{SCALED}")))
+km = pl.concat(
+    [
+        pl.read_csv(
+            DATA / f"{s}_protein_kmerseek_min_evalue.csv.gz",
+            schema_overrides={"accession": pl.String},
+        ).with_columns(pl.lit(s).alias("species"))
+        for s in SPECIES
+    ]
+)
+unfitted = pl.concat(
+    [
+        pl.read_csv(DATA / f"{s}_kmerseek_unfitted.csv").with_columns(
+            pl.lit(s).alias("species")
+        )
+        for s in SPECIES
+    ]
+)
+print(
+    tool.group_by("species")
+    .agg(
+        pl.len().alias("proteins"),
+        pl.col("best_tool_evalue").is_null().sum().alias("no_tool_hit_at_all"),
+    )
+    .sort(pl.col("species").replace_strict({s: i for i, s in enumerate(SPECIES)}))
+)
+print(
+    km.group_by("species", "scaled")
+    .agg(
+        pl.struct("alphabet", "ksize").n_unique().alias("settings_with_evalues"),
+        pl.len().alias("protein_setting_rows"),
+    )
+    .sort("species", "scaled")
+)
+print(
+    unfitted.filter(pl.col("scaled") == SCALED)
+    .group_by("species")
+    .agg(pl.len().alias(f"settings_without_fit_scaled_{SCALED}"))
+)
 """)
 
 md(r"""
@@ -281,38 +321,94 @@ each bar.
 """)
 
 code(r"""
-best = (reach_all.filter(pl.col("tells_dark_from_placed"))
-        .sort(["dark_share", "placed_share", "alphabet", "ksize"], descending=[True, True, False, False])
-        .group_by("tool_cutoff", "kmerseek_cutoff", "species", maintain_order=True).head(1))
-grid = pl.DataFrame([{"tool_cutoff": float(t), "kmerseek_cutoff": float(k), "species": s}
-                     for t, k in CUTOFF_PAIRS for s in SPECIES])
-best = grid.join(best, on=["tool_cutoff", "kmerseek_cutoff", "species"], how="left").with_columns(
-    pl.col("dark_share").fill_null(0.0), pl.col("dark_reached").fill_null(0))
-print(best.select("tool_cutoff", "kmerseek_cutoff", "species", "alphabet", "ksize", "dark_proteins", "dark_reached",
-                  pl.col("dark_share").round(3), "placed_reached", pl.col("placed_share").round(3)))
+best = (
+    reach_all.filter(pl.col("tells_dark_from_placed"))
+    .sort(
+        ["dark_share", "placed_share", "alphabet", "ksize"],
+        descending=[True, True, False, False],
+    )
+    .group_by("tool_cutoff", "kmerseek_cutoff", "species", maintain_order=True)
+    .head(1)
+)
+grid = pl.DataFrame(
+    [
+        {"tool_cutoff": float(t), "kmerseek_cutoff": float(k), "species": s}
+        for t, k in CUTOFF_PAIRS
+        for s in SPECIES
+    ]
+)
+best = grid.join(
+    best, on=["tool_cutoff", "kmerseek_cutoff", "species"], how="left"
+).with_columns(pl.col("dark_share").fill_null(0.0), pl.col("dark_reached").fill_null(0))
+print(
+    best.select(
+        "tool_cutoff",
+        "kmerseek_cutoff",
+        "species",
+        "alphabet",
+        "ksize",
+        "dark_proteins",
+        "dark_reached",
+        pl.col("dark_share").round(3),
+        "placed_reached",
+        pl.col("placed_share").round(3),
+    )
+)
 
-verdict = best.group_by("tool_cutoff", "kmerseek_cutoff").agg(
-    (pl.col("dark_share") >= MIN_DARK_SHARE).sum().alias("species_with_candidates"),
-    pl.len().alias("species")).sort("tool_cutoff")
-verdict = verdict.with_columns((pl.col("species_with_candidates") == pl.col("species")).alias("rule_met"))
+best.write_csv(TABLES / f"279_repaired_best_qualifying_settings_scaled{SCALED}.csv")
+
+verdict = (
+    best.group_by("tool_cutoff", "kmerseek_cutoff")
+    .agg(
+        (pl.col("dark_share") >= MIN_DARK_SHARE).sum().alias("species_with_candidates"),
+        pl.len().alias("species"),
+    )
+    .sort("tool_cutoff")
+)
+verdict = verdict.with_columns(
+    (pl.col("species_with_candidates") == pl.col("species")).alias("rule_met")
+)
 print(verdict)
 
-fig, axs = pf.figure(pf.TWO_COLUMN_MM, 55, ncols=len(CUTOFF_PAIRS), sharex=True, squeeze=False)
+fig, axs = pf.figure(
+    pf.TWO_COLUMN_MM, 55, ncols=len(CUTOFF_PAIRS), sharex=True, squeeze=False
+)
 for c, (t, k) in enumerate(CUTOFF_PAIRS):
     ax = axs[0][c]
-    d = best.filter((pl.col("tool_cutoff") == t) & (pl.col("kmerseek_cutoff") == k)).sort(pl.col("species").replace_strict(order))
+    d = best.filter(
+        (pl.col("tool_cutoff") == t) & (pl.col("kmerseek_cutoff") == k)
+    ).sort(pl.col("species").replace_strict(order))
     ys = list(range(len(SPECIES)))[::-1]
-    ax.barh(ys, 100 * d["dark_share"], color=pf.OKABE_ITO["blue"], height=0.6,
-            label="best setting that tells dark from placed")
-    ax.axvline(100 * MIN_DARK_SHARE, color=pf.GREY, lw=0.5, ls="--", label=f"{100 * MIN_DARK_SHARE:g}% the rule asks for")
+    ax.barh(
+        ys,
+        100 * d["dark_share"],
+        color=pf.OKABE_ITO["blue"],
+        height=0.6,
+        label="best setting that tells dark from placed",
+    )
+    ax.axvline(
+        100 * MIN_DARK_SHARE,
+        color=pf.GREY,
+        lw=0.5,
+        ls="--",
+        label=f"{100 * MIN_DARK_SHARE:g}% the rule asks for",
+    )
     for y, share, a, kk in zip(ys, d["dark_share"], d["alphabet"], d["ksize"]):
-        ax.text(100 * share + 1, y, f"{a} k{kk}" if a is not None else "none", va="center", fontsize=5)
+        ax.text(
+            100 * share + 1,
+            y,
+            f"{a} k{kk}" if a is not None else "none",
+            va="center",
+            fontsize=5,
+        )
     ax.set_yticks(ys, [SPECIES_NAME[s] for s in d["species"]])
     for lab in ax.get_yticklabels():
         lab.set_fontstyle("normal" if lab.get_text() == "Human" else "italic")
     ax.set_xlim(0, 70)
     ax.set_xlabel(f"Dark proteins reached (%)")
-    ax.set_title(f"dark: no tool hit with E < {t:g}\nreached: kmerseek region with E < {k:g}")
+    ax.set_title(
+        f"dark: no tool hit with E < {t:g}\nreached: kmerseek region with E < {k:g}"
+    )
 pf.shared_legend(fig, ncol=2)
 pf.save(fig, FIG / f"279_best_dark_reach_scaled{SCALED}_qfo_swissprot")
 """)
@@ -367,7 +463,7 @@ code(r"""
 import urllib.parse
 import urllib.request
 
-CACHE = Path("/Users/olga/data/invertebrate-dark-set/uniprot_cache/279_example_proteins.tsv")
+CACHE = Path("/Users/olga/data/invertebrate-dark-set/uniprot_cache/279_example_proteins_repaired_2026_10_23.tsv")
 accs = sorted(set(examples.filter(~pl.col("accession").str.starts_with("FUN"))["accession"].to_list()))
 if not CACHE.exists() or set(pl.read_csv(CACHE, separator="\t")["Entry"].to_list()) != set(accs):
     CACHE.parent.mkdir(parents=True, exist_ok=True)
@@ -1457,8 +1553,8 @@ print(f"wrote {EXPLAINER_JSON}: {EXPLAINER_JSON.stat().st_size / 1e3:.0f} kB, "
 md(r"""
 ## 7. Reach after dropping low-complexity and helix regions
 
-Every kmerseek region on a dark protein (no tool hit with E < 1) under the six settings that
-came out best in section 3, with region E < 10, was pulled from the run's region files and
+Every kmerseek region on a dark protein (no tool hit with E < 1) under the six settings selected
+before the query-summary repair, with region E < 10, was pulled from the run's region files and
 scored by `tools/dark-regions` (PR 57): the share of its residues, on the query and on the
 target, that sit in a low-complexity stretch (SEG first pass) or a predicted transmembrane
 helix (Kyte-Doolittle), read on the full sequences. A region is **dropped** when at least
@@ -1466,65 +1562,152 @@ helix (Kyte-Doolittle), read on the full sequences. A region is **dropped** when
 is **reached after filtering** when at least one of its regions is kept.
 
 Placed proteins' regions were not extracted, so after filtering there is no placed share to
-compare with; the counts below are dark proteins only. kmerseek 0.4.0 gives some target names
+compare with; the counts below are dark proteins only. The settings in this panel were
+selected before the query-summary repair. Some are no longer the qualifying winners.
+The current E < 10 winners for human, worm and Botryllus have no region-mask extraction
+here, so this panel does not measure filtering for every current winner. kmerseek 0.4.0 gives some target names
 another sequence's coordinates (kmerseek PR 141); `target_coords` says which rows were moved
 to where their residues really are, or not found in the named target.
 """)
 
 code(r"""
-MAX_MASKED_SHARE = 0.5   # drop a region when at least this share of it is low complexity or helix
+original_reach = pl.read_csv(TABLES / "279_dark_set_kmerseek_reach_scaled1_original_2026_10_12_qfo_swissprot.csv")
+original_best = (
+    original_reach.filter(pl.col("tells_dark_from_placed"))
+    .sort(["dark_share", "placed_share", "alphabet", "ksize"], descending=[True, True, False, False])
+    .group_by("tool_cutoff", "kmerseek_cutoff", "species", maintain_order=True).head(1)
+)
+
+MAX_MASKED_SHARE = (
+    0.5  # drop a region when at least this share of it is low complexity or helix
+)
 DR = Path("/Users/olga/data/invertebrate-dark-set/results-0.4/dark-regions")
-regions = pl.concat([pl.read_csv(DR / f"{s}_dark_regions.csv.gz", infer_schema_length=0,
-                                 schema_overrides={"query_name": pl.String, "target_name": pl.String})
-                       .with_columns(pl.lit(s).alias("species")) for s in SPECIES])
+regions = pl.concat(
+    [
+        pl.read_csv(
+            DR / f"{s}_dark_regions.csv.gz",
+            infer_schema_length=0,
+            schema_overrides={"query_name": pl.String, "target_name": pl.String},
+        ).with_columns(pl.lit(s).alias("species"))
+        for s in SPECIES
+    ]
+)
 num = ["region_start", "region_end", "target_start", "target_end", "ksize", "scaled"]
-regions = regions.with_columns(pl.col(num).cast(pl.Int64),
-                               pl.col("region_evalue", "query_lc", "query_tm", "target_lc", "target_tm").cast(pl.Float64),
-                               pl.col("moltype").alias("alphabet"))
 regions = regions.with_columns(
-    (pl.max_horizontal("query_lc", "query_tm", "target_lc", "target_tm") >= MAX_MASKED_SHARE).alias("dropped"))
+    pl.col(num).cast(pl.Int64),
+    pl.col("region_evalue", "query_lc", "query_tm", "target_lc", "target_tm").cast(
+        pl.Float64
+    ),
+    pl.col("moltype").alias("alphabet"),
+)
+regions = regions.with_columns(
+    (
+        pl.max_horizontal("query_lc", "query_tm", "target_lc", "target_tm")
+        >= MAX_MASKED_SHARE
+    ).alias("dropped")
+)
 print("Regions per species and how their target coordinates checked out:")
-print(regions.group_by("species", "target_coords").len().pivot(on="target_coords", index="species", values="len")
-      .sort(pl.col("species").replace_strict(order)))
+print(
+    regions.group_by("species", "target_coords")
+    .len()
+    .pivot(on="target_coords", index="species", values="len")
+    .sort(pl.col("species").replace_strict(order))
+)
 
 EXTRACTED = set(regions.select("species", "alphabet", "ksize").unique().iter_rows())
 after = []
-for (t, k) in CUTOFF_PAIRS:
+for t, k in CUTOFF_PAIRS:
     flags = dark_flags(t).filter(pl.col("dark"))
-    for r in best.filter((pl.col("tool_cutoff") == t) & (pl.col("kmerseek_cutoff") == k) & pl.col("alphabet").is_not_null()).iter_rows(named=True):
+    for r in original_best.filter(
+        (pl.col("tool_cutoff") == t)
+        & (pl.col("kmerseek_cutoff") == k)
+        & pl.col("alphabet").is_not_null()
+    ).iter_rows(named=True):
         if (r["species"], r["alphabet"], r["ksize"]) not in EXTRACTED:
-            print(f"not extracted: {r['species']} {r['alphabet']} k{r['ksize']} (best at E < {k:g}); left out of this section")
+            print(
+                f"not extracted: {r['species']} {r['alphabet']} k{r['ksize']} (best at E < {k:g}); left out of this section"
+            )
             continue
-        g = regions.filter((pl.col("species") == r["species"]) & (pl.col("alphabet") == r["alphabet"]) & (pl.col("ksize") == r["ksize"])
-                           & (pl.col("scaled") == SCALED) & (pl.col("region_evalue") < k)).join(
-            flags.select(pl.col("accession").alias("query_name"), "species"), on=["species", "query_name"])
+        g = regions.filter(
+            (pl.col("species") == r["species"])
+            & (pl.col("alphabet") == r["alphabet"])
+            & (pl.col("ksize") == r["ksize"])
+            & (pl.col("scaled") == SCALED)
+            & (pl.col("region_evalue") < k)
+        ).join(
+            flags.select(pl.col("accession").alias("query_name"), "species"),
+            on=["species", "query_name"],
+        )
         before_n = g["query_name"].n_unique()
         kept_n = g.filter(~pl.col("dropped"))["query_name"].n_unique()
-        after.append({"tool_cutoff": float(t), "kmerseek_cutoff": float(k), "species": r["species"],
-                      "setting": f"{r['alphabet']} k{r['ksize']}", "dark_proteins": r["dark_proteins"],
-                      "dark_reached": before_n, "dark_reached_after_filter": kept_n})
+        after.append(
+            {
+                "tool_cutoff": float(t),
+                "kmerseek_cutoff": float(k),
+                "species": r["species"],
+                "setting": f"{r['alphabet']} k{r['ksize']}",
+                "dark_proteins": r["dark_proteins"],
+                "dark_reached": before_n,
+                "dark_reached_after_filter": kept_n,
+            }
+        )
 after = pl.DataFrame(after).with_columns(
     (pl.col("dark_reached") / pl.col("dark_proteins")).alias("share_before"),
-    (pl.col("dark_reached_after_filter") / pl.col("dark_proteins")).alias("share_after"))
-check = after.join(best.select("tool_cutoff", "kmerseek_cutoff", "species", pl.col("dark_reached").alias("section3_dark_reached")),
-                   on=["tool_cutoff", "kmerseek_cutoff", "species"])
-print("Dark proteins reached: section 3 (from queries.tsv) against the region files; the region files are right, see the note at the top")
-print(check.select("tool_cutoff", "species", "setting", "section3_dark_reached", "dark_reached"))
+    (pl.col("dark_reached_after_filter") / pl.col("dark_proteins")).alias(
+        "share_after"
+    ),
+)
+check = after.join(
+    original_best.select(
+        "tool_cutoff",
+        "kmerseek_cutoff",
+        "species",
+        pl.col("dark_reached").alias("section3_dark_reached"),
+    ),
+    on=["tool_cutoff", "kmerseek_cutoff", "species"],
+)
+print(
+    "Historical pre-repair choice: original summary counts against region counts; current winners are in section 3"
+)
+print(
+    check.select(
+        "tool_cutoff", "species", "setting", "section3_dark_reached", "dark_reached"
+    )
+)
 print(after.with_columns(pl.col("share_before", "share_after").round(3)))
 
-fig, axs = pf.figure(pf.TWO_COLUMN_MM, 55, ncols=len(CUTOFF_PAIRS), sharex=True, squeeze=False)
+fig, axs = pf.figure(
+    pf.TWO_COLUMN_MM, 55, ncols=len(CUTOFF_PAIRS), sharex=True, squeeze=False
+)
 for c, (t, k) in enumerate(CUTOFF_PAIRS):
     ax = axs[0][c]
-    d = after.filter((pl.col("tool_cutoff") == t) & (pl.col("kmerseek_cutoff") == k)).sort(pl.col("species").replace_strict(order))
+    d = after.filter(
+        (pl.col("tool_cutoff") == t) & (pl.col("kmerseek_cutoff") == k)
+    ).sort(pl.col("species").replace_strict(order))
     ys = list(range(d.height))[::-1]
-    ax.barh([y + 0.2 for y in ys], 100 * d["share_before"], height=0.38, color=pf.OKABE_ITO["sky_blue"], label="all regions")
-    ax.barh([y - 0.2 for y in ys], 100 * d["share_after"], height=0.38, color=pf.OKABE_ITO["blue"],
-            label=f"after dropping regions at least {MAX_MASKED_SHARE:.0%} low complexity or helix")
+    ax.barh(
+        [y + 0.2 for y in ys],
+        100 * d["share_before"],
+        height=0.38,
+        color=pf.OKABE_ITO["sky_blue"],
+        label="all regions",
+    )
+    ax.barh(
+        [y - 0.2 for y in ys],
+        100 * d["share_after"],
+        height=0.38,
+        color=pf.OKABE_ITO["blue"],
+        label=f"after dropping regions at least {MAX_MASKED_SHARE:.0%} low complexity or helix",
+    )
     for y, a, n in zip(ys, d["share_after"], d["dark_reached_after_filter"]):
         ax.text(100 * a + 1, y - 0.2, f"{n:_}", va="center", fontsize=5)
-    ax.set_yticks(ys, [f"{SPECIES_NAME[s]}\n{st}" for s, st in zip(d["species"], d["setting"])])
+    ax.set_yticks(
+        ys, [f"{SPECIES_NAME[s]}\n{st}" for s, st in zip(d["species"], d["setting"])]
+    )
     ax.set_xlabel("Dark proteins reached (%)")
-    ax.set_title(f"dark: no tool hit with E < {t:g}\nreached: kmerseek region with E < {k:g}")
+    ax.set_title(
+        f"dark: no tool hit with E < {t:g}\nreached: kmerseek region with E < {k:g}"
+    )
 pf.shared_legend(fig, ncol=2)
 pf.save(fig, FIG / f"279_dark_reach_after_lowcomplexity_helix_filter_scaled{SCALED}")
 """)
@@ -1590,66 +1773,205 @@ md(r"""
 
 Each protein's smallest finite region E-value under the six settings of section 7, read
 straight from the run's region files by `tools/dark-regions min-evalue` (PR 57, f67c34a),
-for every protein, dark or placed. This is what sections 2-3 should have read; it replaces
-their numbers for these six settings. The decision rule of the first cell is applied again.
+for every protein, dark or placed. The repaired summary export now supplies sections 2-3 for all settings. These independently
+extracted region minima check the six previously selected settings against that export;
+the original export is retained in the figure to show how much the counts changed.
 """)
 
 code(r"""
 ME = Path("/Users/olga/data/invertebrate-dark-set/results-0.4/protein-min-evalue")
 NAME_RE = r"^chunk_\d+\.(?P<alphabet>.+)\.k(?P<ksize>\d+)\.s(?P<scaled>\d+)\.lc"
-me = pl.concat([pl.read_csv(f, infer_schema_length=0).with_columns(pl.lit(sp).alias("species"))
-                for sp in SPECIES for f in sorted((ME / sp).glob("*.csv.gz"))])
-me = me.with_columns(pl.col("source_file").str.extract_groups(NAME_RE).alias("g")).unnest("g").with_columns(
-    pl.col("ksize", "scaled").cast(pl.Int64), pl.col("min_region_evalue").cast(pl.Float64))
-me = me.group_by("species", "alphabet", "ksize", "scaled", "query_name").agg(pl.col("min_region_evalue").min())
-print("files read per species:", {sp: len(list((ME / sp).glob("*.csv.gz"))) for sp in SPECIES})
+me = pl.concat(
+    [
+        pl.read_csv(f, infer_schema_length=0).with_columns(pl.lit(sp).alias("species"))
+        for sp in SPECIES
+        for f in sorted((ME / sp).glob("*.csv.gz"))
+    ]
+)
+me = (
+    me.with_columns(pl.col("source_file").str.extract_groups(NAME_RE).alias("g"))
+    .unnest("g")
+    .with_columns(
+        pl.col("ksize", "scaled").cast(pl.Int64),
+        pl.col("min_region_evalue").cast(pl.Float64),
+    )
+)
+me = me.group_by("species", "alphabet", "ksize", "scaled", "query_name").agg(
+    pl.col("min_region_evalue").min()
+)
+print(
+    "files read per species:",
+    {sp: len(list((ME / sp).glob("*.csv.gz"))) for sp in SPECIES},
+)
 
 rows = []
-for (t, k) in CUTOFF_PAIRS:
+for t, k in CUTOFF_PAIRS:
     flags = dark_flags(t)
-    sizes = flags.group_by("species").agg(pl.col("dark").sum().alias("dark_proteins"), (~pl.col("dark")).sum().alias("placed_proteins"))
-    hit = me.filter((pl.col("scaled") == SCALED) & (pl.col("min_region_evalue") < k)).join(
-        flags.rename({"accession": "query_name"}), on=["species", "query_name"], how="left")
+    sizes = flags.group_by("species").agg(
+        pl.col("dark").sum().alias("dark_proteins"),
+        (~pl.col("dark")).sum().alias("placed_proteins"),
+    )
+    hit = me.filter(
+        (pl.col("scaled") == SCALED) & (pl.col("min_region_evalue") < k)
+    ).join(
+        flags.rename({"accession": "query_name"}),
+        on=["species", "query_name"],
+        how="left",
+    )
     if hit["dark"].null_count():
-        raise ValueError(f"{hit['dark'].null_count()} reached proteins are not in the tool table")
-    c = hit.group_by("species", "alphabet", "ksize").agg(pl.col("dark").sum().alias("dark_reached"), (~pl.col("dark")).sum().alias("placed_reached"))
-    rows.append(c.join(sizes, on="species").with_columns(pl.lit(float(t)).alias("tool_cutoff"), pl.lit(float(k)).alias("kmerseek_cutoff")))
-fixed = pl.concat(rows).with_columns((pl.col("dark_reached") / pl.col("dark_proteins")).alias("dark_share"),
-                                     (pl.col("placed_reached") / pl.col("placed_proteins")).alias("placed_share"))
-fixed = fixed.with_columns((pl.col("placed_share") >= MIN_PLACED_OVER_DARK * pl.col("dark_share")).alias("tells_dark_from_placed"))
-old = reach_all.select("tool_cutoff", "kmerseek_cutoff", "species", "alphabet", "ksize",
-                       pl.col("dark_share").alias("dark_share_queries_tsv"), pl.col("placed_share").alias("placed_share_queries_tsv"))
-fixed = fixed.join(old, on=["tool_cutoff", "kmerseek_cutoff", "species", "alphabet", "ksize"], how="left")
-fixed = fixed.sort("tool_cutoff", pl.col("species").replace_strict(order), "dark_share", descending=[False, False, True])
-print(fixed.select("tool_cutoff", "species", "alphabet", "ksize", "dark_reached", pl.col("dark_share", "dark_share_queries_tsv").round(3),
-                   "placed_reached", pl.col("placed_share", "placed_share_queries_tsv").round(3), "tells_dark_from_placed"))
+        raise ValueError(
+            f"{hit['dark'].null_count()} reached proteins are not in the tool table"
+        )
+    c = hit.group_by("species", "alphabet", "ksize").agg(
+        pl.col("dark").sum().alias("dark_reached"),
+        (~pl.col("dark")).sum().alias("placed_reached"),
+    )
+    rows.append(
+        c.join(sizes, on="species").with_columns(
+            pl.lit(float(t)).alias("tool_cutoff"),
+            pl.lit(float(k)).alias("kmerseek_cutoff"),
+        )
+    )
+fixed = pl.concat(rows).with_columns(
+    (pl.col("dark_reached") / pl.col("dark_proteins")).alias("dark_share"),
+    (pl.col("placed_reached") / pl.col("placed_proteins")).alias("placed_share"),
+)
+fixed = fixed.with_columns(
+    (pl.col("placed_share") >= MIN_PLACED_OVER_DARK * pl.col("dark_share")).alias(
+        "tells_dark_from_placed"
+    )
+)
+check = fixed.join(
+    reach_all.select("tool_cutoff", "kmerseek_cutoff", "species", "alphabet", "ksize",
+        pl.col("dark_reached").alias("export_dark"), pl.col("placed_reached").alias("export_placed")),
+    on=["tool_cutoff", "kmerseek_cutoff", "species", "alphabet", "ksize"], how="left"
+)
+assert check.height == fixed.height and check["export_dark"].null_count() == 0
+assert check.filter((pl.col("dark_reached") != pl.col("export_dark")) | (pl.col("placed_reached") != pl.col("export_placed"))).is_empty()
+print(f"Independent region minima agree with repaired query export on all {check.height} species/setting/cutoff rows")
+
+old = pl.read_csv(TABLES / "279_dark_set_kmerseek_reach_scaled1_original_2026_10_12_qfo_swissprot.csv").select(
+    "tool_cutoff",
+    "kmerseek_cutoff",
+    "species",
+    "alphabet",
+    "ksize",
+    pl.col("dark_share").alias("dark_share_queries_tsv"),
+    pl.col("placed_share").alias("placed_share_queries_tsv"),
+)
+fixed = fixed.join(
+    old,
+    on=["tool_cutoff", "kmerseek_cutoff", "species", "alphabet", "ksize"],
+    how="left",
+)
+fixed = fixed.sort(
+    "tool_cutoff",
+    pl.col("species").replace_strict(order),
+    "dark_share",
+    descending=[False, False, True],
+)
+print(
+    fixed.select(
+        "tool_cutoff",
+        "species",
+        "alphabet",
+        "ksize",
+        "dark_reached",
+        pl.col("dark_share", "dark_share_queries_tsv").round(3),
+        "placed_reached",
+        pl.col("placed_share", "placed_share_queries_tsv").round(3),
+        "tells_dark_from_placed",
+    )
+)
 TABLES.mkdir(exist_ok=True)
-fixed.write_csv(TABLES / f"279_dark_set_kmerseek_reach_six_settings_region_files_scaled{SCALED}_qfo_swissprot.csv")
+fixed.write_csv(
+    TABLES
+    / f"279_dark_set_kmerseek_reach_six_settings_region_files_scaled{SCALED}_qfo_swissprot.csv"
+)
 
-best_fixed = (fixed.filter(pl.col("tells_dark_from_placed")).sort(["dark_share", "placed_share", "alphabet", "ksize"], descending=[True, True, False, False])
-              .group_by("tool_cutoff", "kmerseek_cutoff", "species", maintain_order=True).head(1))
-verdict_fixed = (grid.join(best_fixed, on=["tool_cutoff", "kmerseek_cutoff", "species"], how="left")
-                 .group_by("tool_cutoff", "kmerseek_cutoff").agg((pl.col("dark_share").fill_null(0) >= MIN_DARK_SHARE).sum().alias("species_with_candidates"),
-                                                                pl.len().alias("species")).sort("tool_cutoff"))
+best_fixed = (
+    fixed.filter(pl.col("tells_dark_from_placed"))
+    .sort(
+        ["dark_share", "placed_share", "alphabet", "ksize"],
+        descending=[True, True, False, False],
+    )
+    .group_by("tool_cutoff", "kmerseek_cutoff", "species", maintain_order=True)
+    .head(1)
+)
+verdict_fixed = (
+    grid.join(best_fixed, on=["tool_cutoff", "kmerseek_cutoff", "species"], how="left")
+    .group_by("tool_cutoff", "kmerseek_cutoff")
+    .agg(
+        (pl.col("dark_share").fill_null(0) >= MIN_DARK_SHARE)
+        .sum()
+        .alias("species_with_candidates"),
+        pl.len().alias("species"),
+    )
+    .sort("tool_cutoff")
+)
 print("Decision rule on the corrected counts, six settings only:")
-print(verdict_fixed.with_columns((pl.col("species_with_candidates") == pl.col("species")).alias("rule_met")))
+print(
+    verdict_fixed.with_columns(
+        (pl.col("species_with_candidates") == pl.col("species")).alias("rule_met")
+    )
+)
 
-ALPHABET_MARK = {"hp_lehninger2": "o", "hp_lehninger_c_nonpolar2": "s", "hp_pbotc_1st_ed2": "^"}
-fig, axs = pf.figure(pf.TWO_COLUMN_MM, 34 * len(CUTOFF_PAIRS) + 14, nrows=len(CUTOFF_PAIRS), ncols=len(SPECIES), sharex=True, sharey=True, squeeze=False)
+ALPHABET_MARK = {
+    "hp_lehninger2": "o",
+    "hp_lehninger_c_nonpolar2": "s",
+    "hp_pbotc_1st_ed2": "^",
+}
+fig, axs = pf.figure(
+    pf.TWO_COLUMN_MM,
+    34 * len(CUTOFF_PAIRS) + 14,
+    nrows=len(CUTOFF_PAIRS),
+    ncols=len(SPECIES),
+    sharex=True,
+    sharey=True,
+    squeeze=False,
+)
 for r_i, (t, k) in enumerate(CUTOFF_PAIRS):
     for c_i, sp in enumerate(SPECIES):
         ax = axs[r_i][c_i]
         d = fixed.filter((pl.col("tool_cutoff") == t) & (pl.col("species") == sp))
-        ax.plot([0, 100], [0, 100], color=pf.GREY, lw=0.5, label="placed share = dark share")
-        ax.plot([0, 100], [0, 100 / MIN_PLACED_OVER_DARK], color=pf.GREY, lw=0.5, ls="--", label=f"placed share = {MIN_PLACED_OVER_DARK} x dark share")
+        ax.plot(
+            [0, 100], [0, 100], color=pf.GREY, lw=0.5, label="placed share = dark share"
+        )
+        ax.plot(
+            [0, 100],
+            [0, 100 / MIN_PLACED_OVER_DARK],
+            color=pf.GREY,
+            lw=0.5,
+            ls="--",
+            label=f"placed share = {MIN_PLACED_OVER_DARK} x dark share",
+        )
         for a, m in ALPHABET_MARK.items():
             e = d.filter(pl.col("alphabet") == a)
-            ax.scatter(100 * e["placed_share_queries_tsv"], 100 * e["dark_share_queries_tsv"], s=8, marker=m, facecolor="white",
-                       edgecolor=pf.GREY, lw=0.5, label="from queries.tsv (too low)" if a == "hp_lehninger2" else None)
-            ax.scatter(100 * e["placed_share"], 100 * e["dark_share"], s=8, marker=m, color=pf.OKABE_ITO["blue"], lw=0, label=a)
-        ax.set_xlim(0, 100); ax.set_ylim(0, 100)
+            ax.scatter(
+                100 * e["placed_share_queries_tsv"],
+                100 * e["dark_share_queries_tsv"],
+                s=8,
+                marker=m,
+                facecolor="white",
+                edgecolor=pf.GREY,
+                lw=0.5,
+                label="from queries.tsv (too low)" if a == "hp_lehninger2" else None,
+            )
+            ax.scatter(
+                100 * e["placed_share"],
+                100 * e["dark_share"],
+                s=8,
+                marker=m,
+                color=pf.OKABE_ITO["blue"],
+                lw=0,
+                label=a,
+            )
+        ax.set_xlim(0, 100)
+        ax.set_ylim(0, 100)
         if r_i == 0:
-            ax.set_title(SPECIES_NAME[sp], fontstyle="normal" if sp == "human" else "italic")
+            ax.set_title(
+                SPECIES_NAME[sp], fontstyle="normal" if sp == "human" else "italic"
+            )
         if c_i == 0:
             ax.set_ylabel(f"Dark proteins\nreached (%), E < {k:g}")
         if r_i == len(CUTOFF_PAIRS) - 1:
@@ -1667,18 +1989,22 @@ The dark set is the proteins phmmer, jackhmmer and mmseqs2 all fail to place in 
 with the query's own clade removed. This notebook asks how many of them kmerseek puts a
 region on, at E < 1 and E < 10 for both the tools and kmerseek, in human, *C. elegans*,
 *S. cerevisiae*, *B. burgdorferi* and *B. schlosseri*, using the finished dark-set midi run
-(PR 57). Every number comes from filtering per-protein E-values; nothing was searched again.
+(PR 57). The repaired per-protein summaries refresh sections 2-6 without new searches. The
+BHF analyses use the previously completed shuffle searches recorded below.
 
 ## Summary and Conclusions
 
 * Loosening the tool cutoff shrinks the human dark set from 3_103 proteins (15.1%) at
   E < 0.001 to 1_696 (8.2%) at E < 1 and 442 (2.1%) at E < 10.
-* Counted from the region files, kmerseek's best setting reaches 14-32% of dark proteins at
-  E < 1 (hp_lehninger2 k17 in four of five species).
-* Dropping regions that are at least half low complexity or transmembrane helix leaves
-  8-21% of dark proteins reached at E < 1, and 27-40% at E < 10.
-* Sections 2-6 undercount kmerseek reach, because the run's queries.tsv files stored some
-  finite E-values as "inf"; read from the region files (section 9), the rule still holds.
+* Among settings whose placed share is at least twice the dark share, the repaired export
+  reaches 14-32% of dark proteins at E < 1: hp_lehninger2 k17 in three species and
+  hp_lehninger_c_nonpolar2 k19 in worm and Borrelia. At E < 10 the best qualifying settings
+  reach 28-44%. The fixed rule is met in all five species at both cutoffs.
+* For the historical settings selected before repair, dropping regions that are at least
+  half low complexity or transmembrane helix leaves 8-21% of dark proteins reached at
+  E < 1 and 27-40% at E < 10. These are not filter results for every current winner.
+* Sections 2-6 now use repaired query summaries. Section 9 retains the original undercount
+  for comparison and checks the repaired counts against independent region minima.
 * On the corrected counts, the best of six H/P settings reaches 14-32% of dark proteins at
   E < 1 against 43-79% of placed proteins, in all five species.
 * BHF is not dark at E < 1: phmmer and jackhmmer both hit the Vpx protein of simian
@@ -1718,11 +2044,11 @@ every alphabet and k-size at scaled 1: at E < 1 nearly all settings reach far mo
 than dark proteins; at E < 10 many sit on or near the "twice" line. Section 3 picks, per
 species and cutoff, the setting with the largest dark share among those that reach placed
 proteins at least twice as often. Section 4 lists the five dark proteins with the smallest
-kmerseek E-value under that setting; several have no tool hit at all but a kmerseek region
-E-value near 1e-15 (worm srh-97, sre-41). Section 5 compares UniProt features of dark
+kmerseek E-value under that setting. These candidates still need inspection of their matched
+regions; a small E-value alone does not establish a homolog. Section 5 compares UniProt features of dark
 proteins reached against dark proteins missed. The pattern is not the same everywhere: in
-*S. cerevisiae* reached dark proteins carry compositional bias more often at E < 1 (40.9%
-against 22.6%) but less often at E < 10 (11.7% against 17.5%), and *B. burgdorferi* has too
+*S. cerevisiae*, reached dark proteins carry compositional bias more often at both cutoffs:
+44.7% against 20.4% at E < 1, and 28.1% against 8.0% at E < 10, and *B. burgdorferi* has too
 few dark proteins (53 at E < 10) to read. UniProt features are whole-protein marks; whether a
 kmerseek region sits inside a biased stretch or a helix is not checked here.
 
@@ -1741,11 +2067,13 @@ kmerseek setting's regions with E < 1 (6h). The shuffle search is the only new s
   own dark set uses E <= 0.001, so one human and one *B. schlosseri* protein whose best hit is
   exactly 0.001 differ.
 - Run: `runs/ladder-0.4-midi`, finished 2026-10-12, image `olgabot/kmerseek:0.4.0-rc5`,
-  pipeline commit e3808d1; export `tools/export-protein-evalues` at ac5e4f9 (PR 57).
-- Settings without a Karlin-Altschul fit (26-30 per species at scaled 1) have no E-values
+  pipeline commit e3808d1 for the original searches; repaired summaries downloaded
+  2026-10-23 from the completed PR 57 run. Export and source hashes are recorded in
+  `tables/279_repaired_export_manifest.json.gz`.
+- Settings without a Karlin-Altschul fit have no E-values
   and are not drawn.
-- Ten *B. schlosseri* ids contain a comma; the export maps them back to the full id, while
-  the pipeline's own gain step misses them.
+- The repaired query summaries retain full *B. schlosseri* ids containing commas; the
+  export validates every query id against the original conventional-tool query set.
 - Output tables: `tables/279_dark_set_kmerseek_reach_scaled1_qfo_swissprot.csv`; for BHF,
   `tables/279_bhf_hp_lehninger2_seed_counts_vs_shuffles_swissprot.csv`,
   `tables/279_bhf_regions_low_complexity_vs_dipeptide_shuffles_hp_lehninger2_swissprot.csv`
@@ -1781,18 +2109,22 @@ The dark set is the proteins phmmer, jackhmmer and mmseqs2 all fail to place in 
 with the query's own clade removed. This notebook asks how many of them kmerseek puts a
 region on, at E < 1 and E < 10 for both the tools and kmerseek, in human, *C. elegans*,
 *S. cerevisiae*, *B. burgdorferi* and *B. schlosseri*, using the finished dark-set midi run
-(PR 57). Every number comes from filtering per-protein E-values; nothing was searched again.
+(PR 57). The repaired per-protein summaries refresh sections 2-6 without new searches. The
+BHF analyses use the previously completed shuffle searches recorded below.
 
 ## Summary and Conclusions
 
 * Loosening the tool cutoff shrinks the human dark set from 3_103 proteins (15.1%) at
   E < 0.001 to 1_696 (8.2%) at E < 1 and 442 (2.1%) at E < 10.
-* Counted from the region files, kmerseek's best setting reaches 14-32% of dark proteins at
-  E < 1 (hp_lehninger2 k17 in four of five species).
-* Dropping regions that are at least half low complexity or transmembrane helix leaves
-  8-21% of dark proteins reached at E < 1, and 27-40% at E < 10.
-* Sections 2-6 undercount kmerseek reach, because the run's queries.tsv files stored some
-  finite E-values as "inf"; read from the region files (section 9), the rule still holds.
+* Among settings whose placed share is at least twice the dark share, the repaired export
+  reaches 14-32% of dark proteins at E < 1: hp_lehninger2 k17 in three species and
+  hp_lehninger_c_nonpolar2 k19 in worm and Borrelia. At E < 10 the best qualifying settings
+  reach 28-44%. The fixed rule is met in all five species at both cutoffs.
+* For the historical settings selected before repair, dropping regions that are at least
+  half low complexity or transmembrane helix leaves 8-21% of dark proteins reached at
+  E < 1 and 27-40% at E < 10. These are not filter results for every current winner.
+* Sections 2-6 now use repaired query summaries. Section 9 retains the original undercount
+  for comparison and checks the repaired counts against independent region minima.
 * On the corrected counts, the best of six H/P settings reaches 14-32% of dark proteins at
   E < 1 against 43-79% of placed proteins, in all five species.
 * BHF is not dark at E < 1: phmmer and jackhmmer both hit the Vpx protein of simian
@@ -1832,11 +2164,11 @@ every alphabet and k-size at scaled 1: at E < 1 nearly all settings reach far mo
 than dark proteins; at E < 10 many sit on or near the "twice" line. Section 3 picks, per
 species and cutoff, the setting with the largest dark share among those that reach placed
 proteins at least twice as often. Section 4 lists the five dark proteins with the smallest
-kmerseek E-value under that setting; several have no tool hit at all but a kmerseek region
-E-value near 1e-15 (worm srh-97, sre-41). Section 5 compares UniProt features of dark
+kmerseek E-value under that setting. These candidates still need inspection of their matched
+regions; a small E-value alone does not establish a homolog. Section 5 compares UniProt features of dark
 proteins reached against dark proteins missed. The pattern is not the same everywhere: in
-*S. cerevisiae* reached dark proteins carry compositional bias more often at E < 1 (40.9%
-against 22.6%) but less often at E < 10 (11.7% against 17.5%), and *B. burgdorferi* has too
+*S. cerevisiae*, reached dark proteins carry compositional bias more often at both cutoffs:
+44.7% against 20.4% at E < 1, and 28.1% against 8.0% at E < 10, and *B. burgdorferi* has too
 few dark proteins (53 at E < 10) to read. UniProt features are whole-protein marks; whether a
 kmerseek region sits inside a biased stretch or a helix is not checked here.
 
@@ -1855,11 +2187,13 @@ kmerseek setting's regions with E < 1 (6h). The shuffle search is the only new s
   own dark set uses E <= 0.001, so one human and one *B. schlosseri* protein whose best hit is
   exactly 0.001 differ.
 - Run: `runs/ladder-0.4-midi`, finished 2026-10-12, image `olgabot/kmerseek:0.4.0-rc5`,
-  pipeline commit e3808d1; export `tools/export-protein-evalues` at ac5e4f9 (PR 57).
-- Settings without a Karlin-Altschul fit (26-30 per species at scaled 1) have no E-values
+  pipeline commit e3808d1 for the original searches; repaired summaries downloaded
+  2026-10-23 from the completed PR 57 run. Export and source hashes are recorded in
+  `tables/279_repaired_export_manifest.json.gz`.
+- Settings without a Karlin-Altschul fit have no E-values
   and are not drawn.
-- Ten *B. schlosseri* ids contain a comma; the export maps them back to the full id, while
-  the pipeline's own gain step misses them.
+- The repaired query summaries retain full *B. schlosseri* ids containing commas; the
+  export validates every query id against the original conventional-tool query set.
 - Output tables: `tables/279_dark_set_kmerseek_reach_scaled1_qfo_swissprot.csv`; for BHF,
   `tables/279_bhf_hp_lehninger2_seed_counts_vs_shuffles_swissprot.csv`,
   `tables/279_bhf_regions_low_complexity_vs_dipeptide_shuffles_hp_lehninger2_swissprot.csv`
