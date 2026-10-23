@@ -130,13 +130,17 @@
   },
   {
     "number": 198,
-    "head": "f55f4f45bf2a39fffbefcc2cceb32484de9520cf",
+    "head": "da79e9b56b8e9afe3623650e4cd833d748aade59",
     "complete": false,
     "comment_url": "https://github.com/seanome/2024-kmerseek-analysis/pull/198#issuecomment-6366088440",
-    "tests": "",
-    "fixes": [],
-    "blockers": [],
-    "reviewer_status": "outside_notebook_review_scope"
+    "tests": "18tests+18subtests;Black;frozenhashes;independent256binaryvector enumeration=70balancedassignments",
+    "fixes": [
+      "Duplicate table headers silently overwrite values; empty run tokens and whitespace-disguised duplicate runs accepted. Fixed with failing-before regressions."
+    ],
+    "blockers": [
+      "Biological routes, calibration, data selection and condition test not implemented or executed; no biological claim certified."
+    ],
+    "reviewer_status": "focused_protocol_review_fixes_pushed"
   },
   {
     "number": 197,
@@ -509,6 +513,41 @@
     "reviewer_status": "outside_notebook_review_scope"
   },
   {
+    "number": 202,
+    "head": "087d73beceb5081d64f521c72a9e78dde673da2a",
+    "complete": false,
+    "comment_url": "https://github.com/seanome/2024-kmerseek-analysis/pull/202#issuecomment-6367160722",
+    "tests": "5 bounded tests PASS under python -O (4extension+1changed-input search guard); all added Python compiles; Bash syntax PASS",
+    "fixes": [
+      "Reject blank/non-DNA anchors",
+      "Explicit extension/checkpoint/search input/reference/query validation survives python -O",
+      "Close input/output hash handles"
+    ],
+    "blockers": [
+      "Full extension pending and live Sherlock status unverified",
+      "Read and binary contents not fingerprinted by checkpoint; immutable-input assumption"
+    ],
+    "reviewer_status": "outside_notebook_review_scope"
+  },
+  {
+    "number": 203,
+    "head": "6bff04c9d0d197986b752163c71ecc62309e79e6",
+    "complete": false,
+    "comment_url": "https://github.com/seanome/2024-kmerseek-analysis/pull/203#issuecomment-6367527928",
+    "tests": "Fresh full supplied pilot audit JSON matches;45339reference sequences,1632translations,3984actual sourmash comparisons;3encoding API/CLI test PASS;2selectiontests PASS;64sample/5776tunicate metadata hash/count validation PASS;Python compile/all sbatch syntax PASS",
+    "fixes": [
+      "Reject blank/non-DNA anchors in full significant selection",
+      "Close selection input hash handle"
+    ],
+    "blockers": [
+      "Biological experimental unit unresolved",
+      "Full-depth preprocessing/discovery/search not completed or independently verified",
+      "Raw pilot FASTQs absent; pilot trimming/discovery not rerun",
+      "Live Sherlock status not queried"
+    ],
+    "reviewer_status": "outside_notebook_review_scope"
+  },
+  {
     "number": 126,
     "head": "c217915c18117d11ce87357b6ceaca48960d2a81",
     "complete": false,
@@ -557,226 +596,6 @@
       "Full scorer on695GB search outputs, new searches/Sherlock execution, independent bootstrap interval recreation, all subsidiary figures, Pfam-seed reference search (explicitly not run)."
     ],
     "reviewer_status": "reviewed_fixed"
-  },
-  {
-    "number": 169,
-    "head": "369a51d312e48939af217457beeb4bd367519319",
-    "complete": false,
-    "comment_url": "https://github.com/seanome/2024-kmerseek-analysis/pull/169#issuecomment-6365790238",
-    "tests": "",
-    "fixes": [],
-    "blockers": [],
-    "reviewer_status": "scoped_not_scientifically_reviewed"
-  },
-  {
-    "number": 166,
-    "head": "898d4e034722b75a97ea05799ca8b8a986c928cc",
-    "complete": false,
-    "comment_url": "https://github.com/seanome/2024-kmerseek-analysis/pull/166#issuecomment-6365791044",
-    "tests": "",
-    "fixes": [],
-    "blockers": [],
-    "reviewer_status": "scoped_not_scientifically_reviewed"
-  },
-  {
-    "number": 165,
-    "head": "e29efee4aa48d1f78634a4afde9d7878ff78f4da",
-    "complete": false,
-    "comment_url": "https://github.com/seanome/2024-kmerseek-analysis/pull/165#issuecomment-6365791886",
-    "tests": "",
-    "fixes": [],
-    "blockers": [],
-    "reviewer_status": "scoped_not_scientifically_reviewed"
-  },
-  {
-    "number": 164,
-    "head": "275e195e230a2a808881d320b036365af41beee9",
-    "complete": false,
-    "comment_url": "https://github.com/seanome/2024-kmerseek-analysis/pull/164#issuecomment-6365792711",
-    "tests": "",
-    "fixes": [],
-    "blockers": [],
-    "reviewer_status": "scoped_not_scientifically_reviewed"
-  },
-  {
-    "number": 163,
-    "head": "cc33016e578f4cf2440f249b10992670347978cb",
-    "complete": false,
-    "comment_url": "https://github.com/seanome/2024-kmerseek-analysis/pull/163#issuecomment-6365793596",
-    "tests": "",
-    "fixes": [],
-    "blockers": [],
-    "reviewer_status": "scoped_not_scientifically_reviewed"
-  },
-  {
-    "number": 162,
-    "head": "db747e424265a12d618adfbd63a3b27a2351ffb9",
-    "complete": false,
-    "comment_url": "https://github.com/seanome/2024-kmerseek-analysis/pull/162#issuecomment-6365794390",
-    "tests": "",
-    "fixes": [],
-    "blockers": [],
-    "reviewer_status": "scoped_not_scientifically_reviewed"
-  },
-  {
-    "number": 161,
-    "head": "715275a8925b35732d796eb35af552405755e57a",
-    "complete": false,
-    "comment_url": "https://github.com/seanome/2024-kmerseek-analysis/pull/161#issuecomment-6365795256",
-    "tests": "",
-    "fixes": [],
-    "blockers": [],
-    "reviewer_status": "scoped_not_scientifically_reviewed"
-  },
-  {
-    "number": 160,
-    "head": "f0802ebe12a15d752580798f37a32c0033d6a81a",
-    "complete": false,
-    "comment_url": "https://github.com/seanome/2024-kmerseek-analysis/pull/160#issuecomment-6365796090",
-    "tests": "",
-    "fixes": [],
-    "blockers": [],
-    "reviewer_status": "scoped_not_scientifically_reviewed"
-  },
-  {
-    "number": 159,
-    "head": "c2f151497ccca98d7cf2f96f8509a0df1f6d5308",
-    "complete": false,
-    "comment_url": "https://github.com/seanome/2024-kmerseek-analysis/pull/159#issuecomment-6365796970",
-    "tests": "",
-    "fixes": [],
-    "blockers": [],
-    "reviewer_status": "scoped_not_scientifically_reviewed"
-  },
-  {
-    "number": 158,
-    "head": "5b644dc8195cba4535d06d59c6b15748a30874b0",
-    "complete": false,
-    "comment_url": "https://github.com/seanome/2024-kmerseek-analysis/pull/158#issuecomment-6365797865",
-    "tests": "",
-    "fixes": [],
-    "blockers": [],
-    "reviewer_status": "scoped_not_scientifically_reviewed"
-  },
-  {
-    "number": 156,
-    "head": "cd2bc2f6f2d010537264a15f53a0f05be6d12eaa",
-    "complete": false,
-    "comment_url": "https://github.com/seanome/2024-kmerseek-analysis/pull/156#issuecomment-6365798685",
-    "tests": "",
-    "fixes": [],
-    "blockers": [],
-    "reviewer_status": "scoped_not_scientifically_reviewed"
-  },
-  {
-    "number": 155,
-    "head": "02ba2be7ac0145aaaec642453acbd8f84cab9e85",
-    "complete": false,
-    "comment_url": "https://github.com/seanome/2024-kmerseek-analysis/pull/155#issuecomment-6365799519",
-    "tests": "",
-    "fixes": [],
-    "blockers": [],
-    "reviewer_status": "scoped_not_scientifically_reviewed"
-  },
-  {
-    "number": 154,
-    "head": "08a099b5d9b6d566036072f19d2152b2544571a1",
-    "complete": false,
-    "comment_url": "https://github.com/seanome/2024-kmerseek-analysis/pull/154#issuecomment-6365800375",
-    "tests": "",
-    "fixes": [],
-    "blockers": [],
-    "reviewer_status": "scoped_not_scientifically_reviewed"
-  },
-  {
-    "number": 150,
-    "head": "8cfada34b7834bc04d4de9d88ea84a066219e971",
-    "complete": false,
-    "comment_url": "https://github.com/seanome/2024-kmerseek-analysis/pull/150#issuecomment-6365801243",
-    "tests": "",
-    "fixes": [],
-    "blockers": [],
-    "reviewer_status": "scoped_not_scientifically_reviewed"
-  },
-  {
-    "number": 149,
-    "head": "f7e0946de258cb8d94aeb7a7bbc6dbacfc76f275",
-    "complete": false,
-    "comment_url": "https://github.com/seanome/2024-kmerseek-analysis/pull/149#issuecomment-6365802116",
-    "tests": "",
-    "fixes": [],
-    "blockers": [],
-    "reviewer_status": "scoped_not_scientifically_reviewed"
-  },
-  {
-    "number": 148,
-    "head": "7eca428b763ccb5b4209d5b76ca2f7db1e0f6ab0",
-    "complete": false,
-    "comment_url": "https://github.com/seanome/2024-kmerseek-analysis/pull/148#issuecomment-6365802879",
-    "tests": "",
-    "fixes": [],
-    "blockers": [],
-    "reviewer_status": "scoped_not_scientifically_reviewed"
-  },
-  {
-    "number": 147,
-    "head": "49a889af1d176cf459f546557047ef15f47fc99f",
-    "complete": false,
-    "comment_url": "https://github.com/seanome/2024-kmerseek-analysis/pull/147#issuecomment-6365803749",
-    "tests": "",
-    "fixes": [],
-    "blockers": [],
-    "reviewer_status": "scoped_not_scientifically_reviewed"
-  },
-  {
-    "number": 146,
-    "head": "0bfe25a744854efceaa3c0e0940e83ed79b95761",
-    "complete": false,
-    "comment_url": "https://github.com/seanome/2024-kmerseek-analysis/pull/146#issuecomment-6365804470",
-    "tests": "",
-    "fixes": [],
-    "blockers": [],
-    "reviewer_status": "scoped_not_scientifically_reviewed"
-  },
-  {
-    "number": 145,
-    "head": "e985f7d49cb30a86abee7a308c6d68ed229788c4",
-    "complete": false,
-    "comment_url": "https://github.com/seanome/2024-kmerseek-analysis/pull/145#issuecomment-6365806118",
-    "tests": "",
-    "fixes": [],
-    "blockers": [],
-    "reviewer_status": "scoped_not_scientifically_reviewed"
-  },
-  {
-    "number": 144,
-    "head": "825554892c009f2a1e84f8edb8f6a23a8d6d52ec",
-    "complete": false,
-    "comment_url": "https://github.com/seanome/2024-kmerseek-analysis/pull/144#issuecomment-6365807433",
-    "tests": "",
-    "fixes": [],
-    "blockers": [],
-    "reviewer_status": "scoped_not_scientifically_reviewed"
-  },
-  {
-    "number": 135,
-    "head": "1118194478f295509acbd8872e83d2145a33150b",
-    "complete": false,
-    "comment_url": "https://github.com/seanome/2024-kmerseek-analysis/pull/135#issuecomment-6365808184",
-    "tests": "",
-    "fixes": [],
-    "blockers": [],
-    "reviewer_status": "scoped_not_scientifically_reviewed"
-  },
-  {
-    "number": 127,
-    "head": "09abbb4cb5baa7f8d84a2c7c412f479500ab5957",
-    "complete": false,
-    "comment_url": "https://github.com/seanome/2024-kmerseek-analysis/pull/127#issuecomment-6365809050",
-    "tests": "",
-    "fixes": [],
-    "blockers": [],
-    "reviewer_status": "scoped_not_scientifically_reviewed"
   },
   {
     "number": 134,
@@ -1189,16 +1008,280 @@
     "reviewer_status": "reviewed_fixed"
   },
   {
-    "number": 65,
-    "head": "0a236dac125b83b67633c0a2c5729e965e64b0dd",
+    "number": 145,
+    "head": "d409716f24275a46c1a3e30fd17374a41341c5ab",
     "complete": false,
-    "comment_url": "https://github.com/seanome/2024-kmerseek-analysis/pull/65#issuecomment-6366952192",
+    "comment_url": "https://github.com/seanome/2024-kmerseek-analysis/pull/145#issuecomment-6367316921",
+    "tests": "Project Python doctests and tests/test_decoys.py: 111 tests passed. Read the cysteine framework, taxon exclusion, scoring and bootstrap helper code.",
+    "fixes": [],
+    "blockers": [
+      "Raw search reruns, independence of related peptide families, and recalculation of benchmark outcomes from original hit files."
+    ],
+    "reviewer_status": "focused_helper_review_fixed"
+  },
+  {
+    "number": 159,
+    "head": "41b83d5916e717cb759237540f3354bc05e67551",
+    "complete": false,
+    "comment_url": "https://github.com/seanome/2024-kmerseek-analysis/pull/159#issuecomment-6367322884",
+    "tests": "Rebuilt all 380 alphabet-class rows and compared them exactly with the cache. Checked all unaffected evidence columns and all numeric seed-table columns for equality before and after the change. Commit hooks passed.",
+    "fixes": [],
+    "blockers": [
+      "Full raw evidence recomputation, new searches, and validation of original notebook numeric outputs against every raw input."
+    ],
+    "reviewer_status": "focused_helper_review_fixed"
+  },
+  {
+    "number": 65,
+    "head": "307b89e9d932b45310323c5c27e9c940212c9ad4",
+    "complete": false,
+    "comment_url": "https://github.com/seanome/2024-kmerseek-analysis/pull/65#issuecomment-6367350289",
     "tests": "Independent standard-library gzip/csv audit of134histograms; committed reproducible script and auditCSV. Final full fresh-kernel execution in2025-kmerseek-analysis succeeds with24sequential code cells and zero error outputs. Current notebook checker, black check and helper compilation pass. Makefile pull-uniref100 dry run confirms corrected nextflow-runs path. Empty-input and mismatched-header audit fixtures correctly fail. Publication-size Arial6pt exports regenerate16reachable figures asPDF/SVG/PNG; representative panels viewed. Old branch has no pre-commit configuration.",
     "fixes": [],
     "blockers": [
       "New kmerseek index/search; exact canonical-only vocabulary counts from raw words; accuracy-versus-gap analysis because original RBH inputs are unavailable; independent provenance of the original spectrum-generation binary; every visual panel individually."
     ],
     "reviewer_status": "reviewed_fixed_accuracy_inputs_unavailable"
+  },
+  {
+    "number": 149,
+    "head": "f7e0946de258cb8d94aeb7a7bbc6dbacfc76f275",
+    "complete": false,
+    "comment_url": "https://github.com/seanome/2024-kmerseek-analysis/pull/149#issuecomment-6367362712",
+    "tests": "Installed git-filter-repo 2.47.0 only under a temporary isolated dependency directory; project environment unchanged. Both end-to-end pytest tests passed against temporary repositories.",
+    "fixes": [],
+    "blockers": [
+      "Repository-wide production rewrite, every historical image, production ref migration, and remote force-push."
+    ],
+    "reviewer_status": "focused_helper_results_review"
+  },
+  {
+    "number": 163,
+    "head": "15858282d72e8d6bf9e7d217ce8d1f173d728791",
+    "complete": false,
+    "comment_url": "https://github.com/seanome/2024-kmerseek-analysis/pull/163#issuecomment-6367375817",
+    "tests": "Actual dark-set accuracy toy tests report all checks pass (6 proteins, 315 rows). Synthetic figure export verifies palette PNG plus nonempty PDF/SVG. Independent standard-library TSV aggregation.",
+    "fixes": [],
+    "blockers": [
+      "All individual raw hit calls, new searches, independence of related query families, and re-rendering every historical figure."
+    ],
+    "reviewer_status": "focused_helper_results_review"
+  },
+  {
+    "number": 165,
+    "head": "e29efee4aa48d1f78634a4afde9d7878ff78f4da",
+    "complete": false,
+    "comment_url": "https://github.com/seanome/2024-kmerseek-analysis/pull/165#issuecomment-6367403091",
+    "tests": "Project Python pytest on: nextflow-runs/qfo-pfam-region-benchmark/tests/test_prebuilt_truth_restricted.py, nextflow-runs/qfo-pfam-region-benchmark/tests/test_scored_calls_mode.py, tests/test_build_leaderboard_long.py, tests/test_build_leaderboard_tables.py. Result: 46 passed in 6.83s",
+    "fixes": [],
+    "blockers": [
+      "Production raw-search reruns, every saved numeric result, external databases, cluster jobs, and a full scientific review of the pipeline analysis."
+    ],
+    "reviewer_status": "targeted_pipeline_tests_not_full_scientific_review"
+  },
+  {
+    "number": 164,
+    "head": "275e195e230a2a808881d320b036365af41beee9",
+    "complete": false,
+    "comment_url": "https://github.com/seanome/2024-kmerseek-analysis/pull/164#issuecomment-6367403981",
+    "tests": "Project Python pytest on: nextflow-runs/qfo-pfam-region-benchmark/tests/test_query_strata.py, tests/test_build_leaderboard_long.py, tests/test_build_leaderboard_tables.py, tests/test_check_query_strata.py. Result: 81 passed in 3.73s",
+    "fixes": [],
+    "blockers": [
+      "Production raw-search reruns, every saved numeric result, external databases, cluster jobs, and a full scientific review of the pipeline analysis."
+    ],
+    "reviewer_status": "targeted_pipeline_tests_not_full_scientific_review"
+  },
+  {
+    "number": 162,
+    "head": "db747e424265a12d618adfbd63a3b27a2351ffb9",
+    "complete": false,
+    "comment_url": "https://github.com/seanome/2024-kmerseek-analysis/pull/162#issuecomment-6367404839",
+    "tests": "Project Python pytest on: nextflow-runs/qfo-pfam-region-benchmark/tests/test_annotator_best_hit.py, nextflow-runs/qfo-pfam-region-benchmark/tests/test_embedding_calls.py, nextflow-runs/qfo-pfam-region-benchmark/tests/test_refdb_calls.py. Result: 28 passed, 1 skipped in 2.23s",
+    "fixes": [],
+    "blockers": [
+      "Production raw-search reruns, every saved numeric result, external databases, cluster jobs, and a full scientific review of the pipeline analysis."
+    ],
+    "reviewer_status": "targeted_pipeline_tests_not_full_scientific_review"
+  },
+  {
+    "number": 161,
+    "head": "715275a8925b35732d796eb35af552405755e57a",
+    "complete": false,
+    "comment_url": "https://github.com/seanome/2024-kmerseek-analysis/pull/161#issuecomment-6367405630",
+    "tests": "Project Python pytest on: nextflow-runs/qfo-pfam-region-benchmark/tests/test_annotator_best_hit.py, nextflow-runs/qfo-pfam-region-benchmark/tests/test_refdb_calls.py. Result: 21 passed, 1 skipped in 1.59s",
+    "fixes": [],
+    "blockers": [
+      "Production raw-search reruns, every saved numeric result, external databases, cluster jobs, and a full scientific review of the pipeline analysis."
+    ],
+    "reviewer_status": "targeted_pipeline_tests_not_full_scientific_review"
+  },
+  {
+    "number": 160,
+    "head": "f0802ebe12a15d752580798f37a32c0033d6a81a",
+    "complete": false,
+    "comment_url": "https://github.com/seanome/2024-kmerseek-analysis/pull/160#issuecomment-6367406503",
+    "tests": "Project Python pytest on: nextflow-runs/qfo-pfam-region-benchmark/tests/test_annotator_best_hit.py. Result: 16 passed, 1 skipped in 1.19s",
+    "fixes": [],
+    "blockers": [
+      "Production raw-search reruns, every saved numeric result, external databases, cluster jobs, and a full scientific review of the pipeline analysis."
+    ],
+    "reviewer_status": "targeted_pipeline_tests_not_full_scientific_review"
+  },
+  {
+    "number": 158,
+    "head": "5b644dc8195cba4535d06d59c6b15748a30874b0",
+    "complete": false,
+    "comment_url": "https://github.com/seanome/2024-kmerseek-analysis/pull/158#issuecomment-6367407373",
+    "tests": "Project Python pytest on: nextflow-runs/qfo-pfam-region-benchmark/tests/test_no_search_baselines.py, scripts/tests/test_build_no_search_baseline_table.py. Result: 16 passed in 0.40s",
+    "fixes": [],
+    "blockers": [
+      "Production raw-search reruns, every saved numeric result, external databases, cluster jobs, and a full scientific review of the pipeline analysis."
+    ],
+    "reviewer_status": "targeted_pipeline_tests_not_full_scientific_review"
+  },
+  {
+    "number": 156,
+    "head": "cd2bc2f6f2d010537264a15f53a0f05be6d12eaa",
+    "complete": false,
+    "comment_url": "https://github.com/seanome/2024-kmerseek-analysis/pull/156#issuecomment-6367408272",
+    "tests": "Project Python pytest on: nextflow-runs/qfo-pfam-region-benchmark/tests/test_annotator_best_hit.py, nextflow-runs/qfo-pfam-region-benchmark/tests/test_check_tool_hits.py. Result: 25 passed, 1 skipped in 1.50s",
+    "fixes": [],
+    "blockers": [
+      "Production raw-search reruns, every saved numeric result, external databases, cluster jobs, and a full scientific review of the pipeline analysis."
+    ],
+    "reviewer_status": "targeted_pipeline_tests_not_full_scientific_review"
+  },
+  {
+    "number": 155,
+    "head": "02ba2be7ac0145aaaec642453acbd8f84cab9e85",
+    "complete": false,
+    "comment_url": "https://github.com/seanome/2024-kmerseek-analysis/pull/155#issuecomment-6367409163",
+    "tests": "Project Python pytest on: nextflow-runs/invertebrate-dark-set/tests/test_structure.py. Result: 11 passed in 0.32s",
+    "fixes": [],
+    "blockers": [
+      "Production raw-search reruns, every saved numeric result, external databases, cluster jobs, and a full scientific review of the pipeline analysis."
+    ],
+    "reviewer_status": "targeted_pipeline_tests_not_full_scientific_review"
+  },
+  {
+    "number": 154,
+    "head": "08a099b5d9b6d566036072f19d2152b2544571a1",
+    "complete": false,
+    "comment_url": "https://github.com/seanome/2024-kmerseek-analysis/pull/154#issuecomment-6367410035",
+    "tests": "Project Python pytest on: tests/test_build_leaderboard_long.py, tests/test_build_leaderboard_tables.py. Result: 44 passed in 0.11s",
+    "fixes": [],
+    "blockers": [
+      "Production raw-search reruns, every saved numeric result, external databases, cluster jobs, and a full scientific review of the pipeline analysis."
+    ],
+    "reviewer_status": "targeted_pipeline_tests_not_full_scientific_review"
+  },
+  {
+    "number": 148,
+    "head": "7eca428b763ccb5b4209d5b76ca2f7db1e0f6ab0",
+    "complete": false,
+    "comment_url": "https://github.com/seanome/2024-kmerseek-analysis/pull/148#issuecomment-6367410888",
+    "tests": "Project Python pytest on: tests/test_build_leaderboard_long.py, tests/test_build_leaderboard_tables.py. Result: 40 passed in 0.10s",
+    "fixes": [],
+    "blockers": [
+      "Production raw-search reruns, every saved numeric result, external databases, cluster jobs, and a full scientific review of the pipeline analysis."
+    ],
+    "reviewer_status": "targeted_pipeline_tests_not_full_scientific_review"
+  },
+  {
+    "number": 146,
+    "head": "0bfe25a744854efceaa3c0e0940e83ed79b95761",
+    "complete": false,
+    "comment_url": "https://github.com/seanome/2024-kmerseek-analysis/pull/146#issuecomment-6367411548",
+    "tests": "Project Python pytest on: tests/test_build_leaderboard_tables.py. Result: 17 passed in 0.07s",
+    "fixes": [],
+    "blockers": [
+      "Production raw-search reruns, every saved numeric result, external databases, cluster jobs, and a full scientific review of the pipeline analysis."
+    ],
+    "reviewer_status": "targeted_pipeline_tests_not_full_scientific_review"
+  },
+  {
+    "number": 144,
+    "head": "825554892c009f2a1e84f8edb8f6a23a8d6d52ec",
+    "complete": false,
+    "comment_url": "https://github.com/seanome/2024-kmerseek-analysis/pull/144#issuecomment-6367412413",
+    "tests": "Project Python pytest on: tests/test_build_leaderboard_tables.py. Result: 17 passed in 0.07s",
+    "fixes": [],
+    "blockers": [
+      "Production raw-search reruns, every saved numeric result, external databases, cluster jobs, and a full scientific review of the pipeline analysis."
+    ],
+    "reviewer_status": "targeted_pipeline_tests_not_full_scientific_review"
+  },
+  {
+    "number": 135,
+    "head": "1118194478f295509acbd8872e83d2145a33150b",
+    "complete": false,
+    "comment_url": "https://github.com/seanome/2024-kmerseek-analysis/pull/135#issuecomment-6367413151",
+    "tests": "Project Python pytest on: nextflow-runs/qfo-pfam-region-benchmark/tests/test_nf_running.py. Result: 5 passed in 0.76s",
+    "fixes": [],
+    "blockers": [
+      "Production raw-search reruns, every saved numeric result, external databases, cluster jobs, and a full scientific review of the pipeline analysis."
+    ],
+    "reviewer_status": "targeted_pipeline_tests_not_full_scientific_review"
+  },
+  {
+    "number": 169,
+    "head": "369a51d312e48939af217457beeb4bd367519319",
+    "complete": false,
+    "comment_url": "https://github.com/seanome/2024-kmerseek-analysis/pull/169#issuecomment-6367424340",
+    "tests": "Fresh source reading; local arithmetic checks where stated.",
+    "fixes": [],
+    "blockers": [
+      "Reopening all linked primary sources, current vendor prices/market uptake, live Sherlock state, all copied PR results, and remote workflow execution."
+    ],
+    "reviewer_status": "document_scope_checked_external_claims_not_reverified"
+  },
+  {
+    "number": 150,
+    "head": "8cfada34b7834bc04d4de9d88ea84a066219e971",
+    "complete": false,
+    "comment_url": "https://github.com/seanome/2024-kmerseek-analysis/pull/150#issuecomment-6367425132",
+    "tests": "Fresh source reading; local arithmetic checks where stated.",
+    "fixes": [],
+    "blockers": [
+      "Reopening all linked primary sources, current vendor prices/market uptake, live Sherlock state, all copied PR results, and remote workflow execution."
+    ],
+    "reviewer_status": "document_scope_checked_external_claims_not_reverified"
+  },
+  {
+    "number": 147,
+    "head": "49a889af1d176cf459f546557047ef15f47fc99f",
+    "complete": false,
+    "comment_url": "https://github.com/seanome/2024-kmerseek-analysis/pull/147#issuecomment-6367425939",
+    "tests": "Fresh source reading; local arithmetic checks where stated.",
+    "fixes": [],
+    "blockers": [
+      "Reopening all linked primary sources, current vendor prices/market uptake, live Sherlock state, all copied PR results, and remote workflow execution."
+    ],
+    "reviewer_status": "document_scope_checked_external_claims_not_reverified"
+  },
+  {
+    "number": 127,
+    "head": "09abbb4cb5baa7f8d84a2c7c412f479500ab5957",
+    "complete": false,
+    "comment_url": "https://github.com/seanome/2024-kmerseek-analysis/pull/127#issuecomment-6367426742",
+    "tests": "Fresh source reading; local arithmetic checks where stated.",
+    "fixes": [],
+    "blockers": [
+      "Reopening all linked primary sources, current vendor prices/market uptake, live Sherlock state, all copied PR results, and remote workflow execution."
+    ],
+    "reviewer_status": "document_scope_checked_external_claims_not_reverified"
+  },
+  {
+    "number": 166,
+    "head": "d19b5383060fa81ad5a9ef9edbdd62a8ca1fe613",
+    "complete": false,
+    "comment_url": "https://github.com/seanome/2024-kmerseek-analysis/pull/166#issuecomment-6367429164",
+    "tests": "Eight synthetic regressions pass: NaN/null in both score directions, finite true/false score order, false-positive-first ties, and valid infinite scores. Commit hooks pass.",
+    "fixes": [],
+    "blockers": [
+      "External AWK comparison script (pytest collected no tests from that standalone CLI), every production hit file, and production result rescoring."
+    ],
+    "reviewer_status": "scorer_bug_fixed"
   },
   {
     "number": 118,
@@ -1463,15 +1546,17 @@
   },
   {
     "number": 201,
-    "head": "442f2d017ec8471404d2fa58d0b9a29a65082cd9",
+    "head": "21e9991b1596cf858eafd5f2831088c87417e0b1",
     "complete": false,
-    "comment_url": "https://github.com/seanome/2024-kmerseek-analysis/pull/201#issuecomment-6367005357",
+    "comment_url": "https://github.com/seanome/2024-kmerseek-analysis/pull/201#issuecomment-6367468692",
     "tests": [
       "11 Python regression tests PASS",
       "6 Rust tests PASS",
       "Cargo fmt/defaultClippy-Dwarnings PASS; pedantic/nursery style warnings remain",
       "Biopython oracle3000DNA/28420peptides exactmatch",
-      "shellsyntax+Pythoncompile PASS"
+      "shellsyntax+Pythoncompile PASS",
+      "Final delta setup and DE-kupl shell syntax PASS; wrapper execution untested",
+      "Final snapshot setup banner-only delta read; bash -n PASS, actual invocation untested"
     ],
     "fixes": [
       "Reverify FASTQ and fastp output before trusting old markers",

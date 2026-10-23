@@ -19,7 +19,7 @@ commits do not inherit this recommendation.
 | [PR 153](https://github.com/seanome/2024-kmerseek-analysis/pull/153) | `7ced2521` | Colour-map changes and tested protection against reducing continuous colour bars to a few bands. Eight focused tests pass. |
 | [PR 115](https://github.com/seanome/2024-kmerseek-analysis/pull/115) | `e38fca58` | DisProt parser rejects missing/duplicate entry IDs and repeated pages. Ten tests pass; cached human residue totals reproduce. No new live API or benchmark run. |
 | [PR 117](https://github.com/seanome/2024-kmerseek-analysis/pull/117) | `6b76956a` | Merge the stopped BCL2 plan and corrected query inventory. Fresh notebook execution, 28 tests and an independent Swiss-Prot parse pass. This does not authorize the stopped experiment or establish an E-value calibration. |
-| [PR 120](https://github.com/seanome/2024-kmerseek-analysis/pull/120) | `59aeb872` | Repaired completed-run summaries, hashed provenance and corrected comparisons. All 11,270 summary files exported; 60 species/settings/cutoff comparisons independently reproduce. All five species pass the stated E1/E10 rule. This is the recorded rule, not independent biological validation. |
+| [PR 120](https://github.com/seanome/2024-kmerseek-analysis/pull/120) | `59aeb872` | Repaired completed-run summaries, hashed provenance and corrected comparisons. All 11,270 summary files exported; 60 species/settings/cutoff comparisons independently reproduce. All five species pass the stated rule at E-value cutoffs of 1 and 10. This is the recorded rule, not independent biological validation. |
 
 Merge these individually and recheck tests after main changes. PR 91's merge conflict
 has also been fixed, but its shared plotting helper affects downstream notebooks;
@@ -39,7 +39,8 @@ its focused tests and cached example do not constitute a scientific rerun of the
   anywhere between two proteins. Corrected PRs 54/106/113 and 143 state this limit;
   they cannot establish search reachability from the aligned-run calculation.
 - **Region scores:** PR 57's conclusion depends on counting duplicated calls.
-  After counting each domain instance once, phmmer has higher Fmax in all four
+  After counting each domain instance once, phmmer has a higher maximum F1 score,
+  which balances precision and recall, in all four
   species examined. Do not reuse the earlier unmerged-call conclusion as a
   biological advantage. PRs 30/52/57/114 still need relevant pipeline validation.
 - **BHF/Botryllus:** PRs 83/124/132 now expose query provenance, composition controls,
@@ -66,8 +67,36 @@ its focused tests and cached example do not constitute a scientific rerun of the
    available. This report does not claim that today's remaining queue has finished.
    No new searches, Nextflow jobs, cancellations or environment changes were made.
 
-The other-repository file is an inventory only. In particular, this review does not
-approve the 24 open kmerseek PRs or the 31 leaderboard PRs. Clearing those requires
-reviews of their own code and dependencies.
+The other-repository inventory does not approve all 24 kmerseek or 31 leaderboard
+PRs. [Focused checks of ten PRs](OTHER_REPOSITORY_REVIEWS.md) add these findings:
+
+- kmerseek PR 159 now rejects corrupt index boundaries; six module tests and current
+  CI pass. It targets PR 158's branch. Land or reconcile that dependency first;
+  the historical speed measurement predates the added validation scan.
+- kmerseek PR 143's documentation conflict is fixed; wait for its current checks.
+  PR 137 still has merge conflicts. PR 155's coverage process segfaulted; this
+  is not evidence of a coverage percentage below the threshold.
+- Leaderboard PRs 12 and 32 are conditional merge candidates as dated descriptive
+  and retrospective records after repository checks. Their local source checks
+  pass, but no GitHub checks are configured on these current heads. PR 32's broad
+  prediction claim and unsupported power claim have been narrowed.
+- Leaderboard PR 33 now distinguishes seven reported transfer claims from
+  independently supported transfers. Four source assertions fail; hold scientific
+  approval. PRs 7/8 pass focused browser checks but depend on PR 6. PR 2 needs
+  the correctness fixes already present in later PR 9 before a standalone merge.
+
+PRs 202 and 203 received focused checks of extensions, search guards, anchor
+selection and saved pilot outputs. PR 203's local audit reproduces the recorded
+pilot; it does not establish full-depth completion or a treatment effect. Which
+samples are independent biological replicates remains unresolved.
+
+The continuously edited SPLASH branches can advance after a recorded review.
+A changed head is shown as needing another check; this report does not approve
+changes made after that review commit.
+
+No new notebook source was found in the final 22 analysis PRs. Their helpers,
+scorers, output conversion and pipeline tests received focused checks. Missing
+raw-data validation remains stated in their per-PR comments. PRs 166 and 198 now
+reject missing-score and ambiguous-manifest cases that previously passed.
 
 Written by Codex at olgabot's request.

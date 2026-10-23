@@ -1,5 +1,7 @@
 # Other public pull requests
 
+Inventory snapshot: 2026-10-23T14:11:37.875142+00:00. Later changes appear in the analysis review ledger.
+
 This is an inventory, not code or scientific approval. The notebook review is recorded
 separately in README.md. Private repository details are omitted from this public report.
 

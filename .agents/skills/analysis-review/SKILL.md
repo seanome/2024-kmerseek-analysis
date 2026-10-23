@@ -370,3 +370,13 @@ ceiling are different filters; test whether the advertised default adds the latt
 Matching chunk sets across every arm do not prove coverage: every arm can omit the
 same chunk. Require an independent expected chunk count from the input manifest,
 and reject equal but incomplete sets. Added 2026-10-23 after PRs 30 and 57.
+
+Validate table headers before constructing row dictionaries: duplicate column names
+otherwise overwrite earlier values. Split run lists, trim separator whitespace, reject
+empty entries, then test uniqueness. Added 2026-10-23 after PR 198 accepted ambiguous
+sample manifests despite its eligibility checks.
+
+Distinguish missing scores from valid infinite ranking scores. A transformed zero
+E-value can legitimately be infinite; reject NaN/null scores and test the metric
+contract before banning infinity. Added 2026-10-23 after PR 166's missing score
+sorted ahead of a real hit and falsely counted recovery.
