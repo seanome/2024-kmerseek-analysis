@@ -3,11 +3,11 @@
 Requested by Olga on 2026-10-23: search every extended sequence using DNA, protein, Dayhoff and HP, then update the report.
 
 - Extension array: 49191753, 22 batches. First ten batches had completed at the initial search setup check.
-- Index validation and integration-test job: 49194074.
-- Search array: 49194102, `afterok:49191753:49194074`, 22 tasks, concurrency two.
+- Index validation and integration-test job: 49194487 (replaces failed 49194074).
+- Search array: 49194526, `afterok:49191753:49194487` (replaces automatically cancelled 49194102), 22 tasks, concurrency two.
 - Read and follow current Sherlock instructions at each session and after compaction. No local heavy analysis.
 
-The earlier index job 49190585 built DNA scaled5, then failed because `sig check` requires a picklist. The repaired builder exports manifests with `sig manifest`, validates exactly six reference names and requires each library to recover its own full sketch at containment 1. It reuses the already-built DNA directory only after those checks. It builds the other three encodings at scaled5; searches downsample to scaled10 and 100. A real synthetic positive/ambiguous-sequence integration test runs first in the same Slurm job. A failed test prevents downstream searches.
+The earlier index job 49190585 built DNA scaled5, then failed because `sig check` requires a picklist. A subsequent `sig manifest` export wrote six manifest records but then crashed (job 49194074, exit 139). The real four-alphabet integration test passed before this application crash. The repaired builder removes the unnecessary export and directly validates exactly six reference names from search results, requiring each library to recover its own full sketch at containment 1. It reuses the already-built DNA directory only after those checks. It builds the other three encodings at scaled5; searches downsample to scaled10 and 100. A real synthetic positive/ambiguous-sequence integration test runs first in the same Slurm job. A failed test prevents downstream searches.
 
 Reference coverage is six trimmed, first-million-pair oyster libraries from the discovery study. This is self-study sequence occurrence, not independent corroboration or global SRA context. The full bivalve inventory has 17,623 runs and is not indexed. Broader searches must be repeated against that collection when available.
 
