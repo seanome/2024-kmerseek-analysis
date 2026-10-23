@@ -188,8 +188,8 @@ kmerseek's own mask finds a stretch in BHF at only 9 of the 152 settings, and on
 notebook 256's 153 winning (score, setting) pairs are at one of them (both gbmr4 k18). So
 at the settings of 151 of the 153 wins, kmerseek's mask, which was on during notebook
 256's searches, removed nothing from BHF. Whether the wins come from 63-105 is what
-sections 4 and 5 test. SEG calls 70-93 and 109-116 low-complexity, inside 256's region
-63-105 but shorter. The copies below use the union: 63-105, 108-117 and 208-216, 62 of 252 residues.
+sections 4 and 5 test. SEG calls 70-93 and 109-116 low-complexity. The first lies inside notebook 256's
+region 63-105; the second lies beyond it. The copies below use the union: 63-105, 108-117 and 208-216, 62 of 252 residues.
 """),
     md(r"""
 ## 2. The five sets of queries
@@ -357,6 +357,11 @@ chance predicts (3.1 of 61, 5.3 of 106); that holds for every score but mean IDF
 ## 5. The decision rule
 """),
     code(r"""
+from IPython.display import Image, display
+
+# Repeat the score-by-null figure beside the decision tables.
+display(Image(filename="../figures/283_bhf_beats_copies_by_null_human_gencode.png"))
+
 if COPIES_DONE:
     if over.height == 0:
         print("verdict: BHF: no kmerseek signal beyond its low-complexity stretches")
@@ -523,10 +528,11 @@ counting only the proteins that found something, under the line of 10.6). Its 14
 one match. Proteins with real human homologs score at least as well as BHF under every
 other score, as expected.
 
-**Verdict across the five nulls.** BHF's kmerseek hits are no better than chance by
-E-value under every null. Under the other scores, BHF beats other proteins of its length
+**Verdict across the five nulls.** No E-value result supports a human homolog. Null 3
+exceeds the original count threshold (7 of 61 settings versus 6.1), but drops to 6 when
+conditioning on copies with hits. This is a sensitivity check, not the original rule. Under the other scores, BHF beats other proteins of its length
 that conventional search cannot place, but only through its low-complexity stretches:
-copies that keep those stretches (null 2) bring every score back to chance, and the human
+copies that keep those stretches (null 2) leave every score below the 10% decision line, and the human
 proteins behind the wins against other proteins are the same serine and charged stretches
 (NFE2L1, DEK) plus one ordinary 10-residue match (ZNF770). Nothing here supports BHF as a
 homolog of any human protein.
