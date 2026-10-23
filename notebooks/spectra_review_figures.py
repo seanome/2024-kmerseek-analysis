@@ -29,9 +29,8 @@ def save_spectrum(fig, path):
         ax.set_position([position.x0, position.y0, position.width, height])
         legend.set_loc("lower left")
         legend.set_bbox_to_anchor((0, 1.01))
-        ax.title.set_position(
-            (0.5, 1.03 + (rows * 0.15) / (height * fig.get_size_inches()[1]))
-        )
+        ax.set_title("")
+
     for legend in fig.legends:
         legend.set_loc("upper center")
         legend.set_bbox_to_anchor((0.5, 0.98))
