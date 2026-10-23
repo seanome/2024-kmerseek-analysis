@@ -1,0 +1,181 @@
+<?xml version="1.0" encoding="utf-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+  "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg xmlns:xlink="http://www.w3.org/1999/xlink" width="515.619677pt" height="337.037pt" viewBox="0 0 515.619677 337.037" xmlns="http://www.w3.org/2000/svg" version="1.1">
+ <metadata>
+  <rdf:RDF xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:cc="http://creativecommons.org/ns#" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+   <cc:Work>
+    <dc:type rdf:resource="http://purl.org/dc/dcmitype/StillImage"/>
+    <dc:date>2026-10-23T05:58:45.347229</dc:date>
+    <dc:format>image/svg+xml</dc:format>
+    <dc:creator>
+     <cc:Agent>
+      <dc:title>Matplotlib v3.10.8, https://matplotlib.org/</dc:title>
+     </cc:Agent>
+    </dc:creator>
+   </cc:Work>
+  </rdf:RDF>
+ </metadata>
+ <defs>
+  <style type="text/css">*{stroke-linejoin: round; stroke-linecap: butt}</style>
+ </defs>
+ <g id="figure_1">
+  <g id="patch_1">
+   <path d="M 0 337.037
+L 515.619677 337.037
+L 515.619677 0
+L 0 0
+z
+" style="fill: #ffffff"/>
+  </g>
+  <g id="axes_1">
+   <g id="text_1">
+    <text style="font-size: 7px; font-family: 'Arial', 'Helvetica', 'Liberation Sans', 'DejaVu Sans', sans-serif" transform="translate(1.44 19.024387)">gbmr7</text>
+    <text style="font-size: 7px; font-family: 'Arial', 'Helvetica', 'Liberation Sans', 'DejaVu Sans', sans-serif" transform="translate(1.44 26.510231)">0=DN; 1=AEFIKLMQRVWY; 2=CH; 3=T; 4=S; 5=G; 6=P</text>
+    <text style="font-size: 7px; font-family: 'Arial', 'Helvetica', 'Liberation Sans', 'DejaVu Sans', sans-serif" transform="translate(1.44 34.016418)">Blue: BHF; orange: human. | = agreement</text>
+   </g>
+   <g id="text_2">
+    <text style="font-size: 7px; font-family: 'Arial', 'Helvetica', 'Liberation Sans', 'DejaVu Sans', sans-serif" transform="translate(1.44 66.980224)">BHF 209-228 / TMEM80 29-48</text>
+    <text style="font-size: 7px; font-family: 'Arial', 'Helvetica', 'Liberation Sans', 'DejaVu Sans', sans-serif" transform="translate(1.44 74.384037)">4/20 identical; 20/20 same class</text>
+   </g>
+   <g id="text_3">
+    <text style="font-size: 7px; font-family: 'Courier New', 'Courier', 'Liberation Mono', 'DejaVu Sans Mono', monospace; text-anchor: start; fill: #0072b2" x="1.44" y="89.79727" transform="rotate(-0 1.44 89.79727)">BHF   KKARKRIRTVMKATWQSLQA</text>
+   </g>
+   <g id="text_4">
+    <text style="font-size: 7px; font-family: 'Courier New', 'Courier', 'Liberation Mono', 'DejaVu Sans Mono', monospace; text-anchor: start" x="1.44" y="96.858619" transform="rotate(-0 1.44 96.858619)">        |     |    |  |   </text>
+   </g>
+   <g id="text_5">
+    <text style="font-size: 7px; font-family: 'Courier New', 'Courier', 'Liberation Mono', 'DejaVu Sans Mono', monospace; text-anchor: start; fill: #d55e00" x="1.44" y="103.919967" transform="rotate(-0 1.44 103.919967)">Human YYALYFLATLLMITYKSQVF</text>
+   </g>
+   <g id="text_6">
+    <text style="font-size: 7px; font-family: 'Courier New', 'Courier', 'Liberation Mono', 'DejaVu Sans Mono', monospace; text-anchor: start; fill: #0072b2" x="1.44" y="110.981315" transform="rotate(-0 1.44 110.981315)">BHF   11111111311113114111</text>
+   </g>
+   <g id="text_7">
+    <text style="font-size: 7px; font-family: 'Courier New', 'Courier', 'Liberation Mono', 'DejaVu Sans Mono', monospace; text-anchor: start" x="1.44" y="118.042663" transform="rotate(-0 1.44 118.042663)">      ||||||||||||||||||||</text>
+   </g>
+   <g id="text_8">
+    <text style="font-size: 7px; font-family: 'Courier New', 'Courier', 'Liberation Mono', 'DejaVu Sans Mono', monospace; text-anchor: start; fill: #d55e00" x="1.44" y="125.104012" transform="rotate(-0 1.44 125.104012)">Human 11111111311113114111</text>
+   </g>
+   <g id="text_9">
+    <text style="font-size: 7px; font-family: 'Arial', 'Helvetica', 'Liberation Sans', 'DejaVu Sans', sans-serif" transform="translate(1.44 161.131534)">BHF 210-228 / SMAGP 35-53</text>
+    <text style="font-size: 7px; font-family: 'Arial', 'Helvetica', 'Liberation Sans', 'DejaVu Sans', sans-serif" transform="translate(1.44 168.535347)">4/19 identical; 19/19 same class</text>
+   </g>
+   <g id="text_10">
+    <text style="font-size: 7px; font-family: 'Courier New', 'Courier', 'Liberation Mono', 'DejaVu Sans Mono', monospace; text-anchor: start; fill: #0072b2" x="1.44" y="183.94858" transform="rotate(-0 1.44 183.94858)">BHF   KARKRIRTVMKATWQSLQA</text>
+   </g>
+   <g id="text_11">
+    <text style="font-size: 7px; font-family: 'Courier New', 'Courier', 'Liberation Mono', 'DejaVu Sans Mono', monospace; text-anchor: start" x="1.44" y="191.009929" transform="rotate(-0 1.44 191.009929)">             ||   |  |   </text>
+   </g>
+   <g id="text_12">
+    <text style="font-size: 7px; font-family: 'Courier New', 'Courier', 'Liberation Mono', 'DejaVu Sans Mono', monospace; text-anchor: start; fill: #d55e00" x="1.44" y="198.071277" transform="rotate(-0 1.44 198.071277)">Human ALIAVVITVVFLTLLSVVI</text>
+   </g>
+   <g id="text_13">
+    <text style="font-size: 7px; font-family: 'Courier New', 'Courier', 'Liberation Mono', 'DejaVu Sans Mono', monospace; text-anchor: start; fill: #0072b2" x="1.44" y="205.132625" transform="rotate(-0 1.44 205.132625)">BHF   1111111311113114111</text>
+   </g>
+   <g id="text_14">
+    <text style="font-size: 7px; font-family: 'Courier New', 'Courier', 'Liberation Mono', 'DejaVu Sans Mono', monospace; text-anchor: start" x="1.44" y="212.193973" transform="rotate(-0 1.44 212.193973)">      |||||||||||||||||||</text>
+   </g>
+   <g id="text_15">
+    <text style="font-size: 7px; font-family: 'Courier New', 'Courier', 'Liberation Mono', 'DejaVu Sans Mono', monospace; text-anchor: start; fill: #d55e00" x="1.44" y="219.255322" transform="rotate(-0 1.44 219.255322)">Human 1111111311113114111</text>
+   </g>
+   <g id="text_16">
+    <text style="font-size: 7px; font-family: 'Arial', 'Helvetica', 'Liberation Sans', 'DejaVu Sans', sans-serif" transform="translate(1.44 255.282844)">BHF 206-224 / PLXDC2 458-476</text>
+    <text style="font-size: 7px; font-family: 'Arial', 'Helvetica', 'Liberation Sans', 'DejaVu Sans', sans-serif" transform="translate(1.44 262.686657)">3/19 identical; 19/19 same class</text>
+   </g>
+   <g id="text_17">
+    <text style="font-size: 7px; font-family: 'Courier New', 'Courier', 'Liberation Mono', 'DejaVu Sans Mono', monospace; text-anchor: start; fill: #0072b2" x="1.44" y="278.099891" transform="rotate(-0 1.44 278.099891)">BHF   QGAKKARKRIRTVMKATWQ</text>
+   </g>
+   <g id="text_18">
+    <text style="font-size: 7px; font-family: 'Courier New', 'Courier', 'Liberation Mono', 'DejaVu Sans Mono', monospace; text-anchor: start" x="1.44" y="285.161239" transform="rotate(-0 1.44 285.161239)">       |         |    |  </text>
+   </g>
+   <g id="text_19">
+    <text style="font-size: 7px; font-family: 'Courier New', 'Courier', 'Liberation Mono', 'DejaVu Sans Mono', monospace; text-anchor: start; fill: #d55e00" x="1.44" y="292.222587" transform="rotate(-0 1.44 292.222587)">Human IGILILVLIVATAILVTVY</text>
+   </g>
+   <g id="text_20">
+    <text style="font-size: 7px; font-family: 'Courier New', 'Courier', 'Liberation Mono', 'DejaVu Sans Mono', monospace; text-anchor: start; fill: #0072b2" x="1.44" y="299.283935" transform="rotate(-0 1.44 299.283935)">BHF   1511111111131111311</text>
+   </g>
+   <g id="text_21">
+    <text style="font-size: 7px; font-family: 'Courier New', 'Courier', 'Liberation Mono', 'DejaVu Sans Mono', monospace; text-anchor: start" x="1.44" y="306.345284" transform="rotate(-0 1.44 306.345284)">      |||||||||||||||||||</text>
+   </g>
+   <g id="text_22">
+    <text style="font-size: 7px; font-family: 'Courier New', 'Courier', 'Liberation Mono', 'DejaVu Sans Mono', monospace; text-anchor: start; fill: #d55e00" x="1.44" y="313.406632" transform="rotate(-0 1.44 313.406632)">Human 1511111111131111311</text>
+   </g>
+  </g>
+  <g id="axes_2">
+   <g id="text_23">
+    <text style="font-size: 7px; font-family: 'Arial', 'Helvetica', 'Liberation Sans', 'DejaVu Sans', sans-serif" transform="translate(260.810079 19.024387)">polarity4</text>
+    <text style="font-size: 7px; font-family: 'Arial', 'Helvetica', 'Liberation Sans', 'DejaVu Sans', sans-serif" transform="translate(260.810079 26.510231)">0=GAVLIFWMP; 1=STCYNQ; 2=DE; 3=HKR</text>
+    <text style="font-size: 7px; font-family: 'Arial', 'Helvetica', 'Liberation Sans', 'DejaVu Sans', sans-serif" transform="translate(260.810079 34.016418)">Blue: BHF; orange: human. | = agreement</text>
+   </g>
+   <g id="text_24">
+    <text style="font-size: 7px; font-family: 'Arial', 'Helvetica', 'Liberation Sans', 'DejaVu Sans', sans-serif" transform="translate(260.810079 66.980224)">BHF 234-250 / PARL 105-121</text>
+    <text style="font-size: 7px; font-family: 'Arial', 'Helvetica', 'Liberation Sans', 'DejaVu Sans', sans-serif" transform="translate(260.810079 74.384037)">5/17 identical; 17/17 same class</text>
+   </g>
+   <g id="text_25">
+    <text style="font-size: 7px; font-family: 'Courier New', 'Courier', 'Liberation Mono', 'DejaVu Sans Mono', monospace; text-anchor: start; fill: #0072b2" x="260.810079" y="89.79727" transform="rotate(-0 260.810079 89.79727)">BHF   TAFLNPQGAVSAALVQN</text>
+   </g>
+   <g id="text_26">
+    <text style="font-size: 7px; font-family: 'Courier New', 'Courier', 'Liberation Mono', 'DejaVu Sans Mono', monospace; text-anchor: start" x="260.810079" y="96.858619" transform="rotate(-0 260.810079 96.858619)">      |         |||  | </text>
+   </g>
+   <g id="text_27">
+    <text style="font-size: 7px; font-family: 'Courier New', 'Courier', 'Liberation Mono', 'DejaVu Sans Mono', monospace; text-anchor: start; fill: #d55e00" x="260.810079" y="103.919967" transform="rotate(-0 260.810079 103.919967)">Human TVGFTGCAFGSAAIWQY</text>
+   </g>
+   <g id="text_28">
+    <text style="font-size: 7px; font-family: 'Courier New', 'Courier', 'Liberation Mono', 'DejaVu Sans Mono', monospace; text-anchor: start; fill: #0072b2" x="260.810079" y="110.981315" transform="rotate(-0 260.810079 110.981315)">BHF   10001010001000011</text>
+   </g>
+   <g id="text_29">
+    <text style="font-size: 7px; font-family: 'Courier New', 'Courier', 'Liberation Mono', 'DejaVu Sans Mono', monospace; text-anchor: start" x="260.810079" y="118.042663" transform="rotate(-0 260.810079 118.042663)">      |||||||||||||||||</text>
+   </g>
+   <g id="text_30">
+    <text style="font-size: 7px; font-family: 'Courier New', 'Courier', 'Liberation Mono', 'DejaVu Sans Mono', monospace; text-anchor: start; fill: #d55e00" x="260.810079" y="125.104012" transform="rotate(-0 260.810079 125.104012)">Human 10001010001000011</text>
+   </g>
+   <g id="text_31">
+    <text style="font-size: 7px; font-family: 'Arial', 'Helvetica', 'Liberation Sans', 'DejaVu Sans', sans-serif" transform="translate(260.810079 161.131534)">BHF 234-250 / SLC36A4 236-252</text>
+    <text style="font-size: 7px; font-family: 'Arial', 'Helvetica', 'Liberation Sans', 'DejaVu Sans', sans-serif" transform="translate(260.810079 168.535347)">4/17 identical; 17/17 same class</text>
+   </g>
+   <g id="text_32">
+    <text style="font-size: 7px; font-family: 'Courier New', 'Courier', 'Liberation Mono', 'DejaVu Sans Mono', monospace; text-anchor: start; fill: #0072b2" x="260.810079" y="183.94858" transform="rotate(-0 260.810079 183.94858)">BHF   TAFLNPQGAVSAALVQN</text>
+   </g>
+   <g id="text_33">
+    <text style="font-size: 7px; font-family: 'Courier New', 'Courier', 'Liberation Mono', 'DejaVu Sans Mono', monospace; text-anchor: start" x="260.810079" y="191.009929" transform="rotate(-0 260.810079 191.009929)">          |   |||      </text>
+   </g>
+   <g id="text_34">
+    <text style="font-size: 7px; font-family: 'Courier New', 'Courier', 'Liberation Mono', 'DejaVu Sans Mono', monospace; text-anchor: start; fill: #d55e00" x="260.810079" y="198.071277" transform="rotate(-0 260.810079 198.071277)">Human SFLANVSMAVSLVIIYQ</text>
+   </g>
+   <g id="text_35">
+    <text style="font-size: 7px; font-family: 'Courier New', 'Courier', 'Liberation Mono', 'DejaVu Sans Mono', monospace; text-anchor: start; fill: #0072b2" x="260.810079" y="205.132625" transform="rotate(-0 260.810079 205.132625)">BHF   10001010001000011</text>
+   </g>
+   <g id="text_36">
+    <text style="font-size: 7px; font-family: 'Courier New', 'Courier', 'Liberation Mono', 'DejaVu Sans Mono', monospace; text-anchor: start" x="260.810079" y="212.193973" transform="rotate(-0 260.810079 212.193973)">      |||||||||||||||||</text>
+   </g>
+   <g id="text_37">
+    <text style="font-size: 7px; font-family: 'Courier New', 'Courier', 'Liberation Mono', 'DejaVu Sans Mono', monospace; text-anchor: start; fill: #d55e00" x="260.810079" y="219.255322" transform="rotate(-0 260.810079 219.255322)">Human 10001010001000011</text>
+   </g>
+   <g id="text_38">
+    <text style="font-size: 7px; font-family: 'Arial', 'Helvetica', 'Liberation Sans', 'DejaVu Sans', sans-serif" transform="translate(260.810079 255.282844)">BHF 229-250 / SLC36A1 216-237</text>
+    <text style="font-size: 7px; font-family: 'Arial', 'Helvetica', 'Liberation Sans', 'DejaVu Sans', sans-serif" transform="translate(260.810079 262.686657)">3/22 identical; 19/22 same class</text>
+   </g>
+   <g id="text_39">
+    <text style="font-size: 7px; font-family: 'Courier New', 'Courier', 'Liberation Mono', 'DejaVu Sans Mono', monospace; text-anchor: start; fill: #0072b2" x="260.810079" y="278.099891" transform="rotate(-0 260.810079 278.099891)">BHF   GARSQTAFLNPQGAVSAALVQN</text>
+   </g>
+   <g id="text_40">
+    <text style="font-size: 7px; font-family: 'Courier New', 'Courier', 'Liberation Mono', 'DejaVu Sans Mono', monospace; text-anchor: start" x="260.810079" y="285.161239" transform="rotate(-0 260.810079 285.161239)">               |    ||      </text>
+   </g>
+   <g id="text_41">
+    <text style="font-size: 7px; font-family: 'Courier New', 'Courier', 'Liberation Mono', 'DejaVu Sans Mono', monospace; text-anchor: start; fill: #d55e00" x="260.810079" y="292.222587" transform="rotate(-0 260.810079 292.222587)">Human ALSIFSLLANITMLVSLVMIYQ</text>
+   </g>
+   <g id="text_42">
+    <text style="font-size: 7px; font-family: 'Courier New', 'Courier', 'Liberation Mono', 'DejaVu Sans Mono', monospace; text-anchor: start; fill: #0072b2" x="260.810079" y="299.283935" transform="rotate(-0 260.810079 299.283935)">BHF   0031110001010001000011</text>
+   </g>
+   <g id="text_43">
+    <text style="font-size: 7px; font-family: 'Courier New', 'Courier', 'Liberation Mono', 'DejaVu Sans Mono', monospace; text-anchor: start" x="260.810079" y="306.345284" transform="rotate(-0 260.810079 306.345284)">      ||   |||||||||||||||||</text>
+   </g>
+   <g id="text_44">
+    <text style="font-size: 7px; font-family: 'Courier New', 'Courier', 'Liberation Mono', 'DejaVu Sans Mono', monospace; text-anchor: start; fill: #d55e00" x="260.810079" y="313.406632" transform="rotate(-0 260.810079 313.406632)">Human 0010010001010001000011</text>
+   </g>
+  </g>
+  <g id="text_45">
+   <text style="font-size: 7px; font-family: 'Arial', 'Helvetica', 'Liberation Sans', 'DejaVu Sans', sans-serif; text-anchor: middle" x="257.809839" y="6.540156" transform="rotate(-0 257.809839 6.540156)">kmerseek 0.4: BHF versus GENCODE v49 human membrane regions; first three by frequency</text>
+  </g>
+ </g>
+</svg>
