@@ -2,7 +2,7 @@
 
 Domen et al. 2026 (PNAS 123(22): e2610968123, https://doi.org/10.1073/pnas.2610968123) report genes
 that change after pulsatile electrical current (PEC) in *Botryllus schlosseri*. They aligned reads to the
-genome (STAR, HTSeq, DESeq2). This folder repeats the analysis with no genome: SPLASH 2 finds 27-nt
+genome (STAR, HTSeq, DESeq2). This folder repeats the analysis with no genome: SPLASH 2 finds 31-nt
 anchors whose downstream sequence differs between PEC and control, an anchor-count model (PyDESeq2)
 gives the abundance view, and the changed sequences are translated and matched to the new Botryllus
 proteome and to Swiss-Prot.
