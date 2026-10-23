@@ -90,7 +90,11 @@ def align(pair):
 def main():
     pairs_p, qfa, tfa, out = sys.argv[1:5]
     n_procs = int(sys.argv[5]) if len(sys.argv) > 5 else 8
-    pairs = pl.read_csv(pairs_p, separator="\t").select("query", "target").unique()
+    pairs = pl.read_csv(pairs_p, separator="\t", infer_schema_length=0).select("query", "target").unique()
+    if pairs.height == 0:
+        pl.DataFrame(schema={"query": pl.Utf8, "target": pl.Utf8}).write_parquet(out)
+        print("pairs 0")
+        return
     q, _ = read_fasta(qfa, set(pairs["query"]))
     t, n_total = read_fasta(tfa, set(pairs["target"]))
     missing = set(pairs["query"]) - set(q) | set(pairs["target"]) - set(t)
