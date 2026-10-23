@@ -189,5 +189,5 @@
   ],
   "scope": "Eight complete public runs; untrimmed pilot. Query coverage is partial; full trimmed archive is separate.",
   "rule": "Any shared hash; candidate occurrence, not validated function.",
-  "audit_status": "Worker-validated outputs; independent full-pair audit follows the active paired-scale validation allocation 49215860."
+  "audit_status": "Audit diagnosed a Branchwater 0.9.15 RocksDB filtering issue: -A alone retained the default 0.01 filter. Explicit threshold 0 recovered a real missing shared-hash match. Corrected searches are queued in array49222143; these historical counts are net differences, not final exact losses."
 }

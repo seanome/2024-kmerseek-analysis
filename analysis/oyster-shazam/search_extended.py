@@ -23,7 +23,10 @@ def main():
     p.add_argument('--batch',type=int,required=True)
     p.add_argument('--reference-dir',default='pilot-indexes')
     p.add_argument('--output-dir',default='search-trimmed-all')
+    p.add_argument('--scales',type=int,nargs='+',default=[5,10,100])
     a=p.parse_args()
+    if len(a.scales)!=len(set(a.scales)) or not set(a.scales)<={5,10,100}:
+        p.error("Scales must be distinct values from 5,10,100")
     source=a.root/'splash-trimmed-all'/f'batch-{a.batch:03d}'
     ext=json.loads((source/'validated.json').read_text())
     path=source/'compactors.tsv'
@@ -52,7 +55,7 @@ def main():
             raise ValueError('Encodings cover different reference libraries')
         reference_names=names
         sigpath=out/f'{mol}.sig.zip'
-        empty={s:0 for s in (5,10,100)}
+        empty={s:0 for s in a.scales}
         with SaveSignaturesToLocation(str(sigpath)) as save:
             for r in rows:
                 mh=sourmash.MinHash(n=0,ksize=k,scaled=5,**flags)
@@ -60,12 +63,12 @@ def main():
                 save.add(sourmash.SourmashSignature(mh,name=r['query_id']))
                 for scale in empty:
                     empty[scale]+=not len(mh.downsample(scaled=scale))
-        for scale in (5,10,100):
+        for scale in a.scales:
             csvpath=out/f'{mol}.scaled{scale}.csv'
             if rows and empty[scale]<len(rows):
                 subprocess.run(['sourmash','scripts','manysearch',str(sigpath),str(index),
                                 '-o',str(csvpath),'-k',str(k),'-m','DNA' if mol=='dna' else mol,
-                                '-s',str(scale),'-c','4','-A','-N','--ignore-abundance'],check=True)
+                                '-s',str(scale),'-t','0','-c','4','-A','-N','--ignore-abundance'],check=True)
                 with csvpath.open() as f:
                     hits=list(csv.DictReader(f))
                 queries={h['query_name'] for h in hits}
@@ -84,7 +87,8 @@ def main():
         input_sha256=ext['output_sha256'],extended_records=len(rows),
         reference_scope=validated.get('scope','Synthetic test reference'),reference_names=validated['reference_names'],
         translation='Six-frame sourmash translation of each separate DNA record',
-        search_rule='All comparisons with at least one shared hash; candidate occurrence evidence only',
+        search_rule='All comparisons with at least one shared hash; explicit threshold0; candidate occurrence evidence only',
+        containment_threshold=0.0,
         searches=settings),indent=2)+'\n')
 
 

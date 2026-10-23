@@ -15,7 +15,7 @@ def sha(p):
 
 def main():
     root=Path(os.environ['SCRATCH'])/'oyster-shazam-20261023'
-    out=root/'public-match-summary';out.mkdir(exist_ok=True)
+    out=root/'public-match-summary-zero';out.mkdir(exist_ok=True)
     with (Path.home()/'oyster-shazam-code/public-bivalve-pilot.tsv').open() as f:metadata={r['run_accession']:r for r in csv.DictReader(f,delimiter='\t')}
     totals=defaultdict(lambda:defaultdict(int));completed=[];examples=[];queries=0
     path=out/'matches-lost-at-scaled100.tsv.gz'
@@ -23,9 +23,10 @@ def main():
         fields=['batch','query_id','run','study','species','encoding','shared_hashes_scaled10','containment_scaled10','reason_at_scaled100']
         writer=csv.DictWriter(dest,fieldnames=fields,delimiter='\t');writer.writeheader()
         for i in range(22):
-            batch=root/'search-public-bivalve'/f'batch-{i:03d}'
+            batch=root/'search-public-bivalve-zero'/f'batch-{i:03d}'
             if not (batch/'validated.json').exists():continue
             v=json.loads((batch/'validated.json').read_text())
+            if v.get('containment_threshold')!=0.0:raise ValueError('Search does not declare explicit zero threshold')
             source=root/'splash-trimmed-all'/f'batch-{i:03d}'/'compactors.tsv'
             if sha(source)!=v['input_sha256']:raise ValueError('Extension input changed')
             completed.append(i);queries+=v['extended_records']

@@ -14,17 +14,17 @@ def sha256(path):
 
 
 def select(path):
-    rows = table(path)
     anchors = []
-    for row in rows:
-        anchor = row['anchor']
-        if not anchor or set(anchor) - set('ACGT'):
-            raise ValueError('Invalid DNA anchor')
-        q = float(row['pval_opt_corrected'])
-        if not math.isfinite(q) or not 0 <= q <= 1:
-            raise ValueError('Invalid adjusted P value')
-        if q < 0.05:
-            anchors.append(row['anchor'])
+    with path.open() as source:
+        for row in csv.DictReader(source, delimiter='\t'):
+            anchor = row['anchor']
+            if not anchor or set(anchor) - set('ACGT'):
+                raise ValueError('Invalid DNA anchor')
+            q = float(row['pval_opt_corrected'])
+            if not math.isfinite(q) or not 0 <= q <= 1:
+                raise ValueError('Invalid adjusted P value')
+            if q < 0.05:
+                anchors.append(anchor)
     if len(anchors) != len(set(anchors)):
         raise ValueError('Duplicate anchor')
     return sorted(anchors)
@@ -35,8 +35,11 @@ def main():
     p.add_argument('--root', required=True, type=Path)
     p.add_argument('--batch', required=True, type=int)
     p.add_argument('--batch-size', default=10000, type=int)
+    p.add_argument('--scores', type=Path)
+    p.add_argument('--reads', type=Path)
+    p.add_argument('--compactors', type=Path)
     args = p.parse_args()
-    source = args.root / 'splash-trimmed/splash.after_correction.scores.tsv'
+    source = args.scores or args.root / 'splash-trimmed/splash.after_correction.scores.tsv'
     anchors = select(source)
     if args.batch_size <= 0 or not 0 <= args.batch < math.ceil(len(anchors)/args.batch_size):
         raise ValueError('Invalid batch')
@@ -59,8 +62,8 @@ def main():
     (out/'selection.json').write_text(json.dumps(metadata, indent=2)+'\n')
     with (out/'selected_anchors.tsv').open('w') as f:
         w=csv.writer(f, delimiter='\t'); w.writerow(['anchor']); w.writerows([a] for a in selected)
-    command([args.root/'software/compactors','--num_threads','8',
-             args.root/'splash-trimmed/reads.txt',out/'selected_anchors.tsv',out/'compactors.tsv'], out, 'compactors')
+    command([args.compactors or args.root/'software/compactors','--num_threads','8',
+             args.reads or args.root/'splash-trimmed/reads.txt',out/'selected_anchors.tsv',out/'compactors.tsv'], out, 'compactors')
     expected=set(selected); extended=set(); count=0
     with (out/'compactors.tsv').open() as f:
         for row in csv.DictReader(f, delimiter='\t'):

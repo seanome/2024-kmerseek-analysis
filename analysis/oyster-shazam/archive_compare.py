@@ -16,7 +16,7 @@ from sourmash.save_load import SaveSignaturesToLocation
 
 SETTINGS=[('dna',31,{}),('protein',7,{'is_protein':True}),('dayhoff',12,{'dayhoff':True}),('hp',30,{'hp':True})]
 CODE=Path(__file__).parent
-ROOT=Path(os.environ['GROUP_SCRATCH'])/'oyster-bivalve-s10-s100-20261023'
+ROOT=Path(os.environ['GROUP_SCRATCH'])/'oyster-bivalve-s10-s100-zero-20261023'
 DISCOVERY=Path(os.environ['SCRATCH'])/'oyster-shazam-20261023'
 
 
@@ -33,6 +33,14 @@ def prepare():
     expected=json.loads((DISCOVERY/'splash-trimmed-all/summary.json').read_text())
     if sha(source)!=expected['download_sha256']:raise ValueError('Extended sequence export changed')
     out=ROOT/'queries';out.mkdir(parents=True,exist_ok=True)
+    if (out/'validated.json').exists():
+        prior=json.loads((out/'validated.json').read_text())
+        if prior['source_sha256']!=sha(source):raise ValueError('Cached query source changed')
+        if {(s['moltype'],s['scaled']) for s in prior['searches']} != {(m,k) for m,_,_ in SETTINGS for k in (10,100)}:raise ValueError('Missing cached setting')
+        for entry in prior['searches']:
+            if sha(out/f"{entry['moltype']}.scaled{entry['scaled']}.sig.gz")!=entry['sha256']:raise ValueError('Cached query sketch changed')
+        print('Verified cached paired query sketches',flush=True)
+        return
     with gzip.open(source,'rt') as f:rows=list(csv.DictReader(f,delimiter='\t'))
     if len(rows)!=expected['extended_records']:raise ValueError('Query count changed')
     stats=[]
@@ -110,7 +118,7 @@ def process(row):
                 paths=temp/f'{mol}.paths';paths.write_text(str(target)+'\n')
                 run(['sourmash','scripts','index',paths,'-o',index,'-k',k,'-m','DNA' if mol=='dna' else mol,'--scaled',str(scale),'-c','4'],out/f'{mol}.scaled{scale}.index.log')
                 csvpath=temp/f'{mol}.scaled{scale}.csv'
-                run(['sourmash','scripts','manysearch',query,index,'-o',csvpath,'-k',k,'-m','DNA' if mol=='dna' else mol,'-s',str(scale),'-c','4','-A','-N','--ignore-abundance'],out/f'{mol}.scaled{scale}.search.log')
+                run(['sourmash','scripts','manysearch',query,index,'-o',csvpath,'-k',k,'-m','DNA' if mol=='dna' else mol,'-s',str(scale),'-t','0','-c','4','-A','-N','--ignore-abundance'],out/f'{mol}.scaled{scale}.search.log')
                 names=set();count=0;dest=out/f'{mol}.scaled{scale}.matches.csv.gz'
                 with csvpath.open() as src,gzip.open(dest,'wt') as saved:
                     reader=csv.DictReader(src);writer=csv.DictWriter(saved,fieldnames=reader.fieldnames);writer.writeheader()
@@ -126,7 +134,7 @@ def process(row):
                 w=csv.writer(f,delimiter='\t');w.writerow(['query_id','run','reason'])
                 for q in sorted(lost):w.writerow([q,accession,'empty query sketch' if q in empty100 else 'no retained shared hash'])
             comparisons.append(dict(moltype=mol,lost_matches=len(lost),retained_matches=len(pair_sets[100]),lost_empty_queries=len(lost&empty100),loss_sha256=sha(loss_path)))
-        info=dict(run=accession,metadata=row,sources=sources,scales=[10,100],signatures=signatures,searches=searches,comparisons=comparisons,
+        info=dict(run=accession,metadata=row,sources=sources,scales=[10,100],containment_threshold=0.0,signatures=signatures,searches=searches,comparisons=comparisons,
                   retention='Scaled100 signature ZIPs and RocksDB retained; scaled10 signature/index temporary; both match tables and exact loss IDs retained',
                   preprocessing='Trim Galore 0.6.10, Q20, length20; each listed FASTQ independently; no SPLASH or DE-kupl',query_source_sha256=query_meta['source_sha256'])
         (out/'validated.json').write_text(json.dumps(info,indent=2)+'\n')
