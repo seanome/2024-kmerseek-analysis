@@ -8,10 +8,18 @@ from pathlib import Path
 from run_splash import command, table
 
 
+def sha256(path):
+    with path.open('rb') as source:
+        return hashlib.file_digest(source, 'sha256').hexdigest()
+
+
 def select(path):
     rows = table(path)
     anchors = []
     for row in rows:
+        anchor = row['anchor']
+        if not anchor or set(anchor) - set('ACGT'):
+            raise ValueError('Invalid DNA anchor')
         q = float(row['pval_opt_corrected'])
         if not math.isfinite(q) or not 0 <= q <= 1:
             raise ValueError('Invalid adjusted P value')
@@ -35,14 +43,16 @@ def main():
     selected = anchors[args.batch*args.batch_size:(args.batch+1)*args.batch_size]
     out = args.root / 'splash-trimmed-all' / f'batch-{args.batch:03d}'
     out.mkdir(parents=True, exist_ok=True)
-    metadata = dict(source_sha256=hashlib.file_digest(source.open('rb'), 'sha256').hexdigest(),
+    metadata = dict(source_sha256=sha256(source),
                     threshold=0.05, comparison='<', total_selected=len(anchors),
                     batch=args.batch, batch_size=args.batch_size, selected_anchors=len(selected))
     done = out / 'validated.json'
     if done.exists():
         saved = json.loads(done.read_text())
-        assert all(saved[k] == v for k, v in metadata.items())
-        assert saved['output_sha256'] == hashlib.file_digest((out/'compactors.tsv').open('rb'),'sha256').hexdigest()
+        if not all(saved.get(k) == v for k, v in metadata.items()):
+            raise ValueError('Validated metadata does not match this selection')
+        if saved.get('output_sha256') != sha256(out/'compactors.tsv'):
+            raise ValueError('Validated output hash does not match')
         return
     if (out/'compactors.command.json').exists() or (out/'compactors.tsv').exists():
         raise RuntimeError('Unvalidated previous attempt; inspect before retry')
@@ -55,11 +65,12 @@ def main():
     with (out/'compactors.tsv').open() as f:
         for row in csv.DictReader(f, delimiter='\t'):
             a=row['anchor']; seq=row['compactor']
-            assert a in expected and a in seq and not set(seq.upper())-set('ACGTN')
+            if a not in expected or a not in seq or set(seq.upper()) - set('ACGTN'):
+                raise ValueError('Invalid Compactors output sequence or anchor')
             count+=1
             if len(seq)>len(a): extended.add(a)
     metadata.update(output_rows=count, anchors_extended=len(extended),
-                    output_sha256=hashlib.file_digest((out/'compactors.tsv').open('rb'),'sha256').hexdigest())
+                    output_sha256=sha256(out/'compactors.tsv'))
     done.write_text(json.dumps(metadata, indent=2)+'\n')
 
 
