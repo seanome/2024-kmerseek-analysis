@@ -26,7 +26,8 @@ md(r"""
 
 Notebook 245 ([PR 54](https://github.com/seanome/2024-kmerseek-analysis/pull/54)) found
 that an exact H/P seed stands out from chance in a human-proteome search only at k ≥ 34,
-where 0.6% or fewer of Pfam pairs at 20-30% identity share one. It ended: the fix has to
+where 0.6% or fewer of Pfam pairs at 20-30% identity have one along their supplied alignment.
+Seeds at different offsets are not counted by that Pfam statistic, so it is not an index recall ceiling. It ended: the fix has to
 be a seed that allows mismatches, more letters, or a smaller database. This notebook tests
 the first option.
 
@@ -298,7 +299,7 @@ md(r"""
 
 **Claim.** In a two-letter H/P alphabet, no seed shape found here (exact, spaced, chained
 or window, 59 seeds in all, at scaled 1 or 2) finds BCL2 from CED-9 or CD47 from P66 in a
-search of the human proteome, and none reaches more than 1.6% of Pfam 20-30% pairs while
+search of the human proteome, and none fires along more than 1.6% of supplied Pfam 20-30% pair alignments while
 firing by chance 10 times or fewer per search.
 
 1. Seeds that allow mismatches do find the BH1 block where exact seeds cannot. In
@@ -307,7 +308,7 @@ firing by chance 10 times or fewer per search.
    between 94,660 and 2.5 million times on the rest of the human proteome.
 2. All seed shapes lie near one curve of reach against chance hits. Window seeds sit
    highest, about 3 times the reach of an exact seed at a few hundred chance seeds per search.
-   At 10 or fewer chance seeds per search, the best seed reaches 1.6% of Pfam 20-30% pairs.
+   At 10 or fewer chance seeds per search, the best seed fires along 1.6% of supplied Pfam 20-30% pair alignments. Seeds elsewhere in those pairs are not counted.
 3. The partners are not found. Best rank over all 59 seeds: BCL2 551, CD47 472 of 19,732
    (hp_lehninger2), with hundreds to thousands of proteins tied at the same score. A random
    human protein does as well in 41% to 85% of draws.
