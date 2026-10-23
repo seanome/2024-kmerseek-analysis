@@ -1,0 +1,20 @@
+alphabet	previous_job_id	previous_state	previous_elapsed_s	previous_memory_gib	failure_stage	max_recorded_rss_kib	completed_chunks	requested_memory_gib	requested_hours	request_basis
+dayhoff6	49021327	OUT_OF_MEMORY	605.0	96	index	100663660	0	256	12	index: >96 GiB killed; 256 GiB allows calibration growth
+funcgroups8	49021331	OUT_OF_MEMORY	691.0	96	index	100663688	0	256	12	index: >96 GiB killed; 256 GiB allows calibration growth
+gbmr4	49021333	OUT_OF_MEMORY	611.0	96	index	100663680	0	256	12	index: >96 GiB killed; 256 GiB allows calibration growth
+gbmr7	49021335	OUT_OF_MEMORY	247.0	96	index	100663728	0	256	12	index: >96 GiB killed; 256 GiB allows calibration growth
+hp_kyte_doolittle2	49021338	OUT_OF_MEMORY	1755.0	96	search	100653528	0	192	12	search: >96 GiB killed; double ask, preserve chunks
+hp_lehninger2	49021342	OUT_OF_MEMORY	1493.0	96	search	100653688	0	192	12	search: >96 GiB killed; double ask, preserve chunks
+hp_lehninger_c_nonpolar2	49021347	OUT_OF_MEMORY	1493.0	96	search	100653948	0	192	12	search: >96 GiB killed; double ask, preserve chunks
+hp_lehninger_hpc3	49021351	OUT_OF_MEMORY	2384.0	96	search	100653532	0	192	12	search: >96 GiB killed; double ask, preserve chunks
+hp_pbotc_1st_ed2	49021353	OUT_OF_MEMORY	1799.0	96	search	100653500	0	192	12	search: >96 GiB killed; double ask, preserve chunks
+hp_thomas_dill2	49021450	OUT_OF_MEMORY	10180.0	96	search	100649296	7	192	10	search: >96 GiB killed; double ask, preserve chunks
+hp_thomas_dill_no_c2	49021455	OUT_OF_MEMORY	1307.0	96	search	100654432	0	192	12	search: >96 GiB killed; double ask, preserve chunks
+hsdm17	49021458	OUT_OF_MEMORY	1438.0	96	search	100657696	0	192	12	search: >96 GiB killed; double ask, preserve chunks
+mmseqs12	49021461	OUT_OF_MEMORY	2018.0	96	search	100658012	0	192	12	search: >96 GiB killed; double ask, preserve chunks
+polarity4	49021465	OUT_OF_MEMORY	625.0	96	index	100669324	0	256	12	index: >96 GiB killed; 256 GiB allows calibration growth
+protein20	49021470	COMPLETED	6180.0	96	completed	61558020	18	0	0	complete; do not resubmit
+sdm12	49021472	OUT_OF_MEMORY	923.0	96	index	100669336	0	256	12	index: >96 GiB killed; 256 GiB allows calibration growth
+uniprot18	49021473	COMPLETED	8279.0	96	completed	82313408	18	0	0	complete; do not resubmit
+wass14	49021474	COMPLETED	4758.0	96	completed	55157552	18	0	0	complete; do not resubmit
+wwmj5	49021475	OUT_OF_MEMORY	974.0	96	index	100663488	0	256	12	index: >96 GiB killed; 256 GiB allows calibration growth

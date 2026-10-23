@@ -35,7 +35,7 @@ QUERIES=$BASE/step5/subset_queries.fasta
 CHUNK=${CHUNK:-100}
 OUT=$BASE/step5/$ALPHABET
 mkdir -p "$OUT"
-module load gcc/14.2.0 python/3.12.1 2>/dev/null || true
+if command -v module >/dev/null 2>&1; then module load gcc/14.2.0 python/3.12.1; fi
 TIME=${TIME_BIN:-/usr/bin/time}  # GNU time; a test can point this elsewhere
 STATUS=$OUT/status.tsv
 printf 'alphabet\tksize\tpenalty\txdrop\tfit\tindex_wall_s\tindex_peak_kb\tsearch_wall_s\tsearch_peak_kb\n' > "$STATUS"
@@ -54,12 +54,20 @@ while read -r K PENALTY XDROP; do
     TAG=$ALPHABET.k$K.s1.lctrue.c$PENALTY.x$XDROP
     D=$OUT/$TAG
     mkdir -p "$D"
-    # A k whose fit was refused on an earlier run keeps its log; it is not indexed again.
-    if [ ! -f "$D/idx/CURRENT" ] && ! grep -q "nothing stored" "$D/index.log" 2>/dev/null; then
+    # CURRENT also exists after a killed build. Only the final success line proves
+    # the index and calibration finished. Keep interrupted builds for diagnosis.
+    if ! grep -q "Indexing completed successfully!" "$D/index.log" 2>/dev/null; then
+        if [ -d "$D/idx" ]; then
+            mv "$D/idx" "$D/idx.failed.${SLURM_JOB_ID:-test}"
+            for f in index.log index.time ka_survival.csv; do
+                [ ! -f "$D/$f" ] || cp "$D/$f" "$D/$f.failed.${SLURM_JOB_ID:-test}"
+            done
+        fi
         "$TIME" -v -o "$D/index.time" "$KMERSEEK" index -i "$DB" -o "$D/idx" \
             -k "$K" -s 1 -a "$ALPHABET" --remove-low-complexity \
             --extend-mismatch-penalty "$PENALTY" --extend-xdrop "$XDROP" \
             --ka-queries 200 --ka-survival-out "$D/ka_survival.csv" > "$D/index.log" 2>&1
+        grep -q "Indexing completed successfully!" "$D/index.log"
     fi
     if ! grep -q "fitted now" "$D/index.log"; then
         printf '%s\t%s\t%s\t%s\trefused\t%s\t%s\t\t\n' "$ALPHABET" "$K" "$PENALTY" "$XDROP" \
@@ -68,10 +76,17 @@ while read -r K PENALTY XDROP; do
         continue
     fi
     mkdir -p "$D/chunks"
+    if [ -e "$D/chunks/chunk000.fasta" ]; then
+        # Resume must keep the same chunk boundaries as the cached outputs.
+        count=$(grep -c '^>' "$D/chunks/chunk000.fasta")
+        [ "$count" -eq "$CHUNK" ] || { echo "chunk size changed; use a separate output directory" >&2; exit 2; }
+    fi
     awk -v n="$CHUNK" -v d="$D/chunks" '/^>/{if(c%n==0){f=sprintf("%s/chunk%03d.fasta",d,c/n)} c++} {print > f}' "$QUERIES"
+    # Kill the reader if search fails, avoiding an orphan blocked on the FIFO.
+    trap '[ -z "${FILTER:-}" ] || kill "$FILTER" 2>/dev/null || true' EXIT
     for q in "$D"/chunks/chunk*.fasta; do
         c=$(basename "$q" .fasta)
-        [ -s "$D/regions_filtered.$c.tsv.gz" ] && continue
+        [ -s "$D/regions_filtered.$c.tsv.gz" ] && gzip -t "$D/regions_filtered.$c.tsv.gz" && continue
         FIFO=$D/$c.fifo
         rm -f "$FIFO"; mkfifo "$FIFO"
         python3 -I "$REPO/scripts/filter_301_regions.py" --truth "$BASE/step2/truth.tsv" \
@@ -83,6 +98,7 @@ while read -r K PENALTY XDROP; do
             --min-region-score 0 --extend-mismatch-penalty "$PENALTY" --extend-xdrop "$XDROP" \
             -o "$FIFO" > "$D/search.$c.log" 2>&1
         wait "$FILTER"
+        FILTER=
         rm -f "$FIFO"
         mv "$D/regions_filtered.$c.part.tsv.gz" "$D/regions_filtered.$c.tsv.gz"
     done
