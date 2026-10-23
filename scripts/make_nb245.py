@@ -315,7 +315,7 @@ md(r"""
    but only 3.8% of the same pairs share an exact 23-mer, 1.7% a 26-mer and 0.6% a 30-mer.
    An exact seed stands out from chance only at $k \ge 34$ ($k \ge 31$ at 10 chance seeds
    per search), so no $k$ both reaches the pairs and stands out.
-6. **gbmr7 and hp_lehninger_hpc3 cannot give an E-value at any k.** gbmr4 sits at −0.0003,
+6. **gbmr7 and hp_lehninger_hpc3 have no positive Karlin–Altschul root under the measured background and scoring rule.** gbmr4 sits at −0.0003,
    just below zero, so its λ exists and is close to 0.
 """)
 

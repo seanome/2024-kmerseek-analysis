@@ -92,6 +92,14 @@ def search_table(
     if keep is not None:
         d = d.filter(pl.col("target").is_in(keep))
     real = d.filter(pl.col("kind") == "real")
+    if real["target"].n_unique() != real.height:
+        raise ValueError("duplicate real target rows; database coverage is ambiguous")
+    for kind in DECOYS:
+        usable = d.filter((pl.col("kind") == kind) & (pl.col("shuffle_failed") == 0))
+        if usable.height == 0:
+            raise ValueError(f"no usable {kind} decoys; cannot measure a decoy rate")
+        if usable["target"].n_unique() != usable.height:
+            raise ValueError(f"duplicate {kind} decoys; denominator is ambiguous")
     p = real.filter(pl.col("target") == partner)
     if p.height != 1:
         raise ValueError(f"{p.height} rows for partner {partner[:60]!r}")

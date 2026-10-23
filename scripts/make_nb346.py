@@ -863,8 +863,8 @@ A ranking that puts the true partner at rank 9,000 should say what is on top. **
 plots every human protein's linked-key score against its length (grey), with the BCL-2
 family in black (BCL-2 filled). How to read it: if the family sat above the grey cloud at
 its length, the key would carry family signal; inside the cloud, it does not. If the top
-hits are long proteins with nothing in common with CED-9, the score is counting chance key
-matches, which grow with the target's length.
+hits are long proteins outside the annotated BCL-2 family, length-related background matches
+are one possible explanation. The plot alone does not establish that every top hit is unrelated.
 """)
 
 code(r"""

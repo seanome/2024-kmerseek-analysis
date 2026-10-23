@@ -2003,7 +2003,7 @@ matches: lower is better.
    section 4a, so not a pre-registered test). At exactly FPR 0.001 with families
    resampled, the gain is 6.7 points (95% interval 3.2 to 8.9): a gain of 10 points is
    ruled out. The one-key-per-position version an index can afford gains 2.4 (−0.7 to 6.4).
-4. **The second exact word adds nothing.** B3, the same 8-letter seed plus the best second
+4. **No incremental advantage of the second exact word was established.** B3, the same 8-letter seed plus the best second
    segment within 32 residues, finds 47.6% at 20–30% identity against the linked key's
    45.9% (linked minus B3: −1.7, interval −3.0 to 0.5). B3 gains 8.4 points over the plain
    8-letter seed (4.0 to 10.9); that interval crosses 10, so by the same rule B3 is
@@ -2028,9 +2028,10 @@ matches: lower is better.
    Keys built from every anchor pair fall 0.5 to 1.6 bits short of that prediction.
    Randstrobe keys fall 2.8 to 5.2 bits short, because the hash rule ties the second anchor
    to the first.
-8. **Not a membrane effect.** The 709 report-half pairs at 20–30% identity found only by the
+8. **No shift in whole-query hydrophobic fraction.** The 709 report-half pairs at 20–30% identity found only by the
    linked key are no more hydrophobic than the other 6,803 (median 43% of query residues in
-   `ACFILMVWY` in both), and no family has more than 2 of them.
+   `ACFILMVWY` in both), and no family has more than 2 of them. Whole-query hydrophobic fraction is not a membrane
+   annotation and does not exclude a role for local membrane segments.
 9. **Not shown here.** All numbers are per comparison, on each pair's own alignment, against
    a null that shuffles residues. Section 4f tests a null built from unrelated real proteins
    instead, which keeps their local HP patterns; the shuffled null turns out the stricter

@@ -26,7 +26,7 @@ BCL-2 and CED-9, searched in both directions.
   16,071, 4,395 and 3,972 of the human proteome at k = 6, 8 and 10; its top hit is RNASE2 at all three.
 * P66 shares fewer exact 6-letter HP words with CD47 (2,771) than 74% of 1,000 human
   proteins of CD47's length do.
-* The top 20 human proteins for CED-9 under the linked key are unrelated to BCL-2 and
+* The top 20 human proteins for CED-9 under the linked key are not annotated as BCL-2 family members and
   longer than average (median 754 against 427 residues); score and length correlate at 0.63.
 
 ### Analysis Details
