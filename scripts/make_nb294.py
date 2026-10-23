@@ -2035,13 +2035,14 @@ matches: lower is better.
    section 4a, so not a pre-registered test). At exactly FPR 0.001 with families
    resampled, the gain is 6.7 points (95% interval 3.2 to 8.9): a gain of 10 points is
    ruled out. The one-key-per-position version an index can afford gains 2.4 (−0.7 to 6.4).
-4. **The second exact word adds nothing.** B3, the same 8-letter seed plus the best second
+4. **No gain from the second exact word is detected.** B3, the same 8-letter seed plus the best second
    segment within 32 residues, finds 47.6% at 20–30% identity against the linked key's
    45.9% (linked minus B3: −1.7, interval −3.0 to 0.5). B3 gains 8.4 points over the plain
    8-letter seed (4.0 to 10.9); that interval crosses 10, so by the same rule B3 is
    unclear, not shown to be worth 10 points either. So what helps is extending into a
-   second segment across an insertion, which needs no change to the index. kmerseek already chains matches across
-   small shifts (`--chain-max-shift`); whether that gives the same gain was not tested here.
+   second segment across an insertion, which needs no change to the index. Section 4f tests kmerseek's existing chaining
+   across small shifts (`--chain-max-shift`): its gain is -0.1 points, unlike B3's +8.4.
+   Existing chaining therefore does not reproduce B3's gain on this test.
 5. **Against phmmer and MMseqs2** (section 4c, notebook 233's runs on the same pairs). At
    20–30% identity phmmer finds 75.4% and MMseqs2 55.2%, against 43.5% for the linked HP key
    and 46.2% for B3. These HP values are at 232's threshold, so they are lower than the
@@ -2092,8 +2093,14 @@ matches: lower is better.
    unrelated targets, and a composition closer to the query's; which of the two raises the
    shuffled null's thresholds was not tested.
 13. **kmerseek's own chaining** (section 4f part 2): the verdict line printed above, from the
-   Sherlock searches against a database of 7,384 target proteins. It says "provisional"
-   while the shuffled search without chaining is still missing.
+   Sherlock searches against a database of 7,384 target proteins. The completed real and shuffled searches give -0.1 points
+   (-0.2 to +0.0) for chaining versus no chaining; it does not reproduce B3's gain.
+
+
+The selection and report halves split pairs, not Pfam families. Related pairs can occur
+in both halves. Family resampling describes spread within this design; it does not make
+the report half an independent test on new families. The verdict is a decision for this
+exploratory design and should not be read as a general limit on unseen families.
 """)
 
 nb = {"cells": cells, "metadata": {"kernelspec": {"display_name": "Python 3", "language": "python", "name": "python3"},
