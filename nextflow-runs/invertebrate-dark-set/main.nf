@@ -1205,7 +1205,7 @@ process computeDarkSet {
     publishDir "${params.outdir}/${species}", mode: 'copy'
 
     input:
-    tuple val(species), path(query), path(hits, stageAs: 'hits/*')
+    tuple val(species), path(query), path(hits, stageAs: 'hits/*'), val(expected_chunks)
 
     output:
     tuple val(species), path("${species}_dark_set.parquet"), path("${species}_dark_summary.json")
@@ -1215,6 +1215,7 @@ process computeDarkSet {
     set -euo pipefail
     compute_dark_set.py \\
         --query ${query} --species ${species} \\
+        --expected-chunks ${expected_chunks} \\
         --evalue-call ${params.evalue_call} \\
         --hits hits/*.tsv.gz \\
         --out ${species}_dark_set.parquet \\
@@ -1689,7 +1690,7 @@ workflow darkSet {
         .groupTuple()
         .map { k, fs -> tuple(k.getGroupTarget(), fs) }
 
-    dark = computeDarkSet(proteome.join(hits))
+    dark = computeDarkSet(proteome.join(hits).join(n_chunks))
 
     // Everything the report can draw besides the headline, as (species, file). Each
     // optional arm mixes its own products in where it runs, so a run without that arm
