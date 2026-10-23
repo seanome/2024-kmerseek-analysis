@@ -1,0 +1,3 @@
+command: diamond blastp --query UP000005640_9606.fasta --db reference.dmnd --sensitive --threads 8 --out hits.tsv --outfmt 6 qseqid sseqid qstart qend sstart send bitscore evalue pident qseq_gapped sseq_gapped
+version: diamond version 2.2.8
+cpu_model: AMD EPYC 7543 32-Core Processor
