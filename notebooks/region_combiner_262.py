@@ -7,8 +7,9 @@ Three ranking scores, kept separate:
 * ``evalue_best_of_n_corrected`` = ``n_arms_tried * evalue_min`` (lower is better).
   ``n_arms_tried`` is the number of pairs whose search was run on that query and target
   species, whether or not they called anything there. Taking the lowest of n E-values is
-  n chances to get a low one by luck; multiplying by n undoes that when the n searches are
-  independent, and over-corrects when they are not.
+  n chances to get a low one by luck; multiplying by n is a Bonferroni-style adjustment when individual null statistics
+  are valid. It is not exact calibration of the minimum, even for independent searches,
+  and does not repair miscalibrated input E-values.
 * ``mean_idf_max``: the highest ``region_mean_idf`` any pair gave the region (higher is
   better). region_mean_idf is the mean rarity of one shared k-mer in the region.
 
@@ -212,6 +213,18 @@ def pr_curve(c: Calls, score: str, lower_is_better: bool, ts: str) -> pl.DataFra
     """Precision and recall at every distinct score, calling every region at least as
     good as it. One row per threshold, loosest last."""
     r = c.regions.filter(pl.col(score).is_not_null() & pl.col(score).is_not_nan())
+    if r.height == 0:
+        return pl.DataFrame(
+            schema={
+                "threshold": pl.Float64,
+                "n_called": pl.Int64,
+                "n_called_on_truth": pl.Int64,
+                "n_true": pl.Int64,
+                "precision": pl.Float64,
+                "n_found": pl.Int64,
+                "recall": pl.Float64,
+            }
+        )
     s = r[score].to_numpy().astype(float)
     key = s if lower_is_better else -s
     order = np.argsort(key, kind="stable")
@@ -270,7 +283,7 @@ def loosest_threshold(
     """The loosest threshold whose precision is still at least `target`, or None when no
     threshold reaches it. Rows are ordered strictest first, so the loosest is the last.
     """
-    ok = curve.filter(pl.col("precision") >= target)
+    ok = curve.filter(pl.col("precision").is_finite() & (pl.col("precision") >= target))
     return ok.row(-1, named=True) if ok.height else None
 
 

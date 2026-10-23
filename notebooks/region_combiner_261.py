@@ -196,7 +196,7 @@ def freeze(paths: pl.DataFrame) -> dict:
     """The (panel, E_max) to carry to test: among each E_max's stop panel, the highest
     objective, ties to more regions called, then the smaller E_max."""
     stops = paths.filter(pl.col("is_stop")).to_dicts()
-    best = min(stops, key=lambda r: _rank(r) + (r["emax"],))
+    best = min(stops, key=lambda r: _rank(r)[:2] + (r["emax"], r["panel"]))
     return best
 
 
