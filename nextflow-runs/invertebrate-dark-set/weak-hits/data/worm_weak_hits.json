@@ -1,0 +1,1005 @@
+{
+ "species": "worm",
+ "bands": [
+  "le_0.001",
+  "0.001_1",
+  "1_10"
+ ],
+ "dark_cutoffs": [
+  0.001,
+  1.0,
+  10.0
+ ],
+ "n_proteome": 19819,
+ "n_known": 14015,
+ "n_findable": 10789,
+ "query_domain_rows_without_position": 0,
+ "realign": {
+  "phmmer": {
+   "pairs": 18910,
+   "same_target_range": 18910,
+   "overlapping_target_range": 18910,
+   "no_overlap": 0
+  },
+  "jackhmmer": {
+   "pairs": 18914,
+   "same_target_range": 9641,
+   "overlapping_target_range": 18907,
+   "no_overlap": 7
+  },
+  "mmseqs2": {
+   "pairs": 12422,
+   "same_target_range": 198,
+   "overlapping_target_range": 12399,
+   "no_overlap": 23
+  }
+ },
+ "n_sources": 172,
+ "strict_right_dark_1": {
+  "jackhmmer": [
+   {
+    "query": "A4F332",
+    "target": "Q7T0L6",
+    "evalue": 1.1,
+    "band": "1_10",
+    "query_from": 4,
+    "query_to": 61,
+    "shared_families": [
+     "PF00646"
+    ]
+   },
+   {
+    "query": "Q21978",
+    "target": "P21660",
+    "evalue": 1.1,
+    "band": "1_10",
+    "query_from": 180,
+    "query_to": 261,
+    "shared_families": [
+     "PF00042"
+    ]
+   },
+   {
+    "query": "Q9U2P1",
+    "target": "Q9LUJ1",
+    "evalue": 1.1,
+    "band": "1_10",
+    "query_from": 20,
+    "query_to": 57,
+    "shared_families": [
+     "PF00646"
+    ]
+   },
+   {
+    "query": "Q2WF55",
+    "target": "Q9LXZ3",
+    "evalue": 1.2,
+    "band": "1_10",
+    "query_from": 15,
+    "query_to": 53,
+    "shared_families": [
+     "PF00646"
+    ]
+   },
+   {
+    "query": "Q9XU28",
+    "target": "Q7JQ07",
+    "evalue": 1.2,
+    "band": "1_10",
+    "query_from": 73,
+    "query_to": 131,
+    "shared_families": [
+     "PF17906"
+    ]
+   },
+   {
+    "query": "S6CPF4",
+    "target": "Q16943",
+    "evalue": 1.2,
+    "band": "1_10",
+    "query_from": 2,
+    "query_to": 56,
+    "shared_families": [
+     "PF00635"
+    ]
+   },
+   {
+    "query": "O45336",
+    "target": "Q9M9Q4",
+    "evalue": 1.3,
+    "band": "1_10",
+    "query_from": 20,
+    "query_to": 75,
+    "shared_families": [
+     "PF00646"
+    ]
+   },
+   {
+    "query": "O45600",
+    "target": "Q9LUV7",
+    "evalue": 1.4,
+    "band": "1_10",
+    "query_from": 7,
+    "query_to": 97,
+    "shared_families": [
+     "PF00646"
+    ]
+   },
+   {
+    "query": "O16316",
+    "target": "Q6YRM6",
+    "evalue": 1.6,
+    "band": "1_10",
+    "query_from": 169,
+    "query_to": 318,
+    "shared_families": [
+     "PF01697"
+    ]
+   },
+   {
+    "query": "Q9GUC8",
+    "target": "Q9FFP1",
+    "evalue": 1.6,
+    "band": "1_10",
+    "query_from": 633,
+    "query_to": 736,
+    "shared_families": [
+     "PF01485"
+    ]
+   },
+   {
+    "query": "Q9TYK2",
+    "target": "P11953",
+    "evalue": 1.6,
+    "band": "1_10",
+    "query_from": 50,
+    "query_to": 95,
+    "shared_families": [
+     "PF03488"
+    ]
+   },
+   {
+    "query": "Q965J1",
+    "target": "Q96F10",
+    "evalue": 1.7,
+    "band": "1_10",
+    "query_from": 77,
+    "query_to": 109,
+    "shared_families": [
+     "PF00583"
+    ]
+   },
+   {
+    "query": "Q22614",
+    "target": "P81897",
+    "evalue": 1.8,
+    "band": "1_10",
+    "query_from": 26,
+    "query_to": 60,
+    "shared_families": [
+     "PF01549"
+    ]
+   },
+   {
+    "query": "Q21019",
+    "target": "Q9CR70",
+    "evalue": 1.9,
+    "band": "1_10",
+    "query_from": 26,
+    "query_to": 101,
+    "shared_families": [
+     "PF09341"
+    ]
+   },
+   {
+    "query": "Q9NDU9",
+    "target": "Q7JQ07",
+    "evalue": 2.0,
+    "band": "1_10",
+    "query_from": 13,
+    "query_to": 83,
+    "shared_families": [
+     "PF17906"
+    ]
+   },
+   {
+    "query": "Q95QH1",
+    "target": "Q8N201",
+    "evalue": 2.3,
+    "band": "1_10",
+    "query_from": 46,
+    "query_to": 141,
+    "shared_families": [
+     "PF22928"
+    ]
+   },
+   {
+    "query": "Q9XVC5",
+    "target": "Q7JQ07",
+    "evalue": 2.9,
+    "band": "1_10",
+    "query_from": 15,
+    "query_to": 66,
+    "shared_families": [
+     "PF17906"
+    ]
+   },
+   {
+    "query": "P92010",
+    "target": "Q503R4",
+    "evalue": 3.2,
+    "band": "1_10",
+    "query_from": 436,
+    "query_to": 501,
+    "shared_families": [
+     "PF00651"
+    ]
+   },
+   {
+    "query": "Q93792",
+    "target": "Q7T3S3",
+    "evalue": 3.5,
+    "band": "1_10",
+    "query_from": 128,
+    "query_to": 160,
+    "shared_families": [
+     "PF03567"
+    ]
+   },
+   {
+    "query": "O76559",
+    "target": "P0DKG5",
+    "evalue": 3.7,
+    "band": "1_10",
+    "query_from": 15,
+    "query_to": 123,
+    "shared_families": [
+     "PF00917"
+    ]
+   },
+   {
+    "query": "Q19174",
+    "target": "Q6CNF8",
+    "evalue": 3.9,
+    "band": "1_10",
+    "query_from": 236,
+    "query_to": 269,
+    "shared_families": [
+     "PF08652"
+    ]
+   },
+   {
+    "query": "O16659",
+    "target": "Q53GT1",
+    "evalue": 4.2,
+    "band": "1_10",
+    "query_from": 169,
+    "query_to": 242,
+    "shared_families": [
+     "PF00651"
+    ]
+   },
+   {
+    "query": "A4F331",
+    "target": "Q6NKN8",
+    "evalue": 5.1,
+    "band": "1_10",
+    "query_from": 5,
+    "query_to": 41,
+    "shared_families": [
+     "PF00646"
+    ]
+   },
+   {
+    "query": "Q9XUX2",
+    "target": "Q9LFV5",
+    "evalue": 8.1,
+    "band": "1_10",
+    "query_from": 84,
+    "query_to": 115,
+    "shared_families": [
+     "PF00646"
+    ]
+   },
+   {
+    "query": "Q21500",
+    "target": "O82213",
+    "evalue": 8.9,
+    "band": "1_10",
+    "query_from": 54,
+    "query_to": 95,
+    "shared_families": [
+     "PF00635"
+    ]
+   }
+  ],
+  "kmerseek:dayhoff6.k11.s10": [],
+  "kmerseek:dayhoff6.k15.s1": [],
+  "kmerseek:dayhoff6.k17.s1": [],
+  "kmerseek:dayhoff6.k9.s1": [
+   {
+    "query": "Q95XL2",
+    "target": "Q9LQB0",
+    "evalue": 5.07,
+    "band": "1_10",
+    "query_from": 24,
+    "query_to": 62,
+    "shared_families": [
+     "PF00646"
+    ]
+   }
+  ],
+  "kmerseek:dayhoff6.k9.s10": [],
+  "kmerseek:funcgroups8.k11.s1": [],
+  "kmerseek:funcgroups8.k11.s10": [],
+  "kmerseek:funcgroups8.k13.s1": [],
+  "kmerseek:funcgroups8.k13.s10": [],
+  "kmerseek:funcgroups8.k14.s1": [],
+  "kmerseek:funcgroups8.k14.s10": [],
+  "kmerseek:funcgroups8.k9.s1": [],
+  "kmerseek:funcgroups8.k9.s10": [],
+  "kmerseek:gbmr4.k16.s1": [],
+  "kmerseek:gbmr4.k16.s10": [],
+  "kmerseek:gbmr4.k18.s1": [],
+  "kmerseek:gbmr4.k18.s10": [],
+  "kmerseek:gbmr4.k20.s1": [],
+  "kmerseek:gbmr4.k20.s10": [],
+  "kmerseek:gbmr4.k22.s1": [],
+  "kmerseek:gbmr4.k22.s10": [],
+  "kmerseek:gbmr4.k24.s1": [],
+  "kmerseek:gbmr4.k24.s10": [],
+  "kmerseek:gbmr4.k26.s1": [],
+  "kmerseek:gbmr7.k17.s1": [],
+  "kmerseek:gbmr7.k19.s1": [],
+  "kmerseek:gbmr7.k21.s1": [],
+  "kmerseek:hp_kyte_doolittle2.k21.s10": [],
+  "kmerseek:hp_kyte_doolittle2.k23.s10": [],
+  "kmerseek:hp_kyte_doolittle2.k25.s1": [],
+  "kmerseek:hp_kyte_doolittle2.k25.s10": [],
+  "kmerseek:hp_kyte_doolittle2.k27.s1": [],
+  "kmerseek:hp_kyte_doolittle2.k27.s10": [],
+  "kmerseek:hp_kyte_doolittle2.k29.s1": [],
+  "kmerseek:hp_kyte_doolittle2.k31.s1": [],
+  "kmerseek:hp_kyte_doolittle2.k31.s10": [],
+  "kmerseek:hp_kyte_doolittle2.k33.s1": [],
+  "kmerseek:hp_kyte_doolittle2.k33.s10": [],
+  "kmerseek:hp_kyte_doolittle2.k35.s1": [],
+  "kmerseek:hp_kyte_doolittle2.k37.s1": [],
+  "kmerseek:hp_kyte_doolittle2.k37.s10": [],
+  "kmerseek:hp_kyte_doolittle2.k39.s1": [],
+  "kmerseek:hp_lehninger2.k17.s1": [],
+  "kmerseek:hp_lehninger2.k17.s10": [],
+  "kmerseek:hp_lehninger2.k19.s1": [],
+  "kmerseek:hp_lehninger2.k19.s10": [
+   {
+    "query": "Q9GZE2",
+    "target": "H3JU05",
+    "evalue": 4.76,
+    "band": "1_10",
+    "query_from": 122,
+    "query_to": 181,
+    "shared_families": [
+     "PF01549"
+    ]
+   }
+  ],
+  "kmerseek:hp_lehninger2.k21.s1": [],
+  "kmerseek:hp_lehninger2.k21.s10": [],
+  "kmerseek:hp_lehninger2.k23.s1": [],
+  "kmerseek:hp_lehninger2.k23.s10": [],
+  "kmerseek:hp_lehninger2.k25.s1": [],
+  "kmerseek:hp_lehninger2.k25.s10": [
+   {
+    "query": "O44867",
+    "target": "Q9SYP3",
+    "evalue": 8.12,
+    "band": "1_10",
+    "query_from": 17,
+    "query_to": 67,
+    "shared_families": [
+     "PF00646"
+    ]
+   }
+  ],
+  "kmerseek:hp_lehninger2.k27.s1": [],
+  "kmerseek:hp_lehninger2.k27.s10": [],
+  "kmerseek:hp_lehninger2.k29.s10": [],
+  "kmerseek:hp_lehninger2.k30.s1": [],
+  "kmerseek:hp_lehninger2.k30.s10": [],
+  "kmerseek:hp_lehninger_c_nonpolar2.k19.s1": [],
+  "kmerseek:hp_lehninger_c_nonpolar2.k19.s10": [],
+  "kmerseek:hp_lehninger_c_nonpolar2.k21.s1": [],
+  "kmerseek:hp_lehninger_c_nonpolar2.k21.s10": [
+   {
+    "query": "A7YX59",
+    "target": "Q08CL3",
+    "evalue": 4.83,
+    "band": "1_10",
+    "query_from": 229,
+    "query_to": 290,
+    "shared_families": [
+     "PF00651"
+    ]
+   }
+  ],
+  "kmerseek:hp_lehninger_c_nonpolar2.k23.s1": [],
+  "kmerseek:hp_lehninger_c_nonpolar2.k23.s10": [],
+  "kmerseek:hp_lehninger_c_nonpolar2.k25.s1": [],
+  "kmerseek:hp_lehninger_c_nonpolar2.k25.s10": [
+   {
+    "query": "P92010",
+    "target": "Q5NBY9",
+    "evalue": 5.59,
+    "band": "1_10",
+    "query_from": 475,
+    "query_to": 536,
+    "shared_families": [
+     "PF00651"
+    ]
+   }
+  ],
+  "kmerseek:hp_lehninger_c_nonpolar2.k27.s1": [],
+  "kmerseek:hp_lehninger_c_nonpolar2.k27.s10": [
+   {
+    "query": "P92010",
+    "target": "Q5NBY9",
+    "evalue": 6.61,
+    "band": "1_10",
+    "query_from": 475,
+    "query_to": 536,
+    "shared_families": [
+     "PF00651"
+    ]
+   }
+  ],
+  "kmerseek:hp_lehninger_c_nonpolar2.k29.s1": [],
+  "kmerseek:hp_lehninger_c_nonpolar2.k29.s10": [],
+  "kmerseek:hp_lehninger_c_nonpolar2.k31.s1": [],
+  "kmerseek:hp_lehninger_c_nonpolar2.k31.s10": [],
+  "kmerseek:hp_lehninger_hpc3.k17.s1": [],
+  "kmerseek:hp_lehninger_hpc3.k17.s10": [],
+  "kmerseek:hp_lehninger_hpc3.k19.s1": [],
+  "kmerseek:hp_lehninger_hpc3.k19.s10": [],
+  "kmerseek:hp_lehninger_hpc3.k21.s1": [],
+  "kmerseek:hp_lehninger_hpc3.k21.s10": [],
+  "kmerseek:hp_lehninger_hpc3.k23.s1": [],
+  "kmerseek:hp_lehninger_hpc3.k23.s10": [],
+  "kmerseek:hp_lehninger_hpc3.k25.s1": [
+   {
+    "query": "G5EED3",
+    "target": "P0CY46",
+    "evalue": 6.05,
+    "band": "1_10",
+    "query_from": 391,
+    "query_to": 433,
+    "shared_families": [
+     "PF01030"
+    ]
+   },
+   {
+    "query": "Q22200",
+    "target": "P0CY46",
+    "evalue": 6.06,
+    "band": "1_10",
+    "query_from": 383,
+    "query_to": 429,
+    "shared_families": [
+     "PF01030"
+    ]
+   }
+  ],
+  "kmerseek:hp_lehninger_hpc3.k25.s10": [
+   {
+    "query": "G5EED3",
+    "target": "P0CY46",
+    "evalue": 1.68,
+    "band": "1_10",
+    "query_from": 391,
+    "query_to": 433,
+    "shared_families": [
+     "PF01030"
+    ]
+   },
+   {
+    "query": "Q22200",
+    "target": "P0CY46",
+    "evalue": 1.69,
+    "band": "1_10",
+    "query_from": 383,
+    "query_to": 429,
+    "shared_families": [
+     "PF01030"
+    ]
+   }
+  ],
+  "kmerseek:hp_lehninger_hpc3.k27.s1": [
+   {
+    "query": "B3GWA5",
+    "target": "Q25197",
+    "evalue": 7.96,
+    "band": "1_10",
+    "query_from": 214,
+    "query_to": 289,
+    "shared_families": [
+     "PF01030"
+    ]
+   }
+  ],
+  "kmerseek:hp_lehninger_hpc3.k27.s10": [],
+  "kmerseek:hp_lehninger_hpc3.k29.s1": [],
+  "kmerseek:hp_lehninger_hpc3.k29.s10": [],
+  "kmerseek:hp_pbotc_1st_ed2.k19.s1": [],
+  "kmerseek:hp_pbotc_1st_ed2.k19.s10": [],
+  "kmerseek:hp_pbotc_1st_ed2.k21.s1": [],
+  "kmerseek:hp_pbotc_1st_ed2.k21.s10": [],
+  "kmerseek:hp_pbotc_1st_ed2.k23.s1": [],
+  "kmerseek:hp_pbotc_1st_ed2.k23.s10": [],
+  "kmerseek:hp_pbotc_1st_ed2.k25.s1": [],
+  "kmerseek:hp_pbotc_1st_ed2.k25.s10": [],
+  "kmerseek:hp_pbotc_1st_ed2.k27.s1": [],
+  "kmerseek:hp_pbotc_1st_ed2.k27.s10": [],
+  "kmerseek:hp_pbotc_1st_ed2.k29.s1": [],
+  "kmerseek:hp_pbotc_1st_ed2.k29.s10": [],
+  "kmerseek:hp_pbotc_1st_ed2.k30.s10": [],
+  "kmerseek:hp_thomas_dill2.k20.s1": [],
+  "kmerseek:hp_thomas_dill2.k20.s10": [],
+  "kmerseek:hp_thomas_dill2.k22.s1": [],
+  "kmerseek:hp_thomas_dill2.k22.s10": [],
+  "kmerseek:hp_thomas_dill2.k24.s1": [],
+  "kmerseek:hp_thomas_dill2.k24.s10": [],
+  "kmerseek:hp_thomas_dill2.k26.s1": [],
+  "kmerseek:hp_thomas_dill2.k28.s1": [],
+  "kmerseek:hp_thomas_dill2.k30.s1": [],
+  "kmerseek:hp_thomas_dill2.k30.s10": [],
+  "kmerseek:hp_thomas_dill2.k34.s10": [],
+  "kmerseek:hp_thomas_dill_no_c2.k20.s1": [],
+  "kmerseek:hp_thomas_dill_no_c2.k20.s10": [],
+  "kmerseek:hp_thomas_dill_no_c2.k22.s1": [],
+  "kmerseek:hp_thomas_dill_no_c2.k22.s10": [],
+  "kmerseek:hp_thomas_dill_no_c2.k24.s1": [],
+  "kmerseek:hp_thomas_dill_no_c2.k24.s10": [],
+  "kmerseek:hp_thomas_dill_no_c2.k26.s1": [],
+  "kmerseek:hp_thomas_dill_no_c2.k28.s10": [],
+  "kmerseek:hp_thomas_dill_no_c2.k30.s10": [],
+  "kmerseek:hp_thomas_dill_no_c2.k32.s1": [],
+  "kmerseek:hp_thomas_dill_no_c2.k36.s1": [],
+  "kmerseek:hp_thomas_dill_no_c2.k39.s10": [],
+  "kmerseek:hsdm17.k10.s1": [],
+  "kmerseek:hsdm17.k6.s1": [],
+  "kmerseek:hsdm17.k6.s10": [],
+  "kmerseek:hsdm17.k8.s1": [],
+  "kmerseek:hsdm17.k8.s10": [],
+  "kmerseek:mmseqs12.k8.s1": [],
+  "kmerseek:mmseqs12.k8.s10": [],
+  "kmerseek:polarity4.k13.s1": [],
+  "kmerseek:polarity4.k13.s10": [],
+  "kmerseek:polarity4.k15.s1": [],
+  "kmerseek:polarity4.k15.s10": [],
+  "kmerseek:polarity4.k17.s1": [],
+  "kmerseek:polarity4.k17.s10": [],
+  "kmerseek:polarity4.k19.s1": [],
+  "kmerseek:polarity4.k19.s10": [],
+  "kmerseek:polarity4.k21.s1": [],
+  "kmerseek:polarity4.k21.s10": [],
+  "kmerseek:polarity4.k25.s1": [],
+  "kmerseek:protein20.k5.s1": [],
+  "kmerseek:protein20.k5.s10": [],
+  "kmerseek:protein20.k7.s1": [],
+  "kmerseek:protein20.k7.s10": [],
+  "kmerseek:protein20.k8.s1": [],
+  "kmerseek:protein20.k8.s10": [],
+  "kmerseek:sdm12.k11.s1": [],
+  "kmerseek:sdm12.k11.s10": [],
+  "kmerseek:sdm12.k12.s1": [],
+  "kmerseek:sdm12.k12.s10": [],
+  "kmerseek:sdm12.k7.s1": [],
+  "kmerseek:sdm12.k7.s10": [],
+  "kmerseek:sdm12.k9.s1": [],
+  "kmerseek:sdm12.k9.s10": [],
+  "kmerseek:uniprot18.k5.s1": [],
+  "kmerseek:uniprot18.k5.s10": [],
+  "kmerseek:uniprot18.k7.s1": [],
+  "kmerseek:uniprot18.k7.s10": [],
+  "kmerseek:uniprot18.k9.s1": [],
+  "kmerseek:wass14.k6.s1": [],
+  "kmerseek:wass14.k6.s10": [],
+  "kmerseek:wass14.k8.s1": [],
+  "kmerseek:wass14.k8.s10": [],
+  "kmerseek:wass14.k9.s10": [],
+  "kmerseek:wwmj5.k11.s1": [],
+  "kmerseek:wwmj5.k11.s10": [],
+  "kmerseek:wwmj5.k15.s1": [],
+  "kmerseek:wwmj5.k15.s10": [],
+  "kmerseek:wwmj5.k9.s1": [],
+  "kmerseek:wwmj5.k9.s10": [],
+  "mmseqs2": [
+   {
+    "query": "Q21662",
+    "target": "O14255",
+    "evalue": 1.46,
+    "band": "1_10",
+    "query_from": 538,
+    "query_to": 595,
+    "shared_families": [
+     "PF03200"
+    ]
+   },
+   {
+    "query": "O16424",
+    "target": "A7RNZ0",
+    "evalue": 2.21,
+    "band": "1_10",
+    "query_from": 128,
+    "query_to": 243,
+    "shared_families": [
+     "PF01549"
+    ]
+   },
+   {
+    "query": "Q9GUC8",
+    "target": "Q9SKC3",
+    "evalue": 2.31,
+    "band": "1_10",
+    "query_from": 635,
+    "query_to": 688,
+    "shared_families": [
+     "PF01485"
+    ]
+   },
+   {
+    "query": "Q966B5",
+    "target": "P04412",
+    "evalue": 2.5,
+    "band": "1_10",
+    "query_from": 169,
+    "query_to": 248,
+    "shared_families": [
+     "PF01030"
+    ]
+   },
+   {
+    "query": "O44585",
+    "target": "A7RNZ0",
+    "evalue": 3.21,
+    "band": "1_10",
+    "query_from": 92,
+    "query_to": 164,
+    "shared_families": [
+     "PF01549"
+    ]
+   },
+   {
+    "query": "Q9U2P1",
+    "target": "Q9LUJ1",
+    "evalue": 3.23,
+    "band": "1_10",
+    "query_from": 20,
+    "query_to": 57,
+    "shared_families": [
+     "PF00646"
+    ]
+   },
+   {
+    "query": "Q9XV90",
+    "target": "O88676",
+    "evalue": 4.13,
+    "band": "1_10",
+    "query_from": 226,
+    "query_to": 257,
+    "shared_families": [
+     "PF01549"
+    ]
+   },
+   {
+    "query": "Q9XV17",
+    "target": "A7SXG9",
+    "evalue": 7.42,
+    "band": "1_10",
+    "query_from": 39,
+    "query_to": 124,
+    "shared_families": [
+     "PF01549"
+    ]
+   },
+   {
+    "query": "O16422",
+    "target": "A7RNZ0",
+    "evalue": 9.25,
+    "band": "1_10",
+    "query_from": 130,
+    "query_to": 232,
+    "shared_families": [
+     "PF01549"
+    ]
+   },
+   {
+    "query": "Q22614",
+    "target": "P81897",
+    "evalue": 9.57,
+    "band": "1_10",
+    "query_from": 26,
+    "query_to": 60,
+    "shared_families": [
+     "PF01549"
+    ]
+   }
+  ],
+  "phmmer": [
+   {
+    "query": "A4F332",
+    "target": "Q7T0L6",
+    "evalue": 1.1,
+    "band": "1_10",
+    "query_from": 4,
+    "query_to": 61,
+    "shared_families": [
+     "PF00646"
+    ]
+   },
+   {
+    "query": "Q21978",
+    "target": "P21660",
+    "evalue": 1.1,
+    "band": "1_10",
+    "query_from": 180,
+    "query_to": 261,
+    "shared_families": [
+     "PF00042"
+    ]
+   },
+   {
+    "query": "Q9U2P1",
+    "target": "Q9LUJ1",
+    "evalue": 1.1,
+    "band": "1_10",
+    "query_from": 20,
+    "query_to": 57,
+    "shared_families": [
+     "PF00646"
+    ]
+   },
+   {
+    "query": "Q2WF55",
+    "target": "Q9LXZ3",
+    "evalue": 1.2,
+    "band": "1_10",
+    "query_from": 15,
+    "query_to": 53,
+    "shared_families": [
+     "PF00646"
+    ]
+   },
+   {
+    "query": "Q9XU28",
+    "target": "Q7JQ07",
+    "evalue": 1.2,
+    "band": "1_10",
+    "query_from": 73,
+    "query_to": 131,
+    "shared_families": [
+     "PF17906"
+    ]
+   },
+   {
+    "query": "S6CPF4",
+    "target": "Q16943",
+    "evalue": 1.2,
+    "band": "1_10",
+    "query_from": 2,
+    "query_to": 56,
+    "shared_families": [
+     "PF00635"
+    ]
+   },
+   {
+    "query": "O45336",
+    "target": "Q9M9Q4",
+    "evalue": 1.3,
+    "band": "1_10",
+    "query_from": 20,
+    "query_to": 75,
+    "shared_families": [
+     "PF00646"
+    ]
+   },
+   {
+    "query": "O45600",
+    "target": "Q9LUV7",
+    "evalue": 1.4,
+    "band": "1_10",
+    "query_from": 7,
+    "query_to": 97,
+    "shared_families": [
+     "PF00646"
+    ]
+   },
+   {
+    "query": "O16316",
+    "target": "Q6YRM6",
+    "evalue": 1.6,
+    "band": "1_10",
+    "query_from": 169,
+    "query_to": 318,
+    "shared_families": [
+     "PF01697"
+    ]
+   },
+   {
+    "query": "Q9GUC8",
+    "target": "Q9FFP1",
+    "evalue": 1.6,
+    "band": "1_10",
+    "query_from": 633,
+    "query_to": 736,
+    "shared_families": [
+     "PF01485"
+    ]
+   },
+   {
+    "query": "Q9TYK2",
+    "target": "P11953",
+    "evalue": 1.6,
+    "band": "1_10",
+    "query_from": 50,
+    "query_to": 95,
+    "shared_families": [
+     "PF03488"
+    ]
+   },
+   {
+    "query": "Q965J1",
+    "target": "Q96F10",
+    "evalue": 1.7,
+    "band": "1_10",
+    "query_from": 77,
+    "query_to": 109,
+    "shared_families": [
+     "PF00583"
+    ]
+   },
+   {
+    "query": "Q22614",
+    "target": "P81897",
+    "evalue": 1.8,
+    "band": "1_10",
+    "query_from": 26,
+    "query_to": 60,
+    "shared_families": [
+     "PF01549"
+    ]
+   },
+   {
+    "query": "Q21019",
+    "target": "Q9CR70",
+    "evalue": 1.9,
+    "band": "1_10",
+    "query_from": 26,
+    "query_to": 101,
+    "shared_families": [
+     "PF09341"
+    ]
+   },
+   {
+    "query": "Q9NDU9",
+    "target": "Q7JQ07",
+    "evalue": 2.0,
+    "band": "1_10",
+    "query_from": 13,
+    "query_to": 83,
+    "shared_families": [
+     "PF17906"
+    ]
+   },
+   {
+    "query": "Q95QH1",
+    "target": "Q8N201",
+    "evalue": 2.3,
+    "band": "1_10",
+    "query_from": 46,
+    "query_to": 141,
+    "shared_families": [
+     "PF22928"
+    ]
+   },
+   {
+    "query": "Q9XVC5",
+    "target": "Q7JQ07",
+    "evalue": 2.9,
+    "band": "1_10",
+    "query_from": 15,
+    "query_to": 66,
+    "shared_families": [
+     "PF17906"
+    ]
+   },
+   {
+    "query": "P92010",
+    "target": "Q503R4",
+    "evalue": 3.2,
+    "band": "1_10",
+    "query_from": 436,
+    "query_to": 501,
+    "shared_families": [
+     "PF00651"
+    ]
+   },
+   {
+    "query": "Q93792",
+    "target": "Q7T3S3",
+    "evalue": 3.5,
+    "band": "1_10",
+    "query_from": 128,
+    "query_to": 160,
+    "shared_families": [
+     "PF03567"
+    ]
+   },
+   {
+    "query": "O76559",
+    "target": "P0DKG5",
+    "evalue": 3.7,
+    "band": "1_10",
+    "query_from": 15,
+    "query_to": 123,
+    "shared_families": [
+     "PF00917"
+    ]
+   },
+   {
+    "query": "Q19174",
+    "target": "Q6CNF8",
+    "evalue": 3.9,
+    "band": "1_10",
+    "query_from": 236,
+    "query_to": 269,
+    "shared_families": [
+     "PF08652"
+    ]
+   },
+   {
+    "query": "O16659",
+    "target": "Q53GT1",
+    "evalue": 4.2,
+    "band": "1_10",
+    "query_from": 169,
+    "query_to": 242,
+    "shared_families": [
+     "PF00651"
+    ]
+   },
+   {
+    "query": "A4F331",
+    "target": "Q6NKN8",
+    "evalue": 5.1,
+    "band": "1_10",
+    "query_from": 5,
+    "query_to": 41,
+    "shared_families": [
+     "PF00646"
+    ]
+   },
+   {
+    "query": "Q9XUX2",
+    "target": "Q9LFV5",
+    "evalue": 8.1,
+    "band": "1_10",
+    "query_from": 84,
+    "query_to": 115,
+    "shared_families": [
+     "PF00646"
+    ]
+   },
+   {
+    "query": "Q21500",
+    "target": "O82213",
+    "evalue": 8.9,
+    "band": "1_10",
+    "query_from": 54,
+    "query_to": 95,
+    "shared_families": [
+     "PF00635"
+    ]
+   }
+  ]
+ }
+}
