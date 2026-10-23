@@ -1,0 +1,88 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="940" viewBox="0 0 1200 940" role="img"><title>Swiss-Prot protein search and public SRA occurrence search</title><rect width="1200" height="940" fill="white"/><style>text{font-family:Arial,sans-serif;fill:#1c211f}.route{fill:none;stroke-width:4;stroke-linecap:round;stroke-linejoin:round}.sra{stroke:#D55E00;stroke-dasharray:12 9}.protein{stroke:#0072B2}.file{fill:white;stroke:#1c211f;stroke-width:1.4}</style>
+<text x="25" y="32" font-size="24" font-weight="600" text-anchor="start">Swiss-Prot and public SRA are searched separately</text>
+<path d="M25 65 H65" class="route protein"/>
+<text x="80" y="70" font-size="16" font-weight="400" text-anchor="start">Swiss-Prot protein search</text>
+<path d="M480 65 H520" class="route sra"/>
+<text x="535" y="70" font-size="16" font-weight="400" text-anchor="start">Public SRA sequence occurrence</text>
+<text x="25" y="103" font-size="15" font-weight="400" text-anchor="start">Circle = program / transformation. Document = one file type. Arrows show reading direction.</text>
+<rect x="20" y="128" width="1160" height="488" rx="12" fill="#f7f7f5"/>
+<text x="40" y="158" font-size="18" font-weight="600" text-anchor="start">PUBLIC SRA RNA-seq — 5,776 tunicate runs inventoried; collection indexing/search still pending</text>
+<path d="M75 240 H245 H390 Q410 240 410 218 L430 210 M390 240 Q410 240 410 260 L430 300 M449 210 H480 Q500 210 520 240 H610 M449 300 H480 Q500 300 520 240 M610 240 H730 Q750 240 750 218 H800 M730 240 Q750 240 750 300 H800 M819 218 H850 Q875 218 890 240 H1020 M819 300 H850 Q875 300 890 240" class="route sra"/>
+<path d="M56,217 h25 l13,13 v33 h-38 Z M81,217 v13 h13" class="file"/>
+<text x="75" y="244" font-size="11" font-weight="600" text-anchor="middle">TSV.gz</text>
+<text x="75" y="288" font-size="14" font-weight="400" text-anchor="middle">SRA / ENA run inventory</text>
+<circle cx="245" cy="240" r="7" fill="white" stroke="#D55E00" stroke-width="3"/>
+<text x="245" y="270" font-size="16" font-weight="600" text-anchor="middle">curl + MD5 + Rust FASTQ</text>
+<text x="245" y="289" font-size="16" font-weight="600" text-anchor="middle">validation</text>
+<path d="M411,187 h25 l13,13 v33 h-38 Z M436,187 v13 h13" class="file"/>
+<text x="430" y="214" font-size="9" font-weight="600" text-anchor="middle">FASTQ.gz</text>
+<text x="430" y="258" font-size="14" font-weight="400" text-anchor="middle">Raw read 1</text>
+<path d="M411,277 h25 l13,13 v33 h-38 Z M436,277 v13 h13" class="file"/>
+<text x="430" y="304" font-size="9" font-weight="600" text-anchor="middle">FASTQ.gz</text>
+<text x="430" y="348" font-size="14" font-weight="400" text-anchor="middle">Raw read 2</text>
+<circle cx="610" cy="240" r="7" fill="white" stroke="#D55E00" stroke-width="3"/>
+<text x="610" y="270" font-size="16" font-weight="600" text-anchor="middle">Trim Galore</text>
+<path d="M781,187 h25 l13,13 v33 h-38 Z M806,187 v13 h13" class="file"/>
+<text x="800" y="214" font-size="11" font-weight="600" text-anchor="middle">FQ.gz</text>
+<text x="800" y="258" font-size="14" font-weight="400" text-anchor="middle">Trimmed read 1</text>
+<path d="M781,277 h25 l13,13 v33 h-38 Z M806,277 v13 h13" class="file"/>
+<text x="800" y="304" font-size="11" font-weight="600" text-anchor="middle">FQ.gz</text>
+<text x="800" y="348" font-size="14" font-weight="400" text-anchor="middle">Trimmed read 2</text>
+<circle cx="1020" cy="240" r="7" fill="white" stroke="#D55E00" stroke-width="3"/>
+<text x="1020" y="270" font-size="16" font-weight="600" text-anchor="middle">Sourmash DNA and</text>
+<text x="1020" y="289" font-size="16" font-weight="600" text-anchor="middle">six-frame translation</text>
+<path d="M1020 240 H1110 Q1140 240 1140 270 V390 Q1140 420 1110 420 H1010 H810 H610 H390 H170" class="route sra"/>
+<path d="M991,397 h25 l13,13 v33 h-38 Z M1016,397 v13 h13" class="file"/>
+<text x="1010" y="424" font-size="9" font-weight="600" text-anchor="middle">SIG.zip</text>
+<text x="1010" y="468" font-size="14" font-weight="400" text-anchor="middle">DNA31 / protein7 /</text>
+<text x="1010" y="485" font-size="14" font-weight="400" text-anchor="middle">Dayhoff12 / HP30; scaled</text>
+<text x="1010" y="502" font-size="14" font-weight="400" text-anchor="middle">10 and 100</text>
+<circle cx="810" cy="420" r="7" fill="white" stroke="#D55E00" stroke-width="3"/>
+<text x="810" y="450" font-size="16" font-weight="600" text-anchor="middle">Branchwater index</text>
+<path d="M591,397 h25 l13,13 v33 h-38 Z M616,397 v13 h13" class="file"/>
+<text x="610" y="424" font-size="9" font-weight="600" text-anchor="middle">RocksDB</text>
+<text x="610" y="468" font-size="14" font-weight="400" text-anchor="middle">Searchable index</text>
+<text x="610" y="485" font-size="14" font-weight="400" text-anchor="middle">directory</text>
+<circle cx="390" cy="420" r="7" fill="white" stroke="#D55E00" stroke-width="3"/>
+<text x="390" y="450" font-size="16" font-weight="600" text-anchor="middle">Branchwater manysearch</text>
+<path d="M151,397 h25 l13,13 v33 h-38 Z M176,397 v13 h13" class="file"/>
+<text x="170" y="424" font-size="11" font-weight="600" text-anchor="middle">CSV</text>
+<text x="170" y="468" font-size="14" font-weight="400" text-anchor="middle">Run / study occurrence</text>
+<text x="170" y="485" font-size="14" font-weight="400" text-anchor="middle">matches</text>
+<text x="610" y="575" font-size="15" font-weight="400" text-anchor="middle">Same trimmed runs and queries at both scales. Empty query sketches are unsearchable, not biological absence.</text>
+<polyline points="145,235 154,240 145,245" fill="none" stroke="#1c211f" stroke-width="1.5"/>
+<polyline points="540,235 549,240 540,245" fill="none" stroke="#1c211f" stroke-width="1.5"/>
+<polyline points="925,235 934,240 925,245" fill="none" stroke="#1c211f" stroke-width="1.5"/>
+<polyline points="925,415 916,420 925,425" fill="none" stroke="#1c211f" stroke-width="1.5"/>
+<polyline points="710,415 701,420 710,425" fill="none" stroke="#1c211f" stroke-width="1.5"/>
+<polyline points="505,415 496,420 505,425" fill="none" stroke="#1c211f" stroke-width="1.5"/>
+<polyline points="280,415 271,420 280,425" fill="none" stroke="#1c211f" stroke-width="1.5"/>
+<rect x="20" y="638" width="1160" height="276" rx="12" fill="#f7f7f5"/>
+<text x="40" y="671" font-size="18" font-weight="600" text-anchor="start">SWISS-PROT — 575,748 reference proteins; pilot search execution complete, match validation pending</text>
+<path d="M80 740 H145 Q165 740 180 780 H300 M80 825 H145 Q165 825 180 780 M300 780 H535 H760 H1035" class="route protein"/>
+<path d="M61,717 h25 l13,13 v33 h-38 Z M86,717 v13 h13" class="file"/>
+<text x="80" y="744" font-size="9" font-weight="600" text-anchor="middle">FASTA.gz</text>
+<text x="80" y="788" font-size="14" font-weight="400" text-anchor="middle">Swiss-Prot proteins</text>
+<path d="M61,802 h25 l13,13 v33 h-38 Z M86,802 v13 h13" class="file"/>
+<text x="80" y="829" font-size="11" font-weight="600" text-anchor="middle">FASTA</text>
+<text x="80" y="873" font-size="14" font-weight="400" text-anchor="middle">Peptide queries</text>
+<circle cx="300" cy="780" r="7" fill="white" stroke="#0072B2" stroke-width="3"/>
+<text x="300" y="710" font-size="16" font-weight="600" text-anchor="middle">Sourmash / Branchwater</text>
+<text x="300" y="729" font-size="16" font-weight="600" text-anchor="middle">sketching</text>
+<path d="M516,757 h25 l13,13 v33 h-38 Z M541,757 v13 h13" class="file"/>
+<text x="535" y="784" font-size="9" font-weight="600" text-anchor="middle">SIG.zip</text>
+<text x="535" y="828" font-size="14" font-weight="400" text-anchor="middle">Protein7 / Dayhoff12 /</text>
+<text x="535" y="845" font-size="14" font-weight="400" text-anchor="middle">HP30; scaled 5</text>
+<circle cx="760" cy="780" r="7" fill="white" stroke="#0072B2" stroke-width="3"/>
+<text x="760" y="710" font-size="16" font-weight="600" text-anchor="middle">Sourmash / Branchwater</text>
+<text x="760" y="729" font-size="16" font-weight="600" text-anchor="middle">multisearch</text>
+<path d="M1016,757 h25 l13,13 v33 h-38 Z M1041,757 v13 h13" class="file"/>
+<text x="1035" y="784" font-size="11" font-weight="600" text-anchor="middle">CSV</text>
+<text x="1035" y="828" font-size="14" font-weight="400" text-anchor="middle">Swiss-Prot protein</text>
+<text x="1035" y="845" font-size="14" font-weight="400" text-anchor="middle">candidate matches</text>
+<polyline points="210,775 219,780 210,785" fill="none" stroke="#1c211f" stroke-width="1.5"/>
+<polyline points="415,775 424,780 415,785" fill="none" stroke="#1c211f" stroke-width="1.5"/>
+<polyline points="650,775 659,780 650,785" fill="none" stroke="#1c211f" stroke-width="1.5"/>
+<polyline points="895,775 904,780 895,785" fill="none" stroke="#1c211f" stroke-width="1.5"/>
+<text x="610" y="923" font-size="14" font-weight="400" text-anchor="middle">Botryllus-experiment DNA / peptide FASTA queries feed the SRA search. No SPLASH or DE-kupl across public archive runs.</text>
+</svg>

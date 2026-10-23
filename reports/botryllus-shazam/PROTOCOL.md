@@ -127,3 +127,27 @@ ranking is not an estimate of overall annotation accuracy.
 Propose localization, perturbation, or biochemical experiments only when the relevant
 protocol is supported as feasible in Botryllus. Label feasibility that has not been
 verified. No sorted-population or bulk RNA-seq table is passed to SAMap as single cells.
+
+
+## Source-specific scale amendment, 23 October 2026
+
+Olga's updated decisions, relayed from the oyster chat: future public SRA archive
+processing uses scaled 10 and 100 only for DNA k31, protein k7, Dayhoff k12 and HP k30.
+Compare the same runs, trimming, queries and thresholds at both scales. Report empty
+query sketches and searchable-query denominators; empty sketches are not absence.
+Public archives use trimming and Sourmash only, without archive-wide SPLASH/DE-kupl.
+Swiss-Prot protein-reference searches remain scaled 5 for protein/Dayhoff/HP.
+Completed earlier 5/10/100 pilots remain preserved. New 10/100 Swiss-Prot sketches
+are for the requested storage-size comparison, not a replacement production policy.
+
+## Archive storage and search update, 23 October 2026
+
+Use Branchwater manysearch for public SRA. Store one signature per run and alphabet,
+combining paired mates. Search signature ZIPs by streaming, or build shared RocksDB
+index directories for repeated searches. Do not build new SBT indexes. Preserve
+historical SBT pilots as historical evidence. Record FASTQ.gz input bytes, signature
+ZIP bytes, RocksDB directory bytes, and combined retained storage separately.
+The storage target is at least 50%, preferably 90%, smaller than compressed input
+FASTQs. This target cannot override sensitivity and searchable-query validation.
+Protein-reference ZIPs retain individual protein identities; merged reference sketches
+are only a storage experiment until a separate retrieval strategy is validated.

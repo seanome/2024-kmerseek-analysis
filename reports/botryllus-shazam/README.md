@@ -60,40 +60,54 @@ Each public run has a distinct BioSample accession. This does not prove independ
 biological replication. Young groups repeat genotypes; the old group has one genotype.
 Treatment inference remains blocked until the experimental unit and design are resolved.
 
-## Work running or queued
+## Current execution and interactive explorer
 
-The download array is 49188713, with eight batches and four concurrent tasks.
-Task 0 stopped on a checksum and gzip-integrity failure in one downloaded mate.
-The bad partial file was retained under its failed MD5. Recovery job 49192201
-reuses validated runs and retrieves that failed mate again. Other tasks were preserved.
-Queued tasks 4–7 have 24-hour limits after measured transfer rates slowed.
-SRR32233926 is validated at full depth: 4,418,415 paired records and 1,325,524,500 bases.
+[Open the private evidence explorer](https://botryllus-shazam-evidence.brawnyspoon2048.chatgpt.site).
+It includes the original supplied report, independently audited pilot records,
+searchable peptides/DNA/reference proteins, separate file downloads, a timestamped
+job table, and the complete [metro-map SVG](metro-map.svg).
+The default nf-metro Seqera overview shows inputs, read processing, SPLASH,
+strict adjusted P selection, Compactors, translation, Branchwater search, and results.
+Detailed panels separate each file type. Blue is focal discovery, purple is protein
+search, and dashed orange is public SRA occurrence in the overview. Each detailed
+panel has its own legend. Planned branches are not completion claims.
 
-The initial annotation job 49189184 completed the pilot audit and a 500-protein
-DIAMOND pilot, then stopped on a dot in one supplied protein sequence.
-Job 49191037 uses a separate search copy with unsupported characters masked to X,
-with a positional map. Original reference sequences remain unchanged.
-DIAMOND is follow-up alignment evidence. Sourmash is primary protein retrieval.
+The 17:14 UTC snapshot contains 41/64 validated raw runs; see [status.json](status.json).
+No automatic monitoring is configured. Healthy downloads remain running.
+Transfer recovery 49211401 handles failed batch 4. Preprocessing 49211406 waits for
+surviving download tasks and recovery arrays; full-depth discovery 49211416 waits
+for validated preprocessing. Every anchor with adjusted P < 0.05 is extended,
+without a cap; anchors with no emitted extension are explicitly recorded.
 
-The tunicate inventory completed: 5,776 runs, 195 studies, 5,467 BioSamples,
-94 taxon IDs, and 9,432,590,269,958 listed compressed FASTQ bytes.
-Eight runs lack ENA FASTQ URLs. Taxon IDs are not a species count.
-The chordate inventory stopped on a title containing an unmatched quotation mark.
-The parser regression check passed; job 49191136 completed that inventory separately.
-The completed tunicate inventory was not rerun.
+Historical full-run sketch pilot 49192465 completed in 1:53:13 at 11,448,104 KB peak
+RSS. Its SBT outputs are historical, not the production archive architecture.
+Public SRA uses per-run, per-alphabet signatures combining both mates, at scaled
+10 and 100. Branchwater manysearch streams signature ZIPs or searches shared
+RocksDB directories. Storage/index correctness benchmark 49212645 is running;
+it reuses raw focal pilot sketches and cannot establish external occurrence.
 
-A small real-input Sourmash check built and searched all four encodings at all
-three scales for SRR32233927. It contains only 692 paired records, so it is a
-correctness check rather than a representative resource measurement.
-The 4,418,415-pair indexing pilot is job 49192465.
-All-tunicate indexing waits for measured resource and disk requirements.
-Broader chordates are metadata/cost inventory only.
+Primary Sourmash/Branchwater protein pilot 49206896 completed in 11:59. It searched
+987 pilot peptides against 45,339 Botryllus and 575,748 Swiss-Prot proteins.
+Execution is complete; new match interpretation remains gated on independent
+validation. Production Swiss-Prot uses scaled 5. Scales 10 and 100 here are a
+requested storage comparison, not a changed production setting.
+DIAMOND/Pfam 49191037 completed as separate annotation evidence; biological
+interpretation is not yet audited. Original references remain unchanged.
 
-Full-depth nf-core preprocessing is job 49191258. Its dependencies require the
-seven preserved array tasks and recovery job 49192201 to complete successfully.
-Trimming outputs are not exposed until paired-file validation passes.
-Full-depth discovery, SPLASH+, valid external abundance models, deep candidate
-review, and the interactive explorer remain incomplete.
+[Measured Swiss-Prot sizes](swissprot-size-comparison.json) include 575,748 separate
+protein signatures per alphabet. Even scaled-100 ZIPs occupy 458–465 MB versus
+93.8 MB for FASTA.gz; they do not meet the storage target. For full run SRR32233926,
+compressed FASTQs total 555,604,961 bytes. Scaled-100 protein alone is 10,984,061
+bytes (98.0% smaller); all four alphabets total 57,844,280 bytes (89.6% smaller),
+excluding indexes. Keep signature bytes and index bytes separate. Merging Swiss-Prot
+proteins can remove record overhead but loses protein identity; the benchmark is
+an experiment, not an approved replacement for per-protein retrieval.
+
+The tunicate metadata inventory is complete: 5,776 runs, 195 studies, 5,467 BioSamples,
+94 taxon IDs and 9.43 TB of listed compressed FASTQs. Eight runs lack FASTQ metadata.
+All-tunicate indexing remains authorized but the full collection is not indexed.
+Chordates remain metadata/cost inventory only. Full-depth discovery, SPLASH+,
+valid abundance inference, and deep candidate review remain incomplete.
 
 ## Frozen rules and restart
 

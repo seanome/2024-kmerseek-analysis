@@ -17,6 +17,17 @@ def digest(path, algorithm):
     return h.hexdigest()
 
 
+def transfer(args):
+    """Resume interrupted transfers on older cluster curl versions."""
+    for attempt in range(6):
+        result = subprocess.run(args, check=False)
+        if result.returncode == 0:
+            return
+        if result.returncode not in {18, 28, 52, 55, 56} or attempt == 5:
+            raise subprocess.CalledProcessError(result.returncode, args)
+        time.sleep(min(60, 2**attempt))
+
+
 def recover(row, root, validator):
     start = time.monotonic()
     run = row["run_accession"]
@@ -51,7 +62,7 @@ def recover(row, root, validator):
                 partial = final.with_suffix(".gz.partial")
                 # curl resumes only its own incomplete file; it never writes final.
                 if not partial.exists() or partial.stat().st_size < size:
-                    subprocess.run(
+                    transfer(
                         [
                             "curl",
                             "--fail",
@@ -70,7 +81,6 @@ def recover(row, root, validator):
                             str(partial),
                             "https://" + url,
                         ],
-                        check=True,
                     )
                 if partial.stat().st_size != size or digest(partial, "md5") != md5:
                     raise ValueError(

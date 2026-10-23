@@ -113,3 +113,100 @@ The representative Sourmash pilot had completed its DNA scaled-5 sketch in
 5:18.83 at 2,522,944 KB peak RSS when checked; other encodings were still running.
 The optional DIAMOND full search finished; Pfam was still running. These incomplete
 annotation outputs have not been promoted to biological candidate claims.
+
+## Continuation checkpoint: 2026-10-23, 16:24 UTC
+
+The private explorer is published at
+https://botryllus-shazam-evidence.brawnyspoon2048.chatgpt.site .
+Site ID: `appgprj_6adb8461f2a08191a6bcce0594b60661`.
+The Site source checkout is outside the analysis worktree at
+`/Users/olga/.codex/visualizations/2026/10/23/01a168f0-7460-76a3-bb7b-e25675bb1a63/botryllus-site`.
+Tracked page source is `sites/botryllus-shazam`; generated data are ignored there.
+The published Site is owner-private and the hosted browser requires sign-in.
+Local browser tests passed peptide/protein lookup, zero-match handling, and file tables.
+Original report and protein FASTA bytes remain unchanged in the private deployment.
+
+The 16:19 UTC snapshot had 36/64 validated raw runs. Current status is in `status.json`.
+Batch 0 recovered successfully (49192201); transfer-interrupted batches 3, 6 and 7
+were resumed as array 49205641 using a separate code folder. Task 3 completed.
+Tasks 1, 4 and 5 of the original download array were kept running.
+The retry wrapper handles curl 18/28/52/55/56, with bounded attempts. Native curl
+is old and lacks `--retry-all-errors`; it was not given that unsupported flag.
+
+The old preprocessing job was cancelled by the failed dependency.
+Replacement 49205669 waits for surviving original tasks 1/4/5 and array 49205641.
+Its own 64-run marker gate also checks completed inputs; completed older job IDs
+were removed from the dependency because Slurm had purged their live records.
+Full-depth SPLASH/Compactors job 49206899 waits for 49205669. It selects from the
+complete all-anchors table with strict adjusted P < 0.05, no top-N cap, and exports
+DNA FASTA, peptide FASTA and membership TSV. Resources: 16 CPUs, 96 GB, 48 h.
+Its all-anchor Compactors memory/runtime are model estimates, not measured success.
+Discovery script and selector are isolated in `full-discovery-20261023` under HOME code.
+
+Representative four-encoding indexing job 49192465 completed in 1:53:13,
+peak RSS 11,448,104 KB. All 12 signatures, 12 SBT indexes and self-searches passed.
+Its complete marker is committed as `indexing-pilot-validated.json`.
+DIAMOND/Pfam annotation job 49191037 completed; candidate interpretations are unaudited.
+
+Primary search pilot 49206896 uses actual Sourmash 4.9.4 / Branchwater 0.9.15 Rust
+manysketch and multisearch, all 987 historical pilot peptides, and full Botryllus
+and Swiss-Prot references, in three encodings and scales 5/10/100. It has 8 CPUs,
+32 GB, 4 h. Separate canonical record maps and masked-position tables preserve original
+IDs and sequences. `execution.complete.json` means execution only: independent
+comparison to `sourmash search` and hash arithmetic is required before promotion.
+Do not queue full-depth protein retrieval until this native bulk-search pilot passes.
+No full-depth protein-result or biological candidate claim is complete.
+
+Olga authorized messaging the oyster chat to make a matching metro SVG and label
+where the projects differ. Request delivered to chat
+`01a168d3-ac40-7c43-a22c-22fc05b21d8b`, title
+`#202 Oyster public bivalve searches and report`. Do not edit that chat's worktree.
+Both diagrams use blue solid read-preparation tracks and orange dashed discovery tracks,
+separate file icons, legends before tracks, and exact program/file labels.
+The oyster chat now plans scaled-100 archive sketches. That does not silently change
+the Botryllus 5/10/100 protocol. Tunicate archive expansion remains unlaunched pending
+resource/storage planning; chordates remain inventory only.
+
+### Updated searches and map, 23 October 2026
+
+Primary Sourmash pilot 49206896 completed in 11:59 with 4,553,276 KB peak RSS.
+It searched all 987 pilot peptides against 45,339 Botryllus and 575,748 Swiss-Prot
+records. All 18 raw CSVs exist; `primary-search-execution.json` is the execution
+record. Raw rows include single-hash matches and are NOT validated candidate claims.
+Apply the fixed two-shared-hash filter only after independent hash/CLI checks.
+The public archive is explicitly named SRA/ENA on the first metro panel and has a
+separate route. Its 5,776-run inventory is complete; external collection indexing
+and occurrence searching have not been claimed complete.
+
+Updated source-specific scales were relayed from Olga via the oyster chat:
+public SRA DNA/protein/Dayhoff/HP uses only scales 10 and 100, comparing identical
+runs/preprocessing/queries. Swiss-Prot protein/Dayhoff/HP production searches use 5.
+Preserve the completed historical 5/10/100 pilots. The source-specific amendment is
+in PROTOCOL.md; do not apply the archive reduction to Swiss-Prot.
+
+Requested Swiss-Prot size comparison job 49210194 measures the original compressed
+and uncompressed FASTA, retains existing scaled-5 reference ZIPs, and builds
+scaled 10 and 100 for each protein encoding from identical canonical reference
+inputs. It has 8 CPUs, 8 GB, 30 min, based on the completed 12-minute primary pilot.
+Outputs: `$SCRATCH/botryllus-shazam-PEC-20261023/swissprot-size-comparison-20261023/`.
+The scale-10/100 reference sketches are a requested storage measurement, not a change
+to the production Swiss-Prot scale-5 rule.
+
+SVG renderer correction: its exported canvas height must use the complete nf-metro
+canvas height, not the legend's vertical coordinate. The renderer may place its
+legend in an upper gap; using legend Y clipped downstream stations. Legends are
+moved above the full geometry. All six source files render with nf-metro --strict.
+
+## Latest execution and UI checkpoint, 17:14 UTC
+
+This section supersedes job status above. 41/64 raw runs have completion markers.
+Original batch 4 failed curl 18; recovery 49211401 preserves the partial transfer.
+Preprocessing 49211406 replaces dependency-cancelled 49205669. Full discovery
+49211416 replaces 49206899 and waits for preprocessing. Healthy downloads continue.
+Storage benchmark 49212645 runs merged Swiss-Prot storage measurements and eight
+Branchwater RocksDB/manysearch self-checks using the historical raw focal run.
+No full external tunicate search has run. SBT outputs remain historical only.
+The default map now includes SPLASH in an nf-metro Seqera overview. Detailed maps
+and file tables show Branchwater RocksDB directories; streaming ZIP search is also
+authorized. Sequence extensions show support, translated peptides, and retained match
+counts instead of raw anchor descriptions. New native primary matches remain unvalidated.

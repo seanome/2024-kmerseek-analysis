@@ -40,7 +40,7 @@ flowchart TB
     PE --> SQ[sourmash 4.9.4 sketch protein<br/>Protein k7; Dayhoff k12; HP k30<br/>Scaled 5 then downsample to 10 and 100]:::program
     BP[Original new Botryllus proteome: all 45,339 records]:::input --> SR[sourmash 4.9.4 reference sketches and searchable indexes<br/>Matching encoding, k, seed, and scale]:::program
     SW[Checksummed reviewed Swiss-Prot FASTA]:::input --> SR
-    SQ --> SS[sourmash search --containment<br/>Retain shared hashes, ties, empty sketches and denominators]:::program
+    SQ --> SS[Sourmash / Branchwater 0.9.15 multisearch<br/>sourmash search for independent validation<br/>Retain shared hashes, ties, empty sketches and denominators]:::program
     SR --> SS
     SS --> HIT[Protein candidates TSV/JSON; database, encoding, scale, ambiguity]:::output
     HIT -. follow-up validation .-> AL[DIAMOND alignment; HMMER 3.4 / Pfam domains<br/>eggNOG or structure search only when verified and justified]:::program
@@ -65,10 +65,10 @@ flowchart TB
   end
   subgraph ARCHIVE[Public tunicate occurrence search]
     TI[ENA tunicate RNA-Seq manifest and checksums]:::input --> BD[Bounded downloads and input validation; measured pilot before scaling]:::program
-    BD --> AS[sourmash sketch dna and sketch translate<br/>DNA k31; protein k7; Dayhoff k12; HP k30<br/>Scaled 5 to 10 and 100; mates remain separate records]:::program
-    AS --> IX[sourmash index: searchable per-run collections and metadata]:::program
+    BD --> AS[sourmash sketch dna and sketch translate<br/>DNA k31; protein k7; Dayhoff k12; HP k30<br/>Scaled 10 and 100; one signature per run and alphabet combining mates]:::program
+    AS --> IX[Branchwater index: shared RocksDB directories and metadata]:::program
     IX --> AR[Validated archive signatures and indexes]:::output
-    AR --> LS[sourmash search and sequence confirmation]:::program
+    AR --> LS[Branchwater manysearch and sequence confirmation]:::program
     X --> LS
     PE --> LS
     LS --> CT[Run/study occurrence TSV; self-study flags; ties; missing coverage]:::output

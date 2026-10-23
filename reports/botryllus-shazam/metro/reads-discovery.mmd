@@ -1,0 +1,74 @@
+%%metro title: 1. Full-depth reads to DNA extensions — pending trimmed inputs
+%%metro style: nfcore
+%%metro legend: tl
+%%metro line: reads | Read preparation - solid | #0072B2
+%%metro line: discovery | SPLASH / Compactors - dashed | #D55E00 | dashed
+%%metro file: raw1 | FASTQ.gz | Focal SRA read 1
+%%metro file: raw2 | FASTQ.gz | Focal SRA read 2
+%%metro file: marker | JSON | Per-run validation
+%%metro file: trim1 | FQ.gz | Trimmed read 1
+%%metro file: trim2 | FQ.gz | Trimmed read 2
+%%metro file: qc | HTML | FastQC and MultiQC reports
+%%metro file: qczip | ZIP | FastQC metrics
+%%metro file: trace | TSV | Nextflow execution trace
+%%metro file: anchors | TSV | All anchors and adjusted P
+%%metro file: satc | SATC | Binary anchor-target counts
+%%metro file: dumps | TXT | Sample-anchor-target counts
+%%metro file: selected | TSV | Every adjusted P < 0.05 anchor
+%%metro file: compact | TSV | Extensions, parent IDs, support
+%%metro file: dna | FASTA | Extended DNA sequences
+
+graph LR
+ subgraph raw [Archive retrieval]
+  ena[Focal SRA study / ENA / curl]
+  raw1[ ]
+  raw2[ ]
+  ena -->|reads| raw1
+  ena -->|reads| raw2
+ end
+ subgraph prep [Validate and trim]
+  val[Rust paired-FASTQ validator + MD5]
+  marker[ ]
+  nf[nf-core/rnaseq 3.27.0 / Trim Galore 2.3]
+  trim1[ ]
+  trim2[ ]
+  qc[ ]
+  qczip[ ]
+  trace[ ]
+  val -->|reads| marker
+  marker -->|reads| nf
+  nf -->|reads| trim1
+  nf -->|reads| trim2
+  nf -->|reads| qc
+  nf -->|reads| qczip
+  nf -->|reads| trace
+ end
+ subgraph splash [SPLASH composition statistics]
+  sp[SPLASH 2.11.9 / anchor31-target31-gap0]
+  anchors[ ]
+  satc[ ]
+  dumps[ ]
+  sp -->|discovery| anchors
+  sp -->|discovery| satc
+  sp -->|discovery| dumps
+ end
+ subgraph extension [All significant anchors; no top-N cap]
+  sel[Strict adjusted P < 0.05 selection]
+  selected[ ]
+  co[Compactors 2.11.9]
+  compact[ ]
+  export[DNA FASTA export]
+  dna[ ]
+  sel -->|discovery| selected
+  selected -->|discovery| co
+  co -->|discovery| compact
+  compact -->|discovery| export
+  export -->|discovery| dna
+ end
+ raw1 -->|reads| val
+ raw2 -->|reads| val
+ trim1 -->|discovery| sp
+ trim2 -->|discovery| sp
+ anchors -->|discovery| sel
+ trim1 -->|discovery| co
+ trim2 -->|discovery| co
