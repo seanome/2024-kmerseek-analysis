@@ -30,7 +30,7 @@ the matched region alone?
 
 **Data.** An all-against-all search of the 998 human proteins that carry a Pfam domain in
 the midi-plus truth set, with hp_lehninger2 at k = 24 (`labeled_pairs_overlap_rules.parquet`).
-One row is one independent domain match: a pair of matched spans, counted once whichever
+One row is one deduplicated domain match: a pair of matched spans, counted once whichever
 protein was the query (the direction with the lower E-value is kept). There are 5_649.
 Section 7 repeats the main numbers for all 152 alphabet and k combinations of the
 notebook 243 search of the same 998 proteins.
@@ -52,12 +52,12 @@ names the one it uses:
   a coin toss, 1 is perfect.
 - Average precision (AP, the area under the precision-recall curve): the precision
   averaged over every point where a correct match is recovered, going down the list. Its
-  floor is the base rate, the fraction of matches that are correct, so AP is always shown
+  random-ranking reference is the base rate, the fraction of matches that are correct; AP can be lower. AP is shown
   next to the base rate.
 - Accuracy, precision, recall and F1 at a cutoff, and MCC (Matthews correlation
   coefficient: the correlation between the call and the label, from -1 to 1, with 0 for
-  calls unrelated to the label). MCC and F1 are not inflated by the many easy incorrect
-  matches the way accuracy is.
+  calls unrelated to the label). F1 ignores true negatives. MCC uses all four call counts, so changing the number
+  of incorrect matches can still change it.
 - Per query protein: the chance that its top-ranked match is correct (precision at 1) and
   the mean of 1 / rank of its first correct match (mean reciprocal rank).
 
