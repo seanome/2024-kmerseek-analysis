@@ -762,8 +762,9 @@ md(r"""
 **Question.** Does an exact k-mer in a reduced alphabet certify any Pfam seed pair at 30%
 identity or less that an aligner scoring with BLOSUM62 cannot?
 
-**Answer.** Not in practice. Almost every pair a run certifies is certified by BLOSUM62 too, and
-a gapped aligner catches most of the rest.
+**Answer.** Most pairs above the run threshold also pass the BLOSUM62 threshold.
+Eleven H/P pairs remain below the gapped threshold, or six with the stated K correction.
+This exploratory comparison does not establish a general sensitivity advantage.
 
 1. The two methods do count different things. In pairs at 20% identity or less, 52% of aligned
    positions keep their H/P class with a different residue, and BLOSUM62 scores those at +0.02
@@ -780,10 +781,11 @@ a gapped aligner catches most of the rest.
 3. A gapped Smith-Waterman alignment of the whole domains, BLOSUM62 11/1, reaches 24 bits on
    180 of the 282 and on 17 of the 28 (section 4). The V-SNARE pair of section 2 scores 30.0
    bits. Of the 21 substitutions in its run, 11 score above zero in BLOSUM62 (K-R and L-M
-   three times each, L-V twice, D-E, E-K), 3 at zero and 7 below, and the aligner adds the
+   three times each, L-V twice, D-E, E-K and E-Q), 3 at zero and 7 below, and the aligner adds the
    rest of the domain.
 4. The 11 pairs that neither aligner certifies rest on one H/P run each, in 11 families, 4 of
-   them DUFs. That is a handful, not a class of finds.
+   them DUFs. The decision rule did not define how many families count as more than a handful,
+   so this count alone cannot determine whether that part of the rule passes.
 
 **Limits.**
 * A column holding a non-standard letter (X, B, Z, U, O) breaks a run and a segment, like a
@@ -802,10 +804,11 @@ a gapped aligner catches most of the rest.
   favours the aligner: 141 of the 282 run-only pairs then pass on the ungapped segment, and 5
   more of the 11 pass with the gapped score, leaving 6.
 * Pfam seed families are built from alignments, so this set cannot hold a pair that no
-  alignment supports. It can only show that, inside alignment-defined families, k-mers add
-  nothing an aligner lacks.
+  alignment supports. It compares scores inside alignment-defined families; it cannot establish that
+  k-mers add nothing on pairs outside those families.
 
-**Decision.** The paper cannot say that exact k-mers certify Pfam pairs BLOSUM62 misses. What
+**Decision.** The paper can report the remaining pairs at this exploratory threshold,
+but cannot infer a general advantage over BLOSUM62 from them. What
 an exact H/P k-mer counts and BLOSUM62 does not is a class kept with a residue change that
 BLOSUM62 scores at zero: hydrophobic for hydrophobic, polar for polar, outside the pairs it
 rewards. Pairs certified by that alone have to be looked for where features are defined by
