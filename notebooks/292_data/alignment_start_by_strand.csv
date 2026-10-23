@@ -1,0 +1,5 @@
+label,strand,n_reads,median_read_length,median_first_aligned_base,share_alignment_overlaps_first_400,share_protein_start_in_first_400
+family,forward,9467,747.0,222.0,0.9869018696524771,0.9869018696524771
+family,reverse,11803,737.0,353.0,0.8618995170719309,0.0016097602304498855
+non_family,forward,82389,730.0,211.0,0.9832501911662964,0.9832501911662964
+non_family,reverse,78837,728.0,337.0,0.8634397554447785,0.008587338432461915
