@@ -430,9 +430,13 @@ def fig_examples(survivors, exon_ids: list[str], path_stem: str):
     pf.use_style()
     rows = (
         survivors.filter(pl.col("exon_id").is_in(exon_ids)).sort("exon_id").to_dicts()
+        if survivors.height
+        else []
     )
     fig, ax = pf.figure(pf.TWO_COLUMN_MM, 20 + 22 * max(1, len(rows)))
     ax.axis("off")
+    if not rows:
+        ax.text(0, 0.5, "No surviving landings to show.", transform=ax.transAxes)
     y = 1.0
     step = 1.0 / max(1, len(rows))
     for r in rows:

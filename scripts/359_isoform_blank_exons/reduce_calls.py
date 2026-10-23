@@ -9,7 +9,8 @@ blank exon whose representative isoform is <isoform>; a call on decoy__<exon_id>
 against that exon. A call lands when it covers at least half of the exon's protein
 segment. Because the threshold is on region_evalue alone, the landing call with the
 smallest E-value is all the scorer needs for every threshold; it is written with its
-target and residues. Ties on E keep the first call kmerseek wrote.
+target and residues. Ties on E use target accession, coordinates and residues, so input order cannot
+change which feature is counted as named.
 
 Standard library only, so it runs in any image with Python 3.
 """
@@ -56,13 +57,18 @@ def main(parquet, side):
             continue
         call = (int(row[c["region_start"]]), int(row[c["region_end"]]))
         e = float(row[c["region_evalue"]])
+        tie_key = (
+            e, row[c["target_name"]], *call,
+            int(row[c["target_start"]]), int(row[c["target_end"]]),
+            row[c["region_subseq"]], row[c["target_subseq"]],
+        )
         for exon_id, seg in segs:
-            if ib.lands(call, seg) and (exon_id not in best or e < best[exon_id][0]):
-                best[exon_id] = (e, row)
+            if ib.lands(call, seg) and (exon_id not in best or tie_key < best[exon_id][0]):
+                best[exon_id] = (tie_key, row)
     out = csv.writer(sys.stdout, delimiter="\t", lineterminator="\n")
     out.writerow(["exon_id", "side", "evalue", "query", "qstart", "qend", "target", "tstart", "tend", "qseq", "tseq"])
-    for exon_id, (e, row) in sorted(best.items()):
-        out.writerow([exon_id, side, repr(e), row[c["query_name"]], row[c["region_start"]], row[c["region_end"]],
+    for exon_id, (tie_key, row) in sorted(best.items()):
+        out.writerow([exon_id, side, repr(tie_key[0]), row[c["query_name"]], row[c["region_start"]], row[c["region_end"]],
                       row[c["target_name"]], row[c["target_start"]], row[c["target_end"]],
                       row[c["region_subseq"]], row[c["target_subseq"]]])  # fmt: skip
     print(f"reduce_calls: {n_calls} calls read, {len(best)} exons with a landing call", file=sys.stderr)

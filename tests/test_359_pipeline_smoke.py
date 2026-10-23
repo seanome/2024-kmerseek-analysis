@@ -134,3 +134,24 @@ def test_build_reduce_score(tmp_path):
     ex = json.loads((out / "examples.json").read_text())
     ib.fig_examples(pl.read_parquet(out / "survivors.parquet"), ex["exon_ids"], str(tmp_path / "sfc"))
     assert all((tmp_path / f"{n}.png").exists() for n in ("sfa", "sfb", "sfc"))
+
+
+def test_empty_survivors_figure(tmp_path):
+    """A run with zero accepted landings still produces its examples figure."""
+    sys.path.insert(0, str(ROOT / "notebooks"))
+    import isoform_blank_exons_359 as ib
+
+    fig = ib.fig_examples(pl.DataFrame(), [], str(tmp_path / "empty"))
+    assert (tmp_path / "empty.png").exists()
+    assert any("No surviving landings" in t.get_text() for t in fig.axes[0].texts)
+
+
+def test_reducer_equal_scores_ignore_input_order(tmp_path):
+    """A tied named-feature choice must not depend on parallel search output order."""
+    blank = tmp_path / "blank.parquet"
+    pl.DataFrame({"exon_id": ["ex1"], "rep_isoform": ["iso1"], "p_start": [0], "p_end": [20]}).write_parquet(blank)
+    header = "query_name,target_name,region_start,region_end,target_start,target_end,region_evalue,region_subseq,target_subseq\n"
+    calls = [f"real__iso1,{target},0,20,0,20,1e-6,{'A' * 20},{'A' * 20}\n" for target in ["Z|REGION|none|1-20", "A|DOMAIN|named|1-20"]]
+    outputs = [subprocess.run([PY, S / "reduce_calls.py", blank, "real"], input=header + "".join(order), text=True, check=True, capture_output=True).stdout for order in [calls, calls[::-1]]]
+    assert outputs[0] == outputs[1]
+    assert "A|DOMAIN|named|1-20" in outputs[0]
