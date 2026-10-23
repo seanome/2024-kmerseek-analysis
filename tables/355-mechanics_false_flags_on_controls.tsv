@@ -1,0 +1,91 @@
+host	construct_kind	method	n_flags_total	n_flags_on_inserted_region	flag_names
+BCL2_HUMAN	clean	exact tag match (protein20)	0	0	none
+BCL2_HUMAN	clean	local alignment (BLOSUM62)	0	0	none
+BCL2_HUMAN	clean	kmerseek reduced alphabet (hp_thomas_dill, k=19)	0	0	none
+BCL2_HUMAN	shuffled GST (sj26)	exact tag match (protein20)	0	0	none
+BCL2_HUMAN	shuffled GST (sj26)	local alignment (BLOSUM62)	1	1	unnamed
+BCL2_HUMAN	shuffled GST (sj26)	kmerseek reduced alphabet (hp_thomas_dill, k=19)	0	0	none
+BCL2_HUMAN	composition-matched stretch for GST (sj26)	exact tag match (protein20)	0	0	none
+BCL2_HUMAN	composition-matched stretch for GST (sj26)	local alignment (BLOSUM62)	1	1	unnamed
+BCL2_HUMAN	composition-matched stretch for GST (sj26)	kmerseek reduced alphabet (hp_thomas_dill, k=19)	0	0	none
+BCL2_HUMAN	shuffled MBP (MalE mature chain)	exact tag match (protein20)	0	0	none
+BCL2_HUMAN	shuffled MBP (MalE mature chain)	local alignment (BLOSUM62)	1	1	unnamed
+BCL2_HUMAN	shuffled MBP (MalE mature chain)	kmerseek reduced alphabet (hp_thomas_dill, k=19)	0	0	none
+BCL2_HUMAN	composition-matched stretch for MBP (MalE mature chain)	exact tag match (protein20)	1	1	GS linker GSG
+BCL2_HUMAN	composition-matched stretch for MBP (MalE mature chain)	local alignment (BLOSUM62)	1	1	unnamed
+BCL2_HUMAN	composition-matched stretch for MBP (MalE mature chain)	kmerseek reduced alphabet (hp_thomas_dill, k=19)	0	0	none
+CED9_CAEEL	clean	exact tag match (protein20)	0	0	none
+CED9_CAEEL	clean	local alignment (BLOSUM62)	0	0	none
+CED9_CAEEL	clean	kmerseek reduced alphabet (hp_thomas_dill, k=19)	1	0	MBP (MalE mature chain)
+CED9_CAEEL	shuffled GST (sj26)	exact tag match (protein20)	0	0	none
+CED9_CAEEL	shuffled GST (sj26)	local alignment (BLOSUM62)	1	1	unnamed
+CED9_CAEEL	shuffled GST (sj26)	kmerseek reduced alphabet (hp_thomas_dill, k=19)	1	0	MBP (MalE mature chain)
+CED9_CAEEL	composition-matched stretch for GST (sj26)	exact tag match (protein20)	0	0	none
+CED9_CAEEL	composition-matched stretch for GST (sj26)	local alignment (BLOSUM62)	1	1	unnamed
+CED9_CAEEL	composition-matched stretch for GST (sj26)	kmerseek reduced alphabet (hp_thomas_dill, k=19)	1	0	MBP (MalE mature chain)
+CED9_CAEEL	shuffled MBP (MalE mature chain)	exact tag match (protein20)	0	0	none
+CED9_CAEEL	shuffled MBP (MalE mature chain)	local alignment (BLOSUM62)	1	1	unnamed
+CED9_CAEEL	shuffled MBP (MalE mature chain)	kmerseek reduced alphabet (hp_thomas_dill, k=19)	1	0	MBP (MalE mature chain)
+CED9_CAEEL	composition-matched stretch for MBP (MalE mature chain)	exact tag match (protein20)	1	1	GS linker GSG
+CED9_CAEEL	composition-matched stretch for MBP (MalE mature chain)	local alignment (BLOSUM62)	1	1	unnamed
+CED9_CAEEL	composition-matched stretch for MBP (MalE mature chain)	kmerseek reduced alphabet (hp_thomas_dill, k=19)	1	0	MBP (MalE mature chain)
+MCL1_HUMAN	clean	exact tag match (protein20)	1	0	GS linker GSG
+MCL1_HUMAN	clean	local alignment (BLOSUM62)	0	0	none
+MCL1_HUMAN	clean	kmerseek reduced alphabet (hp_thomas_dill, k=19)	0	0	none
+MCL1_HUMAN	shuffled GST (sj26)	exact tag match (protein20)	1	0	GS linker GSG
+MCL1_HUMAN	shuffled GST (sj26)	local alignment (BLOSUM62)	1	1	unnamed
+MCL1_HUMAN	shuffled GST (sj26)	kmerseek reduced alphabet (hp_thomas_dill, k=19)	0	0	none
+MCL1_HUMAN	composition-matched stretch for GST (sj26)	exact tag match (protein20)	1	0	GS linker GSG
+MCL1_HUMAN	composition-matched stretch for GST (sj26)	local alignment (BLOSUM62)	1	1	unnamed
+MCL1_HUMAN	composition-matched stretch for GST (sj26)	kmerseek reduced alphabet (hp_thomas_dill, k=19)	0	0	none
+MCL1_HUMAN	shuffled MBP (MalE mature chain)	exact tag match (protein20)	1	0	GS linker GSG
+MCL1_HUMAN	shuffled MBP (MalE mature chain)	local alignment (BLOSUM62)	1	1	unnamed
+MCL1_HUMAN	shuffled MBP (MalE mature chain)	kmerseek reduced alphabet (hp_thomas_dill, k=19)	0	0	none
+MCL1_HUMAN	composition-matched stretch for MBP (MalE mature chain)	exact tag match (protein20)	2	1	GS linker GSG
+MCL1_HUMAN	composition-matched stretch for MBP (MalE mature chain)	local alignment (BLOSUM62)	1	1	unnamed
+MCL1_HUMAN	composition-matched stretch for MBP (MalE mature chain)	kmerseek reduced alphabet (hp_thomas_dill, k=19)	0	0	none
+BAX_HUMAN	clean	exact tag match (protein20)	1	0	GS linker GSG
+BAX_HUMAN	clean	local alignment (BLOSUM62)	0	0	none
+BAX_HUMAN	clean	kmerseek reduced alphabet (hp_thomas_dill, k=19)	0	0	none
+BAX_HUMAN	shuffled GST (sj26)	exact tag match (protein20)	1	0	GS linker GSG
+BAX_HUMAN	shuffled GST (sj26)	local alignment (BLOSUM62)	1	1	unnamed
+BAX_HUMAN	shuffled GST (sj26)	kmerseek reduced alphabet (hp_thomas_dill, k=19)	0	0	none
+BAX_HUMAN	composition-matched stretch for GST (sj26)	exact tag match (protein20)	1	0	GS linker GSG
+BAX_HUMAN	composition-matched stretch for GST (sj26)	local alignment (BLOSUM62)	1	1	unnamed
+BAX_HUMAN	composition-matched stretch for GST (sj26)	kmerseek reduced alphabet (hp_thomas_dill, k=19)	0	0	none
+BAX_HUMAN	shuffled MBP (MalE mature chain)	exact tag match (protein20)	1	0	GS linker GSG
+BAX_HUMAN	shuffled MBP (MalE mature chain)	local alignment (BLOSUM62)	1	1	unnamed
+BAX_HUMAN	shuffled MBP (MalE mature chain)	kmerseek reduced alphabet (hp_thomas_dill, k=19)	0	0	none
+BAX_HUMAN	composition-matched stretch for MBP (MalE mature chain)	exact tag match (protein20)	2	1	GS linker GSG
+BAX_HUMAN	composition-matched stretch for MBP (MalE mature chain)	local alignment (BLOSUM62)	1	1	unnamed
+BAX_HUMAN	composition-matched stretch for MBP (MalE mature chain)	kmerseek reduced alphabet (hp_thomas_dill, k=19)	0	0	none
+P53_HUMAN	clean	exact tag match (protein20)	0	0	none
+P53_HUMAN	clean	local alignment (BLOSUM62)	0	0	none
+P53_HUMAN	clean	kmerseek reduced alphabet (hp_thomas_dill, k=19)	0	0	none
+P53_HUMAN	shuffled GST (sj26)	exact tag match (protein20)	0	0	none
+P53_HUMAN	shuffled GST (sj26)	local alignment (BLOSUM62)	1	1	unnamed
+P53_HUMAN	shuffled GST (sj26)	kmerseek reduced alphabet (hp_thomas_dill, k=19)	0	0	none
+P53_HUMAN	composition-matched stretch for GST (sj26)	exact tag match (protein20)	0	0	none
+P53_HUMAN	composition-matched stretch for GST (sj26)	local alignment (BLOSUM62)	1	1	unnamed
+P53_HUMAN	composition-matched stretch for GST (sj26)	kmerseek reduced alphabet (hp_thomas_dill, k=19)	0	0	none
+P53_HUMAN	shuffled MBP (MalE mature chain)	exact tag match (protein20)	0	0	none
+P53_HUMAN	shuffled MBP (MalE mature chain)	local alignment (BLOSUM62)	1	1	unnamed
+P53_HUMAN	shuffled MBP (MalE mature chain)	kmerseek reduced alphabet (hp_thomas_dill, k=19)	0	0	none
+P53_HUMAN	composition-matched stretch for MBP (MalE mature chain)	exact tag match (protein20)	1	1	GS linker GSG
+P53_HUMAN	composition-matched stretch for MBP (MalE mature chain)	local alignment (BLOSUM62)	1	1	unnamed
+P53_HUMAN	composition-matched stretch for MBP (MalE mature chain)	kmerseek reduced alphabet (hp_thomas_dill, k=19)	0	0	none
+EGFR_HUMAN	clean	exact tag match (protein20)	1	0	GS linker GSG
+EGFR_HUMAN	clean	local alignment (BLOSUM62)	0	0	none
+EGFR_HUMAN	clean	kmerseek reduced alphabet (hp_thomas_dill, k=19)	0	0	none
+EGFR_HUMAN	shuffled GST (sj26)	exact tag match (protein20)	1	0	GS linker GSG
+EGFR_HUMAN	shuffled GST (sj26)	local alignment (BLOSUM62)	1	1	unnamed
+EGFR_HUMAN	shuffled GST (sj26)	kmerseek reduced alphabet (hp_thomas_dill, k=19)	0	0	none
+EGFR_HUMAN	composition-matched stretch for GST (sj26)	exact tag match (protein20)	1	0	GS linker GSG
+EGFR_HUMAN	composition-matched stretch for GST (sj26)	local alignment (BLOSUM62)	1	1	unnamed
+EGFR_HUMAN	composition-matched stretch for GST (sj26)	kmerseek reduced alphabet (hp_thomas_dill, k=19)	0	0	none
+EGFR_HUMAN	shuffled MBP (MalE mature chain)	exact tag match (protein20)	1	0	GS linker GSG
+EGFR_HUMAN	shuffled MBP (MalE mature chain)	local alignment (BLOSUM62)	1	1	unnamed
+EGFR_HUMAN	shuffled MBP (MalE mature chain)	kmerseek reduced alphabet (hp_thomas_dill, k=19)	0	0	none
+EGFR_HUMAN	composition-matched stretch for MBP (MalE mature chain)	exact tag match (protein20)	2	1	GS linker GSG
+EGFR_HUMAN	composition-matched stretch for MBP (MalE mature chain)	local alignment (BLOSUM62)	1	1	unnamed
+EGFR_HUMAN	composition-matched stretch for MBP (MalE mature chain)	kmerseek reduced alphabet (hp_thomas_dill, k=19)	0	0	none
