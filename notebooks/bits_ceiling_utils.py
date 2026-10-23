@@ -1,11 +1,11 @@
-"""Computations and figures for notebook 245 (the bits ceiling on an exact reduced-alphabet seed).
+"""Computations and figures for notebook 245 (model information and aligned exact runs).
 
 Nothing here searches a database. Every input number is in tables/245_*.tsv, written by
 scripts/make_245_inputs.py from the executed notebooks that measured it. What this module
 adds is arithmetic on those numbers and the figures.
 
 Colours carry one meaning each, in every figure of the notebook:
-  HAVE (blue)  bits the BCL2/CED-9 pair has, or could have at most
+  HAVE (blue)  observed run rarity or model-average information
   NEED (red)   bits a search of the database needs before a hit stands out from chance
 Other quantities (reach, the chance score) are drawn in black and grey; the mean longest
 exact run in Figure 3 is green.
@@ -246,7 +246,7 @@ def fig_bits_have_vs_need(v: dict, path: Path) -> None:
     fig.legend(
         handles=[
             Patch(
-                color=HAVE, label="bits the BCL2/CED-9 pair has, or can have at most"
+                color=HAVE, label="observed run rarity or model-average information"
             ),
             Patch(color=NEED, label="bits the human-proteome search needs"),
         ],
@@ -292,7 +292,7 @@ def fig_scaling(v: dict, dbs: list[dict], path: Path) -> None:
         v["bits_block_20"],
         color=HAVE,
         lw=1.6,
-        label=f"BH1 block, 20-letter ceiling: {v['bits_block_20']:.1f} bits",
+        label=f"37-residue model average: {v['bits_block_20']:.1f} bits",
     )
     ax.axhline(
         v["bits_block_hp"],
@@ -327,7 +327,7 @@ def fig_conservation_vs_reach(
     need: dict[float, float],
     path: Path,
 ) -> None:
-    """Figure 3: no exact-seed length k both reaches the pairs and stands out from chance.
+    """Figure 3 compares supplied-alignment runs with a chance-placement model.
 
     (a) share of pairs that share an exact class-identical run of at least k residues;
     (b) bits of rarity such a seed carries, against the bits a search needs (one per E in
@@ -371,7 +371,7 @@ def fig_conservation_vs_reach(
             fontsize=8.5,
             color=INK,
         )
-    ax_a.set_ylabel("share of pairs reached")
+    ax_a.set_ylabel("share of alignments containing a run")
     ax_a.set_ylim(0, 1.05)
     ax_a.set_title(
         "a  How many homolog pairs an exact seed of length k can find",
@@ -409,7 +409,7 @@ def fig_conservation_vs_reach(
             ls=styles.get(E, ":"),
             lw=1.4,
             label=f"needed for {E:g} chance seed{'s' if E != 1 else ''} per search: {bits:.1f} bits, "
-            f"reached at k = {math.ceil(k_cross)}",
+            f"with aligned runs at k = {math.ceil(k_cross)}",
         )
     ax_b.set_ylabel("bits")
     ax_b.set_xlabel("k, exact seed length (residues)")

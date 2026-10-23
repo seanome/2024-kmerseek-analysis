@@ -21,9 +21,9 @@ def code(source):
 md(r"""
 # 245. How many bits an exact reduced-alphabet seed can carry, and how many a proteome search needs
 
-A remote homolog at 20-30% identity carries too little information, on average, for an
-exact k-mer seed in any reduced alphabet to rank it above chance in a search of a whole
-proteome. This notebook puts numbers on that for one pair, human BCL2 against
+This notebook compares model-average information with model chance-match thresholds.
+It also measures exact class runs along supplied homolog alignments. These comparisons
+do not establish an upper bound on the information in an individual pair or on index recall. This notebook puts numbers on that for one pair, human BCL2 against
 *C. elegans* CED-9, and the 19,732 canonical human proteins that notebook 241 searched.
 
 No search is run here. Every input number was printed by an earlier notebook and is read
@@ -108,7 +108,7 @@ evolution. The only number it needs is $I_{20}$.
 
 **$I_{20}$ is not measured here.** 0.38 bits per position is the relative entropy of BLOSUM45
 (Henikoff and Henikoff 1992), the 20-letter matrix used for 20-30% identity. It is a table
-value. Measuring $I_{20}$ on notebook 230's aligned pairs would make the ceiling a measurement.
+value. Measuring $I_{20}$ on notebook 230's aligned pairs would estimate that population rate; it would not bound an individual pair.
 
 **What two letters carry, under a model.** Part 2 of the kmerseek docs models a true pair
 with the copy rate $\kappa$ (Cohen's κ): at each position the target copies the query's
@@ -131,7 +131,7 @@ bits_block_hp = L * I_hp_model
 print(f"I_20 (BLOSUM45, table value)                      = {I_20:.2f} bits per position")
 print(f"I_HP, copy-rate model, hp_thomas_dill2, κ = {kappa:.3f},")
 print(f"  class shares h = {shares[0]:.3f}, p = {shares[1]:.3f} (human proteome)  = {I_hp_model:.3f} bits per position")
-print(f"bits_block, 20-letter ceiling:  {L} × {I_20:.2f}  = {bits_block_20:.1f} bits")
+print(f"bits_block, 20-letter model average:  {L} × {I_20:.2f}  = {bits_block_20:.1f} bits")
 print(f"bits_block, two letters (model): {L} × {I_hp_model:.3f} = {bits_block_hp:.1f} bits")
 """)
 
@@ -196,7 +196,7 @@ for p, q in (("BCL2", "Ced9"), ("CD47", "P66")):
 md(r"""
 ## 4. Bits the pair has against bits the search needs
 
-One bar per quantity. Blue: what the BH1 block has, or can have at most. Red: what the
+One bar per quantity. Blue: the observed exact-run rarity or model-average information for the BH1 block length. Red: what the
 search needs. Every blue bar is shorter than the red bar in its panel.
 """)
 
@@ -205,7 +205,7 @@ vals = {
     "bits_block_20": bits_block_20, "bits_block_hp": bits_block_hp,
     "bits_needed_region": need_region, "seed_bits_bh1": seed_have, "bits_needed_seed": need_seed,
     "bits_needed_region_e10": need_region_e10, "bits_needed_seed_e10": need_seed_e10,
-    "label_ceiling20": f"20-letter ceiling (BLOSUM45 table value): {L} × {I_20:.2f}",
+    "label_ceiling20": f"20-letter model average (BLOSUM45 table value): {L} × {I_20:.2f}",
     "label_coin2": f"hp_thomas_dill2 (copy-rate model): {L} × {I_hp_model:.3f}",
     "label_need_region": "E = 1 on one proteome: log$_2$(K·m·n)",
     "label_need_region_e10": "E = 10 on one proteome: log$_2$(K·m·n / 10)",
@@ -220,8 +220,8 @@ md(r"""
 ## 5. How the cost grows with the database
 
 Equation (3) at each database the kmerseek docs calibrated, and Equation (4) as a line.
-Both rise by one bit per doubling of $n$. The BH1 block stays under every one of them, even
-at its 20-letter ceiling.
+Both rise by one bit per doubling of $n$. The model-average information for the BH1 block length stays under these thresholds.
+This is an expectation under the assumed distribution, not a maximum for this pair.
 """)
 
 code(r"""
@@ -238,20 +238,20 @@ md(r"""
 ## 6. Conservation and reachability are different quantities
 
 **Conservation** is per position: Cohen's κ, the class match rate above chance as a share
-of the room above chance. **Reachability** is whether an exact seed of length $k$ exists at
-all: the share of pairs whose longest class-identical run is at least $k$. If positions were
+of the room above chance. **Aligned-run reach** is the share of supplied pair alignments whose longest class-identical
+run is at least $k$. Seeds at other offsets are not counted, so this is not index recall. If positions were
 independent, a given window of $k$ positions would be all same-class with probability
 $\Pr(\text{same})^k$, which falls exponentially in $k$ while κ does not move. Notebook 230
 measured both on the same 37,085 Pfam pairs at 20-30% identity.
 
-**What to decide from Figure 3: no seed length works for an exact hp_thomas_dill2 seed.**
-Panel (a) is how many homolog pairs a seed of length $k$ can find; panel (b) is whether
+**Figure 3 compares aligned-run frequency with an independent-position chance model.**
+Panel (a) is how many supplied homolog alignments contain an exact run of length $k$; panel (b) is whether
 that seed is rare enough to stand out from chance on the human proteome (Equation 4).
 Read (b) for the smallest $k$ where the blue line crosses a red one, then read (a) at that
 $k$. A seed stands out at $k \ge 34$ (1 chance seed per search) or $k \ge 31$ (10 per
 search), and at $k = 30$ only 0.6% of the pairs share one. At $k = 13$, the mean longest
-run per pair, a seed carries about 12 bits, 19 short. So changing $k$ cannot fix exact HP
-seeds; the fix has to be a seed that allows mismatches, more letters, or a smaller database.
+run per pair, a seed carries about 12 bits, 19 short. These measurements motivate testing mismatch-tolerant seeds, more letters, or a smaller database.
+They do not exclude off-alignment seeds, chaining, or different scoring models.
 """)
 
 code(r"""
@@ -278,7 +278,7 @@ bu.fig_conservation_vs_reach(reach, v, pr_unrel["hp_thomas_dill2"],
 """)
 
 md(r"""
-## 7. Two alphabets have no E-value at any k, and a third is at the edge
+## 7. Two alphabets lack a positive-root fit under these penalties
 
 $\lambda$ is the positive root of $\sum_{a,b} \Pr(a)\,\Pr(b)\,e^{\lambda s_{ab}} = 1$, where
 $s_{ab}$ is the score for a query class $a$ against a target class $b$. kmerseek scores
@@ -298,11 +298,11 @@ bu.fig_chance_score(cs, bu.FIG / "245_chance_score_by_alphabet.png")
 md(r"""
 ## 8. What this shows
 
-1. **The ceiling is below the cost.** The 37-residue BH1 block carries at most 14.1 bits
-   at the 20-letter ceiling, and about 5.8 bits in two letters under the copy-rate model.
+1. **The model averages are below the threshold.** For a 37-residue block, the BLOSUM45
+   rate gives 14.1 expected bits, and the two-letter copy-rate model gives about 5.8 bits.
    An E-value of 1 on a proteome the size of the human one costs about 25.7 bits for a
-   scored region. The ceiling holds for every reduced alphabet by Equation (2).
-2. **The ceiling bounds the average, not one pair.** $I_A$ is an expected log-likelihood
+   scored region. Equation (2) bounds mutual information under the same joint distribution; the BLOSUM45 rate is not a measured bound on this particular BH1 pair.
+2. **The information rate describes an average, not one pair.** $I_A$ is an expected log-likelihood
    ratio, so a single pair can carry more than $L \cdot I_A$. BH1 does: its exact
    19-residue hp_lehninger2 run is worth 18.9 bits of rarity. That is still 12.6 bits short of
    the 31.5 an exact seed needs, so about 6,100 chance matches as rare are expected in one search.
@@ -311,11 +311,11 @@ md(r"""
 4. **"32 bits" and "25 bits" are two different thresholds.** $\log_2(m\,n) = 31.5$ is where an
    exact seed stands out. $\log_2(K\,m\,n) = 25.7$ is where a scored region reaches E = 1. The
    prose of notebooks 241 and 242 called the first one the cost of E = 1.
-5. **Reach, not conservation, is what an exact seed loses.** κ for hp_thomas_dill2 is 0.463,
+5. **Aligned-run frequency differs from per-column conservation.** κ for hp_thomas_dill2 is 0.463,
    but only 3.8% of the same pairs share an exact 23-mer, 1.7% a 26-mer and 0.6% a 30-mer.
    An exact seed stands out from chance only at $k \ge 34$ ($k \ge 31$ at 10 chance seeds
-   per search), so no $k$ both reaches the pairs and stands out.
-6. **gbmr7 and hp_lehninger_hpc3 cannot give an E-value at any k.** gbmr4 sits at −0.0003,
+   per search), so few supplied alignments have runs that long. This is not a bound on seeds at other offsets.
+6. **Under these class frequencies and mismatch penalties, gbmr7 and hp_lehninger_hpc3 lack the positive-root fit at any k.** gbmr4 sits at −0.0003,
    just below zero, so its λ exists and is close to 0.
 """)
 
