@@ -24,9 +24,9 @@ md(r"""
 found that kmerseek puts a region with E-value below 1 on 14-32% of *dark* proteins (no
 phmmer, jackhmmer or MMseqs2 hit in Swiss-Prot with the query's own clade removed), against
 43-79% of *placed* proteins (every protein that is not dark). How many of those dark-protein
-regions would kmerseek also give to a protein with no homolog at all? We search shuffled
-copies of every protein, which keep its composition but lose any homology, and count how
-often they get a region.
+regions would kmerseek also give to shuffled copies? We search copies of every protein
+that keep its composition while changing residue order, and count how often they get a
+region. Short matches can survive shuffling, especially within 10-residue windows.
 
 **Decision.** Whether the dark-protein hint list can be handed to genome annotators (the
 Earth BioGenome Project use case), or whether at E < 1 it is what chance alone gives.
@@ -82,12 +82,13 @@ The search command for every setting and chunk was checked to be the run's own
 **Rule.** A setting *beats chance* in a species at E < 1 when, after the filter,
 R >= 2 x max(S_dipeptide, S_window) **and** R - max(S) >= 5 percentage points with the lower
 end of its 95% interval above zero. Higher R - S is better; R - S near 0 means kmerseek finds
-dark-protein regions no more often than it finds them on proteins with no homolog.
+dark-protein regions no more often than it finds them on these shuffled copies.
 
 The dark set has hints worth handing to annotators if some setting beats chance in **both
 *B. schlosseri* and *C. elegans*** (the two large invertebrate dark sets). If not, the
-dark-set hint list is chance at E < 1: it is written up as a negative result with the
-shuffled reach numbers, and the experiment stops. No setting, cutoff or filter changes after
+dark-set hint list has not met the selection rule at E < 1: it is written up as a negative
+result with the shuffled reach numbers, and the experiment stops. Failure to pass does
+not establish equal reach in real proteins and controls. No setting, cutoff or filter changes after
 the numbers are read.
 
 **Olga's expectation**, from the shuffled copies of BHF: S under hp_lehninger2 k17 is high,
@@ -115,7 +116,7 @@ of 12,845, section 7.)
 pLDDT < 50 bin (and in the top disorder quartile for *B. schlosseri*), since disordered,
 low-complexity sequence gives chance k-mer matches. If a setting beats chance overall, we
 report whether it still does inside pLDDT < 50: that row is the one the Earth BioGenome pitch
-needs, because it is where structure search has no model to use.
+needs, because it is where low-confidence structure limits a structural interpretation.
 """)
 
 nb = {"cells": cells, "metadata": {"kernelspec": {"display_name": "Python 3", "language": "python", "name": "python3"},
