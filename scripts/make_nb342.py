@@ -60,9 +60,10 @@ Kinds 1 to 3 need no search. Only kind 4 needs a k-mer index.
 **Question.** Does the kind 4 label predict whether neurons include or skip an exon more than
 progenitors do, beyond what kinds 1 to 3 already predict?
 
-**What this decides.** If it does not, kmerseek has no role in exon annotation, and exon function
-is kinds 1 to 3 plus Exon Ontology. If it does, the next notebook adds a second outcome (TDP-43
-loss in motor neurons, Tanaka et al. 2025) and a second index (PhaSePro and DisProt regions).
+**What this decides.** A pass supports testing transferred k-mer labels on a second outcome
+(TDP-43 loss in motor neurons, Tanaka et al. 2025) and a second index (PhaSePro and DisProt
+regions). If both comparisons fail, this experiment does not support adding those labels
+to the set A splicing classifier.
 
 ### Prior work
 
@@ -168,8 +169,7 @@ cross-validation with folds split by gene) and then scored once on the test half
 * **Unclear** if the interval contains 0.02. The notebook then gives the number of test exons
   that would make the interval narrow enough to decide, and says whether set A has that many.
 * The same test is run for "skipped more in neurons" against "unchanged". Each comparison gets its
-  own verdict. kmerseek has a role in exon annotation if at least one comparison passes. It has
-  none if both are KILL. Any other pair of verdicts is unclear.
+  own verdict. This test supports kmerseek for the set A splicing task if at least one comparison passes. Neither comparison supports this application if both are KILL. Any other pair of verdicts is unclear.
 * A missing feature value (Ω_aro on an exon with 10% or fewer aromatic residues; no kind 4 hit) is
   set to 0 and gets its own 0/1 column saying it was missing.
 * Power: with fewer than 100 exons of a changed class on the tune half, the test is unlikely to
@@ -933,7 +933,7 @@ Stop 3 runs kmerseek on Sherlock (section 3).
 """)
 
 md(r"""
-## 3. Kind 4: the queries for kmerseek (search not yet run)
+## 3. Kind 4: the queries used for kmerseek
 
 `scripts/342_make_queries.py` writes one query per exon: the exon with 20 residues of flank on each
 side, from the including protein. Each query has one decoy, a dipeptide-shuffled copy
@@ -941,7 +941,7 @@ side, from the including protein. Each query has one decoy, a dipeptide-shuffled
 query's residues, its first and last residue and its count of every residue pair, so it has the
 same composition but no real match. All 4_513 exons are searched, in both halves and all classes.
 
-**Not yet run.** The search runs on Sherlock with `scripts/342_stop3_submit.sh`, which submits one
+At this stage the search had not yet run. The search runs on Sherlock with `scripts/342_stop3_submit.sh`, which submits one
 job per step of `scripts/342_stop3.sbatch`:
 
 1. Build kmerseek from the tag `nb342-kmerseek-9ce5865` of seanome/kmerseek: `main` 00395d7 plus
@@ -1299,8 +1299,8 @@ Olga, 2026-10-21).
 """)
 
 code(r"""
-from sklearn.linear_model import LogisticRegressionCV
-from sklearn.model_selection import GroupKFold
+from sklearn.linear_model import LogisticRegression
+from sklearn.model_selection import GridSearchCV, GroupKFold
 from sklearn.pipeline import make_pipeline
 from sklearn.preprocessing import StandardScaler
 
@@ -1315,16 +1315,17 @@ KIND123 = [c for c in labels.columns if c not in NOT_FEATURES]
 FEATURE_TYPES = sorted(k4.filter((pl.col("half") == "tune") & pl.col("k4_has_hit"))["k4_best_feature_type"].unique())
 
 
-def design(df, columns):
+def design(df, columns, missing_columns=None):
     # Booleans to 0/1; a missing or NaN value to 0 with its own 0/1 column (rule 4).
     out = []
     for c in columns:
         x = df[c].cast(pl.Float64)
         missing = x.is_null() | x.is_nan()
-        if missing.any():
+        add_indicator = missing.any() if missing_columns is None else c in missing_columns
+        if add_indicator:
             out += [x.fill_nan(None).fill_null(0.0).alias(c), missing.cast(pl.Float64).alias(f"{c}_missing")]
         else:
-            out.append(x.alias(c))
+            out.append(x.fill_nan(None).fill_null(0.0).alias(c))
     return pl.DataFrame(out)
 
 
@@ -1354,15 +1355,18 @@ def fit_and_score(changed_class, columns):
     sub = data.filter(pl.col("outcome").is_in([changed_class, "unchanged"]))
     tune, test = sub.filter(pl.col("half") == "tune"), sub.filter(pl.col("half") == "test")
     X_tune = design(tune, columns)
-    X_test = design(test, columns).select([c for c in X_tune.columns])  # same columns as the fit
+    X_test = design(test, columns, {c[:-8] for c in X_tune.columns if c.endswith("_missing")}).select([c for c in X_tune.columns])  # same columns as the fit
     y_tune = (tune["outcome"] == changed_class).cast(pl.Int8).to_numpy()
     y_test = (test["outcome"] == changed_class).cast(pl.Int8).to_numpy()
     folds = list(GroupKFold(n_splits=N_FOLDS).split(X_tune, y_tune, groups=tune["gene_name"].to_numpy()))
-    model = make_pipeline(StandardScaler(), LogisticRegressionCV(Cs=np.logspace(-4, 2, 13), cv=folds,
-                                                                  scoring="roc_auc", max_iter=5000))
+    model = GridSearchCV(
+        make_pipeline(StandardScaler(), LogisticRegression(max_iter=5000)),
+        {"logisticregression__C": np.logspace(-4, 2, 13)},
+        cv=folds, scoring="roc_auc",
+    )
     model.fit(X_tune.to_numpy(), y_tune)
     return {"score": model.predict_proba(X_test.to_numpy())[:, 1], "y": y_test, "genes": test["gene_name"].to_numpy(),
-            "C": float(model[-1].C_[0]), "n_tune": (int(y_tune.sum()), int((1 - y_tune).sum())),
+            "C": float(model.best_params_["logisticregression__C"]), "n_tune": (int(y_tune.sum()), int((1 - y_tune).sum())),
             "n_test": (int(y_test.sum()), int((1 - y_test).sum())), "columns": X_tune.columns}
 
 
@@ -1382,9 +1386,11 @@ def gene_bootstrap_gain(m3, m4, n_boot=N_BOOT, seed=SEED):
 
 
 stop4 = []
+predictions = []
 for changed in ["included more in neurons", "skipped more in neurons"]:
     m3, m4 = fit_and_score(changed, KIND123), fit_and_score(changed, KIND123 + KIND4)
     assert (m3["y"] == m4["y"]).all() and (m3["genes"] == m4["genes"]).all()
+    predictions.append(pl.DataFrame({"comparison": changed, "gene": m3["genes"], "y": m3["y"], "model3_score": m3["score"], "model4_score": m4["score"]}))
     a3, a4 = auroc(m3["y"], m3["score"]), auroc(m4["y"], m4["score"])
     gains = gene_bootstrap_gain(m3, m4)
     lo, hi = np.percentile(gains, [2.5, 97.5])
@@ -1403,12 +1409,13 @@ for changed in ["included more in neurons", "skipped more in neurons"]:
         row["set A has (both halves)"] = have
     stop4.append(row)
     stop4[-1]["_boot"] = gains
+pl.concat(predictions).write_csv(TABLES / "342_stop4_test_predictions.tsv", separator="\t")
 stop4_table = pl.DataFrame([{k: v for k, v in r.items() if k != "_boot"} for r in stop4])
 with pl.Config(tbl_cols=-1, tbl_width_chars=250):
     print(stop4_table)
 verdicts = stop4_table["verdict"].to_list()
-overall = ("kmerseek has a role in exon annotation" if "PASS" in verdicts
-           else "kmerseek has no role in exon annotation" if verdicts == ["KILL", "KILL"] else "unclear")
+overall = ("this test supports kmerseek for the set A splicing task" if "PASS" in verdicts
+           else "this test does not support kmerseek for the set A splicing task" if verdicts == ["KILL", "KILL"] else "unclear")
 print(f"Rule 4: {verdicts[0]} and {verdicts[1]}: {overall}. P4 predicted KILL in both comparisons:",
       "holds" if verdicts == ["KILL", "KILL"] else "does not hold")
 """)
@@ -1463,7 +1470,7 @@ for changed in ["included more in neurons", "skipped more in neurons"]:
     for name, cols in [("3", KIND123), ("4", KIND123 + KIND4)]:
         test = sub.filter(pl.col("half") == "test")
         X_tune = design(tune, cols)
-        X_test = design(test, cols).select(X_tune.columns)
+        X_test = design(test, cols, {c[:-8] for c in X_tune.columns if c.endswith("_missing")}).select(X_tune.columns)
         m = make_pipeline(StandardScaler(), LogisticRegression(C=1.0, max_iter=5000)).fit(X_tune.to_numpy(), y_tune)
         y_test = (test["outcome"] == changed).cast(pl.Int8).to_numpy()
         fixed[name] = auroc(y_test, m.predict_proba(X_test.to_numpy())[:, 1])
@@ -1478,12 +1485,11 @@ with pl.Config(tbl_cols=-1, tbl_width_chars=250):
 md(r"""
 ## Summary and conclusions
 
-**A k-mer label copied from an annotated Swiss-Prot region does not predict which brain exons
-neurons include or skip, beyond domains, motifs and composition: rule 4 gives KILL in both
-comparisons, so kmerseek has no role in exon annotation on set A.**
+A transferred k-mer label does not add the required 0.02 AUROC to the baseline models for
+set A neuronal splicing. Rule 4 gives KILL in both comparisons for the three settings tested.
 
 * **Included more in neurons against unchanged** (92 and 1_572 test exons): AUROC 0.807 with kinds 1
-  to 3 and 0.799 with kind 4 added. The gain is −0.007, 95% interval −0.033 to +0.013, entirely
+  to 3 and 0.804 with kind 4 added. The gain is −0.003, 95% interval −0.024 to +0.013, entirely
   below 0.02.
 * **Skipped more in neurons against unchanged** (48 and 1_572 test exons): AUROC 0.751 and 0.752,
   gain +0.001, interval −0.001 to +0.004. Cross-validation chose the strongest penalty tried

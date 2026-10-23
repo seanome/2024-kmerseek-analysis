@@ -53,8 +53,8 @@ corrected for chance with Cohen's kappa: `(agree - expected) / (1 - expected)`, 
 `expected = sum_c f_q(c) f_t(c)` is what a composition-preserving shuffle of one partner
 gives. Kappa puts a 2-letter alphabet (chance agreement about 0.5) and the 20-letter one
 (chance about 0.06) on one scale. Then the longest exact run: the longest stretch of aligned
-columns with no gap and the same class on both sides, which is the longest k-mer the pair
-shares in that alphabet, and the only thing an exact-match k-mer index can see.
+columns with no gap and the same class on both sides, which is the longest shared k-mer at corresponding positions on that alignment.
+Shared words at other offsets are not measured here.
 
 Inputs come from `scripts/pfam_seed_pair_alignments.py` and
 `scripts/scope_pair_structural_alignments.py`; the per-pair table is computed by
@@ -913,7 +913,7 @@ Written from the numbers above; see each figure's footer for the exact values.
 1. The biology is real. Between homologs at 20-30% identity, the HP class of aligned
    residues agrees far above the composition null (kappa about 0.45 in both Pfam seed and
    SCOPe cross-family pairs), and about twice the chance-corrected agreement of the residues
-   themselves. Below 20% identity, where sequence methods have nothing, HP kappa is still
+   themselves. Below 20% identity, HP kappa is still
    0.25-0.36 in homologs.
 1b. Kappa is agreement corrected for chance: (agreement - chance) / (1 - chance). At 20-30%
    identity hp_thomas_dill2 agrees on 74% of aligned columns where a shuffled partner gives 51%,
@@ -931,7 +931,7 @@ Written from the numbers above; see each figure's footer for the exact values.
    identity would appear between any two well-superposed sequences. That fraction is a
    false-positive source for any HP-based search and a reason the null model has to be
    composition- and structure-aware, not just composition-aware.
-3. An exact k-mer cannot use it. The longest exact HP run between 20-30% homologs is about
+3. Exact seeds at the tested lengths reach only a small share of these pairs. The longest exact HP run between 20-30% homologs is about
    12 residues on average (null 6), and only a few percent of pairs share a 23-mer. The
    sweep chose k=23-30 for the 2-letter arms because shorter k drowns in the null's own
    6-residue runs. That is the identity panel's zeros below 40%: not a refutation of the
