@@ -8,27 +8,40 @@ cells = []
 
 
 def md(source):
-    cells.append({"cell_type": "markdown", "id": f"md-{len(cells):02d}", "metadata": {},
-                  "source": source.strip().splitlines(keepends=True)})
+    cells.append(
+        {
+            "cell_type": "markdown",
+            "id": f"md-{len(cells):02d}",
+            "metadata": {},
+            "source": source.strip().splitlines(keepends=True),
+        }
+    )
 
 
 def code(source):
-    cells.append({"cell_type": "code", "id": f"code-{len(cells):02d}", "execution_count": None,
-                  "metadata": {"jupyter": {"source_hidden": True}}, "outputs": [],
-                  "source": source.strip("\n").splitlines(keepends=True)})
+    cells.append(
+        {
+            "cell_type": "code",
+            "id": f"code-{len(cells):02d}",
+            "execution_count": None,
+            "metadata": {"jupyter": {"source_hidden": True}},
+            "outputs": [],
+            "source": source.strip("\n").splitlines(keepends=True),
+        }
+    )
 
 
 md(r"""
 # 247. Does a panel of BCL-2 family queries from distant animals find human BCL2 better than CED-9 alone?
 
 **Idea.** Search human Swiss-Prot with several BCL-2 family proteins from animals that
-are not chordates, one at a time. Each query has a different sequence, so its chance hits
-should differ from the other queries' chance hits. The true target (human BCL2) and the
+are not chordates, one at a time. The hypothesis is that the different query sequences will give different chance hits.
+Shared composition or low-complexity stretches could instead give repeated chance hits. The true target (human BCL2) and the
 place it is hit (the BH1 block) should repeat across queries. Counting how many queries
 hit each human protein should then lift BCL2 above chance. This is not the
 alphabet-combining idea of
 [PR 48](https://github.com/seanome/2024-kmerseek-analysis/pull/48) (notebook 242), which
-failed because the same long proteins win in every alphabet. Here the queries differ and
+reported repeated long-protein hits across alphabets. Here the queries differ and
 the alphabet stays fixed.
 
 **Decision.** Keep or drop "many distant queries, one alphabet" as the way to reach
@@ -50,7 +63,9 @@ dropped and this notebook says so. No other setting is tried to rescue it.
 **Fixed kmerseek setting, for every search:** alphabet hp_lehninger2 (two letters:
 hydrophobic AFGILMPVWY, polar CDEHKNQRST), k = 17, scaled 1, no extension,
 low-complexity mask on. Each query is searched on its own against a human Swiss-Prot
-index. Hits are ranked and filtered on `region_evalue`.
+index. The proposed ranking used `region_evalue`, but an exact, unfitted search can return only
+infinite E-values. This is a second unresolved precondition: a future plan must first
+specify a ranking with valid measured values. No search or performance test was run.
 
 **Queries.** 5 to 8 BCL-2 family proteins from animals that are not chordates: C. elegans
 CED-9, Drosophila Buffy and Debcl, at least one cnidarian, and any other non-chordate
@@ -115,7 +130,7 @@ The flat file is from July 2025. The check below reads every header of Swiss-Pro
 release 2026_03 for Drosophila melanogaster (taxon 7227), Hydra vulgaris (6087),
 Nematostella vectensis (45351), Trichoplax adhaerens (10228) and Amphimedon queenslandica
 (400682), and keeps those whose description names Bcl-2, Buffy, Debcl or "apoptosis
-regulator".
+regulator". A missing name match does not establish absence of a family member.
 """)
 
 code(r"""
@@ -147,20 +162,30 @@ import pubfig as pf
 
 pf.use_style()
 group_counts = dict(family.group_by("group").agg(pl.len()).iter_rows())
-bars = [(f"{g} (Pfam, 2025-07)", group_counts.get(g, 0)) for g in ["chordate", "virus", "non-chordate animal"]]
-bars += [(f"{sp} (by name, 2026_03)", n) for sp, n in check.select("species", "n_bcl2_like_names").iter_rows()]
-labels, counts = zip(*bars)
-fig, ax = pf.figure(pf.ONE_COLUMN_MM, 55)
-y = range(len(labels))[::-1]
-ax.barh(list(y), counts, color=pf.OKABE_ITO["blue"], label="Swiss-Prot BCL-2 family entries")
-ax.axvline(MIN_QUERIES, color="black", ls="--", label=f"non-chordate animal queries the panel needs ({MIN_QUERIES})")
-for yi, c in zip(y, counts):
-    ax.text(c + 0.5, yi, str(c), va="center")
-ax.set_yticks(list(y), labels)
-ax.set_xlabel("Swiss-Prot entries")
+fig, axes = pf.figure(pf.TWO_COLUMN_MM, 80, ncols=2)
+for ax, labels, counts, color, key in [
+    (axes[0], ["Chordate", "Virus", "Non-chordate animal"],
+     [group_counts.get(g, 0) for g in ["chordate", "virus", "non-chordate animal"]],
+     pf.OKABE_ITO["blue"], "Pfam PF00452/PF02180 annotations, July 2025"),
+    (axes[1], check["species"].to_list(), check["n_bcl2_like_names"].to_list(),
+     pf.OKABE_ITO["vermillion"], "Matching description words in five taxa, 2026_03"),
+]:
+    y = list(range(len(labels)))[::-1]
+    ax.barh(y, counts, color=color, label=key)
+    for yi, count in zip(y, counts):
+        ax.annotate(str(count), (count, yi), xytext=(3, 0), textcoords="offset points", va="center")
+    ax.set_yticks(y, labels)
+    ax.set_xlim(0, max(max(counts), MIN_QUERIES) * 1.15)
+    ax.set_xlabel("Swiss-Prot entries (count)")
+axes[0].plot(MIN_QUERIES, 0, marker="D", color="black", linestyle="",
+             label="Required non-chordate animal panel: five entries")
 pf.shared_legend(fig, ncol=1)
 pf.save(fig, "../figures/247_swissprot_bcl2_family_entries_by_group")
-print(pl.DataFrame({"group": labels, "n_entries": counts}))
+# Reuse the repo PNG export check for this flat-colour chart.
+import sys
+sys.path.insert(0, str(Path.cwd().parent / "scripts"))
+from shrink_png import process
+process(Path("../figures/247_swissprot_bcl2_family_entries_by_group.png"), check=False)
 """)
 
 code(r"""
@@ -174,23 +199,33 @@ if n < MIN_QUERIES:
 md(r"""
 ## Status
 
-Stopped before any search. Swiss-Prot holds only two BCL-2 family proteins from animals
-that are not chordates, CED-9 of *C. elegans* (P41958) and of *C. briggsae* (P41957),
-and the panel needs at least 5. Buffy, Debcl and any cnidarian BCL-2 protein are not in
-Swiss-Prot, in the 2025-07-03 download or in release 2026_03. The other 12 non-chordate
-entries with PF00452 are from viruses, not animals. The panel is waiting on a choice of
-query source.
+Stopped before any search. The July 2025 Swiss-Prot flat file has two entries annotated
+with PF00452 or PF02180 from animals that are not chordates, CED-9 of *C. elegans* (P41958) and of *C. briggsae* (P41957),
+and the panel needs at least 5. The July annotation filter does not recover Buffy, Debcl or a cnidarian candidate.
+The separate 2026_03 check finds no matching description words in the five selected taxa.
+It does not search all cnidarians or test proteins lacking those description words. The other 12 non-chordate
+entries with PF00452 are from viruses, not animals. The panel needs a suitable query source and a valid ranking plan. The proposed
+E-value ranking was not tested; infinite values from an unfitted exact search cannot
+provide the proposed finite ranking. No sensitivity result follows from this stopped plan.
 """)
 
 nb = {
     "cells": cells,
     "metadata": {
-        "kernelspec": {"display_name": "2025-kmerseek-analysis", "language": "python", "name": "python3"},
+        "kernelspec": {
+            "display_name": "2025-kmerseek-analysis",
+            "language": "python",
+            "name": "2025-kmerseek-analysis",
+        },
         "language_info": {"name": "python"},
     },
     "nbformat": 4,
     "nbformat_minor": 5,
 }
-out = Path(__file__).resolve().parent.parent / "notebooks" / "247_bcl2_family_query_panel_vs_ced9_alone.ipynb"
+out = (
+    Path(__file__).resolve().parent.parent
+    / "notebooks"
+    / "247_bcl2_family_query_panel_vs_ced9_alone.ipynb"
+)
 out.write_text(json.dumps(nb, indent=1) + "\n")
 print(f"wrote {out}")
