@@ -29,7 +29,7 @@ repos:
         name: save PNGs and notebook images with 256 colours
         entry: python scripts/shrink_png.py
         language: python
-        additional_dependencies: ["pillow>=10.1"]
+        additional_dependencies: ["pillow>=10.1", numpy]
         files: '\.(png|ipynb)$'
 
   # Same formatter as the Lint workflow. black skips its pyproject.toml extend-exclude list
