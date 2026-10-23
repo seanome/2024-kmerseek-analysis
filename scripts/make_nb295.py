@@ -45,9 +45,9 @@ Ice-binding proteins, also called antifreeze proteins, stop ice crystals growing
 animal, plant or microbe that lives below freezing. They arose separately several times:
 in fish, type I, type II, type III and the antifreeze glycoprotein AFGP come from
 different ancestral genes, and insects, plants, bacteria and fungi evolved their own. So
-two ice-binding proteins from different lineages share a job and, in places, a
-physicochemical pattern, but no common ancestor. A search that reads ancestry cannot
-connect them.
+two ice-binding proteins from different lineages may share a job and a physicochemical
+pattern without sharing that function by ancestry. A taxonomic lineage boundary alone
+does not establish independent origins; section 4 checks the family annotations of hits.
 
 **The question.** kmerseek matches k-mers in a reduced alphabet, so a hydrophobic and
 polar pattern can match where the residues do not. If that is enough to carry a pattern

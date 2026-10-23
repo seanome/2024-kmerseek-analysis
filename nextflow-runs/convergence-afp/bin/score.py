@@ -69,14 +69,21 @@ MARGIN = 0.10
 NULL_B_FRACTION = 0.10
 
 
-def average_precision(is_positive, n_positive):
-    """Average precision over a ranked list, with unreported positives never retrieved."""
+def average_precision(is_positive, n_positive, scores):
+    """Average precision at distinct score thresholds, with missing positives unretrieved.
+
+    A tied group enters at once. Its contribution uses precision after the whole group,
+    so an arbitrary input order within a tie cannot change the result.
+    """
     if n_positive == 0:
         return float("nan")
-    hits = np.cumsum(is_positive)
-    ranks = np.arange(1, len(is_positive) + 1)
-    precision = hits / ranks
-    return float(precision[is_positive].sum() / n_positive)
+    if len(is_positive) == 0:
+        return 0.0
+    ends = np.r_[np.flatnonzero(scores[1:] != scores[:-1]), len(scores) - 1]
+    hits = np.cumsum(is_positive)[ends]
+    newly_found = np.diff(np.r_[0, hits])
+    precision = hits / (ends + 1)
+    return float((newly_found * precision).sum() / n_positive)
 
 
 def score_one(
@@ -86,7 +93,9 @@ def score_one(
 
     targets and scores are that list's rows, in any order; both are read as arrays.
     """
-    order = np.argsort(-np.asarray(scores, dtype=float), kind="stable")
+    order = np.lexsort(
+        (np.asarray(targets, dtype=str), -np.asarray(scores, dtype=float))
+    )
     targets = np.asarray(targets)[order]
     scores = np.asarray(scores, dtype=float)[order]
     lineage = np.array([truth_lineage.get(t, "") for t in targets])
@@ -113,7 +122,7 @@ def score_one(
         "n_hits": int(above.sum()),
         "n_found": n_found,
         "recall": (None if threshold is None or not n_cross else n_found / n_cross),
-        "auprc": average_precision(is_cross[keep], n_cross),
+        "auprc": average_precision(is_cross[keep], n_cross, scores[keep]),
         "n_ranked_kept": int(len(scores)),
         "n_found_at_real_threshold": (
             int((is_cross & (scores > fixed_threshold)).sum())
