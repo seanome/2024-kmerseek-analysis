@@ -12,6 +12,8 @@ Channels:
   splash_opt  SPLASH unsupervised pval_opt, BH over all tested anchors, <= 0.05
   abundance   anchor counts, PyDESeq2 ~ pair + condition, BH q <= 0.05 and |log2FC| > 1
   abundance_condition_only   same with ~ condition
+  dekupl      DE-kupl's differential k-mers (its own adjusted p <= 0.05 and |log2FC| >= 1;
+              rows of diff-counts.tsv.gz), placed in genes the same way as anchors
 
 A gene is found by a channel if at least one of its anchors is significant in that channel.
 """
@@ -74,6 +76,11 @@ def main():
         infer_schema_length=0,
     )
     anchors = set(all_anchors["anchor"].to_list())
+    dk_path = cdir / "dekupl/DEkupl_result/control_vs_PEC_kmer_counts/diff-counts.tsv.gz"
+    dekupl_kmers = set()
+    if dk_path.exists():
+        dekupl_kmers = set(pl.read_csv(dk_path, separator="\t", columns=["kmer"])["kmer"].to_list())
+    wanted = anchors | dekupl_kmers
     kmer_genes = defaultdict(set)
     for t, s in tx.items():
         g = gene_of(t)
@@ -81,7 +88,7 @@ def main():
         for seq in (s, rc):
             for i in range(len(seq) - K + 1):
                 k = seq[i : i + K]
-                if k in anchors:
+                if k in wanted:
                     kmer_genes[k].add(g)
 
     def place(a):
@@ -120,6 +127,8 @@ def main():
             (pl.col("q_bh_all") <= 0.05) & (pl.col("log2FoldChange").abs() > 1)
         )
         sig[name] = set(hit["anchor"].to_list())
+    if dk_path.exists():
+        sig["dekupl"] = dekupl_kmers
 
     rows, summary = [], dict(
         tested_anchors=len(anchors),
