@@ -65,7 +65,7 @@ present", and at which alphabets and k. Two outcomes:
 1. The control exists at the k kmerseek is run at (H/P k of 19 or more, the smallest H/P k the project treats as realistic: kmerseek PR 62 review): build it into the
    pipeline as a decoy that only an order-aware score can reject.
 2. It exists only at k below what kmerseek runs: at real k the k-mer counts pin the order,
-   so kmerseek's sketch already fixes the sequence's reduced order almost completely, and
+   under the fixed-end construction; this is stronger information than a sampled sketch, and
    an order control has to change the words (shuffles) instead.
 
 **Pre-registered rule.** Written in this cell before the full sweep was counted. A
@@ -525,7 +525,8 @@ cannot tell the two apart. Such a sequence would be a control that changes only 
 * At `hp_pbotc_1st_ed2` k = 20, only 2.6% of 1,000 human proteins (95% interval 1.8-3.8%)
   have 10 reorderings changing at least 30% of positions; the pre-registered outcome is 2.
 * At H/P k = 20, 90.0% of human proteins have exactly one reduced string with their k-mer
-  counts, so kmerseek's sketch fixes their reduced order completely.
+  counts when the first k-1 letters are fixed. This is a property of full word counts, not proof
+  that a sampled sketch determines the order.
 * Reordering with identical k-mers works at short words: 79.1% of proteins pass at H/P
   k = 12 and 87.8% at `dayhoff6` k = 6.
 * The limit is set by repeats: the median protein's longest repeated H/P word is 17 letters,
@@ -536,18 +537,20 @@ cannot tell the two apart. Such a sequence would be a control that changes only 
   104 of 239 positions and gives a byte-identical sourmash sketch.
 
 **What to do with it.** Outcome 2. At the k kmerseek runs, a protein's reduced k-mer
-counts nearly always determine its reduced string, so "same words, new order" is not
-available as a control for most proteins. A test of whether kmerseek depends on word order
-has to change the words (shuffles, or k below the run k), or be limited to the 2.6% of
-proteins where reordering exists. Higher pass
+counts and fixed first k-1 letters usually admit only one reduced string in this sample.
+The tested construction therefore rarely supplies ten suitable controls at this k. A test of whether kmerseek depends on word order
+has to change the words (shuffles, or k below the run k), or use the 2.6% of
+proteins where these draws found ten suitable reorderings. This does not prove that all other
+proteins lack such controls. Higher pass
 fractions would have been better for the control; the drop is steep between k = 12 and
 k = 20 for H/P and between k = 6 and k = 10 for Dayhoff.
 
 ### Analysis details
 
 The pass fraction follows the ceiling closely at every k (H/P k = 20: 2.6% pass, ceiling
-5.1%), so the 200 uniform draws find most of what exists; the gap is proteins with 11 or
-more strings where fewer than 10 differ from the original at 30% of positions. Per-protein
+5.1%). This upper bound only counts distinct strings with fixed ends; it does not require
+30% changed positions. The 2.5 percentage-point gap may reflect insufficient changed positions,
+finite sampling, or both; the stored draws do not distinguish these explanations. Per-protein
 change among the draws is a median 47% of reduced positions at H/P k = 8 and falls to 0 (the original
 redrawn) once k is past the longest repeat. BCL2 passes at H/P k = 8 and 10 only.
 
