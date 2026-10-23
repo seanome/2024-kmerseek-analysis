@@ -34,13 +34,19 @@ ALPHABET_SIZE_GROUPS: tuple[tuple[int, int], ...] = ((2, 3), (4, 8), (9, 19), (2
 
 
 def alphabet_size(alphabet: str) -> int:
-    """Number of residue classes, read from the trailing digits of the name.
+    """Number of residue classes, from a numbered name or the existing registry.
 
     ``hp_pbotc_1st_ed2`` -> 2, ``gbmr7`` -> 7, ``protein20`` -> 20.
     """
     m = re.search(r"(\d+)$", alphabet)
     if m is None:
-        raise ValueError(f"alphabet name {alphabet!r} does not end in its class count")
+        from ortholog_analysis_utils import ALPHABET_AA_GROUPS
+
+        if alphabet in ALPHABET_AA_GROUPS:
+            return len(ALPHABET_AA_GROUPS[alphabet])
+        raise ValueError(
+            f"alphabet {alphabet!r} has no class count or registered grouping"
+        )
     return int(m.group(1))
 
 
@@ -91,11 +97,13 @@ def alphabet_axis(
     labels = list(positions)
     if axis == "y":
         ax.set_yticks(ticks, labels)
-        ax.set_ylim(min(ticks) - 0.6, max(ticks) + 0.6)
+        if ticks:
+            ax.set_ylim(min(ticks) - 0.6, max(ticks) + 0.6)
         ax.yaxis.grid(True, color=grid_color, linewidth=0.8, zorder=0)
     elif axis == "x":
         ax.set_xticks(ticks, labels, rotation=90)
-        ax.set_xlim(min(ticks) - 0.6, max(ticks) + 0.6)
+        if ticks:
+            ax.set_xlim(min(ticks) - 0.6, max(ticks) + 0.6)
         ax.xaxis.grid(True, color=grid_color, linewidth=0.8, zorder=0)
     else:
         raise ValueError(f"axis must be 'x' or 'y', not {axis!r}")
