@@ -1,0 +1,17 @@
+# Public bivalve indexing, 2026-10-23
+
+The complete dated inventory contains 17,623 public bivalve RNA-seq runs. Of those, 17,442 list ENA FASTQs and 181 need an alternate retrieval route. Listed FASTQs total 57.2 TB. Inventory completion is not indexing completion.
+
+Full-archive indexing had not started when Olga asked for progress. The six-library index is only a discovery-study check. It cannot supply public archive occurrence results.
+
+The first actual public indexing batch is job 49205521: eight complete runs from eight studies and eight taxon IDs, each with 20–25 MB of listed compressed FASTQ. They are selected deterministically by listed size with distinct studies and taxon IDs. This subset tests retrieval, all listed mates, source MD5 verification, actual four-alphabet sketches and storage costs. It is not a representative biological sample. Original full-run metadata are retained with each run. No prefix sampling or trimming occurs. Only disposable copies in node-local job storage are removed automatically when that job ends.
+
+Each run produces DNA k31, protein k7, Dayhoff k12 and HP k30 sketches at scaled5,10,100, with full-run names. Index construction job 49205639 depends on all eight runs; every encoding must recover exact self-containment at scaled100. Search array 49205663 then searches all 22 batches of extended oyster sequences against these public indexes, writing separately from the six-library search outputs. It retains every nonzero shared-hash comparison and explicitly counts empty sketches. These are candidate occurrences, not validated functions.
+
+The public-run job requests 1 CPU, 16 GB and 6 hours for eight serial small runs. Its basis is the measured oyster prefix sketch cost of roughly 14 minutes and 2 GB for larger compressed inputs; six hours allows retrieval and translation variation but is not a measured full-run estimate. The index job requests 4 CPUs, 32 GB and 2 hours, based on the earlier 16 GB self-search OOM and smaller source inputs. Searches request 4 CPUs, 32 GB and 4 hours per batch, with two concurrent. Queue delay is unknown. First partial archive matches can be reported as soon as one search batch passes validation.
+
+The full 17,623-run indexing remains unfinished. Before expanding, measure actual downloaded bytes, CPU time, RSS, signature/index bytes and available storage. Bound raw retrieval per job, preserve validated sketch outputs, and size jobs from measurements. Dense translated sketches can exceed the compressed FASTQ size, so reading 57.2 TB once does not imply that the indexes fit in current scratch storage. Keep missing-URL runs and unindexed runs explicit. Continue extending coverage and re-search every completed archive shard; do not stop the follow-up when only the six-library check finishes.
+
+The adapter plot was also corrected: read 1 and read 2 previously occupied the same row position, so nearly equal values let the square cover the circle. Mates now have separate vertical positions and numeric percentages. DW1 is 36.48% for read 1 and 36.37% for read 2. These count reads with any reported adapter match, with a minimum overlap of one base, not adapter-base content or discarded pairs. The published Site source commit for this correction is 740a8139fb170ad2005f54fa9167102e9d5dcff5.
+
+Checks: Python compilation, Bash syntax, generated report JavaScript syntax, and visual inspection of the corrected plot passed. The eight public runs and their downstream searches are queued; completion and archive matches are not claimed.
