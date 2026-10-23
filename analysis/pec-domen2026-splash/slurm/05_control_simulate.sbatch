@@ -27,13 +27,15 @@ SAMPLES="ctrl1 ctrl2 ctrl3 ctrl4 ctrl5 ctrl6 pec1 pec2 pec3 pec4 pec5 pec6"
 for s in $SAMPLES; do
   [ -e "trimmed/$s.done" ] && continue
   P1=trimmed/${s}_1.fastq.gz; P2=trimmed/${s}_2.fastq.gz
-  fastp -i "reads/${s}_1.fastq.gz" -I "reads/${s}_2.fastq.gz" -o "$P1.part" -O "$P2.part" --compression 4 \
+  # fastp chooses gzip from the extension, so temporary names must end in .fastq.gz
+  T1=trimmed/${s}_1.tmp.fastq.gz; T2=trimmed/${s}_2.tmp.fastq.gz
+  fastp -i "reads/${s}_1.fastq.gz" -I "reads/${s}_2.fastq.gz" -o "$T1" -O "$T2" --compression 4 \
     --detect_adapter_for_pe --trim_poly_g --length_required 50 --thread 8 \
     -j "trimmed/$s.fastp.json" -h "trimmed/$s.fastp.html" 2> "trimmed/$s.fastp.log"
   WANT=$(python -c "import json;print(json.load(open('trimmed/$s.fastp.json'))['summary']['after_filtering']['total_reads'])")
-  N1=$(pigz -dc "$P1.part" | awk 'END{print NR/4}'); N2=$(pigz -dc "$P2.part" | awk 'END{print NR/4}')
+  N1=$(pigz -dc "$T1" | awk 'END{print NR/4}'); N2=$(pigz -dc "$T2" | awk 'END{print NR/4}')
   [ "$N1" = "$N2" ] && [ $(( N1 + N2 )) = "$WANT" ] || { echo "$s: R1 $N1 R2 $N2 fastp $WANT"; exit 3; }
-  mv "$P1.part" "$P1"; mv "$P2.part" "$P2"
+  mv "$T1" "$P1"; mv "$T2" "$P2"
   paste <(pigz -dc "$P1" | paste - - - -) <(pigz -dc "$P2" | paste - - - -) | tr '\t' '\n' \
     | pigz -p 8 -1 > "trimmed/$s.il.fastq.gz.part"
   N=$(pigz -dc "trimmed/$s.il.fastq.gz.part" | awk 'END{print NR/4}')
