@@ -1,16 +1,9 @@
 /*
  * Pfam domains on the dark set.
  *
- * The dark fraction's first challenge is "are these real proteins". modules/length.nf
- * answers it with a proxy -- junk gene models are short -- and says so. This answers it
- * directly: a dark protein carrying a recognisable Pfam domain is a real protein that
- * phmmer, jackhmmer and mmseqs2 all still failed to place, which is the strongest form of
- * the claim rather than a weakening of it.
- *
- * Not circular. Darkness is defined by three pairwise SEQUENCE searches against reviewed
- * Swiss-Prot with the query's clade removed. Pfam is a library of profile HMMs built from
- * curated alignments -- a more sensitive instrument, against a different database -- so a
- * protein can carry a Pfam domain and still be dark. Those are the interesting ones.
+ * Profile-domain matches support protein-like sequence, but do not validate a complete
+ * gene model. The Pfam and clade-excluded search references are both sequence-derived;
+ * their training data can overlap. Report this as supporting annotation.
  *
  * The scan runs on the DARK proteins only, not the proteome. The placed proteins are
  * placed already.
@@ -101,8 +94,7 @@ process pfamSearchDark {
         --cut_ga \\
         --cpu ${task.cpus} \\
         ${pfam_hmm} ${dark_fasta} \\
-    | grep -v '^#' \\
-    | awk 'NF >= 22 {print \$1 "\\t" \$4 "\\t" \$5 "\\t" \$20 "\\t" \$21 "\\t" \$14 "\\t" \$13}' \\
+    | awk '/^[[:space:]]*#/ || NF == 0 {next} NF < 22 {print "Malformed HMMER domain row" > "/dev/stderr"; exit 2} {print \$1 "\\t" \$4 "\\t" \$5 "\\t" \$20 "\\t" \$21 "\\t" \$14 "\\t" \$13}' \\
     | gzip -c > ${species}_dark_pfam.tsv.gz
     """
 }
@@ -128,11 +120,12 @@ process summarizeDarkPfam {
     """
 
     script:
+    def extraEvalue = params.pfam_i_evalue != null ? "--i-evalue ${params.pfam_i_evalue}" : ""
     """
     set -euo pipefail
     summarize_dark_pfam.py \\
         --hits ${pfam_hits} --dark ${dark_parquet} --species ${species} \\
-        --i-evalue ${params.pfam_i_evalue} \\
+        ${extraEvalue} \\
         --out ${species}_pfam.parquet \\
         --summary-out ${species}_pfam_summary.json
     """

@@ -14,6 +14,7 @@ Every dark accession must be found. A dark protein missing from the FASTA means 
 were built from different files, which is the failure this exits on rather than scanning a
 short set and reporting a Pfam count against the wrong denominator.
 """
+
 import argparse
 import gzip
 import sys
@@ -33,10 +34,15 @@ def open_maybe_gzip(path: Path):
 
 
 def main() -> int:
-    ap = argparse.ArgumentParser(description=__doc__,
-                                 formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument("--query", type=Path, required=True, help="the staged query proteome")
-    ap.add_argument("--dark", type=Path, required=True, help="<species>_dark_set.parquet")
+    ap = argparse.ArgumentParser(
+        description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter
+    )
+    ap.add_argument(
+        "--query", type=Path, required=True, help="the staged query proteome"
+    )
+    ap.add_argument(
+        "--dark", type=Path, required=True, help="<species>_dark_set.parquet"
+    )
     ap.add_argument("--out", type=Path, required=True)
     args = ap.parse_args()
 
@@ -56,6 +62,8 @@ def main() -> int:
                 acc = accession_of(line[1:].strip())
                 keep = acc in wanted
                 if keep:
+                    if acc in found:
+                        raise ValueError(f"Duplicate dark FASTA accession: {acc}")
                     found.add(acc)
                     written += 1
             if keep:
@@ -74,7 +82,9 @@ def main() -> int:
         )
         return 1
 
-    print(f"wrote {written} dark proteins of {len(wanted)} to {args.out}", file=sys.stderr)
+    print(
+        f"wrote {written} dark proteins of {len(wanted)} to {args.out}", file=sys.stderr
+    )
     return 0
 
 

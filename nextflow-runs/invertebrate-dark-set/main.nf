@@ -296,18 +296,14 @@ params.with_length_comparison = true
 // a Pfam-A.hmm that nothing else in this pipeline requires, so a run without one must
 // still work rather than fail at the first task.
 //
-// What it buys: the dark set's headline is "no sequence arm placed these", and the first
-// question asked of it is whether they are real proteins. with_length_comparison answers
-// that with a proxy. A dark protein carrying a Pfam domain answers it outright -- a real
-// protein that phmmer, jackhmmer and mmseqs2 all still failed to place. Darkness is
-// defined by three pairwise SEQUENCE searches against reviewed Swiss-Prot minus the
-// query's clade; Pfam is a profile-HMM library over a different database, so carrying a
-// Pfam domain and being dark is not a contradiction. See modules/pfam.nf.
+// Pfam profile matches support protein-like sequence in an entry that the specified
+// conventional searches did not place. They do not validate the complete gene model.
+// Both references are sequence-derived and can share training data. See modules/pfam.nf.
 params.with_pfam    = false
 params.pfam_hmm     = null
 // Pfam's own gathering threshold decides membership (hmmsearch --cut_ga). This only
-// tightens it further; 1.0 leaves every call --cut_ga accepted.
-params.pfam_i_evalue = 1.0
+// tightens it further when set; null keeps every call accepted by --cut_ga.
+params.pfam_i_evalue = null
 
 // Disorder is ON by default, unlike kmerseek. It is one metapredict pass over the query
 // proteome with no index to build, so it costs a rounding error next to the three search

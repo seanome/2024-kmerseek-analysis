@@ -1,16 +1,11 @@
 #!/usr/bin/env python3
 """Turn the Pfam scan of the dark set into a table and a summary.
 
-What the number is for: the dark set's headline is "no sequence arm placed these", and the
-first question asked of it is whether they are real proteins at all. compare_dark_lengths.py
-answers that with length, which is a proxy. This answers it directly -- a dark protein
-carrying a recognisable Pfam domain is a real protein that phmmer, jackhmmer and mmseqs2
-still failed to place.
-
-That is not circular. Darkness is defined by three pairwise SEQUENCE searches against
-reviewed Swiss-Prot with the query's clade removed. Pfam is a library of profile HMMs built
-from curated alignments, which is a different and more sensitive instrument and a different
-database. A protein can carry a Pfam domain and be dark, and that subset is the point.
+A Pfam profile match supports protein-like sequence in a dark-set entry. It does not
+validate the complete gene model or independently establish evolutionary homology.
+Darkness here means no qualifying match in the specified conventional searches against
+a clade-excluded reference. Pfam uses another sequence-derived reference and may share
+training data with those searches; it is supporting annotation, not independent truth.
 
 A domain counts when it passes Pfam's own gathering threshold (hmmsearch --cut_ga), which
 is the curated per-family score Pfam uses to decide membership. --i-evalue can tighten that
@@ -20,8 +15,10 @@ The counts are reported over the dark set as the denominator, taken from the dar
 rather than from the rows present here, so a protein with no Pfam hit still counts in the
 denominator instead of vanishing.
 """
+
 import argparse
 import json
+import math
 import sys
 from pathlib import Path
 
@@ -31,48 +28,98 @@ import polars as pl
 #   1 sequence, 4 HMM name, 5 HMM accession, 20/21 env coords, 14 domain bitscore,
 #   13 i-Evalue. hmmsearch, not hmmscan: the scan direction iterates models over one
 #   sequence at a time and is the slow way round when there are many sequences.
-COLUMNS = ["accession", "pfam_name", "pfam_acc", "env_start", "env_end",
-           "bitscore", "i_evalue"]
+COLUMNS = [
+    "accession",
+    "pfam_name",
+    "pfam_acc",
+    "env_start",
+    "env_end",
+    "bitscore",
+    "i_evalue",
+]
 
 
 def main() -> int:
-    ap = argparse.ArgumentParser(description=__doc__,
-                                 formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument("--hits", type=Path, required=True, help="the tsv.gz from hmmsearch")
-    ap.add_argument("--dark", type=Path, required=True, help="<species>_dark_set.parquet")
+    ap = argparse.ArgumentParser(
+        description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter
+    )
+    ap.add_argument(
+        "--hits", type=Path, required=True, help="the tsv.gz from hmmsearch"
+    )
+    ap.add_argument(
+        "--dark", type=Path, required=True, help="<species>_dark_set.parquet"
+    )
     ap.add_argument("--species", required=True)
-    # The real threshold is hmmsearch --cut_ga, Pfam's own curated per-family gathering
-    # score, which is what "this protein has this domain" means in Pfam. This knob only
-    # tightens further and defaults to off; setting it below 1 discards calls Pfam's
-    # curators accepted, so it is a deliberate act and not a default.
-    ap.add_argument("--i-evalue", type=float, default=1.0,
-                    help="optional extra independent-E-value ceiling on top of --cut_ga "
-                         "(default 1.0, which keeps everything --cut_ga accepted)")
+    ap.add_argument(
+        "--i-evalue",
+        type=float,
+        default=None,
+        help="optional finite, nonnegative independent-E-value ceiling; "
+        "default: keep all calls passing --cut_ga",
+    )
     ap.add_argument("--out", type=Path, required=True)
     ap.add_argument("--summary-out", type=Path, required=True)
     args = ap.parse_args()
+
+    if args.i_evalue is not None and (
+        not math.isfinite(args.i_evalue) or args.i_evalue < 0
+    ):
+        ap.error("--i-evalue must be finite and nonnegative")
 
     dark = pl.read_parquet(args.dark).select("accession").unique()
     n_dark = dark.height
 
     try:
-        hits = pl.read_csv(args.hits, separator="\t", has_header=False,
-                           new_columns=COLUMNS, infer_schema_length=0)
-    except Exception:
+        hits = pl.read_csv(
+            args.hits,
+            separator="\t",
+            has_header=False,
+            new_columns=COLUMNS,
+            infer_schema_length=0,
+        )
+    except pl.exceptions.NoDataError:
         # No hits at all is a real answer. An empty gzip stream is not a zero-byte file,
         # so this catches the empty case by failing to parse rather than by a size check.
-        hits = pl.DataFrame(schema={c: pl.Utf8 for c in COLUMNS})
+        hits = pl.DataFrame(
+            schema={
+                c: (
+                    pl.Int64
+                    if c in {"env_start", "env_end"}
+                    else pl.Float64 if c in {"bitscore", "i_evalue"} else pl.Utf8
+                )
+                for c in COLUMNS
+            }
+        )
+
+    if hits.width != len(COLUMNS):
+        raise ValueError(f"Expected {len(COLUMNS)} Pfam columns; got {hits.width}")
 
     if hits.height:
         hits = hits.with_columns(
-            pl.col("env_start").cast(pl.Int64, strict=False),
-            pl.col("env_end").cast(pl.Int64, strict=False),
-            pl.col("bitscore").cast(pl.Float64, strict=False),
-            pl.col("i_evalue").cast(pl.Float64, strict=False),
+            pl.col("env_start").cast(pl.Int64),
+            pl.col("env_end").cast(pl.Int64),
+            pl.col("bitscore").cast(pl.Float64),
+            pl.col("i_evalue").cast(pl.Float64),
             # Pfam accessions are versioned in the HMM library (PF00001.24); every other
             # table in this project keys on the unversioned id.
             pl.col("pfam_acc").str.split(".").list.get(0).alias("pfam_acc"),
-        ).filter(pl.col("i_evalue") <= args.i_evalue)
+        )
+        invalid = hits.filter(
+            pl.any_horizontal([pl.col(c).is_null() for c in COLUMNS])
+            | ~pl.col("pfam_acc").str.contains(r"^PF[0-9]{5}$")
+            | (pl.col("env_start") < 1)
+            | (pl.col("env_end") < pl.col("env_start"))
+            | ~pl.col("bitscore").is_finite()
+            | ~pl.col("i_evalue").is_finite()
+            | (pl.col("i_evalue") < 0)
+        )
+        if invalid.height:
+            raise ValueError(f"Invalid Pfam rows: {invalid.height}")
+        unknown = hits.join(dark, on="accession", how="anti")
+        if unknown.height:
+            raise ValueError(f"Pfam rows outside the dark query set: {unknown.height}")
+        if args.i_evalue is not None:
+            hits = hits.filter(pl.col("i_evalue") <= args.i_evalue)
 
     # Only rows whose protein is actually in the dark set. The scan runs on the dark FASTA
     # so this should be every row; an inner join that drops any is a mismatch worth seeing
@@ -97,11 +144,21 @@ def main() -> int:
     }
     args.summary_out.write_text(json.dumps(summary, indent=1))
 
-    print(f"{args.species}: {n_with} of {n_dark} dark proteins carry a Pfam domain "
-          f"(--cut_ga, i-Evalue <= {args.i_evalue})", file=sys.stderr)
+    rule = (
+        "--cut_ga"
+        if args.i_evalue is None
+        else f"--cut_ga, i-Evalue <= {args.i_evalue}"
+    )
+    print(
+        f"{args.species}: {n_with} of {n_dark} dark proteins carry a Pfam domain "
+        f"({rule})",
+        file=sys.stderr,
+    )
     if dropped:
-        print(f"WARNING: {dropped} hit rows name a protein not in the dark set",
-              file=sys.stderr)
+        print(
+            f"WARNING: {dropped} hit rows name a protein not in the dark set",
+            file=sys.stderr,
+        )
     return 0
 
 
