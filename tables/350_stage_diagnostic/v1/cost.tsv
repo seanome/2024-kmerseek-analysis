@@ -1,0 +1,40 @@
+dataset	kind	setting	n_candidate_pairs	n_seed_count_agree	n_pairs_sharing_a_seed_not_emitted	n_candidate_pairs_s10	n_seed_count_agree_s10	stage	cpu_seconds	peak_mb	candidates_per_query	exit	ka_fit_refused
+ice_binding	adapter_check	dayhoff6.k9	11876	11876	0	2708	2708						
+ice_binding	stage	dayhoff6.k9						A	13.334015959873796	82.0	1258.0		
+ice_binding	stage	dayhoff6.k9						B	12.10824150184635	85.0625	1258.0		
+ice_binding	kmerseek	dayhoff6.k9						index s1	2.75	229.140625		0	false
+ice_binding	kmerseek	dayhoff6.k9						candidates s1	1.16	291.125		0	false
+ice_binding	kmerseek	dayhoff6.k9						e2e s1	0.97	260.28515625		0	false
+ice_binding	kmerseek	dayhoff6.k9						index s10	1.11	49.38671875		0	false
+ice_binding	kmerseek	dayhoff6.k9						candidates s10	0.29	31.70703125		0	false
+ice_binding	kmerseek	dayhoff6.k9						e2e s10	0.3	28.4140625		0	false
+ice_binding	volume	dayhoff6.k9						C			208.35087719298247		
+ice_binding	volume	dayhoff6.k9						D			47.50877192982456		
+ice_binding	volume	dayhoff6.k9						E1			101.96491228070175		
+ice_binding	volume	dayhoff6.k9						E10			12.052631578947368		
+toxin_scaffold	adapter_check	cys2.k12.mask	54251	54251	0	35276	35276						
+toxin_scaffold	stage	cys2.k12.mask						B	4.084926169074606	78.140625	1500.0		
+toxin_scaffold	stage	cys2.k12.mask						A	4.469422295980621	78.140625	1500.0		
+toxin_scaffold	kmerseek	cys2.k12.mask						index s1	0.57	31.3515625		0	false
+toxin_scaffold	kmerseek	cys2.k12.mask						candidates s1	1.57	282.69921875		0	false
+toxin_scaffold	kmerseek	cys2.k12.mask						e2e s1	0.73	108.91015625		0	false
+toxin_scaffold	kmerseek	cys2.k12.mask						index s10	2.22	23.8671875		0	false
+toxin_scaffold	kmerseek	cys2.k12.mask						candidates s10	1.01	177.16796875		0	false
+toxin_scaffold	kmerseek	cys2.k12.mask						e2e s10	0.31	26.4296875		0	false
+toxin_scaffold	volume	cys2.k12.mask						C			904.1833333333333		
+toxin_scaffold	volume	cys2.k12.mask						D			587.9333333333333		
+toxin_scaffold	volume	cys2.k12.mask						E1			237.16666666666666		
+toxin_scaffold	volume	cys2.k12.mask						E10			5.666666666666667		
+toxin_target	adapter_check	cys2.k12.mask	47584	47584	0	41488	41488						
+toxin_target	stage	cys2.k12.mask						B	4.798301626869943	76.890625	1440.0		
+toxin_target	stage	cys2.k12.mask						A	6.180019289953634	76.25	1440.0		
+toxin_target	kmerseek	cys2.k12.mask						index s1	0.68	30.5		0	false
+toxin_target	kmerseek	cys2.k12.mask						candidates s1	2.13	378.359375		0	false
+toxin_target	kmerseek	cys2.k12.mask						e2e s1	1.01	158.6796875		0	false
+toxin_target	kmerseek	cys2.k12.mask						index s10	0.47	23.96484375		0	false
+toxin_target	kmerseek	cys2.k12.mask						candidates s10	1.53	272.5078125		0	false
+toxin_target	kmerseek	cys2.k12.mask						e2e s10	0.4	35.78515625		0	false
+toxin_target	volume	cys2.k12.mask						C			1034.4347826086957		
+toxin_target	volume	cys2.k12.mask						D			901.9130434782609		
+toxin_target	volume	cys2.k12.mask						E1			280.9347826086956		
+toxin_target	volume	cys2.k12.mask						E10			11.630434782608695		

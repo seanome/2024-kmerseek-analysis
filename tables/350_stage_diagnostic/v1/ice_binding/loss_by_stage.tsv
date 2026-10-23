@@ -1,0 +1,19 @@
+split	stage	len	path
+dev	sketch	191	scaled 10
+dev	seed	1392	scaled 10
+heldout	seed	756	scaled 10
+heldout	sketch	221	scaled 10
+dev	filter	18	scaled 10
+heldout	filter	22	scaled 10
+heldout	rank	1	scaled 10
+dev	rank	1	scaled 10
+dev	seed	1392	scaled 1
+heldout	seed	756	scaled 1
+heldout	filter	152	scaled 1
+dev	rank	84	scaled 1
+dev	filter	126	scaled 1
+heldout	rank	92	scaled 1
+heldout	A found, B not	3	scorers
+dev	A found, B not	15	scorers
+dev	B found, A not	3	scorers
+heldout	B found, A not	5	scorers
