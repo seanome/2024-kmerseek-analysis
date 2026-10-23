@@ -12,7 +12,8 @@ import pytest
 
 REPO = Path(__file__).parents[1]
 spec = importlib.util.spec_from_file_location(
-    "ice_binding_sw_benchmark", REPO / "scripts" / "ice_binding_sw_benchmark.py")
+    "ice_binding_sw_benchmark", REPO / "scripts" / "ice_binding_sw_benchmark.py"
+)
 bm = importlib.util.module_from_spec(spec)
 sys.modules[spec.name] = bm
 spec.loader.exec_module(bm)
@@ -63,23 +64,40 @@ def test_hp_translation_matches_kmerseek_classes():
 
 
 def test_mature_span_prefers_longest_chain():
-    rec = bm.FlatRecord("X", "M" * 100, [("SIGNAL", "1..20"), ("CHAIN", "21..100"),
-                                         ("CHAIN", "30..40")], "")
+    rec = bm.FlatRecord(
+        "X",
+        "M" * 100,
+        [("SIGNAL", "1..20"), ("CHAIN", "21..100"), ("CHAIN", "30..40")],
+        "",
+    )
     assert bm.mature_span(rec) == (21, 100, "longest CHAIN")
-    rec = bm.FlatRecord("Y", "M" * 50, [("PEPTIDE", "6..19"), ("PEPTIDE", "23..36")], "")
+    rec = bm.FlatRecord(
+        "Y", "M" * 50, [("PEPTIDE", "6..19"), ("PEPTIDE", "23..36")], ""
+    )
     assert bm.mature_span(rec) == (6, 36, "span of PEPTIDE features")
     assert bm.parse_span("<1..5") == (1, 5)
     assert bm.parse_span("?..5") is None
 
 
 def test_assign_origin_needs_every_rule_field():
-    origins = pl.DataFrame({
-        "origin_id": ["A", "B"], "uniprot_family": ["Type-I AFP family", "Type-I AFP family"],
-        "taxon_family": ["Pleuronectidae", "Cottidae"], "name_regex": ["", ""],
-        "positive_status": ["positive", "positive"], "origin_evidence": ["x", "x"],
-        "citation_doi": ["d", "d"], "note": ["", ""]})
-    row = {"accession": "P1", "uniprot_family": "Type-I AFP family", "taxon_family": "Cottidae",
-           "protein_name": "AFP"}
+    origins = pl.DataFrame(
+        {
+            "origin_id": ["A", "B"],
+            "uniprot_family": ["Type-I AFP family", "Type-I AFP family"],
+            "taxon_family": ["Pleuronectidae", "Cottidae"],
+            "name_regex": ["", ""],
+            "positive_status": ["positive", "positive"],
+            "origin_evidence": ["x", "x"],
+            "citation_doi": ["d", "d"],
+            "note": ["", ""],
+        }
+    )
+    row = {
+        "accession": "P1",
+        "uniprot_family": "Type-I AFP family",
+        "taxon_family": "Cottidae",
+        "protein_name": "AFP",
+    }
     assert bm.assign_origin(row, origins)["origin_id"] == "B"
     row["taxon_family"] = "Gadidae"
     assert bm.assign_origin(row, origins)["status"] == "positive_unresolved_origin"
@@ -121,16 +139,37 @@ def test_shuffle_preserves_composition_and_identity_coverage():
 
 
 def test_task_metrics_on_a_toy_ranking():
-    df = pl.DataFrame({
-        "setting": ["s"] * 5, "query": ["q"] * 5, "q_origin": ["o1"] * 5,
-        "role": ["cross_origin_positive", "real_negative", "cross_origin_positive",
-                 "real_negative", "shuffle"],
-        "sim": [9.0, 8.0, 1.0, 0.5, 100.0]})
+    df = pl.DataFrame(
+        {
+            "setting": ["s"] * 5,
+            "query": ["q"] * 5,
+            "q_origin": ["o1"] * 5,
+            "role": [
+                "cross_origin_positive",
+                "real_negative",
+                "cross_origin_positive",
+                "real_negative",
+                "shuffle",
+            ],
+            "sim": [9.0, 8.0, 1.0, 0.5, 100.0],
+        }
+    )
     m = bm.task_metrics(df, "cross_origin_positive", [0.0, 0.5]).row(0, named=True)
     # Shuffles never count as negatives here.
     assert m["n_negatives"] == 2
-    assert m["average_precision"] == pytest.approx((1 / 1 + 2 / 3) / 2)  # positives at ranks 1 and 3
+    assert m["average_precision"] == pytest.approx(
+        (1 / 1 + 2 / 3) / 2
+    )  # positives at ranks 1 and 3
     assert m["recall_fpr_0.0"] == pytest.approx(0.5)
     assert m["recall_fpr_0.5"] == pytest.approx(1.0)
     assert m["best_positive_rank"] == 1
     assert math.isnan(bm.recall_at_budget(np.array([]), np.array([1.0]), 0.0))
+
+
+def test_curve_thresholds_include_complete_tie_groups():
+    # Positives precede negatives in the stored array; neither can precede
+    # the other when an actual threshold admits the entire tied group.
+    scores = np.array([5.0, 5.0, 4.0, 3.0, 3.0])
+    assert bm.curve_threshold_indices(scores).tolist() == [1, 2, 4]
+    assert bm.curve_threshold_indices(np.ones(10)).tolist() == [9]
+    assert bm.curve_threshold_indices(np.array([])).tolist() == []

@@ -8,14 +8,27 @@ cells = []
 
 
 def md(source):
-    cells.append({"cell_type": "markdown", "id": f"md-{len(cells):02d}", "metadata": {},
-                  "source": source.strip().splitlines(keepends=True)})
+    cells.append(
+        {
+            "cell_type": "markdown",
+            "id": f"md-{len(cells):02d}",
+            "metadata": {},
+            "source": source.strip().splitlines(keepends=True),
+        }
+    )
 
 
 def code(source):
-    cells.append({"cell_type": "code", "id": f"code-{len(cells):02d}", "execution_count": None,
-                  "metadata": {"jupyter": {"source_hidden": True}}, "outputs": [],
-                  "source": source.strip("\n").splitlines(keepends=True)})
+    cells.append(
+        {
+            "cell_type": "code",
+            "id": f"code-{len(cells):02d}",
+            "execution_count": None,
+            "metadata": {"jupyter": {"source_hidden": True}},
+            "outputs": [],
+            "source": source.strip("\n").splitlines(keepends=True),
+        }
+    )
 
 
 md(r"""
@@ -696,19 +709,19 @@ fourth outcome: no tested linear scoring method separates IBPs of separate origi
    at 1% false positives it recovers 5.7% of other-origin pairs with the 20 amino acids, 0% with
    `hp_lehninger2` and 1.1% with `dayhoff6`, against 35.9% for a rule that only ranks targets by
    alanine plus threonine fraction (section 3).
-2. Residue order adds nothing across origins: shuffled IBPs score as well as the real proteins
+2. These alignments show no pooled advantage of residue order across origins: shuffled IBPs score as well as the real proteins
    (AUC 0.47-0.53 against 0.75 needed), while the same alignments recover 49-100% of same-origin
    IBPs (section 3).
 3. Reduction hurts here. H/P and Dayhoff are below protein20 on every measure, and their E-values
-   are worse calibrated, about 7% chance hits where 1% is promised (sections 3, 7).
+   are worse calibrated, about 7% of unverified control pairs below a fitted 0.01 chance-probability cutoff (sections 3, 7).
 4. The type I AFP pair that evolved separately (flounder vs sculpin) aligns at E = 7.4e-7, but a
    20-residue composition score already finds all 20 of those pairs at 1% false positives: the
    alignment is alanine matching alanine (sections 6, 8).
 
 **What this means for kmerseek.** The result does not point to kmerseek's retrieval step as the
-bottleneck: a full alignment of every pair, with no seed, finds no more than composition does.
-A new seed for cross-origin IBP search would need a signal that linear scoring of these sequences
-does not contain. This does not show that every sequence classifier must fail; a method that uses
+bottleneck: a full alignment of every pair, with no seed, does not beat composition under the pooled decision rule.
+These results do not show an advantage for the three tested alphabets and selected affine-gap
+settings. They do not exclude a different scoring scheme or a subgroup with more data. This does not show that every sequence classifier must fail; a method that uses
 structure, or a model trained on ice-binding sites, was not tested.
 
 **Next.** Two runs that would change this reading, neither run here: the same benchmark with
@@ -717,9 +730,23 @@ order signal hides under the composition; and a check whether the moth-beetle hi
 beetle-family sequences from TrEMBL with experimental evidence.
 """)
 
-nb = {"cells": cells, "metadata": {
-    "kernelspec": {"display_name": "Python 3", "language": "python", "name": "python3"},
-    "language_info": {"name": "python"}}, "nbformat": 4, "nbformat_minor": 5}
-out = Path(__file__).parents[1] / "notebooks" / "349_ice_binding_seedless_alignment_swissprot.ipynb"
+nb = {
+    "cells": cells,
+    "metadata": {
+        "kernelspec": {
+            "display_name": "Python 3",
+            "language": "python",
+            "name": "python3",
+        },
+        "language_info": {"name": "python"},
+    },
+    "nbformat": 4,
+    "nbformat_minor": 5,
+}
+out = (
+    Path(__file__).parents[1]
+    / "notebooks"
+    / "349_ice_binding_seedless_alignment_swissprot.ipynb"
+)
 out.write_text(json.dumps(nb, indent=1) + "\n")
 print(out)
