@@ -56,15 +56,15 @@ category's targets, of the control share in that target's length decile.
 **Decision.** Whether the kmerseek-only links to these categories are leads to send Ayelet
 (Botryllus proteins worth a closer look as MHC-like or recognition proteins), or are at the
 rate kmerseek gives random proteins of the same length, in which case we tell her the list
-holds no signal and do not use it in the paper.
+does not meet the lead-selection rule and do not use it in the paper.
 
 **Rule** (written 2026-10-13, see the note below):
 * A category *passes* when its share of targets reached kmerseek-only, at E < 1, is at least
   1.5 times the length-matched control share **and** a one-sided binomial test against the
   control share gives p < 0.05 after Bonferroni correction over the 8 categories.
 * If at least one category passes, its kmerseek-only links are leads, sent with their
-  residues. If none passes, no category shows more kmerseek-only links than random proteins
-  of the same length, and the links are listed for inspection only.
+  residues. If none passes, no category meets both thresholds, and the links are listed for
+  inspection only. Failure to pass does not establish equal rates.
 * Each lead link is also checked for residue identity above the identity two random
   sequences of the same composition would share (section 5). A link at chance identity is
   a pattern match in a reduced alphabet, not a sequence match; it can still be real, but it
@@ -742,8 +742,9 @@ proteins.
   share of its targets that length-matched random proteins have, at E < 1.
 * MHC class I and II comes closest: 59 of 187 targets (32%) have a kmerseek-only link, against
   22% expected from the control (1.41 times, Bonferroni p = 0.02), under the 1.5-fold bar.
-* kmerseek-only links are at chance identity: median 2.7 points above it for the 335 category
-  links and 2.9 for the 9_597 control links, against 38 points for links a tool also finds.
+* Identity above chance is similar for kmerseek-only links: median 2.7 points for the
+  335 category links and 2.9 for the 9_597 control links, against 38 points for links a tool
+  also finds.
 * In the alphabet's own letters, kmerseek-only category links match a median 24 points above
   chance, and kmerseek-only links to control proteins 28 points: the letter pattern kmerseek
   scores is as strong on random proteins.
@@ -759,11 +760,16 @@ proteins.
   points above chance identity for both (5_101 category links, 16_887 control links).
 
 **Decision.** The 335 kmerseek-only links are sent to Ayelet for inspection only, not as leads:
-by the rule written first, they occur at the rate kmerseek gives random proteins of the same
-length, and their residues match no better than chance. The paper makes no Botryllus MHC claim
-from this run.
+no category meets both thresholds of the rule, which was written after preliminary results
+were inspected. This does not establish equal link rates: MHC has a 1.41-fold excess, below
+the 1.5-fold threshold. Identity above chance is similar in category and control links.
+The paper makes no Botryllus MHC claim from this run.
 
 ## Analysis details
+
+The binomial p-values treat targets as independent and the estimated control share as
+fixed. Related target proteins and uncertainty in the control share are not accounted
+for, so these p-values describe this screen and do not establish family-level enrichment.
 
 * Section 2: dropping regions that are at least half low complexity or transmembrane helix
   removes most regions on MHC (72%), NK receptor (91%), T cell receptor (96%) and minor
@@ -832,8 +838,9 @@ proteins.
   share of its targets that length-matched random proteins have, at E < 1.
 * MHC class I and II comes closest: 59 of 187 targets (32%) have a kmerseek-only link, against
   22% expected from the control (1.41 times, Bonferroni p = 0.02), under the 1.5-fold bar.
-* kmerseek-only links are at chance identity: median 2.7 points above it for the 335 category
-  links and 2.9 for the 9_597 control links, against 38 points for links a tool also finds.
+* Identity above chance is similar for kmerseek-only links: median 2.7 points for the
+  335 category links and 2.9 for the 9_597 control links, against 38 points for links a tool
+  also finds.
 * In the alphabet's own letters, kmerseek-only category links match a median 24 points above
   chance, and kmerseek-only links to control proteins 28 points: the letter pattern kmerseek
   scores is as strong on random proteins.
@@ -849,11 +856,16 @@ proteins.
   points above chance identity for both (5_101 category links, 16_887 control links).
 
 **Decision.** The 335 kmerseek-only links are sent to Ayelet for inspection only, not as leads:
-by the rule written first, they occur at the rate kmerseek gives random proteins of the same
-length, and their residues match no better than chance. The paper makes no Botryllus MHC claim
-from this run.
+no category meets both thresholds of the rule, which was written after preliminary results
+were inspected. This does not establish equal link rates: MHC has a 1.41-fold excess, below
+the 1.5-fold threshold. Identity above chance is similar in category and control links.
+The paper makes no Botryllus MHC claim from this run.
 
 ## Analysis details
+
+The binomial p-values treat targets as independent and the estimated control share as
+fixed. Related target proteins and uncertainty in the control share are not accounted
+for, so these p-values describe this screen and do not establish family-level enrichment.
 
 * Section 2: dropping regions that are at least half low complexity or transmembrane helix
   removes most regions on MHC (72%), NK receptor (91%), T cell receptor (96%) and minor
