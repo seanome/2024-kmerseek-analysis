@@ -133,10 +133,9 @@ def _no_evalue_handle(label: str) -> Line2D:
     return Line2D([], [], marker=".", ls="", ms=4.5, color=NO_EVALUE, label=label)
 
 
-# The two metrics that need lambda. An alphabet whose chance position scores at or above
-# zero on average (chance_drift = p - C (1 - p) >= 0) has no lambda at any k, so the few
-# finite E-values it prints are not E-values. Within 0.001 of zero counts as zero: gbmr4
-# is at -0.0003.
+# The existing analysis excludes both lambda-dependent metrics when database-level
+# drift is nonnegative or within 0.001 of zero. This is a heuristic exclusion:
+# gbmr4 has slightly negative drift, which can have a positive mathematical root.
 SCORE_METRICS = ("E-value", "bit score")
 DRIFT_TOLERANCE = 0.001
 
@@ -147,8 +146,10 @@ WHOLE_PROTEIN_METRICS = ("containment", "protein enrichment", "protein Poisson p
 
 
 def no_evalue_alphabets(arms: pl.DataFrame) -> list[str]:
-    """Alphabets whose chance drift p - C (1 - p) is at or above zero (within
-    DRIFT_TOLERANCE): they cannot have an E-value at any k."""
+    """Alphabets excluded by the existing nonnegative-or-near-zero drift guard.
+
+    This selection rule does not prove that a positive lambda is impossible.
+    """
     return sorted(
         arms.group_by("alphabet")
         .agg(pl.col("chance_drift").first())
@@ -158,7 +159,7 @@ def no_evalue_alphabets(arms: pl.DataFrame) -> list[str]:
 
 def load() -> tuple[pl.DataFrame, pl.DataFrame]:
     """arms.csv and ranks.csv, with the E-value and bit score emptied for the alphabets
-    that cannot have an E-value (`valid` = False on those rows).
+    excluded by the drift guard (`valid` = False on those rows).
 
     A rank is over the targets with a finite value under that metric (`n_finite`), so a
     target with no E-value is left out, not ranked last. `n_targets` is every target
@@ -410,7 +411,7 @@ def rank_matrix(
         ),
         _no_evalue_handle(
             "E-value panel only: no E-value at this setting (the Karlin-Altschul fit was refused, "
-            "or the alphabet cannot have one: gbmr4, gbmr7, hp_lehninger_hpc3)"
+            "or excluded by the drift guard: gbmr4, gbmr7, hp_lehninger_hpc3)"
         ),
     ]
     fig, axes = _figure_with_legend_row(5, (183, 95), handles)
@@ -823,7 +824,7 @@ def bhf_matrix(
             label="no human protein has a region at this setting",
         ),
         _no_evalue_handle(
-            "left panel only: no E-value at this setting (fit refused, or the alphabet cannot have one)"
+            "left panel only: no E-value at this setting (fit refused, or excluded by the drift guard)"
         ),
     ]
     fig, axes = _figure_with_legend_row(2, (183, 95), handles)

@@ -404,8 +404,36 @@ def one_arm(
             "no Karlin-Altschul fit; searched with exact regions\n"
         )
 
+    # A search CSV left by an earlier run that extended its regions does not match an
+    # arm that is now unfitted. hp_lehninger_hpc3 k=21 was fitted by the retry on
+    # 2026-09-23 and searched with extension; the run after it skipped the retry (the
+    # dense-curves rule above) and kept that CSV, so E-values stayed finite on an arm
+    # recorded as having none. Move the old CSV and log to search/extended/ (out of reach
+    # of any search/*.csv glob) and search again.
+    search_log = logs / f"{tag}.search.log"
+    if (
+        fit is not True
+        and search_csv.exists()
+        and search_log.exists()
+        and "Seed extension: off" not in search_log.read_text()
+    ):
+        old = out / "search" / "extended"
+        old.mkdir(exist_ok=True)
+
+        # A second rerun must not overwrite the first extended search (rename replaces
+        # an existing target), so number the copy when the name is taken.
+        def moved(path, n):
+            tail = f".{n}" if n else ""
+            return old / f"{path.stem}{tail}{path.suffix}"
+
+        n = 0
+        while moved(search_csv, n).exists() or moved(search_log, n).exists():
+            n += 1
+        search_csv.rename(moved(search_csv, n))
+        search_log.rename(moved(search_log, n))
+
     if not search_csv.exists():
-        rc, dt = run(search_cmd, logs / f"{tag}.search.log")
+        rc, dt = run(search_cmd, search_log)
         rec["search_rc"], rec["search_s"] = rc, round(dt, 1)
     else:
         rec["search_rc"], rec["search_s"] = 0, 0.0
@@ -446,42 +474,63 @@ def main() -> None:
     ap.add_argument(
         "--plan-only", action="store_true", help="print the ladder and exit"
     )
+    ap.add_argument(
+        "--only",
+        default="",
+        help="run only these settings, as alphabet.kN tags (comma-separated)",
+    )
     args = ap.parse_args()
 
     # A fresh output folder (a first run on Sherlock) has none of these yet.
     for d in ("idx", "search", "ka_survival", "pair", "logs"):
         (OUT / d).mkdir(parents=True, exist_ok=True)
-    cnt = residue_counts()
-    hbits = bits_per_position(cnt)
-    kappa = read_kappa()
-    alphabets = [a for a in args.alphabets.split(",") if a]
-
-    plan = []
-    for a in alphabets:
-        c, x = penalty_for(a, kappa)
-        for k in ladder(a, hbits[a]):
-            plan.append((a, k, c, x))
-    (OUT / "plan.json").write_text(
-        json.dumps(
-            [
-                {
-                    "alphabet": a,
-                    "ksize": k,
-                    "bits": round(k * hbits[a], 2),
-                    "penalty": c,
-                    "xdrop": x,
-                }
-                for a, k, c, x in plan
-            ],
-            indent=1,
+    only = {t for t in args.only.split(",") if t}
+    if only:
+        # Re-running a few settings of a finished run: take each one's penalty from the
+        # run's own plan.json and leave that file alone. The kappa table changed after
+        # the run (funcgroups8 had no measured kappa on 2026-09-23 and was searched at
+        # the fallback 2 / 8; the table now gives 0.29 / 1.18), so recomputing the plan
+        # would record penalties the searches never used.
+        recorded = json.loads((OUT / "plan.json").read_text())
+        plan = [
+            (p["alphabet"], p["ksize"], p["penalty"], p["xdrop"])
+            for p in recorded
+            if f"{p['alphabet']}.k{p['ksize']}" in only
+        ]
+        missing = only - {f"{a}.k{k}" for a, k, _, _ in plan}
+        if missing:
+            sys.exit(f"--only: not in {OUT / 'plan.json'}: {sorted(missing)}")
+    else:
+        cnt = residue_counts()
+        hbits = bits_per_position(cnt)
+        kappa = read_kappa()
+        alphabets = [a for a in args.alphabets.split(",") if a]
+        plan = []
+        for a in alphabets:
+            c, x = penalty_for(a, kappa)
+            for k in ladder(a, hbits[a]):
+                plan.append((a, k, c, x))
+        (OUT / "plan.json").write_text(
+            json.dumps(
+                [
+                    {
+                        "alphabet": a,
+                        "ksize": k,
+                        "bits": round(k * hbits[a], 2),
+                        "penalty": c,
+                        "xdrop": x,
+                    }
+                    for a, k, c, x in plan
+                ],
+                indent=1,
+            )
         )
-    )
-    (OUT / "bits_per_position.json").write_text(json.dumps(hbits, indent=1))
-    print(f"{len(plan)} arms over {len(alphabets)} alphabets", file=sys.stderr)
-    if args.plan_only:
-        for a, k, c, x in plan:
-            print(f"{a:26s} k={k:2d}  bits={k * hbits[a]:5.1f}  C={c} X={x}")
-        return
+        (OUT / "bits_per_position.json").write_text(json.dumps(hbits, indent=1))
+        print(f"{len(plan)} arms over {len(alphabets)} alphabets", file=sys.stderr)
+        if args.plan_only:
+            for a, k, c, x in plan:
+                print(f"{a:26s} k={k:2d}  bits={k * hbits[a]:5.1f}  C={c} X={x}")
+            return
 
     results = []
     with cf.ThreadPoolExecutor(max_workers=args.workers) as ex:
@@ -495,6 +544,14 @@ def main() -> None:
             with open(OUT / "runs.jsonl", "a") as fh:
                 fh.write(json.dumps(rec) + "\n")
     print(f"done: {len(results)} arms", file=sys.stderr)
+    if only:
+        # A rerun is followed by the collector, which rebuilds every table; do not let it
+        # run on a setting whose index or search failed.
+        bad = [r for r in results if r.get("index_rc") or r.get("search_rc")]
+        if bad:
+            sys.exit(
+                f"--only: index or search failed for {len(bad)} setting(s); see runs.jsonl"
+            )
 
 
 if __name__ == "__main__":
