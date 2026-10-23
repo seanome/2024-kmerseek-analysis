@@ -1,4 +1,4 @@
-"""Score completed settings only, with an strict E cutoff set on decoys alone.
+"""Score completed settings only, with a strict E cutoff set on decoys alone.
 
 The cutoff is capped at 10 because the retained hits stop there. Boundary error is
 conditional on recall, using largest overlap then E-value, target and coordinates.
@@ -65,8 +65,12 @@ def main():
         tag = next(directory.glob(f"*.k{status['ksize']}.*"))
         files = sorted(tag.glob("regions_filtered.chunk*.tsv.gz"))
         chunks = sorted((tag / "chunks").glob("chunk*.fasta"))
-        # The downloaded snapshot can omit FASTAs; expected chunk count is recorded in manifest.
-        expected = int((directory / "expected_chunks.txt").read_text())
+        # Live runs retain chunk FASTAs; committed snapshots retain the chunk count.
+        expected = (
+            len(chunks)
+            if chunks
+            else int((directory / "expected_chunks.txt").read_text())
+        )
         assert len(files) == expected, (directory, len(files), expected)
         hits = {}
         for f in files:
