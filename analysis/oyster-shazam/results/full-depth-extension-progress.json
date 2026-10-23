@@ -1,0 +1,76 @@
+{
+  "selected_total": 5538699,
+  "total_batches": 554,
+  "source_sha256": "4312b75c216d9f62767c2457b531e80d0bbb1343a013634c44f850751e8e5f9e",
+  "completed_batches": [
+    {
+      "batch": 0,
+      "selected_anchors": 10000,
+      "anchors_extended": 8528,
+      "output_rows": 17232,
+      "output_sha256": "5f97dada71b75fc5810133e97dcf9d8f61a65bf78547b011122d965c255e6884"
+    },
+    {
+      "batch": 1,
+      "selected_anchors": 10000,
+      "anchors_extended": 9905,
+      "output_rows": 21655,
+      "output_sha256": "b8e2794946bd4d72792c7de99a1f06decbd2ec79544180f2de30854435e95b19"
+    },
+    {
+      "batch": 2,
+      "selected_anchors": 10000,
+      "anchors_extended": 9932,
+      "output_rows": 21933,
+      "output_sha256": "8abb7b6872c253755314bcb3e5b4d3ea67dd001a839f97f61a20df53ae517fd0"
+    },
+    {
+      "batch": 3,
+      "selected_anchors": 10000,
+      "anchors_extended": 9936,
+      "output_rows": 22015,
+      "output_sha256": "21c74449de8946ac3f86305d67201c71a35c18776e20daecd0ece4e91ee91aa8"
+    },
+    {
+      "batch": 4,
+      "selected_anchors": 10000,
+      "anchors_extended": 9859,
+      "output_rows": 21698,
+      "output_sha256": "61e9e271f0c6ee59f099334945ec15b8fd8b2dbf02b78223ad265834dc132c78"
+    },
+    {
+      "batch": 5,
+      "selected_anchors": 10000,
+      "anchors_extended": 9864,
+      "output_rows": 22484,
+      "output_sha256": "670a573fdaf83a0770770d76d5d25c3b528b5d294b01b17b481e631f9e9bb01e"
+    },
+    {
+      "batch": 6,
+      "selected_anchors": 10000,
+      "anchors_extended": 9950,
+      "output_rows": 21570,
+      "output_sha256": "a4bc4eb5adcfd98d93881d21a1e3d04ffa83792d4230f22a3a9e437c018a053d"
+    },
+    {
+      "batch": 7,
+      "selected_anchors": 10000,
+      "anchors_extended": 9947,
+      "output_rows": 21684,
+      "output_sha256": "a293a37124cb777761e556f75d7c0675b21869d187926dcbe85f413b4fcf61e9"
+    },
+    {
+      "batch": 8,
+      "selected_anchors": 10000,
+      "anchors_extended": 9949,
+      "output_rows": 21853,
+      "output_sha256": "8549c8d22f2e2d924a932916a46a39b812bda56a7752eba6537a2409726d7a82"
+    }
+  ],
+  "completed_selected_anchors": 90000,
+  "anchors_extended": 87870,
+  "extension_records": 192124,
+  "scope": "Full-depth read1 SPLASH selection; both complete trimmed mates used for extension context",
+  "verification": "Output hashes, sequence membership, independent counts and exact frozen selection slices checked",
+  "complete": false
+}

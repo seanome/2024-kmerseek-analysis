@@ -2,6 +2,7 @@
 import csv
 import datetime
 import json
+import os
 import re
 import shutil
 from pathlib import Path
@@ -9,7 +10,7 @@ from public_results_html import render as render_public_results
 
 ROOT=Path(__file__).resolve().parent
 OUT=ROOT/'report'
-SITE=Path('/Users/olga/code/oyster-shazam-report-site/dist')
+SITE=Path(os.environ.get('OYSTER_SITE_DIR','/Users/olga/code/oyster-shazam-report-site/dist'))
 
 
 def main():
@@ -45,28 +46,42 @@ def main():
               stages=[dict(name='Raw reads',status='Complete',detail='Six first-million paired prefixes. All 12 uncompressed hashes match the supplied prior pilot.'),
                       dict(name='Trimming',status='Complete',detail='nf-core/rnaseq with alignment and pseudoalignment disabled. All quality and adapter summary checks passed.'),
                       dict(name='SPLASH',status='Full-depth discovery complete',detail='Full-depth read1 SPLASH job 49214375 completed; all 5,538,699 adjusted P < 0.05 anchors are selected for extension in 554 batches, job 49221554. Separately, extension of all 213,658 significant prefix anchors completed: 165,679 anchors extended into 354,316 records; 47,979 without extensions. The sequence explorer remains the historical 300-anchor pilot.'),
-                      dict(name='DE-kupl',status='Full-depth running',detail='Full-depth job 49203559 is running in the separate oyster-mvp workflow. No full-depth DE-kupl result is claimed yet.'),
-                      dict(name='Sourmash',status='Public pilot indexed',detail='Eight public untrimmed runs have validated indexes. The older six-library prefix HP index timed out and its searches were cancelled; corrected public search array 49222143 is submitted.'),
-                      dict(name='Bivalve archive',status='Corrected validation needs access',detail='One trimmed public run passed independent four-alphabet paired-scale and self-search checks. An inconsistency in the older untrimmed public pilot comparison stopped allocation 49215860 and cancelled its dependent worker array. Explicit threshold 0 fixed a reproduced filtering issue; corrected validation session disconnected and SSH access is unavailable. 181 runs lack ENA FASTQ URLs.')],
+                      dict(name='DE-kupl',status='Full-depth completed',detail='Full-depth job 49203559 completed with exit0 in 3:05:46. Biological interpretation and a reference-free comparison are pending.'),
+                      dict(name='Sourmash',status='Public pilot indexed',detail='Eight public untrimmed runs have validated indexes. The older six-library prefix HP index timed out and its searches were cancelled; all22 corrected public search batches completed and passed the independent pair-set/hash audit49241571.'),
+                      dict(name='Bivalve archive',status='Workers eligible after validation',detail='One trimmed public run passed independent four-alphabet paired-scale and self-search checks. The explicit threshold0 correction passed the complete public-pilot audit. Restored-access validation49241803 passed all four encodings and both scales with exact loss-set and self-search checks. Replacement932-worker array49241661 is eligible for scheduler allocation. 181 runs lack ENA FASTQ URLs.')],
               findings=[])
     with (ROOT/'results/splash-trimmed/compactors.tsv').open() as f:
         for r in csv.DictReader(f,delimiter='\t'):
             data['findings'].append(dict(id=f"splash:trimmed:{r['anchor']}:{r['id']}",pipeline='splash',anchor=r['anchor'],dna=r['compactor'],support=int(r['support']),evidence_summary='Compactors DNA extension. Gene identity and protein annotation are pending.'))
     if (ROOT/'results/findings.json').exists():
         data['findings']=json.loads((ROOT/'results/findings.json').read_text())
+    data['full_depth']=json.loads((ROOT/'full-depth-status.json').read_text())
+    full_progress=ROOT/'results/full-depth-extension-progress.json'
+    data['full_extension_progress']=json.loads(full_progress.read_text()) if full_progress.exists() else None
     (OUT/'report-data.json').write_text(json.dumps(data,separators=(',',':'))+'\n')
     template=(ROOT/'report-template.html').read_text()
+    full_path=ROOT/'results/full-depth-extension-progress.json'
+    if full_path.exists():
+        full=json.loads(full_path.read_text())
+        full_html=f"<div class=\"card\"><h3>Full-depth extension results</h3><p>{full['selected_total']:,} anchors selected at adjusted P &lt; 0.05. {len(full['completed_batches']):,} of {full['total_batches']:,} extension batches have completion records.</p><p>Those batches cover {full['completed_selected_anchors']:,} selected anchors: {full['anchors_extended']:,} have extended sequence, producing {full['extension_records']:,} DNA records. Remaining batches are pending or running, not zero results. Records are not distinct genes.</p><p>Discovery used complete read 1 from each experimental library; extensions use both complete trimmed mates. Full-depth searches are submitted for the first 32 batches against eight public runs, starting after each corresponding extension batch succeeds. Remaining search batches await scheduler submission slots.</p><p>{full['verification']}</p><a href=\"full-depth-extension-progress.json\" download>Full-depth extension progress · JSON</a></div>"
+        template=template.replace('__FULL_DEPTH_RESULTS__',full_html)
+        shutil.copy2(full_path,OUT/full_path.name)
+    else:template=template.replace('__FULL_DEPTH_RESULTS__','<p>Full-depth extension aggregation pending.</p>')
     public_path=ROOT/'results/public-match-summary.json'
     public=json.loads(public_path.read_text()) if public_path.exists() else None
     template=template.replace('__PUBLIC_RESULTS__',render_public_results(public) if public else '<p>Public search aggregation pending.</p>')
     if public:
         shutil.copy2(public_path,OUT/public_path.name)
         loss=ROOT/'results'/public.get('loss_table','matches-lost-at-scaled100.tsv.gz')
-        if loss.exists():shutil.copy2(loss,OUT/loss.name)
+        if public.get('loss_tables'):
+            for entry in public['loss_tables'].values():shutil.copy2(ROOT/'results'/entry['file'],OUT/entry['file'])
+        elif loss.exists():shutil.copy2(loss,OUT/loss.name)
     (OUT/'index.html').write_text(template.replace('__REPORT_DATA__',json.dumps(data).replace('</','<\\/')))
     for file in ['raw-prefix-qc.json','prior-prefix-comparison.json','execution_trace.txt','trimmed-qc.json','splash-comparison.json','job-status.tsv']:
         src=ROOT/'results'/file
         if src.exists():shutil.copy2(src,OUT/file)
+    for asset in ['public_bivalve_raw_vs_sourmash_sizes.png','public-sketch-size-comparison.json','public-sketch-size-comparison.tsv']:
+        if (ROOT/asset).exists():shutil.copy2(ROOT/asset,OUT/asset)
     inventory_path=ROOT/'provenance/bivalve-rnaseq-ena-2026-10-23.tsv.gz'
     shutil.copy2(inventory_path,OUT/inventory_path.name)
     if SITE.parent.exists():

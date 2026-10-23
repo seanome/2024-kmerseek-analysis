@@ -24,6 +24,7 @@ def main():
     p.add_argument('--reference-dir',default='pilot-indexes')
     p.add_argument('--output-dir',default='search-trimmed-all')
     p.add_argument('--scales',type=int,nargs='+',default=[5,10,100])
+    p.add_argument('--query-prefix',default='splash:all')
     a=p.parse_args()
     if len(a.scales)!=len(set(a.scales)) or not set(a.scales)<={5,10,100}:
         p.error("Scales must be distinct values from 5,10,100")
@@ -42,7 +43,7 @@ def main():
     with (out/'queries.tsv').open('w') as f:
         w=csv.writer(f,delimiter='\t');w.writerow(['query_id','anchor','compactor_id','dna','length'])
         for i,r in enumerate(rows):
-            r['query_id']=f"splash:all:{a.batch}:{i}:{r['anchor']}"
+            r['query_id']=f"{a.query_prefix}:{a.batch}:{i}:{r['anchor']}"
             w.writerow([r['query_id'],r['anchor'],r['id'],r['compactor'],len(r['compactor'])])
     settings=[]; reference_names=None
     for mol,k,flags in SETTINGS:

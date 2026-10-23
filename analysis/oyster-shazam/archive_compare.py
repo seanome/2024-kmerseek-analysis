@@ -75,7 +75,7 @@ def process(row):
     if len(urls)!=len(md5s) or not all(md5s):raise ValueError('Missing source MD5')
     size=sum(map(int,row['fastq_bytes'].split(';')))
     local=Path(os.environ['L_SCRATCH_JOB'])
-    if shutil.disk_usage(local).free<size*3:
+    if shutil.disk_usage(local).free<size*16+20_000_000_000:
         local=ROOT/'temporary';local.mkdir(exist_ok=True)
     if shutil.disk_usage(ROOT).free<5_000_000_000_000:raise RuntimeError('Less than 5 TB storage headroom; stop for review')
     with tempfile.TemporaryDirectory(prefix=accession+'-',dir=local) as temp:
@@ -147,17 +147,25 @@ def worker(identifier):
     plan=json.loads((CODE/'archive-worker-plan.json').read_text())
     selected=[identifier] if identifier in rows else sorted(plan['workers'][identifier]['runs'],key=lambda run:sum(map(int,rows[run]['fastq_bytes'].split(';'))))
     start=time.monotonic();limit=float(os.environ.get('ARCHIVE_WORKER_HOURS','44'))*3600
-    completed=[];deferred=[]
+    completed=[];deferred=[];deferred_details=[]
+    memory_bytes=int(os.environ.get("SLURM_MEM_PER_NODE","131072"))*1024**2
     for accession in selected:
         size=sum(map(int,rows[accession]['fastq_bytes'].split(';')))
         # Checkpoint between complete runs; do not knowingly start beyond the allocation.
         predicted=0 if (ROOT/'runs'/accession[:6]/accession/'validated.json').exists() else size/1e6*12+1800
         if time.monotonic()-start+predicted>limit:
             deferred.append(accession)
+            deferred_details.append(dict(run=accession,reason='estimated runtime exceeds remaining allocation'))
+            continue
+        # Pilot: about4.9M dense HP hashes from20.7MB input. Reserve48bytes/hash plus query memory.
+        predicted_memory=size*12+3_000_000_000
+        if predicted_memory>memory_bytes*.8:
+            deferred.append(accession)
+            deferred_details.append(dict(run=accession,reason='estimated sketch memory exceeds80percent of allocation',estimated_bytes=predicted_memory))
             continue
         process(rows[accession]);completed.append(accession)
     progress=ROOT/'workers';progress.mkdir(exist_ok=True)
-    (progress/f'{identifier}.json').write_text(json.dumps(dict(completed=completed,deferred=deferred),indent=2)+'\n')
+    (progress/f'{identifier}.json').write_text(json.dumps(dict(completed=completed,deferred=deferred,deferred_details=deferred_details),indent=2)+'\n')
 
 
 if __name__=='__main__':

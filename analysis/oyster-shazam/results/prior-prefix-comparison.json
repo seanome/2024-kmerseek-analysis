@@ -1,0 +1,50 @@
+[
+  {
+    "sample": "DW1",
+    "run": "SRR9089190",
+    "hashes_match": [
+      true,
+      true
+    ]
+  },
+  {
+    "sample": "DW2",
+    "run": "SRR9089191",
+    "hashes_match": [
+      true,
+      true
+    ]
+  },
+  {
+    "sample": "DW3",
+    "run": "SRR9089188",
+    "hashes_match": [
+      true,
+      true
+    ]
+  },
+  {
+    "sample": "ZW1",
+    "run": "SRR9089189",
+    "hashes_match": [
+      true,
+      true
+    ]
+  },
+  {
+    "sample": "ZW2",
+    "run": "SRR9089186",
+    "hashes_match": [
+      true,
+      true
+    ]
+  },
+  {
+    "sample": "ZW3",
+    "run": "SRR9089187",
+    "hashes_match": [
+      true,
+      true
+    ]
+  }
+]
