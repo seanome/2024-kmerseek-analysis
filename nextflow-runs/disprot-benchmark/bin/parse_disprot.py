@@ -35,6 +35,18 @@ HUMAN_TAXON = "9606"
 PAGE_SIZE = 500
 
 
+def check_entry_ids(entries: list[dict]) -> None:
+    """Reject missing IDs or repeated pages before writing benchmark truth."""
+    seen = set()
+    for entry in entries:
+        identifier = entry.get("disprot_id")
+        if not identifier:
+            sys.exit("DisProt entry has no disprot_id")
+        if identifier in seen:
+            sys.exit(f"duplicate DisProt entry {identifier}: repeated download page?")
+        seen.add(identifier)
+
+
 def fetch_disprot_json(url: str = DISPROT_API) -> list[dict]:
     """Download every human DisProt entry from the API, one page at a time.
 
@@ -44,10 +56,15 @@ def fetch_disprot_json(url: str = DISPROT_API) -> list[dict]:
     all_data = []
     page = 0
     while True:
-        query = urllib.parse.urlencode({
-            "release": "current", "format": "json", "ncbi_taxon_id": HUMAN_TAXON,
-            "page_size": PAGE_SIZE, "page": page,
-        })
+        query = urllib.parse.urlencode(
+            {
+                "release": "current",
+                "format": "json",
+                "ncbi_taxon_id": HUMAN_TAXON,
+                "page_size": PAGE_SIZE,
+                "page": page,
+            }
+        )
         paged_url = f"{url}?{query}"
         print(f"Fetching DisProt page {page}: {paged_url}", file=sys.stderr)
         with urllib.request.urlopen(paged_url, timeout=60) as resp:
@@ -60,10 +77,13 @@ def fetch_disprot_json(url: str = DISPROT_API) -> list[dict]:
         if not entries or len(all_data) >= total:
             break
         page += 1
-        time.sleep(0.5)   # be polite to the API
+        time.sleep(0.5)  # be polite to the API
 
     if len(all_data) != total:
-        sys.exit(f"DisProt API returned {len(all_data)} entries but reports size {total}")
+        sys.exit(
+            f"DisProt API returned {len(all_data)} entries but reports size {total}"
+        )
+    check_entry_ids(all_data)
     return all_data
 
 
@@ -74,7 +94,7 @@ def parse_entry(entry: dict) -> dict | None:
     if taxon != HUMAN_TAXON:
         return None
 
-    disprot_id  = entry.get("disprot_id", "")
+    disprot_id = entry.get("disprot_id", "")
     uniprot_acc = entry.get("acc", entry.get("uniprot_acc", ""))
 
     # gene name lives in genes[0].name.value in the current API
@@ -95,7 +115,7 @@ def parse_entry(entry: dict) -> dict | None:
     regions = []
     for r in regions_raw:
         start = int(r.get("start", 0))
-        end   = int(r.get("end", 0))
+        end = int(r.get("end", 0))
         if start > 0 and end >= start:
             regions.append({"start": start, "end": end, "length": end - start + 1})
 
@@ -104,7 +124,7 @@ def parse_entry(entry: dict) -> dict | None:
     merged = []
     for reg in regions:
         if merged and reg["start"] <= merged[-1]["end"] + 1:
-            merged[-1]["end"]    = max(merged[-1]["end"], reg["end"])
+            merged[-1]["end"] = max(merged[-1]["end"], reg["end"])
             merged[-1]["length"] = merged[-1]["end"] - merged[-1]["start"] + 1
         else:
             merged.append(dict(reg))
@@ -112,13 +132,13 @@ def parse_entry(entry: dict) -> dict | None:
     total_disordered = sum(r["length"] for r in merged)
 
     return {
-        "disprot_id":               disprot_id,
-        "uniprot_acc":              uniprot_acc,
-        "gene_name":                gene_name,
-        "n_disordered_regions":     len(merged),
+        "disprot_id": disprot_id,
+        "uniprot_acc": uniprot_acc,
+        "gene_name": gene_name,
+        "n_disordered_regions": len(merged),
         "total_disordered_residues": total_disordered,
-        "protein_length":           protein_len,
-        "regions_json":             json.dumps(merged),
+        "protein_length": protein_len,
+        "regions_json": json.dumps(merged),
     }
 
 
@@ -133,18 +153,29 @@ def main():
         with open(args.local) as fh:
             payload = json.load(fh)
         raw_entries = payload if isinstance(payload, list) else payload["data"]
-        if isinstance(payload, dict) and "size" in payload and len(raw_entries) != payload["size"]:
-            sys.exit(f"{args.local} holds {len(raw_entries)} entries but reports size "
-                     f"{payload['size']}: one page of a paged download?")
+        if (
+            isinstance(payload, dict)
+            and "size" in payload
+            and len(raw_entries) != payload["size"]
+        ):
+            sys.exit(
+                f"{args.local} holds {len(raw_entries)} entries but reports size "
+                f"{payload['size']}: one page of a paged download?"
+            )
     else:
         raw_entries = fetch_disprot_json(DISPROT_API)
 
+    check_entry_ids(raw_entries)
     print(f"Total DisProt entries: {len(raw_entries)}", file=sys.stderr)
 
     cols = [
-        "disprot_id", "uniprot_acc", "gene_name",
-        "n_disordered_regions", "total_disordered_residues",
-        "protein_length", "regions_json",
+        "disprot_id",
+        "uniprot_acc",
+        "gene_name",
+        "n_disordered_regions",
+        "total_disordered_residues",
+        "protein_length",
+        "regions_json",
     ]
 
     records = []

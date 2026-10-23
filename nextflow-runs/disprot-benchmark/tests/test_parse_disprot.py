@@ -1,5 +1,6 @@
 """parse_disprot.py: pages count from 0, the total is payload["size"], and a disordered
 region is a consensus "Structural state" region of type "D", not any annotation term."""
+
 import importlib.util
 import io
 import json
@@ -15,10 +16,15 @@ spec.loader.exec_module(pd)
 
 
 def entry(i, ss=None, regions=None):
-    return {"disprot_id": f"DP{i:05d}", "acc": f"P{i:05d}", "ncbi_taxon_id": 9606,
-            "length": 100, "genes": [{"name": {"value": f"G{i}"}}],
-            "regions": regions or [],
-            "disprot_consensus": {"full": [], "Structural state": ss or []}}
+    return {
+        "disprot_id": f"DP{i:05d}",
+        "acc": f"P{i:05d}",
+        "ncbi_taxon_id": 9606,
+        "length": 100,
+        "genes": [{"name": {"value": f"G{i}"}}],
+        "regions": regions or [],
+        "disprot_consensus": {"full": [], "Structural state": ss or []},
+    }
 
 
 def serve(pages, size, monkeypatch):
@@ -50,12 +56,50 @@ def test_fetch_stops_on_short_download(monkeypatch):
         pd.fetch_disprot_json()
 
 
+def test_repeated_page_cannot_pass_the_entry_count(monkeypatch):
+    """Four returned rows must not stand in for four distinct DisProt entries."""
+    serve([[entry(0), entry(1)], [entry(0), entry(1)]], size=4, monkeypatch=monkeypatch)
+    with pytest.raises(SystemExit, match="duplicate DisProt entry"):
+        pd.fetch_disprot_json()
+
+
+def test_local_duplicate_entries_are_refused(tmp_path):
+    """A cached repeated page is also invalid, even when its row count matches size."""
+    import subprocess
+    import sys
+
+    source = tmp_path / "duplicate.json"
+    source.write_text(json.dumps({"data": [entry(0), entry(0)], "size": 2}))
+    output = tmp_path / "out.tsv"
+    result = subprocess.run(
+        [
+            sys.executable,
+            str(BIN / "parse_disprot.py"),
+            "--local",
+            str(source),
+            str(output),
+        ],
+        capture_output=True,
+        text=True,
+    )
+    assert result.returncode != 0
+    assert "duplicate DisProt entry" in result.stderr
+    assert not output.exists()
+
+
 def test_regions_are_consensus_disorder_only():
-    e = entry(1,
-              ss=[{"start": 10, "end": 20, "type": "D"}, {"start": 30, "end": 40, "type": "S"}],
-              # a function term outside the disordered stretch: must not become a region
-              regions=[{"start": 10, "end": 20, "term_namespace": "Structural state"},
-                       {"start": 60, "end": 90, "term_namespace": "Disorder function"}])
+    e = entry(
+        1,
+        ss=[
+            {"start": 10, "end": 20, "type": "D"},
+            {"start": 30, "end": 40, "type": "S"},
+        ],
+        # a function term outside the disordered stretch: must not become a region
+        regions=[
+            {"start": 10, "end": 20, "term_namespace": "Structural state"},
+            {"start": 60, "end": 90, "term_namespace": "Disorder function"},
+        ],
+    )
     rec = pd.parse_entry(e)
     assert json.loads(rec["regions_json"]) == [{"start": 10, "end": 20, "length": 11}]
     assert rec["total_disordered_residues"] == 11
@@ -66,6 +110,16 @@ def test_local_one_page_file_is_refused(tmp_path):
     f.write_text(json.dumps({"data": [entry(0)], "size": 2}))
     import subprocess
     import sys
-    r = subprocess.run([sys.executable, str(BIN / "parse_disprot.py"), "--local", str(f),
-                        str(tmp_path / "o.tsv")], capture_output=True, text=True)
+
+    r = subprocess.run(
+        [
+            sys.executable,
+            str(BIN / "parse_disprot.py"),
+            "--local",
+            str(f),
+            str(tmp_path / "o.tsv"),
+        ],
+        capture_output=True,
+        text=True,
+    )
     assert r.returncode != 0 and "one page of a paged download" in r.stderr
