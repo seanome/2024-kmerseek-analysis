@@ -12,3 +12,7 @@ Scaled100 is the preferred smaller archive index, but compare its coverage again
 Swiss-Prot protein FASTA does not provide a DNA reference. Keep its protein retrieval separate from optional downstream alignment/domain annotation. The settings were sent to the Botryllus Shazam chat at Olga's explicit request.
 
 The existing `archive100.py` and queued scale100 worker plan predate the two-scale public-SRA instruction. Update and validate them before the full worker rollout. They must not be described as a completed scaled10-versus-scaled100 comparison.
+
+## Shared oyster and Botryllus extension rule
+
+For both focal experiments, extend every anchor with adjusted P strictly less than 0.05. There is no top-N or top-300 cap. Retain every resulting extension and explicitly count significant anchors without extension output. Input depth, completion state and output counts are separate fields; none changes this rule. Historical 300-anchor pilots remain labelled as historical. Public archive runs still receive no SPLASH discovery or extension.
