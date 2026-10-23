@@ -182,6 +182,10 @@ nextflow-runs/kmer-spectra/results-*/
 .nextflow.log*
 work/
 results/
+# Except the leaderboard tables, which the leaderboard site copies from a commit.
+!/results/
+/results/*
+!/results/leaderboard/
 results-test/
 *.report.html
 *.timeline.html
