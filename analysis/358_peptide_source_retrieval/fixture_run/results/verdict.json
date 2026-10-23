@@ -1,0 +1,77 @@
+{
+  "verdict": "INSUFFICIENT_EVIDENCE",
+  "reasons": [
+    "data_origin is synthetic_fixture: synthetic calls cannot show usefulness",
+    "485 calls left after exclusions, fewer than 500"
+  ],
+  "verdict_if_data_were_real": "FAIL",
+  "strongest_full_method": "align",
+  "full_method_meets_gates_1_to_3": {
+    "exact": false,
+    "align": false,
+    "exact_then_align": false
+  },
+  "settings": {
+    "reduced_massspec18_k5": {
+      "gates": {
+        "gate1_recovery_ge_0.95": false,
+        "gate2_false_assignment_le_0.01": false,
+        "gate3_median_surviving_le_5": true
+      },
+      "criteria": {
+        "A_recovery_gain_ge_10pp": false,
+        "B_runtime_5x_lower_at_matched_recovery": false
+      },
+      "recovery_gain_vs_strongest_full": 0.0,
+      "recovery_gain_ci": [
+        0.0,
+        0.0
+      ],
+      "matched_full_method": null,
+      "speedup": NaN,
+      "gain_vanishes_after_verification": false,
+      "passes": false
+    },
+    "reduced_sdm12_k6": {
+      "gates": {
+        "gate1_recovery_ge_0.95": false,
+        "gate2_false_assignment_le_0.01": false,
+        "gate3_median_surviving_le_5": true
+      },
+      "criteria": {
+        "A_recovery_gain_ge_10pp": false,
+        "B_runtime_5x_lower_at_matched_recovery": false
+      },
+      "recovery_gain_vs_strongest_full": -0.009433962264150941,
+      "recovery_gain_ci": [
+        -0.02358490566037741,
+        0.0
+      ],
+      "matched_full_method": null,
+      "speedup": NaN,
+      "gain_vanishes_after_verification": false,
+      "passes": false
+    },
+    "reduced_dayhoff6_k8": {
+      "gates": {
+        "gate1_recovery_ge_0.95": false,
+        "gate2_false_assignment_le_0.01": false,
+        "gate3_median_surviving_le_5": true
+      },
+      "criteria": {
+        "A_recovery_gain_ge_10pp": false,
+        "B_runtime_5x_lower_at_matched_recovery": false
+      },
+      "recovery_gain_vs_strongest_full": -0.009433962264150941,
+      "recovery_gain_ci": [
+        -0.06132075471698106,
+        0.04245283018867918
+      ],
+      "matched_full_method": null,
+      "speedup": NaN,
+      "gain_vanishes_after_verification": false,
+      "passes": false
+    }
+  },
+  "source_absent_note": "53 source-absent evaluation calls; 0 false assignments would still allow a true rate up to 6.8% (Wilson 95% upper bound)"
+}

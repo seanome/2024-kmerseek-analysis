@@ -1,0 +1,12 @@
+{
+  "method": "reduced_sdm12_k6",
+  "n_queries": 948,
+  "load_seconds": 0.004347125010099262,
+  "cold_wall_seconds": 0.2959619580069557,
+  "cold_cpu_seconds": 0.29578000000000015,
+  "cold_verify_seconds": 0.20095185056561604,
+  "warm_wall_seconds": 0.294153000053484,
+  "warm_cpu_seconds": 0.2939480000000003,
+  "warm_verify_seconds": 0.20322482398478314,
+  "peak_rss_bytes": 148291584
+}
