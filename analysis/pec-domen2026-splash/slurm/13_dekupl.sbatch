@@ -27,6 +27,11 @@ TMP=${L_SCRATCH:-$D/$W}/dekupl_tmp_$SLURM_JOB_ID
 mkdir -p "$TMP"
 "$PEC_ROOT/env/bin/python" "$PEC_CODE/scripts/dekupl_config.py" ../design.tsv "$D/$W/fastq" "$TMP" config.json "$METHOD"
 IMG=$PEC_ROOT/images/dekupl-run_1.3.5.sif
+# The image's limma script loads the R package pryr (never used) but the image lacks it.
+# pryr 0.1.4 (CRAN archive, 2018) is installed beside the image and put on R's library path;
+# DE-kupl's own code is not changed.
+export APPTAINERENV_R_LIBS=$PEC_ROOT/Rlib_dekupl
+[ -d "$APPTAINERENV_R_LIBS/pryr" ] || { echo "pryr side library missing"; exit 2; }
 MEM_MB=$(( SLURM_MEM_PER_NODE * 9 / 10 ))
 /usr/bin/time -v -o ../$W.time apptainer run --bind /scratch --bind "$TMP" "$IMG" \
   --configfile config.json -j "$SLURM_CPUS_PER_TASK" --resources ram=$MEM_MB -p > ../$W.log 2>&1
