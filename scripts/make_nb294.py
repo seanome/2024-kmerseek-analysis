@@ -1139,8 +1139,8 @@ md(r"""
 Section 4b's recall comes from a seed and its extension. Two upper bounds limit it, and
 neither was measured above.
 
-1. *The seed ceiling.* A seed design can only find a pair whose alignment holds at least one
-   exact run of k matching HP classes. If few pairs hold one, no seed design can gain much,
+1. *The seed ceiling.* This aligned-run calculation counts pairs whose supplied alignment holds at least one
+   exact run of k matching HP classes. Shared words at other offsets can still seed a search; this count does not bound search recall,
    whatever it scores.
 2. *The scoring ceiling.* Even a pair with a seed is missed when its extended score stays
    under the null threshold. If the whole alignment, scored with the best HP matrix, finds
@@ -1249,7 +1249,7 @@ ax.set_ylim(0, 102)
 hc.finish_figure(
     fig, FIG / "294_seed_ceiling.png", tools=hc.NO_TOOL,
     title="Seed ceiling: Pfam seed pairs with an exact HP run of k (hp_thomas_dill2, report half)",
-    hypothesis="If few remote pairs carry a k-run, no seed design can find them, whatever it scores.",
+    hypothesis="This counts matching runs at corresponding alignment positions; other offsets are not measured.",
     conclusion=(f"At 20-30% identity, {100 * seed8['share']:.1f}% of pairs carry an 8-run ({100 * seed6['share']:.1f}% a 6-run), "
                 f"but one 8-letter word finds {100 * seed8['recall']:.1f}%: {100 * seed8['lost']:.1f} points are lost after the seed, in the scoring. "
                 "Squares are shifted sideways by identity so they do not overlap."),
@@ -1445,16 +1445,15 @@ hc.finish_figure(
 """)
 
 md(r"""
-**Verdict for 4e: most missing pairs carry a seed; what they lack is a score added up across gaps.** All numbers
+**Verdict for 4e: most missed pairs have an aligned 8-run; the partition does not establish why each pair was missed.** All numbers
 are for the report half at 20–30% identity, 7,512 true pairs.
 
 - *Seed ceiling.* 92.6% of pairs carry an 8-run and 99.3% a 6-run, yet one 8-letter word
   with extension finds 39.2%. Of the 60.8 points between B2 and 100%, 7.4 are pairs with no
-  8-letter seed at all and 53.4 are pairs that have a seed but score below the threshold. A
-  design that gains only by finding a seed in pairs that have no 8-run can add at most 7.4
-  points (6.7 for 6-letter seeds), below 10, and fewer once its own threshold is set. So
-  seeds in new pairs alone cannot give the 10 points; a gain that large has to come from how
-  pairs that already carry a seed are scored (B3's second segment is one such change).
+  8-letter run at corresponding alignment positions and 53.4 are pairs with such a run
+  that score below the threshold. The 7.4 points describe this aligned-run partition only.
+  Shared words at other offsets are not counted, so these results do not rule out a
+  10-point gain from a different seed search. B3's second segment improves the measured score.
 - *Scoring ceiling.* Summing the 2×2 log-odds score over each whole alignment finds 85.4%
   (95% interval 76.0 to 88.4), 37.8 points above B3 (30.1 to 42.5). It recovers 46.2 of the
   60.8 points; the other 14.6 stay out of reach even with the whole alignment. With the
@@ -2078,9 +2077,9 @@ matches: lower is better.
    the designs whose gain interval lies above 0 cost 3 to 55 times B2's chance matches. The chance matches
    are counted on Swiss-Prot; recall is still scored on each pair's own alignment.
 11. **Two ceilings: most missing pairs carry a seed** (section 4e, added 2026-10-17). At
-   20–30% identity 92.6% of pairs carry an exact 8-letter HP match, but B2 finds 39.2%, so
+   20–30% identity 92.6% of pairs carry an exact 8-letter HP match at corresponding alignment positions, but B2 finds 39.2%, so
    53.4 of the 60.8 missing points are pairs with a seed that score too low, and only 7.4
-   have no seed. Scoring the whole alignment with a 2×2 HP log-odds matrix finds 85.4%
+   have no 8-run at corresponding alignment positions. Shared words elsewhere are not excluded. Scoring the whole alignment with a 2×2 HP log-odds matrix finds 85.4%
    (76.0 to 88.4), 37.8 points above B3; the best single ungapped stretch finds 42.3%. This
    is an upper bound: the whole alignment is given, and the shuffled targets are not
    realigned.
