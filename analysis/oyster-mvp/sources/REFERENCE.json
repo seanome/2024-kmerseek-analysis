@@ -1,0 +1,14 @@
+{
+  "rna.fna.gz": {
+    "url": "https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/297/895/GCF_000297895.1_oyster_v9/GCF_000297895.1_oyster_v9_rna.fna.gz",
+    "sha256": "43d23ce19080d21547998ce34cf3952025eaa624aa4e8c0c8d126543679dd2f2"
+  },
+  "protein.faa.gz": {
+    "url": "https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/297/895/GCF_000297895.1_oyster_v9/GCF_000297895.1_oyster_v9_protein.faa.gz",
+    "sha256": "1ced830a2b1a709f3b151fe568564d8c2ce3ff2343d9d37f9c61455903fb8c7e"
+  },
+  "feature_table.txt.gz": {
+    "url": "https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/297/895/GCF_000297895.1_oyster_v9/GCF_000297895.1_oyster_v9_feature_table.txt.gz",
+    "sha256": "069c3cd0fbb47d781643a8261ed07e4de19466d881bf7268aaf3218c186f60f9"
+  }
+}

@@ -1,0 +1,19 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "clam-context"
+version = "0.1.0"
+description = "SPLASH sequence events to protein and Dayhoff sourmash evidence"
+requires-python = ">=3.10"
+dependencies = ["sourmash==4.9.4", "biopython>=1.84,<2"]
+
+[project.optional-dependencies]
+test = ["pytest>=8,<10"]
+
+[project.scripts]
+clam-context = "clam_context.cli:main"
+
+[tool.setuptools.package-data]
+clam_context = ["viewer.html"]
