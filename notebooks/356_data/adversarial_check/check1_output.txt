@@ -1,0 +1,14 @@
+verdict exons: 1669  by species: [('chicken', 516), ('zebrafish', 1153)]
+unique (species,target,start,end): 1669
+pairs represented: 261
+internal<=60 on pairs, before model filter: 3178
+exon_len range in verdict: 7 60
+kmerseek             calls=  1155248 settings= 404 lands= 1129 (67.6%)
+foldseek             calls=      322 settings=   1 lands=    0 (0.0%)
+reseek               calls=      336 settings=   1 lands=    0 (0.0%)
+prostt5              calls=      532 settings=   1 lands=    0 (0.0%)
+hmmer3_phmmer        calls=      636 settings=   1 lands=    0 (0.0%)
+hmmer3_jackhmmer     calls=      626 settings=   1 lands=    0 (0.0%)
+mmseqs2_seqseq       calls=      546 settings=   1 lands=    0 (0.0%)
+mmseqs2_iterative    calls=      546 settings=   1 lands=    0 (0.0%)
+hhblits              calls=     1312 settings=   1 lands=   68 (4.1%)

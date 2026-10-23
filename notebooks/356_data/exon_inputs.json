@@ -1,0 +1,36 @@
+{
+  "n_queries": 998,
+  "qfo_release": "/Users/olga/data/quest-for-orthologs/QfO_release_2020_04_with_updated_UP000008143/Eukaryota",
+  "gcoord_md5": {
+    "chicken": "54f27d7c02679a0e6e031a1dddfb5258",
+    "zebrafish": "0bbe87f6153539793653da9d78dacce6"
+  },
+  "species": {
+    "chicken": {
+      "n_pairs_1to1": 207,
+      "targets_by_outcome": {
+        "kept": 203,
+        "no transcript reaches both protein ends": 1,
+        "not in gcoord.xml": 3
+      },
+      "n_targets_with_exons": 203,
+      "n_exons": 1860,
+      "n_internal_le60": 1213,
+      "n_agrees_uniprot": 1860,
+      "n_single_exon_proteins": 11
+    },
+    "zebrafish": {
+      "n_pairs_1to1": 339,
+      "targets_by_outcome": {
+        "kept": 338,
+        "not in gcoord.xml": 1
+      },
+      "n_targets_with_exons": 338,
+      "n_exons": 3021,
+      "n_internal_le60": 1965,
+      "n_agrees_uniprot": 3021,
+      "n_single_exon_proteins": 30
+    }
+  },
+  "n_duplicate_intervals_dropped": 0
+}

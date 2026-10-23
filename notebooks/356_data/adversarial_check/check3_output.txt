@@ -1,0 +1,9 @@
+verdict rows 1669
+unique exon_id: 1669
+unique (species,target,start,end): 1669
+transcripts per target (max): 1
+pairs rows 546 unique (species,target) 546 unique (species,query) 546
+verdict exons overlapping the previous verdict exon of the same target by >1 residue: 0
+chicken verdict targets 81 distinct sequences 81 distinct exon peptides 516 of 516
+zebrafish verdict targets 180 distinct sequences 180 distinct exon peptides 1153 of 1153
+unique genes in verdict: 261 targets: 261
