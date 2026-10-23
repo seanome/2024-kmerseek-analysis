@@ -71,3 +71,13 @@ Tests replay the actual ten-job accounting, reject a changed state, check the ex
 seven-setting selection, exercise archival on a scratch fixture, and verify that a
 completed marker or protected alphabet prevents changes. These tests do not reproduce
 the full-scale merge or calibration. Completion remains pending on Sherlock.
+
+## Submitted jobs
+
+The selective restart submitted exactly seven jobs: protein20 49183033, dayhoff6
+49183035, funcgroups8 49183036, hsdm17 49183037, mmseqs12 49183038, sdm12
+49183041 and wass14 49183044. All seven were pending at the recorded queue snapshot.
+`jobs.tsv` records the old-to-new mapping; `after_submission.txt` records the queue.
+The nine completion, fit-status and source-SHA files for the three protected indexes
+have identical sizes, modification times and SHA256 hashes before and after submission.
+No full-database checksum was computed.
