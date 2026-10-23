@@ -92,7 +92,7 @@ pull-uniref90:
 
 pull-uniref100:
 	rsync -avz --progress \
-	  $(SHERLOCK_HOST):'$$SCRATCH/kmer-spectra-analysis/nextflow-run/kmer-spectra/results-uniref100/' \
+	  $(SHERLOCK_HOST):'$$SCRATCH/kmer-spectra-analysis/nextflow-runs/kmer-spectra/results-uniref100/' \
 	  $(LOCAL_RESULTS_ROOT)/kmerseek-kmer-spectra-uniref100/
 
 # Not part of pull-all -- pull these explicitly once their runs actually exist,
