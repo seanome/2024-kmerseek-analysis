@@ -7,11 +7,12 @@ E<=10 finds any HSP for the pair at all.
   easy — DIAMOND found >=1 HSP (sanity control: the relationship IS
          detectable by a fast local aligner)
   hard — DIAMOND found nothing (the capability-claim stratum: does
-         kmerseek localize a shared domain in pairs where no sequence
-         method finds the relationship at all?)
+         kmerseek localize a shared domain in pairs where DIAMOND finds no
+         HSP under these settings? This does not test every sequence method.)
 
 Only positive (shared-domain) pairs are stratified — negative pairs share
-no Pfam domain, so there is no relationship for DIAMOND to find or miss.
+no annotated Pfam domain. They are benchmark negatives; this does not prove
+that the proteins have no evolutionary relationship.
 
 DIAMOND here is used ONLY as a hard/easy detector, never as an identity
 source. Global %identity is computed via a full Needleman-Wunsch global
@@ -141,7 +142,9 @@ def nw_identity(task: tuple) -> tuple:
     aln = aligner.align(h_seq, s_seq)[0]
     a1, a2 = str(aln[0]), str(aln[1])
     aln_len = len(a1)
-    matches = sum(1 for x, y in zip(a1, a2) if x == y and x != "-")
+    matches = sum(
+        1 for x, y in zip(a1, a2) if x == y and x in "ACDEFGHIKLMNPQRSTVWY"
+    )  # Sanitized unknown/ambiguous letters are not evidence of residue identity.
     identity = matches / aln_len if aln_len else 0.0
     return h_acc, s_acc, identity, float(aln.score), aln_len
 
