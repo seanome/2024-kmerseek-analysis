@@ -700,7 +700,7 @@ process computeDarkSet {
     publishDir "${params.outdir}/${species}", mode: 'copy'
 
     input:
-    tuple val(species), path(query), path(hits, stageAs: 'hits/*')
+    tuple val(species), path(query), path(hits, stageAs: 'hits/*'), val(expected_chunks)
     // The registry names the focus proteins (BHF for Botryllus) the report follows.
     path registry, stageAs: 'species_metadata.json'
 
@@ -712,6 +712,7 @@ process computeDarkSet {
     set -euo pipefail
     compute_dark_set.py \\
         --query ${query} --species ${species} \\
+        --expected-chunks ${expected_chunks} \\
         --evalue-call ${params.evalue_call} \\
         --registry ${registry} \\
         --hits hits/*.tsv.gz \\
@@ -895,7 +896,7 @@ workflow darkSet {
         .map { k, fs -> tuple(k.getGroupTarget(), fs) }
 
     registry_file = Channel.value(file(params.registry))
-    dark = computeDarkSet(proteome.join(hits), registry_file)
+    dark = computeDarkSet(proteome.join(hits).join(n_chunks), registry_file)
 
     // Everything the report can draw besides the headline, as (species, file). Each
     // optional arm mixes its own products in where it runs, so a run without that arm

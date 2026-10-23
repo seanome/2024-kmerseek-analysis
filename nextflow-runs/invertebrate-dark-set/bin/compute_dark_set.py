@@ -19,6 +19,8 @@ re-running any search.
 import argparse
 import gzip
 import json
+import math
+import re
 from pathlib import Path
 
 import polars as pl
@@ -27,20 +29,65 @@ import polars as pl
 COLS = ["query", "target", "tstart", "tend", "bits", "evalue"]
 
 
+ARMS = ("phmmer", "jackhmmer", "mmseqs2")
+
+
 def arm_of(path: Path) -> str:
-    for arm in ("phmmer", "jackhmmer", "mmseqs2"):
-        if arm in path.name:
-            return arm
-    return path.name
+    match = re.search(r"(?:^|\.)(phmmer|jackhmmer|mmseqs2)\.tsv(?:\.gz)?$", path.name)
+    if match is None:
+        raise ValueError(f"unrecognised baseline arm filename: {path}")
+    return match.group(1)
+
+
+def validate_hit_files(paths: list[Path], expected_chunks: int | None = None) -> dict:
+    """Require the same unique chunk outputs from all three baseline arms.
+
+    A missing chunk shared by every arm can only be detected when expected_chunks is
+    supplied from the pipeline's query split, not inferred from the available files.
+    """
+    chunks = {arm: set() for arm in ARMS}
+    for path in paths:
+        arm = arm_of(path)
+        prefix = re.sub(r"(?:^|\.)" + arm + r"\.tsv(?:\.gz)?$", "", path.name)
+        if prefix in chunks[arm]:
+            raise ValueError(f"duplicate {arm} chunk output: {prefix}")
+        chunks[arm].add(prefix)
+    if not all(chunks.values()):
+        raise ValueError("need output files for phmmer, jackhmmer and mmseqs2")
+    if any(chunks[arm] != chunks[ARMS[0]] for arm in ARMS[1:]):
+        raise ValueError("baseline arms have different chunk coverage")
+    if expected_chunks is not None:
+        if expected_chunks < 1 or len(chunks[ARMS[0]]) != expected_chunks:
+            raise ValueError(
+                f"expected {expected_chunks} chunks per arm; found {len(chunks[ARMS[0]])}"
+            )
+    return {
+        "files_per_arm": {arm: len(ids) for arm, ids in chunks.items()},
+        "expected_chunks": expected_chunks,
+        "complete_chunk_count_checked": expected_chunks is not None,
+    }
 
 
 def read_hits(path: Path) -> pl.DataFrame:
-    if path.stat().st_size == 0:
-        return pl.DataFrame({c: [] for c in COLS}).with_columns(
-            pl.lit(arm_of(path)).alias("arm"))
-    df = pl.read_csv(path, separator="\t", has_header=False, infer_schema_length=0,
-                     truncate_ragged_lines=True, new_columns=COLS)
-    return df.with_columns(pl.lit(arm_of(path)).alias("arm"))
+    empty = pl.DataFrame(schema={c: pl.String for c in COLS})
+    try:
+        df = pl.read_csv(path, separator="\t", has_header=False, infer_schema_length=0)
+    except pl.exceptions.NoDataError:
+        df = empty
+    if df.width != len(COLS):
+        raise ValueError(f"{path}: expected exactly six hit columns, got {df.width}")
+    df.columns = COLS
+    if any(
+        df[c].is_null().any() or (df[c].str.strip_chars() == "").any()
+        for c in ("query", "target")
+    ):
+        raise ValueError(f"{path}: missing query or target identifier")
+    ev = df["evalue"].cast(pl.Float64, strict=False)
+    if (ev.is_null() | ~ev.is_finite() | (ev < 0)).any():
+        raise ValueError(
+            f"{path}: invalid E-value; expected finite nonnegative numbers"
+        )
+    return df.with_columns(ev.alias("evalue"), pl.lit(arm_of(path)).alias("arm"))
 
 
 def query_accessions(fasta: Path) -> list[str]:
@@ -65,24 +112,40 @@ def focus_proteins(registry: Path | None, species: str) -> dict[str, str]:
 
 
 def main() -> None:
-    ap = argparse.ArgumentParser(description=__doc__,
-                                 formatter_class=argparse.RawDescriptionHelpFormatter)
+    ap = argparse.ArgumentParser(
+        description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter
+    )
     ap.add_argument("--query", type=Path, required=True)
     ap.add_argument("--species", required=True)
     ap.add_argument("--hits", type=Path, nargs="+", required=True)
     ap.add_argument("--evalue-call", type=float, default=1e-3)
-    ap.add_argument("--registry", type=Path, default=None,
-                    help="species_metadata.json; its focus_proteins for --species are "
-                         "followed through the report, so their per-arm best E-value "
-                         "and placed/dark call are written into the summary")
+    ap.add_argument(
+        "--expected-chunks",
+        type=int,
+        default=None,
+        help="query split chunk count; required to detect chunks missing from every arm",
+    )
+    ap.add_argument(
+        "--registry",
+        type=Path,
+        default=None,
+        help="species_metadata.json; its focus_proteins for --species are "
+        "followed through the report, so their per-arm best E-value "
+        "and placed/dark call are written into the summary",
+    )
     ap.add_argument("--out", type=Path, required=True)
     ap.add_argument("--summary-out", type=Path, default=None)
     args = ap.parse_args()
 
+    if not math.isfinite(args.evalue_call) or args.evalue_call < 0:
+        raise SystemExit("--evalue-call must be finite and nonnegative")
+    validation = validate_hit_files(args.hits, args.expected_chunks)
     accs = query_accessions(args.query)
     if not accs:
         raise SystemExit(f"no records in {args.query}")
-    proteome = pl.DataFrame({"accession": accs}).unique()
+    if len(set(accs)) != len(accs):
+        raise SystemExit("duplicate query accessions in FASTA")
+    proteome = pl.DataFrame({"accession": accs})
 
     frames = [read_hits(h) for h in args.hits]
     hits = pl.concat(frames, how="diagonal") if frames else None
@@ -96,22 +159,30 @@ def main() -> None:
         )
 
     hits = hits.with_columns(pl.col("evalue").cast(pl.Float64, strict=False))
+    unknown = set(hits["query"].to_list()) - set(accs)
+    if unknown:
+        raise SystemExit(f"hit queries absent from FASTA: {sorted(unknown)[:3]}")
     called = hits.filter(pl.col("evalue") <= args.evalue_call)
 
     per_arm = {}
-    for arm in sorted(hits["arm"].unique().to_list()):
+    for arm in ARMS:
         per_arm[arm] = int(called.filter(pl.col("arm") == arm)["query"].n_unique())
 
     placed = called.select("query").unique().rename({"query": "accession"})
     # Left join then null-check, never a horizontal min/max: a left join that misses leaves
     # nulls, and treating null as "no hit" has to be explicit or it silently becomes one.
-    marked = proteome.join(placed.with_columns(pl.lit(True).alias("placed")),
-                           on="accession", how="left")
+    marked = proteome.join(
+        placed.with_columns(pl.lit(True).alias("placed")), on="accession", how="left"
+    )
     marked = marked.with_columns(
-        pl.when(pl.col("placed").is_null()).then(False).otherwise(True).alias("placed"))
+        pl.when(pl.col("placed").is_null()).then(False).otherwise(True).alias("placed")
+    )
 
-    dark = marked.filter(~pl.col("placed")).select("accession").with_columns(
-        pl.lit(args.species).alias("species"))
+    dark = (
+        marked.filter(~pl.col("placed"))
+        .select("accession")
+        .with_columns(pl.lit(args.species).alias("species"))
+    )
     dark.write_parquet(args.out, compression="zstd")
 
     total = proteome.height
@@ -122,16 +193,22 @@ def main() -> None:
     for acc, what in focus_proteins(args.registry, args.species).items():
         mine = hits.filter(pl.col("query") == acc)
         arms = {}
-        for arm in sorted(hits["arm"].unique().to_list()):
+        for arm in ARMS:
             best = mine.filter(pl.col("arm") == arm)["evalue"].min()
-            arms[arm] = {"best_evalue": (float(best) if best is not None else None),
-                         "placed": bool(best is not None and best <= args.evalue_call)}
-        focus[acc] = {"what": what, "in_proteome": acc in accs,
-                      "placed": any(a["placed"] for a in arms.values()),
-                      "per_arm": arms}
+            arms[arm] = {
+                "best_evalue": (float(best) if best is not None else None),
+                "placed": bool(best is not None and best <= args.evalue_call),
+            }
+        focus[acc] = {
+            "what": what,
+            "in_proteome": acc in accs,
+            "placed": any(a["placed"] for a in arms.values()),
+            "per_arm": arms,
+        }
 
     summary = {
         "species": args.species,
+        "input_validation": validation,
         "proteins_in_proteome": total,
         "proteins_placed_by_any_arm": total - n_dark,
         "proteins_dark": n_dark,
@@ -142,8 +219,10 @@ def main() -> None:
         "focus_proteins": focus,
     }
     print(json.dumps(summary, indent=2))
-    print(f"\n{args.species}: {n_dark} of {total} proteins ({100 * n_dark / total:.1f}%) "
-          f"are dark to phmmer, jackhmmer and mmseqs2 at E<={args.evalue_call}")
+    print(
+        f"\n{args.species}: {n_dark} of {total} proteins ({100 * n_dark / total:.1f}%) "
+        f"are dark to phmmer, jackhmmer and mmseqs2 at E<={args.evalue_call}"
+    )
     if args.summary_out:
         args.summary_out.write_text(json.dumps(summary, indent=2))
 
