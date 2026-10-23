@@ -16,6 +16,9 @@ Channels:
               rows of diff-counts.tsv.gz), placed in genes the same way as anchors
 
 A gene is found by a channel if at least one of its anchors is significant in that channel.
+Anchors shared by two or more genes (paralogs in the old gene models) are not given to any gene;
+they are split into those whose gene set holds a planted change and those in unchanged genes only,
+and planted genes reached only through shared anchors are counted apart.
 """
 
 import json
@@ -156,6 +159,22 @@ def main():
             genes_found.add(p)
         for g in genes_found:
             found[gene_class[g]] += 1
+        # anchors in two or more genes: does the gene set hold a planted change, or only unchanged genes?
+        multi_split = Counter()
+        multi_genes_changed = Counter()
+        for a in s:
+            gs = kmer_genes.get(a, set())
+            if len(gs) < 2:
+                continue
+            cls = {gene_class[g] for g in gs}
+            if cls == {"unchanged"}:
+                multi_split["all_unchanged"] += 1
+            else:
+                multi_split["includes_planted_change"] += 1
+                for g in gs:
+                    if gene_class[g] != "unchanged":
+                        multi_genes_changed[g] += 1
+        found_shared = Counter(gene_class[g] for g in multi_genes_changed if g not in genes_found)
         anchors_by_class = Counter(
             gene_class[place(a)] for a in s if place(a) not in ("multi", "none")
         )
@@ -166,6 +185,8 @@ def main():
             genes_in_class={c: class_n[c] for c in classes},
             recall={c: round(found[c] / class_n[c], 4) for c in classes},
             significant_anchors_by_class={c: anchors_by_class[c] for c in classes},
+            shared_anchor_split=dict(multi_split),
+            planted_genes_found_only_through_shared_anchors={c: found_shared[c] for c in classes},
         )
         for g in genes_found:
             rows.append(dict(channel=ch, gene=g, truth_class=gene_class[g]))
