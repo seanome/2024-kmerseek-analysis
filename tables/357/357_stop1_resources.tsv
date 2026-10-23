@@ -1,0 +1,15 @@
+# First-attempt asks for notebook 357 Stop 1 on Sherlock (hns partition). Copied from nb 342 Stop 3
+# (tables/342/342_stop3_resources.tsv on olgabot/exon-function-342), the "regions" rows for the same
+# alphabet and k, as notebooks/357_preregistration.md says. Those rows were measured on the Swiss-Prot
+# regions index; the condensate index holds 176 sequences (88 regions + 88 decoys), so these asks are
+# far above what this run needs and cannot be too small. A retry (RETRY=1) doubles both.
+# Searches: 10 chunks of about 903 queries, as nb 342.
+step	alphabet	k	cpus	mem_gb	hours	source_row
+index	aro_hyd_chg_pol4	11	8	110	2	nb 342 index regions
+index	aro_hyd_arg_chg_pol5	9	8	110	2	nb 342 index regions
+index	hp_pbotc_1st_ed2	21	8	48	1	nb 342 index regions
+index	protein20	5	8	56	1	nb 342 index regions
+search	aro_hyd_chg_pol4	11	4	120	2	nb 342 search regions
+search	aro_hyd_arg_chg_pol5	9	4	120	2	nb 342 search regions
+search	hp_pbotc_1st_ed2	21	4	32	1	nb 342 search regions
+search	protein20	5	4	48	1	nb 342 search regions

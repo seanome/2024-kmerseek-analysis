@@ -1,0 +1,9 @@
+# Mismatch penalty (c_opt) and give-up margin (xdrop_4c) per alphabet, copied from nb 342
+# (tables/342/kappa_by_alphabet_new_rows.tsv and dark_set_kappa_by_alphabet.ec91da5.tsv on
+# olgabot/exon-function-342), so the search uses the same scoring as nb 342 Stop 3 and the
+# whole-protein fit made with it.
+alphabet	c_opt	xdrop_4c
+aro_hyd_chg_pol4	0.58	2.32
+aro_hyd_arg_chg_pol5	0.46	1.85
+hp_pbotc_1st_ed2	1.59	6.35
+protein20	0.14	0.57
