@@ -83,6 +83,9 @@ def read_hits(path: Path, score: str, columns: list[str] | None) -> pl.LazyFrame
 
 
 def label_hits(hits: pl.LazyFrame, dom: pl.DataFrame, higher_first: bool) -> pl.DataFrame:
+    invalid = hits.select((pl.col("score").is_null() | pl.col("score").is_nan()).any()).collect().item()
+    if invalid:
+        raise ValueError("Hit scores must not contain null or NaN values")
     q = dom.select(pl.col("domain_id").alias("query"), pl.col("family").alias("q_fam"),
                    pl.col("superfamily").alias("q_sf"), pl.col("fold").alias("q_fold"))
     t = dom.select(pl.col("domain_id").alias("target"), pl.col("family").alias("t_fam"),
