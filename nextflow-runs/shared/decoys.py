@@ -67,3 +67,33 @@ def dipeptide_shuffle(seq: str, rng: random.Random) -> str:
         u = order[u].pop(0)
         walk.append(u)
     return "".join(walk)
+
+
+def full_shuffle(seq: str, rng: random.Random) -> str:
+    """A random permutation of `seq`: same residue counts, nothing else kept.
+
+    Every pattern that depends on where a residue sits is gone, the cysteine spacing of a
+    disulfide-rich peptide included, so a hit to one of these is a chance hit under any
+    alphabet. Use it as the floor a real result has to clear.
+    """
+    residues = list(seq)
+    rng.shuffle(residues)
+    return "".join(residues)
+
+
+def shuffle_around_fixed(seq: str, rng: random.Random, fixed: str = "C") -> str:
+    """A permutation of `seq` that leaves every residue in `fixed` where it was.
+
+    `dipeptide_shuffle` and `full_shuffle` both move the cysteines, so neither separates
+    "the cysteine spacing carries the signal" from "the residues between the cysteines
+    carry it". This keeps the spacing exactly and shuffles everything else, so a search
+    that scores the same on these as on the real peptides is reading the spacing alone.
+
+    Residues in `fixed` keep their positions; the rest are permuted among the positions
+    they already occupied, so the residue counts do not change either.
+    """
+    keep = set(fixed)
+    movable = [r for r in seq if r not in keep]
+    rng.shuffle(movable)
+    moved = iter(movable)
+    return "".join(r if r in keep else next(moved) for r in seq)
