@@ -35,6 +35,7 @@ import math
 import os
 import re
 import shutil
+import signal
 import subprocess
 import sys
 import threading
@@ -406,17 +407,36 @@ def maxrss_bytes(ru_maxrss: int, platform: str = sys.platform) -> int:
     return ru_maxrss if platform == "darwin" else ru_maxrss * 1024
 
 
-def timed_run(cmd: list[str], env: dict, stderr_path: Path, count_stdout: bool) -> dict:
+def timed_run(
+    cmd: list[str], env: dict, stderr_path: Path, count_stdout: bool,
+    timeout_s: float | None = None,
+) -> dict:
     """Run one process; return wall seconds, peak RSS (GB), exit status and output counts.
 
     Wall time is from just before the process starts to its exit, read with
     time.perf_counter. Peak RSS is ru_maxrss from os.wait4, converted to GB (1e9 bytes). When
     count_stdout is true, stdout is read in 4 MB blocks and only its bytes and line breaks
-    are counted, then discarded.
+    are counted, then discarded. With timeout_s, a process still running at the
+    deadline is killed and recorded with exit 124, including partial output counts.
     """
     with open(stderr_path, "wb") as err:
         start = time.perf_counter()
         proc = subprocess.Popen(cmd, env=env, stdout=subprocess.PIPE if count_stdout else subprocess.DEVNULL, stderr=err)
+        timed_out = threading.Event()
+
+        def stop_process():
+            try:
+                # Avoid Popen.poll(): wait4 below owns child reaping for peak RSS.
+                os.kill(proc.pid, signal.SIGKILL)
+            except ProcessLookupError:
+                return
+            timed_out.set()
+
+        timer = None
+        if timeout_s is not None:
+            timer = threading.Timer(max(0.0, timeout_s), stop_process)
+            timer.daemon = True
+            timer.start()
         n_bytes = n_lines = 0
         if count_stdout:
             for block in iter(lambda: proc.stdout.read(1 << 22), b""):
@@ -424,12 +444,15 @@ def timed_run(cmd: list[str], env: dict, stderr_path: Path, count_stdout: bool) 
                 n_lines += block.count(b"\n")
             proc.stdout.close()
         _, status, usage = os.wait4(proc.pid, 0)
+        if timer is not None:
+            timer.cancel()
+            timer.join()
         wall = time.perf_counter() - start
     proc.returncode = os.waitstatus_to_exitcode(status)
     return {
         "wall_s": wall,
         "peak_rss_gb": maxrss_bytes(usage.ru_maxrss) / 1e9,
-        "exit": proc.returncode,
+        "exit": 124 if timed_out.is_set() else proc.returncode,
         "stdout_bytes": n_bytes,
         "stdout_lines": n_lines,
     }
@@ -543,7 +566,10 @@ def run_size(args) -> None:
             stop.set()
             return order, {"accession": accession, "exit": "not_run"}
         qcmd = [args.kmerseek, "search", *SEARCH_ARGS, "--query", str(path), "--target", str(index)]
-        result = timed_run(qcmd, qenv, out / "query_stderr" / f"q{order:04d}.log", count_stdout=True)
+        result = timed_run(
+            qcmd, qenv, out / "query_stderr" / f"q{order:04d}.log",
+            count_stdout=True, timeout_s=max(0.0, deadline - time.time()),
+        )
         result["accession"] = accession
         with lock:
             n_done[0] += 1

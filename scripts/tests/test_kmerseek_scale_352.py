@@ -273,3 +273,19 @@ def test_a_size_counts_when_99_percent_of_queries_finish(monkeypatch):
     assert ks.min_queries_ok() == 2
     monkeypatch.setattr(ks, "N_QUERIES", 101)
     assert ks.min_queries_ok() == 100
+
+
+def test_timed_query_is_stopped_at_deadline(tmp_path):
+    """A query already running must not consume the entire Slurm shutdown margin."""
+    import os
+    import sys
+    import time
+
+    start = time.monotonic()
+    result = ks.timed_run(
+        [sys.executable, "-c", "import time; print('partial', flush=True); time.sleep(5)"],
+        dict(os.environ), tmp_path / "timeout.log", count_stdout=True, timeout_s=0.2,
+    )
+    assert result["exit"] == 124
+    assert result["stdout_lines"] == 1
+    assert time.monotonic() - start < 3
