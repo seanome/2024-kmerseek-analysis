@@ -47,375 +47,105 @@ def write_notebook():
     print(f"wrote {out} ({len(cells)} cells)")
 
 
-md(r"""
-# 253. Can a search put a human ELM motif on its chicken ortholog?
+# Current notebook sources; generated notebook outputs start empty.
+md('# 253. Can a search put a human ELM motif on its ortholog, in chicken and seven farther species?\n\nA call **covers** a motif when the human side of the call holds at least 80% of the\nmotif\'s residues. Covering a motif with a call to *some* protein is easy. Each human query\nkeeps its best 1_000 target proteins, and most motifs sit inside a longer domain that many\nproteins share. So the question asked here is narrower. Take a human protein with a 1:1\northolog in the target species: the same OMA group, one member in each species. Did the\nsearch put the motif on the ortholog, **at the place where the motif sits in the ortholog**?\n\n"At the place" is measured against a protein alignment made without any of these\nsearches. [Notebook 250](https://github.com/seanome/2024-kmerseek-analysis/blob/olgabot/elm-cover-all-species/notebooks/250_elm_motif_transfer.ipynb) (Stage 0) aligned each human protein to its ortholog with MAFFT.\nThe motif\'s residues, carried through that alignment, give a stretch of ortholog\nresidues: the **projected motif**. A call to the ortholog is **on position** when its\ntarget side holds at least 80% of the projected motif. A higher share of motifs on\nposition is better.\n\nInputs: 2_160 experimentally supported human ELM instances on 1_303 proteins, searched\nagainst whole QfO 2020_04 proteomes.\n\n- **Chicken** (sections 1 to 11): every kmerseek setting, 276 in all, and eight comparison\n  tools. Of the 2_160 motifs, 550 are on a protein with a chicken ortholog, and 540 of those\n  have a projected motif.\n- **Seven farther species** (sections 12 to 16): mouse, zebrafish, the sea squirt Ciona, fly,\n  worm, yeast and Arabidopsis, with the same eight comparison tools and the 19 kmerseek\n  settings chosen on chicken, one per alphabet ([PR #72](https://github.com/seanome/2024-kmerseek-analysis/pull/72)). Sherlock run `run-elm-search-all`,\n  29 September to 1 October 2026, image `docker.io/olgabot/kmerseek:0.4.0-rc5`.\n\nDecision rule for the seven species, the one sections 8 and 9 applied to chicken: kmerseek\nadds something to motif transfer if, in some species, at least one of its 19 settings puts\nmotifs on position that none of the eight comparison tools does. If no species has such a\nmotif, kmerseek adds nothing to these tools here.\n\nTwo corrections apply to every section. Foldseek and Reseek search AlphaFold models, so\nthey are scored only on motifs whose human query and ortholog both have a model matching\ntheir QfO sequence (section 12). Reseek\'s target positions are corrected for an offset that\n`bin/normalize_reseek.awk` adds to some accessions (section 13).\n\nThe scores come from `scripts/reduce_elm_cover.py`, one run per search, on Sherlock\n(`make reduce-elm-cover` and `make reduce-elm-cover-all`). Its tests are in\n`nextflow-runs/qfo-pfam-region-benchmark/tests/test_reduce_elm_cover.py`.')
 
-A call **covers** a motif when the human side of the call holds at least 80% of the
-motif's residues. Covering a motif with a call to *some* chicken protein is easy. Each
-human query keeps its best 1_000 chicken proteins, and most motifs sit inside a longer
-domain that many chicken proteins share. So the question asked here is narrower. Take a
-human protein with a 1:1 ortholog in chicken: the same OMA group, one member in each
-species. Did the search put the motif on the ortholog, **at the place where the motif sits
-in the ortholog**?
+code('import json\nimport os\nimport re\nfrom pathlib import Path\n\nimport matplotlib.pyplot as plt\nimport numpy as np\nimport polars as pl\n\nimport elm_motif_utils as emu\n\npl.Config.set_tbl_rows(60)\npl.Config.set_tbl_cols(20)\npl.Config.set_fmt_str_lengths(60)\n\nCOVER = Path(\n    os.environ.get("ELM_COVER_DIR", "/Users/olga/data/elm-motif-transfer/cover/chicken")\n)\nCONF = Path("../nextflow-runs/qfo-pfam-region-benchmark/conf/elm_cover.config")\nASSETS = Path("../nextflow-runs/qfo-pfam-region-benchmark/assets")\nFIG = Path("../figures")\nTAB = Path("../tables")\n\nCOMPARATORS = {\n    "hmmer3_phmmer": "phmmer",\n    "hmmer3_jackhmmer": "jackhmmer",\n    "mmseqs2_seqseq": "MMseqs2",\n    "mmseqs2_iterative": "MMseqs2, iterative",\n    "hhblits": "HHblits",\n    "foldseek": "Foldseek",\n    "prostt5": "Foldseek with ProstT5",\n    "reseek": "Reseek",\n}\nARM_RE = re.compile(\n    r"^(?P<alphabet>.+)\\.k(?P<k>\\d+)(?:\\.s(?P<scaled>\\d+))?\\.lc(?P<mask>true|false)$"\n)\n\n\ndef parse_arm(arm):\n    if arm in COMPARATORS:\n        return {\n            "tool": COMPARATORS[arm],\n            "alphabet": None,\n            "k": None,\n            "scaled": None,\n            "mask": None,\n        }\n    m = ARM_RE.match(arm)\n    return {\n        "tool": "kmerseek",\n        "alphabet": m["alphabet"],\n        "k": int(m["k"]),\n        "scaled": int(m["scaled"] or 1),\n        "mask": m["mask"] == "true",\n    }\n\n\ndef arm_label(arm):\n    p = parse_arm(arm)\n    if p["tool"] != "kmerseek":\n        return p["tool"]\n    return (\n        f"kmerseek {p[\'alphabet\']}, k = {p[\'k\']}, scaled {p[\'scaled\']}, "\n        f"mask {\'on\' if p[\'mask\'] else \'off\'}"\n    )\n\n\nPROJECTIONS = pl.read_csv(ASSETS / "elm_cover_projections.tsv", separator="\\t")\nMODEL_STATUS = pl.read_csv(emu.MODEL_STATUS_FILE, separator="\\t")\n\n\ndef summary_frame(summaries):\n    """One row per search, with its tool, alphabet, k, scaled and mask parsed from the name."""\n    return pl.DataFrame(\n        [\n            {\n                **{k: v for k, v in s.items() if k != "length_check"},\n                "spearman_vs_length": (s.get("length_check") or {}).get(\n                    "spearman_vs_length"\n                ),\n                **parse_arm(s["arm"]),\n            }\n            for s in summaries\n        ],\n        infer_schema_length=None,\n    )\n\n\n# Reseek is read from the corrected files (section 13); Foldseek and Reseek rows whose\n# ortholog has no matching AlphaFold model are marked not scoreable (section 12).\nsummaries, I = emu.load_cover_scores(\n    COVER.name, PROJECTIONS, MODEL_STATUS, cover_dir=COVER.parent\n)\nS = summary_frame(summaries)\nI = I.join(S.select("arm", "tool", "alphabet", "k", "scaled", "mask"), on="arm")\nprint(\n    f"{S.height} searches with a summary: {S[\'status\'].value_counts().sort(\'status\').rows()}"\n)\nprint(\n    "Motifs left out of each tool\'s share, because it could not have put them on position:"\n)\nprint(\n    I.filter(pl.col("tool") != "kmerseek")\n    .group_by("tool")\n    .agg(\n        query_model_not_qfo=(~pl.col("query_scoreable")).sum(),\n        ortholog_model_missing_or_not_qfo=(\n            pl.col("query_scoreable") & ~pl.col("scoreable")\n        ).sum(),\n    )\n    .filter(\n        pl.col("query_model_not_qfo") + pl.col("ortholog_model_missing_or_not_qfo") > 0\n    )\n    .sort("tool")\n)\nprint(\n    f"{I[\'elm_instance\'].n_unique()} ELM instances; {I.filter(\'has_ortholog\')[\'elm_instance\'].n_unique()} on a protein "\n    f"with a chicken ortholog; {I.filter(\'has_projection\')[\'elm_instance\'].n_unique()} with a projected motif"\n)')
 
-"At the place" is measured against a protein alignment made without any of these
-searches. Notebook 250 (Stage 0) aligned each human protein to its ortholog with MAFFT.
-The motif's residues, carried through that alignment, give a stretch of ortholog
-residues: the **projected motif**. A call to the ortholog is **on position** when its
-chicken side holds at least 80% of the projected motif.
+md('## 1. How long ELM motifs are\n\nMotif length is End - Start + 1 in the ELM instance table (ELM 1.4, downloaded 2026-09-24).\nThe database rows are every true-positive instance, from all organisms. The tested motifs are\nthe 540 human instances with a projected motif on the chicken ortholog.\n')
 
-Inputs: 2_160 experimentally supported human ELM instances on 1_303 proteins. Of these,
-550 are on a protein with a chicken ortholog. 540 of those have a projected motif; the
-other 10 have no ortholog residue aligned to any motif residue. Every arm searched the
-1_303 human proteins against the whole chicken proteome (QfO 2020_04, 17_837 proteins).
-Only chicken has been searched so far.
+code('ELM = (\n    pl.read_csv(\n        COVER.parent.parent / "elm_instances.tsv",\n        separator="\\t",\n        comment_prefix="#",\n        infer_schema_length=0,\n    )\n    .filter(pl.col("InstanceLogic") == "true positive")\n    .with_columns(\n        motif_length=pl.col("End").cast(pl.Int64) - pl.col("Start").cast(pl.Int64) + 1\n    )\n)\ntested_ids = I.filter("has_projection")["elm_instance"].unique()\ngroups = {\n    "ELM, all true positives": ELM,\n    "ELM, human": ELM.filter(pl.col("Organism") == "Homo sapiens"),\n    "tested here (chicken ortholog)": ELM.filter(\n        pl.col("Accession").is_in(tested_ids.implode())\n    ),\n}\nLEN = pl.DataFrame(\n    [\n        {\n            "set": name,\n            "n": d.height,\n            "median aa": d["motif_length"].median(),\n            "25% aa": d["motif_length"].quantile(0.25),\n            "75% aa": d["motif_length"].quantile(0.75),\n            "max aa": d["motif_length"].max(),\n            "3-6 aa": (d["motif_length"] <= 6).mean(),\n            "7-10 aa": d["motif_length"].is_between(7, 10).mean(),\n            "11+ aa": (d["motif_length"] >= 11).mean(),\n        }\n        for name, d in groups.items()\n    ]\n)\nprint(LEN)\nby_type = (\n    ELM.group_by("ELMType")\n    .agg(\n        n=pl.len(),\n        median_aa=pl.col("motif_length").median(),\n        max_aa=pl.col("motif_length").max(),\n    )\n    .sort("n", descending=True)\n)\nprint(\n    "By ELM type (all true positives): CLV cleavage, DEG degradation, DOC docking, LIG ligand binding, MOD modification, TRG targeting"\n)\nprint(by_type)\nLEN.write_csv(TAB / "253_motif_lengths.csv")\n\nfig, ax = plt.subplots(figsize=(7, 3.4))\nbins = np.arange(1.5, 31.5, 1)\nall_len = groups["ELM, all true positives"]["motif_length"].to_numpy()\ntest_len = groups["tested here (chicken ortholog)"]["motif_length"].to_numpy()\nw_all = np.full(len(all_len), 100 / len(all_len))\nw_test = np.full(len(test_len), 100 / len(test_len))\nax.hist(\n    all_len.clip(max=30),\n    bins=bins,\n    weights=w_all,\n    color="0.8",\n    edgecolor="0.55",\n    label=f"ELM, all true-positive instances (n = {len(all_len):_})",\n)\nax.hist(\n    test_len.clip(max=30),\n    bins=bins,\n    weights=w_test,\n    histtype="step",\n    lw=1.8,\n    color="#3B6EA5",\n    label=f"tested here: human motifs on the chicken ortholog (n = {len(test_len)})",\n)\nax.set_xlim(1, 31)\nax.set_xticks([2, 5, 10, 15, 20, 25, 30], ["2", "5", "10", "15", "20", "25", "30+"])\nax.set_xlabel("motif length (aa)")\nax.set_ylabel("share of motifs (%)")\nax.legend(loc="lower left", bbox_to_anchor=(0, 1.01), frameon=False, fontsize=8.5)\nfor s in ["top", "right"]:\n    ax.spines[s].set_visible(False)\nfig.savefig(FIG / "253_motif_lengths.png", dpi=200, bbox_inches="tight")')
 
-The scores come from `scripts/reduce_elm_cover.py`, one run per arm, on Sherlock
-(`make reduce-elm-cover`). Its tests are in
-`nextflow-runs/qfo-pfam-region-benchmark/tests/test_reduce_elm_cover.py`.
-""")
+md('ELM motifs are short. Over all 4_047 true-positive instances the median is 6 aa, half are 3-6 aa\n(51%), and 12% are 11 aa or longer; the longest is a 47 aa ligand-binding (LIG) motif. The 540 tested\nhere have the same shape as the 2_270 human instances: median 7 aa, 49% at 3-6 aa, 10% at 11 aa or\nlonger.\n')
 
-code(r"""
-import json
-import os
-import re
-from pathlib import Path
+md("## 2. Which kmerseek settings ran\n\nA kmerseek setting is an alphabet, a k-mer length k, the low-complexity mask off or on, and\nscaled 1, 2, 5 or 10. Scaled s keeps about one k-mer in s from the chicken proteome, so the\nindex is smaller. The settings that should exist are read from the search's own\nconfiguration. So a setting that never wrote a result shows up here as missing, not as a\nsetting that found nothing. The eight comparison tools are listed after them.")
 
-import matplotlib.pyplot as plt
-import numpy as np
-import polars as pl
+code('conf = CONF.read_text()\ncombos = re.search(r"kmerseek_combos\\s*=\\s*\'([^\']+)\'", conf)[1].split(",")\nscaled_set = [\n    int(x) for x in re.search(r"kmerseek_scaled\\s*=\\s*\'([^\']+)\'", conf)[1].split(",")\n]\nmasks = re.search(r"low_complexity_toggle\\s*=\\s*\'([^\']+)\'", conf)[1].split(",")\nexpected = pl.DataFrame(\n    [\n        {"alphabet": a, "k": int(k), "scaled": s, "mask": m == "true"}\n        for a, k in (c.split(":") for c in combos)\n        for s in scaled_set\n        for m in masks\n    ]\n)\nkm = S.filter(pl.col("tool") == "kmerseek").select(\n    "alphabet", "k", "scaled", "mask", "status"\n)\narms = expected.join(\n    km, on=["alphabet", "k", "scaled", "mask"], how="left"\n).with_columns(pl.col("status").fill_null("no result file"))\nstatus = arms.group_by("status").len().sort("status")\nprint(f"kmerseek settings in the configuration: {expected.height}")\nprint(status)\nprint("\\nSettings without a usable result:")\nprint(arms.filter(pl.col("status") != "ok").sort("alphabet", "k", "scaled", "mask"))\ncomp = S.filter(pl.col("tool") != "kmerseek").select("tool", "status").sort("tool")\nprint("\\nComparison tools:")\nprint(comp)\narms.write_csv(TAB / "253_arm_status.csv")')
 
-pl.Config.set_tbl_rows(60)
-pl.Config.set_tbl_cols(20)
-pl.Config.set_fmt_str_lengths(60)
+md('## 3. Covering a motif is easy; putting it on position is not\n\nEach check below is stricter than the one before it. The **placement check** is from\nnotebook 250. Drop a window the same length as the call at a random place on the human\nprotein: how often does it also cover the motif? A call passes when that happens less than\n5% of the time. The check looks at the human side only. So a long alignment of a whole\northolog fails it even when it is right, because a window that long covers the motif\nwherever it is dropped. The on-position check does not have that problem: it asks where\nthe call sits on the chicken side.')
 
-COVER = Path(os.environ.get("ELM_COVER_DIR", "/Users/olga/data/elm-motif-transfer/cover/chicken"))
-CONF = Path("../nextflow-runs/qfo-pfam-region-benchmark/conf/elm_cover.config")
-FIG = Path("../figures")
-TAB = Path("../tables")
+code('def shares(frame):\n    frame = frame.filter("scoreable")\n    orth = frame.filter("has_ortholog")\n    proj = frame.filter("has_projection")\n    return {\n        "covered, any chicken protein (of 2_160)": frame["best_rank"]\n        .is_not_null()\n        .mean(),\n        "covered, on the ortholog (of 550)": orth["ortholog_rank"].is_not_null().mean(),\n        "covered on the ortholog, passes the placement check (of 550)": orth[\n            "ortholog_rank_placed"\n        ]\n        .is_not_null()\n        .mean(),\n        "on the ortholog, on position (of 540)": proj["ortholog_rank_on_position"]\n        .is_not_null()\n        .mean(),\n    }\n\n\nok = S.filter(pl.col("status") == "ok")["arm"].to_list()\nrows = []\nfor arm in ok:\n    rows.append({"arm": arm, **shares(I.filter(pl.col("arm") == arm))})\nSH = pl.DataFrame(rows).join(\n    S.select("arm", "tool", "alphabet", "k", "scaled", "mask"), on="arm"\n)\nCHECKS = [c for c in SH.columns if c.startswith(("covered", "on the"))]\nbest_km = (\n    SH.filter(pl.col("tool") == "kmerseek")\n    .sort(CHECKS[-1], "arm", descending=[True, False])\n    .head(1)\n)\nshow = pl.concat(\n    [\n        SH.filter(pl.col("tool") != "kmerseek").sort(CHECKS[-1], descending=True),\n        best_km.with_columns(\n            tool=pl.col("arm").map_elements(arm_label, return_dtype=pl.String)\n        ),\n    ]\n)\nprint(\n    "Share of motifs passing each check (kmerseek: the one setting with the highest on-position share):"\n)\nprint(show.select("tool", *CHECKS))\nshow.select("tool", *CHECKS).write_csv(TAB / "253_checks_by_tool.csv")\n\nmarkers = ["o", "s", "^", "D"]\nfills = ["0.75", "0.55", "white", "black"]\nfig, ax = plt.subplots(figsize=(7.5, 0.42 * show.height + 1.6))\nlabels = show["tool"].to_list()\nfor j, c in enumerate(CHECKS):\n    ax.scatter(\n        show[c],\n        range(show.height),\n        marker=markers[j],\n        s=46,\n        facecolor=fills[j],\n        edgecolor="black",\n        zorder=3,\n        label=c,\n    )\nax.set_yticks(range(show.height), labels)\nax.invert_yaxis()\nax.set_xlim(0, 1.02)\nax.set_xlabel("share of motifs passing the check")\nax.grid(axis="x", color="0.9", zorder=0)\nax.legend(loc="lower left", bbox_to_anchor=(0, 1.01), ncol=1, frameon=False, fontsize=8)\nfig.savefig(FIG / "253_checks_by_tool.png", dpi=200, bbox_inches="tight")')
 
-COMPARATORS = {
-    "hmmer3_phmmer": "phmmer",
-    "hmmer3_jackhmmer": "jackhmmer",
-    "mmseqs2_seqseq": "MMseqs2",
-    "mmseqs2_iterative": "MMseqs2, iterative",
-    "hhblits": "HHblits",
-    "foldseek": "Foldseek",
-    "prostt5": "Foldseek with ProstT5",
-    "reseek": "Reseek",
-}
-ARM_RE = re.compile(r"^(?P<alphabet>.+)\.k(?P<k>\d+)(?:\.s(?P<scaled>\d+))?\.lc(?P<mask>true|false)$")
+md("Every tool covers almost every motif with a call to *some* chicken protein (97% to 100%), so that check says nothing. The placement check rejects almost every correct call. For the six sequence tools, 0% to 5% of motifs pass it, while 96% to 99% are on position.\n\nOn position, the six sequence tools reach 96.1% (Foldseek with ProstT5) to 98.7% (jackhmmer). Foldseek reaches 96.6% and Reseek 99.3% of the 268 motifs they could reach. The other 272 motifs are left out for them: for 271 the chicken ortholog has no AlphaFold model in the run's structure folder, and for the rest the query's or the ortholog's model is not its QfO sequence (section 12). Why 156 of the 331 chicken orthologs have no model there is not checked here. The best kmerseek setting, protein20 with k = 5 at scaled 1, puts 442 of 540 motifs on position (81.9%).")
 
+md('## 4. Every kmerseek arm, on position\n\nOne point per kmerseek arm at scaled 1 (the full chicken index). Shape is the k-mer\nlength: each alphabet was run at two k (the shorter one only where the search fit in\nmemory, notebook 250 step 5). Filled means the low-complexity mask was off, open means on.\nThe comparison tools, from section 2, are the grey rows at the top.')
 
-def parse_arm(arm):
-    if arm in COMPARATORS:
-        return {"tool": COMPARATORS[arm], "alphabet": None, "k": None, "scaled": None, "mask": None}
-    m = ARM_RE.match(arm)
-    return {"tool": "kmerseek", "alphabet": m["alphabet"], "k": int(m["k"]),
-            "scaled": int(m["scaled"] or 1), "mask": m["mask"] == "true"}
+code('k1 = SH.filter((pl.col("tool") == "kmerseek") & (pl.col("scaled") == 1)).with_columns(\n    k_rank=pl.col("k").rank("dense").over("alphabet")\n)\norder = (\n    k1.group_by("alphabet")\n    .agg(best=pl.col(CHECKS[-1]).max())\n    .sort("best", "alphabet", descending=[True, False])["alphabet"]\n    .to_list()\n)\nprint("kmerseek at scaled 1, share on position (of 540):")\nprint(k1.select("alphabet", "k", "mask", CHECKS[-1]).sort("alphabet", "k", "mask"))\nk1.select("alphabet", "k", "mask", *CHECKS).write_csv(TAB / "253_kmerseek_scaled1.csv")\n\ncomp_rows = SH.filter(pl.col("tool") != "kmerseek").sort(CHECKS[-1], descending=True)\nnames = comp_rows["tool"].to_list() + order\nfig, ax = plt.subplots(figsize=(7.5, 0.3 * len(names) + 1.8))\nfor i, r in enumerate(comp_rows.iter_rows(named=True)):\n    ax.scatter(\n        r[CHECKS[-1]], i, marker="D", s=36, facecolor="0.55", edgecolor="0.3", zorder=3\n    )\nax.axhline(comp_rows.height - 0.5, color="0.3", lw=0.8)\ny = {a: comp_rows.height + i for i, a in enumerate(order)}\nfor r in k1.iter_rows(named=True):\n    ax.scatter(\n        r[CHECKS[-1]],\n        y[r["alphabet"]] + (0.12 if r["mask"] else -0.12),\n        marker="o" if r["k_rank"] == 1 else "s",\n        s=36,\n        facecolor="white" if r["mask"] else "#3B6EA5",\n        edgecolor="#3B6EA5",\n        zorder=3,\n    )\nax.set_yticks(range(len(names)), names)\nax.set_ylim(len(names) - 0.5, -0.5)\nax.set_xlim(0, 1.02)\nax.set_xlabel("share of the 540 motifs put on position on the chicken ortholog")\nhandles = [\n    plt.Line2D(\n        [],\n        [],\n        marker="o",\n        ls="",\n        mfc="#3B6EA5",\n        mec="#3B6EA5",\n        label="shorter k, mask off",\n    ),\n    plt.Line2D(\n        [],\n        [],\n        marker="s",\n        ls="",\n        mfc="#3B6EA5",\n        mec="#3B6EA5",\n        label="longer k, mask off",\n    ),\n    plt.Line2D(\n        [],\n        [],\n        marker="o",\n        ls="",\n        mfc="white",\n        mec="#3B6EA5",\n        label="shorter k, mask on",\n    ),\n    plt.Line2D(\n        [], [], marker="s", ls="", mfc="white", mec="#3B6EA5", label="longer k, mask on"\n    ),\n    plt.Line2D(\n        [], [], marker="D", ls="", mfc="0.55", mec="0.3", label="a comparison tool"\n    ),\n]\nax.legend(\n    handles=handles,\n    loc="lower left",\n    bbox_to_anchor=(0, 1.01),\n    ncol=2,\n    frameon=False,\n    fontsize=8,\n)\nax.grid(axis="x", color="0.92", zorder=0)\nfig.savefig(FIG / "253_kmerseek_scaled1.png", dpi=200, bbox_inches="tight")')
 
+md('At scaled 1, the longer k puts more motifs on position in 27 of the 28 alphabet-and-mask pairs run at both k. For example, dayhoff6 reaches 20% at k = 7 and 63% at k = 9. The low-complexity mask changes the share by a median of 0.6 points. The two exceptions are hp_thomas_dill_no_c2 and hp_kyte_doolittle2 at k = 20, where the mask halves it (50% to 23%, and 49% to 23%). The hydrophobic-polar (HP) alphabets put 13% to 50% of the motifs on position at scaled 1.')
 
-def arm_label(arm):
-    p = parse_arm(arm)
-    if p["tool"] != "kmerseek":
-        return p["tool"]
-    return (f"kmerseek {p['alphabet']}, k = {p['k']}, scaled {p['scaled']}, "
-            f"mask {'on' if p['mask'] else 'off'}")
+md('## 5. Seed length k, per alphabet\n\nThe same arms as section 4, at scaled 1 with the mask off. Each alphabet ran at up to two k:\nthe shortest k whose seed occurs in fewer than 100 human proteins, and the shortest under 1_000\nthat fits the 128 GB search limit (notebook 250, `scripts/elm_seed_floor.py`). Five alphabets have\nonly one k. The right panel puts every alphabet on one axis: the bits in one seed,\nk x log2(letters), so a 5-mer of 20 letters (21.6 bits) sits near a 22-mer of 2 letters (22 bits).\n')
 
+code('K1 = (\n    k1.filter(~pl.col("mask"))\n    .with_columns(letters=pl.col("alphabet").str.extract(r"(\\d+)$").cast(pl.Int64))\n    .with_columns(bits=pl.col("k") * pl.col("letters").log(2), share=pl.col(CHECKS[-1]))\n    .sort("alphabet", "k")\n)\nprint(\n    K1.select(\n        "alphabet", "letters", "k", pl.col("bits").round(1), pl.col("share").round(3)\n    )\n)\nK1.select("alphabet", "letters", "k", "bits", "share").write_csv(\n    TAB / "253_seed_length.csv"\n)\n\n\ndef size_group(n):\n    return "2-3 letters" if n <= 3 else ("4-8 letters" if n <= 8 else "12-20 letters")\n\n\nGROUP_COLOUR = {\n    "2-3 letters": "#C0612B",\n    "4-8 letters": "0.45",\n    "12-20 letters": "#3B6EA5",\n}\nK1 = K1.with_columns(\n    group=pl.col("letters").map_elements(size_group, return_dtype=pl.String)\n)\norder_k = (\n    K1.group_by("alphabet")\n    .agg(best=pl.col("share").max())\n    .sort("best", descending=True)["alphabet"]\n    .to_list()\n)\nfig, (ax, bx) = plt.subplots(\n    1, 2, figsize=(11, 6.2), gridspec_kw={"width_ratios": [3, 2]}\n)\nfor i, a in enumerate(order_k):\n    d = K1.filter(pl.col("alphabet") == a).sort("k")\n    col = GROUP_COLOUR[d["group"][0]]\n    ax.plot(d["share"], [i] * d.height, color=col, lw=1.2, zorder=2)\n    for j, r in enumerate(d.iter_rows(named=True)):\n        shorter = j == 0 and d.height == 2\n        ax.scatter(\n            r["share"], i, marker="o" if shorter else "s", s=40, color=col, zorder=3\n        )\n        # shorter k labelled left of its point, longer k right, on the alphabet\'s own row\n        ax.annotate(\n            f"k={r[\'k\']}",\n            (r["share"], i),\n            xytext=(-7 if shorter else 7, 0),\n            textcoords="offset points",\n            ha="right" if shorter else "left",\n            va="center",\n            fontsize=7.5,\n            color="0.2",\n        )\nax.set_yticks(range(len(order_k)), order_k)\nax.set_ylim(len(order_k) - 0.4, -0.8)\nax.set_xlim(0, 1)\nax.set_xlabel("share of the 540 motifs put on position\\non the chicken ortholog")\nax.grid(axis="x", color="0.92")\n# same marks as the left panel: circle for the shorter k, square for the longer or only k\nK1 = K1.with_columns(\n    shorter=(pl.col("k") == pl.col("k").min().over("alphabet"))\n    & (pl.len().over("alphabet") == 2)\n)\nfor g, col in GROUP_COLOUR.items():\n    for is_short, mk in [(True, "o"), (False, "s")]:\n        d = K1.filter((pl.col("group") == g) & (pl.col("shorter") == is_short))\n        bx.scatter(d["bits"], d["share"], color=col, marker=mk, s=30)\nbx.set_xlabel("bits in one seed, k x log2(letters)")\nbx.set_ylabel("share on position")\nbx.set_ylim(0, 1)\nbx.grid(color="0.92")\nhandles = [\n    plt.Line2D([], [], color=c, marker="s", ls="", label=g)\n    for g, c in GROUP_COLOUR.items()\n]\nhandles += [\n    plt.Line2D([], [], color="0.3", marker="o", ls="", label="shorter k"),\n    plt.Line2D([], [], color="0.3", marker="s", ls="", label="longer k, or the only k"),\n]\nfig.legend(\n    handles=handles,\n    loc="lower left",\n    bbox_to_anchor=(0.1, 0.99),\n    ncol=5,\n    frameon=False,\n    fontsize=8.5,\n)\nfor a_ in (ax, bx):\n    for s in ["top", "right"]:\n        a_.spines[s].set_visible(False)\nfig.tight_layout()\nfig.savefig(FIG / "253_seed_length.png", dpi=200, bbox_inches="tight")')
 
-summaries = [json.loads(p.read_text()) for p in sorted(COVER.glob("*.summary.json"))]
-S = pl.DataFrame([{**{k: v for k, v in s.items() if k != "length_check"},
-                   "spearman_vs_length": (s.get("length_check") or {}).get("spearman_vs_length"),
-                   **parse_arm(s["arm"])} for s in summaries], infer_schema_length=None)
-I = pl.concat([pl.read_parquet(p) for p in sorted(COVER.glob("*.instances.parquet"))], how="diagonal_relaxed")
-# Foldseek and Reseek count along the AlphaFold model; a query whose model is not the QfO
-# sequence is not scoreable for them (reduce_elm_cover.py). Arms scored before that column
-# existed are sequence arms, where every query is scoreable.
-if "query_scoreable" not in I.columns:
-    I = I.with_columns(query_scoreable=pl.lit(True))
-I = I.with_columns(pl.col("query_scoreable").fill_null(True))
-I = I.join(S.select("arm", "tool", "alphabet", "k", "scaled", "mask"), on="arm")
-print(f"{S.height} arms with a summary: {S['status'].value_counts().sort('status').rows()}")
-print("Motifs left out because the query's AlphaFold model is not its QfO sequence:")
-print(I.group_by("tool").agg(not_scoreable=(~pl.col("query_scoreable")).sum() / pl.col("arm").n_unique())
-      .filter(pl.col("not_scoreable") > 0))
-print(f"{I['elm_instance'].n_unique()} ELM instances; {I.filter('has_ortholog')['elm_instance'].n_unique()} on a protein "
-      f"with a chicken ortholog; {I.filter('has_projection')['elm_instance'].n_unique()} with a projected motif")
-""")
+md('The longer k puts more motifs on position in all 13 alphabets run at two k (mask off). The gain\nranges from 2.5 points (hp_lehninger2, k = 15 to 17) to 43 points (dayhoff6, k = 7 to 9). Only two k\nwere run per alphabet, so this does not say where the share stops rising.\n\nBits per seed do not explain the order of the alphabets. At about 20-22 bits, protein20 k = 5 puts\n82% on position, hp_thomas_dill_no_c2 k = 20 puts 50% and polarity4 k = 10 puts 10%. The alphabets\nwith 12 to 20 letters and dayhoff6 k = 9 are the top five settings (58% to 82%). The best HP settings reach\n50% (hp_thomas_dill_no_c2 and hp_kyte_doolittle2 at k = 20); the other HP alphabets reach 19% to 30%.\nWhy the longer k helps is not tested here.')
 
-md(r"""
-## 1. Which arms ran
+md('## 6. What a smaller index costs\n\nFor each kmerseek alphabet, k and mask, the on-position share at scaled 2, 5 and 10\ndivided by the share at scaled 1. A ratio of 1 means subsampling the chicken k-mers lost\nnothing.')
 
-An arm is one search setting. For kmerseek that is an alphabet, a k-mer length k, the
-low-complexity mask off or on, and scaled 1, 2, 5 or 10. Scaled s keeps about one k-mer in
-s from the chicken proteome, so the index is smaller. The eight comparison tools are one
-arm each. The kmerseek arms that should exist are read from the search's own
-configuration. So an arm that never wrote a result shows up here as missing, not as an arm
-that found nothing.
-""")
+code('km_all = SH.filter(pl.col("tool") == "kmerseek")\nbase = km_all.filter(pl.col("scaled") == 1).select(\n    "alphabet", "k", "mask", base=pl.col(CHECKS[-1])\n)\nratio = (\n    km_all.filter(pl.col("scaled") > 1)\n    .join(base, on=["alphabet", "k", "mask"])\n    .filter(pl.col("base") > 0)\n    .with_columns(ratio=pl.col(CHECKS[-1]) / pl.col("base"))\n)\nsumm = (\n    ratio.group_by("scaled")\n    .agg(\n        n_arms=pl.len(),\n        median_ratio=pl.col("ratio").median(),\n        q25=pl.col("ratio").quantile(0.25),\n        q75=pl.col("ratio").quantile(0.75),\n    )\n    .sort("scaled")\n)\nprint(\n    "On-position share relative to scaled 1, over settings with a nonzero share at scaled 1:"\n)\nprint(summ)\nsumm.write_csv(TAB / "253_scaled_cost.csv")\n\nif summ.is_empty():\n    print(\n        "No setting has both scaled 1 and a larger scaled with a result, so there is nothing to compare."\n    )\nelse:\n    fig, ax = plt.subplots(figsize=(5.5, 3.2))\n    data = [\n        ratio.filter(pl.col("scaled") == s)["ratio"].to_numpy() for s in summ["scaled"]\n    ]\n    ax.boxplot(\n        data,\n        tick_labels=[f"scaled {s}" for s in summ["scaled"]],\n        widths=0.5,\n        medianprops={"color": "#3B6EA5"},\n        flierprops={"marker": ".", "markersize": 3},\n    )\n    ax.axhline(1, color="0.55", ls=":", lw=0.8, label="same share as at scaled 1")\n    ax.set_ylabel("on-position share,\\nrelative to scaled 1")\n    ax.legend(loc="lower left", bbox_to_anchor=(0, 1.01), frameon=False, fontsize=8)\n    fig.savefig(FIG / "253_scaled_cost.png", dpi=200, bbox_inches="tight")')
 
-code(r"""
-conf = CONF.read_text()
-combos = re.search(r"kmerseek_combos\s*=\s*'([^']+)'", conf)[1].split(",")
-scaled_set = [int(x) for x in re.search(r"kmerseek_scaled\s*=\s*'([^']+)'", conf)[1].split(",")]
-masks = re.search(r"low_complexity_toggle\s*=\s*'([^']+)'", conf)[1].split(",")
-expected = pl.DataFrame([{"alphabet": a, "k": int(k), "scaled": s, "mask": m == "true"}
-                         for a, k in (c.split(":") for c in combos) for s in scaled_set for m in masks])
-km = S.filter(pl.col("tool") == "kmerseek").select("alphabet", "k", "scaled", "mask", "status")
-arms = expected.join(km, on=["alphabet", "k", "scaled", "mask"], how="left").with_columns(
-    pl.col("status").fill_null("no result file"))
-status = arms.group_by("status").len().sort("status")
-print(f"kmerseek arms in the configuration: {expected.height}")
-print(status)
-print("\nArms without a usable result:")
-print(arms.filter(pl.col("status") != "ok").sort("alphabet", "k", "scaled", "mask"))
-comp = S.filter(pl.col("tool") != "kmerseek").select("tool", "status").sort("tool")
-print("\nComparison tools:")
-print(comp)
-arms.write_csv(TAB / "253_arm_status.csv")
-""")
+md("Subsampling the chicken index raises the share instead of lowering it. The comparison uses the 65 alphabet, k and mask settings with a nonzero share at scaled 1. Against scaled 1, the median share is 1.29 times higher at scaled 2, 1.81 times at scaled 5 and 2.02 times at scaled 10.\n\nThis notebook does not explain it. Section 7 shows that kmerseek puts the ortholog low in the query's list. Section 11 shows that its ranking score follows call length. One reading is that a smaller index leaves fewer long calls to other proteins above the ortholog, before the cut to 1_000 targets. That reading is not tested here.")
 
-md(r"""
-## 2. Covering a motif is easy; putting it on position is not
+md("## 7. Rank of the ortholog, when it is on position\n\nRank is the ortholog's place in the query's list of chicken proteins, ordered by each\nprotein's best call: rank 1 means the ortholog was the best chicken hit. Shown for the\ncomparison tools and for the best kmerseek arm of section 2.")
 
-Each check below is stricter than the one before it. The **placement check** is from
-notebook 250. Drop a window the same length as the call at a random place on the human
-protein: how often does it also cover the motif? A call passes when that happens less than
-5% of the time. The check looks at the human side only. So a long alignment of a whole
-ortholog fails it even when it is right, because a window that long covers the motif
-wherever it is dropped. The on-position check does not have that problem: it asks where
-the call sits on the chicken side.
-""")
+code('pick = (\n    SH.filter(pl.col("tool") != "kmerseek")["arm"].to_list() + best_km["arm"].to_list()\n)\nR = I.filter(\n    pl.col("arm").is_in(pick) & pl.col("has_projection") & pl.col("scoreable")\n).with_columns(label=pl.col("arm").map_elements(arm_label, return_dtype=pl.String))\nrk = (\n    R.group_by("label")\n    .agg(\n        on_position=pl.col("ortholog_rank_on_position").is_not_null().sum(),\n        rank_1=(pl.col("ortholog_rank_on_position") == 1).sum(),\n        rank_2_to_10=pl.col("ortholog_rank_on_position").is_between(2, 10).sum(),\n        rank_over_10=(pl.col("ortholog_rank_on_position") > 10).sum(),\n    )\n    .sort("on_position", descending=True)\n)\nprint("Motifs on position (of 540), by the ortholog\'s rank in the query\'s list:")\nprint(rk)\nrk.write_csv(TAB / "253_ortholog_rank.csv")\n\nfig, ax = plt.subplots(figsize=(7.5, 0.4 * rk.height + 1.4))\nleft = np.zeros(rk.height)\nfor col, colour, name in [\n    ("rank_1", "#3B6EA5", "ortholog is the best chicken hit (rank 1)"),\n    ("rank_2_to_10", "#9DB6D6", "rank 2 to 10"),\n    ("rank_over_10", "0.85", "rank 11 to 1_000"),\n]:\n    ax.barh(rk["label"], rk[col], left=left, color=colour, edgecolor="0.3", label=name)\n    left += rk[col].to_numpy()\nax.invert_yaxis()\nax.set_xlim(0, R.group_by("label").len()["len"].max())\nax.set_xlabel(\n    "motifs put on position on the chicken ortholog (n; Foldseek and Reseek\\n"\n    "leave out queries whose AlphaFold model is not the QfO sequence)"\n)\nax.legend(loc="lower left", bbox_to_anchor=(0, 1.01), ncol=2, frameon=False, fontsize=8)\nfig.savefig(FIG / "253_ortholog_rank.png", dpi=200, bbox_inches="tight")')
 
-code(r"""
-def shares(frame):
-    frame = frame.filter("query_scoreable")
-    orth = frame.filter("has_ortholog")
-    proj = frame.filter("has_projection")
-    return {
-        "covered, any chicken protein (of 2_160)": frame["best_rank"].is_not_null().mean(),
-        "covered, on the ortholog (of 550)": orth["ortholog_rank"].is_not_null().mean(),
-        "covered on the ortholog, passes the placement check (of 550)": orth["ortholog_rank_placed"].is_not_null().mean(),
-        "on the ortholog, on position (of 540)": proj["ortholog_rank_on_position"].is_not_null().mean(),
-    }
+md('When a sequence tool puts the motif on position, the ortholog is its best chicken hit for 485 to 497 of 540 motifs, and never below rank 10. For the best kmerseek setting the ortholog is the best hit for 34 of its 442 motifs, and below rank 10 for 348 of them. Foldseek and Reseek rank the ortholog first for 247 of their 259 and 184 of their 266 motifs on position.')
 
+md('## 8. Motifs only kmerseek puts on position\n\nA motif that no comparison tool puts on position, but at least one kmerseek setting does.\nThe first count pools every kmerseek setting, so it is an upper bound: with 266 settings,\nsome will land by chance. The second count uses only the best setting of section 3. That\nsetting was chosen on these same motifs, so its count is also optimistic.')
 
-ok = S.filter(pl.col("status") == "ok")["arm"].to_list()
-rows = []
-for arm in ok:
-    rows.append({"arm": arm, **shares(I.filter(pl.col("arm") == arm))})
-SH = pl.DataFrame(rows).join(S.select("arm", "tool", "alphabet", "k", "scaled", "mask"), on="arm")
-CHECKS = [c for c in SH.columns if c.startswith(("covered", "on the"))]
-best_km = (SH.filter(pl.col("tool") == "kmerseek").sort(CHECKS[-1], "arm", descending=[True, False]).head(1))
-show = pl.concat([SH.filter(pl.col("tool") != "kmerseek").sort(CHECKS[-1], descending=True),
-                  best_km.with_columns(tool=pl.col("arm").map_elements(arm_label, return_dtype=pl.String))])
-print("Share of motifs passing each check (kmerseek: the one arm with the highest on-position share):")
-print(show.select("tool", *CHECKS))
-show.select("tool", *CHECKS).write_csv(TAB / "253_checks_by_tool.csv")
+code('proj = I.filter("has_projection")\nby_comp = (\n    proj.filter(pl.col("tool") != "kmerseek")\n    .group_by("elm_instance")\n    .agg(any_comparator=pl.col("ortholog_rank_on_position").is_not_null().any())\n)\nby_km = (\n    proj.filter(pl.col("tool") == "kmerseek")\n    .group_by("elm_instance")\n    .agg(n_km_arms=pl.col("ortholog_rank_on_position").is_not_null().sum())\n)\nby_best = proj.filter(pl.col("arm") == best_km["arm"][0]).select(\n    "elm_instance", best_arm=pl.col("ortholog_rank_on_position").is_not_null()\n)\nU = (\n    proj.select(\n        "elm_instance",\n        "elm_class",\n        "accession",\n        "start",\n        "end",\n        "motif_length",\n        "length_bin",\n    )\n    .unique()\n    .join(by_comp, on="elm_instance")\n    .join(by_km, on="elm_instance")\n    .join(by_best, on="elm_instance")\n)\nonly_km = U.filter(~pl.col("any_comparator") & (pl.col("n_km_arms") > 0))\nprint(f"motifs with a projected motif: {U.height}")\nprint(f"on position for at least one comparison tool: {U[\'any_comparator\'].sum()}")\nprint(\n    f"on position for no comparison tool, but for at least one kmerseek setting: {only_km.height}"\n)\nprint(\n    f"  ... and for the best kmerseek setting ({arm_label(best_km[\'arm\'][0])}): {only_km[\'best_arm\'].sum()}"\n)\nprint(only_km.sort("n_km_arms", descending=True).head(20))\nonly_km.write_csv(TAB / "253_only_kmerseek.csv")\n\nfig, ax = plt.subplots(figsize=(6, 2.8))\nvals = [\n    U["any_comparator"].sum(),\n    only_km.height,\n    int(only_km["best_arm"].sum()),\n    U.height - U["any_comparator"].sum() - only_km.height,\n]\nnames = [\n    "on position for a comparison tool",\n    "only kmerseek, any of its settings",\n    "only kmerseek, the best setting\\n(part of the bar above)",\n    "on position for no tool",\n]\nax.barh(\n    names,\n    vals,\n    color=["0.6", "#3B6EA5", "#3B6EA5", "white"],\n    edgecolor="0.3",\n    hatch=[None, None, "//", None],\n)\nfor i, v in enumerate(vals):\n    ax.text(v + 3, i, f"{v}", va="center", fontsize=8)\nax.invert_yaxis()\nax.set_xlim(0, 1.12 * max(vals))\nax.set_xlabel(f"motifs (n, of {U.height} with a projected motif)")\nfig.savefig(FIG / "253_only_kmerseek.png", dpi=200, bbox_inches="tight")')
 
-markers = ["o", "s", "^", "D"]
-fills = ["0.75", "0.55", "white", "black"]
-fig, ax = plt.subplots(figsize=(7.5, 0.42 * show.height + 1.6))
-labels = show["tool"].to_list()
-for j, c in enumerate(CHECKS):
-    ax.scatter(show[c], range(show.height), marker=markers[j], s=46, facecolor=fills[j],
-               edgecolor="black", zorder=3, label=c)
-ax.set_yticks(range(show.height), labels)
-ax.invert_yaxis()
-ax.set_xlim(0, 1.02)
-ax.set_xlabel("share of motifs passing the check")
-ax.grid(axis="x", color="0.9", zorder=0)
-ax.legend(loc="lower left", bbox_to_anchor=(0, 1.01), ncol=1, frameon=False, fontsize=8)
-fig.savefig(FIG / "253_checks_by_tool.png", dpi=200, bbox_inches="tight")
-""")
+md('537 of the 540 motifs are put on position by at least one comparison tool. No motif is put on position by a kmerseek setting and by none of the comparison tools, pooling all 266 settings.')
 
-md(NARRATIVE.get("section2", ""))
+md("## 9. Which tool's misses kmerseek places\n\nFor each comparison tool: the motifs it does not put on position, and how many of those the\nbest kmerseek setting of section 3 does. Foldseek and Reseek count only the 268 motifs whose\nquery and ortholog both have an AlphaFold model matching their QfO sequence. The kmerseek\nsetting was chosen on these same motifs, so its counts are an upper bound.")
 
-md(r"""
-## 3. Every kmerseek arm, on position
+code('best_arm = best_km["arm"][0]\nkm_hit = proj.filter(pl.col("arm") == best_arm).select(\n    "elm_instance", km=pl.col("ortholog_rank_on_position").is_not_null()\n)\nSTRUCTURE = {"Foldseek", "Foldseek with ProstT5", "Reseek"}\nrows = []\nfor arm, tool in COMPARATORS.items():\n    t = (\n        proj.filter((pl.col("arm") == arm) & pl.col("scoreable"))\n        .with_columns(hit=pl.col("ortholog_rank_on_position").is_not_null())\n        .join(km_hit, on="elm_instance")\n    )\n    miss = t.filter(~pl.col("hit"))\n    rows.append(\n        {\n            "tool": tool,\n            "structure": tool in STRUCTURE,\n            "motifs": t.height,\n            "on position": int(t["hit"].sum()),\n            "missed": miss.height,\n            "missed, kmerseek on position": int(miss["km"].sum()),\n        }\n    )\nMISS = pl.DataFrame(rows).sort("missed")\nprint(f"kmerseek setting: {arm_label(best_arm)}")\nprint(MISS)\nMISS.write_csv(TAB / "253_misses_by_tool.csv")\n\nblue, grey = "#3B6EA5", "#D9D9D9"\nfig, ax = plt.subplots(figsize=(8, 4.6))\ny = range(MISS.height)\nfilled = MISS["missed, kmerseek on position"]\nax.barh(y, filled, color=blue, edgecolor="0.25", lw=0.6)\nax.barh(\n    y,\n    MISS["missed"] - filled,\n    left=filled,\n    color=grey,\n    edgecolor="0.25",\n    lw=0.6,\n    hatch="///",\n)\nfor i, r in enumerate(MISS.iter_rows(named=True)):\n    ax.text(\n        r["missed"] + 0.02 * 1.6 * MISS["missed"].max(),\n        i,\n        f"{r[\'missed, kmerseek on position\']} of {r[\'missed\']} missed motifs",\n        va="center",\n        fontsize=8.5,\n    )\nax.set_yticks(\n    list(y),\n    [f"{t}  (structure)" if s else t for t, s in zip(MISS["tool"], MISS["structure"])],\n)\nax.invert_yaxis()\nax.set_xlim(0, 1.6 * MISS["missed"].max())\nax.set_xlabel(\n    "ELM motifs this tool does not put on position on the chicken ortholog (n)"\n)\nax.legend(\n    handles=[\n        plt.Rectangle(\n            (0, 0),\n            1,\n            1,\n            facecolor=blue,\n            edgecolor="0.25",\n            label="kmerseek puts it on position (protein20, k = 5)",\n        ),\n        plt.Rectangle(\n            (0, 0),\n            1,\n            1,\n            facecolor=grey,\n            edgecolor="0.25",\n            hatch="///",\n            label="kmerseek misses it too",\n        ),\n    ],\n    loc="lower left",\n    bbox_to_anchor=(0, 1.01),\n    frameon=False,\n    fontsize=9,\n)\nax.set_title(\n    "Motifs each comparison tool misses on the chicken 1:1 ortholog\\n"\n    "540 human ELM motifs; Foldseek and Reseek: the 268 they could reach",\n    loc="left",\n    fontsize=10.5,\n    pad=48,\n)\nfor s in ["top", "right"]:\n    ax.spines[s].set_visible(False)\nfig.savefig(FIG / "253_misses_by_tool.png", dpi=200, bbox_inches="tight")')
 
-One point per kmerseek arm at scaled 1 (the full chicken index). Shape is the k-mer
-length: each alphabet was run at two k (the shorter one only where the search fit in
-memory, notebook 250 step 5). Filled means the low-complexity mask was off, open means on.
-The comparison tools, from section 2, are the grey rows at the top.
-""")
+md('Every tool misses few motifs on chicken. Foldseek with ProstT5 misses the most, 21, and kmerseek puts 11 of those on position. Foldseek misses 9 and Reseek 2 of the motifs they could reach. The sequence alignment tools miss 7 to 13 each, and kmerseek places 0 to 2 of them. Each motif kmerseek places that one tool misses is placed by another comparison tool (section 8).')
 
-code(r"""
-k1 = SH.filter((pl.col("tool") == "kmerseek") & (pl.col("scaled") == 1)).with_columns(
-    k_rank=pl.col("k").rank("dense").over("alphabet"))
-order = (k1.group_by("alphabet").agg(best=pl.col(CHECKS[-1]).max())
-         .sort("best", "alphabet", descending=[True, False])["alphabet"].to_list())
-print("kmerseek at scaled 1, share on position (of 540):")
-print(k1.select("alphabet", "k", "mask", CHECKS[-1]).sort("alphabet", "k", "mask"))
-k1.select("alphabet", "k", "mask", *CHECKS).write_csv(TAB / "253_kmerseek_scaled1.csv")
+md('## 10. By motif length and disorder\n\nShare of motifs put on position, split by motif length and by whether most of the motif is\ndisordered (`frac_disordered_motif` >= 0.5, from `elm_instance_covariates.parquet`). Four tools:\nthe two best sequence tools, Foldseek (on the 268 motifs it could reach), and the best kmerseek setting.')
 
-comp_rows = SH.filter(pl.col("tool") != "kmerseek").sort(CHECKS[-1], descending=True)
-names = comp_rows["tool"].to_list() + order
-fig, ax = plt.subplots(figsize=(7.5, 0.3 * len(names) + 1.8))
-for i, r in enumerate(comp_rows.iter_rows(named=True)):
-    ax.scatter(r[CHECKS[-1]], i, marker="D", s=36, facecolor="0.55", edgecolor="0.3", zorder=3)
-ax.axhline(comp_rows.height - 0.5, color="0.3", lw=0.8)
-y = {a: comp_rows.height + i for i, a in enumerate(order)}
-for r in k1.iter_rows(named=True):
-    ax.scatter(r[CHECKS[-1]], y[r["alphabet"]] + (0.12 if r["mask"] else -0.12),
-               marker="o" if r["k_rank"] == 1 else "s", s=36,
-               facecolor="white" if r["mask"] else "#3B6EA5", edgecolor="#3B6EA5", zorder=3)
-ax.set_yticks(range(len(names)), names)
-ax.set_ylim(len(names) - 0.5, -0.5)
-ax.set_xlim(0, 1.02)
-ax.set_xlabel("share of the 540 motifs put on position on the chicken ortholog")
-handles = [plt.Line2D([], [], marker="o", ls="", mfc="#3B6EA5", mec="#3B6EA5", label="shorter k, mask off"),
-           plt.Line2D([], [], marker="s", ls="", mfc="#3B6EA5", mec="#3B6EA5", label="longer k, mask off"),
-           plt.Line2D([], [], marker="o", ls="", mfc="white", mec="#3B6EA5", label="shorter k, mask on"),
-           plt.Line2D([], [], marker="s", ls="", mfc="white", mec="#3B6EA5", label="longer k, mask on"),
-           plt.Line2D([], [], marker="D", ls="", mfc="0.55", mec="0.3", label="a comparison tool")]
-ax.legend(handles=handles, loc="lower left", bbox_to_anchor=(0, 1.01), ncol=2, frameon=False, fontsize=8)
-ax.grid(axis="x", color="0.92", zorder=0)
-fig.savefig(FIG / "253_kmerseek_scaled1.png", dpi=200, bbox_inches="tight")
-""")
+code('COV = pl.read_parquet(COVER.parent.parent / "elm_instance_covariates.parquet").select(\n    "elm_instance", "frac_disordered_motif"\n)\nSHOW = {\n    "hmmer3_jackhmmer": "jackhmmer",\n    "mmseqs2_seqseq": "MMseqs2",\n    "foldseek": "Foldseek",\n    best_arm: "kmerseek, protein20 k = 5",\n}\nLB = (\n    proj.filter(pl.col("arm").is_in(list(SHOW)) & pl.col("scoreable"))\n    .join(COV, on="elm_instance", how="left")\n    .with_columns(\n        tool=pl.col("arm").replace_strict(SHOW),\n        hit=pl.col("ortholog_rank_on_position").is_not_null(),\n        length=pl.when(pl.col("motif_length") <= 6)\n        .then(pl.lit("3-6 aa"))\n        .when(pl.col("motif_length") <= 10)\n        .then(pl.lit("7-10 aa"))\n        .otherwise(pl.lit("11+ aa")),\n        disorder=pl.when(pl.col("frac_disordered_motif") >= 0.5)\n        .then(pl.lit("disordered"))\n        .otherwise(pl.lit("ordered")),\n    )\n)\nby = {}\nfor g, order in [\n    ("length", ["3-6 aa", "7-10 aa", "11+ aa"]),\n    ("disorder", ["ordered", "disordered"]),\n]:\n    t = LB.group_by(g, "tool").agg(share=pl.col("hit").mean(), n=pl.len())\n    by[g] = (t, order)\n    print(f"Share on position by {g}:")\n    print(t.pivot(on="tool", index=g, values="share").sort(g))\n    print(t.filter(pl.col("tool") == "MMseqs2").select(g, "n").sort(g))\nLB.group_by("length", "disorder", "tool").agg(\n    share=pl.col("hit").mean(), n=pl.len()\n).sort("length", "disorder", "tool").write_csv(TAB / "253_by_length_disorder.csv")\n\nSTYLE = {\n    "jackhmmer": dict(color="0.35", marker="o", mfc="white", ms=10),\n    "MMseqs2": dict(color="0.35", marker="s"),\n    "Foldseek": dict(color="#C0612B", marker="^"),\n    "kmerseek, protein20 k = 5": dict(color="#3B6EA5", marker="D"),\n}\nfig, axes = plt.subplots(\n    1, 2, figsize=(8, 3.4), sharey=True, gridspec_kw={"width_ratios": [3, 2]}\n)\nfor ax, (g, (t, order)) in zip(axes, by.items()):\n    for tool, st in STYLE.items():\n        d = t.filter(pl.col("tool") == tool)\n        vals = [d.filter(pl.col(g) == o)["share"][0] for o in order]\n        ax.plot(range(len(order)), vals, lw=1.2, label=tool, **{"ms": 6, **st})\n    n = t.filter(pl.col("tool") == "MMseqs2")\n    ax.set_xticks(\n        range(len(order)),\n        [f"{o}\\nn = {n.filter(pl.col(g) == o)[\'n\'][0]}" for o in order],\n    )\n    ax.set_xlim(-0.4, len(order) - 0.6)\n    ax.grid(axis="y", color="0.9")\n    for s in ["top", "right"]:\n        ax.spines[s].set_visible(False)\naxes[0].set_ylim(0, 1.02)\naxes[0].set_ylabel("share of motifs on position\\non the chicken ortholog")\naxes[0].set_xlabel("motif length")\naxes[1].set_xlabel("motif disorder")\naxes[0].legend(\n    loc="lower left", bbox_to_anchor=(0, 1.02), ncol=2, frameon=False, fontsize=8.5\n)\nfig.savefig(FIG / "253_by_length_disorder.png", dpi=200, bbox_inches="tight")')
 
-md(NARRATIVE.get("section3", ""))
+md('kmerseek does worse on short and on disordered motifs, as every sequence tool does, and the gap to\nMMseqs2 is widest on the shortest motifs (79.5% against 97.0% at 3-6 aa; 92.7% against 100% at\n11+ aa). Foldseek puts 96.0% of the disordered motifs it could reach on position and 98.5% of the\nordered ones. On chicken, kmerseek is not better than the sequence tools on short or disordered\nmotifs. Chicken is close to human, so the sequence tools find nearly every ortholog here. Sections\n12 to 16 test the farther species ([PR #72](https://github.com/seanome/2024-kmerseek-analysis/pull/72)).')
 
-md(r"""
-## 4. What a smaller index costs
+md("## 11. Does the kmerseek score just follow call length?\n\nFor each kmerseek setting, this is the Spearman correlation between `region_mean_idf`, the\nscore that ranks its calls, and the call's length in residues. It uses a fixed sample of\nabout one call in 1_000. A score that tracks length ranks long calls first whatever they\nmatch, which makes covering a motif easy for the wrong reason.")
 
-For each kmerseek alphabet, k and mask, the on-position share at scaled 2, 5 and 10
-divided by the share at scaled 1. A ratio of 1 means subsampling the chicken k-mers lost
-nothing.
-""")
+code('lc = S.filter(\n    (pl.col("tool") == "kmerseek") & pl.col("spearman_vs_length").is_not_null()\n)\nprint(\n    lc.select(\n        n_settings=pl.len(),\n        median=pl.col("spearman_vs_length").median(),\n        min=pl.col("spearman_vs_length").min(),\n        max=pl.col("spearman_vs_length").max(),\n    )\n)\nlc.select("arm", "spearman_vs_length").sort(\n    "spearman_vs_length", descending=True\n).write_csv(TAB / "253_length_check.csv")\nfig, ax = plt.subplots(figsize=(5.5, 2.8))\nax.hist(\n    lc["spearman_vs_length"],\n    bins=np.linspace(-1, 1, 41),\n    color="#3B6EA5",\n    edgecolor="white",\n)\nax.axvspan(-0.3, 0.3, color="0.92", zorder=0, label="|Spearman| below 0.3")\nax.set_xlabel("Spearman correlation of region_mean_idf with call length")\nax.set_ylabel("kmerseek settings (n)")\nax.legend(loc="lower left", bbox_to_anchor=(0, 1.01), frameon=False, fontsize=8)\nfig.savefig(FIG / "253_length_check.png", dpi=200, bbox_inches="tight")')
 
-code(r"""
-km_all = SH.filter(pl.col("tool") == "kmerseek")
-base = km_all.filter(pl.col("scaled") == 1).select("alphabet", "k", "mask", base=pl.col(CHECKS[-1]))
-ratio = (km_all.filter(pl.col("scaled") > 1).join(base, on=["alphabet", "k", "mask"])
-         .filter(pl.col("base") > 0).with_columns(ratio=pl.col(CHECKS[-1]) / pl.col("base")))
-summ = ratio.group_by("scaled").agg(n_arms=pl.len(), median_ratio=pl.col("ratio").median(),
-                                    q25=pl.col("ratio").quantile(0.25), q75=pl.col("ratio").quantile(0.75)).sort("scaled")
-print("On-position share relative to scaled 1, over arms with a nonzero share at scaled 1:")
-print(summ)
-summ.write_csv(TAB / "253_scaled_cost.csv")
+md('`region_mean_idf` follows call length: the median Spearman correlation over the 266 kmerseek settings is 0.80 (lowest -0.18, highest 0.92). Longer calls rank first whatever they match, which fits the low rank of the ortholog in section 7.')
 
-if summ.is_empty():
-    print("No arm has both scaled 1 and a larger scaled with a result, so there is nothing to compare.")
-else:
-    fig, ax = plt.subplots(figsize=(5.5, 3.2))
-    data = [ratio.filter(pl.col("scaled") == s)["ratio"].to_numpy() for s in summ["scaled"]]
-    ax.boxplot(data, tick_labels=[f"scaled {s}" for s in summ["scaled"]], widths=0.5,
-               medianprops={"color": "#3B6EA5"}, flierprops={"marker": ".", "markersize": 3})
-    ax.axhline(1, color="0.55", ls=":", lw=0.8, label="same share as at scaled 1")
-    ax.set_ylabel("on-position share,\nrelative to scaled 1")
-    ax.legend(loc="lower left", bbox_to_anchor=(0, 1.01), frameon=False, fontsize=8)
-    fig.savefig(FIG / "253_scaled_cost.png", dpi=200, bbox_inches="tight")
-""")
+md("## 12. Seven farther species: what was searched, and which motifs can be tested\n\nEach of the seven species was searched with the eight comparison tools and the 19 kmerseek\nsettings chosen on chicken: for each alphabet, the setting that put the most chicken motifs on\nposition ([PR #72](https://github.com/seanome/2024-kmerseek-analysis/pull/72), `assets/elm_cover_chosen_arms.tsv`). Chicken is shown beside them with the\nsame 19 settings and tools. One difference: in the seven species, kmerseek kept each query's\nbest 1_000 target proteins inside the search; for chicken it kept everything and the scoring\nmade the same cut.\n\nThe bars count the human motifs with a projected position on each species' 1:1 ortholog, the\ndenominator of every share below. They are split by the ortholog's AlphaFold model. Foldseek\nand Reseek can only reach the blue part: an ortholog without a model is not in their database,\nand a model that is not the QfO sequence numbers its residues differently from the projected\nmotif. Those motifs are left out of Foldseek's and Reseek's shares, not counted as misses.")
 
-md(NARRATIVE.get("section4", ""))
+code('COMPARATOR_ARMS = list(COMPARATORS)\nseven = [sp for sp in emu.COVER_SPECIES if sp != "chicken"]\nper_species = {}\nfor sp in emu.COVER_SPECIES:\n    sums, inst = emu.load_cover_scores(\n        sp, PROJECTIONS, MODEL_STATUS, cover_dir=COVER.parent\n    )\n    per_species[sp] = (summary_frame(sums).with_columns(species=pl.lit(sp)), inst)\n# The 19 kmerseek settings chosen on chicken (one per alphabet, notebook 250) are the\n# kmerseek searches every one of the seven species has.\nchosen_sets = {\n    sp: set(per_species[sp][0].filter(pl.col("tool") == "kmerseek")["arm"])\n    for sp in seven\n}\nCHOSEN = sorted(set.intersection(*chosen_sets.values()))\nassert all(\n    s == set(CHOSEN) for s in chosen_sets.values()\n), "species ran different settings"\nassert set(CHOSEN) <= set(S["arm"]), "a chosen setting is missing from chicken"\nALL_S = pl.concat([s for s, _ in per_species.values()], how="diagonal_relaxed")\nALL_I = pl.concat([i for _, i in per_species.values()], how="diagonal_relaxed").filter(\n    pl.col("arm").is_in(COMPARATOR_ARMS + CHOSEN)\n)\nran = (\n    ALL_S.filter(pl.col("arm").is_in(COMPARATOR_ARMS + CHOSEN))\n    .group_by("species")\n    .agg(\n        kmerseek_ok=((pl.col("tool") == "kmerseek") & (pl.col("status") == "ok")).sum(),\n        comparison_tools_ok=(\n            (pl.col("tool") != "kmerseek") & (pl.col("status") == "ok")\n        ).sum(),\n    )\n)\none = ALL_I.filter(pl.col("arm") == "hmmer3_phmmer")\ntested = (\n    one.filter("has_projection")\n    .group_by("species")\n    .agg(\n        motifs=pl.len(),\n        orthologs=pl.col("ortholog").n_unique(),\n        motifs_ortholog_model_matches=(pl.col("ortholog_model") == "same").sum(),\n        motifs_ortholog_no_model=(pl.col("ortholog_model") == "no model").sum(),\n        motifs_ortholog_model_differs=(pl.col("ortholog_model") == "differs").sum(),\n    )\n)\nSPECIES_TABLE = (\n    ran.join(tested, on="species")\n    .with_columns(pl.col("species").cast(pl.Enum(emu.COVER_SPECIES)))\n    .sort("species")\n)\nprint(f"kmerseek settings run on all seven species: {len(CHOSEN)}")\nprint(SPECIES_TABLE)\nSPECIES_TABLE.write_csv(TAB / "253_species_tested_motifs.csv")\n\nfig, ax = plt.subplots(figsize=(7.5, 3.6))\ny = np.arange(SPECIES_TABLE.height)\nleft = np.zeros(SPECIES_TABLE.height)\nfor col, colour, hatch, name in [\n    (\n        "motifs_ortholog_model_matches",\n        "0.45",\n        None,\n        "ortholog has an AlphaFold model matching its QfO sequence",\n    ),\n    (\n        "motifs_ortholog_model_differs",\n        "0.8",\n        None,\n        "ortholog\'s AlphaFold model is not its QfO sequence",\n    ),\n    (\n        "motifs_ortholog_no_model",\n        "white",\n        "///",\n        "ortholog has no AlphaFold model in the run\'s structure folder",\n    ),\n]:\n    v = SPECIES_TABLE[col].to_numpy()\n    ax.barh(\n        y, v, left=left, color=colour, hatch=hatch, edgecolor="0.3", lw=0.6, label=name\n    )\n    left += v\nfor yi, total in zip(y, left):\n    ax.text(total + 10, yi, f"{int(total):_}", va="center", fontsize=8)\nax.set_yticks(y, SPECIES_TABLE["species"].cast(pl.String))\nax.invert_yaxis()\nax.set_xlim(0, 1.1 * left.max())\nax.set_xlabel("human ELM motifs with a projected position on the 1:1 ortholog (n)")\nax.legend(loc="lower left", bbox_to_anchor=(0, 1.01), frameon=False, fontsize=8)\nfor s in ["top", "right"]:\n    ax.spines[s].set_visible(False)\nfig.savefig(FIG / "253_species_tested_motifs.png", dpi=200, bbox_inches="tight")')
 
-md(r"""
-## 5. Rank of the ortholog, when it is on position
+md('Every species has results for all 19 kmerseek settings and all eight comparison tools. The number\nof motifs falls with distance, from 1_343 in mouse to 93 in yeast, because fewer of the human\nproteins have a 1:1 ortholog there (814 orthologs in mouse, 71 in yeast). Chicken and zebrafish\nare short of AlphaFold models: for 271 of 540 and 354 of 837 motifs the ortholog has no model in\nthe structure folder. In the other species it is 1 to 40 motifs.')
 
-Rank is the ortholog's place in the query's list of chicken proteins, ordered by each
-protein's best call: rank 1 means the ortholog was the best chicken hit. Shown for the
-comparison tools and for the best kmerseek arm of section 2.
-""")
+md("## 13. Reseek positions, corrected\n\n`bin/normalize_reseek.awk` turns Reseek's structure file names into accessions. An AlphaFold\nmodel of a long protein is split into pieces named F1, F2 and so on, and the script adds 200\nresidues for each piece after the first. It reads the piece number from the first `-F` and\ndigits in the file name. For an accession that starts with F and a digit, that is the\naccession: `AF-F6SXM4-F1.cif` is read as piece 6, and 1_000 is added to every position on\nF6SXM4. The table counts, per species, the orthologs whose accession starts with F2 to F9.\n\n`scripts/rescore_elm_reseek_offset.sh` subtracts that offset from a copy of each species'\nReseek table and rescores Reseek alone. Every other section uses the corrected scores. The\nawk script itself is fixed in a separate change. Shown are the motifs Reseek could reach\n(section 12).")
 
-code(r"""
-pick = SH.filter(pl.col("tool") != "kmerseek")["arm"].to_list() + best_km["arm"].to_list()
-R = (I.filter(pl.col("arm").is_in(pick) & pl.col("has_projection") & pl.col("query_scoreable"))
-     .with_columns(label=pl.col("arm").map_elements(arm_label, return_dtype=pl.String)))
-rk = R.group_by("label").agg(
-    on_position=pl.col("ortholog_rank_on_position").is_not_null().sum(),
-    rank_1=(pl.col("ortholog_rank_on_position") == 1).sum(),
-    rank_2_to_10=pl.col("ortholog_rank_on_position").is_between(2, 10).sum(),
-    rank_over_10=(pl.col("ortholog_rank_on_position") > 10).sum()).sort("on_position", descending=True)
-print("Motifs on position (of 540), by the ortholog's rank in the query's list:")
-print(rk)
-rk.write_csv(TAB / "253_ortholog_rank.csv")
+code('def on_position_share(inst):\n    """Share of scoreable motifs with a projected position that are on position."""\n    p = inst.filter(pl.col("has_projection") & pl.col("scoreable"))\n    return p.height, int(p["ortholog_rank_on_position"].is_not_null().sum())\n\n\nrows = []\nfor sp in emu.COVER_SPECIES:\n    inst = per_species[sp][1]\n    raw = (\n        pl.read_parquet(COVER.parent / sp / "reseek.instances.parquet")\n        .select("elm_instance", "ortholog_rank_on_position")\n        .join(\n            inst.filter(pl.col("arm") == "reseek").select(\n                "elm_instance", "has_projection", "scoreable"\n            ),\n            on="elm_instance",\n        )\n    )\n    n, before = on_position_share(raw)\n    _, after = on_position_share(inst.filter(pl.col("arm") == "reseek"))\n    f_acc = MODEL_STATUS.filter(\n        (pl.col("species") == sp) & pl.col("ortholog").str.contains(r"^F[2-9]")\n    )\n    rows.append(\n        {\n            "species": sp,\n            "motifs": n,\n            "orthologs F2 to F9": f_acc.height,\n            "on position, as published": before,\n            "on position, corrected": after,\n        }\n    )\nRESEEK_FIX = pl.DataFrame(rows).with_columns(\n    pct_published=100 * pl.col("on position, as published") / pl.col("motifs"),\n    pct_corrected=100 * pl.col("on position, corrected") / pl.col("motifs"),\n)\nprint("Reseek, motifs whose ortholog has a matching AlphaFold model:")\nprint(RESEEK_FIX.with_columns(pl.col("pct_published", "pct_corrected").round(1)))\nRESEEK_FIX.write_csv(TAB / "253_reseek_position_correction.csv")\n\nfig, ax = plt.subplots(figsize=(6.5, 3.4))\ny = np.arange(RESEEK_FIX.height)\nax.hlines(\n    y,\n    RESEEK_FIX["pct_published"],\n    RESEEK_FIX["pct_corrected"],\n    color="0.6",\n    lw=1.5,\n    zorder=1,\n)\nax.scatter(\n    RESEEK_FIX["pct_published"],\n    y,\n    s=40,\n    facecolor="white",\n    edgecolor="#C0612B",\n    lw=1.5,\n    zorder=2,\n    label="as published (positions shifted for accessions F2 to F9)",\n)\nax.scatter(\n    RESEEK_FIX["pct_corrected"],\n    y,\n    s=40,\n    color="#C0612B",\n    zorder=3,\n    label="positions corrected",\n)\nax.set_yticks(\n    y, [f"{s} (n = {n})" for s, n in zip(RESEEK_FIX["species"], RESEEK_FIX["motifs"])]\n)\nax.invert_yaxis()\nax.set_xlim(0, 102)\nax.set_xlabel("Reseek: motifs put on position on the ortholog (%)")\nax.grid(axis="x", color="0.9", zorder=0)\nax.legend(loc="lower left", bbox_to_anchor=(0, 1.01), frameon=False, fontsize=8)\nfor s in ["top", "right"]:\n    ax.spines[s].set_visible(False)\nfig.savefig(FIG / "253_reseek_position_correction.png", dpi=200, bbox_inches="tight")')
 
-fig, ax = plt.subplots(figsize=(7.5, 0.4 * rk.height + 1.4))
-left = np.zeros(rk.height)
-for col, colour, name in [("rank_1", "#3B6EA5", "ortholog is the best chicken hit (rank 1)"),
-                          ("rank_2_to_10", "#9DB6D6", "rank 2 to 10"),
-                          ("rank_over_10", "0.85", "rank 11 to 1_000")]:
-    ax.barh(rk["label"], rk[col], left=left, color=colour, edgecolor="0.3", label=name)
-    left += rk[col].to_numpy()
-ax.invert_yaxis()
-ax.set_xlim(0, R.group_by("label").len()["len"].max())
-ax.set_xlabel("motifs put on position on the chicken ortholog (n; Foldseek and Reseek\n"
-              "leave out queries whose AlphaFold model is not the QfO sequence)")
-ax.legend(loc="lower left", bbox_to_anchor=(0, 1.01), ncol=2, frameon=False, fontsize=8)
-fig.savefig(FIG / "253_ortholog_rank.png", dpi=200, bbox_inches="tight")
-""")
+md("129 of Ciona's 158 orthologs have an accession that starts with F2 to F9; the other species have 0 to 8. So the offset changed Reseek's share most on Ciona: 17.9% as published, 96.7% corrected. It moved Arabidopsis from 90.4% to 94.8%, chicken from 98.1% to 99.3% and zebrafish from 98.1% to 99.8%. Fly, worm and yeast, with no such orthologs, did not change, and mouse moved by 0.1 points.")
 
-md(NARRATIVE.get("section5", ""))
+md("## 14. On position, from mouse to Arabidopsis\n\nThe share of motifs each search puts on position on the 1:1 ortholog, in species from\nclosest to furthest from human. Higher is better. The grey band spans the five sequence\nalignment tools (phmmer, jackhmmer, MMseqs2 in two modes, HHblits). Blue lines are the three\nstructure searches; Foldseek and Reseek count only the motifs they could reach (section 12).\nOrange lines are two kmerseek settings chosen on chicken alone, so their values in the other\nseven species were not picked on those motifs: the best setting on chicken (protein20, k = 5)\nand the best hydrophobic-polar one. The second table gives the best of the 19 settings in\neach species. That one is picked on the same motifs it is scored on, so it is optimistic.\n\nIf kmerseek's line stays near the alignment tools as species get further away, a reduced\nalphabet keeps motifs that alignment loses. If it falls faster, it does not.")
 
-md(r"""
-## 6. Motifs only kmerseek puts on position
+code('SEQUENCE_ARMS = [\n    "hmmer3_phmmer",\n    "hmmer3_jackhmmer",\n    "mmseqs2_seqseq",\n    "mmseqs2_iterative",\n    "hhblits",\n]\n# Chosen on chicken alone, so their share in the other species is not chosen on those motifs.\nCHICKEN_BEST = "protein20.k5.lcfalse"\nCHICKEN_BEST_HP = SH.filter(\n    pl.col("arm").is_in(CHOSEN) & pl.col("alphabet").str.starts_with("hp_")\n).sort(CHECKS[-1], "arm", descending=[True, False])["arm"][0]\nSHARE = (\n    ALL_I.filter(pl.col("has_projection") & pl.col("scoreable"))\n    .group_by("species", "arm")\n    .agg(\n        n=pl.len(), on_position=pl.col("ortholog_rank_on_position").is_not_null().sum()\n    )\n    .with_columns(pct=100 * pl.col("on_position") / pl.col("n"))\n)\nbest19 = (\n    SHARE.filter(pl.col("arm").is_in(CHOSEN))\n    .sort("pct", "arm", descending=[True, False])\n    .group_by("species", maintain_order=True)\n    .first()\n    .select("species", best_of_19=pl.col("arm"), best_of_19_pct="pct")\n)\nwide = (\n    SHARE.with_columns(\n        tool=pl.col("arm").replace(\n            {\n                **COMPARATORS,\n                CHICKEN_BEST: arm_label(CHICKEN_BEST),\n                CHICKEN_BEST_HP: arm_label(CHICKEN_BEST_HP),\n            }\n        )\n    )\n    .filter(pl.col("arm").is_in(COMPARATOR_ARMS + [CHICKEN_BEST, CHICKEN_BEST_HP]))\n    .pivot(on="species", index="tool", values="pct")\n    .select("tool", *emu.COVER_SPECIES)\n)\nprint(\n    "Motifs put on position on the 1:1 ortholog (%). Foldseek and Reseek: motifs whose"\n)\nprint("ortholog has a matching AlphaFold model (n in the table below).")\nprint(wide.with_columns(pl.exclude("tool").round(1)))\nprint(\n    best19.with_columns(pl.col("species").cast(pl.Enum(emu.COVER_SPECIES)))\n    .sort("species")\n    .with_columns(pl.col("best_of_19_pct").round(1))\n)\nprint(\n    SHARE.filter(pl.col("arm").is_in(["hmmer3_phmmer", "foldseek", "reseek"]))\n    .pivot(on="species", index="arm", values="n")\n    .select("arm", *emu.COVER_SPECIES)\n    .rename({"arm": "motifs counted (n)"})\n)\nSHARE.write_csv(TAB / "253_on_position_by_species.csv")\n\n\ndef series(arm):\n    d = SHARE.filter(pl.col("arm") == arm)\n    return [d.filter(pl.col("species") == sp)["pct"][0] for sp in emu.COVER_SPECIES]\n\n\nseq = np.array([series(a) for a in SEQUENCE_ARMS])\nx = np.arange(len(emu.COVER_SPECIES))\nfig, ax = plt.subplots(figsize=(8.5, 4.6))\nax.fill_between(\n    x,\n    seq.min(axis=0),\n    seq.max(axis=0),\n    color="0.85",\n    lw=0,\n    label="sequence alignment tools: range of phmmer, jackhmmer, MMseqs2 (2 modes), HHblits",\n)\nax.plot(\n    x,\n    series("prostt5"),\n    color="#C0612B",\n    lw=2,\n    marker="o",\n    label="Foldseek with ProstT5 (structure letters from sequence)",\n)\nax.plot(\n    x,\n    series("foldseek"),\n    color="#C0612B",\n    lw=1.6,\n    ls=":",\n    marker="^",\n    label="Foldseek (AlphaFold models)",\n)\nax.plot(\n    x,\n    series("reseek"),\n    color="#C0612B",\n    lw=1.6,\n    ls="--",\n    marker="s",\n    mfc="white",\n    label="Reseek (AlphaFold models, positions corrected)",\n)\nax.plot(\n    x,\n    series(CHICKEN_BEST),\n    color="#3B6EA5",\n    lw=2.2,\n    marker="D",\n    label=f"{arm_label(CHICKEN_BEST)} (best on chicken)",\n)\nax.plot(\n    x,\n    series(CHICKEN_BEST_HP),\n    color="#3B6EA5",\n    lw=1.6,\n    ls="--",\n    marker="D",\n    mfc="white",\n    label=f"{arm_label(CHICKEN_BEST_HP)} (best hydrophobic-polar on chicken)",\n)\nn_seq = SHARE.filter(pl.col("arm") == "hmmer3_phmmer")\nax.set_xticks(\n    x,\n    [\n        f"{sp}\\nn = {n_seq.filter(pl.col(\'species\') == sp)[\'n\'][0]:_}"\n        for sp in emu.COVER_SPECIES\n    ],\n)\nax.set_ylim(0, 102)\nax.set_ylabel("motifs put on position on the ortholog (%)")\nax.set_xlabel(\n    "target species, closest to furthest from human (n = motifs with a projected position)"\n)\nax.grid(axis="y", color="0.9", zorder=0)\nax.legend(loc="lower left", bbox_to_anchor=(0, 1.01), frameon=False, fontsize=8)\nfor s in ["top", "right"]:\n    ax.spines[s].set_visible(False)\nfig.savefig(FIG / "253_on_position_by_species.png", dpi=200, bbox_inches="tight")')
 
-A motif that no comparison tool puts on position, but at least one kmerseek arm does. The
-first count pools every kmerseek arm, so it is an upper bound: with 266 arms, some will
-land by chance. The second count uses only the best arm of section 2. That arm was chosen
-on these same motifs, so its count is also optimistic.
-""")
+md('kmerseek falls faster than every other search. protein20 with k = 5 puts 87.0% of motifs on\nposition in mouse, 81.9% in chicken and 65.7% in zebrafish, then 7.5% to 23.1% from Ciona to\nArabidopsis. The best hydrophobic-polar setting, hp_lehninger_hpc3 with k = 17 at scaled 10,\ngoes from 84.8% in mouse to 5.4% to 19.0% from Ciona to Arabidopsis. Even the best of the 19 settings in each species,\npicked on the motifs it is scored on, reaches only 9.7% to 27.7% past zebrafish.\n\nThe sequence alignment tools also drop with distance, from 98.8% to 99.5% in mouse to 30.2%\nto 50.9% in Arabidopsis. The structure searches drop least: in Arabidopsis, Foldseek with ProstT5\nplaces 79.3%, Foldseek 80.9% and Reseek 94.8%. In every species, every comparison tool places at\nleast 30% of the motifs, and every kmerseek setting places at most 28% past zebrafish.')
 
-code(r"""
-proj = I.filter("has_projection")
-by_comp = (proj.filter(pl.col("tool") != "kmerseek").group_by("elm_instance")
-           .agg(any_comparator=pl.col("ortholog_rank_on_position").is_not_null().any()))
-by_km = (proj.filter(pl.col("tool") == "kmerseek").group_by("elm_instance")
-         .agg(n_km_arms=pl.col("ortholog_rank_on_position").is_not_null().sum()))
-by_best = (proj.filter(pl.col("arm") == best_km["arm"][0])
-           .select("elm_instance", best_arm=pl.col("ortholog_rank_on_position").is_not_null()))
-U = (proj.select("elm_instance", "elm_class", "accession", "start", "end", "motif_length", "length_bin").unique()
-     .join(by_comp, on="elm_instance").join(by_km, on="elm_instance").join(by_best, on="elm_instance"))
-only_km = U.filter(~pl.col("any_comparator") & (pl.col("n_km_arms") > 0))
-print(f"motifs with a projected motif: {U.height}")
-print(f"on position for at least one comparison tool: {U['any_comparator'].sum()}")
-print(f"on position for no comparison tool, but for at least one kmerseek arm: {only_km.height}")
-print(f"  ... and for the best kmerseek arm ({arm_label(best_km['arm'][0])}): {only_km['best_arm'].sum()}")
-print(only_km.sort("n_km_arms", descending=True).head(20))
-only_km.write_csv(TAB / "253_only_kmerseek.csv")
+md('## 15. Each of the 19 kmerseek settings, by species\n\nShare of motifs on position for every kmerseek setting in every species, sorted by the chicken\nvalue. A setting that does well because it was chosen on chicken should fall back past chicken;\none that keeps its place across species is the better candidate for distant searches.')
 
-fig, ax = plt.subplots(figsize=(6, 2.8))
-vals = [U["any_comparator"].sum(), only_km.height, int(only_km["best_arm"].sum()),
-        U.height - U["any_comparator"].sum() - only_km.height]
-names = ["on position for a comparison tool", "only kmerseek, any of its arms",
-         "only kmerseek, the best arm\n(part of the bar above)", "on position for no tool"]
-ax.barh(names, vals, color=["0.6", "#3B6EA5", "#3B6EA5", "white"], edgecolor="0.3",
-        hatch=[None, None, "//", None])
-for i, v in enumerate(vals):
-    ax.text(v + 3, i, f"{v}", va="center", fontsize=8)
-ax.invert_yaxis()
-ax.set_xlim(0, 1.12 * max(vals))
-ax.set_xlabel(f"motifs (n, of {U.height} with a projected motif)")
-fig.savefig(FIG / "253_only_kmerseek.png", dpi=200, bbox_inches="tight")
-""")
+code('grid = (\n    SHARE.filter(pl.col("arm").is_in(CHOSEN))\n    .pivot(on="species", index="arm", values="pct")\n    .select("arm", *emu.COVER_SPECIES)\n    .sort("chicken", descending=True)\n)\nprint("kmerseek, motifs put on position (%), sorted by the chicken value:")\nprint(grid.with_columns(pl.exclude("arm").round(1)).rename({"arm": "kmerseek setting"}))\ngrid.write_csv(TAB / "253_kmerseek_settings_by_species.csv")\n\nvals = grid.select(emu.COVER_SPECIES).to_numpy()\nfig, ax = plt.subplots(figsize=(8.5, 0.34 * grid.height + 1.6))\nim = ax.imshow(vals, cmap="Blues", vmin=0, vmax=100, aspect="auto")\nfor r in range(vals.shape[0]):\n    for c in range(vals.shape[1]):\n        ax.text(\n            c,\n            r,\n            f"{vals[r, c]:.0f}",\n            ha="center",\n            va="center",\n            fontsize=7.5,\n            color="white" if vals[r, c] > 60 else "black",\n        )\nax.set_xticks(range(len(emu.COVER_SPECIES)), emu.COVER_SPECIES)\nax.xaxis.tick_top()\nax.set_yticks(\n    range(grid.height),\n    [arm_label(a).removeprefix("kmerseek ") for a in grid["arm"]],\n    fontsize=8,\n)\ncb = fig.colorbar(im, ax=ax, fraction=0.03, pad=0.02)\ncb.set_label("kmerseek: motifs put on position on the ortholog (%)")\nfig.savefig(FIG / "253_kmerseek_settings_by_species.png", dpi=200, bbox_inches="tight")')
 
-md(NARRATIVE.get("section6", ""))
+md('No setting holds up past zebrafish. The best in Ciona is hp_kyte_doolittle2 with k = 20 (27.7%),\nin fly sdm12 with k = 7 (26.3%), in worm and yeast mmseqs12 with k = 6 (13.6% and 9.7%), and in\nArabidopsis hp_thomas_dill2 with k = 19 (17.2%). hp_kyte_doolittle2 is second from last on\nchicken (49.1%) and first on Ciona, but it places 0.9% in worm and 1.1% in yeast. Six different\nsettings are the best in the eight species, and the largest value past zebrafish is 27.7%.')
 
-md(r"""
-## 7. Does the kmerseek score just follow call length?
+md('## 16. Motifs only kmerseek puts on position, by species\n\nThe decision rule of the introduction, in every species: motifs that at least one of the 19\nkmerseek settings puts on position and none of the eight comparison tools does. Pooling 19\nsettings makes this an upper bound.')
 
-For each kmerseek arm, this is the Spearman correlation between `region_mean_idf`, the
-score that ranks its calls, and the call's length in residues. It uses a fixed sample of
-about one call in 1_000. A score that tracks length ranks long calls first whatever they
-match, which makes covering a motif easy for the wrong reason.
-""")
+code('P = ALL_I.filter("has_projection").with_columns(\n    hit=pl.col("ortholog_rank_on_position").is_not_null()\n)\ncomp_hit = (\n    P.filter(pl.col("arm").is_in(COMPARATOR_ARMS))\n    .group_by("species", "elm_instance")\n    .agg(any_comparator=pl.col("hit").any())\n)\nkm_hit = (\n    P.filter(pl.col("arm").is_in(CHOSEN))\n    .group_by("species", "elm_instance")\n    .agg(any_kmerseek=pl.col("hit").any(), n_kmerseek_settings=pl.col("hit").sum())\n)\nONLY = (\n    comp_hit.join(km_hit, on=["species", "elm_instance"])\n    .group_by("species")\n    .agg(\n        motifs=pl.len(),\n        comparison_tool=pl.col("any_comparator").sum(),\n        only_kmerseek=(pl.col("any_kmerseek") & ~pl.col("any_comparator")).sum(),\n        no_search=(~pl.col("any_kmerseek") & ~pl.col("any_comparator")).sum(),\n    )\n    .with_columns(pl.col("species").cast(pl.Enum(emu.COVER_SPECIES)))\n    .sort("species")\n)\nprint("Motifs with a projected position, by which searches put them on position")\nprint("(kmerseek: any of the 19 settings; comparison tools: any of the eight):")\nprint(ONLY)\nONLY.write_csv(TAB / "253_only_kmerseek_by_species.csv")\n\nfig, ax = plt.subplots(figsize=(7.5, 3.6))\ny = np.arange(ONLY.height)\nleft = np.zeros(ONLY.height)\nfor col, colour, hatch, name in [\n    ("comparison_tool", "0.65", None, "on position for at least one comparison tool"),\n    ("only_kmerseek", "#3B6EA5", None, "on position for kmerseek only"),\n    ("no_search", "white", "///", "on position for no search"),\n]:\n    v = ONLY[col].to_numpy()\n    ax.barh(\n        y, v, left=left, color=colour, hatch=hatch, edgecolor="0.3", lw=0.6, label=name\n    )\n    left += v\nfor yi, k in zip(y, ONLY["only_kmerseek"]):\n    ax.text(left.max() * 1.02, yi, f"kmerseek only: {k}", va="center", fontsize=8)\nax.set_yticks(y, ONLY["species"].cast(pl.String))\nax.invert_yaxis()\nax.set_xlim(0, 1.3 * left.max())\nax.set_xlabel("human ELM motifs with a projected position on the 1:1 ortholog (n)")\nax.legend(loc="lower left", bbox_to_anchor=(0, 1.01), frameon=False, fontsize=8)\nfor s in ["top", "right"]:\n    ax.spines[s].set_visible(False)\nfig.savefig(FIG / "253_only_kmerseek_by_species.png", dpi=200, bbox_inches="tight")')
 
-code(r"""
-lc = S.filter((pl.col("tool") == "kmerseek") & pl.col("spearman_vs_length").is_not_null())
-print(lc.select(n_arms=pl.len(), median=pl.col("spearman_vs_length").median(),
-                min=pl.col("spearman_vs_length").min(), max=pl.col("spearman_vs_length").max()))
-lc.select("arm", "spearman_vs_length").sort("spearman_vs_length", descending=True).write_csv(TAB / "253_length_check.csv")
-fig, ax = plt.subplots(figsize=(5.5, 2.8))
-ax.hist(lc["spearman_vs_length"], bins=np.linspace(-1, 1, 41), color="#3B6EA5", edgecolor="white")
-ax.axvspan(-0.3, 0.3, color="0.92", zorder=0, label="|Spearman| below 0.3")
-ax.set_xlabel("Spearman correlation of region_mean_idf with call length")
-ax.set_ylabel("kmerseek arms (n)")
-ax.legend(loc="lower left", bbox_to_anchor=(0, 1.01), frameon=False, fontsize=8)
-fig.savefig(FIG / "253_length_check.png", dpi=200, bbox_inches="tight")
-""")
+md('No species has such a motif. The comparison tools together put 91% to 100% of the motifs on\nposition in every species (85 of 93 in yeast to 1_341 of 1_343 in mouse). By the decision rule,\nNo additional motif was detected with kmerseek under these settings in these eight species.')
 
-md(NARRATIVE.get("section7", ""))
-md(NARRATIVE.get("verdict", ""))
+md("## What this says\n\nAgainst chicken, kmerseek puts a human ELM motif on its ortholog's position less often than every sequence tool: 81.9% for its best arm, against 96.1% to 98.7%. It also puts the ortholog low in its list, and it places no motif that the comparison tools miss.\n\nChicken is close enough to human that the sequence tools find almost every ortholog. Sections 12–16 also report the seven farther species using arms chosen on chicken. No motif in those tested species was placed only by kmerseek; this is a result for these motif instances and search settings, not proof that the method can never add a motif.\n\nThe ranking score follows call length (section 11). That affects every result that uses the list order, including the cut to 1_000 targets.")
 
 write_notebook()
