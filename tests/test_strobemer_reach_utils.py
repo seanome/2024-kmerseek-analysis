@@ -154,3 +154,26 @@ def test_null_c_keeps_each_phase():
     assert sr.null_c(rep, 3, np.random.default_rng(0)) == rep
     # period 1 is an ordinary shuffle and does change a varied sequence
     assert sr.null_c(seq, 1, np.random.default_rng(0)) != seq
+
+
+def test_selection_requires_all_four_distinct_queries():
+    import polars as pl
+
+    rows = [
+        dict(
+            alphabet="protein",
+            word_length=4,
+            family="pairs",
+            kind="real",
+            min_shared=2,
+            lineage=lineage,
+            reach=0.5,
+            random_share=0.005,
+        )
+        for lineage in sr.SELECT_LINEAGES
+    ]
+    assert sr.selection_table(pl.DataFrame(rows))["eligible"][0]
+    assert not sr.selection_table(pl.DataFrame(rows[:3]))["eligible"][0]
+    assert not sr.selection_table(pl.DataFrame(rows[:3] + [rows[0]]))["eligible"][0]
+    rows[-1]["random_share"] = None
+    assert not sr.selection_table(pl.DataFrame(rows))["eligible"][0]

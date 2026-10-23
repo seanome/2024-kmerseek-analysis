@@ -339,8 +339,18 @@ def selection_table(reach):
             max_random_share=pl.col("random_share").max(),
             mean_random_share=pl.col("random_share").mean(),
             n_queries=pl.len(),
+            n_lineages=pl.col("lineage").n_unique(),
+            complete_random_share=pl.col("random_share")
+            .is_finite()
+            .fill_null(False)
+            .all(),
         )
-        .with_columns(eligible=pl.col("max_random_share") <= RANDOM_SHARE_BAR)
+        .with_columns(
+            eligible=(pl.col("max_random_share") <= RANDOM_SHARE_BAR)
+            & (pl.col("n_queries") == len(SELECT_LINEAGES))
+            & (pl.col("n_lineages") == len(SELECT_LINEAGES))
+            & pl.col("complete_random_share")
+        )
         .sort(
             ["eligible", "mean_reach", "mean_random_share", *SETTING],
             descending=[True, True, False, False, False, False],

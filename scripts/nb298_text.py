@@ -216,15 +216,15 @@ lineage, from three of the six queries. All are printed below; the reading is:
   This is ancestry, which notebook 295 found too (its F3), not a pattern reached without
   it.
 * Bacterial query H7FWB6 against P05140 (fish type II): 2 shared keys, `KILK` and `ETTA`
-  about 31 residues apart in both, in otherwise unrelated sequence. One chance match at
-  the bar.
+  about 31 residues apart in both, in otherwise unrelated sequence. One additional match at
+  the bar; this benchmark does not establish its biological meaning.
 * AFGP query P02732 against four fish type I proteins (B1P0S1, P02734, P07835, P23699),
   and the type I query P04002 against the AFGP polyprotein P24856: every shared word is
   made of alanine and threonine (`AATA`, `ATAA`, `TAAT`), plus proline in the type I
   pair (`AAPA`, `APAA`). Both lineages are alanine-rich with threonine at intervals. The
   AFGP query's residue-shuffled copies (null A) reach more ice-binding proteins of other
-  lineages than the real query does (SF1), so the order of the residues adds nothing to
-  these matches.
+  lineages than the real query does (SF1), so these comparisons do not show an advantage of residue order
+  for these matches.
 
 Each key is printed as the stretch from the first word's start to the second word's end,
 in both sequences, with coordinates (1-based, inclusive), the alphabet's classes
@@ -266,10 +266,10 @@ CONCLUSIONS = """## Summary and conclusions
    Prediction (b) held. Prediction (a), that a stored spacing would not carry across
    lineages, is consistent with the data: the spacing-in-key families reach no more than
    the families without it.
-3. The few cross-lineage matches the chosen key makes are shared ancestry (the bacterial
+3. Most cross-lineage matches the chosen key makes are consistent with shared ancestry (the bacterial
    query and five fungal proteins of one UniProt family, a median 54 to 66% identical
    between the two words) or alanine and threonine runs, where residue-shuffled copies
-   of the query reach more (section 7, SF1).
+   of the query reach more (section 7, SF1). The H7FWB6–P05140 match remains unclassified.
 4. Notebook 294's key (hydrophobic-polar, `hp_thomas_dill2`, 6-letter words, every pair,
    no spacing) is shared 2 or more times by 95% of random Swiss-Prot entries, a mean of
    981 shared keys per random entry, so about 546_000 of Swiss-Prot's 575_748 entries for
