@@ -1,0 +1,1 @@
+awk -F, -v max=10000 'NR==1 { for (i=1;i<=NF;i++) if ($i=="region_evalue") c=i; if (!c) { print "region_evalue column missing: --max_region_evalue needs a 0.4 " "image, pass --max_region_evalue null for an older one" > "/dev/stderr"; exit 3 } print; next } ($c+0) <= max'
