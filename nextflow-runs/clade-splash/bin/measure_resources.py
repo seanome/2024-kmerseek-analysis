@@ -58,13 +58,15 @@ def predict(paths):
             max(1, hours),
             f"{len(successful)} completed, {len(killed)} memory/time/signal failures",
         )
-    # New disk-backed implementation: 2x the largest killed ask. Its runtime must
-    # be measured; 24 h is an explicit conservative allowance, not a measured ETA.
+    # 2026-10-22 full task: manually cancelled, not OOM; Slurm peak 93.3 GiB.
+    # 33 completed files covered 11.12% of occurrence bytes in 2h25m37s:
+    # about 21.8 h for preparation by byte scaling. Ask 128 GiB and 36 h
+    # (over 1.5x that estimate), including room for copying outputs back.
     previous = result.get("alignInput", (0, 0, "no history"))
     result["alignInput"] = (
-        max(96, previous[0]),
-        max(24, previous[1]),
-        "new disk-backed code; old implementation killed at 48 GB",
+        max(128, previous[0]),
+        max(36, previous[1]),
+        "full task: 93.3 GiB peak; byte-scaled runtime ~21.8 h; manually cancelled",
     )
     for process, (gb, hours, _) in result.items():
         if gb > 500 or hours > 168:

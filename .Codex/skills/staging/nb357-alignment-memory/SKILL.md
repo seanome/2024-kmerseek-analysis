@@ -29,3 +29,12 @@ Added 2026-10-22 after the full run's alignInput was killed at 16, 32 and 48 GB.
   alignInput selector uses scratch '$L_SCRATCH_JOB' and binds that directory into
   Apptainer. A Nextflow probe inside allocation 48999084 confirmed the resulting
   working directory was node-local. Inspect the generated .command.run after launch.
+
+- Added 2026-10-23: CANCELLED is not evidence of a pipeline crash. Jobs 49000133
+  and 49000241 were stopped by an explicit request in another chat; its transcript
+  contained the exact scancel command and Slurm named the same UID. Check both
+  accounting and chat history before diagnosing a cancellation. A new explicit
+  resume request permits restarting; a status message alone does not.
+- Size from the full run, not only its one-file check. That full task's Slurm peak
+  was 93.28 GiB and completed 11.12% of occurrence bytes in 2h25m37s. The relaunch
+  floor is 128 GiB/36 h. The earlier one-file 28.07 GiB check was not a full-run peak.

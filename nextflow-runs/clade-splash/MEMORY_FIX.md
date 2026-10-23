@@ -29,9 +29,9 @@ can reuse the completed Pfam mapping and counting tasks. The same launch directo
 and Nextflow session must be retained.
 
 `make run` regenerates `run/measured/resources.config` and its evidence table from
-retained full-run and pilot traces, then resumes with Nextflow 25.04.7. The new
-preparer's first ask is 96 GB (twice the largest killed ask) and 24 hours. The time
-is a conservative allowance for the new implementation, not a completion estimate.
+retained full-run and pilot traces, then resumes with Nextflow 25.04.7. The initial repaired run requested 96 GB and 24 hours. The 2026-10-23 relaunch
+requests 128 GB and 36 hours, based on the full task's memory reading and progress
+described below.
 The full input still needs runtime and memory measurement.
 
 The real-input check (Sherlock job 48999084) completed successfully in 8 min 49 s.
@@ -42,8 +42,8 @@ rows. Slurm reported 29,430,620 KiB (28.07 GiB) peak memory for the batch;
 cover different accounting scopes; use the larger one for sizing. This was one
 of 512 occurrence files, not a completed full preparation.
 
-The resume is running as driver job 49000133, with alignment preparation job
-49000241, on 2026-10-22. It uses the same
+The 2026-10-22 resume ran as driver job 49000133, with alignment preparation job
+49000241. It used the same
 launch directory, Nextflow 25.04.7 and `-resume`. Existing counts, significant
 anchors, top occurrences and Pfam mappings can be inspected while alignment runs.
 Both the Nextflow log and the new trace confirm 2,200 cached tasks, including all
@@ -59,3 +59,44 @@ unsigned anchor IDs, repeated occurrences, repeated protein FASTAs, multiple dom
 envelopes and targets outside those envelopes. A malformed anchor appearing in more
 than one hash bucket is rejected rather than overwriting its earlier FASTA. The
 full scientific benchmark has not finished.
+
+
+Cancellation diagnosis, 2026-10-23
+----------------------------------
+
+The repaired run was cancelled deliberately. In chat
+`01a1648a-25cc-73a3-adf5-dfd5b594aece`, Olga said at 2026-10-22 09:59:37 PDT,
+“wait cancel all this, these are not the experiments I want to do”. The agent then
+ran `scancel 49000133 49000241` at 09:59:47. Slurm attributes both cancellations to
+UID 363520, Olga's account. The driver received TERM, its handler sent Ctrl-C to
+Nextflow, and Nextflow recorded SIGINT with one aborted task. No failed task or
+out-of-memory event was recorded for that resume. The earlier memory failures
+belong to the original preparer, before the disk-backed replacement.
+
+The cancellation was therefore a change of experiment direction, rather than a
+pipeline error. Olga explicitly requested a resume in this chat on 2026-10-23.
+This resumes the same registered protein experiment; the question and pass/fail
+rules are unchanged.
+
+The aborted child ran 2h25m37s and had a Slurm batch peak of 97,815,480 KiB
+(93.28 GiB) against 96 GiB. Its log began 34 occurrence files, so 33 completed
+before the interrupted file. Those 33 total 17,987,244,289 of 161,735,388,518
+occurrence bytes (11.12%). Scaling elapsed time by bytes gives about 21.8 h for
+preparation. This is an estimate: later files and output copying can differ.
+The launch now asks for 128 GiB and 36 h, over 1.5 times that estimated runtime.
+The 48 h head allocation provides additional time for the remaining alignment
+and column-testing stages.
+
+The previous 96 GiB allocation was close to the batch reading, so the provisioning
+floor changes from 96 to 128 GiB; the time floor changes from 24 to 36 h. The
+resource test was run before the change (failed with 96/24), then after it. The
+counting, domain mapping and alignment algorithms are unchanged in this relaunch.
+The 2,200 completed upstream tasks remain reusable. The cancelled task's temporary
+node-local outputs were not published; its unfinished alignment preparation must
+run again.
+
+First usable outputs already exist: the pilot alignment tables and the full run's
+count, significant-anchor, top-occurrence and Pfam-mapping tables. These can be
+reviewed while the full alignment preparation runs. A shorter diagnostic alignment
+could provide earlier examples by reducing coverage; it would not replace the
+registered full result.

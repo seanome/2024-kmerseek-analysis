@@ -24,7 +24,7 @@ def test_memory_failures_raise_first_ask_and_runtime_has_headroom(tmp_path):
             ]
         )
     result = predict([path])
-    assert result["alignInput"][:2] == (96, 24)
+    assert result["alignInput"][:2] == (128, 36)
     assert result["targets"][:2] == (32, 9)
     assert quantity("1d 2h 30m", {"d": 86400, "h": 3600, "m": 60}) == 95400
 
