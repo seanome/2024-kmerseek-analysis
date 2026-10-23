@@ -1,0 +1,388 @@
+{
+  "p138": {
+    "number": 138,
+    "url": "https://github.com/seanome/2024-kmerseek-analysis/pull/138",
+    "title": "Shared dipeptide shuffle for decoy queries: nextflow-runs/shared/decoys.py",
+    "headRefOid": "c6754372fa18228381b461c6e9f9d61249702de9",
+    "baseRefName": "main",
+    "mergeStateStatus": "CLEAN",
+    "mergeable": "MERGEABLE",
+    "isDraft": false,
+    "reviewDecision": null,
+    "commits": {
+      "nodes": [
+        {
+          "commit": {
+            "statusCheckRollup": {
+              "state": "SUCCESS",
+              "contexts": {
+                "nodes": [
+                  {
+                    "name": "black",
+                    "conclusion": "SUCCESS",
+                    "status": "COMPLETED",
+                    "detailsUrl": "https://github.com/seanome/2024-kmerseek-analysis/actions/runs/38576200073/job/115893843866"
+                  },
+                  {
+                    "name": "black",
+                    "conclusion": "SUCCESS",
+                    "status": "COMPLETED",
+                    "detailsUrl": "https://github.com/seanome/2024-kmerseek-analysis/actions/runs/38575958735/job/115892984584"
+                  },
+                  {
+                    "name": "test",
+                    "conclusion": "SUCCESS",
+                    "status": "COMPLETED",
+                    "detailsUrl": "https://github.com/seanome/2024-kmerseek-analysis/actions/runs/38576200423/job/115893845557"
+                  },
+                  {
+                    "name": "test",
+                    "conclusion": "SUCCESS",
+                    "status": "COMPLETED",
+                    "detailsUrl": "https://github.com/seanome/2024-kmerseek-analysis/actions/runs/38575959249/job/115892987140"
+                  },
+                  {
+                    "name": "notebooks",
+                    "conclusion": "SKIPPED",
+                    "status": "COMPLETED",
+                    "detailsUrl": "https://github.com/seanome/2024-kmerseek-analysis/actions/runs/38575958735/job/115892986804"
+                  },
+                  {
+                    "name": "notebooks",
+                    "conclusion": "SUCCESS",
+                    "status": "COMPLETED",
+                    "detailsUrl": "https://github.com/seanome/2024-kmerseek-analysis/actions/runs/38576200073/job/115893844112"
+                  }
+                ]
+              }
+            }
+          }
+        }
+      ]
+    }
+  },
+  "p153": {
+    "number": 153,
+    "url": "https://github.com/seanome/2024-kmerseek-analysis/pull/153",
+    "title": "Figure style: mako colour map by default (Seanome style guide)",
+    "headRefOid": "7ced25210b8318105ecc4a26a0ad735227ff99e1",
+    "baseRefName": "main",
+    "mergeStateStatus": "CLEAN",
+    "mergeable": "MERGEABLE",
+    "isDraft": false,
+    "reviewDecision": null,
+    "commits": {
+      "nodes": [
+        {
+          "commit": {
+            "statusCheckRollup": {
+              "state": "SUCCESS",
+              "contexts": {
+                "nodes": [
+                  {
+                    "name": "black",
+                    "conclusion": "SUCCESS",
+                    "status": "COMPLETED",
+                    "detailsUrl": "https://github.com/seanome/2024-kmerseek-analysis/actions/runs/39956320506/job/120422941097"
+                  },
+                  {
+                    "name": "black",
+                    "conclusion": "SUCCESS",
+                    "status": "COMPLETED",
+                    "detailsUrl": "https://github.com/seanome/2024-kmerseek-analysis/actions/runs/39956314380/job/120422920784"
+                  },
+                  {
+                    "name": "check",
+                    "conclusion": "SUCCESS",
+                    "status": "COMPLETED",
+                    "detailsUrl": "https://github.com/seanome/2024-kmerseek-analysis/actions/runs/39956320310/job/120422940652"
+                  },
+                  {
+                    "name": "notebooks",
+                    "conclusion": "SKIPPED",
+                    "status": "COMPLETED",
+                    "detailsUrl": "https://github.com/seanome/2024-kmerseek-analysis/actions/runs/39956314380/job/120422922801"
+                  },
+                  {
+                    "name": "notebooks",
+                    "conclusion": "SUCCESS",
+                    "status": "COMPLETED",
+                    "detailsUrl": "https://github.com/seanome/2024-kmerseek-analysis/actions/runs/39956320506/job/120422941524"
+                  }
+                ]
+              }
+            }
+          }
+        }
+      ]
+    }
+  },
+  "p115": {
+    "number": 115,
+    "url": "https://github.com/seanome/2024-kmerseek-analysis/pull/115",
+    "title": "parse_disprot.py: read every DisProt page, and only consensus disorder",
+    "headRefOid": "e38fca581769f5efbb1ade733fc1bdfcccedbca6",
+    "baseRefName": "main",
+    "mergeStateStatus": "CLEAN",
+    "mergeable": "MERGEABLE",
+    "isDraft": false,
+    "reviewDecision": null,
+    "commits": {
+      "nodes": [
+        {
+          "commit": {
+            "statusCheckRollup": {
+              "state": "SUCCESS",
+              "contexts": {
+                "nodes": [
+                  {
+                    "name": "black",
+                    "conclusion": "SUCCESS",
+                    "status": "COMPLETED",
+                    "detailsUrl": "https://github.com/seanome/2024-kmerseek-analysis/actions/runs/39954937469/job/120418310935"
+                  },
+                  {
+                    "name": "black",
+                    "conclusion": "SUCCESS",
+                    "status": "COMPLETED",
+                    "detailsUrl": "https://github.com/seanome/2024-kmerseek-analysis/actions/runs/39954931887/job/120418291199"
+                  },
+                  {
+                    "name": "notebooks",
+                    "conclusion": "SKIPPED",
+                    "status": "COMPLETED",
+                    "detailsUrl": "https://github.com/seanome/2024-kmerseek-analysis/actions/runs/39954931887/job/120418293298"
+                  },
+                  {
+                    "name": "notebooks",
+                    "conclusion": "SUCCESS",
+                    "status": "COMPLETED",
+                    "detailsUrl": "https://github.com/seanome/2024-kmerseek-analysis/actions/runs/39954937469/job/120418310638"
+                  }
+                ]
+              }
+            }
+          }
+        }
+      ]
+    }
+  },
+  "p117": {
+    "number": 117,
+    "url": "https://github.com/seanome/2024-kmerseek-analysis/pull/117",
+    "title": "Notebook 247: BCL-2 query panel vs CED-9 alone (stopped: 2 non-chordate queries in Swiss-Prot)",
+    "headRefOid": "6b76956ac26ed80d9b6e33d88b09af6db64d57e9",
+    "baseRefName": "main",
+    "mergeStateStatus": "CLEAN",
+    "mergeable": "MERGEABLE",
+    "isDraft": false,
+    "reviewDecision": null,
+    "commits": {
+      "nodes": [
+        {
+          "commit": {
+            "statusCheckRollup": {
+              "state": "SUCCESS",
+              "contexts": {
+                "nodes": [
+                  {
+                    "name": "black",
+                    "conclusion": "SUCCESS",
+                    "status": "COMPLETED",
+                    "detailsUrl": "https://github.com/seanome/2024-kmerseek-analysis/actions/runs/39963675631/job/120447847475"
+                  },
+                  {
+                    "name": "black",
+                    "conclusion": "SUCCESS",
+                    "status": "COMPLETED",
+                    "detailsUrl": "https://github.com/seanome/2024-kmerseek-analysis/actions/runs/39963668822/job/120447823078"
+                  },
+                  {
+                    "name": "check",
+                    "conclusion": "SUCCESS",
+                    "status": "COMPLETED",
+                    "detailsUrl": "https://github.com/seanome/2024-kmerseek-analysis/actions/runs/39963675603/job/120447846963"
+                  },
+                  {
+                    "name": "notebooks",
+                    "conclusion": "SKIPPED",
+                    "status": "COMPLETED",
+                    "detailsUrl": "https://github.com/seanome/2024-kmerseek-analysis/actions/runs/39963668822/job/120447824841"
+                  },
+                  {
+                    "name": "notebooks",
+                    "conclusion": "SUCCESS",
+                    "status": "COMPLETED",
+                    "detailsUrl": "https://github.com/seanome/2024-kmerseek-analysis/actions/runs/39963675631/job/120447847050"
+                  }
+                ]
+              }
+            }
+          }
+        }
+      ]
+    }
+  },
+  "p120": {
+    "number": 120,
+    "url": "https://github.com/seanome/2024-kmerseek-analysis/pull/120",
+    "title": "Notebook 279: dark proteins kmerseek reaches at E < 1 and E < 10",
+    "headRefOid": "59aeb87274ee343475a7928c56d7f1c36be6bb7a",
+    "baseRefName": "main",
+    "mergeStateStatus": "CLEAN",
+    "mergeable": "MERGEABLE",
+    "isDraft": false,
+    "reviewDecision": null,
+    "commits": {
+      "nodes": [
+        {
+          "commit": {
+            "statusCheckRollup": {
+              "state": "SUCCESS",
+              "contexts": {
+                "nodes": [
+                  {
+                    "name": "black",
+                    "conclusion": "SUCCESS",
+                    "status": "COMPLETED",
+                    "detailsUrl": "https://github.com/seanome/2024-kmerseek-analysis/actions/runs/39967197314/job/120460047285"
+                  },
+                  {
+                    "name": "black",
+                    "conclusion": "SUCCESS",
+                    "status": "COMPLETED",
+                    "detailsUrl": "https://github.com/seanome/2024-kmerseek-analysis/actions/runs/39967187547/job/120460013800"
+                  },
+                  {
+                    "name": "check",
+                    "conclusion": "SUCCESS",
+                    "status": "COMPLETED",
+                    "detailsUrl": "https://github.com/seanome/2024-kmerseek-analysis/actions/runs/39967197330/job/120460046737"
+                  },
+                  {
+                    "name": "notebooks",
+                    "conclusion": "SKIPPED",
+                    "status": "COMPLETED",
+                    "detailsUrl": "https://github.com/seanome/2024-kmerseek-analysis/actions/runs/39967187547/job/120460016162"
+                  },
+                  {
+                    "name": "notebooks",
+                    "conclusion": "SUCCESS",
+                    "status": "COMPLETED",
+                    "detailsUrl": "https://github.com/seanome/2024-kmerseek-analysis/actions/runs/39967197314/job/120460046854"
+                  }
+                ]
+              }
+            }
+          }
+        }
+      ]
+    }
+  },
+  "p123": {
+    "number": 123,
+    "url": "https://github.com/seanome/2024-kmerseek-analysis/pull/123",
+    "title": "Figures as 256-colour PNGs: pf.save, shrink_png, and 321 committed PNGs",
+    "headRefOid": "c2943fe336b1dba44d75a50ba1d79229c6605a4f",
+    "baseRefName": "main",
+    "mergeStateStatus": "CLEAN",
+    "mergeable": "MERGEABLE",
+    "isDraft": false,
+    "reviewDecision": null,
+    "commits": {
+      "nodes": [
+        {
+          "commit": {
+            "statusCheckRollup": {
+              "state": "SUCCESS",
+              "contexts": {
+                "nodes": [
+                  {
+                    "name": "black",
+                    "conclusion": "SUCCESS",
+                    "status": "COMPLETED",
+                    "detailsUrl": "https://github.com/seanome/2024-kmerseek-analysis/actions/runs/39955757655/job/120421067509"
+                  },
+                  {
+                    "name": "black",
+                    "conclusion": "SUCCESS",
+                    "status": "COMPLETED",
+                    "detailsUrl": "https://github.com/seanome/2024-kmerseek-analysis/actions/runs/39955751712/job/120421047236"
+                  },
+                  {
+                    "name": "check",
+                    "conclusion": "SUCCESS",
+                    "status": "COMPLETED",
+                    "detailsUrl": "https://github.com/seanome/2024-kmerseek-analysis/actions/runs/39955757691/job/120421067740"
+                  },
+                  {
+                    "name": "notebooks",
+                    "conclusion": "SKIPPED",
+                    "status": "COMPLETED",
+                    "detailsUrl": "https://github.com/seanome/2024-kmerseek-analysis/actions/runs/39955751712/job/120421049052"
+                  },
+                  {
+                    "name": "notebooks",
+                    "conclusion": "SUCCESS",
+                    "status": "COMPLETED",
+                    "detailsUrl": "https://github.com/seanome/2024-kmerseek-analysis/actions/runs/39955757655/job/120421067881"
+                  }
+                ]
+              }
+            }
+          }
+        }
+      ]
+    }
+  },
+  "p139": {
+    "number": 139,
+    "url": "https://github.com/seanome/2024-kmerseek-analysis/pull/139",
+    "title": "Notebook 284: what an exact k-mer counts that BLOSUM62 does not, on Pfam seed pairs",
+    "headRefOid": "3e397a001fa84cf0fd25c4e9f2c8327b8337034c",
+    "baseRefName": "olgabot/hp-agreement-per-100",
+    "mergeStateStatus": "CLEAN",
+    "mergeable": "MERGEABLE",
+    "isDraft": false,
+    "reviewDecision": null,
+    "commits": {
+      "nodes": [
+        {
+          "commit": {
+            "statusCheckRollup": {
+              "state": "SUCCESS",
+              "contexts": {
+                "nodes": [
+                  {
+                    "name": "black",
+                    "conclusion": "SUCCESS",
+                    "status": "COMPLETED",
+                    "detailsUrl": "https://github.com/seanome/2024-kmerseek-analysis/actions/runs/39960841505/job/120438129028"
+                  },
+                  {
+                    "name": "black",
+                    "conclusion": "SUCCESS",
+                    "status": "COMPLETED",
+                    "detailsUrl": "https://github.com/seanome/2024-kmerseek-analysis/actions/runs/39960833901/job/120438102963"
+                  },
+                  {
+                    "name": "notebooks",
+                    "conclusion": "SKIPPED",
+                    "status": "COMPLETED",
+                    "detailsUrl": "https://github.com/seanome/2024-kmerseek-analysis/actions/runs/39960833901/job/120438104579"
+                  },
+                  {
+                    "name": "notebooks",
+                    "conclusion": "SUCCESS",
+                    "status": "COMPLETED",
+                    "detailsUrl": "https://github.com/seanome/2024-kmerseek-analysis/actions/runs/39960841505/job/120438129540"
+                  }
+                ]
+              }
+            }
+          }
+        }
+      ]
+    }
+  }
+}

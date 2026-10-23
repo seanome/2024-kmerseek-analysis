@@ -1,0 +1,2855 @@
+{
+  "captured_at": "2026-10-23T14:11:37.875142+00:00",
+  "scope": "Public-repository inventory only; not review approval. Private repository details omitted.",
+  "pull_requests": [
+    {
+      "isDraft": true,
+      "number": 201,
+      "repository": {
+        "name": "2024-kmerseek-analysis",
+        "nameWithOwner": "seanome/2024-kmerseek-analysis"
+      },
+      "title": "nb361: Domen et al. 2026 PEC RNA-seq without a genome (SPLASH, anchor counts, proteome matches)",
+      "updatedAt": "2026-10-23T13:59:33Z",
+      "url": "https://github.com/seanome/2024-kmerseek-analysis/pull/201"
+    },
+    {
+      "isDraft": false,
+      "number": 200,
+      "repository": {
+        "name": "2024-kmerseek-analysis",
+        "nameWithOwner": "seanome/2024-kmerseek-analysis"
+      },
+      "title": "Record open notebook PR review and remaining merge blockers",
+      "updatedAt": "2026-10-23T13:17:30Z",
+      "url": "https://github.com/seanome/2024-kmerseek-analysis/pull/200"
+    },
+    {
+      "isDraft": false,
+      "number": 199,
+      "repository": {
+        "name": "2024-kmerseek-analysis",
+        "nameWithOwner": "seanome/2024-kmerseek-analysis"
+      },
+      "title": "nb300: peptide lookup gate, query set, and measured index-build plan",
+      "updatedAt": "2026-10-23T13:37:17Z",
+      "url": "https://github.com/seanome/2024-kmerseek-analysis/pull/199"
+    },
+    {
+      "isDraft": false,
+      "number": 198,
+      "repository": {
+        "name": "2024-kmerseek-analysis",
+        "nameWithOwner": "seanome/2024-kmerseek-analysis"
+      },
+      "title": "Freeze RNA-seq kill-test rules and add pre-run checks",
+      "updatedAt": "2026-10-23T13:32:37Z",
+      "url": "https://github.com/seanome/2024-kmerseek-analysis/pull/198"
+    },
+    {
+      "isDraft": false,
+      "number": 159,
+      "repository": {
+        "name": "kmerseek",
+        "nameWithOwner": "seanome/kmerseek"
+      },
+      "title": "Read the inverted index in place from posting files (Swiss-Prot search 165 s to 1 s)",
+      "updatedAt": "2026-10-21T14:41:07Z",
+      "url": "https://github.com/seanome/kmerseek/pull/159"
+    },
+    {
+      "isDraft": false,
+      "number": 197,
+      "repository": {
+        "name": "2024-kmerseek-analysis",
+        "nameWithOwner": "seanome/2024-kmerseek-analysis"
+      },
+      "title": "Botryllus RNA-seq: nf-core/rnaseq pre-processing only, on Sherlock",
+      "updatedAt": "2026-10-23T13:32:39Z",
+      "url": "https://github.com/seanome/2024-kmerseek-analysis/pull/197"
+    },
+    {
+      "isDraft": false,
+      "number": 196,
+      "repository": {
+        "name": "2024-kmerseek-analysis",
+        "nameWithOwner": "seanome/2024-kmerseek-analysis"
+      },
+      "title": "Notebook 357: clade-grouped SPLASH experiment stopped; results preserved",
+      "updatedAt": "2026-10-23T13:02:52Z",
+      "url": "https://github.com/seanome/2024-kmerseek-analysis/pull/196"
+    },
+    {
+      "isDraft": false,
+      "number": 195,
+      "repository": {
+        "name": "2024-kmerseek-analysis",
+        "nameWithOwner": "seanome/2024-kmerseek-analysis"
+      },
+      "title": "nb 359: kill test, region calls on alternative exons that IsoAnnotLite leaves blank (pre-registered, not run yet)",
+      "updatedAt": "2026-10-23T13:02:55Z",
+      "url": "https://github.com/seanome/2024-kmerseek-analysis/pull/195"
+    },
+    {
+      "isDraft": false,
+      "number": 194,
+      "repository": {
+        "name": "2024-kmerseek-analysis",
+        "nameWithOwner": "seanome/2024-kmerseek-analysis"
+      },
+      "title": "241: search hp_lehninger_hpc3 k21 with exact regions, as recorded, and rebuild the tables",
+      "updatedAt": "2026-10-23T13:02:58Z",
+      "url": "https://github.com/seanome/2024-kmerseek-analysis/pull/194"
+    },
+    {
+      "isDraft": false,
+      "number": 193,
+      "repository": {
+        "name": "2024-kmerseek-analysis",
+        "nameWithOwner": "seanome/2024-kmerseek-analysis"
+      },
+      "title": "Notebook 354: kill test, kmerseek massspec18 source lookup for de novo peptide calls: FAIL",
+      "updatedAt": "2026-10-23T13:03:02Z",
+      "url": "https://github.com/seanome/2024-kmerseek-analysis/pull/193"
+    },
+    {
+      "isDraft": false,
+      "number": 192,
+      "repository": {
+        "name": "2024-kmerseek-analysis",
+        "nameWithOwner": "seanome/2024-kmerseek-analysis"
+      },
+      "title": "Notebook 358: peptide source lookup, reduced vs full alphabet; NovoBoard (PXD055277) job; INSUFFICIENT_EVIDENCE until it runs",
+      "updatedAt": "2026-10-23T13:32:41Z",
+      "url": "https://github.com/seanome/2024-kmerseek-analysis/pull/192"
+    },
+    {
+      "isDraft": false,
+      "number": 191,
+      "repository": {
+        "name": "2024-kmerseek-analysis",
+        "nameWithOwner": "seanome/2024-kmerseek-analysis"
+      },
+      "title": "nb 357: pre-registration, Stop 0 (P2 holds) and Stop 1 scripts, condensate alphabet lead figure",
+      "updatedAt": "2026-10-23T13:03:06Z",
+      "url": "https://github.com/seanome/2024-kmerseek-analysis/pull/191"
+    },
+    {
+      "isDraft": false,
+      "number": 190,
+      "repository": {
+        "name": "2024-kmerseek-analysis",
+        "nameWithOwner": "seanome/2024-kmerseek-analysis"
+      },
+      "title": "Notebook 356: kmerseek lands on short exons ~3 points above a matched null; the structure-tool rule could not fail",
+      "updatedAt": "2026-10-23T13:03:09Z",
+      "url": "https://github.com/seanome/2024-kmerseek-analysis/pull/190"
+    },
+    {
+      "isDraft": false,
+      "number": 189,
+      "repository": {
+        "name": "2024-kmerseek-analysis",
+        "nameWithOwner": "seanome/2024-kmerseek-analysis"
+      },
+      "title": "Notebook 355: construct-check kill test is NOT RUN, the 200 facility submissions do not exist here",
+      "updatedAt": "2026-10-23T13:03:12Z",
+      "url": "https://github.com/seanome/2024-kmerseek-analysis/pull/189"
+    },
+    {
+      "isDraft": false,
+      "number": 188,
+      "repository": {
+        "name": "2024-kmerseek-analysis",
+        "nameWithOwner": "seanome/2024-kmerseek-analysis"
+      },
+      "title": "Notebook 353: does kmerseek find existing measurements faster? Pipeline built; no analyst queue, so INSUFFICIENT_EVIDENCE",
+      "updatedAt": "2026-10-23T13:32:44Z",
+      "url": "https://github.com/seanome/2024-kmerseek-analysis/pull/188"
+    },
+    {
+      "isDraft": false,
+      "number": 186,
+      "repository": {
+        "name": "2024-kmerseek-analysis",
+        "nameWithOwner": "seanome/2024-kmerseek-analysis"
+      },
+      "title": "Construct insert check: frozen plan, templates, pipeline, INSUFFICIENT_EVIDENCE",
+      "updatedAt": "2026-10-23T13:32:46Z",
+      "url": "https://github.com/seanome/2024-kmerseek-analysis/pull/186"
+    },
+    {
+      "isDraft": false,
+      "number": 158,
+      "repository": {
+        "name": "kmerseek",
+        "nameWithOwner": "seanome/kmerseek"
+      },
+      "title": "Time each search step; filter candidates before reading targets",
+      "updatedAt": "2026-10-21T10:11:25Z",
+      "url": "https://github.com/seanome/kmerseek/pull/158"
+    },
+    {
+      "isDraft": false,
+      "number": 185,
+      "repository": {
+        "name": "2024-kmerseek-analysis",
+        "nameWithOwner": "seanome/2024-kmerseek-analysis"
+      },
+      "title": "344 gate rerun on kmerseek PR 157 (Pr(same) from each region)",
+      "updatedAt": "2026-10-23T13:32:49Z",
+      "url": "https://github.com/seanome/2024-kmerseek-analysis/pull/185"
+    },
+    {
+      "isDraft": false,
+      "number": 184,
+      "repository": {
+        "name": "2024-kmerseek-analysis",
+        "nameWithOwner": "seanome/2024-kmerseek-analysis"
+      },
+      "title": "Notebook 353: short-stretch evidence lookup kill test: not run (no real queries); Stage 0 finds a self-match blind spot and E-values off 2-24x",
+      "updatedAt": "2026-10-23T13:09:17Z",
+      "url": "https://github.com/seanome/2024-kmerseek-analysis/pull/184"
+    },
+    {
+      "isDraft": false,
+      "number": 157,
+      "repository": {
+        "name": "kmerseek",
+        "nameWithOwner": "seanome/kmerseek"
+      },
+      "title": "Count Pr(same class) from each region, so low-complexity regions get honest E-values",
+      "updatedAt": "2026-10-21T10:22:28Z",
+      "url": "https://github.com/seanome/kmerseek/pull/157"
+    },
+    {
+      "isDraft": false,
+      "number": 183,
+      "repository": {
+        "name": "2024-kmerseek-analysis",
+        "nameWithOwner": "seanome/2024-kmerseek-analysis"
+      },
+      "title": "Notebook 352: time kmerseek's index build and 1,000 queries at 1, 10 and up to 100 billion UniParc residues (preregistered, not run yet)",
+      "updatedAt": "2026-10-23T13:03:15Z",
+      "url": "https://github.com/seanome/2024-kmerseek-analysis/pull/183"
+    },
+    {
+      "isDraft": false,
+      "number": 156,
+      "repository": {
+        "name": "kmerseek",
+        "nameWithOwner": "seanome/kmerseek"
+      },
+      "title": "Add massspec18: the 20 residues with I=L and Q=K merged, for mass-spec peptides",
+      "updatedAt": "2026-10-21T10:05:18Z",
+      "url": "https://github.com/seanome/kmerseek/pull/156"
+    },
+    {
+      "isDraft": false,
+      "number": 182,
+      "repository": {
+        "name": "2024-kmerseek-analysis",
+        "nameWithOwner": "seanome/2024-kmerseek-analysis"
+      },
+      "title": "Notebook 301: three short-feature settings give partial DROP; resume 16 memory failures",
+      "updatedAt": "2026-10-23T13:09:21Z",
+      "url": "https://github.com/seanome/2024-kmerseek-analysis/pull/182"
+    },
+    {
+      "isDraft": false,
+      "number": 34,
+      "repository": {
+        "name": "protein-function-annotation-leaderboard",
+        "nameWithOwner": "seanome/protein-function-annotation-leaderboard"
+      },
+      "title": "Table 2: best-hit transfer rows in their own group, with the call rule named",
+      "updatedAt": "2026-10-21T07:15:01Z",
+      "url": "https://github.com/seanome/protein-function-annotation-leaderboard/pull/34"
+    },
+    {
+      "isDraft": false,
+      "number": 33,
+      "repository": {
+        "name": "protein-function-annotation-leaderboard",
+        "nameWithOwner": "seanome/protein-function-annotation-leaderboard"
+      },
+      "title": "Tolerance atlas: 60 human diseases through five steps, from 235 PubMed queries",
+      "updatedAt": "2026-10-21T07:15:09Z",
+      "url": "https://github.com/seanome/protein-function-annotation-leaderboard/pull/33"
+    },
+    {
+      "isDraft": false,
+      "number": 32,
+      "repository": {
+        "name": "protein-function-annotation-leaderboard",
+        "nameWithOwner": "seanome/protein-function-annotation-leaderboard"
+      },
+      "title": "Transferability back-test: T does not predict which animal molecules became drugs",
+      "updatedAt": "2026-10-21T07:15:20Z",
+      "url": "https://github.com/seanome/protein-function-annotation-leaderboard/pull/32"
+    },
+    {
+      "isDraft": false,
+      "number": 31,
+      "repository": {
+        "name": "protein-function-annotation-leaderboard",
+        "nameWithOwner": "seanome/protein-function-annotation-leaderboard"
+      },
+      "title": "Solvers unreadable: tolerant species are not harder to annotate than matched random species (42 proteomes)",
+      "updatedAt": "2026-10-21T07:15:37Z",
+      "url": "https://github.com/seanome/protein-function-annotation-leaderboard/pull/31"
+    },
+    {
+      "isDraft": false,
+      "number": 180,
+      "repository": {
+        "name": "2024-kmerseek-analysis",
+        "nameWithOwner": "seanome/2024-kmerseek-analysis"
+      },
+      "title": "Venom-peptide retrieval: cysteine framework, fold and target are three questions",
+      "updatedAt": "2026-10-23T13:32:51Z",
+      "url": "https://github.com/seanome/2024-kmerseek-analysis/pull/180"
+    },
+    {
+      "isDraft": false,
+      "number": 179,
+      "repository": {
+        "name": "2024-kmerseek-analysis",
+        "nameWithOwner": "seanome/2024-kmerseek-analysis"
+      },
+      "title": "Notebook 350: kmerseek loses toxin-framework hits in ranking, not in seeds; ice binding and toxin target show no signal",
+      "updatedAt": "2026-10-23T13:32:54Z",
+      "url": "https://github.com/seanome/2024-kmerseek-analysis/pull/179"
+    },
+    {
+      "isDraft": false,
+      "number": 178,
+      "repository": {
+        "name": "2024-kmerseek-analysis",
+        "nameWithOwner": "seanome/2024-kmerseek-analysis"
+      },
+      "title": "Notebook 349: seedless alignment does not separate ice-binding proteins of separate origins from controls",
+      "updatedAt": "2026-10-23T13:12:13Z",
+      "url": "https://github.com/seanome/2024-kmerseek-analysis/pull/178"
+    },
+    {
+      "isDraft": false,
+      "number": 177,
+      "repository": {
+        "name": "2024-kmerseek-analysis",
+        "nameWithOwner": "seanome/2024-kmerseek-analysis"
+      },
+      "title": "nb347: mutations a reduced alphabet cannot see, PTEN abundance (VAMP-seq)",
+      "updatedAt": "2026-10-23T13:32:56Z",
+      "url": "https://github.com/seanome/2024-kmerseek-analysis/pull/177"
+    },
+    {
+      "isDraft": true,
+      "number": 155,
+      "repository": {
+        "name": "kmerseek",
+        "nameWithOwner": "seanome/kmerseek"
+      },
+      "title": "Build the \"expected one of\" alphabet lists from Alphabet::all()",
+      "updatedAt": "2026-10-19T21:16:47Z",
+      "url": "https://github.com/seanome/kmerseek/pull/155"
+    },
+    {
+      "isDraft": false,
+      "number": 176,
+      "repository": {
+        "name": "2024-kmerseek-analysis",
+        "nameWithOwner": "seanome/2024-kmerseek-analysis"
+      },
+      "title": "nb346: linked HP word pairs at database scale on known pairs: KILL",
+      "updatedAt": "2026-10-23T13:21:11Z",
+      "url": "https://github.com/seanome/2024-kmerseek-analysis/pull/176"
+    },
+    {
+      "isDraft": false,
+      "number": 175,
+      "repository": {
+        "name": "2024-kmerseek-analysis",
+        "nameWithOwner": "seanome/2024-kmerseek-analysis"
+      },
+      "title": "Notebook 298: linked word pairs do not reach ice-binding proteins of other lineages",
+      "updatedAt": "2026-10-23T13:21:06Z",
+      "url": "https://github.com/seanome/2024-kmerseek-analysis/pull/175"
+    },
+    {
+      "isDraft": false,
+      "number": 174,
+      "repository": {
+        "name": "2024-kmerseek-analysis",
+        "nameWithOwner": "seanome/2024-kmerseek-analysis"
+      },
+      "title": "344: kmerseek 0.4.0 region E-values fail calibration on 309,000 decoys (NO-GO)",
+      "updatedAt": "2026-10-23T13:03:19Z",
+      "url": "https://github.com/seanome/2024-kmerseek-analysis/pull/174"
+    },
+    {
+      "isDraft": false,
+      "number": 173,
+      "repository": {
+        "name": "2024-kmerseek-analysis",
+        "nameWithOwner": "seanome/2024-kmerseek-analysis"
+      },
+      "title": "Notebook 343: same reduced k-mers, new order is possible only at short k",
+      "updatedAt": "2026-10-23T13:15:39Z",
+      "url": "https://github.com/seanome/2024-kmerseek-analysis/pull/173"
+    },
+    {
+      "isDraft": false,
+      "number": 172,
+      "repository": {
+        "name": "2024-kmerseek-analysis",
+        "nameWithOwner": "seanome/2024-kmerseek-analysis"
+      },
+      "title": "nb345: does one more proteome add new sequence? Pipeline and pre-registered rule",
+      "updatedAt": "2026-10-23T13:15:43Z",
+      "url": "https://github.com/seanome/2024-kmerseek-analysis/pull/172"
+    },
+    {
+      "isDraft": false,
+      "number": 171,
+      "repository": {
+        "name": "2024-kmerseek-analysis",
+        "nameWithOwner": "seanome/2024-kmerseek-analysis"
+      },
+      "title": "Weekly PR status, 2026-W42 (Oct 12-18)",
+      "updatedAt": "2026-10-18T17:37:24Z",
+      "url": "https://github.com/seanome/2024-kmerseek-analysis/pull/171"
+    },
+    {
+      "isDraft": false,
+      "number": 169,
+      "repository": {
+        "name": "2024-kmerseek-analysis",
+        "nameWithOwner": "seanome/2024-kmerseek-analysis"
+      },
+      "title": "eDNA market: who pays, where DNA naming fails, would protein naming help (Prompt 3)",
+      "updatedAt": "2026-10-23T13:17:39Z",
+      "url": "https://github.com/seanome/2024-kmerseek-analysis/pull/169"
+    },
+    {
+      "isDraft": false,
+      "number": 168,
+      "repository": {
+        "name": "2024-kmerseek-analysis",
+        "nameWithOwner": "seanome/2024-kmerseek-analysis"
+      },
+      "title": "Notebook 297: cys_hp3 phylum run, kmerseek vs phmmer and the cysteine regex",
+      "updatedAt": "2026-10-23T12:42:30Z",
+      "url": "https://github.com/seanome/2024-kmerseek-analysis/pull/168"
+    },
+    {
+      "isDraft": false,
+      "number": 154,
+      "repository": {
+        "name": "kmerseek",
+        "nameWithOwner": "seanome/kmerseek"
+      },
+      "title": "Count Karlin-Altschul fit regions per score bin as they are found",
+      "updatedAt": "2026-10-21T08:50:18Z",
+      "url": "https://github.com/seanome/kmerseek/pull/154"
+    },
+    {
+      "isDraft": false,
+      "number": 167,
+      "repository": {
+        "name": "2024-kmerseek-analysis",
+        "nameWithOwner": "seanome/2024-kmerseek-analysis"
+      },
+      "title": "Notebook 296: cysteine-framework pilot, Cnidaria, kmerseek vs phmmer and regex",
+      "updatedAt": "2026-10-23T12:42:27Z",
+      "url": "https://github.com/seanome/2024-kmerseek-analysis/pull/167"
+    },
+    {
+      "isDraft": false,
+      "number": 30,
+      "repository": {
+        "name": "protein-function-annotation-leaderboard",
+        "nameWithOwner": "seanome/protein-function-annotation-leaderboard"
+      },
+      "title": "Known cases: fourteen protein pairs proven in a laboratory, and what each tool does with them",
+      "updatedAt": "2026-10-21T07:29:14Z",
+      "url": "https://github.com/seanome/protein-function-annotation-leaderboard/pull/30"
+    },
+    {
+      "isDraft": false,
+      "number": 166,
+      "repository": {
+        "name": "2024-kmerseek-analysis",
+        "nameWithOwner": "seanome/2024-kmerseek-analysis"
+      },
+      "title": "SCOPe40 hit lists for every Table 1 tool, scored per query with Foldseek's rules",
+      "updatedAt": "2026-10-23T13:39:46Z",
+      "url": "https://github.com/seanome/2024-kmerseek-analysis/pull/166"
+    },
+    {
+      "isDraft": false,
+      "number": 29,
+      "repository": {
+        "name": "protein-function-annotation-leaderboard",
+        "nameWithOwner": "seanome/protein-function-annotation-leaderboard"
+      },
+      "title": "SCOPe40 ranking page: Foldseek, MMseqs2 and kmerseek scored per query with LoL-align's denominators",
+      "updatedAt": "2026-10-21T07:16:18Z",
+      "url": "https://github.com/seanome/protein-function-annotation-leaderboard/pull/29"
+    },
+    {
+      "isDraft": false,
+      "number": 165,
+      "repository": {
+        "name": "2024-kmerseek-analysis",
+        "nameWithOwner": "seanome/2024-kmerseek-analysis"
+      },
+      "title": "Pfam-N recall: count only regions on the proteins each run searched",
+      "updatedAt": "2026-10-23T13:17:45Z",
+      "url": "https://github.com/seanome/2024-kmerseek-analysis/pull/165"
+    },
+    {
+      "isDraft": true,
+      "number": 28,
+      "repository": {
+        "name": "protein-function-annotation-leaderboard",
+        "nameWithOwner": "seanome/protein-function-annotation-leaderboard"
+      },
+      "title": "Cost of labelling the two proteomes, from Slurm's record of job 47961379",
+      "updatedAt": "2026-10-17T03:26:25Z",
+      "url": "https://github.com/seanome/protein-function-annotation-leaderboard/pull/28"
+    },
+    {
+      "isDraft": true,
+      "number": 27,
+      "repository": {
+        "name": "protein-function-annotation-leaderboard",
+        "nameWithOwner": "seanome/protein-function-annotation-leaderboard"
+      },
+      "title": "Antifreeze glycoprotein: masking test job, E below 1e-300, mussel foot sentence",
+      "updatedAt": "2026-10-17T03:26:14Z",
+      "url": "https://github.com/seanome/protein-function-annotation-leaderboard/pull/27"
+    },
+    {
+      "isDraft": true,
+      "number": 26,
+      "repository": {
+        "name": "protein-function-annotation-leaderboard",
+        "nameWithOwner": "seanome/protein-function-annotation-leaderboard"
+      },
+      "title": "Why page: what the dark proteins are, and \"A model is not a label\"",
+      "updatedAt": "2026-10-19T21:08:52Z",
+      "url": "https://github.com/seanome/protein-function-annotation-leaderboard/pull/26"
+    },
+    {
+      "isDraft": false,
+      "number": 25,
+      "repository": {
+        "name": "protein-function-annotation-leaderboard",
+        "nameWithOwner": "seanome/protein-function-annotation-leaderboard"
+      },
+      "title": "Filter rows for eight subsets an annotator can compute, and the commands on Methods",
+      "updatedAt": "2026-10-21T07:16:20Z",
+      "url": "https://github.com/seanome/protein-function-annotation-leaderboard/pull/25"
+    },
+    {
+      "isDraft": false,
+      "number": 164,
+      "repository": {
+        "name": "2024-kmerseek-analysis",
+        "nameWithOwner": "seanome/2024-kmerseek-analysis"
+      },
+      "title": "Leaderboard query strata: eight subsets an annotator can compute, for the 998 midi-plus queries",
+      "updatedAt": "2026-10-23T13:17:47Z",
+      "url": "https://github.com/seanome/2024-kmerseek-analysis/pull/164"
+    },
+    {
+      "isDraft": false,
+      "number": 24,
+      "repository": {
+        "name": "protein-function-annotation-leaderboard",
+        "nameWithOwner": "seanome/protein-function-annotation-leaderboard"
+      },
+      "title": "Weak hits right: leaderboard columns and a card block from the dark set",
+      "updatedAt": "2026-10-21T07:16:21Z",
+      "url": "https://github.com/seanome/protein-function-annotation-leaderboard/pull/24"
+    },
+    {
+      "isDraft": false,
+      "number": 163,
+      "repository": {
+        "name": "2024-kmerseek-analysis",
+        "nameWithOwner": "seanome/2024-kmerseek-analysis"
+      },
+      "title": "Dark set: is a weak best hit right? Every tool and kmerseek setting, by E-value band",
+      "updatedAt": "2026-10-23T13:17:50Z",
+      "url": "https://github.com/seanome/2024-kmerseek-analysis/pull/163"
+    },
+    {
+      "isDraft": false,
+      "number": 23,
+      "repository": {
+        "name": "protein-function-annotation-leaderboard",
+        "nameWithOwner": "seanome/protein-function-annotation-leaderboard"
+      },
+      "title": "Cost calculator for a proteome and a budget, and the hardware line on tool cards",
+      "updatedAt": "2026-10-21T07:16:22Z",
+      "url": "https://github.com/seanome/protein-function-annotation-leaderboard/pull/23"
+    },
+    {
+      "isDraft": false,
+      "number": 162,
+      "repository": {
+        "name": "2024-kmerseek-analysis",
+        "nameWithOwner": "seanome/2024-kmerseek-analysis"
+      },
+      "title": "Annotator tools 3: TM-Vec and PLMSearch embedding search rows",
+      "updatedAt": "2026-10-23T13:17:52Z",
+      "url": "https://github.com/seanome/2024-kmerseek-analysis/pull/162"
+    },
+    {
+      "isDraft": false,
+      "number": 161,
+      "repository": {
+        "name": "2024-kmerseek-analysis",
+        "nameWithOwner": "seanome/2024-kmerseek-analysis"
+      },
+      "title": "Annotator tools 2: InterProScan and eggNOG-mapper as reference-database rows",
+      "updatedAt": "2026-10-23T13:17:55Z",
+      "url": "https://github.com/seanome/2024-kmerseek-analysis/pull/161"
+    },
+    {
+      "isDraft": false,
+      "number": 160,
+      "repository": {
+        "name": "2024-kmerseek-analysis",
+        "nameWithOwner": "seanome/2024-kmerseek-analysis"
+      },
+      "title": "Annotator tools 1: DIAMOND and MMseqs2 best-hit transfer as leaderboard rows",
+      "updatedAt": "2026-10-23T13:17:58Z",
+      "url": "https://github.com/seanome/2024-kmerseek-analysis/pull/160"
+    },
+    {
+      "isDraft": false,
+      "number": 22,
+      "repository": {
+        "name": "protein-function-annotation-leaderboard",
+        "nameWithOwner": "seanome/protein-function-annotation-leaderboard"
+      },
+      "title": "Organism page: type a species, get four facts, three tools and a command",
+      "updatedAt": "2026-10-21T07:16:24Z",
+      "url": "https://github.com/seanome/protein-function-annotation-leaderboard/pull/22"
+    },
+    {
+      "isDraft": false,
+      "number": 21,
+      "repository": {
+        "name": "protein-function-annotation-leaderboard",
+        "nameWithOwner": "seanome/protein-function-annotation-leaderboard"
+      },
+      "title": "No-search baselines in Table 1: pinned under the search tools, not applicable where they cannot score",
+      "updatedAt": "2026-10-21T07:23:30Z",
+      "url": "https://github.com/seanome/protein-function-annotation-leaderboard/pull/21"
+    },
+    {
+      "isDraft": false,
+      "number": 153,
+      "repository": {
+        "name": "kmerseek",
+        "nameWithOwner": "seanome/kmerseek"
+      },
+      "title": "Skip a query's identical database entry in every search, and test it",
+      "updatedAt": "2026-10-21T10:05:28Z",
+      "url": "https://github.com/seanome/kmerseek/pull/153"
+    },
+    {
+      "isDraft": false,
+      "number": 159,
+      "repository": {
+        "name": "2024-kmerseek-analysis",
+        "nameWithOwner": "seanome/2024-kmerseek-analysis"
+      },
+      "title": "make leaderboard-alphabets: tables for the leaderboard's alphabet page",
+      "updatedAt": "2026-10-23T13:18:00Z",
+      "url": "https://github.com/seanome/2024-kmerseek-analysis/pull/159"
+    },
+    {
+      "isDraft": false,
+      "number": 20,
+      "repository": {
+        "name": "protein-function-annotation-leaderboard",
+        "nameWithOwner": "seanome/protein-function-annotation-leaderboard"
+      },
+      "title": "Reduced alphabets page: evidence per position, kappa and usable k for 19 alphabets",
+      "updatedAt": "2026-10-21T07:23:31Z",
+      "url": "https://github.com/seanome/protein-function-annotation-leaderboard/pull/20"
+    },
+    {
+      "isDraft": false,
+      "number": 158,
+      "repository": {
+        "name": "2024-kmerseek-analysis",
+        "nameWithOwner": "seanome/2024-kmerseek-analysis"
+      },
+      "title": "No-search baselines as leaderboard rows: Kyte-Doolittle, IUPred, metapredict, SEG, Pfam family frequency",
+      "updatedAt": "2026-10-23T13:18:03Z",
+      "url": "https://github.com/seanome/2024-kmerseek-analysis/pull/158"
+    },
+    {
+      "isDraft": false,
+      "number": 19,
+      "repository": {
+        "name": "protein-function-annotation-leaderboard",
+        "nameWithOwner": "seanome/protein-function-annotation-leaderboard"
+      },
+      "title": "Known failure modes on every tool card, each quoted from its source",
+      "updatedAt": "2026-10-21T07:23:32Z",
+      "url": "https://github.com/seanome/protein-function-annotation-leaderboard/pull/19"
+    },
+    {
+      "isDraft": false,
+      "number": 152,
+      "repository": {
+        "name": "kmerseek",
+        "nameWithOwner": "seanome/kmerseek"
+      },
+      "title": "Key index entries by their sequence, not their k-mer set",
+      "updatedAt": "2026-10-19T07:38:45Z",
+      "url": "https://github.com/seanome/kmerseek/pull/152"
+    },
+    {
+      "isDraft": false,
+      "number": 18,
+      "repository": {
+        "name": "protein-function-annotation-leaderboard",
+        "nameWithOwner": "seanome/protein-function-annotation-leaderboard"
+      },
+      "title": "Submission guide, authors' quoted claims for four tools, results-row schema and make release",
+      "updatedAt": "2026-10-21T07:23:34Z",
+      "url": "https://github.com/seanome/protein-function-annotation-leaderboard/pull/18"
+    },
+    {
+      "isDraft": false,
+      "number": 156,
+      "repository": {
+        "name": "2024-kmerseek-analysis",
+        "nameWithOwner": "seanome/2024-kmerseek-analysis"
+      },
+      "title": "Submission guide: CONTRIBUTING.md for host-run tool modules, and a hits-format check",
+      "updatedAt": "2026-10-23T13:18:05Z",
+      "url": "https://github.com/seanome/2024-kmerseek-analysis/pull/156"
+    },
+    {
+      "isDraft": false,
+      "number": 17,
+      "repository": {
+        "name": "protein-function-annotation-leaderboard",
+        "nameWithOwner": "seanome/protein-function-annotation-leaderboard"
+      },
+      "title": "Seven figures: Fmax by distance, identity and feature type; who found which region",
+      "updatedAt": "2026-10-21T07:23:35Z",
+      "url": "https://github.com/seanome/protein-function-annotation-leaderboard/pull/17"
+    },
+    {
+      "isDraft": false,
+      "number": 155,
+      "repository": {
+        "name": "2024-kmerseek-analysis",
+        "nameWithOwner": "seanome/2024-kmerseek-analysis"
+      },
+      "title": "Dark set: Foldseek and ProstT5 on every query, rules and scoring written before the run",
+      "updatedAt": "2026-10-23T13:18:07Z",
+      "url": "https://github.com/seanome/2024-kmerseek-analysis/pull/155"
+    },
+    {
+      "isDraft": false,
+      "number": 154,
+      "repository": {
+        "name": "2024-kmerseek-analysis",
+        "nameWithOwner": "seanome/2024-kmerseek-analysis"
+      },
+      "title": "Leaderboard: read the Pfam pair benchmark, DisProt cost and k-mer counts; record what cannot be read",
+      "updatedAt": "2026-10-23T13:18:10Z",
+      "url": "https://github.com/seanome/2024-kmerseek-analysis/pull/154"
+    },
+    {
+      "isDraft": false,
+      "number": 16,
+      "repository": {
+        "name": "protein-function-annotation-leaderboard",
+        "nameWithOwner": "seanome/protein-function-annotation-leaderboard"
+      },
+      "title": "Two ways in: scored tool submissions and a wet-lab truth form",
+      "updatedAt": "2026-10-21T07:14:52Z",
+      "url": "https://github.com/seanome/protein-function-annotation-leaderboard/pull/16"
+    },
+    {
+      "isDraft": false,
+      "number": 13,
+      "repository": {
+        "name": "protein-function-annotation-leaderboard",
+        "nameWithOwner": "seanome/protein-function-annotation-leaderboard"
+      },
+      "title": "Why this project: a four-screen page for funders, from measured numbers",
+      "updatedAt": "2026-10-21T07:15:19Z",
+      "url": "https://github.com/seanome/protein-function-annotation-leaderboard/pull/13"
+    },
+    {
+      "isDraft": true,
+      "number": 12,
+      "repository": {
+        "name": "protein-function-annotation-leaderboard",
+        "nameWithOwner": "seanome/protein-function-annotation-leaderboard"
+      },
+      "title": "Why-this-project numbers: Swiss-Prot, PDB, species, and labelled proteins in human and oyster",
+      "updatedAt": "2026-10-17T13:30:44Z",
+      "url": "https://github.com/seanome/protein-function-annotation-leaderboard/pull/12"
+    },
+    {
+      "isDraft": false,
+      "number": 153,
+      "repository": {
+        "name": "2024-kmerseek-analysis",
+        "nameWithOwner": "seanome/2024-kmerseek-analysis"
+      },
+      "title": "Figure style: mako colour map by default (Seanome style guide)",
+      "updatedAt": "2026-10-23T12:52:19Z",
+      "url": "https://github.com/seanome/2024-kmerseek-analysis/pull/153"
+    },
+    {
+      "isDraft": false,
+      "number": 152,
+      "repository": {
+        "name": "2024-kmerseek-analysis",
+        "nameWithOwner": "seanome/2024-kmerseek-analysis"
+      },
+      "title": "nb342: exon function kill test, Stops 0-4: KILL on three kmerseek settings",
+      "updatedAt": "2026-10-23T13:16:39Z",
+      "url": "https://github.com/seanome/2024-kmerseek-analysis/pull/152"
+    },
+    {
+      "isDraft": false,
+      "number": 11,
+      "repository": {
+        "name": "protein-function-annotation-leaderboard",
+        "nameWithOwner": "seanome/protein-function-annotation-leaderboard"
+      },
+      "title": "Plain words for each column; draggable IoU call and cost numbers",
+      "updatedAt": "2026-10-21T07:15:59Z",
+      "url": "https://github.com/seanome/protein-function-annotation-leaderboard/pull/11"
+    },
+    {
+      "isDraft": false,
+      "number": 10,
+      "repository": {
+        "name": "protein-function-annotation-leaderboard",
+        "nameWithOwner": "seanome/protein-function-annotation-leaderboard"
+      },
+      "title": "Data first on every page: one row per tool, a computed answer, bars per relative, pile-up result first",
+      "updatedAt": "2026-10-21T07:21:00Z",
+      "url": "https://github.com/seanome/protein-function-annotation-leaderboard/pull/10"
+    },
+    {
+      "isDraft": false,
+      "number": 9,
+      "repository": {
+        "name": "protein-function-annotation-leaderboard",
+        "nameWithOwner": "seanome/protein-function-annotation-leaderboard"
+      },
+      "title": "Fix 24 correctness findings: IoU wording, MMseqs2 build cost, URL hash, dark-mode colours, deterministic builds",
+      "updatedAt": "2026-10-21T07:21:01Z",
+      "url": "https://github.com/seanome/protein-function-annotation-leaderboard/pull/9"
+    },
+    {
+      "isDraft": false,
+      "number": 150,
+      "repository": {
+        "name": "kmerseek",
+        "nameWithOwner": "seanome/kmerseek"
+      },
+      "title": "Draw the three cysteine-aware readings of two toxins that share a framework",
+      "updatedAt": "2026-10-20T07:09:23Z",
+      "url": "https://github.com/seanome/kmerseek/pull/150"
+    },
+    {
+      "isDraft": false,
+      "number": 8,
+      "repository": {
+        "name": "protein-function-annotation-leaderboard",
+        "nameWithOwner": "seanome/protein-function-annotation-leaderboard"
+      },
+      "title": "Definitions beside each score, and a \"How the scores work\" page",
+      "updatedAt": "2026-10-21T07:17:11Z",
+      "url": "https://github.com/seanome/protein-function-annotation-leaderboard/pull/8"
+    },
+    {
+      "isDraft": false,
+      "number": 7,
+      "repository": {
+        "name": "protein-function-annotation-leaderboard",
+        "nameWithOwner": "seanome/protein-function-annotation-leaderboard"
+      },
+      "title": "Compare two columns: pick both axes of the cost figure",
+      "updatedAt": "2026-10-21T07:17:13Z",
+      "url": "https://github.com/seanome/protein-function-annotation-leaderboard/pull/7"
+    },
+    {
+      "isDraft": false,
+      "number": 6,
+      "repository": {
+        "name": "protein-function-annotation-leaderboard",
+        "nameWithOwner": "seanome/protein-function-annotation-leaderboard"
+      },
+      "title": "Leaderboard first: table above the fold, choices in a drop-down",
+      "updatedAt": "2026-10-21T07:17:14Z",
+      "url": "https://github.com/seanome/protein-function-annotation-leaderboard/pull/6"
+    },
+    {
+      "isDraft": false,
+      "number": 5,
+      "repository": {
+        "name": "protein-function-annotation-leaderboard",
+        "nameWithOwner": "seanome/protein-function-annotation-leaderboard"
+      },
+      "title": "Claims card for kmerseek, and a filterable tool cards index",
+      "updatedAt": "2026-10-21T07:17:16Z",
+      "url": "https://github.com/seanome/protein-function-annotation-leaderboard/pull/5"
+    },
+    {
+      "isDraft": false,
+      "number": 149,
+      "repository": {
+        "name": "kmerseek",
+        "nameWithOwner": "seanome/kmerseek"
+      },
+      "title": "PR template: Olga's Why and What I learned, checked before merge",
+      "updatedAt": "2026-10-19T07:13:32Z",
+      "url": "https://github.com/seanome/kmerseek/pull/149"
+    },
+    {
+      "isDraft": false,
+      "number": 150,
+      "repository": {
+        "name": "2024-kmerseek-analysis",
+        "nameWithOwner": "seanome/2024-kmerseek-analysis"
+      },
+      "title": "PR template: Olga's Why and What I learned, checked before merge",
+      "updatedAt": "2026-10-23T13:18:12Z",
+      "url": "https://github.com/seanome/2024-kmerseek-analysis/pull/150"
+    },
+    {
+      "isDraft": false,
+      "number": 4,
+      "repository": {
+        "name": "protein-function-annotation-leaderboard",
+        "nameWithOwner": "seanome/protein-function-annotation-leaderboard"
+      },
+      "title": "Read the leaderboard from PR 148's long tables",
+      "updatedAt": "2026-10-21T07:17:19Z",
+      "url": "https://github.com/seanome/protein-function-annotation-leaderboard/pull/4"
+    },
+    {
+      "isDraft": false,
+      "number": 149,
+      "repository": {
+        "name": "2024-kmerseek-analysis",
+        "nameWithOwner": "seanome/2024-kmerseek-analysis"
+      },
+      "title": "Script to rewrite history so past figures are 256-colour PNGs",
+      "updatedAt": "2026-10-23T13:18:15Z",
+      "url": "https://github.com/seanome/2024-kmerseek-analysis/pull/149"
+    },
+    {
+      "isDraft": true,
+      "number": 1,
+      "repository": {
+        "name": "CAFA_forever",
+        "nameWithOwner": "seanome/CAFA_forever"
+      },
+      "title": "Annotation leaderboard on LAFA: region transfer, strata, cost, Pages build",
+      "updatedAt": "2026-10-15T14:23:27Z",
+      "url": "https://github.com/seanome/CAFA_forever/pull/1"
+    },
+    {
+      "isDraft": false,
+      "number": 148,
+      "repository": {
+        "name": "2024-kmerseek-analysis",
+        "nameWithOwner": "seanome/2024-kmerseek-analysis"
+      },
+      "title": "leaderboard-tables: one long table of every finished benchmark",
+      "updatedAt": "2026-10-23T13:18:17Z",
+      "url": "https://github.com/seanome/2024-kmerseek-analysis/pull/148"
+    },
+    {
+      "isDraft": false,
+      "number": 147,
+      "repository": {
+        "name": "2024-kmerseek-analysis",
+        "nameWithOwner": "seanome/2024-kmerseek-analysis"
+      },
+      "title": "Research: what a protein function annotation leaderboard needs",
+      "updatedAt": "2026-10-23T13:18:19Z",
+      "url": "https://github.com/seanome/2024-kmerseek-analysis/pull/147"
+    },
+    {
+      "isDraft": true,
+      "number": 3,
+      "repository": {
+        "name": "protein-function-annotation-leaderboard",
+        "nameWithOwner": "seanome/protein-function-annotation-leaderboard"
+      },
+      "title": "Region pile-up page (Figures 3 and 4)",
+      "updatedAt": "2026-10-15T14:24:14Z",
+      "url": "https://github.com/seanome/protein-function-annotation-leaderboard/pull/3"
+    },
+    {
+      "isDraft": false,
+      "number": 146,
+      "repository": {
+        "name": "2024-kmerseek-analysis",
+        "nameWithOwner": "seanome/2024-kmerseek-analysis"
+      },
+      "title": "make leaderboard-pileup: tables for the region pile-up figure",
+      "updatedAt": "2026-10-23T13:18:21Z",
+      "url": "https://github.com/seanome/2024-kmerseek-analysis/pull/146"
+    },
+    {
+      "isDraft": false,
+      "number": 2,
+      "repository": {
+        "name": "protein-function-annotation-leaderboard",
+        "nameWithOwner": "seanome/protein-function-annotation-leaderboard"
+      },
+      "title": "Leaderboard v1: five pages built from results/leaderboard",
+      "updatedAt": "2026-10-19T07:14:26Z",
+      "url": "https://github.com/seanome/protein-function-annotation-leaderboard/pull/2"
+    },
+    {
+      "isDraft": false,
+      "number": 145,
+      "repository": {
+        "name": "2024-kmerseek-analysis",
+        "nameWithOwner": "seanome/2024-kmerseek-analysis"
+      },
+      "title": "cys-frameworks: cysteine-framework peptide pipeline; pilot runs on Sherlock",
+      "updatedAt": "2026-10-23T13:18:26Z",
+      "url": "https://github.com/seanome/2024-kmerseek-analysis/pull/145"
+    },
+    {
+      "isDraft": false,
+      "number": 144,
+      "repository": {
+        "name": "2024-kmerseek-analysis",
+        "nameWithOwner": "seanome/2024-kmerseek-analysis"
+      },
+      "title": "make leaderboard-tables: the tables the leaderboard site reads",
+      "updatedAt": "2026-10-23T13:18:29Z",
+      "url": "https://github.com/seanome/2024-kmerseek-analysis/pull/144"
+    },
+    {
+      "isDraft": false,
+      "number": 143,
+      "repository": {
+        "name": "2024-kmerseek-analysis",
+        "nameWithOwner": "seanome/2024-kmerseek-analysis"
+      },
+      "title": "nb294: linked HP word pairs (strobemers) kill test: KILL; gain comes from a second segment",
+      "updatedAt": "2026-10-23T13:16:48Z",
+      "url": "https://github.com/seanome/2024-kmerseek-analysis/pull/143"
+    },
+    {
+      "isDraft": false,
+      "number": 142,
+      "repository": {
+        "name": "2024-kmerseek-analysis",
+        "nameWithOwner": "seanome/2024-kmerseek-analysis"
+      },
+      "title": "nb 292: translated k-mer keep/eject rule for adaptive sampling, tarantula venom",
+      "updatedAt": "2026-10-23T12:51:19Z",
+      "url": "https://github.com/seanome/2024-kmerseek-analysis/pull/142"
+    },
+    {
+      "isDraft": false,
+      "number": 148,
+      "repository": {
+        "name": "kmerseek",
+        "nameWithOwner": "seanome/kmerseek"
+      },
+      "title": "Add hp_pbotc_1st_ed_hpc3 (cys_hp3), and let a cys2 index be searched",
+      "updatedAt": "2026-10-21T10:05:22Z",
+      "url": "https://github.com/seanome/kmerseek/pull/148"
+    },
+    {
+      "isDraft": false,
+      "number": 141,
+      "repository": {
+        "name": "2024-kmerseek-analysis",
+        "nameWithOwner": "seanome/2024-kmerseek-analysis"
+      },
+      "title": "Convergence search kill test: ice-binding proteins FAIL, truth sets for three more classes",
+      "updatedAt": "2026-10-23T12:54:20Z",
+      "url": "https://github.com/seanome/2024-kmerseek-analysis/pull/141"
+    },
+    {
+      "isDraft": false,
+      "number": 147,
+      "repository": {
+        "name": "kmerseek",
+        "nameWithOwner": "seanome/kmerseek"
+      },
+      "title": "Add the cys2 alphabet on the v0.4.0 release",
+      "updatedAt": "2026-10-20T07:19:26Z",
+      "url": "https://github.com/seanome/kmerseek/pull/147"
+    },
+    {
+      "isDraft": false,
+      "number": 140,
+      "repository": {
+        "name": "2024-kmerseek-analysis",
+        "nameWithOwner": "seanome/2024-kmerseek-analysis"
+      },
+      "title": "nb 341: condensate exons, day 1 (data access, aro_hyd_chg_pol4, BuGZ exon 9)",
+      "updatedAt": "2026-10-23T12:51:16Z",
+      "url": "https://github.com/seanome/2024-kmerseek-analysis/pull/140"
+    },
+    {
+      "isDraft": false,
+      "number": 146,
+      "repository": {
+        "name": "kmerseek",
+        "nameWithOwner": "seanome/kmerseek"
+      },
+      "title": "Add aro_hyd_chg_pol4 and aro_hyd_arg_chg_pol5 (sticker and spacer alphabets)",
+      "updatedAt": "2026-10-20T07:19:21Z",
+      "url": "https://github.com/seanome/kmerseek/pull/146"
+    },
+    {
+      "isDraft": false,
+      "number": 145,
+      "repository": {
+        "name": "kmerseek",
+        "nameWithOwner": "seanome/kmerseek"
+      },
+      "title": "Add the cys2 alphabet: cysteine against every other residue",
+      "updatedAt": "2026-10-21T08:50:21Z",
+      "url": "https://github.com/seanome/kmerseek/pull/145"
+    },
+    {
+      "isDraft": false,
+      "number": 139,
+      "repository": {
+        "name": "2024-kmerseek-analysis",
+        "nameWithOwner": "seanome/2024-kmerseek-analysis"
+      },
+      "title": "Notebook 284: what an exact k-mer counts that BLOSUM62 does not, on Pfam seed pairs",
+      "updatedAt": "2026-10-23T13:24:37Z",
+      "url": "https://github.com/seanome/2024-kmerseek-analysis/pull/139"
+    },
+    {
+      "isDraft": false,
+      "number": 138,
+      "repository": {
+        "name": "2024-kmerseek-analysis",
+        "nameWithOwner": "seanome/2024-kmerseek-analysis"
+      },
+      "title": "Shared dipeptide shuffle for decoy queries: nextflow-runs/shared/decoys.py",
+      "updatedAt": "2026-10-23T12:52:09Z",
+      "url": "https://github.com/seanome/2024-kmerseek-analysis/pull/138"
+    },
+    {
+      "isDraft": false,
+      "number": 135,
+      "repository": {
+        "name": "2024-kmerseek-analysis",
+        "nameWithOwner": "seanome/2024-kmerseek-analysis"
+      },
+      "title": "make running: a task under its head's launch folder goes with that head",
+      "updatedAt": "2026-10-23T13:18:31Z",
+      "url": "https://github.com/seanome/2024-kmerseek-analysis/pull/135"
+    },
+    {
+      "isDraft": false,
+      "number": 134,
+      "repository": {
+        "name": "2024-kmerseek-analysis",
+        "nameWithOwner": "seanome/2024-kmerseek-analysis"
+      },
+      "title": "290: dark proteins kmerseek reaches against shuffled copies (Stop 1)",
+      "updatedAt": "2026-10-23T12:42:25Z",
+      "url": "https://github.com/seanome/2024-kmerseek-analysis/pull/134"
+    },
+    {
+      "isDraft": false,
+      "number": 133,
+      "repository": {
+        "name": "2024-kmerseek-analysis",
+        "nameWithOwner": "seanome/2024-kmerseek-analysis"
+      },
+      "title": "Dark set: summary page for the 0.4 midi run (five species, any cutoff, gene groups)",
+      "updatedAt": "2026-10-23T13:19:31Z",
+      "url": "https://github.com/seanome/2024-kmerseek-analysis/pull/133"
+    },
+    {
+      "isDraft": false,
+      "number": 132,
+      "repository": {
+        "name": "2024-kmerseek-analysis",
+        "nameWithOwner": "seanome/2024-kmerseek-analysis"
+      },
+      "title": "289: reverse search: the BCL-2 family ranks Ced9 30th of 19,792 worm proteins; CD47 ranks P66 381st of 1,291",
+      "updatedAt": "2026-10-23T13:36:14Z",
+      "url": "https://github.com/seanome/2024-kmerseek-analysis/pull/132"
+    },
+    {
+      "isDraft": false,
+      "number": 144,
+      "repository": {
+        "name": "kmerseek",
+        "nameWithOwner": "seanome/kmerseek"
+      },
+      "title": "search: --ka-r-database, to search with a fit made on another index",
+      "updatedAt": "2026-10-21T08:50:23Z",
+      "url": "https://github.com/seanome/kmerseek/pull/144"
+    },
+    {
+      "isDraft": false,
+      "number": 143,
+      "repository": {
+        "name": "kmerseek",
+        "nameWithOwner": "seanome/kmerseek"
+      },
+      "title": "Skills: rules from Olga's review comments, Oct 5-11",
+      "updatedAt": "2026-10-19T07:13:33Z",
+      "url": "https://github.com/seanome/kmerseek/pull/143"
+    },
+    {
+      "isDraft": false,
+      "number": 131,
+      "repository": {
+        "name": "2024-kmerseek-analysis",
+        "nameWithOwner": "seanome/2024-kmerseek-analysis"
+      },
+      "title": "Notebook 287: sum statistics do not rescue Ced9 \u2192 BCL2 or P66 \u2192 CD47",
+      "updatedAt": "2026-10-23T13:00:02Z",
+      "url": "https://github.com/seanome/2024-kmerseek-analysis/pull/131"
+    },
+    {
+      "isDraft": false,
+      "number": 130,
+      "repository": {
+        "name": "2024-kmerseek-analysis",
+        "nameWithOwner": "seanome/2024-kmerseek-analysis"
+      },
+      "title": "286: can kmerseek reach BCL2 from Ced9 through a human protein? (scripts ready; waits on 283's indexes)",
+      "updatedAt": "2026-10-23T12:59:59Z",
+      "url": "https://github.com/seanome/2024-kmerseek-analysis/pull/130"
+    },
+    {
+      "isDraft": false,
+      "number": 129,
+      "repository": {
+        "name": "2024-kmerseek-analysis",
+        "nameWithOwner": "seanome/2024-kmerseek-analysis"
+      },
+      "title": "288: Ced9 \u2192 BCL2 and P66 \u2192 CD47 as pairwise questions, and a two-step search",
+      "updatedAt": "2026-10-23T12:59:57Z",
+      "url": "https://github.com/seanome/2024-kmerseek-analysis/pull/129"
+    },
+    {
+      "isDraft": false,
+      "number": 128,
+      "repository": {
+        "name": "2024-kmerseek-analysis",
+        "nameWithOwner": "seanome/2024-kmerseek-analysis"
+      },
+      "title": "Notebook 285: pooling kmerseek calls across the BCL-2 family ranks it 39th of 7_212 human groups for Ced9",
+      "updatedAt": "2026-10-23T13:08:59Z",
+      "url": "https://github.com/seanome/2024-kmerseek-analysis/pull/128"
+    },
+    {
+      "isDraft": false,
+      "number": 127,
+      "repository": {
+        "name": "2024-kmerseek-analysis",
+        "nameWithOwner": "seanome/2024-kmerseek-analysis"
+      },
+      "title": "Progress summary for readers without the local chats (2026-10-13)",
+      "updatedAt": "2026-10-23T13:18:34Z",
+      "url": "https://github.com/seanome/2024-kmerseek-analysis/pull/127"
+    },
+    {
+      "isDraft": false,
+      "number": 126,
+      "repository": {
+        "name": "2024-kmerseek-analysis",
+        "nameWithOwner": "seanome/2024-kmerseek-analysis"
+      },
+      "title": "Notebook 281: Botryllus links to MHC, histocompatibility and self/non-self proteins",
+      "updatedAt": "2026-10-23T13:08:48Z",
+      "url": "https://github.com/seanome/2024-kmerseek-analysis/pull/126"
+    },
+    {
+      "isDraft": false,
+      "number": 125,
+      "repository": {
+        "name": "2024-kmerseek-analysis",
+        "nameWithOwner": "seanome/2024-kmerseek-analysis"
+      },
+      "title": "Notebook 284: do the 19 alphabets agree on BCL2's region? Only 4 do, and 4_848 proteins get more",
+      "updatedAt": "2026-10-23T12:45:08Z",
+      "url": "https://github.com/seanome/2024-kmerseek-analysis/pull/125"
+    },
+    {
+      "isDraft": false,
+      "number": 124,
+      "repository": {
+        "name": "2024-kmerseek-analysis",
+        "nameWithOwner": "seanome/2024-kmerseek-analysis"
+      },
+      "title": "283: does BHF beat copies that keep its low-complexity stretches? (and the E-value qualifier for 256)",
+      "updatedAt": "2026-10-23T13:36:09Z",
+      "url": "https://github.com/seanome/2024-kmerseek-analysis/pull/124"
+    },
+    {
+      "isDraft": false,
+      "number": 123,
+      "repository": {
+        "name": "2024-kmerseek-analysis",
+        "nameWithOwner": "seanome/2024-kmerseek-analysis"
+      },
+      "title": "Figures as 256-colour PNGs: pf.save, shrink_png, and 321 committed PNGs",
+      "updatedAt": "2026-10-23T13:23:57Z",
+      "url": "https://github.com/seanome/2024-kmerseek-analysis/pull/123"
+    },
+    {
+      "isDraft": false,
+      "number": 122,
+      "repository": {
+        "name": "2024-kmerseek-analysis",
+        "nameWithOwner": "seanome/2024-kmerseek-analysis"
+      },
+      "title": "Notebook 282: set up the ohnolog split-or-narrow test with Botryllus (Stages 0-1, Stage 2 plan)",
+      "updatedAt": "2026-10-23T12:37:17Z",
+      "url": "https://github.com/seanome/2024-kmerseek-analysis/pull/122"
+    },
+    {
+      "isDraft": false,
+      "number": 142,
+      "repository": {
+        "name": "kmerseek",
+        "nameWithOwner": "seanome/kmerseek"
+      },
+      "title": "Search report: draw rows with no run, --min-runs to leave them out, dot plot labels that fit",
+      "updatedAt": "2026-10-19T07:13:34Z",
+      "url": "https://github.com/seanome/kmerseek/pull/142"
+    },
+    {
+      "isDraft": false,
+      "number": 121,
+      "repository": {
+        "name": "2024-kmerseek-analysis",
+        "nameWithOwner": "seanome/2024-kmerseek-analysis"
+      },
+      "title": "nb 280: time-split test, Pfam 33.1 to 38.2 (P4 fails; kmerseek adds no unique finds)",
+      "updatedAt": "2026-10-23T13:08:55Z",
+      "url": "https://github.com/seanome/2024-kmerseek-analysis/pull/121"
+    },
+    {
+      "isDraft": false,
+      "number": 120,
+      "repository": {
+        "name": "2024-kmerseek-analysis",
+        "nameWithOwner": "seanome/2024-kmerseek-analysis"
+      },
+      "title": "Notebook 279: dark proteins kmerseek reaches at E < 1 and E < 10",
+      "updatedAt": "2026-10-23T13:29:00Z",
+      "url": "https://github.com/seanome/2024-kmerseek-analysis/pull/120"
+    },
+    {
+      "isDraft": false,
+      "number": 119,
+      "repository": {
+        "name": "2024-kmerseek-analysis",
+        "nameWithOwner": "seanome/2024-kmerseek-analysis"
+      },
+      "title": "Notebook 278: no alphabet beats BLOSUM62, but H/P leads exact matching at the fold level",
+      "updatedAt": "2026-10-23T13:03:07Z",
+      "url": "https://github.com/seanome/2024-kmerseek-analysis/pull/119"
+    },
+    {
+      "isDraft": false,
+      "number": 118,
+      "repository": {
+        "name": "2024-kmerseek-analysis",
+        "nameWithOwner": "seanome/2024-kmerseek-analysis"
+      },
+      "title": "276: structure does not support P66 mimicking CD47",
+      "updatedAt": "2026-10-23T13:03:05Z",
+      "url": "https://github.com/seanome/2024-kmerseek-analysis/pull/118"
+    },
+    {
+      "isDraft": false,
+      "number": 117,
+      "repository": {
+        "name": "2024-kmerseek-analysis",
+        "nameWithOwner": "seanome/2024-kmerseek-analysis"
+      },
+      "title": "Notebook 247: BCL-2 query panel vs CED-9 alone (stopped: 2 non-chordate queries in Swiss-Prot)",
+      "updatedAt": "2026-10-23T13:48:23Z",
+      "url": "https://github.com/seanome/2024-kmerseek-analysis/pull/117"
+    },
+    {
+      "isDraft": false,
+      "number": 141,
+      "repository": {
+        "name": "kmerseek",
+        "nameWithOwner": "seanome/kmerseek"
+      },
+      "title": "Key index entries by their sequence, so a target's hits carry its own coordinates",
+      "updatedAt": "2026-10-19T09:51:35Z",
+      "url": "https://github.com/seanome/kmerseek/pull/141"
+    },
+    {
+      "isDraft": false,
+      "number": 115,
+      "repository": {
+        "name": "2024-kmerseek-analysis",
+        "nameWithOwner": "seanome/2024-kmerseek-analysis"
+      },
+      "title": "parse_disprot.py: read every DisProt page, and only consensus disorder",
+      "updatedAt": "2026-10-23T12:52:11Z",
+      "url": "https://github.com/seanome/2024-kmerseek-analysis/pull/115"
+    },
+    {
+      "isDraft": false,
+      "number": 114,
+      "repository": {
+        "name": "2024-kmerseek-analysis",
+        "nameWithOwner": "seanome/2024-kmerseek-analysis"
+      },
+      "title": "Regions-index pilot: three indexes, full run, Pfam result",
+      "updatedAt": "2026-10-23T13:42:08Z",
+      "url": "https://github.com/seanome/2024-kmerseek-analysis/pull/114"
+    },
+    {
+      "isDraft": false,
+      "number": 137,
+      "repository": {
+        "name": "kmerseek",
+        "nameWithOwner": "seanome/kmerseek"
+      },
+      "title": "Remove two unused ProteomeIndex fields; fail CI on dead_code allows",
+      "updatedAt": "2026-10-21T08:50:24Z",
+      "url": "https://github.com/seanome/kmerseek/pull/137"
+    },
+    {
+      "isDraft": false,
+      "number": 113,
+      "repository": {
+        "name": "2024-kmerseek-analysis",
+        "nameWithOwner": "seanome/2024-kmerseek-analysis"
+      },
+      "title": "Notebook 246: seeds that allow mismatches, on CED-9/BCL2 and P66/CD47",
+      "updatedAt": "2026-10-23T13:34:32Z",
+      "url": "https://github.com/seanome/2024-kmerseek-analysis/pull/113"
+    },
+    {
+      "isDraft": false,
+      "number": 134,
+      "repository": {
+        "name": "kmerseek",
+        "nameWithOwner": "seanome/kmerseek"
+      },
+      "title": "Test the run E-value on random sequences and on dipeptide-shuffled decoys",
+      "updatedAt": "2026-10-21T10:11:37Z",
+      "url": "https://github.com/seanome/kmerseek/pull/134"
+    },
+    {
+      "isDraft": false,
+      "number": 133,
+      "repository": {
+        "name": "kmerseek",
+        "nameWithOwner": "seanome/kmerseek"
+      },
+      "title": "Give every row a run E-value, and drop the Poisson E-value",
+      "updatedAt": "2026-10-20T08:23:00Z",
+      "url": "https://github.com/seanome/kmerseek/pull/133"
+    },
+    {
+      "isDraft": false,
+      "number": 107,
+      "repository": {
+        "name": "2024-kmerseek-analysis",
+        "nameWithOwner": "seanome/2024-kmerseek-analysis"
+      },
+      "title": "SCOPe40 family and superfamily sensitivity with kmerseek 0.4: 19 alphabets, k_min to k_max, six settings",
+      "updatedAt": "2026-10-23T13:03:02Z",
+      "url": "https://github.com/seanome/2024-kmerseek-analysis/pull/107"
+    },
+    {
+      "isDraft": false,
+      "number": 106,
+      "repository": {
+        "name": "2024-kmerseek-analysis",
+        "nameWithOwner": "seanome/2024-kmerseek-analysis"
+      },
+      "title": "Supplementary Figure 1 (alphabets, bits, k-sizes to test) and seed reach at k*",
+      "updatedAt": "2026-10-23T13:58:24Z",
+      "url": "https://github.com/seanome/2024-kmerseek-analysis/pull/106"
+    },
+    {
+      "isDraft": false,
+      "number": 104,
+      "repository": {
+        "name": "2024-kmerseek-analysis",
+        "nameWithOwner": "seanome/2024-kmerseek-analysis"
+      },
+      "title": "Notebook 264: the three combiners, the single best pair, phmmer and a Kyte-Doolittle scan on test",
+      "updatedAt": "2026-10-23T13:36:04Z",
+      "url": "https://github.com/seanome/2024-kmerseek-analysis/pull/104"
+    },
+    {
+      "isDraft": false,
+      "number": 103,
+      "repository": {
+        "name": "2024-kmerseek-analysis",
+        "nameWithOwner": "seanome/2024-kmerseek-analysis"
+      },
+      "title": "Notebook 263: combiner C, a consensus vote across alphabet-ksize pairs",
+      "updatedAt": "2026-10-23T13:36:01Z",
+      "url": "https://github.com/seanome/2024-kmerseek-analysis/pull/103"
+    },
+    {
+      "isDraft": false,
+      "number": 102,
+      "repository": {
+        "name": "2024-kmerseek-analysis",
+        "nameWithOwner": "seanome/2024-kmerseek-analysis"
+      },
+      "title": "Notebook 262: combiner B, best of n alphabet-ksize pairs",
+      "updatedAt": "2026-10-23T13:35:59Z",
+      "url": "https://github.com/seanome/2024-kmerseek-analysis/pull/102"
+    },
+    {
+      "isDraft": false,
+      "number": 101,
+      "repository": {
+        "name": "2024-kmerseek-analysis",
+        "nameWithOwner": "seanome/2024-kmerseek-analysis"
+      },
+      "title": "274: the k-sizes to test per alphabet, from k_min to k_max (print version of explainer Figure 12)",
+      "updatedAt": "2026-10-23T13:35:58Z",
+      "url": "https://github.com/seanome/2024-kmerseek-analysis/pull/101"
+    },
+    {
+      "isDraft": false,
+      "number": 98,
+      "repository": {
+        "name": "2024-kmerseek-analysis",
+        "nameWithOwner": "seanome/2024-kmerseek-analysis"
+      },
+      "title": "Notebook 261: combiner A, intersection of a fixed panel of alphabet-ksize pairs",
+      "updatedAt": "2026-10-23T13:35:56Z",
+      "url": "https://github.com/seanome/2024-kmerseek-analysis/pull/98"
+    },
+    {
+      "isDraft": false,
+      "number": 130,
+      "repository": {
+        "name": "kmerseek",
+        "nameWithOwner": "seanome/kmerseek"
+      },
+      "title": "Add the mid-p run E-value, and score the decoy test on other proteins' shuffles",
+      "updatedAt": "2026-10-21T10:05:30Z",
+      "url": "https://github.com/seanome/kmerseek/pull/130"
+    },
+    {
+      "isDraft": false,
+      "number": 97,
+      "repository": {
+        "name": "2024-kmerseek-analysis",
+        "nameWithOwner": "seanome/2024-kmerseek-analysis"
+      },
+      "title": "Experiment inventory, claims page, and its GitHub Pages site",
+      "updatedAt": "2026-10-23T13:32:58Z",
+      "url": "https://github.com/seanome/2024-kmerseek-analysis/pull/97"
+    },
+    {
+      "isDraft": false,
+      "number": 96,
+      "repository": {
+        "name": "2024-kmerseek-analysis",
+        "nameWithOwner": "seanome/2024-kmerseek-analysis"
+      },
+      "title": "245: where the P66/CD47 shared k-mers sit, and whether they touch the SIRP-alpha residues",
+      "updatedAt": "2026-10-23T13:24:12Z",
+      "url": "https://github.com/seanome/2024-kmerseek-analysis/pull/96"
+    },
+    {
+      "isDraft": false,
+      "number": 93,
+      "repository": {
+        "name": "2024-kmerseek-analysis",
+        "nameWithOwner": "seanome/2024-kmerseek-analysis"
+      },
+      "title": "Nb 271: which kmerseek region score to filter on (mini set, Pfam truth)",
+      "updatedAt": "2026-10-23T13:24:10Z",
+      "url": "https://github.com/seanome/2024-kmerseek-analysis/pull/93"
+    },
+    {
+      "isDraft": false,
+      "number": 92,
+      "repository": {
+        "name": "2024-kmerseek-analysis",
+        "nameWithOwner": "seanome/2024-kmerseek-analysis"
+      },
+      "title": "Figure: bits of information per letter for all 19 alphabets",
+      "updatedAt": "2026-10-23T13:27:24Z",
+      "url": "https://github.com/seanome/2024-kmerseek-analysis/pull/92"
+    },
+    {
+      "isDraft": false,
+      "number": 91,
+      "repository": {
+        "name": "2024-kmerseek-analysis",
+        "nameWithOwner": "seanome/2024-kmerseek-analysis"
+      },
+      "title": "Shared figure helpers: header placement, alphabet axis, missing-value mark",
+      "updatedAt": "2026-10-23T12:52:14Z",
+      "url": "https://github.com/seanome/2024-kmerseek-analysis/pull/91"
+    },
+    {
+      "isDraft": false,
+      "number": 88,
+      "repository": {
+        "name": "2024-kmerseek-analysis",
+        "nameWithOwner": "seanome/2024-kmerseek-analysis"
+      },
+      "title": "midi-plus 0.4 with extension, and its shuffled-query twin (nb 260)",
+      "updatedAt": "2026-10-23T13:27:22Z",
+      "url": "https://github.com/seanome/2024-kmerseek-analysis/pull/88"
+    },
+    {
+      "isDraft": false,
+      "number": 87,
+      "repository": {
+        "name": "2024-kmerseek-analysis",
+        "nameWithOwner": "seanome/2024-kmerseek-analysis"
+      },
+      "title": "Notebook 270: --scaled 1-10 on the mini set, with decoy queries",
+      "updatedAt": "2026-10-23T13:29:55Z",
+      "url": "https://github.com/seanome/2024-kmerseek-analysis/pull/87"
+    },
+    {
+      "isDraft": false,
+      "number": 114,
+      "repository": {
+        "name": "kmerseek",
+        "nameWithOwner": "seanome/kmerseek"
+      },
+      "title": "Extend matched regions by default when the index holds a fit",
+      "updatedAt": "2026-10-21T08:50:26Z",
+      "url": "https://github.com/seanome/kmerseek/pull/114"
+    },
+    {
+      "isDraft": false,
+      "number": 113,
+      "repository": {
+        "name": "kmerseek",
+        "nameWithOwner": "seanome/kmerseek"
+      },
+      "title": "Extend regions when there is no Karlin-Altschul fit, instead of refusing the search",
+      "updatedAt": "2026-10-17T11:18:48Z",
+      "url": "https://github.com/seanome/kmerseek/pull/113"
+    },
+    {
+      "isDraft": false,
+      "number": 85,
+      "repository": {
+        "name": "2024-kmerseek-analysis",
+        "nameWithOwner": "seanome/2024-kmerseek-analysis"
+      },
+      "title": "257: rerun the 998-protein search with a newer kmerseek (every row gets an E-value)",
+      "updatedAt": "2026-10-23T13:27:20Z",
+      "url": "https://github.com/seanome/2024-kmerseek-analysis/pull/85"
+    },
+    {
+      "isDraft": false,
+      "number": 84,
+      "repository": {
+        "name": "2024-kmerseek-analysis",
+        "nameWithOwner": "seanome/2024-kmerseek-analysis"
+      },
+      "title": "Notebook 255: kmerseek ranking metrics against human Pfam, with region length as the control",
+      "updatedAt": "2026-10-23T13:20:52Z",
+      "url": "https://github.com/seanome/2024-kmerseek-analysis/pull/84"
+    },
+    {
+      "isDraft": false,
+      "number": 83,
+      "repository": {
+        "name": "2024-kmerseek-analysis",
+        "nameWithOwner": "seanome/2024-kmerseek-analysis"
+      },
+      "title": "256: BHF against 300 dipeptide-shuffled copies of itself",
+      "updatedAt": "2026-10-23T13:57:03Z",
+      "url": "https://github.com/seanome/2024-kmerseek-analysis/pull/83"
+    },
+    {
+      "isDraft": false,
+      "number": 82,
+      "repository": {
+        "name": "2024-kmerseek-analysis",
+        "nameWithOwner": "seanome/2024-kmerseek-analysis"
+      },
+      "title": "244: two bonus cases, Ced-9/BCL2 and BHF",
+      "updatedAt": "2026-10-23T13:54:30Z",
+      "url": "https://github.com/seanome/2024-kmerseek-analysis/pull/82"
+    },
+    {
+      "isDraft": false,
+      "number": 80,
+      "repository": {
+        "name": "2024-kmerseek-analysis",
+        "nameWithOwner": "seanome/2024-kmerseek-analysis"
+      },
+      "title": "Case gallery: reference pairs, other tools, and every shared k-mer",
+      "updatedAt": "2026-10-23T13:54:27Z",
+      "url": "https://github.com/seanome/2024-kmerseek-analysis/pull/80"
+    },
+    {
+      "isDraft": false,
+      "number": 78,
+      "repository": {
+        "name": "2024-kmerseek-analysis",
+        "nameWithOwner": "seanome/2024-kmerseek-analysis"
+      },
+      "title": "Notebook 244: figures, call coordinates, kmerseek pair and hits pages for all 183 cases",
+      "updatedAt": "2026-10-23T13:54:23Z",
+      "url": "https://github.com/seanome/2024-kmerseek-analysis/pull/78"
+    },
+    {
+      "isDraft": false,
+      "number": 77,
+      "repository": {
+        "name": "2024-kmerseek-analysis",
+        "nameWithOwner": "seanome/2024-kmerseek-analysis"
+      },
+      "title": "Notebook 254: seed extension loses notebook 244's short placements",
+      "updatedAt": "2026-10-23T13:40:40Z",
+      "url": "https://github.com/seanome/2024-kmerseek-analysis/pull/77"
+    },
+    {
+      "isDraft": false,
+      "number": 76,
+      "repository": {
+        "name": "2024-kmerseek-analysis",
+        "nameWithOwner": "seanome/2024-kmerseek-analysis"
+      },
+      "title": "Search ten random 2-letter partitions beside the six H/P alphabets under kmerseek 0.4 (notebook 246, experiment A)",
+      "updatedAt": "2026-10-23T13:40:38Z",
+      "url": "https://github.com/seanome/2024-kmerseek-analysis/pull/76"
+    },
+    {
+      "isDraft": false,
+      "number": 75,
+      "repository": {
+        "name": "2024-kmerseek-analysis",
+        "nameWithOwner": "seanome/2024-kmerseek-analysis"
+      },
+      "title": "Notebook 238 on the full midi-plus run",
+      "updatedAt": "2026-10-23T13:40:36Z",
+      "url": "https://github.com/seanome/2024-kmerseek-analysis/pull/75"
+    },
+    {
+      "isDraft": false,
+      "number": 72,
+      "repository": {
+        "name": "2024-kmerseek-analysis",
+        "nameWithOwner": "seanome/2024-kmerseek-analysis"
+      },
+      "title": "ELM cover on seven more species: 19 arms chosen on chicken, lists cut to 1_000",
+      "updatedAt": "2026-10-23T13:40:34Z",
+      "url": "https://github.com/seanome/2024-kmerseek-analysis/pull/72"
+    },
+    {
+      "isDraft": false,
+      "number": 71,
+      "repository": {
+        "name": "2024-kmerseek-analysis",
+        "nameWithOwner": "seanome/2024-kmerseek-analysis"
+      },
+      "title": "kmerseek search: keep each query's best N targets, and pin one arm per alphabet",
+      "updatedAt": "2026-10-23T13:40:31Z",
+      "url": "https://github.com/seanome/2024-kmerseek-analysis/pull/71"
+    },
+    {
+      "isDraft": false,
+      "number": 69,
+      "repository": {
+        "name": "2024-kmerseek-analysis",
+        "nameWithOwner": "seanome/2024-kmerseek-analysis"
+      },
+      "title": "Notebook 253: are ELM motifs put on position on the chicken ortholog?",
+      "updatedAt": "2026-10-23T13:54:20Z",
+      "url": "https://github.com/seanome/2024-kmerseek-analysis/pull/69"
+    },
+    {
+      "isDraft": false,
+      "number": 67,
+      "repository": {
+        "name": "2024-kmerseek-analysis",
+        "nameWithOwner": "seanome/2024-kmerseek-analysis"
+      },
+      "title": "Notebook 220: BCL2/Bcl-xL vs Ced9 across all six HP alphabets, k=15-25",
+      "updatedAt": "2026-10-23T13:40:33Z",
+      "url": "https://github.com/seanome/2024-kmerseek-analysis/pull/67"
+    },
+    {
+      "isDraft": false,
+      "number": 66,
+      "repository": {
+        "name": "2024-kmerseek-analysis",
+        "nameWithOwner": "seanome/2024-kmerseek-analysis"
+      },
+      "title": "Pfam subdomain benchmark: split positive pairs into DIAMOND-hard and DIAMOND-easy",
+      "updatedAt": "2026-10-23T13:54:18Z",
+      "url": "https://github.com/seanome/2024-kmerseek-analysis/pull/66"
+    },
+    {
+      "isDraft": false,
+      "number": 65,
+      "repository": {
+        "name": "2024-kmerseek-analysis",
+        "nameWithOwner": "seanome/2024-kmerseek-analysis"
+      },
+      "title": "Notebook 24: k-mer spectra across all alphabets, with nine saved figures",
+      "updatedAt": "2026-10-17T12:23:41Z",
+      "url": "https://github.com/seanome/2024-kmerseek-analysis/pull/65"
+    },
+    {
+      "isDraft": false,
+      "number": 64,
+      "repository": {
+        "name": "2024-kmerseek-analysis",
+        "nameWithOwner": "seanome/2024-kmerseek-analysis"
+      },
+      "title": "Run the family-AUC, RBH-F1 and leaderboard sweeps on Sherlock",
+      "updatedAt": "2026-10-23T13:54:15Z",
+      "url": "https://github.com/seanome/2024-kmerseek-analysis/pull/64"
+    },
+    {
+      "isDraft": false,
+      "number": 63,
+      "repository": {
+        "name": "2024-kmerseek-analysis",
+        "nameWithOwner": "seanome/2024-kmerseek-analysis"
+      },
+      "title": "E3 detection-gap benchmark: notebook 340 and a pipeline for the missing baseline arms",
+      "updatedAt": "2026-10-23T13:51:39Z",
+      "url": "https://github.com/seanome/2024-kmerseek-analysis/pull/63"
+    },
+    {
+      "isDraft": false,
+      "number": 59,
+      "repository": {
+        "name": "2024-kmerseek-analysis",
+        "nameWithOwner": "seanome/2024-kmerseek-analysis"
+      },
+      "title": "Give the Swiss-Prot identity axis a Pfam anchor",
+      "updatedAt": "2026-10-23T13:51:35Z",
+      "url": "https://github.com/seanome/2024-kmerseek-analysis/pull/59"
+    },
+    {
+      "isDraft": false,
+      "number": 58,
+      "repository": {
+        "name": "2024-kmerseek-analysis",
+        "nameWithOwner": "seanome/2024-kmerseek-analysis"
+      },
+      "title": "Score the ELM cover search: motif cover per arm, placement null, chicken dry run",
+      "updatedAt": "2026-10-23T13:55:29Z",
+      "url": "https://github.com/seanome/2024-kmerseek-analysis/pull/58"
+    },
+    {
+      "isDraft": false,
+      "number": 57,
+      "repository": {
+        "name": "2024-kmerseek-analysis",
+        "nameWithOwner": "seanome/2024-kmerseek-analysis"
+      },
+      "title": "Dark set with kmerseek 0.4: the midi run, and a failed index no longer stops it",
+      "updatedAt": "2026-10-23T14:00:37Z",
+      "url": "https://github.com/seanome/2024-kmerseek-analysis/pull/57"
+    },
+    {
+      "isDraft": false,
+      "number": 54,
+      "repository": {
+        "name": "2024-kmerseek-analysis",
+        "nameWithOwner": "seanome/2024-kmerseek-analysis"
+      },
+      "title": "Notebook 245: bits an exact reduced-alphabet seed carries against bits a proteome search needs",
+      "updatedAt": "2026-10-23T13:37:37Z",
+      "url": "https://github.com/seanome/2024-kmerseek-analysis/pull/54"
+    },
+    {
+      "isDraft": false,
+      "number": 53,
+      "repository": {
+        "name": "2024-kmerseek-analysis",
+        "nameWithOwner": "seanome/2024-kmerseek-analysis"
+      },
+      "title": "DisProt functional-region transfer benchmark: data, scoring with controls, notebook 251",
+      "updatedAt": "2026-10-23T13:53:10Z",
+      "url": "https://github.com/seanome/2024-kmerseek-analysis/pull/53"
+    },
+    {
+      "isDraft": false,
+      "number": 52,
+      "repository": {
+        "name": "2024-kmerseek-analysis",
+        "nameWithOwner": "seanome/2024-kmerseek-analysis"
+      },
+      "title": "Region pipeline: ungapped kmerseek extension with an E-value, opened comparator filters",
+      "updatedAt": "2026-10-23T13:16:17Z",
+      "url": "https://github.com/seanome/2024-kmerseek-analysis/pull/52"
+    },
+    {
+      "isDraft": false,
+      "number": 51,
+      "repository": {
+        "name": "2024-kmerseek-analysis",
+        "nameWithOwner": "seanome/2024-kmerseek-analysis"
+      },
+      "title": "Add the ELM motif benchmark (notebook 250): Stage 0, target labels, seed lengths, provenance",
+      "updatedAt": "2026-10-23T13:55:26Z",
+      "url": "https://github.com/seanome/2024-kmerseek-analysis/pull/51"
+    },
+    {
+      "isDraft": false,
+      "number": 49,
+      "repository": {
+        "name": "2024-kmerseek-analysis",
+        "nameWithOwner": "seanome/2024-kmerseek-analysis"
+      },
+      "title": "Add notebook 244: hero example candidates on the Swiss-Prot feature key",
+      "updatedAt": "2026-10-23T13:52:10Z",
+      "url": "https://github.com/seanome/2024-kmerseek-analysis/pull/49"
+    },
+    {
+      "isDraft": false,
+      "number": 47,
+      "repository": {
+        "name": "2024-kmerseek-analysis",
+        "nameWithOwner": "seanome/2024-kmerseek-analysis"
+      },
+      "title": "Pfam on the dark set: are these real proteins?",
+      "updatedAt": "2026-10-13T20:54:23Z",
+      "url": "https://github.com/seanome/2024-kmerseek-analysis/pull/47"
+    },
+    {
+      "isDraft": false,
+      "number": 10,
+      "repository": {
+        "name": "botryllus-mhc",
+        "nameWithOwner": "olgabot/botryllus-mhc"
+      },
+      "title": "Add a kmerseek 0.4 arm for Botryllus vs human GENCODE",
+      "updatedAt": "2026-09-23T13:45:43Z",
+      "url": "https://github.com/olgabot/botryllus-mhc/pull/10"
+    },
+    {
+      "isDraft": false,
+      "number": 30,
+      "repository": {
+        "name": "2024-kmerseek-analysis",
+        "nameWithOwner": "seanome/2024-kmerseek-analysis"
+      },
+      "title": "Measure the dark set: what conventional sequence search misses on an invertebrate proteome",
+      "updatedAt": "2026-10-23T14:00:36Z",
+      "url": "https://github.com/seanome/2024-kmerseek-analysis/pull/30"
+    },
+    {
+      "isDraft": false,
+      "number": 3932,
+      "repository": {
+        "name": "sourmash",
+        "nameWithOwner": "sourmash-bio/sourmash"
+      },
+      "title": "Update HPTABLE with correct Gly and Cys mappings",
+      "updatedAt": "2026-04-26T16:26:42Z",
+      "url": "https://github.com/sourmash-bio/sourmash/pull/3932"
+    },
+    {
+      "isDraft": false,
+      "number": 9,
+      "repository": {
+        "name": "botryllus-mhc",
+        "nameWithOwner": "olgabot/botryllus-mhc"
+      },
+      "title": "olgabot/kmerseek",
+      "updatedAt": "2026-04-14T21:07:40Z",
+      "url": "https://github.com/olgabot/botryllus-mhc/pull/9"
+    },
+    {
+      "isDraft": false,
+      "number": 8,
+      "repository": {
+        "name": "botryllus-mhc",
+        "nameWithOwner": "olgabot/botryllus-mhc"
+      },
+      "title": "olgabot/uniprot marine diversity",
+      "updatedAt": "2026-04-14T21:03:58Z",
+      "url": "https://github.com/olgabot/botryllus-mhc/pull/8"
+    },
+    {
+      "isDraft": false,
+      "number": 7,
+      "repository": {
+        "name": "botryllus-mhc",
+        "nameWithOwner": "olgabot/botryllus-mhc"
+      },
+      "title": "olgabot/nf core proteinannotator",
+      "updatedAt": "2026-04-14T22:31:55Z",
+      "url": "https://github.com/olgabot/botryllus-mhc/pull/7"
+    },
+    {
+      "isDraft": false,
+      "number": 79,
+      "repository": {
+        "name": "proteinannotator",
+        "nameWithOwner": "nf-core/proteinannotator"
+      },
+      "title": "Add batch processing to InterProScan",
+      "updatedAt": "2026-09-27T07:59:04Z",
+      "url": "https://github.com/nf-core/proteinannotator/pull/79"
+    },
+    {
+      "isDraft": false,
+      "number": 63,
+      "repository": {
+        "name": "proteinannotator",
+        "nameWithOwner": "nf-core/proteinannotator"
+      },
+      "title": "Add EggNOG-mapper",
+      "updatedAt": "2026-01-26T11:12:09Z",
+      "url": "https://github.com/nf-core/proteinannotator/pull/63"
+    },
+    {
+      "isDraft": false,
+      "number": 17,
+      "repository": {
+        "name": "seanome.org",
+        "nameWithOwner": "seanome/seanome.org"
+      },
+      "title": "Add some consent asking banners for GDPR/EU compliance",
+      "updatedAt": "2025-08-17T17:22:23Z",
+      "url": "https://github.com/seanome/seanome.org/pull/17"
+    },
+    {
+      "isDraft": false,
+      "number": 1,
+      "repository": {
+        "name": "nf-core-proteinannotator",
+        "nameWithOwner": "heuermh/nf-core-proteinannotator"
+      },
+      "title": "Update contact info for Olga Botvinnik",
+      "updatedAt": "2025-05-15T21:24:49Z",
+      "url": "https://github.com/heuermh/nf-core-proteinannotator/pull/1"
+    },
+    {
+      "isDraft": false,
+      "number": 295,
+      "repository": {
+        "name": "nf-test",
+        "nameWithOwner": "askimed/nf-test"
+      },
+      "title": "Github Actions update: Add updated CI yaml and nf-test.config example",
+      "updatedAt": "2025-04-22T21:19:09Z",
+      "url": "https://github.com/askimed/nf-test/pull/295"
+    },
+    {
+      "isDraft": false,
+      "number": 6,
+      "repository": {
+        "name": "botryllus-mhc",
+        "nameWithOwner": "olgabot/botryllus-mhc"
+      },
+      "title": "olgabot/yc demo prep",
+      "updatedAt": "2025-02-08T01:39:34Z",
+      "url": "https://github.com/olgabot/botryllus-mhc/pull/6"
+    },
+    {
+      "isDraft": false,
+      "number": 1,
+      "repository": {
+        "name": "differentialabundance",
+        "nameWithOwner": "BridgeBioAnalytics/differentialabundance"
+      },
+      "title": "Add message of which file is being read",
+      "updatedAt": "2024-09-20T16:18:22Z",
+      "url": "https://github.com/BridgeBioAnalytics/differentialabundance/pull/1"
+    },
+    {
+      "isDraft": false,
+      "number": 354,
+      "repository": {
+        "name": "sourmash_plugin_branchwater",
+        "nameWithOwner": "sourmash-bio/sourmash_plugin_branchwater"
+      },
+      "title": "Enable listing of zip files in fromfiles for index, gather, search",
+      "updatedAt": "2024-10-16T10:03:09Z",
+      "url": "https://github.com/sourmash-bio/sourmash_plugin_branchwater/pull/354"
+    },
+    {
+      "isDraft": false,
+      "number": 3,
+      "repository": {
+        "name": "nf-core-kmerseek",
+        "nameWithOwner": "seanome/nf-core-kmerseek"
+      },
+      "title": "olgabot/sourmash index",
+      "updatedAt": "2024-10-01T19:46:27Z",
+      "url": "https://github.com/seanome/nf-core-kmerseek/pull/3"
+    },
+    {
+      "isDraft": false,
+      "number": 2,
+      "repository": {
+        "name": "viralrecon",
+        "nameWithOwner": "BridgeBioAnalytics/viralrecon"
+      },
+      "title": "olgabot/nnk directed evo sequence",
+      "updatedAt": "2024-05-29T23:43:57Z",
+      "url": "https://github.com/BridgeBioAnalytics/viralrecon/pull/2"
+    },
+    {
+      "isDraft": false,
+      "number": 4,
+      "repository": {
+        "name": "botryllus-mhc",
+        "nameWithOwner": "olgabot/botryllus-mhc"
+      },
+      "title": "olgabot/pjs end to end",
+      "updatedAt": "2024-05-18T01:11:32Z",
+      "url": "https://github.com/olgabot/botryllus-mhc/pull/4"
+    },
+    {
+      "isDraft": false,
+      "number": 22,
+      "repository": {
+        "name": "SPLASH",
+        "nameWithOwner": "refresh-bio/SPLASH"
+      },
+      "title": "Black formatting on splash.py",
+      "updatedAt": "2024-10-02T11:43:24Z",
+      "url": "https://github.com/refresh-bio/SPLASH/pull/22"
+    },
+    {
+      "isDraft": true,
+      "number": 1,
+      "repository": {
+        "name": "rnasplice",
+        "nameWithOwner": "BridgeBioAnalytics/rnasplice"
+      },
+      "title": "Use script with echo + sed instead of exec with task.WorkDir for rMATS create_bamlist",
+      "updatedAt": "2022-11-16T21:59:08Z",
+      "url": "https://github.com/BridgeBioAnalytics/rnasplice/pull/1"
+    },
+    {
+      "isDraft": false,
+      "number": 107,
+      "repository": {
+        "name": "orpheum",
+        "nameWithOwner": "czbiohub-sf/orpheum"
+      },
+      "title": "Add support for reading bam files",
+      "updatedAt": "2022-10-04T13:46:38Z",
+      "url": "https://github.com/czbiohub-sf/orpheum/pull/107"
+    },
+    {
+      "isDraft": false,
+      "number": 1,
+      "repository": {
+        "name": "2022-mouse-lemur-tabula-microcebus",
+        "nameWithOwner": "olgabot/2022-mouse-lemur-tabula-microcebus"
+      },
+      "title": "olgabot/2022 09 09  fix environment yml",
+      "updatedAt": "2022-09-09T18:08:10Z",
+      "url": "https://github.com/olgabot/2022-mouse-lemur-tabula-microcebus/pull/1"
+    },
+    {
+      "isDraft": false,
+      "number": 152,
+      "repository": {
+        "name": "kmermaid",
+        "nameWithOwner": "nf-core/kmermaid"
+      },
+      "title": "Fixes to run in July 2022",
+      "updatedAt": "2022-09-08T17:03:13Z",
+      "url": "https://github.com/nf-core/kmermaid/pull/152"
+    },
+    {
+      "isDraft": false,
+      "number": 4,
+      "repository": {
+        "name": "scrnaseq-for-the-99-percent",
+        "nameWithOwner": "czbiohub-sf/scrnaseq-for-the-99-percent"
+      },
+      "title": "Prepare reproducible repo for elife submission",
+      "updatedAt": "2022-12-16T14:04:46Z",
+      "url": "https://github.com/czbiohub-sf/scrnaseq-for-the-99-percent/pull/4"
+    },
+    {
+      "isDraft": false,
+      "number": 648,
+      "repository": {
+        "name": "OrthoFinder",
+        "nameWithOwner": "davidemms/OrthoFinder"
+      },
+      "title": "Specify version in docker pull",
+      "updatedAt": "2021-11-24T20:31:49Z",
+      "url": "https://github.com/davidemms/OrthoFinder/pull/648"
+    },
+    {
+      "isDraft": false,
+      "number": 3,
+      "repository": {
+        "name": "scrnaseq-for-the-99-percent",
+        "nameWithOwner": "czbiohub-sf/scrnaseq-for-the-99-percent"
+      },
+      "title": "Add Lekha subset busco, kmermaid workflows, lemur unaligned",
+      "updatedAt": "2021-10-22T23:45:20Z",
+      "url": "https://github.com/czbiohub-sf/scrnaseq-for-the-99-percent/pull/3"
+    },
+    {
+      "isDraft": false,
+      "number": 15,
+      "repository": {
+        "name": "xicor",
+        "nameWithOwner": "czbiohub-sf/xicor"
+      },
+      "title": "Get JOSS preview to compile",
+      "updatedAt": "2021-07-22T21:47:34Z",
+      "url": "https://github.com/czbiohub-sf/xicor/pull/15"
+    },
+    {
+      "isDraft": false,
+      "number": 12,
+      "repository": {
+        "name": "nf-sicilian",
+        "nameWithOwner": "salzman-lab/nf-sicilian"
+      },
+      "title": "Add example config for smartseq2",
+      "updatedAt": "2021-07-18T23:40:36Z",
+      "url": "https://github.com/salzman-lab/nf-sicilian/pull/12"
+    },
+    {
+      "isDraft": false,
+      "number": 99,
+      "repository": {
+        "name": "orpheum",
+        "nameWithOwner": "czbiohub-sf/orpheum"
+      },
+      "title": "Update minimal sourmash version for different hash_murmur location",
+      "updatedAt": "2021-07-01T23:58:31Z",
+      "url": "https://github.com/czbiohub-sf/orpheum/pull/99"
+    },
+    {
+      "isDraft": false,
+      "number": 140,
+      "repository": {
+        "name": "kmermaid",
+        "nameWithOwner": "nf-core/kmermaid"
+      },
+      "title": "Add --singleton option for sourmash",
+      "updatedAt": "2021-07-22T16:52:51Z",
+      "url": "https://github.com/nf-core/kmermaid/pull/140"
+    },
+    {
+      "isDraft": false,
+      "number": 135,
+      "repository": {
+        "name": "kmermaid",
+        "nameWithOwner": "nf-core/kmermaid"
+      },
+      "title": "Add sourmash search",
+      "updatedAt": "2021-03-16T18:28:15Z",
+      "url": "https://github.com/nf-core/kmermaid/pull/135"
+    },
+    {
+      "isDraft": false,
+      "number": 3,
+      "repository": {
+        "name": "2021-01-27-olga-remove-protein",
+        "nameWithOwner": "luizirber/2021-01-27-olga-remove-protein"
+      },
+      "title": "Add DNA and track abundance, don't add ksize to output dir",
+      "updatedAt": "2021-03-16T22:20:28Z",
+      "url": "https://github.com/luizirber/2021-01-27-olga-remove-protein/pull/3"
+    },
+    {
+      "isDraft": false,
+      "number": 131,
+      "repository": {
+        "name": "kmermaid",
+        "nameWithOwner": "nf-core/kmermaid"
+      },
+      "title": "Remove constitutive k-mers",
+      "updatedAt": "2021-03-16T21:53:24Z",
+      "url": "https://github.com/nf-core/kmermaid/pull/131"
+    },
+    {
+      "isDraft": false,
+      "number": 37,
+      "repository": {
+        "name": "bbknn",
+        "nameWithOwner": "Teichlab/bbknn"
+      },
+      "title": "add initial distance matrix work",
+      "updatedAt": "2021-01-30T04:18:34Z",
+      "url": "https://github.com/Teichlab/bbknn/pull/37"
+    },
+    {
+      "isDraft": false,
+      "number": 1,
+      "repository": {
+        "name": "2021-01-27-olga-remove-protein",
+        "nameWithOwner": "luizirber/2021-01-27-olga-remove-protein"
+      },
+      "title": "[WIP] Add dayhoff and hp compatibility",
+      "updatedAt": "2021-01-30T03:55:35Z",
+      "url": "https://github.com/luizirber/2021-01-27-olga-remove-protein/pull/1"
+    },
+    {
+      "isDraft": false,
+      "number": 36,
+      "repository": {
+        "name": "bbknn",
+        "nameWithOwner": "Teichlab/bbknn"
+      },
+      "title": "Add cosine distance as valid metric",
+      "updatedAt": "2021-06-02T17:49:32Z",
+      "url": "https://github.com/Teichlab/bbknn/pull/36"
+    },
+    {
+      "isDraft": false,
+      "number": 35,
+      "repository": {
+        "name": "bbknn",
+        "nameWithOwner": "Teichlab/bbknn"
+      },
+      "title": "Black formatting",
+      "updatedAt": "2021-01-28T17:48:23Z",
+      "url": "https://github.com/Teichlab/bbknn/pull/35"
+    },
+    {
+      "isDraft": false,
+      "number": 1,
+      "repository": {
+        "name": "bbknn",
+        "nameWithOwner": "czbiohub-sf/bbknn"
+      },
+      "title": "Add cosine distance as valid metric",
+      "updatedAt": "2021-01-30T04:22:00Z",
+      "url": "https://github.com/czbiohub-sf/bbknn/pull/1"
+    },
+    {
+      "isDraft": false,
+      "number": 76,
+      "repository": {
+        "name": "sc2-illumina-pipeline",
+        "nameWithOwner": "czbiohub-sf/sc2-illumina-pipeline"
+      },
+      "title": "Add nf-core style custom configs",
+      "updatedAt": "2021-01-20T19:13:10Z",
+      "url": "https://github.com/czbiohub-sf/sc2-illumina-pipeline/pull/76"
+    },
+    {
+      "isDraft": false,
+      "number": 66,
+      "repository": {
+        "name": "sc2-illumina-pipeline",
+        "nameWithOwner": "czbiohub-sf/sc2-illumina-pipeline"
+      },
+      "title": "Add ability to use czbiohub_aws config",
+      "updatedAt": "2020-09-16T19:29:50Z",
+      "url": "https://github.com/czbiohub-sf/sc2-illumina-pipeline/pull/66"
+    },
+    {
+      "isDraft": false,
+      "number": 81,
+      "repository": {
+        "name": "orpheum",
+        "nameWithOwner": "czbiohub-sf/orpheum"
+      },
+      "title": "Add more conveniences for noncoding nucleotide alphabets",
+      "updatedAt": "2020-07-16T00:57:09Z",
+      "url": "https://github.com/czbiohub-sf/orpheum/pull/81"
+    },
+    {
+      "isDraft": false,
+      "number": 49,
+      "repository": {
+        "name": "orpheum",
+        "nameWithOwner": "czbiohub-sf/orpheum"
+      },
+      "title": "More strict coding/noncoding filters",
+      "updatedAt": "2020-04-08T05:17:02Z",
+      "url": "https://github.com/czbiohub-sf/orpheum/pull/49"
+    },
+    {
+      "isDraft": false,
+      "number": 47,
+      "repository": {
+        "name": "orpheum",
+        "nameWithOwner": "czbiohub-sf/orpheum"
+      },
+      "title": "Add protein k-mer counting",
+      "updatedAt": "2020-03-18T18:52:13Z",
+      "url": "https://github.com/czbiohub-sf/orpheum/pull/47"
+    },
+    {
+      "isDraft": false,
+      "number": 1,
+      "repository": {
+        "name": "abSENSE",
+        "nameWithOwner": "caraweisman/abSENSE"
+      },
+      "title": "Use backticks for code formatting and add links",
+      "updatedAt": "2020-03-09T00:49:13Z",
+      "url": "https://github.com/caraweisman/abSENSE/pull/1"
+    },
+    {
+      "isDraft": false,
+      "number": 35,
+      "repository": {
+        "name": "nf-kmer-similarity",
+        "nameWithOwner": "olgabot/nf-kmer-similarity"
+      },
+      "title": "Add fastqc, khtools, multiqc to dependencies",
+      "updatedAt": "2019-10-24T14:37:59Z",
+      "url": "https://github.com/olgabot/nf-kmer-similarity/pull/35"
+    },
+    {
+      "isDraft": false,
+      "number": 34,
+      "repository": {
+        "name": "nf-kmer-similarity",
+        "nameWithOwner": "olgabot/nf-kmer-similarity"
+      },
+      "title": "Add fastp to container",
+      "updatedAt": "2019-10-22T18:23:17Z",
+      "url": "https://github.com/olgabot/nf-kmer-similarity/pull/34"
+    },
+    {
+      "isDraft": false,
+      "number": 12,
+      "repository": {
+        "name": "pcm",
+        "nameWithOwner": "lukejharmon/pcm"
+      },
+      "title": "Fix typo: interacions --> interactions",
+      "updatedAt": "2019-07-17T16:40:46Z",
+      "url": "https://github.com/lukejharmon/pcm/pull/12"
+    },
+    {
+      "isDraft": false,
+      "number": 27,
+      "repository": {
+        "name": "nf-kmer-similarity",
+        "nameWithOwner": "olgabot/nf-kmer-similarity"
+      },
+      "title": "Add split k-mer analysis",
+      "updatedAt": "2019-10-20T18:42:14Z",
+      "url": "https://github.com/olgabot/nf-kmer-similarity/pull/27"
+    },
+    {
+      "isDraft": false,
+      "number": 22,
+      "repository": {
+        "name": "rnaseq",
+        "nameWithOwner": "czbiohub-sf/rnaseq"
+      },
+      "title": "Start writing STAR Solo",
+      "updatedAt": "2019-05-28T03:08:33Z",
+      "url": "https://github.com/czbiohub-sf/rnaseq/pull/22"
+    },
+    {
+      "isDraft": false,
+      "number": 4,
+      "repository": {
+        "name": "rnaseq",
+        "nameWithOwner": "kerimoff/rnaseq"
+      },
+      "title": "Start writing STAT solo",
+      "updatedAt": "2019-05-28T03:09:32Z",
+      "url": "https://github.com/kerimoff/rnaseq/pull/4"
+    },
+    {
+      "isDraft": false,
+      "number": 20,
+      "repository": {
+        "name": "rnaseq",
+        "nameWithOwner": "czbiohub-sf/rnaseq"
+      },
+      "title": "Update documentation",
+      "updatedAt": "2019-05-23T20:26:33Z",
+      "url": "https://github.com/czbiohub-sf/rnaseq/pull/20"
+    },
+    {
+      "isDraft": false,
+      "number": 16,
+      "repository": {
+        "name": "rnaseq",
+        "nameWithOwner": "czbiohub-sf/rnaseq"
+      },
+      "title": "Make reference genomes composable",
+      "updatedAt": "2019-05-24T19:47:19Z",
+      "url": "https://github.com/czbiohub-sf/rnaseq/pull/16"
+    },
+    {
+      "isDraft": false,
+      "number": 18,
+      "repository": {
+        "name": "nf-kmer-similarity",
+        "nameWithOwner": "olgabot/nf-kmer-similarity"
+      },
+      "title": "Fix inputting with fasta and generating one signature per record",
+      "updatedAt": "2019-06-21T23:08:08Z",
+      "url": "https://github.com/olgabot/nf-kmer-similarity/pull/18"
+    },
+    {
+      "isDraft": false,
+      "number": 14,
+      "repository": {
+        "name": "nf-kmer-similarity",
+        "nameWithOwner": "olgabot/nf-kmer-similarity"
+      },
+      "title": "Add trimming, fastqc, software versions, email notifications from nf-core ",
+      "updatedAt": "2019-07-05T20:19:03Z",
+      "url": "https://github.com/olgabot/nf-kmer-similarity/pull/14"
+    },
+    {
+      "isDraft": false,
+      "number": 13,
+      "repository": {
+        "name": "nf-kmer-similarity",
+        "nameWithOwner": "olgabot/nf-kmer-similarity"
+      },
+      "title": "Add option for sourmash index",
+      "updatedAt": "2019-07-05T20:16:57Z",
+      "url": "https://github.com/olgabot/nf-kmer-similarity/pull/13"
+    },
+    {
+      "isDraft": false,
+      "number": 7,
+      "repository": {
+        "name": "nf-kmer-similarity",
+        "nameWithOwner": "olgabot/nf-kmer-similarity"
+      },
+      "title": "Add input is protein option",
+      "updatedAt": "2019-07-05T20:16:44Z",
+      "url": "https://github.com/olgabot/nf-kmer-similarity/pull/7"
+    },
+    {
+      "isDraft": false,
+      "number": 5,
+      "repository": {
+        "name": "cookiecutter-pypackage-from-czb",
+        "nameWithOwner": "singlecell-batches/cookiecutter-pypackage-from-czb"
+      },
+      "title": "Olgabot/update figures",
+      "updatedAt": "2019-04-10T18:32:26Z",
+      "url": "https://github.com/singlecell-batches/cookiecutter-pypackage-from-czb/pull/5"
+    },
+    {
+      "isDraft": false,
+      "number": 15,
+      "repository": {
+        "name": "FRC_align",
+        "nameWithOwner": "vezzi/FRC_align"
+      },
+      "title": "Reformat README for easier reading",
+      "updatedAt": "2018-10-05T17:02:34Z",
+      "url": "https://github.com/vezzi/FRC_align/pull/15"
+    },
+    {
+      "isDraft": false,
+      "number": 9,
+      "repository": {
+        "name": "NouGAT",
+        "nameWithOwner": "vezzi/NouGAT"
+      },
+      "title": "Add command line example",
+      "updatedAt": "2018-10-05T16:59:34Z",
+      "url": "https://github.com/vezzi/NouGAT/pull/9"
+    },
+    {
+      "isDraft": false,
+      "number": 8,
+      "repository": {
+        "name": "tabula-muris-vignettes",
+        "nameWithOwner": "czbiohub-sf/tabula-muris-vignettes"
+      },
+      "title": "download rds files from aws s3",
+      "updatedAt": "2018-09-28T01:06:08Z",
+      "url": "https://github.com/czbiohub-sf/tabula-muris-vignettes/pull/8"
+    },
+    {
+      "isDraft": false,
+      "number": 53,
+      "repository": {
+        "name": "reflow",
+        "nameWithOwner": "grailbio/reflow"
+      },
+      "title": "Add example usage for username",
+      "updatedAt": "2018-08-01T17:19:52Z",
+      "url": "https://github.com/grailbio/reflow/pull/53"
+    },
+    {
+      "isDraft": false,
+      "number": 49,
+      "repository": {
+        "name": "reflow",
+        "nameWithOwner": "grailbio/reflow"
+      },
+      "title": "runbatch: Add more explanation to -retry and -reset",
+      "updatedAt": "2018-08-01T17:20:55Z",
+      "url": "https://github.com/grailbio/reflow/pull/49"
+    },
+    {
+      "isDraft": false,
+      "number": 20,
+      "repository": {
+        "name": "maca",
+        "nameWithOwner": "czbiohub-sf/maca"
+      },
+      "title": "[WIP] Update cell annotations",
+      "updatedAt": "2018-01-12T20:14:34Z",
+      "url": "https://github.com/czbiohub-sf/maca/pull/20"
+    },
+    {
+      "isDraft": false,
+      "number": 694,
+      "repository": {
+        "name": "tensorboard",
+        "nameWithOwner": "tensorflow/tensorboard"
+      },
+      "title": "Add animated gif",
+      "updatedAt": "2022-09-21T22:12:27Z",
+      "url": "https://github.com/tensorflow/tensorboard/pull/694"
+    },
+    {
+      "isDraft": false,
+      "number": 222,
+      "repository": {
+        "name": "dalliance",
+        "nameWithOwner": "dasmoth/dalliance"
+      },
+      "title": "[WIP] Add wrapper for an electron app",
+      "updatedAt": "2017-09-20T20:00:50Z",
+      "url": "https://github.com/dasmoth/dalliance/pull/222"
+    },
+    {
+      "isDraft": false,
+      "number": 10,
+      "repository": {
+        "name": "pim",
+        "nameWithOwner": "freeman-lab/pim"
+      },
+      "title": "Whitespace around equals for version",
+      "updatedAt": "2017-08-25T19:43:15Z",
+      "url": "https://github.com/freeman-lab/pim/pull/10"
+    },
+    {
+      "isDraft": false,
+      "number": 12,
+      "repository": {
+        "name": "singlecell-dash",
+        "nameWithOwner": "czbiohub-sf/singlecell-dash"
+      },
+      "title": "[WIP] Make this an installable package",
+      "updatedAt": "2019-03-21T19:11:37Z",
+      "url": "https://github.com/czbiohub-sf/singlecell-dash/pull/12"
+    },
+    {
+      "isDraft": false,
+      "number": 2,
+      "repository": {
+        "name": "segerstolpe_palasantza2016",
+        "nameWithOwner": "olgabot/segerstolpe_palasantza2016"
+      },
+      "title": "Add data cleaning notebooks",
+      "updatedAt": "2017-07-05T19:32:21Z",
+      "url": "https://github.com/olgabot/segerstolpe_palasantza2016/pull/2"
+    },
+    {
+      "isDraft": false,
+      "number": 77,
+      "repository": {
+        "name": "outrigger",
+        "nameWithOwner": "YeoLab/outrigger"
+      },
+      "title": "Update Documentation",
+      "updatedAt": "2017-04-14T21:05:26Z",
+      "url": "https://github.com/YeoLab/outrigger/pull/77"
+    },
+    {
+      "isDraft": false,
+      "number": 47,
+      "repository": {
+        "name": "outrigger",
+        "nameWithOwner": "YeoLab/outrigger"
+      },
+      "title": "Incompatible chroms between fasta and annotation",
+      "updatedAt": "2016-11-30T17:43:16Z",
+      "url": "https://github.com/YeoLab/outrigger/pull/47"
+    },
+    {
+      "isDraft": false,
+      "number": 89,
+      "repository": {
+        "name": "gscripts",
+        "nameWithOwner": "YeoLab/gscripts"
+      },
+      "title": "Don't do oldsplice or miso",
+      "updatedAt": "2016-08-07T03:46:41Z",
+      "url": "https://github.com/YeoLab/gscripts/pull/89"
+    },
+    {
+      "isDraft": false,
+      "number": 1,
+      "repository": {
+        "name": "biom262-2016",
+        "nameWithOwner": "olgabot/biom262-2016"
+      },
+      "title": "Create test.md",
+      "updatedAt": "2016-01-08T21:37:50Z",
+      "url": "https://github.com/olgabot/biom262-2016/pull/1"
+    },
+    {
+      "isDraft": false,
+      "number": 317,
+      "repository": {
+        "name": "flotilla",
+        "nameWithOwner": "YeoLab/flotilla"
+      },
+      "title": "Update violinplots to work with seaborn 0.6",
+      "updatedAt": "2015-07-07T15:45:39Z",
+      "url": "https://github.com/YeoLab/flotilla/pull/317"
+    },
+    {
+      "isDraft": false,
+      "number": 316,
+      "repository": {
+        "name": "flotilla",
+        "nameWithOwner": "YeoLab/flotilla"
+      },
+      "title": "Fix failing splicing compute tests and get rid of various code smells",
+      "updatedAt": "2015-07-07T15:45:39Z",
+      "url": "https://github.com/YeoLab/flotilla/pull/316"
+    },
+    {
+      "isDraft": false,
+      "number": 2,
+      "repository": {
+        "name": "twerk",
+        "nameWithOwner": "olgabot/twerk"
+      },
+      "title": "Add pytest-style tests",
+      "updatedAt": "2015-05-21T18:42:32Z",
+      "url": "https://github.com/olgabot/twerk/pull/2"
+    },
+    {
+      "isDraft": false,
+      "number": 302,
+      "repository": {
+        "name": "flotilla",
+        "nameWithOwner": "YeoLab/flotilla"
+      },
+      "title": "Fix various documentation issues",
+      "updatedAt": "2015-07-07T15:45:39Z",
+      "url": "https://github.com/YeoLab/flotilla/pull/302"
+    },
+    {
+      "isDraft": false,
+      "number": 297,
+      "repository": {
+        "name": "flotilla",
+        "nameWithOwner": "YeoLab/flotilla"
+      },
+      "title": "Metadata marker",
+      "updatedAt": "2015-07-07T15:45:39Z",
+      "url": "https://github.com/YeoLab/flotilla/pull/297"
+    },
+    {
+      "isDraft": false,
+      "number": 295,
+      "repository": {
+        "name": "flotilla",
+        "nameWithOwner": "YeoLab/flotilla"
+      },
+      "title": "Metadata ignore subset columns",
+      "updatedAt": "2015-07-07T15:45:39Z",
+      "url": "https://github.com/YeoLab/flotilla/pull/295"
+    },
+    {
+      "isDraft": false,
+      "number": 282,
+      "repository": {
+        "name": "flotilla",
+        "nameWithOwner": "YeoLab/flotilla"
+      },
+      "title": "Update species data location",
+      "updatedAt": "2015-07-07T15:45:38Z",
+      "url": "https://github.com/YeoLab/flotilla/pull/282"
+    },
+    {
+      "isDraft": false,
+      "number": 274,
+      "repository": {
+        "name": "flotilla",
+        "nameWithOwner": "YeoLab/flotilla"
+      },
+      "title": "Add option to scramble a study for saving and sharing unpublished results",
+      "updatedAt": "2015-07-07T15:45:38Z",
+      "url": "https://github.com/YeoLab/flotilla/pull/274"
+    },
+    {
+      "isDraft": false,
+      "number": 258,
+      "repository": {
+        "name": "flotilla",
+        "nameWithOwner": "YeoLab/flotilla"
+      },
+      "title": "Various interactive function fixes",
+      "updatedAt": "2015-07-07T15:45:38Z",
+      "url": "https://github.com/YeoLab/flotilla/pull/258"
+    },
+    {
+      "isDraft": false,
+      "number": 1,
+      "repository": {
+        "name": "gatk",
+        "nameWithOwner": "olgabot/gatk"
+      },
+      "title": "correct sailfish index path",
+      "updatedAt": "2016-08-12T00:08:49Z",
+      "url": "https://github.com/olgabot/gatk/pull/1"
+    },
+    {
+      "isDraft": false,
+      "number": 3,
+      "repository": {
+        "name": "hcp",
+        "nameWithOwner": "YeoLab/hcp"
+      },
+      "title": "remove pycache, ipynb_checkpoints, and add these to the gitignroe",
+      "updatedAt": "2014-12-09T21:19:36Z",
+      "url": "https://github.com/YeoLab/hcp/pull/3"
+    }
+  ]
+}
