@@ -193,7 +193,7 @@ byte of the SHA-1 of the group's name), so proteins assigned the same complete H
 split holds out whole function terms: the arm is picked on regions of the choose-half
 terms, and scored only on terms it never saw.
 
-Among476 scored human proteins,53 individual HGNC group labels occur in both halves. The code hashes the complete group string; proteins sharing only one of several labels can cross halves. These original-split counts are exploratory, not a fully held-out paralog test. A corrected split must be declared before a confirmatory comparison. See `tables/251_split_group_overlap_audit.json`.
+Among 476 scored human proteins, 53 individual HGNC group labels occur in both halves. The code hashes the complete group string; proteins sharing only one of several labels can cross halves. These original-split counts are exploratory, not a fully held-out paralog test. A corrected split must be declared before a confirmatory comparison. See `tables/251_split_group_overlap_audit.json`.
 """)
 
 code(r"""
