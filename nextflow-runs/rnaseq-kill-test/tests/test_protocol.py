@@ -94,6 +94,30 @@ class ProtocolTests(unittest.TestCase):
                 with self.assertRaises(ValueError):
                     p.check_samples(write_table(manifest, changed), "mouse")
 
+    def test_duplicate_headers_are_not_silently_overwritten(self):
+        path = self.path / "duplicate.tsv"
+        path.write_text("sample\tsample\nfirst\tsecond\n")
+        with self.assertRaisesRegex(ValueError, "duplicate.*column"):
+            p.read_table(path, {"sample"})
+
+    def test_sequencing_run_tokens_are_nonempty_and_unique(self):
+        for bad_runs in ("run0;", ";run0", "run0; ", "run0; run1"):
+            with self.subTest(runs=bad_runs):
+                rows = sample_rows()
+                rows[0]["runs"] = bad_runs
+                with self.assertRaises(ValueError):
+                    p.check_samples(
+                        write_table(self.path / "samples.tsv", rows), "mouse"
+                    )
+
+    def test_distinct_sequencing_runs_allow_separator_spaces(self):
+        rows = sample_rows()
+        rows[0]["runs"] = "run0; run8"
+        self.assertEqual(
+            len(p.check_samples(write_table(self.path / "samples.tsv", rows), "mouse")),
+            8,
+        )
+
     def test_two_conditions_and_replicate_count(self):
         manifest = self.path / "samples.tsv"
         for rows in (

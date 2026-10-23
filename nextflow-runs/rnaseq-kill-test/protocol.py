@@ -36,7 +36,10 @@ def check_rules(root=ROOT):
 def read_table(path, required):
     with Path(path).open(newline="") as handle:
         reader = csv.DictReader(handle, delimiter="\t")
-        if not required <= set(reader.fieldnames or []):
+        fields = reader.fieldnames or []
+        if len(fields) != len(set(fields)):
+            raise ValueError(f"{path}: duplicate table column")
+        if not required <= set(fields):
             raise ValueError(f"{path}: required columns: {sorted(required)}")
         rows = list(reader)
     if not rows:
@@ -85,7 +88,9 @@ def check_samples(path, species):
     rows = read_table(path, columns)
     for col in ("sample", "biological_replicate"):
         unique([r[col] for r in rows], col)
-    runs = [run for row in rows for run in row["runs"].split(";")]
+    runs = [run.strip() for row in rows for run in row["runs"].split(";")]
+    if not all(runs):
+        raise ValueError("empty sequencing run")
     unique(runs, "sequencing run")
     if len({r["study"] for r in rows}) != 1:
         raise ValueError("samples must come from one experiment")
