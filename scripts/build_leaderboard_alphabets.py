@@ -18,7 +18,8 @@ Four tables, one per question a builder of a reduced-alphabet prefilter asks:
 * ``kappa.parquet``: agreement, chance and kappa per alphabet and identity bin for the Pfam
   seed pairs, with the number of pairs: notebook 230 section 2b's ``kappa_parts``, which the
   notebook prints but does not store. Recomputed here with the notebook's code.
-* ``usable_k.parquet``: the usable seed lengths k per alphabet and identity bin: notebook 230
+* ``usable_k.parquet``: seed lengths k with a matching run at corresponding alignment positions;
+  shared words at other offsets are not counted. These are not search-recall ceilings: notebook 230
   section 2c's ``usable`` table, next to notebook 274's k_min to k_max range (where a seed
   matches no more than 100 human proteins by chance, up to one chance match in Swiss-Prot).
   Also printed but not stored by the notebook, so recomputed here with its code.
@@ -73,11 +74,19 @@ CAT_LABEL = {
     "same_fold_diff_superfamily": "SCOPe: same fold, different superfamily",
     "diff_fold_same_class": "SCOPe: different fold, same class",
 }
-# SCOPe calls two domains homologs only when they share a superfamily.
-HOMOLOG_GROUP = {"Pfam seed": True} | {
-    v: k.startswith("same_family") or k.startswith("same_super")
-    for k, v in CAT_LABEL.items()
+# Same-fold/different-superfamily pairs have unresolved evolutionary relationships.
+# Different-fold pairs are benchmark negatives, not proof of non-homology.
+HOMOLOG_GROUP = {
+    "Pfam seed": True,
+    CAT_LABEL["same_family"]: True,
+    CAT_LABEL["same_superfamily_diff_family"]: True,
+    CAT_LABEL["same_fold_diff_superfamily"]: None,
+    CAT_LABEL["diff_fold_same_class"]: False,
 }
+SEED_DEFINITION = (
+    "Matching run at corresponding alignment positions; other offsets are not counted"
+)
+
 MODE_LABEL = {
     "low_half": "20% identity or less, grouped on one half of the positions, measured on the other",
     "all": "all identities, whole pairs",
@@ -328,6 +337,8 @@ def build_kappa_and_k() -> tuple[pl.DataFrame, pl.DataFrame, pl.DataFrame]:
         .select("alphabet", "identity_bin", "k", "share_reached", "n_pairs")
         .sort("alphabet", "identity_bin", "k")
     )
+    usable = usable.with_columns(pl.lit(SEED_DEFINITION).alias("seed_definition"))
+    shares = shares.with_columns(pl.lit(SEED_DEFINITION).alias("seed_definition"))
     return kappa, usable, shares
 
 
