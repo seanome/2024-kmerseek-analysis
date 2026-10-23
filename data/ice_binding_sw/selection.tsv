@@ -1,0 +1,4 @@
+alphabet	grid_order	setting	matrix	gap_open	gap_extend	mean_cross_origin_average_precision	mean_within_origin_recall_fpr_0.01	n_dev_queries
+dayhoff6	11	dayhoff6_B45_g6e1	BLOSUM45	6	1	0.04418011003737241	0.8461538461538461	14
+hp_lehninger2	7	hp_lehninger2_B45_g4e1	BLOSUM45	4	1	0.07163464684318784	0.7692307692307693	14
+protein20	0	protein20_B62_g11e1	BLOSUM62	11	1	0.08012741774887637	0.9230769230769231	14
