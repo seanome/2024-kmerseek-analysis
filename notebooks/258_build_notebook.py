@@ -67,6 +67,7 @@ pl.Config.set_fmt_str_lengths(70)
 feats, stats = f.feature_table()
 print(f"human proteins with an identical reviewed UniProt entry: {stats['n_matched']:_} of {stats['n_gencode']:_}")
 print(feats.group_by("cls").agg(pl.len().alias("intervals"), pl.col("gene").n_unique().alias("proteins")).sort("cls"))
+print("Region inputs:", f.regions_input())
 reg = f.load_regions()
 print(f"\ntop-10 matches: {reg.height:_} ({reg['query_name'].n_unique()} queries, "
       f"{reg.select('alphabet', 'k').n_unique()} alphabet-ksize pairs where anything was hit)")
@@ -171,6 +172,10 @@ for a in ["gbmr7", "polarity4"]:
     print(x.select("gene", pl.col("region_start").alias("bhf_from"), "n_cells", "bhf_residues", "human_residues",
                    "bhf_encoded", "human_encoded", "same_class", "identical", "length").head(6))
     print()
+
+from bhf_review_figures import membrane_alignment_figure
+
+membrane_alignment_figure(mt, u.FIG / "258_bhf_human_membrane_encoded_alignments_gencode_v49")
 """),
     md(r"""
 **Membrane.** The matches come from BHF's C-terminal third, most of them covering residue 223

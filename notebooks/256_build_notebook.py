@@ -27,14 +27,14 @@ Notebook 241 searched BHF (*Botryllus* histocompatibility factor, 252 aa) agains
 one k-mer size). BHF hit something at 106 pairs. Every pair gives each human protein a
 score under 11 ranking metrics (E-value, bit score, mean IDF, tf-idf, enrichment, Poisson
 score and p-value, shared k-mers, containment, and the two protein-level scores). Only the
-E-value has a chance scale, and it exists at 61 of the 106 alphabet-ksize pairs. For the other metrics a
+E-value has a model-based chance scale, and it exists at 61 of the 106 alphabet-ksize pairs. For the other metrics a
 high score says nothing on its own.
 
-This notebook gives every metric a chance scale. BHF was searched again together with 300
+This notebook compares every metric with dipeptide-shuffled controls. BHF was searched again together with 300
 shuffled copies of itself. Each copy has BHF's length, its amino-acid counts, and its count
 of every adjacent residue pair (a dipeptide shuffle, Altschul and Erickson 1985). A copy
-matches BHF at a median of 7.1% of positions. It has BHF's make-up and no real match in
-the human proteome. Whatever a copy finds, BHF can find by chance.
+matches BHF at a median of 7.1% of positions. It preserves these composition features while changing the sequence.
+It controls for these features, but does not preserve every source of low complexity.
 
 Search: `256_bhf_dipeptide_shuffle_null.py`, same indexes and flags as 241 and 242, all 152
 alphabet-ksize pairs. A human protein's score is that of its best region. Every comparison uses the alphabet-ksize pairs
@@ -104,8 +104,9 @@ comes back at the other alphabet-ksize pairs.
 ## 2. BHF's best score against its copies' best scores
 
 For each metric and alphabet-ksize pair: the share of copies whose best human hit scores at least as well
-as BHF's best hit, (1 + copies at least as good) / 301. If BHF's best hit is chance, this
-share is spread evenly between 0 and 1, and about 5% of alphabet-ksize pairs fall at or below 0.05.
+as BHF's best hit, (1 + copies at least as good) / 301. The 0.05 cutoff is a nominal reference, not an exact expected fraction here.
+Ties make these values discrete, and the pairs were selected because BHF had a hit.
+The pairs also share sequences, so their counts are not independent tests.
 """),
     code(r"""
 bp = u.best_score_p(df)
@@ -116,8 +117,8 @@ print(f"\nall metrics: {n_hit} of {n_all} (metric, alphabet-ksize pair) cells at
 u.fig_best_score_p(
     bp, u.FIG / "256_best_score_bhf_vs_copies.png",
     hypothesis="If BHF has a real match in the human proteome, its best score beats the best score of most shuffled copies on many alphabet-ksize pairs.",
-    conclusion=(f"E-value: {bp_s.filter(pl.col('metric') == 'E-value')['n_pairs_p_le_0_05'][0]} of 61 alphabet-ksize pairs, as chance predicts (3.1). "
-                f"Metrics that count shared k-mers: up to {bp_s['n_pairs_p_le_0_05'].max()} of 106, about 5x chance. "
+    conclusion=(f"E-value: {bp_s.filter(pl.col('metric') == 'E-value')['n_pairs_p_le_0_05'][0]} of 61 alphabet-ksize pairs, versus a nominal 5% reference of 3.1. "
+                f"Metrics that count shared k-mers: up to {bp_s['n_pairs_p_le_0_05'].max()} of 106, about 5x the nominal reference. "
                 "Pairs that share an alphabet see the same sequences, so they are not independent."),
 )
 e = u.full_grid(df).filter(pl.col("metric") == "E-value").group_by("query_name").agg(pl.col("top_value").min().alias("best_e"))
@@ -128,13 +129,13 @@ print(f"\nbest E-value over all 61 alphabet-ksize pairs: BHF {b:.2f}; median cop
       f"copies with a best E at least as small as BHF's: {(c <= b).sum()} of {c.len()}")
 """),
     md(r"""
-The E-value agrees with chance. BHF beats 95% of its copies at 3 of 61 alphabet-ksize pairs, and 3.1 are
-expected. Over all 61 alphabet-ksize pairs BHF's best E-value is 0.61; the median copy's is 0.39, 291 of 300
+BHF beats 95% of its copies by E-value at 3 of 61 alphabet-ksize pairs, versus a nominal 5% reference of 3.1.
+This does not establish equal null behavior: ranks have ties, arms were selected for BHF hits, and arms share sequences. Over all 61 alphabet-ksize pairs BHF's best E-value is 0.61; the median copy's is 0.39, 291 of 300
 copies reach E < 1 at some alphabet-ksize pair, and 229 have a best E-value at least as small as BHF's.
 
-The metrics that count shared k-mers do not agree with chance. tf-idf puts BHF above 95% of
+The metrics that count shared k-mers exceed the nominal reference more often. tf-idf puts BHF above 95% of
 its copies at 27 of 106 alphabet-ksize pairs, containment 25, shared k-mers 23 and mean IDF 19, against 5.3
-expected. Enrichment (6) is at chance. Section 3 shows where on BHF these wins come from.
+under that reference. Enrichment gives 6. Section 3 shows where on BHF these wins come from.
 """),
     md(r"""
 ## 3. Where on BHF the wins come from
@@ -201,6 +202,14 @@ sticky = u.sticky_top_hits(df)
 print(u.sticky_summary(sticky))
 print("\nproteins most often #1 for the copies (share of copy x alphabet-ksize pair cells), with the number of alphabet-ksize pairs where each is #1 for BHF:")
 print(u.top_gene_recurrence(df, 5).filter(pl.col("metric").is_in(["E-value", "mean IDF", "shared k-mers", "containment", "protein Poisson p-value"])))
+from bhf_review_figures import recurrence_figure
+
+recurrence = u.top_gene_recurrence(df, 5).filter(
+    pl.col("metric").is_in(["E-value", "mean IDF", "shared k-mers", "containment", "protein Poisson p-value"])
+)
+print("Table plotted below (top five copy proteins per selected metric):")
+print(recurrence)
+recurrence_figure(recurrence, u.bhf_arms(df), u.FIG / "256_top_protein_recurrence_bhf_copies_gencode_v49")
 """),
     md(r"""
 Under containment and protein enrichment, BHF's #1 protein is also in the top 10 of at least
@@ -209,29 +218,22 @@ is the #1 hit in 27.4% of all copy × alphabet-ksize pair cells under containmen
 alphabet-ksize pairs. These metrics favour very long proteins, so for them BHF's #1 hit is what any sequence
 of BHF's make-up gets. Under the region-level metrics (E-value, mean IDF, tf-idf, shared
 k-mers) no protein is #1 for more than 0.9% of the copy × alphabet-ksize pair cells.
+
 """),
     md(r"""
 ## Summary
 
-By E-value, BHF's kmerseek hits do no better than shuffled copies of BHF (3 of 61 settings beat 95% of copies; 3.1 expected by chance). Other scores beat the copies more often, but mostly through one lysine-rich low-complexity stretch, BHF 63-105:
+How BHF's result changes with the ranking metric, compared with the shuffled controls:
 
-```text
-BHF 63-105  ESQEHLDASTKKTKKKAKKDKRKNKPPKKDSETSKPAQTTISR   (15 of 43 residues K or R)
-```
-
-A setting here is one alphabet at one k-mer size, with the search flags of notebook 241.
-
-How BHF's result changes with the ranking metric, now that every metric has a chance scale:
-
-- **E-value** (61 alphabet-ksize pairs): chance. BHF beats 95% of its copies at 3 alphabet-ksize pairs, 3.1 expected. Its
+- **E-value** (61 alphabet-ksize pairs): BHF beats 95% of its copies at 3 alphabet-ksize pairs, versus a nominal 5% reference of 3.1. Its
   best E-value, 0.61, is matched or beaten by 229 of 300 copies.
 - **tf-idf, containment, shared k-mers, mean IDF** (106 alphabet-ksize pairs): BHF beats 95% of its copies at
-  19 to 27 alphabet-ksize pairs, 4 to 5 times chance. Two thirds of these wins come from BHF's lysine-rich
+  19 to 27 alphabet-ksize pairs, 4 to 5 times the nominal 5% reference. Two thirds of these wins come from BHF's lysine-rich
   stretch (63-105), matched to other polar stretches, such as a serine run in NFE2L1 at the
   two-letter alphabets. A dipeptide shuffle breaks up that stretch, so this is a
-  low-complexity match, not evidence of homology.
+  match concentrated in low-complexity sequence. These results alone do not establish homology.
 - **Poisson score and p-value, protein enrichment, protein Poisson p-value**: 11 to 13 alphabet-ksize pairs,
-  about twice chance. **Enrichment**: 6, chance.
+  about twice the nominal reference. **Enrichment**: 6.
 - **Containment, protein enrichment and the protein Poisson p-value** reward long proteins:
   TTN and MUC16 come to the top for BHF and its copies alike.
 - The 2024 talk's hits return for BHF and not for its copies under every metric. They were
@@ -239,7 +241,7 @@ How BHF's result changes with the ranking metric, now that every metric has a ch
   that they are homologs.
 
 Next: a control that keeps BHF's low-complexity stretches in one piece and shuffles the rest.
-If BHF still beats those copies, the match is more than a lysine block.
+That control tests whether the advantage persists when the lysine-rich stretch is preserved.
 """),
 ]
 
