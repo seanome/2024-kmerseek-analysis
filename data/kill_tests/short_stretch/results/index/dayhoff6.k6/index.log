@@ -1,0 +1,67 @@
+kmerseek 0.3.1
+0a229700bc9dbf3d04f9e4f141024ff33b5c4e7e
+fe83624f338b7f5d74e36ff026b54f4b725009adcf250b386f89917b550cc7ff  /scratch/users/olgabot/apptainer-cache/docker.io-olgabot-kmerseek-2026-10-18-nb344-0a22970.img
+07132c35b9de5cafacf846d3de420229f5612cf7877ee5c1e4d251cad36ff063  /scratch/users/olgabot/2024-kmerseek-analysis-nb353/data/kill_tests/short_stretch/records.fasta
+kmerseek 0.3.1
+Indexing FASTA file: /scratch/users/olgabot/2024-kmerseek-analysis-nb353/data/kill_tests/short_stretch/records.fasta
+Output database: /scratch/users/olgabot/nb353/index/dayhoff6.k6/collection.db
+
+-------
+K-mer size: 6
+Scaled: 1
+Alphabet: dayhoff6
+Progress interval: 10000
+Remove low-complexity k-mers: false
+-------
+
+Processing FASTA file...
+Reading FASTA file with automatic compression detection and parallel processing...
+Processed 10000 sequences...
+Done reading FASTA (11376 sequences total). Building inverted index...
+[save] Merging 1 posting runs into 1024 inverted index shards...
+[save] Inverted index written: 24820 unique k-mers in 0.0s
+[save] Skipped 215 sequences whose signature key was already indexed
+Optimizing database for read operations...
+[save] K-mer frequency histogram: 524925 total k-mers found, 24820 unique (mean 21.15, median 7.0, mode 1 sequences per k-mer)
+[save]              1 occurrences:       3367 k-mers  ######################
+[save]            2-3 occurrences:       3143 k-mers  #####################
+[save]            4-7 occurrences:       5947 k-mers  ########################################
+[save]           8-15 occurrences:       4510 k-mers  ##############################
+[save]          16-31 occurrences:       3495 k-mers  #######################
+[save]          32-63 occurrences:       2552 k-mers  #################
+[save]         64-127 occurrences:       1234 k-mers  ########
+[save]        128-255 occurrences:        442 k-mers  ##
+[save]        256-511 occurrences:        109 k-mers  #
+[save]       512-1023 occurrences:         11 k-mers  #
+[save]      1024-2047 occurrences:         10 k-mers  #
+[save] 10 most common k-mers (encoded k-mer: occurrences):
+[save]   bbbbbb: 1735
+[save]   ebbbbb: 1238
+[save]   bbbbbe: 1199
+[save]   bbbbeb: 1164
+[save]   cbbbbb: 1158
+[save]   bbbbbc: 1157
+[save]   bbebbb: 1147
+[save]   bbbebb: 1120
+[save]   bebbbb: 1089
+[save]   bcbbbb: 1027
+[save] 10 least common k-mers (encoded k-mer: occurrences):
+[save]   dabbdd: 1
+[save]   cbdfca: 1
+[save]   fbacac: 1
+[save]   accccd: 1
+[save]   dbecfa: 1
+[save]   fbaecb: 1
+[save]   fcbdad: 1
+[save]   edaecf: 1
+[save]   adedee: 1
+[save]   ccacbf: 1
+[save]   (3367 k-mers occur 1x; showing an arbitrary sample)
+[save] Flushing RocksDB...
+[save] Index saved in 0.0s
+Fitting r_database and K on 200 database sequences (mismatch penalty 2, give-up margin 8); the fit stops where their counts rise above the same sequences shuffled-dipeptide...
+  Closed form at the database's own match probability 0.237: K 0.6446 (independent positions, no seed, one lambda for every pair)
+  fitted now: 200 database queries, 1275789 regions; r_database 0.900 per nat of lambda_pair S (1 = closed form holds; closed form 1.391 at the database's match probability 0.237), K 0.1032, fit on x 13.0..17.0, relatives from x 17.0, rms 0.110; shuffled-dipeptide reference slope 0.891 over the same bins
+  Stored in the index for --extend-mismatch-penalty 2 --extend-xdrop 8
+Indexing completed successfully!
+Database saved to: /scratch/users/olgabot/nb353/index/dayhoff6.k6/collection.db

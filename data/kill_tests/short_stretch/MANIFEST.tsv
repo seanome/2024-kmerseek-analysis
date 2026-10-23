@@ -1,0 +1,7 @@
+file	source	download_or_build_date	description	sha256	sha256_uncompressed
+raw/elm_instances.tsv.gz	http://elm.eu.org/instances.tsv?q=*	2026-09-24 19:56:36.107811	ELM instance export format 1.4	9965f61537960ba1ef188da7e514df352c928ac262928210a3f9bf11495ae7d7	d40168eb3d9714bf87c1400f2a2a71f6a0fa3a9d27be593c4d1550684e06e18b
+raw/elm_classes.tsv.gz	http://elm.eu.org/elms/elms_index.tsv	2026-09-24 07:44:21.159577	ELM class export format 1.4	d70e49702f7e742cd75f9b73618facdd6792e8d52d5ae49fb298386b784d6fc3	aef1c5a26dde5d2d9dab310163b11c11a0694517576ac898a55b07dfbb193f2a
+raw/elm_proteins.fasta.gz	https://rest.uniprot.org/uniprotkb/accessions?accessions=...&format=fasta	2026-09-24	UniProt sequences of every ELM true-positive protein (scripts/prep_elm_inputs.py, branch olgabot/elm-motif-transfer)	73461d813fb7f8ae2cdf7936449f2f9e452870f9cf18af21bcb2c91c488ba85d	bdde87e2a038c509de02ec6debc97470d566d73214da428ecee3fdfa3754d87d
+raw/elife-68068-fig1-data1-v3.xlsx	https://cdn.elifesciences.org/articles/68068/elife-68068-fig1-data1-v3.xlsx	2026-10-20	Sanborn et al. 2021 eLife 10:e68068, doi:10.7554/eLife.68068, Figure 1 source data 1	089a060cfece0ced072c1866f00e05405feac05a3168b66f09e6f72fbcf62c1e	
+records.tsv	scripts/353_freeze_short_stretch_data.py	2026-10-20	evidence collection	d9248d8ea0beb2f077a5069293bac14f823751233386b34b27691856f8adab11	
+records.fasta	scripts/353_freeze_short_stretch_data.py	2026-10-20	record sequences	07132c35b9de5cafacf846d3de420229f5612cf7877ee5c1e4d251cad36ff063	
