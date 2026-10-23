@@ -1,6 +1,6 @@
 #!/bin/bash
 #SBATCH --job-name=oyster-full-splash-corrected
-#SBATCH --partition=normal,hns
+#SBATCH --partition=normal,hns,bigmem
 #SBATCH --cpus-per-task=32
 #SBATCH --mem=256G
 #SBATCH --time=12:00:00

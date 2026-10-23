@@ -1,0 +1,193 @@
+{
+  "completed_batches": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5
+  ],
+  "total_batches": 22,
+  "extended_records_searched": 99439,
+  "reference_runs": 8,
+  "reference_studies": 8,
+  "encodings": {
+    "dna": {
+      "match_rows_10": 13940,
+      "queries_with_overlap_10": 9317,
+      "empty_sketches_10": 168,
+      "match_rows_100": 2307,
+      "queries_with_overlap_100": 2192,
+      "empty_sketches_100": 41046
+    },
+    "protein": {
+      "match_rows_10": 493267,
+      "queries_with_overlap_10": 97207,
+      "empty_sketches_10": 0,
+      "match_rows_100": 132324,
+      "queries_with_overlap_100": 48098,
+      "empty_sketches_100": 16525
+    },
+    "dayhoff": {
+      "match_rows_10": 547309,
+      "queries_with_overlap_10": 95961,
+      "empty_sketches_10": 0,
+      "match_rows_100": 162703,
+      "queries_with_overlap_100": 46371,
+      "empty_sketches_100": 23238
+    },
+    "hp": {
+      "match_rows_10": 84083,
+      "queries_with_overlap_10": 25622,
+      "empty_sketches_10": 52201,
+      "match_rows_100": 25750,
+      "queries_with_overlap_100": 9204,
+      "empty_sketches_100": 62907
+    }
+  },
+  "lost_examples": [
+    {
+      "query_id": "splash:all:0:6949:AAGACACAATGTCTAGGAAGCTATGGCCTGA",
+      "run": "SRR18575420",
+      "encoding": "dna",
+      "containment_scaled10": "0.3333333333333333",
+      "shared_hashes_scaled10": "2"
+    },
+    {
+      "query_id": "splash:all:0:6950:AAGACACAATGTCTAGGAAGCTATGGCCTGA",
+      "run": "SRR18575420",
+      "encoding": "dna",
+      "containment_scaled10": "0.25",
+      "shared_hashes_scaled10": "2"
+    },
+    {
+      "query_id": "splash:all:0:10424:AAGAAATTGAGATATTCCATTTGTGCCAAGG",
+      "run": "SRR18575420",
+      "encoding": "dna",
+      "containment_scaled10": "0.1111111111111111",
+      "shared_hashes_scaled10": "1"
+    },
+    {
+      "query_id": "splash:all:0:10426:AAGAAATTGGAGACAGCCTCCAAAAAGACAA",
+      "run": "SRR18575420",
+      "encoding": "dna",
+      "containment_scaled10": "0.1111111111111111",
+      "shared_hashes_scaled10": "1"
+    },
+    {
+      "query_id": "splash:all:0:15:AAAAAAAGGGGAAGAAGAAGGTAGCAGCAGC",
+      "run": "SRR18575420",
+      "encoding": "dna",
+      "containment_scaled10": "0.25",
+      "shared_hashes_scaled10": "1"
+    },
+    {
+      "query_id": "splash:all:0:6971:AAGACAGTGATGAAGATGATGATGACGACGA",
+      "run": "DRR350416",
+      "encoding": "dna",
+      "containment_scaled10": "0.6666666666666666",
+      "shared_hashes_scaled10": "6"
+    },
+    {
+      "query_id": "splash:all:0:10437:AAGAACAGAACAACAAGCCACGGACGAGTGG",
+      "run": "SRR18575420",
+      "encoding": "dna",
+      "containment_scaled10": "0.4",
+      "shared_hashes_scaled10": "4"
+    },
+    {
+      "query_id": "splash:all:0:6986:AAGACATGCAAGTAGCCGAGGCGGGGCAGCC",
+      "run": "SRR18575420",
+      "encoding": "dna",
+      "containment_scaled10": "0.4",
+      "shared_hashes_scaled10": "2"
+    },
+    {
+      "query_id": "splash:all:0:10446:AAGAACCTTCCGTCACTTGGCTGTAGATATC",
+      "run": "SRR18575420",
+      "encoding": "dna",
+      "containment_scaled10": "0.1",
+      "shared_hashes_scaled10": "1"
+    },
+    {
+      "query_id": "splash:all:0:55:AAAAAACAGTTGCATGTTGTTAGGGAATTTA",
+      "run": "SRR18575420",
+      "encoding": "dna",
+      "containment_scaled10": "0.42857142857142855",
+      "shared_hashes_scaled10": "3"
+    },
+    {
+      "query_id": "splash:all:0:6995:AAGACCAAATGAAGGGTGGATTCCTTCTGAA",
+      "run": "SRR18575420",
+      "encoding": "dna",
+      "containment_scaled10": "0.16666666666666666",
+      "shared_hashes_scaled10": "1"
+    },
+    {
+      "query_id": "splash:all:0:6996:AAGACCAAATGGAGGGTGGATTCCTTCTGAA",
+      "run": "SRR18575420",
+      "encoding": "dna",
+      "containment_scaled10": "0.16666666666666666",
+      "shared_hashes_scaled10": "1"
+    },
+    {
+      "query_id": "splash:all:0:6996:AAGACCAAATGGAGGGTGGATTCCTTCTGAA",
+      "run": "SRR12227931",
+      "encoding": "dna",
+      "containment_scaled10": "0.16666666666666666",
+      "shared_hashes_scaled10": "1"
+    },
+    {
+      "query_id": "splash:all:0:10451:AAGAACGTGTCCGTAAAGGAAATCCGTCGTG",
+      "run": "SRR18575420",
+      "encoding": "dna",
+      "containment_scaled10": "0.125",
+      "shared_hashes_scaled10": "1"
+    },
+    {
+      "query_id": "splash:all:0:10456:AAGAACTTCACCGTCACAGAGGAGGCGTGGT",
+      "run": "SRR18575420",
+      "encoding": "dna",
+      "containment_scaled10": "0.21428571428571427",
+      "shared_hashes_scaled10": "3"
+    },
+    {
+      "query_id": "splash:all:0:8729:AAATAATGGACGAAGCAAGAAGGGGCGTGGT",
+      "run": "SRR7640806",
+      "encoding": "dna",
+      "containment_scaled10": "0.2",
+      "shared_hashes_scaled10": "1"
+    },
+    {
+      "query_id": "splash:all:0:10461:AAGAAGAAGGCCTACACCAAGTATTCCAAGA",
+      "run": "SRR18575420",
+      "encoding": "dna",
+      "containment_scaled10": "0.5",
+      "shared_hashes_scaled10": "4"
+    },
+    {
+      "query_id": "splash:all:0:10465:AAGAAGACCAGTCTGCGTTACACCATTGACT",
+      "run": "SRR18575420",
+      "encoding": "dna",
+      "containment_scaled10": "0.09090909090909091",
+      "shared_hashes_scaled10": "1"
+    },
+    {
+      "query_id": "splash:all:0:10468:AAGAAGAGTGCTTAAAAAGAATCCATTAAAG",
+      "run": "SRR18575420",
+      "encoding": "dna",
+      "containment_scaled10": "0.08333333333333333",
+      "shared_hashes_scaled10": "1"
+    },
+    {
+      "query_id": "splash:all:0:8742:AAATACAGGCCAAAAATCTGTCTTGATCAAG",
+      "run": "SRR18575420",
+      "encoding": "dna",
+      "containment_scaled10": "0.3",
+      "shared_hashes_scaled10": "3"
+    }
+  ],
+  "scope": "Eight complete public runs; untrimmed pilot. Query coverage is partial; full trimmed archive is separate.",
+  "rule": "Any shared hash; candidate occurrence, not validated function.",
+  "audit_status": "Worker-validated outputs; independent full-pair audit follows the active paired-scale validation allocation 49215860."
+}
