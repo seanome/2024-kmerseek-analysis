@@ -112,3 +112,13 @@ confirm 2,200 cached tasks, including 946 hmmsearch tasks and pfamOverlap.
 Alignment preparation was submitted as 49179904 and was queued at the 05:02 check.
 The resolved cluster configuration requests 128 GiB/36 h with the same node-local
 scratch and container binding. The full alignment result remains incomplete.
+
+
+Stopped at Olga's request, 2026-10-23
+------------------------------------
+
+Olga rejected this experiment after seeing its workflow diagram: “No, this is not
+the experiment I want to do stop it”. Driver 49179827 and preparation job 49179904
+were sent scancel immediately. This is a rejection of the experimental question,
+not a request to repair and restart this same design. Preserve existing outputs;
+do not restart this experiment while the intended biological question is unresolved.

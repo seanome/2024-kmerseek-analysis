@@ -38,3 +38,8 @@ Added 2026-10-22 after the full run's alignInput was killed at 16, 32 and 48 GB.
 - Size from the full run, not only its one-file check. That full task's Slurm peak
   was 93.28 GiB and completed 11.12% of occurrence bytes in 2h25m37s. The relaunch
   floor is 128 GiB/36 h. The earlier one-file 28.07 GiB check was not a full-run peak.
+
+- Added 2026-10-23 after the same experiment was stopped twice: when Olga cancels
+  because the experiment asks the wrong question, establish the intended biological
+  question before treating a generic “fix and resume” request as approval of this
+  design. Showing the workflow after relaunch was too late. This design is stopped.
