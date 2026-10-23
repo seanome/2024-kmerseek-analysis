@@ -29,7 +29,8 @@ can reuse the completed Pfam mapping and counting tasks. The same launch directo
 and Nextflow session must be retained.
 
 `make run` regenerates `run/measured/resources.config` and its evidence table from
-retained full-run and pilot traces, then resumes with Nextflow 25.04.7. The initial repaired run requested 96 GB and 24 hours. The 2026-10-23 relaunch
+retained full-run and pilot traces, then resumes with Nextflow 25.04.7. The initial
+repaired run requested 96 GB and 24 hours. The 2026-10-23 relaunch
 requests 128 GB and 36 hours, based on the full task's memory reading and progress
 described below.
 The full input still needs runtime and memory measurement.
@@ -100,3 +101,14 @@ count, significant-anchor, top-occurrence and Pfam-mapping tables. These can be
 reviewed while the full alignment preparation runs. A shorter diagnostic alignment
 could provide earlier examples by reducing coverage; it would not replace the
 registered full result.
+
+
+Renewed launch, 2026-10-23
+-------------------------
+
+Driver 49179827 started at about 05:01 PDT. It retained session UUID
+0261f444-6cf6-44b0-9cdd-24280e43360c. The new log and October 23 trace independently
+confirm 2,200 cached tasks, including 946 hmmsearch tasks and pfamOverlap.
+Alignment preparation was submitted as 49179904 and was queued at the 05:02 check.
+The resolved cluster configuration requests 128 GiB/36 h with the same node-local
+scratch and container binding. The full alignment result remains incomplete.
