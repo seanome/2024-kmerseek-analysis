@@ -236,7 +236,7 @@ def bootstrap_mean_ci(
 def cluster_mean_ci(df, value, cluster, n_boot=500, seed=0):
     """Pair-weighted mean, resampling whole families or query domains."""
     totals = (
-        df.filter(pl.col(value).is_not_null())
+        df.filter(pl.col(value).is_finite().fill_null(False))
         .group_by(cluster)
         .agg(pl.col(value).sum().alias("total"), pl.col(value).count().alias("count"))
         .sort(cluster)

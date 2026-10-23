@@ -24,3 +24,8 @@ def test_offset_seed_is_absent_from_aligned_runs():
     assert set(a[i : i + 2] for i in range(3)) & set(
         b[i : i + 2] for i in range(3)
     ) == {"HH", "PP"}
+
+
+def test_missing_values_do_not_poison_cluster_statistics():
+    d = pl.DataFrame({"family": ["a", "a", "b"], "value": [0.0, float("nan"), 1.0]})
+    assert hc.cluster_mean_ci(d, "value", "family") == (0.5, 0.0, 1.0)
