@@ -37,3 +37,23 @@
   not independent proteins. Compactors support is shown with its source field name.
 - Storage benchmark 49212645 remains in progress; merged reference sizes and new
   RocksDB correctness are not yet claimed as measured results.
+
+## Reconnected actual execution
+
+- manysearch 49242047 completed 12 settings: all query/target pairs and counts
+  agreed with the preserved multisearch outputs. This is engine agreement, not
+  independent biological replication.
+- Swiss-Prot: each of 300 sampled pairs was checked by intersecting stored
+  query and reference hash sets. Every output row's query containment was checked.
+- Independent gzip line counts equal the three retained-output counts; every
+  compressed export matches its SHA256. Candidate ID mapping covers every
+  retained reference record.
+- First external run is complete-read input, not a read prefix; raw ENA bytes,
+  MD5, paired IDs, pair/base totals and trimmed pairs passed. HP scaled-100
+  returned zero rows; the exporter handles a successful empty native CSV.
+- Download regression tests cover corrupt full-length partial preservation,
+  valid full-length partial reuse, and quarantine collisions without overwriting.
+- External occurrence biological interpretation and control-based false-positive
+  rates remain unmeasured. Full-depth discovery has no completed result yet.
+
+Final local checks: three download-recovery regressions and two anchor-selection tests passed. Black checked nine changed Python files; Python compileall, Bash syntax, Node syntax and git diff whitespace checks passed. Independent imported-CSV row counts and SHA-256 checks passed for 22 external settings and all three Swiss-Prot exports. Published app inspected in the browser. No direct SRA sequence confirmation or control-based false-positive calibration has been completed.

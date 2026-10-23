@@ -60,6 +60,31 @@ def recover(row, root, validator):
             final = out / f"{run}_{mate}.fastq.gz"
             if not final.exists():
                 partial = final.with_suffix(".gz.partial")
+                # Preserve a complete but corrupt partial before downloading afresh.
+                if partial.exists() and partial.stat().st_size == size:
+                    actual_md5 = digest(partial, "md5")
+                    if actual_md5 != md5:
+                        quarantine = partial.with_name(
+                            partial.name + ".invalid-md5-" + actual_md5[:12]
+                        )
+                        if quarantine.exists():
+                            raise ValueError(
+                                "Quarantine destination already exists; preserved"
+                            )
+                        partial.rename(quarantine)
+                        quarantine.with_name(quarantine.name + ".json").write_text(
+                            json.dumps(
+                                {
+                                    "reason": "Full-sized partial failed unchanged ENA MD5",
+                                    "expected_md5": md5,
+                                    "actual_md5": actual_md5,
+                                    "bytes": size,
+                                    "preserved_path": str(quarantine),
+                                },
+                                indent=2,
+                            )
+                            + "\n"
+                        )
                 # curl resumes only its own incomplete file; it never writes final.
                 if not partial.exists() or partial.stat().st_size < size:
                     transfer(

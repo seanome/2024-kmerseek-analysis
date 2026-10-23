@@ -1,6 +1,6 @@
 {
-  "checked_at": "2026-10-23T17:14:49.429656+00:00",
-  "validated_raw_runs": 41,
+  "checked_at": "2026-10-23T22:09:29.395734+00:00",
+  "validated_raw_runs": 50,
   "runs": [
     "SRR32233926",
     "SRR32233927",
@@ -22,27 +22,36 @@
     "SRR32233945",
     "SRR32233946",
     "SRR32233948",
+    "SRR32233949",
     "SRR32233950",
     "SRR32233951",
     "SRR32233952",
     "SRR32233953",
     "SRR32233954",
     "SRR32233956",
+    "SRR32233957",
     "SRR32233958",
     "SRR32233959",
     "SRR32233960",
     "SRR32233961",
     "SRR32233962",
+    "SRR32233965",
     "SRR32233966",
     "SRR32233967",
     "SRR32233968",
     "SRR32233969",
+    "SRR32233970",
+    "SRR32233973",
     "SRR32233974",
+    "SRR32233975",
     "SRR32233976",
     "SRR32233977",
+    "SRR32233978",
+    "SRR32233981",
     "SRR32233982",
     "SRR32233984",
-    "SRR32233985"
+    "SRR32233985",
+    "SRR32233989"
   ],
   "total_runs": 64,
   "trimmed_complete": false,
@@ -59,9 +68,9 @@
     {
       "id": "49188713_1",
       "name": "botryllus-PEC-full-download",
-      "state": "RUNNING",
-      "elapsed": "03:35:38",
-      "exit_code": "0:0"
+      "state": "FAILED",
+      "elapsed": "05:50:03",
+      "exit_code": "1:0"
     },
     {
       "id": "49188713_2",
@@ -87,9 +96,9 @@
     {
       "id": "49188713_5",
       "name": "botryllus-PEC-full-download",
-      "state": "RUNNING",
-      "elapsed": "01:46:26",
-      "exit_code": "0:0"
+      "state": "FAILED",
+      "elapsed": "02:51:07",
+      "exit_code": "1:0"
     },
     {
       "id": "49188713_6",
@@ -136,15 +145,15 @@
     {
       "id": "49205641_6",
       "name": "botryllus-PEC-download-recovery",
-      "state": "RUNNING",
-      "elapsed": "01:05:10",
-      "exit_code": "0:0"
+      "state": "FAILED",
+      "elapsed": "03:48:19",
+      "exit_code": "1:0"
     },
     {
       "id": "49205641_7",
       "name": "botryllus-PEC-download-recovery",
-      "state": "RUNNING",
-      "elapsed": "01:05:10",
+      "state": "COMPLETED",
+      "elapsed": "02:10:36",
       "exit_code": "0:0"
     },
     {
@@ -176,26 +185,103 @@
       "exit_code": "0:0"
     },
     {
-      "id": "49211401_[4]",
+      "id": "49211401_4",
       "name": "botryllus-PEC-download-recovery",
-      "state": "PENDING",
-      "elapsed": "00:00:00",
+      "state": "RUNNING",
+      "elapsed": "04:54:19",
       "exit_code": "0:0"
     },
     {
       "id": "49211406",
       "name": "botryllus-PEC-nfcore-trim",
-      "state": "PENDING",
+      "state": "CANCELLED",
       "elapsed": "00:00:00",
       "exit_code": "0:0"
     },
     {
       "id": "49211416",
       "name": "botryllus-full-SPLASH-all-anchors",
+      "state": "CANCELLED",
+      "elapsed": "00:00:00",
+      "exit_code": "0:0"
+    },
+    {
+      "id": "49212645",
+      "name": "botryllus-storage-Branchwater",
+      "state": "COMPLETED",
+      "elapsed": "00:43:40",
+      "exit_code": "0:0"
+    },
+    {
+      "id": "49215765",
+      "name": "botryllus-manysearch-comparison",
+      "state": "FAILED",
+      "elapsed": "00:00:20",
+      "exit_code": "1:0"
+    },
+    {
+      "id": "49241354",
+      "name": "botryllus-manysearch-comparison",
+      "state": "CANCELLED by 363520",
+      "elapsed": "00:00:00",
+      "exit_code": "0:0"
+    },
+    {
+      "id": "49241657",
+      "name": "botryllus-external-SRA-manysearch",
+      "state": "CANCELLED by 363520",
+      "elapsed": "00:00:00",
+      "exit_code": "0:0"
+    },
+    {
+      "id": "49242047",
+      "name": "botryllus-manysearch-attended",
+      "state": "COMPLETED",
+      "elapsed": "00:03:08",
+      "exit_code": "0:0"
+    },
+    {
+      "id": "49242789",
+      "name": "botryllus-external-SRA-attended",
+      "state": "RUNNING",
+      "elapsed": "00:21:19",
+      "exit_code": "0:0"
+    },
+    {
+      "id": "49244019_1",
+      "name": "botryllus-PEC-download-recovery",
+      "state": "RUNNING",
+      "elapsed": "00:05:42",
+      "exit_code": "0:0"
+    },
+    {
+      "id": "49244019_5",
+      "name": "botryllus-PEC-download-recovery",
+      "state": "RUNNING",
+      "elapsed": "00:03:09",
+      "exit_code": "0:0"
+    },
+    {
+      "id": "49244019_6",
+      "name": "botryllus-PEC-download-recovery",
+      "state": "RUNNING",
+      "elapsed": "00:03:09",
+      "exit_code": "0:0"
+    },
+    {
+      "id": "49244021",
+      "name": "botryllus-PEC-nfcore-trim",
+      "state": "PENDING",
+      "elapsed": "00:00:00",
+      "exit_code": "0:0"
+    },
+    {
+      "id": "49244023",
+      "name": "botryllus-full-SPLASH-all-anchors",
       "state": "PENDING",
       "elapsed": "00:00:00",
       "exit_code": "0:0"
     }
   ],
-  "scope": "Timestamped Sherlock snapshot; this static page does not poll or monitor jobs."
+  "scope": "Verified timestamped Sherlock snapshot; no automatic polling."
 }

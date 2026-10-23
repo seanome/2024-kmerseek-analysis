@@ -73,6 +73,12 @@ def build(pilot, repo, dest):
         "swissprot-raw-vs-sketch-sizes.png",
         "swissprot-raw-vs-sketch-sizes.tsv",
         "status.json",
+        "connection-status.json",
+        "finished-search-results.json",
+        "external-search-progress.json",
+        "manysearch-comparison-complete.json",
+        "storage-benchmark-complete.json",
+        "native-manysearch-botryllus-protein-scaled5.csv",
         "tunicate-summary.json",
         "chordate-summary.json",
         "pilot-all-anchor-selection.json",
@@ -115,6 +121,8 @@ def build(pilot, repo, dest):
     shutil.copyfile(
         report / "tunicate-rna-seq.tsv.gz", data / "tunicate-rna-seq.tsv.gz"
     )
+    for folder in ["finished-manysearch", "external-results"]:
+        shutil.copytree(report / folder, data / folder, dirs_exist_ok=True)
     paths = []
     for name in [
         "workflow-overview",

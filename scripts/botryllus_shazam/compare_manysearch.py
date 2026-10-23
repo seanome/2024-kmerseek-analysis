@@ -5,6 +5,7 @@ validation of protein function or biological occurrence.
 """
 
 import csv
+from decimal import Decimal
 import hashlib
 import importlib.metadata
 import json
@@ -15,7 +16,7 @@ import sys
 
 root = Path(sys.argv[1])
 old = root / "primary-search-pilot-20261023"
-out = root / "manysearch-comparison-20261023"
+out = root / "manysearch-comparison-20261023-v2"
 out.mkdir(exist_ok=False)
 if (
     importlib.metadata.version("sourmash") != "4.9.4"
@@ -32,12 +33,19 @@ report = {
 }
 
 
+def parse_hash_count(value):
+    count = Decimal(value)
+    if not count.is_finite() or count < 0 or count != count.to_integral_value():
+        raise ValueError("Invalid shared-hash count")
+    return int(count)
+
+
 def pairs(path):
     with path.open() as f:
         rows = list(csv.DictReader(f))
     return {
         (r["query_name"], r["match_name"]): (
-            int(r["intersect_hashes"]),
+            parse_hash_count(r["intersect_hashes"]),
             float(r["containment"]),
         )
         for r in rows
@@ -45,7 +53,10 @@ def pairs(path):
     }
 
 
-for item in execution["results"]:
+for item in sorted(
+    execution["results"],
+    key=lambda x: (x["database"] != "swissprot", x["mode"], x["scaled"]),
+):
     db, mode, k, scale = item["database"], item["mode"], item["ksize"], item["scaled"]
     if db == "swissprot" and scale != 5:
         continue

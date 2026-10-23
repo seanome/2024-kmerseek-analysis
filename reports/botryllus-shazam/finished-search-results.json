@@ -1,0 +1,25 @@
+{
+  "native_botryllus_protein_scaled5": {
+    "program": "Branchwater manysearch 0.9.15",
+    "job": "49215765",
+    "search_command_completed": true,
+    "wrapper_failed_after_search": true,
+    "raw_match_rows": 1148,
+    "queries_with_raw_matches": 340,
+    "rows_with_at_least_two_hashes": 935,
+    "pair_sets_equal_to_prior_multisearch": true,
+    "validation": "Engine comparison only; biological interpretation pending",
+    "csv": "native-manysearch-botryllus-protein-scaled5.csv"
+  },
+  "external_tunicate_manysearch": {
+    "imported_results": true,
+    "job_id": "49242789",
+    "summary": "external-search-progress.json",
+    "scope": "Partial first-batch results; four complete external runs authorized in this batch"
+  },
+  "swissprot_manysearch": {
+    "imported_results": true,
+    "job_id": "49242047",
+    "summary": "finished-manysearch/finished-swissprot-manysearch.json"
+  }
+}

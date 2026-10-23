@@ -221,3 +221,50 @@ The completed multisearch pilot is preserved. Comparison job 49215765 reuses the
 same sketches, encodings, scales, and query-containment threshold before its new
 match tables can replace historical results. No new biological validation is
 claimed from engine agreement alone. Swiss-Prot production remains scaled 5.
+
+## Executed search checkpoint after reconnection, 23 October afternoon PDT
+
+SSH authentication was renewed by Olga. Native comparison 49215765 had failed
+after the first Botryllus search because the wrapper read decimal count `1.0`
+as a strict integer string. The corrected parser accepts integral decimals and
+rejects fractional/nonfinite/negative counts. Pending replacement 49241354 was
+cancelled before execution. Attended Slurm allocation 49242047 completed all
+12 comparisons in 3:08; all pair sets/count arithmetic agreed with multisearch.
+Swiss-Prot protein/Dayhoff/HP at scaled 5 have 0 / 240,931 / 46 retained rows under
+the frozen two-hash and 0.1 containment rule. These are rows, not gene assignments.
+100 hash intersections per alphabet were independently recomputed from stored
+sketches, and every raw row's query containment was checked. All retained rows
+and a map of 9,627 distinct reference IDs to original Swiss-Prot headers are exported.
+
+Pending external batch 49241657 was cancelled before execution. Attended allocation
+49242789 runs four COMPLETE external Botryllus RNA-seq runs from four other studies,
+using Trim Galore 0.6.10 and streaming Branchwater manysearch at scaled 10 and 100.
+It does not run archive-wide SPLASH/DE-kupl. Queries remain the historical 339 DNA
+extensions and 987 peptides; full-depth query data are still pending. Partial results
+are imported with recorded fingerprints by import_external_results.py.
+The first run SRR10352260 has 328,070 raw pairs and 313,885 trimmed pairs. Retained
+DNA/protein/Dayhoff/HP rows are 156/417/346/29 at scaled 10 and 1/23/13/0 at 100.
+Empty queries and eligibility for the two-hash filter are reported separately.
+No external occurrence has yet been confirmed by direct sequence alignment or controls.
+
+49/64 original-study raw inputs were complete at 21:55 UTC. Three full-sized
+partials failed unchanged ENA checksums (SRR32233983 R2, SRR32233931 R2,
+SRR32233964 R1). Recovery 49244019, tasks 1/5/6, preserves corrupt partials
+under invalid-md5 filenames before a fresh transfer. Healthy task 49211401_4
+continues unchanged. Preprocessing 49244021 depends on both download jobs;
+full-depth SPLASH/all-anchor Compactors 49244023 depends on preprocessing.
+These replace dependency-cancelled 49211406/49211416.
+
+No automated job monitoring is configured. Refresh with capture_status.py and
+import_external_results.py no more often than Sherlock's 60-second cadence.
+Read /etc/agents/AGENTS.md and relevant topic files after compaction/reconnection.
+
+## Executed search checkpoint, 23 October 2026 at 22:09 UTC
+
+Sherlock job 49242047 completed native Branchwater manysearch for all three Swiss-Prot alphabets and nine Botryllus settings. All twelve agree with the preserved multisearch pair sets and arithmetic. Swiss-Prot candidate filtering retains 240,931 Dayhoff rows, 46 HP rows and zero standard-protein rows. The first 100 raw pairs per alphabet were independently checked by intersecting stored hashes. These are candidate matches; function and control-based false-positive rates remain unmeasured.
+
+External SRA job 49242789 is running. Imported outputs cover 22 of 32 search settings across four planned complete external runs from four studies. Three runs have finished trimming; two have all eight searches imported. This batch uses historical pilot queries, not full-depth all-anchor discoveries, and does not represent the whole 5,776-run inventory. Each completed retained CSV has a checked SHA-256 fingerprint and row count.
+
+Full-depth recovery has validated 50 of 64 libraries. Corrupt full-sized partial downloads are preserved before fresh transfer. Recovery array 49244019 replaces failed download batches; healthy job 49211401 is preserved. Preprocessing 49244021 and SPLASH/all-anchor discovery 49244023 have after-success dependencies. No completed full-depth discovery is claimed.
+
+The private app was republished successfully from Site source commit 7107874eb1dbc150194a993abc1342a0edc0930f. Slurm status is timestamped; no automatic monitoring is configured.

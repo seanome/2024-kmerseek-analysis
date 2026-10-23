@@ -142,3 +142,13 @@ The completed multisearch pilot is preserved. Comparison job 49215765 reuses the
 same sketches, encodings, scales, and query-containment threshold before its new
 match tables can replace historical results. No new biological validation is
 claimed from engine agreement alone. Swiss-Prot production remains scaled 5.
+
+## Executed search checkpoint, 23 October 2026 at 22:09 UTC
+
+Sherlock job 49242047 completed native Branchwater manysearch for all three Swiss-Prot alphabets and nine Botryllus settings. All twelve agree with the preserved multisearch pair sets and arithmetic. Swiss-Prot candidate filtering retains 240,931 Dayhoff rows, 46 HP rows and zero standard-protein rows. The first 100 raw pairs per alphabet were independently checked by intersecting stored hashes. These are candidate matches; function and control-based false-positive rates remain unmeasured.
+
+External SRA job 49242789 is running. Imported outputs cover 22 of 32 search settings across four planned complete external runs from four studies. Three runs have finished trimming; two have all eight searches imported. This batch uses historical pilot queries, not full-depth all-anchor discoveries, and does not represent the whole 5,776-run inventory. Each completed retained CSV has a checked SHA-256 fingerprint and row count.
+
+Full-depth recovery has validated 50 of 64 libraries. Corrupt full-sized partial downloads are preserved before fresh transfer. Recovery array 49244019 replaces failed download batches; healthy job 49211401 is preserved. Preprocessing 49244021 and SPLASH/all-anchor discovery 49244023 have after-success dependencies. No completed full-depth discovery is claimed.
+
+The private app was republished successfully from Site source commit 7107874eb1dbc150194a993abc1342a0edc0930f. Slurm status is timestamped; no automatic monitoring is configured.

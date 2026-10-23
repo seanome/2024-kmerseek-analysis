@@ -1,0 +1,42 @@
+{
+  "recorded_at": "2026-10-23T22:09:29.705531+00:00",
+  "live_status_available": true,
+  "checked_at": "2026-10-23T22:09:29.395734+00:00",
+  "failure": null,
+  "search_jobs": [
+    {
+      "id": "49242047",
+      "scope": "Swiss-Prot and Botryllus manysearch; attended run",
+      "state": "COMPLETED",
+      "elapsed": "00:03:08",
+      "exit_code": "0:0"
+    },
+    {
+      "id": "49242789",
+      "scope": "Four complete external tunicate runs: trim, sketch, manysearch",
+      "state": "RUNNING",
+      "elapsed": "00:21:19",
+      "exit_code": "0:0"
+    },
+    {
+      "id": "49212645",
+      "scope": "RocksDB storage and self-search checks on one Botryllus run",
+      "state": "COMPLETED",
+      "elapsed": "00:43:40",
+      "exit_code": "0:0"
+    },
+    {
+      "id": "49215765",
+      "scope": "Earlier comparison: parser failure after first Botryllus search",
+      "state": "FAILED",
+      "elapsed": "00:00:20",
+      "exit_code": "1:0"
+    }
+  ],
+  "external_tunicate_sra": {
+    "job_id": "49242789",
+    "scope": "Four external paired runs from four studies; historical pilot queries, not full-depth queries",
+    "current_state": "RUNNING"
+  },
+  "automatic_polling": false
+}
