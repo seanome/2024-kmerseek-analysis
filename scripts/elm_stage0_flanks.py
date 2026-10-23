@@ -36,7 +36,8 @@ with h the hydrophobic share and p the polar share of each whole protein.
 It also reports the longest run of consecutive alignment columns, with no gap on either
 side, where the two proteins have the same HP class, among the runs that cover at least 80%
 of the motif's residues (the COVER rule of the ELM scoring). An exact k-mer seed of length
-k that covers the motif can exist only if that run is at least k long.
+k along this supplied alignment that covers the motif requires a run at least k long.
+Seeds at different offsets are not counted.
 
 Outputs, in --out-dir:
   stage0_instances.parquet  one row per query instance, with pLDDT and metapredict disorder
