@@ -1,0 +1,170 @@
+{
+  "sources": {
+    "si/pnas.2610968123.sd01.xlsx": "4e2f2164fff28658f38ac30deee3f3bd61926b4f9ae8f8306c9def21a0072eba",
+    "meta/ena_filereport.tsv": "d363ed326c5004891d2931930621de6fe4067acd83886ddc0088842b1c687db6"
+  },
+  "runs": 64,
+  "assigned_runs": 47,
+  "pair_rule": "same contrast and genotype, ages differ by <= 1 day, one-to-one, closest first",
+  "pairs": [
+    {
+      "contrast": "young_2h",
+      "control": "JA100",
+      "pec": "JA101",
+      "age_difference_days": 0
+    },
+    {
+      "contrast": "young_2h",
+      "control": "JA102",
+      "pec": "JA103",
+      "age_difference_days": 0
+    },
+    {
+      "contrast": "young_2h",
+      "control": "JA104",
+      "pec": "JA105",
+      "age_difference_days": 0
+    },
+    {
+      "contrast": "young_2h",
+      "control": "JA112",
+      "pec": "JA113",
+      "age_difference_days": 0
+    },
+    {
+      "contrast": "young_2h",
+      "control": "JA123",
+      "pec": "JA124",
+      "age_difference_days": 0
+    },
+    {
+      "contrast": "young_2h",
+      "control": "JA125",
+      "pec": "JA126",
+      "age_difference_days": 0
+    },
+    {
+      "contrast": "young_24h",
+      "control": "JA106",
+      "pec": "JA107",
+      "age_difference_days": 0
+    },
+    {
+      "contrast": "young_24h",
+      "control": "JA108",
+      "pec": "JA109",
+      "age_difference_days": 0
+    },
+    {
+      "contrast": "young_24h",
+      "control": "JA110",
+      "pec": "JA111",
+      "age_difference_days": 0
+    },
+    {
+      "contrast": "young_24h",
+      "control": "JA114",
+      "pec": "JA115",
+      "age_difference_days": 0
+    },
+    {
+      "contrast": "young_24h",
+      "control": "JA127",
+      "pec": "JA128",
+      "age_difference_days": 0
+    },
+    {
+      "contrast": "young_24h",
+      "control": "JA129",
+      "pec": "JA130",
+      "age_difference_days": 0
+    },
+    {
+      "contrast": "old_24h",
+      "control": "JA116",
+      "pec": "JA117",
+      "age_difference_days": 0
+    },
+    {
+      "contrast": "old_24h",
+      "control": "JA118",
+      "pec": "JA119",
+      "age_difference_days": 0
+    },
+    {
+      "contrast": "young_13_49d",
+      "control": "JA120",
+      "pec": "JA121",
+      "age_difference_days": 0
+    },
+    {
+      "contrast": "young_13_49d",
+      "control": "JA154",
+      "pec": "JA152",
+      "age_difference_days": 1
+    },
+    {
+      "contrast": "young_13_49d",
+      "control": "JA150",
+      "pec": "JA153",
+      "age_difference_days": 1
+    },
+    {
+      "contrast": "young_13_49d",
+      "singleton": "JA131",
+      "treatment": "control"
+    },
+    {
+      "contrast": "young_13_49d",
+      "singleton": "JA151",
+      "treatment": "PEC"
+    },
+    {
+      "contrast": "young_132d",
+      "singleton": "JA162",
+      "treatment": "control"
+    },
+    {
+      "contrast": "young_132d",
+      "singleton": "JA163",
+      "treatment": "control"
+    },
+    {
+      "contrast": "young_132d",
+      "singleton": "JA164",
+      "treatment": "control"
+    },
+    {
+      "contrast": "young_132d",
+      "singleton": "JA165",
+      "treatment": "PEC"
+    },
+    {
+      "contrast": "young_132d",
+      "singleton": "JA167",
+      "treatment": "PEC"
+    },
+    {
+      "contrast": "young_132d",
+      "singleton": "JA169",
+      "treatment": "PEC"
+    },
+    {
+      "contrast": "old_41_93d",
+      "control": "JA157",
+      "pec": "JA156",
+      "age_difference_days": 0
+    },
+    {
+      "contrast": "old_41_93d",
+      "control": "JA158",
+      "pec": "JA159",
+      "age_difference_days": 0
+    },
+    {
+      "contrast": "old_41_93d",
+      "singleton": "JA166",
+      "treatment": "PEC"
+    }
+  ]
+}
