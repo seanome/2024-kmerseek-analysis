@@ -62,11 +62,12 @@ listed.
   sourmash, so its classes come from `notebooks/hp_conservation_utils.py`.
 
 **Definitions.**
-- $k_{100}$: the shortest $k$ at which seeds are shared by fewer than 100 human proteins on
+- $k_{100}$: the shortest tested $k$ at which seeds are shared by fewer than 100 human proteins on
   average ($P(k) < 100$, each seed weighted by how often it occurs), measured by kmerseek in
   notebook 250. Notebook 250's table calls this column `k_main`.
-- Bits per letter $B$: how much one matching letter narrows the search. Each extra letter
-  divides the number of chance matches by $2^B$.
+- Bits per letter $B$: how much one matching letter narrows the search. Under an independent-residue model, each extra letter
+  divides the expected number of matching positions by $2^B$. The empirically fitted slope
+  below need not stay constant outside the two measured seed lengths.
 - $B_\mathrm{comp}$, bits per letter from composition: $B_\mathrm{comp} = -\log_2 \sum_c q_c^2$,
   where $q_c$ is the share of Swiss-Prot residues in letter class $c$. $\sum_c q_c^2$ is the
   chance that two residues drawn at random fall in the same class.
@@ -78,11 +79,12 @@ listed.
   chance matches in a database of $N$ residues,
   $k(N, \mathrm{allowed}, B) = \left\lceil \dfrac{\log_2 N - \log_2 \mathrm{allowed}}{B} \right\rceil$.
 - $k_{100}$ predicted $= k(N_\mathrm{human}, 100, B_\mathrm{comp})$: the formula's answer to the
-  question $k_{100}$ measures.
+  protein-count question only approximately: the formula counts matching positions, whereas the measurement counts proteins containing a match.
 - $k_\mathrm{min} = \min(k_{100}\ \text{measured},\ k_{100}\ \text{predicted})$, the low end.
 - $k^* = k(209{,}017{,}843,\ 1,\ B_\mathrm{comp})$: one chance match in Swiss-Prot.
-- $k_\mathrm{max} = k(209{,}017{,}843,\ 1,\ B_\mathrm{human})$, the high end. It is an estimate:
-  the formula with a measured input.
+- $k_\mathrm{max} = k(209{,}017{,}843,\ 1,\ B_\mathrm{human})$, the high end. It is a heuristic extrapolation:
+  a slope from proteins-per-seed measurements is applied to a database residue count. It is
+  not a measured Swiss-Prot false-positive threshold or a guarantee of homolog recall.
 """)
 
 code(r"""
@@ -346,6 +348,10 @@ print(table.select(
     "alphabet", "n_letters", "B_comp", "B_human", "k100_measured", "k100_predicted_exact", "k100_predicted",
     "k_star_exact", "k_star", "k_max_exact", "k_max", "k_min", "n_ksizes", "ksizes",
 ))
+
+# Show the same stored range figure beside the numeric table.
+from IPython.display import Image, display
+display(Image(filename=str(REPO / "figures/274_ksizes_to_test_per_alphabet_human_swissprot.png")))
 """)
 
 md(r"""
