@@ -1,0 +1,141 @@
+%%metro title: Shazam for Biology, oyster demo (branch olgabot/oyster-shazam-mvp, no PR yet)
+%%metro style: nfcore
+%%metro legend: bl
+%%metro caption: File icon = file type, with what it holds below it. "(planned)" = not built yet. Sherlock root $SCRATCH/oyster-mvp-20261023; code analysis/oyster-mvp/. Not drawn: timing.py (GNU time per stage -> stages.tsv, speed.json).
+%%metro line_order: definition
+%%metro compact_offsets: true
+%%metro center_ports: true
+%%metro line: splash | SPLASH anchors (reference-free) | #0570b0
+%%metro line: dekupl | DE-kupl contigs (reference-free) | #e6550d
+%%metro line: protein | Protein k-mer indexes | #756bb1
+%%metro line: check | Reference route, grading only | #7f7f7f | dashed
+%%metro files: reads_in | FASTQ.GZ | 6 mantle libraries\n12 files, 21 GB
+%%metro file: rna_in | FNA.GZ | oyster_v9\ntranscripts
+%%metro file: prot_in | FAA.GZ | oyster_v9\n46,748 proteins
+%%metro file: sprot_in | FASTA.GZ | Swiss-Prot\n482,697 proteins
+%%metro file: degs_in | JSON | 1,303 published\nDE genes
+%%metro files: trim_out | FQ.GZ | trimmed pairs
+%%metro file: anch_out | TSV | anchors,\ncompactors
+%%metro file: satc_out | DUMP | anchor-target\ncounts
+%%metro file: dekupl_out | TSV.GZ | k-mers, contigs
+%%metro file: idx_out | SQLITE | 1.7 + 9.5 GB
+%%metro file: quant_out | TSV | abundance per\nlibrary
+%%metro file: de_out | TSV | gene DE table
+%%metro file: grades_out | TSV | grades,\nnear-reference
+%%metro file: gene_out | TSV | gene table
+%%metro file: cmp_out | JSON | comparison
+%%metro file: annot_out | JSONL | annotations
+%%metro file: hits_out | TSV | protein hits
+%%metro file: page_out | HTML | demo page\n(planned)
+%%metro file: report_out | MD | report\n(planned)
+%%metro off_track: trim_out, anch_out, satc_out, dekupl_out, idx_out, quant_out, de_out, grades_out
+%%metro grid: inputs | 0,0,1,2
+%%metro grid: find | 1,0,1,1
+%%metro grid: reference | 1,1,1,1
+%%metro grid: analyze | 2,0,1,2
+%%metro grid: outputs | 3,0,1,2
+
+graph LR
+    subgraph inputs [Inputs, download, trim]
+        %%metro exit: right | splash, dekupl, protein, check
+        reads_in[ ]
+        rna_in[ ]
+        prot_in[ ]
+        sprot_in[ ]
+        degs_in[ ]
+        download[Download, md5 check]
+        prefix[1M / 5M / full depth]
+        trim[Trim Galore!]
+        trim_out[ ]
+
+        reads_in -->|splash,dekupl,check| download
+        download -->|splash,dekupl,check| prefix
+        prefix -->|splash,dekupl,check| trim
+        trim -->|splash,dekupl,check| trim_out
+        rna_in -->|check| download
+        prot_in -->|protein| download
+        sprot_in -->|protein| download
+        degs_in -->|check| download
+    end
+
+    subgraph find [Find changed sequences, no reference]
+        %%metro entry: left | splash, dekupl, protein
+        %%metro exit: right | splash, dekupl, protein
+        splash[SPLASH, k 31, read 1]
+        compactors[Compactors]
+        dekupl[DE-kupl, DESeq2]
+        indexes[build_index\nprotein k7, Dayhoff k12, HP k30]
+        anch_out[ ]
+        satc_out[ ]
+        dekupl_out[ ]
+        idx_out[ ]
+
+        splash -->|splash| compactors
+        splash -->|splash| satc_out
+        compactors -->|splash| anch_out
+        dekupl -->|dekupl| dekupl_out
+        indexes -->|protein| idx_out
+    end
+
+    subgraph reference [Reference route, grading only]
+        %%metro entry: left | check
+        %%metro exit: right | check
+        kallisto[kallisto index + quant]
+        pydeseq[PyDESeq2]
+        quant_out[ ]
+        de_out[ ]
+
+        kallisto -->|check| pydeseq
+        kallisto -->|check| quant_out
+        pydeseq -->|check| de_out
+    end
+
+    subgraph analyze [Grade and annotate, 09_analyze]
+        %%metro entry: left | splash, dekupl, protein, check
+        %%metro exit: right | splash, dekupl, protein, check
+        prepare[prepare_methods]
+        grade[Exact 31-mer lookup\nin transcripts]
+        near[BLASTN, no-hit\nsequences]
+        compare[compare vs\npublished DE]
+        review[select_review]
+        annotate[Translate + protein\nindex search]
+        grades_out[ ]
+
+        prepare -->|splash,dekupl| grade
+        grade -->|splash,dekupl| near
+        near -->|splash,dekupl| grades_out
+        near -->|splash,dekupl| compare
+        compare -->|splash,dekupl| review
+        review -->|splash,dekupl| annotate
+    end
+
+    subgraph outputs [Outputs]
+        %%metro entry: left | splash, dekupl, protein, check
+        tables[Per-depth tables]
+        export[export_demo\n(planned)]
+        gene_out[ ]
+        cmp_out[ ]
+        annot_out[ ]
+        hits_out[ ]
+        page_out[ ]
+        report_out[ ]
+
+        tables -->|splash,dekupl,check| gene_out
+        tables -->|splash,dekupl,check| cmp_out
+        tables -->|splash,dekupl,protein| annot_out
+        tables -->|splash,dekupl,protein| hits_out
+        tables -->|splash,dekupl| export
+        export -->|splash,dekupl| page_out
+        export -->|splash,dekupl| report_out
+    end
+
+    trim -->|splash| splash
+    trim -->|dekupl| dekupl
+    download -->|protein| indexes
+    trim -->|check| kallisto
+    compactors -->|splash| prepare
+    dekupl -->|dekupl| prepare
+    indexes -->|protein| annotate
+    pydeseq -->|check| compare
+    compare -->|check| tables
+    annotate -->|splash,dekupl,protein| tables
