@@ -110,3 +110,8 @@ independent validation. Full reproduction is claimed only if the published lists
 the stated thresholds.
 
 ## Changes
+
+* 2026-10-23, before any run: the supervised p-value column is `Cjs_0_pval`, read from SPLASH
+  2.11.9 source (`src/satc_merge/satc_merge.cpp`, header `"Cjs_" << i << "_pval"`). SPLASH fixes
+  the sample weights c to the Cjs values, picks target weights f on the training split
+  (`--opt_train_fraction` 0.25) and computes the p-value on the remaining counts.
