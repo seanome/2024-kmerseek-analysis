@@ -83,6 +83,8 @@ def read_hits(path: Path, score: str, columns: list[str] | None) -> pl.LazyFrame
 
 
 def label_hits(hits: pl.LazyFrame, dom: pl.DataFrame, higher_first: bool) -> pl.DataFrame:
+    # Infinities remain valid ordered scores, for example -log10(E=0).
+    # Missing values and NaN have no defensible rank and must fail explicitly.
     invalid = hits.select((pl.col("score").is_null() | pl.col("score").is_nan()).any()).collect().item()
     if invalid:
         raise ValueError("Hit scores must not contain null or NaN values")
