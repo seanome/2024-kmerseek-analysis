@@ -24,3 +24,9 @@ Report builder: `analysis/oyster-shazam/build_report.py`; local Site checkout `/
 ## Memory correction, 2026-10-23
 
 Job 49194487 was OOM-killed at 16 GB during six-library dense-sketch self-search (16,776,808 KiB recorded). It did not validate the production index, so dependent searches were cancelled. Replacement 49201967 uses the existing scaled100 source sketches for exact self-containment validation, rather than loading all six dense source sketches. It requests 32 GB, twice the failed ask; search tasks also request 32 GB. The real synthetic integration test still exercises all twelve encoding/scale combinations. `summarize_extensions.py` independently checks all batch hashes, selection coverage and counts before exporting every extended record and its source ID. A full synthetic 213,658-anchor partition test passed and a tampered output was rejected. Production aggregation remains pending.
+
+## 2026-10-23 10:40 PDT: legacy six-library index timeout
+
+Job 49201967 reached its two-hour time limit during dense scaled5 HP index construction. Accounting reports TIMEOUT, elapsed 02:00:22; the batch step recorded 14,639,908 KiB peak RSS and signal15. The log explicitly reports cancellation due to time limit. Dependent array49201976 was cancelled before any tasks ran. This was a runtime-limit failure, not another OOM or a system fault.
+
+Do not blindly resume the existing builder: it treats an existing RocksDB directory as completed, so the interrupted HP directory could be reused without having completed construction. Preserve it for diagnosis. No resubmission was made. This legacy prefix self-study comparison is deferred behind the requested full-depth experiment and public archive rollout. Public indexes, public pilot searches, paired archive validation49215860 and full-depth SPLASH49214375 are separate and were running or waiting normally when checked. Their outputs remain intact.
