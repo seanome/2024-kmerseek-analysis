@@ -2,7 +2,7 @@
 from html import escape
 
 
-def render(data):
+def render(data, full_depth=False):
     n=data['extended_records_searched'];completed=len(data['completed_batches']);rows=[];bars=[];empty=[]
     maximum=max(s.get('matches_10',s.get('match_rows_10',0)) for s in data['encodings'].values())
     limit=max(100000,((maximum+99999)//100000)*100000)
@@ -26,10 +26,14 @@ def render(data):
         examples.append('<tr>'+''.join(f'<td>{escape(str(r.get(k,"")))}</td>' for k in ['query_id','run','encoding','containment_scaled10'])+'</tr>')
     examples_box=f'''<details><summary>Examples of exact query–run pairs recovered at 10 but missing at 100</summary><p>These exact query/run pairs occur at scaled10 and are missing at scaled100. Query IDs retain their source anchor. Empty query sketches are reported separately.</p><div class="scroll"><table><thead><tr><th>Query ID</th><th>Public run</th><th>Encoding</th><th>Containment at 10</th></tr></thead><tbody>{''.join(examples)}</tbody></table></div></details>''' if examples else ''
     plot=f'<div class="key"><span><i class="sw" style="background:#D55E00"></i>scaled 10</span><span><i class="sw" style="background:#009E73"></i>scaled 100</span></div><svg class="plot" viewBox="0 0 900 300" role="img" aria-label="Candidate query-run match counts at scaled10 and scaled100">'+''.join(bars)+f'<line x1="140" x2="710" y1="260" y2="260"/><text x="140" y="280">0</text><text x="425" y="280" text-anchor="middle">{limit//2:,}</text><text x="710" y="280" text-anchor="middle">{limit:,} pairs</text></svg>'
-    return f'''<div class="card" id="public-results"><h3>Public matches: scaled 10 versus scaled 100</h3>
-<p>{n:,} extended DNA records from the earlier 1M-pair experiment have completed searches against eight public runs from eight studies ({completed} of 22 query batches). These reference runs are the earlier <strong>untrimmed pilot</strong>; the new trimmed full-archive comparison is separate. This is not coverage of all 17,623 runs.</p>
+    title='Full-depth public matches' if full_depth else 'Historical prefix public matches'
+    section_id='full-public-results' if full_depth else 'public-results'
+    summary_file='full-public-match-summary.json' if full_depth else 'public-match-summary.json'
+    experiment='the complete-library experiment' if full_depth else 'the earlier 1M-pair experiment'
+    return f'''<div class="card" id="{section_id}"><h3>{title}: scaled 10 versus scaled 100</h3>
+<p>{n:,} extended DNA records from {experiment} have completed searches against eight public runs from eight studies ({completed} of {data["total_batches"]} query batches). These reference runs are the earlier <strong>untrimmed pilot</strong>; the new trimmed full-archive comparison is separate. This is not coverage of all 17,623 runs.</p>
 <p>A pair is one query record and one public run with at least one shared hash. These are candidate occurrences, not validated functions or distinct genes. Reduced-alphabet matches can occur by chance.</p>
 {plot}<div class="scroll"><table><thead><tr><th>Encoding</th><th>Pairs at 10</th><th>Pairs at 100</th><th>{"Lost at 100" if data.get("loss_table") else "Net fewer pairs at 100"}</th></tr></thead><tbody>{''.join(rows)}</tbody></table></div>
 <details><summary>Which queries can be searched?</summary><p>An empty sketch is unsearchable at that scale. It is not evidence that a sequence is absent.</p><div class="scroll"><table><thead><tr><th>Encoding</th><th>Nonempty at 10</th><th>Nonempty at 100</th><th>Empty at 100</th></tr></thead><tbody>{''.join(empty)}</tbody></table></div></details>
 {examples_box}
-<p class="small muted">{escape(data.get('audit_status','Independent result hashes, pair counts and nested-match consistency checked.'))}</p><a href="public-match-summary.json" download>Completed public-match summary · JSON</a> {loss_link}</div>'''
+<p class="small muted">{escape(data.get('audit_status','Independent result hashes, pair counts and nested-match consistency checked.'))}</p><a href="{summary_file}" download>Completed public-match summary · JSON</a> {loss_link}</div>'''
