@@ -341,6 +341,7 @@ PREFETCH_CONTAINERS ?= $(ALL_CONTAINERS)
         mini-testset mini-testset-sherlock mhc-testset run-mhc-local \
         midi-testset-sherlock run-midi fetch-structures-login \
         midi-plus-testset-sherlock run-midi-plus pull-report-midi-plus \
+        stage-iupred run-no-search-baselines no-search-baselines-usage \
         run-midi-plus-all-qfo queue-empty \
         watch attach stop \
         fetch-structures-mac \
@@ -400,6 +401,10 @@ help:
 	@echo "  run-midi             chr6 queries vs FULL proteomes (includes the MHC)"
 	@echo "  run-midi-plus        chr6 PLUS B2M, CD1A-E, MR1, KIR and LILR (998 queries)."
 	@echo "  run-midi-plus-all-qfo  the same 998 queries against ALL 77 QfO targets."
+	@echo "  run-no-search-baselines  Kyte-Doolittle, IUPred, metapredict, SEG and Pfam family"
+	@echo "                       frequency on the 998 midi-plus queries, scored on that run's"
+	@echo "                       truth tables. One 1 h job. Needs 'make stage-iupred' (Mac) first."
+	@echo "  no-search-baselines-usage  sacct peak and trace rows of the last baselines run"
 	@echo "  watch                attach to the running head and see the live table"
 	@echo "  stop                 ask the running head to cancel its tasks and exit"
 	@echo "                       Reuses run-midi-plus's stored searches; replaces its report"
@@ -1872,6 +1877,75 @@ run-midi-plus: prefetch-images midi-plus-testset-sherlock
 	    $(PFAM_HMM_ARG) \
 	    $(QUERY_SET_NF_ARG) \
 	    $(NF_ARGS)
+
+# ---- no-search baselines on the midi-plus queries ----------------------------
+#
+# Four tools that read only the query sequence, scored like every search tool against the
+# midi-plus run's own truth tables (main.nf, `workflow noSearchBaselines`):
+# Kyte-Doolittle hydropathy (notebook 231's scan), IUPred long and metapredict disorder,
+# SEG low complexity (segmasker), and the most common Pfam family per length bin.
+#
+# One SLURM job: the head job runs every task itself (`withLabel: no_search` is the local
+# executor under the sherlock profile), because each task takes seconds to minutes and
+# Sherlock asks for jobs of at least 10 minutes. Sized from run-midi-plus's trace:
+# metapredict on the same 998 queries peaked at 3.3 GB (job 41567300, 12.3 s), reading the
+# Swiss-Prot flat file at 654.5 MB (job 42866517, 47.7 s), and every other task is smaller.
+# 16 GB = 12 GB for tasks (metapredict asks 8) + 4 GB for the Nextflow JVM.
+#
+# Data paths are absolute, into the main clone's data/, so this runs from any clone of
+# the branch. IUPred is not in git or any image (academic licence: no passing it on);
+# `make stage-iupred` on the Mac puts it at NOSEARCH_IUPRED first.
+NOSEARCH_DATA    ?= $(SCRATCH)/2024-kmerseek-analysis/nextflow-runs/qfo-pfam-region-benchmark/data
+NOSEARCH_IUPRED  ?= $(SCRATCH)/data/iupred
+NOSEARCH_OUTDIR  ?= $(NOSEARCH_DATA)/midi-plus/no-search-baselines
+NOSEARCH_RUN_DIR ?= run-no-search-baselines
+# The source the Mac copies from: InterProScan 5's bundled IUPred source and data files.
+IPS_IUPRED_DIR   ?= /Users/olga/data/interproscan/bin/mobidb/idrpred/bin/IUPred
+NOSEARCH_IMAGES   = $(IMAGE_REMOTE) $(METAPREDICT_REMOTE) \
+                    $(shell sed -n "s/^params\.\(gcc\|blast\)_image *= *'\(.*\)'.*/\2/p" main.nf)
+
+stage-iupred:
+	$(call require_mac)
+	@test -f "$(IPS_IUPRED_DIR)/src.zip" || { echo "no $(IPS_IUPRED_DIR)/src.zip"; exit 1; }
+	@stage=$$(mktemp -d) && \
+	  unzip -q -o "$(IPS_IUPRED_DIR)/src.zip" -d "$$stage" && \
+	  command cp "$(IPS_IUPRED_DIR)/histo" "$(IPS_IUPRED_DIR)/ss" "$$stage/" && \
+	  ls -l "$$stage" && \
+	  $(RSYNC) "$$stage/" $(SHERLOCK_HOST):'$$SCRATCH/data/iupred/' && \
+	  /bin/rm -rf "$$stage"
+
+run-no-search-baselines: PREFETCH_CONTAINERS := $(NOSEARCH_IMAGES)
+run-no-search-baselines: HEAD_TIME    := 01:00:00
+run-no-search-baselines: HEAD_CPUS    := 2
+run-no-search-baselines: HEAD_MEM     := 16G
+run-no-search-baselines: HEAD_JOBNAME := nf-nosearch
+run-no-search-baselines: HEAD_SESSION := nosearch
+run-no-search-baselines: prefetch-images
+	$(call require_cluster)
+	@test -f "$(NOSEARCH_IUPRED)/iupred_string.c" || \
+	  { echo "  no IUPred at $(NOSEARCH_IUPRED); run 'make stage-iupred' on the Mac"; exit 1; }
+	mkdir -p $(NOSEARCH_RUN_DIR)
+	cd $(NOSEARCH_RUN_DIR) && \
+	  ml load biology nextflow && \
+	  $(HEAD_SUBMIT) nextflow run ../main.nf -entry noSearchBaselines -profile $(PROFILE) -resume \
+	    --kmerseek_image                $(IMAGE_REMOTE) \
+	    --qfo_dir                       $(NOSEARCH_DATA)/midi-plus/qfo \
+	    --baseline_run_dir              $(NOSEARCH_DATA)/midi-plus/results \
+	    --pfamn_dir                     $(NOSEARCH_DATA)/pfamn \
+	    --swissprot_dat                 $(NOSEARCH_DATA)/uniprot_sprot.dat.gz \
+	    --baseline_reference_fasta      $(NOSEARCH_DATA)/qfo/Eukaryota/UP000005640_9606.fasta \
+	    --baseline_reference_annotation $(NOSEARCH_DATA)/annotations/human_pfam_domains.parquet \
+	    --iupred_dir                    $(NOSEARCH_IUPRED) \
+	    --outdir                        $(NOSEARCH_OUTDIR) \
+	    $(NF_ARGS)
+
+## After the run: the head job's peak memory and the tasks' own numbers.
+no-search-baselines-usage:
+	$(call require_cluster)
+	@job=$$(ls -t $(NOSEARCH_RUN_DIR)/nf-head.*.log | head -1 | sed 's/.*nf-head\.\([0-9]*\)\.log/\1/'); \
+	  echo "head job $$job"; \
+	  sacct -j $$job --format=JobID,State,Elapsed,MaxRSS,ReqMem,AllocCPUS; \
+	  cut -f4,5,7,20,26 $$(ls -t $(NOSEARCH_RUN_DIR)/*trace*.txt | head -1)
 
 # ---- midi-plus across every QfO target -------------------------------------
 #

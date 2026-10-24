@@ -1,0 +1,13 @@
+tool	variant	label	truth_set	stratum_axis	stratum
+kyte_doolittle	w19_t1.6_transmem	TRANSMEM	swissprot	feature_type	TRANSMEM
+kyte_doolittle	w19_t1.6_intramem	INTRAMEM	swissprot	feature_type	INTRAMEM
+iupred	long_t0.5_min20_disordered	REGION_DISORDERED	swissprot_disordered	*	*
+iupred	long_t0.5_min20_compbias	COMPBIAS	swissprot_compbias	*	*
+metapredict	v3_t0.5_min20_disordered	REGION_DISORDERED	swissprot_disordered	*	*
+metapredict	v3_t0.5_min20_compbias	COMPBIAS	swissprot_compbias	*	*
+iupred	long_t0.5_min20_region	REGION	swissprot	feature_type	REGION
+metapredict	v3_t0.5_min20_region	REGION	swissprot	feature_type	REGION
+seg	segmasker_default_compbias	COMPBIAS	swissprot_compbias	*	*
+seg	segmasker_default_repeat	REPEAT	swissprot	feature_type	REPEAT
+pfam_family_frequency	length_bin	*	pfam	*	*
+pfam_family_frequency	length_bin	*	pfamn	*	*

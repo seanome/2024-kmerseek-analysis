@@ -4734,3 +4734,509 @@ workflow report {
         Channel.of(ks_spectra),
     )
 }
+
+// =========================================================================================
+// No-search baselines: what a reader scores with no database at all.
+//
+// Run as its own entry after a finished run, on that run's query set and truth tables
+// (`make run-no-search-baselines` writes the command):
+//
+//   nextflow run main.nf -entry noSearchBaselines -profile sherlock \
+//       --baseline_run_dir ../data/midi-plus/results --outdir ../data/midi-plus/results ...
+//
+// It reads, and never rewrites, the finished run's truth/ and truth_swissprot/ folders and
+// the Pfam-N truth, so the baselines are scored against exactly the tables every search
+// tool in that run was scored against. Everything it writes goes under
+// ${params.outdir}/no_search. bin/no_search_baselines.py says what each baseline is;
+// assets/no_search_baselines.tsv says which truth set and feature type each can address.
+//
+// Every task is small. On the midi-plus queries the closest measured tasks are
+// proteomeDisorder (metapredict on the same 998 queries, job 41567300: 12.3 s, 3.3 GB
+// peak), buildSwissprotTruth (reads the whole Swiss-Prot flat file, job 42866517: 47.7 s,
+// 654.5 MB peak) and scoreHmmscanCeiling (direct scoring on the Pfam truth, job 42867710:
+// 4.6 s, 109.8 MB peak), all in run-midi-plus/qfo_pfam_region.2026-09-*.trace.txt.
+// =========================================================================================
+
+params.baseline_run_dir              = null
+params.baseline_reference_fasta      = null   // whole human proteome, for the frequency bins
+params.baseline_reference_annotation = null   // whole-proteome human_pfam_domains.parquet
+// IUPred is under an academic licence that forbids passing it on, so it is never put in an
+// image or in git. `make stage-iupred` copies iupred_string.c and its two data files
+// (histo, ss) from InterProScan's bin/mobidb/idrpred/bin/IUPred/src.zip into a folder on
+// Sherlock, and iupredLong compiles it there, as notebook 341 compiled the same file.
+params.iupred_dir                    = null
+// IUPred long (Dosztanyi et al. 2005) and metapredict v3 both read a score above 0.5 as
+// disordered.
+params.disorder_cutoff               = 0.5
+// Images used only here, so they are params rather than `container '...'` literals: the
+// Makefile's ALL_CONTAINERS collects every literal, and every main-run launch would then
+// pull and convert these two as well (gcc alone is about 1.4 GB).
+// gcc 14.2.0, by digest; a Debian userland, so bash, awk and ps are present.
+params.gcc_image   = 'docker.io/library/gcc@sha256:b99b86a28812b1e6453a231a947dc43d76fe192788a12f344a9b568bf9f5d24c'
+// BLAST+ 2.16.0 (build h66d330f_5). Its segmasker is NCBI's copy of SEG (Wootton and
+// Federhen 1993); `segmasker -version` printed "segmasker: 1.0.0, blast 2.16.0" from this
+// image on 2026-10-16.
+params.blast_image = 'quay.io/biocontainers/blast@sha256:9dfc69f990c0aeb936276ee591ed32919a79f46dfa34060055e05a050a17959c'
+params.disorder_min_length           = 20
+
+// <tool>.<variant> names of every call file, in one place so script and stub agree with
+// assets/no_search_baselines.tsv.
+def baselineVariants = { tool ->
+    def tag = "t${params.disorder_cutoff}_min${params.disorder_min_length}"
+    [
+        iupred:      ["long_${tag}_disordered", "long_${tag}_compbias", "long_${tag}_region"],
+        metapredict: ["v3_${tag}_disordered", "v3_${tag}_compbias", "v3_${tag}_region"],
+        seg:         ["segmasker_default_compbias", "segmasker_default_repeat"],
+    ][tool]
+}
+
+process kdScan {
+    tag "kyte_doolittle"
+    label 'no_search'
+    container params.kmerseek_image
+    cpus 1
+    memory { 4.GB * task.attempt }
+    time   { 1.h * task.attempt }
+    errorStrategy { retryOnKill(task) }
+    maxRetries 2
+    publishDir "${params.outdir}/no_search/calls_raw", mode: 'copy'
+
+    input:
+    path query_fasta
+
+    output:
+    path "kyte_doolittle.*.tsv", emit: calls
+
+    script:
+    """
+    no_search_baselines.py kd --fasta ${query_fasta} \\
+        --label TRANSMEM --out kyte_doolittle.w19_t1.6_transmem.tsv \\
+        --label INTRAMEM --out kyte_doolittle.w19_t1.6_intramem.tsv
+    """
+
+    stub:
+    """
+    printf 'sp|P1|A_HUMAN\\tTRANSMEM\\t10\\t30\\t2.0\\tNA\\n' > kyte_doolittle.w19_t1.6_transmem.tsv
+    printf 'sp|P1|A_HUMAN\\tINTRAMEM\\t10\\t30\\t2.0\\tNA\\n' > kyte_doolittle.w19_t1.6_intramem.tsv
+    """
+}
+
+process iupredLong {
+    tag "iupred long"
+    label 'no_search'
+    container params.gcc_image
+    cpus 1
+    memory { 4.GB * task.attempt }
+    time   { 1.h * task.attempt }
+    errorStrategy { retryOnKill(task) }
+    maxRetries 2
+    publishDir "${params.outdir}/no_search/residue_scores", mode: 'copy'
+
+    input:
+    tuple path(query_fasta), path(iupred_dir)
+
+    output:
+    path "iupred_long.residue_scores.tsv", emit: scores
+
+    script:
+    """
+    gcc -O2 -o iupred_string ${iupred_dir}/iupred_string.c -lm
+    export IUPred_PATH=\$(readlink -f ${iupred_dir})
+    # One line per protein: accession <tab> sequence. Accession as
+    # no_search_baselines.accession_of: the second |-field of a UniProt name.
+    awk '/^>/ { if (s != "") print n "\\t" s
+                split(substr(\$1, 2), f, "|"); n = (f[2] != "" ? f[2] : substr(\$1, 2))
+                s = ""; next }
+         { s = s \$0 }
+         END { if (s != "") print n "\\t" s }' ${query_fasta} > seqs.tsv
+    : > iupred_long.residue_scores.tsv
+    while IFS=\$'\\t' read -r acc seq; do
+        ./iupred_string "\$seq" long \\
+          | awk -v a="\$acc" '\$1 ~ /^[0-9]+\$/ && NF == 3 { print a "\\t" \$1 "\\t" \$3 }' \\
+          >> iupred_long.residue_scores.tsv
+    done < seqs.tsv
+    # Every residue scored, or fail here rather than as missing calls later.
+    want=\$(awk -F'\\t' '{ n += length(\$2) } END { print n }' seqs.tsv)
+    got=\$(wc -l < iupred_long.residue_scores.tsv)
+    [ "\$want" -eq "\$got" ] || { echo "IUPred scored \$got of \$want residues" >&2; exit 1; }
+    """
+
+    stub:
+    """
+    printf 'P1\\t1\\t0.9\\n' > iupred_long.residue_scores.tsv
+    """
+}
+
+process metapredictScores {
+    tag "metapredict"
+    label 'no_search'
+    container params.metapredict_image
+    cpus 1
+    // 3.3 GB peak for the same model on the same 998 queries (proteomeDisorder, job
+    // 41567300), so 8 GB rather than 4 on the first attempt.
+    memory { 8.GB * task.attempt }
+    time   { 1.h * task.attempt }
+    errorStrategy { retryOnKill(task) }
+    maxRetries 2
+    publishDir "${params.outdir}/no_search/residue_scores", mode: 'copy'
+
+    input:
+    path query_fasta
+
+    output:
+    path "metapredict.residue_scores.tsv", emit: scores
+
+    script:
+    """
+    metapredict_residue_scores.py --fasta ${query_fasta} --out metapredict.residue_scores.tsv
+    """
+
+    stub:
+    """
+    printf 'P1\\t1\\t0.9\\n' > metapredict.residue_scores.tsv
+    """
+}
+
+process segmasker {
+    tag "seg"
+    label 'no_search'
+    container params.blast_image
+    cpus 1
+    memory { 4.GB * task.attempt }
+    time   { 1.h * task.attempt }
+    errorStrategy { retryOnKill(task) }
+    maxRetries 2
+    publishDir "${params.outdir}/no_search/residue_scores", mode: 'copy'
+
+    input:
+    path query_fasta
+
+    output:
+    path "seg.intervals.txt", emit: intervals
+
+    script:
+    // No -window, -locut or -hicut: segmasker's defaults (12, 2.2, 2.5) are SEG's own.
+    """
+    segmasker -version
+    segmasker -in ${query_fasta} -infmt fasta -outfmt interval -out seg.intervals.txt
+    """
+
+    stub:
+    """
+    printf '>sp|P1|A_HUMAN\\n0 - 11\\n' > seg.intervals.txt
+    """
+}
+
+process baselineCalls {
+    // The per-residue outputs above become calls here, through one run-finding function.
+    tag "${tool}"
+    label 'no_search'
+    container params.kmerseek_image
+    cpus 1
+    memory { 4.GB * task.attempt }
+    time   { 1.h * task.attempt }
+    errorStrategy { retryOnKill(task) }
+    maxRetries 2
+    publishDir "${params.outdir}/no_search/calls_raw", mode: 'copy'
+
+    input:
+    tuple val(tool), path(raw)
+
+    output:
+    path "${tool}.*.tsv", emit: calls
+
+    script:
+    def v = baselineVariants(tool)
+    if (tool == 'seg')
+        """
+        no_search_baselines.py seg --intervals ${raw} \\
+            --label COMPBIAS --out seg.${v[0]}.tsv \\
+            --label REPEAT   --out seg.${v[1]}.tsv
+        """
+    else
+        """
+        no_search_baselines.py runs --scores ${raw} \\
+            --cutoff ${params.disorder_cutoff} --min-length ${params.disorder_min_length} \\
+            --label REGION_DISORDERED --out ${tool}.${v[0]}.tsv \\
+            --label COMPBIAS          --out ${tool}.${v[1]}.tsv \\
+            --label REGION            --out ${tool}.${v[2]}.tsv
+        """
+
+    stub:
+    def v = baselineVariants(tool)
+    """
+    printf 'P1\\tCOMPBIAS\\t1\\t20\\t1.0\\tNA\\n' > ${tool}.${v[0]}.tsv
+    printf 'P1\\tCOMPBIAS\\t1\\t20\\t1.0\\tNA\\n' > ${tool}.${v[1]}.tsv
+    if [ "${v.size()}" -gt 2 ]; then
+        printf 'P1\\tREGION\\t1\\t20\\t1.0\\tNA\\n' > ${tool}.${v[2]}.tsv
+    fi
+    """
+}
+
+process familyFrequency {
+    tag "pfam_family_frequency"
+    label 'no_search'
+    container params.kmerseek_image
+    cpus 1
+    memory { 4.GB * task.attempt }
+    time   { 1.h * task.attempt }
+    errorStrategy { retryOnKill(task) }
+    maxRetries 2
+    publishDir "${params.outdir}/no_search/calls_raw", mode: 'copy'
+
+    input:
+    // The query FASTA and the reference proteome can share a file name (both are
+    // UP000005640_9606.fasta for human), so each is staged in its own folder.
+    tuple path(query_fasta, stageAs: 'query/*'), path(reference_fasta, stageAs: 'reference/*'),
+          path(reference_annotation)
+
+    output:
+    path "pfam_family_frequency.length_bin.tsv", emit: calls
+    path "pfam_family_frequency.bins.tsv",       emit: table
+
+    script:
+    """
+    no_search_baselines.py frequency --fasta ${query_fasta} \\
+        --reference-fasta ${reference_fasta} \\
+        --reference-annotation ${reference_annotation} \\
+        --table-out pfam_family_frequency.bins.tsv \\
+        --out pfam_family_frequency.length_bin.tsv
+    """
+
+    stub:
+    """
+    printf 'P1\\tPF00001\\t1\\t100\\t0.1\\tNA\\n' > pfam_family_frequency.length_bin.tsv
+    printf 'bin\\tpfam_id\\n' > pfam_family_frequency.bins.tsv
+    """
+}
+
+process buildDisorderTruth {
+    tag "swissprot_disordered, swissprot_compbias"
+    label 'no_search'
+    container params.kmerseek_image
+    cpus 1
+    // buildSwissprotTruth reads the same flat file: 654.5 MB peak, 47.7 s (job 42866517).
+    memory { 4.GB * task.attempt }
+    time   { 1.h * task.attempt }
+    errorStrategy { retryOnKill(task) }
+    maxRetries 2
+    publishDir "${params.outdir}/no_search/truth", mode: 'copy'
+
+    input:
+    tuple path(sprot_dat), path(query_fasta)
+
+    output:
+    path "human_swissprot_disordered_truth.parquet", emit: disordered
+    path "human_swissprot_compbias_truth.parquet",   emit: compbias
+    path "swissprot_disorder_summary.json",          emit: summary
+
+    script:
+    """
+    build_sprot_disorder_truth.py --sprot-dat ${sprot_dat} --query-fasta ${query_fasta} \\
+        --disordered-out human_swissprot_disordered_truth.parquet \\
+        --compbias-out   human_swissprot_compbias_truth.parquet \\
+        --summary-out    swissprot_disorder_summary.json
+    """
+
+    stub:
+    """
+    touch human_swissprot_disordered_truth.parquet human_swissprot_compbias_truth.parquet
+    echo '{}' > swissprot_disorder_summary.json
+    """
+}
+
+process scoreBaselines {
+    /*
+     * One task per truth set: every baseline call file that can address that truth set,
+     * scored by evaluate_domain_calls.py the way scoreHmmscanCeiling scores hmmscan
+     * (--direct-annotation, --species all: no target proteome is read). Only the "off"
+     * dedup mode, because transfer dedup acts on target-side transfers and there are none.
+     */
+    tag "${truth_set} (${tools.size()} baselines)"
+    label 'no_search'
+    container params.kmerseek_image
+    cpus 1
+    // scoreHmmscanCeiling, direct scoring on the same Pfam truth: 109.8 MB peak, 4.6 s
+    // (job 42867710). The Pfam-N truth is the whole human proteome (44_315 instances), 18x
+    // the Pfam table, and 4 GB still leaves a wide margin.
+    memory { 4.GB * task.attempt }
+    time   { 1.h * task.attempt }
+    errorStrategy { retryOnKill(task) }
+    maxRetries 2
+    publishDir "${params.outdir}/no_search/calls",   mode: 'copy', pattern: '*.calls.parquet'
+    publishDir "${params.outdir}/no_search/metrics", mode: 'copy', pattern: '*.metrics.parquet'
+    publishDir "${params.outdir}/no_search/curves",  mode: 'copy', pattern: '*.curve.parquet'
+
+    input:
+    tuple val(truth_set), path(truth, stageAs: 'truth/*'), val(tools), val(variants),
+          path(calls, stageAs: 'calls*/*'), path(covariates)
+
+    output:
+    path "*.metrics.parquet", arity: '1..*', emit: metrics
+    path "*.calls.parquet",   arity: '1..*', emit: calls
+    path "*.curve.parquet",   arity: '1..*', emit: curve
+
+    script:
+    def files = calls instanceof List ? calls : [calls]
+    def rows = [tools, variants, files].transpose()
+        .collect { t, v, c -> "${t}\t${v}\t${c}" }.join("\n")
+    """
+    cat > manifest.tsv << 'MANIFEST_EOF'
+${rows}
+MANIFEST_EOF
+    evaluate_domain_calls.py \\
+        --manifest     manifest.tsv \\
+        --species      all \\
+        --truth        ${truth} \\
+        --direct-annotation \\
+        --covariates   ${covariates} \\
+        --min-overlap  ${params.min_overlap} \\
+        --strict-iou   ${params.strict_iou} \\
+        --dedup-transfer-modes off \\
+        --truth-set    ${truth_set} < /dev/null
+    """
+
+    stub:
+    def stems = [tools, variants].transpose().collect { t, v -> "${truth_set}.${t}.${v}.all" }
+    """
+    for s in ${stems.join(' ')}; do
+        touch \$s.metrics.parquet \$s.calls.parquet \$s.curve.parquet
+    done
+    """
+}
+
+process restrictBaselineTruth {
+    /*
+     * The Pfam-N truth table is built from the whole human annotation: 44_315 regions on
+     * 18_724 proteins, of which the 998 midi-plus queries hold 2_218 on 966. Scored as it
+     * stands, recall is divided by regions nobody searched (memory note and PR 165, which
+     * adds restrictTruthToQueries to the main workflow). The 2026-10-19 run of this entry
+     * scored the Pfam family frequency baseline against the whole table and got Fmax 0.002;
+     * against the queries' own rows it is 0.035.
+     */
+    tag "${truth_set}"
+    label 'no_search'
+    container params.kmerseek_image
+    cpus 1
+    memory { 4.GB * task.attempt }
+    time   { 1.h * task.attempt }
+    errorStrategy { retryOnKill(task) }
+    maxRetries 2
+
+    input:
+    tuple val(truth_set), path(truth, stageAs: 'full/*'), path(query_fasta)
+
+    output:
+    tuple val(truth_set), path("human_${truth_set}_truth.queries.parquet")
+
+    script:
+    """
+    no_search_baselines.py restrict --truth ${truth} --fasta ${query_fasta} \\
+        --out human_${truth_set}_truth.queries.parquet
+    """
+
+    stub:
+    """
+    touch human_${truth_set}_truth.queries.parquet
+    """
+}
+
+process aggregateNoSearch {
+    tag "no-search baselines"
+    label 'no_search'
+    container params.kmerseek_image
+    cpus 1
+    memory { 4.GB * task.attempt }
+    time   { 1.h * task.attempt }
+    errorStrategy { retryOnKill(task) }
+    maxRetries 2
+    publishDir "${params.outdir}/no_search", mode: 'copy'
+
+    input:
+    path 'metrics/*'
+    path applies
+
+    output:
+    path "no_search_baseline_metrics.parquet"
+
+    script:
+    """
+    no_search_baselines.py concat --metrics-dir metrics --applies ${applies} \\
+        --out no_search_baseline_metrics.parquet
+    """
+
+    stub:
+    """
+    touch no_search_baseline_metrics.parquet
+    """
+}
+
+workflow noSearchBaselines {
+    if (!params.baseline_run_dir) error "--baseline_run_dir: the finished run's results folder"
+    def run_dir     = file(params.baseline_run_dir)
+    def query_fasta = file("${params.qfo_dir}/Eukaryota/UP000005640_9606.fasta")
+    def must = { f, what ->
+        def p = f ? file(f) : null
+        if (p == null || !p.exists()) error "no-search baselines: ${what} not found at ${f}"
+        p
+    }
+    must(query_fasta, 'query FASTA')
+    def covariates = must("${run_dir}/truth/human_query_covariates.parquet", 'query covariates')
+    def applies    = must("${projectDir}/assets/no_search_baselines.tsv", 'applicability table')
+
+    // (truth set, truth table): the same files the finished run scored every tool against.
+    def truth_list = [
+        tuple('pfam',      must("${run_dir}/truth/human_domain_truth.parquet", 'Pfam truth')),
+        tuple('swissprot', must("${run_dir}/truth_swissprot/human_swissprot_truth.parquet",
+                                'Swiss-Prot truth')),
+    ]
+    // Pfam-N's table covers the whole proteome, so it is cut to the queries first; the Pfam
+    // and Swiss-Prot tables of the finished run already hold only the queries.
+    pfamn_truth = params.pfamn_dir
+        ? restrictBaselineTruth(Channel.of(tuple(
+              'pfamn', must("${params.pfamn_dir}/human_pfamn_truth.parquet", 'Pfam-N truth'),
+              query_fasta)))
+        : Channel.empty()
+
+    dis = buildDisorderTruth(
+        Channel.of(tuple(must(params.swissprot_dat, 'Swiss-Prot flat file'), query_fasta)))
+    disorder_truth = dis.disordered.map { t -> tuple('swissprot_disordered', t) }
+        .mix(dis.compbias.map { t -> tuple('swissprot_compbias', t) })
+
+    kd   = kdScan(query_fasta).calls
+    freq = familyFrequency(Channel.of(tuple(
+        query_fasta,
+        must(params.baseline_reference_fasta, 'reference FASTA'),
+        must(params.baseline_reference_annotation, 'reference Pfam annotation')))).calls
+    iu   = iupredLong(Channel.of(tuple(query_fasta,
+                                       must(params.iupred_dir, 'IUPred folder')))).scores
+    mp   = metapredictScores(query_fasta).scores
+    sg   = segmasker(query_fasta).intervals
+    per_residue = baselineCalls(
+        iu.map { f -> tuple('iupred', f) }
+          .mix(mp.map { f -> tuple('metapredict', f) })
+          .mix(sg.map { f -> tuple('seg', f) })
+    ).calls
+
+    // Every call file is <tool>.<variant>.tsv; the applicability table says which truth
+    // sets each (tool, variant) is scored against. A file the table does not list is an
+    // error, not a silent drop.
+    def table = applies.readLines().drop(1).findAll { it.trim() }.collect { it.split('\t') }
+    scored_in = kd.flatten().mix(freq, per_residue.flatten())
+        .flatMap { f ->
+            def stem    = f.name.replaceAll(/\.tsv$/, '')
+            def tool    = stem.tokenize('.')[0]
+            def variant = stem.substring(tool.length() + 1)
+            def sets = table.findAll { it[0] == tool && it[1] == variant }
+                            .collect { it[3] }.unique()
+            if (!sets) error "no-search baselines: ${f.name} is not in ${applies.name}"
+            sets.collect { ts -> tuple(ts, tool, variant, f) }
+        }
+        .groupTuple()
+        .join(Channel.fromList(truth_list).mix(disorder_truth, pfamn_truth))
+        .map { ts, tools, variants, files, truth ->
+            tuple(ts, truth, tools, variants, files, covariates) }
+
+    scored = scoreBaselines(scored_in)
+    aggregateNoSearch(scored.metrics.flatten().collect(), applies)
+}
