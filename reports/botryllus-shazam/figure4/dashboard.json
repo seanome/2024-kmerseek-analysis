@@ -1,0 +1,6839 @@
+{
+  "source": {
+    "source_url": "https://www.ebi.ac.uk/europepmc/webservices/rest/PMC13229227/supplementaryFiles",
+    "workbook_sha256": "4e2f2164fff28658f38ac30deee3f3bd61926b4f9ae8f8306c9def21a0072eba",
+    "sheets": [
+      "sequenced samples meta data",
+      "DEseq group annotation",
+      "Pacemaker_Counts_Table",
+      "Group1_2Hr_young_DEseqres",
+      "group2_24Hr_Young_DEseqresult",
+      "group3_24Hr_OLD_DEseq",
+      "Group4_13and49Days_Young_DEseq",
+      "group5_132Days_young_DEseq",
+      "group6_41to93days_oldDEseq",
+      "Fig 4_M1 M2 Botryllus gene set",
+      "annotated DE all groups young",
+      "annotated DE all groups old",
+      "Temporal Reg gene list young ",
+      "Temporal Reg gene list Old",
+      "fig4a&bgene_count"
+    ],
+    "genes": 72113,
+    "libraries": 64,
+    "gene_set_counts": {
+      "proimmune": 13,
+      "cell_repair": 133
+    },
+    "published_groups": {
+      "Group 1 after 2h young": 12,
+      "Group 2 after 24h young": 12,
+      "Group 3 after 24h old": 4,
+      "Group 4 after 13 and 49 days Young": 8,
+      "Group 5 after 132 days Young": 6,
+      "Group 6 after 41 and 93 days Old": 5
+    },
+    "low_count_libraries": [
+      "SRR32233985",
+      "SRR32233971",
+      "SRR32233962",
+      "SRR32233927",
+      "SRR32233974",
+      "SRR32233948",
+      "SRR32233935",
+      "SRR32233972",
+      "SRR32233951",
+      "SRR32233988",
+      "SRR32233945",
+      "SRR32233939",
+      "SRR32233947",
+      "SRR32233950",
+      "SRR32233944",
+      "SRR32233976"
+    ],
+    "published_de_tables": [
+      {
+        "sheet": "Group1_2Hr_young_DEseqres",
+        "genes": 72113,
+        "finite_p": 50236,
+        "raw_p_005_abs_lfc_gt1": 646,
+        "adjusted_p_005_abs_lfc_gt1": 0
+      },
+      {
+        "sheet": "group2_24Hr_Young_DEseqresult",
+        "genes": 72113,
+        "finite_p": 50592,
+        "raw_p_005_abs_lfc_gt1": 816,
+        "adjusted_p_005_abs_lfc_gt1": 1
+      },
+      {
+        "sheet": "group3_24Hr_OLD_DEseq",
+        "genes": 72113,
+        "finite_p": 36366,
+        "raw_p_005_abs_lfc_gt1": 136,
+        "adjusted_p_005_abs_lfc_gt1": 0
+      },
+      {
+        "sheet": "Group4_13and49Days_Young_DEseq",
+        "genes": 72113,
+        "finite_p": 25407,
+        "raw_p_005_abs_lfc_gt1": 94,
+        "adjusted_p_005_abs_lfc_gt1": 0
+      },
+      {
+        "sheet": "group5_132Days_young_DEseq",
+        "genes": 72113,
+        "finite_p": 21031,
+        "raw_p_005_abs_lfc_gt1": 179,
+        "adjusted_p_005_abs_lfc_gt1": 11
+      },
+      {
+        "sheet": "group6_41to93days_oldDEseq",
+        "genes": 72113,
+        "finite_p": 28015,
+        "raw_p_005_abs_lfc_gt1": 64,
+        "adjusted_p_005_abs_lfc_gt1": 0
+      }
+    ],
+    "hub_count_cells": 84,
+    "status": "Published inputs extracted; no raw-read or adjusted-model reproduction inferred"
+  },
+  "immune_genes": [
+    {
+      "gene_id": "g17033",
+      "gene_name": "PPA1",
+      "role": "proimmune",
+      "published_tests": [
+        {
+          "group": 1,
+          "log2foldchange": "0.8998478414",
+          "pvalue": "0.4607224312",
+          "padj": "0.9999618916"
+        },
+        {
+          "group": 2,
+          "log2foldchange": "0.4751046072",
+          "pvalue": "0.7137155058",
+          "padj": "0.9999737429"
+        },
+        {
+          "group": 3,
+          "log2foldchange": "-2.14455944",
+          "pvalue": "0.4481172385",
+          "padj": "0.9959670491"
+        },
+        {
+          "group": 4,
+          "log2foldchange": "0.4551211149",
+          "pvalue": "0.8940470475",
+          "padj": "0.9992364554"
+        },
+        {
+          "group": 5,
+          "log2foldchange": "-1.69577405",
+          "pvalue": "0.5399866744",
+          "padj": ""
+        },
+        {
+          "group": 6,
+          "log2foldchange": "0.3252377229",
+          "pvalue": "0.9173336155",
+          "padj": "0.9951116568"
+        }
+      ],
+      "adjusted_tests": [],
+      "splash_recovery": "not measured",
+      "DEkupl_recovery": "not measured"
+    },
+    {
+      "gene_id": "g1000",
+      "gene_name": "WDR19",
+      "role": "cell_repair",
+      "published_tests": [
+        {
+          "group": 1,
+          "log2foldchange": "-0.6125842632",
+          "pvalue": "0.6415683913",
+          "padj": "0.9999618916"
+        },
+        {
+          "group": 2,
+          "log2foldchange": "-1.051537638",
+          "pvalue": "0.5187774477",
+          "padj": "0.9999737429"
+        },
+        {
+          "group": 3,
+          "log2foldchange": "-2.916366418",
+          "pvalue": "0.5075258268",
+          "padj": "0.9959670491"
+        },
+        {
+          "group": 4,
+          "log2foldchange": "-0.9576230433",
+          "pvalue": "0.7800250534",
+          "padj": "0.9992364554"
+        },
+        {
+          "group": 5,
+          "log2foldchange": "",
+          "pvalue": "",
+          "padj": ""
+        },
+        {
+          "group": 6,
+          "log2foldchange": "1.060470579",
+          "pvalue": "0.8137543602",
+          "padj": "0.9951116568"
+        }
+      ],
+      "adjusted_tests": [],
+      "splash_recovery": "not measured",
+      "DEkupl_recovery": "not measured"
+    },
+    {
+      "gene_id": "g17423",
+      "gene_name": "SCO2",
+      "role": "proimmune",
+      "published_tests": [
+        {
+          "group": 1,
+          "log2foldchange": "2.570485114",
+          "pvalue": "0.05982849891",
+          "padj": "0.9999618916"
+        },
+        {
+          "group": 2,
+          "log2foldchange": "0.8092887915",
+          "pvalue": "0.5936614578",
+          "padj": "0.9999737429"
+        },
+        {
+          "group": 3,
+          "log2foldchange": "2.03348231",
+          "pvalue": "0.4604740461",
+          "padj": "0.9959670491"
+        },
+        {
+          "group": 4,
+          "log2foldchange": "-0.641907224",
+          "pvalue": "0.8352481179",
+          "padj": "0.9992364554"
+        },
+        {
+          "group": 5,
+          "log2foldchange": "1.085701659",
+          "pvalue": "0.7475450215",
+          "padj": ""
+        },
+        {
+          "group": 6,
+          "log2foldchange": "2.252078383",
+          "pvalue": "0.6147744572",
+          "padj": "0.9951116568"
+        }
+      ],
+      "adjusted_tests": [],
+      "splash_recovery": "not measured",
+      "DEkupl_recovery": "not measured"
+    },
+    {
+      "gene_id": "g10616",
+      "gene_name": "PIBF1",
+      "role": "cell_repair",
+      "published_tests": [
+        {
+          "group": 1,
+          "log2foldchange": "0.6656346196",
+          "pvalue": "0.6175722592",
+          "padj": "0.9999618916"
+        },
+        {
+          "group": 2,
+          "log2foldchange": "-0.01950688628",
+          "pvalue": "0.9890828344",
+          "padj": "0.9999737429"
+        },
+        {
+          "group": 3,
+          "log2foldchange": "0.6465511518",
+          "pvalue": "0.8965842825",
+          "padj": "0.9959670491"
+        },
+        {
+          "group": 4,
+          "log2foldchange": "-1.222962508",
+          "pvalue": "0.7235759577",
+          "padj": "0.9992364554"
+        },
+        {
+          "group": 5,
+          "log2foldchange": "",
+          "pvalue": "",
+          "padj": ""
+        },
+        {
+          "group": 6,
+          "log2foldchange": "-3.820757006",
+          "pvalue": "0.3512750479",
+          "padj": "0.9951116568"
+        }
+      ],
+      "adjusted_tests": [],
+      "splash_recovery": "not measured",
+      "DEkupl_recovery": "not measured"
+    },
+    {
+      "gene_id": "g18855",
+      "gene_name": "STOM",
+      "role": "proimmune",
+      "published_tests": [
+        {
+          "group": 1,
+          "log2foldchange": "-3.008881573",
+          "pvalue": "0.04154652886",
+          "padj": "0.9999618916"
+        },
+        {
+          "group": 2,
+          "log2foldchange": "-0.3971039292",
+          "pvalue": "0.7356013262",
+          "padj": "0.9999737429"
+        },
+        {
+          "group": 3,
+          "log2foldchange": "3.652828971",
+          "pvalue": "0.204352772",
+          "padj": "0.9959670491"
+        },
+        {
+          "group": 4,
+          "log2foldchange": "-0.7776683049",
+          "pvalue": "0.8209266683",
+          "padj": "0.9992364554"
+        },
+        {
+          "group": 5,
+          "log2foldchange": "1.729588415",
+          "pvalue": "0.4851231751",
+          "padj": ""
+        },
+        {
+          "group": 6,
+          "log2foldchange": "1.347712717",
+          "pvalue": "0.6721480497",
+          "padj": "0.9951116568"
+        }
+      ],
+      "adjusted_tests": [],
+      "splash_recovery": "not measured",
+      "DEkupl_recovery": "not measured"
+    },
+    {
+      "gene_id": "g1072",
+      "gene_name": "SYNE1",
+      "role": "cell_repair",
+      "published_tests": [
+        {
+          "group": 1,
+          "log2foldchange": "0.1996814953",
+          "pvalue": "0.8260390586",
+          "padj": "0.9999618916"
+        },
+        {
+          "group": 2,
+          "log2foldchange": "0.2142095721",
+          "pvalue": "0.8562824576",
+          "padj": "0.9999737429"
+        },
+        {
+          "group": 3,
+          "log2foldchange": "-0.4070245009",
+          "pvalue": "0.8713487799",
+          "padj": "0.9959670491"
+        },
+        {
+          "group": 4,
+          "log2foldchange": "-1.429845093",
+          "pvalue": "0.4804394924",
+          "padj": "0.9992364554"
+        },
+        {
+          "group": 5,
+          "log2foldchange": "-0.5653234367",
+          "pvalue": "0.6634204217",
+          "padj": "0.9989747531"
+        },
+        {
+          "group": 6,
+          "log2foldchange": "2.1109899",
+          "pvalue": "0.2569884071",
+          "padj": "0.9951116568"
+        }
+      ],
+      "adjusted_tests": [],
+      "splash_recovery": "not measured",
+      "DEkupl_recovery": "not measured"
+    },
+    {
+      "gene_id": "g18856",
+      "gene_name": "STOM",
+      "role": "proimmune",
+      "published_tests": [
+        {
+          "group": 1,
+          "log2foldchange": "-3.385997143",
+          "pvalue": "",
+          "padj": ""
+        },
+        {
+          "group": 2,
+          "log2foldchange": "-1.53313094",
+          "pvalue": "",
+          "padj": ""
+        },
+        {
+          "group": 3,
+          "log2foldchange": "3.385093503",
+          "pvalue": "0.1291753742",
+          "padj": "0.9959670491"
+        },
+        {
+          "group": 4,
+          "log2foldchange": "1.295616148",
+          "pvalue": "0.3905002902",
+          "padj": "0.9992364554"
+        },
+        {
+          "group": 5,
+          "log2foldchange": "0.8833936655",
+          "pvalue": "0.5201404138",
+          "padj": "0.9989747531"
+        },
+        {
+          "group": 6,
+          "log2foldchange": "-1.990674635",
+          "pvalue": "0.2478624394",
+          "padj": "0.9951116568"
+        }
+      ],
+      "adjusted_tests": [],
+      "splash_recovery": "not measured",
+      "DEkupl_recovery": "not measured"
+    },
+    {
+      "gene_id": "g1115",
+      "gene_name": "CLCN6",
+      "role": "cell_repair",
+      "published_tests": [
+        {
+          "group": 1,
+          "log2foldchange": "-1.042727778",
+          "pvalue": "0.5490773086",
+          "padj": "0.9999618916"
+        },
+        {
+          "group": 2,
+          "log2foldchange": "0.1828585472",
+          "pvalue": "",
+          "padj": ""
+        },
+        {
+          "group": 3,
+          "log2foldchange": "-0.05474755704",
+          "pvalue": "0.9911468818",
+          "padj": "0.9959670491"
+        },
+        {
+          "group": 4,
+          "log2foldchange": "",
+          "pvalue": "",
+          "padj": ""
+        },
+        {
+          "group": 5,
+          "log2foldchange": "",
+          "pvalue": "",
+          "padj": ""
+        },
+        {
+          "group": 6,
+          "log2foldchange": "0.6592249752",
+          "pvalue": "0.8839429881",
+          "padj": "0.9951116568"
+        }
+      ],
+      "adjusted_tests": [],
+      "splash_recovery": "not measured",
+      "DEkupl_recovery": "not measured"
+    },
+    {
+      "gene_id": "g19255",
+      "gene_name": "PPA1",
+      "role": "proimmune",
+      "published_tests": [
+        {
+          "group": 1,
+          "log2foldchange": "0.9651300825",
+          "pvalue": "0.6683380036",
+          "padj": "0.9999618916"
+        },
+        {
+          "group": 2,
+          "log2foldchange": "0.835553368",
+          "pvalue": "0.7322338258",
+          "padj": "0.9999737429"
+        },
+        {
+          "group": 3,
+          "log2foldchange": "",
+          "pvalue": "",
+          "padj": ""
+        },
+        {
+          "group": 4,
+          "log2foldchange": "",
+          "pvalue": "",
+          "padj": ""
+        },
+        {
+          "group": 5,
+          "log2foldchange": "",
+          "pvalue": "",
+          "padj": ""
+        },
+        {
+          "group": 6,
+          "log2foldchange": "",
+          "pvalue": "",
+          "padj": ""
+        }
+      ],
+      "adjusted_tests": [],
+      "splash_recovery": "not measured",
+      "DEkupl_recovery": "not measured"
+    },
+    {
+      "gene_id": "g12365",
+      "gene_name": "MLL",
+      "role": "cell_repair",
+      "published_tests": [
+        {
+          "group": 1,
+          "log2foldchange": "-0.8922370299",
+          "pvalue": "0.7169286666",
+          "padj": "0.9999618916"
+        },
+        {
+          "group": 2,
+          "log2foldchange": "-0.05792704914",
+          "pvalue": "0.9846548684",
+          "padj": "0.9999737429"
+        },
+        {
+          "group": 3,
+          "log2foldchange": "-1.345713259",
+          "pvalue": "0.7812782969",
+          "padj": "0.9959670491"
+        },
+        {
+          "group": 4,
+          "log2foldchange": "",
+          "pvalue": "",
+          "padj": ""
+        },
+        {
+          "group": 5,
+          "log2foldchange": "",
+          "pvalue": "",
+          "padj": ""
+        },
+        {
+          "group": 6,
+          "log2foldchange": "",
+          "pvalue": "",
+          "padj": ""
+        }
+      ],
+      "adjusted_tests": [],
+      "splash_recovery": "not measured",
+      "DEkupl_recovery": "not measured"
+    },
+    {
+      "gene_id": "g19256",
+      "gene_name": "PPA1",
+      "role": "proimmune",
+      "published_tests": [
+        {
+          "group": 1,
+          "log2foldchange": "0.6346776536",
+          "pvalue": "0.5855024328",
+          "padj": "0.9999618916"
+        },
+        {
+          "group": 2,
+          "log2foldchange": "0.2224328796",
+          "pvalue": "0.8512955727",
+          "padj": "0.9999737429"
+        },
+        {
+          "group": 3,
+          "log2foldchange": "-2.870938311",
+          "pvalue": "0.3608341404",
+          "padj": "0.9959670491"
+        },
+        {
+          "group": 4,
+          "log2foldchange": "-1.222962508",
+          "pvalue": "0.7235759577",
+          "padj": "0.9992364554"
+        },
+        {
+          "group": 5,
+          "log2foldchange": "-1.066987482",
+          "pvalue": "0.7915509332",
+          "padj": ""
+        },
+        {
+          "group": 6,
+          "log2foldchange": "1.210205365",
+          "pvalue": "0.7878351678",
+          "padj": "0.9951116568"
+        }
+      ],
+      "adjusted_tests": [],
+      "splash_recovery": "not measured",
+      "DEkupl_recovery": "not measured"
+    },
+    {
+      "gene_id": "g12657",
+      "gene_name": "WDR19",
+      "role": "cell_repair",
+      "published_tests": [
+        {
+          "group": 1,
+          "log2foldchange": "0.7526697092",
+          "pvalue": "0.7817330007",
+          "padj": "0.9999618916"
+        },
+        {
+          "group": 2,
+          "log2foldchange": "0.2418224328",
+          "pvalue": "0.9360477844",
+          "padj": "0.9999737429"
+        },
+        {
+          "group": 3,
+          "log2foldchange": "5.550766156",
+          "pvalue": "0.07638857601",
+          "padj": "0.9959670491"
+        },
+        {
+          "group": 4,
+          "log2foldchange": "",
+          "pvalue": "",
+          "padj": ""
+        },
+        {
+          "group": 5,
+          "log2foldchange": "",
+          "pvalue": "",
+          "padj": ""
+        },
+        {
+          "group": 6,
+          "log2foldchange": "-1.955369343",
+          "pvalue": "0.6671310544",
+          "padj": "0.9951116568"
+        }
+      ],
+      "adjusted_tests": [],
+      "splash_recovery": "not measured",
+      "DEkupl_recovery": "not measured"
+    },
+    {
+      "gene_id": "g2554",
+      "gene_name": "PPA1",
+      "role": "proimmune",
+      "published_tests": [
+        {
+          "group": 1,
+          "log2foldchange": "0.02387860425",
+          "pvalue": "0.9803128627",
+          "padj": "0.9999618916"
+        },
+        {
+          "group": 2,
+          "log2foldchange": "1.865216624",
+          "pvalue": "0.09194047998",
+          "padj": "0.9999737429"
+        },
+        {
+          "group": 3,
+          "log2foldchange": "-4.277399477",
+          "pvalue": "0.0766084942",
+          "padj": "0.9959670491"
+        },
+        {
+          "group": 4,
+          "log2foldchange": "-2.913688051",
+          "pvalue": "0.05121041541",
+          "padj": "0.9992364554"
+        },
+        {
+          "group": 5,
+          "log2foldchange": "0.5153515249",
+          "pvalue": "0.779753074",
+          "padj": ""
+        },
+        {
+          "group": 6,
+          "log2foldchange": "0.2286556042",
+          "pvalue": "0.9218796134",
+          "padj": "0.9951116568"
+        }
+      ],
+      "adjusted_tests": [],
+      "splash_recovery": "not measured",
+      "DEkupl_recovery": "not measured"
+    },
+    {
+      "gene_id": "g12778",
+      "gene_name": "GNPDA1",
+      "role": "cell_repair",
+      "published_tests": [
+        {
+          "group": 1,
+          "log2foldchange": "0.1581563014",
+          "pvalue": "0.9569801003",
+          "padj": "0.9999618916"
+        },
+        {
+          "group": 2,
+          "log2foldchange": "-0.4766362948",
+          "pvalue": "0.8140728533",
+          "padj": "0.9999737429"
+        },
+        {
+          "group": 3,
+          "log2foldchange": "",
+          "pvalue": "",
+          "padj": ""
+        },
+        {
+          "group": 4,
+          "log2foldchange": "",
+          "pvalue": "",
+          "padj": ""
+        },
+        {
+          "group": 5,
+          "log2foldchange": "",
+          "pvalue": "",
+          "padj": ""
+        },
+        {
+          "group": 6,
+          "log2foldchange": "",
+          "pvalue": "",
+          "padj": ""
+        }
+      ],
+      "adjusted_tests": [],
+      "splash_recovery": "not measured",
+      "DEkupl_recovery": "not measured"
+    },
+    {
+      "gene_id": "g33827",
+      "gene_name": "STOM",
+      "role": "proimmune",
+      "published_tests": [
+        {
+          "group": 1,
+          "log2foldchange": "-0.6032075661",
+          "pvalue": "0.4331353682",
+          "padj": "0.9999618916"
+        },
+        {
+          "group": 2,
+          "log2foldchange": "0.7110054269",
+          "pvalue": "0.4214111885",
+          "padj": "0.9999737429"
+        },
+        {
+          "group": 3,
+          "log2foldchange": "-2.055512203",
+          "pvalue": "0.2616312507",
+          "padj": "0.9959670491"
+        },
+        {
+          "group": 4,
+          "log2foldchange": "-0.9644344128",
+          "pvalue": "0.2367585598",
+          "padj": "0.9992364554"
+        },
+        {
+          "group": 5,
+          "log2foldchange": "-0.9509286048",
+          "pvalue": "0.2762198372",
+          "padj": "0.9989747531"
+        },
+        {
+          "group": 6,
+          "log2foldchange": "0.1513778956",
+          "pvalue": "0.9134915778",
+          "padj": "0.9951116568"
+        }
+      ],
+      "adjusted_tests": [],
+      "splash_recovery": "not measured",
+      "DEkupl_recovery": "not measured"
+    },
+    {
+      "gene_id": "g1367",
+      "gene_name": "SYNE1",
+      "role": "cell_repair",
+      "published_tests": [
+        {
+          "group": 1,
+          "log2foldchange": "-0.5143472952",
+          "pvalue": "0.7862265362",
+          "padj": "0.9999618916"
+        },
+        {
+          "group": 2,
+          "log2foldchange": "0.6011989778",
+          "pvalue": "0.8014720007",
+          "padj": "0.9999737429"
+        },
+        {
+          "group": 3,
+          "log2foldchange": "-1.513578539",
+          "pvalue": "0.754491071",
+          "padj": "0.9959670491"
+        },
+        {
+          "group": 4,
+          "log2foldchange": "1.54141729",
+          "pvalue": "0.6575322892",
+          "padj": "0.9992364554"
+        },
+        {
+          "group": 5,
+          "log2foldchange": "",
+          "pvalue": "",
+          "padj": ""
+        },
+        {
+          "group": 6,
+          "log2foldchange": "2.252078383",
+          "pvalue": "0.6147744572",
+          "padj": "0.9951116568"
+        }
+      ],
+      "adjusted_tests": [],
+      "splash_recovery": "not measured",
+      "DEkupl_recovery": "not measured"
+    },
+    {
+      "gene_id": "g35956",
+      "gene_name": "KARS",
+      "role": "proimmune",
+      "published_tests": [
+        {
+          "group": 1,
+          "log2foldchange": "-0.06480596017",
+          "pvalue": "0.9023308496",
+          "padj": "0.9999618916"
+        },
+        {
+          "group": 2,
+          "log2foldchange": "0.004121367559",
+          "pvalue": "0.9948552376",
+          "padj": "0.9999737429"
+        },
+        {
+          "group": 3,
+          "log2foldchange": "-0.519781357",
+          "pvalue": "0.7850225189",
+          "padj": "0.9959670491"
+        },
+        {
+          "group": 4,
+          "log2foldchange": "-1.578318324",
+          "pvalue": "0.1819249908",
+          "padj": "0.9992364554"
+        },
+        {
+          "group": 5,
+          "log2foldchange": "0.3758780808",
+          "pvalue": "0.6851864686",
+          "padj": "0.9989747531"
+        },
+        {
+          "group": 6,
+          "log2foldchange": "-1.021068334",
+          "pvalue": "0.5392219194",
+          "padj": "0.9951116568"
+        }
+      ],
+      "adjusted_tests": [],
+      "splash_recovery": "not measured",
+      "DEkupl_recovery": "not measured"
+    },
+    {
+      "gene_id": "g14132",
+      "gene_name": "WDR19",
+      "role": "cell_repair",
+      "published_tests": [
+        {
+          "group": 1,
+          "log2foldchange": "-0.197094551",
+          "pvalue": "0.9284524158",
+          "padj": "0.9999618916"
+        },
+        {
+          "group": 2,
+          "log2foldchange": "0.5487640635",
+          "pvalue": "0.8022969333",
+          "padj": "0.9999737429"
+        },
+        {
+          "group": 3,
+          "log2foldchange": "2.043921025",
+          "pvalue": "0.5351221459",
+          "padj": "0.9959670491"
+        },
+        {
+          "group": 4,
+          "log2foldchange": "",
+          "pvalue": "",
+          "padj": ""
+        },
+        {
+          "group": 5,
+          "log2foldchange": "",
+          "pvalue": "",
+          "padj": ""
+        },
+        {
+          "group": 6,
+          "log2foldchange": "2.013723169",
+          "pvalue": "0.6529806615",
+          "padj": "0.9951116568"
+        }
+      ],
+      "adjusted_tests": [],
+      "splash_recovery": "not measured",
+      "DEkupl_recovery": "not measured"
+    },
+    {
+      "gene_id": "g43428",
+      "gene_name": "IRF1",
+      "role": "proimmune",
+      "published_tests": [
+        {
+          "group": 1,
+          "log2foldchange": "-1.475757275",
+          "pvalue": "0.3503847579",
+          "padj": "0.9999618916"
+        },
+        {
+          "group": 2,
+          "log2foldchange": "0.8876668959",
+          "pvalue": "0.4494265008",
+          "padj": "0.9999737429"
+        },
+        {
+          "group": 3,
+          "log2foldchange": "2.613124374",
+          "pvalue": "0.435088375",
+          "padj": "0.9959670491"
+        },
+        {
+          "group": 4,
+          "log2foldchange": "-1.56448866",
+          "pvalue": "0.6464750439",
+          "padj": "0.9992364554"
+        },
+        {
+          "group": 5,
+          "log2foldchange": "-2.295908682",
+          "pvalue": "0.5291350242",
+          "padj": ""
+        },
+        {
+          "group": 6,
+          "log2foldchange": "1.304341017",
+          "pvalue": "0.7716418174",
+          "padj": "0.9951116568"
+        }
+      ],
+      "adjusted_tests": [],
+      "splash_recovery": "not measured",
+      "DEkupl_recovery": "not measured"
+    },
+    {
+      "gene_id": "g14702",
+      "gene_name": "SYNE1",
+      "role": "cell_repair",
+      "published_tests": [
+        {
+          "group": 1,
+          "log2foldchange": "-0.79371637",
+          "pvalue": "0.4279684459",
+          "padj": "0.9999618916"
+        },
+        {
+          "group": 2,
+          "log2foldchange": "-0.6801938731",
+          "pvalue": "0.5397808335",
+          "padj": "0.9999737429"
+        },
+        {
+          "group": 3,
+          "log2foldchange": "1.000885439",
+          "pvalue": "0.700118107",
+          "padj": "0.9959670491"
+        },
+        {
+          "group": 4,
+          "log2foldchange": "-1.668602959",
+          "pvalue": "0.3372838951",
+          "padj": "0.9992364554"
+        },
+        {
+          "group": 5,
+          "log2foldchange": "-0.2259551905",
+          "pvalue": "0.8627321121",
+          "padj": "0.9989747531"
+        },
+        {
+          "group": 6,
+          "log2foldchange": "0.7033560128",
+          "pvalue": "0.7519121737",
+          "padj": "0.9951116568"
+        }
+      ],
+      "adjusted_tests": [],
+      "splash_recovery": "not measured",
+      "DEkupl_recovery": "not measured"
+    },
+    {
+      "gene_id": "g46922",
+      "gene_name": "SCO2",
+      "role": "proimmune",
+      "published_tests": [
+        {
+          "group": 1,
+          "log2foldchange": "0.09526971397",
+          "pvalue": "0.9228457097",
+          "padj": "0.9999618916"
+        },
+        {
+          "group": 2,
+          "log2foldchange": "1.698245053",
+          "pvalue": "0.1317503299",
+          "padj": "0.9999737429"
+        },
+        {
+          "group": 3,
+          "log2foldchange": "-3.256439222",
+          "pvalue": "0.4313459765",
+          "padj": "0.9959670491"
+        },
+        {
+          "group": 4,
+          "log2foldchange": "-1.396729155",
+          "pvalue": "0.6801880141",
+          "padj": "0.9992364554"
+        },
+        {
+          "group": 5,
+          "log2foldchange": "-0.334219862",
+          "pvalue": "0.8882664237",
+          "padj": ""
+        },
+        {
+          "group": 6,
+          "log2foldchange": "-2.080952143",
+          "pvalue": "0.5948278961",
+          "padj": "0.9951116568"
+        }
+      ],
+      "adjusted_tests": [],
+      "splash_recovery": "not measured",
+      "DEkupl_recovery": "not measured"
+    },
+    {
+      "gene_id": "g14978",
+      "gene_name": "STK38",
+      "role": "cell_repair",
+      "published_tests": [
+        {
+          "group": 1,
+          "log2foldchange": "0.1644120202",
+          "pvalue": "0.9567245361",
+          "padj": "0.9999618916"
+        },
+        {
+          "group": 2,
+          "log2foldchange": "",
+          "pvalue": "",
+          "padj": ""
+        },
+        {
+          "group": 3,
+          "log2foldchange": "",
+          "pvalue": "",
+          "padj": ""
+        },
+        {
+          "group": 4,
+          "log2foldchange": "",
+          "pvalue": "",
+          "padj": ""
+        },
+        {
+          "group": 5,
+          "log2foldchange": "",
+          "pvalue": "",
+          "padj": ""
+        },
+        {
+          "group": 6,
+          "log2foldchange": "",
+          "pvalue": "",
+          "padj": ""
+        }
+      ],
+      "adjusted_tests": [],
+      "splash_recovery": "not measured",
+      "DEkupl_recovery": "not measured"
+    },
+    {
+      "gene_id": "g66043",
+      "gene_name": "SFT2D2",
+      "role": "proimmune",
+      "published_tests": [
+        {
+          "group": 1,
+          "log2foldchange": "0.09216360994",
+          "pvalue": "0.8837703219",
+          "padj": "0.9999618916"
+        },
+        {
+          "group": 2,
+          "log2foldchange": "0.5215944623",
+          "pvalue": "0.4433972287",
+          "padj": "0.9999737429"
+        },
+        {
+          "group": 3,
+          "log2foldchange": "0.08178511499",
+          "pvalue": "0.9672106012",
+          "padj": "0.9959670491"
+        },
+        {
+          "group": 4,
+          "log2foldchange": "-0.7758498754",
+          "pvalue": "0.4590268951",
+          "padj": "0.9992364554"
+        },
+        {
+          "group": 5,
+          "log2foldchange": "-0.4588857944",
+          "pvalue": "0.6017597916",
+          "padj": "0.9989747531"
+        },
+        {
+          "group": 6,
+          "log2foldchange": "-0.9016859965",
+          "pvalue": "0.5420691967",
+          "padj": "0.9951116568"
+        }
+      ],
+      "adjusted_tests": [],
+      "splash_recovery": "not measured",
+      "DEkupl_recovery": "not measured"
+    },
+    {
+      "gene_id": "g15219",
+      "gene_name": "CCDC88A",
+      "role": "cell_repair",
+      "published_tests": [
+        {
+          "group": 1,
+          "log2foldchange": "-1.962511833",
+          "pvalue": "0.09151293226",
+          "padj": "0.9999618916"
+        },
+        {
+          "group": 2,
+          "log2foldchange": "0.5190704761",
+          "pvalue": "0.6642071374",
+          "padj": "0.9999737429"
+        },
+        {
+          "group": 3,
+          "log2foldchange": "0.7662445013",
+          "pvalue": "0.7630738953",
+          "padj": "0.9959670491"
+        },
+        {
+          "group": 4,
+          "log2foldchange": "0.6464758155",
+          "pvalue": "0.7849800388",
+          "padj": "0.9992364554"
+        },
+        {
+          "group": 5,
+          "log2foldchange": "-1.653774267",
+          "pvalue": "0.2983086999",
+          "padj": ""
+        },
+        {
+          "group": 6,
+          "log2foldchange": "1.638364086",
+          "pvalue": "0.5899911809",
+          "padj": "0.9951116568"
+        }
+      ],
+      "adjusted_tests": [],
+      "splash_recovery": "not measured",
+      "DEkupl_recovery": "not measured"
+    },
+    {
+      "gene_id": "g68371",
+      "gene_name": "STOM",
+      "role": "proimmune",
+      "published_tests": [
+        {
+          "group": 1,
+          "log2foldchange": "0.7217142525",
+          "pvalue": "0.5214753714",
+          "padj": "0.9999618916"
+        },
+        {
+          "group": 2,
+          "log2foldchange": "-0.7348631601",
+          "pvalue": "0.553405746",
+          "padj": "0.9999737429"
+        },
+        {
+          "group": 3,
+          "log2foldchange": "-5.990251011",
+          "pvalue": "0.06146440596",
+          "padj": "0.9959670491"
+        },
+        {
+          "group": 4,
+          "log2foldchange": "-2.783550234",
+          "pvalue": "0.4151885522",
+          "padj": "0.9992364554"
+        },
+        {
+          "group": 5,
+          "log2foldchange": "-0.6488270243",
+          "pvalue": "0.8729816736",
+          "padj": ""
+        },
+        {
+          "group": 6,
+          "log2foldchange": "-1.791572514",
+          "pvalue": "0.5183091741",
+          "padj": "0.9951116568"
+        }
+      ],
+      "adjusted_tests": [],
+      "splash_recovery": "not measured",
+      "DEkupl_recovery": "not measured"
+    },
+    {
+      "gene_id": "g1595",
+      "gene_name": "CEP63",
+      "role": "cell_repair",
+      "published_tests": [
+        {
+          "group": 1,
+          "log2foldchange": "-0.7027065673",
+          "pvalue": "0.5011242341",
+          "padj": "0.9999618916"
+        },
+        {
+          "group": 2,
+          "log2foldchange": "-0.5676209854",
+          "pvalue": "0.5107739374",
+          "padj": "0.9999737429"
+        },
+        {
+          "group": 3,
+          "log2foldchange": "-2.809361022",
+          "pvalue": "0.4896145799",
+          "padj": "0.9959670491"
+        },
+        {
+          "group": 4,
+          "log2foldchange": "-0.6666308749",
+          "pvalue": "0.8413115902",
+          "padj": "0.9992364554"
+        },
+        {
+          "group": 5,
+          "log2foldchange": "0.05703309401",
+          "pvalue": "0.988645142",
+          "padj": ""
+        },
+        {
+          "group": 6,
+          "log2foldchange": "-1.227507125",
+          "pvalue": "0.7507821527",
+          "padj": "0.9951116568"
+        }
+      ],
+      "adjusted_tests": [],
+      "splash_recovery": "not measured",
+      "DEkupl_recovery": "not measured"
+    },
+    {
+      "gene_id": "g15994",
+      "gene_name": "TCEA1",
+      "role": "cell_repair",
+      "published_tests": [
+        {
+          "group": 1,
+          "log2foldchange": "-0.4503391385",
+          "pvalue": "0.6756099873",
+          "padj": "0.9999618916"
+        },
+        {
+          "group": 2,
+          "log2foldchange": "1.161973957",
+          "pvalue": "0.2466680672",
+          "padj": "0.9999737429"
+        },
+        {
+          "group": 3,
+          "log2foldchange": "-0.3775006054",
+          "pvalue": "0.8696381608",
+          "padj": "0.9959670491"
+        },
+        {
+          "group": 4,
+          "log2foldchange": "-1.701414845",
+          "pvalue": "0.4252513235",
+          "padj": "0.9992364554"
+        },
+        {
+          "group": 5,
+          "log2foldchange": "0.004292018344",
+          "pvalue": "0.9984872716",
+          "padj": ""
+        },
+        {
+          "group": 6,
+          "log2foldchange": "-1.564037925",
+          "pvalue": "0.5981940547",
+          "padj": "0.9951116568"
+        }
+      ],
+      "adjusted_tests": [],
+      "splash_recovery": "not measured",
+      "DEkupl_recovery": "not measured"
+    },
+    {
+      "gene_id": "g16093",
+      "gene_name": "PAN2",
+      "role": "cell_repair",
+      "published_tests": [
+        {
+          "group": 1,
+          "log2foldchange": "0.2883877176",
+          "pvalue": "0.8129741599",
+          "padj": "0.9999618916"
+        },
+        {
+          "group": 2,
+          "log2foldchange": "1.03436364",
+          "pvalue": "0.2606633446",
+          "padj": "0.9999737429"
+        },
+        {
+          "group": 3,
+          "log2foldchange": "-0.4265511728",
+          "pvalue": "0.9106576414",
+          "padj": "0.9959670491"
+        },
+        {
+          "group": 4,
+          "log2foldchange": "-1.278892462",
+          "pvalue": "0.6277037298",
+          "padj": "0.9992364554"
+        },
+        {
+          "group": 5,
+          "log2foldchange": "-2.162915208",
+          "pvalue": "0.3017690982",
+          "padj": ""
+        },
+        {
+          "group": 6,
+          "log2foldchange": "-2.121353898",
+          "pvalue": "0.2920877443",
+          "padj": "0.9951116568"
+        }
+      ],
+      "adjusted_tests": [],
+      "splash_recovery": "not measured",
+      "DEkupl_recovery": "not measured"
+    },
+    {
+      "gene_id": "g16234",
+      "gene_name": "FRY",
+      "role": "cell_repair",
+      "published_tests": [
+        {
+          "group": 1,
+          "log2foldchange": "",
+          "pvalue": "",
+          "padj": ""
+        },
+        {
+          "group": 2,
+          "log2foldchange": "2.464905545",
+          "pvalue": "0.4202035999",
+          "padj": "0.9999737429"
+        },
+        {
+          "group": 3,
+          "log2foldchange": "",
+          "pvalue": "",
+          "padj": ""
+        },
+        {
+          "group": 4,
+          "log2foldchange": "",
+          "pvalue": "",
+          "padj": ""
+        },
+        {
+          "group": 5,
+          "log2foldchange": "",
+          "pvalue": "",
+          "padj": ""
+        },
+        {
+          "group": 6,
+          "log2foldchange": "",
+          "pvalue": "",
+          "padj": ""
+        }
+      ],
+      "adjusted_tests": [],
+      "splash_recovery": "not measured",
+      "DEkupl_recovery": "not measured"
+    },
+    {
+      "gene_id": "g1751",
+      "gene_name": "IPO5",
+      "role": "cell_repair",
+      "published_tests": [
+        {
+          "group": 1,
+          "log2foldchange": "-0.5245285176",
+          "pvalue": "0.8173014817",
+          "padj": "0.9999618916"
+        },
+        {
+          "group": 2,
+          "log2foldchange": "-0.7889243707",
+          "pvalue": "",
+          "padj": ""
+        },
+        {
+          "group": 3,
+          "log2foldchange": "",
+          "pvalue": "",
+          "padj": ""
+        },
+        {
+          "group": 4,
+          "log2foldchange": "",
+          "pvalue": "",
+          "padj": ""
+        },
+        {
+          "group": 5,
+          "log2foldchange": "",
+          "pvalue": "",
+          "padj": ""
+        },
+        {
+          "group": 6,
+          "log2foldchange": "1.713054631",
+          "pvalue": "0.7024576472",
+          "padj": "0.9951116568"
+        }
+      ],
+      "adjusted_tests": [],
+      "splash_recovery": "not measured",
+      "DEkupl_recovery": "not measured"
+    },
+    {
+      "gene_id": "g18361",
+      "gene_name": "RPL3",
+      "role": "cell_repair",
+      "published_tests": [
+        {
+          "group": 1,
+          "log2foldchange": "-0.005491903024",
+          "pvalue": "0.9918559827",
+          "padj": "0.9999618916"
+        },
+        {
+          "group": 2,
+          "log2foldchange": "-0.08917339212",
+          "pvalue": "0.9010019105",
+          "padj": "0.9999737429"
+        },
+        {
+          "group": 3,
+          "log2foldchange": "-0.4602113325",
+          "pvalue": "0.8111631213",
+          "padj": "0.9959670491"
+        },
+        {
+          "group": 4,
+          "log2foldchange": "-1.297465259",
+          "pvalue": "0.1705032527",
+          "padj": "0.9992364554"
+        },
+        {
+          "group": 5,
+          "log2foldchange": "-0.6978778242",
+          "pvalue": "0.3116186883",
+          "padj": "0.9989747531"
+        },
+        {
+          "group": 6,
+          "log2foldchange": "-0.1969596113",
+          "pvalue": "0.8733174397",
+          "padj": "0.9951116568"
+        }
+      ],
+      "adjusted_tests": [],
+      "splash_recovery": "not measured",
+      "DEkupl_recovery": "not measured"
+    },
+    {
+      "gene_id": "g18571",
+      "gene_name": "CHKA",
+      "role": "cell_repair",
+      "published_tests": [
+        {
+          "group": 1,
+          "log2foldchange": "-0.4242869155",
+          "pvalue": "0.7030305038",
+          "padj": "0.9999618916"
+        },
+        {
+          "group": 2,
+          "log2foldchange": "-1.412503373",
+          "pvalue": "0.3113900388",
+          "padj": "0.9999737429"
+        },
+        {
+          "group": 3,
+          "log2foldchange": "-0.876698296",
+          "pvalue": "0.8111695677",
+          "padj": "0.9959670491"
+        },
+        {
+          "group": 4,
+          "log2foldchange": "-0.1357022158",
+          "pvalue": "0.9479206191",
+          "padj": "0.9992364554"
+        },
+        {
+          "group": 5,
+          "log2foldchange": "1.24344778",
+          "pvalue": "0.5579497022",
+          "padj": ""
+        },
+        {
+          "group": 6,
+          "log2foldchange": "2.665076737",
+          "pvalue": "0.4979908027",
+          "padj": "0.9951116568"
+        }
+      ],
+      "adjusted_tests": [],
+      "splash_recovery": "not measured",
+      "DEkupl_recovery": "not measured"
+    },
+    {
+      "gene_id": "g18759",
+      "gene_name": "PARP2",
+      "role": "cell_repair",
+      "published_tests": [
+        {
+          "group": 1,
+          "log2foldchange": "-0.3805688576",
+          "pvalue": "",
+          "padj": ""
+        },
+        {
+          "group": 2,
+          "log2foldchange": "0.9734442406",
+          "pvalue": "0.5276808669",
+          "padj": "0.9999737429"
+        },
+        {
+          "group": 3,
+          "log2foldchange": "",
+          "pvalue": "",
+          "padj": ""
+        },
+        {
+          "group": 4,
+          "log2foldchange": "",
+          "pvalue": "",
+          "padj": ""
+        },
+        {
+          "group": 5,
+          "log2foldchange": "0.7683670273",
+          "pvalue": "0.7953072347",
+          "padj": ""
+        },
+        {
+          "group": 6,
+          "log2foldchange": "-0.5510353176",
+          "pvalue": "0.8900834436",
+          "padj": "0.9951116568"
+        }
+      ],
+      "adjusted_tests": [],
+      "splash_recovery": "not measured",
+      "DEkupl_recovery": "not measured"
+    },
+    {
+      "gene_id": "g18964",
+      "gene_name": "CERK",
+      "role": "cell_repair",
+      "published_tests": [
+        {
+          "group": 1,
+          "log2foldchange": "0.1813230736",
+          "pvalue": "0.9291357367",
+          "padj": "0.9999618916"
+        },
+        {
+          "group": 2,
+          "log2foldchange": "0.2961909052",
+          "pvalue": "0.8885064606",
+          "padj": "0.9999737429"
+        },
+        {
+          "group": 3,
+          "log2foldchange": "0.6465511518",
+          "pvalue": "0.8965842825",
+          "padj": "0.9959670491"
+        },
+        {
+          "group": 4,
+          "log2foldchange": "-0.5193478818",
+          "pvalue": "0.8818674659",
+          "padj": "0.9992364554"
+        },
+        {
+          "group": 5,
+          "log2foldchange": "",
+          "pvalue": "",
+          "padj": ""
+        },
+        {
+          "group": 6,
+          "log2foldchange": "",
+          "pvalue": "",
+          "padj": ""
+        }
+      ],
+      "adjusted_tests": [],
+      "splash_recovery": "not measured",
+      "DEkupl_recovery": "not measured"
+    },
+    {
+      "gene_id": "g19192",
+      "gene_name": "IPO5",
+      "role": "cell_repair",
+      "published_tests": [
+        {
+          "group": 1,
+          "log2foldchange": "-0.7022588166",
+          "pvalue": "0.6781454062",
+          "padj": "0.9999618916"
+        },
+        {
+          "group": 2,
+          "log2foldchange": "0.1373971625",
+          "pvalue": "0.9418481435",
+          "padj": "0.9999737429"
+        },
+        {
+          "group": 3,
+          "log2foldchange": "-0.6233284981",
+          "pvalue": "0.8984913244",
+          "padj": "0.9959670491"
+        },
+        {
+          "group": 4,
+          "log2foldchange": "",
+          "pvalue": "",
+          "padj": ""
+        },
+        {
+          "group": 5,
+          "log2foldchange": "",
+          "pvalue": "",
+          "padj": ""
+        },
+        {
+          "group": 6,
+          "log2foldchange": "0.6592249752",
+          "pvalue": "0.8839429881",
+          "padj": "0.9951116568"
+        }
+      ],
+      "adjusted_tests": [],
+      "splash_recovery": "not measured",
+      "DEkupl_recovery": "not measured"
+    },
+    {
+      "gene_id": "g19861",
+      "gene_name": "XBP1",
+      "role": "cell_repair",
+      "published_tests": [
+        {
+          "group": 1,
+          "log2foldchange": "0.08445670975",
+          "pvalue": "0.8749588606",
+          "padj": "0.9999618916"
+        },
+        {
+          "group": 2,
+          "log2foldchange": "-0.4291872853",
+          "pvalue": "0.4685296812",
+          "padj": "0.9999737429"
+        },
+        {
+          "group": 3,
+          "log2foldchange": "-0.02814474624",
+          "pvalue": "0.9882409932",
+          "padj": "0.9959670491"
+        },
+        {
+          "group": 4,
+          "log2foldchange": "0.1047487057",
+          "pvalue": "0.8925412125",
+          "padj": "0.9992364554"
+        },
+        {
+          "group": 5,
+          "log2foldchange": "-0.3806000094",
+          "pvalue": "0.621346708",
+          "padj": "0.9989747531"
+        },
+        {
+          "group": 6,
+          "log2foldchange": "0.1494028329",
+          "pvalue": "0.9104521702",
+          "padj": "0.9951116568"
+        }
+      ],
+      "adjusted_tests": [],
+      "splash_recovery": "not measured",
+      "DEkupl_recovery": "not measured"
+    },
+    {
+      "gene_id": "g21532",
+      "gene_name": "ITPR2",
+      "role": "cell_repair",
+      "published_tests": [
+        {
+          "group": 1,
+          "log2foldchange": "",
+          "pvalue": "",
+          "padj": ""
+        },
+        {
+          "group": 2,
+          "log2foldchange": "",
+          "pvalue": "",
+          "padj": ""
+        },
+        {
+          "group": 3,
+          "log2foldchange": "",
+          "pvalue": "",
+          "padj": ""
+        },
+        {
+          "group": 4,
+          "log2foldchange": "",
+          "pvalue": "",
+          "padj": ""
+        },
+        {
+          "group": 5,
+          "log2foldchange": "",
+          "pvalue": "",
+          "padj": ""
+        },
+        {
+          "group": 6,
+          "log2foldchange": "",
+          "pvalue": "",
+          "padj": ""
+        }
+      ],
+      "adjusted_tests": [],
+      "splash_recovery": "not measured",
+      "DEkupl_recovery": "not measured"
+    },
+    {
+      "gene_id": "g21832",
+      "gene_name": "UGP2",
+      "role": "cell_repair",
+      "published_tests": [
+        {
+          "group": 1,
+          "log2foldchange": "1.589411933",
+          "pvalue": "0.1425553553",
+          "padj": "0.9999618916"
+        },
+        {
+          "group": 2,
+          "log2foldchange": "-0.3421767365",
+          "pvalue": "0.6826298374",
+          "padj": "0.9999737429"
+        },
+        {
+          "group": 3,
+          "log2foldchange": "1.012964861",
+          "pvalue": "0.7091327628",
+          "padj": "0.9959670491"
+        },
+        {
+          "group": 4,
+          "log2foldchange": "-0.4940693039",
+          "pvalue": "0.8848285564",
+          "padj": "0.9992364554"
+        },
+        {
+          "group": 5,
+          "log2foldchange": "1.827045426",
+          "pvalue": "0.3695437014",
+          "padj": ""
+        },
+        {
+          "group": 6,
+          "log2foldchange": "2.959513736",
+          "pvalue": "0.4139693803",
+          "padj": "0.9951116568"
+        }
+      ],
+      "adjusted_tests": [],
+      "splash_recovery": "not measured",
+      "DEkupl_recovery": "not measured"
+    },
+    {
+      "gene_id": "g21902",
+      "gene_name": "PCSK5",
+      "role": "cell_repair",
+      "published_tests": [
+        {
+          "group": 1,
+          "log2foldchange": "0.6526983272",
+          "pvalue": "0.8290777685",
+          "padj": "0.9999618916"
+        },
+        {
+          "group": 2,
+          "log2foldchange": "1.399955015",
+          "pvalue": "0.6441615874",
+          "padj": "0.9999737429"
+        },
+        {
+          "group": 3,
+          "log2foldchange": "",
+          "pvalue": "",
+          "padj": ""
+        },
+        {
+          "group": 4,
+          "log2foldchange": "",
+          "pvalue": "",
+          "padj": ""
+        },
+        {
+          "group": 5,
+          "log2foldchange": "",
+          "pvalue": "",
+          "padj": ""
+        },
+        {
+          "group": 6,
+          "log2foldchange": "",
+          "pvalue": "",
+          "padj": ""
+        }
+      ],
+      "adjusted_tests": [],
+      "splash_recovery": "not measured",
+      "DEkupl_recovery": "not measured"
+    },
+    {
+      "gene_id": "g22727",
+      "gene_name": "TSC2",
+      "role": "cell_repair",
+      "published_tests": [
+        {
+          "group": 1,
+          "log2foldchange": "0.5902300388",
+          "pvalue": "0.5573165243",
+          "padj": "0.9999618916"
+        },
+        {
+          "group": 2,
+          "log2foldchange": "-0.3511862695",
+          "pvalue": "0.7076880441",
+          "padj": "0.9999737429"
+        },
+        {
+          "group": 3,
+          "log2foldchange": "-0.8871533439",
+          "pvalue": "0.7918181164",
+          "padj": "0.9959670491"
+        },
+        {
+          "group": 4,
+          "log2foldchange": "2.547714501",
+          "pvalue": "0.4617160253",
+          "padj": "0.9992364554"
+        },
+        {
+          "group": 5,
+          "log2foldchange": "0.4452209817",
+          "pvalue": "0.7990735583",
+          "padj": ""
+        },
+        {
+          "group": 6,
+          "log2foldchange": "-0.5114151087",
+          "pvalue": "0.8865225981",
+          "padj": "0.9951116568"
+        }
+      ],
+      "adjusted_tests": [],
+      "splash_recovery": "not measured",
+      "DEkupl_recovery": "not measured"
+    },
+    {
+      "gene_id": "g22733",
+      "gene_name": "RPS21",
+      "role": "cell_repair",
+      "published_tests": [
+        {
+          "group": 1,
+          "log2foldchange": "0.4629709434",
+          "pvalue": "0.622080936",
+          "padj": "0.9999618916"
+        },
+        {
+          "group": 2,
+          "log2foldchange": "-0.2380065546",
+          "pvalue": "0.8127450535",
+          "padj": "0.9999737429"
+        },
+        {
+          "group": 3,
+          "log2foldchange": "1.214410745",
+          "pvalue": "0.5438519513",
+          "padj": "0.9959670491"
+        },
+        {
+          "group": 4,
+          "log2foldchange": "-1.310878008",
+          "pvalue": "0.1428304052",
+          "padj": "0.9992364554"
+        },
+        {
+          "group": 5,
+          "log2foldchange": "0.3379551026",
+          "pvalue": "0.6138874716",
+          "padj": "0.9989747531"
+        },
+        {
+          "group": 6,
+          "log2foldchange": "-1.562113581",
+          "pvalue": "0.2779379307",
+          "padj": "0.9951116568"
+        }
+      ],
+      "adjusted_tests": [],
+      "splash_recovery": "not measured",
+      "DEkupl_recovery": "not measured"
+    },
+    {
+      "gene_id": "g23747",
+      "gene_name": "TSC2",
+      "role": "cell_repair",
+      "published_tests": [
+        {
+          "group": 1,
+          "log2foldchange": "0.4715799845",
+          "pvalue": "0.8767602915",
+          "padj": "0.9999618916"
+        },
+        {
+          "group": 2,
+          "log2foldchange": "1.496839605",
+          "pvalue": "0.620942461",
+          "padj": "0.9999737429"
+        },
+        {
+          "group": 3,
+          "log2foldchange": "",
+          "pvalue": "",
+          "padj": ""
+        },
+        {
+          "group": 4,
+          "log2foldchange": "",
+          "pvalue": "",
+          "padj": ""
+        },
+        {
+          "group": 5,
+          "log2foldchange": "",
+          "pvalue": "",
+          "padj": ""
+        },
+        {
+          "group": 6,
+          "log2foldchange": "",
+          "pvalue": "",
+          "padj": ""
+        }
+      ],
+      "adjusted_tests": [],
+      "splash_recovery": "not measured",
+      "DEkupl_recovery": "not measured"
+    },
+    {
+      "gene_id": "g23770",
+      "gene_name": "RPL17",
+      "role": "cell_repair",
+      "published_tests": [
+        {
+          "group": 1,
+          "log2foldchange": "-0.4432780977",
+          "pvalue": "0.5857007672",
+          "padj": "0.9999618916"
+        },
+        {
+          "group": 2,
+          "log2foldchange": "-0.2033569642",
+          "pvalue": "0.7750010388",
+          "padj": "0.9999737429"
+        },
+        {
+          "group": 3,
+          "log2foldchange": "0.1206818005",
+          "pvalue": "0.9532750277",
+          "padj": "0.9959670491"
+        },
+        {
+          "group": 4,
+          "log2foldchange": "0.02623365371",
+          "pvalue": "0.9725393529",
+          "padj": "0.9992364554"
+        },
+        {
+          "group": 5,
+          "log2foldchange": "-0.5756460619",
+          "pvalue": "0.4434722898",
+          "padj": "0.9989747531"
+        },
+        {
+          "group": 6,
+          "log2foldchange": "-1.028967717",
+          "pvalue": "0.4477052766",
+          "padj": "0.9951116568"
+        }
+      ],
+      "adjusted_tests": [],
+      "splash_recovery": "not measured",
+      "DEkupl_recovery": "not measured"
+    },
+    {
+      "gene_id": "g25976",
+      "gene_name": "PAN2",
+      "role": "cell_repair",
+      "published_tests": [
+        {
+          "group": 1,
+          "log2foldchange": "0.5304020551",
+          "pvalue": "0.8121395167",
+          "padj": "0.9999618916"
+        },
+        {
+          "group": 2,
+          "log2foldchange": "-1.153004839",
+          "pvalue": "0.5552891516",
+          "padj": "0.9999737429"
+        },
+        {
+          "group": 3,
+          "log2foldchange": "0.6465511518",
+          "pvalue": "0.8965842825",
+          "padj": "0.9959670491"
+        },
+        {
+          "group": 4,
+          "log2foldchange": "2.624194392",
+          "pvalue": "0.448098116",
+          "padj": "0.9992364554"
+        },
+        {
+          "group": 5,
+          "log2foldchange": "",
+          "pvalue": "",
+          "padj": ""
+        },
+        {
+          "group": 6,
+          "log2foldchange": "",
+          "pvalue": "",
+          "padj": ""
+        }
+      ],
+      "adjusted_tests": [],
+      "splash_recovery": "not measured",
+      "DEkupl_recovery": "not measured"
+    },
+    {
+      "gene_id": "g26592",
+      "gene_name": "GIN1",
+      "role": "cell_repair",
+      "published_tests": [
+        {
+          "group": 1,
+          "log2foldchange": "",
+          "pvalue": "",
+          "padj": ""
+        },
+        {
+          "group": 2,
+          "log2foldchange": "1.877481816",
+          "pvalue": "0.5369999586",
+          "padj": "0.9999737429"
+        },
+        {
+          "group": 3,
+          "log2foldchange": "",
+          "pvalue": "",
+          "padj": ""
+        },
+        {
+          "group": 4,
+          "log2foldchange": "",
+          "pvalue": "",
+          "padj": ""
+        },
+        {
+          "group": 5,
+          "log2foldchange": "",
+          "pvalue": "",
+          "padj": ""
+        },
+        {
+          "group": 6,
+          "log2foldchange": "0.6592249752",
+          "pvalue": "0.8839429881",
+          "padj": "0.9951116568"
+        }
+      ],
+      "adjusted_tests": [],
+      "splash_recovery": "not measured",
+      "DEkupl_recovery": "not measured"
+    },
+    {
+      "gene_id": "g2689",
+      "gene_name": "SYNE1",
+      "role": "cell_repair",
+      "published_tests": [
+        {
+          "group": 1,
+          "log2foldchange": "0.4281955923",
+          "pvalue": "0.8871528393",
+          "padj": "0.9999618916"
+        },
+        {
+          "group": 2,
+          "log2foldchange": "1.139906713",
+          "pvalue": "0.7056917249",
+          "padj": "0.9999737429"
+        },
+        {
+          "group": 3,
+          "log2foldchange": "",
+          "pvalue": "",
+          "padj": ""
+        },
+        {
+          "group": 4,
+          "log2foldchange": "",
+          "pvalue": "",
+          "padj": ""
+        },
+        {
+          "group": 5,
+          "log2foldchange": "-1.066987482",
+          "pvalue": "0.7915509332",
+          "padj": ""
+        },
+        {
+          "group": 6,
+          "log2foldchange": "",
+          "pvalue": "",
+          "padj": ""
+        }
+      ],
+      "adjusted_tests": [],
+      "splash_recovery": "not measured",
+      "DEkupl_recovery": "not measured"
+    },
+    {
+      "gene_id": "g27172",
+      "gene_name": "TFPI",
+      "role": "cell_repair",
+      "published_tests": [
+        {
+          "group": 1,
+          "log2foldchange": "0.5051538297",
+          "pvalue": "0.5199704635",
+          "padj": "0.9999618916"
+        },
+        {
+          "group": 2,
+          "log2foldchange": "-0.2192680692",
+          "pvalue": "0.8181042138",
+          "padj": "0.9999737429"
+        },
+        {
+          "group": 3,
+          "log2foldchange": "-0.3850964246",
+          "pvalue": "0.8705366216",
+          "padj": "0.9959670491"
+        },
+        {
+          "group": 4,
+          "log2foldchange": "0.7508333189",
+          "pvalue": "0.4569325777",
+          "padj": "0.9992364554"
+        },
+        {
+          "group": 5,
+          "log2foldchange": "0.6503159191",
+          "pvalue": "0.5071983971",
+          "padj": "0.9989747531"
+        },
+        {
+          "group": 6,
+          "log2foldchange": "-1.338285871",
+          "pvalue": "0.3995934617",
+          "padj": "0.9951116568"
+        }
+      ],
+      "adjusted_tests": [],
+      "splash_recovery": "not measured",
+      "DEkupl_recovery": "not measured"
+    },
+    {
+      "gene_id": "g2785",
+      "gene_name": "SYNE1",
+      "role": "cell_repair",
+      "published_tests": [
+        {
+          "group": 1,
+          "log2foldchange": "-2.181009357",
+          "pvalue": "0.38930521",
+          "padj": "0.9999618916"
+        },
+        {
+          "group": 2,
+          "log2foldchange": "3.530375681",
+          "pvalue": "0.09333759273",
+          "padj": "0.9999737429"
+        },
+        {
+          "group": 3,
+          "log2foldchange": "0.1630103092",
+          "pvalue": "0.9737274067",
+          "padj": "0.9959670491"
+        },
+        {
+          "group": 4,
+          "log2foldchange": "-0.6018328531",
+          "pvalue": "0.8630990733",
+          "padj": "0.9992364554"
+        },
+        {
+          "group": 5,
+          "log2foldchange": "-0.09030597886",
+          "pvalue": "0.9770072681",
+          "padj": ""
+        },
+        {
+          "group": 6,
+          "log2foldchange": "0.2119101039",
+          "pvalue": "0.9627465748",
+          "padj": "0.9951116568"
+        }
+      ],
+      "adjusted_tests": [],
+      "splash_recovery": "not measured",
+      "DEkupl_recovery": "not measured"
+    },
+    {
+      "gene_id": "g27879",
+      "gene_name": "PIBF1",
+      "role": "cell_repair",
+      "published_tests": [
+        {
+          "group": 1,
+          "log2foldchange": "-0.5263826334",
+          "pvalue": "0.6019394038",
+          "padj": "0.9999618916"
+        },
+        {
+          "group": 2,
+          "log2foldchange": "2.694668195",
+          "pvalue": "0.01455132736",
+          "padj": "0.9999737429"
+        },
+        {
+          "group": 3,
+          "log2foldchange": "-2.417059678",
+          "pvalue": "0.5789821041",
+          "padj": "0.9959670491"
+        },
+        {
+          "group": 4,
+          "log2foldchange": "1.50138098",
+          "pvalue": "0.6369045248",
+          "padj": "0.9992364554"
+        },
+        {
+          "group": 5,
+          "log2foldchange": "-0.1911467162",
+          "pvalue": "0.9625645404",
+          "padj": ""
+        },
+        {
+          "group": 6,
+          "log2foldchange": "-2.193178673",
+          "pvalue": "0.5762663289",
+          "padj": "0.9951116568"
+        }
+      ],
+      "adjusted_tests": [],
+      "splash_recovery": "not measured",
+      "DEkupl_recovery": "not measured"
+    },
+    {
+      "gene_id": "g28259",
+      "gene_name": "SYNE1",
+      "role": "cell_repair",
+      "published_tests": [
+        {
+          "group": 1,
+          "log2foldchange": "-0.1275916714",
+          "pvalue": "0.9664656597",
+          "padj": "0.9999618916"
+        },
+        {
+          "group": 2,
+          "log2foldchange": "1.58284793",
+          "pvalue": "0.6019349627",
+          "padj": "0.9999737429"
+        },
+        {
+          "group": 3,
+          "log2foldchange": "",
+          "pvalue": "",
+          "padj": ""
+        },
+        {
+          "group": 4,
+          "log2foldchange": "",
+          "pvalue": "",
+          "padj": ""
+        },
+        {
+          "group": 5,
+          "log2foldchange": "",
+          "pvalue": "",
+          "padj": ""
+        },
+        {
+          "group": 6,
+          "log2foldchange": "",
+          "pvalue": "",
+          "padj": ""
+        }
+      ],
+      "adjusted_tests": [],
+      "splash_recovery": "not measured",
+      "DEkupl_recovery": "not measured"
+    },
+    {
+      "gene_id": "g28260",
+      "gene_name": "SYNE1",
+      "role": "cell_repair",
+      "published_tests": [
+        {
+          "group": 1,
+          "log2foldchange": "0.550146697",
+          "pvalue": "0.8129248862",
+          "padj": "0.9999618916"
+        },
+        {
+          "group": 2,
+          "log2foldchange": "0.9316095894",
+          "pvalue": "0.6271793975",
+          "padj": "0.9999737429"
+        },
+        {
+          "group": 3,
+          "log2foldchange": "-0.6233284981",
+          "pvalue": "0.8984913244",
+          "padj": "0.9959670491"
+        },
+        {
+          "group": 4,
+          "log2foldchange": "-1.794463469",
+          "pvalue": "0.6016483405",
+          "padj": "0.9992364554"
+        },
+        {
+          "group": 5,
+          "log2foldchange": "-0.09927322833",
+          "pvalue": "0.9805681796",
+          "padj": ""
+        },
+        {
+          "group": 6,
+          "log2foldchange": "0.2119101039",
+          "pvalue": "0.9627465748",
+          "padj": "0.9951116568"
+        }
+      ],
+      "adjusted_tests": [],
+      "splash_recovery": "not measured",
+      "DEkupl_recovery": "not measured"
+    },
+    {
+      "gene_id": "g29004",
+      "gene_name": "AMY1A",
+      "role": "cell_repair",
+      "published_tests": [
+        {
+          "group": 1,
+          "log2foldchange": "0.2242210155",
+          "pvalue": "0.7110082855",
+          "padj": "0.9999618916"
+        },
+        {
+          "group": 2,
+          "log2foldchange": "-0.4250598177",
+          "pvalue": "0.5489820193",
+          "padj": "0.9999737429"
+        },
+        {
+          "group": 3,
+          "log2foldchange": "-0.8151548903",
+          "pvalue": "0.6638411252",
+          "padj": "0.9959670491"
+        },
+        {
+          "group": 4,
+          "log2foldchange": "0.824068792",
+          "pvalue": "0.4996902044",
+          "padj": "0.9992364554"
+        },
+        {
+          "group": 5,
+          "log2foldchange": "0.2275602765",
+          "pvalue": "0.8509580561",
+          "padj": "0.9989747531"
+        },
+        {
+          "group": 6,
+          "log2foldchange": "-0.8736562381",
+          "pvalue": "0.6222572424",
+          "padj": "0.9951116568"
+        }
+      ],
+      "adjusted_tests": [],
+      "splash_recovery": "not measured",
+      "DEkupl_recovery": "not measured"
+    },
+    {
+      "gene_id": "g29419",
+      "gene_name": "CCDC93",
+      "role": "cell_repair",
+      "published_tests": [
+        {
+          "group": 1,
+          "log2foldchange": "-0.3625494106",
+          "pvalue": "0.6964694829",
+          "padj": "0.9999618916"
+        },
+        {
+          "group": 2,
+          "log2foldchange": "-0.5696124246",
+          "pvalue": "0.4460076225",
+          "padj": "0.9999737429"
+        },
+        {
+          "group": 3,
+          "log2foldchange": "-0.2427188354",
+          "pvalue": "0.9217777366",
+          "padj": "0.9959670491"
+        },
+        {
+          "group": 4,
+          "log2foldchange": "0.2914033187",
+          "pvalue": "0.8569628189",
+          "padj": "0.9992364554"
+        },
+        {
+          "group": 5,
+          "log2foldchange": "1.057257123",
+          "pvalue": "0.3562082742",
+          "padj": "0.9989747531"
+        },
+        {
+          "group": 6,
+          "log2foldchange": "1.567747396",
+          "pvalue": "0.3604522003",
+          "padj": "0.9951116568"
+        }
+      ],
+      "adjusted_tests": [],
+      "splash_recovery": "not measured",
+      "DEkupl_recovery": "not measured"
+    },
+    {
+      "gene_id": "g30322",
+      "gene_name": "SLC9A8",
+      "role": "cell_repair",
+      "published_tests": [
+        {
+          "group": 1,
+          "log2foldchange": "0.1287744403",
+          "pvalue": "0.9415207746",
+          "padj": "0.9999618916"
+        },
+        {
+          "group": 2,
+          "log2foldchange": "0.3987720041",
+          "pvalue": "0.8452743661",
+          "padj": "0.9999737429"
+        },
+        {
+          "group": 3,
+          "log2foldchange": "-1.955114063",
+          "pvalue": "0.6853603129",
+          "padj": "0.9959670491"
+        },
+        {
+          "group": 4,
+          "log2foldchange": "",
+          "pvalue": "",
+          "padj": ""
+        },
+        {
+          "group": 5,
+          "log2foldchange": "",
+          "pvalue": "",
+          "padj": ""
+        },
+        {
+          "group": 6,
+          "log2foldchange": "",
+          "pvalue": "",
+          "padj": ""
+        }
+      ],
+      "adjusted_tests": [],
+      "splash_recovery": "not measured",
+      "DEkupl_recovery": "not measured"
+    },
+    {
+      "gene_id": "g30374",
+      "gene_name": "SENP6",
+      "role": "cell_repair",
+      "published_tests": [
+        {
+          "group": 1,
+          "log2foldchange": "0.1442829633",
+          "pvalue": "0.931160291",
+          "padj": "0.9999618916"
+        },
+        {
+          "group": 2,
+          "log2foldchange": "-0.2332106093",
+          "pvalue": "0.8587891038",
+          "padj": "0.9999737429"
+        },
+        {
+          "group": 3,
+          "log2foldchange": "-1.029423732",
+          "pvalue": "0.8323091014",
+          "padj": "0.9959670491"
+        },
+        {
+          "group": 4,
+          "log2foldchange": "1.068333067",
+          "pvalue": "0.7592535665",
+          "padj": "0.9992364554"
+        },
+        {
+          "group": 5,
+          "log2foldchange": "1.050414409",
+          "pvalue": "0.7892940696",
+          "padj": ""
+        },
+        {
+          "group": 6,
+          "log2foldchange": "0.6281042828",
+          "pvalue": "0.8835622865",
+          "padj": "0.9951116568"
+        }
+      ],
+      "adjusted_tests": [],
+      "splash_recovery": "not measured",
+      "DEkupl_recovery": "not measured"
+    },
+    {
+      "gene_id": "g30839",
+      "gene_name": "IPO5",
+      "role": "cell_repair",
+      "published_tests": [
+        {
+          "group": 1,
+          "log2foldchange": "-0.006687268162",
+          "pvalue": "0.9968272449",
+          "padj": "0.9999618916"
+        },
+        {
+          "group": 2,
+          "log2foldchange": "-0.8267805399",
+          "pvalue": "0.6258101813",
+          "padj": "0.9999737429"
+        },
+        {
+          "group": 3,
+          "log2foldchange": "",
+          "pvalue": "",
+          "padj": ""
+        },
+        {
+          "group": 4,
+          "log2foldchange": "-0.7598948273",
+          "pvalue": "0.8271856637",
+          "padj": "0.9992364554"
+        },
+        {
+          "group": 5,
+          "log2foldchange": "",
+          "pvalue": "",
+          "padj": ""
+        },
+        {
+          "group": 6,
+          "log2foldchange": "-1.161438143",
+          "pvalue": "0.7538708743",
+          "padj": "0.9951116568"
+        }
+      ],
+      "adjusted_tests": [],
+      "splash_recovery": "not measured",
+      "DEkupl_recovery": "not measured"
+    },
+    {
+      "gene_id": "g30840",
+      "gene_name": "IPO5",
+      "role": "cell_repair",
+      "published_tests": [
+        {
+          "group": 1,
+          "log2foldchange": "0.201129488",
+          "pvalue": "0.8956614093",
+          "padj": "0.9999618916"
+        },
+        {
+          "group": 2,
+          "log2foldchange": "-1.1403187",
+          "pvalue": "",
+          "padj": ""
+        },
+        {
+          "group": 3,
+          "log2foldchange": "0.1630103092",
+          "pvalue": "0.9737274067",
+          "padj": "0.9959670491"
+        },
+        {
+          "group": 4,
+          "log2foldchange": "",
+          "pvalue": "",
+          "padj": ""
+        },
+        {
+          "group": 5,
+          "log2foldchange": "",
+          "pvalue": "",
+          "padj": ""
+        },
+        {
+          "group": 6,
+          "log2foldchange": "0.6592249752",
+          "pvalue": "0.8839429881",
+          "padj": "0.9951116568"
+        }
+      ],
+      "adjusted_tests": [],
+      "splash_recovery": "not measured",
+      "DEkupl_recovery": "not measured"
+    },
+    {
+      "gene_id": "g31056",
+      "gene_name": "PAN2",
+      "role": "cell_repair",
+      "published_tests": [
+        {
+          "group": 1,
+          "log2foldchange": "-0.2129455221",
+          "pvalue": "0.8617170679",
+          "padj": "0.9999618916"
+        },
+        {
+          "group": 2,
+          "log2foldchange": "-0.8116842447",
+          "pvalue": "0.5120908859",
+          "padj": "0.9999737429"
+        },
+        {
+          "group": 3,
+          "log2foldchange": "-1.122182612",
+          "pvalue": "0.7269564707",
+          "padj": "0.9959670491"
+        },
+        {
+          "group": 4,
+          "log2foldchange": "-0.5193478818",
+          "pvalue": "0.8818674659",
+          "padj": "0.9992364554"
+        },
+        {
+          "group": 5,
+          "log2foldchange": "0.6818565688",
+          "pvalue": "0.7873366821",
+          "padj": ""
+        },
+        {
+          "group": 6,
+          "log2foldchange": "1.799332873",
+          "pvalue": "0.6881242417",
+          "padj": "0.9951116568"
+        }
+      ],
+      "adjusted_tests": [],
+      "splash_recovery": "not measured",
+      "DEkupl_recovery": "not measured"
+    },
+    {
+      "gene_id": "g31650",
+      "gene_name": "ZBED1",
+      "role": "cell_repair",
+      "published_tests": [
+        {
+          "group": 1,
+          "log2foldchange": "",
+          "pvalue": "",
+          "padj": ""
+        },
+        {
+          "group": 2,
+          "log2foldchange": "",
+          "pvalue": "",
+          "padj": ""
+        },
+        {
+          "group": 3,
+          "log2foldchange": "",
+          "pvalue": "",
+          "padj": ""
+        },
+        {
+          "group": 4,
+          "log2foldchange": "",
+          "pvalue": "",
+          "padj": ""
+        },
+        {
+          "group": 5,
+          "log2foldchange": "",
+          "pvalue": "",
+          "padj": ""
+        },
+        {
+          "group": 6,
+          "log2foldchange": "",
+          "pvalue": "",
+          "padj": ""
+        }
+      ],
+      "adjusted_tests": [],
+      "splash_recovery": "not measured",
+      "DEkupl_recovery": "not measured"
+    },
+    {
+      "gene_id": "g31980",
+      "gene_name": "SYNE1",
+      "role": "cell_repair",
+      "published_tests": [
+        {
+          "group": 1,
+          "log2foldchange": "-0.7697290185",
+          "pvalue": "0.4968385217",
+          "padj": "0.9999618916"
+        },
+        {
+          "group": 2,
+          "log2foldchange": "-0.9058941012",
+          "pvalue": "0.4487740502",
+          "padj": "0.9999737429"
+        },
+        {
+          "group": 3,
+          "log2foldchange": "2.446639477",
+          "pvalue": "0.3430872121",
+          "padj": "0.9959670491"
+        },
+        {
+          "group": 4,
+          "log2foldchange": "0.09320561139",
+          "pvalue": "0.9753829643",
+          "padj": "0.9992364554"
+        },
+        {
+          "group": 5,
+          "log2foldchange": "-0.8870892075",
+          "pvalue": "0.631326868",
+          "padj": ""
+        },
+        {
+          "group": 6,
+          "log2foldchange": "1.721749436",
+          "pvalue": "0.5794286071",
+          "padj": "0.9951116568"
+        }
+      ],
+      "adjusted_tests": [],
+      "splash_recovery": "not measured",
+      "DEkupl_recovery": "not measured"
+    },
+    {
+      "gene_id": "g32010",
+      "gene_name": "UBL3",
+      "role": "cell_repair",
+      "published_tests": [
+        {
+          "group": 1,
+          "log2foldchange": "-0.1822551607",
+          "pvalue": "0.8981222008",
+          "padj": "0.9999618916"
+        },
+        {
+          "group": 2,
+          "log2foldchange": "-0.5661051044",
+          "pvalue": "0.7322799199",
+          "padj": "0.9999737429"
+        },
+        {
+          "group": 3,
+          "log2foldchange": "-1.604868785",
+          "pvalue": "0.7400291971",
+          "padj": "0.9959670491"
+        },
+        {
+          "group": 4,
+          "log2foldchange": "",
+          "pvalue": "",
+          "padj": ""
+        },
+        {
+          "group": 5,
+          "log2foldchange": "",
+          "pvalue": "",
+          "padj": ""
+        },
+        {
+          "group": 6,
+          "log2foldchange": "",
+          "pvalue": "",
+          "padj": ""
+        }
+      ],
+      "adjusted_tests": [],
+      "splash_recovery": "not measured",
+      "DEkupl_recovery": "not measured"
+    },
+    {
+      "gene_id": "g32952",
+      "gene_name": "TSC2",
+      "role": "cell_repair",
+      "published_tests": [
+        {
+          "group": 1,
+          "log2foldchange": "0.9258580224",
+          "pvalue": "0.3382035207",
+          "padj": "0.9999618916"
+        },
+        {
+          "group": 2,
+          "log2foldchange": "-0.4822062855",
+          "pvalue": "0.5815294993",
+          "padj": "0.9999737429"
+        },
+        {
+          "group": 3,
+          "log2foldchange": "-1.194529885",
+          "pvalue": "0.6415123941",
+          "padj": "0.9959670491"
+        },
+        {
+          "group": 4,
+          "log2foldchange": "-0.2121260886",
+          "pvalue": "0.8969810556",
+          "padj": "0.9992364554"
+        },
+        {
+          "group": 5,
+          "log2foldchange": "0.4270103873",
+          "pvalue": "0.7827497822",
+          "padj": "0.9989747531"
+        },
+        {
+          "group": 6,
+          "log2foldchange": "-0.1177147205",
+          "pvalue": "0.9542975874",
+          "padj": "0.9951116568"
+        }
+      ],
+      "adjusted_tests": [],
+      "splash_recovery": "not measured",
+      "DEkupl_recovery": "not measured"
+    },
+    {
+      "gene_id": "g33624",
+      "gene_name": "CYLD",
+      "role": "cell_repair",
+      "published_tests": [
+        {
+          "group": 1,
+          "log2foldchange": "4.885037765",
+          "pvalue": "",
+          "padj": ""
+        },
+        {
+          "group": 2,
+          "log2foldchange": "-0.3754250096",
+          "pvalue": "0.9008051691",
+          "padj": "0.9999737429"
+        },
+        {
+          "group": 3,
+          "log2foldchange": "-0.05474755704",
+          "pvalue": "0.9911468818",
+          "padj": "0.9959670491"
+        },
+        {
+          "group": 4,
+          "log2foldchange": "",
+          "pvalue": "",
+          "padj": ""
+        },
+        {
+          "group": 5,
+          "log2foldchange": "",
+          "pvalue": "",
+          "padj": ""
+        },
+        {
+          "group": 6,
+          "log2foldchange": "0.6592249752",
+          "pvalue": "0.8839429881",
+          "padj": "0.9951116568"
+        }
+      ],
+      "adjusted_tests": [],
+      "splash_recovery": "not measured",
+      "DEkupl_recovery": "not measured"
+    },
+    {
+      "gene_id": "g3429",
+      "gene_name": "ATP8A1",
+      "role": "cell_repair",
+      "published_tests": [
+        {
+          "group": 1,
+          "log2foldchange": "-0.1558296829",
+          "pvalue": "0.8596083333",
+          "padj": "0.9999618916"
+        },
+        {
+          "group": 2,
+          "log2foldchange": "-0.4165905311",
+          "pvalue": "0.7026952383",
+          "padj": "0.9999737429"
+        },
+        {
+          "group": 3,
+          "log2foldchange": "-0.5910690353",
+          "pvalue": "0.8458705473",
+          "padj": "0.9959670491"
+        },
+        {
+          "group": 4,
+          "log2foldchange": "-1.891980708",
+          "pvalue": "0.5817406709",
+          "padj": "0.9992364554"
+        },
+        {
+          "group": 5,
+          "log2foldchange": "-0.1911467162",
+          "pvalue": "0.9625645404",
+          "padj": ""
+        },
+        {
+          "group": 6,
+          "log2foldchange": "0.6592249752",
+          "pvalue": "0.8839429881",
+          "padj": "0.9951116568"
+        }
+      ],
+      "adjusted_tests": [],
+      "splash_recovery": "not measured",
+      "DEkupl_recovery": "not measured"
+    },
+    {
+      "gene_id": "g3447",
+      "gene_name": "KLHDC2",
+      "role": "cell_repair",
+      "published_tests": [
+        {
+          "group": 1,
+          "log2foldchange": "-0.003380401178",
+          "pvalue": "0.9979321855",
+          "padj": "0.9999618916"
+        },
+        {
+          "group": 2,
+          "log2foldchange": "-0.903051073",
+          "pvalue": "0.5752356487",
+          "padj": "0.9999737429"
+        },
+        {
+          "group": 3,
+          "log2foldchange": "2.618196826",
+          "pvalue": "0.5730826654",
+          "padj": "0.9959670491"
+        },
+        {
+          "group": 4,
+          "log2foldchange": "-0.5193478818",
+          "pvalue": "0.8818674659",
+          "padj": "0.9992364554"
+        },
+        {
+          "group": 5,
+          "log2foldchange": "",
+          "pvalue": "",
+          "padj": ""
+        },
+        {
+          "group": 6,
+          "log2foldchange": "1.304341017",
+          "pvalue": "0.7716418174",
+          "padj": "0.9951116568"
+        }
+      ],
+      "adjusted_tests": [],
+      "splash_recovery": "not measured",
+      "DEkupl_recovery": "not measured"
+    },
+    {
+      "gene_id": "g361",
+      "gene_name": "SYNE1",
+      "role": "cell_repair",
+      "published_tests": [
+        {
+          "group": 1,
+          "log2foldchange": "1.112648219",
+          "pvalue": "0.7135588319",
+          "padj": "0.9999618916"
+        },
+        {
+          "group": 2,
+          "log2foldchange": "1.574150162",
+          "pvalue": "0.6039112704",
+          "padj": "0.9999737429"
+        },
+        {
+          "group": 3,
+          "log2foldchange": "",
+          "pvalue": "",
+          "padj": ""
+        },
+        {
+          "group": 4,
+          "log2foldchange": "1.514457685",
+          "pvalue": "0.6631899876",
+          "padj": "0.9992364554"
+        },
+        {
+          "group": 5,
+          "log2foldchange": "2.513724204",
+          "pvalue": "0.5340420043",
+          "padj": ""
+        },
+        {
+          "group": 6,
+          "log2foldchange": "0.2119101039",
+          "pvalue": "0.9627465748",
+          "padj": "0.9951116568"
+        }
+      ],
+      "adjusted_tests": [],
+      "splash_recovery": "not measured",
+      "DEkupl_recovery": "not measured"
+    },
+    {
+      "gene_id": "g36110",
+      "gene_name": "RPL17",
+      "role": "cell_repair",
+      "published_tests": [
+        {
+          "group": 1,
+          "log2foldchange": "-0.3022943121",
+          "pvalue": "0.7854637296",
+          "padj": "0.9999618916"
+        },
+        {
+          "group": 2,
+          "log2foldchange": "-0.7445147795",
+          "pvalue": "0.4815132471",
+          "padj": "0.9999737429"
+        },
+        {
+          "group": 3,
+          "log2foldchange": "0.1740587356",
+          "pvalue": "0.9400847823",
+          "padj": "0.9959670491"
+        },
+        {
+          "group": 4,
+          "log2foldchange": "-0.1638208987",
+          "pvalue": "0.8599965618",
+          "padj": "0.9992364554"
+        },
+        {
+          "group": 5,
+          "log2foldchange": "-1.87355023",
+          "pvalue": "0.04325783719",
+          "padj": "0.9989747531"
+        },
+        {
+          "group": 6,
+          "log2foldchange": "-0.8346166835",
+          "pvalue": "0.6252466703",
+          "padj": "0.9951116568"
+        }
+      ],
+      "adjusted_tests": [],
+      "splash_recovery": "not measured",
+      "DEkupl_recovery": "not measured"
+    },
+    {
+      "gene_id": "g36129",
+      "gene_name": "UGP2",
+      "role": "cell_repair",
+      "published_tests": [
+        {
+          "group": 1,
+          "log2foldchange": "0.1965401708",
+          "pvalue": "0.8811911269",
+          "padj": "0.9999618916"
+        },
+        {
+          "group": 2,
+          "log2foldchange": "-1.39426845",
+          "pvalue": "",
+          "padj": ""
+        },
+        {
+          "group": 3,
+          "log2foldchange": "-3.400405679",
+          "pvalue": "0.4001267526",
+          "padj": "0.9959670491"
+        },
+        {
+          "group": 4,
+          "log2foldchange": "",
+          "pvalue": "",
+          "padj": ""
+        },
+        {
+          "group": 5,
+          "log2foldchange": "",
+          "pvalue": "",
+          "padj": ""
+        },
+        {
+          "group": 6,
+          "log2foldchange": "-0.9347293299",
+          "pvalue": "0.8350976971",
+          "padj": "0.9951116568"
+        }
+      ],
+      "adjusted_tests": [],
+      "splash_recovery": "not measured",
+      "DEkupl_recovery": "not measured"
+    },
+    {
+      "gene_id": "g36276",
+      "gene_name": "ZBED1",
+      "role": "cell_repair",
+      "published_tests": [
+        {
+          "group": 1,
+          "log2foldchange": "-1.17875452",
+          "pvalue": "0.6968270759",
+          "padj": "0.9999618916"
+        },
+        {
+          "group": 2,
+          "log2foldchange": "1.454353027",
+          "pvalue": "0.631457969",
+          "padj": "0.9999737429"
+        },
+        {
+          "group": 3,
+          "log2foldchange": "",
+          "pvalue": "",
+          "padj": ""
+        },
+        {
+          "group": 4,
+          "log2foldchange": "",
+          "pvalue": "",
+          "padj": ""
+        },
+        {
+          "group": 5,
+          "log2foldchange": "",
+          "pvalue": "",
+          "padj": ""
+        },
+        {
+          "group": 6,
+          "log2foldchange": "",
+          "pvalue": "",
+          "padj": ""
+        }
+      ],
+      "adjusted_tests": [],
+      "splash_recovery": "not measured",
+      "DEkupl_recovery": "not measured"
+    },
+    {
+      "gene_id": "g36840",
+      "gene_name": "SYNE1",
+      "role": "cell_repair",
+      "published_tests": [
+        {
+          "group": 1,
+          "log2foldchange": "-1.077874734",
+          "pvalue": "0.4642096959",
+          "padj": "0.9999618916"
+        },
+        {
+          "group": 2,
+          "log2foldchange": "0.08332175356",
+          "pvalue": "0.9488621536",
+          "padj": "0.9999737429"
+        },
+        {
+          "group": 3,
+          "log2foldchange": "2.342402651",
+          "pvalue": "0.4427382719",
+          "padj": "0.9959670491"
+        },
+        {
+          "group": 4,
+          "log2foldchange": "-1.82014541",
+          "pvalue": "0.3900041783",
+          "padj": "0.9992364554"
+        },
+        {
+          "group": 5,
+          "log2foldchange": "-3.744764849",
+          "pvalue": "0.113613678",
+          "padj": ""
+        },
+        {
+          "group": 6,
+          "log2foldchange": "1.957546231",
+          "pvalue": "0.6621213021",
+          "padj": "0.9951116568"
+        }
+      ],
+      "adjusted_tests": [],
+      "splash_recovery": "not measured",
+      "DEkupl_recovery": "not measured"
+    },
+    {
+      "gene_id": "g36872",
+      "gene_name": "RPL17",
+      "role": "cell_repair",
+      "published_tests": [
+        {
+          "group": 1,
+          "log2foldchange": "7.014850705",
+          "pvalue": "",
+          "padj": ""
+        },
+        {
+          "group": 2,
+          "log2foldchange": "0.9824013906",
+          "pvalue": "0.313207429",
+          "padj": "0.9999737429"
+        },
+        {
+          "group": 3,
+          "log2foldchange": "1.440613487",
+          "pvalue": "0.7694855989",
+          "padj": "0.9959670491"
+        },
+        {
+          "group": 4,
+          "log2foldchange": "3.873735481",
+          "pvalue": "",
+          "padj": ""
+        },
+        {
+          "group": 5,
+          "log2foldchange": "-6.878586523",
+          "pvalue": "",
+          "padj": ""
+        },
+        {
+          "group": 6,
+          "log2foldchange": "0.6592249752",
+          "pvalue": "0.8839429881",
+          "padj": "0.9951116568"
+        }
+      ],
+      "adjusted_tests": [],
+      "splash_recovery": "not measured",
+      "DEkupl_recovery": "not measured"
+    },
+    {
+      "gene_id": "g3729",
+      "gene_name": "FRY",
+      "role": "cell_repair",
+      "published_tests": [
+        {
+          "group": 1,
+          "log2foldchange": "-3.187378216",
+          "pvalue": "0.2549798368",
+          "padj": "0.9999618916"
+        },
+        {
+          "group": 2,
+          "log2foldchange": "1.016006818",
+          "pvalue": "0.7364584596",
+          "padj": "0.9999737429"
+        },
+        {
+          "group": 3,
+          "log2foldchange": "4.646432121",
+          "pvalue": "0.1315380794",
+          "padj": "0.9959670491"
+        },
+        {
+          "group": 4,
+          "log2foldchange": "",
+          "pvalue": "",
+          "padj": ""
+        },
+        {
+          "group": 5,
+          "log2foldchange": "-0.1911467162",
+          "pvalue": "0.9625645404",
+          "padj": ""
+        },
+        {
+          "group": 6,
+          "log2foldchange": "0.6592249752",
+          "pvalue": "0.8839429881",
+          "padj": "0.9951116568"
+        }
+      ],
+      "adjusted_tests": [],
+      "splash_recovery": "not measured",
+      "DEkupl_recovery": "not measured"
+    },
+    {
+      "gene_id": "g37342",
+      "gene_name": "NFX1",
+      "role": "cell_repair",
+      "published_tests": [
+        {
+          "group": 1,
+          "log2foldchange": "",
+          "pvalue": "",
+          "padj": ""
+        },
+        {
+          "group": 2,
+          "log2foldchange": "",
+          "pvalue": "",
+          "padj": ""
+        },
+        {
+          "group": 3,
+          "log2foldchange": "",
+          "pvalue": "",
+          "padj": ""
+        },
+        {
+          "group": 4,
+          "log2foldchange": "",
+          "pvalue": "",
+          "padj": ""
+        },
+        {
+          "group": 5,
+          "log2foldchange": "",
+          "pvalue": "",
+          "padj": ""
+        },
+        {
+          "group": 6,
+          "log2foldchange": "",
+          "pvalue": "",
+          "padj": ""
+        }
+      ],
+      "adjusted_tests": [],
+      "splash_recovery": "not measured",
+      "DEkupl_recovery": "not measured"
+    },
+    {
+      "gene_id": "g38440",
+      "gene_name": "APPL2",
+      "role": "cell_repair",
+      "published_tests": [
+        {
+          "group": 1,
+          "log2foldchange": "0.589494445",
+          "pvalue": "0.5069273583",
+          "padj": "0.9999618916"
+        },
+        {
+          "group": 2,
+          "log2foldchange": "-0.9170109886",
+          "pvalue": "0.3409284502",
+          "padj": "0.9999737429"
+        },
+        {
+          "group": 3,
+          "log2foldchange": "0.04268319697",
+          "pvalue": "0.9881493469",
+          "padj": "0.9959670491"
+        },
+        {
+          "group": 4,
+          "log2foldchange": "1.032870248",
+          "pvalue": "0.7646933604",
+          "padj": "0.9992364554"
+        },
+        {
+          "group": 5,
+          "log2foldchange": "-0.08095117986",
+          "pvalue": "0.9791094636",
+          "padj": ""
+        },
+        {
+          "group": 6,
+          "log2foldchange": "-1.691701651",
+          "pvalue": "0.6022430621",
+          "padj": "0.9951116568"
+        }
+      ],
+      "adjusted_tests": [],
+      "splash_recovery": "not measured",
+      "DEkupl_recovery": "not measured"
+    },
+    {
+      "gene_id": "g38838",
+      "gene_name": "HMBOX1",
+      "role": "cell_repair",
+      "published_tests": [
+        {
+          "group": 1,
+          "log2foldchange": "-0.7132544831",
+          "pvalue": "0.6965650125",
+          "padj": "0.9999618916"
+        },
+        {
+          "group": 2,
+          "log2foldchange": "0.9310447598",
+          "pvalue": "0.5124373042",
+          "padj": "0.9999737429"
+        },
+        {
+          "group": 3,
+          "log2foldchange": "0.1630103092",
+          "pvalue": "0.9737274067",
+          "padj": "0.9959670491"
+        },
+        {
+          "group": 4,
+          "log2foldchange": "0.3707594483",
+          "pvalue": "0.9144009527",
+          "padj": "0.9992364554"
+        },
+        {
+          "group": 5,
+          "log2foldchange": "0.9433744595",
+          "pvalue": "0.7187919231",
+          "padj": ""
+        },
+        {
+          "group": 6,
+          "log2foldchange": "0.6734931624",
+          "pvalue": "0.8652740762",
+          "padj": "0.9951116568"
+        }
+      ],
+      "adjusted_tests": [],
+      "splash_recovery": "not measured",
+      "DEkupl_recovery": "not measured"
+    },
+    {
+      "gene_id": "g38864",
+      "gene_name": "ZNF573",
+      "role": "cell_repair",
+      "published_tests": [
+        {
+          "group": 1,
+          "log2foldchange": "",
+          "pvalue": "",
+          "padj": ""
+        },
+        {
+          "group": 2,
+          "log2foldchange": "1.647256213",
+          "pvalue": "0.5874028544",
+          "padj": "0.9999737429"
+        },
+        {
+          "group": 3,
+          "log2foldchange": "",
+          "pvalue": "",
+          "padj": ""
+        },
+        {
+          "group": 4,
+          "log2foldchange": "",
+          "pvalue": "",
+          "padj": ""
+        },
+        {
+          "group": 5,
+          "log2foldchange": "",
+          "pvalue": "",
+          "padj": ""
+        },
+        {
+          "group": 6,
+          "log2foldchange": "",
+          "pvalue": "",
+          "padj": ""
+        }
+      ],
+      "adjusted_tests": [],
+      "splash_recovery": "not measured",
+      "DEkupl_recovery": "not measured"
+    },
+    {
+      "gene_id": "g3910",
+      "gene_name": "MAOA",
+      "role": "cell_repair",
+      "published_tests": [
+        {
+          "group": 1,
+          "log2foldchange": "-0.8487679955",
+          "pvalue": "0.6790089413",
+          "padj": "0.9999618916"
+        },
+        {
+          "group": 2,
+          "log2foldchange": "2.265425475",
+          "pvalue": "0.4570081308",
+          "padj": "0.9999737429"
+        },
+        {
+          "group": 3,
+          "log2foldchange": "-0.6233284981",
+          "pvalue": "0.8984913244",
+          "padj": "0.9959670491"
+        },
+        {
+          "group": 4,
+          "log2foldchange": "",
+          "pvalue": "",
+          "padj": ""
+        },
+        {
+          "group": 5,
+          "log2foldchange": "-0.1911467162",
+          "pvalue": "0.9625645404",
+          "padj": ""
+        },
+        {
+          "group": 6,
+          "log2foldchange": "-3.201987062",
+          "pvalue": "0.4696605438",
+          "padj": "0.9951116568"
+        }
+      ],
+      "adjusted_tests": [],
+      "splash_recovery": "not measured",
+      "DEkupl_recovery": "not measured"
+    },
+    {
+      "gene_id": "g40425",
+      "gene_name": "NFX1",
+      "role": "cell_repair",
+      "published_tests": [
+        {
+          "group": 1,
+          "log2foldchange": "0.696446472",
+          "pvalue": "0.8190220604",
+          "padj": "0.9999618916"
+        },
+        {
+          "group": 2,
+          "log2foldchange": "",
+          "pvalue": "",
+          "padj": ""
+        },
+        {
+          "group": 3,
+          "log2foldchange": "",
+          "pvalue": "",
+          "padj": ""
+        },
+        {
+          "group": 4,
+          "log2foldchange": "",
+          "pvalue": "",
+          "padj": ""
+        },
+        {
+          "group": 5,
+          "log2foldchange": "",
+          "pvalue": "",
+          "padj": ""
+        },
+        {
+          "group": 6,
+          "log2foldchange": "",
+          "pvalue": "",
+          "padj": ""
+        }
+      ],
+      "adjusted_tests": [],
+      "splash_recovery": "not measured",
+      "DEkupl_recovery": "not measured"
+    },
+    {
+      "gene_id": "g41167",
+      "gene_name": "GOLGA1",
+      "role": "cell_repair",
+      "published_tests": [
+        {
+          "group": 1,
+          "log2foldchange": "-0.6010125644",
+          "pvalue": "0.6938061134",
+          "padj": "0.9999618916"
+        },
+        {
+          "group": 2,
+          "log2foldchange": "0.215251349",
+          "pvalue": "0.8641210083",
+          "padj": "0.9999737429"
+        },
+        {
+          "group": 3,
+          "log2foldchange": "1.222874664",
+          "pvalue": "0.8029316455",
+          "padj": "0.9959670491"
+        },
+        {
+          "group": 4,
+          "log2foldchange": "-0.5193478818",
+          "pvalue": "0.8818674659",
+          "padj": "0.9992364554"
+        },
+        {
+          "group": 5,
+          "log2foldchange": "",
+          "pvalue": "",
+          "padj": ""
+        },
+        {
+          "group": 6,
+          "log2foldchange": "0.6592249752",
+          "pvalue": "0.8839429881",
+          "padj": "0.9951116568"
+        }
+      ],
+      "adjusted_tests": [],
+      "splash_recovery": "not measured",
+      "DEkupl_recovery": "not measured"
+    },
+    {
+      "gene_id": "g41861",
+      "gene_name": "KCTD3",
+      "role": "cell_repair",
+      "published_tests": [
+        {
+          "group": 1,
+          "log2foldchange": "0.1852484151",
+          "pvalue": "0.9511162103",
+          "padj": "0.9999618916"
+        },
+        {
+          "group": 2,
+          "log2foldchange": "2.558698886",
+          "pvalue": "0.4026579773",
+          "padj": "0.9999737429"
+        },
+        {
+          "group": 3,
+          "log2foldchange": "5.053101847",
+          "pvalue": "0.2340787869",
+          "padj": "0.9959670491"
+        },
+        {
+          "group": 4,
+          "log2foldchange": "",
+          "pvalue": "",
+          "padj": ""
+        },
+        {
+          "group": 5,
+          "log2foldchange": "",
+          "pvalue": "",
+          "padj": ""
+        },
+        {
+          "group": 6,
+          "log2foldchange": "",
+          "pvalue": "",
+          "padj": ""
+        }
+      ],
+      "adjusted_tests": [],
+      "splash_recovery": "not measured",
+      "DEkupl_recovery": "not measured"
+    },
+    {
+      "gene_id": "g41886",
+      "gene_name": "EEF2",
+      "role": "cell_repair",
+      "published_tests": [
+        {
+          "group": 1,
+          "log2foldchange": "0.05799553883",
+          "pvalue": "0.915443832",
+          "padj": "0.9999618916"
+        },
+        {
+          "group": 2,
+          "log2foldchange": "-0.201869565",
+          "pvalue": "0.7708370799",
+          "padj": "0.9999737429"
+        },
+        {
+          "group": 3,
+          "log2foldchange": "-0.4947172784",
+          "pvalue": "0.8028299937",
+          "padj": "0.9959670491"
+        },
+        {
+          "group": 4,
+          "log2foldchange": "-0.5228587563",
+          "pvalue": "0.457521795",
+          "padj": "0.9992364554"
+        },
+        {
+          "group": 5,
+          "log2foldchange": "0.1098937343",
+          "pvalue": "0.8810243948",
+          "padj": "0.9989747531"
+        },
+        {
+          "group": 6,
+          "log2foldchange": "-0.9157641703",
+          "pvalue": "0.4755253464",
+          "padj": "0.9951116568"
+        }
+      ],
+      "adjusted_tests": [],
+      "splash_recovery": "not measured",
+      "DEkupl_recovery": "not measured"
+    },
+    {
+      "gene_id": "g421",
+      "gene_name": "GNPDA1",
+      "role": "cell_repair",
+      "published_tests": [
+        {
+          "group": 1,
+          "log2foldchange": "-0.6661505573",
+          "pvalue": "0.6690343788",
+          "padj": "0.9999618916"
+        },
+        {
+          "group": 2,
+          "log2foldchange": "-0.5247903158",
+          "pvalue": "0.6245816297",
+          "padj": "0.9999737429"
+        },
+        {
+          "group": 3,
+          "log2foldchange": "-1.345713259",
+          "pvalue": "0.7812782969",
+          "padj": "0.9959670491"
+        },
+        {
+          "group": 4,
+          "log2foldchange": "1.068333067",
+          "pvalue": "0.7592535665",
+          "padj": "0.9992364554"
+        },
+        {
+          "group": 5,
+          "log2foldchange": "",
+          "pvalue": "",
+          "padj": ""
+        },
+        {
+          "group": 6,
+          "log2foldchange": "",
+          "pvalue": "",
+          "padj": ""
+        }
+      ],
+      "adjusted_tests": [],
+      "splash_recovery": "not measured",
+      "DEkupl_recovery": "not measured"
+    },
+    {
+      "gene_id": "g42835",
+      "gene_name": "ZNF266",
+      "role": "cell_repair",
+      "published_tests": [
+        {
+          "group": 1,
+          "log2foldchange": "-0.2599047462",
+          "pvalue": "0.9154805571",
+          "padj": "0.9999618916"
+        },
+        {
+          "group": 2,
+          "log2foldchange": "1.180099854",
+          "pvalue": "0.6964741558",
+          "padj": "0.9999737429"
+        },
+        {
+          "group": 3,
+          "log2foldchange": "0.6465511518",
+          "pvalue": "0.8965842825",
+          "padj": "0.9959670491"
+        },
+        {
+          "group": 4,
+          "log2foldchange": "",
+          "pvalue": "",
+          "padj": ""
+        },
+        {
+          "group": 5,
+          "log2foldchange": "",
+          "pvalue": "",
+          "padj": ""
+        },
+        {
+          "group": 6,
+          "log2foldchange": "",
+          "pvalue": "",
+          "padj": ""
+        }
+      ],
+      "adjusted_tests": [],
+      "splash_recovery": "not measured",
+      "DEkupl_recovery": "not measured"
+    },
+    {
+      "gene_id": "g42881",
+      "gene_name": "MFNG",
+      "role": "cell_repair",
+      "published_tests": [
+        {
+          "group": 1,
+          "log2foldchange": "0.2717129749",
+          "pvalue": "0.9283028234",
+          "padj": "0.9999618916"
+        },
+        {
+          "group": 2,
+          "log2foldchange": "1.132601108",
+          "pvalue": "0.7076656225",
+          "padj": "0.9999737429"
+        },
+        {
+          "group": 3,
+          "log2foldchange": "",
+          "pvalue": "",
+          "padj": ""
+        },
+        {
+          "group": 4,
+          "log2foldchange": "",
+          "pvalue": "",
+          "padj": ""
+        },
+        {
+          "group": 5,
+          "log2foldchange": "",
+          "pvalue": "",
+          "padj": ""
+        },
+        {
+          "group": 6,
+          "log2foldchange": "",
+          "pvalue": "",
+          "padj": ""
+        }
+      ],
+      "adjusted_tests": [],
+      "splash_recovery": "not measured",
+      "DEkupl_recovery": "not measured"
+    },
+    {
+      "gene_id": "g43422",
+      "gene_name": "ZNF187",
+      "role": "cell_repair",
+      "published_tests": [
+        {
+          "group": 1,
+          "log2foldchange": "0.3159057718",
+          "pvalue": "0.85930233",
+          "padj": "0.9999618916"
+        },
+        {
+          "group": 2,
+          "log2foldchange": "-0.02292094746",
+          "pvalue": "0.9906404281",
+          "padj": "0.9999737429"
+        },
+        {
+          "group": 3,
+          "log2foldchange": "",
+          "pvalue": "",
+          "padj": ""
+        },
+        {
+          "group": 4,
+          "log2foldchange": "",
+          "pvalue": "",
+          "padj": ""
+        },
+        {
+          "group": 5,
+          "log2foldchange": "",
+          "pvalue": "",
+          "padj": ""
+        },
+        {
+          "group": 6,
+          "log2foldchange": "",
+          "pvalue": "",
+          "padj": ""
+        }
+      ],
+      "adjusted_tests": [],
+      "splash_recovery": "not measured",
+      "DEkupl_recovery": "not measured"
+    },
+    {
+      "gene_id": "g43762",
+      "gene_name": "ZBED1",
+      "role": "cell_repair",
+      "published_tests": [
+        {
+          "group": 1,
+          "log2foldchange": "0.6112108597",
+          "pvalue": "0.8407944825",
+          "padj": "0.9999618916"
+        },
+        {
+          "group": 2,
+          "log2foldchange": "3.068478687",
+          "pvalue": "0.3177742531",
+          "padj": "0.9999737429"
+        },
+        {
+          "group": 3,
+          "log2foldchange": "",
+          "pvalue": "",
+          "padj": ""
+        },
+        {
+          "group": 4,
+          "log2foldchange": "",
+          "pvalue": "",
+          "padj": ""
+        },
+        {
+          "group": 5,
+          "log2foldchange": "",
+          "pvalue": "",
+          "padj": ""
+        },
+        {
+          "group": 6,
+          "log2foldchange": "",
+          "pvalue": "",
+          "padj": ""
+        }
+      ],
+      "adjusted_tests": [],
+      "splash_recovery": "not measured",
+      "DEkupl_recovery": "not measured"
+    },
+    {
+      "gene_id": "g44112",
+      "gene_name": "SYNE1",
+      "role": "cell_repair",
+      "published_tests": [
+        {
+          "group": 1,
+          "log2foldchange": "1.874657712",
+          "pvalue": "0.5362038037",
+          "padj": "0.9999618916"
+        },
+        {
+          "group": 2,
+          "log2foldchange": "2.088124355",
+          "pvalue": "0.4931210304",
+          "padj": "0.9999737429"
+        },
+        {
+          "group": 3,
+          "log2foldchange": "",
+          "pvalue": "",
+          "padj": ""
+        },
+        {
+          "group": 4,
+          "log2foldchange": "",
+          "pvalue": "",
+          "padj": ""
+        },
+        {
+          "group": 5,
+          "log2foldchange": "",
+          "pvalue": "",
+          "padj": ""
+        },
+        {
+          "group": 6,
+          "log2foldchange": "",
+          "pvalue": "",
+          "padj": ""
+        }
+      ],
+      "adjusted_tests": [],
+      "splash_recovery": "not measured",
+      "DEkupl_recovery": "not measured"
+    },
+    {
+      "gene_id": "g44141",
+      "gene_name": "NPEPPS",
+      "role": "cell_repair",
+      "published_tests": [
+        {
+          "group": 1,
+          "log2foldchange": "1.011493352",
+          "pvalue": "0.7384977938",
+          "padj": "0.9999618916"
+        },
+        {
+          "group": 2,
+          "log2foldchange": "0.2602459385",
+          "pvalue": "0.9312454556",
+          "padj": "0.9999737429"
+        },
+        {
+          "group": 3,
+          "log2foldchange": "",
+          "pvalue": "",
+          "padj": ""
+        },
+        {
+          "group": 4,
+          "log2foldchange": "-1.110365819",
+          "pvalue": "0.7484688653",
+          "padj": "0.9992364554"
+        },
+        {
+          "group": 5,
+          "log2foldchange": "",
+          "pvalue": "",
+          "padj": ""
+        },
+        {
+          "group": 6,
+          "log2foldchange": "",
+          "pvalue": "",
+          "padj": ""
+        }
+      ],
+      "adjusted_tests": [],
+      "splash_recovery": "not measured",
+      "DEkupl_recovery": "not measured"
+    },
+    {
+      "gene_id": "g4437",
+      "gene_name": "RPL14",
+      "role": "cell_repair",
+      "published_tests": [
+        {
+          "group": 1,
+          "log2foldchange": "0.1116178381",
+          "pvalue": "0.9364436556",
+          "padj": "0.9999618916"
+        },
+        {
+          "group": 2,
+          "log2foldchange": "0.004673979435",
+          "pvalue": "0.9974002363",
+          "padj": "0.9999737429"
+        },
+        {
+          "group": 3,
+          "log2foldchange": "2.620862292",
+          "pvalue": "0.170566041",
+          "padj": "0.9959670491"
+        },
+        {
+          "group": 4,
+          "log2foldchange": "0.2495659815",
+          "pvalue": "0.8709086257",
+          "padj": "0.9992364554"
+        },
+        {
+          "group": 5,
+          "log2foldchange": "-0.6188392181",
+          "pvalue": "0.8328621725",
+          "padj": "0.9989747531"
+        },
+        {
+          "group": 6,
+          "log2foldchange": "-0.1544471076",
+          "pvalue": "0.9320190333",
+          "padj": "0.9951116568"
+        }
+      ],
+      "adjusted_tests": [],
+      "splash_recovery": "not measured",
+      "DEkupl_recovery": "not measured"
+    },
+    {
+      "gene_id": "g44516",
+      "gene_name": "ZBED1",
+      "role": "cell_repair",
+      "published_tests": [
+        {
+          "group": 1,
+          "log2foldchange": "",
+          "pvalue": "",
+          "padj": ""
+        },
+        {
+          "group": 2,
+          "log2foldchange": "",
+          "pvalue": "",
+          "padj": ""
+        },
+        {
+          "group": 3,
+          "log2foldchange": "0.6465511518",
+          "pvalue": "0.8965842825",
+          "padj": "0.9959670491"
+        },
+        {
+          "group": 4,
+          "log2foldchange": "",
+          "pvalue": "",
+          "padj": ""
+        },
+        {
+          "group": 5,
+          "log2foldchange": "",
+          "pvalue": "",
+          "padj": ""
+        },
+        {
+          "group": 6,
+          "log2foldchange": "",
+          "pvalue": "",
+          "padj": ""
+        }
+      ],
+      "adjusted_tests": [],
+      "splash_recovery": "not measured",
+      "DEkupl_recovery": "not measured"
+    },
+    {
+      "gene_id": "g4586",
+      "gene_name": "DVL2",
+      "role": "cell_repair",
+      "published_tests": [
+        {
+          "group": 1,
+          "log2foldchange": "1.086841066",
+          "pvalue": "0.7207271892",
+          "padj": "0.9999618916"
+        },
+        {
+          "group": 2,
+          "log2foldchange": "",
+          "pvalue": "",
+          "padj": ""
+        },
+        {
+          "group": 3,
+          "log2foldchange": "",
+          "pvalue": "",
+          "padj": ""
+        },
+        {
+          "group": 4,
+          "log2foldchange": "",
+          "pvalue": "",
+          "padj": ""
+        },
+        {
+          "group": 5,
+          "log2foldchange": "",
+          "pvalue": "",
+          "padj": ""
+        },
+        {
+          "group": 6,
+          "log2foldchange": "",
+          "pvalue": "",
+          "padj": ""
+        }
+      ],
+      "adjusted_tests": [],
+      "splash_recovery": "not measured",
+      "DEkupl_recovery": "not measured"
+    },
+    {
+      "gene_id": "g46684",
+      "gene_name": "OSBPL3",
+      "role": "cell_repair",
+      "published_tests": [
+        {
+          "group": 1,
+          "log2foldchange": "-0.5706401662",
+          "pvalue": "0.8350355231",
+          "padj": "0.9999618916"
+        },
+        {
+          "group": 2,
+          "log2foldchange": "0.7156963834",
+          "pvalue": "0.812268942",
+          "padj": "0.9999737429"
+        },
+        {
+          "group": 3,
+          "log2foldchange": "-0.6233284981",
+          "pvalue": "0.8984913244",
+          "padj": "0.9959670491"
+        },
+        {
+          "group": 4,
+          "log2foldchange": "",
+          "pvalue": "",
+          "padj": ""
+        },
+        {
+          "group": 5,
+          "log2foldchange": "",
+          "pvalue": "",
+          "padj": ""
+        },
+        {
+          "group": 6,
+          "log2foldchange": "",
+          "pvalue": "",
+          "padj": ""
+        }
+      ],
+      "adjusted_tests": [],
+      "splash_recovery": "not measured",
+      "DEkupl_recovery": "not measured"
+    },
+    {
+      "gene_id": "g47170",
+      "gene_name": "ITPR2",
+      "role": "cell_repair",
+      "published_tests": [
+        {
+          "group": 1,
+          "log2foldchange": "",
+          "pvalue": "",
+          "padj": ""
+        },
+        {
+          "group": 2,
+          "log2foldchange": "",
+          "pvalue": "",
+          "padj": ""
+        },
+        {
+          "group": 3,
+          "log2foldchange": "",
+          "pvalue": "",
+          "padj": ""
+        },
+        {
+          "group": 4,
+          "log2foldchange": "",
+          "pvalue": "",
+          "padj": ""
+        },
+        {
+          "group": 5,
+          "log2foldchange": "",
+          "pvalue": "",
+          "padj": ""
+        },
+        {
+          "group": 6,
+          "log2foldchange": "",
+          "pvalue": "",
+          "padj": ""
+        }
+      ],
+      "adjusted_tests": [],
+      "splash_recovery": "not measured",
+      "DEkupl_recovery": "not measured"
+    },
+    {
+      "gene_id": "g47384",
+      "gene_name": "RPL6",
+      "role": "cell_repair",
+      "published_tests": [
+        {
+          "group": 1,
+          "log2foldchange": "-0.5956849384",
+          "pvalue": "0.3606790754",
+          "padj": "0.9999618916"
+        },
+        {
+          "group": 2,
+          "log2foldchange": "-0.06764485461",
+          "pvalue": "0.9351992697",
+          "padj": "0.9999737429"
+        },
+        {
+          "group": 3,
+          "log2foldchange": "-0.3733302683",
+          "pvalue": "0.841845924",
+          "padj": "0.9959670491"
+        },
+        {
+          "group": 4,
+          "log2foldchange": "0.8852408531",
+          "pvalue": "0.3150115363",
+          "padj": "0.9992364554"
+        },
+        {
+          "group": 5,
+          "log2foldchange": "-0.2565123455",
+          "pvalue": "0.7146389077",
+          "padj": "0.9989747531"
+        },
+        {
+          "group": 6,
+          "log2foldchange": "-0.05476756801",
+          "pvalue": "0.9681375435",
+          "padj": "0.9951116568"
+        }
+      ],
+      "adjusted_tests": [],
+      "splash_recovery": "not measured",
+      "DEkupl_recovery": "not measured"
+    },
+    {
+      "gene_id": "g47644",
+      "gene_name": "RPL9",
+      "role": "cell_repair",
+      "published_tests": [
+        {
+          "group": 1,
+          "log2foldchange": "-0.364968971",
+          "pvalue": "0.904222636",
+          "padj": "0.9999618916"
+        },
+        {
+          "group": 2,
+          "log2foldchange": "-1.261383306",
+          "pvalue": "0.6374238718",
+          "padj": "0.9999737429"
+        },
+        {
+          "group": 3,
+          "log2foldchange": "",
+          "pvalue": "",
+          "padj": ""
+        },
+        {
+          "group": 4,
+          "log2foldchange": "",
+          "pvalue": "",
+          "padj": ""
+        },
+        {
+          "group": 5,
+          "log2foldchange": "",
+          "pvalue": "",
+          "padj": ""
+        },
+        {
+          "group": 6,
+          "log2foldchange": "",
+          "pvalue": "",
+          "padj": ""
+        }
+      ],
+      "adjusted_tests": [],
+      "splash_recovery": "not measured",
+      "DEkupl_recovery": "not measured"
+    },
+    {
+      "gene_id": "g48013",
+      "gene_name": "RPL6",
+      "role": "cell_repair",
+      "published_tests": [
+        {
+          "group": 1,
+          "log2foldchange": "-3.073204565",
+          "pvalue": "0.005632411989",
+          "padj": "0.9999618916"
+        },
+        {
+          "group": 2,
+          "log2foldchange": "0.4671045127",
+          "pvalue": "0.5577504747",
+          "padj": "0.9999737429"
+        },
+        {
+          "group": 3,
+          "log2foldchange": "0.07672051474",
+          "pvalue": "0.9689646159",
+          "padj": "0.9959670491"
+        },
+        {
+          "group": 4,
+          "log2foldchange": "0.02127246931",
+          "pvalue": "0.9828602409",
+          "padj": "0.9992364554"
+        },
+        {
+          "group": 5,
+          "log2foldchange": "-0.2709161108",
+          "pvalue": "0.7146312641",
+          "padj": "0.9989747531"
+        },
+        {
+          "group": 6,
+          "log2foldchange": "-0.01075723082",
+          "pvalue": "0.9946496072",
+          "padj": "0.9990426782"
+        }
+      ],
+      "adjusted_tests": [],
+      "splash_recovery": "not measured",
+      "DEkupl_recovery": "not measured"
+    },
+    {
+      "gene_id": "g48849",
+      "gene_name": "NXF1",
+      "role": "cell_repair",
+      "published_tests": [
+        {
+          "group": 1,
+          "log2foldchange": "0.7303078787",
+          "pvalue": "0.6396819388",
+          "padj": "0.9999618916"
+        },
+        {
+          "group": 2,
+          "log2foldchange": "-0.02861316822",
+          "pvalue": "",
+          "padj": ""
+        },
+        {
+          "group": 3,
+          "log2foldchange": "1.910083093",
+          "pvalue": "0.6013438017",
+          "padj": "0.9959670491"
+        },
+        {
+          "group": 4,
+          "log2foldchange": "-0.5193478818",
+          "pvalue": "0.8818674659",
+          "padj": "0.9992364554"
+        },
+        {
+          "group": 5,
+          "log2foldchange": "-0.09927322833",
+          "pvalue": "0.9805681796",
+          "padj": ""
+        },
+        {
+          "group": 6,
+          "log2foldchange": "",
+          "pvalue": "",
+          "padj": ""
+        }
+      ],
+      "adjusted_tests": [],
+      "splash_recovery": "not measured",
+      "DEkupl_recovery": "not measured"
+    },
+    {
+      "gene_id": "g49015",
+      "gene_name": "SLC25A6",
+      "role": "cell_repair",
+      "published_tests": [
+        {
+          "group": 1,
+          "log2foldchange": "-0.6799745921",
+          "pvalue": "0.4733495421",
+          "padj": "0.9999618916"
+        },
+        {
+          "group": 2,
+          "log2foldchange": "0.6764189452",
+          "pvalue": "0.5448843474",
+          "padj": "0.9999737429"
+        },
+        {
+          "group": 3,
+          "log2foldchange": "-0.8024553516",
+          "pvalue": "0.6859449825",
+          "padj": "0.9959670491"
+        },
+        {
+          "group": 4,
+          "log2foldchange": "-1.582420649",
+          "pvalue": "0.1255860716",
+          "padj": "0.9992364554"
+        },
+        {
+          "group": 5,
+          "log2foldchange": "-0.7235177949",
+          "pvalue": "0.3955048307",
+          "padj": "0.9989747531"
+        },
+        {
+          "group": 6,
+          "log2foldchange": "-0.5698562899",
+          "pvalue": "0.6773731926",
+          "padj": "0.9951116568"
+        }
+      ],
+      "adjusted_tests": [],
+      "splash_recovery": "not measured",
+      "DEkupl_recovery": "not measured"
+    },
+    {
+      "gene_id": "g49448",
+      "gene_name": "KCTD3",
+      "role": "cell_repair",
+      "published_tests": [
+        {
+          "group": 1,
+          "log2foldchange": "0.4101438059",
+          "pvalue": "0.8539711182",
+          "padj": "0.9999618916"
+        },
+        {
+          "group": 2,
+          "log2foldchange": "-0.6755103972",
+          "pvalue": "",
+          "padj": ""
+        },
+        {
+          "group": 3,
+          "log2foldchange": "",
+          "pvalue": "",
+          "padj": ""
+        },
+        {
+          "group": 4,
+          "log2foldchange": "",
+          "pvalue": "",
+          "padj": ""
+        },
+        {
+          "group": 5,
+          "log2foldchange": "",
+          "pvalue": "",
+          "padj": ""
+        },
+        {
+          "group": 6,
+          "log2foldchange": "",
+          "pvalue": "",
+          "padj": ""
+        }
+      ],
+      "adjusted_tests": [],
+      "splash_recovery": "not measured",
+      "DEkupl_recovery": "not measured"
+    },
+    {
+      "gene_id": "g49750",
+      "gene_name": "CERK",
+      "role": "cell_repair",
+      "published_tests": [
+        {
+          "group": 1,
+          "log2foldchange": "-0.98622599",
+          "pvalue": "0.5827238955",
+          "padj": "0.9999618916"
+        },
+        {
+          "group": 2,
+          "log2foldchange": "-0.8624693645",
+          "pvalue": "0.6025242806",
+          "padj": "0.9999737429"
+        },
+        {
+          "group": 3,
+          "log2foldchange": "-1.029423732",
+          "pvalue": "0.8323091014",
+          "padj": "0.9959670491"
+        },
+        {
+          "group": 4,
+          "log2foldchange": "",
+          "pvalue": "",
+          "padj": ""
+        },
+        {
+          "group": 5,
+          "log2foldchange": "",
+          "pvalue": "",
+          "padj": ""
+        },
+        {
+          "group": 6,
+          "log2foldchange": "0.6592249752",
+          "pvalue": "0.8839429881",
+          "padj": "0.9951116568"
+        }
+      ],
+      "adjusted_tests": [],
+      "splash_recovery": "not measured",
+      "DEkupl_recovery": "not measured"
+    },
+    {
+      "gene_id": "g50412",
+      "gene_name": "FNBP1",
+      "role": "cell_repair",
+      "published_tests": [
+        {
+          "group": 1,
+          "log2foldchange": "-0.2906693574",
+          "pvalue": "0.8354698825",
+          "padj": "0.9999618916"
+        },
+        {
+          "group": 2,
+          "log2foldchange": "1.290774899",
+          "pvalue": "0.2907208451",
+          "padj": "0.9999737429"
+        },
+        {
+          "group": 3,
+          "log2foldchange": "-1.029423732",
+          "pvalue": "0.8323091014",
+          "padj": "0.9959670491"
+        },
+        {
+          "group": 4,
+          "log2foldchange": "1.514457685",
+          "pvalue": "0.6631899876",
+          "padj": "0.9992364554"
+        },
+        {
+          "group": 5,
+          "log2foldchange": "-1.728122272",
+          "pvalue": "0.6650430094",
+          "padj": ""
+        },
+        {
+          "group": 6,
+          "log2foldchange": "0.7581923995",
+          "pvalue": "0.8665559154",
+          "padj": "0.9951116568"
+        }
+      ],
+      "adjusted_tests": [],
+      "splash_recovery": "not measured",
+      "DEkupl_recovery": "not measured"
+    },
+    {
+      "gene_id": "g51674",
+      "gene_name": "PCSK5",
+      "role": "cell_repair",
+      "published_tests": [
+        {
+          "group": 1,
+          "log2foldchange": "-2.555217033",
+          "pvalue": "0.2837527291",
+          "padj": "0.9999618916"
+        },
+        {
+          "group": 2,
+          "log2foldchange": "2.749354861",
+          "pvalue": "0.1888422912",
+          "padj": "0.9999737429"
+        },
+        {
+          "group": 3,
+          "log2foldchange": "6.397779303",
+          "pvalue": "0.06869036123",
+          "padj": "0.9959670491"
+        },
+        {
+          "group": 4,
+          "log2foldchange": "",
+          "pvalue": "",
+          "padj": ""
+        },
+        {
+          "group": 5,
+          "log2foldchange": "",
+          "pvalue": "",
+          "padj": ""
+        },
+        {
+          "group": 6,
+          "log2foldchange": "",
+          "pvalue": "",
+          "padj": ""
+        }
+      ],
+      "adjusted_tests": [],
+      "splash_recovery": "not measured",
+      "DEkupl_recovery": "not measured"
+    },
+    {
+      "gene_id": "g53552",
+      "gene_name": "RBM4",
+      "role": "cell_repair",
+      "published_tests": [
+        {
+          "group": 1,
+          "log2foldchange": "-0.003181656138",
+          "pvalue": "0.998028036",
+          "padj": "0.9999618916"
+        },
+        {
+          "group": 2,
+          "log2foldchange": "-0.181649857",
+          "pvalue": "0.8843051491",
+          "padj": "0.9999737429"
+        },
+        {
+          "group": 3,
+          "log2foldchange": "-1.647055348",
+          "pvalue": "0.5849377184",
+          "padj": "0.9959670491"
+        },
+        {
+          "group": 4,
+          "log2foldchange": "-1.025353139",
+          "pvalue": "0.6173686094",
+          "padj": "0.9992364554"
+        },
+        {
+          "group": 5,
+          "log2foldchange": "-2.017425682",
+          "pvalue": "0.1918464112",
+          "padj": "0.9989747531"
+        },
+        {
+          "group": 6,
+          "log2foldchange": "1.800379509",
+          "pvalue": "0.3756843529",
+          "padj": "0.9951116568"
+        }
+      ],
+      "adjusted_tests": [],
+      "splash_recovery": "not measured",
+      "DEkupl_recovery": "not measured"
+    },
+    {
+      "gene_id": "g5392",
+      "gene_name": "ZDHHC6",
+      "role": "cell_repair",
+      "published_tests": [
+        {
+          "group": 1,
+          "log2foldchange": "0.1013723048",
+          "pvalue": "0.9437805538",
+          "padj": "0.9999618916"
+        },
+        {
+          "group": 2,
+          "log2foldchange": "0.3665520431",
+          "pvalue": "0.7237589158",
+          "padj": "0.9999737429"
+        },
+        {
+          "group": 3,
+          "log2foldchange": "-0.1149908114",
+          "pvalue": "0.9743072544",
+          "padj": "0.9959670491"
+        },
+        {
+          "group": 4,
+          "log2foldchange": "-0.05955921288",
+          "pvalue": "0.9860823123",
+          "padj": "0.9992364554"
+        },
+        {
+          "group": 5,
+          "log2foldchange": "-1.807523853",
+          "pvalue": "0.6502893773",
+          "padj": ""
+        },
+        {
+          "group": 6,
+          "log2foldchange": "-3.201987062",
+          "pvalue": "0.4696605438",
+          "padj": "0.9951116568"
+        }
+      ],
+      "adjusted_tests": [],
+      "splash_recovery": "not measured",
+      "DEkupl_recovery": "not measured"
+    },
+    {
+      "gene_id": "g54137",
+      "gene_name": "MFNG",
+      "role": "cell_repair",
+      "published_tests": [
+        {
+          "group": 1,
+          "log2foldchange": "0.5934541116",
+          "pvalue": "0.8443821365",
+          "padj": "0.9999618916"
+        },
+        {
+          "group": 2,
+          "log2foldchange": "1.863013363",
+          "pvalue": "0.540094097",
+          "padj": "0.9999737429"
+        },
+        {
+          "group": 3,
+          "log2foldchange": "",
+          "pvalue": "",
+          "padj": ""
+        },
+        {
+          "group": 4,
+          "log2foldchange": "",
+          "pvalue": "",
+          "padj": ""
+        },
+        {
+          "group": 5,
+          "log2foldchange": "",
+          "pvalue": "",
+          "padj": ""
+        },
+        {
+          "group": 6,
+          "log2foldchange": "",
+          "pvalue": "",
+          "padj": ""
+        }
+      ],
+      "adjusted_tests": [],
+      "splash_recovery": "not measured",
+      "DEkupl_recovery": "not measured"
+    },
+    {
+      "gene_id": "g54202",
+      "gene_name": "ZBED1",
+      "role": "cell_repair",
+      "published_tests": [
+        {
+          "group": 1,
+          "log2foldchange": "-0.1275916714",
+          "pvalue": "0.9664656597",
+          "padj": "0.9999618916"
+        },
+        {
+          "group": 2,
+          "log2foldchange": "2.088124355",
+          "pvalue": "0.4931210304",
+          "padj": "0.9999737429"
+        },
+        {
+          "group": 3,
+          "log2foldchange": "",
+          "pvalue": "",
+          "padj": ""
+        },
+        {
+          "group": 4,
+          "log2foldchange": "",
+          "pvalue": "",
+          "padj": ""
+        },
+        {
+          "group": 5,
+          "log2foldchange": "",
+          "pvalue": "",
+          "padj": ""
+        },
+        {
+          "group": 6,
+          "log2foldchange": "",
+          "pvalue": "",
+          "padj": ""
+        }
+      ],
+      "adjusted_tests": [],
+      "splash_recovery": "not measured",
+      "DEkupl_recovery": "not measured"
+    },
+    {
+      "gene_id": "g54394",
+      "gene_name": "ENOSF1",
+      "role": "cell_repair",
+      "published_tests": [
+        {
+          "group": 1,
+          "log2foldchange": "-0.4647114106",
+          "pvalue": "0.6294135882",
+          "padj": "0.9999618916"
+        },
+        {
+          "group": 2,
+          "log2foldchange": "-0.5850591055",
+          "pvalue": "0.5582000862",
+          "padj": "0.9999737429"
+        },
+        {
+          "group": 3,
+          "log2foldchange": "0.01492617974",
+          "pvalue": "0.9961004664",
+          "padj": "0.9985442446"
+        },
+        {
+          "group": 4,
+          "log2foldchange": "1.885293999",
+          "pvalue": "0.3176878798",
+          "padj": "0.9992364554"
+        },
+        {
+          "group": 5,
+          "log2foldchange": "1.805735801",
+          "pvalue": "0.3448082828",
+          "padj": ""
+        },
+        {
+          "group": 6,
+          "log2foldchange": "3.306651876",
+          "pvalue": "0.3249496022",
+          "padj": "0.9951116568"
+        }
+      ],
+      "adjusted_tests": [],
+      "splash_recovery": "not measured",
+      "DEkupl_recovery": "not measured"
+    },
+    {
+      "gene_id": "g54395",
+      "gene_name": "ENOSF1",
+      "role": "cell_repair",
+      "published_tests": [
+        {
+          "group": 1,
+          "log2foldchange": "-0.5096736399",
+          "pvalue": "0.6820967666",
+          "padj": "0.9999618916"
+        },
+        {
+          "group": 2,
+          "log2foldchange": "-0.1527202616",
+          "pvalue": "0.8750542432",
+          "padj": "0.9999737429"
+        },
+        {
+          "group": 3,
+          "log2foldchange": "-3.396105951",
+          "pvalue": "0.3553721137",
+          "padj": "0.9959670491"
+        },
+        {
+          "group": 4,
+          "log2foldchange": "-0.1921207895",
+          "pvalue": "0.9553071755",
+          "padj": "0.9992364554"
+        },
+        {
+          "group": 5,
+          "log2foldchange": "-1.066987482",
+          "pvalue": "0.7915509332",
+          "padj": ""
+        },
+        {
+          "group": 6,
+          "log2foldchange": "-1.955369343",
+          "pvalue": "0.6671310544",
+          "padj": "0.9951116568"
+        }
+      ],
+      "adjusted_tests": [],
+      "splash_recovery": "not measured",
+      "DEkupl_recovery": "not measured"
+    },
+    {
+      "gene_id": "g55396",
+      "gene_name": "PCNT",
+      "role": "cell_repair",
+      "published_tests": [
+        {
+          "group": 1,
+          "log2foldchange": "-0.4636185428",
+          "pvalue": "0.6252228294",
+          "padj": "0.9999618916"
+        },
+        {
+          "group": 2,
+          "log2foldchange": "-0.7391643059",
+          "pvalue": "0.460485224",
+          "padj": "0.9999737429"
+        },
+        {
+          "group": 3,
+          "log2foldchange": "0.7957193486",
+          "pvalue": "0.7617004019",
+          "padj": "0.9959670491"
+        },
+        {
+          "group": 4,
+          "log2foldchange": "0.7330865072",
+          "pvalue": "0.741333912",
+          "padj": "0.9992364554"
+        },
+        {
+          "group": 5,
+          "log2foldchange": "-1.851434645",
+          "pvalue": "0.4772553356",
+          "padj": ""
+        },
+        {
+          "group": 6,
+          "log2foldchange": "-0.1553613042",
+          "pvalue": "0.9453681485",
+          "padj": "0.9951116568"
+        }
+      ],
+      "adjusted_tests": [],
+      "splash_recovery": "not measured",
+      "DEkupl_recovery": "not measured"
+    },
+    {
+      "gene_id": "g55760",
+      "gene_name": "IQCK",
+      "role": "cell_repair",
+      "published_tests": [
+        {
+          "group": 1,
+          "log2foldchange": "0.05708560492",
+          "pvalue": "0.9597898492",
+          "padj": "0.9999618916"
+        },
+        {
+          "group": 2,
+          "log2foldchange": "2.667978344",
+          "pvalue": "0.01914349145",
+          "padj": "0.9999737429"
+        },
+        {
+          "group": 3,
+          "log2foldchange": "0.03461056165",
+          "pvalue": "0.987009956",
+          "padj": "0.9959670491"
+        },
+        {
+          "group": 4,
+          "log2foldchange": "0.5581832604",
+          "pvalue": "0.7410666893",
+          "padj": "0.9992364554"
+        },
+        {
+          "group": 5,
+          "log2foldchange": "-1.882972351",
+          "pvalue": "0.1275783426",
+          "padj": "0.9989747531"
+        },
+        {
+          "group": 6,
+          "log2foldchange": "-0.8779343905",
+          "pvalue": "0.6957827175",
+          "padj": "0.9951116568"
+        }
+      ],
+      "adjusted_tests": [],
+      "splash_recovery": "not measured",
+      "DEkupl_recovery": "not measured"
+    },
+    {
+      "gene_id": "g56008",
+      "gene_name": "RAPGEF6",
+      "role": "cell_repair",
+      "published_tests": [
+        {
+          "group": 1,
+          "log2foldchange": "-0.4259960378",
+          "pvalue": "0.8404403208",
+          "padj": "0.9999618916"
+        },
+        {
+          "group": 2,
+          "log2foldchange": "1.904470471",
+          "pvalue": "0.5300318784",
+          "padj": "0.9999737429"
+        },
+        {
+          "group": 3,
+          "log2foldchange": "-0.6233284981",
+          "pvalue": "0.8984913244",
+          "padj": "0.9959670491"
+        },
+        {
+          "group": 4,
+          "log2foldchange": "0.801055079",
+          "pvalue": "0.8169179356",
+          "padj": "0.9992364554"
+        },
+        {
+          "group": 5,
+          "log2foldchange": "",
+          "pvalue": "",
+          "padj": ""
+        },
+        {
+          "group": 6,
+          "log2foldchange": "-1.330793142",
+          "pvalue": "0.7336513063",
+          "padj": "0.9951116568"
+        }
+      ],
+      "adjusted_tests": [],
+      "splash_recovery": "not measured",
+      "DEkupl_recovery": "not measured"
+    },
+    {
+      "gene_id": "g56062",
+      "gene_name": "SLC26A6",
+      "role": "cell_repair",
+      "published_tests": [
+        {
+          "group": 1,
+          "log2foldchange": "-0.9676951963",
+          "pvalue": "0.749332714",
+          "padj": "0.9999618916"
+        },
+        {
+          "group": 2,
+          "log2foldchange": "1.833495272",
+          "pvalue": "0.5464378442",
+          "padj": "0.9999737429"
+        },
+        {
+          "group": 3,
+          "log2foldchange": "0.6465511518",
+          "pvalue": "0.8965842825",
+          "padj": "0.9959670491"
+        },
+        {
+          "group": 4,
+          "log2foldchange": "0.7306861161",
+          "pvalue": "0.8343681281",
+          "padj": "0.9992364554"
+        },
+        {
+          "group": 5,
+          "log2foldchange": "",
+          "pvalue": "",
+          "padj": ""
+        },
+        {
+          "group": 6,
+          "log2foldchange": "",
+          "pvalue": "",
+          "padj": ""
+        }
+      ],
+      "adjusted_tests": [],
+      "splash_recovery": "not measured",
+      "DEkupl_recovery": "not measured"
+    },
+    {
+      "gene_id": "g57190",
+      "gene_name": "FCF1",
+      "role": "cell_repair",
+      "published_tests": [
+        {
+          "group": 1,
+          "log2foldchange": "0.425158896",
+          "pvalue": "0.5232481176",
+          "padj": "0.9999618916"
+        },
+        {
+          "group": 2,
+          "log2foldchange": "0.7147552156",
+          "pvalue": "0.3325325879",
+          "padj": "0.9999737429"
+        },
+        {
+          "group": 3,
+          "log2foldchange": "-0.3924469186",
+          "pvalue": "0.8438866876",
+          "padj": "0.9959670491"
+        },
+        {
+          "group": 4,
+          "log2foldchange": "-0.0755155505",
+          "pvalue": "0.9365706813",
+          "padj": "0.9992364554"
+        },
+        {
+          "group": 5,
+          "log2foldchange": "1.012883592",
+          "pvalue": "0.2932705045",
+          "padj": "0.9989747531"
+        },
+        {
+          "group": 6,
+          "log2foldchange": "-0.2339670096",
+          "pvalue": "0.8939492404",
+          "padj": "0.9951116568"
+        }
+      ],
+      "adjusted_tests": [],
+      "splash_recovery": "not measured",
+      "DEkupl_recovery": "not measured"
+    },
+    {
+      "gene_id": "g5753",
+      "gene_name": "SLC9A8",
+      "role": "cell_repair",
+      "published_tests": [
+        {
+          "group": 1,
+          "log2foldchange": "0.1895892324",
+          "pvalue": "0.950236321",
+          "padj": "0.9999618916"
+        },
+        {
+          "group": 2,
+          "log2foldchange": "3.032254784",
+          "pvalue": "0.1698437167",
+          "padj": "0.9999737429"
+        },
+        {
+          "group": 3,
+          "log2foldchange": "2.421667542",
+          "pvalue": "0.5100773604",
+          "padj": "0.9959670491"
+        },
+        {
+          "group": 4,
+          "log2foldchange": "0.02525772758",
+          "pvalue": "0.9942041176",
+          "padj": "0.9992364554"
+        },
+        {
+          "group": 5,
+          "log2foldchange": "-0.09927322833",
+          "pvalue": "0.9805681796",
+          "padj": ""
+        },
+        {
+          "group": 6,
+          "log2foldchange": "",
+          "pvalue": "",
+          "padj": ""
+        }
+      ],
+      "adjusted_tests": [],
+      "splash_recovery": "not measured",
+      "DEkupl_recovery": "not measured"
+    },
+    {
+      "gene_id": "g57954",
+      "gene_name": "RPL9",
+      "role": "cell_repair",
+      "published_tests": [
+        {
+          "group": 1,
+          "log2foldchange": "0.77004254",
+          "pvalue": "0.3257684573",
+          "padj": "0.9999618916"
+        },
+        {
+          "group": 2,
+          "log2foldchange": "0.2680955419",
+          "pvalue": "0.6505373325",
+          "padj": "0.9999737429"
+        },
+        {
+          "group": 3,
+          "log2foldchange": "1.547753976",
+          "pvalue": "0.4113444126",
+          "padj": "0.9959670491"
+        },
+        {
+          "group": 4,
+          "log2foldchange": "0.1777683035",
+          "pvalue": "0.8558722555",
+          "padj": "0.9992364554"
+        },
+        {
+          "group": 5,
+          "log2foldchange": "0.531959376",
+          "pvalue": "0.4985516256",
+          "padj": "0.9989747531"
+        },
+        {
+          "group": 6,
+          "log2foldchange": "-1.262978513",
+          "pvalue": "0.3386180587",
+          "padj": "0.9951116568"
+        }
+      ],
+      "adjusted_tests": [],
+      "splash_recovery": "not measured",
+      "DEkupl_recovery": "not measured"
+    },
+    {
+      "gene_id": "g58635",
+      "gene_name": "ANXA4",
+      "role": "cell_repair",
+      "published_tests": [
+        {
+          "group": 1,
+          "log2foldchange": "-7.505180463",
+          "pvalue": "",
+          "padj": ""
+        },
+        {
+          "group": 2,
+          "log2foldchange": "0.6278457242",
+          "pvalue": "0.6285897648",
+          "padj": "0.9999737429"
+        },
+        {
+          "group": 3,
+          "log2foldchange": "-2.798978841",
+          "pvalue": "0.4873201494",
+          "padj": "0.9959670491"
+        },
+        {
+          "group": 4,
+          "log2foldchange": "-0.6018328531",
+          "pvalue": "0.8630990733",
+          "padj": "0.9992364554"
+        },
+        {
+          "group": 5,
+          "log2foldchange": "",
+          "pvalue": "",
+          "padj": ""
+        },
+        {
+          "group": 6,
+          "log2foldchange": "",
+          "pvalue": "",
+          "padj": ""
+        }
+      ],
+      "adjusted_tests": [],
+      "splash_recovery": "not measured",
+      "DEkupl_recovery": "not measured"
+    },
+    {
+      "gene_id": "g59820",
+      "gene_name": "CERK",
+      "role": "cell_repair",
+      "published_tests": [
+        {
+          "group": 1,
+          "log2foldchange": "-6.882501678",
+          "pvalue": "",
+          "padj": ""
+        },
+        {
+          "group": 2,
+          "log2foldchange": "0.9436487364",
+          "pvalue": "0.4698269176",
+          "padj": "0.9999737429"
+        },
+        {
+          "group": 3,
+          "log2foldchange": "0.6465511518",
+          "pvalue": "0.8965842825",
+          "padj": "0.9959670491"
+        },
+        {
+          "group": 4,
+          "log2foldchange": "-1.502225673",
+          "pvalue": "0.6629682772",
+          "padj": "0.9992364554"
+        },
+        {
+          "group": 5,
+          "log2foldchange": "-3.349069373",
+          "pvalue": "0.2397502519",
+          "padj": ""
+        },
+        {
+          "group": 6,
+          "log2foldchange": "",
+          "pvalue": "",
+          "padj": ""
+        }
+      ],
+      "adjusted_tests": [],
+      "splash_recovery": "not measured",
+      "DEkupl_recovery": "not measured"
+    },
+    {
+      "gene_id": "g6039",
+      "gene_name": "KMO",
+      "role": "cell_repair",
+      "published_tests": [
+        {
+          "group": 1,
+          "log2foldchange": "-0.9980378888",
+          "pvalue": "0.4838731101",
+          "padj": "0.9999618916"
+        },
+        {
+          "group": 2,
+          "log2foldchange": "1.017564855",
+          "pvalue": "0.3913242174",
+          "padj": "0.9999737429"
+        },
+        {
+          "group": 3,
+          "log2foldchange": "",
+          "pvalue": "",
+          "padj": ""
+        },
+        {
+          "group": 4,
+          "log2foldchange": "",
+          "pvalue": "",
+          "padj": ""
+        },
+        {
+          "group": 5,
+          "log2foldchange": "",
+          "pvalue": "",
+          "padj": ""
+        },
+        {
+          "group": 6,
+          "log2foldchange": "0.7581923995",
+          "pvalue": "0.8665559154",
+          "padj": "0.9951116568"
+        }
+      ],
+      "adjusted_tests": [],
+      "splash_recovery": "not measured",
+      "DEkupl_recovery": "not measured"
+    },
+    {
+      "gene_id": "g6169",
+      "gene_name": "MGAT4A",
+      "role": "cell_repair",
+      "published_tests": [
+        {
+          "group": 1,
+          "log2foldchange": "-0.8502559115",
+          "pvalue": "0.5030083683",
+          "padj": "0.9999618916"
+        },
+        {
+          "group": 2,
+          "log2foldchange": "0.03165869074",
+          "pvalue": "0.9785829952",
+          "padj": "0.9999737429"
+        },
+        {
+          "group": 3,
+          "log2foldchange": "-2.626611106",
+          "pvalue": "0.4387042655",
+          "padj": "0.9959670491"
+        },
+        {
+          "group": 4,
+          "log2foldchange": "",
+          "pvalue": "",
+          "padj": ""
+        },
+        {
+          "group": 5,
+          "log2foldchange": "-0.09927322833",
+          "pvalue": "0.9805681796",
+          "padj": ""
+        },
+        {
+          "group": 6,
+          "log2foldchange": "1.304341017",
+          "pvalue": "0.7716418174",
+          "padj": "0.9951116568"
+        }
+      ],
+      "adjusted_tests": [],
+      "splash_recovery": "not measured",
+      "DEkupl_recovery": "not measured"
+    },
+    {
+      "gene_id": "g61932",
+      "gene_name": "AMY1A",
+      "role": "cell_repair",
+      "published_tests": [
+        {
+          "group": 1,
+          "log2foldchange": "0.7047096115",
+          "pvalue": "0.6560022314",
+          "padj": "0.9999618916"
+        },
+        {
+          "group": 2,
+          "log2foldchange": "-0.676929442",
+          "pvalue": "0.7087943315",
+          "padj": "0.9999737429"
+        },
+        {
+          "group": 3,
+          "log2foldchange": "-1.604868785",
+          "pvalue": "0.7400291971",
+          "padj": "0.9959670491"
+        },
+        {
+          "group": 4,
+          "log2foldchange": "",
+          "pvalue": "",
+          "padj": ""
+        },
+        {
+          "group": 5,
+          "log2foldchange": "",
+          "pvalue": "",
+          "padj": ""
+        },
+        {
+          "group": 6,
+          "log2foldchange": "",
+          "pvalue": "",
+          "padj": ""
+        }
+      ],
+      "adjusted_tests": [],
+      "splash_recovery": "not measured",
+      "DEkupl_recovery": "not measured"
+    },
+    {
+      "gene_id": "g6236",
+      "gene_name": "IPO5",
+      "role": "cell_repair",
+      "published_tests": [
+        {
+          "group": 1,
+          "log2foldchange": "-0.3626204451",
+          "pvalue": "0.8485678709",
+          "padj": "0.9999618916"
+        },
+        {
+          "group": 2,
+          "log2foldchange": "-0.6094729911",
+          "pvalue": "",
+          "padj": ""
+        },
+        {
+          "group": 3,
+          "log2foldchange": "",
+          "pvalue": "",
+          "padj": ""
+        },
+        {
+          "group": 4,
+          "log2foldchange": "",
+          "pvalue": "",
+          "padj": ""
+        },
+        {
+          "group": 5,
+          "log2foldchange": "-0.1911467162",
+          "pvalue": "0.9625645404",
+          "padj": ""
+        },
+        {
+          "group": 6,
+          "log2foldchange": "",
+          "pvalue": "",
+          "padj": ""
+        }
+      ],
+      "adjusted_tests": [],
+      "splash_recovery": "not measured",
+      "DEkupl_recovery": "not measured"
+    },
+    {
+      "gene_id": "g62585",
+      "gene_name": "SLC26A6",
+      "role": "cell_repair",
+      "published_tests": [
+        {
+          "group": 1,
+          "log2foldchange": "0.02705985857",
+          "pvalue": "0.9850376305",
+          "padj": "0.9999618916"
+        },
+        {
+          "group": 2,
+          "log2foldchange": "-1.649637702",
+          "pvalue": "0.1316788372",
+          "padj": "0.9999737429"
+        },
+        {
+          "group": 3,
+          "log2foldchange": "-0.5132257593",
+          "pvalue": "0.8506994336",
+          "padj": "0.9959670491"
+        },
+        {
+          "group": 4,
+          "log2foldchange": "0.1708773902",
+          "pvalue": "0.960101027",
+          "padj": "0.9992364554"
+        },
+        {
+          "group": 5,
+          "log2foldchange": "-2.421686614",
+          "pvalue": "0.4948028598",
+          "padj": ""
+        },
+        {
+          "group": 6,
+          "log2foldchange": "-1.643275211",
+          "pvalue": "0.4590453586",
+          "padj": "0.9951116568"
+        }
+      ],
+      "adjusted_tests": [],
+      "splash_recovery": "not measured",
+      "DEkupl_recovery": "not measured"
+    },
+    {
+      "gene_id": "g63173",
+      "gene_name": "ITSN1",
+      "role": "cell_repair",
+      "published_tests": [
+        {
+          "group": 1,
+          "log2foldchange": "-0.1487491384",
+          "pvalue": "0.960667757",
+          "padj": "0.9999618916"
+        },
+        {
+          "group": 2,
+          "log2foldchange": "0.8808189806",
+          "pvalue": "0.7414540696",
+          "padj": "0.9999737429"
+        },
+        {
+          "group": 3,
+          "log2foldchange": "",
+          "pvalue": "",
+          "padj": ""
+        },
+        {
+          "group": 4,
+          "log2foldchange": "",
+          "pvalue": "",
+          "padj": ""
+        },
+        {
+          "group": 5,
+          "log2foldchange": "",
+          "pvalue": "",
+          "padj": ""
+        },
+        {
+          "group": 6,
+          "log2foldchange": "",
+          "pvalue": "",
+          "padj": ""
+        }
+      ],
+      "adjusted_tests": [],
+      "splash_recovery": "not measured",
+      "DEkupl_recovery": "not measured"
+    },
+    {
+      "gene_id": "g63324",
+      "gene_name": "CYLD",
+      "role": "cell_repair",
+      "published_tests": [
+        {
+          "group": 1,
+          "log2foldchange": "1.155721888",
+          "pvalue": "0.3934572574",
+          "padj": "0.9999618916"
+        },
+        {
+          "group": 2,
+          "log2foldchange": "-0.6841727119",
+          "pvalue": "0.6148939699",
+          "padj": "0.9999737429"
+        },
+        {
+          "group": 3,
+          "log2foldchange": "-0.6233284981",
+          "pvalue": "0.8984913244",
+          "padj": "0.9959670491"
+        },
+        {
+          "group": 4,
+          "log2foldchange": "-0.5193478818",
+          "pvalue": "0.8818674659",
+          "padj": "0.9992364554"
+        },
+        {
+          "group": 5,
+          "log2foldchange": "",
+          "pvalue": "",
+          "padj": ""
+        },
+        {
+          "group": 6,
+          "log2foldchange": "0.6592249752",
+          "pvalue": "0.8839429881",
+          "padj": "0.9951116568"
+        }
+      ],
+      "adjusted_tests": [],
+      "splash_recovery": "not measured",
+      "DEkupl_recovery": "not measured"
+    },
+    {
+      "gene_id": "g63431",
+      "gene_name": "RAPGEF6",
+      "role": "cell_repair",
+      "published_tests": [
+        {
+          "group": 1,
+          "log2foldchange": "0.1344445304",
+          "pvalue": "0.9645565067",
+          "padj": "0.9999618916"
+        },
+        {
+          "group": 2,
+          "log2foldchange": "0.212705658",
+          "pvalue": "0.9153336785",
+          "padj": "0.9999737429"
+        },
+        {
+          "group": 3,
+          "log2foldchange": "2.301372392",
+          "pvalue": "0.5192036137",
+          "padj": "0.9959670491"
+        },
+        {
+          "group": 4,
+          "log2foldchange": "-0.6018328531",
+          "pvalue": "0.8630990733",
+          "padj": "0.9992364554"
+        },
+        {
+          "group": 5,
+          "log2foldchange": "",
+          "pvalue": "",
+          "padj": ""
+        },
+        {
+          "group": 6,
+          "log2foldchange": "",
+          "pvalue": "",
+          "padj": ""
+        }
+      ],
+      "adjusted_tests": [],
+      "splash_recovery": "not measured",
+      "DEkupl_recovery": "not measured"
+    },
+    {
+      "gene_id": "g63544",
+      "gene_name": "RAPGEF6",
+      "role": "cell_repair",
+      "published_tests": [
+        {
+          "group": 1,
+          "log2foldchange": "-0.06858594737",
+          "pvalue": "0.9819324693",
+          "padj": "0.9999618916"
+        },
+        {
+          "group": 2,
+          "log2foldchange": "-0.5031962586",
+          "pvalue": "0.8672890625",
+          "padj": "0.9999737429"
+        },
+        {
+          "group": 3,
+          "log2foldchange": "",
+          "pvalue": "",
+          "padj": ""
+        },
+        {
+          "group": 4,
+          "log2foldchange": "",
+          "pvalue": "",
+          "padj": ""
+        },
+        {
+          "group": 5,
+          "log2foldchange": "",
+          "pvalue": "",
+          "padj": ""
+        },
+        {
+          "group": 6,
+          "log2foldchange": "",
+          "pvalue": "",
+          "padj": ""
+        }
+      ],
+      "adjusted_tests": [],
+      "splash_recovery": "not measured",
+      "DEkupl_recovery": "not measured"
+    },
+    {
+      "gene_id": "g63566",
+      "gene_name": "RAPGEF6",
+      "role": "cell_repair",
+      "published_tests": [
+        {
+          "group": 1,
+          "log2foldchange": "1.620002549",
+          "pvalue": "0.4546785882",
+          "padj": "0.9999618916"
+        },
+        {
+          "group": 2,
+          "log2foldchange": "0.6347204735",
+          "pvalue": "0.8335328022",
+          "padj": "0.9999737429"
+        },
+        {
+          "group": 3,
+          "log2foldchange": "0.6465511518",
+          "pvalue": "0.8965842825",
+          "padj": "0.9959670491"
+        },
+        {
+          "group": 4,
+          "log2foldchange": "",
+          "pvalue": "",
+          "padj": ""
+        },
+        {
+          "group": 5,
+          "log2foldchange": "-0.6488270243",
+          "pvalue": "0.8729816736",
+          "padj": ""
+        },
+        {
+          "group": 6,
+          "log2foldchange": "0.0105084075",
+          "pvalue": "0.9981285907",
+          "padj": "0.999228925"
+        }
+      ],
+      "adjusted_tests": [],
+      "splash_recovery": "not measured",
+      "DEkupl_recovery": "not measured"
+    },
+    {
+      "gene_id": "g64331",
+      "gene_name": "SLC9A8",
+      "role": "cell_repair",
+      "published_tests": [
+        {
+          "group": 1,
+          "log2foldchange": "",
+          "pvalue": "",
+          "padj": ""
+        },
+        {
+          "group": 2,
+          "log2foldchange": "",
+          "pvalue": "",
+          "padj": ""
+        },
+        {
+          "group": 3,
+          "log2foldchange": "",
+          "pvalue": "",
+          "padj": ""
+        },
+        {
+          "group": 4,
+          "log2foldchange": "",
+          "pvalue": "",
+          "padj": ""
+        },
+        {
+          "group": 5,
+          "log2foldchange": "",
+          "pvalue": "",
+          "padj": ""
+        },
+        {
+          "group": 6,
+          "log2foldchange": "",
+          "pvalue": "",
+          "padj": ""
+        }
+      ],
+      "adjusted_tests": [],
+      "splash_recovery": "not measured",
+      "DEkupl_recovery": "not measured"
+    },
+    {
+      "gene_id": "g64703",
+      "gene_name": "MLL",
+      "role": "cell_repair",
+      "published_tests": [
+        {
+          "group": 1,
+          "log2foldchange": "0.07096146012",
+          "pvalue": "0.941021848",
+          "padj": "0.9999618916"
+        },
+        {
+          "group": 2,
+          "log2foldchange": "-0.3786318983",
+          "pvalue": "0.6654320193",
+          "padj": "0.9999737429"
+        },
+        {
+          "group": 3,
+          "log2foldchange": "-0.5815545239",
+          "pvalue": "0.8640350711",
+          "padj": "0.9959670491"
+        },
+        {
+          "group": 4,
+          "log2foldchange": "0.6007026092",
+          "pvalue": "0.7638099742",
+          "padj": "0.9992364554"
+        },
+        {
+          "group": 5,
+          "log2foldchange": "-0.1221341244",
+          "pvalue": "0.9179543099",
+          "padj": "0.9989747531"
+        },
+        {
+          "group": 6,
+          "log2foldchange": "1.014491591",
+          "pvalue": "0.5934059132",
+          "padj": "0.9951116568"
+        }
+      ],
+      "adjusted_tests": [],
+      "splash_recovery": "not measured",
+      "DEkupl_recovery": "not measured"
+    },
+    {
+      "gene_id": "g64704",
+      "gene_name": "MLL",
+      "role": "cell_repair",
+      "published_tests": [
+        {
+          "group": 1,
+          "log2foldchange": "-0.5883285474",
+          "pvalue": "0.8461265548",
+          "padj": "0.9999618916"
+        },
+        {
+          "group": 2,
+          "log2foldchange": "2.167959349",
+          "pvalue": "0.476201004",
+          "padj": "0.9999737429"
+        },
+        {
+          "group": 3,
+          "log2foldchange": "3.958212622",
+          "pvalue": "0.4223871702",
+          "padj": "0.9959670491"
+        },
+        {
+          "group": 4,
+          "log2foldchange": "1.514457685",
+          "pvalue": "0.6631899876",
+          "padj": "0.9992364554"
+        },
+        {
+          "group": 5,
+          "log2foldchange": "-0.09927322833",
+          "pvalue": "0.9805681796",
+          "padj": ""
+        },
+        {
+          "group": 6,
+          "log2foldchange": "0.2119101039",
+          "pvalue": "0.9627465748",
+          "padj": "0.9951116568"
+        }
+      ],
+      "adjusted_tests": [],
+      "splash_recovery": "not measured",
+      "DEkupl_recovery": "not measured"
+    },
+    {
+      "gene_id": "g65473",
+      "gene_name": "CRTAP",
+      "role": "cell_repair",
+      "published_tests": [
+        {
+          "group": 1,
+          "log2foldchange": "-0.1250987807",
+          "pvalue": "0.8595639131",
+          "padj": "0.9999618916"
+        },
+        {
+          "group": 2,
+          "log2foldchange": "-1.091691723",
+          "pvalue": "0.1396285802",
+          "padj": "0.9999737429"
+        },
+        {
+          "group": 3,
+          "log2foldchange": "0.3619467857",
+          "pvalue": "0.8655003719",
+          "padj": "0.9959670491"
+        },
+        {
+          "group": 4,
+          "log2foldchange": "0.5493763182",
+          "pvalue": "0.7463778963",
+          "padj": "0.9992364554"
+        },
+        {
+          "group": 5,
+          "log2foldchange": "-0.4375445243",
+          "pvalue": "0.8008757161",
+          "padj": ""
+        },
+        {
+          "group": 6,
+          "log2foldchange": "-0.04640900377",
+          "pvalue": "0.9840780113",
+          "padj": "0.9966656394"
+        }
+      ],
+      "adjusted_tests": [],
+      "splash_recovery": "not measured",
+      "DEkupl_recovery": "not measured"
+    },
+    {
+      "gene_id": "g66223",
+      "gene_name": "MID1",
+      "role": "cell_repair",
+      "published_tests": [
+        {
+          "group": 1,
+          "log2foldchange": "-1.441905794",
+          "pvalue": "0.2362753774",
+          "padj": "0.9999618916"
+        },
+        {
+          "group": 2,
+          "log2foldchange": "-0.865617069",
+          "pvalue": "0.5510510904",
+          "padj": "0.9999737429"
+        },
+        {
+          "group": 3,
+          "log2foldchange": "-2.595301649",
+          "pvalue": "0.5802410713",
+          "padj": "0.9959670491"
+        },
+        {
+          "group": 4,
+          "log2foldchange": "-0.5193478818",
+          "pvalue": "0.8818674659",
+          "padj": "0.9992364554"
+        },
+        {
+          "group": 5,
+          "log2foldchange": "",
+          "pvalue": "",
+          "padj": ""
+        },
+        {
+          "group": 6,
+          "log2foldchange": "1.545519764",
+          "pvalue": "0.7305751544",
+          "padj": "0.9951116568"
+        }
+      ],
+      "adjusted_tests": [],
+      "splash_recovery": "not measured",
+      "DEkupl_recovery": "not measured"
+    },
+    {
+      "gene_id": "g66295",
+      "gene_name": "UGP2",
+      "role": "cell_repair",
+      "published_tests": [
+        {
+          "group": 1,
+          "log2foldchange": "-1.266260969",
+          "pvalue": "0.3471799981",
+          "padj": "0.9999618916"
+        },
+        {
+          "group": 2,
+          "log2foldchange": "-0.1803644372",
+          "pvalue": "0.898972933",
+          "padj": "0.9999737429"
+        },
+        {
+          "group": 3,
+          "log2foldchange": "",
+          "pvalue": "",
+          "padj": ""
+        },
+        {
+          "group": 4,
+          "log2foldchange": "-0.5193478818",
+          "pvalue": "0.8818674659",
+          "padj": "0.9992364554"
+        },
+        {
+          "group": 5,
+          "log2foldchange": "",
+          "pvalue": "",
+          "padj": ""
+        },
+        {
+          "group": 6,
+          "log2foldchange": "",
+          "pvalue": "",
+          "padj": ""
+        }
+      ],
+      "adjusted_tests": [],
+      "splash_recovery": "not measured",
+      "DEkupl_recovery": "not measured"
+    },
+    {
+      "gene_id": "g66296",
+      "gene_name": "UGP2",
+      "role": "cell_repair",
+      "published_tests": [
+        {
+          "group": 1,
+          "log2foldchange": "-0.6104277833",
+          "pvalue": "0.6193512835",
+          "padj": "0.9999618916"
+        },
+        {
+          "group": 2,
+          "log2foldchange": "-1.334510585",
+          "pvalue": "0.3609215451",
+          "padj": "0.9999737429"
+        },
+        {
+          "group": 3,
+          "log2foldchange": "-2.014909826",
+          "pvalue": "0.6761714034",
+          "padj": "0.9959670491"
+        },
+        {
+          "group": 4,
+          "log2foldchange": "1.506481625",
+          "pvalue": "0.6648673954",
+          "padj": "0.9992364554"
+        },
+        {
+          "group": 5,
+          "log2foldchange": "",
+          "pvalue": "",
+          "padj": ""
+        },
+        {
+          "group": 6,
+          "log2foldchange": "1.304341017",
+          "pvalue": "0.7716418174",
+          "padj": "0.9951116568"
+        }
+      ],
+      "adjusted_tests": [],
+      "splash_recovery": "not measured",
+      "DEkupl_recovery": "not measured"
+    },
+    {
+      "gene_id": "g67328",
+      "gene_name": "FCF1",
+      "role": "cell_repair",
+      "published_tests": [
+        {
+          "group": 1,
+          "log2foldchange": "-0.1473243582",
+          "pvalue": "0.9237204167",
+          "padj": "0.9999618916"
+        },
+        {
+          "group": 2,
+          "log2foldchange": "0.1385219753",
+          "pvalue": "0.9011411051",
+          "padj": "0.9999737429"
+        },
+        {
+          "group": 3,
+          "log2foldchange": "-3.761905071",
+          "pvalue": "0.3257375319",
+          "padj": "0.9959670491"
+        },
+        {
+          "group": 4,
+          "log2foldchange": "1.077931024",
+          "pvalue": "0.3474657437",
+          "padj": "0.9992364554"
+        },
+        {
+          "group": 5,
+          "log2foldchange": "-0.4421211324",
+          "pvalue": "0.7519347332",
+          "padj": "0.9989747531"
+        },
+        {
+          "group": 6,
+          "log2foldchange": "0.6940091516",
+          "pvalue": "0.7360786661",
+          "padj": "0.9951116568"
+        }
+      ],
+      "adjusted_tests": [],
+      "splash_recovery": "not measured",
+      "DEkupl_recovery": "not measured"
+    },
+    {
+      "gene_id": "g68553",
+      "gene_name": "SYNE1",
+      "role": "cell_repair",
+      "published_tests": [
+        {
+          "group": 1,
+          "log2foldchange": "0.7431809391",
+          "pvalue": "0.8066353358",
+          "padj": "0.9999618916"
+        },
+        {
+          "group": 2,
+          "log2foldchange": "-0.7160942682",
+          "pvalue": "0.7671931223",
+          "padj": "0.9999737429"
+        },
+        {
+          "group": 3,
+          "log2foldchange": "",
+          "pvalue": "",
+          "padj": ""
+        },
+        {
+          "group": 4,
+          "log2foldchange": "1.506481625",
+          "pvalue": "0.6648673954",
+          "padj": "0.9992364554"
+        },
+        {
+          "group": 5,
+          "log2foldchange": "",
+          "pvalue": "",
+          "padj": ""
+        },
+        {
+          "group": 6,
+          "log2foldchange": "0.6592249752",
+          "pvalue": "0.8839429881",
+          "padj": "0.9951116568"
+        }
+      ],
+      "adjusted_tests": [],
+      "splash_recovery": "not measured",
+      "DEkupl_recovery": "not measured"
+    },
+    {
+      "gene_id": "g68627",
+      "gene_name": "SYNE1",
+      "role": "cell_repair",
+      "published_tests": [
+        {
+          "group": 1,
+          "log2foldchange": "0.2088106807",
+          "pvalue": "0.9448796271",
+          "padj": "0.9999618916"
+        },
+        {
+          "group": 2,
+          "log2foldchange": "-0.01323322284",
+          "pvalue": "0.9953266729",
+          "padj": "0.9999737429"
+        },
+        {
+          "group": 3,
+          "log2foldchange": "-0.05474755704",
+          "pvalue": "0.9911468818",
+          "padj": "0.9959670491"
+        },
+        {
+          "group": 4,
+          "log2foldchange": "",
+          "pvalue": "",
+          "padj": ""
+        },
+        {
+          "group": 5,
+          "log2foldchange": "",
+          "pvalue": "",
+          "padj": ""
+        },
+        {
+          "group": 6,
+          "log2foldchange": "",
+          "pvalue": "",
+          "padj": ""
+        }
+      ],
+      "adjusted_tests": [],
+      "splash_recovery": "not measured",
+      "DEkupl_recovery": "not measured"
+    },
+    {
+      "gene_id": "g68935",
+      "gene_name": "SLC38A7",
+      "role": "cell_repair",
+      "published_tests": [
+        {
+          "group": 1,
+          "log2foldchange": "-0.5550745124",
+          "pvalue": "0.7049671094",
+          "padj": "0.9999618916"
+        },
+        {
+          "group": 2,
+          "log2foldchange": "-0.8902516339",
+          "pvalue": "0.5472321587",
+          "padj": "0.9999737429"
+        },
+        {
+          "group": 3,
+          "log2foldchange": "1.22600995",
+          "pvalue": "0.7264621044",
+          "padj": "0.9959670491"
+        },
+        {
+          "group": 4,
+          "log2foldchange": "",
+          "pvalue": "",
+          "padj": ""
+        },
+        {
+          "group": 5,
+          "log2foldchange": "-0.1911467162",
+          "pvalue": "0.9625645404",
+          "padj": ""
+        },
+        {
+          "group": 6,
+          "log2foldchange": "0.6592249752",
+          "pvalue": "0.8839429881",
+          "padj": "0.9951116568"
+        }
+      ],
+      "adjusted_tests": [],
+      "splash_recovery": "not measured",
+      "DEkupl_recovery": "not measured"
+    },
+    {
+      "gene_id": "g69443",
+      "gene_name": "NPEPPS",
+      "role": "cell_repair",
+      "published_tests": [
+        {
+          "group": 1,
+          "log2foldchange": "0.6817791076",
+          "pvalue": "0.8062969777",
+          "padj": "0.9999618916"
+        },
+        {
+          "group": 2,
+          "log2foldchange": "0.5550242382",
+          "pvalue": "0.8407791503",
+          "padj": "0.9999737429"
+        },
+        {
+          "group": 3,
+          "log2foldchange": "",
+          "pvalue": "",
+          "padj": ""
+        },
+        {
+          "group": 4,
+          "log2foldchange": "-0.5193478818",
+          "pvalue": "0.8818674659",
+          "padj": "0.9992364554"
+        },
+        {
+          "group": 5,
+          "log2foldchange": "",
+          "pvalue": "",
+          "padj": ""
+        },
+        {
+          "group": 6,
+          "log2foldchange": "",
+          "pvalue": "",
+          "padj": ""
+        }
+      ],
+      "adjusted_tests": [],
+      "splash_recovery": "not measured",
+      "DEkupl_recovery": "not measured"
+    },
+    {
+      "gene_id": "g70476",
+      "gene_name": "RPL17",
+      "role": "cell_repair",
+      "published_tests": [
+        {
+          "group": 1,
+          "log2foldchange": "-2.909474808",
+          "pvalue": "0.01645732421",
+          "padj": "0.9999618916"
+        },
+        {
+          "group": 2,
+          "log2foldchange": "0.7884471584",
+          "pvalue": "0.2995788318",
+          "padj": "0.9999737429"
+        },
+        {
+          "group": 3,
+          "log2foldchange": "2.806967993",
+          "pvalue": "0.2545093468",
+          "padj": "0.9959670491"
+        },
+        {
+          "group": 4,
+          "log2foldchange": "-6.170540517",
+          "pvalue": "",
+          "padj": ""
+        },
+        {
+          "group": 5,
+          "log2foldchange": "-0.6987533718",
+          "pvalue": "0.7200791155",
+          "padj": "0.9989747531"
+        },
+        {
+          "group": 6,
+          "log2foldchange": "-0.5233881134",
+          "pvalue": "0.8840360418",
+          "padj": "0.9951116568"
+        }
+      ],
+      "adjusted_tests": [],
+      "splash_recovery": "not measured",
+      "DEkupl_recovery": "not measured"
+    },
+    {
+      "gene_id": "g7187",
+      "gene_name": "ITPR2",
+      "role": "cell_repair",
+      "published_tests": [
+        {
+          "group": 1,
+          "log2foldchange": "-0.8166244119",
+          "pvalue": "0.5898936439",
+          "padj": "0.9999618916"
+        },
+        {
+          "group": 2,
+          "log2foldchange": "2.120944075",
+          "pvalue": "0.273873886",
+          "padj": "0.9999737429"
+        },
+        {
+          "group": 3,
+          "log2foldchange": "0.6465511518",
+          "pvalue": "0.8965842825",
+          "padj": "0.9959670491"
+        },
+        {
+          "group": 4,
+          "log2foldchange": "0.2709482644",
+          "pvalue": "0.9374244588",
+          "padj": "0.9992364554"
+        },
+        {
+          "group": 5,
+          "log2foldchange": "",
+          "pvalue": "",
+          "padj": ""
+        },
+        {
+          "group": 6,
+          "log2foldchange": "0.6592249752",
+          "pvalue": "0.8839429881",
+          "padj": "0.9951116568"
+        }
+      ],
+      "adjusted_tests": [],
+      "splash_recovery": "not measured",
+      "DEkupl_recovery": "not measured"
+    },
+    {
+      "gene_id": "g8113",
+      "gene_name": "ZBED1",
+      "role": "cell_repair",
+      "published_tests": [
+        {
+          "group": 1,
+          "log2foldchange": "0.2400349976",
+          "pvalue": "0.9370306135",
+          "padj": "0.9999618916"
+        },
+        {
+          "group": 2,
+          "log2foldchange": "3.745708857",
+          "pvalue": "0.2221978117",
+          "padj": "0.9999737429"
+        },
+        {
+          "group": 3,
+          "log2foldchange": "",
+          "pvalue": "",
+          "padj": ""
+        },
+        {
+          "group": 4,
+          "log2foldchange": "",
+          "pvalue": "",
+          "padj": ""
+        },
+        {
+          "group": 5,
+          "log2foldchange": "",
+          "pvalue": "",
+          "padj": ""
+        },
+        {
+          "group": 6,
+          "log2foldchange": "0.6592249752",
+          "pvalue": "0.8839429881",
+          "padj": "0.9951116568"
+        }
+      ],
+      "adjusted_tests": [],
+      "splash_recovery": "not measured",
+      "DEkupl_recovery": "not measured"
+    },
+    {
+      "gene_id": "g8158",
+      "gene_name": "CCDC88A",
+      "role": "cell_repair",
+      "published_tests": [
+        {
+          "group": 1,
+          "log2foldchange": "0.152721996",
+          "pvalue": "0.9020187548",
+          "padj": "0.9999618916"
+        },
+        {
+          "group": 2,
+          "log2foldchange": "0.1483992229",
+          "pvalue": "0.9008635574",
+          "padj": "0.9999737429"
+        },
+        {
+          "group": 3,
+          "log2foldchange": "-1.465038642",
+          "pvalue": "0.6788127498",
+          "padj": "0.9959670491"
+        },
+        {
+          "group": 4,
+          "log2foldchange": "0.02525772758",
+          "pvalue": "0.9942041176",
+          "padj": "0.9992364554"
+        },
+        {
+          "group": 5,
+          "log2foldchange": "0.03127646957",
+          "pvalue": "0.9875747",
+          "padj": ""
+        },
+        {
+          "group": 6,
+          "log2foldchange": "-0.5327780474",
+          "pvalue": "0.816085772",
+          "padj": "0.9951116568"
+        }
+      ],
+      "adjusted_tests": [],
+      "splash_recovery": "not measured",
+      "DEkupl_recovery": "not measured"
+    },
+    {
+      "gene_id": "g819",
+      "gene_name": "USE1",
+      "role": "cell_repair",
+      "published_tests": [
+        {
+          "group": 1,
+          "log2foldchange": "-0.3294610412",
+          "pvalue": "0.7954914992",
+          "padj": "0.9999618916"
+        },
+        {
+          "group": 2,
+          "log2foldchange": "1.196728399",
+          "pvalue": "0.4244080746",
+          "padj": "0.9999737429"
+        },
+        {
+          "group": 3,
+          "log2foldchange": "",
+          "pvalue": "",
+          "padj": ""
+        },
+        {
+          "group": 4,
+          "log2foldchange": "",
+          "pvalue": "",
+          "padj": ""
+        },
+        {
+          "group": 5,
+          "log2foldchange": "",
+          "pvalue": "",
+          "padj": ""
+        },
+        {
+          "group": 6,
+          "log2foldchange": "0.6592249752",
+          "pvalue": "0.8839429881",
+          "padj": "0.9951116568"
+        }
+      ],
+      "adjusted_tests": [],
+      "splash_recovery": "not measured",
+      "DEkupl_recovery": "not measured"
+    },
+    {
+      "gene_id": "g9002",
+      "gene_name": "TSC2",
+      "role": "cell_repair",
+      "published_tests": [
+        {
+          "group": 1,
+          "log2foldchange": "-1.240703438",
+          "pvalue": "0.4360955772",
+          "padj": "0.9999618916"
+        },
+        {
+          "group": 2,
+          "log2foldchange": "-0.6147794381",
+          "pvalue": "0.8051552411",
+          "padj": "0.9999737429"
+        },
+        {
+          "group": 3,
+          "log2foldchange": "",
+          "pvalue": "",
+          "padj": ""
+        },
+        {
+          "group": 4,
+          "log2foldchange": "-0.6673254292",
+          "pvalue": "0.8455942221",
+          "padj": "0.9992364554"
+        },
+        {
+          "group": 5,
+          "log2foldchange": "-0.1911467162",
+          "pvalue": "0.9625645404",
+          "padj": ""
+        },
+        {
+          "group": 6,
+          "log2foldchange": "2.770234612",
+          "pvalue": "0.5160497746",
+          "padj": "0.9951116568"
+        }
+      ],
+      "adjusted_tests": [],
+      "splash_recovery": "not measured",
+      "DEkupl_recovery": "not measured"
+    },
+    {
+      "gene_id": "g9804",
+      "gene_name": "STK38",
+      "role": "cell_repair",
+      "published_tests": [
+        {
+          "group": 1,
+          "log2foldchange": "-2.01739509",
+          "pvalue": "0.5032097033",
+          "padj": "0.9999618916"
+        },
+        {
+          "group": 2,
+          "log2foldchange": "2.464905545",
+          "pvalue": "0.4202035999",
+          "padj": "0.9999737429"
+        },
+        {
+          "group": 3,
+          "log2foldchange": "",
+          "pvalue": "",
+          "padj": ""
+        },
+        {
+          "group": 4,
+          "log2foldchange": "",
+          "pvalue": "",
+          "padj": ""
+        },
+        {
+          "group": 5,
+          "log2foldchange": "",
+          "pvalue": "",
+          "padj": ""
+        },
+        {
+          "group": 6,
+          "log2foldchange": "",
+          "pvalue": "",
+          "padj": ""
+        }
+      ],
+      "adjusted_tests": [],
+      "splash_recovery": "not measured",
+      "DEkupl_recovery": "not measured"
+    }
+  ],
+  "hub_label_mapping": {
+    "unique": 678,
+    "ambiguous": 44,
+    "unresolved": 12
+  },
+  "refit": {
+    "first_job": "49373699",
+    "first_job_status": "Six condition-only comparisons finished; job then failed on missing jsonlite; outputs not yet downloaded",
+    "adjusted_status": "Corrected TSV-input runner committed; transfer and submission blocked by expired SSH authentication",
+    "completion": false
+  },
+  "recovery": {
+    "job": "49373978",
+    "status": "Queued behind full-depth evidence; no recovery output imported"
+  },
+  "score_reproduction": {
+    "status": "Not reproduced",
+    "reason": "146 Botryllus gene IDs recovered. Cited companion mammalian code recovered, but no Botryllus-specific transformed expression matrix or scoring implementation found."
+  },
+  "interpretation": "Published-count redraw is not an independent reproduction. Original raw-P selection and adjusted-P results remain separate. SPLASH/DE-kupl missing outputs are not negative recoveries."
+}

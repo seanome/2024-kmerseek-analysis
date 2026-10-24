@@ -22,6 +22,10 @@ Source: supplied Domen et al. 2026 PDF, DOI 10.1073/pnas.2610968123, Figure 4 ca
 
 Map every significant SPLASH anchor and DE k-mer to a supported Botryllus gene or leave it unresolved. Join those genes to gene-level DE and the frozen paper gene sets. Show how many paper genes are recovered and whether abundance directions agree. Keep candidate splice/sequence changes separate: an anchor's significance or a sketch match does not establish differential gene abundance, differential splicing, an ortholog, or a cell-repair effect.
 
-## Outstanding requirements
+## Recovered inputs and outstanding requirements
 
-Exact Table S2 / Gene Analytics hub assignments, immune gene identities and scoring implementation, exact reference versions, sample inclusion list and original DESeq2 design are not yet recovered here. Full-depth counts and adjusted results remain pending. Kallisto-derived gene counts in our current abundance branch provide an independent analysis; they do not exactly reproduce STAR plus HTSeq.
+Dataset S1 and the supporting appendix have now been retrieved from the Europe PMC supplementary-files service. The workbook contains 72,113 genes × 64 libraries, all six original DESeq2 tables, the 13 proimmune plus 133 cell-repair gene IDs, curated DE gene IDs, functional-group list text and all 84 declared group-count cells. These are exported under figure4/ with the workbook SHA-256 fingerprint.
+
+The companion mammalian exercise-analysis repository is pinned at YoyoVosko/MacrophagesOntheRun commit 4cf2f16fb2191135521bdf716f61c99ed1d3f815. It does not contain a Botryllus-specific implementation. Exact original reference versions, the complete original DESeq2 formula/version, transformed Botryllus expression values and score implementation remain unresolved.
+
+All six supplied-count condition-only refits completed in Sherlock job 49373699 before an R JSON dependency failure. A corrected TSV-design runner is committed; its transfer and submission are blocked by expired SSH authentication. Genotype/collection-adjusted results have not been retrieved. Full-depth SPLASH/DE-kupl gene recovery job 49373978 is queued behind evidence job 49369247; no recovery results are imported. A supplied-count redraw is not an independent reproduction of the original result.
