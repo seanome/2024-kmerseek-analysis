@@ -89,25 +89,25 @@ graph LR
     subgraph find [Find changed sequences, PEC +1 vs control -1]
         %%metro entry: left | splash, counts, dekupl
         %%metro exit: right | splash, counts, dekupl
-        splash[SPLASH 2.11.9]
+        splash_run[SPLASH 2.11.9]
         compactors[Compactors]
         anchorcounts[pec-tools\nanchor-counts]
         deseq[PyDESeq2]
-        dekupl[DE-kupl 1.3.5, limma]
+        dekupl_run[DE-kupl 1.3.5, limma]
         anch_out[ ]
         satc_out[ ]
         comp_out[ ]
         deseq_out[ ]
         dekupl_out[ ]
 
-        splash -->|splash| compactors
-        splash -->|splash| anch_out
-        splash -->|splash| satc_out
+        splash_run -->|splash| compactors
+        splash_run -->|splash| anch_out
+        splash_run -->|splash| satc_out
         compactors -->|splash| comp_out
-        splash -->|counts| anchorcounts
+        splash_run -->|counts| anchorcounts
         anchorcounts -->|counts| deseq
         deseq -->|counts| deseq_out
-        dekupl -->|dekupl| dekupl_out
+        dekupl_run -->|dekupl| dekupl_out
     end
 
     subgraph checks [Checks]
@@ -161,11 +161,11 @@ graph LR
         notebook -->|splash,counts,dekupl,protein,check| page_out
     end
 
-    contrast -->|splash,counts| splash
-    contrast -->|dekupl| dekupl
+    contrast -->|splash,counts| splash_run
+    contrast -->|dekupl| dekupl_run
     freeze -->|check| paperlists
     compactors -->|splash| translate
-    dekupl -->|dekupl| translate
+    dekupl_run -->|dekupl| translate
     sketchdb -->|protein| manysearch
     deseq -->|counts| recover
     align -->|splash,dekupl,protein| recover

@@ -61,19 +61,19 @@ graph LR
     subgraph find [Find changed sequences, no reference]
         %%metro entry: left | splash, dekupl, protein
         %%metro exit: right | splash, dekupl, protein
-        splash[SPLASH, k 31, read 1]
+        splash_run[SPLASH, k 31, read 1]
         compactors[Compactors]
-        dekupl[DE-kupl, DESeq2]
+        dekupl_run[DE-kupl, DESeq2]
         indexes[build_index\nprotein k7, Dayhoff k12, HP k30]
         anch_out[ ]
         satc_out[ ]
         dekupl_out[ ]
         idx_out[ ]
 
-        splash -->|splash| compactors
-        splash -->|splash| satc_out
+        splash_run -->|splash| compactors
+        splash_run -->|splash| satc_out
         compactors -->|splash| anch_out
-        dekupl -->|dekupl| dekupl_out
+        dekupl_run -->|dekupl| dekupl_out
         indexes -->|protein| idx_out
     end
 
@@ -129,12 +129,12 @@ graph LR
         export -->|splash,dekupl| report_out
     end
 
-    trim -->|splash| splash
-    trim -->|dekupl| dekupl
+    trim -->|splash| splash_run
+    trim -->|dekupl| dekupl_run
     download -->|protein| indexes
     trim -->|check| kallisto
     compactors -->|splash| prepare
-    dekupl -->|dekupl| prepare
+    dekupl_run -->|dekupl| prepare
     indexes -->|protein| annotate
     pydeseq -->|check| compare
     compare -->|check| tables
