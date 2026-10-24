@@ -1,0 +1,13 @@
+{
+  "threshold": 0.02452607648522773,
+  "n_target": 22516,
+  "n_decoy": 1123,
+  "nofit": false,
+  "label": "kmerseek.pfamshared.w10.uniprot18_k5_s1",
+  "calls_total": 3012514,
+  "decoy_calls_total": 1374845,
+  "max_decoy_rate": 0.05,
+  "features_found": 677,
+  "features_found_aligned": 671,
+  "features_total": 7174
+}

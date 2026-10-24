@@ -1,0 +1,13 @@
+{
+  "threshold": 3.6032379740867386e-08,
+  "n_target": 1886,
+  "n_decoy": 94,
+  "nofit": false,
+  "label": "kmerseek.wholeannot.w20.dayhoff6_k9_s1",
+  "calls_total": 49706944,
+  "decoy_calls_total": 22557183,
+  "max_decoy_rate": 0.05,
+  "features_found": 169,
+  "features_found_aligned": 230,
+  "features_total": 7174
+}

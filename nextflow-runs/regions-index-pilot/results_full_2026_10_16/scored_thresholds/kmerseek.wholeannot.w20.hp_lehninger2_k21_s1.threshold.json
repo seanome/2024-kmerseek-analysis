@@ -1,0 +1,13 @@
+{
+  "threshold": 0.0009652945831998821,
+  "n_target": 663,
+  "n_decoy": 33,
+  "nofit": false,
+  "label": "kmerseek.wholeannot.w20.hp_lehninger2_k21_s1",
+  "calls_total": 4257566,
+  "decoy_calls_total": 1898598,
+  "max_decoy_rate": 0.05,
+  "features_found": 120,
+  "features_found_aligned": 203,
+  "features_total": 7174
+}

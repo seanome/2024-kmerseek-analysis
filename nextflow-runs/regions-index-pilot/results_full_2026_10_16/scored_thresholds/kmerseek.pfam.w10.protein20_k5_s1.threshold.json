@@ -1,0 +1,13 @@
+{
+  "threshold": 0.11935960859123405,
+  "n_target": 46342,
+  "n_decoy": 2317,
+  "nofit": false,
+  "label": "kmerseek.pfam.w10.protein20_k5_s1",
+  "calls_total": 2207282,
+  "decoy_calls_total": 969580,
+  "max_decoy_rate": 0.05,
+  "features_found": 812,
+  "features_found_aligned": 808,
+  "features_total": 7174
+}
