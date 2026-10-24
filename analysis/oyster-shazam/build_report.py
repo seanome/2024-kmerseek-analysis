@@ -43,12 +43,12 @@ def main():
               preprocessing=dict(pipeline='nf-core/rnaseq 3.27.0',job='49186529',status='completed',
                                  validated_pairs=bool(qc),elapsed_seconds=254,peak_rss_kib=11691088,
                                  trim_galore='2.3.0',fastqc='0.12.1',multiqc='1.35'),
-              stages=[dict(name='Raw reads',status='Complete',detail='Six first-million paired prefixes. All 12 uncompressed hashes match the supplied prior pilot.'),
+              stages=[dict(name='Raw reads',status='Complete',detail='Six complete original experimental libraries:153,671,701 raw pairs;153,628,178 pairs retained after trimming. Historical prefix hashes remain available separately.'),
                       dict(name='Trimming',status='Complete',detail='nf-core/rnaseq with alignment and pseudoalignment disabled. All quality and adapter summary checks passed.'),
                       dict(name='SPLASH',status='Full-depth discovery complete',detail='Full-depth read1 SPLASH job 49214375 completed; all 5,538,699 adjusted P < 0.05 anchors are selected for extension in 554 batches, job 49221554. Separately, extension of all 213,658 significant prefix anchors completed: 165,679 anchors extended into 354,316 records; 47,979 without extensions. The sequence explorer remains the historical 300-anchor pilot.'),
                       dict(name='DE-kupl',status='Full-depth completed',detail='Full-depth job 49203559 completed with exit0 in 3:05:46. Biological interpretation and a reference-free comparison are pending.'),
                       dict(name='Sourmash',status='Public pilot indexed',detail='Eight public untrimmed runs have validated indexes. The older six-library prefix HP index timed out and its searches were cancelled; all22 corrected public search batches completed and passed the independent pair-set/hash audit49241571.'),
-                      dict(name='Bivalve archive',status='Workers eligible after validation',detail='One trimmed public run passed independent four-alphabet paired-scale and self-search checks. The explicit threshold0 correction passed the complete public-pilot audit. Restored-access validation49241803 passed all four encodings and both scales with exact loss-set and self-search checks. Replacement932-worker array49241661 is eligible for scheduler allocation. 181 runs lack ENA FASTQ URLs.')],
+                      dict(name='Bivalve archive',status='561 trimmed public runs completed; partial archive',detail='One trimmed public run passed independent four-alphabet paired-scale and self-search checks. The explicit threshold0 correction passed the complete public-pilot audit. Restored-access validation49241803 passed all four encodings and both scales with exact loss-set and self-search checks. A hash audit found561 completed trimmed runs from103studies. The empty-result parser is repaired; failed tasks are recovered separately. 181 runs lack ENA FASTQ URLs.')],
               findings=[])
     with (ROOT/'results/splash-trimmed/compactors.tsv').open() as f:
         for r in csv.DictReader(f,delimiter='\t'):
@@ -63,13 +63,29 @@ def main():
     full_path=ROOT/'results/full-depth-extension-progress.json'
     if full_path.exists():
         full=json.loads(full_path.read_text())
-        full_html=f"<div class=\"card\"><h3>Full-depth extension results</h3><p>{full['selected_total']:,} anchors selected at adjusted P &lt; 0.05. {len(full['completed_batches']):,} of {full['total_batches']:,} extension batches have completion records.</p><p>Those batches cover {full['completed_selected_anchors']:,} selected anchors: {full['anchors_extended']:,} have extended sequence, producing {full['extension_records']:,} DNA records. Remaining batches are pending or running, not zero results. Records are not distinct genes.</p><p>Discovery used complete read 1 from each experimental library; extensions use both complete trimmed mates. Full-depth searches are submitted for the first 32 batches against eight public runs, starting after each corresponding extension batch succeeds. Remaining search batches await scheduler submission slots.</p><p>{full['verification']}</p><a href=\"full-depth-extension-progress.json\" download>Full-depth extension progress · JSON</a></div>"
+        full_html=f"<div class=\"card\"><h3>Full-depth extension results</h3><p>{full['selected_total']:,} anchors selected at adjusted P &lt; 0.05. {len(full['completed_batches']):,} of {full['total_batches']:,} extension batches have completion records.</p><p>Those batches cover {full['completed_selected_anchors']:,} selected anchors: {full['anchors_extended']:,} have extended sequence, producing {full['extension_records']:,} DNA records. Remaining batches are pending or running, not zero results. Records are not distinct genes.</p><p>Discovery used complete read 1 from each experimental library; extensions use both complete trimmed mates. All 554 full-depth search batches are now submitted against eight public runs. Searches for independently audited completed extension batches are eligible; later batches wait for their corresponding extension.</p><p>{full['verification']}</p><a href=\"full-depth-extension-progress.json\" download>Full-depth extension progress · JSON</a></div>"
         template=template.replace('__FULL_DEPTH_RESULTS__',full_html)
         shutil.copy2(full_path,OUT/full_path.name)
     else:template=template.replace('__FULL_DEPTH_RESULTS__','<p>Full-depth extension aggregation pending.</p>')
     public_path=ROOT/'results/public-match-summary.json'
     public=json.loads(public_path.read_text()) if public_path.exists() else None
     template=template.replace('__PUBLIC_RESULTS__',render_public_results(public) if public else '<p>Public search aggregation pending.</p>')
+    full_public_path=ROOT/'results/full-public-match-summary.json'
+    full_public=json.loads(full_public_path.read_text()) if full_public_path.exists() else None
+    template=template.replace('__FULL_PUBLIC_RESULTS__',render_public_results(full_public,full_depth=True) if full_public else '<p>Full-depth public-match auditing is in progress.</p>')
+    archive_path=ROOT/'results/public-archive-progress.json'
+    if archive_path.exists():
+        archive=json.loads(archive_path.read_text())
+        table=''.join(f"<tr><td>{mol.upper()}</td><td>{v['matches_10']:,}</td><td>{v['matches_100']:,}</td><td>{v['lost_pairs']:,}</td></tr>" for mol,v in archive['encodings'].items())
+        archive_html=f"<div class=\"card\"><h3>Trimmed public archive: {archive['validated_runs']:,} completed runs</h3><p>{archive['validated_runs']:,} of 17,623 inventory runs, from {archive['validated_studies']:,} studies, have completed four-alphabet sketching and searches at scaled 10 and 100 against all 354,316 prefix-derived extension records. These are separate from the full-depth queries above.</p><p>{archive['verification']}. Counts below sum completion records; a second complete pair-set audit of this growing archive is pending.</p><table><thead><tr><th>Encoding</th><th>Query/run pairs at 10</th><th>At 100</th><th>Lost at 100</th></tr></thead><tbody>{table}</tbody></table><p>These candidate occurrences do not establish genes or functions. Partial and failed runs are excluded. The zero-result parser was repaired and tested on a real run; other download/application failures remain under investigation.</p><a href=\"public-archive-progress.json\" download>Indexed runs, study/species metadata and completion counts · JSON</a></div>"
+        template=template.replace('__ARCHIVE_PROGRESS__',archive_html)
+        shutil.copy2(archive_path,OUT/archive_path.name)
+    else:template=template.replace('__ARCHIVE_PROGRESS__','')
+
+    if full_public:
+        shutil.copy2(full_public_path,OUT/full_public_path.name)
+        for entry in full_public.get('loss_tables',{}).values():shutil.copy2(ROOT/'results'/entry['file'],OUT/entry['file'])
+
     if public:
         shutil.copy2(public_path,OUT/public_path.name)
         loss=ROOT/'results'/public.get('loss_table','matches-lost-at-scaled100.tsv.gz')
@@ -80,8 +96,8 @@ def main():
     for file in ['raw-prefix-qc.json','prior-prefix-comparison.json','execution_trace.txt','trimmed-qc.json','splash-comparison.json','job-status.tsv']:
         src=ROOT/'results'/file
         if src.exists():shutil.copy2(src,OUT/file)
-    for asset in ['public_bivalve_raw_vs_sourmash_sizes.png','public-sketch-size-comparison.json','public-sketch-size-comparison.tsv']:
-        if (ROOT/asset).exists():shutil.copy2(ROOT/asset,OUT/asset)
+    for asset in ['public_bivalve_raw_vs_sourmash_sizes.png','public-sketch-size-comparison.json','public-sketch-size-comparison.tsv','metro/workflow-overview.svg','metro/workflow-overview.mmd','oyster_trimmed_reads_stop_frames.png','results/stop-frame-summary.json','results/stop-frame-plot-summary.json']:
+        if (ROOT/asset).exists():shutil.copy2(ROOT/asset,OUT/Path(asset).name)
     inventory_path=ROOT/'provenance/bivalve-rnaseq-ena-2026-10-23.tsv.gz'
     shutil.copy2(inventory_path,OUT/inventory_path.name)
     if SITE.parent.exists():

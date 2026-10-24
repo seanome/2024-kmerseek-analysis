@@ -1,0 +1,88 @@
+%%metro title: Oyster — complete reads to public sequence matches
+%%metro style: seqera
+%%metro legend: tl
+%%metro line: focal | Oyster SPLASH | #0072B2
+%%metro line: dekupl | Oyster DE-kupl | #009E73
+%%metro line: archive | Public bivalve RNA-seq | #D55E00
+%%metro line: swiss | Swiss-Prot — pending | #8A4298 | dashed
+%%metro grid: inputs | 0,0
+%%metro grid: trim | 1,0
+%%metro grid: discover | 2,0
+%%metro grid: extensions | 3,0
+%%metro grid: refs | 0,1
+%%metro grid: sketches | 1,1
+%%metro grid: search | 2,1
+%%metro grid: output | 3,1
+%%metro file: raw | FASTQ.gz | Six complete paired libraries
+%%metro file: r1 | FQ.gz | Complete trimmed R1
+%%metro file: r2 | FQ.gz | Complete trimmed R2
+%%metro file: dna | TSV | All DNA extensions
+%%metro file: diff | TSV.gz | Differential DE-kupl contigs
+%%metro file: publicreads | FASTQ.gz | Public bivalve runs
+%%metro file: swissfa | FASTA.gz | Swiss-Prot proteins
+%%metro file: runsigs | SIG.zip | One sketch set per run
+%%metro file: swisssigs | SIG.zip | Protein references — pending
+%%metro file: querysigs | SIG.zip | Query sketches
+%%metro file: matches | CSV | Run matches
+%%metro file: losses | TSV.gz | Lost at 100
+
+graph LR
+ subgraph inputs [Experimental inputs]
+  raw[ ]
+ end
+ subgraph trim [Trimming — complete]
+  trimming[Trim Galore]
+  r1[ ]
+  r2[ ]
+  trimming -->|focal| r1
+  trimming -->|focal| r2
+ end
+ subgraph discover [Differential discovery]
+  splash[SPLASH — complete]
+  select[Every adjusted P < 0.05 anchor]
+  dekupl[DE-kupl — both mates]
+  splash -->|focal| select
+ end
+ subgraph extensions [Recover DNA]
+  compact[Compactors — both mates]
+  dna[ ]
+  diff[ ]
+  compact -->|focal| dna
+ end
+ subgraph refs [Reference inputs]
+  publicreads[ ]
+  swissfa[ ]
+ end
+ subgraph sketches [Build sketches]
+  pubtrim[Trim + sourmash]
+  runsigs[ ]
+  swsketch[Sourmash — scaled 5]
+  swisssigs[ ]
+  pubtrim -->|archive| runsigs
+  swsketch -->|swiss| swisssigs
+ end
+ subgraph search [Search sequences]
+  queries[Sourmash queries]
+  querysigs[ ]
+  many[manysearch]
+  queries -->|focal| querysigs
+  querysigs -->|focal| many
+ end
+ subgraph output [Compare and report]
+  matches[ ]
+  compare[Audit 10 versus 100]
+  losses[ ]
+  matches -->|archive| compare
+  compare -->|archive| losses
+ end
+ raw -->|focal| trimming
+ r1 -->|focal| splash
+ r2 -->|dekupl| dekupl
+ select -->|focal| compact
+ dekupl -->|dekupl| diff
+ dna -->|focal| queries
+ publicreads -->|archive| pubtrim
+ swissfa -->|swiss| swsketch
+ runsigs -->|archive| many
+ swisssigs -->|swiss| many
+ many -->|archive| matches

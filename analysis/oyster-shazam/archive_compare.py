@@ -13,6 +13,7 @@ import tempfile
 import time
 import sourmash
 from sourmash.save_load import SaveSignaturesToLocation
+from archive_search_results import save_matches
 
 SETTINGS=[('dna',31,{}),('protein',7,{'is_protein':True}),('dayhoff',12,{'dayhoff':True}),('hp',30,{'hp':True})]
 CODE=Path(__file__).parent
@@ -119,12 +120,8 @@ def process(row):
                 run(['sourmash','scripts','index',paths,'-o',index,'-k',k,'-m','DNA' if mol=='dna' else mol,'--scaled',str(scale),'-c','4'],out/f'{mol}.scaled{scale}.index.log')
                 csvpath=temp/f'{mol}.scaled{scale}.csv'
                 run(['sourmash','scripts','manysearch',query,index,'-o',csvpath,'-k',k,'-m','DNA' if mol=='dna' else mol,'-s',str(scale),'-t','0','-c','4','-A','-N','--ignore-abundance'],out/f'{mol}.scaled{scale}.search.log')
-                names=set();count=0;dest=out/f'{mol}.scaled{scale}.matches.csv.gz'
-                with csvpath.open() as src,gzip.open(dest,'wt') as saved:
-                    reader=csv.DictReader(src);writer=csv.DictWriter(saved,fieldnames=reader.fieldnames);writer.writeheader()
-                    for hit in reader:
-                        if hit['match_name']!=accession:raise ValueError('Wrong matched run')
-                        names.add(hit['query_name']);count+=1;writer.writerow(hit)
+                dest=out/f'{mol}.scaled{scale}.matches.csv.gz'
+                names,count=save_matches(csvpath,dest,accession,out/f'{mol}.scaled{scale}.search.log',expected['queries'])
                 pair_sets[scale]=names
                 searches.append(dict(moltype=mol,k=k,scaled=scale,queries=expected['queries'],empty_sketches=expected['empty_sketches'],queries_with_overlap=len(names),match_rows=count,result_sha256=sha(dest)))
             lost=pair_sets[10]-pair_sets[100];gained=pair_sets[100]-pair_sets[10]
