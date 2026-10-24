@@ -21,3 +21,7 @@ dependencies:
   - r-msigdbr
   - goatools
   - jinja2
+  - biopython=1.88
+  - pip
+  - pip:
+      - localcider==0.1.21
