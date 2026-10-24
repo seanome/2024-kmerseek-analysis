@@ -15,7 +15,7 @@
     "imported_results": true,
     "job_id": "49242789",
     "summary": "external-search-progress.json",
-    "scope": "Partial first-batch results; four complete external runs authorized in this batch"
+    "scope": "Partial first-batch results; three external runs imported in this batch, two complete and one partial (SRR14663369 has 6 of 8 settings)"
   },
   "swissprot_manysearch": {
     "imported_results": true,
