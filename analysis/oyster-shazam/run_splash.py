@@ -65,12 +65,12 @@ def main():
         significant=table(out/'splash.after_correction.scores.tsv')
         with (out/'splash.after_correction.all_anchors.tsv').open() as f:
             header=next(f);tested=sum(1 for _ in f)
-        assert tested>=len(significant)
+        if tested<len(significant):raise ValueError('Fewer tested anchors than significant anchors')
         for row in significant:
             q=float(row['pval_opt_corrected'])
-            assert math.isfinite(q) and 0<=q<=0.05
+            if not (math.isfinite(q) and 0<=q<=0.05):raise ValueError('Corrected P outside 0 to 0.05')
         selected=sorted(significant,key=lambda r:(float(r['pval_opt_corrected']),r['anchor']))[:300]
-        assert len({r['anchor'] for r in selected})==len(selected)
+        if len({r['anchor'] for r in selected})!=len(selected):raise ValueError('Duplicate selected anchors')
         with (out/'selected_anchors.tsv').open('w') as f:
             w=csv.writer(f,delimiter='\t');w.writerow(['anchor']);w.writerows([r['anchor']] for r in selected)
         counts=defaultdict(int)
@@ -92,8 +92,8 @@ def main():
         extended=set();unextended=set();lengths=[]
         for row in rows:
             a=row['anchor'];seq=row['compactor']
-            assert a in anchors and not set(seq.upper())-set('ACGTN')
-            assert a in seq
+            if a not in anchors or set(seq.upper())-set('ACGTN'):raise ValueError('Unexpected anchor or compactor characters')
+            if a not in seq:raise ValueError('Anchor missing from its compactor')
             lengths.append(len(seq))
             (extended if len(seq)>len(a) else unextended).add(a)
         stats=dict(output_rows=len(rows),anchors_extended=len(extended),
@@ -110,8 +110,9 @@ def main():
             for line in f:
                 sample,anchor,target,count=line.split()
                 if anchor in anchors:
-                    assert sample in samples
-                    count=int(count);assert count>=0
+                    if sample not in samples:raise ValueError('Unknown sample in SPLASH dump')
+                    count=int(count)
+                    if count<0:raise ValueError('Negative target count')
                     records.append((anchor,sample,target,count));totals[anchor,sample]+=count
     with (out/'selected-target-counts.tsv').open('w') as f:
         w=csv.writer(f,delimiter='\t');w.writerow(['anchor','sample','condition','target','count','sample_anchor_total','target_proportion'])
