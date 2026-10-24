@@ -1,0 +1,30 @@
+[
+  {
+    "id": "49347856",
+    "scope": "Recover remaining full-depth input libraries"
+  },
+  {
+    "id": "49347857",
+    "scope": "Trim and validate all 64 libraries"
+  },
+  {
+    "id": "49347864",
+    "scope": "SPLASH and every adjusted P < 0.05 anchor"
+  },
+  {
+    "id": "49348714",
+    "scope": "Full-depth manysearch: Swiss-Prot and four prepared external runs"
+  },
+  {
+    "id": "49352194",
+    "scope": "DE-kupl installation and native count checks"
+  },
+  {
+    "id": "49352729",
+    "scope": "Blocked abundance model and normalization checks"
+  },
+  {
+    "id": "49352734",
+    "scope": "DE-kupl and gene-level counts; genotype-blocked DESeq2"
+  }
+]

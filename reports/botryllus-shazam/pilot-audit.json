@@ -1,0 +1,22 @@
+{
+  "observed": {
+    "anchors_tested": 85627,
+    "significant_anchors": 13669,
+    "selected_for_extension": 300,
+    "libraries": 12,
+    "input_pairs": 1200000,
+    "retained_pairs": 763424,
+    "extension_records": 339,
+    "selected_anchors_with_extensions": 227,
+    "terminal_extensions": 243,
+    "unique_peptides": 987
+  },
+  "proteome_records": 45339,
+  "translation_occurrences": 1632,
+  "recomputed_real_botryllus_hits": 3984,
+  "limits": [
+    "Raw pilot reads absent: trimming counts reconciled to supplied logs only.",
+    "Original discovery and protein search not rerun.",
+    "No treatment-associated abundance inference."
+  ]
+}

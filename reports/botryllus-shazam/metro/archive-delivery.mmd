@@ -1,0 +1,45 @@
+%%metro title: 4. Public SRA tunicate occurrence — collection inventory complete; archive indexing pending
+%%metro style: nfcore
+%%metro legend: tl
+%%metro line: archive | Public SRA occurrence search | #206E82
+%%metro line: report | Evidence delivery | #b15c16
+%%metro file: inventory | TSV.gz | Public SRA / ENA tunicate inventory
+%%metro file: archivefastq | FASTQ.gz | Bounded validated archive reads
+%%metro file: archsig | SIG.zip | DNA31, protein7, Dayhoff12, HP30; scaled 10 and 100
+%%metro dir: archindex | RocksDB | Shared run index directory
+%%metro file: occurrence | TSV | Run and study occurrence
+%%metro file: app | HTML | Interactive evidence explorer
+%%metro file: json | JSON | Validated results and status snapshot
+%%metro file: cards | HTML | Blinded candidate review cards
+graph LR
+ subgraph archive_search [All public tunicates authorized; bounded execution]
+  inventory[ ]
+  download[curl / MD5 / FASTQ validation]
+  archivefastq[ ]
+  sm[SRA: trimming then sourmash sketch dna and translate]
+  archsig[ ]
+  index[Branchwater index]
+  archindex[ ]
+  search[Branchwater manysearch / sequence confirmation]
+  occurrence[ ]
+  inventory -->|archive| download
+  download -->|archive| archivefastq
+  archivefastq -->|archive| sm
+  sm -->|archive| archsig
+  archsig -->|archive| index
+  index -->|archive| archindex
+  archindex -->|archive| search
+  search -->|archive| occurrence
+ end
+ subgraph delivery [Observed evidence separate from predictions and hypotheses]
+  validate[Validation / provenance / snapshot timestamps]
+  json[ ]
+  app[ ]
+  review[Candidate and control review]
+  cards[ ]
+  validate -->|report| json
+  json -->|report| app
+  app -->|report| review
+  review -->|report| cards
+ end
+ occurrence -->|report| validate

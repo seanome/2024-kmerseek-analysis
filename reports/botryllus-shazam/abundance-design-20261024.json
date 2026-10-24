@@ -1,0 +1,267 @@
+{
+  "samples_sha256": "c97b989a5c8a7777a0cbe54a4c8fab53b4486783f467488bb6af3fadfe9021df",
+  "contrasts": [
+    {
+      "name": "young_2h",
+      "hours": 2,
+      "genotypes": [
+        "6941c",
+        "6990b",
+        "6996m",
+        "6996n"
+      ],
+      "genotype_units": 4,
+      "libraries": [
+        {
+          "run": "SRR32233940",
+          "genotype": "6941c",
+          "condition": "Control",
+          "collection_stratum": "6941c|450|2",
+          "vial": "JA104"
+        },
+        {
+          "run": "SRR32233968",
+          "genotype": "6941c",
+          "condition": "Treatment",
+          "collection_stratum": "6941c|450|2",
+          "vial": "JA105"
+        },
+        {
+          "run": "SRR32233929",
+          "genotype": "6941c",
+          "condition": "Treatment",
+          "collection_stratum": "6941c|465|2",
+          "vial": "JA126"
+        },
+        {
+          "run": "SRR32233959",
+          "genotype": "6941c",
+          "condition": "Control",
+          "collection_stratum": "6941c|465|2",
+          "vial": "JA125"
+        },
+        {
+          "run": "SRR32233928",
+          "genotype": "6990b",
+          "condition": "Treatment",
+          "collection_stratum": "6990b|380|2",
+          "vial": "JA103"
+        },
+        {
+          "run": "SRR32233964",
+          "genotype": "6990b",
+          "condition": "Control",
+          "collection_stratum": "6990b|380|2",
+          "vial": "JA102"
+        },
+        {
+          "run": "SRR32233938",
+          "genotype": "6996m",
+          "condition": "Treatment",
+          "collection_stratum": "6996m|384|2",
+          "vial": "JA113"
+        },
+        {
+          "run": "SRR32233942",
+          "genotype": "6996m",
+          "condition": "Control",
+          "collection_stratum": "6996m|384|2",
+          "vial": "JA112"
+        },
+        {
+          "run": "SRR32233954",
+          "genotype": "6996n",
+          "condition": "Treatment",
+          "collection_stratum": "6996n|373|2",
+          "vial": "JA101"
+        },
+        {
+          "run": "SRR32233970",
+          "genotype": "6996n",
+          "condition": "Control",
+          "collection_stratum": "6996n|373|2",
+          "vial": "JA100"
+        },
+        {
+          "run": "SRR32233932",
+          "genotype": "6996n",
+          "condition": "Treatment",
+          "collection_stratum": "6996n|388|2",
+          "vial": "JA124"
+        },
+        {
+          "run": "SRR32233953",
+          "genotype": "6996n",
+          "condition": "Control",
+          "collection_stratum": "6996n|388|2",
+          "vial": "JA123"
+        }
+      ],
+      "rejected": []
+    },
+    {
+      "name": "young_24h",
+      "hours": 24,
+      "genotypes": [
+        "6941c",
+        "6990b",
+        "6996m",
+        "6996n"
+      ],
+      "genotype_units": 4,
+      "libraries": [
+        {
+          "run": "SRR32233982",
+          "genotype": "6941c",
+          "condition": "Treatment",
+          "collection_stratum": "6941c|451|24",
+          "vial": "JA111"
+        },
+        {
+          "run": "SRR32233986",
+          "genotype": "6941c",
+          "condition": "Control",
+          "collection_stratum": "6941c|451|24",
+          "vial": "JA110"
+        },
+        {
+          "run": "SRR32233973",
+          "genotype": "6941c",
+          "condition": "Control",
+          "collection_stratum": "6941c|466|24",
+          "vial": "JA129"
+        },
+        {
+          "run": "SRR32233979",
+          "genotype": "6941c",
+          "condition": "Treatment",
+          "collection_stratum": "6941c|466|24",
+          "vial": "JA130"
+        },
+        {
+          "run": "SRR32233978",
+          "genotype": "6990b",
+          "condition": "Control",
+          "collection_stratum": "6990b|381|24",
+          "vial": "JA108"
+        },
+        {
+          "run": "SRR32233983",
+          "genotype": "6990b",
+          "condition": "Treatment",
+          "collection_stratum": "6990b|381|24",
+          "vial": "JA109"
+        },
+        {
+          "run": "SRR32233926",
+          "genotype": "6996m",
+          "condition": "Treatment",
+          "collection_stratum": "6996m|385|24",
+          "vial": "JA115"
+        },
+        {
+          "run": "SRR32233943",
+          "genotype": "6996m",
+          "condition": "Control",
+          "collection_stratum": "6996m|385|24",
+          "vial": "JA114"
+        },
+        {
+          "run": "SRR32233931",
+          "genotype": "6996n",
+          "condition": "Treatment",
+          "collection_stratum": "6996n|374|24",
+          "vial": "JA107"
+        },
+        {
+          "run": "SRR32233949",
+          "genotype": "6996n",
+          "condition": "Control",
+          "collection_stratum": "6996n|374|24",
+          "vial": "JA106"
+        },
+        {
+          "run": "SRR32233957",
+          "genotype": "6996n",
+          "condition": "Treatment",
+          "collection_stratum": "6996n|389|24",
+          "vial": "JA128"
+        },
+        {
+          "run": "SRR32233975",
+          "genotype": "6996n",
+          "condition": "Control",
+          "collection_stratum": "6996n|389|24",
+          "vial": "JA127"
+        }
+      ],
+      "rejected": []
+    },
+    {
+      "name": "young_312h",
+      "hours": 312,
+      "genotypes": [
+        "6941c",
+        "6990b",
+        "6996n"
+      ],
+      "genotype_units": 3,
+      "libraries": [
+        {
+          "run": "SRR32233951",
+          "genotype": "6941c",
+          "condition": "Treatment",
+          "collection_stratum": "6941c|469|312",
+          "vial": "JA132"
+        },
+        {
+          "run": "SRR32233958",
+          "genotype": "6941c",
+          "condition": "Control",
+          "collection_stratum": "6941c|469|312",
+          "vial": "JA131"
+        },
+        {
+          "run": "SRR32233934",
+          "genotype": "6990b",
+          "condition": "Control",
+          "collection_stratum": "6990b|393|312",
+          "vial": "JA120"
+        },
+        {
+          "run": "SRR32233963",
+          "genotype": "6990b",
+          "condition": "Treatment",
+          "collection_stratum": "6990b|393|312",
+          "vial": "JA121"
+        },
+        {
+          "run": "SRR32233939",
+          "genotype": "6996n",
+          "condition": "Treatment",
+          "collection_stratum": "6996n|401|312",
+          "vial": "JA138"
+        },
+        {
+          "run": "SRR32233962",
+          "genotype": "6996n",
+          "condition": "Control",
+          "collection_stratum": "6996n|401|312",
+          "vial": "JA137"
+        }
+      ],
+      "rejected": []
+    }
+  ],
+  "all_libraries": 64,
+  "model": "DESeq2: ~ genotype + condition after summing balanced collection strata within each genotype/condition",
+  "collection_definition": "Operational stratum: same genotype, age in days and hours after treatment. This is not a claim that vial numbers identify pairs or that a calendar collection date is known.",
+  "independence": "One genotype is one biological unit; repeated collections do not increase replicate count.",
+  "other_times": "Retain counts and metadata for all 64; no primary treatment test for unmatched times or the single old genotype.",
+  "filter": "At least 5 pooled counts in at least 2 genotype/condition units, independent of treatment labels",
+  "kmer_length": 31,
+  "masking": "nomask",
+  "multiple_testing": "BH separately over all eligible features per contrast and assay; do not restrict gene tests to SPLASH-selected genes",
+  "alpha": 0.05,
+  "classification": "Gene DE and sequence variation are separate evidence axes; absence of a significant gene result is not evidence for unchanged expression."
+}

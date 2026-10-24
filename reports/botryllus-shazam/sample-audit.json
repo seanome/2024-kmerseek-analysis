@@ -1,0 +1,37 @@
+{
+  "runs": 64,
+  "biosamples": 64,
+  "published_comparison_samples": 47,
+  "archive_bytes": 77990548476,
+  "published_times_hours": [
+    2,
+    24,
+    312,
+    336,
+    408,
+    504,
+    624,
+    672,
+    840,
+    984,
+    1176,
+    1200,
+    1248,
+    2232,
+    2280,
+    2304,
+    2496,
+    2544,
+    2832,
+    3096,
+    3168
+  ],
+  "stage_label_differences": 60,
+  "genotype_counts": {
+    "6941c": 13,
+    "6990b": 12,
+    "6996m": 13,
+    "6996n": 14,
+    "944aXBYd196-4": 12
+  }
+}
