@@ -1,0 +1,26 @@
+name: orpheum-rs
+on:
+  pull_request:
+    paths: ['tools/orpheum-rs/**', '.github/workflows/orpheum-rs.yml']
+  push:
+    paths: ['tools/orpheum-rs/**', '.github/workflows/orpheum-rs.yml']
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        rust: ['1.85.0', '1.90.0']
+    defaults:
+      run:
+        working-directory: tools/orpheum-rs
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: ${{ matrix.rust }}
+          components: rustfmt,clippy
+      - run: cargo fmt --check
+      - run: cargo clippy --locked --all-targets -- -D warnings
+      - run: cargo test --locked
+      - run: cargo build --locked
+      - run: python3 tests/check_reference.py target/debug/orpheum-rs
