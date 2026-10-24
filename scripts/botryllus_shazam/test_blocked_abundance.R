@@ -3,7 +3,7 @@ args <- commandArgs(TRUE)
 folder <- args[1]; code <- args[2]
 dir.create(folder, recursive=TRUE, showWarnings=FALSE)
 prefix <- if(length(args)>=3) args[3] else file.path(Sys.getenv("GROUP_HOME"),"opt/botryllus-dekupl-1.3.3-20261024")
-raw_fixture <- file.path(dirname(folder),'smoke/results/kmer_counts/raw-counts.tsv.gz')
+raw_fixture <- readLines(file.path(dirname(folder),'native-fixture-raw.txt'),n=1)
 nf_path <- file.path(folder,'native-normalization-check.tsv')
 status_nf <- system2(file.path(prefix,'share/dekupl/bin/computeNF'),raw_fixture,stdout=nf_path)
 if(status_nf!=0) stop('Native normalization program failed')

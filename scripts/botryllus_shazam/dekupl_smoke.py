@@ -9,8 +9,8 @@ import random
 import subprocess
 import sys
 
-root, image = map(Path, sys.argv[1:])
-out = root / "dekupl-setup/smoke"
+root, image = map(Path, sys.argv[1:3])
+out = Path(sys.argv[3]) if len(sys.argv) > 3 else root / "dekupl-setup/smoke"
 out.mkdir(exist_ok=False)
 reads = out / "reads"
 reads.mkdir()
@@ -69,14 +69,14 @@ if image.is_dir():
 else:
     cmd = ["apptainer", "exec", str(image), "snakemake", "-s", "/dekupl/Snakefile"]
 cmd += [
+    str(raw),
+    str(gene),
     "--configfile",
     str(p),
     "-j",
     "4",
     "--resources",
     "ram=12000",
-    str(raw),
-    str(gene),
 ]
 subprocess.run(cmd, cwd=out, check=True)
 rows = list(csv.DictReader(gzip.open(raw, "rt"), delimiter="\t"))
@@ -103,3 +103,5 @@ if len(genes) != 1 or genes[0].get("feature") != "G1":
     )
     + "\n"
 )
+
+(root / "dekupl-setup/native-fixture-raw.txt").write_text(str(raw) + "\n")
