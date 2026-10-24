@@ -7,6 +7,7 @@ import re
 import shutil
 from pathlib import Path
 from public_results_html import render as render_public_results
+from biological_annotations import attach as attach_annotations
 
 ROOT=Path(__file__).resolve().parent
 OUT=ROOT/'report'
@@ -55,6 +56,7 @@ def main():
             data['findings'].append(dict(id=f"splash:trimmed:{r['anchor']}:{r['id']}",pipeline='splash',anchor=r['anchor'],dna=r['compactor'],support=int(r['support']),evidence_summary='Compactors DNA extension. Gene identity and protein annotation are pending.'))
     if (ROOT/'results/findings.json').exists():
         data['findings']=json.loads((ROOT/'results/findings.json').read_text())
+    attach_annotations(data['findings'], ROOT/'results/biological-annotations.json', OUT)
     data['full_depth']=json.loads((ROOT/'full-depth-status.json').read_text())
     full_progress=ROOT/'results/full-depth-extension-progress.json'
     data['full_extension_progress']=json.loads(full_progress.read_text()) if full_progress.exists() else None
