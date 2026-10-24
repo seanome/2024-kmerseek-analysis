@@ -47,3 +47,7 @@ nf-metro render docs/shazam-workflows/shazam_oyster_mvp_metro.mmd -o docs/shazam
 ```
 
 Do the same for `shazam_pec_nb361_metro.mmd`.
+
+The SVG and PNG files are generated from the `.mmd` files. The README shows the SVG; the
+PNG is the same picture at a fixed size. After any `.mmd` edit, render both again, or the
+pictures no longer match the source.
