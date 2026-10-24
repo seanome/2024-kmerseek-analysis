@@ -12,5 +12,5 @@ export PATH="$PREFIX/bin:$PATH"
 export OMP_NUM_THREADS=1
 export OPENBLAS_NUM_THREADS=1
 sha256sum "$CODE"/*.py "$CODE"/*.R
-"$GROUP_HOME/opt/oyster-shazam-20261023/bin/python" "$CODE/dekupl_smoke.py" "$ROOT" "$PREFIX" "$ROOT/dekupl-setup/smoke-v2"
+"$GROUP_HOME/opt/oyster-shazam-20261023/bin/python" "$CODE/dekupl_smoke.py" "$ROOT" "$PREFIX" "$ROOT/dekupl-setup/smoke-v3"
 "$PREFIX/bin/Rscript" "$CODE/test_blocked_abundance.R" "$ROOT/dekupl-setup/blocked-model-check" "$CODE" "$PREFIX"

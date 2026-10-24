@@ -45,7 +45,7 @@ config = dict(
     lib_type="unstranded",
     output_dir=str(out / "results"),
     masking="nomask",
-    ref_kallisto=str(transcript),
+    transcript_fasta=str(transcript),
     transcript_to_gene=str(mapfile),
     tmp_dir=str(Path(__import__("os").environ["L_SCRATCH_JOB"])),
     diff_method="DESeq2",
@@ -78,6 +78,11 @@ cmd += [
     "--resources",
     "ram=12000",
 ]
+preview = subprocess.run(
+    cmd + ["--dry-run"], cwd=out, check=True, capture_output=True, text=True
+)
+if "gencode_download" in preview.stdout + preview.stderr:
+    raise ValueError("Unexpected default human-reference download in fixture DAG")
 subprocess.run(cmd, cwd=out, check=True)
 rows = list(csv.DictReader(gzip.open(raw, "rt"), delimiter="\t"))
 if not rows:
