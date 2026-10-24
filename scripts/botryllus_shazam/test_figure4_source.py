@@ -9,9 +9,8 @@ ROOT = Path(__file__).resolve().parents[2] / "reports/botryllus-shazam/figure4"
 
 class PublishedInputs(unittest.TestCase):
     def test_gene_sets_and_count_matrix(self):
-        rows = list(
-            csv.DictReader((ROOT / "immune-gene-sets.tsv").open(), delimiter="\t")
-        )
+        with (ROOT / "immune-gene-sets.tsv").open() as f:
+            rows = list(csv.DictReader(f, delimiter="\t"))
         self.assertEqual(
             Counter(r["role"] for r in rows), dict(proimmune=13, cell_repair=133)
         )
@@ -25,9 +24,8 @@ class PublishedInputs(unittest.TestCase):
         self.assertTrue({r["gene_id"] for r in rows} <= genes)
 
     def test_hub_counts_and_explicit_ambiguity(self):
-        rows = list(
-            csv.DictReader((ROOT / "published-hub-counts.tsv").open(), delimiter="\t")
-        )
+        with (ROOT / "published-hub-counts.tsv").open() as f:
+            rows = list(csv.DictReader(f, delimiter="\t"))
         self.assertEqual(len(rows), 84)
         target = [
             r
