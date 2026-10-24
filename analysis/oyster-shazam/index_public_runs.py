@@ -16,7 +16,7 @@ def main():
         run=row['run_accession'];out=root/'public-bivalve-sketches'
         done=out/f'{run}.validated.json'
         if done.exists():
-            raise RuntimeError('Existing run: verify checkpoint before scheduling again')
+            print('Already validated, skipping',run,flush=True);continue
         urls=row['fastq_ftp'].split(';');checks=row['fastq_md5'].split(';')
         if not urls or len(urls)!=len(checks):raise ValueError('Missing source checksums')
         with tempfile.TemporaryDirectory(prefix=run+'-',dir=os.environ['L_SCRATCH_JOB']) as tmp:
