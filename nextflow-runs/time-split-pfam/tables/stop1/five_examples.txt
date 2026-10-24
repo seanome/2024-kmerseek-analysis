@@ -1,0 +1,64 @@
+Q23117 (GLoBin related, Eukaryota) t1 PF00042 Globin [Domain] residues 50-166 (117 aa)
+closest t0 Swiss-Prot domain: A8XGY6/52-165   bits 43.7
+query     50 RCFSRLESNCPIVSQCFQSATY--SLSTNPNGVRTVADHAKYLLQLLDKIIEG-DVDSEF---LREIGANHVCLKHESGFSTQEWDRFQEI 134
+               |  ||   | | | |  |              |   | |      |      |   ||    | ||  |  |   | ||   | |  ||
+Sprot     73 KIFLELEIASPKVKQIFYKAALVDAFNKDDDNTATLEVHIKLTTKFFDELLATLDDENEFVAKIRGIGSAHAILAKGSNFSSDIWERLGEI 163
+27 of 91 aligned columns identical (29.7%)
+hp_pbotc_1st_ed2 classes (h = ACFILMPVWY, p = DEGHKNQRST):
+query        phhpphppphhhhpphhpphph--phppphpphpphhpphphhhphhpphhpp-phppph---hpphphpphhhppppphpppphpphpph
+             ||| |||   | ||||| || |   |||| ||  ||  ||||  ||||||| | | ||||   |||||  |||| |||||||| |||||||
+Sprot        phhhphphhphphpphhhphhhhphhppppppphphphphphppphhpphhhphppppphhhphpphpphphhhhpppphppphhpphpph
+                                                                                        ^^^^^^^^
+64 of 91 columns in the same class; longest gap-free same-class run: 8 columns (^)
+
+A0CHK2 (Uncharacterized protein, Eukaryota) t1 PF00400 WD40 [Repeat] residues 612-642 (31 aa)
+closest t0 Swiss-Prot domain: Q15269/362-401   bits 20.3
+query    616 SIVSLDFSNDGQYLLVGGKKGKISLW 641
+             | | |  | ||||   ||  ||   |
+Sprot    375 SMVALAYSPDGQYIVTGGDDGKVKVW 400
+13 of 26 aligned columns identical (50.0%)
+hp_pbotc_1st_ed2 classes (h = ACFILMPVWY, p = DEGHKNQRST):
+query        phhphphppppphhhhpppppphphh
+             ||| | || |||||| ||||||||||
+Sprot        phhhhhhphppphhhppppppphphh
+                             ^^^^^^^^^^
+22 of 26 columns in the same class; longest gap-free same-class run: 10 columns (^)
+
+A0A0Q6V6U1 (Uncharacterized protein, Bacteria) t1 PF02687 FtsX [Domain] residues 61-190 (130 aa)
+closest t0 Swiss-Prot domain: Q7ULB5/589-677   bits 28.7
+query     90 RLAALRVA-GATTSEVRRLGAIEVGIPVTVGAALGTGVFA-LLRELLGGRQDDSSWPGGSNYAIVPTVSGPNAWQTVVVVVAVAVVGTYVGWHASR 183
+             |   || | ||  |   |   ||      ||     | ||      | ||     ||                |   | |   | ||   |    |
+Sprot    590 REIGLRMAVGANRSAILRQFLIEATVLCVVGGFI--GIFAGHMWSVLVGRV--IGWP-----------TAMSIWAPIVAVTVAATVGIVFGYYPAR 670
+28 of 96 aligned columns identical (29.2%)
+hp_pbotc_1st_ed2 classes (h = ACFILMPVWY, p = DEGHKNQRST):
+query        phhhhphh-phpppphpphphhphphhhphphhhppphhh-hhpphhpppppppphhpppphhhhhphpphphhpphhhhhhhhhhpphhphphpp
+             | | |||| ||||| | |  |||||||| || ||  ||||  | ||| ||    |||           | ||||  |||| ||| || |||| | |
+Sprot        pphphphhhphppphhhpphhhphphhhhhpphh--phhhpphhphhhpph--hphh-----------phhphhhhhhhhphhhphphhhphhhhp
+                                 ^^^^^^^^
+58 of 96 columns in the same class; longest gap-free same-class run: 8 columns (^)
+
+A0A1H4WB33 (Helix-turn-helix domain-containing protein, Bacteria) t1 PF12728 HTH_17 [Domain] residues 45-96 (52 aa)
+closest t0 Swiss-Prot domain: P45876/16-65   bits 28.4
+query     45 LLTAEEIASWLGKSVQSLAQDRYRGVGPAFIRVGT-RAVRYRKADVEAWLT 94
+             ||     || |  |  ||      |  |   |||  || | |  |  |   
+Sprot     16 LLDIKQAASLLNVSEASLRRWTDSGKLPCY-RVGDQRARRFRREDLVAFVS 65
+19 of 51 aligned columns identical (37.3%)
+hp_pbotc_1st_ed2 classes (h = ACFILMPVWY, p = DEGHKNQRST):
+query        hhphpphhphhppphpphhppphpphphhhhphpp-phhphpphphphhhp
+             |||||||||||| |  || | | ||  ||| |||| || |||| || ||||
+Sprot        hhphpphhphhphpphphpphppppphhhh-phpppphpphpppphhhhhp
+             ^^^^^^^^^^^^
+38 of 51 columns in the same class; longest gap-free same-class run: 12 columns (^)
+
+H6NGF3 (Uncharacterized protein, Bacteria) t1 PF02163 Peptidase_M50 [Family] residues 60-140 (81 aa)
+closest t0 Swiss-Prot domain: Q949Y5/299-466   bits 55.8
+query     62 AVGFVLLLLVHEMGHVFAARQKGLPVSAPMFIPFL-----GALISMKRHPRDAATEAYVAIGGPVLGTVGALAAYGLGIYLDS 139
+             | |    || || ||  ||  |    | | |||       ||    |    |  |       ||  |          |  |  
+Sprot    301 AYGVLGILLFHELGHFLAAVPKKVKLSIPYFIPNITLGSFGAITQFKSILPDRSTKVDISLAGPFAGAALSVSMFAVGLFLST 383
+26 of 83 aligned columns identical (31.3%)
+hp_pbotc_1st_ed2 classes (h = ACFILMPVWY, p = DEGHKNQRST):
+query        hhphhhhhhhpphpphhhhpppphhhphhhhhhhh-----phhhphppphpphhpphhhhhpphhhpphphhhhhphphhhpp
+             ||||| |||||||||||||  ||| |||||||| |     ||| |||| | |  ||| | | ||||| |  | || |||||||
+Sprot        hhphhphhhhpphpphhhhhhpphphphhhhhhphphpphphhpphpphhhppppphphphhphhhphhhphphhhhphhhpp
+                   ^^^^^^^^^^^^^
+60 of 83 columns in the same class; longest gap-free same-class run: 13 columns (^)

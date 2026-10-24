@@ -1,0 +1,7 @@
+process,status,tasks,exits,run_h_total,run_h_median,run_h_max,ask_gb_max,peak_gb_median,peak_gb_max
+hmmscanSearch,COMPLETED,1,0,0.0,0.04,0.04,16.0,0.7,0.7
+kmerseekIndex,COMPLETED,126,0,19.6,0.09,1.15,126.0,38.6,100.7
+kmerseekSearch,COMPLETED,186,0,19.2,0.1,0.3,229.0,29.2,72.0
+kmerseekSearch,FAILED,65,1,4.1,0.06,0.12,187.0,,
+mmseqsSearch,COMPLETED,1,0,0.0,0.01,0.01,64.0,2.2,2.2
+phmmerSearch,COMPLETED,1,0,0.1,0.12,0.12,16.0,0.5,0.5

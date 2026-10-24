@@ -1,0 +1,21 @@
+{
+ "comparators": [
+  "MMseqs2",
+  "hmmscan Pfam 33.1",
+  "phmmer"
+ ],
+ "kmerseek_settings": 38,
+ "chosen": "kmerseek gbmr7 k19 extend",
+ "tune_unique_finds": 0,
+ "tune_p4_queries": 2203,
+ "tune_decoy_rate": 0.007265681763138775,
+ "tune_expected": 16.00629692419472,
+ "tune_unique_minus_expected": -16.00629692419472,
+ "test_unique_finds": 0,
+ "test_p4_queries": 2297,
+ "test_decoy_rate": 0.19547619047619047,
+ "test_unique_minus_expected": -449.00880952380953,
+ "test_ci95_low": -1281.4115297619046,
+ "test_ci95_high": -9.297380952380951,
+ "p4_holds": false
+}

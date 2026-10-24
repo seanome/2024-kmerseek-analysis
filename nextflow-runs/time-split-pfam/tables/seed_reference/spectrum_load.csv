@@ -1,0 +1,10 @@
+reference,alphabet,ksize,load,kmers,distinct_kmers,predicted_search_gb
+reference,protein20,5,181.10,175748461,3116589,67.5
+reference,protein20,8,11.77,174853875,102826405,44.0
+reference,hp_pbotc_1st_ed2,17,1398.29,159472490,131072,123.5
+reference,hp_pbotc_1st_ed2,29,8.83,155458352,87480382,43.0
+reference-pfamseed33_1,protein20,5,180.11,187825494,3161931,67.4
+reference-pfamseed33_1,protein20,8,2.93,184204976,154341529,40.0
+reference-pfamseed33_1,hp_pbotc_1st_ed2,17,1437.86,172555037,131072,124.7
+reference-pfamseed33_1,hp_pbotc_1st_ed2,29,2.54,158173938,117057312,39.7
+check reference,hp_pbotc_1st_ed2,29,8.83 (this script) vs 8.81 (kmerseek),,,
