@@ -72,3 +72,39 @@ def validate(root, discovery, manifest):
         unique_peptides=completion["unique_peptides"],
         extension_records=completion["extension_records"],
     )
+
+
+def prepare_dna_queries(discovery, out, provenance):
+    # Every significant anchor is a direct DNA query, including anchors without an extension.
+    with (discovery / "all-significant/selected_anchors.tsv").open() as stream:
+        selected = list(csv.DictReader(stream, delimiter="\t"))
+    with (discovery / "peptide_membership.tsv").open() as stream:
+        membership = list(csv.DictReader(stream, delimiter="\t"))
+    peptides_by_anchor = {}
+    for row in membership:
+        peptides_by_anchor.setdefault(row["anchor"], set()).add(row["peptide_id"])
+    dna_queries = out / "all-anchors-and-extensions.fasta"
+    with dna_queries.open("w") as f, (out / "anchor-query-coverage.tsv").open("w") as c:
+        w = csv.writer(c, delimiter="\t", lineterminator="\n")
+        w.writerow(["anchor", "dna_query", "peptide_queries", "protein_query_status"])
+        for i, row in enumerate(selected, 1):
+            anchor = row["anchor"]
+            name = f"ANC{i:09d}"
+            f.write(f">{name} anchor={anchor}\n{anchor}\n")
+            n = len(peptides_by_anchor.get(anchor, set()))
+            w.writerow(
+                [
+                    anchor,
+                    name,
+                    n,
+                    (
+                        "available"
+                        if n
+                        else "no translated fragment meets the fixed length rule"
+                    ),
+                ]
+            )
+        f.write((discovery / "extensions.fasta").read_text())
+    provenance["all_anchor_dna_query_sha256"] = sha(dna_queries)
+    provenance["anchor_query_coverage_sha256"] = sha(out / "anchor-query-coverage.tsv")
+    return dna_queries

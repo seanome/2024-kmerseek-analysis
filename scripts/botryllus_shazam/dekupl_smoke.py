@@ -64,13 +64,11 @@ p = out / "config.json"
 p.write_text(json.dumps(config, indent=2) + "\n")
 raw = out / "results/kmer_counts/raw-counts.tsv.gz"
 gene = out / "results/gene_expression/kallisto/gene_counts.tsv.gz"
-cmd = [
-    "apptainer",
-    "exec",
-    str(image),
-    "snakemake",
-    "-s",
-    "/dekupl/Snakefile",
+if image.is_dir():
+    cmd = [str(image / "bin/snakemake"), "-s", str(image / "share/dekupl/Snakefile")]
+else:
+    cmd = ["apptainer", "exec", str(image), "snakemake", "-s", "/dekupl/Snakefile"]
+cmd += [
     "--configfile",
     str(p),
     "-j",

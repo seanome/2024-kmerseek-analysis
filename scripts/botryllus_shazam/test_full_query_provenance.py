@@ -5,7 +5,7 @@ import json
 from pathlib import Path
 import tempfile
 import unittest
-from full_query_provenance import validate, sha
+from full_query_provenance import validate, sha, prepare_dna_queries
 
 
 class FullQueryTests(unittest.TestCase):
@@ -58,6 +58,22 @@ class FullQueryTests(unittest.TestCase):
                 )
             )
             self.assertEqual(validate(root, out, manifest)["selected_anchors"], 301)
+            (out / "peptide_membership.tsv").write_text(
+                "anchor\tpeptide_id\n" + anchors[0] + "\tq1\n"
+            )
+            query_dir = root / "queries"
+            query_dir.mkdir()
+            provenance = {}
+            dna = prepare_dna_queries(out, query_dir, provenance)
+            self.assertEqual(
+                sum(x.startswith(">") for x in dna.read_text().splitlines()), 302
+            )
+            with (query_dir / "anchor-query-coverage.tsv").open() as stream:
+                coverage = list(csv.DictReader(stream, delimiter="\t"))
+            self.assertEqual(len(coverage), 301)
+            self.assertEqual(sum(int(x["peptide_queries"]) > 0 for x in coverage), 1)
+            self.assertIn("GGG", source.read_text())
+            self.assertNotIn("anchor=GGG", dna.read_text())
             record["extension_cap"] = 300
             selection.write_text(json.dumps(record))
             with self.assertRaisesRegex(ValueError, "Capped"):
