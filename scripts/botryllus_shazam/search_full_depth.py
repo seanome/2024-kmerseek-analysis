@@ -47,9 +47,47 @@ def call(args, label):
     save()
 
 
+# Every significant anchor is a direct DNA query, including anchors without an extension.
+selected = list(
+    csv.DictReader(
+        (discovery / "all-significant/selected_anchors.tsv").open(), delimiter="\t"
+    )
+)
+membership = list(
+    csv.DictReader((discovery / "peptide_membership.tsv").open(), delimiter="\t")
+)
+peptides_by_anchor = {}
+for row in membership:
+    peptides_by_anchor.setdefault(row["anchor"], set()).add(row["peptide_id"])
+dna_queries = out / "all-anchors-and-extensions.fasta"
+with dna_queries.open("w") as f, (out / "anchor-query-coverage.tsv").open("w") as c:
+    w = csv.writer(c, delimiter="\t", lineterminator="\n")
+    w.writerow(["anchor", "dna_query", "peptide_queries", "protein_query_status"])
+    for i, row in enumerate(selected, 1):
+        anchor = row["anchor"]
+        name = f"ANC{i:09d}"
+        f.write(f">{name} anchor={anchor}\n{anchor}\n")
+        n = len(peptides_by_anchor.get(anchor, set()))
+        w.writerow(
+            [
+                anchor,
+                name,
+                n,
+                (
+                    "available"
+                    if n
+                    else "no translated fragment meets the fixed length rule"
+                ),
+            ]
+        )
+    f.write((discovery / "extensions.fasta").read_text())
+report["provenance"]["all_anchor_dna_query_sha256"] = sha(dna_queries)
+report["provenance"]["anchor_query_coverage_sha256"] = sha(
+    out / "anchor-query-coverage.tsv"
+)
 settings = [("dna", 31), ("protein", 7), ("dayhoff", 12), ("hp", 30)]
 for mode, k in settings:
-    query = discovery / ("extensions.fasta" if mode == "dna" else "peptides.fasta")
+    query = dna_queries if mode == "dna" else discovery / "peptides.fasta"
     q = out / f"queries.{mode}.scaled5.sig.zip"
     call(
         [
@@ -66,7 +104,7 @@ for mode, k in settings:
     )
     sigs = list(sourmash.load_file_as_signatures(str(q)))
     expected = (
-        provenance["extension_records"]
+        provenance["extension_records"] + provenance["selected_anchors"]
         if mode == "dna"
         else provenance["unique_peptides"]
     )
