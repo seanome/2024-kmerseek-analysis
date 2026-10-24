@@ -1,0 +1,1217 @@
+query	query_lineage	alphabet	ksize	n_cross_truth	n_cross_reachable	frac_cross_reachable	frac_background_reachable
+Q6F4C6	C1 molluscs	protein20	3	72	64	0.8888888888888888	0.818
+Q6F4C6	C1 molluscs	protein20	4	72	6	0.08333333333333333	0.1038
+Q6F4C6	C1 molluscs	protein20	5	72	1	0.013888888888888888	0.0044
+Q6F4C6	C1 molluscs	protein20	6	72	1	0.013888888888888888	0.0006
+Q6F4C6	C1 molluscs	protein20	7	72	0	0.0	0.0002
+Q6F4C6	C1 molluscs	protein20	8	72	0	0.0	0.0002
+Q6F4C6	C1 molluscs	protein20	9	72	0	0.0	0.0
+Q6F4C6	C1 molluscs	protein20	10	72	0	0.0	0.0
+Q6F4C6	C1 molluscs	protein20	11	72	0	0.0	0.0
+Q6F4C6	C1 molluscs	protein20	12	72	0	0.0	0.0
+Q6F4C6	C1 molluscs	protein20	13	72	0	0.0	0.0
+Q6F4C6	C1 molluscs	protein20	14	72	0	0.0	0.0
+Q6F4C6	C1 molluscs	protein20	15	72	0	0.0	0.0
+Q6F4C6	C1 molluscs	protein20	16	72	0	0.0	0.0
+Q6F4C6	C1 molluscs	protein20	17	72	0	0.0	0.0
+Q6F4C6	C1 molluscs	protein20	18	72	0	0.0	0.0
+Q6F4C6	C1 molluscs	protein20	19	72	0	0.0	0.0
+Q6F4C6	C1 molluscs	protein20	20	72	0	0.0	0.0
+Q6F4C6	C1 molluscs	protein20	21	72	0	0.0	0.0
+Q6F4C6	C1 molluscs	protein20	22	72	0	0.0	0.0
+Q6F4C6	C1 molluscs	protein20	23	72	0	0.0	0.0
+Q6F4C6	C1 molluscs	protein20	24	72	0	0.0	0.0
+Q6F4C6	C1 molluscs	protein20	25	72	0	0.0	0.0
+Q6F4C6	C1 molluscs	protein20	26	72	0	0.0	0.0
+Q6F4C6	C1 molluscs	protein20	27	72	0	0.0	0.0
+Q6F4C6	C1 molluscs	protein20	28	72	0	0.0	0.0
+Q6F4C6	C1 molluscs	protein20	29	72	0	0.0	0.0
+Q6F4C6	C1 molluscs	protein20	30	72	0	0.0	0.0
+Q6F4C6	C1 molluscs	protein20	31	72	0	0.0	0.0
+Q6F4C6	C1 molluscs	protein20	32	72	0	0.0	0.0
+Q6F4C6	C1 molluscs	protein20	33	72	0	0.0	0.0
+Q6F4C6	C1 molluscs	protein20	34	72	0	0.0	0.0
+Q6F4C6	C1 molluscs	protein20	35	72	0	0.0	0.0
+Q6F4C6	C1 molluscs	protein20	36	72	0	0.0	0.0
+Q6F4C6	C1 molluscs	protein20	37	72	0	0.0	0.0
+Q6F4C6	C1 molluscs	protein20	38	72	0	0.0	0.0
+Q6F4C6	C1 molluscs	protein20	39	72	0	0.0	0.0
+Q6F4C6	C1 molluscs	protein20	40	72	0	0.0	0.0
+Q6F4C6	C1 molluscs	dayhoff6	3	72	72	1.0	0.999
+Q6F4C6	C1 molluscs	dayhoff6	4	72	70	0.9722222222222222	0.989
+Q6F4C6	C1 molluscs	dayhoff6	5	72	58	0.8055555555555556	0.906
+Q6F4C6	C1 molluscs	dayhoff6	6	72	48	0.6666666666666666	0.499
+Q6F4C6	C1 molluscs	dayhoff6	7	72	19	0.2638888888888889	0.1358
+Q6F4C6	C1 molluscs	dayhoff6	8	72	9	0.125	0.0258
+Q6F4C6	C1 molluscs	dayhoff6	9	72	3	0.041666666666666664	0.0052
+Q6F4C6	C1 molluscs	dayhoff6	10	72	0	0.0	0.0004
+Q6F4C6	C1 molluscs	dayhoff6	11	72	0	0.0	0.0004
+Q6F4C6	C1 molluscs	dayhoff6	12	72	0	0.0	0.0002
+Q6F4C6	C1 molluscs	dayhoff6	13	72	0	0.0	0.0
+Q6F4C6	C1 molluscs	dayhoff6	14	72	0	0.0	0.0
+Q6F4C6	C1 molluscs	dayhoff6	15	72	0	0.0	0.0
+Q6F4C6	C1 molluscs	dayhoff6	16	72	0	0.0	0.0
+Q6F4C6	C1 molluscs	dayhoff6	17	72	0	0.0	0.0
+Q6F4C6	C1 molluscs	dayhoff6	18	72	0	0.0	0.0
+Q6F4C6	C1 molluscs	dayhoff6	19	72	0	0.0	0.0
+Q6F4C6	C1 molluscs	dayhoff6	20	72	0	0.0	0.0
+Q6F4C6	C1 molluscs	dayhoff6	21	72	0	0.0	0.0
+Q6F4C6	C1 molluscs	dayhoff6	22	72	0	0.0	0.0
+Q6F4C6	C1 molluscs	dayhoff6	23	72	0	0.0	0.0
+Q6F4C6	C1 molluscs	dayhoff6	24	72	0	0.0	0.0
+Q6F4C6	C1 molluscs	dayhoff6	25	72	0	0.0	0.0
+Q6F4C6	C1 molluscs	dayhoff6	26	72	0	0.0	0.0
+Q6F4C6	C1 molluscs	dayhoff6	27	72	0	0.0	0.0
+Q6F4C6	C1 molluscs	dayhoff6	28	72	0	0.0	0.0
+Q6F4C6	C1 molluscs	dayhoff6	29	72	0	0.0	0.0
+Q6F4C6	C1 molluscs	dayhoff6	30	72	0	0.0	0.0
+Q6F4C6	C1 molluscs	dayhoff6	31	72	0	0.0	0.0
+Q6F4C6	C1 molluscs	dayhoff6	32	72	0	0.0	0.0
+Q6F4C6	C1 molluscs	dayhoff6	33	72	0	0.0	0.0
+Q6F4C6	C1 molluscs	dayhoff6	34	72	0	0.0	0.0
+Q6F4C6	C1 molluscs	dayhoff6	35	72	0	0.0	0.0
+Q6F4C6	C1 molluscs	dayhoff6	36	72	0	0.0	0.0
+Q6F4C6	C1 molluscs	dayhoff6	37	72	0	0.0	0.0
+Q6F4C6	C1 molluscs	dayhoff6	38	72	0	0.0	0.0
+Q6F4C6	C1 molluscs	dayhoff6	39	72	0	0.0	0.0
+Q6F4C6	C1 molluscs	dayhoff6	40	72	0	0.0	0.0
+Q6F4C6	C1 molluscs	hp_lehninger2	3	72	72	1.0	0.9998
+Q6F4C6	C1 molluscs	hp_lehninger2	4	72	72	1.0	0.9998
+Q6F4C6	C1 molluscs	hp_lehninger2	5	72	72	1.0	0.9998
+Q6F4C6	C1 molluscs	hp_lehninger2	6	72	72	1.0	0.999
+Q6F4C6	C1 molluscs	hp_lehninger2	7	72	72	1.0	0.9972
+Q6F4C6	C1 molluscs	hp_lehninger2	8	72	70	0.9722222222222222	0.9912
+Q6F4C6	C1 molluscs	hp_lehninger2	9	72	69	0.9583333333333334	0.9772
+Q6F4C6	C1 molluscs	hp_lehninger2	10	72	68	0.9444444444444444	0.9486
+Q6F4C6	C1 molluscs	hp_lehninger2	11	72	67	0.9305555555555556	0.899
+Q6F4C6	C1 molluscs	hp_lehninger2	12	72	61	0.8472222222222222	0.812
+Q6F4C6	C1 molluscs	hp_lehninger2	13	72	51	0.7083333333333334	0.6768
+Q6F4C6	C1 molluscs	hp_lehninger2	14	72	39	0.5416666666666666	0.5224
+Q6F4C6	C1 molluscs	hp_lehninger2	15	72	30	0.4166666666666667	0.3684
+Q6F4C6	C1 molluscs	hp_lehninger2	16	72	19	0.2638888888888889	0.2592
+Q6F4C6	C1 molluscs	hp_lehninger2	17	72	14	0.19444444444444445	0.1838
+Q6F4C6	C1 molluscs	hp_lehninger2	18	72	12	0.16666666666666666	0.13
+Q6F4C6	C1 molluscs	hp_lehninger2	19	72	7	0.09722222222222222	0.0926
+Q6F4C6	C1 molluscs	hp_lehninger2	20	72	7	0.09722222222222222	0.0626
+Q6F4C6	C1 molluscs	hp_lehninger2	21	72	7	0.09722222222222222	0.0424
+Q6F4C6	C1 molluscs	hp_lehninger2	22	72	7	0.09722222222222222	0.0296
+Q6F4C6	C1 molluscs	hp_lehninger2	23	72	6	0.08333333333333333	0.0188
+Q6F4C6	C1 molluscs	hp_lehninger2	24	72	4	0.05555555555555555	0.0108
+Q6F4C6	C1 molluscs	hp_lehninger2	25	72	4	0.05555555555555555	0.007
+Q6F4C6	C1 molluscs	hp_lehninger2	26	72	4	0.05555555555555555	0.004
+Q6F4C6	C1 molluscs	hp_lehninger2	27	72	4	0.05555555555555555	0.0028
+Q6F4C6	C1 molluscs	hp_lehninger2	28	72	2	0.027777777777777776	0.002
+Q6F4C6	C1 molluscs	hp_lehninger2	29	72	0	0.0	0.0016
+Q6F4C6	C1 molluscs	hp_lehninger2	30	72	0	0.0	0.0012
+Q6F4C6	C1 molluscs	hp_lehninger2	31	72	0	0.0	0.0002
+Q6F4C6	C1 molluscs	hp_lehninger2	32	72	0	0.0	0.0002
+Q6F4C6	C1 molluscs	hp_lehninger2	33	72	0	0.0	0.0002
+Q6F4C6	C1 molluscs	hp_lehninger2	34	72	0	0.0	0.0002
+Q6F4C6	C1 molluscs	hp_lehninger2	35	72	0	0.0	0.0
+Q6F4C6	C1 molluscs	hp_lehninger2	36	72	0	0.0	0.0
+Q6F4C6	C1 molluscs	hp_lehninger2	37	72	0	0.0	0.0
+Q6F4C6	C1 molluscs	hp_lehninger2	38	72	0	0.0	0.0
+Q6F4C6	C1 molluscs	hp_lehninger2	39	72	0	0.0	0.0
+Q6F4C6	C1 molluscs	hp_lehninger2	40	72	0	0.0	0.0
+Q6F4C6	C1 molluscs	hp_thomas_dill2	3	72	72	1.0	0.9998
+Q6F4C6	C1 molluscs	hp_thomas_dill2	4	72	72	1.0	0.9998
+Q6F4C6	C1 molluscs	hp_thomas_dill2	5	72	72	1.0	0.9998
+Q6F4C6	C1 molluscs	hp_thomas_dill2	6	72	72	1.0	0.9996
+Q6F4C6	C1 molluscs	hp_thomas_dill2	7	72	72	1.0	0.999
+Q6F4C6	C1 molluscs	hp_thomas_dill2	8	72	72	1.0	0.997
+Q6F4C6	C1 molluscs	hp_thomas_dill2	9	72	72	1.0	0.9944
+Q6F4C6	C1 molluscs	hp_thomas_dill2	10	72	69	0.9583333333333334	0.9886
+Q6F4C6	C1 molluscs	hp_thomas_dill2	11	72	60	0.8333333333333334	0.9658
+Q6F4C6	C1 molluscs	hp_thomas_dill2	12	72	56	0.7777777777777778	0.8882
+Q6F4C6	C1 molluscs	hp_thomas_dill2	13	72	51	0.7083333333333334	0.7344
+Q6F4C6	C1 molluscs	hp_thomas_dill2	14	72	43	0.5972222222222222	0.5258
+Q6F4C6	C1 molluscs	hp_thomas_dill2	15	72	34	0.4722222222222222	0.3254
+Q6F4C6	C1 molluscs	hp_thomas_dill2	16	72	26	0.3611111111111111	0.1852
+Q6F4C6	C1 molluscs	hp_thomas_dill2	17	72	11	0.1527777777777778	0.1028
+Q6F4C6	C1 molluscs	hp_thomas_dill2	18	72	5	0.06944444444444445	0.0528
+Q6F4C6	C1 molluscs	hp_thomas_dill2	19	72	2	0.027777777777777776	0.028
+Q6F4C6	C1 molluscs	hp_thomas_dill2	20	72	1	0.013888888888888888	0.0144
+Q6F4C6	C1 molluscs	hp_thomas_dill2	21	72	1	0.013888888888888888	0.0064
+Q6F4C6	C1 molluscs	hp_thomas_dill2	22	72	1	0.013888888888888888	0.004
+Q6F4C6	C1 molluscs	hp_thomas_dill2	23	72	0	0.0	0.0012
+Q6F4C6	C1 molluscs	hp_thomas_dill2	24	72	0	0.0	0.0008
+Q6F4C6	C1 molluscs	hp_thomas_dill2	25	72	0	0.0	0.0004
+Q6F4C6	C1 molluscs	hp_thomas_dill2	26	72	0	0.0	0.0002
+Q6F4C6	C1 molluscs	hp_thomas_dill2	27	72	0	0.0	0.0002
+Q6F4C6	C1 molluscs	hp_thomas_dill2	28	72	0	0.0	0.0
+Q6F4C6	C1 molluscs	hp_thomas_dill2	29	72	0	0.0	0.0
+Q6F4C6	C1 molluscs	hp_thomas_dill2	30	72	0	0.0	0.0
+Q6F4C6	C1 molluscs	hp_thomas_dill2	31	72	0	0.0	0.0
+Q6F4C6	C1 molluscs	hp_thomas_dill2	32	72	0	0.0	0.0
+Q6F4C6	C1 molluscs	hp_thomas_dill2	33	72	0	0.0	0.0
+Q6F4C6	C1 molluscs	hp_thomas_dill2	34	72	0	0.0	0.0
+Q6F4C6	C1 molluscs	hp_thomas_dill2	35	72	0	0.0	0.0
+Q6F4C6	C1 molluscs	hp_thomas_dill2	36	72	0	0.0	0.0
+Q6F4C6	C1 molluscs	hp_thomas_dill2	37	72	0	0.0	0.0
+Q6F4C6	C1 molluscs	hp_thomas_dill2	38	72	0	0.0	0.0
+Q6F4C6	C1 molluscs	hp_thomas_dill2	39	72	0	0.0	0.0
+Q6F4C6	C1 molluscs	hp_thomas_dill2	40	72	0	0.0	0.0
+Q6F4C6	C1 molluscs	hp_kyte_doolittle2	3	72	72	1.0	0.9998
+Q6F4C6	C1 molluscs	hp_kyte_doolittle2	4	72	72	1.0	0.9998
+Q6F4C6	C1 molluscs	hp_kyte_doolittle2	5	72	72	1.0	0.9996
+Q6F4C6	C1 molluscs	hp_kyte_doolittle2	6	72	72	1.0	0.9996
+Q6F4C6	C1 molluscs	hp_kyte_doolittle2	7	72	72	1.0	0.9984
+Q6F4C6	C1 molluscs	hp_kyte_doolittle2	8	72	72	1.0	0.9956
+Q6F4C6	C1 molluscs	hp_kyte_doolittle2	9	72	70	0.9722222222222222	0.9928
+Q6F4C6	C1 molluscs	hp_kyte_doolittle2	10	72	70	0.9722222222222222	0.9878
+Q6F4C6	C1 molluscs	hp_kyte_doolittle2	11	72	70	0.9722222222222222	0.9682
+Q6F4C6	C1 molluscs	hp_kyte_doolittle2	12	72	64	0.8888888888888888	0.9226
+Q6F4C6	C1 molluscs	hp_kyte_doolittle2	13	72	59	0.8194444444444444	0.8344
+Q6F4C6	C1 molluscs	hp_kyte_doolittle2	14	72	58	0.8055555555555556	0.7046
+Q6F4C6	C1 molluscs	hp_kyte_doolittle2	15	72	53	0.7361111111111112	0.5406
+Q6F4C6	C1 molluscs	hp_kyte_doolittle2	16	72	49	0.6805555555555556	0.4002
+Q6F4C6	C1 molluscs	hp_kyte_doolittle2	17	72	46	0.6388888888888888	0.2754
+Q6F4C6	C1 molluscs	hp_kyte_doolittle2	18	72	39	0.5416666666666666	0.1818
+Q6F4C6	C1 molluscs	hp_kyte_doolittle2	19	72	33	0.4583333333333333	0.1124
+Q6F4C6	C1 molluscs	hp_kyte_doolittle2	20	72	29	0.4027777777777778	0.0704
+Q6F4C6	C1 molluscs	hp_kyte_doolittle2	21	72	22	0.3055555555555556	0.0436
+Q6F4C6	C1 molluscs	hp_kyte_doolittle2	22	72	16	0.2222222222222222	0.0252
+Q6F4C6	C1 molluscs	hp_kyte_doolittle2	23	72	12	0.16666666666666666	0.015
+Q6F4C6	C1 molluscs	hp_kyte_doolittle2	24	72	9	0.125	0.0084
+Q6F4C6	C1 molluscs	hp_kyte_doolittle2	25	72	8	0.1111111111111111	0.0058
+Q6F4C6	C1 molluscs	hp_kyte_doolittle2	26	72	6	0.08333333333333333	0.0038
+Q6F4C6	C1 molluscs	hp_kyte_doolittle2	27	72	5	0.06944444444444445	0.0026
+Q6F4C6	C1 molluscs	hp_kyte_doolittle2	28	72	4	0.05555555555555555	0.0012
+Q6F4C6	C1 molluscs	hp_kyte_doolittle2	29	72	4	0.05555555555555555	0.001
+Q6F4C6	C1 molluscs	hp_kyte_doolittle2	30	72	3	0.041666666666666664	0.0004
+Q6F4C6	C1 molluscs	hp_kyte_doolittle2	31	72	3	0.041666666666666664	0.0
+Q6F4C6	C1 molluscs	hp_kyte_doolittle2	32	72	3	0.041666666666666664	0.0
+Q6F4C6	C1 molluscs	hp_kyte_doolittle2	33	72	3	0.041666666666666664	0.0
+Q6F4C6	C1 molluscs	hp_kyte_doolittle2	34	72	3	0.041666666666666664	0.0
+Q6F4C6	C1 molluscs	hp_kyte_doolittle2	35	72	2	0.027777777777777776	0.0
+Q6F4C6	C1 molluscs	hp_kyte_doolittle2	36	72	2	0.027777777777777776	0.0
+Q6F4C6	C1 molluscs	hp_kyte_doolittle2	37	72	2	0.027777777777777776	0.0
+Q6F4C6	C1 molluscs	hp_kyte_doolittle2	38	72	0	0.0	0.0
+Q6F4C6	C1 molluscs	hp_kyte_doolittle2	39	72	0	0.0	0.0
+Q6F4C6	C1 molluscs	hp_kyte_doolittle2	40	72	0	0.0	0.0
+Q6F4C6	C1 molluscs	hp_thomas_dill_no_c2	3	72	72	1.0	0.9998
+Q6F4C6	C1 molluscs	hp_thomas_dill_no_c2	4	72	72	1.0	0.9998
+Q6F4C6	C1 molluscs	hp_thomas_dill_no_c2	5	72	72	1.0	0.9998
+Q6F4C6	C1 molluscs	hp_thomas_dill_no_c2	6	72	72	1.0	0.9996
+Q6F4C6	C1 molluscs	hp_thomas_dill_no_c2	7	72	72	1.0	0.999
+Q6F4C6	C1 molluscs	hp_thomas_dill_no_c2	8	72	72	1.0	0.9972
+Q6F4C6	C1 molluscs	hp_thomas_dill_no_c2	9	72	72	1.0	0.995
+Q6F4C6	C1 molluscs	hp_thomas_dill_no_c2	10	72	69	0.9583333333333334	0.9874
+Q6F4C6	C1 molluscs	hp_thomas_dill_no_c2	11	72	60	0.8333333333333334	0.964
+Q6F4C6	C1 molluscs	hp_thomas_dill_no_c2	12	72	55	0.7638888888888888	0.8876
+Q6F4C6	C1 molluscs	hp_thomas_dill_no_c2	13	72	48	0.6666666666666666	0.7396
+Q6F4C6	C1 molluscs	hp_thomas_dill_no_c2	14	72	40	0.5555555555555556	0.5318
+Q6F4C6	C1 molluscs	hp_thomas_dill_no_c2	15	72	32	0.4444444444444444	0.3324
+Q6F4C6	C1 molluscs	hp_thomas_dill_no_c2	16	72	24	0.3333333333333333	0.1948
+Q6F4C6	C1 molluscs	hp_thomas_dill_no_c2	17	72	10	0.1388888888888889	0.1052
+Q6F4C6	C1 molluscs	hp_thomas_dill_no_c2	18	72	6	0.08333333333333333	0.0532
+Q6F4C6	C1 molluscs	hp_thomas_dill_no_c2	19	72	2	0.027777777777777776	0.027
+Q6F4C6	C1 molluscs	hp_thomas_dill_no_c2	20	72	1	0.013888888888888888	0.0146
+Q6F4C6	C1 molluscs	hp_thomas_dill_no_c2	21	72	1	0.013888888888888888	0.0078
+Q6F4C6	C1 molluscs	hp_thomas_dill_no_c2	22	72	1	0.013888888888888888	0.0038
+Q6F4C6	C1 molluscs	hp_thomas_dill_no_c2	23	72	0	0.0	0.0014
+Q6F4C6	C1 molluscs	hp_thomas_dill_no_c2	24	72	0	0.0	0.0008
+Q6F4C6	C1 molluscs	hp_thomas_dill_no_c2	25	72	0	0.0	0.0004
+Q6F4C6	C1 molluscs	hp_thomas_dill_no_c2	26	72	0	0.0	0.0002
+Q6F4C6	C1 molluscs	hp_thomas_dill_no_c2	27	72	0	0.0	0.0002
+Q6F4C6	C1 molluscs	hp_thomas_dill_no_c2	28	72	0	0.0	0.0
+Q6F4C6	C1 molluscs	hp_thomas_dill_no_c2	29	72	0	0.0	0.0
+Q6F4C6	C1 molluscs	hp_thomas_dill_no_c2	30	72	0	0.0	0.0
+Q6F4C6	C1 molluscs	hp_thomas_dill_no_c2	31	72	0	0.0	0.0
+Q6F4C6	C1 molluscs	hp_thomas_dill_no_c2	32	72	0	0.0	0.0
+Q6F4C6	C1 molluscs	hp_thomas_dill_no_c2	33	72	0	0.0	0.0
+Q6F4C6	C1 molluscs	hp_thomas_dill_no_c2	34	72	0	0.0	0.0
+Q6F4C6	C1 molluscs	hp_thomas_dill_no_c2	35	72	0	0.0	0.0
+Q6F4C6	C1 molluscs	hp_thomas_dill_no_c2	36	72	0	0.0	0.0
+Q6F4C6	C1 molluscs	hp_thomas_dill_no_c2	37	72	0	0.0	0.0
+Q6F4C6	C1 molluscs	hp_thomas_dill_no_c2	38	72	0	0.0	0.0
+Q6F4C6	C1 molluscs	hp_thomas_dill_no_c2	39	72	0	0.0	0.0
+Q6F4C6	C1 molluscs	hp_thomas_dill_no_c2	40	72	0	0.0	0.0
+Q6F4C6	C1 molluscs	hp_lehninger_c_nonpolar2	3	72	72	1.0	0.9998
+Q6F4C6	C1 molluscs	hp_lehninger_c_nonpolar2	4	72	72	1.0	0.9998
+Q6F4C6	C1 molluscs	hp_lehninger_c_nonpolar2	5	72	72	1.0	0.9996
+Q6F4C6	C1 molluscs	hp_lehninger_c_nonpolar2	6	72	72	1.0	0.999
+Q6F4C6	C1 molluscs	hp_lehninger_c_nonpolar2	7	72	71	0.9861111111111112	0.9972
+Q6F4C6	C1 molluscs	hp_lehninger_c_nonpolar2	8	72	70	0.9722222222222222	0.9924
+Q6F4C6	C1 molluscs	hp_lehninger_c_nonpolar2	9	72	69	0.9583333333333334	0.979
+Q6F4C6	C1 molluscs	hp_lehninger_c_nonpolar2	10	72	68	0.9444444444444444	0.9542
+Q6F4C6	C1 molluscs	hp_lehninger_c_nonpolar2	11	72	66	0.9166666666666666	0.9098
+Q6F4C6	C1 molluscs	hp_lehninger_c_nonpolar2	12	72	65	0.9027777777777778	0.832
+Q6F4C6	C1 molluscs	hp_lehninger_c_nonpolar2	13	72	62	0.8611111111111112	0.7146
+Q6F4C6	C1 molluscs	hp_lehninger_c_nonpolar2	14	72	48	0.6666666666666666	0.568
+Q6F4C6	C1 molluscs	hp_lehninger_c_nonpolar2	15	72	44	0.6111111111111112	0.4236
+Q6F4C6	C1 molluscs	hp_lehninger_c_nonpolar2	16	72	27	0.375	0.3024
+Q6F4C6	C1 molluscs	hp_lehninger_c_nonpolar2	17	72	18	0.25	0.215
+Q6F4C6	C1 molluscs	hp_lehninger_c_nonpolar2	18	72	13	0.18055555555555555	0.1558
+Q6F4C6	C1 molluscs	hp_lehninger_c_nonpolar2	19	72	12	0.16666666666666666	0.1122
+Q6F4C6	C1 molluscs	hp_lehninger_c_nonpolar2	20	72	12	0.16666666666666666	0.0798
+Q6F4C6	C1 molluscs	hp_lehninger_c_nonpolar2	21	72	12	0.16666666666666666	0.0546
+Q6F4C6	C1 molluscs	hp_lehninger_c_nonpolar2	22	72	12	0.16666666666666666	0.0378
+Q6F4C6	C1 molluscs	hp_lehninger_c_nonpolar2	23	72	11	0.1527777777777778	0.0244
+Q6F4C6	C1 molluscs	hp_lehninger_c_nonpolar2	24	72	9	0.125	0.0138
+Q6F4C6	C1 molluscs	hp_lehninger_c_nonpolar2	25	72	4	0.05555555555555555	0.0084
+Q6F4C6	C1 molluscs	hp_lehninger_c_nonpolar2	26	72	4	0.05555555555555555	0.0056
+Q6F4C6	C1 molluscs	hp_lehninger_c_nonpolar2	27	72	4	0.05555555555555555	0.0042
+Q6F4C6	C1 molluscs	hp_lehninger_c_nonpolar2	28	72	2	0.027777777777777776	0.0028
+Q6F4C6	C1 molluscs	hp_lehninger_c_nonpolar2	29	72	0	0.0	0.0018
+Q6F4C6	C1 molluscs	hp_lehninger_c_nonpolar2	30	72	0	0.0	0.0012
+Q6F4C6	C1 molluscs	hp_lehninger_c_nonpolar2	31	72	0	0.0	0.0002
+Q6F4C6	C1 molluscs	hp_lehninger_c_nonpolar2	32	72	0	0.0	0.0002
+Q6F4C6	C1 molluscs	hp_lehninger_c_nonpolar2	33	72	0	0.0	0.0002
+Q6F4C6	C1 molluscs	hp_lehninger_c_nonpolar2	34	72	0	0.0	0.0002
+Q6F4C6	C1 molluscs	hp_lehninger_c_nonpolar2	35	72	0	0.0	0.0
+Q6F4C6	C1 molluscs	hp_lehninger_c_nonpolar2	36	72	0	0.0	0.0
+Q6F4C6	C1 molluscs	hp_lehninger_c_nonpolar2	37	72	0	0.0	0.0
+Q6F4C6	C1 molluscs	hp_lehninger_c_nonpolar2	38	72	0	0.0	0.0
+Q6F4C6	C1 molluscs	hp_lehninger_c_nonpolar2	39	72	0	0.0	0.0
+Q6F4C6	C1 molluscs	hp_lehninger_c_nonpolar2	40	72	0	0.0	0.0
+Q6F4C6	C1 molluscs	hp_pbotc_1st_ed2	3	72	72	1.0	0.9998
+Q6F4C6	C1 molluscs	hp_pbotc_1st_ed2	4	72	72	1.0	0.9998
+Q6F4C6	C1 molluscs	hp_pbotc_1st_ed2	5	72	72	1.0	0.9998
+Q6F4C6	C1 molluscs	hp_pbotc_1st_ed2	6	72	72	1.0	0.9996
+Q6F4C6	C1 molluscs	hp_pbotc_1st_ed2	7	72	72	1.0	0.9988
+Q6F4C6	C1 molluscs	hp_pbotc_1st_ed2	8	72	72	1.0	0.9964
+Q6F4C6	C1 molluscs	hp_pbotc_1st_ed2	9	72	71	0.9861111111111112	0.9936
+Q6F4C6	C1 molluscs	hp_pbotc_1st_ed2	10	72	63	0.875	0.9828
+Q6F4C6	C1 molluscs	hp_pbotc_1st_ed2	11	72	61	0.8472222222222222	0.9408
+Q6F4C6	C1 molluscs	hp_pbotc_1st_ed2	12	72	59	0.8194444444444444	0.8374
+Q6F4C6	C1 molluscs	hp_pbotc_1st_ed2	13	72	46	0.6388888888888888	0.6534
+Q6F4C6	C1 molluscs	hp_pbotc_1st_ed2	14	72	33	0.4583333333333333	0.4284
+Q6F4C6	C1 molluscs	hp_pbotc_1st_ed2	15	72	18	0.25	0.2456
+Q6F4C6	C1 molluscs	hp_pbotc_1st_ed2	16	72	12	0.16666666666666666	0.1344
+Q6F4C6	C1 molluscs	hp_pbotc_1st_ed2	17	72	7	0.09722222222222222	0.0668
+Q6F4C6	C1 molluscs	hp_pbotc_1st_ed2	18	72	3	0.041666666666666664	0.0334
+Q6F4C6	C1 molluscs	hp_pbotc_1st_ed2	19	72	0	0.0	0.017
+Q6F4C6	C1 molluscs	hp_pbotc_1st_ed2	20	72	0	0.0	0.0082
+Q6F4C6	C1 molluscs	hp_pbotc_1st_ed2	21	72	0	0.0	0.0044
+Q6F4C6	C1 molluscs	hp_pbotc_1st_ed2	22	72	0	0.0	0.0018
+Q6F4C6	C1 molluscs	hp_pbotc_1st_ed2	23	72	0	0.0	0.0012
+Q6F4C6	C1 molluscs	hp_pbotc_1st_ed2	24	72	0	0.0	0.0004
+Q6F4C6	C1 molluscs	hp_pbotc_1st_ed2	25	72	0	0.0	0.0002
+Q6F4C6	C1 molluscs	hp_pbotc_1st_ed2	26	72	0	0.0	0.0
+Q6F4C6	C1 molluscs	hp_pbotc_1st_ed2	27	72	0	0.0	0.0
+Q6F4C6	C1 molluscs	hp_pbotc_1st_ed2	28	72	0	0.0	0.0
+Q6F4C6	C1 molluscs	hp_pbotc_1st_ed2	29	72	0	0.0	0.0
+Q6F4C6	C1 molluscs	hp_pbotc_1st_ed2	30	72	0	0.0	0.0
+Q6F4C6	C1 molluscs	hp_pbotc_1st_ed2	31	72	0	0.0	0.0
+Q6F4C6	C1 molluscs	hp_pbotc_1st_ed2	32	72	0	0.0	0.0
+Q6F4C6	C1 molluscs	hp_pbotc_1st_ed2	33	72	0	0.0	0.0
+Q6F4C6	C1 molluscs	hp_pbotc_1st_ed2	34	72	0	0.0	0.0
+Q6F4C6	C1 molluscs	hp_pbotc_1st_ed2	35	72	0	0.0	0.0
+Q6F4C6	C1 molluscs	hp_pbotc_1st_ed2	36	72	0	0.0	0.0
+Q6F4C6	C1 molluscs	hp_pbotc_1st_ed2	37	72	0	0.0	0.0
+Q6F4C6	C1 molluscs	hp_pbotc_1st_ed2	38	72	0	0.0	0.0
+Q6F4C6	C1 molluscs	hp_pbotc_1st_ed2	39	72	0	0.0	0.0
+Q6F4C6	C1 molluscs	hp_pbotc_1st_ed2	40	72	0	0.0	0.0
+B7W112	C2 stony corals	protein20	3	72	67	0.9305555555555556	0.9824
+B7W112	C2 stony corals	protein20	4	72	36	0.5	0.5064
+B7W112	C2 stony corals	protein20	5	72	10	0.1388888888888889	0.029
+B7W112	C2 stony corals	protein20	6	72	0	0.0	0.0004
+B7W112	C2 stony corals	protein20	7	72	0	0.0	0.0
+B7W112	C2 stony corals	protein20	8	72	0	0.0	0.0
+B7W112	C2 stony corals	protein20	9	72	0	0.0	0.0
+B7W112	C2 stony corals	protein20	10	72	0	0.0	0.0
+B7W112	C2 stony corals	protein20	11	72	0	0.0	0.0
+B7W112	C2 stony corals	protein20	12	72	0	0.0	0.0
+B7W112	C2 stony corals	protein20	13	72	0	0.0	0.0
+B7W112	C2 stony corals	protein20	14	72	0	0.0	0.0
+B7W112	C2 stony corals	protein20	15	72	0	0.0	0.0
+B7W112	C2 stony corals	protein20	16	72	0	0.0	0.0
+B7W112	C2 stony corals	protein20	17	72	0	0.0	0.0
+B7W112	C2 stony corals	protein20	18	72	0	0.0	0.0
+B7W112	C2 stony corals	protein20	19	72	0	0.0	0.0
+B7W112	C2 stony corals	protein20	20	72	0	0.0	0.0
+B7W112	C2 stony corals	protein20	21	72	0	0.0	0.0
+B7W112	C2 stony corals	protein20	22	72	0	0.0	0.0
+B7W112	C2 stony corals	protein20	23	72	0	0.0	0.0
+B7W112	C2 stony corals	protein20	24	72	0	0.0	0.0
+B7W112	C2 stony corals	protein20	25	72	0	0.0	0.0
+B7W112	C2 stony corals	protein20	26	72	0	0.0	0.0
+B7W112	C2 stony corals	protein20	27	72	0	0.0	0.0
+B7W112	C2 stony corals	protein20	28	72	0	0.0	0.0
+B7W112	C2 stony corals	protein20	29	72	0	0.0	0.0
+B7W112	C2 stony corals	protein20	30	72	0	0.0	0.0
+B7W112	C2 stony corals	protein20	31	72	0	0.0	0.0
+B7W112	C2 stony corals	protein20	32	72	0	0.0	0.0
+B7W112	C2 stony corals	protein20	33	72	0	0.0	0.0
+B7W112	C2 stony corals	protein20	34	72	0	0.0	0.0
+B7W112	C2 stony corals	protein20	35	72	0	0.0	0.0
+B7W112	C2 stony corals	protein20	36	72	0	0.0	0.0
+B7W112	C2 stony corals	protein20	37	72	0	0.0	0.0
+B7W112	C2 stony corals	protein20	38	72	0	0.0	0.0
+B7W112	C2 stony corals	protein20	39	72	0	0.0	0.0
+B7W112	C2 stony corals	protein20	40	72	0	0.0	0.0
+B7W112	C2 stony corals	dayhoff6	3	72	72	1.0	0.9998
+B7W112	C2 stony corals	dayhoff6	4	72	72	1.0	0.9982
+B7W112	C2 stony corals	dayhoff6	5	72	70	0.9722222222222222	0.9892
+B7W112	C2 stony corals	dayhoff6	6	72	57	0.7916666666666666	0.9146
+B7W112	C2 stony corals	dayhoff6	7	72	41	0.5694444444444444	0.5528
+B7W112	C2 stony corals	dayhoff6	8	72	32	0.4444444444444444	0.1698
+B7W112	C2 stony corals	dayhoff6	9	72	21	0.2916666666666667	0.0402
+B7W112	C2 stony corals	dayhoff6	10	72	11	0.1527777777777778	0.0102
+B7W112	C2 stony corals	dayhoff6	11	72	2	0.027777777777777776	0.0034
+B7W112	C2 stony corals	dayhoff6	12	72	0	0.0	0.001
+B7W112	C2 stony corals	dayhoff6	13	72	0	0.0	0.0002
+B7W112	C2 stony corals	dayhoff6	14	72	0	0.0	0.0002
+B7W112	C2 stony corals	dayhoff6	15	72	0	0.0	0.0
+B7W112	C2 stony corals	dayhoff6	16	72	0	0.0	0.0
+B7W112	C2 stony corals	dayhoff6	17	72	0	0.0	0.0
+B7W112	C2 stony corals	dayhoff6	18	72	0	0.0	0.0
+B7W112	C2 stony corals	dayhoff6	19	72	0	0.0	0.0
+B7W112	C2 stony corals	dayhoff6	20	72	0	0.0	0.0
+B7W112	C2 stony corals	dayhoff6	21	72	0	0.0	0.0
+B7W112	C2 stony corals	dayhoff6	22	72	0	0.0	0.0
+B7W112	C2 stony corals	dayhoff6	23	72	0	0.0	0.0
+B7W112	C2 stony corals	dayhoff6	24	72	0	0.0	0.0
+B7W112	C2 stony corals	dayhoff6	25	72	0	0.0	0.0
+B7W112	C2 stony corals	dayhoff6	26	72	0	0.0	0.0
+B7W112	C2 stony corals	dayhoff6	27	72	0	0.0	0.0
+B7W112	C2 stony corals	dayhoff6	28	72	0	0.0	0.0
+B7W112	C2 stony corals	dayhoff6	29	72	0	0.0	0.0
+B7W112	C2 stony corals	dayhoff6	30	72	0	0.0	0.0
+B7W112	C2 stony corals	dayhoff6	31	72	0	0.0	0.0
+B7W112	C2 stony corals	dayhoff6	32	72	0	0.0	0.0
+B7W112	C2 stony corals	dayhoff6	33	72	0	0.0	0.0
+B7W112	C2 stony corals	dayhoff6	34	72	0	0.0	0.0
+B7W112	C2 stony corals	dayhoff6	35	72	0	0.0	0.0
+B7W112	C2 stony corals	dayhoff6	36	72	0	0.0	0.0
+B7W112	C2 stony corals	dayhoff6	37	72	0	0.0	0.0
+B7W112	C2 stony corals	dayhoff6	38	72	0	0.0	0.0
+B7W112	C2 stony corals	dayhoff6	39	72	0	0.0	0.0
+B7W112	C2 stony corals	dayhoff6	40	72	0	0.0	0.0
+B7W112	C2 stony corals	hp_lehninger2	3	72	72	1.0	0.9998
+B7W112	C2 stony corals	hp_lehninger2	4	72	72	1.0	0.9998
+B7W112	C2 stony corals	hp_lehninger2	5	72	72	1.0	0.9998
+B7W112	C2 stony corals	hp_lehninger2	6	72	72	1.0	0.9996
+B7W112	C2 stony corals	hp_lehninger2	7	72	72	1.0	0.9988
+B7W112	C2 stony corals	hp_lehninger2	8	72	72	1.0	0.997
+B7W112	C2 stony corals	hp_lehninger2	9	72	71	0.9861111111111112	0.996
+B7W112	C2 stony corals	hp_lehninger2	10	72	70	0.9722222222222222	0.9912
+B7W112	C2 stony corals	hp_lehninger2	11	72	61	0.8472222222222222	0.9824
+B7W112	C2 stony corals	hp_lehninger2	12	72	59	0.8194444444444444	0.9534
+B7W112	C2 stony corals	hp_lehninger2	13	72	57	0.7916666666666666	0.8684
+B7W112	C2 stony corals	hp_lehninger2	14	72	50	0.6944444444444444	0.705
+B7W112	C2 stony corals	hp_lehninger2	15	72	42	0.5833333333333334	0.5172
+B7W112	C2 stony corals	hp_lehninger2	16	72	36	0.5	0.3372
+B7W112	C2 stony corals	hp_lehninger2	17	72	24	0.3333333333333333	0.2048
+B7W112	C2 stony corals	hp_lehninger2	18	72	20	0.2777777777777778	0.118
+B7W112	C2 stony corals	hp_lehninger2	19	72	14	0.19444444444444445	0.0642
+B7W112	C2 stony corals	hp_lehninger2	20	72	10	0.1388888888888889	0.0346
+B7W112	C2 stony corals	hp_lehninger2	21	72	7	0.09722222222222222	0.0192
+B7W112	C2 stony corals	hp_lehninger2	22	72	5	0.06944444444444445	0.0094
+B7W112	C2 stony corals	hp_lehninger2	23	72	3	0.041666666666666664	0.0052
+B7W112	C2 stony corals	hp_lehninger2	24	72	1	0.013888888888888888	0.0028
+B7W112	C2 stony corals	hp_lehninger2	25	72	1	0.013888888888888888	0.0018
+B7W112	C2 stony corals	hp_lehninger2	26	72	1	0.013888888888888888	0.001
+B7W112	C2 stony corals	hp_lehninger2	27	72	0	0.0	0.0002
+B7W112	C2 stony corals	hp_lehninger2	28	72	0	0.0	0.0002
+B7W112	C2 stony corals	hp_lehninger2	29	72	0	0.0	0.0002
+B7W112	C2 stony corals	hp_lehninger2	30	72	0	0.0	0.0
+B7W112	C2 stony corals	hp_lehninger2	31	72	0	0.0	0.0
+B7W112	C2 stony corals	hp_lehninger2	32	72	0	0.0	0.0
+B7W112	C2 stony corals	hp_lehninger2	33	72	0	0.0	0.0
+B7W112	C2 stony corals	hp_lehninger2	34	72	0	0.0	0.0
+B7W112	C2 stony corals	hp_lehninger2	35	72	0	0.0	0.0
+B7W112	C2 stony corals	hp_lehninger2	36	72	0	0.0	0.0
+B7W112	C2 stony corals	hp_lehninger2	37	72	0	0.0	0.0
+B7W112	C2 stony corals	hp_lehninger2	38	72	0	0.0	0.0
+B7W112	C2 stony corals	hp_lehninger2	39	72	0	0.0	0.0
+B7W112	C2 stony corals	hp_lehninger2	40	72	0	0.0	0.0
+B7W112	C2 stony corals	hp_thomas_dill2	3	72	72	1.0	0.9998
+B7W112	C2 stony corals	hp_thomas_dill2	4	72	72	1.0	0.9998
+B7W112	C2 stony corals	hp_thomas_dill2	5	72	72	1.0	0.9998
+B7W112	C2 stony corals	hp_thomas_dill2	6	72	72	1.0	0.9996
+B7W112	C2 stony corals	hp_thomas_dill2	7	72	72	1.0	0.999
+B7W112	C2 stony corals	hp_thomas_dill2	8	72	72	1.0	0.997
+B7W112	C2 stony corals	hp_thomas_dill2	9	72	72	1.0	0.9948
+B7W112	C2 stony corals	hp_thomas_dill2	10	72	72	1.0	0.9922
+B7W112	C2 stony corals	hp_thomas_dill2	11	72	70	0.9722222222222222	0.9878
+B7W112	C2 stony corals	hp_thomas_dill2	12	72	70	0.9722222222222222	0.9802
+B7W112	C2 stony corals	hp_thomas_dill2	13	72	65	0.9027777777777778	0.9598
+B7W112	C2 stony corals	hp_thomas_dill2	14	72	62	0.8611111111111112	0.9078
+B7W112	C2 stony corals	hp_thomas_dill2	15	72	60	0.8333333333333334	0.8098
+B7W112	C2 stony corals	hp_thomas_dill2	16	72	57	0.7916666666666666	0.6536
+B7W112	C2 stony corals	hp_thomas_dill2	17	72	57	0.7916666666666666	0.4798
+B7W112	C2 stony corals	hp_thomas_dill2	18	72	52	0.7222222222222222	0.3362
+B7W112	C2 stony corals	hp_thomas_dill2	19	72	46	0.6388888888888888	0.2268
+B7W112	C2 stony corals	hp_thomas_dill2	20	72	42	0.5833333333333334	0.1538
+B7W112	C2 stony corals	hp_thomas_dill2	21	72	40	0.5555555555555556	0.0984
+B7W112	C2 stony corals	hp_thomas_dill2	22	72	39	0.5416666666666666	0.0648
+B7W112	C2 stony corals	hp_thomas_dill2	23	72	33	0.4583333333333333	0.0394
+B7W112	C2 stony corals	hp_thomas_dill2	24	72	28	0.3888888888888889	0.025
+B7W112	C2 stony corals	hp_thomas_dill2	25	72	24	0.3333333333333333	0.0158
+B7W112	C2 stony corals	hp_thomas_dill2	26	72	17	0.2361111111111111	0.0096
+B7W112	C2 stony corals	hp_thomas_dill2	27	72	10	0.1388888888888889	0.0052
+B7W112	C2 stony corals	hp_thomas_dill2	28	72	8	0.1111111111111111	0.003
+B7W112	C2 stony corals	hp_thomas_dill2	29	72	5	0.06944444444444445	0.0018
+B7W112	C2 stony corals	hp_thomas_dill2	30	72	3	0.041666666666666664	0.0012
+B7W112	C2 stony corals	hp_thomas_dill2	31	72	2	0.027777777777777776	0.001
+B7W112	C2 stony corals	hp_thomas_dill2	32	72	0	0.0	0.001
+B7W112	C2 stony corals	hp_thomas_dill2	33	72	0	0.0	0.0004
+B7W112	C2 stony corals	hp_thomas_dill2	34	72	0	0.0	0.0002
+B7W112	C2 stony corals	hp_thomas_dill2	35	72	0	0.0	0.0
+B7W112	C2 stony corals	hp_thomas_dill2	36	72	0	0.0	0.0
+B7W112	C2 stony corals	hp_thomas_dill2	37	72	0	0.0	0.0
+B7W112	C2 stony corals	hp_thomas_dill2	38	72	0	0.0	0.0
+B7W112	C2 stony corals	hp_thomas_dill2	39	72	0	0.0	0.0
+B7W112	C2 stony corals	hp_thomas_dill2	40	72	0	0.0	0.0
+B7W112	C2 stony corals	hp_kyte_doolittle2	3	72	72	1.0	0.9998
+B7W112	C2 stony corals	hp_kyte_doolittle2	4	72	72	1.0	0.9998
+B7W112	C2 stony corals	hp_kyte_doolittle2	5	72	72	1.0	0.9998
+B7W112	C2 stony corals	hp_kyte_doolittle2	6	72	72	1.0	0.9996
+B7W112	C2 stony corals	hp_kyte_doolittle2	7	72	72	1.0	0.9994
+B7W112	C2 stony corals	hp_kyte_doolittle2	8	72	72	1.0	0.998
+B7W112	C2 stony corals	hp_kyte_doolittle2	9	72	72	1.0	0.9948
+B7W112	C2 stony corals	hp_kyte_doolittle2	10	72	71	0.9861111111111112	0.9922
+B7W112	C2 stony corals	hp_kyte_doolittle2	11	72	70	0.9722222222222222	0.9896
+B7W112	C2 stony corals	hp_kyte_doolittle2	12	72	70	0.9722222222222222	0.9852
+B7W112	C2 stony corals	hp_kyte_doolittle2	13	72	70	0.9722222222222222	0.971
+B7W112	C2 stony corals	hp_kyte_doolittle2	14	72	63	0.875	0.9444
+B7W112	C2 stony corals	hp_kyte_doolittle2	15	72	62	0.8611111111111112	0.8854
+B7W112	C2 stony corals	hp_kyte_doolittle2	16	72	61	0.8472222222222222	0.7932
+B7W112	C2 stony corals	hp_kyte_doolittle2	17	72	61	0.8472222222222222	0.6586
+B7W112	C2 stony corals	hp_kyte_doolittle2	18	72	57	0.7916666666666666	0.5188
+B7W112	C2 stony corals	hp_kyte_doolittle2	19	72	56	0.7777777777777778	0.3938
+B7W112	C2 stony corals	hp_kyte_doolittle2	20	72	45	0.625	0.2872
+B7W112	C2 stony corals	hp_kyte_doolittle2	21	72	44	0.6111111111111112	0.2038
+B7W112	C2 stony corals	hp_kyte_doolittle2	22	72	41	0.5694444444444444	0.1386
+B7W112	C2 stony corals	hp_kyte_doolittle2	23	72	40	0.5555555555555556	0.098
+B7W112	C2 stony corals	hp_kyte_doolittle2	24	72	39	0.5416666666666666	0.0674
+B7W112	C2 stony corals	hp_kyte_doolittle2	25	72	38	0.5277777777777778	0.049
+B7W112	C2 stony corals	hp_kyte_doolittle2	26	72	33	0.4583333333333333	0.0338
+B7W112	C2 stony corals	hp_kyte_doolittle2	27	72	28	0.3888888888888889	0.0244
+B7W112	C2 stony corals	hp_kyte_doolittle2	28	72	24	0.3333333333333333	0.0174
+B7W112	C2 stony corals	hp_kyte_doolittle2	29	72	22	0.3055555555555556	0.0106
+B7W112	C2 stony corals	hp_kyte_doolittle2	30	72	21	0.2916666666666667	0.0086
+B7W112	C2 stony corals	hp_kyte_doolittle2	31	72	11	0.1527777777777778	0.0054
+B7W112	C2 stony corals	hp_kyte_doolittle2	32	72	9	0.125	0.0036
+B7W112	C2 stony corals	hp_kyte_doolittle2	33	72	7	0.09722222222222222	0.002
+B7W112	C2 stony corals	hp_kyte_doolittle2	34	72	7	0.09722222222222222	0.0016
+B7W112	C2 stony corals	hp_kyte_doolittle2	35	72	3	0.041666666666666664	0.0004
+B7W112	C2 stony corals	hp_kyte_doolittle2	36	72	3	0.041666666666666664	0.0002
+B7W112	C2 stony corals	hp_kyte_doolittle2	37	72	3	0.041666666666666664	0.0002
+B7W112	C2 stony corals	hp_kyte_doolittle2	38	72	3	0.041666666666666664	0.0002
+B7W112	C2 stony corals	hp_kyte_doolittle2	39	72	3	0.041666666666666664	0.0
+B7W112	C2 stony corals	hp_kyte_doolittle2	40	72	3	0.041666666666666664	0.0
+B7W112	C2 stony corals	hp_thomas_dill_no_c2	3	72	72	1.0	0.9998
+B7W112	C2 stony corals	hp_thomas_dill_no_c2	4	72	72	1.0	0.9998
+B7W112	C2 stony corals	hp_thomas_dill_no_c2	5	72	72	1.0	0.9998
+B7W112	C2 stony corals	hp_thomas_dill_no_c2	6	72	72	1.0	0.9996
+B7W112	C2 stony corals	hp_thomas_dill_no_c2	7	72	72	1.0	0.999
+B7W112	C2 stony corals	hp_thomas_dill_no_c2	8	72	72	1.0	0.9972
+B7W112	C2 stony corals	hp_thomas_dill_no_c2	9	72	72	1.0	0.995
+B7W112	C2 stony corals	hp_thomas_dill_no_c2	10	72	72	1.0	0.993
+B7W112	C2 stony corals	hp_thomas_dill_no_c2	11	72	72	1.0	0.9898
+B7W112	C2 stony corals	hp_thomas_dill_no_c2	12	72	71	0.9861111111111112	0.984
+B7W112	C2 stony corals	hp_thomas_dill_no_c2	13	72	69	0.9583333333333334	0.9698
+B7W112	C2 stony corals	hp_thomas_dill_no_c2	14	72	69	0.9583333333333334	0.9292
+B7W112	C2 stony corals	hp_thomas_dill_no_c2	15	72	60	0.8333333333333334	0.8448
+B7W112	C2 stony corals	hp_thomas_dill_no_c2	16	72	57	0.7916666666666666	0.7032
+B7W112	C2 stony corals	hp_thomas_dill_no_c2	17	72	56	0.7777777777777778	0.5392
+B7W112	C2 stony corals	hp_thomas_dill_no_c2	18	72	52	0.7222222222222222	0.385
+B7W112	C2 stony corals	hp_thomas_dill_no_c2	19	72	46	0.6388888888888888	0.272
+B7W112	C2 stony corals	hp_thomas_dill_no_c2	20	72	45	0.625	0.1844
+B7W112	C2 stony corals	hp_thomas_dill_no_c2	21	72	43	0.5972222222222222	0.1232
+B7W112	C2 stony corals	hp_thomas_dill_no_c2	22	72	42	0.5833333333333334	0.083
+B7W112	C2 stony corals	hp_thomas_dill_no_c2	23	72	36	0.5	0.053
+B7W112	C2 stony corals	hp_thomas_dill_no_c2	24	72	32	0.4444444444444444	0.0336
+B7W112	C2 stony corals	hp_thomas_dill_no_c2	25	72	26	0.3611111111111111	0.0202
+B7W112	C2 stony corals	hp_thomas_dill_no_c2	26	72	18	0.25	0.0122
+B7W112	C2 stony corals	hp_thomas_dill_no_c2	27	72	11	0.1527777777777778	0.0076
+B7W112	C2 stony corals	hp_thomas_dill_no_c2	28	72	9	0.125	0.0038
+B7W112	C2 stony corals	hp_thomas_dill_no_c2	29	72	7	0.09722222222222222	0.0024
+B7W112	C2 stony corals	hp_thomas_dill_no_c2	30	72	5	0.06944444444444445	0.0016
+B7W112	C2 stony corals	hp_thomas_dill_no_c2	31	72	3	0.041666666666666664	0.0012
+B7W112	C2 stony corals	hp_thomas_dill_no_c2	32	72	0	0.0	0.0012
+B7W112	C2 stony corals	hp_thomas_dill_no_c2	33	72	0	0.0	0.0006
+B7W112	C2 stony corals	hp_thomas_dill_no_c2	34	72	0	0.0	0.0004
+B7W112	C2 stony corals	hp_thomas_dill_no_c2	35	72	0	0.0	0.0002
+B7W112	C2 stony corals	hp_thomas_dill_no_c2	36	72	0	0.0	0.0
+B7W112	C2 stony corals	hp_thomas_dill_no_c2	37	72	0	0.0	0.0
+B7W112	C2 stony corals	hp_thomas_dill_no_c2	38	72	0	0.0	0.0
+B7W112	C2 stony corals	hp_thomas_dill_no_c2	39	72	0	0.0	0.0
+B7W112	C2 stony corals	hp_thomas_dill_no_c2	40	72	0	0.0	0.0
+B7W112	C2 stony corals	hp_lehninger_c_nonpolar2	3	72	72	1.0	0.9998
+B7W112	C2 stony corals	hp_lehninger_c_nonpolar2	4	72	72	1.0	0.9998
+B7W112	C2 stony corals	hp_lehninger_c_nonpolar2	5	72	72	1.0	0.9998
+B7W112	C2 stony corals	hp_lehninger_c_nonpolar2	6	72	72	1.0	0.9996
+B7W112	C2 stony corals	hp_lehninger_c_nonpolar2	7	72	72	1.0	0.9988
+B7W112	C2 stony corals	hp_lehninger_c_nonpolar2	8	72	72	1.0	0.997
+B7W112	C2 stony corals	hp_lehninger_c_nonpolar2	9	72	71	0.9861111111111112	0.9952
+B7W112	C2 stony corals	hp_lehninger_c_nonpolar2	10	72	70	0.9722222222222222	0.9888
+B7W112	C2 stony corals	hp_lehninger_c_nonpolar2	11	72	61	0.8472222222222222	0.9752
+B7W112	C2 stony corals	hp_lehninger_c_nonpolar2	12	72	58	0.8055555555555556	0.9372
+B7W112	C2 stony corals	hp_lehninger_c_nonpolar2	13	72	54	0.75	0.835
+B7W112	C2 stony corals	hp_lehninger_c_nonpolar2	14	72	47	0.6527777777777778	0.6662
+B7W112	C2 stony corals	hp_lehninger_c_nonpolar2	15	72	40	0.5555555555555556	0.4764
+B7W112	C2 stony corals	hp_lehninger_c_nonpolar2	16	72	35	0.4861111111111111	0.3038
+B7W112	C2 stony corals	hp_lehninger_c_nonpolar2	17	72	25	0.3472222222222222	0.183
+B7W112	C2 stony corals	hp_lehninger_c_nonpolar2	18	72	20	0.2777777777777778	0.1038
+B7W112	C2 stony corals	hp_lehninger_c_nonpolar2	19	72	14	0.19444444444444445	0.0558
+B7W112	C2 stony corals	hp_lehninger_c_nonpolar2	20	72	10	0.1388888888888889	0.0306
+B7W112	C2 stony corals	hp_lehninger_c_nonpolar2	21	72	7	0.09722222222222222	0.0162
+B7W112	C2 stony corals	hp_lehninger_c_nonpolar2	22	72	5	0.06944444444444445	0.0082
+B7W112	C2 stony corals	hp_lehninger_c_nonpolar2	23	72	3	0.041666666666666664	0.0048
+B7W112	C2 stony corals	hp_lehninger_c_nonpolar2	24	72	1	0.013888888888888888	0.0024
+B7W112	C2 stony corals	hp_lehninger_c_nonpolar2	25	72	1	0.013888888888888888	0.0018
+B7W112	C2 stony corals	hp_lehninger_c_nonpolar2	26	72	1	0.013888888888888888	0.001
+B7W112	C2 stony corals	hp_lehninger_c_nonpolar2	27	72	0	0.0	0.0002
+B7W112	C2 stony corals	hp_lehninger_c_nonpolar2	28	72	0	0.0	0.0002
+B7W112	C2 stony corals	hp_lehninger_c_nonpolar2	29	72	0	0.0	0.0002
+B7W112	C2 stony corals	hp_lehninger_c_nonpolar2	30	72	0	0.0	0.0
+B7W112	C2 stony corals	hp_lehninger_c_nonpolar2	31	72	0	0.0	0.0
+B7W112	C2 stony corals	hp_lehninger_c_nonpolar2	32	72	0	0.0	0.0
+B7W112	C2 stony corals	hp_lehninger_c_nonpolar2	33	72	0	0.0	0.0
+B7W112	C2 stony corals	hp_lehninger_c_nonpolar2	34	72	0	0.0	0.0
+B7W112	C2 stony corals	hp_lehninger_c_nonpolar2	35	72	0	0.0	0.0
+B7W112	C2 stony corals	hp_lehninger_c_nonpolar2	36	72	0	0.0	0.0
+B7W112	C2 stony corals	hp_lehninger_c_nonpolar2	37	72	0	0.0	0.0
+B7W112	C2 stony corals	hp_lehninger_c_nonpolar2	38	72	0	0.0	0.0
+B7W112	C2 stony corals	hp_lehninger_c_nonpolar2	39	72	0	0.0	0.0
+B7W112	C2 stony corals	hp_lehninger_c_nonpolar2	40	72	0	0.0	0.0
+B7W112	C2 stony corals	hp_pbotc_1st_ed2	3	72	72	1.0	0.9998
+B7W112	C2 stony corals	hp_pbotc_1st_ed2	4	72	72	1.0	0.9998
+B7W112	C2 stony corals	hp_pbotc_1st_ed2	5	72	72	1.0	0.9998
+B7W112	C2 stony corals	hp_pbotc_1st_ed2	6	72	72	1.0	0.9996
+B7W112	C2 stony corals	hp_pbotc_1st_ed2	7	72	72	1.0	0.9988
+B7W112	C2 stony corals	hp_pbotc_1st_ed2	8	72	72	1.0	0.9974
+B7W112	C2 stony corals	hp_pbotc_1st_ed2	9	72	72	1.0	0.9954
+B7W112	C2 stony corals	hp_pbotc_1st_ed2	10	72	70	0.9722222222222222	0.9914
+B7W112	C2 stony corals	hp_pbotc_1st_ed2	11	72	62	0.8611111111111112	0.9858
+B7W112	C2 stony corals	hp_pbotc_1st_ed2	12	72	61	0.8472222222222222	0.9716
+B7W112	C2 stony corals	hp_pbotc_1st_ed2	13	72	60	0.8333333333333334	0.9268
+B7W112	C2 stony corals	hp_pbotc_1st_ed2	14	72	54	0.75	0.8346
+B7W112	C2 stony corals	hp_pbotc_1st_ed2	15	72	49	0.6805555555555556	0.6884
+B7W112	C2 stony corals	hp_pbotc_1st_ed2	16	72	46	0.6388888888888888	0.5032
+B7W112	C2 stony corals	hp_pbotc_1st_ed2	17	72	42	0.5833333333333334	0.328
+B7W112	C2 stony corals	hp_pbotc_1st_ed2	18	72	36	0.5	0.2078
+B7W112	C2 stony corals	hp_pbotc_1st_ed2	19	72	28	0.3888888888888889	0.126
+B7W112	C2 stony corals	hp_pbotc_1st_ed2	20	72	27	0.375	0.0712
+B7W112	C2 stony corals	hp_pbotc_1st_ed2	21	72	16	0.2222222222222222	0.0416
+B7W112	C2 stony corals	hp_pbotc_1st_ed2	22	72	15	0.20833333333333334	0.0234
+B7W112	C2 stony corals	hp_pbotc_1st_ed2	23	72	5	0.06944444444444445	0.0152
+B7W112	C2 stony corals	hp_pbotc_1st_ed2	24	72	3	0.041666666666666664	0.0084
+B7W112	C2 stony corals	hp_pbotc_1st_ed2	25	72	3	0.041666666666666664	0.0054
+B7W112	C2 stony corals	hp_pbotc_1st_ed2	26	72	1	0.013888888888888888	0.0026
+B7W112	C2 stony corals	hp_pbotc_1st_ed2	27	72	1	0.013888888888888888	0.0016
+B7W112	C2 stony corals	hp_pbotc_1st_ed2	28	72	1	0.013888888888888888	0.0006
+B7W112	C2 stony corals	hp_pbotc_1st_ed2	29	72	0	0.0	0.0004
+B7W112	C2 stony corals	hp_pbotc_1st_ed2	30	72	0	0.0	0.0004
+B7W112	C2 stony corals	hp_pbotc_1st_ed2	31	72	0	0.0	0.0004
+B7W112	C2 stony corals	hp_pbotc_1st_ed2	32	72	0	0.0	0.0004
+B7W112	C2 stony corals	hp_pbotc_1st_ed2	33	72	0	0.0	0.0004
+B7W112	C2 stony corals	hp_pbotc_1st_ed2	34	72	0	0.0	0.0004
+B7W112	C2 stony corals	hp_pbotc_1st_ed2	35	72	0	0.0	0.0004
+B7W112	C2 stony corals	hp_pbotc_1st_ed2	36	72	0	0.0	0.0002
+B7W112	C2 stony corals	hp_pbotc_1st_ed2	37	72	0	0.0	0.0002
+B7W112	C2 stony corals	hp_pbotc_1st_ed2	38	72	0	0.0	0.0
+B7W112	C2 stony corals	hp_pbotc_1st_ed2	39	72	0	0.0	0.0
+B7W112	C2 stony corals	hp_pbotc_1st_ed2	40	72	0	0.0	0.0
+P11994	C3 sea urchins and other echinoderms	protein20	3	72	66	0.9166666666666666	0.9494
+P11994	C3 sea urchins and other echinoderms	protein20	4	72	9	0.125	0.2388
+P11994	C3 sea urchins and other echinoderms	protein20	5	72	4	0.05555555555555555	0.007
+P11994	C3 sea urchins and other echinoderms	protein20	6	72	0	0.0	0.0006
+P11994	C3 sea urchins and other echinoderms	protein20	7	72	0	0.0	0.0
+P11994	C3 sea urchins and other echinoderms	protein20	8	72	0	0.0	0.0
+P11994	C3 sea urchins and other echinoderms	protein20	9	72	0	0.0	0.0
+P11994	C3 sea urchins and other echinoderms	protein20	10	72	0	0.0	0.0
+P11994	C3 sea urchins and other echinoderms	protein20	11	72	0	0.0	0.0
+P11994	C3 sea urchins and other echinoderms	protein20	12	72	0	0.0	0.0
+P11994	C3 sea urchins and other echinoderms	protein20	13	72	0	0.0	0.0
+P11994	C3 sea urchins and other echinoderms	protein20	14	72	0	0.0	0.0
+P11994	C3 sea urchins and other echinoderms	protein20	15	72	0	0.0	0.0
+P11994	C3 sea urchins and other echinoderms	protein20	16	72	0	0.0	0.0
+P11994	C3 sea urchins and other echinoderms	protein20	17	72	0	0.0	0.0
+P11994	C3 sea urchins and other echinoderms	protein20	18	72	0	0.0	0.0
+P11994	C3 sea urchins and other echinoderms	protein20	19	72	0	0.0	0.0
+P11994	C3 sea urchins and other echinoderms	protein20	20	72	0	0.0	0.0
+P11994	C3 sea urchins and other echinoderms	protein20	21	72	0	0.0	0.0
+P11994	C3 sea urchins and other echinoderms	protein20	22	72	0	0.0	0.0
+P11994	C3 sea urchins and other echinoderms	protein20	23	72	0	0.0	0.0
+P11994	C3 sea urchins and other echinoderms	protein20	24	72	0	0.0	0.0
+P11994	C3 sea urchins and other echinoderms	protein20	25	72	0	0.0	0.0
+P11994	C3 sea urchins and other echinoderms	protein20	26	72	0	0.0	0.0
+P11994	C3 sea urchins and other echinoderms	protein20	27	72	0	0.0	0.0
+P11994	C3 sea urchins and other echinoderms	protein20	28	72	0	0.0	0.0
+P11994	C3 sea urchins and other echinoderms	protein20	29	72	0	0.0	0.0
+P11994	C3 sea urchins and other echinoderms	protein20	30	72	0	0.0	0.0
+P11994	C3 sea urchins and other echinoderms	protein20	31	72	0	0.0	0.0
+P11994	C3 sea urchins and other echinoderms	protein20	32	72	0	0.0	0.0
+P11994	C3 sea urchins and other echinoderms	protein20	33	72	0	0.0	0.0
+P11994	C3 sea urchins and other echinoderms	protein20	34	72	0	0.0	0.0
+P11994	C3 sea urchins and other echinoderms	protein20	35	72	0	0.0	0.0
+P11994	C3 sea urchins and other echinoderms	protein20	36	72	0	0.0	0.0
+P11994	C3 sea urchins and other echinoderms	protein20	37	72	0	0.0	0.0
+P11994	C3 sea urchins and other echinoderms	protein20	38	72	0	0.0	0.0
+P11994	C3 sea urchins and other echinoderms	protein20	39	72	0	0.0	0.0
+P11994	C3 sea urchins and other echinoderms	protein20	40	72	0	0.0	0.0
+P11994	C3 sea urchins and other echinoderms	dayhoff6	3	72	72	1.0	0.9998
+P11994	C3 sea urchins and other echinoderms	dayhoff6	4	72	71	0.9861111111111112	0.9974
+P11994	C3 sea urchins and other echinoderms	dayhoff6	5	72	68	0.9444444444444444	0.9898
+P11994	C3 sea urchins and other echinoderms	dayhoff6	6	72	65	0.9027777777777778	0.9282
+P11994	C3 sea urchins and other echinoderms	dayhoff6	7	72	58	0.8055555555555556	0.6958
+P11994	C3 sea urchins and other echinoderms	dayhoff6	8	72	48	0.6666666666666666	0.3312
+P11994	C3 sea urchins and other echinoderms	dayhoff6	9	72	30	0.4166666666666667	0.113
+P11994	C3 sea urchins and other echinoderms	dayhoff6	10	72	13	0.18055555555555555	0.0382
+P11994	C3 sea urchins and other echinoderms	dayhoff6	11	72	4	0.05555555555555555	0.0108
+P11994	C3 sea urchins and other echinoderms	dayhoff6	12	72	2	0.027777777777777776	0.003
+P11994	C3 sea urchins and other echinoderms	dayhoff6	13	72	2	0.027777777777777776	0.001
+P11994	C3 sea urchins and other echinoderms	dayhoff6	14	72	2	0.027777777777777776	0.0006
+P11994	C3 sea urchins and other echinoderms	dayhoff6	15	72	0	0.0	0.0
+P11994	C3 sea urchins and other echinoderms	dayhoff6	16	72	0	0.0	0.0
+P11994	C3 sea urchins and other echinoderms	dayhoff6	17	72	0	0.0	0.0
+P11994	C3 sea urchins and other echinoderms	dayhoff6	18	72	0	0.0	0.0
+P11994	C3 sea urchins and other echinoderms	dayhoff6	19	72	0	0.0	0.0
+P11994	C3 sea urchins and other echinoderms	dayhoff6	20	72	0	0.0	0.0
+P11994	C3 sea urchins and other echinoderms	dayhoff6	21	72	0	0.0	0.0
+P11994	C3 sea urchins and other echinoderms	dayhoff6	22	72	0	0.0	0.0
+P11994	C3 sea urchins and other echinoderms	dayhoff6	23	72	0	0.0	0.0
+P11994	C3 sea urchins and other echinoderms	dayhoff6	24	72	0	0.0	0.0
+P11994	C3 sea urchins and other echinoderms	dayhoff6	25	72	0	0.0	0.0
+P11994	C3 sea urchins and other echinoderms	dayhoff6	26	72	0	0.0	0.0
+P11994	C3 sea urchins and other echinoderms	dayhoff6	27	72	0	0.0	0.0
+P11994	C3 sea urchins and other echinoderms	dayhoff6	28	72	0	0.0	0.0
+P11994	C3 sea urchins and other echinoderms	dayhoff6	29	72	0	0.0	0.0
+P11994	C3 sea urchins and other echinoderms	dayhoff6	30	72	0	0.0	0.0
+P11994	C3 sea urchins and other echinoderms	dayhoff6	31	72	0	0.0	0.0
+P11994	C3 sea urchins and other echinoderms	dayhoff6	32	72	0	0.0	0.0
+P11994	C3 sea urchins and other echinoderms	dayhoff6	33	72	0	0.0	0.0
+P11994	C3 sea urchins and other echinoderms	dayhoff6	34	72	0	0.0	0.0
+P11994	C3 sea urchins and other echinoderms	dayhoff6	35	72	0	0.0	0.0
+P11994	C3 sea urchins and other echinoderms	dayhoff6	36	72	0	0.0	0.0
+P11994	C3 sea urchins and other echinoderms	dayhoff6	37	72	0	0.0	0.0
+P11994	C3 sea urchins and other echinoderms	dayhoff6	38	72	0	0.0	0.0
+P11994	C3 sea urchins and other echinoderms	dayhoff6	39	72	0	0.0	0.0
+P11994	C3 sea urchins and other echinoderms	dayhoff6	40	72	0	0.0	0.0
+P11994	C3 sea urchins and other echinoderms	hp_lehninger2	3	72	72	1.0	0.9998
+P11994	C3 sea urchins and other echinoderms	hp_lehninger2	4	72	72	1.0	0.9998
+P11994	C3 sea urchins and other echinoderms	hp_lehninger2	5	72	72	1.0	0.9998
+P11994	C3 sea urchins and other echinoderms	hp_lehninger2	6	72	72	1.0	0.9996
+P11994	C3 sea urchins and other echinoderms	hp_lehninger2	7	72	72	1.0	0.9996
+P11994	C3 sea urchins and other echinoderms	hp_lehninger2	8	72	72	1.0	0.998
+P11994	C3 sea urchins and other echinoderms	hp_lehninger2	9	72	72	1.0	0.9958
+P11994	C3 sea urchins and other echinoderms	hp_lehninger2	10	72	70	0.9722222222222222	0.9924
+P11994	C3 sea urchins and other echinoderms	hp_lehninger2	11	72	70	0.9722222222222222	0.9808
+P11994	C3 sea urchins and other echinoderms	hp_lehninger2	12	72	59	0.8194444444444444	0.9506
+P11994	C3 sea urchins and other echinoderms	hp_lehninger2	13	72	58	0.8055555555555556	0.8804
+P11994	C3 sea urchins and other echinoderms	hp_lehninger2	14	72	46	0.6388888888888888	0.7502
+P11994	C3 sea urchins and other echinoderms	hp_lehninger2	15	72	37	0.5138888888888888	0.5468
+P11994	C3 sea urchins and other echinoderms	hp_lehninger2	16	72	25	0.3472222222222222	0.3646
+P11994	C3 sea urchins and other echinoderms	hp_lehninger2	17	72	19	0.2638888888888889	0.2168
+P11994	C3 sea urchins and other echinoderms	hp_lehninger2	18	72	11	0.1527777777777778	0.1184
+P11994	C3 sea urchins and other echinoderms	hp_lehninger2	19	72	2	0.027777777777777776	0.0652
+P11994	C3 sea urchins and other echinoderms	hp_lehninger2	20	72	1	0.013888888888888888	0.0314
+P11994	C3 sea urchins and other echinoderms	hp_lehninger2	21	72	0	0.0	0.0162
+P11994	C3 sea urchins and other echinoderms	hp_lehninger2	22	72	0	0.0	0.0086
+P11994	C3 sea urchins and other echinoderms	hp_lehninger2	23	72	0	0.0	0.0044
+P11994	C3 sea urchins and other echinoderms	hp_lehninger2	24	72	0	0.0	0.0018
+P11994	C3 sea urchins and other echinoderms	hp_lehninger2	25	72	0	0.0	0.0004
+P11994	C3 sea urchins and other echinoderms	hp_lehninger2	26	72	0	0.0	0.0002
+P11994	C3 sea urchins and other echinoderms	hp_lehninger2	27	72	0	0.0	0.0002
+P11994	C3 sea urchins and other echinoderms	hp_lehninger2	28	72	0	0.0	0.0002
+P11994	C3 sea urchins and other echinoderms	hp_lehninger2	29	72	0	0.0	0.0
+P11994	C3 sea urchins and other echinoderms	hp_lehninger2	30	72	0	0.0	0.0
+P11994	C3 sea urchins and other echinoderms	hp_lehninger2	31	72	0	0.0	0.0
+P11994	C3 sea urchins and other echinoderms	hp_lehninger2	32	72	0	0.0	0.0
+P11994	C3 sea urchins and other echinoderms	hp_lehninger2	33	72	0	0.0	0.0
+P11994	C3 sea urchins and other echinoderms	hp_lehninger2	34	72	0	0.0	0.0
+P11994	C3 sea urchins and other echinoderms	hp_lehninger2	35	72	0	0.0	0.0
+P11994	C3 sea urchins and other echinoderms	hp_lehninger2	36	72	0	0.0	0.0
+P11994	C3 sea urchins and other echinoderms	hp_lehninger2	37	72	0	0.0	0.0
+P11994	C3 sea urchins and other echinoderms	hp_lehninger2	38	72	0	0.0	0.0
+P11994	C3 sea urchins and other echinoderms	hp_lehninger2	39	72	0	0.0	0.0
+P11994	C3 sea urchins and other echinoderms	hp_lehninger2	40	72	0	0.0	0.0
+P11994	C3 sea urchins and other echinoderms	hp_thomas_dill2	3	72	72	1.0	0.9998
+P11994	C3 sea urchins and other echinoderms	hp_thomas_dill2	4	72	72	1.0	0.9998
+P11994	C3 sea urchins and other echinoderms	hp_thomas_dill2	5	72	72	1.0	0.9998
+P11994	C3 sea urchins and other echinoderms	hp_thomas_dill2	6	72	72	1.0	0.9996
+P11994	C3 sea urchins and other echinoderms	hp_thomas_dill2	7	72	72	1.0	0.9988
+P11994	C3 sea urchins and other echinoderms	hp_thomas_dill2	8	72	72	1.0	0.9974
+P11994	C3 sea urchins and other echinoderms	hp_thomas_dill2	9	72	70	0.9722222222222222	0.9952
+P11994	C3 sea urchins and other echinoderms	hp_thomas_dill2	10	72	70	0.9722222222222222	0.9928
+P11994	C3 sea urchins and other echinoderms	hp_thomas_dill2	11	72	67	0.9305555555555556	0.987
+P11994	C3 sea urchins and other echinoderms	hp_thomas_dill2	12	72	58	0.8055555555555556	0.9638
+P11994	C3 sea urchins and other echinoderms	hp_thomas_dill2	13	72	58	0.8055555555555556	0.9032
+P11994	C3 sea urchins and other echinoderms	hp_thomas_dill2	14	72	57	0.7916666666666666	0.7832
+P11994	C3 sea urchins and other echinoderms	hp_thomas_dill2	15	72	56	0.7777777777777778	0.613
+P11994	C3 sea urchins and other echinoderms	hp_thomas_dill2	16	72	52	0.7222222222222222	0.443
+P11994	C3 sea urchins and other echinoderms	hp_thomas_dill2	17	72	49	0.6805555555555556	0.295
+P11994	C3 sea urchins and other echinoderms	hp_thomas_dill2	18	72	45	0.625	0.1984
+P11994	C3 sea urchins and other echinoderms	hp_thomas_dill2	19	72	41	0.5694444444444444	0.1376
+P11994	C3 sea urchins and other echinoderms	hp_thomas_dill2	20	72	41	0.5694444444444444	0.097
+P11994	C3 sea urchins and other echinoderms	hp_thomas_dill2	21	72	40	0.5555555555555556	0.0662
+P11994	C3 sea urchins and other echinoderms	hp_thomas_dill2	22	72	38	0.5277777777777778	0.0512
+P11994	C3 sea urchins and other echinoderms	hp_thomas_dill2	23	72	34	0.4722222222222222	0.0394
+P11994	C3 sea urchins and other echinoderms	hp_thomas_dill2	24	72	32	0.4444444444444444	0.0292
+P11994	C3 sea urchins and other echinoderms	hp_thomas_dill2	25	72	32	0.4444444444444444	0.024
+P11994	C3 sea urchins and other echinoderms	hp_thomas_dill2	26	72	30	0.4166666666666667	0.0176
+P11994	C3 sea urchins and other echinoderms	hp_thomas_dill2	27	72	25	0.3472222222222222	0.0136
+P11994	C3 sea urchins and other echinoderms	hp_thomas_dill2	28	72	20	0.2777777777777778	0.011
+P11994	C3 sea urchins and other echinoderms	hp_thomas_dill2	29	72	19	0.2638888888888889	0.0088
+P11994	C3 sea urchins and other echinoderms	hp_thomas_dill2	30	72	18	0.25	0.0056
+P11994	C3 sea urchins and other echinoderms	hp_thomas_dill2	31	72	13	0.18055555555555555	0.0036
+P11994	C3 sea urchins and other echinoderms	hp_thomas_dill2	32	72	6	0.08333333333333333	0.0018
+P11994	C3 sea urchins and other echinoderms	hp_thomas_dill2	33	72	3	0.041666666666666664	0.0016
+P11994	C3 sea urchins and other echinoderms	hp_thomas_dill2	34	72	2	0.027777777777777776	0.0012
+P11994	C3 sea urchins and other echinoderms	hp_thomas_dill2	35	72	1	0.013888888888888888	0.0012
+P11994	C3 sea urchins and other echinoderms	hp_thomas_dill2	36	72	1	0.013888888888888888	0.0008
+P11994	C3 sea urchins and other echinoderms	hp_thomas_dill2	37	72	1	0.013888888888888888	0.0006
+P11994	C3 sea urchins and other echinoderms	hp_thomas_dill2	38	72	0	0.0	0.0
+P11994	C3 sea urchins and other echinoderms	hp_thomas_dill2	39	72	0	0.0	0.0
+P11994	C3 sea urchins and other echinoderms	hp_thomas_dill2	40	72	0	0.0	0.0
+P11994	C3 sea urchins and other echinoderms	hp_kyte_doolittle2	3	72	72	1.0	0.9998
+P11994	C3 sea urchins and other echinoderms	hp_kyte_doolittle2	4	72	72	1.0	0.9998
+P11994	C3 sea urchins and other echinoderms	hp_kyte_doolittle2	5	72	72	1.0	0.9998
+P11994	C3 sea urchins and other echinoderms	hp_kyte_doolittle2	6	72	72	1.0	0.9996
+P11994	C3 sea urchins and other echinoderms	hp_kyte_doolittle2	7	72	72	1.0	0.999
+P11994	C3 sea urchins and other echinoderms	hp_kyte_doolittle2	8	72	72	1.0	0.9976
+P11994	C3 sea urchins and other echinoderms	hp_kyte_doolittle2	9	72	71	0.9861111111111112	0.9964
+P11994	C3 sea urchins and other echinoderms	hp_kyte_doolittle2	10	72	70	0.9722222222222222	0.994
+P11994	C3 sea urchins and other echinoderms	hp_kyte_doolittle2	11	72	70	0.9722222222222222	0.9892
+P11994	C3 sea urchins and other echinoderms	hp_kyte_doolittle2	12	72	69	0.9583333333333334	0.9744
+P11994	C3 sea urchins and other echinoderms	hp_kyte_doolittle2	13	72	66	0.9166666666666666	0.939
+P11994	C3 sea urchins and other echinoderms	hp_kyte_doolittle2	14	72	65	0.9027777777777778	0.8664
+P11994	C3 sea urchins and other echinoderms	hp_kyte_doolittle2	15	72	60	0.8333333333333334	0.751
+P11994	C3 sea urchins and other echinoderms	hp_kyte_doolittle2	16	72	58	0.8055555555555556	0.6174
+P11994	C3 sea urchins and other echinoderms	hp_kyte_doolittle2	17	72	56	0.7777777777777778	0.4768
+P11994	C3 sea urchins and other echinoderms	hp_kyte_doolittle2	18	72	51	0.7083333333333334	0.3566
+P11994	C3 sea urchins and other echinoderms	hp_kyte_doolittle2	19	72	50	0.6944444444444444	0.2634
+P11994	C3 sea urchins and other echinoderms	hp_kyte_doolittle2	20	72	50	0.6944444444444444	0.1904
+P11994	C3 sea urchins and other echinoderms	hp_kyte_doolittle2	21	72	46	0.6388888888888888	0.1352
+P11994	C3 sea urchins and other echinoderms	hp_kyte_doolittle2	22	72	46	0.6388888888888888	0.1
+P11994	C3 sea urchins and other echinoderms	hp_kyte_doolittle2	23	72	43	0.5972222222222222	0.0752
+P11994	C3 sea urchins and other echinoderms	hp_kyte_doolittle2	24	72	40	0.5555555555555556	0.0562
+P11994	C3 sea urchins and other echinoderms	hp_kyte_doolittle2	25	72	37	0.5138888888888888	0.0426
+P11994	C3 sea urchins and other echinoderms	hp_kyte_doolittle2	26	72	33	0.4583333333333333	0.0318
+P11994	C3 sea urchins and other echinoderms	hp_kyte_doolittle2	27	72	27	0.375	0.026
+P11994	C3 sea urchins and other echinoderms	hp_kyte_doolittle2	28	72	24	0.3333333333333333	0.0202
+P11994	C3 sea urchins and other echinoderms	hp_kyte_doolittle2	29	72	23	0.3194444444444444	0.0166
+P11994	C3 sea urchins and other echinoderms	hp_kyte_doolittle2	30	72	22	0.3055555555555556	0.0114
+P11994	C3 sea urchins and other echinoderms	hp_kyte_doolittle2	31	72	20	0.2777777777777778	0.0086
+P11994	C3 sea urchins and other echinoderms	hp_kyte_doolittle2	32	72	9	0.125	0.0032
+P11994	C3 sea urchins and other echinoderms	hp_kyte_doolittle2	33	72	6	0.08333333333333333	0.0028
+P11994	C3 sea urchins and other echinoderms	hp_kyte_doolittle2	34	72	5	0.06944444444444445	0.002
+P11994	C3 sea urchins and other echinoderms	hp_kyte_doolittle2	35	72	5	0.06944444444444445	0.002
+P11994	C3 sea urchins and other echinoderms	hp_kyte_doolittle2	36	72	5	0.06944444444444445	0.0012
+P11994	C3 sea urchins and other echinoderms	hp_kyte_doolittle2	37	72	3	0.041666666666666664	0.0008
+P11994	C3 sea urchins and other echinoderms	hp_kyte_doolittle2	38	72	1	0.013888888888888888	0.0002
+P11994	C3 sea urchins and other echinoderms	hp_kyte_doolittle2	39	72	0	0.0	0.0
+P11994	C3 sea urchins and other echinoderms	hp_kyte_doolittle2	40	72	0	0.0	0.0
+P11994	C3 sea urchins and other echinoderms	hp_thomas_dill_no_c2	3	72	72	1.0	0.9998
+P11994	C3 sea urchins and other echinoderms	hp_thomas_dill_no_c2	4	72	72	1.0	0.9998
+P11994	C3 sea urchins and other echinoderms	hp_thomas_dill_no_c2	5	72	72	1.0	0.9998
+P11994	C3 sea urchins and other echinoderms	hp_thomas_dill_no_c2	6	72	72	1.0	0.9996
+P11994	C3 sea urchins and other echinoderms	hp_thomas_dill_no_c2	7	72	72	1.0	0.9992
+P11994	C3 sea urchins and other echinoderms	hp_thomas_dill_no_c2	8	72	72	1.0	0.9972
+P11994	C3 sea urchins and other echinoderms	hp_thomas_dill_no_c2	9	72	71	0.9861111111111112	0.9946
+P11994	C3 sea urchins and other echinoderms	hp_thomas_dill_no_c2	10	72	71	0.9861111111111112	0.9932
+P11994	C3 sea urchins and other echinoderms	hp_thomas_dill_no_c2	11	72	68	0.9444444444444444	0.987
+P11994	C3 sea urchins and other echinoderms	hp_thomas_dill_no_c2	12	72	62	0.8611111111111112	0.9694
+P11994	C3 sea urchins and other echinoderms	hp_thomas_dill_no_c2	13	72	60	0.8333333333333334	0.9238
+P11994	C3 sea urchins and other echinoderms	hp_thomas_dill_no_c2	14	72	57	0.7916666666666666	0.8248
+P11994	C3 sea urchins and other echinoderms	hp_thomas_dill_no_c2	15	72	56	0.7777777777777778	0.6598
+P11994	C3 sea urchins and other echinoderms	hp_thomas_dill_no_c2	16	72	51	0.7083333333333334	0.4904
+P11994	C3 sea urchins and other echinoderms	hp_thomas_dill_no_c2	17	72	49	0.6805555555555556	0.347
+P11994	C3 sea urchins and other echinoderms	hp_thomas_dill_no_c2	18	72	45	0.625	0.2378
+P11994	C3 sea urchins and other echinoderms	hp_thomas_dill_no_c2	19	72	41	0.5694444444444444	0.1704
+P11994	C3 sea urchins and other echinoderms	hp_thomas_dill_no_c2	20	72	41	0.5694444444444444	0.1228
+P11994	C3 sea urchins and other echinoderms	hp_thomas_dill_no_c2	21	72	40	0.5555555555555556	0.088
+P11994	C3 sea urchins and other echinoderms	hp_thomas_dill_no_c2	22	72	38	0.5277777777777778	0.0662
+P11994	C3 sea urchins and other echinoderms	hp_thomas_dill_no_c2	23	72	35	0.4861111111111111	0.0526
+P11994	C3 sea urchins and other echinoderms	hp_thomas_dill_no_c2	24	72	35	0.4861111111111111	0.0384
+P11994	C3 sea urchins and other echinoderms	hp_thomas_dill_no_c2	25	72	35	0.4861111111111111	0.0304
+P11994	C3 sea urchins and other echinoderms	hp_thomas_dill_no_c2	26	72	33	0.4583333333333333	0.0234
+P11994	C3 sea urchins and other echinoderms	hp_thomas_dill_no_c2	27	72	26	0.3611111111111111	0.018
+P11994	C3 sea urchins and other echinoderms	hp_thomas_dill_no_c2	28	72	21	0.2916666666666667	0.0146
+P11994	C3 sea urchins and other echinoderms	hp_thomas_dill_no_c2	29	72	19	0.2638888888888889	0.011
+P11994	C3 sea urchins and other echinoderms	hp_thomas_dill_no_c2	30	72	18	0.25	0.0074
+P11994	C3 sea urchins and other echinoderms	hp_thomas_dill_no_c2	31	72	13	0.18055555555555555	0.0046
+P11994	C3 sea urchins and other echinoderms	hp_thomas_dill_no_c2	32	72	6	0.08333333333333333	0.0028
+P11994	C3 sea urchins and other echinoderms	hp_thomas_dill_no_c2	33	72	3	0.041666666666666664	0.0024
+P11994	C3 sea urchins and other echinoderms	hp_thomas_dill_no_c2	34	72	2	0.027777777777777776	0.0018
+P11994	C3 sea urchins and other echinoderms	hp_thomas_dill_no_c2	35	72	1	0.013888888888888888	0.0018
+P11994	C3 sea urchins and other echinoderms	hp_thomas_dill_no_c2	36	72	1	0.013888888888888888	0.0014
+P11994	C3 sea urchins and other echinoderms	hp_thomas_dill_no_c2	37	72	1	0.013888888888888888	0.0012
+P11994	C3 sea urchins and other echinoderms	hp_thomas_dill_no_c2	38	72	0	0.0	0.0006
+P11994	C3 sea urchins and other echinoderms	hp_thomas_dill_no_c2	39	72	0	0.0	0.0004
+P11994	C3 sea urchins and other echinoderms	hp_thomas_dill_no_c2	40	72	0	0.0	0.0
+P11994	C3 sea urchins and other echinoderms	hp_lehninger_c_nonpolar2	3	72	72	1.0	0.9998
+P11994	C3 sea urchins and other echinoderms	hp_lehninger_c_nonpolar2	4	72	72	1.0	0.9998
+P11994	C3 sea urchins and other echinoderms	hp_lehninger_c_nonpolar2	5	72	72	1.0	0.9998
+P11994	C3 sea urchins and other echinoderms	hp_lehninger_c_nonpolar2	6	72	72	1.0	0.9996
+P11994	C3 sea urchins and other echinoderms	hp_lehninger_c_nonpolar2	7	72	72	1.0	0.9992
+P11994	C3 sea urchins and other echinoderms	hp_lehninger_c_nonpolar2	8	72	72	1.0	0.9978
+P11994	C3 sea urchins and other echinoderms	hp_lehninger_c_nonpolar2	9	72	72	1.0	0.9958
+P11994	C3 sea urchins and other echinoderms	hp_lehninger_c_nonpolar2	10	72	66	0.9166666666666666	0.9916
+P11994	C3 sea urchins and other echinoderms	hp_lehninger_c_nonpolar2	11	72	61	0.8472222222222222	0.9842
+P11994	C3 sea urchins and other echinoderms	hp_lehninger_c_nonpolar2	12	72	59	0.8194444444444444	0.9584
+P11994	C3 sea urchins and other echinoderms	hp_lehninger_c_nonpolar2	13	72	52	0.7222222222222222	0.8958
+P11994	C3 sea urchins and other echinoderms	hp_lehninger_c_nonpolar2	14	72	39	0.5416666666666666	0.7782
+P11994	C3 sea urchins and other echinoderms	hp_lehninger_c_nonpolar2	15	72	32	0.4444444444444444	0.5882
+P11994	C3 sea urchins and other echinoderms	hp_lehninger_c_nonpolar2	16	72	24	0.3333333333333333	0.3928
+P11994	C3 sea urchins and other echinoderms	hp_lehninger_c_nonpolar2	17	72	18	0.25	0.2358
+P11994	C3 sea urchins and other echinoderms	hp_lehninger_c_nonpolar2	18	72	10	0.1388888888888889	0.1262
+P11994	C3 sea urchins and other echinoderms	hp_lehninger_c_nonpolar2	19	72	4	0.05555555555555555	0.0666
+P11994	C3 sea urchins and other echinoderms	hp_lehninger_c_nonpolar2	20	72	1	0.013888888888888888	0.03
+P11994	C3 sea urchins and other echinoderms	hp_lehninger_c_nonpolar2	21	72	0	0.0	0.016
+P11994	C3 sea urchins and other echinoderms	hp_lehninger_c_nonpolar2	22	72	0	0.0	0.0092
+P11994	C3 sea urchins and other echinoderms	hp_lehninger_c_nonpolar2	23	72	0	0.0	0.0046
+P11994	C3 sea urchins and other echinoderms	hp_lehninger_c_nonpolar2	24	72	0	0.0	0.0022
+P11994	C3 sea urchins and other echinoderms	hp_lehninger_c_nonpolar2	25	72	0	0.0	0.0006
+P11994	C3 sea urchins and other echinoderms	hp_lehninger_c_nonpolar2	26	72	0	0.0	0.0004
+P11994	C3 sea urchins and other echinoderms	hp_lehninger_c_nonpolar2	27	72	0	0.0	0.0004
+P11994	C3 sea urchins and other echinoderms	hp_lehninger_c_nonpolar2	28	72	0	0.0	0.0002
+P11994	C3 sea urchins and other echinoderms	hp_lehninger_c_nonpolar2	29	72	0	0.0	0.0
+P11994	C3 sea urchins and other echinoderms	hp_lehninger_c_nonpolar2	30	72	0	0.0	0.0
+P11994	C3 sea urchins and other echinoderms	hp_lehninger_c_nonpolar2	31	72	0	0.0	0.0
+P11994	C3 sea urchins and other echinoderms	hp_lehninger_c_nonpolar2	32	72	0	0.0	0.0
+P11994	C3 sea urchins and other echinoderms	hp_lehninger_c_nonpolar2	33	72	0	0.0	0.0
+P11994	C3 sea urchins and other echinoderms	hp_lehninger_c_nonpolar2	34	72	0	0.0	0.0
+P11994	C3 sea urchins and other echinoderms	hp_lehninger_c_nonpolar2	35	72	0	0.0	0.0
+P11994	C3 sea urchins and other echinoderms	hp_lehninger_c_nonpolar2	36	72	0	0.0	0.0
+P11994	C3 sea urchins and other echinoderms	hp_lehninger_c_nonpolar2	37	72	0	0.0	0.0
+P11994	C3 sea urchins and other echinoderms	hp_lehninger_c_nonpolar2	38	72	0	0.0	0.0
+P11994	C3 sea urchins and other echinoderms	hp_lehninger_c_nonpolar2	39	72	0	0.0	0.0
+P11994	C3 sea urchins and other echinoderms	hp_lehninger_c_nonpolar2	40	72	0	0.0	0.0
+P11994	C3 sea urchins and other echinoderms	hp_pbotc_1st_ed2	3	72	72	1.0	0.9998
+P11994	C3 sea urchins and other echinoderms	hp_pbotc_1st_ed2	4	72	72	1.0	0.9998
+P11994	C3 sea urchins and other echinoderms	hp_pbotc_1st_ed2	5	72	72	1.0	0.9998
+P11994	C3 sea urchins and other echinoderms	hp_pbotc_1st_ed2	6	72	72	1.0	0.9996
+P11994	C3 sea urchins and other echinoderms	hp_pbotc_1st_ed2	7	72	72	1.0	0.999
+P11994	C3 sea urchins and other echinoderms	hp_pbotc_1st_ed2	8	72	72	1.0	0.9976
+P11994	C3 sea urchins and other echinoderms	hp_pbotc_1st_ed2	9	72	72	1.0	0.996
+P11994	C3 sea urchins and other echinoderms	hp_pbotc_1st_ed2	10	72	71	0.9861111111111112	0.9936
+P11994	C3 sea urchins and other echinoderms	hp_pbotc_1st_ed2	11	72	69	0.9583333333333334	0.9848
+P11994	C3 sea urchins and other echinoderms	hp_pbotc_1st_ed2	12	72	64	0.8888888888888888	0.9624
+P11994	C3 sea urchins and other echinoderms	hp_pbotc_1st_ed2	13	72	54	0.75	0.8878
+P11994	C3 sea urchins and other echinoderms	hp_pbotc_1st_ed2	14	72	43	0.5972222222222222	0.7318
+P11994	C3 sea urchins and other echinoderms	hp_pbotc_1st_ed2	15	72	38	0.5277777777777778	0.5194
+P11994	C3 sea urchins and other echinoderms	hp_pbotc_1st_ed2	16	72	22	0.3055555555555556	0.3246
+P11994	C3 sea urchins and other echinoderms	hp_pbotc_1st_ed2	17	72	12	0.16666666666666666	0.1834
+P11994	C3 sea urchins and other echinoderms	hp_pbotc_1st_ed2	18	72	5	0.06944444444444445	0.101
+P11994	C3 sea urchins and other echinoderms	hp_pbotc_1st_ed2	19	72	3	0.041666666666666664	0.0554
+P11994	C3 sea urchins and other echinoderms	hp_pbotc_1st_ed2	20	72	2	0.027777777777777776	0.0288
+P11994	C3 sea urchins and other echinoderms	hp_pbotc_1st_ed2	21	72	0	0.0	0.0162
+P11994	C3 sea urchins and other echinoderms	hp_pbotc_1st_ed2	22	72	0	0.0	0.0086
+P11994	C3 sea urchins and other echinoderms	hp_pbotc_1st_ed2	23	72	0	0.0	0.0044
+P11994	C3 sea urchins and other echinoderms	hp_pbotc_1st_ed2	24	72	0	0.0	0.0024
+P11994	C3 sea urchins and other echinoderms	hp_pbotc_1st_ed2	25	72	0	0.0	0.0018
+P11994	C3 sea urchins and other echinoderms	hp_pbotc_1st_ed2	26	72	0	0.0	0.0004
+P11994	C3 sea urchins and other echinoderms	hp_pbotc_1st_ed2	27	72	0	0.0	0.0004
+P11994	C3 sea urchins and other echinoderms	hp_pbotc_1st_ed2	28	72	0	0.0	0.0
+P11994	C3 sea urchins and other echinoderms	hp_pbotc_1st_ed2	29	72	0	0.0	0.0
+P11994	C3 sea urchins and other echinoderms	hp_pbotc_1st_ed2	30	72	0	0.0	0.0
+P11994	C3 sea urchins and other echinoderms	hp_pbotc_1st_ed2	31	72	0	0.0	0.0
+P11994	C3 sea urchins and other echinoderms	hp_pbotc_1st_ed2	32	72	0	0.0	0.0
+P11994	C3 sea urchins and other echinoderms	hp_pbotc_1st_ed2	33	72	0	0.0	0.0
+P11994	C3 sea urchins and other echinoderms	hp_pbotc_1st_ed2	34	72	0	0.0	0.0
+P11994	C3 sea urchins and other echinoderms	hp_pbotc_1st_ed2	35	72	0	0.0	0.0
+P11994	C3 sea urchins and other echinoderms	hp_pbotc_1st_ed2	36	72	0	0.0	0.0
+P11994	C3 sea urchins and other echinoderms	hp_pbotc_1st_ed2	37	72	0	0.0	0.0
+P11994	C3 sea urchins and other echinoderms	hp_pbotc_1st_ed2	38	72	0	0.0	0.0
+P11994	C3 sea urchins and other echinoderms	hp_pbotc_1st_ed2	39	72	0	0.0	0.0
+P11994	C3 sea urchins and other echinoderms	hp_pbotc_1st_ed2	40	72	0	0.0	0.0
+P02452	C4 vertebrates	protein20	3	9	9	1.0	0.994
+P02452	C4 vertebrates	protein20	4	9	7	0.7777777777777778	0.7158
+P02452	C4 vertebrates	protein20	5	9	1	0.1111111111111111	0.082
+P02452	C4 vertebrates	protein20	6	9	0	0.0	0.0042
+P02452	C4 vertebrates	protein20	7	9	0	0.0	0.0008
+P02452	C4 vertebrates	protein20	8	9	0	0.0	0.0004
+P02452	C4 vertebrates	protein20	9	9	0	0.0	0.0002
+P02452	C4 vertebrates	protein20	10	9	0	0.0	0.0002
+P02452	C4 vertebrates	protein20	11	9	0	0.0	0.0
+P02452	C4 vertebrates	protein20	12	9	0	0.0	0.0
+P02452	C4 vertebrates	protein20	13	9	0	0.0	0.0
+P02452	C4 vertebrates	protein20	14	9	0	0.0	0.0
+P02452	C4 vertebrates	protein20	15	9	0	0.0	0.0
+P02452	C4 vertebrates	protein20	16	9	0	0.0	0.0
+P02452	C4 vertebrates	protein20	17	9	0	0.0	0.0
+P02452	C4 vertebrates	protein20	18	9	0	0.0	0.0
+P02452	C4 vertebrates	protein20	19	9	0	0.0	0.0
+P02452	C4 vertebrates	protein20	20	9	0	0.0	0.0
+P02452	C4 vertebrates	protein20	21	9	0	0.0	0.0
+P02452	C4 vertebrates	protein20	22	9	0	0.0	0.0
+P02452	C4 vertebrates	protein20	23	9	0	0.0	0.0
+P02452	C4 vertebrates	protein20	24	9	0	0.0	0.0
+P02452	C4 vertebrates	protein20	25	9	0	0.0	0.0
+P02452	C4 vertebrates	protein20	26	9	0	0.0	0.0
+P02452	C4 vertebrates	protein20	27	9	0	0.0	0.0
+P02452	C4 vertebrates	protein20	28	9	0	0.0	0.0
+P02452	C4 vertebrates	protein20	29	9	0	0.0	0.0
+P02452	C4 vertebrates	protein20	30	9	0	0.0	0.0
+P02452	C4 vertebrates	protein20	31	9	0	0.0	0.0
+P02452	C4 vertebrates	protein20	32	9	0	0.0	0.0
+P02452	C4 vertebrates	protein20	33	9	0	0.0	0.0
+P02452	C4 vertebrates	protein20	34	9	0	0.0	0.0
+P02452	C4 vertebrates	protein20	35	9	0	0.0	0.0
+P02452	C4 vertebrates	protein20	36	9	0	0.0	0.0
+P02452	C4 vertebrates	protein20	37	9	0	0.0	0.0
+P02452	C4 vertebrates	protein20	38	9	0	0.0	0.0
+P02452	C4 vertebrates	protein20	39	9	0	0.0	0.0
+P02452	C4 vertebrates	protein20	40	9	0	0.0	0.0
+P02452	C4 vertebrates	dayhoff6	3	9	9	1.0	1.0
+P02452	C4 vertebrates	dayhoff6	4	9	9	1.0	0.9992
+P02452	C4 vertebrates	dayhoff6	5	9	9	1.0	0.9956
+P02452	C4 vertebrates	dayhoff6	6	9	8	0.8888888888888888	0.9782
+P02452	C4 vertebrates	dayhoff6	7	9	7	0.7777777777777778	0.9078
+P02452	C4 vertebrates	dayhoff6	8	9	6	0.6666666666666666	0.7112
+P02452	C4 vertebrates	dayhoff6	9	9	4	0.4444444444444444	0.446
+P02452	C4 vertebrates	dayhoff6	10	9	3	0.3333333333333333	0.2406
+P02452	C4 vertebrates	dayhoff6	11	9	1	0.1111111111111111	0.1354
+P02452	C4 vertebrates	dayhoff6	12	9	1	0.1111111111111111	0.0776
+P02452	C4 vertebrates	dayhoff6	13	9	0	0.0	0.0476
+P02452	C4 vertebrates	dayhoff6	14	9	0	0.0	0.0326
+P02452	C4 vertebrates	dayhoff6	15	9	0	0.0	0.0224
+P02452	C4 vertebrates	dayhoff6	16	9	0	0.0	0.0146
+P02452	C4 vertebrates	dayhoff6	17	9	0	0.0	0.0106
+P02452	C4 vertebrates	dayhoff6	18	9	0	0.0	0.0076
+P02452	C4 vertebrates	dayhoff6	19	9	0	0.0	0.0054
+P02452	C4 vertebrates	dayhoff6	20	9	0	0.0	0.0034
+P02452	C4 vertebrates	dayhoff6	21	9	0	0.0	0.0022
+P02452	C4 vertebrates	dayhoff6	22	9	0	0.0	0.0012
+P02452	C4 vertebrates	dayhoff6	23	9	0	0.0	0.0
+P02452	C4 vertebrates	dayhoff6	24	9	0	0.0	0.0
+P02452	C4 vertebrates	dayhoff6	25	9	0	0.0	0.0
+P02452	C4 vertebrates	dayhoff6	26	9	0	0.0	0.0
+P02452	C4 vertebrates	dayhoff6	27	9	0	0.0	0.0
+P02452	C4 vertebrates	dayhoff6	28	9	0	0.0	0.0
+P02452	C4 vertebrates	dayhoff6	29	9	0	0.0	0.0
+P02452	C4 vertebrates	dayhoff6	30	9	0	0.0	0.0
+P02452	C4 vertebrates	dayhoff6	31	9	0	0.0	0.0
+P02452	C4 vertebrates	dayhoff6	32	9	0	0.0	0.0
+P02452	C4 vertebrates	dayhoff6	33	9	0	0.0	0.0
+P02452	C4 vertebrates	dayhoff6	34	9	0	0.0	0.0
+P02452	C4 vertebrates	dayhoff6	35	9	0	0.0	0.0
+P02452	C4 vertebrates	dayhoff6	36	9	0	0.0	0.0
+P02452	C4 vertebrates	dayhoff6	37	9	0	0.0	0.0
+P02452	C4 vertebrates	dayhoff6	38	9	0	0.0	0.0
+P02452	C4 vertebrates	dayhoff6	39	9	0	0.0	0.0
+P02452	C4 vertebrates	dayhoff6	40	9	0	0.0	0.0
+P02452	C4 vertebrates	hp_lehninger2	3	9	9	1.0	0.9998
+P02452	C4 vertebrates	hp_lehninger2	4	9	9	1.0	0.9998
+P02452	C4 vertebrates	hp_lehninger2	5	9	9	1.0	0.9998
+P02452	C4 vertebrates	hp_lehninger2	6	9	9	1.0	0.9996
+P02452	C4 vertebrates	hp_lehninger2	7	9	9	1.0	0.9996
+P02452	C4 vertebrates	hp_lehninger2	8	9	9	1.0	0.999
+P02452	C4 vertebrates	hp_lehninger2	9	9	9	1.0	0.9978
+P02452	C4 vertebrates	hp_lehninger2	10	9	9	1.0	0.9964
+P02452	C4 vertebrates	hp_lehninger2	11	9	9	1.0	0.9944
+P02452	C4 vertebrates	hp_lehninger2	12	9	9	1.0	0.9882
+P02452	C4 vertebrates	hp_lehninger2	13	9	8	0.8888888888888888	0.9752
+P02452	C4 vertebrates	hp_lehninger2	14	9	8	0.8888888888888888	0.9458
+P02452	C4 vertebrates	hp_lehninger2	15	9	8	0.8888888888888888	0.8786
+P02452	C4 vertebrates	hp_lehninger2	16	9	8	0.8888888888888888	0.7692
+P02452	C4 vertebrates	hp_lehninger2	17	9	6	0.6666666666666666	0.6218
+P02452	C4 vertebrates	hp_lehninger2	18	9	6	0.6666666666666666	0.46
+P02452	C4 vertebrates	hp_lehninger2	19	9	2	0.2222222222222222	0.3162
+P02452	C4 vertebrates	hp_lehninger2	20	9	2	0.2222222222222222	0.2132
+P02452	C4 vertebrates	hp_lehninger2	21	9	2	0.2222222222222222	0.14
+P02452	C4 vertebrates	hp_lehninger2	22	9	2	0.2222222222222222	0.0926
+P02452	C4 vertebrates	hp_lehninger2	23	9	2	0.2222222222222222	0.0602
+P02452	C4 vertebrates	hp_lehninger2	24	9	2	0.2222222222222222	0.04
+P02452	C4 vertebrates	hp_lehninger2	25	9	2	0.2222222222222222	0.0248
+P02452	C4 vertebrates	hp_lehninger2	26	9	1	0.1111111111111111	0.0134
+P02452	C4 vertebrates	hp_lehninger2	27	9	1	0.1111111111111111	0.0084
+P02452	C4 vertebrates	hp_lehninger2	28	9	0	0.0	0.0044
+P02452	C4 vertebrates	hp_lehninger2	29	9	0	0.0	0.0022
+P02452	C4 vertebrates	hp_lehninger2	30	9	0	0.0	0.0012
+P02452	C4 vertebrates	hp_lehninger2	31	9	0	0.0	0.0004
+P02452	C4 vertebrates	hp_lehninger2	32	9	0	0.0	0.0004
+P02452	C4 vertebrates	hp_lehninger2	33	9	0	0.0	0.0
+P02452	C4 vertebrates	hp_lehninger2	34	9	0	0.0	0.0
+P02452	C4 vertebrates	hp_lehninger2	35	9	0	0.0	0.0
+P02452	C4 vertebrates	hp_lehninger2	36	9	0	0.0	0.0
+P02452	C4 vertebrates	hp_lehninger2	37	9	0	0.0	0.0
+P02452	C4 vertebrates	hp_lehninger2	38	9	0	0.0	0.0
+P02452	C4 vertebrates	hp_lehninger2	39	9	0	0.0	0.0
+P02452	C4 vertebrates	hp_lehninger2	40	9	0	0.0	0.0
+P02452	C4 vertebrates	hp_thomas_dill2	3	9	9	1.0	0.9998
+P02452	C4 vertebrates	hp_thomas_dill2	4	9	9	1.0	0.9998
+P02452	C4 vertebrates	hp_thomas_dill2	5	9	9	1.0	0.9998
+P02452	C4 vertebrates	hp_thomas_dill2	6	9	9	1.0	0.9996
+P02452	C4 vertebrates	hp_thomas_dill2	7	9	9	1.0	0.9996
+P02452	C4 vertebrates	hp_thomas_dill2	8	9	9	1.0	0.9986
+P02452	C4 vertebrates	hp_thomas_dill2	9	9	9	1.0	0.997
+P02452	C4 vertebrates	hp_thomas_dill2	10	9	9	1.0	0.9954
+P02452	C4 vertebrates	hp_thomas_dill2	11	9	9	1.0	0.9922
+P02452	C4 vertebrates	hp_thomas_dill2	12	9	9	1.0	0.986
+P02452	C4 vertebrates	hp_thomas_dill2	13	9	9	1.0	0.9778
+P02452	C4 vertebrates	hp_thomas_dill2	14	9	9	1.0	0.9502
+P02452	C4 vertebrates	hp_thomas_dill2	15	9	7	0.7777777777777778	0.893
+P02452	C4 vertebrates	hp_thomas_dill2	16	9	7	0.7777777777777778	0.7884
+P02452	C4 vertebrates	hp_thomas_dill2	17	9	7	0.7777777777777778	0.6484
+P02452	C4 vertebrates	hp_thomas_dill2	18	9	7	0.7777777777777778	0.4986
+P02452	C4 vertebrates	hp_thomas_dill2	19	9	7	0.7777777777777778	0.3714
+P02452	C4 vertebrates	hp_thomas_dill2	20	9	6	0.6666666666666666	0.2638
+P02452	C4 vertebrates	hp_thomas_dill2	21	9	6	0.6666666666666666	0.1918
+P02452	C4 vertebrates	hp_thomas_dill2	22	9	6	0.6666666666666666	0.1398
+P02452	C4 vertebrates	hp_thomas_dill2	23	9	6	0.6666666666666666	0.1058
+P02452	C4 vertebrates	hp_thomas_dill2	24	9	6	0.6666666666666666	0.0764
+P02452	C4 vertebrates	hp_thomas_dill2	25	9	6	0.6666666666666666	0.0574
+P02452	C4 vertebrates	hp_thomas_dill2	26	9	5	0.5555555555555556	0.0446
+P02452	C4 vertebrates	hp_thomas_dill2	27	9	4	0.4444444444444444	0.0338
+P02452	C4 vertebrates	hp_thomas_dill2	28	9	2	0.2222222222222222	0.025
+P02452	C4 vertebrates	hp_thomas_dill2	29	9	2	0.2222222222222222	0.0182
+P02452	C4 vertebrates	hp_thomas_dill2	30	9	2	0.2222222222222222	0.013
+P02452	C4 vertebrates	hp_thomas_dill2	31	9	2	0.2222222222222222	0.0108
+P02452	C4 vertebrates	hp_thomas_dill2	32	9	1	0.1111111111111111	0.0082
+P02452	C4 vertebrates	hp_thomas_dill2	33	9	1	0.1111111111111111	0.0054
+P02452	C4 vertebrates	hp_thomas_dill2	34	9	1	0.1111111111111111	0.004
+P02452	C4 vertebrates	hp_thomas_dill2	35	9	0	0.0	0.0028
+P02452	C4 vertebrates	hp_thomas_dill2	36	9	0	0.0	0.0016
+P02452	C4 vertebrates	hp_thomas_dill2	37	9	0	0.0	0.0012
+P02452	C4 vertebrates	hp_thomas_dill2	38	9	0	0.0	0.0004
+P02452	C4 vertebrates	hp_thomas_dill2	39	9	0	0.0	0.0004
+P02452	C4 vertebrates	hp_thomas_dill2	40	9	0	0.0	0.0002
+P02452	C4 vertebrates	hp_kyte_doolittle2	3	9	9	1.0	0.9998
+P02452	C4 vertebrates	hp_kyte_doolittle2	4	9	9	1.0	0.9998
+P02452	C4 vertebrates	hp_kyte_doolittle2	5	9	9	1.0	0.9998
+P02452	C4 vertebrates	hp_kyte_doolittle2	6	9	9	1.0	0.9996
+P02452	C4 vertebrates	hp_kyte_doolittle2	7	9	9	1.0	0.9996
+P02452	C4 vertebrates	hp_kyte_doolittle2	8	9	9	1.0	0.9986
+P02452	C4 vertebrates	hp_kyte_doolittle2	9	9	9	1.0	0.9972
+P02452	C4 vertebrates	hp_kyte_doolittle2	10	9	9	1.0	0.9954
+P02452	C4 vertebrates	hp_kyte_doolittle2	11	9	9	1.0	0.9926
+P02452	C4 vertebrates	hp_kyte_doolittle2	12	9	9	1.0	0.9886
+P02452	C4 vertebrates	hp_kyte_doolittle2	13	9	9	1.0	0.9826
+P02452	C4 vertebrates	hp_kyte_doolittle2	14	9	9	1.0	0.9688
+P02452	C4 vertebrates	hp_kyte_doolittle2	15	9	9	1.0	0.9358
+P02452	C4 vertebrates	hp_kyte_doolittle2	16	9	9	1.0	0.8724
+P02452	C4 vertebrates	hp_kyte_doolittle2	17	9	8	0.8888888888888888	0.7844
+P02452	C4 vertebrates	hp_kyte_doolittle2	18	9	8	0.8888888888888888	0.6666
+P02452	C4 vertebrates	hp_kyte_doolittle2	19	9	8	0.8888888888888888	0.5446
+P02452	C4 vertebrates	hp_kyte_doolittle2	20	9	8	0.8888888888888888	0.427
+P02452	C4 vertebrates	hp_kyte_doolittle2	21	9	8	0.8888888888888888	0.329
+P02452	C4 vertebrates	hp_kyte_doolittle2	22	9	8	0.8888888888888888	0.2464
+P02452	C4 vertebrates	hp_kyte_doolittle2	23	9	8	0.8888888888888888	0.1834
+P02452	C4 vertebrates	hp_kyte_doolittle2	24	9	8	0.8888888888888888	0.1364
+P02452	C4 vertebrates	hp_kyte_doolittle2	25	9	8	0.8888888888888888	0.099
+P02452	C4 vertebrates	hp_kyte_doolittle2	26	9	7	0.7777777777777778	0.0754
+P02452	C4 vertebrates	hp_kyte_doolittle2	27	9	7	0.7777777777777778	0.0566
+P02452	C4 vertebrates	hp_kyte_doolittle2	28	9	5	0.5555555555555556	0.043
+P02452	C4 vertebrates	hp_kyte_doolittle2	29	9	5	0.5555555555555556	0.031
+P02452	C4 vertebrates	hp_kyte_doolittle2	30	9	5	0.5555555555555556	0.0222
+P02452	C4 vertebrates	hp_kyte_doolittle2	31	9	5	0.5555555555555556	0.0158
+P02452	C4 vertebrates	hp_kyte_doolittle2	32	9	4	0.4444444444444444	0.011
+P02452	C4 vertebrates	hp_kyte_doolittle2	33	9	4	0.4444444444444444	0.0082
+P02452	C4 vertebrates	hp_kyte_doolittle2	34	9	3	0.3333333333333333	0.0054
+P02452	C4 vertebrates	hp_kyte_doolittle2	35	9	2	0.2222222222222222	0.004
+P02452	C4 vertebrates	hp_kyte_doolittle2	36	9	2	0.2222222222222222	0.0028
+P02452	C4 vertebrates	hp_kyte_doolittle2	37	9	2	0.2222222222222222	0.0016
+P02452	C4 vertebrates	hp_kyte_doolittle2	38	9	1	0.1111111111111111	0.0008
+P02452	C4 vertebrates	hp_kyte_doolittle2	39	9	1	0.1111111111111111	0.0006
+P02452	C4 vertebrates	hp_kyte_doolittle2	40	9	1	0.1111111111111111	0.0002
+P02452	C4 vertebrates	hp_thomas_dill_no_c2	3	9	9	1.0	0.9998
+P02452	C4 vertebrates	hp_thomas_dill_no_c2	4	9	9	1.0	0.9998
+P02452	C4 vertebrates	hp_thomas_dill_no_c2	5	9	9	1.0	0.9998
+P02452	C4 vertebrates	hp_thomas_dill_no_c2	6	9	9	1.0	0.9996
+P02452	C4 vertebrates	hp_thomas_dill_no_c2	7	9	9	1.0	0.9996
+P02452	C4 vertebrates	hp_thomas_dill_no_c2	8	9	9	1.0	0.9984
+P02452	C4 vertebrates	hp_thomas_dill_no_c2	9	9	9	1.0	0.9972
+P02452	C4 vertebrates	hp_thomas_dill_no_c2	10	9	9	1.0	0.9952
+P02452	C4 vertebrates	hp_thomas_dill_no_c2	11	9	9	1.0	0.9926
+P02452	C4 vertebrates	hp_thomas_dill_no_c2	12	9	9	1.0	0.9876
+P02452	C4 vertebrates	hp_thomas_dill_no_c2	13	9	9	1.0	0.9816
+P02452	C4 vertebrates	hp_thomas_dill_no_c2	14	9	9	1.0	0.9598
+P02452	C4 vertebrates	hp_thomas_dill_no_c2	15	9	7	0.7777777777777778	0.914
+P02452	C4 vertebrates	hp_thomas_dill_no_c2	16	9	7	0.7777777777777778	0.8274
+P02452	C4 vertebrates	hp_thomas_dill_no_c2	17	9	7	0.7777777777777778	0.7034
+P02452	C4 vertebrates	hp_thomas_dill_no_c2	18	9	7	0.7777777777777778	0.5574
+P02452	C4 vertebrates	hp_thomas_dill_no_c2	19	9	7	0.7777777777777778	0.4276
+P02452	C4 vertebrates	hp_thomas_dill_no_c2	20	9	7	0.7777777777777778	0.3166
+P02452	C4 vertebrates	hp_thomas_dill_no_c2	21	9	6	0.6666666666666666	0.2342
+P02452	C4 vertebrates	hp_thomas_dill_no_c2	22	9	6	0.6666666666666666	0.1718
+P02452	C4 vertebrates	hp_thomas_dill_no_c2	23	9	6	0.6666666666666666	0.132
+P02452	C4 vertebrates	hp_thomas_dill_no_c2	24	9	6	0.6666666666666666	0.102
+P02452	C4 vertebrates	hp_thomas_dill_no_c2	25	9	6	0.6666666666666666	0.079
+P02452	C4 vertebrates	hp_thomas_dill_no_c2	26	9	5	0.5555555555555556	0.0614
+P02452	C4 vertebrates	hp_thomas_dill_no_c2	27	9	4	0.4444444444444444	0.0482
+P02452	C4 vertebrates	hp_thomas_dill_no_c2	28	9	2	0.2222222222222222	0.036
+P02452	C4 vertebrates	hp_thomas_dill_no_c2	29	9	2	0.2222222222222222	0.0256
+P02452	C4 vertebrates	hp_thomas_dill_no_c2	30	9	2	0.2222222222222222	0.018
+P02452	C4 vertebrates	hp_thomas_dill_no_c2	31	9	2	0.2222222222222222	0.0148
+P02452	C4 vertebrates	hp_thomas_dill_no_c2	32	9	2	0.2222222222222222	0.0102
+P02452	C4 vertebrates	hp_thomas_dill_no_c2	33	9	1	0.1111111111111111	0.0068
+P02452	C4 vertebrates	hp_thomas_dill_no_c2	34	9	1	0.1111111111111111	0.0048
+P02452	C4 vertebrates	hp_thomas_dill_no_c2	35	9	0	0.0	0.0032
+P02452	C4 vertebrates	hp_thomas_dill_no_c2	36	9	0	0.0	0.0016
+P02452	C4 vertebrates	hp_thomas_dill_no_c2	37	9	0	0.0	0.0014
+P02452	C4 vertebrates	hp_thomas_dill_no_c2	38	9	0	0.0	0.0008
+P02452	C4 vertebrates	hp_thomas_dill_no_c2	39	9	0	0.0	0.0004
+P02452	C4 vertebrates	hp_thomas_dill_no_c2	40	9	0	0.0	0.0002
+P02452	C4 vertebrates	hp_lehninger_c_nonpolar2	3	9	9	1.0	0.9998
+P02452	C4 vertebrates	hp_lehninger_c_nonpolar2	4	9	9	1.0	0.9998
+P02452	C4 vertebrates	hp_lehninger_c_nonpolar2	5	9	9	1.0	0.9998
+P02452	C4 vertebrates	hp_lehninger_c_nonpolar2	6	9	9	1.0	0.9996
+P02452	C4 vertebrates	hp_lehninger_c_nonpolar2	7	9	9	1.0	0.9996
+P02452	C4 vertebrates	hp_lehninger_c_nonpolar2	8	9	9	1.0	0.999
+P02452	C4 vertebrates	hp_lehninger_c_nonpolar2	9	9	9	1.0	0.9974
+P02452	C4 vertebrates	hp_lehninger_c_nonpolar2	10	9	9	1.0	0.9962
+P02452	C4 vertebrates	hp_lehninger_c_nonpolar2	11	9	9	1.0	0.994
+P02452	C4 vertebrates	hp_lehninger_c_nonpolar2	12	9	9	1.0	0.99
+P02452	C4 vertebrates	hp_lehninger_c_nonpolar2	13	9	9	1.0	0.976
+P02452	C4 vertebrates	hp_lehninger_c_nonpolar2	14	9	9	1.0	0.9524
+P02452	C4 vertebrates	hp_lehninger_c_nonpolar2	15	9	8	0.8888888888888888	0.8938
+P02452	C4 vertebrates	hp_lehninger_c_nonpolar2	16	9	7	0.7777777777777778	0.7964
+P02452	C4 vertebrates	hp_lehninger_c_nonpolar2	17	9	7	0.7777777777777778	0.6546
+P02452	C4 vertebrates	hp_lehninger_c_nonpolar2	18	9	6	0.6666666666666666	0.503
+P02452	C4 vertebrates	hp_lehninger_c_nonpolar2	19	9	3	0.3333333333333333	0.3578
+P02452	C4 vertebrates	hp_lehninger_c_nonpolar2	20	9	2	0.2222222222222222	0.25
+P02452	C4 vertebrates	hp_lehninger_c_nonpolar2	21	9	2	0.2222222222222222	0.1632
+P02452	C4 vertebrates	hp_lehninger_c_nonpolar2	22	9	2	0.2222222222222222	0.1098
+P02452	C4 vertebrates	hp_lehninger_c_nonpolar2	23	9	2	0.2222222222222222	0.0756
+P02452	C4 vertebrates	hp_lehninger_c_nonpolar2	24	9	2	0.2222222222222222	0.051
+P02452	C4 vertebrates	hp_lehninger_c_nonpolar2	25	9	2	0.2222222222222222	0.0314
+P02452	C4 vertebrates	hp_lehninger_c_nonpolar2	26	9	1	0.1111111111111111	0.0166
+P02452	C4 vertebrates	hp_lehninger_c_nonpolar2	27	9	1	0.1111111111111111	0.0092
+P02452	C4 vertebrates	hp_lehninger_c_nonpolar2	28	9	0	0.0	0.0054
+P02452	C4 vertebrates	hp_lehninger_c_nonpolar2	29	9	0	0.0	0.0032
+P02452	C4 vertebrates	hp_lehninger_c_nonpolar2	30	9	0	0.0	0.0016
+P02452	C4 vertebrates	hp_lehninger_c_nonpolar2	31	9	0	0.0	0.0008
+P02452	C4 vertebrates	hp_lehninger_c_nonpolar2	32	9	0	0.0	0.0004
+P02452	C4 vertebrates	hp_lehninger_c_nonpolar2	33	9	0	0.0	0.0
+P02452	C4 vertebrates	hp_lehninger_c_nonpolar2	34	9	0	0.0	0.0
+P02452	C4 vertebrates	hp_lehninger_c_nonpolar2	35	9	0	0.0	0.0
+P02452	C4 vertebrates	hp_lehninger_c_nonpolar2	36	9	0	0.0	0.0
+P02452	C4 vertebrates	hp_lehninger_c_nonpolar2	37	9	0	0.0	0.0
+P02452	C4 vertebrates	hp_lehninger_c_nonpolar2	38	9	0	0.0	0.0
+P02452	C4 vertebrates	hp_lehninger_c_nonpolar2	39	9	0	0.0	0.0
+P02452	C4 vertebrates	hp_lehninger_c_nonpolar2	40	9	0	0.0	0.0
+P02452	C4 vertebrates	hp_pbotc_1st_ed2	3	9	9	1.0	0.9998
+P02452	C4 vertebrates	hp_pbotc_1st_ed2	4	9	9	1.0	0.9998
+P02452	C4 vertebrates	hp_pbotc_1st_ed2	5	9	9	1.0	0.9998
+P02452	C4 vertebrates	hp_pbotc_1st_ed2	6	9	9	1.0	0.9996
+P02452	C4 vertebrates	hp_pbotc_1st_ed2	7	9	9	1.0	0.9994
+P02452	C4 vertebrates	hp_pbotc_1st_ed2	8	9	9	1.0	0.9982
+P02452	C4 vertebrates	hp_pbotc_1st_ed2	9	9	9	1.0	0.9964
+P02452	C4 vertebrates	hp_pbotc_1st_ed2	10	9	9	1.0	0.9958
+P02452	C4 vertebrates	hp_pbotc_1st_ed2	11	9	9	1.0	0.9924
+P02452	C4 vertebrates	hp_pbotc_1st_ed2	12	9	8	0.8888888888888888	0.987
+P02452	C4 vertebrates	hp_pbotc_1st_ed2	13	9	8	0.8888888888888888	0.979
+P02452	C4 vertebrates	hp_pbotc_1st_ed2	14	9	8	0.8888888888888888	0.952
+P02452	C4 vertebrates	hp_pbotc_1st_ed2	15	9	8	0.8888888888888888	0.8876
+P02452	C4 vertebrates	hp_pbotc_1st_ed2	16	9	8	0.8888888888888888	0.7624
+P02452	C4 vertebrates	hp_pbotc_1st_ed2	17	9	7	0.7777777777777778	0.5914
+P02452	C4 vertebrates	hp_pbotc_1st_ed2	18	9	4	0.4444444444444444	0.4012
+P02452	C4 vertebrates	hp_pbotc_1st_ed2	19	9	4	0.4444444444444444	0.2518
+P02452	C4 vertebrates	hp_pbotc_1st_ed2	20	9	3	0.3333333333333333	0.1394
+P02452	C4 vertebrates	hp_pbotc_1st_ed2	21	9	1	0.1111111111111111	0.0712
+P02452	C4 vertebrates	hp_pbotc_1st_ed2	22	9	1	0.1111111111111111	0.0402
+P02452	C4 vertebrates	hp_pbotc_1st_ed2	23	9	0	0.0	0.0208
+P02452	C4 vertebrates	hp_pbotc_1st_ed2	24	9	0	0.0	0.0092
+P02452	C4 vertebrates	hp_pbotc_1st_ed2	25	9	0	0.0	0.0042
+P02452	C4 vertebrates	hp_pbotc_1st_ed2	26	9	0	0.0	0.003
+P02452	C4 vertebrates	hp_pbotc_1st_ed2	27	9	0	0.0	0.0024
+P02452	C4 vertebrates	hp_pbotc_1st_ed2	28	9	0	0.0	0.0018
+P02452	C4 vertebrates	hp_pbotc_1st_ed2	29	9	0	0.0	0.0004
+P02452	C4 vertebrates	hp_pbotc_1st_ed2	30	9	0	0.0	0.0004
+P02452	C4 vertebrates	hp_pbotc_1st_ed2	31	9	0	0.0	0.0002
+P02452	C4 vertebrates	hp_pbotc_1st_ed2	32	9	0	0.0	0.0
+P02452	C4 vertebrates	hp_pbotc_1st_ed2	33	9	0	0.0	0.0
+P02452	C4 vertebrates	hp_pbotc_1st_ed2	34	9	0	0.0	0.0
+P02452	C4 vertebrates	hp_pbotc_1st_ed2	35	9	0	0.0	0.0
+P02452	C4 vertebrates	hp_pbotc_1st_ed2	36	9	0	0.0	0.0
+P02452	C4 vertebrates	hp_pbotc_1st_ed2	37	9	0	0.0	0.0
+P02452	C4 vertebrates	hp_pbotc_1st_ed2	38	9	0	0.0	0.0
+P02452	C4 vertebrates	hp_pbotc_1st_ed2	39	9	0	0.0	0.0
+P02452	C4 vertebrates	hp_pbotc_1st_ed2	40	9	0	0.0	0.0
