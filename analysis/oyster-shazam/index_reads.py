@@ -21,7 +21,9 @@ def main():
     a=p.parse_args()
     a.output.mkdir(parents=True,exist_ok=True)
     checkpoint=a.output/f'{a.run}.validated.json'
-    source=[dict(path=str(r.resolve()),sha256=hashlib.file_digest(r.open('rb'),'sha256').hexdigest()) for r in a.reads]
+    source=[]
+    for r in a.reads:
+        with r.open('rb') as f:source.append(dict(path=str(r.resolve()),sha256=hashlib.file_digest(f,'sha256').hexdigest()))
     if checkpoint.exists():
         old=json.loads(checkpoint.read_text())
         if old['sources']!=source or old['input_scope']!=a.input_scope:
