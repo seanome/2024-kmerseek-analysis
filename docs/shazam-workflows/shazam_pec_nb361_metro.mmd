@@ -1,0 +1,173 @@
+%%metro title: Shazam for Biology, Botryllus electrical stimulation (PEC), nb361
+%%metro style: nfcore
+%%metro legend: bl
+%%metro caption: File icon = file type, with what it holds below it. "(planned)" = not built yet. Reproduces Domen et al. 2026 PNAS. Sherlock root $SCRATCH/nb361-pec; code analysis/pec-domen2026-splash/.
+%%metro line_order: definition
+%%metro compact_offsets: true
+%%metro center_ports: true
+%%metro line: splash | SPLASH anchors (reference-free) | #0570b0
+%%metro line: counts | Anchor counts, PyDESeq2 | #2db572
+%%metro line: dekupl | DE-kupl contigs, limma | #e6550d
+%%metro line: protein | Protein sketches and search | #756bb1
+%%metro line: check | Checks: known-answer control, paper gene lists | #7f7f7f | dashed
+%%metro files: reads_in | FASTQ.GZ | 64 runs, 47 used\n78 GB
+%%metro file: ena_in | TSV | ENA file report
+%%metro file: si_in | XLSX | PNAS Dataset S1\n52.5 MB
+%%metro file: newprot_in | FASTA | new Botryllus\n45,339 proteins
+%%metro file: sprot_in | FASTA.GZ | Swiss-Prot\n575,748 proteins
+%%metro file: oldprot_in | FA | old gene models\n72,617 proteins
+%%metro file: ctrlfa_in | FA | control\n3,100 transcripts
+%%metro file: ctrltsv_in | TSV | control\ntrue design
+%%metro file: cjs_out | CSV | c_j weights
+%%metro file: design_out | TSV | samples
+%%metro file: anch_out | TSV | anchors,\np-values
+%%metro file: satc_out | SATC | count tables
+%%metro file: comp_out | TSV | compactors
+%%metro file: deseq_out | PARQUET | anchor DESeq2
+%%metro file: dekupl_out | TSV.GZ | k-mers, contigs
+%%metro file: zip_out | ZIP | sketches
+%%metro file: rocks_out | ROCKSDB | index folder
+%%metro file: pep_out | FAA | peptides
+%%metro file: ms_out | CSV | manysearch hits
+%%metro file: aln_out | PARQUET | hits + alignments
+%%metro file: ctrlj_out | JSON | control recall
+%%metro file: ctrlt_out | TSV | genes found
+%%metro file: paper_out | TSV | paper gene lists
+%%metro file: export_out | TSV | per-contrast\nexports (planned)
+%%metro file: nb_out | IPYNB | notebook 361\n(planned)
+%%metro file: fig_out | PNG | figures\n(planned)
+%%metro file: page_out | HTML | report page\n(planned)
+%%metro off_track: cjs_out, design_out, anch_out, satc_out, comp_out, deseq_out, dekupl_out, zip_out, rocks_out, pep_out, ms_out, aln_out, ctrlj_out, ctrlt_out, paper_out
+%%metro grid: inputs | 0,0,1,1
+%%metro grid: dbs | 0,1,1,1
+%%metro grid: find | 1,0,1,1
+%%metro grid: checks | 1,1,1,1
+%%metro grid: search | 2,0,1,2
+%%metro grid: outputs | 3,0,1,2
+
+graph LR
+    subgraph inputs [Inputs, download, trim]
+        %%metro exit: right | splash, counts, dekupl, check
+        reads_in[ ]
+        ena_in[ ]
+        si_in[ ]
+        download[Download, md5 +\nread-count check]
+        freeze[freeze_design\n6 contrasts]
+        fastp[fastp, paired +\ninterleaved]
+        contrast[make_contrast_dir]
+        cjs_out[ ]
+        design_out[ ]
+
+        reads_in -->|splash,counts,dekupl| download
+        ena_in -->|splash,counts,dekupl| download
+        download -->|splash,counts,dekupl| fastp
+        si_in -->|splash,counts,dekupl,check| freeze
+        fastp -->|splash,counts,dekupl| contrast
+        freeze -->|splash,counts,dekupl| contrast
+        freeze -->|splash,counts,dekupl| cjs_out
+        freeze -->|splash,counts,dekupl| design_out
+    end
+
+    subgraph dbs [Protein databases]
+        %%metro exit: right | protein
+        newprot_in[ ]
+        sprot_in[ ]
+        oldprot_in[ ]
+        stableids[stable_ids]
+        sketchdb[sourmash sketch + index\nprotein k7, Dayhoff k12, HP k30]
+        zip_out[ ]
+        rocks_out[ ]
+
+        newprot_in -->|protein| stableids
+        sprot_in -->|protein| stableids
+        oldprot_in -->|protein| stableids
+        stableids -->|protein| sketchdb
+        sketchdb -->|protein| zip_out
+        sketchdb -->|protein| rocks_out
+    end
+
+    subgraph find [Find changed sequences, PEC +1 vs control -1]
+        %%metro entry: left | splash, counts, dekupl
+        %%metro exit: right | splash, counts, dekupl
+        splash_run[SPLASH 2.11.9]
+        compactors[Compactors]
+        anchorcounts[pec-tools\nanchor-counts]
+        deseq[PyDESeq2]
+        dekupl_run[DE-kupl 1.3.5, limma]
+        anch_out[ ]
+        satc_out[ ]
+        comp_out[ ]
+        deseq_out[ ]
+        dekupl_out[ ]
+
+        splash_run -->|splash| compactors
+        splash_run -->|splash| anch_out
+        splash_run -->|splash| satc_out
+        compactors -->|splash| comp_out
+        splash_run -->|counts| anchorcounts
+        anchorcounts -->|counts| deseq
+        deseq -->|counts| deseq_out
+        dekupl_run -->|dekupl| dekupl_out
+    end
+
+    subgraph checks [Checks]
+        %%metro entry: left | check
+        %%metro exit: right | check
+        ctrlfa_in[ ]
+        ctrltsv_in[ ]
+        ctrlscore[control_truth]
+        paperlists[paper_gene_lists]
+        ctrlj_out[ ]
+        ctrlt_out[ ]
+        paper_out[ ]
+
+        ctrlfa_in -->|check| ctrlscore
+        ctrltsv_in -->|check| ctrlscore
+        ctrlscore -->|check| ctrlj_out
+        ctrlscore -->|check| ctrlt_out
+        paperlists -->|check| paper_out
+    end
+
+    subgraph search [Translate and search]
+        %%metro entry: left | splash, counts, dekupl, protein, check
+        %%metro exit: right | splash, counts, dekupl, protein, check
+        translate[pec-tools translate]
+        manysearch[manysketch +\nmanysearch]
+        align[pair_align, parasail]
+        pep_out[ ]
+        ms_out[ ]
+        aln_out[ ]
+
+        translate -->|splash,dekupl| manysearch
+        translate -->|splash,dekupl| pep_out
+        manysearch -->|splash,dekupl,protein| align
+        manysearch -->|splash,dekupl,protein| ms_out
+        align -->|splash,dekupl,protein| aln_out
+    end
+
+    subgraph outputs [Outputs]
+        %%metro entry: left | splash, counts, dekupl, protein, check
+        recover[Paper-list recovery,\nPfam, overlap\n(planned)]
+        notebook[Notebook 361\n(planned)]
+        export_out[ ]
+        nb_out[ ]
+        fig_out[ ]
+        page_out[ ]
+
+        recover -->|splash,counts,dekupl,protein| export_out
+        recover -->|splash,counts,dekupl,protein,check| notebook
+        notebook -->|splash,counts,dekupl,protein,check| nb_out
+        notebook -->|splash,counts,dekupl,protein,check| fig_out
+        notebook -->|splash,counts,dekupl,protein,check| page_out
+    end
+
+    contrast -->|splash,counts| splash_run
+    contrast -->|dekupl| dekupl_run
+    freeze -->|check| paperlists
+    compactors -->|splash| translate
+    dekupl_run -->|dekupl| translate
+    sketchdb -->|protein| manysearch
+    deseq -->|counts| recover
+    align -->|splash,dekupl,protein| recover
+    ctrlscore -->|check| recover
+    paperlists -->|check| recover
