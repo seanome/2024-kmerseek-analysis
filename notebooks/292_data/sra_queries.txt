@@ -1,0 +1,5 @@
+# SRA searches run 2026-10-14 with NCBI EDirect (esearch -db sra -query "<query>" | efetch -format runinfo)
+query1	(venom[All Fields] OR "venom gland"[All Fields] OR Tunicata[Organism]) AND "oxford nanopore"[Platform] AND "transcriptomic"[Source] AND 2021/01/01:2026/12/31[Publication Date]
+query1_runs	27	sra_runinfo_query1_venom_or_tunicate.csv
+query2	(Conus[Organism] OR Conoidea[Organism] OR Cnidaria[Organism] OR Scorpiones[Organism] OR Serpentes[Organism] OR Araneae[Organism] OR Chilopoda[Organism] OR Hymenoptera[Organism] OR "venom"[All Fields] OR "toxin"[All Fields]) AND "oxford nanopore"[Platform] AND "transcriptomic"[Source] AND 2021/01/01:2026/12/31[Publication Date]
+query2_runs	148	sra_runinfo_query2_venomous_taxa.csv
