@@ -1,6 +1,6 @@
 {
-  "checked_at": "2026-10-23T22:09:29.395734+00:00",
-  "validated_raw_runs": 50,
+  "checked_at": "2026-10-24T14:23:32.106524+00:00",
+  "validated_raw_runs": 62,
   "runs": [
     "SRR32233926",
     "SRR32233927",
@@ -14,6 +14,7 @@
     "SRR32233936",
     "SRR32233937",
     "SRR32233938",
+    "SRR32233939",
     "SRR32233940",
     "SRR32233941",
     "SRR32233942",
@@ -21,6 +22,7 @@
     "SRR32233944",
     "SRR32233945",
     "SRR32233946",
+    "SRR32233947",
     "SRR32233948",
     "SRR32233949",
     "SRR32233950",
@@ -28,6 +30,7 @@
     "SRR32233952",
     "SRR32233953",
     "SRR32233954",
+    "SRR32233955",
     "SRR32233956",
     "SRR32233957",
     "SRR32233958",
@@ -35,22 +38,31 @@
     "SRR32233960",
     "SRR32233961",
     "SRR32233962",
+    "SRR32233963",
+    "SRR32233964",
     "SRR32233965",
     "SRR32233966",
     "SRR32233967",
     "SRR32233968",
     "SRR32233969",
     "SRR32233970",
+    "SRR32233971",
+    "SRR32233972",
     "SRR32233973",
     "SRR32233974",
     "SRR32233975",
     "SRR32233976",
     "SRR32233977",
     "SRR32233978",
+    "SRR32233979",
+    "SRR32233980",
     "SRR32233981",
     "SRR32233982",
+    "SRR32233983",
     "SRR32233984",
     "SRR32233985",
+    "SRR32233986",
+    "SRR32233988",
     "SRR32233989"
   ],
   "total_runs": 64,
@@ -187,8 +199,8 @@
     {
       "id": "49211401_4",
       "name": "botryllus-PEC-download-recovery",
-      "state": "RUNNING",
-      "elapsed": "04:54:19",
+      "state": "COMPLETED",
+      "elapsed": "08:41:14",
       "exit_code": "0:0"
     },
     {
@@ -243,42 +255,105 @@
     {
       "id": "49242789",
       "name": "botryllus-external-SRA-attended",
-      "state": "RUNNING",
-      "elapsed": "00:21:19",
+      "state": "COMPLETED",
+      "elapsed": "00:28:06",
       "exit_code": "0:0"
     },
     {
       "id": "49244019_1",
       "name": "botryllus-PEC-download-recovery",
-      "state": "RUNNING",
-      "elapsed": "00:05:42",
+      "state": "COMPLETED",
+      "elapsed": "00:51:21",
       "exit_code": "0:0"
     },
     {
       "id": "49244019_5",
       "name": "botryllus-PEC-download-recovery",
-      "state": "RUNNING",
-      "elapsed": "00:03:09",
-      "exit_code": "0:0"
+      "state": "FAILED",
+      "elapsed": "01:30:58",
+      "exit_code": "1:0"
     },
     {
       "id": "49244019_6",
       "name": "botryllus-PEC-download-recovery",
-      "state": "RUNNING",
-      "elapsed": "00:03:09",
+      "state": "COMPLETED",
+      "elapsed": "07:16:10",
       "exit_code": "0:0"
     },
     {
       "id": "49244021",
       "name": "botryllus-PEC-nfcore-trim",
-      "state": "PENDING",
+      "state": "CANCELLED",
       "elapsed": "00:00:00",
       "exit_code": "0:0"
     },
     {
       "id": "49244023",
       "name": "botryllus-full-SPLASH-all-anchors",
+      "state": "CANCELLED",
+      "elapsed": "00:00:00",
+      "exit_code": "0:0"
+    },
+    {
+      "id": "49347856",
+      "name": "botryllus-remaining-inputs",
+      "state": "RUNNING",
+      "elapsed": "00:36:05",
+      "exit_code": "0:0"
+    },
+    {
+      "id": "49347857",
+      "name": "botryllus-PEC-nfcore-trim",
       "state": "PENDING",
+      "elapsed": "00:00:00",
+      "exit_code": "0:0"
+    },
+    {
+      "id": "49347864",
+      "name": "botryllus-full-SPLASH-all-anchors",
+      "state": "PENDING",
+      "elapsed": "00:00:00",
+      "exit_code": "0:0"
+    },
+    {
+      "id": "49348714",
+      "name": "botryllus-full-depth-manysearch",
+      "state": "PENDING",
+      "elapsed": "00:00:00",
+      "exit_code": "0:0"
+    },
+    {
+      "id": "49350166",
+      "name": "botryllus-DEkupl-setup-test",
+      "state": "FAILED",
+      "elapsed": "00:00:45",
+      "exit_code": "255:0"
+    },
+    {
+      "id": "49350957",
+      "name": "botryllus-DEkupl-conda-test",
+      "state": "FAILED",
+      "elapsed": "00:00:09",
+      "exit_code": "1:0"
+    },
+    {
+      "id": "49351304",
+      "name": "botryllus-DEkupl-conda-test",
+      "state": "FAILED",
+      "elapsed": "00:00:23",
+      "exit_code": "1:0"
+    },
+    {
+      "id": "49351544",
+      "name": "botryllus-blocked-model-test",
+      "state": "CANCELLED",
+      "elapsed": "00:00:00",
+      "exit_code": "0:0"
+    },
+    {
+      "id": "49351548",
+      "name": "botryllus-DEkupl-gene-DE",
+      "state": "CANCELLED",
       "elapsed": "00:00:00",
       "exit_code": "0:0"
     }

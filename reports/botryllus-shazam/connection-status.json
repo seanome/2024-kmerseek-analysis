@@ -1,7 +1,7 @@
 {
-  "recorded_at": "2026-10-23T22:09:29.705531+00:00",
+  "recorded_at": "2026-10-24T14:23:32.446635+00:00",
   "live_status_available": true,
-  "checked_at": "2026-10-23T22:09:29.395734+00:00",
+  "checked_at": "2026-10-24T14:23:32.106524+00:00",
   "failure": null,
   "search_jobs": [
     {
@@ -14,8 +14,8 @@
     {
       "id": "49242789",
       "scope": "Four complete external tunicate runs: trim, sketch, manysearch",
-      "state": "RUNNING",
-      "elapsed": "00:21:19",
+      "state": "COMPLETED",
+      "elapsed": "00:28:06",
       "exit_code": "0:0"
     },
     {
@@ -36,7 +36,7 @@
   "external_tunicate_sra": {
     "job_id": "49242789",
     "scope": "Four external paired runs from four studies; historical pilot queries, not full-depth queries",
-    "current_state": "RUNNING"
+    "current_state": "COMPLETED"
   },
   "automatic_polling": false
 }

@@ -85,6 +85,8 @@ def build(pilot, repo, dest):
         "samples.tsv",
         "sample-audit.json",
         "PROTOCOL.md",
+        "ABUNDANCE-PROTOCOL-20261024.md",
+        "abundance-design-20261024.json",
         "PIPELINE.md",
         "pilot-lengths.png",
     ]:
@@ -121,7 +123,7 @@ def build(pilot, repo, dest):
     shutil.copyfile(
         report / "tunicate-rna-seq.tsv.gz", data / "tunicate-rna-seq.tsv.gz"
     )
-    for folder in ["finished-manysearch", "external-results"]:
+    for folder in ["finished-manysearch", "external-results", "match-context"]:
         shutil.copytree(report / folder, data / folder, dirs_exist_ok=True)
     paths = []
     for name in [
