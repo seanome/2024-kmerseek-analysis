@@ -1,0 +1,914 @@
+[
+  {
+    "batch": 0,
+    "input_sha256": "6033284156dc9c393efab11c7ca395414b0eac03a35aa997d75ecc9f5e3d1390",
+    "extended_records": 13894,
+    "reference_scope": "Eight complete public ENA bivalve RNA-seq runs from eight studies; initial archive subset, not all 17623 runs",
+    "reference_names": [
+      "DRR350416",
+      "DRR354099",
+      "SRR10403264",
+      "SRR12227931",
+      "SRR18575420",
+      "SRR330464",
+      "SRR7640806",
+      "SRR942484"
+    ],
+    "translation": "Six-frame sourmash translation of each separate DNA record",
+    "search_rule": "All comparisons with at least one shared hash; candidate occurrence evidence only",
+    "searches": [
+      {
+        "moltype": "dna",
+        "k": 31,
+        "scaled": 5,
+        "queries": 13894,
+        "empty_sketches": 0,
+        "queries_with_overlap": 1543,
+        "match_rows": 2113,
+        "output": "dna.scaled5.csv",
+        "output_sha256": "e6d57349f4a5fbebd37ec28afbaffe310a53af8828072340f03fd66391fe9f32"
+      },
+      {
+        "moltype": "dna",
+        "k": 31,
+        "scaled": 10,
+        "queries": 13894,
+        "empty_sketches": 20,
+        "queries_with_overlap": 1225,
+        "match_rows": 1644,
+        "output": "dna.scaled10.csv",
+        "output_sha256": "157bbc85a5868e6e0313da0724950791f3986da03dcdfb9804085af76eb8ece9"
+      },
+      {
+        "moltype": "dna",
+        "k": 31,
+        "scaled": 100,
+        "queries": 13894,
+        "empty_sketches": 5631,
+        "queries_with_overlap": 360,
+        "match_rows": 386,
+        "output": "dna.scaled100.csv",
+        "output_sha256": "3a9c543d957624aadc8bee6cff57d9360fba24556619a40bef57f57c3dc3f099"
+      },
+      {
+        "moltype": "protein",
+        "k": 7,
+        "scaled": 5,
+        "queries": 13894,
+        "empty_sketches": 0,
+        "queries_with_overlap": 13859,
+        "match_rows": 84975,
+        "output": "protein.scaled5.csv",
+        "output_sha256": "4b0170cfef0621461be99533abbf106e21e51f5f586d40c7012afabbbbdfde20"
+      },
+      {
+        "moltype": "protein",
+        "k": 7,
+        "scaled": 10,
+        "queries": 13894,
+        "empty_sketches": 0,
+        "queries_with_overlap": 13573,
+        "match_rows": 68894,
+        "output": "protein.scaled10.csv",
+        "output_sha256": "520aa70ca2e6a936760fcba94c381f63d6ce69f4c83c7636c2c8a8a9ec4a5a9b"
+      },
+      {
+        "moltype": "protein",
+        "k": 7,
+        "scaled": 100,
+        "queries": 13894,
+        "empty_sketches": 2191,
+        "queries_with_overlap": 6742,
+        "match_rows": 18099,
+        "output": "protein.scaled100.csv",
+        "output_sha256": "f4eb056f58dfc6232691717103337a9bc0a6d17bf3c6180e37a2da62e9aa20d7"
+      },
+      {
+        "moltype": "dayhoff",
+        "k": 12,
+        "scaled": 5,
+        "queries": 13894,
+        "empty_sketches": 0,
+        "queries_with_overlap": 13772,
+        "match_rows": 88065,
+        "output": "dayhoff.scaled5.csv",
+        "output_sha256": "cec0fcb3c7e165676be076638807b10590a4f04035f4dbd669b9c1981feaa2e8"
+      },
+      {
+        "moltype": "dayhoff",
+        "k": 12,
+        "scaled": 10,
+        "queries": 13894,
+        "empty_sketches": 0,
+        "queries_with_overlap": 13346,
+        "match_rows": 73663,
+        "output": "dayhoff.scaled10.csv",
+        "output_sha256": "d35006e9f8b7996262fc2b7f44f91f15b6fc09bc2fdc958ea944ed43abfdb909"
+      },
+      {
+        "moltype": "dayhoff",
+        "k": 12,
+        "scaled": 100,
+        "queries": 13894,
+        "empty_sketches": 3174,
+        "queries_with_overlap": 6341,
+        "match_rows": 20978,
+        "output": "dayhoff.scaled100.csv",
+        "output_sha256": "fa12575d4a436d0446347fe0db69d8b6a3244d566514b5b8a933d0faf3eecf9d"
+      },
+      {
+        "moltype": "hp",
+        "k": 30,
+        "scaled": 5,
+        "queries": 13894,
+        "empty_sketches": 7212,
+        "queries_with_overlap": 4290,
+        "match_rows": 13556,
+        "output": "hp.scaled5.csv",
+        "output_sha256": "2e104c075f60234f28d414ce7074a846429559fd67891044942fa183c8c531c0"
+      },
+      {
+        "moltype": "hp",
+        "k": 30,
+        "scaled": 10,
+        "queries": 13894,
+        "empty_sketches": 7212,
+        "queries_with_overlap": 3491,
+        "match_rows": 10868,
+        "output": "hp.scaled10.csv",
+        "output_sha256": "981af4da9c3dd800956f33b01e821c5cdc7751e882fa56f90bb5e7aea27a38a2"
+      },
+      {
+        "moltype": "hp",
+        "k": 30,
+        "scaled": 100,
+        "queries": 13894,
+        "empty_sketches": 8684,
+        "queries_with_overlap": 1254,
+        "match_rows": 3355,
+        "output": "hp.scaled100.csv",
+        "output_sha256": "696ac9d33dd98a63bc8c1a8f2158db13914040544224fc08b6af2616a9e306e6"
+      }
+    ]
+  },
+  {
+    "batch": 1,
+    "input_sha256": "0a2c74ca885df8d510a28cba4512c40a61097dea677b9e81fc152cb86057c60a",
+    "extended_records": 17069,
+    "reference_scope": "Eight complete public ENA bivalve RNA-seq runs from eight studies; initial archive subset, not all 17623 runs",
+    "reference_names": [
+      "DRR350416",
+      "DRR354099",
+      "SRR10403264",
+      "SRR12227931",
+      "SRR18575420",
+      "SRR330464",
+      "SRR7640806",
+      "SRR942484"
+    ],
+    "translation": "Six-frame sourmash translation of each separate DNA record",
+    "search_rule": "All comparisons with at least one shared hash; candidate occurrence evidence only",
+    "searches": [
+      {
+        "moltype": "dna",
+        "k": 31,
+        "scaled": 5,
+        "queries": 17069,
+        "empty_sketches": 0,
+        "queries_with_overlap": 2045,
+        "match_rows": 3298,
+        "output": "dna.scaled5.csv",
+        "output_sha256": "b0a0986297d1b13db26cbb6a8489755bdfb966386e332159da4f107da13b6c05"
+      },
+      {
+        "moltype": "dna",
+        "k": 31,
+        "scaled": 10,
+        "queries": 17069,
+        "empty_sketches": 18,
+        "queries_with_overlap": 1657,
+        "match_rows": 2610,
+        "output": "dna.scaled10.csv",
+        "output_sha256": "53e017e1073801a481d3d9459eadd13e344c0c1042079adf230bd90015df2264"
+      },
+      {
+        "moltype": "dna",
+        "k": 31,
+        "scaled": 100,
+        "queries": 17069,
+        "empty_sketches": 6993,
+        "queries_with_overlap": 448,
+        "match_rows": 473,
+        "output": "dna.scaled100.csv",
+        "output_sha256": "f0528f3999ebafbe0d25b708ed95668490a735730b83f321a9aaec609ea7ba48"
+      },
+      {
+        "moltype": "protein",
+        "k": 7,
+        "scaled": 5,
+        "queries": 17069,
+        "empty_sketches": 0,
+        "queries_with_overlap": 17028,
+        "match_rows": 104628,
+        "output": "protein.scaled5.csv",
+        "output_sha256": "89203aed66b9a3f740370cefb1eb42daf30f5ee5133d175948dca44ba56ee0ad"
+      },
+      {
+        "moltype": "protein",
+        "k": 7,
+        "scaled": 10,
+        "queries": 17069,
+        "empty_sketches": 0,
+        "queries_with_overlap": 16691,
+        "match_rows": 84807,
+        "output": "protein.scaled10.csv",
+        "output_sha256": "7e6e630257361f7a873dfa9daa9bfc2ca8d7b2b85ad5a59ce7ece00ee6b45e46"
+      },
+      {
+        "moltype": "protein",
+        "k": 7,
+        "scaled": 100,
+        "queries": 17069,
+        "empty_sketches": 2790,
+        "queries_with_overlap": 8312,
+        "match_rows": 22777,
+        "output": "protein.scaled100.csv",
+        "output_sha256": "114a34ccd42cc19f242e5e2aab261ef7f418c845920324f3a42f87505966f0aa"
+      },
+      {
+        "moltype": "dayhoff",
+        "k": 12,
+        "scaled": 5,
+        "queries": 17069,
+        "empty_sketches": 0,
+        "queries_with_overlap": 16927,
+        "match_rows": 109437,
+        "output": "dayhoff.scaled5.csv",
+        "output_sha256": "3de2286f1e2d5f1cb1dd476d3d17f9fb9c601f85c573e1752bad43a009c6e0a5"
+      },
+      {
+        "moltype": "dayhoff",
+        "k": 12,
+        "scaled": 10,
+        "queries": 17069,
+        "empty_sketches": 0,
+        "queries_with_overlap": 16444,
+        "match_rows": 92408,
+        "output": "dayhoff.scaled10.csv",
+        "output_sha256": "709ca7f0902046c2e8bed280dbeea27c65705b6afd5ab9e0186fb0dd6f156d1d"
+      },
+      {
+        "moltype": "dayhoff",
+        "k": 12,
+        "scaled": 100,
+        "queries": 17069,
+        "empty_sketches": 4035,
+        "queries_with_overlap": 7832,
+        "match_rows": 26656,
+        "output": "dayhoff.scaled100.csv",
+        "output_sha256": "b5576c0eab4e32dc8b79c5302b7d59a11f18bb76579da401554ea7141929da92"
+      },
+      {
+        "moltype": "hp",
+        "k": 30,
+        "scaled": 5,
+        "queries": 17069,
+        "empty_sketches": 8884,
+        "queries_with_overlap": 5260,
+        "match_rows": 17582,
+        "output": "hp.scaled5.csv",
+        "output_sha256": "92672f96096de790816447c0095c2da4df0975755074770447130250027c9d2c"
+      },
+      {
+        "moltype": "hp",
+        "k": 30,
+        "scaled": 10,
+        "queries": 17069,
+        "empty_sketches": 8884,
+        "queries_with_overlap": 4347,
+        "match_rows": 14264,
+        "output": "hp.scaled10.csv",
+        "output_sha256": "d5ea320798db900817fb835fa68e7775350a5ca6e3022c8dcf82b82fd0cb87c1"
+      },
+      {
+        "moltype": "hp",
+        "k": 30,
+        "scaled": 100,
+        "queries": 17069,
+        "empty_sketches": 10754,
+        "queries_with_overlap": 1625,
+        "match_rows": 4758,
+        "output": "hp.scaled100.csv",
+        "output_sha256": "70dca516b97f91fabd45b36a0053bda881348e13ee947bbd64bf901631e58fac"
+      }
+    ]
+  },
+  {
+    "batch": 2,
+    "input_sha256": "58110f909bfacc2aa8ba3a8f58bb5d7f2b9ff6d2c5372956034b38e9fab0acf2",
+    "extended_records": 17528,
+    "reference_scope": "Eight complete public ENA bivalve RNA-seq runs from eight studies; initial archive subset, not all 17623 runs",
+    "reference_names": [
+      "DRR350416",
+      "DRR354099",
+      "SRR10403264",
+      "SRR12227931",
+      "SRR18575420",
+      "SRR330464",
+      "SRR7640806",
+      "SRR942484"
+    ],
+    "translation": "Six-frame sourmash translation of each separate DNA record",
+    "search_rule": "All comparisons with at least one shared hash; candidate occurrence evidence only",
+    "searches": [
+      {
+        "moltype": "dna",
+        "k": 31,
+        "scaled": 5,
+        "queries": 17528,
+        "empty_sketches": 1,
+        "queries_with_overlap": 2096,
+        "match_rows": 3413,
+        "output": "dna.scaled5.csv",
+        "output_sha256": "da2ee0b86b642a9567f79c7f26110b54c238880732d19798ffad3afcfda329d2"
+      },
+      {
+        "moltype": "dna",
+        "k": 31,
+        "scaled": 10,
+        "queries": 17528,
+        "empty_sketches": 33,
+        "queries_with_overlap": 1691,
+        "match_rows": 2663,
+        "output": "dna.scaled10.csv",
+        "output_sha256": "eefb2e15c99af5f38a100ad6022b9cd5bd2d8d0fa9acff7cc42ffc1ccebfe3c7"
+      },
+      {
+        "moltype": "dna",
+        "k": 31,
+        "scaled": 100,
+        "queries": 17528,
+        "empty_sketches": 7282,
+        "queries_with_overlap": 361,
+        "match_rows": 384,
+        "output": "dna.scaled100.csv",
+        "output_sha256": "058cf48c1a89df5094b9b342e862d56a4114477cda2e48aac4deb85ba5db761c"
+      },
+      {
+        "moltype": "protein",
+        "k": 7,
+        "scaled": 5,
+        "queries": 17528,
+        "empty_sketches": 0,
+        "queries_with_overlap": 17467,
+        "match_rows": 106764,
+        "output": "protein.scaled5.csv",
+        "output_sha256": "d3e078a5452f39c9b4f3d98d1e9e768c39eaf00bb2916d942b704fd91254a08d"
+      },
+      {
+        "moltype": "protein",
+        "k": 7,
+        "scaled": 10,
+        "queries": 17528,
+        "empty_sketches": 0,
+        "queries_with_overlap": 17129,
+        "match_rows": 86575,
+        "output": "protein.scaled10.csv",
+        "output_sha256": "a8f4bfc2b9281247d5434ad68018fdbaef5a8edddf547db4f2c95cb78f64d29e"
+      },
+      {
+        "moltype": "protein",
+        "k": 7,
+        "scaled": 100,
+        "queries": 17528,
+        "empty_sketches": 2952,
+        "queries_with_overlap": 8527,
+        "match_rows": 24268,
+        "output": "protein.scaled100.csv",
+        "output_sha256": "7c294d8e53eb421c4259368054fa262536016301d5684688dafeb09c524f5c07"
+      },
+      {
+        "moltype": "dayhoff",
+        "k": 12,
+        "scaled": 5,
+        "queries": 17528,
+        "empty_sketches": 0,
+        "queries_with_overlap": 17421,
+        "match_rows": 115439,
+        "output": "dayhoff.scaled5.csv",
+        "output_sha256": "592e25eabd2733dccaf4b8c575c8f27e65eaf1adcd776f1eb4b89afe723cae4c"
+      },
+      {
+        "moltype": "dayhoff",
+        "k": 12,
+        "scaled": 10,
+        "queries": 17528,
+        "empty_sketches": 0,
+        "queries_with_overlap": 16964,
+        "match_rows": 98477,
+        "output": "dayhoff.scaled10.csv",
+        "output_sha256": "466d6e668b57afaf2520c787673d9742f1c0d2ab88738315622fb523c844f3f8"
+      },
+      {
+        "moltype": "dayhoff",
+        "k": 12,
+        "scaled": 100,
+        "queries": 17528,
+        "empty_sketches": 4102,
+        "queries_with_overlap": 8385,
+        "match_rows": 29869,
+        "output": "dayhoff.scaled100.csv",
+        "output_sha256": "1930983bf570c7640ece8a9c58c19052ffbe3e461c94928d195920ad5aa34845"
+      },
+      {
+        "moltype": "hp",
+        "k": 30,
+        "scaled": 5,
+        "queries": 17528,
+        "empty_sketches": 9271,
+        "queries_with_overlap": 5554,
+        "match_rows": 18844,
+        "output": "hp.scaled5.csv",
+        "output_sha256": "6d09936c428273dd30ab87898b76a103c5216e77e5795125dd16a4112e948981"
+      },
+      {
+        "moltype": "hp",
+        "k": 30,
+        "scaled": 10,
+        "queries": 17528,
+        "empty_sketches": 9271,
+        "queries_with_overlap": 4647,
+        "match_rows": 15360,
+        "output": "hp.scaled10.csv",
+        "output_sha256": "6a12b94edf321222b9178973df0b25d1b8fb648198058ad34745bdb6f152e3eb"
+      },
+      {
+        "moltype": "hp",
+        "k": 30,
+        "scaled": 100,
+        "queries": 17528,
+        "empty_sketches": 11130,
+        "queries_with_overlap": 1606,
+        "match_rows": 4381,
+        "output": "hp.scaled100.csv",
+        "output_sha256": "fcb83400e0705ae4efde67ad3cf5703b869628beab30e3aeca14f1a08a401b86"
+      }
+    ]
+  },
+  {
+    "batch": 3,
+    "input_sha256": "6a15a9c8196e7ee5642cdecfd445ebd0c45fd377b46905c0b9f3756f73e9680f",
+    "extended_records": 16815,
+    "reference_scope": "Eight complete public ENA bivalve RNA-seq runs from eight studies; initial archive subset, not all 17623 runs",
+    "reference_names": [
+      "DRR350416",
+      "DRR354099",
+      "SRR10403264",
+      "SRR12227931",
+      "SRR18575420",
+      "SRR330464",
+      "SRR7640806",
+      "SRR942484"
+    ],
+    "translation": "Six-frame sourmash translation of each separate DNA record",
+    "search_rule": "All comparisons with at least one shared hash; candidate occurrence evidence only",
+    "searches": [
+      {
+        "moltype": "dna",
+        "k": 31,
+        "scaled": 5,
+        "queries": 16815,
+        "empty_sketches": 0,
+        "queries_with_overlap": 2135,
+        "match_rows": 3437,
+        "output": "dna.scaled5.csv",
+        "output_sha256": "33ffa75f3220867ba6a00287b5add102711a674467236c4908e210c1a8dad246"
+      },
+      {
+        "moltype": "dna",
+        "k": 31,
+        "scaled": 10,
+        "queries": 16815,
+        "empty_sketches": 38,
+        "queries_with_overlap": 1672,
+        "match_rows": 2565,
+        "output": "dna.scaled10.csv",
+        "output_sha256": "b271e707284383fadacb10d266f9e4e5c0a5b19d5871f9f45e110efbdddf556f"
+      },
+      {
+        "moltype": "dna",
+        "k": 31,
+        "scaled": 100,
+        "queries": 16815,
+        "empty_sketches": 6994,
+        "queries_with_overlap": 376,
+        "match_rows": 381,
+        "output": "dna.scaled100.csv",
+        "output_sha256": "21e35d931ea2e67c6c854dc643c24c9a4bf2be7de78ebde46544771f83668e5c"
+      },
+      {
+        "moltype": "protein",
+        "k": 7,
+        "scaled": 5,
+        "queries": 16815,
+        "empty_sketches": 0,
+        "queries_with_overlap": 16773,
+        "match_rows": 104598,
+        "output": "protein.scaled5.csv",
+        "output_sha256": "376a4be6baeb2db86903835c6bdc880ff4e2bba848211868ce35a864bcdbd18b"
+      },
+      {
+        "moltype": "protein",
+        "k": 7,
+        "scaled": 10,
+        "queries": 16815,
+        "empty_sketches": 0,
+        "queries_with_overlap": 16466,
+        "match_rows": 85560,
+        "output": "protein.scaled10.csv",
+        "output_sha256": "d58c1bf38d91d6eb069e4854bd9abe35a614b129cdc814cb40081c095cbade0f"
+      },
+      {
+        "moltype": "protein",
+        "k": 7,
+        "scaled": 100,
+        "queries": 16815,
+        "empty_sketches": 2818,
+        "queries_with_overlap": 8273,
+        "match_rows": 23518,
+        "output": "protein.scaled100.csv",
+        "output_sha256": "a585342d8ccbc1ec998d8a0523908dfbb40fd69df66815b771989ee2f708a3f8"
+      },
+      {
+        "moltype": "dayhoff",
+        "k": 12,
+        "scaled": 5,
+        "queries": 16815,
+        "empty_sketches": 0,
+        "queries_with_overlap": 16722,
+        "match_rows": 112643,
+        "output": "dayhoff.scaled5.csv",
+        "output_sha256": "038301d5b590368b9d472ee6b1e1724924e75b55b6b1a295138709dd0270b6d7"
+      },
+      {
+        "moltype": "dayhoff",
+        "k": 12,
+        "scaled": 10,
+        "queries": 16815,
+        "empty_sketches": 0,
+        "queries_with_overlap": 16348,
+        "match_rows": 97175,
+        "output": "dayhoff.scaled10.csv",
+        "output_sha256": "c9e2ea763133ded8a4a75f91773c7cee2df320644ff0782c36cfef33ae94937c"
+      },
+      {
+        "moltype": "dayhoff",
+        "k": 12,
+        "scaled": 100,
+        "queries": 16815,
+        "empty_sketches": 3914,
+        "queries_with_overlap": 8182,
+        "match_rows": 30469,
+        "output": "dayhoff.scaled100.csv",
+        "output_sha256": "20f72f9420443aea7726dd67df7547e0dcbed834420bbe6a759c7ad3967d2aa7"
+      },
+      {
+        "moltype": "hp",
+        "k": 30,
+        "scaled": 5,
+        "queries": 16815,
+        "empty_sketches": 8771,
+        "queries_with_overlap": 5618,
+        "match_rows": 19368,
+        "output": "hp.scaled5.csv",
+        "output_sha256": "10502b96abdea89e406c980d343ca450040ca10ba0e824e720dacc1619aabfa4"
+      },
+      {
+        "moltype": "hp",
+        "k": 30,
+        "scaled": 10,
+        "queries": 16815,
+        "empty_sketches": 8771,
+        "queries_with_overlap": 4701,
+        "match_rows": 15967,
+        "output": "hp.scaled10.csv",
+        "output_sha256": "9bb350ff0aed5451fe8ee8ce9dc465910c1af9351722827376fe154da211eb76"
+      },
+      {
+        "moltype": "hp",
+        "k": 30,
+        "scaled": 100,
+        "queries": 16815,
+        "empty_sketches": 10622,
+        "queries_with_overlap": 1700,
+        "match_rows": 4788,
+        "output": "hp.scaled100.csv",
+        "output_sha256": "b8a4364a059111d073349b361b93167001819e1e3372f31cdc034d3e88291432"
+      }
+    ]
+  },
+  {
+    "batch": 4,
+    "input_sha256": "8a25162334e0940e63ef5ef4eb44d568fe7d46c1e18c8a75764b1df6b2d60efe",
+    "extended_records": 16719,
+    "reference_scope": "Eight complete public ENA bivalve RNA-seq runs from eight studies; initial archive subset, not all 17623 runs",
+    "reference_names": [
+      "DRR350416",
+      "DRR354099",
+      "SRR10403264",
+      "SRR12227931",
+      "SRR18575420",
+      "SRR330464",
+      "SRR7640806",
+      "SRR942484"
+    ],
+    "translation": "Six-frame sourmash translation of each separate DNA record",
+    "search_rule": "All comparisons with at least one shared hash; candidate occurrence evidence only",
+    "searches": [
+      {
+        "moltype": "dna",
+        "k": 31,
+        "scaled": 5,
+        "queries": 16719,
+        "empty_sketches": 0,
+        "queries_with_overlap": 1884,
+        "match_rows": 2849,
+        "output": "dna.scaled5.csv",
+        "output_sha256": "90ffbeae8f78374b2c7a3b3d82999f6495f45a6b7dd5f49d29d4869ecd2e99fe"
+      },
+      {
+        "moltype": "dna",
+        "k": 31,
+        "scaled": 10,
+        "queries": 16719,
+        "empty_sketches": 27,
+        "queries_with_overlap": 1494,
+        "match_rows": 2194,
+        "output": "dna.scaled10.csv",
+        "output_sha256": "001455a22f31307b4a6980650e946de2b0ece78393217ac35831bcb027d219f9"
+      },
+      {
+        "moltype": "dna",
+        "k": 31,
+        "scaled": 100,
+        "queries": 16719,
+        "empty_sketches": 6970,
+        "queries_with_overlap": 305,
+        "match_rows": 330,
+        "output": "dna.scaled100.csv",
+        "output_sha256": "2f95f924c1b5b9c11a926701c0039dc1da93bd2d0d3e1eafaead6d5076d388bb"
+      },
+      {
+        "moltype": "protein",
+        "k": 7,
+        "scaled": 5,
+        "queries": 16719,
+        "empty_sketches": 0,
+        "queries_with_overlap": 16663,
+        "match_rows": 101713,
+        "output": "protein.scaled5.csv",
+        "output_sha256": "b83f9152cb29160caf4f8e2af75f8aaa680afef2de7e626fd74aec4bcdfedd49"
+      },
+      {
+        "moltype": "protein",
+        "k": 7,
+        "scaled": 10,
+        "queries": 16719,
+        "empty_sketches": 0,
+        "queries_with_overlap": 16328,
+        "match_rows": 82177,
+        "output": "protein.scaled10.csv",
+        "output_sha256": "ab24872fa58c1c91c222aebc666a7aad4b2f7df251aa78afcee2e81a1c7efff7"
+      },
+      {
+        "moltype": "protein",
+        "k": 7,
+        "scaled": 100,
+        "queries": 16719,
+        "empty_sketches": 2848,
+        "queries_with_overlap": 7936,
+        "match_rows": 21604,
+        "output": "protein.scaled100.csv",
+        "output_sha256": "bb2531b154dd879c6fe5ce26802acac18c28b2440716bf7e237eba2ee6ff825c"
+      },
+      {
+        "moltype": "dayhoff",
+        "k": 12,
+        "scaled": 5,
+        "queries": 16719,
+        "empty_sketches": 0,
+        "queries_with_overlap": 16584,
+        "match_rows": 107882,
+        "output": "dayhoff.scaled5.csv",
+        "output_sha256": "45f713179370cacebfa54ab723b9f257a0ddfbe725d4f05f91aab482505b5b3e"
+      },
+      {
+        "moltype": "dayhoff",
+        "k": 12,
+        "scaled": 10,
+        "queries": 16719,
+        "empty_sketches": 0,
+        "queries_with_overlap": 16105,
+        "match_rows": 91452,
+        "output": "dayhoff.scaled10.csv",
+        "output_sha256": "0ca233b176cdb46d36ae99350e2074c7564203cf18a64b1fa9a444da64b06dc6"
+      },
+      {
+        "moltype": "dayhoff",
+        "k": 12,
+        "scaled": 100,
+        "queries": 16719,
+        "empty_sketches": 3946,
+        "queries_with_overlap": 7671,
+        "match_rows": 27275,
+        "output": "dayhoff.scaled100.csv",
+        "output_sha256": "12c4beda79de0a291c753b241d2d67bd0f89482d9aafcd845cc077f824405e48"
+      },
+      {
+        "moltype": "hp",
+        "k": 30,
+        "scaled": 5,
+        "queries": 16719,
+        "empty_sketches": 8900,
+        "queries_with_overlap": 5001,
+        "match_rows": 17168,
+        "output": "hp.scaled5.csv",
+        "output_sha256": "fcd4e3150412898d623af9d9a5559dbe39e1b03f0dceafe081bd01bda862aaa6"
+      },
+      {
+        "moltype": "hp",
+        "k": 30,
+        "scaled": 10,
+        "queries": 16719,
+        "empty_sketches": 8900,
+        "queries_with_overlap": 4157,
+        "match_rows": 13827,
+        "output": "hp.scaled10.csv",
+        "output_sha256": "3711f850a6d9437c5ff817be36516f8a9bc867d0fa64f1eaafeede0208174d12"
+      },
+      {
+        "moltype": "hp",
+        "k": 30,
+        "scaled": 100,
+        "queries": 16719,
+        "empty_sketches": 10667,
+        "queries_with_overlap": 1536,
+        "match_rows": 4598,
+        "output": "hp.scaled100.csv",
+        "output_sha256": "5eb54767dcf0d0b25f548397d07687c4402d39fc33946efc29ec4fb3ad578653"
+      }
+    ]
+  },
+  {
+    "batch": 5,
+    "input_sha256": "cfac947ec80c745ed39aae37f0add62beb4cc038f140cc0da89017f3bac5f76c",
+    "extended_records": 17414,
+    "reference_scope": "Eight complete public ENA bivalve RNA-seq runs from eight studies; initial archive subset, not all 17623 runs",
+    "reference_names": [
+      "DRR350416",
+      "DRR354099",
+      "SRR10403264",
+      "SRR12227931",
+      "SRR18575420",
+      "SRR330464",
+      "SRR7640806",
+      "SRR942484"
+    ],
+    "translation": "Six-frame sourmash translation of each separate DNA record",
+    "search_rule": "All comparisons with at least one shared hash; candidate occurrence evidence only",
+    "searches": [
+      {
+        "moltype": "dna",
+        "k": 31,
+        "scaled": 5,
+        "queries": 17414,
+        "empty_sketches": 0,
+        "queries_with_overlap": 1968,
+        "match_rows": 2910,
+        "output": "dna.scaled5.csv",
+        "output_sha256": "f2f8ec65c1720b622f35a24864ab95db37440452c0f239cfc25b499120b1723a"
+      },
+      {
+        "moltype": "dna",
+        "k": 31,
+        "scaled": 10,
+        "queries": 17414,
+        "empty_sketches": 32,
+        "queries_with_overlap": 1578,
+        "match_rows": 2264,
+        "output": "dna.scaled10.csv",
+        "output_sha256": "762f865fa0e438ede48df45bdcda6e217aeb2bf72f38ae43b3dbd330ffb20059"
+      },
+      {
+        "moltype": "dna",
+        "k": 31,
+        "scaled": 100,
+        "queries": 17414,
+        "empty_sketches": 7176,
+        "queries_with_overlap": 342,
+        "match_rows": 353,
+        "output": "dna.scaled100.csv",
+        "output_sha256": "cd22df9ccc94375edc1bf7b9d8009c901950cc9c9c928a1fb2454fe9a4ee9d93"
+      },
+      {
+        "moltype": "protein",
+        "k": 7,
+        "scaled": 5,
+        "queries": 17414,
+        "empty_sketches": 0,
+        "queries_with_overlap": 17360,
+        "match_rows": 105726,
+        "output": "protein.scaled5.csv",
+        "output_sha256": "ec133b6ce9d9d611285fbb5bbc4b91de167887214132dfef5c1b5e8228149619"
+      },
+      {
+        "moltype": "protein",
+        "k": 7,
+        "scaled": 10,
+        "queries": 17414,
+        "empty_sketches": 0,
+        "queries_with_overlap": 17020,
+        "match_rows": 85254,
+        "output": "protein.scaled10.csv",
+        "output_sha256": "f5b8e134d8dca0a3807785072f186c098adf6bf6fa57c3b721d041035ecb2a2b"
+      },
+      {
+        "moltype": "protein",
+        "k": 7,
+        "scaled": 100,
+        "queries": 17414,
+        "empty_sketches": 2926,
+        "queries_with_overlap": 8308,
+        "match_rows": 22058,
+        "output": "protein.scaled100.csv",
+        "output_sha256": "fc74bd1835d84ef423e8262b1c860ca3f5f1a0edad4b5b57adcbf9cecc936360"
+      },
+      {
+        "moltype": "dayhoff",
+        "k": 12,
+        "scaled": 5,
+        "queries": 17414,
+        "empty_sketches": 0,
+        "queries_with_overlap": 17265,
+        "match_rows": 111685,
+        "output": "dayhoff.scaled5.csv",
+        "output_sha256": "f32772cf9d2fe93a95a3e65f4bdf942679a535620b2b00497530983e323126e1"
+      },
+      {
+        "moltype": "dayhoff",
+        "k": 12,
+        "scaled": 10,
+        "queries": 17414,
+        "empty_sketches": 0,
+        "queries_with_overlap": 16754,
+        "match_rows": 94134,
+        "output": "dayhoff.scaled10.csv",
+        "output_sha256": "5b5707573bfdc5fb1590ffb43196cb89de90a43eb296840ff342f3c7e884ccb9"
+      },
+      {
+        "moltype": "dayhoff",
+        "k": 12,
+        "scaled": 100,
+        "queries": 17414,
+        "empty_sketches": 4067,
+        "queries_with_overlap": 7960,
+        "match_rows": 27456,
+        "output": "dayhoff.scaled100.csv",
+        "output_sha256": "6745f24dddf4b4c5c247e42cf0d0892f51481b3f9fe588fac09f28ca809e6021"
+      },
+      {
+        "moltype": "hp",
+        "k": 30,
+        "scaled": 5,
+        "queries": 17414,
+        "empty_sketches": 9163,
+        "queries_with_overlap": 5217,
+        "match_rows": 17217,
+        "output": "hp.scaled5.csv",
+        "output_sha256": "be4023203d6f2eb83d60f782bcd45e4e71fcd3cfc95bc0237a60bab3c4d6d75e"
+      },
+      {
+        "moltype": "hp",
+        "k": 30,
+        "scaled": 10,
+        "queries": 17414,
+        "empty_sketches": 9163,
+        "queries_with_overlap": 4279,
+        "match_rows": 13797,
+        "output": "hp.scaled10.csv",
+        "output_sha256": "7f6fa98e179393671fa9ef6b5c291777036af8e5c1caf67c01ed2b27f99afe96"
+      },
+      {
+        "moltype": "hp",
+        "k": 30,
+        "scaled": 100,
+        "queries": 17414,
+        "empty_sketches": 11050,
+        "queries_with_overlap": 1483,
+        "match_rows": 3870,
+        "output": "hp.scaled100.csv",
+        "output_sha256": "7599beeb5821258cb36140f18414f8892bef4a3a681a1305f410848b9ad475e8"
+      }
+    ]
+  }
+]

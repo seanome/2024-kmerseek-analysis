@@ -1,0 +1,275 @@
+{
+  "run": "SRR942484",
+  "input_scope": "Complete public ENA RNA-seq FASTQs; all listed files, no trimming or subsampling",
+  "sources": [
+    {
+      "path": "/lscratch/olgabot/49205521/SRR942484-_mg6doz2/reads-0.fastq.gz",
+      "sha256": "dda0822ca570c883decdec0f95056cfd8c7ec07cde8ab1e661514aa4de38f98b"
+    }
+  ],
+  "settings": [
+    {
+      "moltype": "dna",
+      "ksize": 31,
+      "scaled": 5,
+      "hashes": 2792510,
+      "bytes": 23139052,
+      "signature_md5": "e39b045a994af8464be735117fff80b4",
+      "path": "/scratch/users/olgabot/oyster-shazam-20261023/public-bivalve-sketches/dna/SRR942484.scaled5.sig.zip"
+    },
+    {
+      "moltype": "dna",
+      "ksize": 31,
+      "scaled": 10,
+      "hashes": 1395737,
+      "bytes": 11550222,
+      "signature_md5": "a8df2f324470108f9bc4c55c73dee7b7",
+      "path": "/scratch/users/olgabot/oyster-shazam-20261023/public-bivalve-sketches/dna/SRR942484.scaled10.sig.zip"
+    },
+    {
+      "moltype": "dna",
+      "ksize": 31,
+      "scaled": 100,
+      "hashes": 139247,
+      "bytes": 1145730,
+      "signature_md5": "f4c6a94f7203291b481c40a45a5e10f4",
+      "path": "/scratch/users/olgabot/oyster-shazam-20261023/public-bivalve-sketches/dna/SRR942484.scaled100.sig.zip"
+    },
+    {
+      "moltype": "protein",
+      "ksize": 7,
+      "scaled": 5,
+      "hashes": 4692604,
+      "bytes": 38399803,
+      "signature_md5": "47a49d896a5dd7a8ffc2ed32ff72a791",
+      "path": "/scratch/users/olgabot/oyster-shazam-20261023/public-bivalve-sketches/protein/SRR942484.scaled5.sig.zip"
+    },
+    {
+      "moltype": "protein",
+      "ksize": 7,
+      "scaled": 10,
+      "hashes": 2347374,
+      "bytes": 19185393,
+      "signature_md5": "586e845fc21b0f04c397bde668438b2a",
+      "path": "/scratch/users/olgabot/oyster-shazam-20261023/public-bivalve-sketches/protein/SRR942484.scaled10.sig.zip"
+    },
+    {
+      "moltype": "protein",
+      "ksize": 7,
+      "scaled": 100,
+      "hashes": 234388,
+      "bytes": 1905727,
+      "signature_md5": "ecb258b0b71cd661feb7f961373e02c1",
+      "path": "/scratch/users/olgabot/oyster-shazam-20261023/public-bivalve-sketches/protein/SRR942484.scaled100.sig.zip"
+    },
+    {
+      "moltype": "dayhoff",
+      "ksize": 12,
+      "scaled": 5,
+      "hashes": 5052661,
+      "bytes": 41268022,
+      "signature_md5": "94bf0b22267a291863c7142410501f4f",
+      "path": "/scratch/users/olgabot/oyster-shazam-20261023/public-bivalve-sketches/dayhoff/SRR942484.scaled5.sig.zip"
+    },
+    {
+      "moltype": "dayhoff",
+      "ksize": 12,
+      "scaled": 10,
+      "hashes": 2524695,
+      "bytes": 20598638,
+      "signature_md5": "8d03a60e932df0c6370fb7de4f38d038",
+      "path": "/scratch/users/olgabot/oyster-shazam-20261023/public-bivalve-sketches/dayhoff/SRR942484.scaled10.sig.zip"
+    },
+    {
+      "moltype": "dayhoff",
+      "ksize": 12,
+      "scaled": 100,
+      "hashes": 252475,
+      "bytes": 2049983,
+      "signature_md5": "4bd9a648f6f800fb2230908136ca585f",
+      "path": "/scratch/users/olgabot/oyster-shazam-20261023/public-bivalve-sketches/dayhoff/SRR942484.scaled100.sig.zip"
+    },
+    {
+      "moltype": "hp",
+      "ksize": 30,
+      "scaled": 5,
+      "hashes": 5206950,
+      "bytes": 42499583,
+      "signature_md5": "41525afaf2bc23eae7471eb23b431e2c",
+      "path": "/scratch/users/olgabot/oyster-shazam-20261023/public-bivalve-sketches/hp/SRR942484.scaled5.sig.zip"
+    },
+    {
+      "moltype": "hp",
+      "ksize": 30,
+      "scaled": 10,
+      "hashes": 2604047,
+      "bytes": 21231420,
+      "signature_md5": "148a852b7cd2eccd2f31b4b96a1fad64",
+      "path": "/scratch/users/olgabot/oyster-shazam-20261023/public-bivalve-sketches/hp/SRR942484.scaled10.sig.zip"
+    },
+    {
+      "moltype": "hp",
+      "ksize": 30,
+      "scaled": 100,
+      "hashes": 260405,
+      "bytes": 2113022,
+      "signature_md5": "2347bd8fa98932cd9767b69fe4108a45",
+      "path": "/scratch/users/olgabot/oyster-shazam-20261023/public-bivalve-sketches/hp/SRR942484.scaled100.sig.zip"
+    }
+  ],
+  "commands": [
+    [
+      "/home/groups/ayeletv/opt/oyster-shazam-20261023/bin/python",
+      "-m",
+      "sourmash",
+      "sketch",
+      "dna",
+      "/lscratch/olgabot/49205521/SRR942484-_mg6doz2/reads-0.fastq.gz",
+      "--merge",
+      "SRR942484",
+      "-p",
+      "dna,k=31,scaled=5",
+      "-o",
+      "/scratch/users/olgabot/oyster-shazam-20261023/public-bivalve-sketches/dna/SRR942484.scaled5.sig.zip"
+    ],
+    [
+      "/home/groups/ayeletv/opt/oyster-shazam-20261023/bin/python",
+      "-m",
+      "sourmash",
+      "sig",
+      "downsample",
+      "--scaled",
+      "10",
+      "/scratch/users/olgabot/oyster-shazam-20261023/public-bivalve-sketches/dna/SRR942484.scaled5.sig.zip",
+      "-o",
+      "/scratch/users/olgabot/oyster-shazam-20261023/public-bivalve-sketches/dna/SRR942484.scaled10.sig.zip"
+    ],
+    [
+      "/home/groups/ayeletv/opt/oyster-shazam-20261023/bin/python",
+      "-m",
+      "sourmash",
+      "sig",
+      "downsample",
+      "--scaled",
+      "100",
+      "/scratch/users/olgabot/oyster-shazam-20261023/public-bivalve-sketches/dna/SRR942484.scaled5.sig.zip",
+      "-o",
+      "/scratch/users/olgabot/oyster-shazam-20261023/public-bivalve-sketches/dna/SRR942484.scaled100.sig.zip"
+    ],
+    [
+      "/home/groups/ayeletv/opt/oyster-shazam-20261023/bin/python",
+      "-m",
+      "sourmash",
+      "sketch",
+      "translate",
+      "/lscratch/olgabot/49205521/SRR942484-_mg6doz2/reads-0.fastq.gz",
+      "--merge",
+      "SRR942484",
+      "-p",
+      "protein,k=7,scaled=5",
+      "-o",
+      "/scratch/users/olgabot/oyster-shazam-20261023/public-bivalve-sketches/protein/SRR942484.scaled5.sig.zip"
+    ],
+    [
+      "/home/groups/ayeletv/opt/oyster-shazam-20261023/bin/python",
+      "-m",
+      "sourmash",
+      "sig",
+      "downsample",
+      "--scaled",
+      "10",
+      "/scratch/users/olgabot/oyster-shazam-20261023/public-bivalve-sketches/protein/SRR942484.scaled5.sig.zip",
+      "-o",
+      "/scratch/users/olgabot/oyster-shazam-20261023/public-bivalve-sketches/protein/SRR942484.scaled10.sig.zip"
+    ],
+    [
+      "/home/groups/ayeletv/opt/oyster-shazam-20261023/bin/python",
+      "-m",
+      "sourmash",
+      "sig",
+      "downsample",
+      "--scaled",
+      "100",
+      "/scratch/users/olgabot/oyster-shazam-20261023/public-bivalve-sketches/protein/SRR942484.scaled5.sig.zip",
+      "-o",
+      "/scratch/users/olgabot/oyster-shazam-20261023/public-bivalve-sketches/protein/SRR942484.scaled100.sig.zip"
+    ],
+    [
+      "/home/groups/ayeletv/opt/oyster-shazam-20261023/bin/python",
+      "-m",
+      "sourmash",
+      "sketch",
+      "translate",
+      "/lscratch/olgabot/49205521/SRR942484-_mg6doz2/reads-0.fastq.gz",
+      "--merge",
+      "SRR942484",
+      "-p",
+      "dayhoff,k=12,scaled=5",
+      "-o",
+      "/scratch/users/olgabot/oyster-shazam-20261023/public-bivalve-sketches/dayhoff/SRR942484.scaled5.sig.zip"
+    ],
+    [
+      "/home/groups/ayeletv/opt/oyster-shazam-20261023/bin/python",
+      "-m",
+      "sourmash",
+      "sig",
+      "downsample",
+      "--scaled",
+      "10",
+      "/scratch/users/olgabot/oyster-shazam-20261023/public-bivalve-sketches/dayhoff/SRR942484.scaled5.sig.zip",
+      "-o",
+      "/scratch/users/olgabot/oyster-shazam-20261023/public-bivalve-sketches/dayhoff/SRR942484.scaled10.sig.zip"
+    ],
+    [
+      "/home/groups/ayeletv/opt/oyster-shazam-20261023/bin/python",
+      "-m",
+      "sourmash",
+      "sig",
+      "downsample",
+      "--scaled",
+      "100",
+      "/scratch/users/olgabot/oyster-shazam-20261023/public-bivalve-sketches/dayhoff/SRR942484.scaled5.sig.zip",
+      "-o",
+      "/scratch/users/olgabot/oyster-shazam-20261023/public-bivalve-sketches/dayhoff/SRR942484.scaled100.sig.zip"
+    ],
+    [
+      "/home/groups/ayeletv/opt/oyster-shazam-20261023/bin/python",
+      "-m",
+      "sourmash",
+      "sketch",
+      "translate",
+      "/lscratch/olgabot/49205521/SRR942484-_mg6doz2/reads-0.fastq.gz",
+      "--merge",
+      "SRR942484",
+      "-p",
+      "hp,k=30,scaled=5",
+      "-o",
+      "/scratch/users/olgabot/oyster-shazam-20261023/public-bivalve-sketches/hp/SRR942484.scaled5.sig.zip"
+    ],
+    [
+      "/home/groups/ayeletv/opt/oyster-shazam-20261023/bin/python",
+      "-m",
+      "sourmash",
+      "sig",
+      "downsample",
+      "--scaled",
+      "10",
+      "/scratch/users/olgabot/oyster-shazam-20261023/public-bivalve-sketches/hp/SRR942484.scaled5.sig.zip",
+      "-o",
+      "/scratch/users/olgabot/oyster-shazam-20261023/public-bivalve-sketches/hp/SRR942484.scaled10.sig.zip"
+    ],
+    [
+      "/home/groups/ayeletv/opt/oyster-shazam-20261023/bin/python",
+      "-m",
+      "sourmash",
+      "sig",
+      "downsample",
+      "--scaled",
+      "100",
+      "/scratch/users/olgabot/oyster-shazam-20261023/public-bivalve-sketches/hp/SRR942484.scaled5.sig.zip",
+      "-o",
+      "/scratch/users/olgabot/oyster-shazam-20261023/public-bivalve-sketches/hp/SRR942484.scaled100.sig.zip"
+    ]
+  ],
+  "translation": "sourmash sketch translate; all six frames, no CDS prediction"
+}

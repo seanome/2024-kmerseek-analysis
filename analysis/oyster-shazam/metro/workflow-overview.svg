@@ -1,0 +1,260 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1262.0" height="758.0" viewBox="0 0 1262.0 758.0" style="color-scheme:light"><rect width="100%" height="100%" fill="white" /><text x="25" y="30" font-family="Arial" font-size="23" font-weight="bold">Oyster — complete reads to public sequence matches</text><path d="M25,60 h30" stroke="#0072B2" stroke-width="5" /><text x="65" y="65" font-family="Arial" font-size="15">Oyster SPLASH</text><path d="M242,60 h30" stroke="#009E73" stroke-width="5" /><text x="282" y="65" font-family="Arial" font-size="15">Oyster DE-kupl</text><path d="M468,60 h30" stroke="#D55E00" stroke-width="5" /><text x="508" y="65" font-family="Arial" font-size="15">Public bivalve RNA-seq</text><path d="M766,60 h30" stroke="#8A4298" stroke-width="5" stroke-dasharray="12,8" /><text x="806" y="65" font-family="Arial" font-size="15">Swiss-Prot — pending</text><text x="25" y="95" font-family="Arial" font-size="15">Circle: program. Document: file. Dashed purple: planned Swiss-Prot branch. Read left to right.</text><g transform="translate(0,120)"><defs>
+</defs>
+<metadata id="diagram-manifest" data-schema-version="1.0">{"groups":[{"color":"#0072B2","id":"focal","label":"Oyster SPLASH"},{"color":"#009E73","id":"dekupl","label":"Oyster DE-kupl"},{"color":"#D55E00","id":"archive","label":"Public bivalve RNA-seq"},{"color":"#8A4298","id":"swiss","label":"Swiss-Prot — pending"}],"height":638,"match":{"flags":"i","target":"fqProcessName","type":"regex"},"nodes":[{"groups":["focal"],"h":10.0,"id":"raw","label":"raw","patterns":[],"r":5.0,"region":"inputs","rx":5.0,"w":10.0,"x":110.0,"y":120.0},{"groups":["focal"],"h":10.0,"id":"trimming","label":"Trim Galore","patterns":[],"r":5.0,"region":"trim","rx":5.0,"w":10.0,"x":309.5,"y":120.0},{"groups":["focal"],"h":10.0,"id":"r1","label":"r1","patterns":[],"r":5.0,"region":"trim","rx":5.0,"w":10.0,"x":405.5,"y":120.0},{"groups":["dekupl","focal"],"h":14.0,"id":"r2","label":"r2","patterns":[],"r":5.0,"region":"trim","rx":5.0,"w":10.0,"x":405.5,"y":180.4},{"groups":["focal"],"h":10.0,"id":"splash","label":"SPLASH — complete","patterns":[],"r":5.0,"region":"discover","rx":5.0,"w":10.0,"x":702.0,"y":120.0},{"groups":["focal"],"h":10.0,"id":"select","label":"Every adjusted P &lt; 0.05 anchor","patterns":[],"r":5.0,"region":"discover","rx":5.0,"w":10.0,"x":762.0,"y":120.0},{"groups":["dekupl"],"h":10.0,"id":"dekupl","label":"DE-kupl — both mates","patterns":[],"r":5.0,"region":"discover","rx":5.0,"w":10.0,"x":702.0,"y":178.4},{"groups":["focal"],"h":10.0,"id":"compact","label":"Compactors — both mates","patterns":[],"r":5.0,"region":"extensions","rx":5.0,"w":10.0,"x":1068.5,"y":120.0},{"groups":["focal"],"h":10.0,"id":"dna","label":"dna","patterns":[],"r":5.0,"region":"extensions","rx":5.0,"w":10.0,"x":1128.5,"y":120.0},{"groups":["dekupl"],"h":10.0,"id":"diff","label":"diff","patterns":[],"r":5.0,"region":"extensions","rx":5.0,"w":10.0,"x":1068.5,"y":178.4},{"groups":["archive"],"h":10.0,"id":"publicreads","label":"publicreads","patterns":[],"r":5.0,"region":"refs","rx":5.0,"w":10.0,"x":128.0,"y":356.4},{"groups":["swiss"],"h":10.0,"id":"swissfa","label":"swissfa","patterns":[],"r":5.0,"region":"refs","rx":5.0,"w":10.0,"x":128.0,"y":414.8},{"groups":["archive"],"h":10.0,"id":"pubtrim","label":"Trim + sourmash","patterns":[],"r":5.0,"region":"sketches","rx":5.0,"w":10.0,"x":402.0,"y":356.4},{"groups":["archive"],"h":10.0,"id":"runsigs","label":"runsigs","patterns":[],"r":5.0,"region":"sketches","rx":5.0,"w":10.0,"x":462.0,"y":356.4},{"groups":["swiss"],"h":10.0,"id":"swsketch","label":"Sourmash — scaled 5","patterns":[],"r":5.0,"region":"sketches","rx":5.0,"w":10.0,"x":402.0,"y":426.8},{"groups":["swiss"],"h":10.0,"id":"swisssigs","label":"swisssigs","patterns":[],"r":5.0,"region":"sketches","rx":5.0,"w":10.0,"x":462.0,"y":426.8},{"groups":["focal"],"h":10.0,"id":"queries","label":"Sourmash queries","patterns":[],"r":5.0,"region":"search","rx":5.0,"w":10.0,"x":694.0,"y":360.4},{"groups":["focal"],"h":10.0,"id":"querysigs","label":"querysigs","patterns":[],"r":5.0,"region":"search","rx":5.0,"w":10.0,"x":754.0,"y":360.4},{"groups":["archive","focal","swiss"],"h":18.0,"id":"many","label":"manysearch","patterns":[],"r":5.0,"region":"search","rx":5.0,"w":10.0,"x":850.0,"y":364.4},{"groups":["archive"],"h":10.0,"id":"matches","label":"matches","patterns":[],"r":5.0,"region":"output","rx":5.0,"w":10.0,"x":1011.0,"y":364.4},{"groups":["archive"],"h":10.0,"id":"compare","label":"Audit 10 versus 100","patterns":[],"r":5.0,"region":"output","rx":5.0,"w":10.0,"x":1071.0,"y":364.4},{"groups":["archive"],"h":10.0,"id":"losses","label":"losses","patterns":[],"r":5.0,"region":"output","rx":5.0,"w":10.0,"x":1131.0,"y":364.4}],"regions":[{"id":"inputs","label":"Experimental inputs"},{"id":"trim","label":"Trimming — complete"},{"id":"discover","label":"Differential discovery"},{"id":"extensions","label":"Recover DNA"},{"id":"refs","label":"Reference inputs"},{"id":"sketches","label":"Build sketches"},{"id":"search","label":"Search sequences"},{"id":"output","label":"Compare and report"}],"title":"Oyster — complete reads to public sequence matches","version":"1.0","width":1262}</metadata>
+<style>.nf-metro-bg { fill: var(--nfm-map-bg, light-dark(#f8f9fa, #1a1625)); }
+.nf-metro-title { fill: var(--nfm-map-title-color, light-dark(#160F26, #f0ecff)); }
+.nf-metro-station-label { fill: var(--nfm-map-label-color, light-dark(#242424, #e0d9f7)); }
+.nf-metro-section-box { fill: var(--nfm-map-section-fill, light-dark(#F3F3F4, #231e30)); stroke: var(--nfm-map-section-stroke, light-dark(#D0CFD4, #3d3650)); }
+.nf-metro-section-label { fill: var(--nfm-map-section-label-color, light-dark(#6c757d, #9d94b8)); }
+.nf-metro-group-label { fill: var(--nfm-map-section-label-color, light-dark(#6c757d, #9d94b8)); }
+.nf-metro-group-underline { stroke: var(--nfm-map-section-label-color, light-dark(#6c757d, #9d94b8)); }
+.nf-metro-legend-bg { fill: var(--nfm-map-legend-bg, light-dark(rgba(248, 249, 250, 0.9), rgba(0, 0, 0, 0.4))); }
+.nf-metro-legend-text { fill: var(--nfm-map-legend-text-color, light-dark(#242424, #e0d9f7)); }
+.nf-metro-marker-stroke { stroke: var(--nfm-map-marker-stroke, light-dark(#2D273C, #7b6ea6)); }
+.nf-metro-label-halo { fill: var(--nfm-map-bg, light-dark(#f8f9fa, #1a1625)); stroke: var(--nfm-map-bg, light-dark(#f8f9fa, #1a1625)); }</style>
+<rect x="52.0" y="70.0" width="108.0" height="100.0" rx="8" ry="8" fill="#F3F3F4" stroke="#D0CFD4" stroke-width="1.0" class="nf-metro-section-box" data-section-id="inputs" data-section-lines="focal" />
+<circle cx="63.0" cy="55.0" r="11" fill="#2D273C" class="nf-metro-section-num-circle" data-section-id="inputs" />
+<text x="63.0" y="55.0" font-size="12" fill="#ffffff" font-family="'Inter Variable', Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif" font-weight="bold" text-anchor="middle" dy="0.3em" data-section-id="inputs">1</text>
+<text x="79.0" y="55.0" font-size="17.0" fill="#6c757d" font-family="'Inter Variable', Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif" font-weight="bold" dy="0.3em" class="nf-metro-section-label" data-section-id="inputs">Experimental inputs</text>
+<rect x="256.0" y="70.0" width="235.5" height="158.4" rx="8" ry="8" fill="#F3F3F4" stroke="#D0CFD4" stroke-width="1.0" class="nf-metro-section-box" data-section-id="trim" data-section-lines="dekupl,focal" />
+<circle cx="267.0" cy="55.0" r="11" fill="#2D273C" class="nf-metro-section-num-circle" data-section-id="trim" />
+<text x="267.0" y="55.0" font-size="12" fill="#ffffff" font-family="'Inter Variable', Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif" font-weight="bold" text-anchor="middle" dy="0.3em" data-section-id="trim">2</text>
+<text x="283.0" y="55.0" font-size="17.0" fill="#6c757d" font-family="'Inter Variable', Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif" font-weight="bold" dy="0.3em" class="nf-metro-section-label" data-section-id="trim">Trimming — complete</text>
+<rect x="608.0" y="70.0" width="293.0" height="158.4" rx="8" ry="8" fill="#F3F3F4" stroke="#D0CFD4" stroke-width="1.0" class="nf-metro-section-box" data-section-id="discover" data-section-lines="dekupl,focal" />
+<circle cx="619.0" cy="55.0" r="11" fill="#2D273C" class="nf-metro-section-num-circle" data-section-id="discover" />
+<text x="619.0" y="55.0" font-size="12" fill="#ffffff" font-family="'Inter Variable', Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif" font-weight="bold" text-anchor="middle" dy="0.3em" data-section-id="discover">3</text>
+<text x="635.0" y="55.0" font-size="17.0" fill="#6c757d" font-family="'Inter Variable', Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif" font-weight="bold" dy="0.3em" class="nf-metro-section-label" data-section-id="discover">Differential discovery</text>
+<rect x="961.0" y="70.0" width="225.5" height="158.4" rx="8" ry="8" fill="#F3F3F4" stroke="#D0CFD4" stroke-width="1.0" class="nf-metro-section-box" data-section-id="extensions" data-section-lines="dekupl,focal" />
+<circle cx="972.0" cy="55.0" r="11" fill="#2D273C" class="nf-metro-section-num-circle" data-section-id="extensions" />
+<text x="972.0" y="55.0" font-size="12" fill="#ffffff" font-family="'Inter Variable', Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif" font-weight="bold" text-anchor="middle" dy="0.3em" data-section-id="extensions">4</text>
+<text x="988.0" y="55.0" font-size="17.0" fill="#6c757d" font-family="'Inter Variable', Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif" font-weight="bold" dy="0.3em" class="nf-metro-section-label" data-section-id="extensions">Recover DNA</text>
+<rect x="60.0" y="306.4" width="136.0" height="158.40000000000003" rx="8" ry="8" fill="#F3F3F4" stroke="#D0CFD4" stroke-width="1.0" class="nf-metro-section-box" data-section-id="refs" data-section-lines="archive,swiss" />
+<circle cx="71.0" cy="281.2" r="11" fill="#2D273C" class="nf-metro-section-num-circle" data-section-id="refs" />
+<text x="71.0" y="281.2" font-size="12" fill="#ffffff" font-family="'Inter Variable', Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif" font-weight="bold" text-anchor="middle" dy="0.3em" data-section-id="refs">5</text>
+<text x="87.0" y="271.0" font-size="17.0" fill="#6c757d" font-family="'Inter Variable', Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif" font-weight="bold" dy="0.3em" class="nf-metro-section-label" data-section-id="refs"><tspan x="87.0" dy="0em">Reference</tspan><tspan x="87.0" dy="1.2em">inputs</tspan></text>
+<rect x="256.0" y="306.4" width="292.0" height="158.40000000000003" rx="8" ry="8" fill="#F3F3F4" stroke="#D0CFD4" stroke-width="1.0" class="nf-metro-section-box" data-section-id="sketches" data-section-lines="archive,swiss" />
+<circle cx="267.0" cy="291.4" r="11" fill="#2D273C" class="nf-metro-section-num-circle" data-section-id="sketches" />
+<text x="267.0" y="291.4" font-size="12" fill="#ffffff" font-family="'Inter Variable', Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif" font-weight="bold" text-anchor="middle" dy="0.3em" data-section-id="sketches">6</text>
+<text x="283.0" y="291.4" font-size="17.0" fill="#6c757d" font-family="'Inter Variable', Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif" font-weight="bold" dy="0.3em" class="nf-metro-section-label" data-section-id="sketches">Build sketches</text>
+<rect x="608.0" y="306.4" width="292.0" height="100.0" rx="8" ry="8" fill="#F3F3F4" stroke="#D0CFD4" stroke-width="1.0" class="nf-metro-section-box" data-section-id="search" data-section-lines="archive,focal,swiss" />
+<circle cx="619.0" cy="291.4" r="11" fill="#2D273C" class="nf-metro-section-num-circle" data-section-id="search" />
+<text x="619.0" y="291.4" font-size="12" fill="#ffffff" font-family="'Inter Variable', Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif" font-weight="bold" text-anchor="middle" dy="0.3em" data-section-id="search">7</text>
+<text x="635.0" y="291.4" font-size="17.0" fill="#6c757d" font-family="'Inter Variable', Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif" font-weight="bold" dy="0.3em" class="nf-metro-section-label" data-section-id="search">Search sequences</text>
+<rect x="961.0" y="306.4" width="228.0" height="100.0" rx="8" ry="8" fill="#F3F3F4" stroke="#D0CFD4" stroke-width="1.0" class="nf-metro-section-box" data-section-id="output" data-section-lines="archive" />
+<circle cx="972.0" cy="291.4" r="11" fill="#2D273C" class="nf-metro-section-num-circle" data-section-id="output" />
+<text x="972.0" y="291.4" font-size="12" fill="#ffffff" font-family="'Inter Variable', Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif" font-weight="bold" text-anchor="middle" dy="0.3em" data-section-id="output">8</text>
+<text x="988.0" y="291.4" font-size="17.0" fill="#6c757d" font-family="'Inter Variable', Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif" font-weight="bold" dy="0.3em" class="nf-metro-section-label" data-section-id="output">Compare and report</text>
+<path d="M402.0,426.8 L462.0,426.8" stroke="#8A4298" stroke-width="4.0" stroke-linecap="round" class="metro-line-swiss" data-line-id="swiss" stroke-dasharray="8,4" />
+<path d="M128.0,414.8 L141.0,414.8 Q151.0,414.8,155.8290712039522,406.0432842168334 L176.1709287960478,369.15671578316665 Q181.0,360.4,191.0,360.4 L196.0,360.4" stroke="#8A4298" stroke-width="4.0" fill="none" stroke-linecap="round" stroke-linejoin="round" class="metro-line-swiss" data-line-id="swiss" stroke-dasharray="8,4" />
+<path d="M256.0,360.4 L261.0,360.4 Q271.0,360.4,275.1173380721893,369.5130415997789 L296.8826619278107,417.6869584002211 Q301.0,426.8,311.0,426.8 L402.0,426.8" stroke="#8A4298" stroke-width="4.0" fill="none" stroke-linecap="round" stroke-linejoin="round" class="metro-line-swiss" data-line-id="swiss" stroke-dasharray="8,4" />
+<path d="M462.0,426.8 L493.0,426.8 Q503.0,426.8,507.5693498139703,417.90499902880447 L528.4306501860297,377.2950009711955 Q533.0,368.4,543.0,368.4 L548.0,368.4" stroke="#8A4298" stroke-width="4.0" fill="none" stroke-linecap="round" stroke-linejoin="round" class="metro-line-swiss" data-line-id="swiss" stroke-dasharray="8,4" />
+<path d="M608.0,368.4 L654.0,368.4 Q664.0,368.4,671.0710678118654,361.3289321881345 L671.9289321881346,360.47106781186545 Q679.0,353.4,689.0,353.4 L759.0,353.4 Q769.0,353.4,776.0710678118654,360.47106781186545 L776.9289321881346,361.3289321881345 Q784.0,368.4,794.0,368.4 L850.0,368.4" stroke="#8A4298" stroke-width="4.0" fill="none" stroke-linecap="round" stroke-linejoin="round" class="metro-line-swiss" data-line-id="swiss" stroke-dasharray="8,4" />
+<path d="M548.0,368.4 L608.0,368.4" stroke="#8A4298" stroke-width="4.0" stroke-linecap="round" class="metro-line-swiss" data-line-id="swiss" stroke-dasharray="8,4" />
+<path d="M196.0,360.4 L256.0,360.4" stroke="#8A4298" stroke-width="4.0" stroke-linecap="round" class="metro-line-swiss" data-line-id="swiss" stroke-dasharray="8,4" />
+<path d="M402.0,356.4 L462.0,356.4" stroke="#D55E00" stroke-width="4.0" stroke-linecap="round" class="metro-line-archive" data-line-id="archive" />
+<path d="M1011.0,364.4 L1071.0,364.4" stroke="#D55E00" stroke-width="4.0" stroke-linecap="round" class="metro-line-archive" data-line-id="archive" />
+<path d="M1071.0,364.4 L1131.0,364.4" stroke="#D55E00" stroke-width="4.0" stroke-linecap="round" class="metro-line-archive" data-line-id="archive" />
+<path d="M128.0,356.4 L196.0,356.4" stroke="#D55E00" stroke-width="4.0" stroke-linecap="round" class="metro-line-archive" data-line-id="archive" />
+<path d="M256.0,356.4 L402.0,356.4" stroke="#D55E00" stroke-width="4.0" stroke-linecap="round" class="metro-line-archive" data-line-id="archive" />
+<path d="M462.0,356.4 L548.0,364.4" stroke="#D55E00" stroke-width="4.0" stroke-linecap="round" class="metro-line-archive" data-line-id="archive" />
+<path d="M608.0,364.4 L654.0,364.4 Q664.0,364.4,671.0710678118654,357.3289321881345 L671.9289321881346,356.47106781186545 Q679.0,349.4,689.0,349.4 L759.0,349.4 Q769.0,349.4,776.0710678118654,356.47106781186545 L776.9289321881346,357.3289321881345 Q784.0,364.4,794.0,364.4 L850.0,364.4" stroke="#D55E00" stroke-width="4.0" fill="none" stroke-linecap="round" stroke-linejoin="round" class="metro-line-archive" data-line-id="archive" />
+<path d="M850.0,364.4 L900.0,364.4" stroke="#D55E00" stroke-width="4.0" stroke-linecap="round" class="metro-line-archive" data-line-id="archive" />
+<path d="M961.0,364.4 L1011.0,364.4" stroke="#D55E00" stroke-width="4.0" stroke-linecap="round" class="metro-line-archive" data-line-id="archive" />
+<path d="M548.0,364.4 L608.0,364.4" stroke="#D55E00" stroke-width="4.0" stroke-linecap="round" class="metro-line-archive" data-line-id="archive" />
+<path d="M196.0,356.4 L256.0,356.4" stroke="#D55E00" stroke-width="4.0" stroke-linecap="round" class="metro-line-archive" data-line-id="archive" />
+<path d="M900.0,364.4 L961.0,364.4" stroke="#D55E00" stroke-width="4.0" stroke-linecap="round" class="metro-line-archive" data-line-id="archive" />
+<path d="M405.5,182.4 L424.25,182.4 Q434.25,182.4,438.8193498139703,173.50499902880446 L459.6806501860297,132.89500097119554 Q464.25,124.0,474.25,124.0 L491.5,124.0" stroke="#009E73" stroke-width="4.0" fill="none" stroke-linecap="round" stroke-linejoin="round" class="metro-line-dekupl" data-line-id="dekupl" />
+<path d="M608.0,124.0 L613.0,124.0 Q623.0,124.0,627.8290712039521,132.75671578316664 L648.1709287960479,169.64328421683334 Q653.0,178.39999999999998,663.0,178.39999999999998 L702.0,178.39999999999998" stroke="#009E73" stroke-width="4.0" fill="none" stroke-linecap="round" stroke-linejoin="round" class="metro-line-dekupl" data-line-id="dekupl" />
+<path d="M702.0,178.39999999999998 L846.0,178.39999999999998 Q856.0,178.39999999999998,860.8290712039521,169.64328421683334 L881.1709287960479,132.75671578316664 Q886.0,124.0,896.0,124.0 L901.0,124.0" stroke="#009E73" stroke-width="4.0" fill="none" stroke-linecap="round" stroke-linejoin="round" class="metro-line-dekupl" data-line-id="dekupl" />
+<path d="M961.0,124.0 L966.0,124.0 Q976.0,124.0,980.8290712039521,132.75671578316664 L1001.1709287960479,169.64328421683334 Q1006.0,178.39999999999998,1016.0,178.39999999999998 L1068.5,178.39999999999998" stroke="#009E73" stroke-width="4.0" fill="none" stroke-linecap="round" stroke-linejoin="round" class="metro-line-dekupl" data-line-id="dekupl" />
+<path d="M491.5,124.0 L608.0,124.0" stroke="#009E73" stroke-width="4.0" stroke-linecap="round" class="metro-line-dekupl" data-line-id="dekupl" />
+<path d="M901.0,124.0 L961.0,124.0" stroke="#009E73" stroke-width="4.0" stroke-linecap="round" class="metro-line-dekupl" data-line-id="dekupl" />
+<path d="M309.5,120.0 L405.5,120.0" stroke="#0072B2" stroke-width="4.0" stroke-linecap="round" class="metro-line-focal" data-line-id="focal" />
+<path d="M309.5,120.0 L336.75,120.0 Q346.75,120.0,351.3193498139703,128.89500097119554 L372.1806501860297,169.50499902880446 Q376.75,178.4,386.75,178.4 L405.5,178.4" stroke="#0072B2" stroke-width="4.0" fill="none" stroke-linecap="round" stroke-linejoin="round" class="metro-line-focal" data-line-id="focal" />
+<path d="M702.0,120.0 L762.0,120.0" stroke="#0072B2" stroke-width="4.0" stroke-linecap="round" class="metro-line-focal" data-line-id="focal" />
+<path d="M1068.5,120.0 L1128.5,120.0" stroke="#0072B2" stroke-width="4.0" stroke-linecap="round" class="metro-line-focal" data-line-id="focal" />
+<path d="M694.0,360.4 L754.0,360.4" stroke="#0072B2" stroke-width="4.0" stroke-linecap="round" class="metro-line-focal" data-line-id="focal" />
+<path d="M754.0,360.4 L850.0,360.4" stroke="#0072B2" stroke-width="4.0" stroke-linecap="round" class="metro-line-focal" data-line-id="focal" />
+<path d="M110.0,120.0 L160.0,120.0" stroke="#0072B2" stroke-width="4.0" stroke-linecap="round" class="metro-line-focal" data-line-id="focal" />
+<path d="M256.0,120.0 L309.5,120.0" stroke="#0072B2" stroke-width="4.0" stroke-linecap="round" class="metro-line-focal" data-line-id="focal" />
+<path d="M405.5,120.0 L491.5,120.0" stroke="#0072B2" stroke-width="4.0" stroke-linecap="round" class="metro-line-focal" data-line-id="focal" />
+<path d="M608.0,120.0 L702.0,120.0" stroke="#0072B2" stroke-width="4.0" stroke-linecap="round" class="metro-line-focal" data-line-id="focal" />
+<path d="M762.0,120.0 L901.0,120.0" stroke="#0072B2" stroke-width="4.0" stroke-linecap="round" class="metro-line-focal" data-line-id="focal" />
+<path d="M961.0,120.0 L1068.5,120.0" stroke="#0072B2" stroke-width="4.0" stroke-linecap="round" class="metro-line-focal" data-line-id="focal" />
+<path d="M1128.5,120.0 L1186.5,120.0" stroke="#0072B2" stroke-width="4.0" stroke-linecap="round" class="metro-line-focal" data-line-id="focal" />
+<path d="M608.0,360.4 L694.0,360.4" stroke="#0072B2" stroke-width="4.0" stroke-linecap="round" class="metro-line-focal" data-line-id="focal" />
+<path d="M160.0,120.0 L256.0,120.0" stroke="#0072B2" stroke-width="4.0" stroke-linecap="round" class="metro-line-focal" data-line-id="focal" />
+<path d="M491.5,120.0 L608.0,120.0" stroke="#0072B2" stroke-width="4.0" stroke-linecap="round" class="metro-line-focal" data-line-id="focal" />
+<path d="M901.0,120.0 L961.0,120.0" stroke="#0072B2" stroke-width="4.0" stroke-linecap="round" class="metro-line-focal" data-line-id="focal" />
+<path d="M1186.5,120.0 L1192.5,120.0 Q1202.5,120.0,1202.5,130.0 L1202.5,244.39999999999998 Q1202.5,254.39999999999998,1192.5,254.39999999999998 L602.0,254.39999999999998 Q592.0,254.39999999999998,592.0,264.4 L592.0,350.4 Q592.0,360.4,602.0,360.4 L608.0,360.4" stroke="#0072B2" stroke-width="4.0" fill="none" stroke-linecap="round" stroke-linejoin="round" class="metro-line-focal" data-line-id="focal" />
+<g class="nf-metro-station-group" data-node-id="raw" data-node-cx="110.0" data-node-cy="120.0" data-node-r="5.0" data-node-groups="focal" data-node-region="inputs" data-node-w="10.0" data-node-h="10.0" data-node-rx="5.0">
+<rect x="105.0" y="115.0" width="10.0" height="10.0" fill="#ffffff" stroke="#2D273C" stroke-width="2.0" class="nf-metro-station" data-station-id="raw" data-station-lines="focal" data-station-label="raw" data-section-id="inputs" data-section-name="Experimental inputs" />
+<g data-station-id="raw">
+<path d="M73.0,104.0 L91.0,104.0 L99.0,112.0 L99.0,134.0 Q99.0,136.0,97.0,136.0 L73.0,136.0 Q71.0,136.0,71.0,134.0 L71.0,106.0 Q71.0,104.0,73.0,104.0 Z" fill="#ffffff" stroke="#2D273C" stroke-width="1.5" stroke-linejoin="round" />
+<path d="M91.0,104.0 L91.0,112.0 L99.0,112.0 Z" fill="#2D273C" opacity="0.15" stroke="none" />
+<path d="M91.0,104.0 L91.0,112.0 L99.0,112.0" fill="none" stroke="#2D273C" stroke-width="0.8999999999999999" />
+<text x="85.0" y="121.2" font-size="4.791666666666667" fill="#000000" font-family="'Inter Variable', Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif" font-weight="bold" text-anchor="middle" dy="0.3em">FASTQ.gz</text>
+<text x="85.0" y="140.0" font-size="8.4" fill="#242424" font-family="'Inter Variable', Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif" font-weight="600" text-anchor="middle" dominant-baseline="hanging" class="nf-metro-station-label">Six complete paired libraries</text>
+</g>
+</g>
+<g class="nf-metro-station-group" data-node-id="trimming" data-node-cx="309.5" data-node-cy="120.0" data-node-r="5.0" data-node-groups="focal" data-node-region="trim" data-node-w="10.0" data-node-h="10.0" data-node-rx="5.0">
+<rect x="304.5" y="115.0" width="10.0" height="10.0" rx="5.0" ry="5.0" fill="#ffffff" stroke="#2D273C" stroke-width="2.0" class="nf-metro-station" data-station-id="trimming" data-station-lines="focal" data-station-label="Trim Galore" data-section-id="trim" data-section-name="Trimming — complete" />
+</g>
+<g class="nf-metro-station-group" data-node-id="r1" data-node-cx="405.5" data-node-cy="120.0" data-node-r="5.0" data-node-groups="focal" data-node-region="trim" data-node-w="10.0" data-node-h="10.0" data-node-rx="5.0">
+<rect x="400.5" y="115.0" width="10.0" height="10.0" fill="#ffffff" stroke="#2D273C" stroke-width="2.0" class="nf-metro-station" data-station-id="r1" data-station-lines="focal" data-station-label="r1" data-section-id="trim" data-section-name="Trimming — complete" />
+<g data-station-id="r1">
+<path d="M418.5,104.0 L436.5,104.0 L444.5,112.0 L444.5,134.0 Q444.5,136.0,442.5,136.0 L418.5,136.0 Q416.5,136.0,416.5,134.0 L416.5,106.0 Q416.5,104.0,418.5,104.0 Z" fill="#ffffff" stroke="#2D273C" stroke-width="1.5" stroke-linejoin="round" />
+<path d="M436.5,104.0 L436.5,112.0 L444.5,112.0 Z" fill="#2D273C" opacity="0.15" stroke="none" />
+<path d="M436.5,104.0 L436.5,112.0 L444.5,112.0" fill="none" stroke="#2D273C" stroke-width="0.8999999999999999" />
+<text x="430.5" y="121.2" font-size="7.5" fill="#000000" font-family="'Inter Variable', Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif" font-weight="bold" text-anchor="middle" dy="0.3em">FQ.gz</text>
+<text x="430.5" y="140.0" font-size="8.4" fill="#242424" font-family="'Inter Variable', Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif" font-weight="600" text-anchor="middle" dominant-baseline="hanging" class="nf-metro-station-label">Complete trimmed R1</text>
+</g>
+</g>
+<g class="nf-metro-station-group" data-node-id="r2" data-node-cx="405.5" data-node-cy="180.4" data-node-r="5.0" data-node-groups="dekupl,focal" data-node-region="trim" data-node-w="10.0" data-node-h="14.0" data-node-rx="5.0">
+<rect x="400.5" y="173.4" width="10.0" height="14.0" fill="#ffffff" stroke="#2D273C" stroke-width="2.0" class="nf-metro-station" data-station-id="r2" data-station-lines="dekupl,focal" data-station-label="r2" data-section-id="trim" data-section-name="Trimming — complete" />
+<g data-station-id="r2">
+<path d="M418.5,164.4 L436.5,164.4 L444.5,172.4 L444.5,194.4 Q444.5,196.4,442.5,196.4 L418.5,196.4 Q416.5,196.4,416.5,194.4 L416.5,166.4 Q416.5,164.4,418.5,164.4 Z" fill="#ffffff" stroke="#2D273C" stroke-width="1.5" stroke-linejoin="round" />
+<path d="M436.5,164.4 L436.5,172.4 L444.5,172.4 Z" fill="#2D273C" opacity="0.15" stroke="none" />
+<path d="M436.5,164.4 L436.5,172.4 L444.5,172.4" fill="none" stroke="#2D273C" stroke-width="0.8999999999999999" />
+<text x="430.5" y="181.6" font-size="7.5" fill="#000000" font-family="'Inter Variable', Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif" font-weight="bold" text-anchor="middle" dy="0.3em">FQ.gz</text>
+<text x="430.5" y="200.4" font-size="8.4" fill="#242424" font-family="'Inter Variable', Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif" font-weight="600" text-anchor="middle" dominant-baseline="hanging" class="nf-metro-station-label">Complete trimmed R2</text>
+</g>
+</g>
+<g class="nf-metro-station-group" data-node-id="splash" data-node-cx="702.0" data-node-cy="120.0" data-node-r="5.0" data-node-groups="focal" data-node-region="discover" data-node-w="10.0" data-node-h="10.0" data-node-rx="5.0">
+<rect x="697.0" y="115.0" width="10.0" height="10.0" rx="5.0" ry="5.0" fill="#ffffff" stroke="#2D273C" stroke-width="2.0" class="nf-metro-station" data-station-id="splash" data-station-lines="focal" data-station-label="SPLASH — complete" data-section-id="discover" data-section-name="Differential discovery" />
+</g>
+<g class="nf-metro-station-group" data-node-id="select" data-node-cx="762.0" data-node-cy="120.0" data-node-r="5.0" data-node-groups="focal" data-node-region="discover" data-node-w="10.0" data-node-h="10.0" data-node-rx="5.0">
+<rect x="757.0" y="115.0" width="10.0" height="10.0" rx="5.0" ry="5.0" fill="#ffffff" stroke="#2D273C" stroke-width="2.0" class="nf-metro-station" data-station-id="select" data-station-lines="focal" data-station-label="Every adjusted P &lt; 0.05 anchor" data-section-id="discover" data-section-name="Differential discovery" />
+</g>
+<g class="nf-metro-station-group" data-node-id="dekupl" data-node-cx="702.0" data-node-cy="178.4" data-node-r="5.0" data-node-groups="dekupl" data-node-region="discover" data-node-w="10.0" data-node-h="10.0" data-node-rx="5.0">
+<rect x="697.0" y="173.39999999999998" width="10.0" height="10.0" rx="5.0" ry="5.0" fill="#ffffff" stroke="#2D273C" stroke-width="2.0" class="nf-metro-station" data-station-id="dekupl" data-station-lines="dekupl" data-station-label="DE-kupl — both mates" data-section-id="discover" data-section-name="Differential discovery" />
+</g>
+<g class="nf-metro-station-group" data-node-id="compact" data-node-cx="1068.5" data-node-cy="120.0" data-node-r="5.0" data-node-groups="focal" data-node-region="extensions" data-node-w="10.0" data-node-h="10.0" data-node-rx="5.0">
+<rect x="1063.5" y="115.0" width="10.0" height="10.0" rx="5.0" ry="5.0" fill="#ffffff" stroke="#2D273C" stroke-width="2.0" class="nf-metro-station" data-station-id="compact" data-station-lines="focal" data-station-label="Compactors — both mates" data-section-id="extensions" data-section-name="Recover DNA" />
+</g>
+<g class="nf-metro-station-group" data-node-id="dna" data-node-cx="1128.5" data-node-cy="120.0" data-node-r="5.0" data-node-groups="focal" data-node-region="extensions" data-node-w="10.0" data-node-h="10.0" data-node-rx="5.0">
+<rect x="1123.5" y="115.0" width="10.0" height="10.0" fill="#ffffff" stroke="#2D273C" stroke-width="2.0" class="nf-metro-station" data-station-id="dna" data-station-lines="focal" data-station-label="dna" data-section-id="extensions" data-section-name="Recover DNA" />
+<g data-station-id="dna">
+<path d="M1141.5,104.0 L1159.5,104.0 L1167.5,112.0 L1167.5,134.0 Q1167.5,136.0,1165.5,136.0 L1141.5,136.0 Q1139.5,136.0,1139.5,134.0 L1139.5,106.0 Q1139.5,104.0,1141.5,104.0 Z" fill="#ffffff" stroke="#2D273C" stroke-width="1.5" stroke-linejoin="round" />
+<path d="M1159.5,104.0 L1159.5,112.0 L1167.5,112.0 Z" fill="#2D273C" opacity="0.15" stroke="none" />
+<path d="M1159.5,104.0 L1159.5,112.0 L1167.5,112.0" fill="none" stroke="#2D273C" stroke-width="0.8999999999999999" />
+<text x="1153.5" y="121.2" font-size="7.5" fill="#000000" font-family="'Inter Variable', Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif" font-weight="bold" text-anchor="middle" dy="0.3em">TSV</text>
+<text x="1142.92" y="140.0" font-size="8.4" fill="#242424" font-family="'Inter Variable', Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif" font-weight="600" text-anchor="middle" dominant-baseline="hanging" class="nf-metro-station-label">All DNA extensions</text>
+</g>
+</g>
+<g class="nf-metro-station-group" data-node-id="diff" data-node-cx="1068.5" data-node-cy="178.4" data-node-r="5.0" data-node-groups="dekupl" data-node-region="extensions" data-node-w="10.0" data-node-h="10.0" data-node-rx="5.0">
+<rect x="1063.5" y="173.39999999999998" width="10.0" height="10.0" fill="#ffffff" stroke="#2D273C" stroke-width="2.0" class="nf-metro-station" data-station-id="diff" data-station-lines="dekupl" data-station-label="diff" data-section-id="extensions" data-section-name="Recover DNA" />
+<g data-station-id="diff">
+<path d="M1081.5,162.39999999999998 L1099.5,162.39999999999998 L1107.5,170.39999999999998 L1107.5,192.39999999999998 Q1107.5,194.39999999999998,1105.5,194.39999999999998 L1081.5,194.39999999999998 Q1079.5,194.39999999999998,1079.5,192.39999999999998 L1079.5,164.39999999999998 Q1079.5,162.39999999999998,1081.5,162.39999999999998 Z" fill="#ffffff" stroke="#2D273C" stroke-width="1.5" stroke-linejoin="round" />
+<path d="M1099.5,162.39999999999998 L1099.5,170.39999999999998 L1107.5,170.39999999999998 Z" fill="#2D273C" opacity="0.15" stroke="none" />
+<path d="M1099.5,162.39999999999998 L1099.5,170.39999999999998 L1107.5,170.39999999999998" fill="none" stroke="#2D273C" stroke-width="0.8999999999999999" />
+<text x="1093.5" y="179.59999999999997" font-size="6.388888888888889" fill="#000000" font-family="'Inter Variable', Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif" font-weight="bold" text-anchor="middle" dy="0.3em">TSV.gz</text>
+<text x="1093.5" y="198.39999999999998" font-size="8.4" fill="#242424" font-family="'Inter Variable', Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif" font-weight="600" text-anchor="middle" dominant-baseline="hanging" class="nf-metro-station-label">Differential DE-kupl contigs</text>
+</g>
+</g>
+<g class="nf-metro-station-group" data-node-id="publicreads" data-node-cx="128.0" data-node-cy="356.4" data-node-r="5.0" data-node-groups="archive" data-node-region="refs" data-node-w="10.0" data-node-h="10.0" data-node-rx="5.0">
+<rect x="123.0" y="351.4" width="10.0" height="10.0" fill="#ffffff" stroke="#2D273C" stroke-width="2.0" class="nf-metro-station" data-station-id="publicreads" data-station-lines="archive" data-station-label="publicreads" data-section-id="refs" data-section-name="Reference inputs" />
+<g data-station-id="publicreads">
+<path d="M91.0,340.4 L109.0,340.4 L117.0,348.4 L117.0,370.4 Q117.0,372.4,115.0,372.4 L91.0,372.4 Q89.0,372.4,89.0,370.4 L89.0,342.4 Q89.0,340.4,91.0,340.4 Z" fill="#ffffff" stroke="#2D273C" stroke-width="1.5" stroke-linejoin="round" />
+<path d="M109.0,340.4 L109.0,348.4 L117.0,348.4 Z" fill="#2D273C" opacity="0.15" stroke="none" />
+<path d="M109.0,340.4 L109.0,348.4 L117.0,348.4" fill="none" stroke="#2D273C" stroke-width="0.8999999999999999" />
+<text x="103.0" y="357.59999999999997" font-size="4.791666666666667" fill="#000000" font-family="'Inter Variable', Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif" font-weight="bold" text-anchor="middle" dy="0.3em">FASTQ.gz</text>
+<text x="105.89" y="376.4" font-size="8.4" fill="#242424" font-family="'Inter Variable', Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif" font-weight="600" text-anchor="middle" dominant-baseline="hanging" class="nf-metro-station-label">Public bivalve runs</text>
+</g>
+</g>
+<g class="nf-metro-station-group" data-node-id="swissfa" data-node-cx="128.0" data-node-cy="414.8" data-node-r="5.0" data-node-groups="swiss" data-node-region="refs" data-node-w="10.0" data-node-h="10.0" data-node-rx="5.0">
+<rect x="123.0" y="409.8" width="10.0" height="10.0" fill="#ffffff" stroke="#2D273C" stroke-width="2.0" class="nf-metro-station" data-station-id="swissfa" data-station-lines="swiss" data-station-label="swissfa" data-section-id="refs" data-section-name="Reference inputs" />
+<g data-station-id="swissfa">
+<path d="M91.0,398.8 L109.0,398.8 L117.0,406.8 L117.0,428.8 Q117.0,430.8,115.0,430.8 L91.0,430.8 Q89.0,430.8,89.0,428.8 L89.0,400.8 Q89.0,398.8,91.0,398.8 Z" fill="#ffffff" stroke="#2D273C" stroke-width="1.5" stroke-linejoin="round" />
+<path d="M109.0,398.8 L109.0,406.8 L117.0,406.8 Z" fill="#2D273C" opacity="0.15" stroke="none" />
+<path d="M109.0,398.8 L109.0,406.8 L117.0,406.8" fill="none" stroke="#2D273C" stroke-width="0.8999999999999999" />
+<text x="103.0" y="416.0" font-size="4.791666666666667" fill="#000000" font-family="'Inter Variable', Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif" font-weight="bold" text-anchor="middle" dy="0.3em">FASTA.gz</text>
+<text x="105.89" y="434.8" font-size="8.4" fill="#242424" font-family="'Inter Variable', Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif" font-weight="600" text-anchor="middle" dominant-baseline="hanging" class="nf-metro-station-label">Swiss-Prot proteins</text>
+</g>
+</g>
+<g class="nf-metro-station-group" data-node-id="pubtrim" data-node-cx="402.0" data-node-cy="356.4" data-node-r="5.0" data-node-groups="archive" data-node-region="sketches" data-node-w="10.0" data-node-h="10.0" data-node-rx="5.0">
+<rect x="397.0" y="351.4" width="10.0" height="10.0" rx="5.0" ry="5.0" fill="#ffffff" stroke="#2D273C" stroke-width="2.0" class="nf-metro-station" data-station-id="pubtrim" data-station-lines="archive" data-station-label="Trim + sourmash" data-section-id="sketches" data-section-name="Build sketches" />
+</g>
+<g class="nf-metro-station-group" data-node-id="runsigs" data-node-cx="462.0" data-node-cy="356.4" data-node-r="5.0" data-node-groups="archive" data-node-region="sketches" data-node-w="10.0" data-node-h="10.0" data-node-rx="5.0">
+<rect x="457.0" y="351.4" width="10.0" height="10.0" fill="#ffffff" stroke="#2D273C" stroke-width="2.0" class="nf-metro-station" data-station-id="runsigs" data-station-lines="archive" data-station-label="runsigs" data-section-id="sketches" data-section-name="Build sketches" />
+<g data-station-id="runsigs">
+<path d="M475.0,340.4 L493.0,340.4 L501.0,348.4 L501.0,370.4 Q501.0,372.4,499.0,372.4 L475.0,372.4 Q473.0,372.4,473.0,370.4 L473.0,342.4 Q473.0,340.4,475.0,340.4 Z" fill="#ffffff" stroke="#2D273C" stroke-width="1.5" stroke-linejoin="round" />
+<path d="M493.0,340.4 L493.0,348.4 L501.0,348.4 Z" fill="#2D273C" opacity="0.15" stroke="none" />
+<path d="M493.0,340.4 L493.0,348.4 L501.0,348.4" fill="none" stroke="#2D273C" stroke-width="0.8999999999999999" />
+<text x="487.0" y="357.59999999999997" font-size="5.476190476190476" fill="#000000" font-family="'Inter Variable', Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif" font-weight="bold" text-anchor="middle" dy="0.3em">SIG.zip</text>
+<text x="487.0" y="376.4" font-size="8.4" fill="#242424" font-family="'Inter Variable', Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif" font-weight="600" text-anchor="middle" dominant-baseline="hanging" class="nf-metro-station-label">One sketch set per run</text>
+</g>
+</g>
+<g class="nf-metro-station-group" data-node-id="swsketch" data-node-cx="402.0" data-node-cy="426.8" data-node-r="5.0" data-node-groups="swiss" data-node-region="sketches" data-node-w="10.0" data-node-h="10.0" data-node-rx="5.0">
+<rect x="397.0" y="421.8" width="10.0" height="10.0" rx="5.0" ry="5.0" fill="#ffffff" stroke="#2D273C" stroke-width="2.0" class="nf-metro-station" data-station-id="swsketch" data-station-lines="swiss" data-station-label="Sourmash — scaled 5" data-section-id="sketches" data-section-name="Build sketches" />
+</g>
+<g class="nf-metro-station-group" data-node-id="swisssigs" data-node-cx="462.0" data-node-cy="426.8" data-node-r="5.0" data-node-groups="swiss" data-node-region="sketches" data-node-w="10.0" data-node-h="10.0" data-node-rx="5.0">
+<rect x="457.0" y="421.8" width="10.0" height="10.0" fill="#ffffff" stroke="#2D273C" stroke-width="2.0" class="nf-metro-station" data-station-id="swisssigs" data-station-lines="swiss" data-station-label="swisssigs" data-section-id="sketches" data-section-name="Build sketches" />
+<g data-station-id="swisssigs">
+<path d="M475.0,410.8 L493.0,410.8 L501.0,418.8 L501.0,440.8 Q501.0,442.8,499.0,442.8 L475.0,442.8 Q473.0,442.8,473.0,440.8 L473.0,412.8 Q473.0,410.8,475.0,410.8 Z" fill="#ffffff" stroke="#2D273C" stroke-width="1.5" stroke-linejoin="round" />
+<path d="M493.0,410.8 L493.0,418.8 L501.0,418.8 Z" fill="#2D273C" opacity="0.15" stroke="none" />
+<path d="M493.0,410.8 L493.0,418.8 L501.0,418.8" fill="none" stroke="#2D273C" stroke-width="0.8999999999999999" />
+<text x="487.0" y="428.0" font-size="5.476190476190476" fill="#000000" font-family="'Inter Variable', Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif" font-weight="bold" text-anchor="middle" dy="0.3em">SIG.zip</text>
+<text x="481.32" y="446.8" font-size="8.4" fill="#242424" font-family="'Inter Variable', Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif" font-weight="600" text-anchor="middle" dominant-baseline="hanging" class="nf-metro-station-label">Protein references — pending</text>
+</g>
+</g>
+<g class="nf-metro-station-group" data-node-id="queries" data-node-cx="694.0" data-node-cy="360.4" data-node-r="5.0" data-node-groups="focal" data-node-region="search" data-node-w="10.0" data-node-h="10.0" data-node-rx="5.0">
+<rect x="689.0" y="355.4" width="10.0" height="10.0" rx="5.0" ry="5.0" fill="#ffffff" stroke="#2D273C" stroke-width="2.0" class="nf-metro-station" data-station-id="queries" data-station-lines="focal" data-station-label="Sourmash queries" data-section-id="search" data-section-name="Search sequences" />
+</g>
+<g class="nf-metro-station-group" data-node-id="querysigs" data-node-cx="754.0" data-node-cy="360.4" data-node-r="5.0" data-node-groups="focal" data-node-region="search" data-node-w="10.0" data-node-h="10.0" data-node-rx="5.0">
+<rect x="749.0" y="355.4" width="10.0" height="10.0" fill="#ffffff" stroke="#2D273C" stroke-width="2.0" class="nf-metro-station" data-station-id="querysigs" data-station-lines="focal" data-station-label="querysigs" data-section-id="search" data-section-name="Search sequences" />
+<g data-station-id="querysigs">
+<path d="M767.0,344.4 L785.0,344.4 L793.0,352.4 L793.0,374.4 Q793.0,376.4,791.0,376.4 L767.0,376.4 Q765.0,376.4,765.0,374.4 L765.0,346.4 Q765.0,344.4,767.0,344.4 Z" fill="#ffffff" stroke="#2D273C" stroke-width="1.5" stroke-linejoin="round" />
+<path d="M785.0,344.4 L785.0,352.4 L793.0,352.4 Z" fill="#2D273C" opacity="0.15" stroke="none" />
+<path d="M785.0,344.4 L785.0,352.4 L793.0,352.4" fill="none" stroke="#2D273C" stroke-width="0.8999999999999999" />
+<text x="779.0" y="361.59999999999997" font-size="5.476190476190476" fill="#000000" font-family="'Inter Variable', Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif" font-weight="bold" text-anchor="middle" dy="0.3em">SIG.zip</text>
+<text x="779.0" y="380.4" font-size="8.4" fill="#242424" font-family="'Inter Variable', Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif" font-weight="600" text-anchor="middle" dominant-baseline="hanging" class="nf-metro-station-label">Query sketches</text>
+</g>
+</g>
+<g class="nf-metro-station-group" data-node-id="many" data-node-cx="850.0" data-node-cy="364.4" data-node-r="5.0" data-node-groups="archive,focal,swiss" data-node-region="search" data-node-w="10.0" data-node-h="18.0" data-node-rx="5.0">
+<rect x="845.0" y="355.4" width="10.0" height="18.0" rx="5.0" ry="5.0" fill="#ffffff" stroke="#2D273C" stroke-width="2.0" class="nf-metro-station" data-station-id="many" data-station-lines="archive,focal,swiss" data-station-label="manysearch" data-section-id="search" data-section-name="Search sequences" />
+</g>
+<g class="nf-metro-station-group" data-node-id="matches" data-node-cx="1011.0" data-node-cy="364.4" data-node-r="5.0" data-node-groups="archive" data-node-region="output" data-node-w="10.0" data-node-h="10.0" data-node-rx="5.0">
+<rect x="1006.0" y="359.4" width="10.0" height="10.0" fill="#ffffff" stroke="#2D273C" stroke-width="2.0" class="nf-metro-station" data-station-id="matches" data-station-lines="archive" data-station-label="matches" data-section-id="output" data-section-name="Compare and report" />
+<g data-station-id="matches">
+<path d="M1024.0,348.4 L1042.0,348.4 L1050.0,356.4 L1050.0,378.4 Q1050.0,380.4,1048.0,380.4 L1024.0,380.4 Q1022.0,380.4,1022.0,378.4 L1022.0,350.4 Q1022.0,348.4,1024.0,348.4 Z" fill="#ffffff" stroke="#2D273C" stroke-width="1.5" stroke-linejoin="round" />
+<path d="M1042.0,348.4 L1042.0,356.4 L1050.0,356.4 Z" fill="#2D273C" opacity="0.15" stroke="none" />
+<path d="M1042.0,348.4 L1042.0,356.4 L1050.0,356.4" fill="none" stroke="#2D273C" stroke-width="0.8999999999999999" />
+<text x="1036.0" y="365.59999999999997" font-size="7.5" fill="#000000" font-family="'Inter Variable', Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif" font-weight="bold" text-anchor="middle" dy="0.3em">CSV</text>
+<text x="1036.0" y="384.4" font-size="8.4" fill="#242424" font-family="'Inter Variable', Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif" font-weight="600" text-anchor="middle" dominant-baseline="hanging" class="nf-metro-station-label">Run matches</text>
+</g>
+</g>
+<g class="nf-metro-station-group" data-node-id="compare" data-node-cx="1071.0" data-node-cy="364.4" data-node-r="5.0" data-node-groups="archive" data-node-region="output" data-node-w="10.0" data-node-h="10.0" data-node-rx="5.0">
+<rect x="1066.0" y="359.4" width="10.0" height="10.0" rx="5.0" ry="5.0" fill="#ffffff" stroke="#2D273C" stroke-width="2.0" class="nf-metro-station" data-station-id="compare" data-station-lines="archive" data-station-label="Audit 10 versus 100" data-section-id="output" data-section-name="Compare and report" />
+</g>
+<g class="nf-metro-station-group" data-node-id="losses" data-node-cx="1131.0" data-node-cy="364.4" data-node-r="5.0" data-node-groups="archive" data-node-region="output" data-node-w="10.0" data-node-h="10.0" data-node-rx="5.0">
+<rect x="1126.0" y="359.4" width="10.0" height="10.0" fill="#ffffff" stroke="#2D273C" stroke-width="2.0" class="nf-metro-station" data-station-id="losses" data-station-lines="archive" data-station-label="losses" data-section-id="output" data-section-name="Compare and report" />
+<g data-station-id="losses">
+<path d="M1144.0,348.4 L1162.0,348.4 L1170.0,356.4 L1170.0,378.4 Q1170.0,380.4,1168.0,380.4 L1144.0,380.4 Q1142.0,380.4,1142.0,378.4 L1142.0,350.4 Q1142.0,348.4,1144.0,348.4 Z" fill="#ffffff" stroke="#2D273C" stroke-width="1.5" stroke-linejoin="round" />
+<path d="M1162.0,348.4 L1162.0,356.4 L1170.0,356.4 Z" fill="#2D273C" opacity="0.15" stroke="none" />
+<path d="M1162.0,348.4 L1162.0,356.4 L1170.0,356.4" fill="none" stroke="#2D273C" stroke-width="0.8999999999999999" />
+<text x="1156.0" y="365.59999999999997" font-size="6.388888888888889" fill="#000000" font-family="'Inter Variable', Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif" font-weight="bold" text-anchor="middle" dy="0.3em">TSV.gz</text>
+<text x="1156.0" y="384.4" font-size="8.4" fill="#242424" font-family="'Inter Variable', Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif" font-weight="600" text-anchor="middle" dominant-baseline="hanging" class="nf-metro-station-label">Lost at 100</text>
+</g>
+</g>
+<text x="309.5" y="109.0" font-size="14.0" fill="#f8f9fa" stroke="#f8f9fa" stroke-width="3.0" stroke-linejoin="round" font-family="'Inter Variable', Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif" font-weight="600" aria-hidden="true" class="nf-metro-label-halo" text-anchor="middle" dominant-baseline="auto">Trim Galore</text>
+<text x="309.5" y="109.0" font-size="14.0" fill="#242424" font-family="'Inter Variable', Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif" font-weight="600" text-anchor="middle" dominant-baseline="auto" data-station-id="trimming" class="nf-metro-station-label">Trim Galore</text>
+<text x="702.0" y="131.0" font-size="14.0" fill="#f8f9fa" stroke="#f8f9fa" stroke-width="3.0" stroke-linejoin="round" font-family="'Inter Variable', Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif" font-weight="600" aria-hidden="true" class="nf-metro-label-halo" text-anchor="middle" dominant-baseline="hanging">SPLASH — complete</text>
+<text x="702.0" y="131.0" font-size="14.0" fill="#242424" font-family="'Inter Variable', Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif" font-weight="600" text-anchor="middle" dominant-baseline="hanging" data-station-id="splash" class="nf-metro-station-label">SPLASH — complete</text>
+<text x="1068.5" y="95.8" font-size="14.0" fill="#f8f9fa" stroke="#f8f9fa" stroke-width="3.0" stroke-linejoin="round" font-family="'Inter Variable', Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif" font-weight="600" aria-hidden="true" class="nf-metro-label-halo" text-anchor="middle" dominant-baseline="auto">Compactors — both mates</text>
+<text x="1068.5" y="95.8" font-size="14.0" fill="#242424" font-family="'Inter Variable', Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif" font-weight="600" text-anchor="middle" dominant-baseline="auto" data-station-id="compact" class="nf-metro-station-label">Compactors — both mates</text>
+<text x="686.9" y="371.4" font-size="14.0" fill="#f8f9fa" stroke="#f8f9fa" stroke-width="3.0" stroke-linejoin="round" font-family="'Inter Variable', Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif" font-weight="600" aria-hidden="true" class="nf-metro-label-halo" text-anchor="middle" dominant-baseline="hanging">Sourmash queries</text>
+<text x="686.9" y="371.4" font-size="14.0" fill="#242424" font-family="'Inter Variable', Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif" font-weight="600" text-anchor="middle" dominant-baseline="hanging" data-station-id="queries" class="nf-metro-station-label">Sourmash queries</text>
+<text x="399.4" y="342.4" font-size="14.0" fill="#f8f9fa" stroke="#f8f9fa" stroke-width="3.0" stroke-linejoin="round" font-family="'Inter Variable', Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif" font-weight="600" aria-hidden="true" class="nf-metro-label-halo" text-anchor="middle" dominant-baseline="auto">Trim + sourmash</text>
+<text x="399.4" y="342.4" font-size="14.0" fill="#242424" font-family="'Inter Variable', Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif" font-weight="600" text-anchor="middle" dominant-baseline="auto" data-station-id="pubtrim" class="nf-metro-station-label">Trim + sourmash</text>
+<text x="402.0" y="402.6" font-size="14.0" fill="#f8f9fa" stroke="#f8f9fa" stroke-width="3.0" stroke-linejoin="round" font-family="'Inter Variable', Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif" font-weight="600" aria-hidden="true" class="nf-metro-label-halo" text-anchor="middle" dominant-baseline="auto">Sourmash — scaled 5</text>
+<text x="402.0" y="402.6" font-size="14.0" fill="#242424" font-family="'Inter Variable', Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif" font-weight="600" text-anchor="middle" dominant-baseline="auto" data-station-id="swsketch" class="nf-metro-station-label">Sourmash — scaled 5</text>
+<text x="702.0" y="189.39999999999998" font-size="14.0" fill="#f8f9fa" stroke="#f8f9fa" stroke-width="3.0" stroke-linejoin="round" font-family="'Inter Variable', Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif" font-weight="600" aria-hidden="true" class="nf-metro-label-halo" text-anchor="middle" dominant-baseline="hanging">DE-kupl — both mates</text>
+<text x="702.0" y="189.39999999999998" font-size="14.0" fill="#242424" font-family="'Inter Variable', Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif" font-weight="600" text-anchor="middle" dominant-baseline="hanging" data-station-id="dekupl" class="nf-metro-station-label">DE-kupl — both mates</text>
+<text x="762.0" y="106.0" font-size="14.0" fill="#f8f9fa" stroke="#f8f9fa" stroke-width="3.0" stroke-linejoin="round" font-family="'Inter Variable', Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif" font-weight="600" aria-hidden="true" class="nf-metro-label-halo" text-anchor="middle" dominant-baseline="auto">Every adjusted P &lt; 0.05 anchor</text>
+<text x="762.0" y="106.0" font-size="14.0" fill="#242424" font-family="'Inter Variable', Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif" font-weight="600" text-anchor="middle" dominant-baseline="auto" data-station-id="select" class="nf-metro-station-label">Every adjusted P &lt; 0.05 anchor</text>
+<text x="1071.0" y="350.4" font-size="14.0" fill="#f8f9fa" stroke="#f8f9fa" stroke-width="3.0" stroke-linejoin="round" font-family="'Inter Variable', Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif" font-weight="600" aria-hidden="true" class="nf-metro-label-halo" text-anchor="middle" dominant-baseline="auto">Audit 10 versus 100</text>
+<text x="1071.0" y="350.4" font-size="14.0" fill="#242424" font-family="'Inter Variable', Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif" font-weight="600" text-anchor="middle" dominant-baseline="auto" data-station-id="compare" class="nf-metro-station-label">Audit 10 versus 100</text>
+<text x="850.0" y="379.4" font-size="14.0" fill="#f8f9fa" stroke="#f8f9fa" stroke-width="3.0" stroke-linejoin="round" font-family="'Inter Variable', Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif" font-weight="600" aria-hidden="true" class="nf-metro-label-halo" text-anchor="middle" dominant-baseline="hanging">manysearch</text>
+<text x="850.0" y="379.4" font-size="14.0" fill="#242424" font-family="'Inter Variable', Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif" font-weight="600" text-anchor="middle" dominant-baseline="hanging" data-station-id="many" class="nf-metro-station-label">manysearch</text>
+</g></svg>

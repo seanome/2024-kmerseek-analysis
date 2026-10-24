@@ -1,0 +1,283 @@
+{
+  "run": "DW1",
+  "input_scope": "oyster first 1M raw pairs, nf-core trimmed; not full SRA run",
+  "sources": [
+    {
+      "path": "/scratch/users/olgabot/oyster-shazam-20261023/nfcore/results/trimgalore/DW1_trimmed_1_val_1.fq.gz",
+      "sha256": "9e323a427eb79c7d647a776994ec106ba4237dac7298f41855374691b28a0600"
+    },
+    {
+      "path": "/scratch/users/olgabot/oyster-shazam-20261023/nfcore/results/trimgalore/DW1_trimmed_2_val_2.fq.gz",
+      "sha256": "f09beff797f387d335796a58e39fa327ebed044d597e4c7dace5a090d376e9f5"
+    }
+  ],
+  "settings": [
+    {
+      "moltype": "dna",
+      "ksize": 31,
+      "scaled": 5,
+      "hashes": 10943222,
+      "bytes": 87740881,
+      "signature_md5": "4bbd9d0b2aa93c6da5bb1c638d5c0cf7",
+      "path": "/scratch/users/olgabot/oyster-shazam-20261023/index-pilot/dna/DW1.scaled5.sig.zip"
+    },
+    {
+      "moltype": "dna",
+      "ksize": 31,
+      "scaled": 10,
+      "hashes": 5472195,
+      "bytes": 43827837,
+      "signature_md5": "b4d2a5f76813d23c6dbf615193da27cb",
+      "path": "/scratch/users/olgabot/oyster-shazam-20261023/index-pilot/dna/DW1.scaled10.sig.zip"
+    },
+    {
+      "moltype": "dna",
+      "ksize": 31,
+      "scaled": 100,
+      "hashes": 546972,
+      "bytes": 4361043,
+      "signature_md5": "d34025360f4eec72af21af287d7e10cd",
+      "path": "/scratch/users/olgabot/oyster-shazam-20261023/index-pilot/dna/DW1.scaled100.sig.zip"
+    },
+    {
+      "moltype": "protein",
+      "ksize": 7,
+      "scaled": 5,
+      "hashes": 17961412,
+      "bytes": 141951579,
+      "signature_md5": "7f820e9d3c1fa2e13a9313c1505736f8",
+      "path": "/scratch/users/olgabot/oyster-shazam-20261023/index-pilot/protein/DW1.scaled5.sig.zip"
+    },
+    {
+      "moltype": "protein",
+      "ksize": 7,
+      "scaled": 10,
+      "hashes": 8979781,
+      "bytes": 70901974,
+      "signature_md5": "6e268415d2bfc845bdb0828ffcb4cbb1",
+      "path": "/scratch/users/olgabot/oyster-shazam-20261023/index-pilot/protein/DW1.scaled10.sig.zip"
+    },
+    {
+      "moltype": "protein",
+      "ksize": 7,
+      "scaled": 100,
+      "hashes": 898861,
+      "bytes": 7069921,
+      "signature_md5": "ac4d96bed16494cc2ef6f8b31b8db907",
+      "path": "/scratch/users/olgabot/oyster-shazam-20261023/index-pilot/protein/DW1.scaled100.sig.zip"
+    },
+    {
+      "moltype": "dayhoff",
+      "ksize": 12,
+      "scaled": 5,
+      "hashes": 17445264,
+      "bytes": 138015538,
+      "signature_md5": "805d5adc452e88967c6d633fccdebfab",
+      "path": "/scratch/users/olgabot/oyster-shazam-20261023/index-pilot/dayhoff/DW1.scaled5.sig.zip"
+    },
+    {
+      "moltype": "dayhoff",
+      "ksize": 12,
+      "scaled": 10,
+      "hashes": 8721782,
+      "bytes": 68930802,
+      "signature_md5": "7939cb2e224062aa6e12571d061df5ec",
+      "path": "/scratch/users/olgabot/oyster-shazam-20261023/index-pilot/dayhoff/DW1.scaled10.sig.zip"
+    },
+    {
+      "moltype": "dayhoff",
+      "ksize": 12,
+      "scaled": 100,
+      "hashes": 871631,
+      "bytes": 6861730,
+      "signature_md5": "7cf2fa6a614da01d1781087b95cb673c",
+      "path": "/scratch/users/olgabot/oyster-shazam-20261023/index-pilot/dayhoff/DW1.scaled100.sig.zip"
+    },
+    {
+      "moltype": "hp",
+      "ksize": 30,
+      "scaled": 5,
+      "hashes": 14864944,
+      "bytes": 118097296,
+      "signature_md5": "b0be074b329168cd665095a4b44b7ced",
+      "path": "/scratch/users/olgabot/oyster-shazam-20261023/index-pilot/hp/DW1.scaled5.sig.zip"
+    },
+    {
+      "moltype": "hp",
+      "ksize": 30,
+      "scaled": 10,
+      "hashes": 7431770,
+      "bytes": 58986377,
+      "signature_md5": "77ea83da431338def3082c8aaf1f20a7",
+      "path": "/scratch/users/olgabot/oyster-shazam-20261023/index-pilot/hp/DW1.scaled10.sig.zip"
+    },
+    {
+      "moltype": "hp",
+      "ksize": 30,
+      "scaled": 100,
+      "hashes": 742422,
+      "bytes": 5869214,
+      "signature_md5": "1afeb221f830af889144c9ebe5f21ba7",
+      "path": "/scratch/users/olgabot/oyster-shazam-20261023/index-pilot/hp/DW1.scaled100.sig.zip"
+    }
+  ],
+  "commands": [
+    [
+      "/home/groups/ayeletv/opt/oyster-shazam-20261023/bin/python",
+      "-m",
+      "sourmash",
+      "sketch",
+      "dna",
+      "/scratch/users/olgabot/oyster-shazam-20261023/shared-trimmed/DW1_1.fastq.gz",
+      "/scratch/users/olgabot/oyster-shazam-20261023/shared-trimmed/DW1_2.fastq.gz",
+      "--merge",
+      "DW1",
+      "-p",
+      "dna,k=31,scaled=5",
+      "-o",
+      "/scratch/users/olgabot/oyster-shazam-20261023/index-pilot/dna/DW1.scaled5.sig.zip"
+    ],
+    [
+      "/home/groups/ayeletv/opt/oyster-shazam-20261023/bin/python",
+      "-m",
+      "sourmash",
+      "sig",
+      "downsample",
+      "--scaled",
+      "10",
+      "/scratch/users/olgabot/oyster-shazam-20261023/index-pilot/dna/DW1.scaled5.sig.zip",
+      "-o",
+      "/scratch/users/olgabot/oyster-shazam-20261023/index-pilot/dna/DW1.scaled10.sig.zip"
+    ],
+    [
+      "/home/groups/ayeletv/opt/oyster-shazam-20261023/bin/python",
+      "-m",
+      "sourmash",
+      "sig",
+      "downsample",
+      "--scaled",
+      "100",
+      "/scratch/users/olgabot/oyster-shazam-20261023/index-pilot/dna/DW1.scaled5.sig.zip",
+      "-o",
+      "/scratch/users/olgabot/oyster-shazam-20261023/index-pilot/dna/DW1.scaled100.sig.zip"
+    ],
+    [
+      "/home/groups/ayeletv/opt/oyster-shazam-20261023/bin/python",
+      "-m",
+      "sourmash",
+      "sketch",
+      "translate",
+      "/scratch/users/olgabot/oyster-shazam-20261023/shared-trimmed/DW1_1.fastq.gz",
+      "/scratch/users/olgabot/oyster-shazam-20261023/shared-trimmed/DW1_2.fastq.gz",
+      "--merge",
+      "DW1",
+      "-p",
+      "protein,k=7,scaled=5",
+      "-o",
+      "/scratch/users/olgabot/oyster-shazam-20261023/index-pilot/protein/DW1.scaled5.sig.zip"
+    ],
+    [
+      "/home/groups/ayeletv/opt/oyster-shazam-20261023/bin/python",
+      "-m",
+      "sourmash",
+      "sig",
+      "downsample",
+      "--scaled",
+      "10",
+      "/scratch/users/olgabot/oyster-shazam-20261023/index-pilot/protein/DW1.scaled5.sig.zip",
+      "-o",
+      "/scratch/users/olgabot/oyster-shazam-20261023/index-pilot/protein/DW1.scaled10.sig.zip"
+    ],
+    [
+      "/home/groups/ayeletv/opt/oyster-shazam-20261023/bin/python",
+      "-m",
+      "sourmash",
+      "sig",
+      "downsample",
+      "--scaled",
+      "100",
+      "/scratch/users/olgabot/oyster-shazam-20261023/index-pilot/protein/DW1.scaled5.sig.zip",
+      "-o",
+      "/scratch/users/olgabot/oyster-shazam-20261023/index-pilot/protein/DW1.scaled100.sig.zip"
+    ],
+    [
+      "/home/groups/ayeletv/opt/oyster-shazam-20261023/bin/python",
+      "-m",
+      "sourmash",
+      "sketch",
+      "translate",
+      "/scratch/users/olgabot/oyster-shazam-20261023/shared-trimmed/DW1_1.fastq.gz",
+      "/scratch/users/olgabot/oyster-shazam-20261023/shared-trimmed/DW1_2.fastq.gz",
+      "--merge",
+      "DW1",
+      "-p",
+      "dayhoff,k=12,scaled=5",
+      "-o",
+      "/scratch/users/olgabot/oyster-shazam-20261023/index-pilot/dayhoff/DW1.scaled5.sig.zip"
+    ],
+    [
+      "/home/groups/ayeletv/opt/oyster-shazam-20261023/bin/python",
+      "-m",
+      "sourmash",
+      "sig",
+      "downsample",
+      "--scaled",
+      "10",
+      "/scratch/users/olgabot/oyster-shazam-20261023/index-pilot/dayhoff/DW1.scaled5.sig.zip",
+      "-o",
+      "/scratch/users/olgabot/oyster-shazam-20261023/index-pilot/dayhoff/DW1.scaled10.sig.zip"
+    ],
+    [
+      "/home/groups/ayeletv/opt/oyster-shazam-20261023/bin/python",
+      "-m",
+      "sourmash",
+      "sig",
+      "downsample",
+      "--scaled",
+      "100",
+      "/scratch/users/olgabot/oyster-shazam-20261023/index-pilot/dayhoff/DW1.scaled5.sig.zip",
+      "-o",
+      "/scratch/users/olgabot/oyster-shazam-20261023/index-pilot/dayhoff/DW1.scaled100.sig.zip"
+    ],
+    [
+      "/home/groups/ayeletv/opt/oyster-shazam-20261023/bin/python",
+      "-m",
+      "sourmash",
+      "sketch",
+      "translate",
+      "/scratch/users/olgabot/oyster-shazam-20261023/shared-trimmed/DW1_1.fastq.gz",
+      "/scratch/users/olgabot/oyster-shazam-20261023/shared-trimmed/DW1_2.fastq.gz",
+      "--merge",
+      "DW1",
+      "-p",
+      "hp,k=30,scaled=5",
+      "-o",
+      "/scratch/users/olgabot/oyster-shazam-20261023/index-pilot/hp/DW1.scaled5.sig.zip"
+    ],
+    [
+      "/home/groups/ayeletv/opt/oyster-shazam-20261023/bin/python",
+      "-m",
+      "sourmash",
+      "sig",
+      "downsample",
+      "--scaled",
+      "10",
+      "/scratch/users/olgabot/oyster-shazam-20261023/index-pilot/hp/DW1.scaled5.sig.zip",
+      "-o",
+      "/scratch/users/olgabot/oyster-shazam-20261023/index-pilot/hp/DW1.scaled10.sig.zip"
+    ],
+    [
+      "/home/groups/ayeletv/opt/oyster-shazam-20261023/bin/python",
+      "-m",
+      "sourmash",
+      "sig",
+      "downsample",
+      "--scaled",
+      "100",
+      "/scratch/users/olgabot/oyster-shazam-20261023/index-pilot/hp/DW1.scaled5.sig.zip",
+      "-o",
+      "/scratch/users/olgabot/oyster-shazam-20261023/index-pilot/hp/DW1.scaled100.sig.zip"
+    ]
+  ],
+  "translation": "sourmash sketch translate; all six frames, no CDS prediction"
+}

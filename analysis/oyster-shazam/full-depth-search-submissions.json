@@ -1,0 +1,33 @@
+{
+  "extension_array": "49221554",
+  "required_batches": 554,
+  "search_submissions": [
+    {
+      "job": "49241935",
+      "first_batch": 0,
+      "last_batch": 31,
+      "dependency": "aftercorr:49221554",
+      "reference_runs": 8,
+      "reference_scope": "Untrimmed public pilot",
+      "scales": [
+        10,
+        100
+      ]
+    },
+    {
+      "job": "49347946",
+      "first_batch": 32,
+      "last_batch": 553,
+      "dependency": "aftercorr:49221554",
+      "reference_runs": 8,
+      "reference_scope": "Untrimmed public pilot",
+      "scales": [
+        10,
+        100
+      ]
+    }
+  ],
+  "unsubmitted_first_batch": null,
+  "unsubmitted_last_batch": null,
+  "reason": "All554 submitted. Dependencies cleared only for independently audited completed extension batches0-140; future batches retain aftercorr."
+}
