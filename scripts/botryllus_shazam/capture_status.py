@@ -49,6 +49,9 @@ ids = [
     "49351544",
     "49351548",
 ]
+pipeline_file = a.report / "current-pipeline.json"
+pipeline = json.loads(pipeline_file.read_text()) if pipeline_file.exists() else []
+ids = sorted(set(ids) | {j["id"] for j in pipeline})
 raw = subprocess.check_output(
     [
         "ssh",
@@ -68,6 +71,17 @@ s["scope"] = "Verified timestamped Sherlock snapshot; no automatic polling."
 a.report.mkdir(parents=True, exist_ok=True)
 (a.report / "status.json").write_text(json.dumps(s, indent=2) + "\n")
 byid = {j["id"]: j for j in s["jobs"]}
+s["current_pipeline"] = [
+    dict(
+        **byid.get(
+            j["id"],
+            dict(id=j["id"], state="NOT RETURNED", elapsed=None, exit_code=None),
+        ),
+        scope=j["scope"]
+    )
+    for j in pipeline
+]
+(a.report / "status.json").write_text(json.dumps(s, indent=2) + "\n")
 searches = []
 for job, scope in [
     ("49242047", "Swiss-Prot and Botryllus manysearch; attended run"),

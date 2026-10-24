@@ -2,6 +2,13 @@
 args <- commandArgs(TRUE)
 folder <- args[1]; code <- args[2]
 dir.create(folder, recursive=TRUE, showWarnings=FALSE)
+prefix <- if(length(args)>=3) args[3] else file.path(Sys.getenv("GROUP_HOME"),"opt/botryllus-dekupl-1.3.3-20261024")
+raw_fixture <- file.path(dirname(folder),'smoke/results/kmer_counts/raw-counts.tsv.gz')
+nf_path <- file.path(folder,'native-normalization-check.tsv')
+status_nf <- system2(file.path(prefix,'share/dekupl/bin/computeNF'),raw_fixture,stdout=nf_path)
+if(status_nf!=0) stop('Native normalization program failed')
+native_nf <- read.delim(nf_path)
+if(!identical(names(native_nf),c('sample','normalization_factor')) || nrow(native_nf)!=4 || any(abs(native_nf$normalization_factor-1)>1e-6)) stop('Native normalization fixture differs')
 set.seed(1729)
 units <- expand.grid(condition=c('Control','Treatment'), genotype=c('G1','G2','G3'), stringsAsFactors=FALSE)
 units$unit <- paste0('U',seq_len(nrow(units)))

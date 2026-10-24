@@ -16,7 +16,7 @@ const external=c.external_tunicate_sra;
 $('externalSearchStatus').textContent=available?`External tunicate job ${external.job_id}: ${external.current_state}. ${external.scope}.`:'No external tunicate search submission was recorded before the connection failed. Current state unknown.';
 $('statusLine').textContent=`Snapshot: ${s.validated_raw_runs} of ${s.total_runs} raw libraries have validated completion records.`;
 $('readProgress').value=s.validated_raw_runs;
-$('fullDepthJobs').innerHTML=table(s.jobs.filter(j=>j.id.startsWith('493')).map(j=>({job:j.id,stage:j.name,state:j.state,elapsed:j.elapsed})),['job','stage','state','elapsed']);
+$('fullDepthJobs').innerHTML=table((s.current_pipeline||[]).map(j=>({job:j.id,stage:j.scope,state:j.state,elapsed:j.elapsed})),['job','stage','state','elapsed']);
 $('snapshot').textContent=`Slurm snapshot ${new Date(s.checked_at).toLocaleString()}. Failed and cancelled attempts remain visible; a running exit field is not a completion verdict.`;
 $('jobs').innerHTML=s.jobs.map(j=>`<tr><td><code>${esc(j.id)}</code></td><td>${esc(j.name)}</td><td>${esc(j.state)}</td><td>${esc(j.elapsed)}</td><td>${esc(j.exit_code)}</td></tr>`).join('');
 $('newStages').textContent=`DIAMOND/Pfam: ${s.annotation_complete?'completed; candidate interpretation pending':'incomplete'}. Historical full-run sketch pilot: ${s.index_pilot_complete?'completed':'incomplete'}. Full-depth trimmed inputs: ${s.trimmed_complete?'completion marker present':'no completion marker'}.`;
