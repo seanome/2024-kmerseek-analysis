@@ -60,6 +60,11 @@ def main():
     data['full_depth']=json.loads((ROOT/'full-depth-status.json').read_text())
     full_progress=ROOT/'results/full-depth-extension-progress.json'
     data['full_extension_progress']=json.loads(full_progress.read_text()) if full_progress.exists() else None
+    archive_snapshot=ROOT/'results/public-archive-progress.json'
+    if archive_snapshot.exists():
+        progress=json.loads(archive_snapshot.read_text())
+        data['stages'][-1]['status']=f"{progress['validated_runs']:,} trimmed run completion records; partial archive"
+        data['stages'][-1]['detail']=f"{progress['validated_studies']:,} studies; all eight settings on prefix-derived queries. {progress['verification']}. Full-depth replay across the growing trimmed archive remains pending."
     (OUT/'report-data.json').write_text(json.dumps(data,separators=(',',':'))+'\n')
     template=(ROOT/'report-template.html').read_text()
     full_path=ROOT/'results/full-depth-extension-progress.json'
@@ -69,6 +74,12 @@ def main():
         template=template.replace('__FULL_DEPTH_RESULTS__',full_html)
         shutil.copy2(full_path,OUT/full_path.name)
     else:template=template.replace('__FULL_DEPTH_RESULTS__','<p>Full-depth extension aggregation pending.</p>')
+    quant=ROOT/'results/quantifier-comparison/audited-summary.json'
+    if quant.exists():
+        q=json.loads(quant.read_text())
+        body=f'<section id="gene-comparison"><div class="eyebrow">Complete paired libraries · R DESeq2</div><h2>Kallisto and Salmon share {q["both_DE"]:,} DE genes.</h2><p>Both quantifiers tested the same {q["common_tested"]:,} genes. Kallisto calls {q["kallisto_DE"]:,} and Salmon {q["salmon_DE"]:,} genes at BH-adjusted P &lt; 0.05, without an extra fold-change cutoff. {q["kallisto_only"]:,} are significant only with kallisto; {q["salmon_only"]:,} only with Salmon. One shared DE gene has opposite directions. Fold-change rank correlation is {q["lfc_spearman"]:.3f}.</p><img src="oyster_kallisto_salmon_DESeq2.png" alt="Gene overlap and fold-change agreement for kallisto and Salmon with the same DESeq2 model" style="width:100%;height:auto"><p>Same complete paired reads, transcript-only reference, gene aggregation and condition-only model. This is robustness to quantifier choice; genotype and tank remain confounded. Gene mapping of SPLASH and DE-kupl sequences is pending, so this does not yet establish their overlap with DE genes or splicing.</p><p>Downloaded output hashes and gene overlap/rank correlation were independently checked. Job49369221 completed in 15:58, with peak RSS about3.8GiB. These results use R DESeq2 and a shared tested family; the earlier PyDESeq2 count with an additional1.5-fold threshold is a different analysis.</p><p><a href="gene-comparison.tsv" download>All tested genes, both effects and adjusted P values · TSV</a> · <a href="quantifier-audited-summary.json" download>Audited counts and opposite-direction gene · JSON</a> · <a href="quantifier-R-session.txt" download>R versions</a></p></section>'
+        template=template.replace('<section id="design">',body+'<section id="design">')
+        for src,name in [(quant,'quantifier-audited-summary.json'),(quant.parent/'gene-comparison.tsv','gene-comparison.tsv'),(quant.parent/'R-session.txt','quantifier-R-session.txt'),(ROOT/'oyster_kallisto_salmon_DESeq2.png','oyster_kallisto_salmon_DESeq2.png')]:shutil.copy2(src,OUT/name)
     public_path=ROOT/'results/public-match-summary.json'
     public=json.loads(public_path.read_text()) if public_path.exists() else None
     template=template.replace('__PUBLIC_RESULTS__',render_public_results(public) if public else '<p>Public search aggregation pending.</p>')
@@ -79,7 +90,7 @@ def main():
     if archive_path.exists():
         archive=json.loads(archive_path.read_text())
         table=''.join(f"<tr><td>{mol.upper()}</td><td>{v['matches_10']:,}</td><td>{v['matches_100']:,}</td><td>{v['lost_pairs']:,}</td></tr>" for mol,v in archive['encodings'].items())
-        archive_html=f"<div class=\"card\"><h3>Trimmed public archive: {archive['validated_runs']:,} completed runs</h3><p>{archive['validated_runs']:,} of 17,623 inventory runs, from {archive['validated_studies']:,} studies, have completed four-alphabet sketching and searches at scaled 10 and 100 against all 354,316 prefix-derived extension records. These are separate from the full-depth queries above.</p><p>{archive['verification']}. Counts below sum completion records; a second complete pair-set audit of this growing archive is pending.</p><table><thead><tr><th>Encoding</th><th>Query/run pairs at 10</th><th>At 100</th><th>Lost at 100</th></tr></thead><tbody>{table}</tbody></table><p>These candidate occurrences do not establish genes or functions. Partial and failed runs are excluded. The zero-result parser was repaired and tested on a real run; other download/application failures remain under investigation.</p><a href=\"public-archive-progress.json\" download>Indexed runs, study/species metadata and completion counts · JSON</a></div>"
+        archive_html=f"<div class=\"card\"><h3>Trimmed public archive: {archive['validated_runs']:,} run completion records</h3><p>{archive['validated_runs']:,} of 17,623 inventory runs, from {archive['validated_studies']:,} studies, have completed four-alphabet sketching and searches at scaled 10 and 100 against all 354,316 prefix-derived extension records. These are separate from the full-depth queries above.</p><p>{archive['verification']}. The earlier full-file hash audit covered561runs. Counts below sum the latest completion records; the new full-file hash audit and a second complete pair-set audit remain pending.</p><table><thead><tr><th>Encoding</th><th>Query/run pairs at 10</th><th>At 100</th><th>Lost at 100</th></tr></thead><tbody>{table}</tbody></table><p>These candidate occurrences do not establish genes or functions. Partial and failed runs are excluded. The zero-result parser was repaired and tested on a real run; other download/application failures remain under investigation.</p><a href=\"public-archive-progress.json\" download>Indexed runs, study/species metadata and completion counts · JSON</a></div>"
         template=template.replace('__ARCHIVE_PROGRESS__',archive_html)
         shutil.copy2(archive_path,OUT/archive_path.name)
     else:template=template.replace('__ARCHIVE_PROGRESS__','')
