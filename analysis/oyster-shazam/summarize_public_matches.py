@@ -58,7 +58,7 @@ def main():
                     if len(examples)<30:examples.append(row)
     summary=dict(completed_batches=completed,total_batches=22,extended_records_searched=queries,reference_runs=len(metadata),
                  reference_studies=len({r['study_accession'] for r in metadata.values()}),
-                 scope='Eight complete public runs, untrimmed pilot; partial query coverage. New trimmed full-archive results are separate.',
+                 scope='Eight complete public runs, untrimmed pilot; '+('all 22 query batches complete' if len(completed)==22 else f'partial query coverage, {len(completed)} of 22 batches')+'. New trimmed full-archive results are separate.',
                  rule='Any nonzero shared-hash match; candidate occurrence only, not validated homology or function.',
                  encodings=dict(totals),lost_examples=examples,loss_table=path.name,loss_table_sha256=sha(path))
     (out/'summary.json').write_text(json.dumps(summary,indent=2)+'\n')
