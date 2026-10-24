@@ -60,7 +60,7 @@ def run(root, software, out):
                 cpus=16,
                 memory_GB=96,
                 time_hours=48,
-                evidence="Six-library oyster pilot: 6 million input pairs, 3m24s, 2.2 GB peak RSS for SPLASH plus top-300 Compactors. Botryllus raw maximum 654672879 pairs, about 109 times the reads. KMC bounded at 24 GB; 64 bins. Full-depth all-anchor Compactors has no measured history; 48h and 96 GB are conservative model requests, not guarantees.",
+                evidence="Six-library oyster pilot: 6 million input pairs, 3m24s, 2.2 GB peak RSS for SPLASH plus top-300 Compactors. Botryllus total across 64 runs 654672879 pairs (largest single run 108931114), about 109 times the pilot reads in total. KMC bounded at 24 GB; 64 bins. Full-depth all-anchor Compactors has no measured history; 48h and 96 GB are conservative model requests, not guarantees.",
             ),
             indent=2,
         )
