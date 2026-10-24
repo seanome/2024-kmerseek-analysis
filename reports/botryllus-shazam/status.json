@@ -1,5 +1,5 @@
 {
-  "checked_at": "2026-10-24T17:25:07.879339+00:00",
+  "checked_at": "2026-10-24T17:28:29.223789+00:00",
   "validated_raw_runs": 63,
   "runs": [
     "SRR32233926",
@@ -359,17 +359,10 @@
       "exit_code": "0:0"
     },
     {
-      "id": "49368647",
-      "name": "botryllus-DEkupl-software-checks",
-      "state": "PENDING",
-      "elapsed": "00:00:00",
-      "exit_code": "0:0"
-    },
-    {
       "id": "49368817",
       "name": "botryllus-remaining-inputs",
-      "state": "PENDING",
-      "elapsed": "00:00:00",
+      "state": "RUNNING",
+      "elapsed": "00:02:49",
       "exit_code": "0:0"
     },
     {
@@ -394,14 +387,21 @@
       "exit_code": "0:0"
     },
     {
-      "id": "49368825",
+      "id": "49369242",
+      "name": "botryllus-DEkupl-software-checks",
+      "state": "PENDING",
+      "elapsed": "00:00:00",
+      "exit_code": "0:0"
+    },
+    {
+      "id": "49369243",
       "name": "botryllus-DEkupl-gene-DE",
       "state": "PENDING",
       "elapsed": "00:00:00",
       "exit_code": "0:0"
     },
     {
-      "id": "49368826",
+      "id": "49369247",
       "name": "botryllus-SPLASH-DE-evidence",
       "state": "PENDING",
       "elapsed": "00:00:00",
@@ -413,8 +413,8 @@
     {
       "id": "49368817",
       "name": "botryllus-remaining-inputs",
-      "state": "PENDING",
-      "elapsed": "00:00:00",
+      "state": "RUNNING",
+      "elapsed": "00:02:49",
       "exit_code": "0:0",
       "scope": "Recover last full-depth library; fresh HTTPS and archive checksum"
     },
@@ -443,7 +443,7 @@
       "scope": "Full-depth manysearch: Swiss-Prot and four prepared external runs"
     },
     {
-      "id": "49368647",
+      "id": "49369242",
       "name": "botryllus-DEkupl-software-checks",
       "state": "PENDING",
       "elapsed": "00:00:00",
@@ -451,7 +451,7 @@
       "scope": "DE-kupl native counts and blocked-model software checks"
     },
     {
-      "id": "49368825",
+      "id": "49369243",
       "name": "botryllus-DEkupl-gene-DE",
       "state": "PENDING",
       "elapsed": "00:00:00",
@@ -459,7 +459,7 @@
       "scope": "DE-kupl and gene-level counts; genotype-blocked DESeq2"
     },
     {
-      "id": "49368826",
+      "id": "49369247",
       "name": "botryllus-SPLASH-DE-evidence",
       "state": "PENDING",
       "elapsed": "00:00:00",

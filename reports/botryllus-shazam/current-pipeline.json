@@ -16,15 +16,15 @@
     "scope": "Full-depth manysearch: Swiss-Prot and four prepared external runs"
   },
   {
-    "id": "49368647",
+    "id": "49369242",
     "scope": "DE-kupl native counts and blocked-model software checks"
   },
   {
-    "id": "49368825",
+    "id": "49369243",
     "scope": "DE-kupl and gene-level counts; genotype-blocked DESeq2"
   },
   {
-    "id": "49368826",
+    "id": "49369247",
     "scope": "Join SPLASH to gene DE and candidate sequence changes"
   }
 ]
