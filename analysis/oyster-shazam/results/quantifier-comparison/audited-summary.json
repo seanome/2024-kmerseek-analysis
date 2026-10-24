@@ -1,0 +1,33 @@
+{
+  "common_tested": 22959,
+  "kallisto_DE": 3728,
+  "salmon_DE": 3739,
+  "both_DE": 3262,
+  "kallisto_only": 466,
+  "salmon_only": 477,
+  "opposite_DE": 1,
+  "lfc_spearman": 0.9439012305939565,
+  "opposite_direction_genes": [
+    {
+      "gene_id": "105343802",
+      "baseMean_kallisto": "5774.36578555121",
+      "log2FoldChange_kallisto": "-0.384464479903015",
+      "lfcSE_kallisto": "0.123414106112788",
+      "stat_kallisto": "-3.11523935158315",
+      "pvalue_kallisto": "0.00183795703988143",
+      "padj_kallisto": "0.0166525870870709",
+      "baseMean_salmon": "475.791138582614",
+      "log2FoldChange_salmon": "0.600877367575411",
+      "lfcSE_salmon": "0.171932175780668",
+      "stat_salmon": "3.49485118097932",
+      "pvalue_salmon": "0.000474326149837002",
+      "padj_salmon": "0.00596690444298035",
+      "DE_kallisto": "TRUE",
+      "DE_salmon": "TRUE",
+      "direction_agrees": "FALSE"
+    }
+  ],
+  "scope": "Six complete paired libraries; condition-only R DESeq2 on a shared tested gene universe",
+  "rule": "BH adjusted P strictly below 0.05; no additional fold-change cutoff",
+  "verification": "All downloaded comparison output SHA256 hashes matched; overlap and rank correlation independently recomputed from gene rows"
+}
