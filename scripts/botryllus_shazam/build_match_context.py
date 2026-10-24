@@ -162,7 +162,7 @@ def build(report, membership):
                 alphabet=mode,
                 queries=len(querysets[mode]),
                 proteins=len(labels),
-                species=len(set(x["species"] for x in labels)),
+                organism_labels=len(set(x["species"] for x in labels)),
                 top_species=Counter(x["species"] for x in labels).most_common(12),
                 examples=sorted(
                     labels,

@@ -1,4 +1,4 @@
-"""Recover missing libraries; preserve failed HTTPS data and verify FTP fallback."""
+"""Recover missing libraries; preserve failed HTTPS data and verify a separate fresh HTTPS download."""
 
 import csv
 import hashlib
@@ -40,14 +40,14 @@ for row in missing:
             evidence = {
                 "expected_md5": expected,
                 "expected_bytes": size,
-                "transport": "FTP",
+                "transport": "fresh HTTPS after FTP directory rejection",
                 "https_partial_preserved": str(old),
             }
             if old.exists():
                 evidence.update(
                     https_bytes=old.stat().st_size, https_md5=digest(old, "md5")
                 )
-            target = final.with_suffix(".gz.ftp.partial")
+            target = final.with_suffix(".gz.fresh-https-v2.partial")
             transfer(
                 [
                     "curl",
@@ -67,18 +67,19 @@ for row in missing:
                     "-",
                     "--output",
                     str(target),
-                    "ftp://" + url,
+                    "https://" + url,
                 ]
             )
             evidence.update(
-                ftp_bytes=target.stat().st_size, ftp_md5=digest(target, "md5")
+                fresh_https_bytes=target.stat().st_size,
+                fresh_https_md5=digest(target, "md5"),
             )
-            (folder / f"ftp-recovery-mate{mate}.json").write_text(
+            (folder / f"fresh-https-v2-mate{mate}.json").write_text(
                 json.dumps(evidence, indent=2) + "\n"
             )
-            if target.stat().st_size != size or evidence["ftp_md5"] != expected:
+            if target.stat().st_size != size or evidence["fresh_https_md5"] != expected:
                 raise ValueError(
-                    "FTP archive also failed expected MD5/size; all files preserved"
+                    "Fresh HTTPS archive failed expected MD5/size; all files preserved"
                 )
             target.rename(final)
     recover(row, root, validator)
