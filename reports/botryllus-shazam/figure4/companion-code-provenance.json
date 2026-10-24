@@ -1,0 +1,17 @@
+{
+  "repository": "https://github.com/YoyoVosko/MacrophagesOntheRun",
+  "commit": "4cf2f16fb2191135521bdf716f61c99ed1d3f815",
+  "relation": "Cited 2024 mammalian exercise analysis; not Botryllus-specific Figure 4 code",
+  "files": {
+    "Macrophages_On_The_Run_Make_Figures_Code.ipynb": "0c95a5b562e61d4c309989abd8e155a443a4d7ab7bb52c8eea9d530f19ecd59c",
+    "MacUtils.py": "e879d69d36bf953be8f1dc72f8b4c4042611ae0cfe3fe5370f6d2449a7120751",
+    "Download_Data.ipynb": "bc2bb3bdd470b8f20c7a918b35f9159b931fb5077befc0d49213263c08f98c7a",
+    "StepMiner.py": "c33f2df745783fc6a18a74b1920495dbee8c3935751e7af1a6d7d511b448d949",
+    "README.md": "d3321f0309d9f3a7a481ab98e19e2276e42d124dbb4411e6ed6bab2b0792a807",
+    "Download_Data.source.txt": "79880deeb57139e62a8732782e7341309d96d9fe41d914f7ba9b02a278312cfc",
+    "Macrophages_On_The_Run_Make_Figures_Code.source.txt": "ca40c6763f83b4f95e37aa6a5b5c687fc5c0a36f07b8613237f4cc6a0d6165bb",
+    "HegemonUtil.py": "931729a653ff7d3727802e899c0f540abc0fde5eeb13b7aae00ad76a7d689f97",
+    "bone.py": "1a33a75363b5e5cd4c1e9a16d7e574c6dd7d33c50ffcf8de11dde71445a45345"
+  },
+  "botryllus_specific_code_found": false
+}
