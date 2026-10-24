@@ -123,6 +123,7 @@ def build(pilot, repo, dest):
     shutil.copyfile(
         report / "tunicate-rna-seq.tsv.gz", data / "tunicate-rna-seq.tsv.gz"
     )
+    shutil.copy2(report / "FIGURE4-REPRODUCTION.md", data / "FIGURE4-REPRODUCTION.md")
     for folder in ["finished-manysearch", "external-results", "match-context"]:
         shutil.copytree(report / folder, data / folder, dirs_exist_ok=True)
     paths = []
