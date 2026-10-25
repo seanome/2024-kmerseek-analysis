@@ -19,19 +19,27 @@ flowchart LR
 
 ## Status on 2026-10-25
 
+Sherlock access was restored. Job 49520265 ran source 49d75dcb; the independent
+audits and corrected-protocol checks completed, then the Nextflow audit failed
+because its `log` input resolved to the built-in logger. The input is renamed
+`search_log`; recovery job 49521583 passed all seven bounded migration scenarios. See the committed
+[evidence and scope](../results/migration-20261025/STATUS.md).
+
 | Work | Status | Evidence or remaining gate |
 |---|---|---|
-| Corrected six-frame translator | Implemented and locally tested | Five tests: lengths 29/30/31, internal X, actual stops, all frames, forward coordinates, original DNA and empty membership, duplicate IDs, overwrite refusal |
-| Adoption and result validator | Implemented and locally tested | Seven tests: checksums, protocol, ownership, membership, wrong or duplicate matches, incomplete logs, independently confirmed zero matches |
-| Nextflow adoption/index/search/audit | Implemented; runtime untested | Nextflow is absent locally; no syntax, resolved-profile, first-run or resume claim |
-| Corrected Branchwater peptide builder | Implemented; pinned execution pending | Uses manysketch per segment, compares peptide API hashes, merges by original ID, retains empty originals at scales 10/100 |
-| Historical recovery scripts and outputs | Preserved | Existing dirty recovery scripts and report files remain outside this change |
-| Sherlock audit, corrected pilot and rollout | Pending | Access confirmation required; no SSH attempt made in this continuation |
+| Corrected six-frame translator | Tested locally and on Sherlock | Lengths29/30/31, stops, X, all frames, coordinates and original membership |
+| Pinned Branchwater X handling | Passed fixture test | All 7 protein-k7, 12 Dayhoff-k12 and 30 HP-k30 X-spanning hashes retained at scaled1 |
+| Corrected 2,000-query sketches | Passed | 4,659 segment/alphabet comparisons; every original ID retained; real sample has no X-bearing retained segment |
+| Initial DNA shard | Independently audited | 380,867 original queries, 38 collections, eight runs, 36 query–run pairs |
+| Historical translated preflight | Saved results and original query hashes independently audited | Exact intersections, identities, scale losses and word-by-word reconstruction; historical stop/X protocol |
+| Nextflow adoption/index/search | Executed successfully | First-run trace retained |
+| Nextflow audit and migration gates | Passed on compute | First run, cached resume, query change, controlled stop/resume, corruption and protocol mismatch |
+| Production adoption | Blocked | Production execution tests and historical build-provenance gaps remain |
 
-The local tests use Biopython 1.88 and Sourmash 4.9.4. Local Branchwater is
-0.9.14.dev0; production code refuses it because the intended pin is 0.9.15.
-The local Sourmash loader emits SQLite connection ResourceWarnings under Python
-3.13. The tests pass; they do not establish the pinned Branchwater runtime's behavior.
+The local helper checks use Biopython1.88 and Sourmash4.9.4. Sherlock checks use
+Sourmash4.9.4 and Branchwater0.9.15. Local Branchwater0.9.14.dev0 is rejected.
+Local Sourmash emits SQLite ResourceWarnings under Python3.13. Black and Python
+compilation pass; Ruff is unavailable in the local analysis environment.
 
 ## Adoption manifest
 
@@ -40,6 +48,13 @@ Supply separate JSON manifests for reference and query. Each has these fields:
 - `role`: `reference` or `query`.
 - `artifact_id`, absolute `artifact_path`, and full-file `artifact_sha256`.
 - `source_sha256`, `source_code_sha256`, and nonempty `source_tool_versions`.
+  The source checksum binds the recorded provenance document for a historical
+  reference, or the original sequence source for a query. Original build-code
+  checksums and tool versions were not recorded for the audited historical
+  artifacts. Such manifests carry `source_code_sha256: null` and
+  `provenance_scope: historical-build-code-unrecorded-test-only`; the production
+  profile refuses them. Do not substitute the current audit code for missing
+  historical build provenance.
 - `ownership`: `completed-read-only`, established by the independent inventory.
 - `expected_ids`: every expected signature name, including empty query sketches.
 - `settings`: `{"moltype":"DNA","k":31,"scaled":100,"seed":42,"abundance":false,"stop_policy":"not-applicable","minimum_aa":null}`.
@@ -55,12 +70,12 @@ New indexes and results stay in Nextflow work directories. No `storeDir` or
 `publishDir` is used. Preserve the work directory and `.nextflow/cache` together.
 Deep content hashing is enabled for task inputs. Reference and query adoption are
 separate, so changing a query should leave the reference index reusable; this
-still requires the real Nextflow query-change test.
+passed the real Nextflow query-change test.
 
 The driver requires renewed-access, resource-review, and ownership-review flags.
 It also requires an explicit Slurm partition, CPU, memory, time, interpreter and
-Sourmash path. These are not supplied here: current cluster instructions, measured
-resource history and ownership remain inaccessible. Nextflow is pinned to 25.04.7;
+Sourmash path. The batch test scripts record their bounded resource requests. Read current
+cluster instructions, resource history and ownership before any further launch. Nextflow is pinned to 25.04.7;
 Branchwater is checked as 0.9.15 in the same environment as the Python interpreter.
 Task errors terminate this bounded workflow and preserve files; no automatic retry
 is configured. Trace, report, timeline and DAG outputs are enabled.
@@ -79,25 +94,36 @@ It uses Branchwater manysketch, verifies every segment against the peptide API,
 and aggregates segment hashes under original IDs. The bounded pilot holds its
 records in memory. It is not an archive-scale streaming implementation. An all-empty
 translation writes explicit empty original sketches without calling manysketch.
-Internal-X hashing must still be measured on the pinned tool, including whether
-words containing X contribute hashes. API agreement alone is not a biological
-validation or evidence of equivalence to the historical split-X protocol.
+The pinned synthetic test confirms that words spanning X contribute hashes in all
+three alphabets. API agreement is not biological validation or evidence of
+equivalence to the historical split-X protocol.
 
 The older `pilot_minimum_peptide.py` and `stopfree_public_pilot.py` implement
 historical stop/X splitting. Their results remain historical; do not use them as
 corrected-protocol launchers or relabel their outputs.
 
-## Required work after access is confirmed
+## Grouped tests and remaining work
 
-1. Read current Sherlock instructions and inspect ownership and measured resource
-   history. Independently audit the completed DNA shard and historical preflight.
-2. Freeze adoption manifests from that audit. Resolve the Sherlock profile with
-   Nextflow 25.04.7. Run this one-run workflow and compare with the matching old shard.
-3. Test first run, unchanged resume, interrupted resume, query change, truncated
-   sketches and protocol mismatch. Save commands, SHAs, trace/cache evidence and hashes.
-4. Run the corrected peptide pilot with pinned Branchwater, including internal X,
-   empty/nonempty and duplicate-hash signatures, and multiple segments per origin.
-5. Implement missing-artifact download/trim/sketch channels, safe worker draining,
-   measured resource selection and archive-scale aggregation only after these gates.
-6. Extend public and Swiss-Prot coverage and update the private report using audited
-   results. No historical denominator changes were made in this continuation.
+Current Sherlock rules require short tasks to be grouped. `allocation_test`
+runs the workflow with the local executor inside an existing Slurm allocation;
+it refuses to run without `SLURM_JOB_ID`. This exercises real Branchwater and
+Nextflow tasks on compute without submitting many short batch jobs. It does not
+verify Slurm task dispatch, preemption or external scheduler interruption.
+`migration_tests.py` records a controlled application stop before search and then
+resumes. A scheduler-interruption test remains separate.
+
+`migration-suite.sbatch` preserves its work/cache, logs and partial files in an
+archive on shared Scratch. `migration-recovery.sbatch` extracts only completed
+audit inputs and corrected sketches into a new directory. It never changes the
+original archive. Node-local absolute paths in the archived cache are evidence,
+not a portable cross-job resume mechanism.
+
+## Remaining work
+
+The independent historical audits, corrected pinned-tool pilot, and bounded
+migration matrix passed; see the linked evidence for exact scope and counts.
+Remaining work is scheduler interruption and Slurm child-task dispatch testing,
+portable cross-job cache recovery, complete production provenance, missing-artifact
+download/trim/sketch channels, safe worker draining, measured resource selection
+and archive-scale aggregation. Public/Swiss-Prot coverage and private-report
+integration remain separate. No historical denominator changed in this continuation.

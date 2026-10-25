@@ -26,6 +26,12 @@ class PeptideProtocolTest(unittest.TestCase):
             [(s.dna_start, s.dna_end) for s in forward], [(0, 93), (96, 186)]
         )
 
+        # X counts toward the requested 30-aa stretch length.
+        at_boundary = [
+            s for s in segments("GCT" * 15 + "NNN" + "GCT" * 14) if s.frame == 1
+        ]
+        self.assertEqual([s.peptide for s in at_boundary], ["A" * 15 + "X" + "A" * 14])
+
     def test_all_frames_and_coordinates(self):
         dna = "GCT" * 35 + "NNN" + "GCT" * 35
         result = list(segments(dna))
