@@ -125,9 +125,9 @@ class StageTests(unittest.TestCase):
                 dict(source=source, database="swissprot", mode="hp", scaled=5),
             )
             (m / "matches.csv").write_text(
-                "query_name,match_name,intersect_hashes,containment\n"
+                "query_name,match_name,intersect_hashes,containment,scaled\n"
                 + prefix
-                + ",REF1,2,0.2\n"
+                + ",REF1,2,0.2,5\n"
             )
         for folder in folders:
             m = Path(folder)

@@ -623,13 +623,13 @@ def evidence(reference, mapping, paper, annotations, *folders):
             search_sources.add(meta["source"])
             with (folder / "matches.csv").open() as f:
                 matches.extend(
-                    dict(
-                        source=meta["source"],
-                        database=meta["database"],
-                        mode=meta["mode"],
-                        scaled=meta["scaled"],
+                    {
                         **r,
-                    )
+                        "source": meta["source"],
+                        "database": meta["database"],
+                        "mode": meta["mode"],
+                        "scaled": meta["scaled"],
+                    }
                     for r in csv.DictReader(f)
                 )
         elif (folder / "context.paf").exists():
