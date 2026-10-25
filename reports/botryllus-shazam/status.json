@@ -501,16 +501,16 @@
   ],
   "trimming_scheduler": {
     "job": "49368820",
-    "checked_at": "2026-10-25T01:40:35.207618+00:00",
+    "checked_at": "2026-10-25T01:44:27.830512+00:00",
     "state": "PENDING",
-    "reason": "None",
-    "partition": "normal",
-    "start_time": "Unknown",
+    "reason": "Resources",
+    "partition": "hns,normal",
+    "start_time": "Slurm estimate 18:42:59 PDT has passed; job still pending at latest check",
     "cpus": 16,
     "memory_gb": 48,
     "time_hours": 24,
     "dependency": null,
-    "change_attempt": "Requested hns,normal; command returned 0 but follow-up job record remained normal. Change not verified.",
-    "explanation": "Eligible and waiting for scheduler allocation; no hold, no remaining input dependency. Slurm provided no specific blocking reason or start estimate. All downstream full-depth stages await successful predecessors."
+    "change_attempt": "Confirmed in later scheduler evaluation: existing job now allows hns and normal. No duplicate submitted.",
+    "explanation": "All 64 raw libraries are validated. Trimming is eligible and waiting for resources; its download dependency has cleared. SPLASH / DE-kupl and manysearch will follow through their existing dependencies."
   }
 }

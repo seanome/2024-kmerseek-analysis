@@ -1,6 +1,6 @@
 #!/bin/bash
 #SBATCH --job-name=botryllus-PEC-nfcore-trim
-#SBATCH --partition=normal
+#SBATCH --partition=hns,normal
 #SBATCH --cpus-per-task=16
 #SBATCH --mem=48G
 #SBATCH --time=24:00:00

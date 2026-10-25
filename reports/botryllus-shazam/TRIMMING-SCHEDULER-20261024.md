@@ -1,17 +1,13 @@
 # Full-depth trimming scheduler check
 
-24 October 2026, 18:39 PDT: job 49368820 was pending and eligible, with no dependency, no hold, no node constraint and a positive priority. Its download predecessor 49368817 completed successfully. No nf-core output directory existed yet, so trimming had not started.
+24 October 2026, 18:39 PDT: trimming job 49368820 was eligible and pending on normal only. Its raw-download dependency had completed. There was no hold or requested node constraint. All 64 raw libraries were validated: 654,672,879 read pairs. No nf-core output directory existed yet.
 
-The job requested 16 CPUs, 48 GB and 24 hours on normal only. The partition inventory reported 59,258 queued CPU cores on normal, compared with 24,796 on hns. These totals describe demand, not the job's position or an estimated start time. Slurm reported Reason=None and StartTime=Unknown; a specific reservation or resource conflict was not identified.
+The request is 16 CPUs, 48 GB and 24 hours. The partition inventory reported 59,258 queued CPU cores on normal and 24,796 on hns. These totals describe demand, not the job's queue position. Slurm initially reported Reason=None and StartTime=Unknown.
 
-An in-place request to allow hns and normal returned exit status 0, but the follow-up job record still reported normal only. The requested partition change is therefore not verified and must not be reported as applied. Its ID, CPU count, memory, time limit, inputs and downstream dependencies remain unchanged. No duplicate job was submitted. The source sbatch header remains normal until broader eligibility can be confirmed. No resources were reduced: there is no completed full-depth trimming trace supporting a smaller request.
+An in-place partition update to hns,normal returned success. The first follow-up still showed normal only, so the change was initially unverified. A later scheduler evaluation confirmed hns,normal, Reason=Resources, priority 1017392, and an estimated start at 18:42:59 PDT. That estimate is not a guarantee. The delayed update must not be described as a permanent failure.
 
-SPLASH 49368823 and DE-kupl / gene DE 49369243 depend on validated trimming. manysearch 49368824 follows SPLASH. Evidence 49369247 and paper-gene recovery 49373978 follow their required analyses; the latter also waits for manysearch. These dependencies remain intentional and should not be bypassed.
+The original job ID, CPU count, memory, time limit, inputs and downstream dependencies were preserved. No duplicate job was submitted and no healthy work was restarted. The source sbatch header now retains both verified eligible partitions. Resources were not reduced: no completed full-depth trimming trace supports a smaller request.
 
-18:40 PDT follow-up: trimming remained PENDING / Reason=None / StartTime=Unknown on normal. All 64 raw libraries have validated completion records. The existing dependency chain remains pending; no new full-depth result is available.
+SPLASH 49368823 and DE-kupl / gene DE 49369243 depend on validated trimming. manysearch 49368824 follows SPLASH. Evidence 49369247 and paper-gene recovery 49373978 follow their required analyses; recovery also waits for manysearch. These dependencies remain intentional and must not be bypassed.
 
-Suggested message for SRCC, if the user chooses to request a scheduler check:
-
-> On sh03-ln08 at 2026-10-24 18:40 PDT, my job 49368820 was eligible and pending, with no dependency/hold, Reason=None and StartTime=Unknown. It requests 16 CPUs, 48 GB and 24 h. An scontrol partition update to hns,normal returned success, but the subsequent job record still showed normal only. Could you confirm its partition eligibility and whether a scheduling restriction is preventing allocation?
-
-No support request was sent. No scheduler configuration was changed or probed.
+18:44 PDT follow-up: the broader partition eligibility is retained. Trimming remains pending for Resources; the scheduler start estimate has passed and no trimming log exists yet. No actual runtime or first-result time is measurable before allocation.
