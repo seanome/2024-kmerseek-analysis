@@ -305,6 +305,16 @@ def run(root, code, out):
                 qid = name if mode == "dna" else fragment_parent[name]
                 if name in seen:
                     raise ValueError("Duplicate sketch ID")
+                if len(seen) < 10:
+                    expected_mh = sig.minhash.copy_and_clear()
+                    if mode == "dna":
+                        expected_mh.add_sequence(dna[name], force=True)
+                    else:
+                        expected_mh.add_protein(fragments[name])
+                    if set(expected_mh.hashes) != set(sig.minhash.hashes):
+                        raise ValueError(
+                            "Branchwater hash parity differs from independent MinHash validation"
+                        )
                 seen.add(name)
                 grouped[qid].add_many(list(sig.minhash.hashes))
             expected = (
@@ -318,6 +328,15 @@ def run(root, code, out):
         with SaveSignaturesToLocation(str(queryzip)) as dest:
             for qid, mh in grouped.items():
                 dest.add(sourmash.SourmashSignature(mh, name=qid))
+        loaded = set()
+        for signature in sourmash.load_file_as_signatures(str(queryzip)):
+            if signature.name in loaded or signature.name not in grouped:
+                raise ValueError("Grouped query names changed")
+            loaded.add(signature.name)
+            if set(signature.minhash.hashes) != set(grouped[signature.name].hashes):
+                raise ValueError("Grouped query hashes changed on serialization")
+        if loaded != set(dna):
+            raise ValueError("Grouped serialization dropped empty DNA queries")
         for scale in ([10, 100] if mode == "dna" else [5, 10, 100]):
             report["query_coverage"].append(
                 dict(
