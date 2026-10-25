@@ -103,17 +103,17 @@ process GENE_COUNTS {
 }
 
 process POOL_COUNTS {
+    tag "$assay"
     memory '16 GB'
     time '12h'
     input:
-    path kmers
-    path genes
+    tuple val(assay), path(counts)
     path design
     path pool_script
     output: path 'models/*/*', arity: '1..*'
     script:
     """
-    '${params.python}' '${pool_script}' '${kmers}' '${genes}' '${design}' models
+    '${params.python}' '${pool_script}' '${counts}' '${counts}' '${design}' models '${assay}'
     """
 }
 
@@ -401,7 +401,10 @@ workflow {
     KALLISTO_INDEX(file(params.reference))
     QUANTIFY_GENES(VALIDATE_PAIR.out, KALLISTO_INDEX.out)
     GENE_COUNTS(QUANTIFY_GENES.out.map{run, q -> q}.collect(), file(params.reference), file(params.gtf), helper)
-    POOL_COUNTS(JOIN_KMERS.out, GENE_COUNTS.out.counts, file(params.design), file("${scripts}/pool_abundance.py"))
+    // Gene models can start before the k-mer matrix finishes; each keeps its own counts.
+    def assays = GENE_COUNTS.out.counts.map { tuple('genes', it) }
+        .mix(JOIN_KMERS.out.map { tuple('kmers', it) })
+    POOL_COUNTS(assays, file(params.design), file("${scripts}/pool_abundance.py"))
     def pooled = POOL_COUNTS.out.flatten().map { p -> tuple(p.parent.name, p.name, p) }
     NORMALIZE(pooled)
     BLOCKED_MODEL(NORMALIZE.out, file("${scripts}/blocked_abundance.R"))

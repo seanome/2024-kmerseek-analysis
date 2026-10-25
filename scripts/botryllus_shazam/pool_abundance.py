@@ -7,7 +7,10 @@ import json
 from pathlib import Path
 import sys
 
-raw, genes, design_file, out = map(Path, sys.argv[1:])
+raw, genes, design_file, out = map(Path, sys.argv[1:5])
+assays = sys.argv[5:] or ["genes", "kmers"]
+if any(a not in {"genes", "kmers"} for a in assays) or len(set(assays)) != len(assays):
+    raise ValueError("Expected genes and/or kmers assays")
 design = json.loads(design_file.read_text())
 out.mkdir(exist_ok=False)
 for contrast in design["contrasts"]:
@@ -15,6 +18,8 @@ for contrast in design["contrasts"]:
     names = {unit: f"U{i:02d}_{unit[1]}" for i, unit in enumerate(units, 1)}
     mapping = {r["run"]: (r["genotype"], r["condition"]) for r in contrast["libraries"]}
     for assay, source in [("genes", genes), ("kmers", raw)]:
+        if assay not in assays:
+            continue
         folder = out / contrast["name"] / assay
         folder.mkdir(parents=True)
         with (folder / "units.tsv").open("w") as f:

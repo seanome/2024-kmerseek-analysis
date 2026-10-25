@@ -160,6 +160,19 @@ if __name__ == "__main__":
             measured_pairs=measured["pairs"],
             rule="Scale the 1.5x measured largest-library peak by read pairs, with a provisional 32 GB floor for other libraries",
         )
+    model = result["BLOCKED_MODEL"]
+    gene_hours = max(
+        [4]
+        + [
+            math.ceil(1.5 * (hours(e["realtime"]) or 0))
+            for e in model["evidence"]
+            if e["name"].endswith(":genes)")
+        ]
+    )
+    model["time_by_assay_hours"] = {"genes": gene_hours, "kmers": model["time_hours"]}
+    model["gene_time_basis"] = (
+        "4h floor: 100-gene fixture scaled to the 72,113-reference upper bound; raise for supplied gene-model history"
+    )
     a.output.mkdir(parents=True, exist_ok=False)
     (a.output / "resources.json").write_text(json.dumps(result, indent=2) + "\n")
     with (a.output / "resources.config").open("w") as f:
@@ -178,6 +191,17 @@ if __name__ == "__main__":
                     + "]; if (!allocations.containsKey(run)) error 'No resource prediction for library'; allocations[run] + ' GB' }; time = '"
                     + str(row["time_hours"])
                     + "h' } }\n"
+                )
+                continue
+            if name == "BLOCKED_MODEL":
+                f.write(
+                    "process { withName: 'BLOCKED_MODEL' { memory = '"
+                    + str(row["memory_gb"])
+                    + " GB'; time = { assay == 'genes' ? '"
+                    + str(row["time_by_assay_hours"]["genes"])
+                    + "h' : '"
+                    + str(row["time_hours"])
+                    + "h' } } }\n"
                 )
                 continue
             f.write(

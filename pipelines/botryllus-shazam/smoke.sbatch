@@ -14,6 +14,7 @@ PY="$GROUP_HOME/opt/oyster-shazam-20261023/bin/python"
 cd "$ROOT"
 "$PY" -m unittest discover -s "$CODE/scripts/botryllus_shazam" -p test_nextflow_stages.py
 "$PY" -m unittest discover -s "$CODE/scripts/botryllus_shazam" -p test_nextflow_counts.py
+"$PY" -m unittest discover -s "$CODE/scripts/botryllus_shazam" -p test_pool_abundance.py
 "$PY" -m unittest discover -s "$CODE/scripts/botryllus_shazam" -p test_dekupl_translation.py
 "$PY" -m unittest discover -s "$CODE/scripts/botryllus_shazam" -p test_nextflow_sketches.py
 "$PY" "$CODE/scripts/botryllus_shazam/make_nextflow_fixture.py" "$ROOT/input"

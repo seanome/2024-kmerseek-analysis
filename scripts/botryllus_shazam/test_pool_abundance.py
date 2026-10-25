@@ -48,7 +48,36 @@ class PoolTests(unittest.TestCase):
                 check=True,
             )
             for assay in ("genes", "kmers"):
+                isolated = p / ("only-" + assay)
+                selected = p / ("genes.gz" if assay == "genes" else "raw.gz")
+                # The unused assay may be absent; early gene pooling must not open it.
+                subprocess.run(
+                    [
+                        sys.executable,
+                        str(Path(__file__).with_name("pool_abundance.py")),
+                        str(selected if assay == "kmers" else p / "absent.gz"),
+                        str(selected if assay == "genes" else p / "absent.gz"),
+                        str(p / "design.json"),
+                        str(isolated),
+                        assay,
+                    ],
+                    check=True,
+                )
+                self.assertEqual(
+                    [x.name for x in (isolated / "test").iterdir()], [assay]
+                )
                 folder = p / "out/test" / assay
+                for original in folder.iterdir():
+                    counterpart = isolated / "test" / assay / original.name
+                    if original.suffix == ".gz":
+                        with gzip.open(original, "rb") as a, gzip.open(
+                            counterpart, "rb"
+                        ) as b:
+                            self.assertEqual(a.read(), b.read())
+                    else:
+                        self.assertEqual(
+                            original.read_bytes(), counterpart.read_bytes()
+                        )
                 with gzip.open(folder / "pooled.tsv.gz", "rt") as f:
                     rows = list(csv.reader(f, delimiter="\t"))
                 self.assertEqual(rows[1:], [["KEEP", *["6"] * 6]])
