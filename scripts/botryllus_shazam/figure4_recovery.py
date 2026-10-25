@@ -60,6 +60,84 @@ def exact_gene_map(fasta, tx_to_gene, keys):
     return hits
 
 
+def attach_protein_matches(root, sequence_records):
+    """Join completed full-depth peptide matches through exact anchor membership."""
+    from build_match_context import protein_label
+
+    discovery = root / "full-depth-discovery-20261023"
+    search = root / "full-depth-manysearch-20261024"
+    completion = json.loads((search / "execution.complete.json").read_text())
+    if completion["status"] != "completed":
+        raise ValueError("Full-depth search is incomplete")
+    anchor_genes = defaultdict(set)
+    for gid, evidence in sequence_records.items():
+        evidence["protein_matches"] = []
+        for row in evidence["splash_sequences"]:
+            anchor_genes[row["anchor"]].add(gid)
+    peptide_genes = defaultdict(set)
+    peptide_parents = defaultdict(list)
+    with (discovery / "peptide_membership.tsv").open() as f:
+        for row in csv.DictReader(f, delimiter="\t"):
+            for gid in anchor_genes.get(row["anchor"], []):
+                peptide_genes[row["peptide_id"]].add(gid)
+            if row["peptide_id"] in peptide_genes:
+                peptide_parents[row["peptide_id"]].append(row)
+    peptide_sequences = {}
+    name = None
+    with (discovery / "peptides.fasta").open() as f:
+        for line in f:
+            if line.startswith(">"):
+                name = line[1:].split()[0]
+                if name in peptide_genes:
+                    peptide_sequences[name] = ""
+            elif name in peptide_sequences:
+                peptide_sequences[name] += line.strip()
+    if set(peptide_sequences) != set(peptide_genes):
+        raise ValueError("Mapped peptide absent from full-depth FASTA")
+    with (root / "primary-search-pilot-20261023/swissprot.record-map.tsv").open() as f:
+        references = {
+            r["record_id"]: protein_label(r) for r in csv.DictReader(f, delimiter="\t")
+        }
+    for mode in ("protein", "dayhoff", "hp"):
+        path = search / f"swissprot.{mode}.scaled5.raw.csv"
+        # Verify the completed search manifest owns the exact input file.
+        record = next(
+            r
+            for r in completion["results"]
+            if r["database"] == "swissprot" and r["mode"] == mode and r["scaled"] == 5
+        )
+        if (
+            hashlib.file_digest(path.open("rb"), "sha256").hexdigest()
+            != record["sha256"]
+        ):
+            raise ValueError("Search result checksum differs")
+        with path.open() as f:
+            for row in csv.DictReader(f):
+                query = row["query_name"]
+                if query not in peptide_genes:
+                    continue
+                if int(row["intersect_hashes"]) < 2 or float(row["containment"]) < 0.1:
+                    continue
+                reference = references[row["match_name"]]
+                for gid in peptide_genes[query]:
+                    sequence_records[gid]["protein_matches"].append(
+                        dict(
+                            query=query,
+                            sequence=peptide_sequences[query],
+                            alphabet=mode,
+                            **reference,
+                            shared_hashes=int(row["intersect_hashes"]),
+                            containment=float(row["containment"]),
+                            source_memberships=[
+                                r
+                                for r in peptide_parents[query]
+                                if gid in anchor_genes.get(r["anchor"], set())
+                            ],
+                            interpretation="Candidate reference protein; peptide inherits the mapped source anchor, not a direct peptide-domain assignment",
+                        )
+                    )
+
+
 def run(root, inputs, out):
     abundance = root / "abundance-20261024"
     splash = root / "splash-abundance-sequence-evidence-20261024"
@@ -118,11 +196,22 @@ def run(root, inputs, out):
             "More than ten million significant k-mers; use a partitioned mapping job"
         )
     mapped = exact_gene_map(fasta, tx, keys)
+    sequence_records = defaultdict(
+        lambda: dict(splash_sequences=[], DEkupl_sequences=[])
+    )
     splash_hits = defaultdict(set)
     with gzip.open(splash / "anchor-gene-abundance-evidence.tsv.gz", "rt") as f:
         for row in csv.DictReader(f, delimiter="\t"):
             if row["reference_gene"]:
                 splash_hits[(row["contrast"], row["reference_gene"])].add(row["anchor"])
+                sequence_records[row["reference_gene"]]["splash_sequences"].append(
+                    dict(
+                        contrast=row["contrast"],
+                        anchor=row["anchor"],
+                        mapping_status="unique genomic gene assignment",
+                        alignment=row["sequence_alignment_evidence"],
+                    )
+                )
     out.mkdir(exist_ok=False)
     kmers = defaultdict(set)
     ambiguous = defaultdict(set)
@@ -147,6 +236,16 @@ def run(root, inputs, out):
                     else "multiple genes" if genes else "no exact transcript match"
                 )
                 for gene in genes:
+                    sequence_records[gene]["DEkupl_sequences"].append(
+                        dict(
+                            contrast=contrast,
+                            kmer=row["tag"],
+                            padj=row["padj"],
+                            log2foldchange=row["log2FoldChange"],
+                            mapping_status=status,
+                            reference_genes=sorted(genes),
+                        )
+                    )
                     (kmers if len(genes) == 1 else ambiguous)[contrast, gene].add(
                         row["tag"]
                     )
@@ -197,7 +296,7 @@ def run(root, inputs, out):
                         gene_log2foldchange=r.get("log2FoldChange", "NA"),
                         gene_status=r.get(
                             "status", "not tested: absent or below count filter"
-                        )
+                        ),
                     )
                 )
                 if gene["role"] in ("proimmune", "cell_repair"):
@@ -215,6 +314,10 @@ def run(root, inputs, out):
             (abundance / "abundance-tests.complete.json").read_bytes()
         ).hexdigest(),
         limitations="Transcript matches do not localize genomic junctions; ambiguous genes excluded from unique recovery. Significant k-mer abundance need not imply gene-level DE. No original Figure 4E score reproduction inferred.",
+    )
+    attach_protein_matches(root, sequence_records)
+    (out / "gene-sequences.json").write_text(
+        json.dumps(dict(sequence_records), indent=2) + "\n"
     )
     (out / "complete.json").write_text(json.dumps(record, indent=2) + "\n")
 
