@@ -34,7 +34,9 @@ because its `log` input resolved to the built-in logger. The input is renamed
 | Historical translated preflight | Saved results and original query hashes independently audited | Exact intersections, identities, scale losses and word-by-word reconstruction; historical stop/X protocol |
 | Nextflow adoption/index/search | Executed successfully | First-run trace retained |
 | Nextflow audit and migration gates | Passed on compute | First run, cached resume, query change, controlled stop/resume, corruption and protocol mismatch |
-| Production adoption | Blocked | Production execution tests and historical build-provenance gaps remain |
+| Grouped Slurm dispatch, task cancellation and resume | Passed | Job 49525039 cancelled during execution; 49525575 completed; a further resume was cached |
+| Corrected replacement provenance | Independently verified | 380,867 queries and fresh SRR5945967 reference; all scientific runtime versions recorded |
+| Production rollout | Pending | Historical unknown-provenance artifacts remain excluded; translated integration and archive ownership remain |
 
 The local helper checks use Biopython1.88 and Sourmash4.9.4. Sherlock checks use
 Sourmash4.9.4 and Branchwater0.9.15. Local Branchwater0.9.14.dev0 is rejected.
@@ -107,10 +109,12 @@ corrected-protocol launchers or relabel their outputs.
 Current Sherlock rules require short tasks to be grouped. `allocation_test`
 runs the workflow with the local executor inside an existing Slurm allocation;
 it refuses to run without `SLURM_JOB_ID`. This exercises real Branchwater and
-Nextflow tasks on compute without submitting many short batch jobs. It does not
-verify Slurm task dispatch, preemption or external scheduler interruption.
+Nextflow tasks on compute without submitting many short batch jobs. Separately,
+`dispatch.nf` now verifies real Slurm dispatch through one grouped corrected-query
+build. It passed task cancellation with `scancel`, resume in a new allocation,
+and subsequent cached reuse. Preemption and controller death remain untested.
 `migration_tests.py` records a controlled application stop before search and then
-resumes. A scheduler-interruption test remains separate.
+resumes. The separate real scheduler task-interruption evidence is linked below.
 
 `migration-suite.sbatch` preserves its work/cache, logs and partial files in an
 archive on shared Scratch. `migration-recovery.sbatch` extracts only completed
@@ -118,12 +122,22 @@ audit inputs and corrected sketches into a new directory. It never changes the
 original archive. Node-local absolute paths in the archived cache are evidence,
 not a portable cross-job resume mechanism.
 
+## Scheduler and provenance evidence
+
+[Scheduler test and provenance evidence](../results/scheduler-20261025/STATUS.md)
+records the successful grouped Slurm test and independent full-query audit. The
+query set is the first audited SPLASH batch plus all selected DE-kupl contigs.
+`build_provenance.py` bounds sketching to chunks of 2,000 but still loads the
+source query dictionary; archive-scale streaming is not implemented. The new
+reference covers only SRR5945967. Legacy unknown-provenance artifacts remain
+unchanged and excluded from production adoption.
+
 ## Remaining work
 
-The independent historical audits, corrected pinned-tool pilot, and bounded
-migration matrix passed; see the linked evidence for exact scope and counts.
-Remaining work is scheduler interruption and Slurm child-task dispatch testing,
-portable cross-job cache recovery, complete production provenance, missing-artifact
-download/trim/sketch channels, safe worker draining, measured resource selection
-and archive-scale aggregation. Public/Swiss-Prot coverage and private-report
-integration remain separate. No historical denominator changed in this continuation.
+Translate the corrected artifact records into the production retrieval workflow,
+implement missing-artifact download/trim/sketch channels, reconcile worker
+ownership and implement archive-scale aggregation. Public/Swiss-Prot coverage
+and private-report integration remain separate. The Slurm test dispatches one
+grouped task; it does not launch each short DNA prototype step as a separate
+Slurm job. Controller death and preemption remain untested. No production rollout
+or historical denominator change occurred.

@@ -1,5 +1,23 @@
 # Preserve oyster results while moving public searches to Nextflow
 
+## Scheduler and provenance continuation, 2026-10-25
+
+The grouped Slurm dispatch, scheduler task-cancellation, resume across allocations,
+and subsequent cached reuse tests passed. Job 49525039 was deliberately cancelled;
+49525575 rebuilt all 380,867 audited originals, and a further resume was cached.
+Independent audit 49525633 verified every corrected query hash and rebuilt the
+small SRR5945967 reference with complete scientific runtime version records.
+See [the current evidence and scope](results/scheduler-20261025/STATUS.md).
+
+The corrected rule remains all six frames, >=30 aa, stop-only boundaries and X
+preservation. New corrected replacements have recorded build provenance; missing
+historical provenance remains unknown and those artifacts stay excluded from
+production adoption. The test covers a grouped Slurm task, not controller death
+or preemption. Production integration, worker ownership transfer, full coverage
+and report updates remain pending. Earlier pending-test statements below are
+historical. Existing outputs, interrupted chunks and dirty files were preserved.
+
+
 ## Latest tested status, after access restoration on 2026-10-25
 
 Olga confirmed renewed Sherlock access. This section supersedes older access and
