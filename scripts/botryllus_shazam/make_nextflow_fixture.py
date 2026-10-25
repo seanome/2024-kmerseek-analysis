@@ -34,7 +34,7 @@ for contrast in range(3):
             handles = [gzip.open(out / f"{run}_{m}.fastq.gz", "wt") for m in (1, 2)]
             for i, (t, seq) in enumerate(seqs.items()):
                 n = max(20, int(rng.gammavariate(4, 20))) * (
-                    4 if cond == "Treatment" and i < 20 else 1
+                    4 if cond == "Treatment" and i < 2 else 1
                 )
                 for repeat in range(n):
                     start = rng.randrange(100)
