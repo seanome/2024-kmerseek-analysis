@@ -5,6 +5,7 @@ from Bio import SeqIO
 from Bio.Seq import Seq
 import sourmash
 from sourmash.save_load import SaveSignaturesToLocation
+from resource_usage import run_timed
 from archive_search_results import save_matches
 SETTINGS=[('dna',31,{}),('protein',7,{'is_protein':True}),('dayhoff',12,{'dayhoff':True}),('hp',30,{'hp':True})]
 ROOT=Path(os.environ['GROUP_SCRATCH'])/'oyster-stopfree-public-pilot-20261024'
@@ -15,7 +16,7 @@ CUTADAPT=Path(os.environ['GROUP_HOME'])/'opt/oyster-mvp/envs/shazam/bin/cutadapt
 def sha(p,alg='sha256'):
  with p.open('rb') as f:return hashlib.file_digest(f,alg).hexdigest()
 def run(args,log):
- with log.open('w') as f:subprocess.run(list(map(str,args)),stdout=f,stderr=subprocess.STDOUT,check=True)
+ run_timed(args,log)
 def sketch(dna,mol,k,flags):
  mh=sourmash.MinHash(n=0,ksize=k,scaled=10,**flags)
  if mol=='dna':mh.add_sequence(dna,force=True)

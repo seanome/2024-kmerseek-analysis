@@ -10,6 +10,7 @@ import re
 import subprocess
 import sourmash
 from sourmash.save_load import SaveSignaturesToLocation
+from resource_usage import run_timed
 
 ROOT=Path(os.environ['GROUP_SCRATCH'])/'oyster-full-public-replay-20261024'
 ARCHIVE=Path(os.environ['GROUP_SCRATCH'])/'oyster-bivalve-s10-s100-zero-20261023'
@@ -20,7 +21,7 @@ def sha(p):
     with p.open('rb') as f:return hashlib.file_digest(f,'sha256').hexdigest()
 
 def command(args,log):
-    with log.open('w') as f:subprocess.run(list(map(str,args)),stdout=f,stderr=subprocess.STDOUT,check=True)
+    run_timed(args,log)
 
 def save_query(rows,name,out):
     path=out/f'{name}.sig.zip';total=0;empty=0
@@ -79,7 +80,9 @@ def search(shard):
     index=out/'dna.rocksdb'
     command(['sourmash','scripts','index',pathlist,'-o',index,'-k','31','-m','DNA','--scaled','100','-c','4'],out/'index.log')
     results=[]
-    for q in m['collections']:
+    # Interleave methods so first results include both discovery sources.
+    ordered=sorted(m['collections'],key=lambda q:(int(q['query_set'].rsplit('-',1)[1]),q['query_set']))
+    for q in ordered:
         query=ROOT/'queries'/q['file']
         if sha(query)!=q['sha256']:raise ValueError('Query changed')
         dest=out/f"{q['query_set']}.csv";log=out/f"{q['query_set']}.log"
@@ -101,6 +104,9 @@ def search(shard):
             shutil.copyfileobj(src,target)
         dest.unlink()
         results.append(dict(query_set=q['query_set'],queries=q['queries'],empty_sketches=q['empty_sketches'],match_pairs=count,file=packed.name,sha256=sha(packed)))
+        checkpoint=out/'completed-collections.json.partial'
+        checkpoint.write_text(json.dumps(dict(manifest_sha256=sha(manifest),references=sorted(names),encoding='DNA',scaled=100,complete=False,results=results),indent=2)+'\n')
+        checkpoint.replace(out/'completed-collections.json')
     (out/'validated.json').write_text(json.dumps(dict(manifest_sha256=sha(manifest),references=sorted(names),encoding='DNA',scaled=100,results=results),indent=2)+'\n')
 
 if __name__=='__main__':

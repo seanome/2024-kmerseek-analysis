@@ -16,3 +16,7 @@ The existing `archive100.py` and queued scale100 worker plan predate the two-sca
 ## Shared oyster and Botryllus extension rule
 
 For both focal experiments, extend every anchor with adjusted P strictly less than 0.05. There is no top-N or top-300 cap. Retain every resulting extension and explicitly count significant anchors without extension output. Input depth, completion state and output counts are separate fields; none changes this rule. Historical 300-anchor pilots remain labelled as historical. Public archive runs still receive no SPLASH discovery or extension.
+
+## Stop-free translation policy, confirmed 2026-10-24
+
+Keep stop-free stretches from all six standard-code reading frames. Exclude individual words crossing a stop codon or ambiguous residue; do not reject a whole frame because another stretch contains a stop. Reference-proteome support is a separate annotation or optional comparison, not an eligibility filter for the primary search. Preserve unmatched sequences as unclassified and searchable. Historical stop-inclusive outputs remain separately labelled. Both translated query and reference sketches must use the same declared stop policy.
