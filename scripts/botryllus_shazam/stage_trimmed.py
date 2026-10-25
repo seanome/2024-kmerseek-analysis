@@ -1,5 +1,7 @@
 """Expose only complete, synchronized nf-core trimmed files to discovery tools."""
 
+import argparse
+from concurrent.futures import ThreadPoolExecutor
 import csv
 import hashlib
 import json
@@ -7,10 +9,22 @@ import subprocess
 import sys
 from pathlib import Path
 
-root, manifest, validator = map(Path, sys.argv[1:])
+parser = argparse.ArgumentParser()
+parser.add_argument("root", type=Path)
+parser.add_argument("manifest", type=Path)
+parser.add_argument("validator", type=Path)
+parser.add_argument("--workers", type=int, default=1)
+args = parser.parse_args()
+root, manifest, validator = args.root, args.manifest, args.validator
+if args.workers < 1:
+    raise ValueError("workers must be positive")
+rows = list(csv.DictReader(manifest.open(), delimiter="\t"))
+if not rows or len({r["run_accession"] for r in rows}) != len(rows):
+    raise ValueError("Manifest is empty or has duplicate runs")
 files = list((root / "nfcore/results/trimgalore").rglob("*.fq.gz"))
-records = []
-for row in csv.DictReader(manifest.open(), delimiter="\t"):
+
+
+def validate_run(row):
     run = row["run_accession"]
     mates = []
     for mate in (1, 2):
@@ -29,20 +43,24 @@ for row in csv.DictReader(manifest.open(), delimiter="\t"):
     )
     if counts["pairs"] > int(row["read_count"]):
         raise ValueError(f"{run}: more pairs after trimming")
-    records.append(
-        dict(
-            run=run,
-            **counts,
-            input_pairs=int(row["read_count"]),
-            files=[
-                dict(
-                    path=str(p.resolve()),
-                    sha256=hashlib.file_digest(p.open("rb"), "sha256").hexdigest(),
-                )
-                for p in mates
-            ],
-        )
+    record = dict(
+        run=run,
+        **counts,
+        input_pairs=int(row["read_count"]),
+        files=[
+            dict(
+                path=str(p.resolve()),
+                sha256=hashlib.file_digest(p.open("rb"), "sha256").hexdigest(),
+            )
+            for p in mates
+        ],
     )
+    print(f"Validated {run}: {counts['pairs']} pairs", flush=True)
+    return record
+
+
+with ThreadPoolExecutor(max_workers=args.workers) as pool:
+    records = list(pool.map(validate_run, rows))
 assert len({r["run"] for r in records}) == len(records)
 dest = root / "shared-trimmed"
 dest.mkdir(exist_ok=True)
