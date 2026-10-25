@@ -1,12 +1,14 @@
 {
-  "checked_at": "2026-10-24T17:28:29.223789+00:00",
-  "validated_raw_runs": 63,
+  "checked_at": "2026-10-25T01:40:35.207618+00:00",
+  "validated_raw_runs": 64,
+  "validated_raw_pairs": 654672879,
   "runs": [
     "SRR32233926",
     "SRR32233927",
     "SRR32233928",
     "SRR32233929",
     "SRR32233930",
+    "SRR32233931",
     "SRR32233932",
     "SRR32233933",
     "SRR32233934",
@@ -361,8 +363,8 @@
     {
       "id": "49368817",
       "name": "botryllus-remaining-inputs",
-      "state": "RUNNING",
-      "elapsed": "00:02:49",
+      "state": "COMPLETED",
+      "elapsed": "01:01:40",
       "exit_code": "0:0"
     },
     {
@@ -389,8 +391,8 @@
     {
       "id": "49369242",
       "name": "botryllus-DEkupl-software-checks",
-      "state": "PENDING",
-      "elapsed": "00:00:00",
+      "state": "COMPLETED",
+      "elapsed": "00:00:27",
       "exit_code": "0:0"
     },
     {
@@ -406,6 +408,20 @@
       "state": "PENDING",
       "elapsed": "00:00:00",
       "exit_code": "0:0"
+    },
+    {
+      "id": "49373978",
+      "name": "botryllus-Fig4-SPLASH-DEkupl-recovery",
+      "state": "PENDING",
+      "elapsed": "00:00:00",
+      "exit_code": "0:0"
+    },
+    {
+      "id": "49387733",
+      "name": "botryllus-Fig4-supplied-count-refit",
+      "state": "COMPLETED",
+      "elapsed": "00:00:58",
+      "exit_code": "0:0"
     }
   ],
   "scope": "Verified timestamped Sherlock snapshot; no automatic polling.",
@@ -413,8 +429,8 @@
     {
       "id": "49368817",
       "name": "botryllus-remaining-inputs",
-      "state": "RUNNING",
-      "elapsed": "00:02:49",
+      "state": "COMPLETED",
+      "elapsed": "01:01:40",
       "exit_code": "0:0",
       "scope": "Recover last full-depth library; fresh HTTPS and archive checksum"
     },
@@ -445,8 +461,8 @@
     {
       "id": "49369242",
       "name": "botryllus-DEkupl-software-checks",
-      "state": "PENDING",
-      "elapsed": "00:00:00",
+      "state": "COMPLETED",
+      "elapsed": "00:00:27",
       "exit_code": "0:0",
       "scope": "DE-kupl native counts and blocked-model software checks"
     },
@@ -465,6 +481,36 @@
       "elapsed": "00:00:00",
       "exit_code": "0:0",
       "scope": "Join SPLASH to gene DE and candidate sequence changes"
+    },
+    {
+      "id": "49373978",
+      "name": "botryllus-Fig4-SPLASH-DEkupl-recovery",
+      "state": "PENDING",
+      "elapsed": "00:00:00",
+      "exit_code": "0:0",
+      "scope": "Connect paper genes to SPLASH / DE-kupl sequences and full-depth manysearch"
+    },
+    {
+      "id": "49387733",
+      "name": "botryllus-Fig4-supplied-count-refit",
+      "state": "COMPLETED",
+      "elapsed": "00:00:58",
+      "exit_code": "0:0",
+      "scope": "Completed supplied-count genotype / collection-adjusted expression refits"
     }
-  ]
+  ],
+  "trimming_scheduler": {
+    "job": "49368820",
+    "checked_at": "2026-10-25T01:40:35.207618+00:00",
+    "state": "PENDING",
+    "reason": "None",
+    "partition": "normal",
+    "start_time": "Unknown",
+    "cpus": 16,
+    "memory_gb": 48,
+    "time_hours": 24,
+    "dependency": null,
+    "change_attempt": "Requested hns,normal; command returned 0 but follow-up job record remained normal. Change not verified.",
+    "explanation": "Eligible and waiting for scheduler allocation; no hold, no remaining input dependency. Slurm provided no specific blocking reason or start estimate. All downstream full-depth stages await successful predecessors."
+  }
 }

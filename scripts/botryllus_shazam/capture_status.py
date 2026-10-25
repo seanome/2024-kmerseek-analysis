@@ -12,7 +12,7 @@ a = parser.parse_args()
 remote = """import json,os,pathlib,datetime
 r=pathlib.Path(os.environ['SCRATCH'])/'botryllus-shazam-PEC-20261023'
 m=[json.loads(p.read_text()) for p in (r/'raw').glob('*/validated.json')]
-print(json.dumps(dict(checked_at=datetime.datetime.now(datetime.timezone.utc).isoformat(),validated_raw_runs=len(m),runs=sorted(x['archive']['run'] for x in m),total_runs=64,trimmed_complete=(r/'trimmed-inputs.validated.json').exists(),index_pilot_complete=(r/'indexing-pilot/SRR32233926/validated.json').exists(),annotation_complete=all((r/'annotation-maskX-20261023'/p).exists() for p in ['diamond.complete','pfam.complete']))))
+print(json.dumps(dict(checked_at=datetime.datetime.now(datetime.timezone.utc).isoformat(),validated_raw_runs=len(m),validated_raw_pairs=sum(x['pairs'] for x in m),runs=sorted(x['archive']['run'] for x in m),total_runs=64,trimmed_complete=(r/'trimmed-inputs.validated.json').exists(),index_pilot_complete=(r/'indexing-pilot/SRR32233926/validated.json').exists(),annotation_complete=all((r/'annotation-maskX-20261023'/p).exists() for p in ['diamond.complete','pfam.complete']))))
 """
 s = json.loads(
     subprocess.check_output(["ssh", "sherlock", "python3 -"], input=remote, text=True)
