@@ -97,3 +97,17 @@ Plan committed before implementation. Production ownership transfer and pending-
 ## Protocol correction, 2026-10-25
 
 Olga corrected an unrequested agent assumption: X is not a split point. The rule is >=30aa stretches from all six frames, split only at *, preserve internal X. Earlier stop/X and min20 pilots are historical and must not be called measurements of this corrected rule. Test lengths29/30/31 and internalX before production changes.
+
+## Local implementation continuation, 2026-10-25
+
+The first one-run DNA adoption/index/search/audit workflow is now implemented in
+[nextflow/](nextflow/README.md). Its Python validation helpers pass local fixture
+tests; the Nextflow driver has not been parsed or executed. Corrected translation
+is implemented separately and passes the 29/30/31-aa, stop-only, X-preserving,
+six-frame, coordinate and original-membership tests. The corrected Branchwater
+pilot builder is written, but pinned-tool execution remains pending.
+
+Historical recovery scripts and outputs are preserved. No Sherlock connection,
+submission, cancellation, ownership transfer or production protocol migration
+was attempted. Access confirmation, independent historical audits, pinned X
+hashing, all Phase 3 runtime gates and the remaining workflow phases are pending.
