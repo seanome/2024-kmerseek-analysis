@@ -492,9 +492,13 @@ def search(query, target, protocol, source, database, mode, k, scale, cpus):
     if n:
         with open("raw-matches.csv") as src, open("matches.csv", "w") as dest:
             reader = csv.DictReader(src)
-            if not reader.fieldnames or "intersect_hashes" not in reader.fieldnames:
+            fields = reader.fieldnames
+            if not fields and Path("raw-matches.csv").stat().st_size == 0:
+                # Pinned Branchwater writes a zero-byte CSV when no comparison matches.
+                fields = ["query_name", "match_name", "intersect_hashes", "containment"]
+            if not fields or "intersect_hashes" not in fields:
                 raise ValueError("Search output schema changed")
-            writer = csv.DictWriter(dest, fieldnames=reader.fieldnames)
+            writer = csv.DictWriter(dest, fieldnames=fields)
             writer.writeheader()
             for row in reader:
                 if int(row["intersect_hashes"]) > 0:
