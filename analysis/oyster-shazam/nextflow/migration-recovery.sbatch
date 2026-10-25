@@ -32,7 +32,7 @@ PYEND
 }
 trap finish EXIT
 mkdir imported
-tar -xzf "$PRIOR/evidence.tar.gz" -C imported audit corrected-sketches
+tar -xzf "$PRIOR/evidence.tar.gz" -C imported ./audit ./corrected-sketches
 command cp -R "$CODE" code
 CODE="$TEST_ROOT/code"
 PY="$GROUP_HOME/opt/oyster-shazam-20261023/bin/python"
