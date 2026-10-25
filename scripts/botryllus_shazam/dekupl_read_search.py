@@ -225,7 +225,7 @@ def run(root, code, out):
     report["extension_limits"] = (
         "Compactors defaults retain branching up to 1000 compactors per seed and 20 children per step; unsupported/short/unextended seeds remain direct DNA queries. Pooled extension is not a sample-specific transcript or proof of a full coding sequence."
     )
-    dna_file = out / "queries.fna"
+    dna_file = out / "queries.fasta"
     dna_file.write_text("".join(f">{k}\n{v}\n" for k, v in dna.items()))
     fragments = {}
     fragment_parent = {}
