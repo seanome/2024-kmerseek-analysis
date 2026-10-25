@@ -5,6 +5,7 @@ import groovy.json.JsonSlurper
 def scripts = file("${projectDir}/../../scripts/botryllus_shazam")
 
 process VALIDATE_PAIR {
+    publishDir "${params.outdir}/input-validation", mode: 'copy', pattern: '*.validated.json'
     tag "$run"
     cpus 3
     input:
@@ -144,6 +145,7 @@ process BLOCKED_MODEL {
 }
 
 process SELECT_DE_SEEDS {
+    publishDir "${params.outdir}/selected-dekupl", mode: 'copy'
     input:
     path models, stageAs: 'models/??/*', arity: '3'
     path helper
@@ -158,6 +160,7 @@ process SELECT_DE_SEEDS {
 }
 
 process MERGE_TAGS {
+    publishDir "${params.outdir}/native-contigs/${contrast}", mode: 'copy'
     tag "$contrast"
     input:
     tuple val(contrast), path(selected)
@@ -181,6 +184,7 @@ process BUILD_RECRUITER {
 }
 
 process RECRUIT_READS {
+    publishDir "${params.outdir}/recruited/${run}", mode: 'copy'
     tag "$run"
     cpus 5
     memory '16 GB'
@@ -213,6 +217,7 @@ process SPLASH {
 }
 
 process SELECT_SPLASH {
+    publishDir "${params.outdir}/selected-splash", mode: 'copy'
     input:
     path splash
     path selector
@@ -220,6 +225,7 @@ process SELECT_SPLASH {
     script:
     """
     '${params.python}' '${selector}' '${splash}/full.after_correction.all_anchors.tsv' splash-selected
+    cp -- '${splash}/full.after_correction.all_anchors.tsv' splash-selected/all-tested-anchors.tsv
     """
 }
 
@@ -254,6 +260,7 @@ process TRANSLATE {
 }
 
 process SKETCH {
+    publishDir "${params.outdir}/sketches/${source}/${mode}", mode: 'copy'
     tag "$source:$mode"
     cpus 4
     memory '16 GB'
