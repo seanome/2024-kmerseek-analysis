@@ -31,12 +31,15 @@ def trim_tokens(text):
     for option in SINGLETONS:
         if tokens.count(option) > 1:
             raise ValueError("Repeated singleton option: " + option)
-    if tokens.count("--no_poly_g") != 1:
-        raise ValueError("Expected exactly one pipeline-managed --no_poly_g")
     return tokens
 
 
 def run(root, code, nextflow, pipeline):
+    params = json.loads((code / "nfcore-params.json").read_text())
+    if "--no_poly_g" in shlex.split(params["extra_trimgalore_args"]):
+        raise ValueError(
+            "Do not supply pipeline-managed --no_poly_g in extra arguments"
+        )
     folder = root / "nfcore/preflight"
     folder.mkdir(parents=True, exist_ok=True)
     marker = folder / "passed.json"

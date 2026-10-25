@@ -11,6 +11,12 @@ class GeneratedCommandTests(unittest.TestCase):
                 "trim_galore --quality 20 --no_poly_g --no_poly_g --paired a.fq b.fq\n"
             )
 
+    def test_conditional_flag_may_be_absent(self):
+        self.assertEqual(
+            trim_tokens("trim_galore --quality 20 --paired a.fq b.fq\n")[0],
+            "trim_galore",
+        )
+
     def test_corrected_command(self):
         argv = trim_tokens(
             "trim_galore \\\n --quality 20 --no_poly_g \\\n --paired --gzip a.fq b.fq\n"

@@ -50,6 +50,7 @@ with (root/'nfcore/samplesheet.csv').open('w') as stream:
 PY
 "$NEXTFLOW" -c "$CODE/nfcore.config" config "software/rnaseq-${REV}" -profile singularity -o flat > nfcore/resolved.config
 # Fail before touching experimental reads if the actual generated command is invalid.
+"$GROUP_HOME/opt/oyster-shazam-20261023/bin/python" "$CODE/dekupl-read-search-20261025/check_dekupl_tools.py" "$ROOT" "$CODE/dekupl-read-search-20261025" "$ROOT/nfcore/tool-check-${SLURM_JOB_ID}" > "nfcore/tool-check-${SLURM_JOB_ID}.log" 2>&1
 /usr/bin/time -v python3 "$CODE/nfcore_preflight.py" "$ROOT" "$CODE" "$NEXTFLOW" "$ROOT/software/rnaseq-${REV}" > nfcore/preflight.log 2>&1
 /usr/bin/time -v "$NEXTFLOW" run "software/rnaseq-${REV}" \
     -profile singularity -c "$CODE/nfcore.config" -work-dir "$ROOT/nfcore/work" -resume \
