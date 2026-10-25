@@ -282,7 +282,7 @@ process SEARCH {
     """
     '${params.python}' '${helper}' search '${query}' '${target}' '${protocol}' '${source}' '${database}' '${mode}' ${k} ${scale} ${task.cpus}
     mkdir search-result
-    mv matches.csv search.json search-result/
+    mv raw-matches.csv matches.csv search.json search-result/
     """
 }
 

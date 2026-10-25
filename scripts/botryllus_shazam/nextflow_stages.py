@@ -476,13 +476,12 @@ def search(query, target, protocol, source, database, mode, k, scale, cpus):
                 scale,
                 "-t",
                 "0",
-                "-A",
                 "-N",
                 "--ignore-abundance",
                 "-c",
                 cpus,
                 "-o",
-                "matches.csv",
+                "raw-matches.csv",
             ],
             check=True,
         )
@@ -490,6 +489,18 @@ def search(query, target, protocol, source, database, mode, k, scale, cpus):
         Path("matches.csv").write_text(
             "query_name,match_name,intersect_hashes,containment\n"
         )
+    if n:
+        with open("raw-matches.csv") as src, open("matches.csv", "w") as dest:
+            reader = csv.DictReader(src)
+            if not reader.fieldnames or "intersect_hashes" not in reader.fieldnames:
+                raise ValueError("Search output schema changed")
+            writer = csv.DictWriter(dest, fieldnames=reader.fieldnames)
+            writer.writeheader()
+            for row in reader:
+                if int(row["intersect_hashes"]) > 0:
+                    writer.writerow(row)
+    else:
+        Path("raw-matches.csv").write_text(Path("matches.csv").read_text())
     with open("matches.csv") as f:
         rows = sum(1 for _ in csv.DictReader(f))
     save(

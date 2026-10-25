@@ -87,6 +87,46 @@ class SketchTests(unittest.TestCase):
             finally:
                 os.chdir(old)
 
+    def test_zero_overlap_not_retained(self):
+        from sourmash.save_load import SaveSignaturesToLocation
+
+        old = Path.cwd()
+        with tempfile.TemporaryDirectory() as tmp:
+            try:
+                os.chdir(tmp)
+                sigs = []
+                for name, seq in [("same", "A" * 31), ("different", "C" * 31)]:
+                    mh = sourmash.MinHash(n=0, ksize=31, scaled=1)
+                    mh.add_sequence(seq)
+                    sigs.append(sourmash.SourmashSignature(mh, name=name))
+                with SaveSignaturesToLocation("query.sig.zip") as out:
+                    out.add(sigs[0])
+                with SaveSignaturesToLocation("target.sig.zip") as out:
+                    for sig in sigs:
+                        out.add(sig)
+                stages.save(
+                    "protocol.json",
+                    dict(protocol=stages.PROTOCOL, sha256=stages.sha("target.sig.zip")),
+                )
+                stages.search(
+                    "query.sig.zip",
+                    "target.sig.zip",
+                    "protocol.json",
+                    "dekupl",
+                    "fixture",
+                    "dna",
+                    "31",
+                    "1",
+                    "1",
+                )
+                with open("matches.csv") as f:
+                    rows = list(csv.DictReader(f))
+                self.assertEqual(len(rows), 1)
+                self.assertEqual(rows[0]["match_name"], "same")
+                self.assertEqual(int(rows[0]["intersect_hashes"]), 1)
+            finally:
+                os.chdir(old)
+
 
 if __name__ == "__main__":
     unittest.main()
