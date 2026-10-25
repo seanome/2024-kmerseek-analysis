@@ -35,7 +35,7 @@ def test(root, audited, nextflow, python, sourmash):
         "--task_time",
         "30 min",
         "--partition",
-        "dev",
+        "normal,hns",
         "--reference_manifest",
         str(audited / "reference.json"),
     ]

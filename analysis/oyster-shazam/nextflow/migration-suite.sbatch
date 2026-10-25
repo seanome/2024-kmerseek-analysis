@@ -1,6 +1,6 @@
 #!/bin/bash
 #SBATCH --job-name=oyster-migration-audit
-#SBATCH --partition=dev
+#SBATCH --partition=normal,hns
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=4
 #SBATCH --mem=16G
