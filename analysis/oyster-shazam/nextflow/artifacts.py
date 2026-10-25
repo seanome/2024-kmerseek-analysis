@@ -47,9 +47,20 @@ def metadata(manifest, role):
         raise ValueError("Only completed, read-only artifacts can be adopted")
     if manifest["preprocessing"] != PREPROCESSING:
         raise ValueError("Preprocessing mismatch")
-    for field in ("artifact_sha256", "source_sha256", "source_code_sha256"):
+    for field in ("artifact_sha256", "source_sha256"):
         if not re.fullmatch("[a-f0-9]{64}", manifest[field]):
             raise ValueError(f"Missing or invalid {field}")
+    code = manifest["source_code_sha256"]
+    if code is None:
+        if (
+            manifest.get("provenance_scope")
+            != "historical-build-code-unrecorded-test-only"
+        ):
+            raise ValueError(
+                "Unrecorded historical code is only allowed for bounded tests"
+            )
+    elif not re.fullmatch("[a-f0-9]{64}", code):
+        raise ValueError("Invalid source code checksum")
     if not manifest["artifact_id"] or not manifest["source_tool_versions"]:
         raise ValueError("Missing source provenance")
     names = manifest["expected_ids"]
