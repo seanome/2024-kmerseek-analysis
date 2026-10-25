@@ -124,6 +124,28 @@ class SketchTests(unittest.TestCase):
                 self.assertEqual(len(rows), 1)
                 self.assertEqual(rows[0]["match_name"], "same")
                 self.assertEqual(int(rows[0]["intersect_hashes"]), 1)
+                with SaveSignaturesToLocation("disjoint.sig.zip") as out:
+                    out.add(sigs[1])
+                stages.save(
+                    "disjoint.protocol.json",
+                    dict(
+                        protocol=stages.PROTOCOL, sha256=stages.sha("disjoint.sig.zip")
+                    ),
+                )
+                stages.search(
+                    "query.sig.zip",
+                    "disjoint.sig.zip",
+                    "disjoint.protocol.json",
+                    "dekupl",
+                    "fixture",
+                    "dna",
+                    "31",
+                    "1",
+                    "1",
+                )
+                with open("matches.csv") as f:
+                    self.assertEqual(list(csv.DictReader(f)), [])
+                self.assertEqual(json.loads(Path("search.json").read_text())["rows"], 0)
             finally:
                 os.chdir(old)
 
