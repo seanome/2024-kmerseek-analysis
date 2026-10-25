@@ -24,7 +24,7 @@ with tempfile.TemporaryDirectory() as tmp:
             if line.endswith('| dashed'):attrs['stroke-dasharray']='12,8'
             E.SubElement(svg,f'{{{S}}}path',attrs)
             E.SubElement(svg,f'{{{S}}}text',dict(x=str(x+40),y='65',**{'font-family':'Arial','font-size':'15'})).text=m[2]
-            x+=len(m[2])*9+100
+            x+=len(m[2])*8+65
     E.SubElement(svg,f'{{{S}}}text',dict(x='25',y='95',**{'font-family':'Arial','font-size':'15'})).text='Circle: program. Document: file. Dashed purple: planned Swiss-Prot branch. Read left to right.'
     g=E.SubElement(svg,f'{{{S}}}g',dict(transform='translate(0,120)'))
     for e in old:
