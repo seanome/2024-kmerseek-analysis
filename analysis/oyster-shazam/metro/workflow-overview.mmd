@@ -90,14 +90,14 @@ graph LR
   genepairs[ ]
  end
  subgraph quant [Quantify — complete]
-  quantify[kallisto + Salmon]
+  quantify[Salmon]
   abundance[ ]
   quantify -->|genes| abundance
  end
  subgraph fit [Gene DE]
   deseq[R DESeq2]
  end
- subgraph geneout [Gene comparison]
+ subgraph geneout [Gene results]
   geneDE[ ]
  end
  genepairs -->|genes| quantify
