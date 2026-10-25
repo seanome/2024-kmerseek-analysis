@@ -4,7 +4,9 @@ The DSL2 workflow consumes a validated paired-read manifest. It separates canoni
 31-mer counting, Kallisto quantification, pooling, normalization, each blocked model,
 SPLASH, native mergeTags, paired-read recruitment, Compactors, translation, target
 preparation and each database/alphabet/scale search. It does not invoke Snakemake or
-submit the historical sbatch chain.
+submit the historical sbatch chain. Counting explicitly uses 63-bit in-memory and
+seven-byte output counters: independent recounts exposed an error with the pinned
+Jellyfish default counter width. This differs from the installed Snakefile flags.
 
 The preserved nf-core run failed after all 64 Trim Galore tasks completed. Use
 `recover_trimmed.sbatch` to validate the existing outputs before supplying its JSON
@@ -13,8 +15,12 @@ lengths, counts and SHA-256. It creates shared links only after every input pass
 It does not alter existing FASTQ files or infer strandedness.
 
 The historical plan and results remain under `reports/botryllus-shazam/nextflow-plan`.
-The migration is undergoing real-tool fixture tests. Production execution and app
-publication are separate acceptance gates; no full-depth result is claimed here.
+Real-tool fixtures and independent count/statistical checks passed on Sherlock,
+including a 125-task cache resume. See the migration STATUS report for the exact
+positive/empty source coverage. Production execution and app publication remain
+separate acceptance gates; no full-depth result is claimed here.
+This workflow starts from validated trimmed reads. Fresh download/trimming and
+archive-wide download orchestration remain outside it.
 
 ## Inputs
 
@@ -41,7 +47,9 @@ Target preparation writes new signature collections with protocol and checksum
 records. It preserves internal X, splits translation only at stops, and retains
 stretches of at least 30 amino acids. Every eligible query sketch is checked against
 Sourmash's API. SBT databases are rejected. Empty query sketches are reported as
-unsearchable rather than biological negatives.
+unsearchable rather than biological negatives. Protein encodings combine eligible
+six-frame fragments per source DNA context. A match row names that DNA context, not
+one individual peptide; fragment sequences, membership and coordinates remain saved.
 
 Native contigs retain the tool's representative seed and adjusted P. Neither is a
 new contig-level statistical test. The final gene link is exact seed containment;
@@ -53,6 +61,10 @@ Use pinned Nextflow 25.10.4 and the `sherlock` profile for production. Absolute 
 Python and DE-kupl paths are resolved from `GROUP_HOME`. Diagnostics have unique
 filenames. Keep the work directory to resume with `-resume` and use a distinct output
 directory for this protocol. Process scripts and imported helpers are staged inputs.
+The results directory retains per-library validation, selected seeds and their tests,
+native contigs, recruited pairs and hit coordinates, query origins, sketch coverage,
+raw comparisons and filtered nonzero-overlap matches. Keep the work directory too:
+it retains the full SPLASH intermediates and supports resuming.
 
 `smoke.sbatch` generates synthetic inputs inside a Slurm allocation and exercises the
 actual tools through the full workflow. Its local executor runs inside that allocation,
@@ -71,3 +83,18 @@ Optional `genome`/`minimap2` and `pfam_hmm`/`hmmscan` parameters enable separate
 alignment and direct peptide-domain searches. Pfam requires the HMM plus its four
 pressed index files. Missing assets produce explicit `not measured` records. Raw PAF
 and domain tables are retained; their interpretation is separate from exact seed links.
+
+## Coverage of the proposed metro map
+
+| Station | Migration state |
+|---|---|
+| Existing trimmed reads | Recovered and fully validated for all 64 experimental libraries |
+| Native counts, pooled models and both sequence sources | Separate DSL2 processes; tested with synthetic inputs |
+| Translation, target preparation and searches | One versioned protocol; explicit target batches |
+| Gene/paper evidence | Waits for both sources and gene models; preserves missing evidence |
+| Genome alignment and direct query Pfam | Optional processes; reference-backed execution not yet tested |
+| Fresh downloads and trimming | Existing preparation remains outside this workflow |
+| All-tunicate expansion and app publication | Not run; require validated production outputs |
+
+The original proposed map is preserved at
+`reports/botryllus-shazam/nextflow-plan/metro-plan.svg`.
