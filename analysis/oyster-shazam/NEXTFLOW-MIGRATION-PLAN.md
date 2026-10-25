@@ -10,7 +10,7 @@ Replace the sequential public-archive workers with a Nextflow DSL2 workflow usin
 
 - Never overwrite or delete an existing result during migration.
 - File existence is not validation. Reuse requires recorded source checksums, exact settings, expected output structure, and successful validation.
-- Keep historical stop-inclusive results separate from the primary stop-free protocol. Keep stop-free stretches from all six frames; split at stop and ambiguous amino acids. Do not filter queries by reference-proteome support.
+- Keep historical stop-inclusive results separate from the primary stop-free protocol. Keep stretches >=30 amino acids from all six frames; split ONLY at stop codons (*), preserving internal X. Do not filter queries by reference-proteome support.
 - DNA reuse requires identical input preprocessing, k, scale, seed, and abundance settings. Translated historical sketches cannot stand in for stop-free sketches.
 - Query membership, empty sketches, and all unmatched query IDs remain explicit. No caps or silently dropped collections.
 - Only one writer may create a given artifact. Old workers and Nextflow never own the same run concurrently.
@@ -35,14 +35,14 @@ Artifact keys include stage, run or query-collection ID, source checksum, prepro
 |---|---|---|---|
 | DOWNLOAD | ENA URLs and expected MD5s | Resumable download, checksum verification | FASTQ files and source manifest; MD5 matches |
 | TRIM | Verified FASTQs | Pinned Trim Galore/Cutadapt Q20, minimum length20; preserve existing independent-file trimming semantics | Trimmed FASTQs, reports, settings/checksums |
-| TRANSLATE | Trimmed FASTQs or query DNA | Stream stop-free stretches from six frames; preserve origin IDs | Peptide file plus ID/membership manifest; independent exact-word test |
+| TRANSLATE | Trimmed FASTQs or query DNA | Stream >=30aa stretches from six frames; split only at *, preserve X and origin IDs | Peptide file plus ID/membership manifest; independent exact-word test |
 | SKETCH | Trimmed DNA or translated peptides | Branchwater manysketch, exact encoding/k/scale; preserve per-query identity | Sketch collection, settings, source hash, count and empty-ID manifest |
 | INDEX | Validated reference sketches | Branchwater index with allocated threads | Complete searchable index plus source/settings manifest |
 | SEARCH | Validated query collection and compatible index | Branchwater manysearch, explicit threshold0 and all-overlap output | Compressed matches plus expected-query/DONE-count validation |
 | COMPARE | Matched scaled10 and100 results | Exact pair-set difference | Lost pairs and reasons; no unexpected gained pairs |
 | AUDIT | Outputs and manifests | Check hashes, IDs, counts, settings, scope | Atomic completion record; only then report coverage |
 
-The first migration milestone uses an existing compatible DNA100 sketch. New translated production builds remain gated on Branchwater peptide aggregation and exact hash validation.
+The first migration milestone uses an existing compatible DNA100 sketch. New translated production builds remain gated on Branchwater peptide aggregation, exact hash validation, and tests that internal X is preserved and only * splits stretches.
 
 ## Phase 3: Minimal real-input workflow and tests
 
@@ -93,3 +93,7 @@ Stop only new Nextflow submissions if validation fails. Preserve work/cache, log
 ## Initial status
 
 Plan committed before implementation. Production ownership transfer and pending-task holds have not occurred. The earlier linear replay and stop-free preflight completed according to Slurm, but independent result audits and report integration remain outstanding. Their completion must not be mistaken for archive-wide coverage.
+
+## Protocol correction, 2026-10-25
+
+Olga corrected an unrequested agent assumption: X is not a split point. The rule is >=30aa stretches from all six frames, split only at *, preserve internal X. Earlier stop/X and min20 pilots are historical and must not be called measurements of this corrected rule. Test lengths29/30/31 and internalX before production changes.
