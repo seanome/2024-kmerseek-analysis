@@ -10,6 +10,7 @@ import json
 import math
 import os
 from pathlib import Path
+from dekupl_contigs import assemble
 import subprocess
 import sys
 import time
@@ -136,6 +137,17 @@ def run(root, code, out):
         save()
         (out / "complete.json").write_text(json.dumps(report, indent=2) + "\n")
         return
+    report["status"] = "native DE-kupl mergeTags contigs"
+    save()
+    merge_binary = (
+        Path(os.environ["GROUP_HOME"])
+        / "opt/botryllus-dekupl-1.3.3-20261024/share/dekupl/bin/mergeTags"
+    )
+    contig_dna, contig_origins = assemble(
+        seeds, seed_ids, merge_binary, out / "native-contigs"
+    )
+    report["native_contigs"] = len(contig_dna)
+    save()
     binary = Path(os.environ["L_SCRATCH_JOB"]) / "recruit-dekupl-reads"
     call(
         ["rustc", "-O", code / "recruit_dekupl_reads.rs", "-o", binary],
@@ -208,6 +220,8 @@ def run(root, code, out):
     )
     dna = {seed_ids[s]: s for s in seeds}
     origins = {seed_ids[s]: seed_ids[s] for s in seeds}
+    dna.update(contig_dna)
+    origins.update(contig_origins)
     extensions = []
     with (out / "compactors.tsv").open() as f:
         for i, row in enumerate(csv.DictReader(f, delimiter="\t"), 1):

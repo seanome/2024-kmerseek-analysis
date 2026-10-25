@@ -11,3 +11,26 @@ Search DNA seeds and extensions against the four prepared external tunicate runs
 Use Branchwater 0.9.15 manysketch and manysearch with Sourmash 4.9.4. Reuse validated target signature ZIPs in streaming searches. Explicit -t 0 -A requests any nonzero overlap; raw candidates do not establish homology, function or condition-specific expression. Record versions, source/model/output hashes, query coverage per alphabet/scale and GNU time measurements per command. Source read recruitment has separate per-library timings. No ordinary Python search loop is used for retrieval.
 
 Runtime guard: the resumed trimming job runs a known-answer read-pair/Compactors/Branchwater test and a tiny nf-core fixture before experimental trimming. Local regressions check the adjusted-P boundary, reverse-complement canonicalization, ambiguous-base resets and duplicated tool options. Full DE-kupl read-search is dependent on completed abundance tests and successful tool checks. Initial allocation: 16 CPUs, 96 GB, 48 h; four concurrent read scanners and a 24 GB Compactors read buffer. Full-scale runtime is not measured; this is a resource model, not an ETA.
+
+## Native DE-kupl contigs
+
+Before read recruitment, the queued DE-kupl search stage now runs the installed native
+`mergeTags -k 31 -m 15 -n` separately for each adjusted contrast. It uses every selected
+31-mer (adjusted P < 0.05). Native mergeTags keeps positive and negative fold changes
+separate. The adjusted P occupies the native representative-ranking column; it remains
+a member statistic, not a new contig-level test. The unused native mean columns contain
+explicit placeholders, not estimated expression values.
+
+Outputs in `native-contigs/` are separate per-contrast `.selected.tsv` input tables,
+`.merged.tsv` native assembly tables, `.log` execution logs, `contigs.fasta` sequences,
+and `contig-metadata.json` with representative seed links, contrast, assembled k-mer
+count, representative adjusted P/fold change, and binary SHA256. Representative links
+are not complete assembly membership. Every selected seed must occur in an output
+contig in either orientation, and summed native assembly counts must equal selected
+input counts. DMC query IDs distinguish native contigs from DK seeds and DEX Compactors
+extensions. All three enter the existing Branchwater DNA/translated alphabet searches.
+
+The installed Sherlock binary passed a known-answer test: two overlapping 31-mers
+became the exact expected 32-nt contig; opposite fold-change directions remained two
+sequences. Empty selection also passed. Full-depth experimental assembly awaits the
+adjusted abundance job; no experimental contig results are claimed here.
