@@ -7,7 +7,9 @@ transcript FASTA, downloaded genome, and earlier outputs remain unchanged.
 The original GTF does not reconstruct the reference FASTA at its declared coordinates.
 Moving both interval endpoints one base earlier reconstructs 71,802 of 72,113 coding
 sequences when CDS and stop-codon intervals are combined. The remaining 311 sequences
-are unresolved. Full exons are a different comparison: some include untranslated regions
+are unresolved in that gene-level interval-union check. The audit combined intervals
+from different isoforms; it must be repeated per transcript before those failures can
+be interpreted as reference differences. Full exons are a different comparison: some include untranslated regions
 that are absent from the reference FASTA. No corrected GTF was written because no tested
 coordinate convention reconstructs every sequence.
 

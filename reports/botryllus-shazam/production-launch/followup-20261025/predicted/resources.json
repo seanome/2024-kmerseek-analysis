@@ -1,0 +1,293 @@
+{
+  "VALIDATE_PAIR": {
+    "memory_gb": 8,
+    "time_hours": 4,
+    "evidence": [],
+    "failures": [],
+    "basis": "provisional model; no production measurement"
+  },
+  "COUNT_KMERS": {
+    "memory_gb": 91,
+    "time_hours": 12,
+    "evidence": [
+      {
+        "trace": "reports/botryllus-shazam/production-launch/followup-20261025/recovered-trace.tsv",
+        "name": "COUNT_KMERS (SRR32233964)",
+        "status": "COMPLETED",
+        "exit": "0",
+        "peak_rss": "63319680 KB",
+        "realtime": "1969.6 s"
+      }
+    ],
+    "failures": [],
+    "basis": "default or 1.5 times measured peak, whichever is larger; inspect input scale",
+    "per_library_memory_gb": {
+      "SRR32233927": 32,
+      "SRR32233928": 32,
+      "SRR32233953": 32,
+      "SRR32233961": 32,
+      "SRR32233969": 32,
+      "SRR32233971": 32,
+      "SRR32233976": 32,
+      "SRR32233986": 56,
+      "SRR32233929": 32,
+      "SRR32233930": 32,
+      "SRR32233935": 32,
+      "SRR32233940": 32,
+      "SRR32233945": 32,
+      "SRR32233948": 32,
+      "SRR32233949": 32,
+      "SRR32233960": 32,
+      "SRR32233963": 32,
+      "SRR32233967": 32,
+      "SRR32233968": 32,
+      "SRR32233972": 32,
+      "SRR32233973": 32,
+      "SRR32233989": 32,
+      "SRR32233938": 32,
+      "SRR32233942": 32,
+      "SRR32233947": 32,
+      "SRR32233956": 32,
+      "SRR32233958": 32,
+      "SRR32233978": 41,
+      "SRR32233981": 32,
+      "SRR32233982": 32,
+      "SRR32233985": 32,
+      "SRR32233988": 32,
+      "SRR32233926": 32,
+      "SRR32233934": 32,
+      "SRR32233936": 32,
+      "SRR32233939": 32,
+      "SRR32233944": 32,
+      "SRR32233951": 32,
+      "SRR32233954": 32,
+      "SRR32233957": 32,
+      "SRR32233959": 32,
+      "SRR32233964": 91,
+      "SRR32233966": 32,
+      "SRR32233974": 32,
+      "SRR32233977": 32,
+      "SRR32233979": 32,
+      "SRR32233983": 32,
+      "SRR32233984": 32,
+      "SRR32233931": 40,
+      "SRR32233932": 32,
+      "SRR32233933": 32,
+      "SRR32233937": 32,
+      "SRR32233941": 32,
+      "SRR32233943": 32,
+      "SRR32233946": 32,
+      "SRR32233950": 32,
+      "SRR32233952": 32,
+      "SRR32233955": 32,
+      "SRR32233962": 32,
+      "SRR32233965": 32,
+      "SRR32233970": 32,
+      "SRR32233975": 32,
+      "SRR32233980": 32,
+      "SRR32233987": 56
+    },
+    "library_sizing_basis": {
+      "measured_library": "SRR32233964",
+      "measured_pairs": 69938926,
+      "rule": "Scale the 1.5x measured largest-library peak by read pairs, with a provisional 32 GB floor for other libraries"
+    }
+  },
+  "JOIN_KMERS": {
+    "memory_gb": 32,
+    "time_hours": 12,
+    "evidence": [],
+    "failures": [],
+    "basis": "provisional model; no production measurement"
+  },
+  "KALLISTO_INDEX": {
+    "memory_gb": 16,
+    "time_hours": 4,
+    "evidence": [
+      {
+        "trace": "reports/botryllus-shazam/production-launch/followup-20261025/recovered-trace.tsv",
+        "name": "KALLISTO_INDEX (kallisto-index)",
+        "status": "COMPLETED",
+        "exit": "0",
+        "peak_rss": "2433472 KB",
+        "realtime": "69.7 s"
+      }
+    ],
+    "failures": [],
+    "basis": "default or 1.5 times measured peak, whichever is larger; inspect input scale"
+  },
+  "QUANTIFY_GENES": {
+    "memory_gb": 8,
+    "time_hours": 12,
+    "evidence": [
+      {
+        "trace": "reports/botryllus-shazam/production-launch/followup-20261025/recovered-trace.tsv",
+        "name": "QUANTIFY_GENES (SRR32233964)",
+        "status": "COMPLETED",
+        "exit": "0",
+        "peak_rss": "1824388 KB",
+        "realtime": "1195.77 s"
+      }
+    ],
+    "failures": [],
+    "basis": "default or 1.5 times measured peak, whichever is larger; inspect input scale"
+  },
+  "GENE_COUNTS": {
+    "memory_gb": 16,
+    "time_hours": 4,
+    "evidence": [
+      {
+        "trace": "reports/botryllus-shazam/production-launch/followup-20261025/recovered-trace.tsv",
+        "name": "GENE_COUNTS (gene-map)",
+        "status": "COMPLETED",
+        "exit": "0",
+        "peak_rss": "239288 KB",
+        "realtime": "6.11 s"
+      }
+    ],
+    "failures": [],
+    "basis": "default or 1.5 times measured peak, whichever is larger; inspect input scale"
+  },
+  "POOL_COUNTS": {
+    "memory_gb": 16,
+    "time_hours": 12,
+    "evidence": [],
+    "failures": [],
+    "basis": "provisional model; no production measurement"
+  },
+  "NORMALIZE": {
+    "memory_gb": 8,
+    "time_hours": 4,
+    "evidence": [],
+    "failures": [],
+    "basis": "provisional model; no production measurement"
+  },
+  "BLOCKED_MODEL": {
+    "memory_gb": 32,
+    "time_hours": 96,
+    "evidence": [],
+    "failures": [],
+    "basis": "provisional model; no production measurement",
+    "time_by_assay_hours": {
+      "genes": 4,
+      "kmers": 96
+    },
+    "gene_time_basis": "4h floor: 100-gene fixture scaled to the 72,113-reference upper bound; raise for supplied gene-model history"
+  },
+  "SELECT_DE_SEEDS": {
+    "memory_gb": 8,
+    "time_hours": 4,
+    "evidence": [],
+    "failures": [],
+    "basis": "provisional model; no production measurement"
+  },
+  "MERGE_TAGS": {
+    "memory_gb": 8,
+    "time_hours": 4,
+    "evidence": [],
+    "failures": [],
+    "basis": "provisional model; no production measurement"
+  },
+  "RECRUIT_READS": {
+    "memory_gb": 16,
+    "time_hours": 12,
+    "evidence": [],
+    "failures": [],
+    "basis": "provisional model; no production measurement"
+  },
+  "SPLASH": {
+    "memory_gb": 96,
+    "time_hours": 48,
+    "evidence": [],
+    "failures": [],
+    "basis": "provisional model; no production measurement"
+  },
+  "SELECT_SPLASH": {
+    "memory_gb": 8,
+    "time_hours": 4,
+    "evidence": [],
+    "failures": [],
+    "basis": "provisional model; no production measurement"
+  },
+  "COMPACT": {
+    "memory_gb": 96,
+    "time_hours": 48,
+    "evidence": [],
+    "failures": [],
+    "basis": "provisional model; no production measurement"
+  },
+  "TRANSLATE": {
+    "memory_gb": 8,
+    "time_hours": 4,
+    "evidence": [],
+    "failures": [],
+    "basis": "provisional model; no production measurement"
+  },
+  "SKETCH": {
+    "memory_gb": 16,
+    "time_hours": 12,
+    "evidence": [],
+    "failures": [],
+    "basis": "provisional model; no production measurement"
+  },
+  "SEARCH": {
+    "memory_gb": 32,
+    "time_hours": 12,
+    "evidence": [],
+    "failures": [],
+    "basis": "provisional model; no production measurement"
+  },
+  "PREPARE_TARGET": {
+    "memory_gb": 32,
+    "time_hours": 24,
+    "evidence": [],
+    "failures": [],
+    "basis": "provisional model; no production measurement"
+  },
+  "JOIN_EVIDENCE": {
+    "memory_gb": 32,
+    "time_hours": 12,
+    "evidence": [],
+    "failures": [],
+    "basis": "provisional model; no production measurement"
+  },
+  "ALIGN_CONTEXT": {
+    "memory_gb": 32,
+    "time_hours": 12,
+    "evidence": [
+      {
+        "trace": "reports/botryllus-shazam/production-launch/followup-20261025/recovered-trace.tsv",
+        "name": "ALIGN_CONTEXT (alignment)",
+        "status": "COMPLETED",
+        "exit": "0",
+        "peak_rss": "7910216 KB",
+        "realtime": "15.68 s"
+      }
+    ],
+    "failures": [],
+    "basis": "default or 1.5 times measured peak, whichever is larger; inspect input scale"
+  },
+  "SPLIT_PFAM": {
+    "memory_gb": 8,
+    "time_hours": 4,
+    "evidence": [],
+    "failures": [],
+    "basis": "provisional model; no production measurement"
+  },
+  "QUERY_PFAM": {
+    "memory_gb": 4,
+    "time_hours": 2,
+    "evidence": [
+      {
+        "trace": "reports/botryllus-shazam/production-launch/followup-20261025/recovered-trace.tsv",
+        "name": "QUERY_PFAM (pfam)",
+        "status": "COMPLETED",
+        "exit": "0",
+        "peak_rss": "742924 KB",
+        "realtime": "216.56 s"
+      }
+    ],
+    "failures": [],
+    "basis": "default or 1.5 times measured peak, whichever is larger; inspect input scale"
+  }
+}

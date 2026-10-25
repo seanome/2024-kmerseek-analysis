@@ -30,8 +30,9 @@ All parameters are required: `inputs`, `samples`, `design`, `reference`, `gtf`,
 - `inputs`: recovered JSON records with run, pairs, two file paths and SHA-256 values.
 - `samples` and `design`: frozen sample TSV and contrast JSON. The workflow checks
   the sample fingerprint and requires the same library IDs in both input populations.
-- `reference` and `gtf`: the original transcript FASTA and GTF. Ambiguous transcript
-  mappings and multiple transcripts per gene fail, as in the existing analysis.
+- `reference` and `gtf`: the original transcript FASTA and GTF. Exact gene IDs are accepted even
+  when the GTF annotates multiple isoforms. Ambiguous identifiers and multiple
+  quantified reference sequences assigned to one gene still fail.
 - `targets`: TSV with `database`, `kind`, `mode`, `k`, `scaled`, `paths`. Kind is
   `protein` or `reads`; paths are separated by semicolons. Each row is one explicit
   target batch, with one signature per reference protein or external run. Use
@@ -117,3 +118,6 @@ a completed largest-library preflight, a verified reference check, and a verifie
 fixture. It prepares 64 libraries and explicit target batches, records scheduler
 and command measurements, resolves resource requests, and starts Nextflow under Slurm.
 Existing input files, output directories, and work caches remain intact.
+
+Gene pooling and k-mer pooling run independently. Gene models publish as soon as
+all gene quantifications finish, without waiting for the combined k-mer matrix.
