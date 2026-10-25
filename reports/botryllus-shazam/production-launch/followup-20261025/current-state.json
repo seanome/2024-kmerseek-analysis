@@ -1,0 +1,16 @@
+{
+  "checked_at": "2026-10-25T21:21:35.704981+00:00",
+  "preflight_job": 49525580,
+  "preflight_state": "COMPLETED",
+  "preflight_exit": "0:0",
+  "fixture_completed_tasks": 128,
+  "production_job": 49525592,
+  "production_state": "PENDING",
+  "production_reason": "Priority",
+  "production_start_estimate": null,
+  "production_started": false,
+  "production_source": "81580ff8",
+  "launch_directory": "$SCRATCH/botryllus-shazam-PEC-nextflow-20261025",
+  "first_gene_comparison_estimate": "2\u20136 hours after controller startup, plus child-job queue delays; provisional",
+  "preserved_unfinished_files": 11
+}

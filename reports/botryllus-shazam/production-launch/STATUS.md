@@ -1,5 +1,8 @@
 # Production launch checks, 2026-10-25
 
+Current follow-up: [preflight recovery and scheduler state](followup-20261025/STATUS.md).
+The submission snapshots below are retained as history.
+
 The full graph completed 127 tasks in fixture job 49521200, with independent
 count and statistical checks. The direct genome/Pfam controls completed six tasks
 in job 49521127. Its separate coordinate-equivalence check failed; the unresolved

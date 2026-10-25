@@ -69,3 +69,12 @@ The real-library output retained all 72,113 genes. Every integer-converted count
 matched its Kallisto input. The source quantification processed 69,938,926 pairs.
 Generated resources resolve under pinned Nextflow 25.10.4 on Sherlock; all 64
 library requests are present and span 32–91 GB for counting.
+
+## Latest scheduler state
+
+Production job 49525592 remains PENDING for Priority. Its recovery dependency has
+completed successfully. Sherlock briefly estimated a start around 14:17–14:18
+Pacific, then withdrew that estimate. No production log exists yet, so the full
+64-library workflow is not reported as started. There is no firm calendar ETA.
+The planning window remains 2–6 hours after startup, plus child-job queue delays.
+See current-state.json for the check timestamp. No duplicate production job was submitted.
