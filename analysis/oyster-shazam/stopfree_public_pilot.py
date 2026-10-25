@@ -11,6 +11,7 @@ ROOT=Path(os.environ['GROUP_SCRATCH'])/'oyster-stopfree-public-pilot-20261024'
 ARCHIVE=Path(os.environ['GROUP_SCRATCH'])/'oyster-bivalve-s10-s100-zero-20261023'
 FULL=Path(os.environ['SCRATCH'])/'oyster-full-extensions-20261023'
 DE=Path(os.environ['SCRATCH'])/'oyster-dekupl-queries-20261024'
+CUTADAPT=Path(os.environ['GROUP_HOME'])/'opt/oyster-mvp/envs/shazam/bin/cutadapt'
 def sha(p,alg='sha256'):
  with p.open('rb') as f:return hashlib.file_digest(f,alg).hexdigest()
 def run(args,log):
@@ -43,6 +44,7 @@ def preflight():
 
 def main():
  preflight()
+ subprocess.run([str(CUTADAPT),'--version'],check=True)
  ROOT.mkdir() # Never merge with historical inclusive output.
  audit=json.loads((ARCHIVE/'archive-progress.json').read_text())
  ref=min(audit['runs'],key=lambda r:sum(map(int,r['metadata']['fastq_bytes'].split(';'))))
@@ -64,7 +66,7 @@ def main():
    raw=tmp/f'reads-{i}.fastq.gz'
    run(['curl','--fail','--location','--retry','5','-o',raw,'https://'+url],ROOT/f'download-{i}.log')
    if sha(raw,'md5')!=md5:raise ValueError('Read MD5 mismatch')
-   run(['trim_galore','--cores','1','--quality','20','--length','20','--gzip','--output_dir',tmp,raw],ROOT/f'trim-{i}.log')
+   run(['trim_galore','--path_to_cutadapt',CUTADAPT,'--cores','1','--quality','20','--length','20','--gzip','--output_dir',tmp,raw],ROOT/f'trim-{i}.log')
    trimmed.append(tmp/f'reads-{i}_trimmed.fq.gz')
   settings=[]
   for mol,k,flags in SETTINGS:
