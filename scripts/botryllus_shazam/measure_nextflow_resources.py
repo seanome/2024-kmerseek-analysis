@@ -123,9 +123,43 @@ def measure(traces):
 if __name__ == "__main__":
     p = argparse.ArgumentParser()
     p.add_argument("--output", type=Path, required=True)
+    p.add_argument("--libraries", type=Path)
+    p.add_argument("--sizing-library", type=Path)
     p.add_argument("traces", nargs="*", type=Path)
     a = p.parse_args()
     result = measure(a.traces)
+    if bool(a.libraries) != bool(a.sizing_library):
+        raise ValueError("Both library manifest and sizing library are required")
+    if a.libraries:
+        libraries = json.loads(a.libraries.read_text())
+        measured = json.loads(a.sizing_library.read_text())
+        if measured["pairs"] <= 0 or any(
+            r["pairs"] > measured["pairs"] for r in libraries
+        ):
+            raise ValueError("Sizing measurement must cover the largest library")
+        if not any(
+            e["status"] == "COMPLETED" and measured["run"] in e["name"]
+            for e in result["COUNT_KMERS"]["evidence"]
+        ):
+            raise ValueError(
+                "Missing completed count measurement for the sizing library"
+            )
+        if any(not re.fullmatch(r"SRR[0-9]+", r["run"]) for r in libraries):
+            raise ValueError("Unexpected library identifier")
+        result["COUNT_KMERS"]["per_library_memory_gb"] = {
+            r["run"]: max(
+                32,
+                math.ceil(
+                    result["COUNT_KMERS"]["memory_gb"] * r["pairs"] / measured["pairs"]
+                ),
+            )
+            for r in libraries
+        }
+        result["COUNT_KMERS"]["library_sizing_basis"] = dict(
+            measured_library=measured["run"],
+            measured_pairs=measured["pairs"],
+            rule="Scale the 1.5x measured largest-library peak by read pairs, with a provisional 32 GB floor for other libraries",
+        )
     a.output.mkdir(parents=True, exist_ok=False)
     (a.output / "resources.json").write_text(json.dumps(result, indent=2) + "\n")
     with (a.output / "resources.config").open("w") as f:
@@ -134,6 +168,18 @@ if __name__ == "__main__":
                 raise ValueError(
                     "Resource prediction exceeds configured ceiling: " + name
                 )
+            if "per_library_memory_gb" in row:
+                mapping = ", ".join(
+                    f"'{k}': {v}" for k, v in row["per_library_memory_gb"].items()
+                )
+                f.write(
+                    "process { withName: 'COUNT_KMERS' { memory = { def allocations = ["
+                    + mapping
+                    + "]; if (!allocations.containsKey(run)) error 'No resource prediction for library'; allocations[run] + ' GB' }; time = '"
+                    + str(row["time_hours"])
+                    + "h' } }\n"
+                )
+                continue
             f.write(
                 f"process {{ withName: '{name}' {{ memory = '{row['memory_gb']} GB'; time = '{row['time_hours']}h' }} }}\n"
             )

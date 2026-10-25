@@ -34,12 +34,23 @@ class ProductionTests(unittest.TestCase):
                 str(SCRIPT),
                 str(base / "code"),
                 str(pre),
+                str(base / "refcheck"),
                 str(base / "launch"),
             ]
             result = subprocess.run(cmd, env=env, capture_output=True, text=True)
             self.assertNotEqual(result.returncode, 0)
             self.assertFalse((base / "launch").exists())
-            (pre / "complete.json").write_text('{"genome_matches_all": true}')
+            (pre / "complete.json").write_text('{"genome_matches_all": false}')
+            (pre / "transcript-to-gene.tsv").write_text("T1\tG1\n")
+            (base / "refcheck").mkdir()
+            (base / "refcheck/verified.json").write_text(
+                json.dumps(
+                    dict(
+                        status="direct sequence searches passed",
+                        annotation_coordinate_status="Unresolved; IDs only",
+                    )
+                )
+            )
             (root / "trimmed-inputs.validated.json").write_text(
                 json.dumps([dict(run=f"R{i}", pairs=i) for i in range(64)])
             )

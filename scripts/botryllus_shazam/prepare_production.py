@@ -7,11 +7,14 @@ import os
 from pathlib import Path
 import sys
 
-code, preflight, launch = map(Path, sys.argv[1:])
+code, preflight, reference_check, launch = map(Path, sys.argv[1:])
 root = Path(os.environ["SCRATCH"]) / "botryllus-shazam-PEC-20261023"
 checks = json.loads((preflight / "complete.json").read_text())
-if not checks["genome_matches_all"]:
-    raise ValueError("Genome/transcript mismatch requires resolution before production")
+reference_evidence = json.loads((reference_check / "verified.json").read_text())
+if reference_evidence["status"] != "direct sequence searches passed":
+    raise ValueError("Reference process checks have not passed")
+if not (preflight / "transcript-to-gene.tsv").is_file():
+    raise ValueError("Real reference gene-identifier mapping has not passed")
 records = json.loads((root / "trimmed-inputs.validated.json").read_text())
 if len(records) != 64 or len({r["run"] for r in records}) != 64:
     raise ValueError("Exactly 64 distinct validated libraries required")
@@ -19,6 +22,9 @@ launch.mkdir(exist_ok=False)
 reports = code / "reports/botryllus-shazam"
 inputs = launch / "inputs"
 inputs.mkdir()
+(inputs / "reference-check.json").write_text(
+    json.dumps(reference_evidence, indent=2) + "\n"
+)
 # Use all uniquely resolved published hub memberships and all predefined immune genes.
 with (root / "figure4-inputs/immune-gene-sets.tsv").open() as f:
     memberships = list(csv.DictReader(f, delimiter="\t"))
@@ -111,6 +117,10 @@ params = dict(
             pairs=sum(r["pairs"] for r in records),
             external_runs=[r["run_accession"] for r in external_rows],
             external_scope="Only the explicitly prepared runs, not the entire tunicate archive",
+            reference_checks=str(inputs / "reference-check.json"),
+            annotation_coordinate_status=reference_evidence[
+                "annotation_coordinate_status"
+            ],
             paper_memberships=len(memberships),
             ambiguous_or_unresolved_hubs=[
                 h
