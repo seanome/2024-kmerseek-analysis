@@ -39,7 +39,7 @@ process COUNT_KMERS {
     output: tuple val(run), path("${run}.counts.txt.gz")
     script:
     """
-    '${params.dekupl}/bin/jellyfish' count -C -c 64 --out-counter-len 8 -L 2 -m 31 -s 10000 -t ${task.cpus} -F 2 -o counts.jf <(gzip -dc '${reads[0]}') <(gzip -dc '${reads[1]}')
+    '${params.dekupl}/bin/jellyfish' count -C -c 63 --out-counter-len 8 -L 2 -m 31 -s 10000 -t ${task.cpus} -F 2 -o counts.jf <(gzip -dc '${reads[0]}') <(gzip -dc '${reads[1]}')
     '${params.dekupl}/bin/jellyfish' dump -c counts.jf | LC_ALL=C sort -k 1 -S 3000M --parallel=${task.cpus} | gzip -c > '${run}.counts.txt.gz'
     """
 }
