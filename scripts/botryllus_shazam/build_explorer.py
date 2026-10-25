@@ -86,6 +86,7 @@ def build(pilot, repo, dest):
         "sample-audit.json",
         "PROTOCOL.md",
         "ABUNDANCE-PROTOCOL-20261024.md",
+        "DEKUPL-READ-SEARCH-20261025.md",
         "abundance-design-20261024.json",
         "PIPELINE.md",
         "pilot-lengths.png",

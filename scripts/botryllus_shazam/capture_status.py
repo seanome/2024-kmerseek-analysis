@@ -51,7 +51,16 @@ ids = [
 ]
 pipeline_file = a.report / "current-pipeline.json"
 pipeline = json.loads(pipeline_file.read_text()) if pipeline_file.exists() else []
-ids = sorted(set(ids) | {j["id"] for j in pipeline})
+prior_file = a.report / "status.json"
+prior = (
+    json.loads(prior_file.read_text()).get("jobs", []) if prior_file.exists() else []
+)
+ids = sorted(
+    set(ids)
+    | {j["id"] for j in pipeline}
+    | {j["id"] for j in prior}
+    | {"49490914", "49490915", "49490916", "49490917", "49490918", "49490919"}
+)
 raw = subprocess.check_output(
     [
         "ssh",

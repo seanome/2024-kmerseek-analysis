@@ -74993,8 +74993,8 @@
     "completion": true
   },
   "recovery": {
-    "job": "49373978",
-    "status": "Full-depth SPLASH / DE-kupl pending behind read trimming; no completed mapping output exists"
+    "job": "49492096",
+    "status": "Queued behind resumed full-depth SPLASH / DE-kupl and manysearch. Separate DE-kupl read-extension/search job 49492098 is queued after abundance tests; no experimental read-recovery output exists yet."
   },
   "score_reproduction": {
     "status": "Not reproduced",

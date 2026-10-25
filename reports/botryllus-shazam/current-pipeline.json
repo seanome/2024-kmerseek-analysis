@@ -1,38 +1,34 @@
 [
   {
-    "id": "49368817",
-    "scope": "Recover last full-depth library; fresh HTTPS and archive checksum"
+    "id": "49492080",
+    "scope": "Paired-read and pinned-workflow preflight, then trim all 64 libraries"
   },
   {
-    "id": "49368820",
-    "scope": "Trim and validate all 64 libraries"
+    "id": "49492084",
+    "scope": "Full-depth SPLASH: all adjusted P < 0.05 anchors"
   },
   {
-    "id": "49368823",
-    "scope": "SPLASH and every adjusted P < 0.05 anchor"
+    "id": "49492085",
+    "scope": "DE-kupl counts and genotype/collection-blocked abundance tests"
   },
   {
-    "id": "49368824",
-    "scope": "Full-depth manysearch: Swiss-Prot and four prepared external runs"
+    "id": "49492088",
+    "scope": "SPLASH queries: Swiss-Prot and four prepared SRA runs"
   },
   {
-    "id": "49369242",
-    "scope": "DE-kupl native counts and blocked-model software checks"
+    "id": "49492092",
+    "scope": "SPLASH / gene DE / candidate sequence evidence"
   },
   {
-    "id": "49369243",
-    "scope": "DE-kupl and gene-level counts; genotype-blocked DESeq2"
+    "id": "49492096",
+    "scope": "Paper gene recovery with SPLASH protein matches"
   },
   {
-    "id": "49369247",
-    "scope": "Join SPLASH to gene DE and candidate sequence changes"
-  },
-  {
-    "id": "49373978",
-    "scope": "Connect paper genes to SPLASH / DE-kupl sequences and full-depth manysearch"
+    "id": "49492098",
+    "scope": "DE-kupl seed reads, Compactors extensions and Branchwater manysearch"
   },
   {
     "id": "49387733",
-    "scope": "Completed supplied-count genotype / collection-adjusted expression refits"
+    "scope": "Completed supplied-count adjusted expression refits"
   }
 ]

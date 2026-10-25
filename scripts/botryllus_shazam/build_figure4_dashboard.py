@@ -110,7 +110,7 @@ result = dict(
         completion=True,
     ),
     recovery=dict(
-        job="49373978",
+        job="49492096",
         status=(
             "Completed sequence assignments imported"
             if (recovery_folder / "complete.json").exists()

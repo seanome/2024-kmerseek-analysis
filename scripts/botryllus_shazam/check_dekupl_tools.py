@@ -23,8 +23,8 @@ rc = seed.translate(str.maketrans("ACGT", "TGCA"))[::-1]
 (out / "seeds.tsv").write_text(seed + "\tDKfixture\n")
 for mate in (1, 2):
     with gzip.open(out / f"r{mate}.fq.gz", "wt") as f:
-        for i in range(24):
-            s = seq if mate == 1 else "A" * 150
+        for i in range(25):
+            s = seq if mate == 1 and i < 24 else "A" * 150
             f.write(f"@read{i}/{mate}\n{s}\n+\n" + "I" * 150 + "\n")
 
 args = [
@@ -37,7 +37,7 @@ args = [
     str(out / "hits.tsv.gz"),
 ]
 counts = json.loads(subprocess.check_output(args, text=True))
-assert counts == dict(input_pairs=24, recruited_pairs=24, occurrences=24), counts
+assert counts == dict(input_pairs=25, recruited_pairs=24, occurrences=24), counts
 with gzip.open(out / "hits.tsv.gz", "rt") as f:
     hits = list(csv.DictReader(f, delimiter="\t"))
 assert len(hits) == 24 and all(

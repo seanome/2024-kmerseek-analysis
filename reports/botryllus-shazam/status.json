@@ -1,5 +1,5 @@
 {
-  "checked_at": "2026-10-25T01:40:35.207618+00:00",
+  "checked_at": "2026-10-25T13:26:04.346402+00:00",
   "validated_raw_runs": 64,
   "validated_raw_pairs": 654672879,
   "runs": [
@@ -370,21 +370,21 @@
     {
       "id": "49368820",
       "name": "botryllus-PEC-nfcore-trim",
-      "state": "PENDING",
-      "elapsed": "00:00:00",
-      "exit_code": "0:0"
+      "state": "FAILED",
+      "elapsed": "00:01:03",
+      "exit_code": "1:0"
     },
     {
       "id": "49368823",
       "name": "botryllus-full-SPLASH-all-anchors",
-      "state": "PENDING",
+      "state": "CANCELLED",
       "elapsed": "00:00:00",
       "exit_code": "0:0"
     },
     {
       "id": "49368824",
       "name": "botryllus-full-depth-manysearch",
-      "state": "PENDING",
+      "state": "CANCELLED",
       "elapsed": "00:00:00",
       "exit_code": "0:0"
     },
@@ -398,21 +398,21 @@
     {
       "id": "49369243",
       "name": "botryllus-DEkupl-gene-DE",
-      "state": "PENDING",
+      "state": "CANCELLED",
       "elapsed": "00:00:00",
       "exit_code": "0:0"
     },
     {
       "id": "49369247",
       "name": "botryllus-SPLASH-DE-evidence",
-      "state": "PENDING",
+      "state": "CANCELLED",
       "elapsed": "00:00:00",
       "exit_code": "0:0"
     },
     {
       "id": "49373978",
       "name": "botryllus-Fig4-SPLASH-DEkupl-recovery",
-      "state": "PENDING",
+      "state": "CANCELLED",
       "elapsed": "00:00:00",
       "exit_code": "0:0"
     },
@@ -421,74 +421,157 @@
       "name": "botryllus-Fig4-supplied-count-refit",
       "state": "COMPLETED",
       "elapsed": "00:00:58",
+      "exit_code": "0:0"
+    },
+    {
+      "id": "49490914",
+      "name": "botryllus-PEC-nfcore-trim",
+      "state": "FAILED",
+      "elapsed": "00:01:43",
+      "exit_code": "1:0"
+    },
+    {
+      "id": "49490915",
+      "name": "botryllus-full-SPLASH-all-anchors",
+      "state": "CANCELLED",
+      "elapsed": "00:00:00",
+      "exit_code": "0:0"
+    },
+    {
+      "id": "49490916",
+      "name": "botryllus-DEkupl-gene-DE",
+      "state": "CANCELLED",
+      "elapsed": "00:00:00",
+      "exit_code": "0:0"
+    },
+    {
+      "id": "49490917",
+      "name": "botryllus-full-depth-manysearch",
+      "state": "CANCELLED",
+      "elapsed": "00:00:00",
+      "exit_code": "0:0"
+    },
+    {
+      "id": "49490918",
+      "name": "botryllus-SPLASH-DE-evidence",
+      "state": "CANCELLED",
+      "elapsed": "00:00:00",
+      "exit_code": "0:0"
+    },
+    {
+      "id": "49490919",
+      "name": "botryllus-Fig4-SPLASH-DEkupl-recovery",
+      "state": "CANCELLED",
+      "elapsed": "00:00:00",
+      "exit_code": "0:0"
+    },
+    {
+      "id": "49492080",
+      "name": "botryllus-PEC-nfcore-trim",
+      "state": "PENDING",
+      "elapsed": "00:00:00",
+      "exit_code": "0:0"
+    },
+    {
+      "id": "49492084",
+      "name": "botryllus-full-SPLASH-all-anchors",
+      "state": "PENDING",
+      "elapsed": "00:00:00",
+      "exit_code": "0:0"
+    },
+    {
+      "id": "49492085",
+      "name": "botryllus-DEkupl-gene-DE",
+      "state": "PENDING",
+      "elapsed": "00:00:00",
+      "exit_code": "0:0"
+    },
+    {
+      "id": "49492088",
+      "name": "botryllus-full-depth-manysearch",
+      "state": "PENDING",
+      "elapsed": "00:00:00",
+      "exit_code": "0:0"
+    },
+    {
+      "id": "49492092",
+      "name": "botryllus-SPLASH-DE-evidence",
+      "state": "PENDING",
+      "elapsed": "00:00:00",
+      "exit_code": "0:0"
+    },
+    {
+      "id": "49492096",
+      "name": "botryllus-Fig4-SPLASH-DEkupl-recovery",
+      "state": "PENDING",
+      "elapsed": "00:00:00",
+      "exit_code": "0:0"
+    },
+    {
+      "id": "49492098",
+      "name": "botryllus-DEkupl-read-extension-manysearch",
+      "state": "PENDING",
+      "elapsed": "00:00:00",
       "exit_code": "0:0"
     }
   ],
   "scope": "Verified timestamped Sherlock snapshot; no automatic polling.",
   "current_pipeline": [
     {
-      "id": "49368817",
-      "name": "botryllus-remaining-inputs",
-      "state": "COMPLETED",
-      "elapsed": "01:01:40",
-      "exit_code": "0:0",
-      "scope": "Recover last full-depth library; fresh HTTPS and archive checksum"
-    },
-    {
-      "id": "49368820",
+      "id": "49492080",
       "name": "botryllus-PEC-nfcore-trim",
       "state": "PENDING",
       "elapsed": "00:00:00",
       "exit_code": "0:0",
-      "scope": "Trim and validate all 64 libraries"
+      "scope": "Paired-read and pinned-workflow preflight, then trim all 64 libraries"
     },
     {
-      "id": "49368823",
+      "id": "49492084",
       "name": "botryllus-full-SPLASH-all-anchors",
       "state": "PENDING",
       "elapsed": "00:00:00",
       "exit_code": "0:0",
-      "scope": "SPLASH and every adjusted P < 0.05 anchor"
+      "scope": "Full-depth SPLASH: all adjusted P < 0.05 anchors"
     },
     {
-      "id": "49368824",
-      "name": "botryllus-full-depth-manysearch",
-      "state": "PENDING",
-      "elapsed": "00:00:00",
-      "exit_code": "0:0",
-      "scope": "Full-depth manysearch: Swiss-Prot and four prepared external runs"
-    },
-    {
-      "id": "49369242",
-      "name": "botryllus-DEkupl-software-checks",
-      "state": "COMPLETED",
-      "elapsed": "00:00:27",
-      "exit_code": "0:0",
-      "scope": "DE-kupl native counts and blocked-model software checks"
-    },
-    {
-      "id": "49369243",
+      "id": "49492085",
       "name": "botryllus-DEkupl-gene-DE",
       "state": "PENDING",
       "elapsed": "00:00:00",
       "exit_code": "0:0",
-      "scope": "DE-kupl and gene-level counts; genotype-blocked DESeq2"
+      "scope": "DE-kupl counts and genotype/collection-blocked abundance tests"
     },
     {
-      "id": "49369247",
+      "id": "49492088",
+      "name": "botryllus-full-depth-manysearch",
+      "state": "PENDING",
+      "elapsed": "00:00:00",
+      "exit_code": "0:0",
+      "scope": "SPLASH queries: Swiss-Prot and four prepared SRA runs"
+    },
+    {
+      "id": "49492092",
       "name": "botryllus-SPLASH-DE-evidence",
       "state": "PENDING",
       "elapsed": "00:00:00",
       "exit_code": "0:0",
-      "scope": "Join SPLASH to gene DE and candidate sequence changes"
+      "scope": "SPLASH / gene DE / candidate sequence evidence"
     },
     {
-      "id": "49373978",
+      "id": "49492096",
       "name": "botryllus-Fig4-SPLASH-DEkupl-recovery",
       "state": "PENDING",
       "elapsed": "00:00:00",
       "exit_code": "0:0",
-      "scope": "Connect paper genes to SPLASH / DE-kupl sequences and full-depth manysearch"
+      "scope": "Paper gene recovery with SPLASH protein matches"
+    },
+    {
+      "id": "49492098",
+      "name": "botryllus-DEkupl-read-extension-manysearch",
+      "state": "PENDING",
+      "elapsed": "00:00:00",
+      "exit_code": "0:0",
+      "scope": "DE-kupl seed reads, Compactors extensions and Branchwater manysearch"
     },
     {
       "id": "49387733",
@@ -496,21 +579,7 @@
       "state": "COMPLETED",
       "elapsed": "00:00:58",
       "exit_code": "0:0",
-      "scope": "Completed supplied-count genotype / collection-adjusted expression refits"
+      "scope": "Completed supplied-count adjusted expression refits"
     }
-  ],
-  "trimming_scheduler": {
-    "job": "49368820",
-    "checked_at": "2026-10-25T01:44:27.830512+00:00",
-    "state": "PENDING",
-    "reason": "Resources",
-    "partition": "hns,normal",
-    "start_time": "Slurm estimate 18:42:59 PDT has passed; job still pending at latest check",
-    "cpus": 16,
-    "memory_gb": 48,
-    "time_hours": 24,
-    "dependency": null,
-    "change_attempt": "Confirmed in later scheduler evaluation: existing job now allows hns and normal. No duplicate submitted.",
-    "explanation": "All 64 raw libraries are validated. Trimming is eligible and waiting for resources; its download dependency has cleared. SPLASH / DE-kupl and manysearch will follow through their existing dependencies."
-  }
+  ]
 }
