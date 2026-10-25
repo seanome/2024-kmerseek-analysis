@@ -70,7 +70,12 @@ def main():
     full_path=ROOT/'results/full-depth-extension-progress.json'
     if full_path.exists():
         full=json.loads(full_path.read_text())
+        tested_path=ROOT/'results/full-depth-tested-anchors.json'
+        tested=json.loads(tested_path.read_text()) if tested_path.exists() else None
         full_html=f"<div class=\"card\"><h3>Full-depth extension results</h3><p>{full['selected_total']:,} anchors selected at adjusted P &lt; 0.05. {len(full['completed_batches']):,} of {full['total_batches']:,} extension batches have completion records.</p><p>Those batches cover {full['completed_selected_anchors']:,} selected anchors: {full['anchors_extended']:,} have extended sequence, producing {full['extension_records']:,} DNA records. Remaining batches are pending or running, not zero results. Records are not distinct genes.</p><p>Discovery used complete read 1 from each experimental library; extensions use both complete trimmed mates. All 554 full-depth search batches are now submitted against eight public runs. Searches for independently audited completed extension batches are eligible; later batches wait for their corresponding extension.</p><p>{full['verification']}</p><a href=\"full-depth-extension-progress.json\" download>Full-depth extension progress · JSON</a></div>"
+        if tested:
+            full_html=full_html.replace('<h3>Full-depth extension results</h3>',f'<h3>Full-depth extension results</h3><p>{tested["tested_anchors"]:,} post-filter anchors entered the p-value correction, verified from128distinct completed bins. This is the tested-anchor denominator; significant anchors below are a subset.</p>')
+            shutil.copy2(tested_path,OUT/tested_path.name)
         template=template.replace('__FULL_DEPTH_RESULTS__',full_html)
         shutil.copy2(full_path,OUT/full_path.name)
     else:template=template.replace('__FULL_DEPTH_RESULTS__','<p>Full-depth extension aggregation pending.</p>')

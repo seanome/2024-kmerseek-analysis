@@ -1,0 +1,692 @@
+{
+  "tested_anchors": 31485886,
+  "bins": [
+    {
+      "bin": 0,
+      "tested_anchors": 246189
+    },
+    {
+      "bin": 1,
+      "tested_anchors": 244637
+    },
+    {
+      "bin": 2,
+      "tested_anchors": 246789
+    },
+    {
+      "bin": 3,
+      "tested_anchors": 245924
+    },
+    {
+      "bin": 4,
+      "tested_anchors": 245662
+    },
+    {
+      "bin": 5,
+      "tested_anchors": 246019
+    },
+    {
+      "bin": 6,
+      "tested_anchors": 246434
+    },
+    {
+      "bin": 7,
+      "tested_anchors": 246643
+    },
+    {
+      "bin": 8,
+      "tested_anchors": 247403
+    },
+    {
+      "bin": 9,
+      "tested_anchors": 245737
+    },
+    {
+      "bin": 10,
+      "tested_anchors": 245805
+    },
+    {
+      "bin": 11,
+      "tested_anchors": 246400
+    },
+    {
+      "bin": 12,
+      "tested_anchors": 246035
+    },
+    {
+      "bin": 13,
+      "tested_anchors": 245199
+    },
+    {
+      "bin": 14,
+      "tested_anchors": 245662
+    },
+    {
+      "bin": 15,
+      "tested_anchors": 245493
+    },
+    {
+      "bin": 16,
+      "tested_anchors": 246317
+    },
+    {
+      "bin": 17,
+      "tested_anchors": 245350
+    },
+    {
+      "bin": 18,
+      "tested_anchors": 245950
+    },
+    {
+      "bin": 19,
+      "tested_anchors": 246350
+    },
+    {
+      "bin": 20,
+      "tested_anchors": 245557
+    },
+    {
+      "bin": 21,
+      "tested_anchors": 245409
+    },
+    {
+      "bin": 22,
+      "tested_anchors": 245451
+    },
+    {
+      "bin": 23,
+      "tested_anchors": 244834
+    },
+    {
+      "bin": 24,
+      "tested_anchors": 246384
+    },
+    {
+      "bin": 25,
+      "tested_anchors": 246891
+    },
+    {
+      "bin": 26,
+      "tested_anchors": 246147
+    },
+    {
+      "bin": 27,
+      "tested_anchors": 246151
+    },
+    {
+      "bin": 28,
+      "tested_anchors": 245554
+    },
+    {
+      "bin": 29,
+      "tested_anchors": 245572
+    },
+    {
+      "bin": 30,
+      "tested_anchors": 246241
+    },
+    {
+      "bin": 31,
+      "tested_anchors": 245373
+    },
+    {
+      "bin": 32,
+      "tested_anchors": 245033
+    },
+    {
+      "bin": 33,
+      "tested_anchors": 245929
+    },
+    {
+      "bin": 34,
+      "tested_anchors": 245455
+    },
+    {
+      "bin": 35,
+      "tested_anchors": 245355
+    },
+    {
+      "bin": 36,
+      "tested_anchors": 247461
+    },
+    {
+      "bin": 37,
+      "tested_anchors": 246203
+    },
+    {
+      "bin": 38,
+      "tested_anchors": 246304
+    },
+    {
+      "bin": 39,
+      "tested_anchors": 245996
+    },
+    {
+      "bin": 40,
+      "tested_anchors": 246235
+    },
+    {
+      "bin": 41,
+      "tested_anchors": 245591
+    },
+    {
+      "bin": 42,
+      "tested_anchors": 246018
+    },
+    {
+      "bin": 43,
+      "tested_anchors": 246466
+    },
+    {
+      "bin": 44,
+      "tested_anchors": 245358
+    },
+    {
+      "bin": 45,
+      "tested_anchors": 245685
+    },
+    {
+      "bin": 46,
+      "tested_anchors": 246418
+    },
+    {
+      "bin": 47,
+      "tested_anchors": 246481
+    },
+    {
+      "bin": 48,
+      "tested_anchors": 246411
+    },
+    {
+      "bin": 49,
+      "tested_anchors": 246287
+    },
+    {
+      "bin": 50,
+      "tested_anchors": 246282
+    },
+    {
+      "bin": 51,
+      "tested_anchors": 245844
+    },
+    {
+      "bin": 52,
+      "tested_anchors": 245769
+    },
+    {
+      "bin": 53,
+      "tested_anchors": 245447
+    },
+    {
+      "bin": 54,
+      "tested_anchors": 245688
+    },
+    {
+      "bin": 55,
+      "tested_anchors": 246359
+    },
+    {
+      "bin": 56,
+      "tested_anchors": 245759
+    },
+    {
+      "bin": 57,
+      "tested_anchors": 245765
+    },
+    {
+      "bin": 58,
+      "tested_anchors": 246097
+    },
+    {
+      "bin": 59,
+      "tested_anchors": 245753
+    },
+    {
+      "bin": 60,
+      "tested_anchors": 245843
+    },
+    {
+      "bin": 61,
+      "tested_anchors": 246492
+    },
+    {
+      "bin": 62,
+      "tested_anchors": 245528
+    },
+    {
+      "bin": 63,
+      "tested_anchors": 246634
+    },
+    {
+      "bin": 64,
+      "tested_anchors": 245760
+    },
+    {
+      "bin": 65,
+      "tested_anchors": 245939
+    },
+    {
+      "bin": 66,
+      "tested_anchors": 246134
+    },
+    {
+      "bin": 67,
+      "tested_anchors": 245584
+    },
+    {
+      "bin": 68,
+      "tested_anchors": 245481
+    },
+    {
+      "bin": 69,
+      "tested_anchors": 244494
+    },
+    {
+      "bin": 70,
+      "tested_anchors": 246917
+    },
+    {
+      "bin": 71,
+      "tested_anchors": 246356
+    },
+    {
+      "bin": 72,
+      "tested_anchors": 245336
+    },
+    {
+      "bin": 73,
+      "tested_anchors": 247098
+    },
+    {
+      "bin": 74,
+      "tested_anchors": 246030
+    },
+    {
+      "bin": 75,
+      "tested_anchors": 245712
+    },
+    {
+      "bin": 76,
+      "tested_anchors": 246136
+    },
+    {
+      "bin": 77,
+      "tested_anchors": 246031
+    },
+    {
+      "bin": 78,
+      "tested_anchors": 246183
+    },
+    {
+      "bin": 79,
+      "tested_anchors": 246468
+    },
+    {
+      "bin": 80,
+      "tested_anchors": 246384
+    },
+    {
+      "bin": 81,
+      "tested_anchors": 246015
+    },
+    {
+      "bin": 82,
+      "tested_anchors": 245824
+    },
+    {
+      "bin": 83,
+      "tested_anchors": 245736
+    },
+    {
+      "bin": 84,
+      "tested_anchors": 246616
+    },
+    {
+      "bin": 85,
+      "tested_anchors": 245988
+    },
+    {
+      "bin": 86,
+      "tested_anchors": 245933
+    },
+    {
+      "bin": 87,
+      "tested_anchors": 246826
+    },
+    {
+      "bin": 88,
+      "tested_anchors": 245583
+    },
+    {
+      "bin": 89,
+      "tested_anchors": 245175
+    },
+    {
+      "bin": 90,
+      "tested_anchors": 246829
+    },
+    {
+      "bin": 91,
+      "tested_anchors": 245888
+    },
+    {
+      "bin": 92,
+      "tested_anchors": 246064
+    },
+    {
+      "bin": 93,
+      "tested_anchors": 246246
+    },
+    {
+      "bin": 94,
+      "tested_anchors": 246376
+    },
+    {
+      "bin": 95,
+      "tested_anchors": 247437
+    },
+    {
+      "bin": 96,
+      "tested_anchors": 245783
+    },
+    {
+      "bin": 97,
+      "tested_anchors": 246138
+    },
+    {
+      "bin": 98,
+      "tested_anchors": 247331
+    },
+    {
+      "bin": 99,
+      "tested_anchors": 245382
+    },
+    {
+      "bin": 100,
+      "tested_anchors": 245762
+    },
+    {
+      "bin": 101,
+      "tested_anchors": 246237
+    },
+    {
+      "bin": 102,
+      "tested_anchors": 245750
+    },
+    {
+      "bin": 103,
+      "tested_anchors": 245872
+    },
+    {
+      "bin": 104,
+      "tested_anchors": 246813
+    },
+    {
+      "bin": 105,
+      "tested_anchors": 245820
+    },
+    {
+      "bin": 106,
+      "tested_anchors": 245977
+    },
+    {
+      "bin": 107,
+      "tested_anchors": 246108
+    },
+    {
+      "bin": 108,
+      "tested_anchors": 245113
+    },
+    {
+      "bin": 109,
+      "tested_anchors": 245021
+    },
+    {
+      "bin": 110,
+      "tested_anchors": 246412
+    },
+    {
+      "bin": 111,
+      "tested_anchors": 245867
+    },
+    {
+      "bin": 112,
+      "tested_anchors": 246259
+    },
+    {
+      "bin": 113,
+      "tested_anchors": 246039
+    },
+    {
+      "bin": 114,
+      "tested_anchors": 245712
+    },
+    {
+      "bin": 115,
+      "tested_anchors": 245971
+    },
+    {
+      "bin": 116,
+      "tested_anchors": 244735
+    },
+    {
+      "bin": 117,
+      "tested_anchors": 245835
+    },
+    {
+      "bin": 118,
+      "tested_anchors": 246394
+    },
+    {
+      "bin": 119,
+      "tested_anchors": 246760
+    },
+    {
+      "bin": 120,
+      "tested_anchors": 246554
+    },
+    {
+      "bin": 121,
+      "tested_anchors": 246273
+    },
+    {
+      "bin": 122,
+      "tested_anchors": 246031
+    },
+    {
+      "bin": 123,
+      "tested_anchors": 244479
+    },
+    {
+      "bin": 124,
+      "tested_anchors": 245791
+    },
+    {
+      "bin": 125,
+      "tested_anchors": 245416
+    },
+    {
+      "bin": 126,
+      "tested_anchors": 246135
+    },
+    {
+      "bin": 127,
+      "tested_anchors": 246029
+    }
+  ],
+  "logs": [
+    {
+      "file": "stage_2_thread-0000.log",
+      "sha256": "440002409ec7dc6a7018ad792b0159e5e66140917c8f82f34a3eb4705be6a484",
+      "bins": 4
+    },
+    {
+      "file": "stage_2_thread-0001.log",
+      "sha256": "5a2f9963216db00b05d52693871105072a511bb6de1e0917f9ae7b6b82a03ee9",
+      "bins": 4
+    },
+    {
+      "file": "stage_2_thread-0002.log",
+      "sha256": "a8ad036700246929c00e27bbfc9d063e0bd5331954c69ea4a83fb0ce9bb22385",
+      "bins": 4
+    },
+    {
+      "file": "stage_2_thread-0003.log",
+      "sha256": "ea26bc4d96408759dfaddff2bf4942356df3038d7aa829657a4ed37ea09d5b06",
+      "bins": 4
+    },
+    {
+      "file": "stage_2_thread-0004.log",
+      "sha256": "8eae20434a5b98573cc19639cfb4450c8b048a54759a4423aea4364f74e08f54",
+      "bins": 4
+    },
+    {
+      "file": "stage_2_thread-0005.log",
+      "sha256": "8018868d8538caadfd27ea47ca3bf2138fd374dc31635acd18c517619e2267d0",
+      "bins": 4
+    },
+    {
+      "file": "stage_2_thread-0006.log",
+      "sha256": "4cb2275d6bb59a034f07acd37a0f4b1c93553a1e6dafce2acb384f7d212bc93e",
+      "bins": 4
+    },
+    {
+      "file": "stage_2_thread-0007.log",
+      "sha256": "b1275e3e720384a2799766bf8550c2bbb58043b54539664d0aaef142b8b1fb62",
+      "bins": 4
+    },
+    {
+      "file": "stage_2_thread-0008.log",
+      "sha256": "441175d38b005c83a37cdd6d2ec4d6eba7843260ba13ca8dc6ce873d45bef3df",
+      "bins": 4
+    },
+    {
+      "file": "stage_2_thread-0009.log",
+      "sha256": "8e1b5d98c7beec4f865aed6829ee06d05eceff536a0b2fb8a2928250325f830a",
+      "bins": 4
+    },
+    {
+      "file": "stage_2_thread-0010.log",
+      "sha256": "bc6c4efda426228d97375460cb1522b84d90d0b43da19b085dd0de923eafeba8",
+      "bins": 4
+    },
+    {
+      "file": "stage_2_thread-0011.log",
+      "sha256": "135f5385f3de530fa8273b1a6d8e81aa09264f8120df71c241cda2829d2ea905",
+      "bins": 4
+    },
+    {
+      "file": "stage_2_thread-0012.log",
+      "sha256": "437efb22cc37c719538b83f9e400b737334150e4adc92e9974e531ba5a28a3fb",
+      "bins": 4
+    },
+    {
+      "file": "stage_2_thread-0013.log",
+      "sha256": "af8a91424765dea5513521c521cd0f8a5c9f76f982d88426511865b5e395487f",
+      "bins": 4
+    },
+    {
+      "file": "stage_2_thread-0014.log",
+      "sha256": "a2a3150603f7f66f4cd6ddc082f28087c39d11a4fcdfc56e1bd758c9ce7343c6",
+      "bins": 4
+    },
+    {
+      "file": "stage_2_thread-0015.log",
+      "sha256": "4426060c379ac11e09d09285664268c8b620378e9978e424112bd3db5b294120",
+      "bins": 4
+    },
+    {
+      "file": "stage_2_thread-0016.log",
+      "sha256": "5199f0baa966ce3a2b4db46ee340a3942f13f19b588f798e58685459199b71d2",
+      "bins": 4
+    },
+    {
+      "file": "stage_2_thread-0017.log",
+      "sha256": "3f02c38dc2525b7acb65d475c40a94ce13e9726cc9d3f546cc07ee9e720240d8",
+      "bins": 4
+    },
+    {
+      "file": "stage_2_thread-0018.log",
+      "sha256": "81d5dc4567d2e37391017f80384d00308b1e8788abce6c1da6cfef46c1aa8c7c",
+      "bins": 4
+    },
+    {
+      "file": "stage_2_thread-0019.log",
+      "sha256": "77839e5884308b4efc6c02e40929a34a897c627a78265c938714b49fce357d26",
+      "bins": 4
+    },
+    {
+      "file": "stage_2_thread-0020.log",
+      "sha256": "d311a65a4e1cd61b1823cd412f159cb9c2056c468b66717e4e3c6e785918d113",
+      "bins": 4
+    },
+    {
+      "file": "stage_2_thread-0021.log",
+      "sha256": "2a445ce34ba980fe7debe848f464f5cc6e259516780aac0d0e8ae7412c4b2351",
+      "bins": 4
+    },
+    {
+      "file": "stage_2_thread-0022.log",
+      "sha256": "69da984caf6f87d0afedbc8a3adc1e959d2d3eddf0c29d357bca5de0ca8c060d",
+      "bins": 4
+    },
+    {
+      "file": "stage_2_thread-0023.log",
+      "sha256": "43c1c8bbfa79cc20f2a26ade1733595b442b957c5ada2c6976b5cde85630d6e8",
+      "bins": 4
+    },
+    {
+      "file": "stage_2_thread-0024.log",
+      "sha256": "90b97a242462c26620b6caef85cca0e140de86a99b5b23c57649b09b5f411c38",
+      "bins": 4
+    },
+    {
+      "file": "stage_2_thread-0025.log",
+      "sha256": "e5d2add131905632e515072cd5d379fca3c91fd9669a96e3d2ebf744a54f4f99",
+      "bins": 4
+    },
+    {
+      "file": "stage_2_thread-0026.log",
+      "sha256": "5eb0c003f202e62bf2cc8ee57fcecfdfcece1634f24f5dba304e6ee45cbd3f4d",
+      "bins": 4
+    },
+    {
+      "file": "stage_2_thread-0027.log",
+      "sha256": "f6ac1ef24d9cb64ee7c4a3584a45d9b6ec0524aaa7a03ab0c47a26c8099aab77",
+      "bins": 4
+    },
+    {
+      "file": "stage_2_thread-0028.log",
+      "sha256": "217c710adc5281ad3ec6920abfac3c32f6814fc2302e547a5f9317d20583058d",
+      "bins": 4
+    },
+    {
+      "file": "stage_2_thread-0029.log",
+      "sha256": "6f1ce5ec90b88e972e594bddcfbdc5cb43f6673a5dd96921ba497e33873298e6",
+      "bins": 4
+    },
+    {
+      "file": "stage_2_thread-0030.log",
+      "sha256": "74206b8c5cf1b86267b34c1e9971d889a4115054664af68f252b2fc3766fe416",
+      "bins": 4
+    },
+    {
+      "file": "stage_2_thread-0031.log",
+      "sha256": "4d01184d84dc38d61231beba4f6c22292c8ff502e9554196f84c6d7c7ed60ce3",
+      "bins": 4
+    }
+  ],
+  "correction_log_sha256": "f15a899c2cbf5e96e02620ade164d15caa97d10de32575f8fb3b00507c3361b6",
+  "source_version": "SPLASH v2.11.9",
+  "source_evidence": [
+    "src/satc_merge/satc_merge.cpp:1396-1404 increments the counter once per retained anchor immediately before ProcessAnchor",
+    "src/satc_merge/satc_merge.cpp:862-933 stats writer computes stats and writes one row without a further row filter",
+    "src/sig_anch/sig_anch.cpp:255-270 loads each stats record into correction family"
+  ],
+  "source_urls": [
+    "https://github.com/refresh-bio/SPLASH/blob/v2.11.9/src/satc_merge/satc_merge.cpp",
+    "https://github.com/refresh-bio/SPLASH/blob/v2.11.9/src/sig_anch/sig_anch.cpp"
+  ],
+  "verification": "128 distinct bins0-127, each once,128successful merge exits; correction pval_opt completed exit0; retained base-mode anchors are the correction input family",
+  "scope": "Complete trimmed R1 of six experimental libraries; post-filter tested anchors, not all raw words"
+}
