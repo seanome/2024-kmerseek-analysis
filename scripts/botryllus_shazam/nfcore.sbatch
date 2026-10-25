@@ -49,13 +49,14 @@ with (root/'nfcore/samplesheet.csv').open('w') as stream:
         writer.writerow([run,*[f['path'] for f in record['files']],'auto'])
 PY
 "$NEXTFLOW" -c "$CODE/nfcore.config" config "software/rnaseq-${REV}" -profile singularity -o flat > nfcore/resolved.config
+# Fail before touching experimental reads if the actual generated command is invalid.
+/usr/bin/time -v python3 "$CODE/nfcore_preflight.py" "$ROOT" "$CODE" "$NEXTFLOW" "$ROOT/software/rnaseq-${REV}" > nfcore/preflight.log 2>&1
 /usr/bin/time -v "$NEXTFLOW" run "software/rnaseq-${REV}" \
     -profile singularity -c "$CODE/nfcore.config" -work-dir "$ROOT/nfcore/work" -resume \
     --input "$ROOT/nfcore/samplesheet.csv" --outdir "$ROOT/nfcore/results" \
-    --skip_alignment --skip_pseudo_alignment --save_trimmed --igenomes_ignore \
+    -params-file "$CODE/nfcore-params.json" \
     --transcript_fasta "$ROOT/references/botznik-transcripts.fa" \
-    --gtf "$ROOT/references/nc_nsi_nf.gtf" --trimmer trimgalore --min_trimmed_reads 1 \
-    --extra_trimgalore_args '--quality 20 --length 62 --stringency 3 --adapter AGATCGGAAGAGC --adapter2 AGATCGGAAGAGC --no_poly_g' \
+    --gtf "$ROOT/references/nc_nsi_nf.gtf" \
     -with-report "$ROOT/nfcore/execution-report.html" \
     -with-timeline "$ROOT/nfcore/execution-timeline.html" 2> nfcore/head.time.log
 rustc -O "$CODE/validate_pairs.rs" -o "$L_SCRATCH_JOB/validate_pairs"

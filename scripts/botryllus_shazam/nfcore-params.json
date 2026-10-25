@@ -1,0 +1,9 @@
+{
+  "skip_alignment": true,
+  "skip_pseudo_alignment": true,
+  "save_trimmed": true,
+  "igenomes_ignore": true,
+  "trimmer": "trimgalore",
+  "min_trimmed_reads": 1,
+  "extra_trimgalore_args": "--quality 20 --length 62 --stringency 3 --adapter AGATCGGAAGAGC --adapter2 AGATCGGAAGAGC"
+}
