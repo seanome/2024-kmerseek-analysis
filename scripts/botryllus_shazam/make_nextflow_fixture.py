@@ -14,6 +14,8 @@ rng = random.Random(7301)
 seqs = {
     f"T{i:03d}": "".join(rng.choice("ACGT") for _ in range(330)) for i in range(100)
 }
+# Shared anchors have two downstream targets; only T000 increases in treatment.
+seqs["T001"] = seqs["T001"][:40] + seqs["T000"][40:90] + seqs["T001"][90:]
 (out / "reference.fa").write_text("".join(f">{k}\n{v}\n" for k, v in seqs.items()))
 (out / "reference.gtf").write_text(
     "".join(
@@ -34,7 +36,7 @@ for contrast in range(3):
             handles = [gzip.open(out / f"{run}_{m}.fastq.gz", "wt") for m in (1, 2)]
             for i, (t, seq) in enumerate(seqs.items()):
                 n = max(20, int(rng.gammavariate(4, 20))) * (
-                    4 if cond == "Treatment" and i < 2 else 1
+                    4 if cond == "Treatment" and i == 0 else 1
                 )
                 for repeat in range(n):
                     start = rng.randrange(100)

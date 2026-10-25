@@ -73,7 +73,20 @@ assert len(checks) == 6
 result = json.loads((root / "input/results/evidence/gene-evidence.json").read_text())
 assert result["protocol"] == "six-frame-stop-only-X-min30-v1"
 assert any(g["gene_id"] == "G000" and g["paper_membership"] for g in result["genes"])
+selection = json.loads(
+    (root / "input/results/selected-splash/splash-selected/selection.json").read_text()
+)
+assert selection["tested_anchors"] > 0 and selection["selected_anchors"] > 0
+sources = {}
+for source in ("splash", "dekupl"):
+    protocol = json.loads(
+        (root / f"input/results/queries/{source}/queries/protocol.json").read_text()
+    )
+    assert protocol["dna"] > 0 and protocol["peptides"] > 0
+    sources[source] = protocol
 report = dict(
+    splash_selection=selection,
+    query_sources=sources,
     software_fixture=True,
     canonical_kmers_checked=len(seen),
     samples=len(records),
