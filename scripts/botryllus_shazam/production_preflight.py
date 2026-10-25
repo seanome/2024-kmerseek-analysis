@@ -1,6 +1,5 @@
 """Measure real inputs and check matching genome and Pfam reference assets in Slurm."""
 
-import csv
 import json
 import os
 from pathlib import Path
@@ -27,10 +26,24 @@ def run(label, args):
 
 
 url = "https://botryllus.stanford.edu/botryllusgenome/download/botznik-chr.fa"
-run(
-    "download-genome",
-    ["curl", "--fail", "--location", "--retry", "3", "--output", "botznik-chr.fa", url],
-)
+if os.environ.get("BOTRYLLUS_CHECKED_GENOME"):
+    Path("botznik-chr.fa").symlink_to(
+        Path(os.environ["BOTRYLLUS_CHECKED_GENOME"]).resolve()
+    )
+else:
+    run(
+        "download-genome",
+        [
+            "curl",
+            "--fail",
+            "--location",
+            "--retry",
+            "3",
+            "--output",
+            "botznik-chr.fa",
+            url,
+        ],
+    )
 from Bio import SeqIO
 from Bio.Seq import Seq
 
@@ -68,6 +81,8 @@ for gene, expected in reference.items():
                 "gene": gene,
                 "reference_length": len(expected),
                 "reconstructed_length": len(actual),
+                "expected_start": expected[:80],
+                "actual_start": actual[:80],
             }
         )
 report = {
@@ -86,7 +101,7 @@ Path("transcripts500.fa").write_text(
 run(
     "alignment",
     [
-        py.parent / "minimap2",
+        "/share/software/user/open/minimap2/2.30/bin/minimap2",
         "-x",
         "splice",
         "-c",

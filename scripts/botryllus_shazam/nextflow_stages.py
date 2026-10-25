@@ -597,6 +597,96 @@ def target(database, kind, mode, k, scale, validator, *sources):
     )
 
 
+def align(source, queries, genome, binary, cpus):
+    """Keep completed, empty, and unmeasured alignments distinct."""
+    out = Path("alignment")
+    out.mkdir()
+    query = Path(queries) / "dna.fasta"
+    meta = dict(
+        source=source,
+        published_path=f"sequence-evidence/{source}/alignment/context.paf",
+        query_sha256=sha(query),
+    )
+    if not genome:
+        meta.update(status="not measured", reason="genome not supplied")
+    else:
+        meta.update(
+            reference_sha256=sha(genome),
+            binary=binary,
+            version=subprocess.check_output([binary, "--version"], text=True).strip(),
+        )
+        with (out / "context.paf").open("w") as dest, (out / "minimap2.log").open(
+            "w"
+        ) as log:
+            if query.stat().st_size:
+                subprocess.run(
+                    [
+                        binary,
+                        "-x",
+                        "splice",
+                        "-c",
+                        "--cs=long",
+                        "--secondary=yes",
+                        "-t",
+                        str(cpus),
+                        genome,
+                        str(query),
+                    ],
+                    stdout=dest,
+                    stderr=log,
+                    check=True,
+                )
+        meta.update(
+            status="completed" if query.stat().st_size else "no queries",
+            output_sha256=sha(out / "context.paf"),
+        )
+    save(out / "alignment.json", meta)
+
+
+def pfam(source, queries, reference, binary, cpus):
+    """Search query peptides; reference annotations cannot substitute for these calls."""
+    out = Path("pfam")
+    out.mkdir()
+    query = Path(queries) / "peptides.faa"
+    meta = dict(
+        source=source,
+        published_path=f"query-pfam/{source}/pfam/domains.domtblout",
+        query_sha256=sha(query),
+    )
+    if not reference:
+        meta.update(status="not measured", reason="Pfam database not supplied")
+    else:
+        meta.update(
+            reference_sha256=sha(reference),
+            binary=binary,
+            version=subprocess.check_output([binary, "-h"], text=True).splitlines()[:3],
+        )
+        if query.stat().st_size:
+            with (out / "hmmscan.txt").open("w") as dest:
+                subprocess.run(
+                    [
+                        binary,
+                        "--cpu",
+                        str(cpus),
+                        "--cut_ga",
+                        "--domtblout",
+                        str(out / "domains.domtblout"),
+                        reference,
+                        str(query),
+                    ],
+                    stdout=dest,
+                    check=True,
+                )
+            if "# [ok]" not in (out / "domains.domtblout").read_text():
+                raise ValueError("Incomplete hmmscan output")
+            meta.update(
+                status="completed", output_sha256=sha(out / "domains.domtblout")
+            )
+        else:
+            meta.update(status="no eligible peptides")
+    save(out / "pfam.json", meta)
+
+
 def evidence(reference, mapping, paper, annotations, *folders):
     """Retain exact gene links and both discovery sources without assigning function."""
     from figure4_recovery import encode, exact_gene_map
@@ -636,19 +726,22 @@ def evidence(reference, mapping, paper, annotations, *folders):
                     }
                     for r in csv.DictReader(f)
                 )
-        elif (folder / "context.paf").exists():
-            alignment_files.append(
-                dict(
-                    path=str(folder / "context.paf"), sha256=sha(folder / "context.paf")
-                )
-            )
-        elif (folder / "domains.domtblout").exists():
-            pfam_files.append(
-                dict(
-                    path=str(folder / "domains.domtblout"),
-                    sha256=sha(folder / "domains.domtblout"),
-                )
-            )
+        elif (folder / "alignment.json").exists():
+            meta = json.loads((folder / "alignment.json").read_text())
+            if (
+                "output_sha256" in meta
+                and sha(folder / "context.paf") != meta["output_sha256"]
+            ):
+                raise ValueError("Alignment checksum changed before evidence join")
+            alignment_files.append(meta)
+        elif (folder / "pfam.json").exists():
+            meta = json.loads((folder / "pfam.json").read_text())
+            if (
+                "output_sha256" in meta
+                and sha(folder / "domains.domtblout") != meta["output_sha256"]
+            ):
+                raise ValueError("Pfam checksum changed before evidence join")
+            pfam_files.append(meta)
         elif (folder / "all-features.tsv.gz").exists():
             with gzip.open(folder / "all-features.tsv.gz", "rt") as f:
                 for row in csv.DictReader(f, delimiter="\t"):
@@ -764,6 +857,8 @@ if __name__ == "__main__":
             search,
             target,
             evidence,
+            align,
+            pfam,
         )
     }
     actions[sys.argv[1]](*sys.argv[2:])

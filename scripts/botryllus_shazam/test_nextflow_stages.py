@@ -22,6 +22,38 @@ class StageTests(unittest.TestCase):
         __import__("os").chdir(self.old)
         self.tmp.cleanup()
 
+    def test_reference_checks_distinguish_missing_from_empty(self):
+        Path("queries").mkdir()
+        Path("queries/dna.fasta").write_text("")
+        Path("queries/peptides.faa").write_text("")
+        stages.align("splash", "queries", "", "", "1")
+        stages.pfam("splash", "queries", "", "", "1")
+        self.assertEqual(
+            json.loads(Path("alignment/alignment.json").read_text())["status"],
+            "not measured",
+        )
+        self.assertEqual(
+            json.loads(Path("pfam/pfam.json").read_text())["status"], "not measured"
+        )
+        import shutil
+
+        shutil.rmtree("alignment")
+        shutil.rmtree("pfam")
+        Path("reference").write_text("reference fixture")
+        with patch("subprocess.check_output", return_value="version fixture"), patch(
+            "subprocess.run", side_effect=AssertionError("Empty queries must not run")
+        ):
+            stages.align("splash", "queries", "reference", "unused", "1")
+            stages.pfam("splash", "queries", "reference", "unused", "1")
+        self.assertEqual(
+            json.loads(Path("alignment/alignment.json").read_text())["status"],
+            "no queries",
+        )
+        self.assertEqual(
+            json.loads(Path("pfam/pfam.json").read_text())["status"],
+            "no eligible peptides",
+        )
+
     def models(self):
         paths = []
         for i in range(3):

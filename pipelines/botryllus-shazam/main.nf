@@ -341,12 +341,12 @@ process ALIGN_CONTEXT {
     input:
     tuple val(source), path(queries)
     path genome
+    path helper
     output: tuple val(source), path('alignment')
     script:
-    def command = params.genome ? "'${params.minimap2}' -x splice -c --cs=long --secondary=yes -t ${task.cpus} '${genome}' '${queries}/dna.fasta' > alignment/context.paf" : "printf 'not measured: genome not supplied\\n' > alignment/status.txt"
+    def reference = params.genome ? "${genome}" : ''
     """
-    mkdir alignment
-    ${command}
+    '${params.python}' '${helper}' align '${source}' '${queries}' '${reference}' '${params.minimap2}' ${task.cpus}
     """
 }
 
@@ -359,12 +359,12 @@ process QUERY_PFAM {
     input:
     tuple val(source), path(queries)
     path hmm_files
+    path helper
     output: tuple val(source), path('pfam')
     script:
-    def command = params.pfam_hmm ? "if test -s '${queries}/peptides.faa'; then '${params.hmmscan}' --cpu ${task.cpus} --cut_ga --domtblout pfam/domains.domtblout '${params.pfam_hmm.tokenize('/').last()}' '${queries}/peptides.faa' > pfam/hmmscan.txt; else printf 'no eligible peptides\\n' > pfam/status.txt; fi" : "printf 'not measured: Pfam HMM database not supplied\\n' > pfam/status.txt"
+    def reference = params.pfam_hmm ? params.pfam_hmm.tokenize('/').last() : ''
     """
-    mkdir pfam
-    ${command}
+    '${params.python}' '${helper}' pfam '${source}' '${queries}' '${reference}' '${params.hmmscan ?: ''}' ${task.cpus}
     """
 }
 
@@ -407,8 +407,8 @@ workflow {
     TRANSLATE(COMPACT.out, MERGE_TAGS.out.map{c,p -> p}.collect(), helper, file("${scripts}/dekupl_translation.py"))
     def settings = Channel.of(tuple('dna',31), tuple('protein',7), tuple('dayhoff',12), tuple('hp',30))
     SKETCH(TRANSLATE.out.combine(settings), helper)
-    ALIGN_CONTEXT(TRANSLATE.out, params.genome ? file(params.genome,checkIfExists:true) : [])
-    QUERY_PFAM(TRANSLATE.out, params.pfam_hmm ? ['', '.h3f', '.h3i', '.h3m', '.h3p'].collect { file(params.pfam_hmm+it,checkIfExists:true) } : [])
+    ALIGN_CONTEXT(TRANSLATE.out, params.genome ? file(params.genome,checkIfExists:true) : [], helper)
+    QUERY_PFAM(TRANSLATE.out, params.pfam_hmm ? ['', '.h3f', '.h3i', '.h3m', '.h3p'].collect { file(params.pfam_hmm+it,checkIfExists:true) } : [], helper)
     def targetInputs = Channel.fromPath(params.targets).splitCsv(header:true,sep:'\t').map { r ->
         def targetSettings = [dna:31,protein:7,dayhoff:12,hp:30]
         if (!(r.mode in targetSettings.keySet()) || (r.k as int) != targetSettings[r.mode]) error 'Unsupported target sketch setting'
