@@ -1,0 +1,9 @@
+{
+  "recorded_at": "2026-10-25",
+  "goal": "Reproduce Figure 4 of the paper; the Nextflow migration supports that goal",
+  "sources": [
+    {"file": "pnas.2610968123.sd01.xlsx", "sha256": "4e2f2164fff28658f38ac30deee3f3bd61926b4f9ae8f8306c9def21a0072eba", "relationship": "Matches the workbook used for the earlier published-count extraction"},
+    {"file": "pnas.2610968123.sapp.pdf", "sha256": "cb42a251dc55f8f702f8e4ddd52c96dfaeceb7b92b6a869cedade66ad80cfc45", "pages": 6, "relationship": "Supporting appendix with supplementary figure, table, movie and dataset legends"}
+  ],
+  "boundary": "Published-count redraws, supplied-count refits and independent read-based reproduction remain separate evidence"
+}
