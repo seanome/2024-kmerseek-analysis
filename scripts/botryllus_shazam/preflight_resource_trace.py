@@ -7,7 +7,7 @@ import re
 import sys
 
 preflight, output = map(Path, sys.argv[1:3])
-json.loads((preflight / "complete.json").read_text())
+completion = json.loads((preflight / "complete.json").read_text())
 run = json.loads((preflight / "largest-library.json").read_text())
 measurements = {
     "count": "COUNT_KMERS",
@@ -23,6 +23,9 @@ for label, process in measurements.items():
     if not re.search(r"Exit status: 0\s*$", text):
         raise ValueError("Incomplete or failed measurement: " + label)
     peak = int(re.search(r"Maximum resident set size \(kbytes\): (\d+)", text)[1])
+    if label == "count" and "recovered_scheduler_peak_kb" in completion:
+        # Conservative allocation scope; the later gene-map failure is retained in provenance.
+        peak = max(peak, completion["recovered_scheduler_peak_kb"])
     elapsed = re.search(r"Elapsed \(wall clock\) time \(h:mm:ss or m:ss\): (.+)", text)[
         1
     ].strip()

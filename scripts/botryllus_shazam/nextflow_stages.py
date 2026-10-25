@@ -63,7 +63,7 @@ def check_recruit(validation, counts):
 
 
 def genes(reference, gtf, *quantifications):
-    tx, gene_tx = {}, {}
+    tx, gene_ids = {}, set()
     for line in Path(gtf).read_text().splitlines():
         if line.startswith("#"):
             continue
@@ -72,19 +72,23 @@ def genes(reference, gtf, *quantifications):
             raise ValueError("Invalid GTF")
         attrs = dict(re.findall(r'(\S+) "([^"]*)"', fields[8]))
         g, t = attrs.get("gene_id"), attrs.get("transcript_id")
+        if g:
+            gene_ids.add(g)
         if g and t:
             if t in tx and tx[t] != g:
                 raise ValueError("Ambiguous transcript mapping")
             tx[t] = g
-            gene_tx.setdefault(g, set()).add(t)
     mapping = {}
     mapped_genes = set()
     for identifier in fasta(reference):
         name = identifier.split("|")[0]
-        gene = tx.get(name)
-        if gene is None and len(gene_tx.get(name, ())) == 1:
-            gene = name
-        if gene is None or gene in mapped_genes or name in mapping:
+        candidates = ({tx[name]} if name in tx else set()) | (
+            {name} if name in gene_ids else set()
+        )
+        if len(candidates) != 1:
+            raise ValueError("Unresolved or ambiguous reference identifier: " + name)
+        gene = candidates.pop()
+        if gene in mapped_genes or name in mapping:
             raise ValueError(
                 "Reference requires unresolved or length-aware gene aggregation"
             )

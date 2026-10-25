@@ -110,6 +110,27 @@ class StageTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             stages.genes("ref.fa", "ref.gtf", "S.quant")
 
+    def test_gene_named_reference_with_multiple_annotated_isoforms(self):
+        Path("ref.gtf").write_text(
+            'chr\tx\texon\t1\t4\t.\t+\t.\tgene_id "G1"; transcript_id "T1";\n'
+            'chr\tx\texon\t1\t4\t.\t+\t.\tgene_id "G1"; transcript_id "T2";\n'
+        )
+        Path("ref.fa").write_text(">G1\nACGT\n")
+        Path("S.quant").mkdir()
+        Path("S.quant/abundance.tsv").write_text("target_id\test_counts\nG1\t3.9\n")
+        stages.genes("ref.fa", "ref.gtf", "S.quant")
+        self.assertEqual(Path("transcript-to-gene.tsv").read_text(), "G1\tG1\n")
+        # Two quantified sequences for one gene still need length-aware aggregation.
+        Path("ref.fa").write_text(">T1\nACGT\n>T2\nACGT\n")
+        with self.assertRaises(ValueError):
+            stages.genes("ref.fa", "ref.gtf", "S.quant")
+        # A name shared by a gene and another gene's transcript is ambiguous.
+        Path("ref.fa").write_text(">G1\nACGT\n")
+        with Path("ref.gtf").open("a") as f:
+            f.write('chr\tx\texon\t1\t4\t.\t+\t.\tgene_id "G2"; transcript_id "G1";\n')
+        with self.assertRaises(ValueError):
+            stages.genes("ref.fa", "ref.gtf", "S.quant")
+
     def test_duplicate_fasta_fails(self):
         Path("x.fa").write_text(">x\nACGT\n>x\nAAAA\n")
         with self.assertRaises(ValueError):
