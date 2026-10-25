@@ -82,8 +82,11 @@ for source in ("splash", "dekupl"):
     protocol = json.loads(
         (root / f"input/results/queries/{source}/queries/protocol.json").read_text()
     )
-    assert protocol["dna"] > 0 and protocol["peptides"] > 0
+    if source == "splash":
+        assert protocol["dna"] > 0 and protocol["peptides"] > 0
     sources[source] = protocol
+significant_kmers = sum(c["significant"] for c in checks if "/kmers/" in c["path"])
+assert (sources["dekupl"]["dna"] > 0) == (significant_kmers > 0)
 report = dict(
     splash_selection=selection,
     query_sources=sources,
