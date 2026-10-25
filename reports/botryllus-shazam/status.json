@@ -468,8 +468,8 @@
     {
       "id": "49492080",
       "name": "botryllus-PEC-nfcore-trim",
-      "state": "PENDING",
-      "elapsed": "00:00:00",
+      "state": "RUNNING",
+      "elapsed": "00:00:47",
       "exit_code": "0:0"
     },
     {
@@ -520,8 +520,8 @@
     {
       "id": "49492080",
       "name": "botryllus-PEC-nfcore-trim",
-      "state": "PENDING",
-      "elapsed": "00:00:00",
+      "state": "RUNNING",
+      "elapsed": "00:00:47",
       "exit_code": "0:0",
       "scope": "Paired-read and pinned-workflow preflight, then trim all 64 libraries"
     },
@@ -581,5 +581,18 @@
       "exit_code": "0:0",
       "scope": "Completed supplied-count adjusted expression refits"
     }
-  ]
+  ],
+  "dekupl_read_tool_check": {
+    "status": "passed",
+    "synthetic_fixture": true,
+    "recruitment": {
+      "input_pairs": 25,
+      "recruited_pairs": 24,
+      "occurrences": 24
+    },
+    "compactors_extended_seed": true,
+    "branchwater_manysketch_manysearch_self": true,
+    "job": "49492080"
+  },
+  "latest_trim_check": "2026-10-25T13:29:38.333920+00:00"
 }
