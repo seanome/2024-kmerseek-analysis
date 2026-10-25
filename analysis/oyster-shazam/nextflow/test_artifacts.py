@@ -81,6 +81,14 @@ class AdoptionTest(unittest.TestCase):
             with self.assertRaises(ValueError):
                 metadata(changed, "query")
 
+    def test_missing_build_provenance_requires_explicit_test_scope(self):
+        manifest = json.loads((self.root / "query.json").read_text())
+        manifest["source_code_sha256"] = None
+        with self.assertRaisesRegex(ValueError, "bounded tests"):
+            metadata(manifest, "query")
+        manifest["provenance_scope"] = "historical-build-code-unrecorded-test-only"
+        self.assertIs(metadata(manifest, "query"), manifest)
+
     def test_corruption_rejected(self):
         path = self.root / "query.sig.gz"
         path.write_bytes(path.read_bytes()[:20])

@@ -1,0 +1,40 @@
+{
+  "protocol": "six-frame-standard-stop-only-X-preserved-min30-v1",
+  "source_sha256": "375f2a7f979e8e6f9ca8e999fcb451bab5f41256589627fca60120cb8d944814",
+  "original_ids": [
+    "positive",
+    "same_hash_other_id",
+    "short"
+  ],
+  "duplicate_hash_ids_preserved": true,
+  "nonempty_controls": true,
+  "x_hash_probes": [
+    {
+      "moltype": "protein",
+      "k": 7,
+      "scaled": 1,
+      "peptide": "KRQQIDKNPIDAQMHYRIHMRGQDHSSNIRHRRMRWQRKCDNEPYMRQSTEQWKTLCKAHXCCMECQMCDHKKDKNCLCLPDERGSFANLKRPAATNAQLADEDLCVDQCLTPCWLYHLQW",
+      "total_hashes": 115,
+      "x_spanning_distinct_hashes": 7,
+      "x_spanning_hashes_retained": 7
+    },
+    {
+      "moltype": "dayhoff",
+      "k": 12,
+      "scaled": 1,
+      "peptide": "KRQQIDKNPIDAQMHYRIHMRGQDHSSNIRHRRMRWQRKCDNEPYMRQSTEQWKTLCKAHXCCMECQMCDHKKDKNCLCLPDERGSFANLKRPAATNAQLADEDLCVDQCLTPCWLYHLQW",
+      "total_hashes": 110,
+      "x_spanning_distinct_hashes": 12,
+      "x_spanning_hashes_retained": 12
+    },
+    {
+      "moltype": "hp",
+      "k": 30,
+      "scaled": 1,
+      "peptide": "KRQQIDKNPIDAQMHYRIHMRGQDHSSNIRHRRMRWQRKCDNEPYMRQSTEQWKTLCKAHXCCMECQMCDHKKDKNCLCLPDERGSFANLKRPAATNAQLADEDLCVDQCLTPCWLYHLQW",
+      "total_hashes": 92,
+      "x_spanning_distinct_hashes": 30,
+      "x_spanning_hashes_retained": 30
+    }
+  ]
+}

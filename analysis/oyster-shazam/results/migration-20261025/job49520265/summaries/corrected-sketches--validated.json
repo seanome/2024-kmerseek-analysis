@@ -1,0 +1,45 @@
+{
+  "protocol": "six-frame-standard-stop-only-X-preserved-min30-v1",
+  "branchwater": "0.9.15",
+  "translation_manifest_sha256": "91405774840492a6e100d55fba330bb32c00649271d554ad7b59c5ce91ce8ee8",
+  "segment_comparisons": 4659,
+  "internal_X_segments": 0,
+  "collections": [
+    {
+      "file": "protein-10.sig.gz",
+      "sha256": "c353270914433fd404948afc9ffcab6d6f6372b64e3052a905bd126290159d4f",
+      "origins": 2000,
+      "empty": 1548
+    },
+    {
+      "file": "protein-100.sig.gz",
+      "sha256": "03df9147c6d36848c176ba8d3a2fa8242dde0f8fe8f7db4e1b624a3632518971",
+      "origins": 2000,
+      "empty": 1710
+    },
+    {
+      "file": "dayhoff-10.sig.gz",
+      "sha256": "ad9dec403ce0a6c3f808a2ef1c453b35b97ce57e088cb924ac44ef88d2749861",
+      "origins": 2000,
+      "empty": 1556
+    },
+    {
+      "file": "dayhoff-100.sig.gz",
+      "sha256": "15efb72b858f4a11270253a6f50fff88f8cc20f469d72e4e6b5f1295d7b7c9e0",
+      "origins": 2000,
+      "empty": 1743
+    },
+    {
+      "file": "hp-10.sig.gz",
+      "sha256": "3b5cdfa0d6b53c7c371fdc84f461874995b6af84077239a4c55ad58674f9d1f3",
+      "origins": 2000,
+      "empty": 1622
+    },
+    {
+      "file": "hp-100.sig.gz",
+      "sha256": "aaaa6d8a340c960aae7ac778bc5cb34f6c56f04be7d3642d72a4413e2541260c",
+      "origins": 2000,
+      "empty": 1856
+    }
+  ]
+}

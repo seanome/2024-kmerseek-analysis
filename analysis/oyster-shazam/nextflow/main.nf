@@ -68,13 +68,13 @@ process SEARCH {
 process AUDIT {
     cache 'deep'
     input:
-    tuple path(query), path(reference), path(query_receipt), path(reference_receipt), path(matches), path(log)
+    tuple path(query), path(reference), path(query_receipt), path(reference_receipt), path(matches), path(search_log)
     path validator
     output:
     path 'validated.json'
     script:
     """
-    '${params.python}' '${validator}' audit '${query}' '${reference}' '${query_receipt}' '${reference_receipt}' '${matches}' '${log}' validated.json
+    '${params.python}' '${validator}' audit '${query}' '${reference}' '${query_receipt}' '${reference_receipt}' '${matches}' '${search_log}' validated.json
     """
 }
 
