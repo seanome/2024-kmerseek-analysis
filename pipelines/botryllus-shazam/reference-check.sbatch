@@ -26,8 +26,10 @@ cat > local.config <<'EOF'
 process.executor = 'local'
 process.memory = '2 GB'
 process.cpus = 1
-process.withName: ALIGN_CONTEXT { memory = '12 GB'; cpus = 4 }
-process.withName: QUERY_PFAM { memory = '4 GB'; cpus = 2 }
+process {
+    withName: 'ALIGN_CONTEXT' { memory = '12 GB'; cpus = 4 }
+    withName: 'QUERY_PFAM' { memory = '4 GB'; cpus = 2 }
+}
 executor.cpus = 8
 executor.memory = '14 GB'
 EOF
