@@ -26,3 +26,9 @@ paper-reference equivalence.
 The supplied supplementary workbook's fingerprint matches the earlier extraction.
 The six-page appendix contains supplementary figure, table, movie, and dataset legends;
 its extracted text did not provide genome/HTSeq methods or a Botryllus score implementation.
+
+The reference-check workflow completed all six process tasks. Independent checks found
+491 mapped queries among 500 transcript controls and 813 domain rows among 500 protein
+controls. The empty cases retained their explicit statuses. Slurm job 49521127 exited
+1 because the separate coordinate-equivalence test failed; this is retained as a failed
+reference-equivalence check, not reported as a wholly successful job.

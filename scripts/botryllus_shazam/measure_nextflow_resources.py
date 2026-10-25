@@ -16,7 +16,7 @@ DEFAULTS = {
     "GENE_COUNTS": (16, 4),
     "POOL_COUNTS": (16, 12),
     "NORMALIZE": (8, 4),
-    "BLOCKED_MODEL": (32, 24),
+    "BLOCKED_MODEL": (32, 96),
     "SELECT_DE_SEEDS": (8, 4),
     "MERGE_TAGS": (8, 4),
     "RECRUIT_READS": (16, 12),

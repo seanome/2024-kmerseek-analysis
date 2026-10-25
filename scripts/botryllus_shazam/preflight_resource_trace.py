@@ -6,7 +6,7 @@ from pathlib import Path
 import re
 import sys
 
-preflight, output = map(Path, sys.argv[1:])
+preflight, output = map(Path, sys.argv[1:3])
 json.loads((preflight / "complete.json").read_text())
 run = json.loads((preflight / "largest-library.json").read_text())
 measurements = {
@@ -39,6 +39,25 @@ for label, process in measurements.items():
             exit="0",
             peak_rss=f"{peak} KB",
             realtime=f"{seconds} s",
+            memory="64 GB",
+            time="4h",
+        )
+    )
+if len(sys.argv) > 3:
+    accounting = list(csv.reader(Path(sys.argv[3]).open(), delimiter="|"))
+    batch = [r for r in accounting if r[0].endswith(".batch")]
+    if len(batch) != 1 or batch[0][1] != "COMPLETED" or batch[0][4] != "0:0":
+        raise ValueError("Preflight allocation did not complete successfully")
+    value = batch[0][3]
+    if not re.fullmatch(r"[0-9.]+[KMGT]", value):
+        raise ValueError("Missing scheduler peak memory")
+    rows.append(
+        dict(
+            name=f"COUNT_KMERS ({run['run']} scheduler allocation)",
+            status="COMPLETED",
+            exit="0",
+            peak_rss=value + "B",
+            realtime="0s",
             memory="64 GB",
             time="4h",
         )
