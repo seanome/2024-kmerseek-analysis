@@ -10,7 +10,7 @@ source=root/'metro/workflow-overview.mmd'
 S='http://www.w3.org/2000/svg';E.register_namespace('',S)
 with tempfile.TemporaryDirectory() as tmp:
     raw=Path(tmp)/'map.svg'
-    subprocess.run([sys.argv[1],'render',str(source),'-o',str(raw),'--mode','light','--strict','--row-align','top','--section-x-gap','60'],check=True)
+    subprocess.run([sys.argv[1],'render',str(source),'-o',str(raw),'--mode','light','--strict','--row-align','top','--section-x-gap','90'],check=True)
     old=E.parse(raw).getroot();width=float(old.attrib['width']);height=float(old.attrib['height'])+120
     svg=E.Element(f'{{{S}}}svg',dict(width=str(width),height=str(height),viewBox=f'0 0 {width} {height}',style='color-scheme:light'))
     E.SubElement(svg,f'{{{S}}}rect',dict(width='100%',height='100%',fill='white'))
@@ -31,4 +31,13 @@ with tempfile.TemporaryDirectory() as tmp:
         if e.attrib.get('class')=='nf-metro-legend-bg':break
         if e is title or e.attrib.get('class')=='nf-metro-bg':continue
         g.append(e)
+    # Keep DE-kupl on its own lower lane across section boundaries. The
+    # automatic router otherwise climbs to the SPLASH trunk at every port.
+    for path in g.iter(f'{{{S}}}path'):
+        if path.attrib.get('data-line-id') != 'dekupl':
+            continue
+        coords = re.findall(r'[-+]?[0-9]*\.?[0-9]+', path.attrib.get('d', ''))
+        if coords and max(map(float, coords[::2])) <= 1154.0:
+            path.set('d', re.sub(r'([-+]?[0-9]*\.?[0-9]+),([-+]?[0-9]*\.?[0-9]+)',
+                                lambda m: m[1] + ',178.4', path.attrib['d']))
     E.ElementTree(svg).write(root/'metro/workflow-overview.svg',encoding='unicode')
