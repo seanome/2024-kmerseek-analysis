@@ -1,10 +1,10 @@
 #!/bin/bash
 #SBATCH --job-name=botryllus-64-nextflow
-#SBATCH --partition=normal,hns
+#SBATCH --partition=hns
 #SBATCH --cpus-per-task=2
 #SBATCH --mem=16G
 #SBATCH --time=7-00:00:00
-#SBATCH --qos=long
+#SBATCH --qos=normal
 set -euo pipefail
 CODE=${1:?immutable versioned source}
 LAUNCH=${2:?prepared launch directory}
