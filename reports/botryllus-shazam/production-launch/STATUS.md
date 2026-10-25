@@ -26,3 +26,19 @@ production source. Historical Sherlock outputs and caches were retained.
 
 The scientific objective remains Figure 4 reproduction. This workflow's completion
 will require comparison with the paper's panel-specific inputs, rules and values.
+
+## Submitted production controller
+
+Job 49523163 was accepted with dependency afterok:49520541. At 20:36 UTC it was
+PENDING for Dependency; production Nextflow had not started. The job uses immutable
+source 4da3d169 and a new directory, `$SCRATCH/botryllus-shazam-PEC-nextflow-20261025`.
+Its log is `$SCRATCH/botryllus-64-nextflow-49523163.log`. If the preflight fails, the
+dependent job is cancelled instead of processing unvalidated inputs. Final requests
+are computed inside the controller from completed command and scheduler measurements.
+A submitted job is not a completed production result.
+
+![Genome/GTF reconstruction](genome-gtf-reference-reconstruction.png)
+
+Each point uses all 72,113 reference sequences. Moving both GTF interval endpoints
+one base earlier matches 71,802 coding sequences; 311 remain unresolved. Full exons
+also contain untranslated regions. Original files remain unchanged.
