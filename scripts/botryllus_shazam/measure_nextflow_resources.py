@@ -29,7 +29,8 @@ DEFAULTS = {
     "PREPARE_TARGET": (32, 24),
     "JOIN_EVIDENCE": (32, 12),
     "ALIGN_CONTEXT": (32, 12),
-    "QUERY_PFAM": (16, 24),
+    "SPLIT_PFAM": (8, 4),
+    "QUERY_PFAM": (4, 2),
 }
 
 

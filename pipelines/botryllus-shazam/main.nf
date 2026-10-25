@@ -350,21 +350,33 @@ process ALIGN_CONTEXT {
     """
 }
 
-process QUERY_PFAM {
+process SPLIT_PFAM {
     tag "$source"
-    cpus 4
-    memory '16 GB'
-    time '24h'
-    publishDir "${params.outdir}/query-pfam/${source}", mode: 'copy'
     input:
     tuple val(source), path(queries)
+    path helper
+    output: tuple val(source), path('pfam-chunks/*.faa', arity: '1..*')
+    script:
+    """
+    '${params.python}' '${helper}' split_pfam '${source}' '${queries}'
+    """
+}
+
+process QUERY_PFAM {
+    tag "$source:$chunk"
+    cpus 2
+    memory '4 GB'
+    time '2h'
+    publishDir "${params.outdir}/query-pfam/${source}/${chunk}", mode: 'copy'
+    input:
+    tuple val(source), val(chunk), path(queries)
     path hmm_files
     path helper
-    output: tuple val(source), path('pfam')
+    output: tuple val(source), val(chunk), path('pfam')
     script:
     def reference = params.pfam_hmm ? params.pfam_hmm.tokenize('/').last() : ''
     """
-    '${params.python}' '${helper}' pfam '${source}' '${queries}' '${reference}' '${params.hmmscan ?: ''}' ${task.cpus}
+    '${params.python}' '${helper}' pfam '${source}' '${queries}' '${reference}' '${params.hmmscan ?: ''}' ${task.cpus} '${chunk}'
     """
 }
 
@@ -408,7 +420,8 @@ workflow {
     def settings = Channel.of(tuple('dna',31), tuple('protein',7), tuple('dayhoff',12), tuple('hp',30))
     SKETCH(TRANSLATE.out.combine(settings), helper)
     ALIGN_CONTEXT(TRANSLATE.out, params.genome ? file(params.genome,checkIfExists:true) : [], helper)
-    QUERY_PFAM(TRANSLATE.out, params.pfam_hmm ? ['', '.h3f', '.h3i', '.h3m', '.h3p'].collect { file(params.pfam_hmm+it,checkIfExists:true) } : [], helper)
+    SPLIT_PFAM(TRANSLATE.out, helper)
+    QUERY_PFAM(SPLIT_PFAM.out.flatMap{s, files -> files.collect{p -> tuple(s,p.baseName,p)}}, params.pfam_hmm ? ['', '.h3f', '.h3i', '.h3m', '.h3p'].collect { file(params.pfam_hmm+it,checkIfExists:true) } : [], helper)
     def targetInputs = Channel.fromPath(params.targets).splitCsv(header:true,sep:'\t').map { r ->
         def targetSettings = [dna:31,protein:7,dayhoff:12,hp:30]
         if (!(r.mode in targetSettings.keySet()) || (r.k as int) != targetSettings[r.mode]) error 'Unsupported target sketch setting'
@@ -423,6 +436,6 @@ workflow {
     SEARCH(searches, helper)
     def evidenceInputs = TRANSLATE.out.map{s,q -> q}.mix(SEARCH.out.map{s,d,m,scale,p -> p})
         .mix(BLOCKED_MODEL.out.filter{c,a,p -> a=='genes'}.map{c,a,p -> p})
-        .mix(ALIGN_CONTEXT.out.map{s,p -> p}).mix(QUERY_PFAM.out.map{s,p -> p}).collect()
+        .mix(ALIGN_CONTEXT.out.map{s,p -> p}).mix(QUERY_PFAM.out.map{s,c,p -> p}).collect()
     JOIN_EVIDENCE(evidenceInputs, file(params.reference), GENE_COUNTS.out.mapping, file(params.paper), file(params.annotations), helper, file("${scripts}/figure4_recovery.py"))
 }

@@ -54,6 +54,24 @@ class StageTests(unittest.TestCase):
             "no eligible peptides",
         )
 
+    def test_pfam_batches_preserve_all_sequences_and_empty_input(self):
+        Path("queries").mkdir()
+        original = {f"P{i}": "MX" * 20 for i in range(2001)}
+        stages.write_fasta("queries/peptides.faa", original)
+        stages.split_pfam("splash", "queries")
+        files = sorted(Path("pfam-chunks").glob("*.faa"))
+        self.assertEqual(len(files), 2)
+        recovered = {k: v for p in files for k, v in stages.fasta(p).items()}
+        self.assertEqual(recovered, original)
+        import shutil
+
+        shutil.rmtree("pfam-chunks")
+        Path("queries/peptides.faa").write_text("")
+        stages.split_pfam("splash", "queries")
+        files = list(Path("pfam-chunks").glob("*.faa"))
+        self.assertEqual(len(files), 1)
+        self.assertEqual(files[0].stat().st_size, 0)
+
     def models(self):
         paths = []
         for i in range(3):

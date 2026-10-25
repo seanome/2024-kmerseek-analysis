@@ -643,14 +643,42 @@ def align(source, queries, genome, binary, cpus):
     save(out / "alignment.json", meta)
 
 
-def pfam(source, queries, reference, binary, cpus):
+def split_pfam(source, queries):
+    """Bound each Pfam task by peptide count and residues without dropping sequences."""
+    from Bio import SeqIO
+
+    out = Path("pfam-chunks")
+    out.mkdir()
+    index, count, residues = 0, 0, 0
+    dest = (out / "chunk-00000.faa").open("w")
+    seen = set()
+    try:
+        with (Path(queries) / "peptides.faa").open() as src:
+            for r in SeqIO.parse(src, "fasta"):
+                if r.id in seen:
+                    raise ValueError("Duplicate peptide ID")
+                seen.add(r.id)
+                if count and (count >= 2000 or residues + len(r.seq) > 500000):
+                    dest.close()
+                    index += 1
+                    count = residues = 0
+                    dest = (out / f"chunk-{index:05d}.faa").open("w")
+                dest.write(f">{r.id}\n{r.seq}\n")
+                count += 1
+                residues += len(r.seq)
+    finally:
+        dest.close()
+
+
+def pfam(source, queries, reference, binary, cpus, chunk="all"):
     """Search query peptides; reference annotations cannot substitute for these calls."""
     out = Path("pfam")
     out.mkdir()
-    query = Path(queries) / "peptides.faa"
+    query = Path(queries) / "peptides.faa" if Path(queries).is_dir() else Path(queries)
     meta = dict(
         source=source,
-        published_path=f"query-pfam/{source}/pfam/domains.domtblout",
+        chunk=chunk,
+        published_path=f"query-pfam/{source}/{chunk}/pfam/domains.domtblout",
         query_sha256=sha(query),
     )
     if not reference:
@@ -859,6 +887,7 @@ if __name__ == "__main__":
             evidence,
             align,
             pfam,
+            split_pfam,
         )
     }
     actions[sys.argv[1]](*sys.argv[2:])
