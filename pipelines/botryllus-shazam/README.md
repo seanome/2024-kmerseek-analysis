@@ -53,7 +53,8 @@ one individual peptide; fragment sequences, membership and coordinates remain sa
 
 Native contigs retain the tool's representative seed and adjusted P. Neither is a
 new contig-level statistical test. The final gene link is exact seed containment;
-full-context alignment and direct query Pfam annotation remain unmeasured.
+full-context alignment and direct query Pfam annotation are separate optional outputs.
+Reference controls validate execution; experimental query results require production completion.
 
 ## Execution and checks
 
@@ -92,9 +93,27 @@ and domain tables are retained; their interpretation is separate from exact seed
 | Native counts, pooled models and both sequence sources | Separate DSL2 processes; tested with synthetic inputs |
 | Translation, target preparation and searches | One versioned protocol; explicit target batches |
 | Gene/paper evidence | Waits for both sources and gene models; preserves missing evidence |
-| Genome alignment and direct query Pfam | Optional processes; reference-backed execution not yet tested |
+| Genome alignment and direct query Pfam | Positive and empty reference controls passed; GTF coordinate equivalence remains unresolved |
 | Fresh downloads and trimming | Existing preparation remains outside this workflow |
 | All-tunicate expansion and app publication | Not run; require validated production outputs |
 
 The original proposed map is preserved at
 `reports/botryllus-shazam/nextflow-plan/metro-plan.svg`.
+
+## Production preflight, 2026-10-25
+
+The current full-graph fixture completed all 127 tasks in job 49521200. Independent
+checks compared 29,459 canonical k-mers across 18 synthetic libraries, six complete
+multiple-testing corrections, and 100 retained gene-evidence rows. This is software
+validation, not Figure 4 reproduction.
+
+Direct genome/Pfam controls passed, but the original GTF does not reconstruct all
+reference sequences. See `reports/botryllus-shazam/production-launch/REFERENCE-CHECKS.md`.
+The production workflow uses only GTF identifiers for gene counts and keeps genome
+alignments separate. No corrected GTF or coordinate-based gene assignments were made.
+
+`production.sbatch` accepts an immutable source directory, a new launch directory,
+a completed largest-library preflight, a verified reference check, and a verified
+fixture. It prepares 64 libraries and explicit target batches, records scheduler
+and command measurements, resolves resource requests, and starts Nextflow under Slurm.
+Existing input files, output directories, and work caches remain intact.
