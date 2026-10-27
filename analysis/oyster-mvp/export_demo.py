@@ -36,6 +36,17 @@ def clean(x):
     return x
 
 
+def scrub(x):
+    """NaN and infinity become null, everywhere in a nested structure."""
+    if isinstance(x, dict):
+        return {k: scrub(v) for k, v in x.items()}
+    if isinstance(x, (list, tuple)):
+        return [scrub(v) for v in x]
+    if hasattr(x, "item") and not isinstance(x, (str, bytes)):
+        x = x.item()
+    return clean(x)
+
+
 def load_annotation(path):
     out = {}
     with open(path) as f:
@@ -254,7 +265,7 @@ def main():
     demo["timing"] = jload(timing) if timing.exists() else None
     stages = root / "timing" / "stages.tsv"
     demo["stages"] = pd.read_csv(stages, sep="\t").to_dict("records") if stages.exists() else None
-    (out / "demo.json").write_text(json.dumps(demo, separators=(",", ":"), allow_nan=False))
+    (out / "demo.json").write_text(json.dumps(scrub(demo), separators=(",", ":"), allow_nan=False))
     print({d: len(b["events"]) for d, b in demo["depths"].items()}, (out / "demo.json").stat().st_size)
 
 
