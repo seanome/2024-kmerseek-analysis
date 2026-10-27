@@ -31,13 +31,17 @@ def write_new(path, data):
     # The completion record is the last file written. Never overwrite a prior record.
     partial = path.with_suffix(path.suffix + ".partial")
     with partial.open("x") as handle:
-        json.dump(data, handle, indent=2)
-        handle.write("\n")
-    # Hard link gives an atomic, no-clobber publication on the same filesystem.
-    import os
+        try:
+            json.dump(data, handle, indent=2)
+            handle.write("\n")
+            handle.flush()
+            # Hard link gives an atomic, no-clobber publication on the same filesystem.
+            import os
 
-    os.link(partial, path)
-    partial.unlink()
+            os.link(partial, path)
+        finally:
+            # Remove our own partial file so a retry sees the original error.
+            partial.unlink(missing_ok=True)
 
 
 def metadata(manifest, role):
