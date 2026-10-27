@@ -31,3 +31,13 @@ Implementation and regression checks are in
 `scripts/botryllus_shazam/nextflow_stages.py`, `test_nextflow_stages.py`, and
 `recover_production_preflight.py`. Resource recovery keeps the larger scheduler peak
 when it exceeds the individual command peak.
+
+## Frozen metadata after Git checkout
+
+Added 2026-10-27 after controller 49525592 failed before submitting tasks.
+Git normalized the sample TSV from CRLF to LF while the frozen design retained
+the original byte hash. Before launching, check the actual archived input against
+that hash. Use `frozen_samples.restore_frozen_samples` to restore line endings only
+when they reproduce the exact expected hash. Write into a new launch input file;
+never change the frozen hash to accept changed labels. Test a changed treatment
+label as a rejection case. Preserve the failed launch for diagnosis.
