@@ -11,7 +11,7 @@ import sys
 
 root, destination = map(Path, sys.argv[1:])
 destination.mkdir()
-workflow = Path(__file__).resolve().parents[2] / "pipelines/botryllus-shazam/main.nf"
+workflow = Path(__file__).resolve().parents[2] / "nextflow-runs/botryllus-shazam/main.nf"
 process = (
     workflow.read_text()
     .split("process COUNT_KMERS {")[1]

@@ -148,7 +148,7 @@ class StageTests(unittest.TestCase):
 
     def test_workflow_copies_do_not_mutate_staged_directories(self):
         workflow = (
-            Path(__file__).resolve().parents[2] / "pipelines/botryllus-shazam/main.nf"
+            Path(__file__).resolve().parents[2] / "nextflow-runs/botryllus-shazam/main.nf"
         )
         commands = [
             line.strip()

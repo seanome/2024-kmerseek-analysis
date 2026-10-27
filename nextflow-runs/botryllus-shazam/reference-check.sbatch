@@ -34,6 +34,6 @@ executor.cpus = 8
 executor.memory = '14 GB'
 EOF
 export NXF_OPTS='-Xms256m -Xmx1g'
-"$SCRATCH/oyster-shazam-20261023/software/nextflow-25.10.4" run "$CODE/pipelines/botryllus-shazam/reference-check.nf" -c "$ROOT/local.config" --positive "$ROOT/positive" --empty "$ROOT/empty" --genome "$GENOME" --pfam_hmm "$SCRATCH/data/pfam/Pfam-A.hmm" --hmmscan /share/software/user/open/hmmer/3.4/bin/hmmscan --outdir "$ROOT/results" -work-dir "$ROOT/work" -ansi-log false
+"$SCRATCH/oyster-shazam-20261023/software/nextflow-25.10.4" run "$CODE/nextflow-runs/botryllus-shazam/reference-check.nf" -c "$ROOT/local.config" --positive "$ROOT/positive" --empty "$ROOT/empty" --genome "$GENOME" --pfam_hmm "$SCRATCH/data/pfam/Pfam-A.hmm" --hmmscan /share/software/user/open/hmmer/3.4/bin/hmmscan --outdir "$ROOT/results" -work-dir "$ROOT/work" -ansi-log false
 printf '%s\n' "$COORDINATE_STATUS" > coordinate-exit.txt
 exit "$COORDINATE_STATUS"

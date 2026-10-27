@@ -13,7 +13,7 @@ import unittest
 class CountTests(unittest.TestCase):
     def test_native_counter_boundaries(self):
         workflow = (
-            Path(__file__).resolve().parents[2] / "pipelines/botryllus-shazam/main.nf"
+            Path(__file__).resolve().parents[2] / "nextflow-runs/botryllus-shazam/main.nf"
         )
         process = (
             workflow.read_text()

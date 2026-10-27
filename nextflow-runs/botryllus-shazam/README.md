@@ -1,4 +1,47 @@
-# Botryllus Shazam Nextflow migration
+# Botryllus PEC: recovered reads to Figure 4 comparisons
+
+```mermaid
+flowchart LR
+  A[64 validated trimmed libraries] --> B[Gene quantification and 31-mer counts]
+  B --> C[Genotype-blocked treatment models]
+  B --> D[SPLASH and DE-kupl sequences]
+  D --> E[Sequence searches, genome alignment and Pfam]
+  C --> F[Tables for Figure 4 comparisons]
+  E --> F
+```
+
+The maintained DSL2 pipeline lives here, following the `nextflow-runs` layout in
+PR 197. Helpers remain in `scripts/botryllus_shazam`; scientific reports stay in
+`reports/botryllus-shazam`. The old `pipelines/botryllus-shazam` path is a compatibility
+symlink. Immutable Sherlock source snapshots and historical results are unchanged.
+
+From this directory in a versioned Sherlock checkout:
+
+- `make test` submits the real-tool fixture inside a 4 GB, one-hour allocation.
+- `make run OUTROOT=$SCRATCH/<new-directory>` submits the 64-library controller.
+  Override `FIXTURE`, `PREFLIGHT`, and `REFERENCE_CHECK` with verified directories.
+- `make watch JOB_ID=<controller-id>` reads one scheduler/log snapshot.
+- `make stop JOB_ID=<controller-id>` sends SIGINT to that allocation.
+- `make resume OUTROOT=$SCRATCH/<existing-directory>` remeasures resources from
+  preserved preflight and run traces, then uses the same work cache and `-resume`.
+
+Like PR 197, the head runs on a compute node and Nextflow submits the individual
+stages. This workflow uses its existing batch controller rather than `scripts/nf-head`:
+that shared helper supplies an account flag and polls more frequently than current
+Sherlock guidance permits. `watch` is a snapshot, not a tmux attachment.
+
+Each launch writes a separate `measured-<job-id>` resource table and resolved config.
+Largest-library counting measured 60.39 GiB at the allocation level, giving a 91 GB
+first request; other libraries scale to 32–91 GB. Counting gets 12 h, gene models
+4 h, and k-mer models 96 h. Other stage defaults remain provisional; see the committed
+production-launch report for measurements and scope. Failed task traces block a
+relaunch until diagnosed. A file lock prevents simultaneous controllers for one launch.
+
+Controller 49525592 failed before any tasks: Git normalized the frozen sample table
+from CRLF to LF. Preparation now restores the exact bytes matching the original
+SHA-256 in a new launch input file. It rejects any content change; labels, contrasts,
+and the frozen design remain unchanged. The historical failed directory is preserved.
+
 
 The DSL2 workflow consumes a validated paired-read manifest. It separates canonical
 31-mer counting, Kallisto quantification, pooling, normalization, each blocked model,

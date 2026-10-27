@@ -1,6 +1,7 @@
 """Prepare a separate 64-library run without changing recovered inputs or old results."""
 
 import csv
+from frozen_samples import restore_frozen_samples
 import gzip
 import json
 import os
@@ -22,6 +23,11 @@ launch.mkdir(exist_ok=False)
 reports = code / "reports/botryllus-shazam"
 inputs = launch / "inputs"
 inputs.mkdir()
+restore_frozen_samples(
+    reports / "samples.tsv",
+    reports / "abundance-design-20261024.json",
+    inputs / "samples.tsv",
+)
 (inputs / "reference-check.json").write_text(
     json.dumps(reference_evidence, indent=2) + "\n"
 )
@@ -96,7 +102,7 @@ with (inputs / "annotations.tsv").open("w") as f:
 params = dict(
     inputs=str(root / "trimmed-inputs.validated.json"),
     design=str(reports / "abundance-design-20261024.json"),
-    samples=str(reports / "samples.tsv"),
+    samples=str(inputs / "samples.tsv"),
     reference=str(root / "references/botznik-transcripts.fa"),
     gtf=str(root / "references/nc_nsi_nf.gtf"),
     targets=str(inputs / "targets.tsv"),

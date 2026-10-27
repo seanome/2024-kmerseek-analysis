@@ -130,7 +130,7 @@ records = json.loads((root / "trimmed-inputs.validated.json").read_text())
 r = max(records, key=lambda r: r["pairs"])
 Path("largest-library.json").write_text(json.dumps(r, indent=2) + "\n")
 block = (
-    (code / "pipelines/botryllus-shazam/main.nf")
+    (code / "nextflow-runs/botryllus-shazam/main.nf")
     .read_text()
     .split("process COUNT_KMERS {", 1)[1]
     .split("process JOIN_KMERS {", 1)[0]
