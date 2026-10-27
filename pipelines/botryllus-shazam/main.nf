@@ -388,7 +388,7 @@ workflow {
     def records = new JsonSlurper().parse(file(params.inputs))
     def design = new JsonSlurper().parse(file(params.design))
     if (records.size() != params.expected_libraries || records.collect{it.run}.unique().size() != records.size()) error 'Incomplete or duplicate validated libraries'
-    def sampleIds = file(params.samples).readLines().drop(1).collect { it.split('\t')[0] }.toSet()
+    def sampleIds = file(params.samples).readLines().drop(1).findAll { it.trim() }.collect { it.split('\t')[0].trim() }.toSet()
     if (sampleIds != records.collect{it.run}.toSet()) error 'Sample metadata and validated libraries differ'
     def sampleHash = java.security.MessageDigest.getInstance('SHA-256').digest(file(params.samples).bytes).encodeHex().toString()
     if (sampleHash != design.samples_sha256) error 'Frozen sample metadata changed'
