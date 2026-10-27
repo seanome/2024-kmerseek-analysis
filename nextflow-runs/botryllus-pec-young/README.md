@@ -107,7 +107,17 @@ earlier STAR run on this genome exists to size from. A task killed by the schedu
 retried twice (`sherlock.config`).
 
 Watch the Nextflow head with `make watch`; stop it with `make stop`. Job ids are in
-`$SCRATCH/botryllus-pec-young/job_ids.txt`.
+`$SCRATCH/botryllus-pec-young/job_ids.txt`. `make run` refuses to submit while any job of
+this run (`pec-young-*` or `nf-botryllus-pec-young`) is queued or running.
+
+### Launch record
+
+`make run` was given twice on 2026-10-27, at 13:41 (jobs 49841823-49841922) and 13:49
+(49843510-49843518). The second round was cancelled. Before the cancel, its
+`splash_prep` task 5 wrote 785 MB to `SRR32233964.fq.gz.part`; the first round had
+already finished `SRR32233964.fq.gz` at 13:47:52, so that file is the first round's and
+the `.part` file is a leftover. Its Nextflow head stopped at once ("Unable to acquire lock
+on session"), so the first run was not touched.
 
 ## Outputs
 
