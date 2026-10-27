@@ -11,6 +11,7 @@
 set -euo pipefail
 : "${PEC_ROOT:?}" "${PEC_CODE:?}"
 cd "$PEC_ROOT"
+mkdir -p logs
 RUN=$(sed -n "$((SLURM_ARRAY_TASK_ID + 1))p" meta/runs.txt)
 [ -n "$RUN" ] || { echo "no run for task $SLURM_ARRAY_TASK_ID"; exit 1; }
 export PATH=$PEC_ROOT/env/bin:$PATH
