@@ -14,7 +14,7 @@ Status: in progress. Results and the report are added as stages finish.
 | path | what |
 |---|---|
 | `handoff/` | the starting package as received on 2026-10-23 (inferred design, capped downloader, first runner). Kept unchanged for provenance. |
-| `design/` | the declared analysis plan and SI-driven design builder; samples.tsv is not committed yet |
+| `design/` | the declared analysis plan and SI-driven design builder; `design/samples.tsv` lists all 64 runs |
 | `environment-pec361.yml` | pinned tools |
 | `pec-tools/` | Rust: six-frame translation with coordinates, and the read simulator for the known-answer control |
 | `control/` | known-answer control design (3,000 parent transcripts, 3,100 sequences including paired isoforms) |
