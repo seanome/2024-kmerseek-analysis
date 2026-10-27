@@ -1,12 +1,15 @@
 """Keep valid zero-match Branchwater output distinct from incomplete searches."""
 import csv
 import gzip
+import re
 
 FIELDS='query_name,query_md5,match_name,containment,intersect_hashes,ksize,scaled,moltype,match_md5,jaccard,max_containment,query_containment_ani'.split(',')
 
 
 def save_matches(source,destination,accession,log,queries):
-    if f'DONE. Processed {queries} search sigs' not in log.read_text():
+    # Accept the count with or without thousands separators.
+    done={int(n.replace(',','')) for n in re.findall(r'DONE\. Processed ([\d,]+) search sigs',log.read_text())}
+    if queries not in done:
         raise ValueError('Search did not confirm all query signatures processed')
     names=set();count=0
     with source.open() as src,gzip.open(destination,'wt') as saved:
