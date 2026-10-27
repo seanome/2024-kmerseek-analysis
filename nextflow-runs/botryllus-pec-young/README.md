@@ -60,7 +60,7 @@ trimming check (`inputs/trimmed-inputs.validated.json`). `make_design.py` turns 
 | Setting | Value | Why |
 |---|---|---|
 | rnaseq `skip_trimming` | true | reads were trimmed by Trim Galore in PR 203 |
-| rnaseq `strandedness` | see below | Salmon cannot work out the strand from SRR32233927's 636 pairs, which stopped the PR 203 run |
+| rnaseq `strandedness` | unstranded, every library | measured (below); left on `auto`, Salmon cannot work out the strand from SRR32233927's 636 pairs, which stopped the PR 203 run |
 | rnaseq `min_mapped_reads` | 0 | keep every library (default drops libraries under 5% aligned) |
 | rnaseq `skip_deseq2_qc` | true | its DESeq2 step fails when no gene has a count in every library |
 | rnaseq `skip_biotype_qc` | true | the FullNames GTF has no `gene_biotype` |
@@ -70,6 +70,22 @@ trimming check (`inputs/trimmed-inputs.validated.json`). `make_design.py` turns 
 | SPLASH `--pvals_correction_col_name` | `Cjs_0_pval` | corrects the p-value for those weights |
 
 All other settings are the pipelines' defaults.
+
+### Strand of read 1: unstranded
+
+`strand-check/strand_check.sbatch` (Sherlock job 49810662, 2026-10-27) ran Salmon's
+library-type detection on the first 1 million read pairs of the three deepest young
+libraries, against an index of the FullNames transcripts. In all three, read 1 lies on the
+gene's strand for half of the fragments (`strand-check/lib_format_counts.tsv`):
+
+| Library | Window | Fragments placed | Read 1 on the gene's strand | Salmon's call |
+|---|---|---:|---:|---|
+| SRR32233964 | 2 h | 460,804 | 49.9% | IU (unstranded, paired) |
+| SRR32233978 | 24 h | 472,715 | 49.9% | IU |
+| SRR32233986 | 24 h | 516,727 | 50.0% | IU |
+
+A stranded library would be near 0% or 100%. The germline libraries from the same lab
+were unstranded too (`nextflow-runs/botryllus-rnaseq-preprocess`).
 
 ## Run
 
