@@ -1,6 +1,6 @@
 #!/bin/bash
 #SBATCH -J expr-indexer-build
-#SBATCH -p normal
+#SBATCH -p hns
 #SBATCH -t 1:00:00
 #SBATCH -c 8
 #SBATCH --mem 16G
