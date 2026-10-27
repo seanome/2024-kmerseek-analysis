@@ -1,0 +1,62 @@
+codon	amino_acid	rule	the_four_codons
+AAN	X	one_N_ambiguous	AAA=K,AAC=N,AAG=K,AAT=N
+ACN	T	one_N_resolved	ACA=T,ACC=T,ACG=T,ACT=T
+AGN	X	one_N_ambiguous	AGA=R,AGC=S,AGG=R,AGT=S
+ATN	X	one_N_ambiguous	ATA=I,ATC=I,ATG=M,ATT=I
+ANA	X	one_N_ambiguous	AAA=K,ACA=T,AGA=R,ATA=I
+ANC	X	one_N_ambiguous	AAC=N,ACC=T,AGC=S,ATC=I
+ANG	X	one_N_ambiguous	AAG=K,ACG=T,AGG=R,ATG=M
+ANT	X	one_N_ambiguous	AAT=N,ACT=T,AGT=S,ATT=I
+ANN	X	two_or_more_N	
+CAN	X	one_N_ambiguous	CAA=Q,CAC=H,CAG=Q,CAT=H
+CCN	P	one_N_resolved	CCA=P,CCC=P,CCG=P,CCT=P
+CGN	R	one_N_resolved	CGA=R,CGC=R,CGG=R,CGT=R
+CTN	L	one_N_resolved	CTA=L,CTC=L,CTG=L,CTT=L
+CNA	X	one_N_ambiguous	CAA=Q,CCA=P,CGA=R,CTA=L
+CNC	X	one_N_ambiguous	CAC=H,CCC=P,CGC=R,CTC=L
+CNG	X	one_N_ambiguous	CAG=Q,CCG=P,CGG=R,CTG=L
+CNT	X	one_N_ambiguous	CAT=H,CCT=P,CGT=R,CTT=L
+CNN	X	two_or_more_N	
+GAN	X	one_N_ambiguous	GAA=E,GAC=D,GAG=E,GAT=D
+GCN	A	one_N_resolved	GCA=A,GCC=A,GCG=A,GCT=A
+GGN	G	one_N_resolved	GGA=G,GGC=G,GGG=G,GGT=G
+GTN	V	one_N_resolved	GTA=V,GTC=V,GTG=V,GTT=V
+GNA	X	one_N_ambiguous	GAA=E,GCA=A,GGA=G,GTA=V
+GNC	X	one_N_ambiguous	GAC=D,GCC=A,GGC=G,GTC=V
+GNG	X	one_N_ambiguous	GAG=E,GCG=A,GGG=G,GTG=V
+GNT	X	one_N_ambiguous	GAT=D,GCT=A,GGT=G,GTT=V
+GNN	X	two_or_more_N	
+TAN	X	one_N_could_be_stop	TAA=*,TAC=Y,TAG=*,TAT=Y
+TCN	S	one_N_resolved	TCA=S,TCC=S,TCG=S,TCT=S
+TGN	X	one_N_could_be_stop	TGA=*,TGC=C,TGG=W,TGT=C
+TTN	X	one_N_ambiguous	TTA=L,TTC=F,TTG=L,TTT=F
+TNA	X	one_N_could_be_stop	TAA=*,TCA=S,TGA=*,TTA=L
+TNC	X	one_N_ambiguous	TAC=Y,TCC=S,TGC=C,TTC=F
+TNG	X	one_N_could_be_stop	TAG=*,TCG=S,TGG=W,TTG=L
+TNT	X	one_N_ambiguous	TAT=Y,TCT=S,TGT=C,TTT=F
+TNN	X	two_or_more_N	
+NAA	X	one_N_could_be_stop	AAA=K,CAA=Q,GAA=E,TAA=*
+NAC	X	one_N_ambiguous	AAC=N,CAC=H,GAC=D,TAC=Y
+NAG	X	one_N_could_be_stop	AAG=K,CAG=Q,GAG=E,TAG=*
+NAT	X	one_N_ambiguous	AAT=N,CAT=H,GAT=D,TAT=Y
+NAN	X	two_or_more_N	
+NCA	X	one_N_ambiguous	ACA=T,CCA=P,GCA=A,TCA=S
+NCC	X	one_N_ambiguous	ACC=T,CCC=P,GCC=A,TCC=S
+NCG	X	one_N_ambiguous	ACG=T,CCG=P,GCG=A,TCG=S
+NCT	X	one_N_ambiguous	ACT=T,CCT=P,GCT=A,TCT=S
+NCN	X	two_or_more_N	
+NGA	X	one_N_could_be_stop	AGA=R,CGA=R,GGA=G,TGA=*
+NGC	X	one_N_ambiguous	AGC=S,CGC=R,GGC=G,TGC=C
+NGG	X	one_N_ambiguous	AGG=R,CGG=R,GGG=G,TGG=W
+NGT	X	one_N_ambiguous	AGT=S,CGT=R,GGT=G,TGT=C
+NGN	X	two_or_more_N	
+NTA	X	one_N_ambiguous	ATA=I,CTA=L,GTA=V,TTA=L
+NTC	X	one_N_ambiguous	ATC=I,CTC=L,GTC=V,TTC=F
+NTG	X	one_N_ambiguous	ATG=M,CTG=L,GTG=V,TTG=L
+NTT	X	one_N_ambiguous	ATT=I,CTT=L,GTT=V,TTT=F
+NTN	X	two_or_more_N	
+NNA	X	two_or_more_N	
+NNC	X	two_or_more_N	
+NNG	X	two_or_more_N	
+NNT	X	two_or_more_N	
+NNN	X	two_or_more_N	
