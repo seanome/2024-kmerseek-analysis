@@ -56,6 +56,22 @@ reached 173 of the 20,448 (`botryllus_kmerseek_dark_gain.json`); those 173 are s
   GSE99963, GSE28998, all arrays); GSE104079, GSE120862, GSE83578, GSE111555 and
   GSE144304 are not.
 
+## Sizing test on Sherlock, 2026-10-27 (array job 49855725)
+
+Four runs of `runs_to_index.tsv` were sketched with every alphabet at scaled = 1 (every
+k-mer hash kept), 8 cores, 64 GB.
+
+| Run | FASTQ (both files) | Download | Sketch file | Result |
+|---|---:|---:|---:|---|
+| SRR32233927 | 97 KB | 9 s | 7.7 MB | done, 6 s |
+| SRR32233950 | 50 KB | 15 s | 5.9 MB | done, 6 s |
+| SRR32233988 | 144 KB | 10 s | 14.8 MB | done, 6 s |
+| SRR32233928 | 1.72 GB | 42 min (0.59-0.83 MB/s per file) | 21.9 GB | sketch written in 45 min (3 h 5 min CPU); the check that counts its signatures then ran out of memory on the 21.9 GB file |
+
+At that ratio, the 64 paper runs (78.0 GB of FASTQ by ENA's file sizes) would make about
+1 TB of sketches, and all 516 Botryllus runs about 16 TB. The paper's runs are 78.0 GB by
+ENA; the 50.2 GB in the table above is SRA's size field, which counts something smaller.
+
 ## Measured speeds (`speed.tsv`)
 
 | Where | Download from ENA, one connection | 810.6 GB at that speed |
