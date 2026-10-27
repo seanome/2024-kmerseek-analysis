@@ -1,0 +1,16 @@
+# nf-core/differentialabundance 2.0.0 with its rnaseq profile: DESeq2, treated vs control
+# within each of six time windows, colony as a blocking factor. One model is fitted to all
+# 52 young libraries (design ~ colony + group, group = window and treatment), so windows
+# with 2 or 3 libraries a side share the variance estimate of the larger ones.
+# input (samples.csv), contrasts (contrasts.csv), matrix, feature_length_matrix and outdir
+# are given on the command line by run_pipelines.sh, as absolute paths.
+
+study_name: botryllus_pec_young
+observations_id_col: sample
+gtf: /home/groups/ayeletv/Index_Genome_New_April2024/ReferenceFiles/Annotated_Merge_Botryllus.sofMask_CorrectedNames_FullNames.gtf
+features_metadata_cols: gene_id,gene_name
+
+# DESeq2's default size factors (median of ratios) use only genes counted in every library
+# and stop with an error when there are none. Libraries with a few hundred read pairs make
+# that likely, so size factors use DESeq2's "poscounts" estimator, which skips the zeros.
+deseq2_sf_type: poscounts

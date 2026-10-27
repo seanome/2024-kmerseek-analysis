@@ -1,0 +1,25 @@
+# nf-core/rnaseq 3.27.0: align the young-colony PEC libraries to the April 2024 Botryllus
+# genome with STAR and count reads per gene with Salmon (the default star_salmon route).
+# input and outdir are given on the command line by the Makefile.
+
+# IMPORTANT_NOTE.txt next to these files names the FullNames annotation as the current one.
+# Same pair as the germline pre-processing run (nextflow-runs/botryllus-rnaseq-preprocess).
+fasta: /home/groups/ayeletv/Index_Genome_New_April2024/ReferenceFiles/final_purged_primary.fasta
+gtf: /home/groups/ayeletv/Index_Genome_New_April2024/ReferenceFiles/Annotated_Merge_Botryllus.sofMask_CorrectedNames_FullNames.gtf
+save_reference: true
+
+# The reads were already trimmed with Trim Galore by the PR 203 run, from the full SRA
+# downloads; every library's input pair count equals its SRA read count.
+skip_trimming: true
+
+# Keep every library. By default a library with under 5% of reads aligned is dropped from
+# counting; several libraries here have only a few hundred read pairs.
+min_mapped_reads: 0
+
+# The pipeline's own DESeq2 quality-control step fails when no gene has a count in every
+# library, which the libraries with a few hundred reads cause. Differential expression is
+# done by nf-core/differentialabundance afterwards, with its own settings.
+skip_deseq2_qc: true
+
+# The FullNames GTF has no gene_biotype attribute.
+skip_biotype_qc: true
