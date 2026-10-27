@@ -2,7 +2,7 @@ import json, re, sys, datetime
 
 d = json.load(open(sys.argv[1]))
 WHAT = json.load(open(sys.argv[2])) if len(sys.argv) > 2 else {}
-HUMAN = json.load(open("human_reviews.json"))
+HUMAN = json.load(open("data/2026-W43_human_reviews.json"))
 ORDER = ["seanome/kmerseek", "seanome/2024-kmerseek-analysis"]
 
 
