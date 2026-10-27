@@ -24,7 +24,7 @@ for repo, r in d["repos"].items():
         ev = human[f"{repo}#{p['number']}"]
         if not ev:
             rv[review[0]] += 1
-        elif p["last_commit_at"] > ev[-1][0]:
+        elif p["last_commit_at"] and p["last_commit_at"] > ev[-1][0]:
             rv[review[1]] += 1
         else:
             rv[review[2]] += 1
