@@ -32,8 +32,8 @@ for u in "${urls[@]}"; do
     t=$(date +%s); ok=0
     for attempt in 1 2 3 4 5; do
         # resume a partial file; give up on a transfer that stalls below 1 byte/s for 60 s
-        if err=$(curl -sS -L -C - --retry 10 --retry-all-errors --speed-limit 1 --speed-time 60 -o "$f" "$u" 2>&1); then ok=1; break; fi
-        sleep $((attempt * 30))
+        if err=$(curl -sS -L -C - --retry 10 --speed-limit 1 --speed-time 60 -o "$f" "$u" 2>&1); then ok=1; break; fi
+        echo "$acc attempt $attempt: $err" >&2; sleep $((attempt * 30))
     done
     if [ $ok -ne 1 ] || ! gzip -t "$f" 2>/dev/null; then
         printf '%s\t%s\t-\t%s\t%s\n' "$acc" "$u" $(( $(date +%s) - t )) "download failed: ${err:-gzip -t failed}" >> "$work/downloads/$acc.tsv"
