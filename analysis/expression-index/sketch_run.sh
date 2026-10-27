@@ -30,7 +30,10 @@ for u in "${urls[@]}"; do
     case $u in http*) ;; *) u="https://$u";; esac
     f=$work/fastq/$(basename "$u")
     t=$(date +%s); ok=0
+    # a complete file from an earlier attempt (it passes gzip -t; a partial one does not) is reused
+    if [ -s "$f" ] && gzip -t "$f" 2>/dev/null; then ok=1; err="reused"; fi
     for attempt in 1 2 3 4 5; do
+        [ $ok -eq 1 ] && break
         # resume a partial file; give up on a transfer that stalls below 1 byte/s for 60 s
         if err=$(curl -sS -L -C - --retry 10 --speed-limit 1 --speed-time 60 -o "$f" "$u" 2>&1); then ok=1; break; fi
         echo "$acc attempt $attempt: $err" >&2; sleep $((attempt * 30))

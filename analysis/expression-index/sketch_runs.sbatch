@@ -10,5 +10,7 @@
 set -uo pipefail
 work=$1
 here=/scratch/users/olgabot/2024-kmerseek-analysis-expression-index/analysis/expression-index
+# the indexer links the libstdc++ of the gcc it was built with (build_sherlock.sbatch)
+module load gcc/14.2.0
 export RAYON_NUM_THREADS=$SLURM_CPUS_PER_TASK
 "$here/sketch_run.sh" "$SLURM_ARRAY_TASK_ID" "$here/runs_to_index.tsv" "$work"
