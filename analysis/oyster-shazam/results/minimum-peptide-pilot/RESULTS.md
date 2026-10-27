@@ -1,5 +1,7 @@
 # Minimum 20-aa stop-free stretch pilot
 
+> Superseded. This pilot splits at stop and X with a 20-aa minimum, which is not the current rule (split only at stops, keep X, at least 30 aa; see `HANDOFF-20261025.md`). Do not compare its numbers with the corrected pilot table in `results/migration-20261025/STATUS.md`.
+
 1000 systematic DE contigs,1000 systematic first-batch SPLASH extensions; entire small public run
 
 Both arms split all six frames at stop/X. Reference matching requires at least one shared sampled hash; it does not establish function. DNA was not changed.
