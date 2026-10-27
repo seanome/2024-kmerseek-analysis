@@ -6,10 +6,10 @@ ME = "olgabot"
 d = json.load(open("data/2026-W43_prs.json"))
 env = dict(os.environ, GH_PAGER="cat")
 def gh(path):
-    out = subprocess.run(["gh", "api", path, "--paginate"], capture_output=True, text=True, env=env)
+    out = subprocess.run(["gh", "api", path, "--paginate", "--slurp"], capture_output=True, text=True, env=env)
     if out.returncode: raise SystemExit(out.stderr)
-    txt = out.stdout.replace("][", ",")
-    return json.loads(txt) if txt.strip() else []
+    pages = json.loads(out.stdout) if out.stdout.strip() else []
+    return [c for page in pages for c in page]
 def one(repo, n):
     ev = []
     for path, tkey in ((f"repos/{repo}/issues/{n}/comments?per_page=100", "created_at"),
