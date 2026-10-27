@@ -1,5 +1,7 @@
 # Whole-library oyster analysis
 
+Latest verified counts are in `results/full-depth-extension-progress.json`. The dated paragraphs below are older snapshots.
+
 The primary analysis uses every original paired record from all six experimental libraries. The first-million-pair results are a deterministic prefix pilot, not a full-depth paper comparison. These pilot results remain separate.
 
 On 2026-10-23, all six full-library trimming completion records report 153,671,701 input pairs and 153,628,178 retained pairs. Each retained count independently agrees with the completed full-depth baseline aggregation record. The compact evidence is `full-depth-status.json`; original records are under `$SCRATCH/oyster-mvp-20261023/trimmed/full` and `baseline/full/aggregation.json`. No new full-file recount was performed for this check.

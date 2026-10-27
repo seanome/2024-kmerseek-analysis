@@ -1,5 +1,7 @@
 # Public bivalve indexing, 2026-10-23
 
+Latest verified counts are in `results/public-archive-progress.json`. The dated paragraphs below are older snapshots.
+
 The complete dated inventory contains 17,623 public bivalve RNA-seq runs. Of those, 17,442 list ENA FASTQs and 181 need an alternate retrieval route. Listed FASTQs total 57.2 TB. Inventory completion is not indexing completion.
 
 Full-archive indexing had not started when Olga asked for progress. The six-library index is only a discovery-study check. It cannot supply public archive occurrence results.
