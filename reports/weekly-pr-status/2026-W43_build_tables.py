@@ -133,6 +133,8 @@ for repo in ORDER:
         p = op[n]
         rs = " ".join(x.replace("**", "") for x in reasons(repo, p))
         todo.append(f"- [ ] {link(repo, n)} {what(repo, p)}: {linkify(repo, rs)}")
+    listed = sum(len(list(dfs(root, 0))) for root in stacked) + len(rest)
+    assert listed == len(op), f"{repo}: {listed} to-do entries for {len(op)} open PRs"
 
 open("tables.md", "w").write("\n".join(out) + "\n")
 open("todo.md", "w").write("\n".join(todo) + "\n")
