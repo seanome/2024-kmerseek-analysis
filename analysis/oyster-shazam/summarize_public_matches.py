@@ -43,7 +43,8 @@ def main():
                     if not len(sig.minhash.downsample(scaled=100)):empty100.add(sig.name)
                 if len(names)!=v['extended_records']:raise ValueError('Signature count mismatch')
                 for scale in (10,100):
-                    s=next(s for s in v['searches'] if s['moltype']==mol and s['scaled']==scale)
+                    s=next((s for s in v['searches'] if s['moltype']==mol and s['scaled']==scale),None)
+                    if s is None:raise ValueError(f'Batch lacks the scaled {scale} {mol} search; rerun search_extended.py with --scales 10 100')
                     if s['queries']!=len(names) or s['empty_sketches']!=len(empty10 if scale==10 else empty100):raise ValueError('Query coverage mismatch')
                     csvpath=batch/s['output']
                     if sha(csvpath)!=s['output_sha256']:raise ValueError('Search result changed')
