@@ -37,6 +37,7 @@ with tempfile.TemporaryDirectory() as temp:
     hits=len(unique&target);expected=hits/len(unique)
     assert int(row['unique_words'])==len(unique) and int(row['reference_hits'])==hits,(alphabet,policy,row)
     assert abs(float(row['membership_fraction'])-expected)<1e-8
+    assert row['status']==('reference_supported' if hits>0 and expected>=(0.8 if alphabet=='hp' else 0.5) else 'unclassified'),(alphabet,policy,row)
     checks+=1
    threaded=root/f'{alphabet}-{policy}-threaded.fa'
    run('translate','-i',index,source,'--stop-policy',policy,'--peptides',threaded,'--threads',4)
