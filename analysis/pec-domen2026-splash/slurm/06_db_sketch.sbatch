@@ -22,7 +22,12 @@ for db in proteome swissprot botznik; do
     swissprot) src=uniprot_sprot.fasta.gz; pre=SPR;;
     botznik)   src=botznik_proteins.fa; pre=BZP;;
   esac
-  [ -s $db.faa ] || python "$PEC_CODE/scripts/stable_ids.py" $src $pre $db.faa $db.id_map.tsv
+  # write to .part files and rename only on success, so a killed job is redone, not trusted
+  if [ ! -e $db.ids.done ]; then
+    python "$PEC_CODE/scripts/stable_ids.py" $src $pre $db.faa.part $db.id_map.tsv.part
+    mv $db.faa.part $db.faa && mv $db.id_map.tsv.part $db.id_map.tsv
+    touch $db.ids.done
+  fi
   if [ ! -e $db.sketch.done ]; then
     printf 'name,genome_filename,protein_filename\n%s,,%s\n' $db $db.faa > $db.manysketch.csv
     /usr/bin/time -v -o $db.manysketch.time sourmash scripts manysketch $db.manysketch.csv --singleton \
