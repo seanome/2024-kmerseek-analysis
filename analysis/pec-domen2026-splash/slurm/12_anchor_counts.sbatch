@@ -5,7 +5,7 @@
 #SBATCH --output=%x.%j.out
 # Anchor counts per sample for every tested anchor, from the SATC bins, then PyDESeq2.
 set -euo pipefail
-: "${PEC_ROOT:?}" "${CONTRAST:?}"
+: "${PEC_ROOT:?}" "${PEC_CODE:?}" "${CONTRAST:?}"
 D=$PEC_ROOT/contrasts/$CONTRAST
 cd "$D"
 export PATH=$PEC_ROOT/env/bin:$PATH
