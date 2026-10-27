@@ -5,8 +5,11 @@ bit score among proteins whose best MMseqs2 hit (against Swiss-Prot with Ascidia
 removed) has a description of the stated kind; ties go to the protein name, alphabetically.
 
   everywhere (2)
-    one cytoplasmic ribosomal protein: description starts "40S ribosomal protein" or
-    "60S ribosomal protein";
+    one cytoplasmic ribosomal protein: description is "Small ribosomal subunit protein eS<n>"
+    or "Large ribosomal subunit protein eL<n>" (UniProt's current names; the e families
+    exist only in the eukaryotic cytoplasmic ribosome). The first version of this rule
+    looked for "40S/60S ribosomal protein", names Swiss-Prot no longer uses, and found
+    none; it was changed before any sample was indexed.
     one cytoplasmic actin: description starts "Actin, cytoplasmic".
   Botryllus only (2)
     no row at any E-value from MMseqs2, phmmer or jackhmmer; the two longest such
@@ -44,7 +47,7 @@ def main(summary, out):
     d = pl.col("mmseqs2_best_description")
     picks = [
         ("everywhere", "cytoplasmic ribosomal protein",
-         top(t, d.str.starts_with("40S ribosomal protein") | d.str.starts_with("60S ribosomal protein"))),
+         top(t, d.str.contains(r"^(Small|Large) ribosomal subunit protein e[SL]\d+$"))),
         ("everywhere", "cytoplasmic actin", top(t, d.str.starts_with("Actin, cytoplasmic"))),
         ("Botryllus only", "no hit from any tool at any E-value",
          t.filter((pl.col("mmseqs2_rows") == 0) & (pl.col("phmmer_rows") == 0) & (pl.col("jackhmmer_rows") == 0))
