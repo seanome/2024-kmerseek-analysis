@@ -16,6 +16,19 @@ flowchart LR
   F --> Q
 ```
 
+## Dark proteins (`dark.txt`)
+
+`dark.txt` lists 20,448 of the 45,339 *Botryllus* proteins (45.1%): those with no hit at
+E <= 0.001 from MMseqs2, phmmer or jackhmmer against Swiss-Prot with all Ascidiacea
+removed. It is copied from the invertebrate-dark-set pipeline's output on Sherlock
+(`/scratch/users/olgabot/invertebrate-dark-set/results/botryllus/botryllus_dark_set.parquet`,
+2026-09-13). Names follow the pipeline's FASTA, where a name used more than once in the
+proteome gets `.1`, `.2`; 925 of the dark names carry such a number.
+
+kmerseek is not part of that rule. The same pipeline's kmerseek protein20 k = 10 search
+reached 173 of the 20,448 (`botryllus_kmerseek_dark_gain.json`); those 173 are still in
+`dark.txt`.
+
 ## Runs to index
 
 | Organism | Runs | GB (SRA) | Reads (millions) | Largest run, GB | Where the accessions came from |
