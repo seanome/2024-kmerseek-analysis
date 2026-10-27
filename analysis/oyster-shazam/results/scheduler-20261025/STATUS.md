@@ -103,7 +103,7 @@ also downloaded into this local results directory. Large archives stay outside
 Git; compact manifests, traces and figures are committed. Shared Scratch remains
 temporary storage. The original workers and their result directories were untouched.
 
-The launch helper now derives requests from successful grouped-build traces.
+The launch helper derives requests from the successful grouped-build traces; only one such trace exists so far (job 49525575).
 For this same 380,867-query scope it produces 4 CPUs, 4 GB and 20 minutes, using
 a memory margin and runtime margin. `future-resources.config` is a generated
 request for future work, not a submitted job or a replacement for the measured
