@@ -2,6 +2,7 @@
 
 import argparse
 import csv
+import hashlib
 import json
 import math
 from pathlib import Path
@@ -64,7 +65,7 @@ def hours(value):
     )
 
 
-def measure(traces):
+def measure(traces, reviews=()):
     result = {
         name: dict(
             memory_gb=m,
@@ -75,7 +76,9 @@ def measure(traces):
         )
         for name, (m, t) in DEFAULTS.items()
     }
+    used_reviews = set()
     for trace in traces:
+        fingerprint = hashlib.sha256(Path(trace).read_bytes()).hexdigest()
         with Path(trace).open() as f:
             for row in csv.DictReader(f, delimiter="\t"):
                 process = row["name"].split(" (")[0].split(":")[-1]
@@ -105,29 +108,61 @@ def measure(traces):
                         "default or 1.5 times measured peak, whichever is larger; inspect input scale"
                     )
                 elif row["status"] == "FAILED":
-                    item["failures"].append(row)
+                    matches = [
+                        (i, review)
+                        for i, review in enumerate(reviews)
+                        if review["trace_sha256"] == fingerprint
+                        and str(review["task_id"]) == row.get("task_id")
+                    ]
+                    if len(matches) > 1:
+                        raise ValueError("Duplicate failure reviews")
+                    reviewed_oom = False
+                    if matches:
+                        i, review = matches[0]
+                        log = Path(row["workdir"]) / ".command.log"
+                        if (
+                            review["cause"] != "oom"
+                            or review["name"] != row["name"]
+                            or "oom_kill event" not in log.read_text()
+                        ):
+                            raise ValueError(
+                                "Failure review lacks matching OOM evidence"
+                            )
+                        used_reviews.add(i)
+                        reviewed_oom = True
+                        item.setdefault("reviewed_failures", []).append(
+                            dict(row=row, review=review)
+                        )
+                    else:
+                        item["failures"].append(row)
                     # Requested resource columns must be in new traces. Unknown failures block launch.
                     requested = memory_gb(row.get("memory", ""))
                     requested_time = hours(row.get("time", ""))
+                    if reviewed_oom and requested is None:
+                        raise ValueError("Reviewed OOM has no memory request")
                     if requested is not None:
                         item["memory_gb"] = max(
                             item["memory_gb"], math.ceil(2 * requested)
                         )
-                    if requested_time is not None:
+                    if requested_time is not None and not reviewed_oom:
                         item["time_hours"] = max(
                             item["time_hours"], math.ceil(2 * requested_time)
                         )
+    if used_reviews != set(range(len(reviews))):
+        raise ValueError("Failure review does not match supplied traces")
     return result
 
 
 if __name__ == "__main__":
     p = argparse.ArgumentParser()
     p.add_argument("--output", type=Path, required=True)
+    p.add_argument("--failure-review", type=Path)
     p.add_argument("--libraries", type=Path)
     p.add_argument("--sizing-library", type=Path)
     p.add_argument("traces", nargs="*", type=Path)
     a = p.parse_args()
-    result = measure(a.traces)
+    reviews = json.loads(a.failure_review.read_text()) if a.failure_review else []
+    result = measure(a.traces, reviews)
     if bool(a.libraries) != bool(a.sizing_library):
         raise ValueError("Both library manifest and sizing library are required")
     if a.libraries:

@@ -2,7 +2,7 @@
 #SBATCH --job-name=botryllus-64-nextflow
 #SBATCH --partition=hns
 #SBATCH --cpus-per-task=2
-#SBATCH --mem=16G
+#SBATCH --mem=24G
 #SBATCH --time=7-00:00:00
 #SBATCH --qos=normal
 set -euo pipefail
@@ -12,7 +12,7 @@ LAUNCH=${2:?prepared launch directory}
 exec 9>"${LAUNCH}.controller.lock"
 flock -n 9 || { echo "Another controller owns $LAUNCH" >&2; exit 1; }
 ml devel java/21.0.4
-export NXF_OPTS='-Xms1g -Xmx10g'
+export NXF_OPTS='-Xms1g -Xmx16g'
 if test "$#" -eq 5; then
     PREFLIGHT=$3
     REFERENCE_CHECK=$4
@@ -33,10 +33,12 @@ fi
 # Keep every resource prediction and include this launch's completed task history.
 export RESOURCE_DIR="$LAUNCH/measured-${SLURM_JOB_ID}"
 shopt -s nullglob
+REVIEW_ARGS=()
+if test -n "${FAILURE_REVIEW:-}"; then REVIEW_ARGS=(--failure-review "$FAILURE_REVIEW"); fi
 TRACES=("$LAUNCH/preflight-trace.tsv" "$LAUNCH"/results/diagnostics/trace-*.tsv)
-bash "$CODE/nextflow-runs/botryllus-shazam/prepare-launch.sh" "$LAUNCH" --libraries "$SCRATCH/botryllus-shazam-PEC-20261023/trimmed-inputs.validated.json" --sizing-library "$PREFLIGHT/largest-library.json" "${TRACES[@]}"
+bash "$CODE/nextflow-runs/botryllus-shazam/prepare-launch.sh" "$LAUNCH" --libraries "$SCRATCH/botryllus-shazam-PEC-20261023/trimmed-inputs.validated.json" --sizing-library "$PREFLIGHT/largest-library.json" "${REVIEW_ARGS[@]}" "${TRACES[@]}"
 
 cd "$LAUNCH"
 test -s params.json
 test -s "$RESOURCE_DIR/resources.config"
-"$SCRATCH/oyster-shazam-20261023/software/nextflow-25.10.4" run "$CODE/nextflow-runs/botryllus-shazam" -profile sherlock -c "$RESOURCE_DIR/resources.config" -params-file "$LAUNCH/params.json" -work-dir "$LAUNCH/work" -ansi-log false -resume
+"$SCRATCH/oyster-shazam-20261023/software/nextflow-25.10.4" run "${WORKFLOW_CODE:-$CODE}/nextflow-runs/botryllus-shazam" -profile sherlock -c "$RESOURCE_DIR/resources.config" -params-file "$LAUNCH/params.json" -work-dir "$LAUNCH/work" -ansi-log false -resume
