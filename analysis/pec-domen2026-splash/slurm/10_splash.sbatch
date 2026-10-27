@@ -18,8 +18,10 @@ rm -rf splash_out && mkdir splash_out && cd splash_out
 TMP=${L_SCRATCH:-$D/splash_out}/splash_tmp_$SLURM_JOB_ID
 rm -rf "$TMP"  # SPLASH makes this folder itself and stops if it exists
 N=$SLURM_CPUS_PER_TASK
-MEM_GB=$(( SLURM_MEM_PER_NODE / 1024 ))
-KMC_GB=$(( MEM_GB / 3 ))
+# SLURM_MEM_PER_NODE is unset with --mem-per-cpu or a partition default; fall back to per-cpu memory
+MEM_MB_TOTAL=${SLURM_MEM_PER_NODE:-$(( ${SLURM_MEM_PER_CPU:-4096} * ${SLURM_CPUS_PER_TASK:-1} ))}
+MEM_GB=$(( MEM_MB_TOTAL / 1024 ))
+KMC_GB=$(( MEM_GB / 3 > 1 ? MEM_GB / 3 : 1 ))
 /usr/bin/time -v -o ../splash.time "$PEC_ROOT/splash/splash" \
   --bin_path "$PEC_ROOT/splash" \
   --Cjs_samplesheet ../cjs.csv \

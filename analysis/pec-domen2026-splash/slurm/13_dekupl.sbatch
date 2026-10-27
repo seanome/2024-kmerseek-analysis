@@ -32,7 +32,9 @@ IMG=$PEC_ROOT/images/dekupl-run_1.3.5.sif
 # DE-kupl's own code is not changed.
 export APPTAINERENV_R_LIBS=$PEC_ROOT/Rlib_dekupl
 [ -d "$APPTAINERENV_R_LIBS/pryr" ] || { echo "pryr side library missing"; exit 2; }
-MEM_MB=$(( SLURM_MEM_PER_NODE * 9 / 10 ))
+# SLURM_MEM_PER_NODE is unset with --mem-per-cpu or a partition default; fall back to per-cpu memory
+MEM_MB_TOTAL=${SLURM_MEM_PER_NODE:-$(( ${SLURM_MEM_PER_CPU:-4096} * ${SLURM_CPUS_PER_TASK:-1} ))}
+MEM_MB=$(( MEM_MB_TOTAL * 9 / 10 ))
 /usr/bin/time -v -o ../$W.time apptainer run --bind /scratch --bind "$TMP" "$IMG" \
   --configfile config.json -j "$SLURM_CPUS_PER_TASK" --resources ram=$MEM_MB -p > ../$W.log 2>&1
 rm -rf "$TMP"
