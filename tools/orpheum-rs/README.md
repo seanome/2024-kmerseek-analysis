@@ -49,7 +49,7 @@ The nucleotide complexity screen uses adjacent-base changes divided by read leng
 
 ## Checks and measurements
 
-Six unit tests check codons, reverse-frame translation, residue classes, stop boundaries, membership and the distinction between word/frame stop policies. An independent Python exact-set calculation checks 1,216 frame scores across all three alphabets and both policies. It also checks gzip members, malformed FASTQ, corrupted indexes, refusal to overwrite indexes and thread-deterministic peptide output.
+Six unit tests check codons, reverse-frame translation, residue classes, stop boundaries, membership and the distinction between word/frame stop policies. An independent Python exact-set calculation checks every scored frame (the script prints the count) across all three alphabets and both policies. It does not exercise the nucleotide low-complexity screen. It also checks gzip members, malformed FASTQ, corrupted indexes, refusal to overwrite indexes and thread-deterministic peptide output.
 
 The independent check reproduces the membership statistic, not the complete Python Orpheum program or its Bloom false positives. End-to-end equivalence, correct-frame accuracy and speedup over Python Orpheum remain unmeasured.
 
