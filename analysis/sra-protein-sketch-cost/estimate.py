@@ -18,7 +18,7 @@ sys.path.insert(0, str(HERE.parents[1] / "notebooks"))
 CHOICES = {
     "a": "all 6 frames",
     "b": "stretches of 30+ aa",
-    "c": "longest stretch per read",
+    "c": "longest stretch per read or contig",
     "d": "frame with most Swiss-Prot 10-mers",
 }
 
@@ -29,6 +29,13 @@ SRA_GBP, SRA_BYTES = 66.9e6, 27e15
 SRA_2026_FACTOR = 113 / 66.9
 # Logan (PMC12424806): contigs 0.90 Pbp, 315 TB zstd; unitigs 4.59 Pbp, 2.18 PB zstd.
 LOGAN = {"3 Logan contigs": (0.90e6, 315e12), "3' Logan unitigs": (4.59e6, 2.18e15)}
+
+# Logan contig files measured by bench_logan.sbatch. The two ~90 Mbp files give the CPU and
+# storage rates (the 4.5 Mbp E. coli file is mostly start-up time); all three give the
+# amino-acid fractions, since Logan holds RNA-seq, metagenomes and genomes.
+LOGAN_RUNS = {"SRR9089190": "oyster RNA-seq", "SRR5650070": "human gut metagenome",
+              "SRR2584863": "E. coli genome"}
+LOGAN_RATE_RUNS = ("SRR9089190", "SRR5650070")
 
 # Oyster mantle run, oyster-mvp-20261023 on Sherlock hns (AMD EPYC), 6 libraries,
 # 307 M trimmed reads; /usr/bin/time user + system seconds of the whole run.
@@ -83,6 +90,28 @@ def main():
     # `sourmash scripts index` CPU-seconds per byte of .sig.zip (whole library, scaled 100).
     index_s_per_byte = tf["index_full_a_s100"] / int(depth["full_a_s100"][1])
 
+    # Logan contigs, measured directly.
+    L = M / "logan"
+    lt = {k: float(v[0]) for k, v in read_tsv(L / "logan_timings.tsv").items()}
+    lsz = {(r[0], r[1]): (int(r[2]), int(r[3]))
+           for r in csv.reader(open(L / "logan_sizes.tsv"), delimiter="\t")}
+    lf = {a: json.load(open(L / f"{a}.frames_summary.json")) for a in LOGAN_RUNS}
+    logan_frac = {x: sum(lf[a]["residues_per_base"][x] for a in LOGAN_RUNS) / len(LOGAN_RUNS)
+                  for x in CHOICES}
+
+    def mean_rate(key):
+        return sum(lt[key.format(a=a)] / (lf[a]["bases"] / 1e9) for a in LOGAN_RATE_RUNS) / 2
+
+    l_translate = mean_rate("{a}_translate6")
+    l_sketch = {x: mean_rate(f"{{a}}_manysketch_{x}_s1000") for x in CHOICES}
+    # Decompressing .zst was not timed; charged at the FASTQ.GZ rate, which is slower.
+    logan_per_gbp = {x: read_s + l_translate + l_sketch[x] + (l_sketch["a"] if x == "d" else 0)
+                     for x in CHOICES}
+    logan_hashes_per_gbp = {x: sum(lsz[(a, x)][0] / (lf[a]["bases"] / 1e9)
+                                   for a in LOGAN_RATE_RUNS) / 2 for x in CHOICES}
+    logan_bytes_per_gbp = {x: sum(lsz[(a, x)][1] / (lf[a]["bases"] / 1e9)
+                                  for a in LOGAN_RATE_RUNS) / 2 for x in CHOICES}
+
     splash_s, dekupl_s = SPLASH_CPU_S / oyster_gbp, DEKUPL_CPU_S / oyster_gbp
     kept = {
         x: (lens["dekupl_contigs"]["bases"] + lens["splash_compactors"]["bases"])
@@ -102,11 +131,14 @@ def main():
             splash_h = gbp * splash_s / 3600 if pre else 0.0
             dekupl_h = gbp * dekupl_s / 3600 if pre else 0.0
             pre_h = splash_h + dekupl_h
-            sk_h = gbp * frac * per_gbp[x] / 3600
-            aa = gbp * 1e9 * frac * frames["residues_per_base"][x]
-            if "Logan" in name:
-                sig = aa / 1000 * bytes_per_hash[1000]
-                sig_100 = aa / 100 * bytes_per_hash[100]
+            logan = "Logan" in name
+            sk_h = gbp * frac * (logan_per_gbp if logan else per_gbp)[x] / 3600
+            aa = gbp * 1e9 * frac * (logan_frac if logan else frames["residues_per_base"])[x]
+            if logan:
+                # Contig k-mers barely repeat within a sample, so ten times the hashes at
+                # scaled 100, at the bytes per hash of the whole-library read sketch.
+                sig = gbp * logan_bytes_per_gbp[x]
+                sig_100 = gbp * logan_hashes_per_gbp[x] * 10 * bytes_per_hash[100]
             else:
                 sig = gbp * frac * sig1000[x]
                 sig_100 = gbp * frac * sig100[x]
@@ -138,6 +170,12 @@ def main():
                           "splash": splash_s, "dekupl": dekupl_s,
                           "rocksdb_index_per_sig_zip_byte": index_s_per_byte},
         "sig_zip_bytes_per_hash": bytes_per_hash,
+        "logan_contigs": {"cpu_s_per_gbp": logan_per_gbp, "translate_6_frames": l_translate,
+                          "manysketch_s1000": l_sketch,
+                          "amino_acids_per_base_mean": logan_frac,
+                          "amino_acids_per_base": {a: lf[a]["residues_per_base"] for a in LOGAN_RUNS},
+                          "contigs_kept_d": {a: lf[a]["reads_kept_d"] for a in LOGAN_RUNS},
+                          "sig_zip_bytes_per_gbp_s1000": logan_bytes_per_gbp},
         "splash_dekupl_kept_fraction_of_bases": kept_frac,
         "sketch_bytes_per_gbp_scaled1000": sig1000, "sketch_bytes_per_gbp_scaled100": sig100,
         "rocksdb_over_sig_zip": {"100": idx100, "1000": idx1000},
@@ -145,13 +183,13 @@ def main():
         "peak_rss_gb": {"splash": SPLASH_RSS_GB, "dekupl": DEKUPL_RSS_GB},
     }
     json.dump(rates, open(M / "rates.json", "w"), indent=1)
-    figure(rows, frames)
+    figure(rows, frames, lf)
     for r in rows:
         print({k: r[k] for k in ("collection", "choice", "total_cpu_h", "wall_days_1000_cores",
                                  "sketch_bytes_scaled1000", "rocksdb_bytes_scaled1000")})
 
 
-def figure(rows, frames):
+def figure(rows, frames, lf):
     import pubfig as pf
 
     pf.use_style()
@@ -173,13 +211,15 @@ def figure(rows, frames):
     ax1.set_ylabel("CPU-hours (one core each)")
     ax1.yaxis.set_major_formatter(
         __import__("matplotlib").ticker.FuncFormatter(lambda v, _: f"{v:,.0f}"))
-    rpb = frames["residues_per_base"]
-    ax2.bar(range(4), [rpb[x] for x in CHOICES], 0.6, color=colours[:4])
-    ax2.set_xticks(range(4), [f"({x})" for x in CHOICES])
-    ax2.set_ylabel("Amino acids kept per DNA base")
-    ax2.set_xlabel("Translation choice, 1 M oyster RNA-seq reads")
+    sources = [("Oyster\nRNA-seq\n1 M reads", frames),
+               ("Oyster\nRNA-seq\nLogan contigs", lf["SRR9089190"]),
+               ("Human gut\nmetagenome\nLogan contigs", lf["SRR5650070"]),
+               ("E. coli\ngenome\nLogan contigs", lf["SRR2584863"])]
     for i, x in enumerate(CHOICES):
-        ax2.text(i, rpb[x], f"{rpb[x]:.2f}", ha="center", va="bottom")
+        xs = [j + (i - 1.5) * w for j in range(len(sources))]
+        ax2.bar(xs, [s["residues_per_base"][x] for _, s in sources], w, color=colours[i])
+    ax2.set_xticks(range(len(sources)), [lab for lab, _ in sources])
+    ax2.set_ylabel("Amino acids kept per DNA base")
     pf.shared_legend(fig, ncol=3)
     for ax, letter in zip((ax1, ax2), "ab"):
         pf.panel_label(ax, letter)

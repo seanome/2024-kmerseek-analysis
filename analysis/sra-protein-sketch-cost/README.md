@@ -8,6 +8,7 @@ per tool. The rates are measured; the totals are those rates times the collectio
 ```mermaid
 flowchart LR
   A[1 M and 24 M oyster RNA-seq reads<br/>FASTQ.GZ] --> T[translate 6 frames<br/>seqkit]
+  L[3 Logan contig files<br/>oyster RNA-seq, gut metagenome,<br/>E. coli genome] --> T
   T --> S{choose protein}
   S -->|a| SA[all 6 frames]
   S -->|b| SB[stop-free stretches 30+ aa]
@@ -24,7 +25,8 @@ flowchart LR
 
 **a**, CPU-hours to translate and sketch each collection (log scale). Grey is SPLASH plus
 DE-kupl run on every BioProject before sketching; their output is so small that sketching
-it does not show. **b**, amino acids each choice keeps per DNA base of 1 M oyster reads.
+it does not show. **b**, amino acids each choice keeps per DNA base, on 1 M oyster reads
+and on the Logan contigs of three runs.
 
 ## Results
 
@@ -40,12 +42,14 @@ all of the SRA directly, almost all of it DE-kupl.
 | | c, longest stretch | 1.97 M | 82 | 8.2 | 12 TB | 37 TB | 369 TB |
 | | d, most Swiss-Prot 10-mers | 2.70 M | 113 | 11.3 | 1.7 TB | 5.2 TB | 45 TB |
 | SRA after SPLASH + DE-kupl per BioProject | any | 54.9 M (SPLASH 3.1 M, DE-kupl 51.8 M, sketching under 2,000) | 2,286 | 229 | under 0.04 TB | under 0.12 TB | under 1.2 TB |
-| Logan contigs, 0.90 Pbp | a | 34,000 | 1.4 | 0.14 | 13 TB | 40 TB | 397 TB |
-| | b | 29,000 | 1.2 | 0.12 | 5.9 TB | 18 TB | 177 TB |
-| | c | 26,000 | 1.1 | 0.11 | 2.1 TB | 6.3 TB | 63 TB |
-| | d | 36,000 | 1.5 | 0.15 | 0.6 TB | 1.8 TB | 18 TB |
-| Logan unitigs, 4.59 Pbp | a | 175,000 | 7.3 | 0.7 | 68 TB | 204 TB | 2.0 PB |
-| | d | 186,000 | 7.7 | 0.8 | 3.0 TB | 9.0 TB | 90 TB |
+| Logan contigs, 0.90 Pbp | a | 39,000 | 1.6 | 0.16 | 12 TB | 35 TB | 343 TB |
+| | b | 32,000 | 1.3 | 0.13 | 5.4 TB | 16 TB | 155 TB |
+| | c | 29,000 | 1.2 | 0.12 | 1.4 TB | 4.1 TB | 38 TB |
+| | d | 42,000 | 1.7 | 0.17 | 0.4 TB | 1.3 TB | 12 TB |
+| Logan unitigs, 4.59 Pbp | a | 199,000 | 8.3 | 0.8 | 60 TB | 178 TB | 1.7 PB |
+| | b | 163,000 | 6.8 | 0.7 | 27 TB | 82 TB | 790 TB |
+| | c | 148,000 | 6.2 | 0.6 | 6.9 TB | 21 TB | 193 TB |
+| | d | 212,000 | 8.9 | 0.9 | 2.3 TB | 6.8 TB | 60 TB |
 
 The SRA rows use the public SRA of December 2024, 66.9 petabases (Pbp), from
 [arXiv 2505.06395](https://arxiv.org/abs/2505.06395). It grew 33% in 2024 (Logan's December
@@ -74,6 +78,30 @@ What each choice keeps from 1 M reads: (a) 1.97 amino acids per base, (b) 0.88, 
 (d) 0.09. Only 28% of the oyster reads had any 10-mer found in Swiss-Prot, so (d) drops
 72% of reads.
 
+### Logan contigs, measured on three runs
+
+The Logan rows use rates measured on real Logan contig files
+(`s3://logan-pub/c/<run>/<run>.contigs.fa.zst`), not on reads:
+
+| Run | What it is | Contigs | Contig bases (share of the run's reads) | Contig length, median / 90th percentile | Amino acids per base, a / b / c / d | Contigs kept by (d) |
+|---|---|---:|---:|---|---|---:|
+| SRR9089190 | oyster mantle RNA-seq (same library as the reads above) | 475,148 | 87.5 Mbp (1.2%) | 70 / 380 bp | 1.98 / 0.75 / 0.25 / 0.05 | 9% |
+| SRR5650070 | human gut metagenome | 331,553 | 92.0 Mbp (1.4%) | 42 / 584 bp | 1.99 / 1.08 / 0.22 / 0.08 | 13% |
+| SRR2584863 | E. coli B REL606 genome | 1,131 | 4.5 Mbp (1.0%) | 75 / 13,244 bp | 2.00 / 1.29 / 0.06 / 0.05 | 51% |
+
+Per Gbp of contigs, six-frame translation took 91 CPU-s (82 on reads) and `manysketch`
+54 / 26 / 15 / 11 CPU-s for a / b / c / d at scaled 1000; the estimate uses the mean of the
+oyster and gut files and the mean amino-acid fractions of all three. Compared with reads:
+
+- (b) keeps more on long contigs (1.29 per base on E. coli against 0.88 on reads), because
+  a contig does not cut an open reading frame short the way a 150 bp read end does.
+- (c) keeps one stretch per contig, so it loses most genes on long contigs: 0.06 per base on
+  E. coli, where a 13 kb contig holds a dozen genes.
+- (d) keeps 0.05 to 0.08 amino acids per base. Only 9% of oyster and 13% of gut contigs have
+  any 10-mer found in Swiss-Prot.
+- Contig k-mers barely repeat within a run: the oyster contigs' (a) sketch has 83% of the
+  hashes it would have if every 10-mer were distinct, the gut contigs' 89%.
+
 ### Memory, disk and network
 
 - Sketching takes under 0.5 GB per process; choice (d) adds a sorted table of Swiss-Prot's
@@ -101,11 +129,11 @@ What each choice keeps from 1 M reads: (a) 1.97 amino acids per base, (b) 0.88, 
 3. **Sketch size depends on depth.** Sketching all 24 M reads of the library gave 6.8x the
    hashes of the first 1 M reads, for 24x the bases. SRA storage uses the whole-library
    rate, measured on one RNA-seq library; metagenomes have more distinct sequence and will
-   be larger. Logan contigs are not redundant within a sample, so their storage counts one
-   hash per `scaled` amino acids, an upper bound.
-4. **Logan amino-acid fractions come from 150 bp reads.** On long contigs, (b) keeps a larger
-   share (stop-free stretches are not cut by the read end) and (c) keeps only one stretch
-   per contig, however many genes it holds.
+   be larger. Logan storage comes from the
+   contig sketches measured directly.
+4. **Three Logan runs stand in for 27 million.** Logan's mix of RNA-seq, metagenomes,
+   genomes and amplicons will move the amino-acid fractions; (c) and (d) differ most between
+   the three runs measured (0.06 to 0.25, and 0.05 to 0.08, per base).
 5. **SPLASH and DE-kupl are priced as if every base of the SRA were in a BioProject they can
    run on.** DE-kupl needs two labelled groups of samples, and both tools were built for
    RNA-seq, so a real run would cover less of the SRA and cost less. What they keep is tiny:
@@ -116,6 +144,7 @@ What each choice keeps from 1 M reads: (a) 1.97 amino acids per base, (b) 0.88, 
 
 - `bench.sbatch`: 1 M reads, four choices, SPLASH and DE-kupl output lengths (job 49952740).
 - `bench_full.sbatch`: whole read-1 file, and RocksDB indexes (job 49957505).
+- `bench_logan.sbatch`: the four choices on three Logan contig files (job 49961314).
 - `frames.py`: writes the four choices as protein FASTA and counts what each keeps.
 - `estimate.py`: turns `measurements/` into `measurements/estimate.csv`, `rates.json` and
   the figure. Run from the repo root.

@@ -35,9 +35,9 @@ for A in SRR9089190 SRR5650070 SRR2584863; do
     for x in a b c d; do
         printf 'name,genome_filename,protein_filename\n%s,,%s\n' "$A.$x" "$W/$A/$x.faa" > "$A.$x.csv"
         T "${A}_manysketch_${x}_s1000" "$E/sourmash" scripts manysketch -c 1 \
-            -p "protein,k=10,scaled=1000,noabund" -o "$A/${x}_s1000.sig.zip" "$A.$x.csv"
+            -p "protein,k=10,scaled=1000,noabund" -o "$A/${x}_s1000.sig.zip" "$A.$x.csv" >&2
         n=$("$E/sourmash" sig describe "$A/${x}_s1000.sig.zip" 2>/dev/null | awk '/size:/{print $2; exit}')
-        printf '%s\t%s\t%s\t%s\n' "$A" "$x" "$n" "$(stat -c %s "$A/${x}_s1000.sig.zip")"
+        printf "%s\t%s\t%s\t%s\n" "$A" "$x" "$n" "$(stat -c %s "$A/${x}_s1000.sig.zip")"
     done >> logan_sizes.tsv
     \cp "$A/frames_summary.json" "$A.frames_summary.json"
     command rm -f "$A.contigs.fa" "$A.seqkit6.faa" "$A"/*.faa
