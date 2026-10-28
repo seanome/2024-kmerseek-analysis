@@ -1,11 +1,12 @@
 #!/bin/bash
 # Download one run's FASTQ files from ENA, sketch them, check the sketch, delete the FASTQs.
-#   sketch_run.sh ROW_NUMBER RUNS_TSV WORK_DIR
+#   sketch_run.sh ROW_NUMBER RUNS_TSV WORK_DIR SCALED
 # ROW_NUMBER is 1-based over the data rows of RUNS_TSV (sorted smallest first).
-# Writes WORK_DIR/sketches/<accession>.sig.gz, WORK_DIR/index_log/<accession>.tsv and
+# Writes WORK_DIR/sketches/scaled<SCALED>/<accession>.sig.gz,
+# WORK_DIR/index_log/scaled<SCALED>/<accession>.tsv and
 # WORK_DIR/downloads/<accession>.tsv (file, bytes, seconds, or the curl error).
 set -uo pipefail
-row=$1; runs=$2; work=$3
+row=$1; runs=$2; work=$3; scaled=$4
 here=$(cd "$(dirname "$0")" && pwd)
 bin=$here/indexer/target/release/expression-indexer
 read -r acc u1 u2 u0 < <(python3 - "$runs" "$row" <<'EOF'
@@ -15,8 +16,9 @@ r = rows[int(sys.argv[2]) - 1]
 print(r["accession"], r.get("ena_fastq_http_1") or "-", r.get("ena_fastq_http_2") or "-", r.get("ena_fastq_http") or "-")
 EOF
 )
-mkdir -p "$work"/{fastq,sketches,index_log,downloads}
-if [ -s "$work/sketches/$acc.sig.gz" ] && [ -s "$work/index_log/$acc.tsv" ]; then
+sk=$work/sketches/scaled$scaled; lg=$work/index_log/scaled$scaled
+mkdir -p "$work"/{fastq,downloads} "$sk" "$lg"
+if [ -s "$sk/$acc.sig.gz" ] && [ -s "$lg/$acc.tsv" ]; then
     echo "$acc already sketched"; exit 0
 fi
 urls=()
@@ -45,11 +47,13 @@ for u in "${urls[@]}"; do
     printf '%s\t%s\t%s\t%s\tok\n' "$acc" "$u" "$(stat -c %s "$f")" $(( $(date +%s) - t )) >> "$work/downloads/$acc.tsv"
     files+=("$f")
 done
-"$bin" sketch "$acc" "$here/k_for_protein7_bits.tsv" "$work/sketches" "${files[@]}" > "$work/index_log/$acc.tsv.tmp" || exit 1
-# check the sketch before deleting the reads: it must be valid gzip and hold one signature per alphabet
+"$bin" sketch "$acc" "$scaled" "$here/k_for_protein7_bits.tsv" "$sk" "${files[@]}" > "$lg/$acc.tsv.tmp" || exit 1
+# check the sketch before deleting the reads: it must be valid gzip and hold one signature per
+# alphabet. The JSON is one line; splitting it at commas and braces keeps grep's memory small.
 n_alpha=$(grep -vc -e '^#' -e '^alphabet' "$here/k_for_protein7_bits.tsv")
-n_sig=$(gzip -dc "$work/sketches/$acc.sig.gz" | grep -o '"molecule"' | wc -l)
+if ! gzip -t "$sk/$acc.sig.gz"; then echo "$acc: sketch is not valid gzip"; exit 1; fi
+n_sig=$(gzip -dc "$sk/$acc.sig.gz" | tr ',{' '\n\n' | grep -c '^"molecule":')
 if [ "$n_sig" -ne "$n_alpha" ]; then echo "$acc: $n_sig signatures, expected $n_alpha"; exit 1; fi
-mv "$work/index_log/$acc.tsv.tmp" "$work/index_log/$acc.tsv"
+mv "$lg/$acc.tsv.tmp" "$lg/$acc.tsv"
 command rm -f "${files[@]}"
 echo "$acc done"
