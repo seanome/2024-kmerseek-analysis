@@ -7,7 +7,9 @@ Choices, per read:
   d  the stop-free stretch (10+ aa) with the most protein 10-mers found in Swiss-Prot;
      reads with no Swiss-Prot 10-mer in any frame are dropped (an orpheum-like choice)
 
-Usage: python frames.py reads.fastq.gz uniprot_sprot.fasta.gz n_reads out_dir
+Each record of the input (a read, or a contig) counts as one "read" below.
+
+Usage: python frames.py reads.fastq.gz|contigs.fa[.gz|.zst] uniprot_sprot.fasta.gz n_reads out_dir
 Writes out_dir/{a,b,c,d}.faa and out_dir/frames_summary.json.
 """
 
@@ -63,6 +65,33 @@ def swissprot_kmers(path):
     return np.unique(kmer_codes("#".join(seqs).encode())), len(seqs)
 
 
+def records(path):
+    """Sequences from FASTQ or (multi-line) FASTA, plain, gzip or zstd."""
+    if path.endswith(".zst"):
+        import io
+        import subprocess
+
+        f = io.TextIOWrapper(subprocess.Popen(["zstdcat", path], stdout=subprocess.PIPE).stdout)
+    else:
+        f = gzip.open(path, "rt") if path.endswith(".gz") else open(path)
+    first = f.readline()
+    if first.startswith("@"):
+        for i, line in enumerate(f, start=1):
+            if i % 4 == 1:
+                yield line.strip()
+        return
+    cur = []
+    for line in f:
+        if line.startswith(">"):
+            if cur:
+                yield "".join(cur).upper()
+            cur = []
+        else:
+            cur.append(line.strip())
+    if cur:
+        yield "".join(cur).upper()
+
+
 def translate(dna):
     return "".join(CODON.get(dna[i:i + 3], "X") for i in range(0, len(dna) - 2, 3))
 
@@ -83,13 +112,10 @@ def main():
     seqs = {x: 0 for x in "abcd"}
     reads = bases = 0
     t_trans = t_look = 0.0
-    with gzip.open(fq, "rt") as f:
-        for i, line in enumerate(f):
-            if i % 4 != 1:
-                continue
+    if True:
+        for read in records(fq):
             if reads >= n_reads:
                 break
-            read = line.strip()
             reads += 1
             bases += len(read)
             t1 = time.time()
