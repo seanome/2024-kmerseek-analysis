@@ -18,10 +18,13 @@ W=$SCRATCH/sra-sketch-bench
 cd "$W"
 T() { local name=$1; shift; /usr/bin/time -v -o "$W/$name.time" "$@"; }
 for s in 100 1000; do
-    T full_translate_s$s "$E/sourmash" sketch translate \
+    # Keep a sketch already made by an earlier attempt of this job (13 min each).
+    [ -s "full_a_s$s.sig.zip" ] || T full_translate_s$s "$E/sourmash" sketch translate \
         -p "protein,k=10,scaled=$s,noabund" -o "full_a_s$s.sig.zip" "$OY/raw/DW1_1.fastq.gz"
     for x in full_a a_translate; do
-        T index_${x}_s$s "$E/sourmash" scripts index -o "${x}_s$s.rocksdb" "${x}_s$s.sig.zip"
+        command rm -rf "${x}_s$s.rocksdb"
+        T index_${x}_s$s "$E/sourmash" scripts index -k 10 -s "$s" --moltype protein \
+            -o "${x}_s$s.rocksdb" "${x}_s$s.sig.zip"
     done
 done
 for f in full_a_s100 full_a_s1000 a_translate_s100 a_translate_s1000; do
