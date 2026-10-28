@@ -1,8 +1,9 @@
 # Where else is this gene expressed: a small k-mer index of RNA-seq runs
 
-Status 2026-10-27: the list of runs is built and the first speeds are measured. Nothing is
-indexed yet. The next step waits on one answer: index all 442 runs (810.6 GB), or cut to a
-stated total.
+Status 2026-10-27: the 64 runs of Domen et al. 2026 (`runs_to_index.tsv`) are being indexed
+first, at scaled = 5. Four of them are sketched (see "Sizing tests"). The 452 other *Botryllus*
+runs (`runs_botryllus_more.tsv`) come next. The human, mouse and zebrafish runs in `runs.tsv`
+are not indexed yet.
 
 ```mermaid
 flowchart LR
@@ -56,21 +57,31 @@ reached 173 of the 20,448 (`botryllus_kmerseek_dark_gain.json`); those 173 are s
   GSE99963, GSE28998, all arrays); GSE104079, GSE120862, GSE83578, GSE111555 and
   GSE144304 are not.
 
-## Sizing test on Sherlock, 2026-10-27 (array job 49855725)
+## Sizing tests on Sherlock, 2026-10-27
 
-Four runs of `runs_to_index.tsv` were sketched with every alphabet at scaled = 1 (every
-k-mer hash kept), 8 cores, 64 GB.
+Four runs of `runs_to_index.tsv` were sketched twice, on 8 cores with 64 GB: first at scaled = 1
+(every k-mer hash kept; array job 49855725), then at scaled = 5 (FracMinHash keeps the hashes at
+or below sourmash's `max_hash_for_scaled(5)`, about 1 in 5; array job 49887524). Scaled = 5 is
+what the index uses (Olga's choice, 2026-10-27).
 
-| Run | FASTQ (both files) | Download | Sketch file | Result |
-|---|---:|---:|---:|---|
-| SRR32233927 | 97 KB | 9 s | 7.7 MB | done, 6 s |
-| SRR32233950 | 50 KB | 15 s | 5.9 MB | done, 6 s |
-| SRR32233988 | 144 KB | 10 s | 14.8 MB | done, 6 s |
-| SRR32233928 | 1.72 GB | 42 min (0.59-0.83 MB/s per file) | 21.9 GB | sketch written in 45 min (3 h 5 min CPU); the check that counts its signatures then ran out of memory on the 21.9 GB file |
+| Run | FASTQ (both files) | Download | Sketch file, scaled 1 | Sketch file, scaled 5 |
+|---|---:|---:|---:|---:|
+| SRR32233927 | 97 KB | 9 s | 7.7 MB | 1.5 MB |
+| SRR32233950 | 50 KB | 15 s | 5.9 MB | 1.2 MB |
+| SRR32233988 | 144 KB | 10 s | 14.8 MB | 2.9 MB |
+| SRR32233928 | 1.72 GB | 42 min (0.59-0.83 MB/s per file) | 21.9 GB | 4.37 GB |
 
-At that ratio, the 64 paper runs (78.0 GB of FASTQ by ENA's file sizes) would make about
-1 TB of sketches, and all 516 Botryllus runs about 16 TB. The paper's runs are 78.0 GB by
-ENA; the 50.2 GB in the table above is SRA's size field, which counts something smaller.
+For SRR32233928 (25.9 million reads, 93.2 million kept pieces):
+- **Scaled 1:** the sketch was written in 45 min (3 h 5 min of CPU). The check that counts its
+  signatures then ran out of 64 GB, because grep held the whole one-line JSON in memory.
+- **Scaled 5:** the job took 13 min 49 s in all, 9 min 8 s of it sketching, with 47 min 58 s
+  of CPU and 9.3 GB peak memory. The FASTQs from the first test were reused, so no download.
+  The check now splits the JSON at commas and braces before counting, and it passed.
+
+At scaled 5, the sketch is 2.5 times the size of the FASTQ. The 64 paper runs are 78.0 GB of
+FASTQ by ENA's file sizes, so they would make about 200 GB of sketches. All 516 *Botryllus*
+runs would make about 3.2 TB. The 50.2 GB in the table above is SRA's size field, which is
+smaller than what ENA serves.
 
 ## Measured speeds (`speed.tsv`)
 
