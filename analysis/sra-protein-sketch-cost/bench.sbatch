@@ -92,5 +92,5 @@ for f in "$W"/*.time; do
 done | sort > timings.tsv
 ls -l ./*.sig.zip ./*.faa | awk '{print $5"\t"$9}' > sizes.tsv
 cat timings.tsv sizes.tsv
-mkdir -p "$HERE/results"
-\cp frames_summary.json splash_dekupl_lengths.json timings.tsv sizes.tsv "$HERE/results/"
+mkdir -p "$HERE/measurements"
+\cp frames_summary.json splash_dekupl_lengths.json timings.tsv sizes.tsv "$HERE/measurements/"
