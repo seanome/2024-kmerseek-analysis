@@ -26,7 +26,9 @@ T() { local name=$1; shift; /usr/bin/time -v -o "$W/$name.time" "$@"; }
 
 # Decompressing a whole fastq.gz: the floor for reading any raw run.
 T zcat_full_DW1_1 bash -c "zcat $OY/raw/DW1_1.fastq.gz | wc -c > $W/DW1_1.bytes"
-zcat "$OY/raw/DW1_1.fastq.gz" | head -n $((4 * N)) > reads.fq
+# head closes the pipe early, so zcat gets SIGPIPE; that is expected here.
+(set +o pipefail; zcat "$OY/raw/DW1_1.fastq.gz" | head -n $((4 * N)) > reads.fq)
+test "$(wc -l < reads.fq)" -eq $((4 * N))
 
 # (a) as sourmash does it: Python sketch translate, six frames, one sketch per run.
 for s in 100 1000; do
