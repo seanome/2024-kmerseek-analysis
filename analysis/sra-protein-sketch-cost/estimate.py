@@ -1,100 +1,189 @@
 """Cost of protein-sketching three sequence collections under four translation choices.
 
-Reads the measured rates in measurements/ (from bench.sbatch) plus the measured rates and sizes
-written in RATES below, and writes measurements/estimate.csv and a figure.
-Usage: python estimate.py
+Reads the rates measured by bench.sbatch and bench_full.sbatch (measurements/), combines them
+with the collection sizes and SPLASH / DE-kupl rates below, and writes
+measurements/estimate.csv, measurements/rates.json and figures/sra_protein_sketch_cost.*.
+Run from the repo root: python analysis/sra-protein-sketch-cost/estimate.py
 """
 
 import csv
 import json
+import sys
 from pathlib import Path
 
-HERE = Path(__file__).parent
-R = HERE / "measurements"
+HERE = Path(__file__).resolve().parent
+M = HERE / "measurements"
+sys.path.insert(0, str(HERE.parents[1] / "notebooks"))
 
-# Sizes of the three collections, in gigabases (Gbp).
-COLLECTIONS = {
-    # Public SRA, December 2024: 66.9 Pbp (arXiv 2505.06395). Logan's December 2023 freeze
-    # was 50.3 Pbp, so the archive grew 33% in a year; at that rate it is ~113 Pbp in
-    # October 2026. Both are shown; the table uses the measured 2024 number.
-    "1 SRA (public, Dec 2024)": 66.9e6,
-    # Same reads, run through SPLASH and DE-kupl per BioProject; only their output is sketched.
-    "2 SRA after SPLASH + DE-kupl": 66.9e6,
-    # Logan contigs: 0.90 Pbp, 315 TB zstd (Logan paper, PMC12424806). Unitigs are 4.59 Pbp.
-    "3 Logan contigs": 0.90e6,
+CHOICES = {
+    "a": "all 6 frames",
+    "b": "stretches of 30+ aa",
+    "c": "longest stretch per read",
+    "d": "frame with most Swiss-Prot 10-mers",
 }
+
+# Collection sizes in gigabases (Gbp) and bytes as stored.
+# Public SRA, Dec 2024: 66.9 Pbp, ~27 PB (arXiv 2505.06395). Logan's Dec 2023 freeze was
+# 50.3 Pbp, so the archive grew 33% that year; at that rate it is ~113 Pbp in Oct 2026.
+SRA_GBP, SRA_BYTES = 66.9e6, 27e15
 SRA_2026_FACTOR = 113 / 66.9
+# Logan (PMC12424806): contigs 0.90 Pbp, 315 TB zstd; unitigs 4.59 Pbp, 2.18 PB zstd.
+LOGAN = {"3 Logan contigs": (0.90e6, 315e12), "3' Logan unitigs": (4.59e6, 2.18e15)}
 
-# Oyster mantle run (oyster-mvp-20261023, 6 libraries, 145 M read pairs), measured with
-# /usr/bin/time on Sherlock hns nodes. CPU-hours per Gbp of trimmed reads.
-SPLASH_CPU_H = (7109.81 + 545.61) / 3600  # 16 min wall on 8 cores, 24.9 GB peak
-DEKUPL_CPU_H = (125118.70 + 3304.88) / 3600  # 3 h 05 min wall on 32 cores, 21.8 GB peak
+# Oyster mantle run, oyster-mvp-20261023 on Sherlock hns (AMD EPYC), 6 libraries,
+# 307 M trimmed reads; /usr/bin/time user + system seconds of the whole run.
+SPLASH_CPU_S, SPLASH_RSS_GB = 7109.81 + 545.61, 24.9  # 16 min wall on 8 cores
+DEKUPL_CPU_S, DEKUPL_RSS_GB = 125118.70 + 3304.88, 21.8  # 3 h 05 min wall on 32 cores
 
 
-def load():
-    frames = json.load(open(R / "frames_summary.json"))
-    lens = json.load(open(R / "splash_dekupl_lengths.json"))
-    t = {}
-    for row in csv.reader(open(R / "timings.tsv"), delimiter="\t"):
-        t[row[0]] = {"cpu_s": float(row[1]), "wall": row[2], "rss_gb": float(row[3])}
-    sizes = {}
-    for row in csv.reader(open(R / "sizes.tsv"), delimiter="\t"):
-        sizes[Path(row[1]).name] = int(row[0])
-    return frames, lens, t, sizes
+def read_tsv(path):
+    return {r[0]: r[1:] for r in csv.reader(open(path), delimiter="\t")}
 
 
 def main():
-    frames, lens, t, sizes = load()
-    gbp_bench = frames["bases"] / 1e9
-    dw1_bytes = int(open(R / "DW1_1.bytes").read()) if (R / "DW1_1.bytes").exists() else None
+    frames = json.load(open(M / "frames_summary.json"))
+    lens = json.load(open(M / "splash_dekupl_lengths.json"))
+    t = {k: float(v[0]) for k, v in read_tsv(M / "timings.tsv").items()}
+    tf = {k: float(v[0]) for k, v in read_tsv(M / "timings_full.tsv").items()}
+    sizes = {Path(v[0]).name: int(k) for k, v in read_tsv(M / "sizes.tsv").items()}
+    depth = read_tsv(M / "depth_sizes.tsv")
+
+    bench_gbp = frames["bases"] / 1e9
+    dw1_gbp = 24137563 * 150 / 1e9  # DW1 read 1, untrimmed (validated.json pairs_in)
     oyster_gbp = lens["oyster_full_trimmed_bases_upper"] / 1e9
-    kept = (lens["dekupl_contigs"]["bases"] + lens["splash_compactors"]["bases"]) / 1e9
-    kept_frac = kept / oyster_gbp
 
-    # CPU-hours per Gbp of DNA going in, per choice.
-    seqkit = t["seqkit_translate6"]["cpu_s"] / 3600 / gbp_bench
-    per_gbp = {}
-    for x in "abcd":
-        sketch = t[f"manysketch_{x}_s100"]["cpu_s"] / 3600 / gbp_bench
-        extra = 0.0
-        if x == "d":
-            # Looking up every 10-mer of every stop-free stretch against Swiss-Prot costs about
-            # what hashing them all costs: proxy is manysketch on all of (b)'s stretches... (a).
-            extra = t["manysketch_a_s100"]["cpu_s"] / 3600 / gbp_bench
-        per_gbp[x] = seqkit + extra + sketch
-    sourmash_py = t["sourmash_translate_s100"]["cpu_s"] / 3600 / gbp_bench
+    # CPU-seconds per Gbp of DNA, one core.
+    read_s = t["zcat_full_DW1_1"] / dw1_gbp
+    translate_s = t["seqkit_translate6"] / bench_gbp
+    sketch_s = {x: t[f"manysketch_{x}_s100"] / bench_gbp for x in CHOICES}
+    # (d): looking up each 10-mer of the six frames in a Swiss-Prot table costs about what
+    # hashing each one does, so the lookup is charged as one more sketch of (a).
+    per_gbp = {
+        x: read_s + translate_s + sketch_s[x] + (sketch_s["a"] if x == "d" else 0)
+        for x in CHOICES
+    }
+    python_a = t["sourmash_translate_s100"] / bench_gbp
+    python_a_full = tf["full_translate_s100"] / dw1_gbp
 
+    # Sketch bytes per Gbp at full library depth: the 1 M-read sketch of each choice,
+    # scaled by how much smaller per Gbp the whole-library six-frame sketch is.
+    def per_gbp_bytes(s):
+        sub = int(depth[f"a_translate_s{s}"][1]) / bench_gbp
+        full = int(depth[f"full_a_s{s}"][1]) / dw1_gbp
+        idx = int(depth[f"full_a_s{s}"][2]) / int(depth[f"full_a_s{s}"][1])
+        return {x: sizes[f"{x}_s{s}.sig.zip"] / bench_gbp * full / sub for x in CHOICES}, idx
+
+    sig100, idx100 = per_gbp_bytes(100)
+    sig1000, idx1000 = per_gbp_bytes(1000)
+    # Logan contigs and unitigs are already non-redundant within an accession, so depth
+    # does not shrink them: count one hash per `scaled` amino acids (an upper bound), at
+    # the bytes per hash of the measured whole-library .sig.zip.
+    bytes_per_hash = {s: int(depth[f"full_a_s{s}"][1]) / int(depth[f"full_a_s{s}"][0])
+                      for s in (100, 1000)}
+    # `sourmash scripts index` CPU-seconds per byte of .sig.zip (whole library, scaled 100).
+    index_s_per_byte = tf["index_full_a_s100"] / int(depth["full_a_s100"][1])
+
+    splash_s, dekupl_s = SPLASH_CPU_S / oyster_gbp, DEKUPL_CPU_S / oyster_gbp
+    kept = {
+        x: (lens["dekupl_contigs"]["bases"] + lens["splash_compactors"]["bases"])
+        if x != "b"
+        else (lens["dekupl_contigs"]["bases_ge_90bp"] + lens["splash_compactors"]["bases_ge_90bp"])
+        for x in CHOICES
+    }
+    kept_frac = {x: kept[x] / 1e9 / oyster_gbp for x in CHOICES}
+
+    collections = {"1 SRA (public, Dec 2024)": (SRA_GBP, SRA_BYTES),
+                   "2 SRA after SPLASH + DE-kupl": (SRA_GBP, SRA_BYTES), **LOGAN}
     rows = []
-    for name, gbp in COLLECTIONS.items():
-        for x in "abcd":
-            if name.startswith("2"):
-                pre = gbp * (SPLASH_CPU_H + DEKUPL_CPU_H) / oyster_gbp
-                sk = gbp * kept_frac * per_gbp[x]
-                res_frac = kept_frac
+    for name, (gbp, in_bytes) in collections.items():
+        for x in CHOICES:
+            frac = kept_frac[x] if name.startswith("2") else 1.0
+            pre = name.startswith("2")
+            splash_h = gbp * splash_s / 3600 if pre else 0.0
+            dekupl_h = gbp * dekupl_s / 3600 if pre else 0.0
+            pre_h = splash_h + dekupl_h
+            sk_h = gbp * frac * per_gbp[x] / 3600
+            aa = gbp * 1e9 * frac * frames["residues_per_base"][x]
+            if "Logan" in name:
+                sig = aa / 1000 * bytes_per_hash[1000]
+                sig_100 = aa / 100 * bytes_per_hash[100]
             else:
-                pre = 0.0
-                sk = gbp * per_gbp[x]
-                res_frac = 1.0
-            sig = sizes[f"{x}_s1000.sig.zip"] / gbp_bench  # bytes per Gbp at scaled 1000
+                sig = gbp * frac * sig1000[x]
+                sig_100 = gbp * frac * sig100[x]
             rows.append({
-                "collection": name, "choice": x,
-                "preprocess_cpu_h": round(pre),
-                "translate_sketch_cpu_h": round(sk),
-                "total_cpu_h": round(pre + sk),
-                "residues_per_input_base": frames["residues_per_base"][x] * res_frac,
-                "sketch_bytes_s1000_upper": sig * gbp * res_frac,
+                "collection": name, "choice": x, "choice_label": CHOICES[x],
+                "input_gbp": gbp, "input_bytes": in_bytes,
+                "splash_cpu_h": round(splash_h), "dekupl_cpu_h": round(dekupl_h),
+                "preprocess_cpu_h": round(pre_h), "translate_sketch_cpu_h": round(sk_h),
+                "index_build_cpu_h_scaled100": round(sig_100 * index_s_per_byte / 3600),
+                "total_cpu_h": round(pre_h + sk_h),
+                "wall_days_1000_cores": round((pre_h + sk_h) / 1000 / 24, 2),
+                "wall_days_10000_cores": round((pre_h + sk_h) / 10000 / 24, 2),
+                "amino_acids_out": aa,
+                "sketch_bytes_scaled1000": sig,
+                "sketch_bytes_scaled100": sig_100,
+                "rocksdb_bytes_scaled1000": sig * idx1000,
+                "rocksdb_bytes_scaled100": sig_100 * idx100,
             })
-    with open(R / "estimate.csv", "w", newline="") as f:
+    with open(M / "estimate.csv", "w", newline="") as f:
         w = csv.DictWriter(f, fieldnames=list(rows[0]))
         w.writeheader()
         w.writerows(rows)
-    json.dump({"seqkit_cpu_h_per_gbp": seqkit, "per_gbp": per_gbp,
-               "sourmash_python_translate_cpu_h_per_gbp": sourmash_py,
-               "splash_dekupl_kept_fraction": kept_frac, "oyster_gbp": oyster_gbp,
-               "dw1_fastq_bytes": dw1_bytes, "sra_2026_factor": SRA_2026_FACTOR},
-              open(R / "rates.json", "w"), indent=1)
+    rates = {
+        "cpu_s_per_gbp": {"read_fastq_gz": read_s, "translate_6_frames_seqkit": translate_s,
+                          **{f"manysketch_{x}": v for x, v in sketch_s.items()},
+                          **{f"total_{x}": v for x, v in per_gbp.items()},
+                          "sourmash_python_translate_a_1M_reads": python_a,
+                          "sourmash_python_translate_a_full_library": python_a_full,
+                          "splash": splash_s, "dekupl": dekupl_s,
+                          "rocksdb_index_per_sig_zip_byte": index_s_per_byte},
+        "sig_zip_bytes_per_hash": bytes_per_hash,
+        "splash_dekupl_kept_fraction_of_bases": kept_frac,
+        "sketch_bytes_per_gbp_scaled1000": sig1000, "sketch_bytes_per_gbp_scaled100": sig100,
+        "rocksdb_over_sig_zip": {"100": idx100, "1000": idx1000},
+        "sra_2026_factor": SRA_2026_FACTOR, "oyster_gbp": oyster_gbp,
+        "peak_rss_gb": {"splash": SPLASH_RSS_GB, "dekupl": DEKUPL_RSS_GB},
+    }
+    json.dump(rates, open(M / "rates.json", "w"), indent=1)
+    figure(rows, frames)
     for r in rows:
-        print(r)
+        print({k: r[k] for k in ("collection", "choice", "total_cpu_h", "wall_days_1000_cores",
+                                 "sketch_bytes_scaled1000", "rocksdb_bytes_scaled1000")})
+
+
+def figure(rows, frames):
+    import pubfig as pf
+
+    pf.use_style()
+    colours = list(pf.OKABE_ITO.values())
+    fig, (ax1, ax2) = pf.figure(pf.TWO_COLUMN_MM, 62, ncols=2)
+    names = list(dict.fromkeys(r["collection"] for r in rows))
+    labels = ["SRA", "SRA after\nSPLASH + DE-kupl", "Logan\ncontigs", "Logan\nunitigs"]
+    w = 0.2
+    for i, x in enumerate(CHOICES):
+        sub = [r for r in rows if r["choice"] == x]
+        xs = [j + (i - 1.5) * w for j in range(len(names))]
+        ax1.bar(xs, [r["preprocess_cpu_h"] for r in sub], w, color=pf.GREY,
+                label="SPLASH + DE-kupl" if i == 0 else None)
+        ax1.bar(xs, [r["translate_sketch_cpu_h"] for r in sub], w,
+                bottom=[r["preprocess_cpu_h"] for r in sub], color=colours[i],
+                label=f"({x}) {CHOICES[x]}")
+    ax1.set_yscale("log")
+    ax1.set_xticks(range(len(names)), labels)
+    ax1.set_ylabel("CPU-hours (one core each)")
+    ax1.yaxis.set_major_formatter(
+        __import__("matplotlib").ticker.FuncFormatter(lambda v, _: f"{v:,.0f}"))
+    rpb = frames["residues_per_base"]
+    ax2.bar(range(4), [rpb[x] for x in CHOICES], 0.6, color=colours[:4])
+    ax2.set_xticks(range(4), [f"({x})" for x in CHOICES])
+    ax2.set_ylabel("Amino acids kept per DNA base")
+    ax2.set_xlabel("Translation choice, 1 M oyster RNA-seq reads")
+    for i, x in enumerate(CHOICES):
+        ax2.text(i, rpb[x], f"{rpb[x]:.2f}", ha="center", va="bottom")
+    pf.shared_legend(fig, ncol=3)
+    for ax, letter in zip((ax1, ax2), "ab"):
+        pf.panel_label(ax, letter)
+    pf.save(fig, str(HERE.parents[1] / "figures" / "sra_protein_sketch_cost_sherlock_oyster"))
 
 
 if __name__ == "__main__":
