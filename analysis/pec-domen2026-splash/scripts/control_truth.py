@@ -12,8 +12,9 @@ Channels:
   splash_opt  SPLASH unsupervised pval_opt, BH over all tested anchors, <= 0.05
   abundance   anchor counts, PyDESeq2 ~ pair + condition, BH q <= 0.05 and |log2FC| > 1
   abundance_condition_only   same with ~ condition
-  dekupl_limma, dekupl_DESeq2   DE-kupl's differential k-mers with each test (column `tag`; its own adjusted p <= 0.05 and |log2FC| >= 1;
-              rows of diff-counts.tsv.gz), placed in genes the same way as anchors
+  dekupl_limma, dekupl_DESeq2   DE-kupl's differential k-mers with each test (column `tag`; every row of diff-counts.tsv.gz is taken,
+              so any p-value and fold-change cut is the one set in the DE-kupl config, not applied here;
+              a missing output is listed under `channels_not_run`, not scored as zero hits), placed in genes the same way as anchors
 
 A gene is found by a channel if at least one of its anchors is significant in that channel.
 Anchors shared by two or more genes (paralogs in the old gene models) are not given to any gene;
@@ -80,10 +81,14 @@ def main():
     )
     anchors = set(all_anchors["anchor"].to_list())
     dekupl_kmers = {}
+    dekupl_not_run = []
     for method in ("limma", "DESeq2"):
         dk_path = cdir / f"dekupl_{method}/DEkupl_result/control_vs_PEC_kmer_counts/diff-counts.tsv.gz"
         if dk_path.exists():
             dekupl_kmers[method] = set(pl.read_csv(dk_path, separator="\t", columns=["tag"])["tag"].to_list())
+        else:
+            dekupl_not_run.append(method)
+            print(f"WARNING: {dk_path} is missing; dekupl_{method} is reported as not run", file=sys.stderr)
     wanted = anchors.union(*dekupl_kmers.values())
     kmer_genes = defaultdict(set)
     for t, s in tx.items():
@@ -139,6 +144,7 @@ def main():
         splash_scores_rows=scores_n,
         supervised_q_column=corr[0] if corr else "BH(Cjs_0_pval) computed here",
         channels={},
+        channels_not_run=[f"dekupl_{m}" for m in dekupl_not_run],
     )
     placement = Counter(
         place(a) if place(a) in ("multi", "none") else "one_gene" for a in anchors
