@@ -433,7 +433,18 @@ def one_arm(
         search_log.rename(moved(search_log, n))
 
     if not search_csv.exists():
-        rc, dt = run(search_cmd, search_log)
+        # Write to a temp name and rename on success, so a search killed part-way (Slurm
+        # time limit, out of memory) never leaves a cut-off CSV that the next run would
+        # take for a finished search.
+        part = search_csv.with_name(search_csv.name + ".part")
+        part.unlink(missing_ok=True)
+        rc, dt = run(
+            [str(part) if a == str(search_csv) else a for a in search_cmd], search_log
+        )
+        if rc == 0 and part.exists():
+            part.rename(search_csv)
+        else:
+            part.unlink(missing_ok=True)
         rec["search_rc"], rec["search_s"] = rc, round(dt, 1)
     else:
         rec["search_rc"], rec["search_s"] = 0, 0.0
