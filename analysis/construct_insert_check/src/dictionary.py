@@ -47,24 +47,28 @@ def build_for(construct: Construct, collection: Collection) -> list[DictionaryEn
             from_group="",
         )
 
-    for other in collection.constructs:
-        if other.group_id == construct.group_id:
+    # Earliest decision first, so that when two decisions give one name different
+    # sequences the same one wins whatever the row order of the input files.
+    earlier = [
+        (event, other.group_id)
+        for other in collection.constructs
+        if other.group_id != construct.group_id
+        for event in other.events
+        if event.decision == "unexpected_insert"
+        and event.decided_date < construct.submitted_date
+    ]
+    earlier.sort(key=lambda pair: (pair[0].decided_date, pair[0].event_id))
+    for event, group_id in earlier:
+        key = event.insert_name.lower()
+        if key in entries:
             continue
-        for event in other.events:
-            if event.decision != "unexpected_insert":
-                continue
-            if event.decided_date >= construct.submitted_date:
-                continue
-            key = event.insert_name.lower()
-            if key in entries:
-                continue
-            entries[key] = DictionaryEntry(
-                insert_name=event.insert_name,
-                insert_seq=event.insert_seq,
-                category="from earlier decision",
-                origin=f"decision {event.event_id} on {event.decided_date}",
-                from_group=other.group_id,
-            )
+        entries[key] = DictionaryEntry(
+            insert_name=event.insert_name,
+            insert_seq=event.insert_seq,
+            category="from earlier decision",
+            origin=f"decision {event.event_id} on {event.decided_date}",
+            from_group=group_id,
+        )
 
     for entry in entries.values():
         if entry.from_group == construct.group_id:
