@@ -426,14 +426,23 @@ def timed_run(
         start = time.perf_counter()
         proc = subprocess.Popen(cmd, env=env, stdout=subprocess.PIPE if count_stdout else subprocess.DEVNULL, stderr=err)
         timed_out = threading.Event()
+        reap_lock = threading.Lock()
+        reaped = [False]
+
+        def has_exited():
+            # Look at the child without reaping it (WNOWAIT), so wait4 below still gets its RSS.
+            return os.waitid(os.P_PID, proc.pid, os.WEXITED | os.WNOHANG | os.WNOWAIT) is not None
 
         def stop_process():
-            try:
-                # Avoid Popen.poll(): wait4 below owns child reaping for peak RSS.
-                os.kill(proc.pid, signal.SIGKILL)
-            except ProcessLookupError:
-                return
-            timed_out.set()
+            # Never kill a child that has exited (a zombie) or been reaped (its pid may be reused).
+            with reap_lock:
+                if reaped[0] or has_exited():
+                    return
+                try:
+                    os.kill(proc.pid, signal.SIGKILL)
+                except ProcessLookupError:
+                    return
+                timed_out.set()
 
         timer = None
         if timeout_s is not None:
@@ -446,7 +455,10 @@ def timed_run(
                 n_bytes += len(block)
                 n_lines += block.count(b"\n")
             proc.stdout.close()
-        _, status, usage = os.wait4(proc.pid, 0)
+        os.waitid(os.P_PID, proc.pid, os.WEXITED | os.WNOWAIT)  # blocks until exit, does not reap
+        with reap_lock:
+            reaped[0] = True  # from here stop_process does nothing
+            _, status, usage = os.wait4(proc.pid, 0)
         if timer is not None:
             timer.cancel()
             timer.join()
