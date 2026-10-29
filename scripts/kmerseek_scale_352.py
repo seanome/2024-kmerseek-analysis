@@ -249,7 +249,10 @@ def histogram_of_parts(parts: list[Path]) -> tuple[np.ndarray, int, int]:
         for accession, sequence in read_fasta(part):
             bins.append(hash_bin(accession))
             lengths.append(len(sequence))
-        np.add.at(hist, np.asarray(bins, dtype=np.int64), np.asarray(lengths, dtype=np.int64))
+        # bincount sums in float64, exact below 2**53; cast back to int64.
+        hist += np.bincount(
+            np.asarray(bins, dtype=np.int64), weights=np.asarray(lengths, dtype=np.float64), minlength=N_BINS
+        ).astype(np.int64)
         n_seq += len(lengths)
         n_res += int(sum(lengths))
     return hist, n_seq, n_res
