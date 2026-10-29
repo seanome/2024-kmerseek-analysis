@@ -97,6 +97,15 @@ def residues_example(variants, groups_df, enc):
 def write(path: Path, *, cfg, summary, groups_df, variants, excl, disc, syn_check, sens, kmer,
           examples, score_check, n_boot, n_positions, kmer_floors):  # fmt: skip
     N = int(summary["N"][0])
+    ref_len = len(variants["sequence"][0])
+    rep_lo, rep_hi = int(variants["n_replicates"].min()), int(variants["n_replicates"].max())
+    n_pooled = int((variants["n_rows_pooled"] > 1).sum())
+    pooled_text = (
+        "no sequence was measured twice"
+        if n_pooled == 0
+        else f"{n_pooled} sequences were measured in more than one row and pooled"
+    )
+    n_examples = examples.filter(pl.col("encoding").is_in(PRIMARY)).height
     sd_all = float(np.sqrt(summary["total_variance"][0]))
     syn_ratio = syn_check["ratio_var_to_mean_se2"]
     L = []
@@ -127,11 +136,11 @@ def write(path: Path, *, cfg, summary, groups_df, variants, excl, disc, syn_chec
         "the cell."
     )
     w(
-        f"- Reference: PTEN, UniProt P60484, 403 aa. The MaveDB target DNA translates to "
+        f"- Reference: PTEN, UniProt P60484, {ref_len} aa. The MaveDB target DNA translates to "
         "exactly the UniProt sequence (checked by the script)."
     )
     w(
-        f"- Replicates: 2 to 8 per variant (`score1`..`score8`). The script checked that "
+        f"- Replicates: {rep_lo} to {rep_hi} per variant (`score1`..`score8`). The script checked that "
         f"`score` is their mean (largest difference {score_check['max_abs_score_minus_replicate_mean']:.1e}), "
         "`sd` their sample standard deviation and `se` = `sd`/sqrt(n)."
     )
@@ -139,7 +148,7 @@ def write(path: Path, *, cfg, summary, groups_df, variants, excl, disc, syn_chec
 
     w("### Rows kept and left out\n")
     w(f"{N} single missense variants were kept, one per distinct protein sequence "
-      f"(no sequence was measured twice), at {n_positions} of 403 positions.\n")  # fmt: skip
+      f"({pooled_text}), at {n_positions} of {ref_len} positions.\n")  # fmt: skip
     w("| Reason left out | Rows |\n|---|---|")
     for r in excl.iter_rows(named=True):
         w(f"| {r['reason']} | {r['n_rows']} |")
@@ -327,7 +336,7 @@ def write(path: Path, *, cfg, summary, groups_df, variants, excl, disc, syn_chec
     w("![Example groups](../figures/347_SF3_example_groups_pten_vamp_seq.png)\n")
     w("Panel a shows the range of every collision group, so the three largest (selected "
       "extremes) can be seen against the rest. Panels b and c show those three and three "
-      "groups drawn at random, per encoding. All 12 are in "
+      f"groups drawn at random, per encoding. All {n_examples} are in "
       "`tables/347_invisible_mutations_examples.tsv`.\n")  # fmt: skip
     for enc in PRIMARY:
         w(residues_example(variants, groups_df, enc))
