@@ -9,6 +9,8 @@ REFERENCE_CHECK ?= $(SCRATCH)/botryllus-reference-check-49521127
 FIXTURE ?= $(SCRATCH)/botryllus-nextflow-fixture-49525580
 # Supply the exact controller ID for status/stop; never select unrelated jobs by name.
 JOB_ID ?=
+# Reviewed-failure file for resume after a FAILED task (read by production.sbatch).
+FAILURE_REVIEW ?=
 
 .PHONY: help run resume test check watch stop
 help:
@@ -21,13 +23,13 @@ run:
 
 resume:
 	@test -s "$(OUTROOT)/params.json" && test -s "$(OUTROOT)/preflight-source.txt"
-	sbatch --output="$(SCRATCH)/botryllus-64-nextflow-%j.log" "$(PIPELINE)/production.sbatch" "$(CODE)" "$(OUTROOT)"
+	FAILURE_REVIEW="$(FAILURE_REVIEW)" sbatch --output="$(SCRATCH)/botryllus-64-nextflow-%j.log" "$(PIPELINE)/production.sbatch" "$(CODE)" "$(OUTROOT)"
 
 test:
 	sbatch --output="$(SCRATCH)/botryllus-nextflow-fixture-%j.log" "$(PIPELINE)/smoke.sbatch" "$(CODE)"
 
 check:
-	python3 -m unittest discover -s "$(CODE)/scripts/botryllus_shazam" -p test_frozen_samples.py
+	python3 -m unittest discover -s "$(CODE)/scripts/botryllus_shazam" -p 'test_*.py'
 
 # One snapshot: Sherlock forbids unattended polling loops.
 watch:
