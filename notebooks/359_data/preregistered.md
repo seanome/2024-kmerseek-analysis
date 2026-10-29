@@ -130,7 +130,10 @@ before the run starts; none changes after.
     REGION "Disordered", and at least half of the call's target interval lies inside the
     feature's own residues rather than its 21-residue flanks. A call that sits only on a
     flank did not land on that feature. In the union, the call is the one with the smallest
-    E among the settings that land on the exon.
+    E among the settings that land on the exon. When calls tie on E, the one with the
+    alphabetically first target accession is counted. That choice is arbitrary: it is only
+    there so the output does not depend on input order, and it can change which tied call
+    is counted as named.
 12. **Scan (rule 3)**: the Kyte-Doolittle scan of notebooks 231 and 244
     (`swissprot_control_utils.kd_transmem_calls`, 19-residue window, a call = a run of
     windows with mean above the threshold), run on the same real and decoy isoforms. It
