@@ -1404,6 +1404,12 @@ def cmd_score(a):
             if u == "yes" and seen == "no":
                 for wf in kk.get(r["card_id"], "").split(";"):
                     useful_by[wf].add(r["query_id"])
+        judged = {r["card_id"] for r in rv.iter_rows(named=True)}
+        not_judged = [c for c in kk if c not in judged]
+        if not_judged:
+            reasons.append(
+                f"{len(not_judged)} cards in blind_key.csv have no row in the review sheet"
+            )
         if bad_rows:
             reasons.append(
                 f"{bad_rows} review rows lack a yes/no judgment, the written reason, "
@@ -1461,6 +1467,15 @@ def cmd_score(a):
                     reduction_vs_strongest=r,
                 )
             )
+        if strongest is not None:
+            untimed = [
+                x for x in qids if (x, "A") not in times or (x, strongest) not in times
+            ]
+            if untimed:
+                reasons.append(
+                    f"{len(untimed)} evaluation queries lack a timed row for A or for "
+                    f"the comparison workflow {strongest}"
+                )
         med = statistics.median(red) if red else float("nan")
         n = len(qids)
         c1 = yields.get("A", 0) >= rule["min_useful_queries"]
