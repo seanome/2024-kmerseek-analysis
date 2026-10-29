@@ -1,0 +1,16 @@
+metric,query,partner,by_arm,by_alphabet,partner_new,by_arm_new,by_alphabet_new
+E-value,Ced9,BCL2,12495,13343,BCL2,12495,13355
+E-value,P66,CD47,7825,7463,CD47,7825,6047
+E-value,BHF,TTN,1,,TTN,1,
+mean IDF,Ced9,BCL2,8140,8169,BCL2,8143,8171
+mean IDF,P66,CD47,8472,8671,CD47,8441,8634
+mean IDF,BHF,MUC16,1,,MUC16,1,
+tf-idf,Ced9,BCL2,8255,8303,BCL2,8255,8303
+tf-idf,P66,CD47,8745,8818,CD47,8762,8839
+tf-idf,BHF,RSF1,1,,RSF1,1,
+enrichment,Ced9,BCL2,10159,9440,BCL2,10159,9439
+enrichment,P66,CD47,8045,8150,CD47,8175,8257
+enrichment,BHF,MUC16,1,,MUC16,1,
+Poisson p-value,Ced9,BCL2,7762,7148,BCL2,7762,7148
+Poisson p-value,P66,CD47,6818,6952,CD47,6869,6999
+Poisson p-value,BHF,MUC16,1,,MUC16,1,
