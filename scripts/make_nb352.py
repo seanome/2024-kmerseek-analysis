@@ -37,7 +37,7 @@ md(
     rf"""
 # 352. kmerseek index build and query time at 1, 10 and up to 100 billion residues (UniParc)
 
-**Question.** When the database kmerseek searches grows from 1 to 10 to 100 billion amino
+**Question.** When the database kmerseek searches grows from 1 to 10 billion and up to 100 billion amino
 acids, does the time to answer one query grow in proportion to the index size, or faster?
 
 **Decision it informs.** Whether the paper and every description of kmerseek may say it
