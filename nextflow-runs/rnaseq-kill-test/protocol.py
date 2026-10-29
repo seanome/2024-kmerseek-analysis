@@ -382,7 +382,10 @@ def overlap_curve(ranked_units, top_genes, overlaps):
     allowed_units = set(ranked_units)
     allowed_genes = set(top_genes)
     for row in overlaps:
-        bases = positive_integer(row["overlap_bp"], "overlap_bp")
+        raw = str(row["overlap_bp"])
+        if not raw.isdigit():
+            raise ValueError("overlap_bp must be a whole number, 0 or more")
+        bases = int(raw)
         if row["unit"] not in allowed_units:
             raise ValueError("overlap contains an unknown unit")
         if row["gene"] in allowed_genes and bases >= 20:

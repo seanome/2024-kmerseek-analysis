@@ -348,6 +348,17 @@ class ProtocolTests(unittest.TestCase):
             with self.assertRaisesRegex(ValueError, "line 2"):
                 p.read_taxonomy(bad)
 
+    def test_zero_overlap_row_is_allowed_but_malformed_is_not(self):
+        rows = [
+            dict(unit="u1", gene="g1", overlap_bp="0"),
+            dict(unit="u1", gene="g1", overlap_bp="20"),
+        ]
+        result = p.overlap_curve(["u1"], ["g1"], rows)
+        self.assertEqual(result[0]["genes_hit"], 1)
+        rows[0]["overlap_bp"] = "20.0"
+        with self.assertRaises(ValueError):
+            p.overlap_curve(["u1"], ["g1"], rows)
+
 
 if __name__ == "__main__":
     unittest.main()
