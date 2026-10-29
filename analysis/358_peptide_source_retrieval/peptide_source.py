@@ -907,10 +907,12 @@ def evaluate(workdir: Path) -> dict:
         surv = [n_surviving(c, t) for c in pres]
         row = dict(method=method, threshold=t, n_present=len(pres), recovered=k_rec,
                    recovery=k_rec / max(len(pres), 1),
-                   recovery_ci=wilson(k_rec, len(pres)),
+                   recovery_ci_lo=float(wilson(k_rec, len(pres))[0]),
+                   recovery_ci_hi=float(wilson(k_rec, len(pres))[1]),
                    n_absent=len(absn), false_assignments=k_fa,
                    false_assignment_rate=k_fa / max(len(absn), 1),
-                   false_assignment_ci=wilson(k_fa, len(absn)),
+                   false_assignment_ci_lo=float(wilson(k_fa, len(absn))[0]),
+                   false_assignment_ci_hi=float(wilson(k_fa, len(absn))[1]),
                    median_surviving=float(np.median(surv)) if surv else float("nan"),
                    max_surviving=int(max(surv)) if surv else 0)
         for kind in ["control_composition", "control_pairs"]:
