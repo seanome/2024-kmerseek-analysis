@@ -32,7 +32,7 @@ manifest=manifest.tsv
 printf 'file\turl\tbytes\tlast_modified\tdate_downloaded\tsha256\n' > "$manifest"
 for file in eval_human.zip uniprot_sprot-only2024_01.tar.gz crap.fasta; do
   url=${URLS[$file]}
-  last_modified=$(curl -sIL "$url" | tr -d '\r' | awk -F': ' 'tolower($1)=="last-modified"{print $2}' | tail -1)
+  last_modified=$(curl -sIL "$url" | tr -d '\r' | awk -F': ' 'tolower($1)=="last-modified"{print $2}' | tail -1) || last_modified=
   for attempt in 1 2 3 4 5 6 7 8 9 10; do
     if curl -fsSL -C - --retry 5 --speed-limit 100000 --speed-time 60 -o "$file" "$url"; then
       break
