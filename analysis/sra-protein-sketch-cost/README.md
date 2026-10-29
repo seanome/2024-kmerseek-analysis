@@ -34,7 +34,8 @@ and on the Logan contigs of three runs.
 The choice of translation barely changes compute (within 1.5x), because six-frame
 translation is most of the cost and every choice has to do it. The choice changes storage
 by 38x. Running SPLASH and DE-kupl on every BioProject first costs 21x more than sketching
-all of the SRA directly, almost all of it DE-kupl.
+all of the SRA directly with choice (a), almost all of it DE-kupl. Their rates come from
+6 libraries of one species (oyster).
 
 | Collection | Choice | CPU-hours | Days on 1,000 cores | Days on 10,000 cores | Sketches, scaled 1000 | RocksDB, scaled 1000 | RocksDB, scaled 100 |
 |---|---|---:|---:|---:|---:|---:|---:|
