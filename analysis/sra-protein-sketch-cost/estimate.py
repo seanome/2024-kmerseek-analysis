@@ -2,7 +2,8 @@
 
 Reads the rates measured by bench.sbatch and bench_full.sbatch (measurements/), combines them
 with the collection sizes and SPLASH / DE-kupl rates below, and writes
-measurements/estimate.csv, measurements/rates.json and figures/sra_protein_sketch_cost.*.
+measurements/estimate.csv, measurements/rates.json and
+figures/sra_protein_sketch_cost_sherlock_oyster.*.
 Run from the repo root: python analysis/sra-protein-sketch-cost/estimate.py
 """
 
@@ -10,6 +11,8 @@ import csv
 import json
 import sys
 from pathlib import Path
+
+from matplotlib.ticker import FuncFormatter
 
 HERE = Path(__file__).resolve().parent
 M = HERE / "measurements"
@@ -209,8 +212,7 @@ def figure(rows, frames, lf):
     ax1.set_yscale("log")
     ax1.set_xticks(range(len(names)), labels)
     ax1.set_ylabel("CPU-hours (one core each)")
-    ax1.yaxis.set_major_formatter(
-        __import__("matplotlib").ticker.FuncFormatter(lambda v, _: f"{v:,.0f}"))
+    ax1.yaxis.set_major_formatter(FuncFormatter(lambda v, _: f"{v:,.0f}"))
     sources = [("Oyster\nRNA-seq\n1 M reads", frames),
                ("Oyster\nRNA-seq\nLogan contigs", lf["SRR9089190"]),
                ("Human gut\nmetagenome\nLogan contigs", lf["SRR5650070"]),
