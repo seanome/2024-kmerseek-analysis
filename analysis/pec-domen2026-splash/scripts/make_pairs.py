@@ -40,9 +40,9 @@ hits = pl.concat(frames, how="diagonal_relaxed") if frames else pl.DataFrame()
 if hits.height:
     sort_cols = ["containment"] + (["prob_overlap_adjusted"] if "prob_overlap_adjusted" in hits.columns else [])
     hits = (hits.filter(pl.col("intersect_hashes") >= 2)
-            .sort(["query", "db", "moltype", "scaled", *sort_cols, "target"],
-                  descending=[False, False, False, False, True] + [False] * (len(sort_cols) - 1) + [False])
-            .group_by(["query", "db", "moltype", "scaled"], maintain_order=True).head(5))
+            .sort(["query", "db", "moltype", "ksize", "scaled", *sort_cols, "target"],
+                  descending=[False, False, False, False, False, True] + [False] * (len(sort_cols) - 1) + [False])
+            .group_by(["query", "db", "moltype", "ksize", "scaled"], maintain_order=True).head(5))
 hits.write_parquet(out_hits)
 pairs = hits.select("query", "target", "db").unique() if hits.height else pl.DataFrame(
     schema={"query": pl.Utf8, "target": pl.Utf8, "db": pl.Utf8})
