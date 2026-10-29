@@ -143,7 +143,10 @@ oyster and gut files and the mean amino-acid fractions of all three. Compared wi
    no direct measurement.
 5. **SPLASH and DE-kupl are priced as if every base of the SRA were in a BioProject they can
    run on.** DE-kupl needs two labelled groups of samples, and both tools were built for
-   RNA-seq, so a real run would cover less of the SRA and cost less. What they keep is tiny:
+   RNA-seq, so a real run would cover less of the SRA and cost less. The amino acids and sketch bytes
+   for this collection are modelled, not measured: the amino-acid fractions come from 150 bp
+   reads and are applied to 48 to 85 bp contigs, and the share kept is the same for
+   (a), (c) and (d). What they keep is tiny:
    27.6 Mbp from 46.1 Gbp (0.06%). DE-kupl contigs have a median length of 48 bases
    (16 amino acids) and SPLASH compactors 85, so (b) keeps only 24% of those bases.
 
