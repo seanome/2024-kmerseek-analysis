@@ -9,7 +9,7 @@ D=${NB353_DIR:-$SCRATCH/353_measurement_retrieval}
 KMERSEEK_TAG=v0.4.0
 KMERSEEK_COMMIT=0aed5ca
 KMERSEEK=$D/kmerseek-$KMERSEEK_TAG/target/release/kmerseek
-BUDGET_CPU_HOURS=${NB353_BUDGET_CPU_HOURS:-96}
+BUDGET_CPU_HOURS=${NB353_BUDGET_CPU_HOURS:-104}
 mkdir -p "$D/ledger" "$D/logs"
 
 if [ -n "${SLURM_JOB_GPUS:-}${SLURM_STEP_GPUS:-}${SLURM_GPUS:-}" ]; then
@@ -28,6 +28,6 @@ ledger_write() {
         "$NB353_STEP" "$elapsed" "${SLURM_CPUS_PER_TASK:-1}" "$status" \
         > "$D/ledger/${SLURM_JOB_ID:-local}_${SLURM_ARRAY_TASK_ID:-0}.tsv"
     total=$(cat "$D"/ledger/*.tsv | awk -F'\t' '{s += $4 * $5} END {printf "%.2f", s / 3600}')
-    echo "353: this job ${elapsed} s; CPU-hours of all 353 jobs so far: ${total} (budget $BUDGET_CPU_HOURS)"
+    echo "353: this job ${elapsed} s; CPU-hours of all 353 jobs so far: ${total} (proposed ceiling $BUDGET_CPU_HOURS; this line only reports, it does not stop jobs)"
 }
 trap ledger_write EXIT
