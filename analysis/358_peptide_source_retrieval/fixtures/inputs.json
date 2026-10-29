@@ -1,0 +1,15 @@
+{
+  "data_origin": "synthetic_fixture",
+  "proteins": [
+    {
+      "path": "proteins_human.fasta",
+      "role": "human"
+    },
+    {
+      "path": "proteins_contaminants.fasta",
+      "role": "contaminant"
+    }
+  ],
+  "calls": "calls.tsv",
+  "accepted": "accepted.tsv"
+}
