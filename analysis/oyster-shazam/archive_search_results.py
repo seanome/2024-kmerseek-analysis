@@ -8,8 +8,9 @@ FIELDS='query_name,query_md5,match_name,containment,intersect_hashes,ksize,scale
 
 def save_matches(source,destination,accession,log,queries):
     # Accept the count with or without thousands separators.
-    done={int(n.replace(',','')) for n in re.findall(r'DONE\. Processed ([\d,]+) search sigs',log.read_text())}
-    if queries not in done:
+    # Use the last such line, as replay_full_dna.py does.
+    done=re.findall(r'DONE\. Processed ([\d,]+) search sigs',log.read_text())
+    if not done or int(done[-1].replace(',',''))!=queries:
         raise ValueError('Search did not confirm all query signatures processed')
     names=set();count=0
     with source.open() as src,gzip.open(destination,'wt') as saved:

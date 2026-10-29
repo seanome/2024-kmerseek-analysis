@@ -17,6 +17,11 @@ class SearchResultsTest(unittest.TestCase):
             p=Path(d);(p/'in').write_text('');(p/'log').write_text('Processed 1 search sigs')
             with self.assertRaises(ValueError):save_matches(p/'in',p/'out.gz','RUN',p/'log',2)
 
+    def test_last_done_line_used(self):
+        with tempfile.TemporaryDirectory() as d:
+            p=Path(d);(p/'in').write_text('');(p/'log').write_text('DONE. Processed 2 search sigs\nDONE. Processed 1 search sigs\n')
+            with self.assertRaises(ValueError):save_matches(p/'in',p/'out.gz','RUN',p/'log',2)
+
     def test_positive_and_invalid_pairs(self):
         with tempfile.TemporaryDirectory() as d:
             p=Path(d);(p/'log').write_text('DONE. Processed 2 search sigs')
