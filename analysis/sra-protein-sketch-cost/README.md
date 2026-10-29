@@ -136,7 +136,10 @@ oyster and gut files and the mean amino-acid fractions of all three. Compared wi
    fractions average all three.
 4. **Three Logan runs stand in for 27 million.** Logan's mix of RNA-seq, metagenomes,
    genomes and amplicons will move the amino-acid fractions; (c) and (d) differ most between
-   the three runs measured (0.06 to 0.25, and 0.05 to 0.08, per base).
+   the three runs measured (0.06 to 0.25, and 0.05 to 0.08, per base). The unitig rows reuse
+   the contig rates, but unitigs have a different length profile (the contig medians are 42
+   to 75 bp), and (b), (c) and (d) depend on length. So the unitig CPU-hours and storage have
+   no direct measurement.
 5. **SPLASH and DE-kupl are priced as if every base of the SRA were in a BioProject they can
    run on.** DE-kupl needs two labelled groups of samples, and both tools were built for
    RNA-seq, so a real run would cover less of the SRA and cost less. What they keep is tiny:
