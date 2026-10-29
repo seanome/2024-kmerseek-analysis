@@ -196,7 +196,13 @@ def convert(zip_path, outdir):
         accepted[scan] = psms[0]
 
     # calls: Casanovo on the real spectra
-    pool, duplicated = {}, set()
+    # a spectrum with more than one Casanovo row has no single call: count over all real rows
+    rows_per_scan = Counter()
+    for r in read_member(z, CASANOVO):
+        if r["Source File"] == REAL_MGF:
+            rows_per_scan[scan_number(r["Scan"])] += 1
+    duplicated = {scan for scan, n in rows_per_scan.items() if n > 1}
+    pool = {}
     for r in read_member(z, CASANOVO):
         report["casanovo_rows"] += 1
         if r["Source File"] != REAL_MGF:
@@ -214,6 +220,9 @@ def convert(zip_path, outdir):
             continue
         seq = "".join(t for t in tokens if t)
         res_scores = [s for t, s in zip(tokens, scores) if t]
+        if scan in duplicated:
+            report["casanovo_duplicate_scan_rows"] += 1
+            continue
         if set(seq) - CANONICAL:
             report["casanovo_noncanonical_letter"] += 1
             continue
@@ -222,11 +231,6 @@ def convert(zip_path, outdir):
             continue
         if scan not in accepted:
             report["casanovo_no_db_psm"] += 1
-            continue
-        if scan in pool or scan in duplicated:  # more than one call for a spectrum: drop it
-            report["casanovo_duplicate_scan_rows"] += 1
-            duplicated.add(scan)
-            pool.pop(scan, None)
             continue
         pool[scan] = (seq, r["Casanovo score"], res_scores)
     report["pool"] = len(pool)

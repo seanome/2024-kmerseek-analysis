@@ -95,7 +95,7 @@ def test_convert_applies_every_rule(zip_path, tmp_path):
     assert rep["casanovo_rows_other_source_file"] == 1
     assert rep["casanovo_length_outside_7_30"] == 1
     assert rep["casanovo_no_db_psm"] == 2  # scan 6, and scan 8 after its tie is dropped
-    assert rep["casanovo_duplicate_scan_rows"] == 1
+    assert rep["casanovo_duplicate_scan_rows"] == 2  # both rows of the repeated scan
     assert rep["db_scans_dropped_tied_psms"] == 1
     assert rep["db_rows_other_source_file"] == 1
     assert rep["chosen_call_equals_accepted_IL"] == 3
