@@ -8,8 +8,18 @@
 #   make run           (Sherlock) everything; reuses the pilot's tasks
 #   make watch / stop / running
 #   make pull-results  (laptop) copy results/ back for the notebook
+#
+# Rerun on kmerseek PR 157 (Pr(same) from each region), in run-pr157/ so run/ keeps
+# notebook 344's results. No pilot: rerun_pr157.json sizes the index and searches from
+# notebook 344's run (searches at most 8.1 GB and about 18 minutes, index 3.0 GB and 1 minute).
+#   make rerun-pr157   (Sherlock) everything, new index, new decoys (same seeds, same human FASTA: HUMAN_MD5 checks it)
+#   make watch-pr157 / stop-pr157
+#   make pull-results RUN_DIR=run-pr157 RESULTS=results-pr157   (laptop)
 
 SHELL := /bin/bash
+
+RUN_DIR ?= run
+RESULTS ?= results
 
 KMERSEEK_REPO ?= /Users/olga/code/kmerseek
 # seanome/kmerseek PR 134 head (olgabot/run-evalue-checks), which holds PR 133.
@@ -50,7 +60,8 @@ HEAD_SUBMIT = HEAD_ACCOUNT=$(SLURM_ACCOUNT) HEAD_PARTITION=$(SLURM_PARTITION) \
               $(MAKEFILE_DIR)/../../scripts/nf-head
 RUN_ARGS = -profile sherlock -resume --human_fasta $(HUMAN_FASTA) --human_md5 $(HUMAN_MD5)
 
-.PHONY: push-image stub pilot measure run watch stop running pull-results
+.PHONY: push-image stub pilot measure run watch stop running pull-results \
+        rerun-pr157 watch-pr157 stop-pr157
 
 # Built from a clean `git archive` of KMERSEEK_SHA, so nothing uncommitted in a kmerseek
 # worktree can reach the image. Checks kmerseek and segmasker run before pushing.
@@ -121,5 +132,29 @@ running:
 # Everything but the decoy FASTAs (about 160 MB); the notebook reads decoys.tsv, the SEG
 # tables and the region files.
 pull-results:
-	mkdir -p results
-	rsync -av --exclude 'decoys/*.fasta' sherlock:$(REMOTE_DIR)/run/results/ results/
+	mkdir -p $(RESULTS)
+	rsync -av --exclude 'decoys/*.fasta' sherlock:$(REMOTE_DIR)/$(RUN_DIR)/results/ $(RESULTS)/
+
+# A head job and tmux session of their own, so watch-pr157 and stop-pr157 find this run
+# and not notebook 344's.
+rerun-pr157 watch-pr157 stop-pr157: HEAD_SESSION = nb344-pr157
+rerun-pr157 watch-pr157 stop-pr157: HEAD_JOBNAME = nf-nb344-pr157
+# notebook 344's 156 searches took at most about 18 minutes each; 8 h covers the run and a queue.
+rerun-pr157: HEAD_TIME = 8:00:00
+
+# kmerseek PR 157 head 02dd7cc (olgabot/region-local-pr-same, on PR 134), built from
+# ./Dockerfile with `make push-image KMERSEEK_SHA=02dd7cc05ce466a7049537a1236661d11e702c09
+# IMAGE_TAG=2026-10-20-nb344-pr157-02dd7cc` and pushed 2026-10-20 under that tag.
+# On the command line, not in rerun_pr157.json: the config reads params.image and
+# params.trace_label when it is parsed, and a command-line value is known by then (the
+# pilot's --trace_label named its trace file).
+PR157_IMAGE := docker.io/olgabot/kmerseek@sha256:ea1fd4cb8f3c9633411cacb0855b57374699e05b95cd1f9de65695f79078e2f1
+
+rerun-pr157:
+	$(call require_cluster)
+	mkdir -p run-pr157
+	cd run-pr157 && ml load biology nextflow && \
+	  $(HEAD_SUBMIT) nextflow run ../main.nf $(RUN_ARGS) --image $(PR157_IMAGE) \
+	    --trace_label pr157 -params-file ../rerun_pr157.json
+
+watch-pr157 stop-pr157: %-pr157: %
