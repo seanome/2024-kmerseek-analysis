@@ -113,30 +113,31 @@ def main(phasepro: Path, disprot: Path, out: Path) -> None:
         for r in rows
         if not 1 <= r["region_start"] <= r["region_end"] <= len(r["sequence"])
     }
+    excluded_names = set(EXCLUDED_TAXA.values())
     for row in rows:
         row["coordinates_past_sequence_end"] = (
             row["source"],
             row["accession"],
         ) in bad_coordinates
         seq = row.pop("sequence")
+        protein_length = len(seq)
+        excluded_species = (
+            row["taxon_id"] in EXCLUDED_TAXA or row["organism"] in excluded_names
+        )
         if row["coordinates_past_sequence_end"]:
-            row["protein_length"] = len(seq)
+            row["protein_length"] = protein_length
             row["region_sequence"] = row["indexed_sequence"] = None
             row["indexed_first_residue"] = row["indexed_last_residue"] = None
-            row["excluded_species"] = row["taxon_id"] in EXCLUDED_TAXA or row[
-                "organism"
-            ] in set(EXCLUDED_TAXA.values())
+            row["excluded_species"] = excluded_species
             continue
-        row["protein_length"] = len(seq)
+        row["protein_length"] = protein_length
         row["region_sequence"] = seq[row["region_start"] - 1 : row["region_end"]]
         (
             row["indexed_sequence"],
             row["indexed_first_residue"],
             row["indexed_last_residue"],
         ) = cut(seq, row["region_start"], row["region_end"])
-        row["excluded_species"] = row["taxon_id"] in EXCLUDED_TAXA or row[
-            "organism"
-        ] in set(EXCLUDED_TAXA.values())
+        row["excluded_species"] = excluded_species
     table = pl.DataFrame(rows, infer_schema_length=None).with_columns(
         (pl.col("region_end") - pl.col("region_start") + 1).alias("region_length_aa"),
         (~pl.col("excluded_species") & ~pl.col("coordinates_past_sequence_end")).alias(
