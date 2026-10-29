@@ -33,7 +33,7 @@ The binary has three commands:
 | `translate` | Index and one or more nucleotide read files | Reference-supported peptide segments, optional per-frame TSV and unclassified-read FASTA |
 | `sixframe` | Nucleotide read files | All stop-free peptide segments without a reference-dependent coding gate |
 
-`index --alphabet protein`, `dayhoff`, and `hp` use default k 7, k 12, and k 30, respectively. K can be changed within 63 packed bits: protein≤12, Dayhoff≤21, HP≤63. All three alphabets use the same classes as upstream Orpheum. These packed words are internal lookup keys, not sourmash hashes.
+`index --alphabet protein`, `dayhoff`, and `hp` use default k 7, k 12, and k 30, respectively. K can be changed within 63 packed bits: protein≤12, Dayhoff≤21, HP≤63. All three alphabets use the same classes as sourmash. These packed words are internal lookup keys, not sourmash hashes.
 
 An index uses 64 MiB by default. `--memory-mib` sets a different fixed allowance. The metadata reports occupied bits and an estimated false-positive probability. `translate` rejects indexes above `--max-index-fpr` (default 0.01). Increase index memory when that guard fails; reducing the guard is not an accuracy improvement. The reference fingerprint, settings and bit data are retained and checksummed.
 
