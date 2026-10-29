@@ -130,7 +130,8 @@ oyster and gut files and the mean amino-acid fractions of all three. Compared wi
    Orpheum itself was not run.
 3. **Sketch size depends on depth.** Sketching all 24 M reads of the library gave 6.8x the
    hashes of the first 1 M reads, for 24x the bases. SRA storage uses the whole-library
-   rate, measured on one RNA-seq library; metagenomes have more distinct sequence and will
+   rate, measured on one RNA-seq library for choice (a) only and applied to (b), (c) and (d)
+   unmeasured; metagenomes have more distinct sequence and will
    be larger. Logan storage comes from the
    contig sketches measured directly on the two large files (oyster and gut); the amino-acid
    fractions average all three.
