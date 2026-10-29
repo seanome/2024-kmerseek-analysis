@@ -1,0 +1,8 @@
+{
+  "python": "3.11.17",
+  "command": "python3 -m unittest discover -s tests -v",
+  "tests_run": 21,
+  "failures": 0,
+  "errors": 0,
+  "successful": true
+}
