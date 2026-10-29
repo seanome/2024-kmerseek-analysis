@@ -47,8 +47,8 @@ gzip -dc "$DB/uhgp-90.faa.gz" \
 gzip -dc "$DB/human_UP000005640_9606.fasta.gz" "$DB/human_UP000005640_9606_additional.fasta.gz" >> "$S1/search_db.fasta"
 cat "$DB/crap.fasta" >> "$S1/search_db.fasta"
 printf 'part\tn_sequences\n' > "$S1/search_db_counts.tsv"
-printf 'uhgp90_kept\t%s\n' "$(gzip -dc "$DB/uhgp-90.faa.gz" | grep -c '^>' | awk -v h="$(wc -l < "$S1/uhgp90_hidden_proteins.txt")" '{print $1-h}')" >> "$S1/search_db_counts.tsv"
-printf 'uhgp90_hidden\t%s\n' "$(wc -l < "$S1/uhgp90_hidden_proteins.txt")" >> "$S1/search_db_counts.tsv"
+printf 'uhgp90_kept\t%s\n' "$(gzip -dc "$DB/uhgp-90.faa.gz" | grep -c '^>' | awk -v h="$(grep -c . "$S1/uhgp90_hidden_proteins.txt" || true)" '{print $1-h}')" >> "$S1/search_db_counts.tsv"
+printf 'uhgp90_hidden\t%s\n' "$(grep -c . "$S1/uhgp90_hidden_proteins.txt" || true)" >> "$S1/search_db_counts.tsv"
 printf 'human_with_isoforms\t%s\n' "$(gzip -dc "$DB/human_UP000005640_9606.fasta.gz" "$DB/human_UP000005640_9606_additional.fasta.gz" | grep -c '^>')" >> "$S1/search_db_counts.tsv"
 printf 'crap\t%s\n' "$(grep -c '^>' "$DB/crap.fasta")" >> "$S1/search_db_counts.tsv"
 printf 'total\t%s\n' "$(grep -c '^>' "$S1/search_db.fasta")" >> "$S1/search_db_counts.tsv"
@@ -58,7 +58,7 @@ cat "$S1/search_db_counts.tsv"
 # accession, and none is left in.
 n_kept=$(awk '$1=="uhgp90_kept"{print $2}' "$S1/search_db_counts.tsv")
 n_db=$(grep -c '^>MGYG' "$S1/search_db.fasta")
-if [ "$n_kept" != "$n_db" ] || grep -qv '^MGYG' "$S1/uhgp90_hidden_proteins.txt"; then
+if [ "$n_kept" != "$n_db" ] || grep -qv -e '^MGYG' -e '^$' "$S1/uhgp90_hidden_proteins.txt"; then
   echo "database check failed: $n_db UHGP-90 proteins in the database, expected $n_kept" >&2
   exit 1
 fi
