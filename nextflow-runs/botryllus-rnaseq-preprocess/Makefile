@@ -56,7 +56,7 @@ test: $(NEXTFLOW)
 	mkdir -p $(TESTROOT)/reads
 	set -e; \
 	 echo "sample,fastq_1,fastq_2,strandedness" > $(TESTROOT)/samplesheet.csv; \
-	 grep -E '^(TL3_GSC3_old|TL14_STD2_young),' samplesheet.csv | \
+	 grep -E '^(TL3_GSC3_old|TL14_STD2_young),' $(MAKEFILE_DIR)/samplesheet.csv | \
 	 while IFS=, read -r s r1 r2 strand; do \
 	   zcat "$$r1" | head -n $$(( 4 * $(TEST_READS) )) | gzip > $(TESTROOT)/reads/$${s}_R1.fastq.gz; \
 	   zcat "$$r2" | head -n $$(( 4 * $(TEST_READS) )) | gzip > $(TESTROOT)/reads/$${s}_R2.fastq.gz; \
