@@ -15,5 +15,5 @@ mkdir -p logs
 RUN=$(sed -n "$((SLURM_ARRAY_TASK_ID + 1))p" meta/runs.txt)
 [ -n "$RUN" ] || { echo "no run for task $SLURM_ARRAY_TASK_ID"; exit 1; }
 export PATH=$PEC_ROOT/env/bin:$PATH
-/usr/bin/time -v python "$PEC_CODE/scripts/download_run.py" meta/ena_filereport.tsv "$RUN" reads \
-  "${PEC_REUSE_DIR:-}" 2> "logs/download_$RUN.time"
+/usr/bin/time -v -o "logs/download_$RUN.time" python "$PEC_CODE/scripts/download_run.py" meta/ena_filereport.tsv "$RUN" reads \
+  "${PEC_REUSE_DIR:-}"
