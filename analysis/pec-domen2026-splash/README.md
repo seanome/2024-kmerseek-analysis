@@ -24,7 +24,7 @@ Runs on Sherlock under `$SCRATCH/nb361-pec`.
 
 ## Review limits
 
-No notebook, differential-expression result or frozen sample table is present yet. The SI workbook was not available during this code review, so sample pairing and contrast membership are not independently verified here. `freeze_design.py` records source hashes and rejects missing contrasts; it does not construct validated pair IDs. A paired design must wait for that validation.
+No notebook or differential-expression result is present yet. `design/samples.tsv` (64 runs) and the six `contrast_*.design.tsv` files, with pair IDs, are committed. A review checked that the contrast sizes (47 samples) and the pair counts in the design files match `design/DESIGN_NOTES.md`. It did not check the pairing rule in `freeze_design.py` against the SI workbook, which was not available. The pairs come from a rule on genotype and age, not from a pairing column in the SI, so treat the pairing as unverified until that check is done.
 
 `handoff/` remains an unchanged historical package. Its runner contains container paths and inferred labels, skips missing databases, and can write a search success marker after failed searches. Do not run it as the production workflow. The checked-in Slurm stages are separate.
 
