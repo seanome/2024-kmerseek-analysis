@@ -128,7 +128,7 @@ md(r"""
 
 The pilot (8 species from each of the 6 largest classes, run before the full run) is not
 part of the verdict. It showed that the within-phylum shuffle leaves nearly as many anchors
-significant as the real labels (12,918 against 13,972 at Dayhoff k = 14, gap 0), because a
+significant as the real labels (12,918 against 13,972 at Dayhoff k = 14, gap 0, from `tables/357_pilot_record/counts.tsv`), because a
 class that is alone in its phylum keeps its labels and every difference between phyla stays.
 The rule was not changed after seeing this.
 """)
