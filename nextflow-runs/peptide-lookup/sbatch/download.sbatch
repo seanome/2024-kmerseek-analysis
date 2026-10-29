@@ -28,13 +28,19 @@ printf 'file\turl\tbytes\tlast_modified\tdate_downloaded\tsha256\n' > "$manifest
 for file in "${!URLS[@]}"; do
   url=${URLS[$file]}
   last_modified=$(curl -sIL "$url" | tr -d '\r' | awk -F': ' 'tolower($1)=="last-modified"{print $2}' | tail -1)
+  ok=0
   for attempt in 1 2 3 4 5 6 7 8 9 10; do
     if curl -fsSL -C - --retry 5 --speed-limit 100000 --speed-time 60 -o "$file" "$url"; then
+      ok=1
       break
     fi
     echo "attempt $attempt for $file stopped; resuming" >&2
     sleep 30
   done
+  if [ "$ok" -ne 1 ]; then
+    echo "download of $file failed after 10 attempts; stopping" >&2
+    exit 1
+  fi
   bytes=$(stat -c %s "$file")
   printf '%s\t%s\t%s\t%s\t%s\t%s\n' "$file" "$url" "$bytes" "$last_modified" \
     "$(date -u +%Y-%m-%dT%H:%M:%SZ)" "$(sha256sum "$file" | cut -d' ' -f1)" >> "$manifest"
