@@ -643,6 +643,7 @@ def test_thresholds_come_from_the_frozen_pass_rule(hosts, monkeypatch):
 def test_choose_alphabet_and_k_refuses_when_nothing_fits_the_budget(tags, hosts):
     """The selection rule raises rather than quietly widening the false-flag budget."""
     host = hosts["BAX_HUMAN"]
+    flag_tag = next(tag for tag in tags if tag.name == "FLAG")
     dev_rows = [
         {
             "submission_id": "clean1",
@@ -655,7 +656,19 @@ def test_choose_alphabet_and_k_refuses_when_nothing_fits_the_budget(tags, hosts)
             "resolved_insert_end": "",
             "insert_was_intended": "false",
             "split": "dev",
-        }
+        },
+        {
+            "submission_id": "insert1",
+            "intended_protein": host,
+            "received_protein": host[:20] + flag_tag.sequence + host[20:],
+            "discrepancy_class": "unexpected_insert",
+            "resolved_insert_name": "FLAG",
+            "resolved_insert_sequence": flag_tag.sequence,
+            "resolved_insert_start": "21",
+            "resolved_insert_end": str(20 + len(flag_tag.sequence)),
+            "insert_was_intended": "false",
+            "split": "dev",
+        },
     ]
     with pytest.raises(ValueError, match="false-flag budget"):
         cc.choose_alphabet_and_k(
@@ -664,4 +677,31 @@ def test_choose_alphabet_and_k_refuses_when_nothing_fits_the_budget(tags, hosts)
             alphabets=["hp_thomas_dill"],
             ksizes=[4],
             false_flag_budget_per_100=0.0,
+        )
+
+
+def test_choose_alphabet_and_k_refuses_when_recall_cannot_be_scored(tags, hosts):
+    """With no documented unintended inserts there is no recall, so the pick must fail."""
+    host = hosts["BAX_HUMAN"]
+    dev_rows = [
+        {
+            "submission_id": f"clean{index}",
+            "intended_protein": host,
+            "received_protein": host,
+            "discrepancy_class": "clean",
+            "resolved_insert_name": "",
+            "resolved_insert_sequence": "",
+            "resolved_insert_start": "",
+            "resolved_insert_end": "",
+            "insert_was_intended": "false",
+            "split": "dev",
+        }
+        for index in range(3)
+    ]
+    with pytest.raises(ValueError, match="no documented unintended inserts"):
+        cc.choose_alphabet_and_k(
+            dev_rows,
+            tags,
+            alphabets=["hp_thomas_dill"],
+            ksizes=[10, 15],
         )

@@ -33,6 +33,7 @@ from __future__ import annotations
 import dataclasses
 import itertools
 import json
+import math
 import pathlib
 import random
 import statistics
@@ -536,6 +537,16 @@ def choose_alphabet_and_k(
     grid = []
     for alphabet, ksize in itertools.product(alphabets, ksizes):
         recall, false_per_100 = _score_on_split(dev_rows, tags, alphabet, ksize)
+        if math.isnan(recall):
+            raise ValueError(
+                "the development split has no documented unintended inserts, so recall "
+                "cannot be scored and no alphabet and k can be picked"
+            )
+        if math.isnan(false_per_100):
+            raise ValueError(
+                "the development split has no clean constructs, so false flags per 100 "
+                "cannot be scored and no alphabet and k can be picked"
+            )
         grid.append(
             {
                 "alphabet": alphabet,
