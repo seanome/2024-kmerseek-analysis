@@ -84,7 +84,8 @@ exit $rc
         check=True,
         capture_output=True,
     )
-    assert (d / "idx.failed.test/CURRENT").exists()
+    assert not list(d.glob("idx.failed.*"))
+    assert (d / "index.log.failed.test").read_text() == "killed during calibration"
     assert "fitted" in (d.parent / "status.tsv").read_text()
     assert gzip.open(d / "regions_filtered.chunk000.tsv.gz", "rt").read() == "kept\n"
 

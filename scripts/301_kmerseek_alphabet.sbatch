@@ -55,10 +55,10 @@ while read -r K PENALTY XDROP; do
     D=$OUT/$TAG
     mkdir -p "$D"
     # CURRENT also exists after a killed build. Only the final success line proves
-    # the index and calibration finished. Keep interrupted builds for diagnosis.
+    # the index and calibration finished. Keep the logs of an interrupted build, not its index.
     if ! grep -q "Indexing completed successfully!" "$D/index.log" 2>/dev/null; then
         if [ -d "$D/idx" ]; then
-            mv "$D/idx" "$D/idx.failed.${SLURM_JOB_ID:-test}"
+            rm -rf "$D/idx"   # 4-5 GB each; the logs below are the diagnosis
             for f in index.log index.time ka_survival.csv; do
                 [ ! -f "$D/$f" ] || cp "$D/$f" "$D/$f.failed.${SLURM_JOB_ID:-test}"
             done
