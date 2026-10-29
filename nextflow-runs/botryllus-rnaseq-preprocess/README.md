@@ -52,6 +52,13 @@ On the first 200 000 read pairs of TL3 (GSC3 old) and TL14 (STD2 young):
   each one in the full run. Do not hard-code `unstranded` until the full run confirms it.
 - Salmon assigned 48% (TL3) and 72% (TL14) of the read pairs to a FullNames transcript.
 
+**Open QC problems.** The trimmed reads are not clean yet. TL3 still fails FastQC adapter
+content (poly-A up to 10%), all four trimmed files fail per-base sequence content, and
+primer-like overrepresented sequences remain. `make run` trims all 18 samples with the same
+settings, so expect the same problems. See
+[`qc_review_2026-10-22/REVIEW.md`](qc_review_2026-10-22/REVIEW.md). Settle the trimming before
+using the trimmed FASTQs.
+
 Numbers are in [`test_results/test_summary.tsv`](test_results/test_summary.tsv); the figure
 is drawn by `plot_test_summary.py`. The first reads of a file come from the edge of the
 flow cell, so the full run may differ a little.
