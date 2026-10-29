@@ -47,8 +47,13 @@ def main() -> None:
             continue
         row = m.groupdict()
         row["scaled"] = row["scaled"] or "1"
+        missing = [key for key in KEEP if key not in first]
+        if missing:
+            sys.exit(f"{survival} lacks columns {missing}")
         row.update({key: first[key] for key in KEEP})
         rows.append(row)
+    if not rows:
+        sys.exit(f"no ka_survival.C*.csv with a fit row under {store}; check the KA store path")
     with open(out, "w", newline="") as fh:
         writer = csv.DictWriter(fh, fieldnames=list(rows[0]), delimiter="\t")
         writer.writeheader()
