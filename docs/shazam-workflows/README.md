@@ -5,6 +5,10 @@ files, the step that reads each of them, and the files that come out, with their
 Both maps were drawn on 2026-10-23 from what each chat reported. They show the plan as of
 that day, including steps not built yet.
 
+The numbers on the maps (protein counts, file sizes, index sizes, gene counts) were copied
+from the chats. None of them is printed by code or a log in this repo, and the analysis code
+is not on this branch, so they are unchecked.
+
 How to read them:
 
 - A coloured line is one route the data takes. The same colour means the same route in both
