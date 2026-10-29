@@ -123,7 +123,7 @@ md(r"""
   envelope coordinates. In the pilot (48 species), hmmscan re-read the 2 GB pressed database
   for every protein: 1 TB read and 11 minutes per 2,000 proteins, with 2 of 8 CPUs busy.
   hmmsearch reads each model once. Gathering thresholds are bit scores, which do not depend on
-  the database size, so the two programs call the same domains.
+  the database size, so the two programs should call the same domains (not compared on the pilot).
 - No other change to the test, the filter, the controls or the thresholds.
 
 The pilot (8 species from each of the 6 largest classes, run before the full run) is not
