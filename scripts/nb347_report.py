@@ -347,12 +347,15 @@ def write(path: Path, *, cfg, summary, groups_df, variants, excl, disc, syn_chec
     )
     s_ok = kmer["sourmash_scaled1_sketches_equal"].all()
     p_diff = (~kmer["protein20_kmer_sets_equal"]).sum()
-    w(f"For {kmer.height} variant pairs from the 12 example groups at k = "
+    w(f"For {kmer.height} variant pairs from the {n_examples} example groups at k = "
       f"{', '.join(str(k) for k in sorted(kmer['k'].unique()))}, the encoded k-mer sets were "
       f"{'identical in every case' if k_ok else 'NOT always identical'}, and sourmash "
       f"MinHash sketches (scaled=1, seed 42, `hp` or `dayhoff`, the hashing kmerseek uses for "
       f"these alphabets) were {'identical in every case' if s_ok else 'NOT always identical'}. "
-      f"The 20-letter k-mer sets differed in {p_diff} of {kmer.height}. Table: "
+      f"The 20-letter k-mer sets differed in {p_diff} of {kmer.height}. Every pair comes "
+      "from a group whose members have the same encoded sequence, so equal k-mer sets and "
+      "sketches are expected at any k. This checks that the sketching code gives equal "
+      "sketches for equal encoded sequences. It is not a finding about the data. Table: "
       "`tables/347_invisible_mutations_kmer_check.tsv`.\n")  # fmt: skip
 
     w("## Sensitivity: adding wild type as a variant\n")

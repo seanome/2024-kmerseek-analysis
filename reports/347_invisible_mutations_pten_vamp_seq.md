@@ -187,7 +187,7 @@ dayhoff6       cbfccccdbccbde
 
 ## K-mers and sketches
 
-For 120 variant pairs from the 12 example groups at k = 5, 10, 20, the encoded k-mer sets were identical in every case, and sourmash MinHash sketches (scaled=1, seed 42, `hp` or `dayhoff`, the hashing kmerseek uses for these alphabets) were identical in every case. The 20-letter k-mer sets differed in 120 of 120. Table: `tables/347_invisible_mutations_kmer_check.tsv`.
+For 120 variant pairs from the 12 example groups at k = 5, 10, 20, the encoded k-mer sets were identical in every case, and sourmash MinHash sketches (scaled=1, seed 42, `hp` or `dayhoff`, the hashing kmerseek uses for these alphabets) were identical in every case. The 20-letter k-mer sets differed in 120 of 120. Every pair comes from a group whose members have the same encoded sequence, so equal k-mer sets and sketches are expected at any k. This checks that the sketching code gives equal sketches for equal encoded sequences. It is not a finding about the data. Table: `tables/347_invisible_mutations_kmer_check.tsv`.
 
 ## Sensitivity: adding wild type as a variant
 
