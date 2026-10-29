@@ -1,0 +1,19 @@
+dataset	setting	rule	value	ci	fires
+ice_binding	dayhoff6.k9	no_signal	0.0040178571428571425	0.00-0.01	true
+ice_binding	dayhoff6.k9	richer_representation	-0.0021904761904761906	-0.00-0.00	false
+ice_binding	dayhoff6.k9	candidate_generation	0.16666666666666666	n=6 B-found positives	false
+ice_binding	dayhoff6.k9	sketch	0.22467592592592595	0.05-0.28	true
+ice_binding	dayhoff6.k9	ranking	0.007166666666666666	C_B-E1 0.01 (0.00-0.01); C_A-C_B -0.01 (-0.01-0.00)	false
+ice_binding	dayhoff6.k9	subgroup	0.0	""	false
+toxin_scaffold	cys2.k12.mask	no_signal	0.30459770114942525	0.14-0.51	false
+toxin_scaffold	cys2.k12.mask	richer_representation	0.04827586206896552	-0.11-0.24	false
+toxin_scaffold	cys2.k12.mask	candidate_generation	0.09865470852017937	n=223 B-found positives	false
+toxin_scaffold	cys2.k12.mask	sketch	0.2367816091954023	0.09-0.37	true
+toxin_scaffold	cys2.k12.mask	ranking	0.14942528735632182	C_B-E1 0.15 (0.03-0.32); C_A-C_B 0.08 (-0.06-0.24)	true
+toxin_scaffold	cys2.k12.mask	subgroup	2.0	C-C-C-C-CC B 0.51 (n=6); C-C-C-C-CC A 0.66 (n=6)	true
+toxin_target	cys2.k12.mask	no_signal	0.0847457627118644	0.01-0.17	true
+toxin_target	cys2.k12.mask	richer_representation	0.0477657935285054	-0.01-0.11	false
+toxin_target	cys2.k12.mask	candidate_generation	0.0	n=48 B-found positives	false
+toxin_target	cys2.k12.mask	sketch	0.15408320493066252	0.07-0.26	true
+toxin_target	cys2.k12.mask	ranking	0.04699537750385208	C_B-E1 0.02 (-0.00-0.05); C_A-C_B 0.05 (-0.01-0.11)	false
+toxin_target	cys2.k12.mask	subgroup	0.0	""	false
