@@ -1,0 +1,23 @@
+[package]
+name = "expression-indexer"
+version = "0.1.0"
+edition = "2021"
+
+[[bin]]
+name = "expression-indexer"
+path = "src/main.rs"
+
+[dependencies]
+anyhow = "1.0"
+# kmerseek main at the time this was written: its alphabet tables and encoders are used as is.
+kmerseek = { git = "https://github.com/seanome/kmerseek", rev = "fd549f962a6c0f54ff328650e6d8e0b87324f4eb" }
+sourmash = { version = "0.20.0", features = ["branchwater"] }
+needletail = "0.6.3"
+flate2 = "1.0"
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+rayon = "1.10"
+md5 = "0.7.0"
+
+[profile.release]
+debug = 1
