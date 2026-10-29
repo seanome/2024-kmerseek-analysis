@@ -47,7 +47,9 @@ idx=$WORK/indexes/condensate.w10.$slug.kmerseek.rocksdb
 
 case "$STEP" in
 index)
-    [ -f "$idx/DONE" ] && { echo "357: $idx done already"; exit 0; }
+    # Reuse a finished index only if it was built from this exact targets FASTA.
+    [ -f "$idx/DONE" ] && [ "$(cat "$idx/targets.md5" 2>/dev/null)" = "$(md5sum "$TARGETS")" ] \
+        && { echo "357: $idx done already"; exit 0; }
     rm -rf "$idx" && mkdir -p "$(dirname "$idx")"
     kmerseek index --alphabet "$ALPHABET" --ksize "$KSIZE" --scaled 1 \
         --input "$TARGETS" --output "$idx" \
