@@ -1,0 +1,228 @@
+{
+ "seanome/kmerseek#113": [
+  [
+   "2026-10-03T18:06:23Z",
+   "olgabot",
+   "Do we really need thi if we have https://github.com/seanome/kmerseek/pull/110?"
+  ]
+ ],
+ "seanome/kmerseek#114": [],
+ "seanome/kmerseek#130": [],
+ "seanome/kmerseek#133": [
+  [
+   "2026-10-10T17:52:48Z",
+   "olgabot",
+   "This is too many e-values\u2026 I don't know which one to use. Can you show me some examples?"
+  ]
+ ],
+ "seanome/kmerseek#134": [],
+ "seanome/kmerseek#137": [
+  [
+   "2026-10-06T15:45:50Z",
+   "olgabot",
+   "Wait, so then how is TFIDF computed? Isn't this field used for that?"
+  ],
+  [
+   "2026-10-06T16:49:52Z",
+   "olgabot",
+   "It seems like a bunch of extra work to do when the search is loading the index. Why isn't it just reading the idf that w"
+  ],
+  [
+   "2026-10-06T16:59:36Z",
+   "olgabot",
+   "It seems like we're throwing away good work when we could actually just use the saved values"
+  ]
+ ],
+ "seanome/kmerseek#141": [],
+ "seanome/kmerseek#142": [],
+ "seanome/kmerseek#143": [],
+ "seanome/kmerseek#144": [],
+ "seanome/kmerseek#145": [],
+ "seanome/kmerseek#146": [],
+ "seanome/kmerseek#147": [],
+ "seanome/kmerseek#148": [],
+ "seanome/kmerseek#149": [],
+ "seanome/kmerseek#150": [],
+ "seanome/kmerseek#152": [],
+ "seanome/kmerseek#153": [],
+ "seanome/kmerseek#154": [],
+ "seanome/kmerseek#155": [],
+ "seanome/kmerseek#156": [],
+ "seanome/kmerseek#157": [],
+ "seanome/kmerseek#159": [],
+ "seanome/2024-kmerseek-analysis#30": [],
+ "seanome/2024-kmerseek-analysis#47": [],
+ "seanome/2024-kmerseek-analysis#49": [],
+ "seanome/2024-kmerseek-analysis#51": [],
+ "seanome/2024-kmerseek-analysis#52": [
+  [
+   "2026-09-25T16:10:21Z",
+   "olgabot",
+   "Specify what the data source is in the filename. Is it SwissProt or UniProt or SCOPe40?"
+  ]
+ ],
+ "seanome/2024-kmerseek-analysis#53": [],
+ "seanome/2024-kmerseek-analysis#54": [
+  [
+   "2026-10-05T20:30:03Z",
+   "olgabot",
+   "Make this figure have a broken x axis to show that -1.45 goes way beyond the current view"
+  ],
+  [
+   "2026-10-05T21:00:09Z",
+   "olgabot",
+   "What decision does this figure help me make?"
+  ],
+  [
+   "2026-10-05T21:00:36Z",
+   "olgabot",
+   " Does the intersection of Cohen's Cappa and the mean longest run mean something? Also, let's use different colors for th"
+  ],
+  [
+   "2026-10-05T21:02:03Z",
+   "olgabot",
+   "What about with an e-value of 10?"
+  ],
+  [
+   "2026-10-05T21:02:56Z",
+   "olgabot",
+   " Does this mean that GBMR7 and HHP Leninger HPC three are useless because there's too high of a chance of of a match bet"
+  ],
+  [
+   "2026-10-06T13:53:53Z",
+   "olgabot",
+   "Can we set C relative to the amino acid frequency distribution in Swiss Prot or the human proteome?"
+  ]
+ ],
+ "seanome/2024-kmerseek-analysis#57": [],
+ "seanome/2024-kmerseek-analysis#58": [],
+ "seanome/2024-kmerseek-analysis#59": [],
+ "seanome/2024-kmerseek-analysis#63": [],
+ "seanome/2024-kmerseek-analysis#64": [],
+ "seanome/2024-kmerseek-analysis#65": [],
+ "seanome/2024-kmerseek-analysis#66": [],
+ "seanome/2024-kmerseek-analysis#67": [],
+ "seanome/2024-kmerseek-analysis#69": [],
+ "seanome/2024-kmerseek-analysis#71": [],
+ "seanome/2024-kmerseek-analysis#72": [],
+ "seanome/2024-kmerseek-analysis#75": [],
+ "seanome/2024-kmerseek-analysis#76": [],
+ "seanome/2024-kmerseek-analysis#77": [],
+ "seanome/2024-kmerseek-analysis#78": [],
+ "seanome/2024-kmerseek-analysis#80": [],
+ "seanome/2024-kmerseek-analysis#82": [],
+ "seanome/2024-kmerseek-analysis#83": [],
+ "seanome/2024-kmerseek-analysis#84": [],
+ "seanome/2024-kmerseek-analysis#85": [],
+ "seanome/2024-kmerseek-analysis#87": [],
+ "seanome/2024-kmerseek-analysis#88": [],
+ "seanome/2024-kmerseek-analysis#92": [],
+ "seanome/2024-kmerseek-analysis#93": [],
+ "seanome/2024-kmerseek-analysis#96": [],
+ "seanome/2024-kmerseek-analysis#97": [
+  [
+   "2026-10-05T21:22:54Z",
+   "olgabot",
+   "I want this page to be hosted so I can view it on the github pages"
+  ],
+  [
+   "2026-10-05T21:23:22Z",
+   "olgabot",
+   " is there a way it can be live or at least have a way to say what date it was created and when it was last updated?"
+  ]
+ ],
+ "seanome/2024-kmerseek-analysis#98": [],
+ "seanome/2024-kmerseek-analysis#101": [],
+ "seanome/2024-kmerseek-analysis#102": [],
+ "seanome/2024-kmerseek-analysis#103": [],
+ "seanome/2024-kmerseek-analysis#104": [],
+ "seanome/2024-kmerseek-analysis#106": [],
+ "seanome/2024-kmerseek-analysis#107": [],
+ "seanome/2024-kmerseek-analysis#113": [],
+ "seanome/2024-kmerseek-analysis#114": [],
+ "seanome/2024-kmerseek-analysis#118": [],
+ "seanome/2024-kmerseek-analysis#119": [
+  [
+   "2026-10-14T13:55:31Z",
+   "olgabot",
+   "Hard to tell apart hp_thomas_dill2 and other HP alphabets here, make it clearer. Also have the right panel use the same "
+  ],
+  [
+   "2026-10-14T16:40:25Z",
+   "olgabot",
+   "Fix the hashed fill from Gemini's comments:\n\n**No \u2014 Tamara Munzner does not prohibit striped fills (hatching/stippling) "
+  ]
+ ],
+ "seanome/2024-kmerseek-analysis#120": [],
+ "seanome/2024-kmerseek-analysis#121": [],
+ "seanome/2024-kmerseek-analysis#122": [],
+ "seanome/2024-kmerseek-analysis#123": [],
+ "seanome/2024-kmerseek-analysis#124": [],
+ "seanome/2024-kmerseek-analysis#125": [],
+ "seanome/2024-kmerseek-analysis#126": [],
+ "seanome/2024-kmerseek-analysis#127": [],
+ "seanome/2024-kmerseek-analysis#128": [],
+ "seanome/2024-kmerseek-analysis#129": [],
+ "seanome/2024-kmerseek-analysis#130": [],
+ "seanome/2024-kmerseek-analysis#131": [],
+ "seanome/2024-kmerseek-analysis#132": [],
+ "seanome/2024-kmerseek-analysis#133": [],
+ "seanome/2024-kmerseek-analysis#134": [],
+ "seanome/2024-kmerseek-analysis#135": [],
+ "seanome/2024-kmerseek-analysis#139": [],
+ "seanome/2024-kmerseek-analysis#140": [],
+ "seanome/2024-kmerseek-analysis#141": [],
+ "seanome/2024-kmerseek-analysis#143": [],
+ "seanome/2024-kmerseek-analysis#144": [],
+ "seanome/2024-kmerseek-analysis#145": [],
+ "seanome/2024-kmerseek-analysis#146": [],
+ "seanome/2024-kmerseek-analysis#148": [],
+ "seanome/2024-kmerseek-analysis#149": [],
+ "seanome/2024-kmerseek-analysis#150": [],
+ "seanome/2024-kmerseek-analysis#152": [],
+ "seanome/2024-kmerseek-analysis#154": [],
+ "seanome/2024-kmerseek-analysis#155": [],
+ "seanome/2024-kmerseek-analysis#156": [],
+ "seanome/2024-kmerseek-analysis#158": [],
+ "seanome/2024-kmerseek-analysis#160": [],
+ "seanome/2024-kmerseek-analysis#161": [],
+ "seanome/2024-kmerseek-analysis#162": [],
+ "seanome/2024-kmerseek-analysis#163": [],
+ "seanome/2024-kmerseek-analysis#164": [],
+ "seanome/2024-kmerseek-analysis#165": [],
+ "seanome/2024-kmerseek-analysis#166": [],
+ "seanome/2024-kmerseek-analysis#167": [],
+ "seanome/2024-kmerseek-analysis#168": [],
+ "seanome/2024-kmerseek-analysis#169": [],
+ "seanome/2024-kmerseek-analysis#171": [],
+ "seanome/2024-kmerseek-analysis#172": [],
+ "seanome/2024-kmerseek-analysis#173": [],
+ "seanome/2024-kmerseek-analysis#174": [],
+ "seanome/2024-kmerseek-analysis#175": [],
+ "seanome/2024-kmerseek-analysis#176": [],
+ "seanome/2024-kmerseek-analysis#177": [],
+ "seanome/2024-kmerseek-analysis#179": [],
+ "seanome/2024-kmerseek-analysis#180": [],
+ "seanome/2024-kmerseek-analysis#182": [],
+ "seanome/2024-kmerseek-analysis#183": [],
+ "seanome/2024-kmerseek-analysis#184": [],
+ "seanome/2024-kmerseek-analysis#185": [],
+ "seanome/2024-kmerseek-analysis#186": [],
+ "seanome/2024-kmerseek-analysis#188": [],
+ "seanome/2024-kmerseek-analysis#189": [],
+ "seanome/2024-kmerseek-analysis#190": [],
+ "seanome/2024-kmerseek-analysis#191": [],
+ "seanome/2024-kmerseek-analysis#192": [],
+ "seanome/2024-kmerseek-analysis#193": [],
+ "seanome/2024-kmerseek-analysis#194": [],
+ "seanome/2024-kmerseek-analysis#195": [],
+ "seanome/2024-kmerseek-analysis#196": [],
+ "seanome/2024-kmerseek-analysis#197": [],
+ "seanome/2024-kmerseek-analysis#198": [],
+ "seanome/2024-kmerseek-analysis#199": [],
+ "seanome/2024-kmerseek-analysis#201": [],
+ "seanome/2024-kmerseek-analysis#202": [],
+ "seanome/2024-kmerseek-analysis#203": [],
+ "seanome/2024-kmerseek-analysis#204": [],
+ "seanome/2024-kmerseek-analysis#205": []
+}
