@@ -30,7 +30,7 @@ and on the Logan contigs of three runs.
 
 ## Results
 
-The choice of translation barely changes compute (within 1.4x), because six-frame
+The choice of translation barely changes compute (within 1.5x), because six-frame
 translation is most of the cost and every choice has to do it. The choice changes storage
 by 38x. Running SPLASH and DE-kupl on every BioProject first costs 21x more than sketching
 all of the SRA directly, almost all of it DE-kupl.
