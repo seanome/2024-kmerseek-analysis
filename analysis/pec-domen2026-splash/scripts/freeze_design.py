@@ -113,6 +113,9 @@ for name in names.values():
     treatments = {r["treatment"] for r in rows if r["contrast"] == name}
     if treatments != {"control", "PEC"}:
         raise SystemExit(f"contrast {name} lacks control or PEC samples")
+for r in rows:
+    if r["contrast"] != "not_in_SI" and not re.fullmatch(r"\d+", r["age_days"]):
+        raise SystemExit(f"{r['sample']}: no NNNd age token in ENA alias {r['ena_alias']!r}; cannot pair")
 # Pairs: within one contrast, a PEC and a control sample of the same genotype whose ages differ
 # by at most 1 day. Matched one-to-one, closest age first; a tie or a second candidate at the
 # same distance stops the script. Samples left over are singletons (pair = single_<sample>).
