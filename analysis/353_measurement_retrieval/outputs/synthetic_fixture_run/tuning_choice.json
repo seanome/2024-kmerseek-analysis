@@ -1,0 +1,16 @@
+{
+ "A": {
+  "setting": "hp_lehninger2_k10",
+  "max_shuffle_cards": 0.25,
+  "dev_useful_queries": 10,
+  "control_cards_per_shuffle": 0.19,
+  "alphabet": "hp_lehninger2",
+  "ksize": 10
+ },
+ "B": {
+  "setting": "exact+blast",
+  "max_shuffle_cards": 0.25,
+  "dev_useful_queries": 13,
+  "control_cards_per_shuffle": 0.23
+ }
+}
