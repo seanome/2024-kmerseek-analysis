@@ -1,4 +1,6 @@
 test_calibration_requires_complete_settings_and_unchanged_development_files (test_protocol.ProtocolTests.test_calibration_requires_complete_settings_and_unchanged_development_files) ... ok
+test_distinct_sequencing_runs_allow_separator_spaces (test_protocol.ProtocolTests.test_distinct_sequencing_runs_allow_separator_spaces) ... ok
+test_duplicate_headers_are_not_silently_overwritten (test_protocol.ProtocolTests.test_duplicate_headers_are_not_silently_overwritten) ... ok
 test_enumeration_agrees_with_independent_binary_exhaustion (test_protocol.ProtocolTests.test_enumeration_agrees_with_independent_binary_exhaustion) ... ok
 test_equal_complement_count_fails_literal_swap_rule (test_protocol.ProtocolTests.test_equal_complement_count_fails_literal_swap_rule) ... ok
 test_frozen_rules (test_protocol.ProtocolTests.test_frozen_rules) ... ok
@@ -7,14 +9,18 @@ test_missing_calibration_blocks_before_mouse_manifest_is_opened (test_protocol.P
 test_no_measurements_cannot_pass (test_protocol.ProtocolTests.test_no_measurements_cannot_pass) ... ok
 test_overlap_counts_genes_once_and_excludes_19_bases (test_protocol.ProtocolTests.test_overlap_counts_genes_once_and_excludes_19_bases) ... ok
 test_sample_eligibility_boundaries (test_protocol.ProtocolTests.test_sample_eligibility_boundaries) ... ok
+test_sequencing_run_tokens_are_nonempty_and_unique (test_protocol.ProtocolTests.test_sequencing_run_tokens_are_nonempty_and_unique) ... ok
 test_status_writer_rejects_modified_report (test_protocol.ProtocolTests.test_status_writer_rejects_modified_report) ... ok
 test_strict_and_inclusive_claim_limits (test_protocol.ProtocolTests.test_strict_and_inclusive_claim_limits) ... ok
 test_taxonomy_cycles_and_unknown_taxa_rejected (test_protocol.ProtocolTests.test_taxonomy_cycles_and_unknown_taxa_rejected) ... ok
+test_taxonomy_skips_blank_lines_and_names_bad_line (test_protocol.ProtocolTests.test_taxonomy_skips_blank_lines_and_names_bad_line) ... ok
 test_two_conditions_and_replicate_count (test_protocol.ProtocolTests.test_two_conditions_and_replicate_count) ... ok
 test_unknown_lineage_and_vertebrates_rejected (test_protocol.ProtocolTests.test_unknown_lineage_and_vertebrates_rejected) ... ok
+test_unknown_measurement_keys_are_rejected (test_protocol.ProtocolTests.test_unknown_measurement_keys_are_rejected) ... ok
+test_zero_overlap_row_is_allowed_but_malformed_is_not (test_protocol.ProtocolTests.test_zero_overlap_row_is_allowed_but_malformed_is_not) ... ok
 test_zero_true_count_is_not_divided_or_passed (test_protocol.ProtocolTests.test_zero_true_count_is_not_divided_or_passed) ... ok
 
 ----------------------------------------------------------------------
-Ran 15 tests in 0.071s
+Ran 21 tests in 0.878s
 
 OK
