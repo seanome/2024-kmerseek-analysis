@@ -65,16 +65,33 @@ def swissprot_kmers(path):
     return np.unique(kmer_codes("#".join(seqs).encode())), len(seqs)
 
 
-def records(path):
-    """Sequences from FASTQ or (multi-line) FASTA, plain, gzip or zstd."""
+def lines_of(path):
+    """Lines of a plain, gzip or zstd file. For zstd, fail if zstdcat exits non-zero."""
     if path.endswith(".zst"):
         import io
         import subprocess
 
-        f = io.TextIOWrapper(subprocess.Popen(["zstdcat", path], stdout=subprocess.PIPE).stdout)
+        proc = subprocess.Popen(["zstdcat", path], stdout=subprocess.PIPE)
+        read_all = False
+        try:
+            yield from io.TextIOWrapper(proc.stdout)
+            read_all = True
+        finally:
+            proc.stdout.close()
+            if not read_all:  # the caller stopped early
+                proc.terminate()
+            code = proc.wait()
+        if code != 0:
+            raise RuntimeError(f"zstdcat failed on {path} (exit {code}): truncated stream?")
     else:
-        f = gzip.open(path, "rt") if path.endswith(".gz") else open(path)
-    first = f.readline()
+        with gzip.open(path, "rt") if path.endswith(".gz") else open(path) as f:
+            yield from f
+
+
+def records(path):
+    """Sequences from FASTQ or (multi-line) FASTA, plain, gzip or zstd."""
+    f = lines_of(path)
+    first = next(f, "")
     if first.startswith("@"):
         for i, line in enumerate(f, start=1):
             if i % 4 == 1:
@@ -112,46 +129,45 @@ def main():
     seqs = {x: 0 for x in "abcd"}
     reads = bases = 0
     t_trans = t_look = 0.0
-    if True:
-        for read in records(fq):
-            if reads >= n_reads:
-                break
-            reads += 1
-            bases += len(read)
-            t1 = time.time()
-            frames = six_frames(read)
-            pieces = [p for fr in frames for p in fr.split("*")]
-            t_trans += time.time() - t1
-            for fi, fr in enumerate(frames):
-                outs["a"].write(f">r{reads}_f{fi}\n{fr}\n")
-                res["a"] += len(fr)
-                seqs["a"] += 1
-            for pi, p in enumerate(pieces):
-                if len(p) >= MIN_LEN_B:
-                    outs["b"].write(f">r{reads}_p{pi}\n{p}\n")
-                    res["b"] += len(p)
-                    seqs["b"] += 1
-            longest = max(pieces, key=len)
-            if longest:
-                outs["c"].write(f">r{reads}\n{longest}\n")
-                res["c"] += len(longest)
-                seqs["c"] += 1
-            t1 = time.time()
-            best, best_hits = None, 0
-            for p in pieces:
-                if len(p) < K:
-                    continue
-                codes = kmer_codes(p.encode())
-                pos = np.searchsorted(ref, codes)
-                pos[pos == len(ref)] = 0
-                hits = int((ref[pos] == codes).sum())
-                if hits > best_hits:
-                    best, best_hits = p, hits
-            t_look += time.time() - t1
-            if best is not None:
-                outs["d"].write(f">r{reads}\n{best}\n")
-                res["d"] += len(best)
-                seqs["d"] += 1
+    for read in records(fq):
+        if reads >= n_reads:
+            break
+        reads += 1
+        bases += len(read)
+        t1 = time.time()
+        frames = six_frames(read)
+        pieces = [p for fr in frames for p in fr.split("*")]
+        t_trans += time.time() - t1
+        for fi, fr in enumerate(frames):
+            outs["a"].write(f">r{reads}_f{fi}\n{fr}\n")
+            res["a"] += len(fr)
+            seqs["a"] += 1
+        for pi, p in enumerate(pieces):
+            if len(p) >= MIN_LEN_B:
+                outs["b"].write(f">r{reads}_p{pi}\n{p}\n")
+                res["b"] += len(p)
+                seqs["b"] += 1
+        longest = max(pieces, key=len)
+        if longest:
+            outs["c"].write(f">r{reads}\n{longest}\n")
+            res["c"] += len(longest)
+            seqs["c"] += 1
+        t1 = time.time()
+        best, best_hits = None, 0
+        for p in pieces:
+            if len(p) < K:
+                continue
+            codes = kmer_codes(p.encode())
+            pos = np.searchsorted(ref, codes)
+            pos[pos == len(ref)] = 0
+            hits = int((ref[pos] == codes).sum())
+            if hits > best_hits:
+                best, best_hits = p, hits
+        t_look += time.time() - t1
+        if best is not None:
+            outs["d"].write(f">r{reads}\n{best}\n")
+            res["d"] += len(best)
+            seqs["d"] += 1
     for h in outs.values():
         h.close()
     summary = {
