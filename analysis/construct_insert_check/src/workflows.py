@@ -87,6 +87,10 @@ def _aligner(mode: str) -> Align.PairwiseAligner:
     return aligner
 
 
+#: Built once: loading BLOSUM62 from disk for every call was the slowest step of a run.
+_ALIGNERS = {mode: _aligner(mode) for mode in ("local", "global")}
+
+
 def _safe(seq: str) -> str:
     """BLOSUM62 has no row for sequencing placeholders; map them to X."""
     return "".join(r if r in "ACDEFGHIKLMNPQRSTVWYX" else "X" for r in seq)
@@ -96,7 +100,7 @@ def _identity(a: str, b: str) -> float:
     """Best local identity of ``a`` within ``b``, as a fraction of len(a)."""
     if not a or not b:
         return 0.0
-    aligner = _aligner("local")
+    aligner = _ALIGNERS["local"]
     try:
         alignment = aligner.align(_safe(b), _safe(a))[0]
     except (ValueError, IndexError):
@@ -164,7 +168,7 @@ def _classify(
 
 def _extra_stretches(intended: str, received: str) -> list[tuple[int, int, str]]:
     """Received stretches with no intended counterpart, as 1-based inclusive spans."""
-    aligner = _aligner("global")
+    aligner = _ALIGNERS["global"]
     try:
         alignment = aligner.align(_safe(intended), _safe(received))[0]
     except (ValueError, IndexError):
