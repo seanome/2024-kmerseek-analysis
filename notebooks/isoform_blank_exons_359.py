@@ -75,8 +75,8 @@ def usable_orf(orf_seq: str, cds_start, cds_end) -> str | None:
     table cover the same isoforms."""
     prot = orf_seq.rstrip("*")
     s, e = int(float(cds_start)), int(float(cds_end))
-    if (e - s + 1) not in (3 * len(prot), 3 * len(prot) + 3) or "*" in prot:
-        return None
+    if not prot or (e - s + 1) not in (3 * len(prot), 3 * len(prot) + 3) or "*" in prot:
+        return None  # an empty protein is no ORF: write_orfs.py would skip it too
     return prot
 
 

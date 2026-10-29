@@ -10,6 +10,11 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "notebooks"))
 
 import isoform_blank_exons_359 as ib  # noqa: E402
 
+def test_usable_orf_rejects_empty_protein():
+    assert ib.usable_orf("*", 1, 3) is None
+    assert ib.usable_orf("MK*", 1, 9) == "MK"
+
+
 def test_codon_split_goes_to_exon_with_two_bases_plus_strand():
     # transcript: 2 UTR bases, then ATG GCT TGG AAA GAA TAA
     # exon 1 = 6 bases "xxATGG" -> holds A,T,G of codon 0 and G of codon 1 (1 of 3)
