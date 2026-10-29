@@ -8,6 +8,9 @@
 set -euo pipefail
 : "${REPO:?}" "${OUT:?}" "${NEXTFLOW:?}"
 WINDOWS="young_2h young_24h young_13_17d young_21_28d young_49_52d young_104_132d"
+for v in HEAD_ACCOUNT HEAD_PARTITION HEAD_QOS HEAD_TIME HEAD_CPUS HEAD_MEM HEAD_SESSION HEAD_JOBNAME; do
+  : "${!v:?submit_all.sh: $v is not set; run through make run}"
+done
 
 # Refuse to submit a second copy while any job of this run is queued or running. On
 # 2026-10-27 `make run` was given twice, 8 minutes apart; the second splash_prep task began
@@ -25,15 +28,21 @@ ids=$OUT/job_ids.txt
 # Sherlock's git is 1.8.3, which has no `git -C`.
 echo "# submitted $(date '+%F %T') from $(cd "$REPO" && git rev-parse --short HEAD)" >> "$ids"
 
+# If anything below fails, cancel what this call already queued, so a re-run is not blocked.
+submitted=""
+trap '[ -z "$submitted" ] || { echo "submit_all.sh: failed; cancelling $submitted" >&2; scancel $submitted; }' ERR
 prep=$(sbatch --parsable --chdir "$OUT" "$REPO/splash_prep.sbatch" "$REPO")
+submitted="$prep"
 echo "splash_prep $prep" | tee -a "$ids"
 for w in $WINDOWS; do
   j=$(sbatch --parsable --chdir "$OUT" --job-name "pec-young-splash-$w" \
         --dependency "afterok:$prep" --kill-on-invalid-dep=yes \
         "$REPO/splash.sbatch" "$REPO" "$w")
+  submitted="$submitted $j"
   echo "splash_$w $j" | tee -a "$ids"
 done
 
 cd "$OUT"
 NF_HEAD_DETACH=1 "$REPO/../../scripts/nf-head" "$REPO/run_pipelines.sh" "$REPO" "$OUT" "$NEXTFLOW"
+trap - ERR
 echo "nf_head $(cat "$OUT/.nf-head.jobid")" | tee -a "$ids"
