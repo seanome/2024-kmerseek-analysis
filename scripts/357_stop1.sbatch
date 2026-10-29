@@ -40,7 +40,8 @@ penalty() {  # c_opt and xdrop_4c of an alphabet
     awk -F'\t' -v a="$1" '!/^#/ && $1 == a { print $2, $3 }' "$REPO/tables/357/357_penalties.tsv"
 }
 
-read -r C X < <(penalty "${ALPHABET:?}")
+# `|| true`: read returns 1 on an empty list, and set -e would skip the message below.
+read -r C X < <(penalty "${ALPHABET:?}") || true
 [ -n "$C" ] || { echo "357: no penalty for $ALPHABET" >&2; exit 2; }
 slug=${ALPHABET}_k${KSIZE:?}_s1
 idx=$WORK/indexes/condensate.w10.$slug.kmerseek.rocksdb
