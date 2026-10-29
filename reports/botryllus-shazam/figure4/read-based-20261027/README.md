@@ -45,8 +45,8 @@ SHA-256 hashes in `summary.json` match the remote files. Completion markers reco
 DESeq2 1.42.0, design ranks and residual degrees of freedom. All three corresponding
 tasks completed with exit 0 in the preserved production trace.
 
-`compare_figure4_gene_models.py` independently recomputes Benjamini-Hochberg adjusted
-P values over each complete eligible population and checks them against the saved
-values. It checks unique IDs and uses one-to-one exact-ID joins. It does not refit
+`compare_figure4_gene_models.py` re-applies Benjamini-Hochberg to the saved P values
+(scaled by the count of finite P values) and checks the result against the saved
+adjusted values. This confirms the adjustment, not the P values themselves. It checks unique IDs and uses one-to-one exact-ID joins. It does not refit
 models, change labels, infer missing results, or use the unfinished plotting edits.
 The figure was rendered and inspected; all finite matched effects are included.
