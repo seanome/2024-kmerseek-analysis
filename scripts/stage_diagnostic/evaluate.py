@@ -120,9 +120,11 @@ def build_frame(cfg, data_dir, results, ds, s, km) -> tuple[pl.DataFrame, dict]:
         C_B=pl.when(pl.col("C_cand")).then(pl.col("B")).otherwise(NEG),
         C_A=pl.when(pl.col("C_cand")).then(pl.col("A")).otherwise(NEG),
         D_B=pl.when(pl.col("D_cand")).then(pl.col("B")).otherwise(NEG),
-        E1=pl.col("E1").fill_null(NEG),
-        E10=pl.col("E10").fill_null(NEG),
+        E1=pl.col("E1").fill_nan(None).fill_null(NEG),
+        E10=pl.col("E10").fill_nan(None).fill_null(NEG),
     )
+    for c in ("C_B", "C_A", "D_B", "E1", "E10"):  # NaN would silently zero a query's recall
+        assert f[c].is_nan().sum() == 0, f"NaN scores in {c} for {ds}"
     return f, modes
 
 
