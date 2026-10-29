@@ -11,7 +11,7 @@
 #
 # Rerun on kmerseek PR 157 (Pr(same) from each region), in run-pr157/ so run/ keeps
 # notebook 344's results. No pilot: rerun_pr157.json sizes the index and searches from
-# notebook 344's run (searches at most 8.1 GB and 17 minutes, index 3.0 GB and 1 minute).
+# notebook 344's run (searches at most 8.1 GB and about 18 minutes, index 3.0 GB and 1 minute).
 #   make rerun-pr157   (Sherlock) everything, new index, new decoys (same seeds)
 #   make watch-pr157 / stop-pr157
 #   make pull-results RUN_DIR=run-pr157 RESULTS=results-pr157   (laptop)
@@ -139,7 +139,7 @@ pull-results:
 # and not notebook 344's.
 rerun-pr157 watch-pr157 stop-pr157: HEAD_SESSION = nb344-pr157
 rerun-pr157 watch-pr157 stop-pr157: HEAD_JOBNAME = nf-nb344-pr157
-# notebook 344's 156 searches took at most 17 minutes each; 8 h covers the run and a queue.
+# notebook 344's 156 searches took at most about 18 minutes each; 8 h covers the run and a queue.
 rerun-pr157: HEAD_TIME = 8:00:00
 
 # kmerseek PR 157 head 02dd7cc (olgabot/region-local-pr-same, on PR 134), built from
