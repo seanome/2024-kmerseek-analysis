@@ -137,15 +137,18 @@ code(
     r"""
 if summaries:
     rows = [json.loads(p.read_text()) for p in summaries]
-    measured = pl.DataFrame(rows).select(
+    # summary.json is written before the build ends and again after the queries, so a failed
+    # or unfinished size lacks some keys: take each column with .get (None when missing).
+    cols = [
         "setting", "size_residues", "n_residues", "n_sequences", "index_build_wall_s",
         "index_build_peak_rss_gb", "index_bytes_apparent", "index_bytes_allocated",
         "n_queries_ok", "n_queries_failed", "n_queries_not_run", "complete", "counted",
         "query_wall_s_median", "query_wall_s_p95", "query_peak_rss_gb_max", "host",
-    ).sort("size_residues")
+    ]
+    measured = pl.DataFrame({c: [r.get(c) for r in rows] for c in cols}).sort("size_residues")
     with pl.Config(tbl_cols=-1, tbl_width_chars=250):
         print(measured)
-    full = measured.filter(pl.col("counted"))
+    full = measured.filter(pl.col("counted").fill_null(False))
     if full.height >= 3:
         import scale_352_figure as sf
 
