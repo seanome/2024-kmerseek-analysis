@@ -594,7 +594,8 @@ def main():
         "rule_2": {
             "structure_tools_land": {t: list(x) for t, x in struct.items()},
             "threshold": PASS_STRUCT,
-            "pass": bool(struct)
+            "missing_tools": [t for t in STRUCTURE_TOOLS if t not in struct],
+            "pass": len(struct) == len(STRUCTURE_TOOLS)
             and all(x[2] is not None and x[2] < PASS_STRUCT for x in struct.values()),
         },
         "rule_3": {
