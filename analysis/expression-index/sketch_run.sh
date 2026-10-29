@@ -22,7 +22,10 @@ if [ -s "$sk/$acc.sig.gz" ] && [ -s "$lg/$acc.tsv" ]; then
     echo "$acc already sketched"; exit 0
 fi
 urls=()
-if [ "$u1" != "-" ]; then urls+=("$u1"); [ "$u2" != "-" ] && urls+=("$u2"); elif [ "$u0" != "-" ]; then urls+=("$u0"); fi
+# mate files, then the unpaired file if the run has one too (its reads are sketched with the mates)
+if [ "$u1" != "-" ]; then urls+=("$u1"); fi
+if [ "$u2" != "-" ]; then urls+=("$u2"); fi
+if [ "$u0" != "-" ]; then urls+=("$u0"); fi
 if [ ${#urls[@]} -eq 0 ]; then
     printf '%s\t-\t-\t-\tno ENA FASTQ link\n' "$acc" > "$work/downloads/$acc.tsv"; exit 1
 fi
