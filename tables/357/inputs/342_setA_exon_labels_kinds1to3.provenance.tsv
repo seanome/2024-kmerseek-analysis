@@ -1,0 +1,10 @@
+exon table md5	52607bb853c05d0c25978b9d395a16a5
+including proteins FASTA md5	2bdbb3dcdcea004e5f43c10f5e2ba82f
+Pfam-A.hmm md5	589ccc8370eaf079022db0dbb25c8aa2
+hmmscan	# HMMER 3.4 (Aug 2023); http://hmmer.org/
+segmasker BLAST+	blastp: 2.16.0+
+elm_date	2026-10-15 21:34:02.818438
+elm_md5	c35f375de2ce92f0286932ba07ada06e
+elm_classes	353
+UniProt	https://rest.uniprot.org/uniprotkb/stream?query=(organism_id:9606)+AND+(reviewed:true)&fields=accession,gene_primary,gene_names,sequence,ft_mod_res&format=tsv | downloaded 2026-10-16 | md5 33cf6b5e19003b3c771962e8a7c77aed | UniProt release 2026_03 | 
+labels md5	7fe6f6f3d442a1e28123dc361842c6b0
