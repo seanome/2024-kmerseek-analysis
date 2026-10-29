@@ -20,6 +20,7 @@ import csv
 import sys
 from pathlib import Path
 base,out=map(Path,sys.argv[1:])
+skipped={r['alphabet'] for r in csv.DictReader((out/'301_settings_skipped_swissprot.tsv').open(),delimiter='\t')}
 with open(out/'301_settings_coverage_swissprot.tsv','w') as f:
     w=csv.writer(f,delimiter='\t',lineterminator='\n')
     w.writerow(['alphabet','state'])
@@ -27,7 +28,7 @@ with open(out/'301_settings_coverage_swissprot.tsv','w') as f:
         if not d.is_dir(): continue
         status=d/'status.tsv'
         rows=list(csv.DictReader(status.open(),delimiter='\t')) if status.exists() else []
-        state='completed' if any(r['fit']=='fitted' for r in rows) else 'incomplete_or_no_fit'
+        state='completed' if any(r['fit']=='fitted' for r in rows) and d.name not in skipped else 'incomplete_or_no_fit'
         w.writerow([d.name,state])
 print(out)
 PY

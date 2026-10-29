@@ -10,6 +10,7 @@ import csv
 import gzip
 import math
 import statistics
+import sys
 from pathlib import Path
 
 
@@ -54,6 +55,7 @@ def main():
     ]
     summaries = []
     details = []
+    skipped = []
     a.out.mkdir(parents=True, exist_ok=True)
     for directory in sorted((a.base / "step5").iterdir()):
         if not directory.is_dir() or not (directory / "status.tsv").exists():
@@ -71,7 +73,14 @@ def main():
             if chunks
             else int((directory / "expected_chunks.txt").read_text())
         )
-        assert len(files) == expected, (directory, len(files), expected)
+        if len(files) != expected:
+            # One odd setting must not stop the other settings from being scored.
+            print(
+                f"SKIP {directory.name}: {len(files)} chunk outputs, expected {expected}",
+                file=sys.stderr,
+            )
+            skipped.append(dict(alphabet=directory.name, state="incomplete"))
+            continue
         hits = {}
         for f in files:
             for r in read(f):
@@ -195,12 +204,20 @@ def main():
                         )
                     )
     for name, rows in [("summary", summaries), ("features", details)]:
+        if not rows:
+            continue
         with open(a.out / f"301_partial_{name}_swissprot.tsv", "w") as f:
             w = csv.DictWriter(
                 f, fieldnames=list(rows[0]), delimiter="\t", lineterminator="\n"
             )
             w.writeheader()
             w.writerows({k: "NA" if v == "" else v for k, v in r.items()} for r in rows)
+    with open(a.out / "301_settings_skipped_swissprot.tsv", "w") as f:
+        w = csv.DictWriter(
+            f, fieldnames=["alphabet", "state"], delimiter="\t", lineterminator="\n"
+        )
+        w.writeheader()
+        w.writerows(skipped)
     for r in summaries:
         if r["feature_type"] == "all" and r["cutoff_kind"] == "decoy_threshold":
             print(r)
