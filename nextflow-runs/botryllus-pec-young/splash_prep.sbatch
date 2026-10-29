@@ -20,5 +20,5 @@ f=$OUT/$sample.fq.gz
 [ -s "$f.done" ] && { echo "$sample already done"; exit 0; }
 zcat "$r1" "$r2" | pigz -p "$SLURM_CPUS_PER_TASK" -1 > "$f.part"
 mv "$f.part" "$f"
-echo "$(zcat "$f" | awk 'END{print NR/4}') reads" > "$f.done"
+echo "$(stat -c %s "$f") bytes" > "$f.done"
 cat "$f.done"
