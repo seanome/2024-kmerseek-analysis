@@ -1,0 +1,29 @@
+{
+  "pass_rule": {
+    "1_recall_of_documented_inserts": {
+      "threshold": 0.95,
+      "direction": "at least",
+      "what": "fraction of documented unexpected inserts in the test split that the reduced-alphabet check flags, counting a flag as recovering an insert when it overlaps the resolved insert coordinates by at least one residue"
+    },
+    "2_false_flags_per_100_clean": {
+      "threshold": 1.0,
+      "direction": "at most",
+      "what": "flags raised on held-out clean constructs, per 100 clean constructs"
+    },
+    "3_comparison_missed_and_found": {
+      "threshold": 5,
+      "direction": "at least",
+      "what": "documented errors the reduced-alphabet check flags that exact tag matching, local alignment and the DNA check all miss"
+    },
+    "4_median_review_time_per_batch": {
+      "threshold": 0.0,
+      "direction": "no increase",
+      "what": "change in the facility's recorded median review minutes per batch when the reduced-alphabet flags are added to the existing ones. Assessable only if the facility supplies review_minutes; a count of flagged regions is not a substitute and the threshold is then reported as not assessable, which is not a pass"
+    }
+  },
+  "fail_clauses": {
+    "exact_already_catches": "exact tag matching alone recovers at least as many documented unexpected inserts as the reduced-alphabet check",
+    "cannot_separate_intended": "flags cannot tell an insert the customer ordered from one that is a mistake: the share of intended inserts flagged is within 0.1 of the share of unintended inserts flagged",
+    "needs_dna": "every documented error the reduced-alphabet check finds beyond the comparison workflow is also found by the DNA check, so the protein method adds nothing the DNA already gives"
+  }
+}
