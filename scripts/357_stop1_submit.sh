@@ -31,7 +31,7 @@ ask() {  # cpus, memory and time of one row: step alphabet
 penalty() { awk -F'\t' -v a="$1" '!/^#/ && $1 == a { print $2 }' tables/357/357_penalties.tsv; }
 submit() {  # name, dependency (or ""), resource args, then sbatch extras; prints the job id
     local name=$1 dep=$2 res=$3; shift 3
-    sbatch --parsable --job-name="357-$name" ${dep:+--dependency=afterok:$dep} $res "$@" "$SB"
+    sbatch --parsable --job-name="357-$name" ${dep:+--dependency=afterok:$dep --kill-on-invalid-dep=yes} $res "$@" "$SB"
 }
 
 SETTINGS="aro_hyd_chg_pol4:11 aro_hyd_arg_chg_pol5:9 hp_pbotc_1st_ed2:21 protein20:5"
@@ -40,7 +40,7 @@ for s in $SETTINGS; do
     fit=$NB342_WORK/indexes/whole.w10.${a}_k${k}_s1.kmerseek.rocksdb/ka_survival.C$(penalty "$a").csv
     fit_job=""
     if [ ! -s "$fit" ]; then
-        fit_job=$(squeue --me -h -n "342-index-whole-$a" -o %i | head -1)
+        fit_job=$(squeue --me -h -n "342-index-whole-$a" -o %i | head -1 | sed 's/_.*//')
         [ -n "$fit_job" ] || { echo "$a k$k: SKIPPED, no fit at $fit and no 342-index-whole-$a job queued"; continue; }
     fi
     index=$(submit "index-$a" "" "$(ask index "$a")" --export=ALL,STEP=index,ALPHABET=$a,KSIZE=$k)
