@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import csv
 import json
+import os
 import random
 import shutil
 import subprocess
@@ -18,7 +19,12 @@ HERE = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(HERE))
 import mr353  # noqa: E402
 
-BLAST_BIN = Path("/Users/olga/anaconda3/envs/orthofinder/bin")
+_BLASTP = (
+    os.environ.get("NB353_BLAST_BIN") and Path(os.environ["NB353_BLAST_BIN"]) / "blastp"
+)
+_BLASTP = _BLASTP or (Path(shutil.which("blastp")) if shutil.which("blastp") else None)
+# Folder holding blastp: NB353_BLAST_BIN if set, else wherever blastp is on PATH.
+BLAST_BIN = _BLASTP.parent if _BLASTP else Path("/nonexistent")
 PY = sys.executable
 
 
