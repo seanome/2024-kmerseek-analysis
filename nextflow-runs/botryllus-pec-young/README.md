@@ -60,7 +60,7 @@ trimming check (`inputs/trimmed-inputs.validated.json`). `make_design.py` turns 
 | Setting | Value | Why |
 |---|---|---|
 | rnaseq `skip_trimming` | true | reads were trimmed by Trim Galore in PR 203 |
-| rnaseq `strandedness` | unstranded, every library | measured (below); left on `auto`, Salmon cannot work out the strand from SRR32233927's 636 pairs, which stopped the PR 203 run |
+| rnaseq `strandedness` | unstranded, every library | measured on the 3 deepest libraries (below) and assumed for the other 49; left on `auto`, Salmon cannot work out the strand from SRR32233927's 636 pairs, which stopped the PR 203 run |
 | rnaseq `min_mapped_reads` | 0 | keep every library (default drops libraries under 5% aligned) |
 | rnaseq `skip_deseq2_qc` | true | its DESeq2 step fails when no gene has a count in every library |
 | rnaseq `skip_biotype_qc` | true | the FullNames GTF has no `gene_biotype` |
