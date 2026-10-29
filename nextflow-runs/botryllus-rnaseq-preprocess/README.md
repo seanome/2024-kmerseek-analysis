@@ -47,8 +47,9 @@ On the first 200 000 read pairs of TL3 (GSC3 old) and TL14 (STD2 young):
   length dropped from 150 to 115-116 bases (TL3) and 99-101 bases (TL14), so many inserts
   are shorter than 150 bases. Under 0.5% of pairs were dropped as too short (under 20 bases).
 - **b.** Salmon put read 1 on the transcript's strand for 50% (TL3) and 52% (TL14) of the
-  fragments it assigned. **The library is unstranded**: give later steps
-  `strandedness: unstranded`.
+  fragments it assigned. **These two samples look unstranded.** The other 16 were not
+  tested, so `samplesheet.csv` keeps `strandedness: auto` for all 18 and Salmon decides
+  each one in the full run. Do not hard-code `unstranded` until the full run confirms it.
 - Salmon assigned 48% (TL3) and 72% (TL14) of the read pairs to a FullNames transcript.
 
 Numbers are in [`test_results/test_summary.tsv`](test_results/test_summary.tsv); the figure
