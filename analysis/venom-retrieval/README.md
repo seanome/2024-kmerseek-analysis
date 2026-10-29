@@ -118,7 +118,7 @@ kmerseek index and search belong on Sherlock, through the cys-frameworks pipelin
 
 ## What is in the manifest
 
-`../../tables/venom_retrieval/pilot/manifest.csv`, 14,630 peptides before duplicate removal, from ConoServer's
+`../../tables/venom_retrieval/pilot/manifest.parquet`, 14,630 peptides before duplicate removal, from ConoServer's
 protein dump and two Swiss-Prot searches (release 2026_03). One row per peptide, with:
 
 - the mature peptide and the precursor it was cut from, plus `mature_boundary_source`,
