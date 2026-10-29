@@ -93,7 +93,9 @@ unresolved, 98 with DNA. The run took 1.3 s elapsed, 9.3 s of CPU across 4 worke
 - Every workflow loads the same specifications, finds, names and coordinates a 35-residue
   insert, and reports it with an E-value where it has one.
 - The reduced-alphabet search recovered 16 of 48 inserts; the three other workflows
-  together recovered 22; it recovered **none that they missed**.
+  together recovered 22; it recovered **none that they missed**. In 20 of the 48 events
+  the insert was already in the dictionary (`events_whose_insert_was_already_in_the_dictionary`
+  in `summary.json`), so 16 of 48 is not a count of inserts the dictionary had never seen.
 - It flagged 11.5% of clean constructs against the 1% the pass rule allows; alignment
   alone flagged 0%.
 - Everything below about 11 residues was missed by every workflow, because the frozen
