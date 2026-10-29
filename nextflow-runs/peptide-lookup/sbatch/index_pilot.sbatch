@@ -27,8 +27,8 @@ while IFS=$'\t' read -r alphabet k; do
     /usr/bin/time -v -o "$stem.time.txt" "$KMERSEEK" index --input "$PILOT/db_${n}.fasta" \
       --output "$TASK_TMP/index" --alphabet "$alphabet" --ksize "$k" --scaled 1 \
       --extend-mismatch-penalty 2 --extend-xdrop 8 --ka-queries 0 \
-      --kmer-stats-out "$stem.spectrum.csv" > "$stem.log" 2>&1
-    du -sb "$TASK_TMP/index" > "$stem.disk.txt"
+      --kmer-stats-out "$stem.spectrum.csv" < /dev/null > "$stem.log" 2>&1
+    du -sb "$TASK_TMP/index" < /dev/null > "$stem.disk.txt"
     if [ "$n" -eq 100000 ]; then
       # K=1 is for memory measurement only. These hits are discarded; they are never
       # calibration or recovery results, and cannot enter any empirical FDR table.
@@ -37,7 +37,7 @@ while IFS=$'\t' read -r alphabet k; do
         --alphabet "$alphabet" --ksize "$k" --output /dev/null \
         --min-shared-kmers 1 --max-query-pvalue 1 --min-region-score 0 \
         --extend-mismatch-penalty 2 --extend-xdrop 8 --ka-k 1 --batch-size 8 \
-        > "$stem.search_memory_only.log" 2>&1
+        < /dev/null > "$stem.search_memory_only.log" 2>&1
     fi
     command rm -rf "$TASK_TMP/index"
     touch "$stem.complete"
