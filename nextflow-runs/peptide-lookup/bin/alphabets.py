@@ -2,8 +2,8 @@
 
 Copied from kmerseek `src/rust/alphabets.rs` at seanome/kmerseek main 00395d7 (2026-10-20).
 `protein20` keeps all 20 residues. `dayhoff6` is sourmash's Dayhoff table
-(`sourmash/src/core/src/encodings.rs`). `tests/test_alphabets.py` checks the cluster lists
-against a kmerseek checkout when one is found.
+(`sourmash/src/core/src/encodings.rs`). `tests/test_step0.py` checks the cluster lists
+against a kmerseek checkout when one is found (set KMERSEEK_DIR; the test is skipped without one).
 
 `massspec18` is new: mass spectrometry cannot tell I from L (same mass) and often not Q from
 K (0.036 Da apart), so those two pairs merge and the other 16 residues stay apart, 18 classes.
