@@ -2,7 +2,8 @@
 import json,sys
 from pathlib import Path
 p=Path(sys.argv[1]);s=json.loads(p.read_text());a=s['arms']['1'];b=s['arms']['20']
-lines=['# Minimum 20-aa stop-free stretch pilot','',s['scope'],'','Both arms split all six frames at stop/X. Reference matching requires at least one shared sampled hash; it does not establish function. DNA was not changed.','', '| Group | Original sequences | With ≥1-aa stretch | With ≥20-aa stretch | Stretches kept / all | Amino acids kept / all |','|---|---:|---:|---:|---:|---:|']
+lines=['# Minimum 20-aa stop-and-X pilot (superseded)','',
+'> Superseded. This pilot splits at stop and X with a 20-aa minimum, which is not the current rule (split only at stops, keep X, at least 30 aa; see `HANDOFF-20261025.md`). Do not compare its numbers with the corrected pilot table in `results/migration-20261025/STATUS.md`.','',s['scope'],'','Both arms split all six frames at stop/X. Reference matching requires at least one shared sampled hash; it does not establish function. DNA was not changed.','', '| Group | Original sequences | With ≥1-aa stretch | With ≥20-aa stretch | Stretches kept / all | Amino acids kept / all |','|---|---:|---:|---:|---:|---:|']
 for g,x in a['stretches'].items():
  y=b['stretches'][g]
  lines.append(f"| {g} | {x['records']:,} | {x['represented']:,} | {y['represented']:,} | {y['stretches']:,} / {x['stretches']:,} ({100*y['stretches']/x['stretches']:.1f}%) | {y['amino_acids']:,} / {x['amino_acids']:,} ({100*y['amino_acids']/x['amino_acids']:.1f}%) |")
