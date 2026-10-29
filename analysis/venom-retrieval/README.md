@@ -82,8 +82,10 @@ them at all.
 
 Reading a peptide as cysteine-versus-everything-else writes 71% of the 4,567 cysteine-rich
 toxins as a string that at least one other peptide also has: 4,567 peptides collapse onto
-2,024 distinct strings. Giving the residues in between even two classes drops that to 30%,
-and six classes to 15%.
+2,024 distinct strings. Giving the residues in between even two classes (`cys_hp3`, k=12) drops
+that to 30%, and six classes (`dayhoff6`, k=10) to 15%. The two-class alphabet is also read at
+k=12. The k differs between rows, so the drop is not from the class count alone. The 20-letter
+alphabet (`protein20`, k=6) has no collisions.
 
 Panel b is the pair the regression test pins: conotoxin Mr6.14 from a cone snail and
 nemertide alpha-8 from a ribbon worm, different phyla, different families, 27% of the
