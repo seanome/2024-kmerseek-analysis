@@ -1,0 +1,7 @@
+{
+  "alphabet": "mmseqs12",
+  "k": 4,
+  "rule": "highest score among settings not excluded",
+  "score_mean_recall_e0.1": 0.8267743854966079,
+  "shuffle_rate_e0.1": 0.015
+}
