@@ -937,7 +937,12 @@ def hits_to_cards(
                 src.get("source_accession")
                 and acc.split("-")[0] == src["source_accession"].split("-")[0]
             ):
-                qs = int(src["source_start"] or -(10**9))
+                if not (src.get("source_start") or "").strip():
+                    raise SystemExit(
+                        f"query {src['query_id']} has source_accession "
+                        f"{src['source_accession']} but no source_start (0-based)"
+                    )
+                qs = int(src["source_start"])
                 if overlap(qs, qs + len(src["sequence"]), s0, e0) > 0:
                     continue
             k = (h["query_id"], h["workflow"], h["setting"], eid)
