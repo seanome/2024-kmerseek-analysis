@@ -590,9 +590,9 @@ chance that two random residues of this proteome fall in the same class. So one 
 of a chance match scores p − C (1 − p) on average. That number has to be **below zero**.
 Below zero, a chance match loses score the longer it runs, high scores stay rare, and
 lambda exists. At or above zero, a chance match keeps gaining score just by running
-longer, no score is ever surprising, and there is no lambda and no E-value at any k.
+longer, no score is ever surprising, and lambda does not exist.
 That is what the right panel shows: bars to the left of the red line are fine, bars
-touching or crossing it mean the alphabet can never produce an E-value. This notebook retains its existing exclusion of drifts within 0.001 of zero
+touching or crossing it are excluded by the drift guard, so they get no E-value. This notebook retains its existing exclusion of drifts within 0.001 of zero
 (gbmr4 is at −0.0003) from E-value and bit-score comparisons. That is a heuristic
 exclusion, not proof that lambda is impossible: negative drift can have a positive
 root. Conclusions above apply to the settings actually retained by this rule.
