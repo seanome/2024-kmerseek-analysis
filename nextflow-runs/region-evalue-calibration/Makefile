@@ -12,7 +12,7 @@
 # Rerun on kmerseek PR 157 (Pr(same) from each region), in run-pr157/ so run/ keeps
 # notebook 344's results. No pilot: rerun_pr157.json sizes the index and searches from
 # notebook 344's run (searches at most 8.1 GB and about 18 minutes, index 3.0 GB and 1 minute).
-#   make rerun-pr157   (Sherlock) everything, new index, new decoys (same seeds)
+#   make rerun-pr157   (Sherlock) everything, new index, new decoys (same seeds, same human FASTA: HUMAN_MD5 checks it)
 #   make watch-pr157 / stop-pr157
 #   make pull-results RUN_DIR=run-pr157 RESULTS=results-pr157   (laptop)
 
