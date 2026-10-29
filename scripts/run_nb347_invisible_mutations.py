@@ -438,7 +438,7 @@ def main(argv=None):
         "packages": {
             p: version(p) for p in ("numpy", "polars", "matplotlib", "sourmash")
         },
-        "command": "/Users/olga/anaconda3/envs/2025-kmerseek-analysis/bin/python3 scripts/run_nb347_invisible_mutations.py",
+        "command": " ".join([sys.executable, *sys.argv]),
     }
     (tables / f"{T}_provenance.json").write_text(json.dumps(prov, indent=2) + "\n")
 
