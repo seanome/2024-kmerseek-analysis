@@ -310,7 +310,9 @@ def score_claims(measurements):
             known |= {"true_significant_units", "swap_count"}
         unknown = set(measurements.get(claim, {})) - known
         if unknown:
-            raise ValueError(f"unknown measurement for claim {claim}: {sorted(unknown)}")
+            raise ValueError(
+                f"unknown measurement for claim {claim}: {sorted(unknown)}"
+            )
         components = []
         values = measurements.get(claim, {})
         for name, limit, op in limits:
