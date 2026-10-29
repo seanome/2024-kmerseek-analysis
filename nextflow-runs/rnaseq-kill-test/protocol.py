@@ -301,7 +301,16 @@ def score_claims(measurements):
         "ge": lambda x, y: x >= y,
         "eq": lambda x, y: x == y,
     }
+    unknown_claims = set(measurements) - set(rules)
+    if unknown_claims:
+        raise ValueError(f"unknown claim: {sorted(unknown_claims)}")
     for claim, limits in rules.items():
+        known = {name for name, _, _ in limits}
+        if claim == "5":  # score_swaps also reports these counts; they have no limit
+            known |= {"true_significant_units", "swap_count"}
+        unknown = set(measurements.get(claim, {})) - known
+        if unknown:
+            raise ValueError(f"unknown measurement for claim {claim}: {sorted(unknown)}")
         components = []
         values = measurements.get(claim, {})
         for name, limit, op in limits:

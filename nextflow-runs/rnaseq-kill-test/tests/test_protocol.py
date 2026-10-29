@@ -359,6 +359,12 @@ class ProtocolTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             p.overlap_curve(["u1"], ["g1"], rows)
 
+    def test_unknown_measurement_keys_are_rejected(self):
+        with self.assertRaisesRegex(ValueError, "genes_hit_top_300"):
+            p.score_claims({"2": {"genes_hit_top_300": 80}})
+        with self.assertRaisesRegex(ValueError, "unknown claim"):
+            p.score_claims({"9": {}})
+
 
 if __name__ == "__main__":
     unittest.main()
