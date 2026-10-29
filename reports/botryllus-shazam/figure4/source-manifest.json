@@ -1,0 +1,99 @@
+{
+  "source_url": "https://www.ebi.ac.uk/europepmc/webservices/rest/PMC13229227/supplementaryFiles",
+  "workbook_sha256": "4e2f2164fff28658f38ac30deee3f3bd61926b4f9ae8f8306c9def21a0072eba",
+  "sheets": [
+    "sequenced samples meta data",
+    "DEseq group annotation",
+    "Pacemaker_Counts_Table",
+    "Group1_2Hr_young_DEseqres",
+    "group2_24Hr_Young_DEseqresult",
+    "group3_24Hr_OLD_DEseq",
+    "Group4_13and49Days_Young_DEseq",
+    "group5_132Days_young_DEseq",
+    "group6_41to93days_oldDEseq",
+    "Fig 4_M1 M2 Botryllus gene set",
+    "annotated DE all groups young",
+    "annotated DE all groups old",
+    "Temporal Reg gene list young ",
+    "Temporal Reg gene list Old",
+    "fig4a&bgene_count"
+  ],
+  "genes": 72113,
+  "libraries": 64,
+  "gene_set_counts": {
+    "proimmune": 13,
+    "cell_repair": 133
+  },
+  "published_groups": {
+    "Group 1 after 2h young": 12,
+    "Group 2 after 24h young": 12,
+    "Group 3 after 24h old": 4,
+    "Group 4 after 13 and 49 days Young": 8,
+    "Group 5 after 132 days Young": 6,
+    "Group 6 after 41 and 93 days Old": 5
+  },
+  "low_count_libraries": [
+    "SRR32233985",
+    "SRR32233971",
+    "SRR32233962",
+    "SRR32233927",
+    "SRR32233974",
+    "SRR32233948",
+    "SRR32233935",
+    "SRR32233972",
+    "SRR32233951",
+    "SRR32233988",
+    "SRR32233945",
+    "SRR32233939",
+    "SRR32233947",
+    "SRR32233950",
+    "SRR32233944",
+    "SRR32233976"
+  ],
+  "published_de_tables": [
+    {
+      "sheet": "Group1_2Hr_young_DEseqres",
+      "genes": 72113,
+      "finite_p": 50236,
+      "raw_p_005_abs_lfc_gt1": 646,
+      "adjusted_p_005_abs_lfc_gt1": 0
+    },
+    {
+      "sheet": "group2_24Hr_Young_DEseqresult",
+      "genes": 72113,
+      "finite_p": 50592,
+      "raw_p_005_abs_lfc_gt1": 816,
+      "adjusted_p_005_abs_lfc_gt1": 1
+    },
+    {
+      "sheet": "group3_24Hr_OLD_DEseq",
+      "genes": 72113,
+      "finite_p": 36366,
+      "raw_p_005_abs_lfc_gt1": 136,
+      "adjusted_p_005_abs_lfc_gt1": 0
+    },
+    {
+      "sheet": "Group4_13and49Days_Young_DEseq",
+      "genes": 72113,
+      "finite_p": 25407,
+      "raw_p_005_abs_lfc_gt1": 94,
+      "adjusted_p_005_abs_lfc_gt1": 0
+    },
+    {
+      "sheet": "group5_132Days_young_DEseq",
+      "genes": 72113,
+      "finite_p": 21031,
+      "raw_p_005_abs_lfc_gt1": 179,
+      "adjusted_p_005_abs_lfc_gt1": 11
+    },
+    {
+      "sheet": "group6_41to93days_oldDEseq",
+      "genes": 72113,
+      "finite_p": 28015,
+      "raw_p_005_abs_lfc_gt1": 64,
+      "adjusted_p_005_abs_lfc_gt1": 0
+    }
+  ],
+  "hub_count_cells": 84,
+  "status": "Published inputs extracted; no raw-read or adjusted-model reproduction inferred"
+}

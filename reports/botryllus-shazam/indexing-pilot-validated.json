@@ -1,0 +1,838 @@
+{
+  "run": "SRR32233926",
+  "sources": [
+    {
+      "path": "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/raw/SRR32233926/SRR32233926_1.fastq.gz",
+      "sha256": "8b6856510121a6d0d979c63ac6ff8764969cd27bfa689b23d55f992389d91ac5"
+    },
+    {
+      "path": "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/raw/SRR32233926/SRR32233926_2.fastq.gz",
+      "sha256": "6ac9a600aa252d1e69337e912406c444364ea7ba48e8931ac496200ca2d26c98"
+    }
+  ],
+  "settings": [
+    {
+      "mode": "dna",
+      "ksize": 31,
+      "scaled": 5,
+      "hashes": 32618111,
+      "empty": false,
+      "bytes": 253865336,
+      "path": "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/indexing-pilot/SRR32233926/dna/scaled5.sig.zip",
+      "sha256": "090286e9b70d0063127fb987d4a3a0c9e60ac73dc86f86480888078b8b556e73",
+      "index": "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/indexing-pilot/SRR32233926/dna/scaled5.sbt.zip",
+      "index_bytes": 253866492
+    },
+    {
+      "mode": "dna",
+      "ksize": 31,
+      "scaled": 10,
+      "hashes": 16309982,
+      "empty": false,
+      "bytes": 126816840,
+      "path": "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/indexing-pilot/SRR32233926/dna/scaled10.sig.zip",
+      "sha256": "6d4f5e06483ff02824f93fe8a3c363dcbe2878864845b29fb18caa095adf3253",
+      "index": "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/indexing-pilot/SRR32233926/dna/scaled10.sbt.zip",
+      "index_bytes": 126818011
+    },
+    {
+      "mode": "dna",
+      "ksize": 31,
+      "scaled": 100,
+      "hashes": 1631679,
+      "empty": false,
+      "bytes": 12641126,
+      "path": "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/indexing-pilot/SRR32233926/dna/scaled100.sig.zip",
+      "sha256": "42dff92a607c624f7ebc72aaf7e615d9d2e5939db6907a639220c529ceb4e7c2",
+      "index": "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/indexing-pilot/SRR32233926/dna/scaled100.sbt.zip",
+      "index_bytes": 12642312
+    },
+    {
+      "mode": "protein",
+      "ksize": 7,
+      "scaled": 5,
+      "hashes": 28251961,
+      "empty": false,
+      "bytes": 220724339,
+      "path": "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/indexing-pilot/SRR32233926/protein/scaled5.sig.zip",
+      "sha256": "f675539e3a30694f4f631f55d7e611cfc6ac966a87ced027ac642a01a65c89c9",
+      "index": "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/indexing-pilot/SRR32233926/protein/scaled5.sbt.zip",
+      "index_bytes": 220725496
+    },
+    {
+      "mode": "protein",
+      "ksize": 7,
+      "scaled": 10,
+      "hashes": 14127979,
+      "empty": false,
+      "bytes": 110277108,
+      "path": "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/indexing-pilot/SRR32233926/protein/scaled10.sig.zip",
+      "sha256": "79d89f6af5943b888b18e59950730b20405e993b9fbc4a1a98549e2e4c5e786d",
+      "index": "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/indexing-pilot/SRR32233926/protein/scaled10.sbt.zip",
+      "index_bytes": 110278280
+    },
+    {
+      "mode": "protein",
+      "ksize": 7,
+      "scaled": 100,
+      "hashes": 1412307,
+      "empty": false,
+      "bytes": 10984061,
+      "path": "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/indexing-pilot/SRR32233926/protein/scaled100.sig.zip",
+      "sha256": "776a1114a0c815bcb7306274888656281739fbb0be0135312d2d20fe4c88ea6a",
+      "index": "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/indexing-pilot/SRR32233926/protein/scaled100.sbt.zip",
+      "index_bytes": 10985247
+    },
+    {
+      "mode": "dayhoff",
+      "ksize": 12,
+      "scaled": 5,
+      "hashes": 36216383,
+      "empty": false,
+      "bytes": 281038853,
+      "path": "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/indexing-pilot/SRR32233926/dayhoff/scaled5.sig.zip",
+      "sha256": "b0bf0e7c026372c0d018c9a0916ce92bf08587c85c22073be5fc1b661748a1ef",
+      "index": "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/indexing-pilot/SRR32233926/dayhoff/scaled5.sbt.zip",
+      "index_bytes": 281040009
+    },
+    {
+      "mode": "dayhoff",
+      "ksize": 12,
+      "scaled": 10,
+      "hashes": 18104920,
+      "empty": false,
+      "bytes": 140369424,
+      "path": "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/indexing-pilot/SRR32233926/dayhoff/scaled10.sig.zip",
+      "sha256": "1c5e321c794c0c05c7a88a1da6d28bda6cdb9a36a0ce3457451c997252caac01",
+      "index": "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/indexing-pilot/SRR32233926/dayhoff/scaled10.sbt.zip",
+      "index_bytes": 140370596
+    },
+    {
+      "mode": "dayhoff",
+      "ksize": 12,
+      "scaled": 100,
+      "hashes": 1809553,
+      "empty": false,
+      "bytes": 13981318,
+      "path": "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/indexing-pilot/SRR32233926/dayhoff/scaled100.sig.zip",
+      "sha256": "165640c5522c4c35480f65289d6539dfa03addfa74b2f213f76b99e69c29b08d",
+      "index": "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/indexing-pilot/SRR32233926/dayhoff/scaled100.sbt.zip",
+      "index_bytes": 13982504
+    },
+    {
+      "mode": "hp",
+      "ksize": 30,
+      "scaled": 5,
+      "hashes": 52903195,
+      "empty": false,
+      "bytes": 406648746,
+      "path": "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/indexing-pilot/SRR32233926/hp/scaled5.sig.zip",
+      "sha256": "4b262d65a29e1e1698ed5ab299b0970e5a76cf7a9394aa4785b081ee36b324b7",
+      "index": "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/indexing-pilot/SRR32233926/hp/scaled5.sbt.zip",
+      "index_bytes": 406649902
+    },
+    {
+      "mode": "hp",
+      "ksize": 30,
+      "scaled": 10,
+      "hashes": 26453354,
+      "empty": false,
+      "bytes": 203153981,
+      "path": "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/indexing-pilot/SRR32233926/hp/scaled10.sig.zip",
+      "sha256": "b3a9b632579f2d6f205c89c03519fcde2f8a36a5ec4d8df25050bb5a28198920",
+      "index": "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/indexing-pilot/SRR32233926/hp/scaled10.sbt.zip",
+      "index_bytes": 203155153
+    },
+    {
+      "mode": "hp",
+      "ksize": 30,
+      "scaled": 100,
+      "hashes": 2644130,
+      "empty": false,
+      "bytes": 20237775,
+      "path": "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/indexing-pilot/SRR32233926/hp/scaled100.sig.zip",
+      "sha256": "9f8562ef62e028eb0e47f657f01609efedafa81ce49443ba213425043968bdba",
+      "index": "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/indexing-pilot/SRR32233926/hp/scaled100.sbt.zip",
+      "index_bytes": 20238961
+    }
+  ],
+  "commands": [
+    {
+      "argv": [
+        "/home/groups/ayeletv/opt/oyster-shazam-20261023/bin/python",
+        "-m",
+        "sourmash",
+        "sketch",
+        "dna",
+        "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/raw/SRR32233926/SRR32233926_1.fastq.gz",
+        "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/raw/SRR32233926/SRR32233926_2.fastq.gz",
+        "--merge",
+        "SRR32233926",
+        "-p",
+        "dna,k=31,scaled=5",
+        "-o",
+        "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/indexing-pilot/SRR32233926/dna/scaled5.sig.zip"
+      ],
+      "wall_seconds": 318.8346411976963,
+      "log": "dna-sketch.log"
+    },
+    {
+      "argv": [
+        "/home/groups/ayeletv/opt/oyster-shazam-20261023/bin/python",
+        "-m",
+        "sourmash",
+        "sig",
+        "downsample",
+        "--scaled",
+        "10",
+        "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/indexing-pilot/SRR32233926/dna/scaled5.sig.zip",
+        "-o",
+        "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/indexing-pilot/SRR32233926/dna/scaled10.sig.zip"
+      ],
+      "wall_seconds": 75.64384469203651,
+      "log": "dna-downsample-10.log"
+    },
+    {
+      "argv": [
+        "/home/groups/ayeletv/opt/oyster-shazam-20261023/bin/python",
+        "-m",
+        "sourmash",
+        "sig",
+        "downsample",
+        "--scaled",
+        "100",
+        "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/indexing-pilot/SRR32233926/dna/scaled5.sig.zip",
+        "-o",
+        "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/indexing-pilot/SRR32233926/dna/scaled100.sig.zip"
+      ],
+      "wall_seconds": 60.14529043342918,
+      "log": "dna-downsample-100.log"
+    },
+    {
+      "argv": [
+        "/home/groups/ayeletv/opt/oyster-shazam-20261023/bin/python",
+        "-m",
+        "sourmash",
+        "index",
+        "-F",
+        "SBT",
+        "-k",
+        "31",
+        "--dna",
+        "--scaled",
+        "5",
+        "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/indexing-pilot/SRR32233926/dna/scaled5.sbt.zip",
+        "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/indexing-pilot/SRR32233926/dna/scaled5.sig.zip"
+      ],
+      "wall_seconds": 81.68812943156809,
+      "log": "dna-index-5.log"
+    },
+    {
+      "argv": [
+        "/home/groups/ayeletv/opt/oyster-shazam-20261023/bin/python",
+        "-m",
+        "sourmash",
+        "search",
+        "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/indexing-pilot/SRR32233926/dna/scaled5.sig.zip",
+        "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/indexing-pilot/SRR32233926/dna/scaled5.sbt.zip",
+        "--containment",
+        "--threshold",
+        "1",
+        "-k",
+        "31",
+        "--dna",
+        "--output",
+        "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/indexing-pilot/SRR32233926/dna/scaled5.self-search.csv"
+      ],
+      "wall_seconds": 268.40061683487147,
+      "log": "dna-self-search-5.log"
+    },
+    {
+      "argv": [
+        "/home/groups/ayeletv/opt/oyster-shazam-20261023/bin/python",
+        "-m",
+        "sourmash",
+        "index",
+        "-F",
+        "SBT",
+        "-k",
+        "31",
+        "--dna",
+        "--scaled",
+        "10",
+        "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/indexing-pilot/SRR32233926/dna/scaled10.sbt.zip",
+        "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/indexing-pilot/SRR32233926/dna/scaled10.sig.zip"
+      ],
+      "wall_seconds": 45.94910657592118,
+      "log": "dna-index-10.log"
+    },
+    {
+      "argv": [
+        "/home/groups/ayeletv/opt/oyster-shazam-20261023/bin/python",
+        "-m",
+        "sourmash",
+        "search",
+        "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/indexing-pilot/SRR32233926/dna/scaled10.sig.zip",
+        "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/indexing-pilot/SRR32233926/dna/scaled10.sbt.zip",
+        "--containment",
+        "--threshold",
+        "1",
+        "-k",
+        "31",
+        "--dna",
+        "--output",
+        "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/indexing-pilot/SRR32233926/dna/scaled10.self-search.csv"
+      ],
+      "wall_seconds": 130.92858549952507,
+      "log": "dna-self-search-10.log"
+    },
+    {
+      "argv": [
+        "/home/groups/ayeletv/opt/oyster-shazam-20261023/bin/python",
+        "-m",
+        "sourmash",
+        "index",
+        "-F",
+        "SBT",
+        "-k",
+        "31",
+        "--dna",
+        "--scaled",
+        "100",
+        "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/indexing-pilot/SRR32233926/dna/scaled100.sbt.zip",
+        "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/indexing-pilot/SRR32233926/dna/scaled100.sig.zip"
+      ],
+      "wall_seconds": 5.501468422822654,
+      "log": "dna-index-100.log"
+    },
+    {
+      "argv": [
+        "/home/groups/ayeletv/opt/oyster-shazam-20261023/bin/python",
+        "-m",
+        "sourmash",
+        "search",
+        "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/indexing-pilot/SRR32233926/dna/scaled100.sig.zip",
+        "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/indexing-pilot/SRR32233926/dna/scaled100.sbt.zip",
+        "--containment",
+        "--threshold",
+        "1",
+        "-k",
+        "31",
+        "--dna",
+        "--output",
+        "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/indexing-pilot/SRR32233926/dna/scaled100.self-search.csv"
+      ],
+      "wall_seconds": 12.897817182354629,
+      "log": "dna-self-search-100.log"
+    },
+    {
+      "argv": [
+        "/home/groups/ayeletv/opt/oyster-shazam-20261023/bin/python",
+        "-m",
+        "sourmash",
+        "sketch",
+        "translate",
+        "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/raw/SRR32233926/SRR32233926_1.fastq.gz",
+        "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/raw/SRR32233926/SRR32233926_2.fastq.gz",
+        "--merge",
+        "SRR32233926",
+        "-p",
+        "protein,k=7,scaled=5",
+        "-o",
+        "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/indexing-pilot/SRR32233926/protein/scaled5.sig.zip"
+      ],
+      "wall_seconds": 895.8482129499316,
+      "log": "protein-sketch.log"
+    },
+    {
+      "argv": [
+        "/home/groups/ayeletv/opt/oyster-shazam-20261023/bin/python",
+        "-m",
+        "sourmash",
+        "sig",
+        "downsample",
+        "--scaled",
+        "10",
+        "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/indexing-pilot/SRR32233926/protein/scaled5.sig.zip",
+        "-o",
+        "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/indexing-pilot/SRR32233926/protein/scaled10.sig.zip"
+      ],
+      "wall_seconds": 73.93489042762667,
+      "log": "protein-downsample-10.log"
+    },
+    {
+      "argv": [
+        "/home/groups/ayeletv/opt/oyster-shazam-20261023/bin/python",
+        "-m",
+        "sourmash",
+        "sig",
+        "downsample",
+        "--scaled",
+        "100",
+        "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/indexing-pilot/SRR32233926/protein/scaled5.sig.zip",
+        "-o",
+        "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/indexing-pilot/SRR32233926/protein/scaled100.sig.zip"
+      ],
+      "wall_seconds": 59.920753992162645,
+      "log": "protein-downsample-100.log"
+    },
+    {
+      "argv": [
+        "/home/groups/ayeletv/opt/oyster-shazam-20261023/bin/python",
+        "-m",
+        "sourmash",
+        "index",
+        "-F",
+        "SBT",
+        "-k",
+        "7",
+        "--protein",
+        "--scaled",
+        "5",
+        "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/indexing-pilot/SRR32233926/protein/scaled5.sbt.zip",
+        "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/indexing-pilot/SRR32233926/protein/scaled5.sig.zip"
+      ],
+      "wall_seconds": 68.94902565330267,
+      "log": "protein-index-5.log"
+    },
+    {
+      "argv": [
+        "/home/groups/ayeletv/opt/oyster-shazam-20261023/bin/python",
+        "-m",
+        "sourmash",
+        "search",
+        "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/indexing-pilot/SRR32233926/protein/scaled5.sig.zip",
+        "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/indexing-pilot/SRR32233926/protein/scaled5.sbt.zip",
+        "--containment",
+        "--threshold",
+        "1",
+        "-k",
+        "7",
+        "--protein",
+        "--output",
+        "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/indexing-pilot/SRR32233926/protein/scaled5.self-search.csv"
+      ],
+      "wall_seconds": 233.41890320461243,
+      "log": "protein-self-search-5.log"
+    },
+    {
+      "argv": [
+        "/home/groups/ayeletv/opt/oyster-shazam-20261023/bin/python",
+        "-m",
+        "sourmash",
+        "index",
+        "-F",
+        "SBT",
+        "-k",
+        "7",
+        "--protein",
+        "--scaled",
+        "10",
+        "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/indexing-pilot/SRR32233926/protein/scaled10.sbt.zip",
+        "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/indexing-pilot/SRR32233926/protein/scaled10.sig.zip"
+      ],
+      "wall_seconds": 38.709466804750264,
+      "log": "protein-index-10.log"
+    },
+    {
+      "argv": [
+        "/home/groups/ayeletv/opt/oyster-shazam-20261023/bin/python",
+        "-m",
+        "sourmash",
+        "search",
+        "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/indexing-pilot/SRR32233926/protein/scaled10.sig.zip",
+        "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/indexing-pilot/SRR32233926/protein/scaled10.sbt.zip",
+        "--containment",
+        "--threshold",
+        "1",
+        "-k",
+        "7",
+        "--protein",
+        "--output",
+        "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/indexing-pilot/SRR32233926/protein/scaled10.self-search.csv"
+      ],
+      "wall_seconds": 110.05928643420339,
+      "log": "protein-self-search-10.log"
+    },
+    {
+      "argv": [
+        "/home/groups/ayeletv/opt/oyster-shazam-20261023/bin/python",
+        "-m",
+        "sourmash",
+        "index",
+        "-F",
+        "SBT",
+        "-k",
+        "7",
+        "--protein",
+        "--scaled",
+        "100",
+        "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/indexing-pilot/SRR32233926/protein/scaled100.sbt.zip",
+        "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/indexing-pilot/SRR32233926/protein/scaled100.sig.zip"
+      ],
+      "wall_seconds": 5.124871737323701,
+      "log": "protein-index-100.log"
+    },
+    {
+      "argv": [
+        "/home/groups/ayeletv/opt/oyster-shazam-20261023/bin/python",
+        "-m",
+        "sourmash",
+        "search",
+        "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/indexing-pilot/SRR32233926/protein/scaled100.sig.zip",
+        "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/indexing-pilot/SRR32233926/protein/scaled100.sbt.zip",
+        "--containment",
+        "--threshold",
+        "1",
+        "-k",
+        "7",
+        "--protein",
+        "--output",
+        "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/indexing-pilot/SRR32233926/protein/scaled100.self-search.csv"
+      ],
+      "wall_seconds": 11.84955808520317,
+      "log": "protein-self-search-100.log"
+    },
+    {
+      "argv": [
+        "/home/groups/ayeletv/opt/oyster-shazam-20261023/bin/python",
+        "-m",
+        "sourmash",
+        "sketch",
+        "translate",
+        "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/raw/SRR32233926/SRR32233926_1.fastq.gz",
+        "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/raw/SRR32233926/SRR32233926_2.fastq.gz",
+        "--merge",
+        "SRR32233926",
+        "-p",
+        "dayhoff,k=12,scaled=5",
+        "-o",
+        "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/indexing-pilot/SRR32233926/dayhoff/scaled5.sig.zip"
+      ],
+      "wall_seconds": 900.3302754191682,
+      "log": "dayhoff-sketch.log"
+    },
+    {
+      "argv": [
+        "/home/groups/ayeletv/opt/oyster-shazam-20261023/bin/python",
+        "-m",
+        "sourmash",
+        "sig",
+        "downsample",
+        "--scaled",
+        "10",
+        "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/indexing-pilot/SRR32233926/dayhoff/scaled5.sig.zip",
+        "-o",
+        "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/indexing-pilot/SRR32233926/dayhoff/scaled10.sig.zip"
+      ],
+      "wall_seconds": 102.4076004549861,
+      "log": "dayhoff-downsample-10.log"
+    },
+    {
+      "argv": [
+        "/home/groups/ayeletv/opt/oyster-shazam-20261023/bin/python",
+        "-m",
+        "sourmash",
+        "sig",
+        "downsample",
+        "--scaled",
+        "100",
+        "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/indexing-pilot/SRR32233926/dayhoff/scaled5.sig.zip",
+        "-o",
+        "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/indexing-pilot/SRR32233926/dayhoff/scaled100.sig.zip"
+      ],
+      "wall_seconds": 72.57681625243276,
+      "log": "dayhoff-downsample-100.log"
+    },
+    {
+      "argv": [
+        "/home/groups/ayeletv/opt/oyster-shazam-20261023/bin/python",
+        "-m",
+        "sourmash",
+        "index",
+        "-F",
+        "SBT",
+        "-k",
+        "12",
+        "--dayhoff",
+        "--scaled",
+        "5",
+        "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/indexing-pilot/SRR32233926/dayhoff/scaled5.sbt.zip",
+        "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/indexing-pilot/SRR32233926/dayhoff/scaled5.sig.zip"
+      ],
+      "wall_seconds": 86.63835150748491,
+      "log": "dayhoff-index-5.log"
+    },
+    {
+      "argv": [
+        "/home/groups/ayeletv/opt/oyster-shazam-20261023/bin/python",
+        "-m",
+        "sourmash",
+        "search",
+        "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/indexing-pilot/SRR32233926/dayhoff/scaled5.sig.zip",
+        "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/indexing-pilot/SRR32233926/dayhoff/scaled5.sbt.zip",
+        "--containment",
+        "--threshold",
+        "1",
+        "-k",
+        "12",
+        "--dayhoff",
+        "--output",
+        "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/indexing-pilot/SRR32233926/dayhoff/scaled5.self-search.csv"
+      ],
+      "wall_seconds": 264.3261735588312,
+      "log": "dayhoff-self-search-5.log"
+    },
+    {
+      "argv": [
+        "/home/groups/ayeletv/opt/oyster-shazam-20261023/bin/python",
+        "-m",
+        "sourmash",
+        "index",
+        "-F",
+        "SBT",
+        "-k",
+        "12",
+        "--dayhoff",
+        "--scaled",
+        "10",
+        "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/indexing-pilot/SRR32233926/dayhoff/scaled10.sbt.zip",
+        "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/indexing-pilot/SRR32233926/dayhoff/scaled10.sig.zip"
+      ],
+      "wall_seconds": 37.735161676071584,
+      "log": "dayhoff-index-10.log"
+    },
+    {
+      "argv": [
+        "/home/groups/ayeletv/opt/oyster-shazam-20261023/bin/python",
+        "-m",
+        "sourmash",
+        "search",
+        "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/indexing-pilot/SRR32233926/dayhoff/scaled10.sig.zip",
+        "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/indexing-pilot/SRR32233926/dayhoff/scaled10.sbt.zip",
+        "--containment",
+        "--threshold",
+        "1",
+        "-k",
+        "12",
+        "--dayhoff",
+        "--output",
+        "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/indexing-pilot/SRR32233926/dayhoff/scaled10.self-search.csv"
+      ],
+      "wall_seconds": 130.19115240871906,
+      "log": "dayhoff-self-search-10.log"
+    },
+    {
+      "argv": [
+        "/home/groups/ayeletv/opt/oyster-shazam-20261023/bin/python",
+        "-m",
+        "sourmash",
+        "index",
+        "-F",
+        "SBT",
+        "-k",
+        "12",
+        "--dayhoff",
+        "--scaled",
+        "100",
+        "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/indexing-pilot/SRR32233926/dayhoff/scaled100.sbt.zip",
+        "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/indexing-pilot/SRR32233926/dayhoff/scaled100.sig.zip"
+      ],
+      "wall_seconds": 5.676383065059781,
+      "log": "dayhoff-index-100.log"
+    },
+    {
+      "argv": [
+        "/home/groups/ayeletv/opt/oyster-shazam-20261023/bin/python",
+        "-m",
+        "sourmash",
+        "search",
+        "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/indexing-pilot/SRR32233926/dayhoff/scaled100.sig.zip",
+        "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/indexing-pilot/SRR32233926/dayhoff/scaled100.sbt.zip",
+        "--containment",
+        "--threshold",
+        "1",
+        "-k",
+        "12",
+        "--dayhoff",
+        "--output",
+        "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/indexing-pilot/SRR32233926/dayhoff/scaled100.self-search.csv"
+      ],
+      "wall_seconds": 14.0224873078987,
+      "log": "dayhoff-self-search-100.log"
+    },
+    {
+      "argv": [
+        "/home/groups/ayeletv/opt/oyster-shazam-20261023/bin/python",
+        "-m",
+        "sourmash",
+        "sketch",
+        "translate",
+        "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/raw/SRR32233926/SRR32233926_1.fastq.gz",
+        "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/raw/SRR32233926/SRR32233926_2.fastq.gz",
+        "--merge",
+        "SRR32233926",
+        "-p",
+        "hp,k=30,scaled=5",
+        "-o",
+        "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/indexing-pilot/SRR32233926/hp/scaled5.sig.zip"
+      ],
+      "wall_seconds": 785.7276609744877,
+      "log": "hp-sketch.log"
+    },
+    {
+      "argv": [
+        "/home/groups/ayeletv/opt/oyster-shazam-20261023/bin/python",
+        "-m",
+        "sourmash",
+        "sig",
+        "downsample",
+        "--scaled",
+        "10",
+        "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/indexing-pilot/SRR32233926/hp/scaled5.sig.zip",
+        "-o",
+        "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/indexing-pilot/SRR32233926/hp/scaled10.sig.zip"
+      ],
+      "wall_seconds": 151.3809770056978,
+      "log": "hp-downsample-10.log"
+    },
+    {
+      "argv": [
+        "/home/groups/ayeletv/opt/oyster-shazam-20261023/bin/python",
+        "-m",
+        "sourmash",
+        "sig",
+        "downsample",
+        "--scaled",
+        "100",
+        "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/indexing-pilot/SRR32233926/hp/scaled5.sig.zip",
+        "-o",
+        "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/indexing-pilot/SRR32233926/hp/scaled100.sig.zip"
+      ],
+      "wall_seconds": 120.46162704844028,
+      "log": "hp-downsample-100.log"
+    },
+    {
+      "argv": [
+        "/home/groups/ayeletv/opt/oyster-shazam-20261023/bin/python",
+        "-m",
+        "sourmash",
+        "index",
+        "-F",
+        "SBT",
+        "-k",
+        "30",
+        "--hp",
+        "--scaled",
+        "5",
+        "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/indexing-pilot/SRR32233926/hp/scaled5.sbt.zip",
+        "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/indexing-pilot/SRR32233926/hp/scaled5.sig.zip"
+      ],
+      "wall_seconds": 143.6564981965348,
+      "log": "hp-index-5.log"
+    },
+    {
+      "argv": [
+        "/home/groups/ayeletv/opt/oyster-shazam-20261023/bin/python",
+        "-m",
+        "sourmash",
+        "search",
+        "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/indexing-pilot/SRR32233926/hp/scaled5.sig.zip",
+        "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/indexing-pilot/SRR32233926/hp/scaled5.sbt.zip",
+        "--containment",
+        "--threshold",
+        "1",
+        "-k",
+        "30",
+        "--hp",
+        "--output",
+        "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/indexing-pilot/SRR32233926/hp/scaled5.self-search.csv"
+      ],
+      "wall_seconds": 467.4641787679866,
+      "log": "hp-self-search-5.log"
+    },
+    {
+      "argv": [
+        "/home/groups/ayeletv/opt/oyster-shazam-20261023/bin/python",
+        "-m",
+        "sourmash",
+        "index",
+        "-F",
+        "SBT",
+        "-k",
+        "30",
+        "--hp",
+        "--scaled",
+        "10",
+        "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/indexing-pilot/SRR32233926/hp/scaled10.sbt.zip",
+        "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/indexing-pilot/SRR32233926/hp/scaled10.sig.zip"
+      ],
+      "wall_seconds": 66.9253455279395,
+      "log": "hp-index-10.log"
+    },
+    {
+      "argv": [
+        "/home/groups/ayeletv/opt/oyster-shazam-20261023/bin/python",
+        "-m",
+        "sourmash",
+        "search",
+        "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/indexing-pilot/SRR32233926/hp/scaled10.sig.zip",
+        "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/indexing-pilot/SRR32233926/hp/scaled10.sbt.zip",
+        "--containment",
+        "--threshold",
+        "1",
+        "-k",
+        "30",
+        "--hp",
+        "--output",
+        "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/indexing-pilot/SRR32233926/hp/scaled10.self-search.csv"
+      ],
+      "wall_seconds": 249.65281443111598,
+      "log": "hp-self-search-10.log"
+    },
+    {
+      "argv": [
+        "/home/groups/ayeletv/opt/oyster-shazam-20261023/bin/python",
+        "-m",
+        "sourmash",
+        "index",
+        "-F",
+        "SBT",
+        "-k",
+        "30",
+        "--hp",
+        "--scaled",
+        "100",
+        "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/indexing-pilot/SRR32233926/hp/scaled100.sbt.zip",
+        "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/indexing-pilot/SRR32233926/hp/scaled100.sig.zip"
+      ],
+      "wall_seconds": 8.81100819632411,
+      "log": "hp-index-100.log"
+    },
+    {
+      "argv": [
+        "/home/groups/ayeletv/opt/oyster-shazam-20261023/bin/python",
+        "-m",
+        "sourmash",
+        "search",
+        "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/indexing-pilot/SRR32233926/hp/scaled100.sig.zip",
+        "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/indexing-pilot/SRR32233926/hp/scaled100.sbt.zip",
+        "--containment",
+        "--threshold",
+        "1",
+        "-k",
+        "30",
+        "--hp",
+        "--output",
+        "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/indexing-pilot/SRR32233926/hp/scaled100.self-search.csv"
+      ],
+      "wall_seconds": 23.096268800087273,
+      "log": "hp-self-search-100.log"
+    }
+  ],
+  "input_scope": "complete raw public run",
+  "translation": "upstream sourmash six-frame translated reads; not predicted proteins",
+  "searched_runs": 1,
+  "self_study_match": true,
+  "biological_replication": "not inferred from runs"
+}

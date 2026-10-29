@@ -1,0 +1,17 @@
+{
+  "software_fixture": true,
+  "jellyfish_version": "2.2.10",
+  "fixture_job": 49515476,
+  "diagnostic_job": 49515995,
+  "sample": "S11T",
+  "canonical_kmer": "AATACATGAAGAACCACAATTGGCAGATTCG",
+  "independent_read_windows": 134,
+  "default_counter_count": 6,
+  "default_counter_without_count_filter": 6,
+  "explicit_32_bit_counter_count": 134,
+  "scope": "Reproduced dependence on counter width; internal cause not established",
+  "width_matrix_job": 49516266,
+  "chosen_memory_bits": 63,
+  "chosen_output_bytes": 7,
+  "chosen_combination_observed": 134
+}

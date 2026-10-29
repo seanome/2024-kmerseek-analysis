@@ -1,0 +1,45 @@
+[
+  {
+    "contrast": "young_2h",
+    "eligible_genes": 32446,
+    "finite_p": 32446,
+    "significant_genes": 0,
+    "model_sha256": "6210a75446fb54f78f2b6c4992348fbaed5e9d1d730f11a425f60d652f836eca",
+    "bh_independently_verified": true,
+    "published_rows": 72113,
+    "published_significant": 0,
+    "exact_id_matches": 32446,
+    "finite_effect_pairs": 30021,
+    "published_ids_without_eligible_read_model": 39667,
+    "read_ids_absent_from_published": 0,
+    "nonzero_effect_pairs": 30021,
+    "same_effect_direction": 20471,
+    "spearman_rho": 0.39733939685022845
+  },
+  {
+    "contrast": "young_24h",
+    "eligible_genes": 31668,
+    "finite_p": 31668,
+    "significant_genes": 0,
+    "model_sha256": "2fa9ca02849bde54e8dba09f67555d2114598d634fc107f2a36d619ddaacb695",
+    "bh_independently_verified": true,
+    "published_rows": 72113,
+    "published_significant": 1,
+    "exact_id_matches": 31668,
+    "finite_effect_pairs": 29326,
+    "published_ids_without_eligible_read_model": 40445,
+    "read_ids_absent_from_published": 0,
+    "nonzero_effect_pairs": 29326,
+    "same_effect_direction": 20778,
+    "spearman_rho": 0.5311770392319592
+  },
+  {
+    "contrast": "young_312h",
+    "eligible_genes": 2724,
+    "finite_p": 2724,
+    "significant_genes": 0,
+    "model_sha256": "a1120de17c7c5da04285aa019029c683a90748b8b8904cc925d5f3ec549a51ff",
+    "bh_independently_verified": true,
+    "published_comparison": "not matched: published group 4 combines 13 and 49 days; this model uses 312 hours only"
+  }
+]

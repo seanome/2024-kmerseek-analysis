@@ -1,0 +1,974 @@
+{
+  "versions": {
+    "sourmash": "4.9.4",
+    "branchwater": "0.9.15"
+  },
+  "input_scope": "historical pilot peptide queries",
+  "query_records": 987,
+  "references": {
+    "botryllus": {
+      "path": "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/primary-search-pilot-20261023/botryllus.search.faa",
+      "records": 45339
+    },
+    "swissprot": {
+      "path": "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/primary-search-pilot-20261023/swissprot.search.faa",
+      "records": 575748
+    }
+  },
+  "source_sha256": {
+    "botryllus": "843407c15dacecc88d9c88c982e77c0ca835a6bd1330fd4abf635b5df547d855",
+    "swissprot": "a9c3496aa727e61d25d9e1291c9ba28d2c2ad19c0e26569dc083d53ec4169536",
+    "queries": "818b39d3353ef23bd596ed7c636ddca4dd5f6e24579eefc16b2d544df1047d71"
+  },
+  "commands": [
+    {
+      "argv": [
+        "scripts",
+        "manysketch",
+        "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/primary-search-pilot-20261023/queries.fromfile.csv",
+        "--singleton",
+        "-c",
+        "8",
+        "-p",
+        "protein,k=7,scaled=5",
+        "-o",
+        "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/primary-search-pilot-20261023/queries.protein.scaled5.sig.zip"
+      ],
+      "seconds": 5.947506903670728
+    },
+    {
+      "argv": [
+        "scripts",
+        "manysketch",
+        "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/primary-search-pilot-20261023/queries.fromfile.csv",
+        "--singleton",
+        "-c",
+        "8",
+        "-p",
+        "dayhoff,k=12,scaled=5",
+        "-o",
+        "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/primary-search-pilot-20261023/queries.dayhoff.scaled5.sig.zip"
+      ],
+      "seconds": 1.5649791518226266
+    },
+    {
+      "argv": [
+        "scripts",
+        "manysketch",
+        "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/primary-search-pilot-20261023/queries.fromfile.csv",
+        "--singleton",
+        "-c",
+        "8",
+        "-p",
+        "hp,k=30,scaled=5",
+        "-o",
+        "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/primary-search-pilot-20261023/queries.hp.scaled5.sig.zip"
+      ],
+      "seconds": 1.563094263896346
+    },
+    {
+      "argv": [
+        "scripts",
+        "manysketch",
+        "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/primary-search-pilot-20261023/botryllus.fromfile.csv",
+        "--singleton",
+        "-c",
+        "8",
+        "-p",
+        "protein,k=7,scaled=5",
+        "-o",
+        "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/primary-search-pilot-20261023/botryllus.protein.scaled5.sig.zip"
+      ],
+      "seconds": 6.439325078390539
+    },
+    {
+      "argv": [
+        "scripts",
+        "manysketch",
+        "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/primary-search-pilot-20261023/botryllus.fromfile.csv",
+        "--singleton",
+        "-c",
+        "8",
+        "-p",
+        "dayhoff,k=12,scaled=5",
+        "-o",
+        "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/primary-search-pilot-20261023/botryllus.dayhoff.scaled5.sig.zip"
+      ],
+      "seconds": 6.607531363144517
+    },
+    {
+      "argv": [
+        "scripts",
+        "manysketch",
+        "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/primary-search-pilot-20261023/botryllus.fromfile.csv",
+        "--singleton",
+        "-c",
+        "8",
+        "-p",
+        "hp,k=30,scaled=5",
+        "-o",
+        "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/primary-search-pilot-20261023/botryllus.hp.scaled5.sig.zip"
+      ],
+      "seconds": 6.345580101013184
+    },
+    {
+      "argv": [
+        "scripts",
+        "manysketch",
+        "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/primary-search-pilot-20261023/swissprot.fromfile.csv",
+        "--singleton",
+        "-c",
+        "8",
+        "-p",
+        "protein,k=7,scaled=5",
+        "-o",
+        "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/primary-search-pilot-20261023/swissprot.protein.scaled5.sig.zip"
+      ],
+      "seconds": 63.18112224433571
+    },
+    {
+      "argv": [
+        "scripts",
+        "manysketch",
+        "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/primary-search-pilot-20261023/swissprot.fromfile.csv",
+        "--singleton",
+        "-c",
+        "8",
+        "-p",
+        "dayhoff,k=12,scaled=5",
+        "-o",
+        "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/primary-search-pilot-20261023/swissprot.dayhoff.scaled5.sig.zip"
+      ],
+      "seconds": 63.08572288881987
+    },
+    {
+      "argv": [
+        "scripts",
+        "manysketch",
+        "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/primary-search-pilot-20261023/swissprot.fromfile.csv",
+        "--singleton",
+        "-c",
+        "8",
+        "-p",
+        "hp,k=30,scaled=5",
+        "-o",
+        "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/primary-search-pilot-20261023/swissprot.hp.scaled5.sig.zip"
+      ],
+      "seconds": 60.93541744630784
+    },
+    {
+      "argv": [
+        "scripts",
+        "multisearch",
+        "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/primary-search-pilot-20261023/queries.protein.scaled5.sig.zip",
+        "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/primary-search-pilot-20261023/botryllus.protein.scaled5.sig.zip",
+        "-c",
+        "8",
+        "-m",
+        "protein",
+        "-k",
+        "7",
+        "-s",
+        "5",
+        "-t",
+        "0.1",
+        "-o",
+        "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/primary-search-pilot-20261023/botryllus.protein.scaled5.csv"
+      ],
+      "seconds": 6.883581148460507
+    },
+    {
+      "argv": [
+        "scripts",
+        "multisearch",
+        "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/primary-search-pilot-20261023/queries.protein.scaled5.sig.zip",
+        "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/primary-search-pilot-20261023/botryllus.protein.scaled5.sig.zip",
+        "-c",
+        "8",
+        "-m",
+        "protein",
+        "-k",
+        "7",
+        "-s",
+        "10",
+        "-t",
+        "0.1",
+        "-o",
+        "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/primary-search-pilot-20261023/botryllus.protein.scaled10.csv"
+      ],
+      "seconds": 4.891267240978777
+    },
+    {
+      "argv": [
+        "scripts",
+        "multisearch",
+        "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/primary-search-pilot-20261023/queries.protein.scaled5.sig.zip",
+        "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/primary-search-pilot-20261023/botryllus.protein.scaled5.sig.zip",
+        "-c",
+        "8",
+        "-m",
+        "protein",
+        "-k",
+        "7",
+        "-s",
+        "100",
+        "-t",
+        "0.1",
+        "-o",
+        "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/primary-search-pilot-20261023/botryllus.protein.scaled100.csv"
+      ],
+      "seconds": 3.9333839509636164
+    },
+    {
+      "argv": [
+        "scripts",
+        "multisearch",
+        "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/primary-search-pilot-20261023/queries.dayhoff.scaled5.sig.zip",
+        "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/primary-search-pilot-20261023/botryllus.dayhoff.scaled5.sig.zip",
+        "-c",
+        "8",
+        "-m",
+        "dayhoff",
+        "-k",
+        "12",
+        "-s",
+        "5",
+        "-t",
+        "0.1",
+        "-o",
+        "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/primary-search-pilot-20261023/botryllus.dayhoff.scaled5.csv"
+      ],
+      "seconds": 6.372361935675144
+    },
+    {
+      "argv": [
+        "scripts",
+        "multisearch",
+        "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/primary-search-pilot-20261023/queries.dayhoff.scaled5.sig.zip",
+        "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/primary-search-pilot-20261023/botryllus.dayhoff.scaled5.sig.zip",
+        "-c",
+        "8",
+        "-m",
+        "dayhoff",
+        "-k",
+        "12",
+        "-s",
+        "10",
+        "-t",
+        "0.1",
+        "-o",
+        "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/primary-search-pilot-20261023/botryllus.dayhoff.scaled10.csv"
+      ],
+      "seconds": 4.789881237782538
+    },
+    {
+      "argv": [
+        "scripts",
+        "multisearch",
+        "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/primary-search-pilot-20261023/queries.dayhoff.scaled5.sig.zip",
+        "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/primary-search-pilot-20261023/botryllus.dayhoff.scaled5.sig.zip",
+        "-c",
+        "8",
+        "-m",
+        "dayhoff",
+        "-k",
+        "12",
+        "-s",
+        "100",
+        "-t",
+        "0.1",
+        "-o",
+        "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/primary-search-pilot-20261023/botryllus.dayhoff.scaled100.csv"
+      ],
+      "seconds": 4.138176437467337
+    },
+    {
+      "argv": [
+        "scripts",
+        "multisearch",
+        "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/primary-search-pilot-20261023/queries.hp.scaled5.sig.zip",
+        "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/primary-search-pilot-20261023/botryllus.hp.scaled5.sig.zip",
+        "-c",
+        "8",
+        "-m",
+        "hp",
+        "-k",
+        "30",
+        "-s",
+        "5",
+        "-t",
+        "0.1",
+        "-o",
+        "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/primary-search-pilot-20261023/botryllus.hp.scaled5.csv"
+      ],
+      "seconds": 5.627365808002651
+    },
+    {
+      "argv": [
+        "scripts",
+        "multisearch",
+        "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/primary-search-pilot-20261023/queries.hp.scaled5.sig.zip",
+        "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/primary-search-pilot-20261023/botryllus.hp.scaled5.sig.zip",
+        "-c",
+        "8",
+        "-m",
+        "hp",
+        "-k",
+        "30",
+        "-s",
+        "10",
+        "-t",
+        "0.1",
+        "-o",
+        "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/primary-search-pilot-20261023/botryllus.hp.scaled10.csv"
+      ],
+      "seconds": 4.755666544660926
+    },
+    {
+      "argv": [
+        "scripts",
+        "multisearch",
+        "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/primary-search-pilot-20261023/queries.hp.scaled5.sig.zip",
+        "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/primary-search-pilot-20261023/botryllus.hp.scaled5.sig.zip",
+        "-c",
+        "8",
+        "-m",
+        "hp",
+        "-k",
+        "30",
+        "-s",
+        "100",
+        "-t",
+        "0.1",
+        "-o",
+        "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/primary-search-pilot-20261023/botryllus.hp.scaled100.csv"
+      ],
+      "seconds": 3.9681892171502113
+    },
+    {
+      "argv": [
+        "scripts",
+        "multisearch",
+        "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/primary-search-pilot-20261023/queries.protein.scaled5.sig.zip",
+        "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/primary-search-pilot-20261023/swissprot.protein.scaled5.sig.zip",
+        "-c",
+        "8",
+        "-m",
+        "protein",
+        "-k",
+        "7",
+        "-s",
+        "5",
+        "-t",
+        "0.1",
+        "-o",
+        "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/primary-search-pilot-20261023/swissprot.protein.scaled5.csv"
+      ],
+      "seconds": 66.11486268602312
+    },
+    {
+      "argv": [
+        "scripts",
+        "multisearch",
+        "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/primary-search-pilot-20261023/queries.protein.scaled5.sig.zip",
+        "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/primary-search-pilot-20261023/swissprot.protein.scaled5.sig.zip",
+        "-c",
+        "8",
+        "-m",
+        "protein",
+        "-k",
+        "7",
+        "-s",
+        "10",
+        "-t",
+        "0.1",
+        "-o",
+        "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/primary-search-pilot-20261023/swissprot.protein.scaled10.csv"
+      ],
+      "seconds": 44.28296717163175
+    },
+    {
+      "argv": [
+        "scripts",
+        "multisearch",
+        "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/primary-search-pilot-20261023/queries.protein.scaled5.sig.zip",
+        "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/primary-search-pilot-20261023/swissprot.protein.scaled5.sig.zip",
+        "-c",
+        "8",
+        "-m",
+        "protein",
+        "-k",
+        "7",
+        "-s",
+        "100",
+        "-t",
+        "0.1",
+        "-o",
+        "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/primary-search-pilot-20261023/swissprot.protein.scaled100.csv"
+      ],
+      "seconds": 33.17368845641613
+    },
+    {
+      "argv": [
+        "scripts",
+        "multisearch",
+        "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/primary-search-pilot-20261023/queries.dayhoff.scaled5.sig.zip",
+        "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/primary-search-pilot-20261023/swissprot.dayhoff.scaled5.sig.zip",
+        "-c",
+        "8",
+        "-m",
+        "dayhoff",
+        "-k",
+        "12",
+        "-s",
+        "5",
+        "-t",
+        "0.1",
+        "-o",
+        "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/primary-search-pilot-20261023/swissprot.dayhoff.scaled5.csv"
+      ],
+      "seconds": 63.95828309748322
+    },
+    {
+      "argv": [
+        "scripts",
+        "multisearch",
+        "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/primary-search-pilot-20261023/queries.dayhoff.scaled5.sig.zip",
+        "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/primary-search-pilot-20261023/swissprot.dayhoff.scaled5.sig.zip",
+        "-c",
+        "8",
+        "-m",
+        "dayhoff",
+        "-k",
+        "12",
+        "-s",
+        "10",
+        "-t",
+        "0.1",
+        "-o",
+        "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/primary-search-pilot-20261023/swissprot.dayhoff.scaled10.csv"
+      ],
+      "seconds": 43.18187394551933
+    },
+    {
+      "argv": [
+        "scripts",
+        "multisearch",
+        "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/primary-search-pilot-20261023/queries.dayhoff.scaled5.sig.zip",
+        "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/primary-search-pilot-20261023/swissprot.dayhoff.scaled5.sig.zip",
+        "-c",
+        "8",
+        "-m",
+        "dayhoff",
+        "-k",
+        "12",
+        "-s",
+        "100",
+        "-t",
+        "0.1",
+        "-o",
+        "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/primary-search-pilot-20261023/swissprot.dayhoff.scaled100.csv"
+      ],
+      "seconds": 33.198220578953624
+    },
+    {
+      "argv": [
+        "scripts",
+        "multisearch",
+        "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/primary-search-pilot-20261023/queries.hp.scaled5.sig.zip",
+        "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/primary-search-pilot-20261023/swissprot.hp.scaled5.sig.zip",
+        "-c",
+        "8",
+        "-m",
+        "hp",
+        "-k",
+        "30",
+        "-s",
+        "5",
+        "-t",
+        "0.1",
+        "-o",
+        "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/primary-search-pilot-20261023/swissprot.hp.scaled5.csv"
+      ],
+      "seconds": 53.956455647945404
+    },
+    {
+      "argv": [
+        "scripts",
+        "multisearch",
+        "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/primary-search-pilot-20261023/queries.hp.scaled5.sig.zip",
+        "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/primary-search-pilot-20261023/swissprot.hp.scaled5.sig.zip",
+        "-c",
+        "8",
+        "-m",
+        "hp",
+        "-k",
+        "30",
+        "-s",
+        "10",
+        "-t",
+        "0.1",
+        "-o",
+        "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/primary-search-pilot-20261023/swissprot.hp.scaled10.csv"
+      ],
+      "seconds": 36.27618263568729
+    },
+    {
+      "argv": [
+        "scripts",
+        "multisearch",
+        "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/primary-search-pilot-20261023/queries.hp.scaled5.sig.zip",
+        "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/primary-search-pilot-20261023/swissprot.hp.scaled5.sig.zip",
+        "-c",
+        "8",
+        "-m",
+        "hp",
+        "-k",
+        "30",
+        "-s",
+        "100",
+        "-t",
+        "0.1",
+        "-o",
+        "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/primary-search-pilot-20261023/swissprot.hp.scaled100.csv"
+      ],
+      "seconds": 32.448985451832414
+    }
+  ],
+  "results": [
+    {
+      "database": "botryllus",
+      "mode": "protein",
+      "ksize": 7,
+      "scaled": 5,
+      "csv": "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/primary-search-pilot-20261023/botryllus.protein.scaled5.csv",
+      "csv_columns": [
+        "query_name",
+        "query_md5",
+        "match_name",
+        "match_md5",
+        "containment",
+        "max_containment",
+        "jaccard",
+        "average_containment",
+        "intersect_hashes",
+        "ksize",
+        "scaled",
+        "moltype",
+        "cosine"
+      ],
+      "raw_match_rows": 1148,
+      "sha256": "4a858a77031f8a977b13ac6afb3913ca40057a516d67c4bce732e70d5984f80a"
+    },
+    {
+      "database": "botryllus",
+      "mode": "protein",
+      "ksize": 7,
+      "scaled": 10,
+      "csv": "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/primary-search-pilot-20261023/botryllus.protein.scaled10.csv",
+      "csv_columns": [
+        "query_name",
+        "query_md5",
+        "match_name",
+        "match_md5",
+        "containment",
+        "max_containment",
+        "jaccard",
+        "average_containment",
+        "intersect_hashes",
+        "ksize",
+        "scaled",
+        "moltype",
+        "cosine"
+      ],
+      "raw_match_rows": 960,
+      "sha256": "175786b95de4ccfa95bbfcf351b4aa820814d5640a49bc0b29cec263d3a297f8"
+    },
+    {
+      "database": "botryllus",
+      "mode": "protein",
+      "ksize": 7,
+      "scaled": 100,
+      "csv": "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/primary-search-pilot-20261023/botryllus.protein.scaled100.csv",
+      "csv_columns": [
+        "query_name",
+        "query_md5",
+        "match_name",
+        "match_md5",
+        "containment",
+        "max_containment",
+        "jaccard",
+        "average_containment",
+        "intersect_hashes",
+        "ksize",
+        "scaled",
+        "moltype",
+        "cosine"
+      ],
+      "raw_match_rows": 14,
+      "sha256": "9a27b119ba16e2b12f3393df22e00385528343d396eaa7339da0bfc8c49fe330"
+    },
+    {
+      "database": "botryllus",
+      "mode": "dayhoff",
+      "ksize": 12,
+      "scaled": 5,
+      "csv": "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/primary-search-pilot-20261023/botryllus.dayhoff.scaled5.csv",
+      "csv_columns": [
+        "query_name",
+        "query_md5",
+        "match_name",
+        "match_md5",
+        "containment",
+        "max_containment",
+        "jaccard",
+        "average_containment",
+        "intersect_hashes",
+        "ksize",
+        "scaled",
+        "moltype",
+        "cosine"
+      ],
+      "raw_match_rows": 23476,
+      "sha256": "2266f686f4e82ab656450dfb51929c05d515e96903a5bb09b210989052009bee"
+    },
+    {
+      "database": "botryllus",
+      "mode": "dayhoff",
+      "ksize": 12,
+      "scaled": 10,
+      "csv": "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/primary-search-pilot-20261023/botryllus.dayhoff.scaled10.csv",
+      "csv_columns": [
+        "query_name",
+        "query_md5",
+        "match_name",
+        "match_md5",
+        "containment",
+        "max_containment",
+        "jaccard",
+        "average_containment",
+        "intersect_hashes",
+        "ksize",
+        "scaled",
+        "moltype",
+        "cosine"
+      ],
+      "raw_match_rows": 17833,
+      "sha256": "da945c0ca2c347116244b2a3f3b34c04170b7c5bc2b4417b72937af9b5edf585"
+    },
+    {
+      "database": "botryllus",
+      "mode": "dayhoff",
+      "ksize": 12,
+      "scaled": 100,
+      "csv": "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/primary-search-pilot-20261023/botryllus.dayhoff.scaled100.csv",
+      "csv_columns": [
+        "query_name",
+        "query_md5",
+        "match_name",
+        "match_md5",
+        "containment",
+        "max_containment",
+        "jaccard",
+        "average_containment",
+        "intersect_hashes",
+        "ksize",
+        "scaled",
+        "moltype",
+        "cosine"
+      ],
+      "raw_match_rows": 6608,
+      "sha256": "cba6ac5ab23c09e718dad38baf9da4d80c4b864bfcd8e367fe0ea4e4f3fe57ab"
+    },
+    {
+      "database": "botryllus",
+      "mode": "hp",
+      "ksize": 30,
+      "scaled": 5,
+      "csv": "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/primary-search-pilot-20261023/botryllus.hp.scaled5.csv",
+      "csv_columns": [
+        "query_name",
+        "query_md5",
+        "match_name",
+        "match_md5",
+        "containment",
+        "max_containment",
+        "jaccard",
+        "average_containment",
+        "intersect_hashes",
+        "ksize",
+        "scaled",
+        "moltype",
+        "cosine"
+      ],
+      "raw_match_rows": 252,
+      "sha256": "c9e025737be9dcccab45b13642f1ad8e057a4a5f6869818cd2cdef94ffcd9d15"
+    },
+    {
+      "database": "botryllus",
+      "mode": "hp",
+      "ksize": 30,
+      "scaled": 10,
+      "csv": "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/primary-search-pilot-20261023/botryllus.hp.scaled10.csv",
+      "csv_columns": [
+        "query_name",
+        "query_md5",
+        "match_name",
+        "match_md5",
+        "containment",
+        "max_containment",
+        "jaccard",
+        "average_containment",
+        "intersect_hashes",
+        "ksize",
+        "scaled",
+        "moltype",
+        "cosine"
+      ],
+      "raw_match_rows": 225,
+      "sha256": "5db970a98bd09fb5ada55ad38843406be8cf4e2375a9446ded60aa65be2cb1c1"
+    },
+    {
+      "database": "botryllus",
+      "mode": "hp",
+      "ksize": 30,
+      "scaled": 100,
+      "csv": "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/primary-search-pilot-20261023/botryllus.hp.scaled100.csv",
+      "csv_columns": [
+        "query_name",
+        "query_md5",
+        "match_name",
+        "match_md5",
+        "containment",
+        "max_containment",
+        "jaccard",
+        "average_containment",
+        "intersect_hashes",
+        "ksize",
+        "scaled",
+        "moltype",
+        "cosine"
+      ],
+      "raw_match_rows": 9,
+      "sha256": "e8185075a99b79d627b85891a9bb967034f652fe2240f59677610a9d2e3476b5"
+    },
+    {
+      "database": "swissprot",
+      "mode": "protein",
+      "ksize": 7,
+      "scaled": 5,
+      "csv": "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/primary-search-pilot-20261023/swissprot.protein.scaled5.csv",
+      "csv_columns": [
+        "query_name",
+        "query_md5",
+        "match_name",
+        "match_md5",
+        "containment",
+        "max_containment",
+        "jaccard",
+        "average_containment",
+        "intersect_hashes",
+        "ksize",
+        "scaled",
+        "moltype",
+        "cosine"
+      ],
+      "raw_match_rows": 1956,
+      "sha256": "609071527b09e05638131c6062399fa33af77e65a184cac4512fb5ff0792fc46"
+    },
+    {
+      "database": "swissprot",
+      "mode": "protein",
+      "ksize": 7,
+      "scaled": 10,
+      "csv": "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/primary-search-pilot-20261023/swissprot.protein.scaled10.csv",
+      "csv_columns": [
+        "query_name",
+        "query_md5",
+        "match_name",
+        "match_md5",
+        "containment",
+        "max_containment",
+        "jaccard",
+        "average_containment",
+        "intersect_hashes",
+        "ksize",
+        "scaled",
+        "moltype",
+        "cosine"
+      ],
+      "raw_match_rows": 1314,
+      "sha256": "9540221f669c0c878fa7416a78d03e215b6220834a17626a58a28a8d549546fa"
+    },
+    {
+      "database": "swissprot",
+      "mode": "protein",
+      "ksize": 7,
+      "scaled": 100,
+      "csv": "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/primary-search-pilot-20261023/swissprot.protein.scaled100.csv",
+      "csv_columns": [
+        "query_name",
+        "query_md5",
+        "match_name",
+        "match_md5",
+        "containment",
+        "max_containment",
+        "jaccard",
+        "average_containment",
+        "intersect_hashes",
+        "ksize",
+        "scaled",
+        "moltype",
+        "cosine"
+      ],
+      "raw_match_rows": 95,
+      "sha256": "8ffb59d04f6db758277884815d9dae6386600d78f6d583b84192455cb9170781"
+    },
+    {
+      "database": "swissprot",
+      "mode": "dayhoff",
+      "ksize": 12,
+      "scaled": 5,
+      "csv": "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/primary-search-pilot-20261023/swissprot.dayhoff.scaled5.csv",
+      "csv_columns": [
+        "query_name",
+        "query_md5",
+        "match_name",
+        "match_md5",
+        "containment",
+        "max_containment",
+        "jaccard",
+        "average_containment",
+        "intersect_hashes",
+        "ksize",
+        "scaled",
+        "moltype",
+        "cosine"
+      ],
+      "raw_match_rows": 514268,
+      "sha256": "64f5b117dd16e1be3681689f53a5f68dfb7c3b984cd2d83c10ae9f9530d720df"
+    },
+    {
+      "database": "swissprot",
+      "mode": "dayhoff",
+      "ksize": 12,
+      "scaled": 10,
+      "csv": "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/primary-search-pilot-20261023/swissprot.dayhoff.scaled10.csv",
+      "csv_columns": [
+        "query_name",
+        "query_md5",
+        "match_name",
+        "match_md5",
+        "containment",
+        "max_containment",
+        "jaccard",
+        "average_containment",
+        "intersect_hashes",
+        "ksize",
+        "scaled",
+        "moltype",
+        "cosine"
+      ],
+      "raw_match_rows": 411096,
+      "sha256": "942789c73a2aaf55e3f405a2490e05b7f7546790c7f00eaff248cc4aa095b2a2"
+    },
+    {
+      "database": "swissprot",
+      "mode": "dayhoff",
+      "ksize": 12,
+      "scaled": 100,
+      "csv": "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/primary-search-pilot-20261023/swissprot.dayhoff.scaled100.csv",
+      "csv_columns": [
+        "query_name",
+        "query_md5",
+        "match_name",
+        "match_md5",
+        "containment",
+        "max_containment",
+        "jaccard",
+        "average_containment",
+        "intersect_hashes",
+        "ksize",
+        "scaled",
+        "moltype",
+        "cosine"
+      ],
+      "raw_match_rows": 140637,
+      "sha256": "060cdfab666cf7f9ffd47a94131881a1c85cdc420194251127bf7bd0b3174876"
+    },
+    {
+      "database": "swissprot",
+      "mode": "hp",
+      "ksize": 30,
+      "scaled": 5,
+      "csv": "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/primary-search-pilot-20261023/swissprot.hp.scaled5.csv",
+      "csv_columns": [
+        "query_name",
+        "query_md5",
+        "match_name",
+        "match_md5",
+        "containment",
+        "max_containment",
+        "jaccard",
+        "average_containment",
+        "intersect_hashes",
+        "ksize",
+        "scaled",
+        "moltype",
+        "cosine"
+      ],
+      "raw_match_rows": 227,
+      "sha256": "66d2d2cb65ecdc871c315435da4011a07d5f520f3ec1efc263dfdb982bd42cd7"
+    },
+    {
+      "database": "swissprot",
+      "mode": "hp",
+      "ksize": 30,
+      "scaled": 10,
+      "csv": "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/primary-search-pilot-20261023/swissprot.hp.scaled10.csv",
+      "csv_columns": [
+        "query_name",
+        "query_md5",
+        "match_name",
+        "match_md5",
+        "containment",
+        "max_containment",
+        "jaccard",
+        "average_containment",
+        "intersect_hashes",
+        "ksize",
+        "scaled",
+        "moltype",
+        "cosine"
+      ],
+      "raw_match_rows": 59,
+      "sha256": "bfe7822a683f2089e443e255b8392d3b4a95470b0068f195a5945ae55f4b5a92"
+    },
+    {
+      "database": "swissprot",
+      "mode": "hp",
+      "ksize": 30,
+      "scaled": 100,
+      "csv": "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/primary-search-pilot-20261023/swissprot.hp.scaled100.csv",
+      "csv_columns": [
+        "query_name",
+        "query_md5",
+        "match_name",
+        "match_md5",
+        "containment",
+        "max_containment",
+        "jaccard",
+        "average_containment",
+        "intersect_hashes",
+        "ksize",
+        "scaled",
+        "moltype",
+        "cosine"
+      ],
+      "raw_match_rows": 1,
+      "sha256": "9ee3e9d46058e7241d40f77564532e8e65fd35c9a7e34ad837e9be88005afd7c"
+    }
+  ],
+  "validation_status": "pending independent comparison against sourmash search and sampled-hash arithmetic",
+  "filter": "native containment >=0.1; raw rows retained, >=2 shared-hash filter applied only after validation"
+}

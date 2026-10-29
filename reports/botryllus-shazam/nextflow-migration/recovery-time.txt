@@ -1,0 +1,23 @@
+	Command being timed: "/home/groups/ayeletv/opt/oyster-shazam-20261023/bin/python /home/users/olgabot/botryllus-shazam-code/recovery-c61e30b2/stage_trimmed.py /scratch/users/olgabot/botryllus-shazam-PEC-20261023 /home/users/olgabot/botryllus-shazam-code/recovery-c61e30b2/ena-runs.tsv /lscratch/olgabot/49512151/validate_pairs --workers 4"
+	User time (seconds): 2697.14
+	System time (seconds): 150.11
+	Percent of CPU this job got: 859%
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 5:31.39
+	Average shared text size (kbytes): 0
+	Average unshared data size (kbytes): 0
+	Average stack size (kbytes): 0
+	Average total size (kbytes): 0
+	Maximum resident set size (kbytes): 36760
+	Average resident set size (kbytes): 0
+	Major (requiring I/O) page faults: 28
+	Minor (reclaiming a frame) page faults: 139607
+	Voluntary context switches: 4478389
+	Involuntary context switches: 25959
+	Swaps: 0
+	File system inputs: 36673632
+	File system outputs: 3432
+	Socket messages sent: 0
+	Socket messages received: 0
+	Signals delivered: 0
+	Page size (bytes): 4096
+	Exit status: 0

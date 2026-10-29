@@ -1,0 +1,126 @@
+task_id	hash	name	status	exit	submit	duration	realtime	cpus	memory	time	peak_rss	workdir
+1	a7/f5ee5e	BUILD_VALIDATOR	COMPLETED	0	2026-10-25 11:47:11.145	1.2s	927ms	1	2 GB	1h	1.6 MB	/scratch/users/olgabot/botryllus-nextflow-fixture-49515476/work/a7/f5ee5e8a960a3b0d37eef2ca59b1df
+3	81/2e6110	BUILD_RECRUITER	COMPLETED	0	2026-10-25 11:47:12.392	2.9s	1.9s	1	2 GB	1h	89.2 MB	/scratch/users/olgabot/botryllus-nextflow-fixture-49515476/work/81/2e61109720f9d87b8cf02488e78344
+2	e4/76d293	KALLISTO_INDEX	COMPLETED	0	2026-10-25 11:47:15.982	269ms	76ms	1	2 GB	1h	1.5 MB	/scratch/users/olgabot/botryllus-nextflow-fixture-49515476/work/e4/76d29301b09b677b10bd57239d251a
+4	ce/51b39a	PREPARE_TARGET (fixture-target:dna:5)	COMPLETED	0	2026-10-25 11:47:16.273	2.9s	1.5s	1	2 GB	1h	99.7 MB	/scratch/users/olgabot/botryllus-nextflow-fixture-49515476/work/ce/51b39ae539d278aa11dfa64919ad96
+8	69/20daa8	VALIDATE_PAIR (S00T)	COMPLETED	0	2026-10-25 11:47:19.205	430ms	147ms	1	2 GB	1h	1.6 MB	/scratch/users/olgabot/botryllus-nextflow-fixture-49515476/work/69/20daa8cdbc74295173e945de126d9d
+7	30/4421ff	VALIDATE_PAIR (S00C)	COMPLETED	0	2026-10-25 11:47:19.661	4.8s	143ms	1	2 GB	1h	1.6 MB	/scratch/users/olgabot/botryllus-nextflow-fixture-49515476/work/30/4421ff8891d71f6a61474aa953226b
+5	cd/ad94b7	PREPARE_TARGET (fixture-target:protein:5)	COMPLETED	0	2026-10-25 11:47:24.461	4.1s	2.8s	1	2 GB	1h	94.5 MB	/scratch/users/olgabot/botryllus-nextflow-fixture-49515476/work/cd/ad94b7e1bb6968791238d74f0a1ad6
+6	da/bef921	PREPARE_TARGET (fixture-target:dayhoff:5)	COMPLETED	0	2026-10-25 11:47:28.536	3.1s	2.9s	1	2 GB	1h	94.5 MB	/scratch/users/olgabot/botryllus-nextflow-fixture-49515476/work/da/bef921286095ddafcd30531c886a9c
+11	4d/089b47	VALIDATE_PAIR (S01T)	COMPLETED	0	2026-10-25 11:47:31.657	324ms	146ms	1	2 GB	1h	1.6 MB	/scratch/users/olgabot/botryllus-nextflow-fixture-49515476/work/4d/089b4783adccf3ac983c4a0ca01300
+9	c5/259101	VALIDATE_PAIR (S01C)	COMPLETED	0	2026-10-25 11:47:31.996	394ms	146ms	1	2 GB	1h	1.6 MB	/scratch/users/olgabot/botryllus-nextflow-fixture-49515476/work/c5/25910123cf1280e343f60d8892dcf4
+10	0d/56141d	PREPARE_TARGET (fixture-target:hp:5)	COMPLETED	0	2026-10-25 11:47:32.406	3s	2.8s	1	2 GB	1h	94.5 MB	/scratch/users/olgabot/botryllus-nextflow-fixture-49515476/work/0d/56141d0c7e578e4399d63892f5fc9b
+12	ec/a2beb2	VALIDATE_PAIR (S02C)	COMPLETED	0	2026-10-25 11:47:36.096	1.2s	143ms	1	2 GB	1h	1.6 MB	/scratch/users/olgabot/botryllus-nextflow-fixture-49515476/work/ec/a2beb24e8a1661f3dca05129a21c0b
+13	1a/3f6045	VALIDATE_PAIR (S02T)	COMPLETED	0	2026-10-25 11:47:37.353	530ms	144ms	1	2 GB	1h	1.6 MB	/scratch/users/olgabot/botryllus-nextflow-fixture-49515476/work/1a/3f604525fbfd8c8136c311b2866ab6
+14	e1/fad3a3	VALIDATE_PAIR (S10C)	COMPLETED	0	2026-10-25 11:47:37.923	313ms	146ms	1	2 GB	1h	1.6 MB	/scratch/users/olgabot/botryllus-nextflow-fixture-49515476/work/e1/fad3a37565e743368fe81c2ecfb0b6
+15	11/d6dce3	VALIDATE_PAIR (S10T)	COMPLETED	0	2026-10-25 11:47:38.276	321ms	144ms	1	2 GB	1h	1.6 MB	/scratch/users/olgabot/botryllus-nextflow-fixture-49515476/work/11/d6dce34310b83019fdd0df9a6fc36d
+17	a5/c37f26	VALIDATE_PAIR (S11T)	COMPLETED	0	2026-10-25 11:47:38.628	308ms	146ms	1	2 GB	1h	1.6 MB	/scratch/users/olgabot/botryllus-nextflow-fixture-49515476/work/a5/c37f269e5dfef43d47b9c1506ae0b1
+16	d1/444af8	VALIDATE_PAIR (S11C)	COMPLETED	0	2026-10-25 11:47:38.969	314ms	151ms	1	2 GB	1h	1.6 MB	/scratch/users/olgabot/botryllus-nextflow-fixture-49515476/work/d1/444af8cea6526130a38c329d659f58
+18	56/d15c53	VALIDATE_PAIR (S12C)	COMPLETED	0	2026-10-25 11:47:39.318	502ms	139ms	1	2 GB	1h	1.6 MB	/scratch/users/olgabot/botryllus-nextflow-fixture-49515476/work/56/d15c5383fb4072d714ff43c436f418
+19	c0/2925c7	VALIDATE_PAIR (S12T)	COMPLETED	0	2026-10-25 11:47:39.858	1.2s	149ms	1	2 GB	1h	1.5 MB	/scratch/users/olgabot/botryllus-nextflow-fixture-49515476/work/c0/2925c710ec212476a9ee9f4b892d00
+20	62/cd4ef6	VALIDATE_PAIR (S20C)	COMPLETED	0	2026-10-25 11:47:41.098	822ms	143ms	1	2 GB	1h	1.6 MB	/scratch/users/olgabot/botryllus-nextflow-fixture-49515476/work/62/cd4ef6cf46f5aa4f50fa02081d2815
+21	be/eecc30	VALIDATE_PAIR (S20T)	COMPLETED	0	2026-10-25 11:47:41.956	427ms	142ms	1	2 GB	1h	1.6 MB	/scratch/users/olgabot/botryllus-nextflow-fixture-49515476/work/be/eecc30870af938ba376ed65129a74a
+22	49/fcda40	VALIDATE_PAIR (S21C)	COMPLETED	0	2026-10-25 11:47:42.417	1.8s	141ms	1	2 GB	1h	1.6 MB	/scratch/users/olgabot/botryllus-nextflow-fixture-49515476/work/49/fcda4092ea3faee58000e53f7a282a
+23	79/7ffa7a	VALIDATE_PAIR (S21T)	COMPLETED	0	2026-10-25 11:47:44.277	301ms	142ms	1	2 GB	1h	1.6 MB	/scratch/users/olgabot/botryllus-nextflow-fixture-49515476/work/79/7ffa7afbeb45bf86f3fb62d6d03109
+24	0c/31b0da	VALIDATE_PAIR (S22C)	COMPLETED	0	2026-10-25 11:47:44.607	310ms	153ms	1	2 GB	1h	1.6 MB	/scratch/users/olgabot/botryllus-nextflow-fixture-49515476/work/0c/31b0da7611cacb6d430f3feab62e42
+25	70/d0cf32	VALIDATE_PAIR (S22T)	COMPLETED	0	2026-10-25 11:47:44.944	315ms	147ms	1	2 GB	1h	1.6 MB	/scratch/users/olgabot/botryllus-nextflow-fixture-49515476/work/70/d0cf32e0d22d894c10f95d0af088bc
+26	fa/2b1bbb	QUANTIFY_GENES (S00T)	COMPLETED	0	2026-10-25 11:47:45.308	290ms	58ms	1	2 GB	1h	1.6 MB	/scratch/users/olgabot/botryllus-nextflow-fixture-49515476/work/fa/2b1bbb4a49730734264831dfac4413
+27	ac/492e8b	COUNT_KMERS (S00T)	COMPLETED	0	2026-10-25 11:47:45.614	1.3s	350ms	1	2 GB	1h	1.6 MB	/scratch/users/olgabot/botryllus-nextflow-fixture-49515476/work/ac/492e8b79e2b50847b07f2dbe926eb8
+28	a4/d24e0e	COUNT_KMERS (S00C)	COMPLETED	0	2026-10-25 11:47:46.945	495ms	339ms	1	2 GB	1h	1.6 MB	/scratch/users/olgabot/botryllus-nextflow-fixture-49515476/work/a4/d24e0edb10e563c66153c261a71e3e
+29	d1/95ff77	QUANTIFY_GENES (S00C)	COMPLETED	0	2026-10-25 11:47:47.505	832ms	59ms	1	2 GB	1h	1.6 MB	/scratch/users/olgabot/botryllus-nextflow-fixture-49515476/work/d1/95ff77defc7c98a30b0eaefff97174
+31	1a/07ea39	COUNT_KMERS (S01T)	COMPLETED	0	2026-10-25 11:47:48.368	507ms	352ms	1	2 GB	1h	1.6 MB	/scratch/users/olgabot/botryllus-nextflow-fixture-49515476/work/1a/07ea39cca61c34e698097458b78791
+30	1b/d02ad9	QUANTIFY_GENES (S01T)	COMPLETED	0	2026-10-25 11:47:48.899	258ms	58ms	1	2 GB	1h	1.6 MB	/scratch/users/olgabot/botryllus-nextflow-fixture-49515476/work/1b/d02ad9017f0b20558d91b876dca159
+32	1d/a01e34	COUNT_KMERS (S01C)	COMPLETED	0	2026-10-25 11:47:49.168	709ms	342ms	1	2 GB	1h	1.6 MB	/scratch/users/olgabot/botryllus-nextflow-fixture-49515476/work/1d/a01e3414d742eefe9add9e01dffab6
+33	05/df8db6	QUANTIFY_GENES (S01C)	COMPLETED	0	2026-10-25 11:47:49.900	224ms	58ms	1	2 GB	1h	1.6 MB	/scratch/users/olgabot/botryllus-nextflow-fixture-49515476/work/05/df8db6de0e6889adcd3411c7bb77d5
+35	52/86516b	COUNT_KMERS (S02C)	COMPLETED	0	2026-10-25 11:47:50.137	500ms	351ms	1	2 GB	1h	1.5 MB	/scratch/users/olgabot/botryllus-nextflow-fixture-49515476/work/52/86516b1e7160f9aff272c753985e63
+34	ad/71a854	QUANTIFY_GENES (S02C)	COMPLETED	0	2026-10-25 11:47:50.666	223ms	57ms	1	2 GB	1h	1.5 MB	/scratch/users/olgabot/botryllus-nextflow-fixture-49515476/work/ad/71a854f1755470c6e91a25e85bb3d2
+37	6b/69c2cd	QUANTIFY_GENES (S02T)	COMPLETED	0	2026-10-25 11:47:50.908	1.3s	58ms	1	2 GB	1h	1.6 MB	/scratch/users/olgabot/botryllus-nextflow-fixture-49515476/work/6b/69c2cd39b79fdab52eddb499308698
+36	db/20738a	COUNT_KMERS (S02T)	COMPLETED	0	2026-10-25 11:47:53.024	1.3s	340ms	1	2 GB	1h	1.6 MB	/scratch/users/olgabot/botryllus-nextflow-fixture-49515476/work/db/20738a9f40874b85b3ae4ac1c73c23
+38	30/ce0b7f	QUANTIFY_GENES (S10C)	COMPLETED	0	2026-10-25 11:47:54.347	303ms	56ms	1	2 GB	1h	1.6 MB	/scratch/users/olgabot/botryllus-nextflow-fixture-49515476/work/30/ce0b7ff7258fe8262b8e1299a60cbe
+39	38/6a2b8a	COUNT_KMERS (S10C)	COMPLETED	0	2026-10-25 11:47:54.672	501ms	348ms	1	2 GB	1h	1.6 MB	/scratch/users/olgabot/botryllus-nextflow-fixture-49515476/work/38/6a2b8a562ddf31c6dee2b59f896d62
+40	3d/fb693b	COUNT_KMERS (S10T)	COMPLETED	0	2026-10-25 11:47:55.197	532ms	359ms	1	2 GB	1h	1.5 MB	/scratch/users/olgabot/botryllus-nextflow-fixture-49515476/work/3d/fb693b8d6bc473b1bed09f44eff20a
+41	25/4ab74a	QUANTIFY_GENES (S10T)	COMPLETED	0	2026-10-25 11:47:55.744	233ms	58ms	1	2 GB	1h	1.5 MB	/scratch/users/olgabot/botryllus-nextflow-fixture-49515476/work/25/4ab74a12f1b9b5465c52d1a550fc38
+42	69/6daeeb	QUANTIFY_GENES (S11T)	COMPLETED	0	2026-10-25 11:47:55.990	4.5s	57ms	1	2 GB	1h	1.6 MB	/scratch/users/olgabot/botryllus-nextflow-fixture-49515476/work/69/6daeeb83b837ea4fb19d5671ace53c
+43	78/8c1801	COUNT_KMERS (S11T)	COMPLETED	0	2026-10-25 11:48:00.492	494ms	343ms	1	2 GB	1h	1.6 MB	/scratch/users/olgabot/botryllus-nextflow-fixture-49515476/work/78/8c1801c977cdbd3180a67278069ff4
+44	30/3ff320	COUNT_KMERS (S11C)	COMPLETED	0	2026-10-25 11:48:01.001	495ms	345ms	1	2 GB	1h	1.6 MB	/scratch/users/olgabot/botryllus-nextflow-fixture-49515476/work/30/3ff32086b0c8e1889b8a53c01222f1
+45	a8/8bb120	QUANTIFY_GENES (S11C)	COMPLETED	0	2026-10-25 11:48:01.513	216ms	58ms	1	2 GB	1h	1.6 MB	/scratch/users/olgabot/botryllus-nextflow-fixture-49515476/work/a8/8bb120cb0cd3e128521b25cb7c0a8e
+47	d4/609d61	COUNT_KMERS (S12C)	COMPLETED	0	2026-10-25 11:48:01.745	628ms	334ms	1	2 GB	1h	1.6 MB	/scratch/users/olgabot/botryllus-nextflow-fixture-49515476/work/d4/609d6124509655318ec766e471fcc0
+46	a4/d2442d	QUANTIFY_GENES (S12C)	COMPLETED	0	2026-10-25 11:48:03.454	1.3s	55ms	1	2 GB	1h	1.6 MB	/scratch/users/olgabot/botryllus-nextflow-fixture-49515476/work/a4/d2442d5b7adec6828a8a64570e2d76
+49	a2/a89459	QUANTIFY_GENES (S12T)	COMPLETED	0	2026-10-25 11:48:04.737	243ms	69ms	1	2 GB	1h	1.6 MB	/scratch/users/olgabot/botryllus-nextflow-fixture-49515476/work/a2/a89459ff087254e70425c9d02e16af
+48	8a/5f9fe8	COUNT_KMERS (S12T)	COMPLETED	0	2026-10-25 11:48:05.001	507ms	345ms	1	2 GB	1h	1.6 MB	/scratch/users/olgabot/botryllus-nextflow-fixture-49515476/work/8a/5f9fe863d35271085106f215ed4874
+51	e9/e86630	COUNT_KMERS (S20C)	COMPLETED	0	2026-10-25 11:48:05.519	500ms	351ms	1	2 GB	1h	1.6 MB	/scratch/users/olgabot/botryllus-nextflow-fixture-49515476/work/e9/e86630a57257e422ae5e252c0125f8
+50	e0/ef1c05	QUANTIFY_GENES (S20C)	COMPLETED	0	2026-10-25 11:48:06.036	1.4s	57ms	1	2 GB	1h	1.5 MB	/scratch/users/olgabot/botryllus-nextflow-fixture-49515476/work/e0/ef1c0566f511b7a71ee522d52ae805
+53	57/d5f164	QUANTIFY_GENES (S20T)	COMPLETED	0	2026-10-25 11:48:07.407	217ms	56ms	1	2 GB	1h	1.6 MB	/scratch/users/olgabot/botryllus-nextflow-fixture-49515476/work/57/d5f16481c578000ed151204c4b1537
+52	23/7855c3	COUNT_KMERS (S20T)	COMPLETED	0	2026-10-25 11:48:07.637	2.4s	338ms	1	2 GB	1h	1.6 MB	/scratch/users/olgabot/botryllus-nextflow-fixture-49515476/work/23/7855c3a0c3158ae4238d783b620c83
+55	6f/086456	COUNT_KMERS (S21C)	COMPLETED	0	2026-10-25 11:48:10.066	499ms	346ms	1	2 GB	1h	1.6 MB	/scratch/users/olgabot/botryllus-nextflow-fixture-49515476/work/6f/086456fe88b0fdba274df65cb49430
+54	c0/9756d0	QUANTIFY_GENES (S21C)	COMPLETED	0	2026-10-25 11:48:10.587	3.3s	57ms	1	2 GB	1h	1.6 MB	/scratch/users/olgabot/botryllus-nextflow-fixture-49515476/work/c0/9756d0f624e0d8a8efba73e20b63ae
+56	5a/de4288	COUNT_KMERS (S21T)	COMPLETED	0	2026-10-25 11:48:14.194	503ms	350ms	1	2 GB	1h	1.6 MB	/scratch/users/olgabot/botryllus-nextflow-fixture-49515476/work/5a/de428890e575b084a9b61fd80b2562
+57	6a/daf81d	QUANTIFY_GENES (S21T)	COMPLETED	0	2026-10-25 11:48:14.707	3.2s	58ms	1	2 GB	1h	1.6 MB	/scratch/users/olgabot/botryllus-nextflow-fixture-49515476/work/6a/daf81d25cc4f25dff9841e2d2b6462
+59	0d/a68f07	COUNT_KMERS (S22C)	COMPLETED	0	2026-10-25 11:48:17.884	2.2s	364ms	1	2 GB	1h	1.5 MB	/scratch/users/olgabot/botryllus-nextflow-fixture-49515476/work/0d/a68f078c88a650c0cf5e152be3165b
+58	f7/3240f3	QUANTIFY_GENES (S22C)	COMPLETED	0	2026-10-25 11:48:20.097	1.8s	65ms	1	2 GB	1h	1.5 MB	/scratch/users/olgabot/botryllus-nextflow-fixture-49515476/work/f7/3240f33e7bc5d1b37116daaedb6d2a
+60	cb/3536eb	COUNT_KMERS (S22T)	COMPLETED	0	2026-10-25 11:48:21.858	1.5s	342ms	1	2 GB	1h	1.6 MB	/scratch/users/olgabot/botryllus-nextflow-fixture-49515476/work/cb/3536eb2792093d257b8d6cbc832e11
+61	10/cc30da	QUANTIFY_GENES (S22T)	COMPLETED	0	2026-10-25 11:48:23.383	261ms	55ms	1	2 GB	1h	1.6 MB	/scratch/users/olgabot/botryllus-nextflow-fixture-49515476/work/10/cc30dad58e9e75e969ab4dd96b3647
+62	6f/8331b8	SPLASH	COMPLETED	0	2026-10-25 11:48:23.666	45.3s	45s	1	2 GB	1h	74.3 MB	/scratch/users/olgabot/botryllus-nextflow-fixture-49515476/work/6f/8331b87df8c4acd70ed035524deeac
+63	3c/351a43	JOIN_KMERS	COMPLETED	0	2026-10-25 11:49:09.017	866ms	687ms	1	2 GB	1h	1.6 MB	/scratch/users/olgabot/botryllus-nextflow-fixture-49515476/work/3c/351a439839e2a85ad0d26c35870d91
+64	0b/a490f7	GENE_COUNTS	COMPLETED	0	2026-10-25 11:49:09.904	2.1s	163ms	1	2 GB	1h	1.6 MB	/scratch/users/olgabot/botryllus-nextflow-fixture-49515476/work/0b/a490f7ba86dc9dc57f8aa9e23c3d39
+65	8e/9c0d15	SELECT_SPLASH	COMPLETED	0	2026-10-25 11:49:11.994	257ms	79ms	1	2 GB	1h	1.6 MB	/scratch/users/olgabot/botryllus-nextflow-fixture-49515476/work/8e/9c0d156e97e9111960a4ebdd6a752b
+66	aa/b73d08	POOL_COUNTS	COMPLETED	0	2026-10-25 11:49:12.266	5.1s	4.8s	1	2 GB	1h	26.1 MB	/scratch/users/olgabot/botryllus-nextflow-fixture-49515476/work/aa/b73d084dc21c803c9213259908de8e
+67	fc/81fc58	COMPACT (splash)	COMPLETED	0	2026-10-25 11:49:17.358	2.5s	809ms	1	2 GB	1h	1.6 MB	/scratch/users/olgabot/botryllus-nextflow-fixture-49515476/work/fc/81fc585bfbb1fdb71f9b16313f6305
+68	27/87d9cf	NORMALIZE (fixture0:genes)	COMPLETED	0	2026-10-25 11:49:19.869	5s	4.5s	1	2 GB	1h	2.5 MB	/scratch/users/olgabot/botryllus-nextflow-fixture-49515476/work/27/87d9cfb90c20ddf61092994146dc20
+70	c3/27ad4c	NORMALIZE (fixture1:genes)	COMPLETED	0	2026-10-25 11:49:24.838	260ms	38ms	1	2 GB	1h	1.6 MB	/scratch/users/olgabot/botryllus-nextflow-fixture-49515476/work/c3/27ad4cf8d37464fd625f9c45b09a36
+71	ab/f8d30c	NORMALIZE (fixture1:kmers)	COMPLETED	0	2026-10-25 11:49:25.118	12.5s	11.3s	1	2 GB	1h	2.8 MB	/scratch/users/olgabot/botryllus-nextflow-fixture-49515476/work/ab/f8d30cda57c7c79d36b555496332f8
+72	73/4261e6	NORMALIZE (fixture2:genes)	COMPLETED	0	2026-10-25 11:49:37.631	552ms	374ms	1	2 GB	1h	1.6 MB	/scratch/users/olgabot/botryllus-nextflow-fixture-49515476/work/73/4261e6fcb078e36eee0ae2160da8a3
+73	1a/49ab0a	NORMALIZE (fixture2:kmers)	COMPLETED	0	2026-10-25 11:49:38.194	6.6s	4.5s	1	2 GB	1h	2.6 MB	/scratch/users/olgabot/botryllus-nextflow-fixture-49515476/work/1a/49ab0a808b88d37bfa75a57bb96150
+69	b5/f0b8d2	NORMALIZE (fixture0:kmers)	COMPLETED	0	2026-10-25 11:49:44.839	280ms	128ms	1	2 GB	1h	1.6 MB	/scratch/users/olgabot/botryllus-nextflow-fixture-49515476/work/b5/f0b8d22606510e45f7351166f18ab4
+74	0c/5bbb57	BLOCKED_MODEL (fixture0:genes)	COMPLETED	0	2026-10-25 11:49:45.140	8.5s	8.3s	1	2 GB	1h	704.5 MB	/scratch/users/olgabot/botryllus-nextflow-fixture-49515476/work/0c/5bbb57e625ce8dee3d6f2c733fd9ce
+75	56/ed027d	BLOCKED_MODEL (fixture1:genes)	COMPLETED	0	2026-10-25 11:49:53.620	9s	8.1s	1	2 GB	1h	704.5 MB	/scratch/users/olgabot/botryllus-nextflow-fixture-49515476/work/56/ed027d48105579280074b1eb31e2d5
+76	b6/0f73a2	BLOCKED_MODEL (fixture1:kmers)	COMPLETED	0	2026-10-25 11:50:02.649	59s	58.8s	1	2 GB	1h	736.8 MB	/scratch/users/olgabot/botryllus-nextflow-fixture-49515476/work/b6/0f73a252076249a0358d89b5b73ef2
+77	0a/a433e9	BLOCKED_MODEL (fixture2:genes)	COMPLETED	0	2026-10-25 11:51:01.629	9s	8.2s	1	2 GB	1h	704.9 MB	/scratch/users/olgabot/botryllus-nextflow-fixture-49515476/work/0a/a433e9b36d071ea1be9fe11bc0d65a
+78	77/59aba9	BLOCKED_MODEL (fixture2:kmers)	COMPLETED	0	2026-10-25 11:51:10.689	58.9s	58.8s	1	2 GB	1h	744.2 MB	/scratch/users/olgabot/botryllus-nextflow-fixture-49515476/work/77/59aba93e41c4075e282f7ffc6f7dbd
+79	84/193d75	BLOCKED_MODEL (fixture0:kmers)	COMPLETED	0	2026-10-25 11:52:09.622	59.1s	59s	1	2 GB	1h	737.4 MB	/scratch/users/olgabot/botryllus-nextflow-fixture-49515476/work/84/193d75cc4a1985d70cf605fa08f90f
+80	28/0f7ec3	SELECT_DE_SEEDS	COMPLETED	0	2026-10-25 11:53:08.815	731ms	508ms	1	2 GB	1h	1.6 MB	/scratch/users/olgabot/botryllus-nextflow-fixture-49515476/work/28/0f7ec3f66de1f121e28cdafb80dc0f
+81	7f/114e6b	RECRUIT_READS (S00T)	COMPLETED	0	2026-10-25 11:53:10.238	581ms	151ms	1	2 GB	1h	1.5 MB	/scratch/users/olgabot/botryllus-nextflow-fixture-49515476/work/7f/114e6ba30b2cb7b29720a0bdd4ac04
+82	2f/fe8146	RECRUIT_READS (S00C)	COMPLETED	0	2026-10-25 11:53:10.825	2.2s	152ms	1	2 GB	1h	1.6 MB	/scratch/users/olgabot/botryllus-nextflow-fixture-49515476/work/2f/fe814655d8a6452523a9b17c6242f7
+83	77/d75b74	RECRUIT_READS (S01T)	COMPLETED	0	2026-10-25 11:53:12.992	921ms	155ms	1	2 GB	1h	1.5 MB	/scratch/users/olgabot/botryllus-nextflow-fixture-49515476/work/77/d75b74c794ee308a2f8ca17ed9d288
+88	c0/df9942	RECRUIT_READS (S02C)	COMPLETED	0	2026-10-25 11:53:13.925	350ms	150ms	1	2 GB	1h	1.6 MB	/scratch/users/olgabot/botryllus-nextflow-fixture-49515476/work/c0/df9942b2ee35696c5f3c421c7c575a
+87	61/aaf107	RECRUIT_READS (S01C)	COMPLETED	0	2026-10-25 11:53:14.284	836ms	158ms	1	2 GB	1h	1.6 MB	/scratch/users/olgabot/botryllus-nextflow-fixture-49515476/work/61/aaf10746fcefd412fbf35b3999cd2e
+90	f5/26cc67	RECRUIT_READS (S10C)	COMPLETED	0	2026-10-25 11:53:15.127	2.1s	149ms	1	2 GB	1h	1.6 MB	/scratch/users/olgabot/botryllus-nextflow-fixture-49515476/work/f5/26cc671761a0977ea8425f0fb63c41
+85	c4/426814	MERGE_TAGS (fixture1)	COMPLETED	0	2026-10-25 11:53:17.280	1.4s	125ms	1	2 GB	1h	1.6 MB	/scratch/users/olgabot/botryllus-nextflow-fixture-49515476/work/c4/426814364668e044d1764aa806be86
+84	7a/b8ecbd	MERGE_TAGS (fixture0)	COMPLETED	0	2026-10-25 11:53:18.670	433ms	121ms	1	2 GB	1h	1.6 MB	/scratch/users/olgabot/botryllus-nextflow-fixture-49515476/work/7a/b8ecbd36c298ecae64b54b635ee4c3
+91	5f/1048f4	RECRUIT_READS (S10T)	COMPLETED	0	2026-10-25 11:53:19.123	1.9s	146ms	1	2 GB	1h	1.6 MB	/scratch/users/olgabot/botryllus-nextflow-fixture-49515476/work/5f/1048f4e76abf532421ba9944b3a94a
+89	df/d03f72	RECRUIT_READS (S02T)	COMPLETED	0	2026-10-25 11:53:21.059	848ms	162ms	1	2 GB	1h	1.5 MB	/scratch/users/olgabot/botryllus-nextflow-fixture-49515476/work/df/d03f72e905f7048aa778993e3ab568
+86	29/f245b9	MERGE_TAGS (fixture2)	COMPLETED	0	2026-10-25 11:53:21.916	1.9s	125ms	1	2 GB	1h	1.5 MB	/scratch/users/olgabot/botryllus-nextflow-fixture-49515476/work/29/f245b904dce252bbb242bf19a7bd71
+92	b4/b16917	RECRUIT_READS (S11T)	COMPLETED	0	2026-10-25 11:53:23.844	363ms	152ms	1	2 GB	1h	1.6 MB	/scratch/users/olgabot/botryllus-nextflow-fixture-49515476/work/b4/b16917bd907c21f2afd6cb1ef4e210
+93	66/09f53d	RECRUIT_READS (S11C)	COMPLETED	0	2026-10-25 11:53:24.216	327ms	150ms	1	2 GB	1h	1.6 MB	/scratch/users/olgabot/botryllus-nextflow-fixture-49515476/work/66/09f53d6422cb73955f2e466c3d7e6d
+94	ec/d9f4a6	RECRUIT_READS (S12C)	COMPLETED	0	2026-10-25 11:53:24.554	423ms	149ms	1	2 GB	1h	1.6 MB	/scratch/users/olgabot/botryllus-nextflow-fixture-49515476/work/ec/d9f4a67835e67f3271c9110ba352b7
+95	a3/f3f037	RECRUIT_READS (S12T)	COMPLETED	0	2026-10-25 11:53:24.984	316ms	148ms	1	2 GB	1h	1.6 MB	/scratch/users/olgabot/botryllus-nextflow-fixture-49515476/work/a3/f3f037a47807d61290ef78ca4e1eb4
+96	20/826017	RECRUIT_READS (S20C)	COMPLETED	0	2026-10-25 11:53:25.310	320ms	153ms	1	2 GB	1h	1.6 MB	/scratch/users/olgabot/botryllus-nextflow-fixture-49515476/work/20/826017c50842c776334ec4162d3c04
+97	0d/f70b2a	RECRUIT_READS (S20T)	COMPLETED	0	2026-10-25 11:53:25.638	323ms	149ms	1	2 GB	1h	1.6 MB	/scratch/users/olgabot/botryllus-nextflow-fixture-49515476/work/0d/f70b2a80fab84bcc904d7df4a26875
+98	20/e64d19	RECRUIT_READS (S21C)	COMPLETED	0	2026-10-25 11:53:25.969	443ms	148ms	1	2 GB	1h	1.6 MB	/scratch/users/olgabot/botryllus-nextflow-fixture-49515476/work/20/e64d197f04ab649c9640231139a689
+99	2f/dc4ace	RECRUIT_READS (S21T)	COMPLETED	0	2026-10-25 11:53:26.427	1.6s	150ms	1	2 GB	1h	1.6 MB	/scratch/users/olgabot/botryllus-nextflow-fixture-49515476/work/2f/dc4ace2809214f6b159aca01005c35
+100	7a/496119	RECRUIT_READS (S22C)	COMPLETED	0	2026-10-25 11:53:28.009	316ms	154ms	1	2 GB	1h	1.6 MB	/scratch/users/olgabot/botryllus-nextflow-fixture-49515476/work/7a/49611917490194a117ec35d7de5e87
+101	82/3fefe4	RECRUIT_READS (S22T)	COMPLETED	0	2026-10-25 11:53:28.332	1.7s	144ms	1	2 GB	1h	1.6 MB	/scratch/users/olgabot/botryllus-nextflow-fixture-49515476/work/82/3fefe486811d30fc7b2cca78874077
+102	cb/162189	TRANSLATE (splash)	COMPLETED	0	2026-10-25 11:53:30.028	1s	158ms	1	2 GB	1h	1.6 MB	/scratch/users/olgabot/botryllus-nextflow-fixture-49515476/work/cb/16218962fa481ec896ccf8b0c3f5e4
+103	c8/6fa8fa	COMPACT (dekupl)	COMPLETED	0	2026-10-25 11:53:31.111	1.6s	138ms	1	2 GB	1h	1.6 MB	/scratch/users/olgabot/botryllus-nextflow-fixture-49515476/work/c8/6fa8fa1b71e7a42c03516a6bb0ece5
+106	dd/c1924e	SKETCH (splash:dna)	COMPLETED	0	2026-10-25 11:53:32.712	2.4s	2.2s	1	2 GB	1h	112.8 MB	/scratch/users/olgabot/botryllus-nextflow-fixture-49515476/work/dd/c1924e12700c50cba27e6474e8060e
+107	51/e017b7	SKETCH (splash:protein)	COMPLETED	0	2026-10-25 11:53:35.110	2.7s	2s	1	2 GB	1h	143 MB	/scratch/users/olgabot/botryllus-nextflow-fixture-49515476/work/51/e017b7a7e69018c3affd9ea416d42f
+108	82/7e0b00	SKETCH (splash:dayhoff)	COMPLETED	0	2026-10-25 11:53:37.843	2.1s	2s	1	2 GB	1h	147.4 MB	/scratch/users/olgabot/botryllus-nextflow-fixture-49515476/work/82/7e0b00fc74f4c57352c63a0fe95d70
+109	f8/f4e10d	SKETCH (splash:hp)	COMPLETED	0	2026-10-25 11:53:40.254	2.1s	2s	1	2 GB	1h	142.9 MB	/scratch/users/olgabot/botryllus-nextflow-fixture-49515476/work/f8/f4e10d24d7b5fd53373b06c40948ec
+105	7f/b03200	ALIGN_CONTEXT (splash)	COMPLETED	0	2026-10-25 11:53:42.389	223ms	21ms	1	2 GB	1h	1.5 MB	/scratch/users/olgabot/botryllus-nextflow-fixture-49515476/work/7f/b03200798ec1fdcc01a52bee16d173
+104	e0/0cdbc5	QUERY_PFAM (splash)	COMPLETED	0	2026-10-25 11:53:42.620	795ms	18ms	1	2 GB	1h	1.6 MB	/scratch/users/olgabot/botryllus-nextflow-fixture-49515476/work/e0/0cdbc5928d6a5141f446deb58b6bed
+110	44/b69e8b	TRANSLATE (dekupl)	COMPLETED	0	2026-10-25 11:53:43.428	326ms	152ms	1	2 GB	1h	1.6 MB	/scratch/users/olgabot/botryllus-nextflow-fixture-49515476/work/44/b69e8bf3318d3f196bc4424b6c4a25
+111	38/982371	SEARCH (splash:fixture-target:dna:5)	COMPLETED	0	2026-10-25 11:53:43.786	2.2s	1.9s	1	2 GB	1h	143.4 MB	/scratch/users/olgabot/botryllus-nextflow-fixture-49515476/work/38/982371c9c10cc8a7dfc0237cd993c6
+112	e8/ddc0a5	SEARCH (splash:fixture-target:protein:5)	COMPLETED	0	2026-10-25 11:53:45.989	3.9s	1.9s	1	2 GB	1h	142.1 MB	/scratch/users/olgabot/botryllus-nextflow-fixture-49515476/work/e8/ddc0a593304ae9051df78e48a26323
+113	00/aa89dd	SEARCH (splash:fixture-target:dayhoff:5)	COMPLETED	0	2026-10-25 11:53:49.930	2.1s	1.9s	1	2 GB	1h	143.4 MB	/scratch/users/olgabot/botryllus-nextflow-fixture-49515476/work/00/aa89dd4cb1253641d770afefabfa14
+114	74/25b97f	SEARCH (splash:fixture-target:hp:5)	COMPLETED	0	2026-10-25 11:53:52.071	2.1s	1.9s	1	2 GB	1h	143.4 MB	/scratch/users/olgabot/botryllus-nextflow-fixture-49515476/work/74/25b97f03e3f9d06c6d42d58d6e6219
+117	0d/63312e	SKETCH (dekupl:dna)	COMPLETED	0	2026-10-25 11:53:54.230	1.2s	1s	1	2 GB	1h	1.6 MB	/scratch/users/olgabot/botryllus-nextflow-fixture-49515476/work/0d/63312e68365b664d4316363d8dc515
+116	bf/c67f48	QUERY_PFAM (dekupl)	COMPLETED	0	2026-10-25 11:53:55.408	176ms	17ms	1	2 GB	1h	1.6 MB	/scratch/users/olgabot/botryllus-nextflow-fixture-49515476/work/bf/c67f489e07f024b7c9ccd0115d3b49
+115	2e/6c3fbf	ALIGN_CONTEXT (dekupl)	COMPLETED	0	2026-10-25 11:53:55.601	1s	18ms	1	2 GB	1h	1.6 MB	/scratch/users/olgabot/botryllus-nextflow-fixture-49515476/work/2e/6c3fbf43ad6d76b9707fc146bb5792
+118	8c/37b0dc	SKETCH (dekupl:protein)	COMPLETED	0	2026-10-25 11:53:57.135	5.2s	957ms	1	2 GB	1h	1.6 MB	/scratch/users/olgabot/botryllus-nextflow-fixture-49515476/work/8c/37b0dc5427dd5dd60c73f047b0e328
+119	56/a9568d	SKETCH (dekupl:dayhoff)	COMPLETED	0	2026-10-25 11:54:05.704	1.4s	974ms	1	2 GB	1h	1.6 MB	/scratch/users/olgabot/botryllus-nextflow-fixture-49515476/work/56/a9568dbc1a31fa3d21418a693a118b
+120	62/cad895	SKETCH (dekupl:hp)	COMPLETED	0	2026-10-25 11:54:07.168	1.2s	958ms	1	2 GB	1h	1.6 MB	/scratch/users/olgabot/botryllus-nextflow-fixture-49515476/work/62/cad8952cf181af5df57132d4c7b6bd
+121	00/d4df5a	SEARCH (dekupl:fixture-target:dna:5)	COMPLETED	0	2026-10-25 11:54:08.360	2.8s	1s	1	2 GB	1h	1.6 MB	/scratch/users/olgabot/botryllus-nextflow-fixture-49515476/work/00/d4df5a1017213364736bee7dd14951
+122	d8/6c12db	SEARCH (dekupl:fixture-target:protein:5)	COMPLETED	0	2026-10-25 11:54:11.148	1.2s	1s	1	2 GB	1h	1.6 MB	/scratch/users/olgabot/botryllus-nextflow-fixture-49515476/work/d8/6c12dbcf8936df43a612d8537a9bbc
+123	53/304626	SEARCH (dekupl:fixture-target:dayhoff:5)	COMPLETED	0	2026-10-25 11:54:12.347	1.2s	998ms	1	2 GB	1h	1.6 MB	/scratch/users/olgabot/botryllus-nextflow-fixture-49515476/work/53/3046262e6b2e0e965723bdebb3d745
+124	30/aba523	SEARCH (dekupl:fixture-target:hp:5)	COMPLETED	0	2026-10-25 11:54:13.510	1.2s	1s	1	2 GB	1h	1.6 MB	/scratch/users/olgabot/botryllus-nextflow-fixture-49515476/work/30/aba52395341146427ac5456ec27d23
+125	a7/5feba9	JOIN_EVIDENCE	COMPLETED	0	2026-10-25 11:54:14.755	1.4s	191ms	1	2 GB	1h	1.5 MB	/scratch/users/olgabot/botryllus-nextflow-fixture-49515476/work/a7/5feba99900e673d1befbab3f1f5ccf

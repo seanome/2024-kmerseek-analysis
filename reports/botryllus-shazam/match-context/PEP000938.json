@@ -1,0 +1,1601 @@
+{
+  "query": "PEP000938",
+  "sequence": "HSSHIERYKPTCKSRLFSSFSLSSDLQWRPTPFGADAGDATILADAMATVM",
+  "length": 51,
+  "source_extensions": [
+    "EXT000320"
+  ],
+  "scope": "Historical top-300 pilot; retained candidates at scaled 5",
+  "matches": [
+    {
+      "record_id": "SWP0297000",
+      "accession": "Q9PJX7",
+      "protein": "GTPase Obg",
+      "gene": "obg",
+      "species": "Chlamydia muridarum (strain MoPn / Nigg)",
+      "taxonomy_id": "243161",
+      "description": "sp|Q9PJX7|OBG_CHLMU GTPase Obg OS=Chlamydia muridarum (strain MoPn / Nigg) OX=243161 GN=obg PE=3 SV=1",
+      "source_url": "https://www.uniprot.org/uniprotkb/Q9PJX7/entry",
+      "alphabet": "dayhoff",
+      "shared_hashes": 2,
+      "query_hashes": 8,
+      "containment": 0.25,
+      "pfam": [
+        {
+          "id": "PF01018",
+          "name": "GTP1/OBG",
+          "short_name": "GTP1_OBG",
+          "pfam2go": []
+        },
+        {
+          "id": "PF01926",
+          "name": "50S ribosome-binding GTPase",
+          "short_name": "MMR_HSR1",
+          "pfam2go": [
+            {
+              "id": "GO:0005525",
+              "term": "GTP binding"
+            }
+          ]
+        }
+      ],
+      "go": [
+        {
+          "id": "GO:0005737",
+          "term": "C:cytoplasm",
+          "evidence": "IEA:UniProtKB-SubCell"
+        },
+        {
+          "id": "GO:0005525",
+          "term": "F:GTP binding",
+          "evidence": "IEA:UniProtKB-UniRule"
+        },
+        {
+          "id": "GO:0003924",
+          "term": "F:GTPase activity",
+          "evidence": "IEA:UniProtKB-UniRule"
+        },
+        {
+          "id": "GO:0000287",
+          "term": "F:magnesium ion binding",
+          "evidence": "IEA:InterPro"
+        },
+        {
+          "id": "GO:0043022",
+          "term": "F:ribosome binding",
+          "evidence": "IEA:UniProtKB-ARBA"
+        },
+        {
+          "id": "GO:0042254",
+          "term": "P:ribosome biogenesis",
+          "evidence": "IEA:UniProtKB-UniRule"
+        }
+      ],
+      "interpro": [
+        {
+          "id": "IPR031167",
+          "name": "G_OBG"
+        },
+        {
+          "id": "IPR006073",
+          "name": "GTP-bd"
+        },
+        {
+          "id": "IPR014100",
+          "name": "GTP-bd_Obg/CgtA"
+        },
+        {
+          "id": "IPR006169",
+          "name": "GTP1_OBG_dom"
+        },
+        {
+          "id": "IPR036726",
+          "name": "GTP1_OBG_dom_sf"
+        },
+        {
+          "id": "IPR045086",
+          "name": "OBG_GTPase"
+        },
+        {
+          "id": "IPR027417",
+          "name": "P-loop_NTPase"
+        },
+        {
+          "id": "IPR005225",
+          "name": "Small_GTP-bd"
+        }
+      ],
+      "annotation_source": "https://rest.uniprot.org/uniprotkb/Q9PJX7.json"
+    },
+    {
+      "record_id": "SWP0297005",
+      "accession": "Q9Z808",
+      "protein": "GTPase Obg",
+      "gene": "obg",
+      "species": "Chlamydia pneumoniae",
+      "taxonomy_id": "83558",
+      "description": "sp|Q9Z808|OBG_CHLPN GTPase Obg OS=Chlamydia pneumoniae OX=83558 GN=obg PE=3 SV=1",
+      "source_url": "https://www.uniprot.org/uniprotkb/Q9Z808/entry",
+      "alphabet": "dayhoff",
+      "shared_hashes": 2,
+      "query_hashes": 8,
+      "containment": 0.25,
+      "pfam": [
+        {
+          "id": "PF01018",
+          "name": "GTP1/OBG",
+          "short_name": "GTP1_OBG",
+          "pfam2go": []
+        },
+        {
+          "id": "PF01926",
+          "name": "50S ribosome-binding GTPase",
+          "short_name": "MMR_HSR1",
+          "pfam2go": [
+            {
+              "id": "GO:0005525",
+              "term": "GTP binding"
+            }
+          ]
+        }
+      ],
+      "go": [
+        {
+          "id": "GO:0005737",
+          "term": "C:cytoplasm",
+          "evidence": "IEA:UniProtKB-SubCell"
+        },
+        {
+          "id": "GO:0005525",
+          "term": "F:GTP binding",
+          "evidence": "IEA:UniProtKB-UniRule"
+        },
+        {
+          "id": "GO:0003924",
+          "term": "F:GTPase activity",
+          "evidence": "IEA:UniProtKB-UniRule"
+        },
+        {
+          "id": "GO:0000287",
+          "term": "F:magnesium ion binding",
+          "evidence": "IEA:InterPro"
+        },
+        {
+          "id": "GO:0043022",
+          "term": "F:ribosome binding",
+          "evidence": "IEA:UniProtKB-ARBA"
+        },
+        {
+          "id": "GO:0042254",
+          "term": "P:ribosome biogenesis",
+          "evidence": "IEA:UniProtKB-UniRule"
+        }
+      ],
+      "interpro": [
+        {
+          "id": "IPR031167",
+          "name": "G_OBG"
+        },
+        {
+          "id": "IPR006073",
+          "name": "GTP-bd"
+        },
+        {
+          "id": "IPR014100",
+          "name": "GTP-bd_Obg/CgtA"
+        },
+        {
+          "id": "IPR006169",
+          "name": "GTP1_OBG_dom"
+        },
+        {
+          "id": "IPR036726",
+          "name": "GTP1_OBG_dom_sf"
+        },
+        {
+          "id": "IPR045086",
+          "name": "OBG_GTPase"
+        },
+        {
+          "id": "IPR027417",
+          "name": "P-loop_NTPase"
+        },
+        {
+          "id": "IPR005225",
+          "name": "Small_GTP-bd"
+        }
+      ],
+      "annotation_source": "https://rest.uniprot.org/uniprotkb/Q9Z808.json"
+    },
+    {
+      "record_id": "SWP0297007",
+      "accession": "B0B7Y8",
+      "protein": "GTPase Obg",
+      "gene": "obg",
+      "species": "Chlamydia trachomatis serovar L2 (strain ATCC VR-902B / DSM 19102 / 434/Bu)",
+      "taxonomy_id": "471472",
+      "description": "sp|B0B7Y8|OBG_CHLT2 GTPase Obg OS=Chlamydia trachomatis serovar L2 (strain ATCC VR-902B / DSM 19102 / 434/Bu) OX=471472 GN=obg PE=3 SV=1",
+      "source_url": "https://www.uniprot.org/uniprotkb/B0B7Y8/entry",
+      "alphabet": "dayhoff",
+      "shared_hashes": 2,
+      "query_hashes": 8,
+      "containment": 0.25,
+      "pfam": [
+        {
+          "id": "PF01018",
+          "name": "GTP1/OBG",
+          "short_name": "GTP1_OBG",
+          "pfam2go": []
+        },
+        {
+          "id": "PF01926",
+          "name": "50S ribosome-binding GTPase",
+          "short_name": "MMR_HSR1",
+          "pfam2go": [
+            {
+              "id": "GO:0005525",
+              "term": "GTP binding"
+            }
+          ]
+        }
+      ],
+      "go": [
+        {
+          "id": "GO:0005737",
+          "term": "C:cytoplasm",
+          "evidence": "IEA:UniProtKB-SubCell"
+        },
+        {
+          "id": "GO:0005525",
+          "term": "F:GTP binding",
+          "evidence": "IEA:UniProtKB-UniRule"
+        },
+        {
+          "id": "GO:0003924",
+          "term": "F:GTPase activity",
+          "evidence": "IEA:UniProtKB-UniRule"
+        },
+        {
+          "id": "GO:0000287",
+          "term": "F:magnesium ion binding",
+          "evidence": "IEA:InterPro"
+        },
+        {
+          "id": "GO:0043022",
+          "term": "F:ribosome binding",
+          "evidence": "IEA:UniProtKB-ARBA"
+        },
+        {
+          "id": "GO:0042254",
+          "term": "P:ribosome biogenesis",
+          "evidence": "IEA:UniProtKB-UniRule"
+        }
+      ],
+      "interpro": [
+        {
+          "id": "IPR031167",
+          "name": "G_OBG"
+        },
+        {
+          "id": "IPR006073",
+          "name": "GTP-bd"
+        },
+        {
+          "id": "IPR014100",
+          "name": "GTP-bd_Obg/CgtA"
+        },
+        {
+          "id": "IPR006169",
+          "name": "GTP1_OBG_dom"
+        },
+        {
+          "id": "IPR036726",
+          "name": "GTP1_OBG_dom_sf"
+        },
+        {
+          "id": "IPR045086",
+          "name": "OBG_GTPase"
+        },
+        {
+          "id": "IPR027417",
+          "name": "P-loop_NTPase"
+        },
+        {
+          "id": "IPR005225",
+          "name": "Small_GTP-bd"
+        }
+      ],
+      "annotation_source": "https://rest.uniprot.org/uniprotkb/B0B7Y8.json"
+    },
+    {
+      "record_id": "SWP0297009",
+      "accession": "Q3KLT5",
+      "protein": "GTPase Obg",
+      "gene": "obg",
+      "species": "Chlamydia trachomatis serovar A (strain ATCC VR-571B / DSM 19440 / HAR-13)",
+      "taxonomy_id": "315277",
+      "description": "sp|Q3KLT5|OBG_CHLTA GTPase Obg OS=Chlamydia trachomatis serovar A (strain ATCC VR-571B / DSM 19440 / HAR-13) OX=315277 GN=obg PE=3 SV=1",
+      "source_url": "https://www.uniprot.org/uniprotkb/Q3KLT5/entry",
+      "alphabet": "dayhoff",
+      "shared_hashes": 2,
+      "query_hashes": 8,
+      "containment": 0.25,
+      "pfam": [
+        {
+          "id": "PF01018",
+          "name": "GTP1/OBG",
+          "short_name": "GTP1_OBG",
+          "pfam2go": []
+        },
+        {
+          "id": "PF01926",
+          "name": "50S ribosome-binding GTPase",
+          "short_name": "MMR_HSR1",
+          "pfam2go": [
+            {
+              "id": "GO:0005525",
+              "term": "GTP binding"
+            }
+          ]
+        }
+      ],
+      "go": [
+        {
+          "id": "GO:0005737",
+          "term": "C:cytoplasm",
+          "evidence": "IEA:UniProtKB-SubCell"
+        },
+        {
+          "id": "GO:0005525",
+          "term": "F:GTP binding",
+          "evidence": "IEA:UniProtKB-UniRule"
+        },
+        {
+          "id": "GO:0003924",
+          "term": "F:GTPase activity",
+          "evidence": "IEA:UniProtKB-UniRule"
+        },
+        {
+          "id": "GO:0000287",
+          "term": "F:magnesium ion binding",
+          "evidence": "IEA:InterPro"
+        },
+        {
+          "id": "GO:0043022",
+          "term": "F:ribosome binding",
+          "evidence": "IEA:UniProtKB-ARBA"
+        },
+        {
+          "id": "GO:0042254",
+          "term": "P:ribosome biogenesis",
+          "evidence": "IEA:UniProtKB-UniRule"
+        }
+      ],
+      "interpro": [
+        {
+          "id": "IPR031167",
+          "name": "G_OBG"
+        },
+        {
+          "id": "IPR006073",
+          "name": "GTP-bd"
+        },
+        {
+          "id": "IPR014100",
+          "name": "GTP-bd_Obg/CgtA"
+        },
+        {
+          "id": "IPR006169",
+          "name": "GTP1_OBG_dom"
+        },
+        {
+          "id": "IPR036726",
+          "name": "GTP1_OBG_dom_sf"
+        },
+        {
+          "id": "IPR045086",
+          "name": "OBG_GTPase"
+        },
+        {
+          "id": "IPR027417",
+          "name": "P-loop_NTPase"
+        },
+        {
+          "id": "IPR005225",
+          "name": "Small_GTP-bd"
+        }
+      ],
+      "annotation_source": "https://rest.uniprot.org/uniprotkb/Q3KLT5.json"
+    },
+    {
+      "record_id": "SWP0297010",
+      "accession": "B0BC53",
+      "protein": "GTPase Obg",
+      "gene": "obg",
+      "species": "Chlamydia trachomatis serovar L2b (strain UCH-1/proctitis)",
+      "taxonomy_id": "471473",
+      "description": "sp|B0BC53|OBG_CHLTB GTPase Obg OS=Chlamydia trachomatis serovar L2b (strain UCH-1/proctitis) OX=471473 GN=obg PE=3 SV=1",
+      "source_url": "https://www.uniprot.org/uniprotkb/B0BC53/entry",
+      "alphabet": "dayhoff",
+      "shared_hashes": 2,
+      "query_hashes": 8,
+      "containment": 0.25,
+      "pfam": [
+        {
+          "id": "PF01018",
+          "name": "GTP1/OBG",
+          "short_name": "GTP1_OBG",
+          "pfam2go": []
+        },
+        {
+          "id": "PF01926",
+          "name": "50S ribosome-binding GTPase",
+          "short_name": "MMR_HSR1",
+          "pfam2go": [
+            {
+              "id": "GO:0005525",
+              "term": "GTP binding"
+            }
+          ]
+        }
+      ],
+      "go": [
+        {
+          "id": "GO:0005737",
+          "term": "C:cytoplasm",
+          "evidence": "IEA:UniProtKB-SubCell"
+        },
+        {
+          "id": "GO:0005525",
+          "term": "F:GTP binding",
+          "evidence": "IEA:UniProtKB-UniRule"
+        },
+        {
+          "id": "GO:0003924",
+          "term": "F:GTPase activity",
+          "evidence": "IEA:UniProtKB-UniRule"
+        },
+        {
+          "id": "GO:0000287",
+          "term": "F:magnesium ion binding",
+          "evidence": "IEA:InterPro"
+        },
+        {
+          "id": "GO:0043022",
+          "term": "F:ribosome binding",
+          "evidence": "IEA:UniProtKB-ARBA"
+        },
+        {
+          "id": "GO:0042254",
+          "term": "P:ribosome biogenesis",
+          "evidence": "IEA:UniProtKB-UniRule"
+        }
+      ],
+      "interpro": [
+        {
+          "id": "IPR031167",
+          "name": "G_OBG"
+        },
+        {
+          "id": "IPR006073",
+          "name": "GTP-bd"
+        },
+        {
+          "id": "IPR014100",
+          "name": "GTP-bd_Obg/CgtA"
+        },
+        {
+          "id": "IPR006169",
+          "name": "GTP1_OBG_dom"
+        },
+        {
+          "id": "IPR036726",
+          "name": "GTP1_OBG_dom_sf"
+        },
+        {
+          "id": "IPR045086",
+          "name": "OBG_GTPase"
+        },
+        {
+          "id": "IPR027417",
+          "name": "P-loop_NTPase"
+        },
+        {
+          "id": "IPR005225",
+          "name": "Small_GTP-bd"
+        }
+      ],
+      "annotation_source": "https://rest.uniprot.org/uniprotkb/B0BC53.json"
+    },
+    {
+      "record_id": "SWP0297012",
+      "accession": "O84423",
+      "protein": "GTPase Obg",
+      "gene": "obg",
+      "species": "Chlamydia trachomatis serovar D (strain ATCC VR-885 / DSM 19411 / UW-3/Cx)",
+      "taxonomy_id": "272561",
+      "description": "sp|O84423|OBG_CHLTR GTPase Obg OS=Chlamydia trachomatis serovar D (strain ATCC VR-885 / DSM 19411 / UW-3/Cx) OX=272561 GN=obg PE=3 SV=1",
+      "source_url": "https://www.uniprot.org/uniprotkb/O84423/entry",
+      "alphabet": "dayhoff",
+      "shared_hashes": 2,
+      "query_hashes": 8,
+      "containment": 0.25,
+      "pfam": [
+        {
+          "id": "PF01018",
+          "name": "GTP1/OBG",
+          "short_name": "GTP1_OBG",
+          "pfam2go": []
+        },
+        {
+          "id": "PF01926",
+          "name": "50S ribosome-binding GTPase",
+          "short_name": "MMR_HSR1",
+          "pfam2go": [
+            {
+              "id": "GO:0005525",
+              "term": "GTP binding"
+            }
+          ]
+        }
+      ],
+      "go": [
+        {
+          "id": "GO:0005737",
+          "term": "C:cytoplasm",
+          "evidence": "IEA:UniProtKB-SubCell"
+        },
+        {
+          "id": "GO:0005525",
+          "term": "F:GTP binding",
+          "evidence": "IBA:GO_Central"
+        },
+        {
+          "id": "GO:0003924",
+          "term": "F:GTPase activity",
+          "evidence": "IEA:UniProtKB-UniRule"
+        },
+        {
+          "id": "GO:0000287",
+          "term": "F:magnesium ion binding",
+          "evidence": "IEA:InterPro"
+        },
+        {
+          "id": "GO:0043022",
+          "term": "F:ribosome binding",
+          "evidence": "IEA:UniProtKB-ARBA"
+        },
+        {
+          "id": "GO:0042254",
+          "term": "P:ribosome biogenesis",
+          "evidence": "IEA:UniProtKB-UniRule"
+        }
+      ],
+      "interpro": [
+        {
+          "id": "IPR031167",
+          "name": "G_OBG"
+        },
+        {
+          "id": "IPR006073",
+          "name": "GTP-bd"
+        },
+        {
+          "id": "IPR014100",
+          "name": "GTP-bd_Obg/CgtA"
+        },
+        {
+          "id": "IPR006169",
+          "name": "GTP1_OBG_dom"
+        },
+        {
+          "id": "IPR036726",
+          "name": "GTP1_OBG_dom_sf"
+        },
+        {
+          "id": "IPR045086",
+          "name": "OBG_GTPase"
+        },
+        {
+          "id": "IPR027417",
+          "name": "P-loop_NTPase"
+        },
+        {
+          "id": "IPR005225",
+          "name": "Small_GTP-bd"
+        }
+      ],
+      "annotation_source": "https://rest.uniprot.org/uniprotkb/O84423.json"
+    },
+    {
+      "record_id": "SWP0447519",
+      "accession": "O00560",
+      "protein": "Syntenin-1",
+      "gene": "SDCBP",
+      "species": "Homo sapiens",
+      "taxonomy_id": "9606",
+      "description": "sp|O00560|SDCB1_HUMAN Syntenin-1 OS=Homo sapiens OX=9606 GN=SDCBP PE=1 SV=1",
+      "source_url": "https://www.uniprot.org/uniprotkb/O00560/entry",
+      "alphabet": "dayhoff",
+      "shared_hashes": 2,
+      "query_hashes": 8,
+      "containment": 0.25,
+      "pfam": [
+        {
+          "id": "PF00595",
+          "name": "PDZ domain",
+          "short_name": "PDZ",
+          "pfam2go": [
+            {
+              "id": "GO:0005515",
+              "term": "protein binding"
+            }
+          ]
+        }
+      ],
+      "go": [
+        {
+          "id": "GO:0005912",
+          "term": "C:adherens junction",
+          "evidence": "NAS:UniProtKB"
+        },
+        {
+          "id": "GO:0035578",
+          "term": "C:azurophil granule lumen",
+          "evidence": "TAS:Reactome"
+        },
+        {
+          "id": "GO:0072562",
+          "term": "C:blood microparticle",
+          "evidence": "HDA:UniProtKB"
+        },
+        {
+          "id": "GO:0005737",
+          "term": "C:cytoplasm",
+          "evidence": "IDA:BHF-UCL"
+        },
+        {
+          "id": "GO:0005856",
+          "term": "C:cytoskeleton",
+          "evidence": "NAS:UniProtKB"
+        },
+        {
+          "id": "GO:0005829",
+          "term": "C:cytosol",
+          "evidence": "IDA:HPA"
+        },
+        {
+          "id": "GO:0005789",
+          "term": "C:endoplasmic reticulum membrane",
+          "evidence": "EXP:UniProtKB"
+        },
+        {
+          "id": "GO:0070062",
+          "term": "C:extracellular exosome",
+          "evidence": "IDA:UniProtKB"
+        },
+        {
+          "id": "GO:0005576",
+          "term": "C:extracellular region",
+          "evidence": "HDA:UniProtKB"
+        },
+        {
+          "id": "GO:1903561",
+          "term": "C:extracellular vesicle",
+          "evidence": "HDA:UniProtKB"
+        },
+        {
+          "id": "GO:0005925",
+          "term": "C:focal adhesion",
+          "evidence": "IEA:UniProtKB-SubCell"
+        },
+        {
+          "id": "GO:0005895",
+          "term": "C:interleukin-5 receptor complex",
+          "evidence": "ISS:UniProtKB"
+        },
+        {
+          "id": "GO:0042470",
+          "term": "C:melanosome",
+          "evidence": "EXP:UniProtKB"
+        },
+        {
+          "id": "GO:0016020",
+          "term": "C:membrane",
+          "evidence": "NAS:UniProtKB"
+        },
+        {
+          "id": "GO:0045121",
+          "term": "C:membrane raft",
+          "evidence": "IDA:UniProtKB"
+        },
+        {
+          "id": "GO:0031965",
+          "term": "C:nuclear membrane",
+          "evidence": "IDA:HPA"
+        },
+        {
+          "id": "GO:0005654",
+          "term": "C:nucleoplasm",
+          "evidence": "IDA:HPA"
+        },
+        {
+          "id": "GO:0005634",
+          "term": "C:nucleus",
+          "evidence": "NAS:UniProtKB"
+        },
+        {
+          "id": "GO:0005886",
+          "term": "C:plasma membrane",
+          "evidence": "IDA:UniProtKB"
+        },
+        {
+          "id": "GO:0045202",
+          "term": "C:synapse",
+          "evidence": "IEA:GOC"
+        },
+        {
+          "id": "GO:0008093",
+          "term": "F:cytoskeletal adaptor activity",
+          "evidence": "NAS:UniProtKB"
+        },
+        {
+          "id": "GO:0005109",
+          "term": "F:frizzled binding",
+          "evidence": "IPI:BHF-UCL"
+        },
+        {
+          "id": "GO:0042802",
+          "term": "F:identical protein binding",
+          "evidence": "IPI:IntAct"
+        },
+        {
+          "id": "GO:0005137",
+          "term": "F:interleukin-5 receptor binding",
+          "evidence": "ISS:UniProtKB"
+        },
+        {
+          "id": "GO:0005546",
+          "term": "F:phosphatidylinositol-4,5-bisphosphate binding",
+          "evidence": "IDA:UniProtKB"
+        },
+        {
+          "id": "GO:0046982",
+          "term": "F:protein heterodimerization activity",
+          "evidence": "IPI:UniProtKB"
+        },
+        {
+          "id": "GO:0140311",
+          "term": "F:protein sequestering activity",
+          "evidence": "IDA:UniProtKB"
+        },
+        {
+          "id": "GO:0045545",
+          "term": "F:syndecan binding",
+          "evidence": "IPI:UniProtKB"
+        },
+        {
+          "id": "GO:0030036",
+          "term": "P:actin cytoskeleton organization",
+          "evidence": "NAS:UniProtKB"
+        },
+        {
+          "id": "GO:0007268",
+          "term": "P:chemical synaptic transmission",
+          "evidence": "NAS:UniProtKB"
+        },
+        {
+          "id": "GO:0035556",
+          "term": "P:intracellular signal transduction",
+          "evidence": "NAS:UniProtKB"
+        },
+        {
+          "id": "GO:0002091",
+          "term": "P:negative regulation of receptor internalization",
+          "evidence": "IMP:UniProtKB"
+        },
+        {
+          "id": "GO:0000122",
+          "term": "P:negative regulation of transcription by RNA polymerase II",
+          "evidence": "IDA:UniProtKB"
+        },
+        {
+          "id": "GO:0030307",
+          "term": "P:positive regulation of cell growth",
+          "evidence": "IMP:UniProtKB"
+        },
+        {
+          "id": "GO:0030335",
+          "term": "P:positive regulation of cell migration",
+          "evidence": "IMP:UniProtKB"
+        },
+        {
+          "id": "GO:0008284",
+          "term": "P:positive regulation of cell population proliferation",
+          "evidence": "IMP:UniProtKB"
+        },
+        {
+          "id": "GO:0010718",
+          "term": "P:positive regulation of epithelial to mesenchymal transition",
+          "evidence": "IMP:UniProtKB"
+        },
+        {
+          "id": "GO:1903543",
+          "term": "P:positive regulation of exosomal secretion",
+          "evidence": "IMP:UniProtKB"
+        },
+        {
+          "id": "GO:1903553",
+          "term": "P:positive regulation of extracellular exosome assembly",
+          "evidence": "IMP:UniProtKB"
+        },
+        {
+          "id": "GO:0046330",
+          "term": "P:positive regulation of JNK cascade",
+          "evidence": "IC:BHF-UCL"
+        },
+        {
+          "id": "GO:0042327",
+          "term": "P:positive regulation of phosphorylation",
+          "evidence": "IDA:BHF-UCL"
+        },
+        {
+          "id": "GO:0030511",
+          "term": "P:positive regulation of transforming growth factor beta receptor signaling pathway",
+          "evidence": "IMP:UniProtKB"
+        },
+        {
+          "id": "GO:0006612",
+          "term": "P:protein targeting to membrane",
+          "evidence": "NAS:UniProtKB"
+        },
+        {
+          "id": "GO:0007346",
+          "term": "P:regulation of mitotic cell cycle",
+          "evidence": "IMP:UniProtKB"
+        },
+        {
+          "id": "GO:0006930",
+          "term": "P:substrate-dependent cell migration, cell extension",
+          "evidence": "NAS:UniProtKB"
+        }
+      ],
+      "interpro": [
+        {
+          "id": "IPR051230",
+          "name": "APP-Binding"
+        },
+        {
+          "id": "IPR001478",
+          "name": "PDZ"
+        },
+        {
+          "id": "IPR036034",
+          "name": "PDZ_sf"
+        }
+      ],
+      "annotation_source": "https://rest.uniprot.org/uniprotkb/O00560.json"
+    },
+    {
+      "record_id": "SWP0486094",
+      "accession": "Q9K0V0",
+      "protein": "Transferrin-binding protein B",
+      "gene": "tbpB",
+      "species": "Neisseria meningitidis serogroup B (strain ATCC BAA-335 / MC58)",
+      "taxonomy_id": "122586",
+      "description": "sp|Q9K0V0|TBPB_NEIMB Transferrin-binding protein B OS=Neisseria meningitidis serogroup B (strain ATCC BAA-335 / MC58) OX=122586 GN=tbpB PE=1 SV=1",
+      "source_url": "https://www.uniprot.org/uniprotkb/Q9K0V0/entry",
+      "alphabet": "dayhoff",
+      "shared_hashes": 2,
+      "query_hashes": 8,
+      "containment": 0.25,
+      "pfam": [
+        {
+          "id": "PF17484",
+          "name": "N-Lobe handle Tf-binding protein B",
+          "short_name": "TbpB_A",
+          "pfam2go": []
+        },
+        {
+          "id": "PF01298",
+          "name": "C-lobe and N-lobe beta barrels of Tf-binding protein B",
+          "short_name": "TbpB_B_D",
+          "pfam2go": []
+        },
+        {
+          "id": "PF17483",
+          "name": "C-lobe handle domain of Tf-binding protein B",
+          "short_name": "TbpB_C",
+          "pfam2go": []
+        }
+      ],
+      "go": [
+        {
+          "id": "GO:0009279",
+          "term": "C:cell outer membrane",
+          "evidence": "IEA:UniProtKB-SubCell"
+        },
+        {
+          "id": "GO:0009986",
+          "term": "C:cell surface",
+          "evidence": "EXP:UniProtKB"
+        },
+        {
+          "id": "GO:0071281",
+          "term": "P:cellular response to iron ion",
+          "evidence": "EXP:CollecTF"
+        }
+      ],
+      "interpro": [
+        {
+          "id": "IPR011250",
+          "name": "OMP/PagP_B-barrel"
+        },
+        {
+          "id": "IPR001677",
+          "name": "TbpB_B_D"
+        },
+        {
+          "id": "IPR035316",
+          "name": "TbpB_C-lobe"
+        },
+        {
+          "id": "IPR038197",
+          "name": "TbpB_C-lobe_sf"
+        },
+        {
+          "id": "IPR035313",
+          "name": "TbpB_N-lobe"
+        },
+        {
+          "id": "IPR038669",
+          "name": "TbpB_N-lobe_sf"
+        }
+      ],
+      "annotation_source": "https://rest.uniprot.org/uniprotkb/Q9K0V0.json"
+    },
+    {
+      "record_id": "SWP0061028",
+      "accession": "B3BM48",
+      "protein": "tRNA nuclease CdiA",
+      "gene": "cdiA1",
+      "species": "Escherichia coli O157:H7 (strain EC869)",
+      "taxonomy_id": "478008",
+      "description": "sp|B3BM48|CDIA1_ECO5C tRNA nuclease CdiA OS=Escherichia coli O157:H7 (strain EC869) OX=478008 GN=cdiA1 PE=1 SV=1",
+      "source_url": "https://www.uniprot.org/uniprotkb/B3BM48/entry",
+      "alphabet": "dayhoff",
+      "shared_hashes": 3,
+      "query_hashes": 8,
+      "containment": 0.375,
+      "pfam": [
+        {
+          "id": "PF13332",
+          "name": "Hemagglutinin repeat",
+          "short_name": "Fil_haemagg_2",
+          "pfam2go": []
+        },
+        {
+          "id": "PF04829",
+          "name": "Pre-toxin domain with VENN motif",
+          "short_name": "PT-VENN",
+          "pfam2go": []
+        },
+        {
+          "id": "PF05860",
+          "name": "TPS secretion domain",
+          "short_name": "TPS",
+          "pfam2go": []
+        }
+      ],
+      "go": [
+        {
+          "id": "GO:0005576",
+          "term": "C:extracellular region",
+          "evidence": "IEA:UniProtKB-SubCell"
+        },
+        {
+          "id": "GO:0030430",
+          "term": "C:host cell cytoplasm",
+          "evidence": "IEA:UniProtKB-ARBA"
+        },
+        {
+          "id": "GO:0004521",
+          "term": "F:RNA endonuclease activity",
+          "evidence": "IEA:UniProtKB-ARBA"
+        }
+      ],
+      "interpro": [
+        {
+          "id": "IPR010069",
+          "name": "CdiA_FHA1_rpt"
+        },
+        {
+          "id": "IPR008638",
+          "name": "FhaB/CdiA-like_TPS"
+        },
+        {
+          "id": "IPR025157",
+          "name": "Hemagglutinin_rpt"
+        },
+        {
+          "id": "IPR012334",
+          "name": "Pectin_lyas_fold"
+        },
+        {
+          "id": "IPR011050",
+          "name": "Pectin_lyase_fold/virulence"
+        },
+        {
+          "id": "IPR006914",
+          "name": "VENN_dom"
+        }
+      ],
+      "annotation_source": "https://rest.uniprot.org/uniprotkb/B3BM48.json"
+    },
+    {
+      "record_id": "SWP0061035",
+      "accession": "Q3YL96",
+      "protein": "Toxin CdiA",
+      "gene": "cdiA",
+      "species": "Escherichia coli",
+      "taxonomy_id": "562",
+      "description": "sp|Q3YL96|CDIA_ECOLX Toxin CdiA OS=Escherichia coli OX=562 GN=cdiA PE=1 SV=1",
+      "source_url": "https://www.uniprot.org/uniprotkb/Q3YL96/entry",
+      "alphabet": "dayhoff",
+      "shared_hashes": 3,
+      "query_hashes": 8,
+      "containment": 0.375,
+      "pfam": [
+        {
+          "id": "PF13332",
+          "name": "Hemagglutinin repeat",
+          "short_name": "Fil_haemagg_2",
+          "pfam2go": []
+        },
+        {
+          "id": "PF04829",
+          "name": "Pre-toxin domain with VENN motif",
+          "short_name": "PT-VENN",
+          "pfam2go": []
+        },
+        {
+          "id": "PF05860",
+          "name": "TPS secretion domain",
+          "short_name": "TPS",
+          "pfam2go": []
+        }
+      ],
+      "go": [
+        {
+          "id": "GO:0005576",
+          "term": "C:extracellular region",
+          "evidence": "NAS:UniProtKB"
+        },
+        {
+          "id": "GO:0030430",
+          "term": "C:host cell cytoplasm",
+          "evidence": "IEA:UniProtKB-ARBA"
+        },
+        {
+          "id": "GO:0004521",
+          "term": "F:RNA endonuclease activity",
+          "evidence": "IEA:UniProtKB-ARBA"
+        }
+      ],
+      "interpro": [
+        {
+          "id": "IPR010069",
+          "name": "CdiA_FHA1_rpt"
+        },
+        {
+          "id": "IPR008638",
+          "name": "FhaB/CdiA-like_TPS"
+        },
+        {
+          "id": "IPR025157",
+          "name": "Hemagglutinin_rpt"
+        },
+        {
+          "id": "IPR012334",
+          "name": "Pectin_lyas_fold"
+        },
+        {
+          "id": "IPR011050",
+          "name": "Pectin_lyase_fold/virulence"
+        },
+        {
+          "id": "IPR006914",
+          "name": "VENN_dom"
+        }
+      ],
+      "annotation_source": "https://rest.uniprot.org/uniprotkb/Q3YL96.json"
+    },
+    {
+      "record_id": "SWP0225790",
+      "accession": "Q70LM7",
+      "protein": "Linear gramicidin synthase subunit A",
+      "gene": "lgrA",
+      "species": "Brevibacillus parabrevis",
+      "taxonomy_id": "54914",
+      "description": "sp|Q70LM7|LGRA_BREPA Linear gramicidin synthase subunit A OS=Brevibacillus parabrevis OX=54914 GN=lgrA PE=1 SV=1",
+      "source_url": "https://www.uniprot.org/uniprotkb/Q70LM7/entry",
+      "alphabet": "dayhoff",
+      "shared_hashes": 2,
+      "query_hashes": 8,
+      "containment": 0.25,
+      "pfam": [
+        {
+          "id": "PF00501",
+          "name": "AMP-binding enzyme",
+          "short_name": "AMP-binding",
+          "pfam2go": []
+        },
+        {
+          "id": "PF13193",
+          "name": "AMP-binding enzyme C-terminal domain",
+          "short_name": "AMP-binding_C",
+          "pfam2go": []
+        },
+        {
+          "id": "PF00668",
+          "name": "Condensation domain",
+          "short_name": "Condensation",
+          "pfam2go": [
+            {
+              "id": "GO:0003824",
+              "term": "catalytic activity"
+            }
+          ]
+        },
+        {
+          "id": "PF00551",
+          "name": "Formyl transferase",
+          "short_name": "Formyl_trans_N",
+          "pfam2go": [
+            {
+              "id": "GO:0009058",
+              "term": "biosynthetic process"
+            }
+          ]
+        },
+        {
+          "id": "PF00550",
+          "name": "Phosphopantetheine attachment site",
+          "short_name": "PP-binding",
+          "pfam2go": []
+        }
+      ],
+      "go": [
+        {
+          "id": "GO:0005737",
+          "term": "C:cytoplasm",
+          "evidence": "IEA:TreeGrafter"
+        },
+        {
+          "id": "GO:0003824",
+          "term": "F:catalytic activity",
+          "evidence": "IEA:InterPro"
+        },
+        {
+          "id": "GO:0031177",
+          "term": "F:phosphopantetheine binding",
+          "evidence": "IEA:InterPro"
+        },
+        {
+          "id": "GO:0043041",
+          "term": "P:amino acid activation for nonribosomal peptide biosynthetic process",
+          "evidence": "IEA:TreeGrafter"
+        },
+        {
+          "id": "GO:0008610",
+          "term": "P:lipid biosynthetic process",
+          "evidence": "IEA:UniProtKB-ARBA"
+        },
+        {
+          "id": "GO:0044550",
+          "term": "P:secondary metabolite biosynthetic process",
+          "evidence": "IEA:UniProtKB-ARBA"
+        }
+      ],
+      "interpro": [
+        {
+          "id": "IPR010071",
+          "name": "AA_adenyl_dom"
+        },
+        {
+          "id": "IPR036736",
+          "name": "ACP-like_sf"
+        },
+        {
+          "id": "IPR045851",
+          "name": "AMP-b_sf"
+        },
+        {
+          "id": "IPR025110",
+          "name": "AMP-bd_C"
+        },
+        {
+          "id": "IPR020845",
+          "name": "AMP-binding_CS"
+        },
+        {
+          "id": "IPR000873",
+          "name": "AMP-dep_synth/lig_dom"
+        },
+        {
+          "id": "IPR023213",
+          "name": "CAT-like_dom_sf"
+        },
+        {
+          "id": "IPR001242",
+          "name": "Condensation_dom"
+        },
+        {
+          "id": "IPR002376",
+          "name": "Formyl_transf_N"
+        },
+        {
+          "id": "IPR036477",
+          "name": "Formyl_transf_N_sf"
+        },
+        {
+          "id": "IPR010060",
+          "name": "NRPS_synth"
+        },
+        {
+          "id": "IPR020806",
+          "name": "PKS_PP-bd"
+        },
+        {
+          "id": "IPR009081",
+          "name": "PP-bd_ACP"
+        },
+        {
+          "id": "IPR006162",
+          "name": "Ppantetheine_attach_site"
+        }
+      ],
+      "annotation_source": "https://rest.uniprot.org/uniprotkb/Q70LM7.json"
+    },
+    {
+      "record_id": "SWP0240302",
+      "accession": "P0C7A3",
+      "protein": "Membrane-bound ghrelin O-acyltransferase MBOAT4",
+      "gene": "Mboat4",
+      "species": "Mus musculus",
+      "taxonomy_id": "10090",
+      "description": "sp|P0C7A3|MBOA4_MOUSE Membrane-bound ghrelin O-acyltransferase MBOAT4 OS=Mus musculus OX=10090 GN=Mboat4 PE=1 SV=1",
+      "source_url": "https://www.uniprot.org/uniprotkb/P0C7A3/entry",
+      "alphabet": "dayhoff",
+      "shared_hashes": 2,
+      "query_hashes": 8,
+      "containment": 0.25,
+      "pfam": [
+        {
+          "id": "PF03062",
+          "name": "MBOAT, membrane-bound O-acyltransferase family",
+          "short_name": "MBOAT",
+          "pfam2go": []
+        }
+      ],
+      "go": [
+        {
+          "id": "GO:0005783",
+          "term": "C:endoplasmic reticulum",
+          "evidence": "IDA:UniProtKB"
+        },
+        {
+          "id": "GO:0005789",
+          "term": "C:endoplasmic reticulum membrane",
+          "evidence": "IDA:UniProtKB"
+        },
+        {
+          "id": "GO:0005794",
+          "term": "C:Golgi apparatus",
+          "evidence": "ISO:GO_Central"
+        },
+        {
+          "id": "GO:0016747",
+          "term": "F:acyltransferase activity, transferring groups other than amino-acyl groups",
+          "evidence": "IDA:UniProtKB"
+        },
+        {
+          "id": "GO:0016412",
+          "term": "F:serine O-acyltransferase activity",
+          "evidence": "IDA:UniProtKB"
+        },
+        {
+          "id": "GO:0030258",
+          "term": "P:lipid modification",
+          "evidence": "IBA:GO_Central"
+        },
+        {
+          "id": "GO:0018191",
+          "term": "P:peptidyl-serine octanoylation",
+          "evidence": "IDA:UniProtKB"
+        },
+        {
+          "id": "GO:0043543",
+          "term": "P:protein acylation",
+          "evidence": "IDA:UniProtKB"
+        },
+        {
+          "id": "GO:0051366",
+          "term": "P:protein decanoylation",
+          "evidence": "IDA:UniProtKB"
+        },
+        {
+          "id": "GO:0018190",
+          "term": "P:protein octanoylation",
+          "evidence": "IDA:UniProtKB"
+        }
+      ],
+      "interpro": [
+        {
+          "id": "IPR049941",
+          "name": "LPLAT_7/PORCN-like"
+        },
+        {
+          "id": "IPR004299",
+          "name": "MBOAT_fam"
+        }
+      ],
+      "annotation_source": "https://rest.uniprot.org/uniprotkb/P0C7A3.json"
+    },
+    {
+      "record_id": "SWP0106655",
+      "accession": "P78004",
+      "protein": "Chaperone protein DnaJ",
+      "gene": "dnaJ",
+      "species": "Mycoplasmoides pneumoniae (strain ATCC 29342 / M129 / Subtype 1)",
+      "taxonomy_id": "272634",
+      "description": "sp|P78004|DNAJ_MYCPN Chaperone protein DnaJ OS=Mycoplasmoides pneumoniae (strain ATCC 29342 / M129 / Subtype 1) OX=272634 GN=dnaJ PE=3 SV=1",
+      "source_url": "https://www.uniprot.org/uniprotkb/P78004/entry",
+      "alphabet": "dayhoff",
+      "shared_hashes": 2,
+      "query_hashes": 8,
+      "containment": 0.25,
+      "pfam": [
+        {
+          "id": "PF00226",
+          "name": "DnaJ domain",
+          "short_name": "DnaJ",
+          "pfam2go": []
+        },
+        {
+          "id": "PF01556",
+          "name": "DnaJ C terminal domain",
+          "short_name": "DnaJ_C",
+          "pfam2go": []
+        },
+        {
+          "id": "PF00684",
+          "name": "DnaJ central domain",
+          "short_name": "DnaJ_CXXCXGXG",
+          "pfam2go": [
+            {
+              "id": "GO:0031072",
+              "term": "heat shock protein binding"
+            }
+          ]
+        }
+      ],
+      "go": [
+        {
+          "id": "GO:0005737",
+          "term": "C:cytoplasm",
+          "evidence": "IEA:UniProtKB-SubCell"
+        },
+        {
+          "id": "GO:0005524",
+          "term": "F:ATP binding",
+          "evidence": "IEA:InterPro"
+        },
+        {
+          "id": "GO:0031072",
+          "term": "F:heat shock protein binding",
+          "evidence": "IEA:InterPro"
+        },
+        {
+          "id": "GO:0008270",
+          "term": "F:zinc ion binding",
+          "evidence": "IEA:UniProtKB-UniRule"
+        },
+        {
+          "id": "GO:0042026",
+          "term": "P:protein refolding",
+          "evidence": "IEA:TreeGrafter"
+        },
+        {
+          "id": "GO:0009408",
+          "term": "P:response to heat",
+          "evidence": "IEA:InterPro"
+        }
+      ],
+      "interpro": [
+        {
+          "id": "IPR012724",
+          "name": "DnaJ"
+        },
+        {
+          "id": "IPR002939",
+          "name": "DnaJ_C"
+        },
+        {
+          "id": "IPR001623",
+          "name": "DnaJ_domain"
+        },
+        {
+          "id": "IPR018253",
+          "name": "DnaJ_domain_CS"
+        },
+        {
+          "id": "IPR008971",
+          "name": "HSP40/DnaJ_pept-bd"
+        },
+        {
+          "id": "IPR001305",
+          "name": "HSP_DnaJ_Cys-rich_dom"
+        },
+        {
+          "id": "IPR036410",
+          "name": "HSP_DnaJ_Cys-rich_dom_sf"
+        },
+        {
+          "id": "IPR036869",
+          "name": "J_dom_sf"
+        }
+      ],
+      "annotation_source": "https://rest.uniprot.org/uniprotkb/P78004.json"
+    },
+    {
+      "record_id": "SWP0563175",
+      "accession": "O94317",
+      "protein": "Uncharacterized serine-rich protein C215.13",
+      "gene": "SPBC215.13",
+      "species": "Schizosaccharomyces pombe (strain 972 / ATCC 24843)",
+      "taxonomy_id": "284812",
+      "description": "sp|O94317|YH5D_SCHPO Uncharacterized serine-rich protein C215.13 OS=Schizosaccharomyces pombe (strain 972 / ATCC 24843) OX=284812 GN=SPBC215.13 PE=1 SV=1",
+      "source_url": "https://www.uniprot.org/uniprotkb/O94317/entry",
+      "alphabet": "dayhoff",
+      "shared_hashes": 2,
+      "query_hashes": 8,
+      "containment": 0.25,
+      "pfam": [],
+      "go": [
+        {
+          "id": "GO:0005783",
+          "term": "C:endoplasmic reticulum",
+          "evidence": "IEA:UniProtKB-SubCell"
+        },
+        {
+          "id": "GO:0009897",
+          "term": "C:external side of plasma membrane",
+          "evidence": "TAS:PomBase"
+        }
+      ],
+      "interpro": [],
+      "annotation_source": "https://rest.uniprot.org/uniprotkb/O94317.json"
+    },
+    {
+      "record_id": "SWP0081374",
+      "accession": "Q0V9M0",
+      "protein": "Cartilage acidic protein 1",
+      "gene": "crtac1",
+      "species": "Xenopus tropicalis",
+      "taxonomy_id": "8364",
+      "description": "sp|Q0V9M0|CRAC1_XENTR Cartilage acidic protein 1 OS=Xenopus tropicalis OX=8364 GN=crtac1 PE=2 SV=2",
+      "source_url": "https://www.uniprot.org/uniprotkb/Q0V9M0/entry",
+      "alphabet": "hp",
+      "shared_hashes": 2,
+      "query_hashes": 9,
+      "containment": 0.2222222222222222,
+      "pfam": [
+        {
+          "id": "PF07645",
+          "name": "Calcium-binding EGF domain",
+          "short_name": "EGF_CA",
+          "pfam2go": []
+        },
+        {
+          "id": "PF13517",
+          "name": "FG-GAP-like repeat",
+          "short_name": "FG-GAP_3",
+          "pfam2go": []
+        },
+        {
+          "id": "PF07593",
+          "name": "ASPIC and UnbV",
+          "short_name": "UnbV_ASPIC",
+          "pfam2go": []
+        }
+      ],
+      "go": [
+        {
+          "id": "GO:0005509",
+          "term": "F:calcium ion binding",
+          "evidence": "IEA:InterPro"
+        },
+        {
+          "id": "GO:0007413",
+          "term": "P:axonal fasciculation",
+          "evidence": "IBA:GO_Central"
+        }
+      ],
+      "interpro": [
+        {
+          "id": "IPR027039",
+          "name": "Crtac1"
+        },
+        {
+          "id": "IPR001881",
+          "name": "EGF-like_Ca-bd_dom"
+        },
+        {
+          "id": "IPR018097",
+          "name": "EGF_Ca-bd_CS"
+        },
+        {
+          "id": "IPR013517",
+          "name": "FG-GAP"
+        },
+        {
+          "id": "IPR028994",
+          "name": "Integrin_alpha_N"
+        },
+        {
+          "id": "IPR049883",
+          "name": "NOTCH1_EGF-like"
+        },
+        {
+          "id": "IPR011519",
+          "name": "UnbV_ASPIC"
+        }
+      ],
+      "annotation_source": "https://rest.uniprot.org/uniprotkb/Q0V9M0.json"
+    }
+  ],
+  "annotation_scope": "Domains and GO annotations belong to the complete reference protein. No peptide-to-domain localization or direct Pfam hit on PEP000938 has been validated.",
+  "retrieved_at": "2026-10-24T17:53:37.519191+00:00",
+  "sources": {
+    "uniprot/Q9Z808.json": "2a29c75ada5cf92afb0958ce75be94505bc45fd08ead44e77c4de75a3702282b",
+    "uniprot/B3BM48.json": "677de0faca67270e3cbe49a32bcc765da721b2aaf900eb66c93a928772b6f032",
+    "uniprot/O00560.json": "259706e8d4896669f5ba9ddeb56bf76bbefbaccc9dcb44a2bff259ca05fc2f60",
+    "uniprot/O84423.json": "4ab2c735e1ba0a88e52fefb66e97bc56ca05d1cf45f5f79c55cb24b475f17814",
+    "uniprot/Q9K0V0.json": "31362e4e6b7b0405c7bc5d21c59e590fcf22c7897b7cf0d2f0fdc97b89528a66",
+    "uniprot/P0C7A3.json": "c7d51721541a8a2fd4aab43017175733cd96e162949df0042c0a9a181cbd31b7",
+    "uniprot/O94317.json": "b2ba9602521d3dd47062e7c465696eebf73e8526b07eb9b111820fa6f55da217",
+    "uniprot/Q9PJX7.json": "23d0bfb23d780bd812b8c9b7c929db5ad5f552095be24aeb1f2800089cb50d77",
+    "uniprot/Q0V9M0.json": "c08990d35073fc9628b1e71a85914d144c151a46ef4b284010476f374e375239",
+    "uniprot/Q3YL96.json": "1a17999a1ef41413c2a21160e114e2f5944e97d6f98b049b5c57ba7adc1c5a86",
+    "uniprot/B0B7Y8.json": "b02141b21b6996734eac41ac8b5d9cef743c85610321face4c4f2950690c6a76",
+    "uniprot/P78004.json": "2c4818a81e953bdbcbe88ce72f0037c16c4b5a06041df5608258eab3a72f5e76",
+    "uniprot/B0BC53.json": "ebe529a95e2f89c053d0c8255b08016b5fb310240878b76ebac955d511b717d6",
+    "uniprot/Q3KLT5.json": "b20cb4651634f2245e5bd8ba704a643cf4c6a374c01f017f11ca18e58be66d12",
+    "uniprot/Q70LM7.json": "449ee5c8f922a1da53d461928f6a4716fd51e0ec7eaf882faeeb512d9df7c7d7",
+    "pfam/PF07645.json": "daa2eec3b1ddf657bec91e986d18c1e66371427fde11faed77e0e98b42def701",
+    "pfam/PF13332.json": "1477a5cf6460c2ff09ba7b58f420dea074c67ac093200a62abaa89a45049cce7",
+    "pfam/PF00226.json": "1d80f37013175533be153922ad22f910c8c07137e54cbba770852e7399923e3e",
+    "pfam/PF04829.json": "7f4f5b11fbbfcbc98e260a90c0049a4d56cc9a0d438596f5f264c7a40710eb4b",
+    "pfam/PF07593.json": "49c18afb87d5c418530f62fb06c2163ae582165bfcf16f47c62f99b273d74587",
+    "pfam/PF00684.json": "380b8f07e3347868829ad4a606dc6d0781ebd0c2fa909e792ab011ba4ece5707",
+    "pfam/PF01298.json": "4202d431aaae54e208eb730fb0afbd8d9bdee697bc151ab33f5da438ac14aabe",
+    "pfam/PF00501.json": "744a96ec4b05bd0878b4fbc084036b6d4154e259a24f6d61212840f1017c726b",
+    "pfam/PF00595.json": "fe0d1c5288f397bdca8f7cf2e0e73bd9ce45a3d8ace4498eab295951dbc3d86e",
+    "pfam/PF17483.json": "1e6bf5b8e5939ac9ce68ebfa43a9fbdaf6bd85770bd87e97cf8a98db37c6ff23",
+    "pfam/PF01018.json": "a3b277ccd1fc012ba4ecd36fac9a835ce1932fb3a04b68b968331f5edb69b0bb",
+    "pfam/PF01556.json": "dcd82fdd9035a2ff045e4087566dd021e3f453025b5f0e545583b7a091b95086",
+    "pfam/PF00668.json": "36d177dcc233832cf08dc0adeda6ecf9572396153c62a8b992eb23b56ec02b93",
+    "pfam/PF01926.json": "14463b63f8fbffaae7a382cd2cc50bbd2b322527cfb6858addaeef2a3bf23fd6",
+    "pfam/PF00550.json": "7176f9f8869bac6cfbc13d039234c639625f4f3745ac93d115b6eb5297cb433a",
+    "pfam/PF13517.json": "ff145612c3f2f0e95314c76a39e0225723472009ca3bc01a19cda8f277dd541d",
+    "pfam/PF13193.json": "e22af85e3dd6e28ea86b90a2b5c411c2228ec485fefdc3ffc250961af2ef55f3",
+    "pfam/PF17484.json": "6a949abb12755deba891edd78e1ed95da5f2ce44db03234d557a99f0b22c0685",
+    "pfam/PF00551.json": "df722d98fc2388b3f29bda4474c1ade1064ad54654a05024d2b24c8e11d67a67",
+    "pfam/PF03062.json": "3ccc30c27bf2948c6d60567709477fc13b23e435569824051f0530c763018695",
+    "pfam/PF05860.json": "1c0573ca3355b9701f1fc8a10c11ca0cc8adea2141e88e19b3701cb4e59b7097"
+  },
+  "pfam2go_source": "https://current.geneontology.org/ontology/external2go/pfam2go",
+  "pfam2go_sha256": "30274dd59c468d70f985dc426abd3c6c43d516e7aff6ba6f00ea1eec242ddfeb",
+  "peptide_fasta_sha256": "818b39d3353ef23bd596ed7c636ddca4dd5f6e24579eefc16b2d544df1047d71"
+}

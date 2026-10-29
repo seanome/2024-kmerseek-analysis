@@ -1,0 +1,63 @@
+%%metro title: 2. Sourmash is the primary protein search — full-depth stage pending
+%%metro style: nfcore
+%%metro legend: tl
+%%metro line: primary | Primary protein retrieval | #206E82
+%%metro line: followup | Follow-up evidence only | #b15c16
+%%metro file: dna | FASTA | DNA extensions
+%%metro file: peptide | FASTA | Peptide fragments; not complete proteins
+%%metro file: member | TSV | Peptide-to-DNA coordinates
+%%metro file: bot | FASTA | Original Botryllus reference proteins
+%%metro file: swiss | FASTA.gz | Reviewed Swiss-Prot reference proteins
+%%metro file: sig | SIG.zip | Swiss-Prot scaled 5; Botryllus scaled 5, 10, 100
+%%metro file: hits | CSV | Sourmash containment matches
+%%metro file: evidence | TSV | Match evidence, ties, empty queries
+%%metro file: diamond | TSV | DIAMOND alignments
+%%metro file: pfam | DOMTBL | HMMER / Pfam domain matches
+%%metro file: map | TSV | Explicit masked reference positions
+%%metro file: botcopy | FASTA | Same original Botryllus proteins
+
+graph LR
+ subgraph translate [DNA to peptides]
+  dna[ ]
+  tr[Six-frame translation / split stops / minimum 20 aa]
+  peptide[ ]
+  member[ ]
+  dna -->|primary| tr
+  tr -->|primary| peptide
+  tr -->|primary| member
+ end
+ subgraph sketch [Matching query and reference settings]
+  bot[ ]
+  swiss[ ]
+  sk[Sourmash 4.9.4 / protein k7 / Dayhoff k12 / HP k30]
+  sig[ ]
+  bot -->|primary| sk
+  swiss -->|primary| sk
+  sk -->|primary| sig
+ end
+ subgraph search [Protein retrieval]
+  ss[Sourmash / Branchwater 0.9.15 manysearch]
+  hits[ ]
+  ev[Validate sampled hashes / preserve no hits]
+  evidence[ ]
+  ss -->|primary| hits
+  hits -->|primary| ev
+  ev -->|primary| evidence
+ end
+ subgraph annotation [Separate follow-up evidence]
+  botcopy[ ]
+  mask[Search copy only / unsupported residue to X]
+  botcopy -->|followup| mask
+  map[ ]
+  al[DIAMOND 2.1.23]
+  hm[HMMER 3.4 / Pfam]
+  diamond[ ]
+  pfam[ ]
+  mask -->|followup| map
+  mask -->|followup| al
+  mask -->|followup| hm
+  al -->|followup| diamond
+  hm -->|followup| pfam
+ end
+ peptide -->|primary| sk
+ sig -->|primary| ss

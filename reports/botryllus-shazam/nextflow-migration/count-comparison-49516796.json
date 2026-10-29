@@ -1,0 +1,96 @@
+{
+  "software_fixture": true,
+  "previous_fixture": "/scratch/users/olgabot/botryllus-nextflow-fixture-49514880",
+  "libraries": [
+    {
+      "run": "S00C",
+      "canonical_kmers": 29399,
+      "counts_identical": true
+    },
+    {
+      "run": "S00T",
+      "canonical_kmers": 29328,
+      "counts_identical": true
+    },
+    {
+      "run": "S01C",
+      "canonical_kmers": 29395,
+      "counts_identical": true
+    },
+    {
+      "run": "S01T",
+      "canonical_kmers": 29464,
+      "counts_identical": true
+    },
+    {
+      "run": "S02C",
+      "canonical_kmers": 29296,
+      "counts_identical": true
+    },
+    {
+      "run": "S02T",
+      "canonical_kmers": 29311,
+      "counts_identical": true
+    },
+    {
+      "run": "S10C",
+      "canonical_kmers": 29302,
+      "counts_identical": true
+    },
+    {
+      "run": "S10T",
+      "canonical_kmers": 29375,
+      "counts_identical": true
+    },
+    {
+      "run": "S11C",
+      "canonical_kmers": 29411,
+      "counts_identical": true
+    },
+    {
+      "run": "S11T",
+      "canonical_kmers": 29339,
+      "counts_identical": true
+    },
+    {
+      "run": "S12C",
+      "canonical_kmers": 29350,
+      "counts_identical": true
+    },
+    {
+      "run": "S12T",
+      "canonical_kmers": 29362,
+      "counts_identical": true
+    },
+    {
+      "run": "S20C",
+      "canonical_kmers": 29409,
+      "counts_identical": true
+    },
+    {
+      "run": "S20T",
+      "canonical_kmers": 29275,
+      "counts_identical": true
+    },
+    {
+      "run": "S21C",
+      "canonical_kmers": 29372,
+      "counts_identical": true
+    },
+    {
+      "run": "S21T",
+      "canonical_kmers": 29458,
+      "counts_identical": true
+    },
+    {
+      "run": "S22C",
+      "canonical_kmers": 29390,
+      "counts_identical": true
+    },
+    {
+      "run": "S22T",
+      "canonical_kmers": 29402,
+      "counts_identical": true
+    }
+  ]
+}

@@ -1,0 +1,65 @@
+[
+  {
+    "alphabet": "protein",
+    "scaled": 5,
+    "manifest_records": 575748,
+    "empty_reference_sketches": 1211,
+    "bytes": 874788502
+  },
+  {
+    "alphabet": "protein",
+    "scaled": 10,
+    "manifest_records": 575748,
+    "empty_reference_sketches": 2523,
+    "bytes": 659431103
+  },
+  {
+    "alphabet": "protein",
+    "scaled": 100,
+    "manifest_records": 575748,
+    "empty_reference_sketches": 76819,
+    "bytes": 463355556
+  },
+  {
+    "alphabet": "dayhoff",
+    "scaled": 5,
+    "manifest_records": 575748,
+    "empty_reference_sketches": 2642,
+    "bytes": 869142809
+  },
+  {
+    "alphabet": "dayhoff",
+    "scaled": 10,
+    "manifest_records": 575748,
+    "empty_reference_sketches": 4166,
+    "bytes": 657751419
+  },
+  {
+    "alphabet": "dayhoff",
+    "scaled": 100,
+    "manifest_records": 575748,
+    "empty_reference_sketches": 80738,
+    "bytes": 464732137
+  },
+  {
+    "alphabet": "hp",
+    "scaled": 5,
+    "manifest_records": 575748,
+    "empty_reference_sketches": 7059,
+    "bytes": 843873013
+  },
+  {
+    "alphabet": "hp",
+    "scaled": 10,
+    "manifest_records": 575748,
+    "empty_reference_sketches": 8928,
+    "bytes": 641774272
+  },
+  {
+    "alphabet": "hp",
+    "scaled": 100,
+    "manifest_records": 575748,
+    "empty_reference_sketches": 96816,
+    "bytes": 458413440
+  }
+]

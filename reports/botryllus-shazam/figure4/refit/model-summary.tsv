@@ -1,0 +1,10 @@
+contrast	scope	libraries_or_units	design	eligible_genes	raw_p_le005_abs_lfc_gt1	padj_le005_abs_lfc_gt1	padj_lt005	missing_p
+paper_group1	published_groups_condition_only_refit	12	~condition	51435	646	0	0	1199
+paper_group2	published_groups_condition_only_refit	12	~condition	53203	816	1	1	2611
+paper_group3	published_groups_condition_only_refit	4	~condition	36366	136	0	0	0
+paper_group4	published_groups_condition_only_refit	8	~condition	25548	94	0	0	141
+paper_group5	published_groups_condition_only_refit	6	~condition	21061	179	11	11	30
+paper_group6	published_groups_condition_only_refit	5	~condition	28033	64	0	0	18
+young_2h	genotype_collection_adjusted	8	~genotype + condition	27509	274	0	0	0
+young_24h	genotype_collection_adjusted	8	~genotype + condition	26219	281	0	0	0
+young_312h	genotype_collection_adjusted	6	~genotype + condition	3619	0	0	0	0

@@ -1,0 +1,68 @@
+{
+  "splash_selection": {
+    "source": "splash/full.after_correction.all_anchors.tsv",
+    "source_sha256": "3784bc08bb4eaeecfda0f594fc35ef0ef8a3ba7c09e61ecb9548a5efc1ed5506",
+    "tested_anchors": 21,
+    "selected_anchors": 21,
+    "rule": "pval_opt_corrected < 0.05",
+    "extension_cap": null,
+    "ordering": "adjusted P, then anchor",
+    "note": "Use the complete after_correction.all_anchors.tsv as the tested population."
+  },
+  "query_sources": {
+    "splash": {
+      "protocol": "six-frame-stop-only-X-min30-v1",
+      "source": "splash",
+      "dna": 72,
+      "peptides": 96
+    },
+    "dekupl": {
+      "protocol": "six-frame-stop-only-X-min30-v1",
+      "source": "dekupl",
+      "dna": 0,
+      "peptides": 0
+    }
+  },
+  "software_fixture": true,
+  "canonical_kmers_checked": 29459,
+  "samples": 18,
+  "model_checks": [
+    {
+      "path": "/scratch/users/olgabot/botryllus-nextflow-fixture-49521200/input/results/models/fixture0/genes/result/all-features.tsv.gz",
+      "features": 100,
+      "finite_p": 100,
+      "significant": 0
+    },
+    {
+      "path": "/scratch/users/olgabot/botryllus-nextflow-fixture-49521200/input/results/models/fixture0/kmers/result/all-features.tsv.gz",
+      "features": 29135,
+      "finite_p": 29135,
+      "significant": 0
+    },
+    {
+      "path": "/scratch/users/olgabot/botryllus-nextflow-fixture-49521200/input/results/models/fixture1/genes/result/all-features.tsv.gz",
+      "features": 100,
+      "finite_p": 100,
+      "significant": 0
+    },
+    {
+      "path": "/scratch/users/olgabot/botryllus-nextflow-fixture-49521200/input/results/models/fixture1/kmers/result/all-features.tsv.gz",
+      "features": 29079,
+      "finite_p": 29079,
+      "significant": 0
+    },
+    {
+      "path": "/scratch/users/olgabot/botryllus-nextflow-fixture-49521200/input/results/models/fixture2/genes/result/all-features.tsv.gz",
+      "features": 100,
+      "finite_p": 100,
+      "significant": 0
+    },
+    {
+      "path": "/scratch/users/olgabot/botryllus-nextflow-fixture-49521200/input/results/models/fixture2/kmers/result/all-features.tsv.gz",
+      "features": 29116,
+      "finite_p": 29116,
+      "significant": 0
+    }
+  ],
+  "gene_evidence_rows": 100
+}

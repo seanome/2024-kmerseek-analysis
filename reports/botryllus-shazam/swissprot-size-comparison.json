@@ -1,0 +1,86 @@
+{
+  "source": "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/references/uniprot_sprot.fasta.gz",
+  "source_sha256": "a9c3496aa727e61d25d9e1291c9ba28d2c2ad19c0e26569dc083d53ec4169536",
+  "reference_records": 575748,
+  "raw_fasta_bytes": 288201213,
+  "raw_fasta_sha256": "1372f18e218d761027616bf17479bcf450b30314fc0a8095fcb0e97e85d6ecf9",
+  "download_fasta_gz_bytes": 93801562,
+  "settings": [
+    {
+      "alphabet": "protein",
+      "ksize_aa": 7,
+      "scaled": 5,
+      "bytes": 874788502,
+      "path": "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/primary-search-pilot-20261023/swissprot.protein.scaled5.sig.zip",
+      "sha256": "ad1f60706aa465423483e301f5d2fb5cc6e4da327d6aa5bc229f8456d4885f7c"
+    },
+    {
+      "alphabet": "protein",
+      "ksize_aa": 7,
+      "scaled": 10,
+      "bytes": 659431103,
+      "path": "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/swissprot-size-comparison-20261023/swissprot.protein.scaled10.sig.zip",
+      "sha256": "83f42fb1512f1dad6176fd13000c6fd4856a6edd40582e601bb5be2e35afdfae"
+    },
+    {
+      "alphabet": "protein",
+      "ksize_aa": 7,
+      "scaled": 100,
+      "bytes": 463355556,
+      "path": "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/swissprot-size-comparison-20261023/swissprot.protein.scaled100.sig.zip",
+      "sha256": "cbcd146a36f504d5fe62d6b59b27ea2db4d625294d2b7629360571e4bdf716d7"
+    },
+    {
+      "alphabet": "dayhoff",
+      "ksize_aa": 12,
+      "scaled": 5,
+      "bytes": 869142809,
+      "path": "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/primary-search-pilot-20261023/swissprot.dayhoff.scaled5.sig.zip",
+      "sha256": "b99a5dac5f448b9539d6d5842733e8d2df4780242f900ba71a13c1abc07ef776"
+    },
+    {
+      "alphabet": "dayhoff",
+      "ksize_aa": 12,
+      "scaled": 10,
+      "bytes": 657751419,
+      "path": "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/swissprot-size-comparison-20261023/swissprot.dayhoff.scaled10.sig.zip",
+      "sha256": "69880d04f2b41d24e488a0df791a871b40a3fb745fcca2721f11793814c62bce"
+    },
+    {
+      "alphabet": "dayhoff",
+      "ksize_aa": 12,
+      "scaled": 100,
+      "bytes": 464732137,
+      "path": "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/swissprot-size-comparison-20261023/swissprot.dayhoff.scaled100.sig.zip",
+      "sha256": "37b8045107f7d09a1e40d63eb71af3a8cc049fa3683e8e96eeb22d0594c3bcfc"
+    },
+    {
+      "alphabet": "hp",
+      "ksize_aa": 30,
+      "scaled": 5,
+      "bytes": 843873013,
+      "path": "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/primary-search-pilot-20261023/swissprot.hp.scaled5.sig.zip",
+      "sha256": "796414f6df9fcc3bfd137c880edfd64cf1a80922d789d5a862566e1548589ba5"
+    },
+    {
+      "alphabet": "hp",
+      "ksize_aa": 30,
+      "scaled": 10,
+      "bytes": 641774272,
+      "path": "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/swissprot-size-comparison-20261023/swissprot.hp.scaled10.sig.zip",
+      "sha256": "42a5811b51917f770a2f3cd8123fd29830a1a4ea5e7a736f05e52949ba6833f9"
+    },
+    {
+      "alphabet": "hp",
+      "ksize_aa": 30,
+      "scaled": 100,
+      "bytes": 458413440,
+      "path": "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/swissprot-size-comparison-20261023/swissprot.hp.scaled100.sig.zip",
+      "sha256": "e93d88d1754e74f42a2ae1e2c3c1efbbdca2f61207eb58c484a376aaa9897318"
+    }
+  ],
+  "sourmash": "4.9.4",
+  "branchwater": "0.9.15",
+  "scope": "Same 575748 Swiss-Prot records; exact full-record sequence and header maps in primary-search-pilot-20261023; separate search copy masks unsupported residues as X; per-record ZIP sketch collection sizes, excludes searchable indexes.",
+  "note": "Scaled 10 and 100 are measurements for storage comparison; production Swiss-Prot searches remain scaled 5."
+}
