@@ -1,0 +1,15 @@
+step	count
+Swiss-Prot entries	575748
+entries with only the 20 standard residues	573063
+Swiss-Prot SIGNAL/TRANSIT/TRANSMEM, ECO:0000269, < 60 aa	9117
+ELM instances read	4006
+ELM instance not on a Swiss-Prot entry	329
+ELM instances kept	3677
+human proteins with a feature	2357
+microbial proteins with a feature	1020
+real queries	2000
+chimeras	500
+chimera degron inserts	177
+chimera signal-peptide inserts	323
+human chimera host candidates	13226
+microbial chimera host candidates	310401
