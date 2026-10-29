@@ -53,7 +53,9 @@ def main() -> None:
         row.update({key: first[key] for key in KEEP})
         rows.append(row)
     if not rows:
-        sys.exit(f"no ka_survival.C*.csv with a fit row under {store}; check the KA store path")
+        sys.exit(
+            f"no ka_survival.C*.csv with a fit row under {store}; check the KA store path"
+        )
     with open(out, "w", newline="") as fh:
         writer = csv.DictWriter(fh, fieldnames=list(rows[0]), delimiter="\t")
         writer.writeheader()

@@ -31,7 +31,8 @@ def test_massspec18_merges_only_il_and_qk():
 
 
 @pytest.mark.skipif(
-    not (KMERSEEK / "src/rust/alphabets.rs").exists(), reason="no kmerseek checkout: set KMERSEEK_DIR to run this drift check"
+    not (KMERSEEK / "src/rust/alphabets.rs").exists(),
+    reason="no kmerseek checkout: set KMERSEEK_DIR to run this drift check",
 )
 def test_cluster_lists_match_kmerseek_source():
     """Every multi-letter cluster list equals the one in kmerseek's alphabets.rs."""
