@@ -53,8 +53,8 @@ reached 173 of the 20,448 (`botryllus_kmerseek_dark_gain.json`); those 173 are s
   SRR32233947, holds 278. They are kept, as the paper lists them.
 - Domen et al. also list eight human and mouse GEO series from their exercise comparison.
   The plan copies only SRA and BioProject accessions from the paper, so those are not in
-  `runs.tsv` unless MetaMEx Table 2 also lists them. Three are in Table 2 (GSE27536,
-  GSE99963, GSE28998, all arrays); GSE104079, GSE120862, GSE83578, GSE111555 and
+  `runs.tsv` unless MetaMEx Table 2 also lists them. Three are in Table 2. Two
+  of them are arrays (GSE27536, GSE28998). GSE99963 is RNA-seq and its 28 runs are in `runs.tsv`. GSE104079, GSE120862, GSE83578, GSE111555 and
   GSE144304 are not.
 
 ## Sizing tests on Sherlock, 2026-10-27
