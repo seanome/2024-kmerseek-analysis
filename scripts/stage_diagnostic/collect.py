@@ -76,8 +76,6 @@ def run(job_dir: Path, results: Path, cfg: dict) -> None:
     frames, cost = [], []
     for row in params.iter_rows(named=True):
         out = job_dir / "out" / row["dataset"] / row["setting"] / f"s{row['scaled']}"
-        if row["dataset"] == "fixtures":
-            out = job_dir / "out" / "fixtures" / row["setting"] / f"s{row['scaled']}"
         t = _read_time(out / f"{row['step']}.time")
         err = (
             (out / f"{row['step']}.stderr").read_text()
@@ -87,7 +85,11 @@ def run(job_dir: Path, results: Path, cfg: dict) -> None:
         cost.append(
             dict(
                 **row, **t, kmerseek_git_sha=sha,
-                ka_fit_refused="no Karlin-Altschul fit" in err or "refus" in err.lower(),
+                ka_fit_refused=any(
+                    "no Karlin-Altschul fit" in line
+                    or ("refus" in line.lower() and "karlin" in line.lower())
+                    for line in err.splitlines()
+                ),
                 stderr_tail=" | ".join(err.strip().splitlines()[-3:])[:500],
             )
         )  # fmt: skip
@@ -101,7 +103,9 @@ def run(job_dir: Path, results: Path, cfg: dict) -> None:
                     scaled=pl.lit(int(row["scaled"])), kind=pl.lit(row["step"]),
                 )
             )  # fmt: skip
-    pl.concat(frames, how="diagonal_relaxed").write_parquet(results / "kmerseek_pairs.parquet")
     pl.DataFrame(cost).write_csv(results / "kmerseek_cost.tsv", separator="\t")
+    if not frames:
+        raise SystemExit(f"no kmerseek search output found under {job_dir / 'out'}; check the job logs")
+    pl.concat(frames, how="diagonal_relaxed").write_parquet(results / "kmerseek_pairs.parquet")
     shutil.copyfile(job_dir / "params.tsv", results / "kmerseek_params.tsv")
     print(f"collected {len(frames)} searches, kmerseek {sha}")
