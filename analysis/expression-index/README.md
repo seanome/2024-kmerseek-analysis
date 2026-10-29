@@ -49,7 +49,7 @@ reached 173 of the 20,448 (`botryllus_kmerseek_dark_gain.json`); those 173 are s
 - The 49 microarray series are not indexed (decided 2026-10-27). They have no reads, and
   the counts fallback is only for controlled-access RNA-seq. Building sketches from their
   expressed genes stays possible later; their GEO matrices are a few MB each.
-- 16 of the 64 *Botryllus* runs hold fewer than 10,000 read pairs. The smallest,
+- 14 of the 64 *Botryllus* runs hold fewer than 10,000 read pairs. The smallest,
   SRR32233947, holds 278. They are kept, as the paper lists them.
 - Domen et al. also list eight human and mouse GEO series from their exercise comparison.
   The plan copies only SRA and BioProject accessions from the paper, so those are not in
