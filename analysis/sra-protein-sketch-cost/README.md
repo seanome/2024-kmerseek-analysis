@@ -132,7 +132,8 @@ oyster and gut files and the mean amino-acid fractions of all three. Compared wi
    hashes of the first 1 M reads, for 24x the bases. SRA storage uses the whole-library
    rate, measured on one RNA-seq library; metagenomes have more distinct sequence and will
    be larger. Logan storage comes from the
-   contig sketches measured directly.
+   contig sketches measured directly on the two large files (oyster and gut); the amino-acid
+   fractions average all three.
 4. **Three Logan runs stand in for 27 million.** Logan's mix of RNA-seq, metagenomes,
    genomes and amplicons will move the amino-acid fractions; (c) and (d) differ most between
    the three runs measured (0.06 to 0.25, and 0.05 to 0.08, per base).
