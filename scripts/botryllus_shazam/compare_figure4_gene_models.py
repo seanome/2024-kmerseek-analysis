@@ -37,7 +37,7 @@ def main():
         p = model.loc[valid, "pvalue"].to_numpy()
         order = np.argsort(p)
         adjusted = np.minimum.accumulate(
-            (p[order] * len(model) / np.arange(1, len(p) + 1))[::-1]
+            (p[order] * len(p) / np.arange(1, len(p) + 1))[::-1]
         )[::-1].clip(0, 1)
         np.testing.assert_allclose(
             model.loc[valid, "padj"].to_numpy()[order], adjusted, rtol=1e-10, atol=1e-12
