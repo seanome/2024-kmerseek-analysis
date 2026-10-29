@@ -958,8 +958,19 @@ def evaluate(workdir: Path) -> dict:
     runtime = runtime_table(workdir)
     runtime.to_csv(res_dir / "runtime.tsv", sep="\t", index=False)
     verdict = decide(prep, res, runtime, scored, cases)
-    (res_dir / "verdict.json").write_text(json.dumps(verdict, indent=2, default=str))
+    (res_dir / "verdict.json").write_text(json.dumps(nan_to_none(verdict), indent=2, default=str, allow_nan=False))
     return verdict
+
+
+def nan_to_none(x):
+    """Replace NaN and infinite floats by None so the JSON is valid (null)."""
+    if isinstance(x, dict):
+        return {k: nan_to_none(v) for k, v in x.items()}
+    if isinstance(x, (list, tuple)):
+        return [nan_to_none(v) for v in x]
+    if isinstance(x, (float, np.floating)) and not math.isfinite(x):
+        return None
+    return x
 
 
 def runtime_table(workdir: Path) -> pd.DataFrame:

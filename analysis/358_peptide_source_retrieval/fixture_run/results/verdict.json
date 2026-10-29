@@ -28,7 +28,7 @@
         0.0
       ],
       "matched_full_method": null,
-      "speedup": NaN,
+      "speedup": null,
       "gain_vanishes_after_verification": false,
       "passes": false
     },
@@ -48,7 +48,7 @@
         0.0
       ],
       "matched_full_method": null,
-      "speedup": NaN,
+      "speedup": null,
       "gain_vanishes_after_verification": false,
       "passes": false
     },
@@ -68,7 +68,7 @@
         0.04245283018867918
       ],
       "matched_full_method": null,
-      "speedup": NaN,
+      "speedup": null,
       "gain_vanishes_after_verification": false,
       "passes": false
     }
