@@ -392,7 +392,11 @@ def cmd_score(args):
             for m in key[r["blind_id"]]:
                 yield_[m].add(r["blind_id"].rsplit("-", 1)[0])
     secs = {
-        m: [float(t["seconds"]) for t in times if t["workflow"] == m]
+        m: [
+            float(t["seconds"])
+            for t in times
+            if t["workflow"] == m and t["seconds"].strip() != ""
+        ]
         for m in ("kmerseek", "comparison")
     }
     med = {m: statistics.median(v) if v else float("nan") for m, v in secs.items()}
@@ -412,7 +416,12 @@ def cmd_score(args):
     )
     complete_timing = all(
         len(secs[m]) == len(qs)
-        and {t["query_number"] for t in times if t["workflow"] == m} == set(qs)
+        and {
+            t["query_number"]
+            for t in times
+            if t["workflow"] == m and t["seconds"].strip() != ""
+        }
+        == set(qs)
         and all(math.isfinite(t) and t >= 0 for t in secs[m])
         for m in ("kmerseek", "comparison")
     )
