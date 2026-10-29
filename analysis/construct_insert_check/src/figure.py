@@ -93,11 +93,12 @@ def draw(results: Path, stem: Path, source: str) -> None:
         score = scores[workflow]
         recall = score["event_recall"]
         clean = score["clean_flag_rate"]
+        # None means not assessed. It is left out, never drawn as 0%.
         rows.append(
             (
                 workflow,
-                0.0 if recall is None else 100 * recall,
-                0.0 if clean is None else 100 * clean,
+                np.nan if recall is None else 100 * recall,
+                np.nan if clean is None else 100 * clean,
             )
         )
     y = np.arange(len(rows))[::-1]
