@@ -62,12 +62,14 @@ summary = dict(
 )
 
 designs = {"pair_condition": ["pair", "condition"], "condition": ["condition"]}
-if (
-    design["genotype"].nunique() > 1
-    and design["genotype"].nunique() < design["pair"].nunique()
-):
+# same partition of samples = the two factors give identical columns, whatever the labels
+same_partition = (
+    design["genotype"].nunique() == design["pair"].nunique()
+    and design.groupby(["genotype", "pair"]).ngroups == design["pair"].nunique()
+)
+if design["genotype"].nunique() > 1 and not same_partition:
     designs["genotype_condition"] = ["genotype", "condition"]
-elif design["genotype"].nunique() == design["pair"].nunique():
+elif same_partition:
     summary["genotype_condition_note"] = (
         "genotype identical to pair here; same fit as pair_condition"
     )
