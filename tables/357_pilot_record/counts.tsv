@@ -1,0 +1,13 @@
+setting	gap	labelling	n_anchors_tested	n_significant
+dayhoff:14	0	real	60364	13972
+dayhoff:14	0	shuffle_random	7530	1
+dayhoff:14	0	shuffle_tree	70827	12918
+dayhoff:14	5	real	60067	12755
+dayhoff:14	5	shuffle_random	7489	2
+dayhoff:14	5	shuffle_tree	70507	11383
+dayhoff:14	10	real	59947	12316
+dayhoff:14	10	shuffle_random	7482	1
+dayhoff:14	10	shuffle_tree	70359	11066
+hp:36	0	real	9086	3660
+hp:36	0	shuffle_random	189	0
+hp:36	0	shuffle_tree	9922	3529
