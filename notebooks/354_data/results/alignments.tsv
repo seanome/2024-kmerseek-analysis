@@ -1,0 +1,740 @@
+call_id	pair	method	target	score	query_start	query_end	target_start	target_end	query_line	match_line	target_line	n_identical	n_columns
+scan462	accepted source		P31327	41	1	8	280	286	KLLEKSDR	|:|| |||	KILE-SDR	6	8
+scan862	accepted source		O75369	79	1	11	837	847	VKVDPSHDASK	|||||||||||	VKVDPSHDASK	11	11
+scan1027	accepted source		Q14643	67	1	9	92	100	LHHAADLEK	|||||||||	LHHAADLEK	9	9
+scan1123	accepted source		Q8TF64	60	1	11	41	51	TQLAHSGPTGK	|||||  ||||	TQLAHGSPTGK	9	11
+scan1136	accepted source		P50914	51	1	7	122	128	LLKNEVK	::|||||	IIKNEVK	5	7
+scan1173	accepted source		O60869	58	3	10	136	143	DLGKPLEK	|:|||:||	DIGKPIEK	6	8
+scan1311	accepted source		P54577	84	1	12	136	147	LSSVVTQHDSKK	||||||||||||	LSSVVTQHDSKK	12	12
+scan2164	accepted source		P61513	47	1	7	7	13	KVGLVGK	|||:|||	KVGIVGK	6	7
+scan2422	accepted source		P61981	73	1	10	153	162	AYSEAHELSK	|||||||:||	AYSEAHEISK	9	10
+scan2509	accepted source		P60709	84	1	11	40	50	HQGVMVGMGQK	|||||||||||	HQGVMVGMGQK	11	11
+scan2509	accepted source		P62736	84	1	11	42	52	HQGVMVGMGQK	|||||||||||	HQGVMVGMGQK	11	11
+scan2509	accepted source		P63261	84	1	11	40	50	HQGVMVGMGQK	|||||||||||	HQGVMVGMGQK	11	11
+scan2509	accepted source		P63267	84	1	11	41	51	HQGVMVGMGQK	|||||||||||	HQGVMVGMGQK	11	11
+scan2509	accepted source		P68032	84	1	11	42	52	HQGVMVGMGQK	|||||||||||	HQGVMVGMGQK	11	11
+scan2509	accepted source		P68133	84	1	11	42	52	HQGVMVGMGQK	|||||||||||	HQGVMVGMGQK	11	11
+scan2509	accepted source		Q562R1	84	1	11	41	51	HQGVMVGMGQK	|||||||||||	HQGVMVGMGQK	11	11
+scan2862	accepted source		P0DMV9	59	1	8	510	517	LSKEELER	|||||:||	LSKEEIER	7	8
+scan2862	accepted source		P34931	59	1	8	512	519	LSKEELER	|||||:||	LSKEEIER	7	8
+scan3347	accepted source		Q9H2M9	54	1	13	1220	1230	VVSAAVQADKGHS	|||||||| : ||	VVSAAVQA-Q-HS	10	13
+scan3384	accepted source		P05787	63	3	10	305	312	TELSEMNR	||:|||||	TEISEMNR	7	8
+scan3464	accepted source		P39687	59	1	8	68	75	KLELSDNR	||||||||	KLELSDNR	8	8
+scan3572	accepted source		P26038	63	1	10	360	370	QA-QELEEQTR	:| ||||||||	KAQQELEEQTR	9	11
+scan3620	accepted source		P31949	27	2	5	25	28	AGKD	||||	AGKD	4	4
+scan3989	accepted source		P04843	82	1	11	537	547	LKTEGSDLCDR	|||||||||||	LKTEGSDLCDR	11	11
+scan4103	accepted source		P62826	47	1	8	30	37	HLTADFEK	|||  |||	HLTGEFEK	6	8
+scan4504	accepted source		Q9Y263	61	1	8	296	303	VFTESEDR	||||||||	VFTESEDR	8	8
+scan4539	accepted source		P52888	56	3	10	629	636	QEGVLNSK	||||||||	QEGVLNSK	8	8
+scan4699	accepted source		Q04637	67	1	9	880	888	LKEELEEAR	|||||||||	LKEELEEAR	9	9
+scan4732	accepted source		Q9BXW7	42	1	6	332	337	ATHDGA	||||||	ATHDGA	6	6
+scan5007	accepted source		Q12846	37	1	5	207	211	HSELQ	|||:|	HSEIQ	4	5
+scan5075	accepted source		P39023	51	1	7	367	373	FLDTTSK	|:|||||	FIDTTSK	6	7
+scan5075	accepted source		Q92901	51	1	7	367	373	FLDTTSK	|:|||||	FIDTTSK	6	7
+scan5099	accepted source		P08621	59	1	9	192	200	LGGGLGGTR	|||||||||	LGGGLGGTR	9	9
+scan5299	accepted source		P30153	45	1	6	267	272	FTELQK	||||||	FTELQK	6	6
+scan5307	accepted source		P68104	73	1	10	21	30	STTTGHLLYK	|||||||:||	STTTGHLIYK	9	10
+scan5307	accepted source		Q05639	73	1	10	21	30	STTTGHLLYK	|||||||:||	STTTGHLIYK	9	10
+scan5307	accepted source		Q5VTE0	73	1	10	21	30	STTTGHLLYK	|||||||:||	STTTGHLIYK	9	10
+scan5511	accepted source		Q99575	53	3	9	373	379	TELPDEK	|||||||	TELPDEK	7	7
+scan5630	accepted source		P35637	43	1	6	366	371	VSFATR	||||||	VSFATR	6	6
+scan5630	accepted source		Q92804	43	1	6	315	320	VSFATR	||||||	VSFATR	6	6
+scan5755	accepted source		P62888	43	3	8	12	17	ESLNSR	||:|||	ESINSR	5	6
+scan5775	accepted source		P60709	48	1	6	285	290	CDVDLR	||||:|	CDVDIR	5	6
+scan5775	accepted source		P63261	48	1	6	285	290	CDVDLR	||||:|	CDVDIR	5	6
+scan5775	accepted source		Q562R1	48	1	6	286	291	CDVDLR	||||:|	CDVDIR	5	6
+scan6007	accepted source		Q8IZL8	62	1	9	49	57	TGSAVAPVH	|||||||||	TGSAVAPVH	9	9
+scan6158	accepted source		P06748	63	1	9	240	248	GPSSVEDLK	|||||||:|	GPSSVEDIK	8	9
+scan6294	accepted source		P31327	59	1	7	936	942	NLHPWVK	|:|||||	NIHPWVK	6	7
+scan6393	accepted source		P61978	89	2	14	23	35	PREDMEEEQAFKR	| |||||||||||	PAEDMEEEQAFKR	12	13
+scan6565	accepted source		P68104	47	1	6	167	172	YEELVK	|||:||	YEEIVK	5	6
+scan6565	accepted source		Q5VTE0	47	1	6	167	172	YEELVK	|||:||	YEEIVK	5	6
+scan6966	accepted source		P09012	69	1	10	61	70	EVSSATNALR	||||||||||	EVSSATNALR	10	10
+scan7143	accepted source		Q8WWI1	91	3	15	1578	1590	TTGVATTQSPTPR	|||||||||||||	TTGVATTQSPTPR	13	13
+scan7210	accepted source		P20073	64	1	8	298	305	CYQSEFGR	||||||||	CYQSEFGR	8	8
+scan7339	accepted source		O00566	106	1	14	485	498	TAEEENPEHVELQK	|||||||||||:||	TAEEENPEHVEIQK	13	14
+scan7442	accepted source		P14866	52	1	7	449	455	LNVCVSK	|||||||	LNVCVSK	7	7
+scan7442	accepted source		Q8WVV9	52	1	7	402	408	LNVCVSK	|||||||	LNVCVSK	7	7
+scan7445	accepted source		Q99615	76	1	11	80	90	EALGDAQQSVR	|||||||||||	EALGDAQQSVR	11	11
+scan7924	accepted source		P04075	76	1	11	332	342	ALANSLACQGK	|||||||||||	ALANSLACQGK	11	11
+scan8335	accepted source		Q14566	80	3	13	316	326	RDEEQTAESLK	|||||||||:|	RDEEQTAESIK	10	11
+scan8453	accepted source		Q13838	69	1	9	164	172	NCPHLVVGT	||||:||||	NCPHIVVGT	8	9
+scan8577	accepted source		P09496	64	1	9	121	129	LEALDANSR	|||||||||	LEALDANSR	9	9
+scan8677	accepted source		Q9BVL2	50	1	7	321	327	NAELALR	|||:|||	NAEIALR	6	7
+scan8928	accepted source		P57721	60	1	8	79	86	LNLSEGNC	:|:|||||	INISEGNC	6	8
+scan8928	accepted source		Q15365	60	1	8	47	54	LNLSEGNC	:|:|||||	INISEGNC	6	8
+scan8928	accepted source		Q15366	60	1	8	47	54	LNLSEGNC	:|:|||||	INISEGNC	6	8
+scan9394	accepted source		P05787	100	1	13	402	414	LESGMQNMSLHTK	|||||||||:|||	LESGMQNMSIHTK	12	13
+scan9592	accepted source		P26038	77	1	10	439	448	ESEAVEWQQK	||||||||||	ESEAVEWQQK	10	10
+scan9763	accepted source		O75390	81	1	11	341	351	VVPGYGHAVLR	|||||||||||	VVPGYGHAVLR	11	11
+scan9857	accepted source		O15427	95	1	13	416	428	EPQPEVAAAEEEK	|||||||||||||	EPQPEVAAAEEEK	13	13
+scan9878	accepted source		P34897	22	6	8	180	182	VQR	|:|	VKR	2	3
+scan9895	accepted source		P78527	40	1	5	2004	2008	YLELR	|:|:|	YIEIR	3	5
+scan9895	accepted source		Q9HAV4	40	1	5	1108	1112	YLELR	|||:|	YLEIR	4	5
+scan10008	accepted source		Q02218	62	1	8	565	572	LCEEAFAR	:|||||||	ICEEAFAR	7	8
+scan10303	accepted source		P18124	70	1	12	77	88	KANGFYVPAEPK	||  ||||||||	KAGNFYVPAEPK	10	12
+scan10413	accepted source		P31930	37	1	5	166	170	DVLLR	||:||	DVILR	4	5
+scan10427	accepted source		Q13423	41	1	6	763	768	LQGLLK	||||||	LQGLLK	6	6
+scan10427	accepted source		Q96A00	41	1	6	93	98	LQGLLK	:|||||	IQGLLK	5	6
+scan10449	accepted source		Q9P2J5	55	1	7	237	243	YTLYSPK	||:||||	YTIYSPK	6	7
+scan10582	accepted source		Q9NR30	63	1	8	517	524	DVESYLHR	|||||:||	DVESYIHR	7	8
+scan10599	accepted source		P49748	44	3	8	106	111	VEPVSR	||||||	VEPVSR	6	6
+scan10673	accepted source		Q02252	34	3	7	258	262	SFVGS	|||||	SFVGS	5	5
+scan10787	accepted source		P05198	76	1	10	114	123	HVAEVLEYTK	||||||||||	HVAEVLEYTK	10	10
+scan10863	accepted source		P05141	39	1	7	201	206	MGLPDPK	| |||||	M-LPDPK	6	7
+scan10863	accepted source		P12235	39	1	7	201	206	MGLPDPK	| |||||	M-LPDPK	6	7
+scan10863	accepted source		P12236	39	1	7	201	206	MGLPDPK	| |||||	M-LPDPK	6	7
+scan10918	accepted source		O43809	90	1	12	24	35	YLQQTKPLTLER	|:||||||||||	YIQQTKPLTLER	11	12
+scan11135	accepted source		P50914	87	1	12	12	23	VAYVSFGPHAGK	||||||||||||	VAYVSFGPHAGK	12	12
+scan11155	accepted source		P78527	37	1	8	1728	1735	EFPPTGPR	||||  ||	EFPPGTPR	6	8
+scan11185	accepted source		O75369	52	1	8	1426	1433	LAGPGLGS	:|||||||	IAGPGLGS	7	8
+scan11262	accepted source		P21291	92	1	15	66	84	YG----GYGQGAGTLSTDK	||    |||||||||||||	YGPKGYGYGQGAGTLSTDK	15	19
+scan11419	accepted source		P02545	79	1	11	79	89	AAYEAELGDAR	|||||||||||	AAYEAELGDAR	11	11
+scan11514	accepted source		Q96HS1	49	3	9	128	134	AELTGLR	|||||||	AELTGLR	7	7
+scan11758	accepted source		P08754	73	1	10	133	142	DGGVQACFSR	||||||||||	DGGVQACFSR	10	10
+scan12180	accepted source		P0CG47	42	1	6	43	48	LLFAGK	|:||||	LIFAGK	5	6
+scan12180	accepted source		P0CG48	42	1	6	43	48	LLFAGK	|:||||	LIFAGK	5	6
+scan12180	accepted source		P62979	42	1	6	43	48	LLFAGK	|:||||	LIFAGK	5	6
+scan12180	accepted source		P62987	42	1	6	43	48	LLFAGK	|:||||	LIFAGK	5	6
+scan12665	accepted source		P07910	45	2	7	145	150	PPPPLA	||||:|	PPPPIA	5	6
+scan12681	accepted source		P11142	62	1	11	128	137	KEMLAEAYLGK	|| :|||||||	KE-IAEAYLGK	9	11
+scan13009	accepted source		P35659	65	1	9	76	84	EPFTLAQGK	||||:||||	EPFTIAQGK	8	9
+scan13188	accepted source		Q9NY33	29	3	6	574	577	VLLR	|:||	VILR	3	4
+scan13254	accepted source		P38646	120	1	15	596	610	MEEFKDQLPADECNK	|||||||||||||||	MEEFKDQLPADECNK	15	15
+scan13264	accepted source		P67809	81	8	19	126	137	TGPGGVPVQGSK	||||||||||||	TGPGGVPVQGSK	12	12
+scan13291	accepted source		P53621	85	1	12	171	182	NLSPGAVESDVR	||||||||||||	NLSPGAVESDVR	12	12
+scan13354	accepted source		Q9Y2T3	74	1	10	436	445	NLEEVYVGGK	|:||||||||	NIEEVYVGGK	9	10
+scan13458	accepted source		Q96PK6	125	3	24	520	541	SSAVTAASYAAQQHPQAAASYR	|||  |||||||||||||||||	SSASLAASYAAQQHPQAAASYR	20	22
+scan13581	accepted source		P68431	50	1	7	58	64	STELLLR	|||||:|	STELLIR	6	7
+scan13581	accepted source		P84243	50	1	7	58	64	STELLLR	|||||:|	STELLIR	6	7
+scan13581	accepted source		Q16695	50	1	7	58	64	STELLLR	|||||:|	STELLIR	6	7
+scan13581	accepted source		Q6NXT2	50	1	7	57	63	STELLLR	|||||:|	STELLIR	6	7
+scan13581	accepted source		Q71DI3	50	1	7	58	64	STELLLR	|||||:|	STELLIR	6	7
+scan13939	accepted source		P30405	43	1	6	62	67	VVLELK	||||||	VVLELK	6	6
+scan13939	accepted source		Q6BAA4	43	1	6	388	393	VVLELK	||||||	VVLELK	6	6
+scan14187	accepted source		P47712	35	3	7	591	595	LLAEK	|||||	LLAEK	5	5
+scan14211	accepted source		P49589	45	1	6	413	418	NFLTLK	||:|:|	NFITIK	4	6
+scan14242	accepted source		O14548	95	1	13	45	57	LTSDSTVYDYAGK	|||||||||||||	LTSDSTVYDYAGK	13	13
+scan14754	accepted source		Q13409	101	1	14	42	55	EAVAPVQEESDLEK	||||||||||||||	EAVAPVQEESDLEK	14	14
+scan14784	accepted source		Q07955	78	1	10	29	38	TKDLEDVFYK	|||:||||||	TKDIEDVFYK	9	10
+scan14895	accepted source		P23526	83	1	12	215	226	VAVVAGYGDVGK	||||||||||||	VAVVAGYGDVGK	12	12
+scan14965	accepted source		Q86VI4	60	1	7	94	100	MVAPWTR	|||||||	MVAPWTR	7	7
+scan15220	accepted source		P11142	88	1	14	328	342	QS-LHDLVLVGGSTR	:| :||:||||||||	KSQIHDIVLVGGSTR	11	15
+scan15359	accepted source		P63244	127	1	16	140	155	YTVQDESHSEWVSCVR	||||||||||||||||	YTVQDESHSEWVSCVR	16	16
+scan15412	accepted source		A5A3E0	80	1	11	729	739	AVFPSLVGRPR	|||||:|||||	AVFPSIVGRPR	10	11
+scan15412	accepted source		P0CG38	80	1	11	729	739	AVFPSLVGRPR	|||||:|||||	AVFPSIVGRPR	10	11
+scan15412	accepted source		P60709	80	1	11	29	39	AVFPSLVGRPR	|||||:|||||	AVFPSIVGRPR	10	11
+scan15412	accepted source		P62736	80	1	11	31	41	AVFPSLVGRPR	|||||:|||||	AVFPSIVGRPR	10	11
+scan15412	accepted source		P63261	80	1	11	29	39	AVFPSLVGRPR	|||||:|||||	AVFPSIVGRPR	10	11
+scan15412	accepted source		P63267	80	1	11	30	40	AVFPSLVGRPR	|||||:|||||	AVFPSIVGRPR	10	11
+scan15412	accepted source		P68032	80	1	11	31	41	AVFPSLVGRPR	|||||:|||||	AVFPSIVGRPR	10	11
+scan15412	accepted source		P68133	80	1	11	31	41	AVFPSLVGRPR	|||||:|||||	AVFPSIVGRPR	10	11
+scan15412	accepted source		Q6S8J3	80	1	11	729	739	AVFPSLVGRPR	|||||:|||||	AVFPSIVGRPR	10	11
+scan15484	accepted source		P30086	76	3	15	50	62	PRNLSWDGLDSGK	|  :|||||||||	PTSISWDGLDSGK	10	13
+scan15548	accepted source		Q07020	65	3	11	41	49	STFNQVVLK	|||||||||	STFNQVVLK	9	9
+scan16236	accepted source		Q04837	75	1	9	114	122	LDYGEYMDK	:||||||||	IDYGEYMDK	8	9
+scan16284	accepted source		P05387	101	1	14	25	38	KLLDSVGLEADDDR	|:|||||:||||||	KILDSVGIEADDDR	12	14
+scan16332	accepted source		P21926	74	1	10	170	179	KDVLETFTVK	||||||||||	KDVLETFTVK	10	10
+scan16343	accepted source		P62826	76	1	10	143	152	NLQYYDLSAK	||||||:|||	NLQYYDISAK	9	10
+scan16531	accepted source		P00505	98	1	13	69	81	DDNGKPYVLPSVR	|||||||||||||	DDNGKPYVLPSVR	13	13
+scan16556	accepted source		Q9Y4L1	58	1	12	252	262	EAGMQPGALQLR	||||||  ||:|	EAGMQP-QLQIR	9	12
+scan16628	accepted source		P38646	90	2	15	580	594	DAVNMAEGLLHD-ET	 |||||||::|| ||	EAVNMAEGIIHDTET	11	15
+scan16630	accepted source		Q96LD4	110	1	15	341	355	LALEDGCGPGPGPPR	|||||||||||||||	LALEDGCGPGPGPPR	15	15
+scan16746	accepted source		Q14974	32	2	9	860	867	TLVGWASK	||  || |	TLATWATK	5	8
+scan16775	accepted source		P43897	96	1	13	234	246	YGALVLCETSEQK	|||||:|||||||	YGALVICETSEQK	12	13
+scan16912	accepted source		Q9Y4L1	57	1	8	68	75	TPVLVTLK	|||:||||	TPVIVTLK	7	8
+scan17194	accepted source		P48047	69	1	10	163	172	SFLSQGQVLK	||||||||||	SFLSQGQVLK	10	10
+scan17295	accepted source		Q96AE4	58	1	8	163	170	LLDQLVEK	||||:|||	LLDQIVEK	7	8
+scan17344	accepted source		O60841	99	1	14	285	298	VTVDTGVLPASEEK	|||||||:||||||	VTVDTGVIPASEEK	13	14
+scan17651	accepted source		P54577	89	1	12	419	430	LVVVLCNLKPQK	||||||||||||	LVVVLCNLKPQK	12	12
+scan17842	accepted source		P11310	97	1	13	396	408	LYQLYEGTSQLQR	:||:||||||:||	IYQIYEGTSQIQR	10	13
+scan17854	accepted source		O00148	67	1	8	200	207	MLEQLDMR	||||||||	MLEQLDMR	8	8
+scan17854	accepted source		Q13838	67	1	8	201	208	MLEQLDMR	||||||||	MLEQLDMR	8	8
+scan17907	accepted source		Q16555	74	2	12	64	75	M-LPGGLDVHTR	| :|||:|||||	MVIPGGIDVHTR	9	12
+scan17955	accepted source		P07951	66	1	11	168	178	KLVLLEADLER	|||:||  |||	KLVILEGELER	8	11
+scan17955	accepted source		P67936	66	1	11	132	142	KLVLLEADLER	|||:||  |||	KLVILEGELER	8	11
+scan18476	accepted source		P38646	108	1	17	468	485	QS-VFSTAADGQTQVELK	:| |||||||||||||:|	KSQVFSTAADGQTQVEIK	15	18
+scan18638	accepted source		Q15046	71	1	9	394	402	LNMVEELEK	:||||||||	INMVEELEK	8	9
+scan18830	accepted source		Q5JWF2	71	1	10	845	854	VLTSGLFETK	|||||:||||	VLTSGIFETK	9	10
+scan18839	accepted source		Q8IUD2	76	1	11	661	671	VSLLQGDLSEK	|||||||||||	VSLLQGDLSEK	11	11
+scan19109	accepted source		P57740	124	1	17	32	48	VLLQASQDENFGNTTPR	|||||||||||||||||	VLLQASQDENFGNTTPR	17	17
+scan19437	accepted source		P31327	39	3	11	150	157	GQWLGAEEK	||||  |||	GQWL-QEEK	7	9
+scan19447	accepted source		P04264	55	4	15	445	455	NDLEDALGAQAK	|||||||  |||	NDLEDAL-QQAK	10	12
+scan19557	accepted source		Q96HS1	92	1	12	274	285	TLGDTGFMPPDK	||||||||||||	TLGDTGFMPPDK	12	12
+scan19580	accepted source		P82914	71	1	12	63	74	LDDDPPSPTLLK	||||||  ||||	LDDDPPPSTLLK	10	12
+scan19918	accepted source		Q9P2E9	42	11	16	1103	1108	PAEPSS	||||||	PAEPSS	6	6
+scan20032	accepted source		O75396	86	1	12	134	145	NLGSLNTELQDV	||||:|||||||	NLGSINTELQDV	11	12
+scan20089	accepted source		Q6KC79	88	1	12	342	353	AAMYDLLSSPSK	|||||::|||||	AAMYDIISSPSK	10	12
+scan20281	accepted source		P47712	65	1	8	607	614	LDPYVFDR	:|||||||	IDPYVFDR	7	8
+scan21062	accepted source		P04075	114	1	20	154	173	LADHTASPLALMENANVLAR	:  || | ||:|||||||||	IGEHTPSALAIMENANVLAR	14	20
+scan21246	accepted source		P61313	110	1	14	115	128	VLNSYWVGEDSTYK	||||||||||||||	VLNSYWVGEDSTYK	14	14
+scan21386	accepted source		P60709	94	3	18	100	113	EHPVLLGLTEAPLNPK	|||||  |||||||||	EHPVL--LTEAPLNPK	14	16
+scan21386	accepted source		P63261	94	3	18	100	113	EHPVLLGLTEAPLNPK	|||||  |||||||||	EHPVL--LTEAPLNPK	14	16
+scan21753	accepted source		Q02978	60	1	8	163	170	NVFNALLR	||||||:|	NVFNALIR	7	8
+scan22023	accepted source		Q6P2Q9	62	1	8	2114	2121	FLCLSDLR	|:|:||||	FICISDLR	6	8
+scan22110	accepted source		P11586	75	1	14	139	150	DLGGGDCFLPCTPK	||   |||:|||||	DL--NDCFIPCTPK	10	14
+scan22525	accepted source		P78527	82	1	11	3325	3335	DQNLLLGTTYR	|||:|||||||	DQNILLGTTYR	10	11
+scan22620	accepted source		P31327	91	1	12	1248	1259	GNDVLVLECNLR	||||||:|||||	GNDVLVIECNLR	11	12
+scan22757	accepted source		O75828	98	1	13	59	71	FHQLDLDDLQSLR	|||||:|||||:|	FHQLDIDDLQSIR	11	13
+scan22757	accepted source		P16152	98	1	13	59	71	FHQLDLDDLQSLR	|||||:|||||:|	FHQLDIDDLQSIR	11	13
+scan22762	accepted source		O60814	63	1	9	101	109	LLLPGELAK	|||||||||	LLLPGELAK	9	9
+scan22762	accepted source		P06899	63	1	9	101	109	LLLPGELAK	|||||||||	LLLPGELAK	9	9
+scan22762	accepted source		P23527	63	1	9	101	109	LLLPGELAK	|||||||||	LLLPGELAK	9	9
+scan22762	accepted source		P33778	63	1	9	101	109	LLLPGELAK	|||||||||	LLLPGELAK	9	9
+scan22762	accepted source		P57053	63	1	9	101	109	LLLPGELAK	|||||||||	LLLPGELAK	9	9
+scan22762	accepted source		P58876	63	1	9	101	109	LLLPGELAK	|||||||||	LLLPGELAK	9	9
+scan22762	accepted source		P62807	63	1	9	101	109	LLLPGELAK	|||||||||	LLLPGELAK	9	9
+scan22762	accepted source		Q16778	63	1	9	101	109	LLLPGELAK	|||||||||	LLLPGELAK	9	9
+scan22762	accepted source		Q5QNW6	63	1	9	101	109	LLLPGELAK	|||||||||	LLLPGELAK	9	9
+scan22762	accepted source		Q8N257	63	1	9	101	109	LLLPGELAK	|||||||||	LLLPGELAK	9	9
+scan22762	accepted source		Q93079	63	1	9	101	109	LLLPGELAK	|||||||||	LLLPGELAK	9	9
+scan22762	accepted source		Q96A08	63	1	9	102	110	LLLPGELAK	|||||||||	LLLPGELAK	9	9
+scan22762	accepted source		Q99877	63	1	9	101	109	LLLPGELAK	|||||||||	LLLPGELAK	9	9
+scan22762	accepted source		Q99879	63	1	9	101	109	LLLPGELAK	|||||||||	LLLPGELAK	9	9
+scan22762	accepted source		Q99880	63	1	9	101	109	LLLPGELAK	|||||||||	LLLPGELAK	9	9
+scan22801	accepted source		O95373	128	1	17	72	88	ETAPGDLSPYTLPEEDR	||||||:||||:|||||	ETAPGDISPYTIPEEDR	15	17
+scan22823	accepted source		P53621	106	1	15	1203	1217	VTTVTELGKDVLGLR	||||||:||||:|||	VTTVTEIGKDVIGLR	13	15
+scan22831	accepted source		Q14566	111	1	15	755	769	ELESELDSEEELLNK	|:|||:||||||:||	EIESEIDSEEELINK	12	15
+scan23004	accepted source		P04843	133	1	17	216	232	VHYENNSPFLTLTSMTR	|||||||||||:|||||	VHYENNSPFLTITSMTR	16	17
+scan23078	accepted source		Q14204	88	1	13	324	340	QALETVNDYNP----FP	|||||||||||    ||	QALETVNDYNPLMKDFP	13	17
+scan23194	accepted source		P62805	98	1	13	81	93	TVTAMDVVYALKR	|||||||||||||	TVTAMDVVYALKR	13	13
+scan23265	accepted source		Q14204	94	1	13	4330	4342	VLLTTQGVDMLSK	||||||||||:||	VLLTTQGVDMISK	12	13
+scan23281	accepted source		P34932	136	1	17	652	668	LEDTENWLYEDGEDQPK	|||||||||||||||||	LEDTENWLYEDGEDQPK	17	17
+scan23615	accepted source		P78527	158	1	22	3336	3357	LLANALSSEPACLAELEEDKAR	::|||||||||||||:||||||	IIANALSSEPACLAEIEEDKAR	19	22
+scan23839	accepted source		P09525	70	1	9	276	284	AELDMLDLR	||:||||:|	AEIDMLDIR	7	9
+scan23923	accepted source		O75874	85	1	11	250	260	LLDDMVAQAMK	|:|||||||||	LIDDMVAQAMK	10	11
+scan24509	accepted source		P62937	67	1	9	20	28	VSFELFADK	|||||||||	VSFELFADK	9	9
+scan24543	accepted source		Q9Y2L1	129	1	17	879	895	DKPNPQLLYDDELPSLK	|||||||:||||:||||	DKPNPQLIYDDEIPSLK	15	17
+scan24686	accepted source		P11169	116	1	15	229	243	LWGTQDVSQDLQEMK	||||||||||:||||	LWGTQDVSQDIQEMK	14	15
+scan24686	accepted source		Q8TDB8	116	1	15	253	267	LWGTQDVSQDLQEMK	||||||||||:||||	LWGTQDVSQDIQEMK	14	15
+scan25067	accepted source		P60903	111	3	17	40	54	PGFLENQKDPLAVDK	|||||||||||||||	PGFLENQKDPLAVDK	15	15
+scan25107	accepted source		P60709	50	3	8	186	191	TDYLMK	||||||	TDYLMK	6	6
+scan25107	accepted source		P62736	50	3	8	188	193	TDYLMK	||||||	TDYLMK	6	6
+scan25107	accepted source		P63261	50	3	8	186	191	TDYLMK	||||||	TDYLMK	6	6
+scan25107	accepted source		P63267	50	3	8	187	192	TDYLMK	||||||	TDYLMK	6	6
+scan25107	accepted source		P68032	50	3	8	188	193	TDYLMK	||||||	TDYLMK	6	6
+scan25107	accepted source		P68133	50	3	8	188	193	TDYLMK	||||||	TDYLMK	6	6
+scan25107	accepted source		Q562R1	50	3	8	187	192	TDYLMK	||||||	TDYLMK	6	6
+scan25178	accepted source		P60842	71	1	10	325	334	VLLTTDLLAR	||:|||||||	VLITTDLLAR	9	10
+scan25178	accepted source		Q14240	71	1	10	326	335	VLLTTDLLAR	||:|||||||	VLITTDLLAR	9	10
+scan25185	accepted source		Q13451	75	1	10	74	83	NEPFVFSLGK	||||||||||	NEPFVFSLGK	10	10
+scan25317	accepted source		P56182	107	1	17	330	347	KLQDLA-NLFPEDELPEK	||||||  :|||||:|||	KLQDLAGGIFPEDEIPEK	14	18
+scan25376	accepted source		Q16543	122	1	17	353	369	EGEEAGPGDPLLEAVPK	|||||||||||||||||	EGEEAGPGDPLLEAVPK	17	17
+scan25616	accepted source		P48643	128	1	21	418	439	VVY-GNAAELSCALAVSQEADK	||| | |||:||||||||||||	VVYGGGAAEISCALAVSQEADK	19	22
+scan26071	accepted source		Q9UPQ0	95	1	13	199	211	DDSFDSLDSFGSR	|||||||||||||	DDSFDSLDSFGSR	13	13
+scan26462	accepted source		P33992	96	4	16	630	642	PFATEADVEEALR	|||||||||||||	PFATEADVEEALR	13	13
+scan26613	accepted source		Q9BZE4	85	1	10	416	425	YWDLMNLSEK	||||||||||	YWDLMNLSEK	10	10
+scan26681	accepted source		P08670	71	1	10	130	139	LLLAELEQLK	:|||||||||	ILLAELEQLK	9	10
+scan26787	accepted source		P05141	70	3	13	13	23	LAGGVAAALSK	||||||||:||	LAGGVAAAISK	10	11
+scan26798	accepted source		P09972	147	3	23	114	134	VPLAGTDGETTTQGLDGLSER	|||||||||||||||||||||	VPLAGTDGETTTQGLDGLSER	21	21
+scan26903	accepted source		P78527	125	5	21	2603	2619	TPMFVETQASQGTLQTR	|||||||||||||||||	TPMFVETQASQGTLQTR	17	17
+scan26970	accepted source		Q92688	82	1	11	76	86	LFGGLDMLAEK	:||||||||||	IFGGLDMLAEK	10	11
+scan26989	accepted source		Q15233	129	1	21	435	456	FGQAATMEGL-QLGGTPPAFNR	|||||||||:  :|||||||||	FGQAATMEGIGAIGGTPPAFNR	18	22
+scan27012	accepted source		Q9UIG0	128	1	17	827	843	FEPQVDTEAEDMLSAVK	||||||||||||:||||	FEPQVDTEAEDMISAVK	16	17
+scan27430	accepted source		P50395	143	1	19	36	54	NPYYGGESASLTPLEDLYK	||||||||||:||||||||	NPYYGGESASITPLEDLYK	18	19
+scan27440	accepted source		P12956	112	7	21	410	424	FVALVPQEEELDDQK	|||||||||||||||	FVALVPQEEELDDQK	15	15
+scan27453	accepted source		P11310	165	1	21	149	169	MTEEPLMCAYCVTEPGAGSDV	|||||||||||||||||||||	MTEEPLMCAYCVTEPGAGSDV	21	21
+scan27516	accepted source		P62263	131	1	18	67	84	DESSPYAAMLAAQDVAQR	||||||||||||||||||	DESSPYAAMLAAQDVAQR	18	18
+scan27703	accepted source		Q9H4A6	59	4	14	272	282	LDLDEPVECLK	||||  |||||	LDLDPEVECLK	9	11
+scan27715	accepted source		P07910	100	1	16	74	89	LMAGQVLDLNLAAEPK	  ||||||:|||||||	MIAGQVLDINLAAEPK	13	16
+scan27767	accepted source		P82912	112	1	15	60	74	FSLYPPLPGEESSLR	||:|||:||||||||	FSIYPPIPGEESSLR	13	15
+scan28177	accepted source		Q9Y3E5	107	1	15	120	134	APDEETLLALLAHAK	|||||||:|||||||	APDEETLIALLAHAK	14	15
+scan28242	accepted source		P09661	122	1	17	4	20	LTAELLEQAAQYTNAVR	|||||:|||||||||||	LTAELIEQAAQYTNAVR	16	17
+scan28348	accepted source		P49368	69	3	11	494	502	GLWEPLAVK	|:|||||||	GIWEPLAVK	8	9
+scan28560	accepted source		Q8TAQ2	121	1	18	343	359	MDDEPSPVPNVEEVTLPK	| ||||||||||||||||	M-DEPSPVPNVEEVTLPK	17	18
+scan28597	accepted source		Q8WUM0	104	6	18	696	708	VDTLCECLLEHEE	|||:|||||||||	VDTICECLLEHEE	12	13
+scan28623	accepted source		P50991	124	1	19	175	193	VVNTYSSLLSPMSVNAVMK	||  |||||||||||||||	VVSQYSSLLSPMSVNAVMK	17	19
+scan28906	accepted source		P04075	48	1	9	62	69	LLQLTADDR	|| ||||||	LL-LTADDR	8	9
+scan28917	accepted source		P36578	78	1	14	144	157	LEEVPELLP-VVEDK	:||||| || |||||	IEEVPE-LPLVVEDK	12	15
+scan28928	accepted source		P00492	94	1	13	129	141	NVLLVEDLLDTGK	|||:|||::||||	NVLIVEDIIDTGK	10	13
+scan29397	accepted source		Q13619	80	1	11	123	133	EDSLDSVLFLK	|||||||||||	EDSLDSVLFLK	11	11
+scan29397	accepted source		Q13620	80	1	11	277	287	EDSLDSVLFLK	|||||||||||	EDSLDSVLFLK	11	11
+scan29651	accepted source		O75369	96	1	16	2059	2074	VSYFPTVPVGYLVSTK	||||||||  |:||||	VSYFPTVPGVYIVSTK	13	16
+scan29749	accepted source		Q8NCW5	85	5	16	234	245	QPDLLLSLTAPK	|||||:||||||	QPDLLISLTAPK	11	12
+scan29929	accepted source		P60709	98	3	20	294	312	YLDTVLS-NTTMYPGLADR	|  ||||  ||||||:|||	YANTVLSGGTTMYPGIADR	14	19
+scan29929	accepted source		P63261	98	3	20	294	312	YLDTVLS-NTTMYPGLADR	|  ||||  ||||||:|||	YANTVLSGGTTMYPGIADR	14	19
+scan30173	accepted source		Q04837	128	1	18	128	145	QATTLLADNLLFLSDQTK	||||::|||::|||||||	QATTIIADNIIFLSDQTK	14	18
+scan30649	accepted source		Q00839	131	3	22	467	484	FPLKEPEEYTFLQNVPLEDR	||:  ||||||:||||||||	FPI--PEEYTFIQNVPLEDR	16	20
+scan30830	accepted source		Q8N7H5	97	3	14	201	212	PVEVMPVFPDFK	||||||||||||	PVEVMPVFPDFK	12	12
+scan31422	accepted source		P50991	95	1	13	307	319	DALSDLALHFLNK	|||||||||||||	DALSDLALHFLNK	13	13
+scan32311	accepted source		P49588	69	2	12	154	165	QL-QNLGLDDTK	|: |||||||||	QIWQNLGLDDTK	10	12
+scan32515	accepted source		A6NIZ1	76	1	12	152	163	LNVNELFYDVLR	:||||:|||  |	INVNEIFYDLVR	8	12
+scan32515	accepted source		P61224	76	1	12	152	163	LNVNELFYDVLR	:||||:|||  |	INVNEIFYDLVR	8	12
+scan32515	accepted source		P62834	76	1	12	152	163	LNVNELFYDVLR	:||||:|||  |	INVNEIFYDLVR	8	12
+scan32721	accepted source		Q8NC51	124	1	16	17	32	FDQLFDDESDPFEVLK	||||||||||||||||	FDQLFDDESDPFEVLK	16	16
+scan33344	accepted source		P78527	117	3	18	1576	1591	DLAVLELMQSSVDNTK	||||||||||||||||	DLAVLELMQSSVDNTK	16	16
+scan34224	accepted source		Q14137	79	13	23	285	295	AQEDPNAVLGR	|||||||||||	AQEDPNAVLGR	11	11
+scan34514	accepted source		Q7Z4Q2	82	1	11	122	132	DLMTPLVALLK	|:|||||||||	DIMTPLVALLK	10	11
+scan38947	accepted source		P07741	19	1	10	171	177	VPALFYGALL	||  |   ||	VP--FF-SLL	5	10
+scan1165	accepted source		P06748	64	1	8	25	32	ADKDYHFK	||||||||	ADKDYHFK	8	8
+scan2566	accepted source		P11216	51	1	7	459	465	LHSELVK	:|||:||	IHSEIVK	5	7
+scan3012	accepted source		Q9H0H5	67	1	10	588	597	TPSSSSLSQR	||||||||||	TPSSSSLSQR	10	10
+scan4853	accepted source		P68104	73	1	10	21	30	STTTGHLLYK	|||||||:||	STTTGHLIYK	9	10
+scan4853	accepted source		Q05639	73	1	10	21	30	STTTGHLLYK	|||||||:||	STTTGHLIYK	9	10
+scan4853	accepted source		Q5VTE0	73	1	10	21	30	STTTGHLLYK	|||||||:||	STTTGHLIYK	9	10
+scan4872	accepted source		Q9UBU9	64	1	9	599	607	SAQAFTHLK	|||||||||	SAQAFTHLK	9	9
+scan4887	accepted source		P07910	60	1	11	189	198	KGDDLLQALKK	|||| |||:||	KGDD-LQAIKK	9	11
+scan5187	accepted source		P06748	58	1	9	46	54	TVSLGAGAK	|||||||||	TVSLGAGAK	9	9
+scan5380	accepted source		P08754	102	1	13	55	67	LLHEDGYSEDECK	::|||||||||||	IIHEDGYSEDECK	11	13
+scan5807	accepted source		P27348	55	1	8	61	68	VLSSLEQK	|:||:|||	VISSIEQK	6	8
+scan5807	accepted source		P31946	55	1	8	63	70	VLSSLEQK	|:||:|||	VISSIEQK	6	8
+scan5807	accepted source		P31947	55	1	8	61	68	VLSSLEQK	||||:|||	VLSSIEQK	7	8
+scan5807	accepted source		P61981	55	1	8	62	69	VLSSLEQK	|:||:|||	VISSIEQK	6	8
+scan5807	accepted source		Q04917	55	1	8	62	69	VLSSLEQK	|:||:|||	VISSIEQK	6	8
+scan6464	accepted source		P35520	45	1	6	103	108	CELLAK	||||||	CELLAK	6	6
+scan6620	accepted source		Q96GQ7	95	1	13	591	603	EMQQSEAQLNTAK	||||||||:||||	EMQQSEAQINTAK	12	13
+scan6965	accepted source		P06703	57	1	8	48	55	LQDAELAR	|||||:||	LQDAEIAR	7	8
+scan7199	accepted source		O60313	74	1	11	291	301	VVVVGDQSAGK	|||||||||||	VVVVGDQSAGK	11	11
+scan7592	accepted source		P20839	80	1	12	439	450	LAQGVSGSLQDK	:|||||||:|||	IAQGVSGSIQDK	10	12
+scan7822	accepted source		P62258	55	1	8	62	69	LLSSLEQK	::||:|||	IISSIEQK	5	8
+scan9051	accepted source		P41250	95	1	13	478	490	VPLVAEKPLKEPK	|||||||||||||	VPLVAEKPLKEPK	13	13
+scan9611	accepted source		Q9UHG3	99	1	13	169	181	YQSHDYAFSSVEK	|||||||||||||	YQSHDYAFSSVEK	13	13
+scan9769	accepted source		O14949	53	1	7	4	10	EFGNLTR	|||||||	EFGNLTR	7	7
+scan11238	accepted source		P15924	60	1	8	1638	1645	DVLDGHLR	||||||||	DVLDGHLR	8	8
+scan11568	accepted source		P29966	108	3	18	90	105	PAAAAAPEAGASPVEK	||||||||||||||||	PAAAAAPEAGASPVEK	16	16
+scan12397	accepted source		Q7KZF4	83	1	11	900	910	ADDADEFGYSR	|||||||||||	ADDADEFGYSR	11	11
+scan12479	accepted source		Q9H3K2	83	1	11	302	312	AEVSPMYGVQK	|||||||||||	AEVSPMYGVQK	11	11
+scan13429	accepted source		P38919	124	1	16	299	314	EANFTVSSMHGDMPQK	||||||||||||||||	EANFTVSSMHGDMPQK	16	16
+scan14894	accepted source		Q96AE4	114	1	15	219	233	MVMLQDGPQNTGADK	|||:|||||||||||	MVMIQDGPQNTGADK	14	15
+scan14943	accepted source		P14324	94	1	13	111	123	LKEVLEYNALGGK	|||||||||:|||	LKEVLEYNAIGGK	12	13
+scan15711	accepted source		Q5JTJ3	102	1	14	111	124	FEAGQFEPSETTAK	||||||||||||||	FEAGQFEPSETTAK	14	14
+scan16433	accepted source		Q9HB07	57	3	10	246	253	VEEALAQR	||||||||	VEEALAQR	8	8
+scan16438	accepted source		O43169	141	1	19	93	111	QYYLGDLHPSDLKPESGSK	|||:||:||||||||||||	QYYIGDIHPSDLKPESGSK	17	19
+scan17105	accepted source		Q07021	70	3	13	210	220	SMKSTGESEWK	| :||||||||	SFQSTGESEWK	9	11
+scan17281	accepted source		O15400	58	1	8	72	79	EFGSLPTT	||||||||	EFGSLPTT	8	8
+scan17388	accepted source		P38919	105	3	16	54	67	YAYGFEKPSALQQR	||||||||||:|||	YAYGFEKPSAIQQR	13	14
+scan17388	accepted source		P60842	105	3	16	48	61	YAYGFEKPSALQQR	||||||||||:|||	YAYGFEKPSAIQQR	13	14
+scan17388	accepted source		Q14240	105	3	16	49	62	YAYGFEKPSALQQR	||||||||||:|||	YAYGFEKPSAIQQR	13	14
+scan18187	accepted source		P25398	113	5	18	50	63	CVLASNCDEPMYVK	||||||||||||||	CVLASNCDEPMYVK	14	14
+scan18206	accepted source		Q16881	91	1	15	277	289	YENAVVYGQFLGPHR	||||  ||||:||||	YENA--YGQFIGPHR	12	15
+scan18654	accepted source		O60568	76	1	10	441	450	SEDYVELVQR	||||||||||	SEDYVELVQR	10	10
+scan19780	accepted source		P49588	96	1	13	652	664	AEELANEMLEAAK	|||:||||:||||	AEEIANEMIEAAK	11	13
+scan20534	accepted source		O75340	28	6	9	126	129	LSDK	|||:	LSDQ	3	4
+scan22218	accepted source		Q14247	134	2	20	436	454	PGSGTEPEPVYSMEAADYR	| |||||||||||||||||	PVSGTEPEPVYSMEAADYR	18	19
+scan22265	accepted source		P04350	91	1	12	163	174	LMNTFSVVPSPK	:|||||||||||	IMNTFSVVPSPK	11	12
+scan22265	accepted source		P07437	91	1	12	163	174	LMNTFSVVPSPK	:|||||||||||	IMNTFSVVPSPK	11	12
+scan22265	accepted source		P68371	91	1	12	163	174	LMNTFSVVPSPK	:|||||||||||	IMNTFSVVPSPK	11	12
+scan22265	accepted source		Q13509	91	1	12	163	174	LMNTFSVVPSPK	:|||||||||||	IMNTFSVVPSPK	11	12
+scan22406	accepted source		O15230	94	3	18	2261	2276	ATNLLAGTEATLGHAK	|  |||||||||||||	ASQLLAGTEATLGHAK	14	16
+scan22643	accepted source		Q8N7H5	81	1	10	48	57	FLTYPFDQNR	|:||||||||	FITYPFDQNR	9	10
+scan23791	accepted source		Q687X5	92	1	12	4	15	TCLDALPLTMNS	||:|||||||||	TCIDALPLTMNS	11	12
+scan24169	accepted source		Q92841	84	3	13	518	528	AYTFFTPGNLK	|||||||||||	AYTFFTPGNLK	11	11
+scan24492	accepted source		P08133	63	1	8	213	220	LVFDEYLK	||||||||	LVFDEYLK	8	8
+scan24806	accepted source		P23284	82	1	13	146	158	ESNGSQFFLTTVK	  ||||||:||||	DTNGSQFFITTVK	10	13
+scan24820	accepted source		Q8WVV9	118	1	16	507	522	TDAVEALTALNHYQLR	||||||||||||||:|	TDAVEALTALNHYQIR	15	16
+scan26439	accepted source		P08574	90	1	16	187	202	AANNGALPPDL-YSLVR	||||||||||| | :||	AANNGALPPDLSY-IVR	14	17
+scan26659	accepted source		Q9P003	159	1	20	85	104	YLMVPSGNMGVFDPTELHNR	|:||||||||||||||:|||	YIMVPSGNMGVFDPTEIHNR	18	20
+scan27310	accepted source		Q8N490	117	1	15	51	65	EEPEPLSPELEYLPR	||||||||||||:||	EEPEPLSPELEYIPR	14	15
+scan28825	accepted source		P62829	100	3	17	18	32	LSLPVGAVLNCADNT	| ||||||:||||||	LGLPVGAVINCADNT	13	15
+scan29642	accepted source		Q01082	85	9	20	451	462	GFDLPAVEAATK	||||||||||||	GFDLPAVEAATK	12	12
+scan862	top candidate	massspec18_k8	O75369	79	1	11	837	847	VKVDPSHDASK	|||||||||||	VKVDPSHDASK	11	11
+scan1027	top candidate	massspec18_k8	Q14643	67	1	9	92	100	LHHAADLEK	|||||||||	LHHAADLEK	9	9
+scan1173	top candidate	massspec18_k8	O60869	58	3	10	136	143	DLGKPLEK	|:|||:||	DIGKPIEK	6	8
+scan1311	top candidate	massspec18_k8	P54577	84	1	12	136	147	LSSVVTQHDSKK	||||||||||||	LSSVVTQHDSKK	12	12
+scan2422	top candidate	massspec18_k8	P61981	73	1	10	153	162	AYSEAHELSK	|||||||:||	AYSEAHEISK	9	10
+scan2509	top candidate	massspec18_k8	P60709	84	1	11	40	50	HQGVMVGMGQK	|||||||||||	HQGVMVGMGQK	11	11
+scan2862	top candidate	massspec18_k8	P0DMV9	59	1	8	510	517	LSKEELER	|||||:||	LSKEEIER	7	8
+scan3347	top candidate	massspec18_k8	Q9H2M9	54	1	13	1220	1230	VVSAAVQADKGHS	|||||||| : ||	VVSAAVQA-Q-HS	10	13
+scan3384	top candidate	massspec18_k8	P05787	63	3	10	305	312	TELSEMNR	||:|||||	TEISEMNR	7	8
+scan3464	top candidate	massspec18_k8	P39687	59	1	8	68	75	KLELSDNR	||||||||	KLELSDNR	8	8
+scan3572	top candidate	massspec18_k8	P26038	63	1	10	360	370	QA-QELEEQTR	:| ||||||||	KAQQELEEQTR	9	11
+scan3989	top candidate	massspec18_k8	P04843	82	1	11	537	547	LKTEGSDLCDR	|||||||||||	LKTEGSDLCDR	11	11
+scan4504	top candidate	massspec18_k8	Q9Y263	61	1	8	296	303	VFTESEDR	||||||||	VFTESEDR	8	8
+scan4539	top candidate	massspec18_k8	P52888	56	3	10	629	636	QEGVLNSK	||||||||	QEGVLNSK	8	8
+scan4699	top candidate	massspec18_k8	Q04637	67	1	9	880	888	LKEELEEAR	|||||||||	LKEELEEAR	9	9
+scan5099	top candidate	massspec18_k8	P08621	59	1	9	192	200	LGGGLGGTR	|||||||||	LGGGLGGTR	9	9
+scan5307	top candidate	massspec18_k8	P68104	73	1	10	21	30	STTTGHLLYK	|||||||:||	STTTGHLIYK	9	10
+scan6007	top candidate	massspec18_k8	Q8IZL8	62	1	9	49	57	TGSAVAPVH	|||||||||	TGSAVAPVH	9	9
+scan6158	top candidate	massspec18_k8	P06748	63	1	9	240	248	GPSSVEDLK	|||||||:|	GPSSVEDIK	8	9
+scan6393	top candidate	massspec18_k8	P61978	89	2	14	23	35	PREDMEEEQAFKR	| |||||||||||	PAEDMEEEQAFKR	12	13
+scan6966	top candidate	massspec18_k8	P09012	69	1	10	61	70	EVSSATNALR	||||||||||	EVSSATNALR	10	10
+scan7143	top candidate	massspec18_k8	Q8WWI1	91	3	15	1578	1590	TTGVATTQSPTPR	|||||||||||||	TTGVATTQSPTPR	13	13
+scan7210	top candidate	massspec18_k8	P20073	64	1	8	298	305	CYQSEFGR	||||||||	CYQSEFGR	8	8
+scan7339	top candidate	massspec18_k8	O00566	106	1	14	485	498	TAEEENPEHVELQK	|||||||||||:||	TAEEENPEHVEIQK	13	14
+scan7445	top candidate	massspec18_k8	Q99615	76	1	11	80	90	EALGDAQQSVR	|||||||||||	EALGDAQQSVR	11	11
+scan7924	top candidate	massspec18_k8	P04075	76	1	11	332	342	ALANSLACQGK	|||||||||||	ALANSLACQGK	11	11
+scan8335	top candidate	massspec18_k8	Q14566	80	3	13	316	326	RDEEQTAESLK	|||||||||:|	RDEEQTAESIK	10	11
+scan8453	top candidate	massspec18_k8	Q13838	69	1	9	164	172	NCPHLVVGT	||||:||||	NCPHIVVGT	8	9
+scan8577	top candidate	massspec18_k8	P09496	64	1	9	121	129	LEALDANSR	|||||||||	LEALDANSR	9	9
+scan8928	top candidate	massspec18_k8	P57721	60	1	8	79	86	LNLSEGNC	:|:|||||	INISEGNC	6	8
+scan9394	top candidate	massspec18_k8	P05787	100	1	13	402	414	LESGMQNMSLHTK	|||||||||:|||	LESGMQNMSIHTK	12	13
+scan9592	top candidate	massspec18_k8	P26038	77	1	10	439	448	ESEAVEWQQK	||||||||||	ESEAVEWQQK	10	10
+scan9763	top candidate	massspec18_k8	O75390	81	1	11	341	351	VVPGYGHAVLR	|||||||||||	VVPGYGHAVLR	11	11
+scan9857	top candidate	massspec18_k8	O15427	95	1	13	416	428	EPQPEVAAAEEEK	|||||||||||||	EPQPEVAAAEEEK	13	13
+scan10008	top candidate	massspec18_k8	Q02218	62	1	8	565	572	LCEEAFAR	:|||||||	ICEEAFAR	7	8
+scan10303	top candidate	massspec18_k8	P18124	70	1	12	77	88	KANGFYVPAEPK	||  ||||||||	KAGNFYVPAEPK	10	12
+scan10582	top candidate	massspec18_k8	Q9BQ39	63	1	8	468	475	DVESYLHR	|||||:||	DVESYIHR	7	8
+scan10599	top candidate	massspec18_k8	Q9UKR5	59	1	8	128	135	LEVEPVSR	||||||||	LEVEPVSR	8	8
+scan10787	top candidate	massspec18_k8	P05198	76	1	10	114	123	HVAEVLEYTK	||||||||||	HVAEVLEYTK	10	10
+scan10918	top candidate	massspec18_k8	O43809	90	1	12	24	35	YLQQTKPLTLER	|:||||||||||	YIQQTKPLTLER	11	12
+scan11135	top candidate	massspec18_k8	P50914	87	1	12	12	23	VAYVSFGPHAGK	||||||||||||	VAYVSFGPHAGK	12	12
+scan11185	top candidate	massspec18_k8	O75369	52	1	8	1426	1433	LAGPGLGS	:|||||||	IAGPGLGS	7	8
+scan11262	top candidate	massspec18_k8	P21291	92	1	15	66	84	YG----GYGQGAGTLSTDK	||    |||||||||||||	YGPKGYGYGQGAGTLSTDK	15	19
+scan11419	top candidate	massspec18_k8	P02545	79	1	11	79	89	AAYEAELGDAR	|||||||||||	AAYEAELGDAR	11	11
+scan11758	top candidate	massspec18_k8	P08754	73	1	10	133	142	DGGVQACFSR	||||||||||	DGGVQACFSR	10	10
+scan12681	top candidate	massspec18_k8	P11142	62	1	11	128	137	KEMLAEAYLGK	|| :|||||||	KE-IAEAYLGK	9	11
+scan13009	top candidate	massspec18_k8	P35659	65	1	9	76	84	EPFTLAQGK	||||:||||	EPFTIAQGK	8	9
+scan13254	top candidate	massspec18_k8	P38646	120	1	15	596	610	MEEFKDQLPADECNK	|||||||||||||||	MEEFKDQLPADECNK	15	15
+scan13264	top candidate	massspec18_k8	P67809	81	8	19	126	137	TGPGGVPVQGSK	||||||||||||	TGPGGVPVQGSK	12	12
+scan13291	top candidate	massspec18_k8	P53621	85	1	12	171	182	NLSPGAVESDVR	||||||||||||	NLSPGAVESDVR	12	12
+scan13354	top candidate	massspec18_k8	Q9Y2T3	74	1	10	436	445	NLEEVYVGGK	|:||||||||	NIEEVYVGGK	9	10
+scan13458	top candidate	massspec18_k8	Q96PK6	125	3	24	520	541	SSAVTAASYAAQQHPQAAASYR	|||  |||||||||||||||||	SSASLAASYAAQQHPQAAASYR	20	22
+scan14242	top candidate	massspec18_k8	O14548	95	1	13	45	57	LTSDSTVYDYAGK	|||||||||||||	LTSDSTVYDYAGK	13	13
+scan14754	top candidate	massspec18_k8	Q13409	101	1	14	42	55	EAVAPVQEESDLEK	||||||||||||||	EAVAPVQEESDLEK	14	14
+scan14784	top candidate	massspec18_k8	Q07955	78	1	10	29	38	TKDLEDVFYK	|||:||||||	TKDIEDVFYK	9	10
+scan14895	top candidate	massspec18_k8	P23526	83	1	12	215	226	VAVVAGYGDVGK	||||||||||||	VAVVAGYGDVGK	12	12
+scan15220	top candidate	massspec18_k8	P11142	88	1	14	328	342	QS-LHDLVLVGGSTR	:| :||:||||||||	KSQIHDIVLVGGSTR	11	15
+scan15359	top candidate	massspec18_k8	P63244	127	1	16	140	155	YTVQDESHSEWVSCVR	||||||||||||||||	YTVQDESHSEWVSCVR	16	16
+scan15412	top candidate	massspec18_k8	A5A3E0	80	1	11	729	739	AVFPSLVGRPR	|||||:|||||	AVFPSIVGRPR	10	11
+scan15484	top candidate	massspec18_k8	P30086	76	3	15	50	62	PRNLSWDGLDSGK	|  :|||||||||	PTSISWDGLDSGK	10	13
+scan15548	top candidate	massspec18_k8	Q07020	65	3	11	41	49	STFNQVVLK	|||||||||	STFNQVVLK	9	9
+scan16236	top candidate	massspec18_k8	Q04837	75	1	9	114	122	LDYGEYMDK	:||||||||	IDYGEYMDK	8	9
+scan16284	top candidate	massspec18_k8	P05387	101	1	14	25	38	KLLDSVGLEADDDR	|:|||||:||||||	KILDSVGIEADDDR	12	14
+scan16332	top candidate	massspec18_k8	P21926	74	1	10	170	179	KDVLETFTVK	||||||||||	KDVLETFTVK	10	10
+scan16343	top candidate	massspec18_k8	P62826	76	1	10	143	152	NLQYYDLSAK	||||||:|||	NLQYYDISAK	9	10
+scan16531	top candidate	massspec18_k8	P00505	98	1	13	69	81	DDNGKPYVLPSVR	|||||||||||||	DDNGKPYVLPSVR	13	13
+scan16628	top candidate	massspec18_k8	P38646	90	2	15	580	594	DAVNMAEGLLHD-ET	 |||||||::|| ||	EAVNMAEGIIHDTET	11	15
+scan16630	top candidate	massspec18_k8	Q96LD4	110	1	15	341	355	LALEDGCGPGPGPPR	|||||||||||||||	LALEDGCGPGPGPPR	15	15
+scan16775	top candidate	massspec18_k8	P43897	96	1	13	234	246	YGALVLCETSEQK	|||||:|||||||	YGALVICETSEQK	12	13
+scan16912	top candidate	massspec18_k8	Q9Y4L1	57	1	8	68	75	TPVLVTLK	|||:||||	TPVIVTLK	7	8
+scan17194	top candidate	massspec18_k8	P48047	69	1	10	163	172	SFLSQGQVLK	||||||||||	SFLSQGQVLK	10	10
+scan17295	top candidate	massspec18_k8	Q96AE4	58	1	8	163	170	LLDQLVEK	||||:|||	LLDQIVEK	7	8
+scan17344	top candidate	massspec18_k8	O60841	99	1	14	285	298	VTVDTGVLPASEEK	|||||||:||||||	VTVDTGVIPASEEK	13	14
+scan17651	top candidate	massspec18_k8	P54577	89	1	12	419	430	LVVVLCNLKPQK	||||||||||||	LVVVLCNLKPQK	12	12
+scan17842	top candidate	massspec18_k8	P11310	97	1	13	396	408	LYQLYEGTSQLQR	:||:||||||:||	IYQIYEGTSQIQR	10	13
+scan17854	top candidate	massspec18_k8	O00148	67	1	8	200	207	MLEQLDMR	||||||||	MLEQLDMR	8	8
+scan17907	top candidate	massspec18_k8	Q16555	74	2	12	64	75	M-LPGGLDVHTR	| :|||:|||||	MVIPGGIDVHTR	9	12
+scan18476	top candidate	massspec18_k8	P38646	108	1	17	468	485	QS-VFSTAADGQTQVELK	:| |||||||||||||:|	KSQVFSTAADGQTQVEIK	15	18
+scan18638	top candidate	massspec18_k8	Q15046	71	1	9	394	402	LNMVEELEK	:||||||||	INMVEELEK	8	9
+scan18830	top candidate	massspec18_k8	Q5JWF2	71	1	10	845	854	VLTSGLFETK	|||||:||||	VLTSGIFETK	9	10
+scan18839	top candidate	massspec18_k8	Q8IUD2	76	1	11	661	671	VSLLQGDLSEK	|||||||||||	VSLLQGDLSEK	11	11
+scan19109	top candidate	massspec18_k8	P57740	124	1	17	32	48	VLLQASQDENFGNTTPR	|||||||||||||||||	VLLQASQDENFGNTTPR	17	17
+scan19557	top candidate	massspec18_k8	Q96HS1	92	1	12	274	285	TLGDTGFMPPDK	||||||||||||	TLGDTGFMPPDK	12	12
+scan19918	top candidate	massspec18_k8	Q9ULH4	64	6	21	566	594	SKM--------------KPPAEPSSAPAGA	|||              :||  ||||||||	SKMAAAVSNVYSQTNGAQPPP-PSSAPAGA	13	30
+scan20032	top candidate	massspec18_k8	O75396	86	1	12	134	145	NLGSLNTELQDV	||||:|||||||	NLGSINTELQDV	11	12
+scan20089	top candidate	massspec18_k8	Q6KC79	88	1	12	342	353	AAMYDLLSSPSK	|||||::|||||	AAMYDIISSPSK	10	12
+scan20281	top candidate	massspec18_k8	P47712	65	1	8	607	614	LDPYVFDR	:|||||||	IDPYVFDR	7	8
+scan21062	top candidate	massspec18_k8	P04075	114	1	20	154	173	LADHTASPLALMENANVLAR	:  || | ||:|||||||||	IGEHTPSALAIMENANVLAR	14	20
+scan21246	top candidate	massspec18_k8	P61313	110	1	14	115	128	VLNSYWVGEDSTYK	||||||||||||||	VLNSYWVGEDSTYK	14	14
+scan21386	top candidate	massspec18_k8	P60709	94	3	18	100	113	EHPVLLGLTEAPLNPK	|||||  |||||||||	EHPVL--LTEAPLNPK	14	16
+scan21753	top candidate	massspec18_k8	Q02978	60	1	8	163	170	NVFNALLR	||||||:|	NVFNALIR	7	8
+scan22023	top candidate	massspec18_k8	Q6P2Q9	62	1	8	2114	2121	FLCLSDLR	|:|:||||	FICISDLR	6	8
+scan22110	top candidate	massspec18_k8	P11586	75	1	14	139	150	DLGGGDCFLPCTPK	||   |||:|||||	DL--NDCFIPCTPK	10	14
+scan22525	top candidate	massspec18_k8	P78527	82	1	11	3325	3335	DQNLLLGTTYR	|||:|||||||	DQNILLGTTYR	10	11
+scan22620	top candidate	massspec18_k8	P31327	91	1	12	1248	1259	GNDVLVLECNLR	||||||:|||||	GNDVLVIECNLR	11	12
+scan22757	top candidate	massspec18_k8	O75828	98	1	13	59	71	FHQLDLDDLQSLR	|||||:|||||:|	FHQLDIDDLQSIR	11	13
+scan22762	top candidate	massspec18_k8	A0A2R8Y619	63	1	9	97	105	LLLPGELAK	|||||||||	LLLPGELAK	9	9
+scan22801	top candidate	massspec18_k8	O95373	128	1	17	72	88	ETAPGDLSPYTLPEEDR	||||||:||||:|||||	ETAPGDISPYTIPEEDR	15	17
+scan22823	top candidate	massspec18_k8	P53621	106	1	15	1203	1217	VTTVTELGKDVLGLR	||||||:||||:|||	VTTVTEIGKDVIGLR	13	15
+scan22831	top candidate	massspec18_k8	Q14566	111	1	15	755	769	ELESELDSEEELLNK	|:|||:||||||:||	EIESEIDSEEELINK	12	15
+scan23004	top candidate	massspec18_k8	P04843	133	1	17	216	232	VHYENNSPFLTLTSMTR	|||||||||||:|||||	VHYENNSPFLTITSMTR	16	17
+scan23078	top candidate	massspec18_k8	Q14204	88	1	13	324	340	QALETVNDYNP----FP	|||||||||||    ||	QALETVNDYNPLMKDFP	13	17
+scan23194	top candidate	massspec18_k8	P62805	98	1	13	81	93	TVTAMDVVYALKR	|||||||||||||	TVTAMDVVYALKR	13	13
+scan23265	top candidate	massspec18_k8	Q14204	94	1	13	4330	4342	VLLTTQGVDMLSK	||||||||||:||	VLLTTQGVDMISK	12	13
+scan23281	top candidate	massspec18_k8	O95757	136	1	17	655	671	LEDTENWLYEDGEDQPK	|||||||||||||||||	LEDTENWLYEDGEDQPK	17	17
+scan23615	top candidate	massspec18_k8	P78527	158	1	22	3336	3357	LLANALSSEPACLAELEEDKAR	::|||||||||||||:||||||	IIANALSSEPACLAEIEEDKAR	19	22
+scan23839	top candidate	massspec18_k8	P09525	70	1	9	276	284	AELDMLDLR	||:||||:|	AEIDMLDIR	7	9
+scan23923	top candidate	massspec18_k8	O75874	85	1	11	250	260	LLDDMVAQAMK	|:|||||||||	LIDDMVAQAMK	10	11
+scan24509	top candidate	massspec18_k8	P62937	67	1	9	20	28	VSFELFADK	|||||||||	VSFELFADK	9	9
+scan24543	top candidate	massspec18_k8	Q9Y2L1	129	1	17	879	895	DKPNPQLLYDDELPSLK	|||||||:||||:||||	DKPNPQLIYDDEIPSLK	15	17
+scan24686	top candidate	massspec18_k8	P11169	116	1	15	229	243	LWGTQDVSQDLQEMK	||||||||||:||||	LWGTQDVSQDIQEMK	14	15
+scan25067	top candidate	massspec18_k8	P60903	111	3	17	40	54	PGFLENQKDPLAVDK	|||||||||||||||	PGFLENQKDPLAVDK	15	15
+scan25178	top candidate	massspec18_k8	P60842	71	1	10	325	334	VLLTTDLLAR	||:|||||||	VLITTDLLAR	9	10
+scan25185	top candidate	massspec18_k8	Q13451	75	1	10	74	83	NEPFVFSLGK	||||||||||	NEPFVFSLGK	10	10
+scan25317	top candidate	massspec18_k8	P56182	107	1	17	330	347	KLQDLA-NLFPEDELPEK	||||||  :|||||:|||	KLQDLAGGIFPEDEIPEK	14	18
+scan25376	top candidate	massspec18_k8	Q16543	122	1	17	353	369	EGEEAGPGDPLLEAVPK	|||||||||||||||||	EGEEAGPGDPLLEAVPK	17	17
+scan25616	top candidate	massspec18_k8	P48643	128	1	21	418	439	VVY-GNAAELSCALAVSQEADK	||| | |||:||||||||||||	VVYGGGAAEISCALAVSQEADK	19	22
+scan26071	top candidate	massspec18_k8	Q9UPQ0	95	1	13	199	211	DDSFDSLDSFGSR	|||||||||||||	DDSFDSLDSFGSR	13	13
+scan26462	top candidate	massspec18_k8	P33992	96	4	16	630	642	PFATEADVEEALR	|||||||||||||	PFATEADVEEALR	13	13
+scan26613	top candidate	massspec18_k8	Q9BZE4	85	1	10	416	425	YWDLMNLSEK	||||||||||	YWDLMNLSEK	10	10
+scan26681	top candidate	massspec18_k8	P08670	71	1	10	130	139	LLLAELEQLK	:|||||||||	ILLAELEQLK	9	10
+scan26787	top candidate	massspec18_k8	P05141	70	3	13	13	23	LAGGVAAALSK	||||||||:||	LAGGVAAAISK	10	11
+scan26798	top candidate	massspec18_k8	P09972	147	3	23	114	134	VPLAGTDGETTTQGLDGLSER	|||||||||||||||||||||	VPLAGTDGETTTQGLDGLSER	21	21
+scan26903	top candidate	massspec18_k8	P78527	125	5	21	2603	2619	TPMFVETQASQGTLQTR	|||||||||||||||||	TPMFVETQASQGTLQTR	17	17
+scan26970	top candidate	massspec18_k8	Q92688	82	1	11	76	86	LFGGLDMLAEK	:||||||||||	IFGGLDMLAEK	10	11
+scan26989	top candidate	massspec18_k8	Q15233	129	1	21	435	456	FGQAATMEGL-QLGGTPPAFNR	|||||||||:  :|||||||||	FGQAATMEGIGAIGGTPPAFNR	18	22
+scan27012	top candidate	massspec18_k8	Q9UIG0	128	1	17	827	843	FEPQVDTEAEDMLSAVK	||||||||||||:||||	FEPQVDTEAEDMISAVK	16	17
+scan27430	top candidate	massspec18_k8	P50395	143	1	19	36	54	NPYYGGESASLTPLEDLYK	||||||||||:||||||||	NPYYGGESASITPLEDLYK	18	19
+scan27440	top candidate	massspec18_k8	P12956	112	7	21	410	424	FVALVPQEEELDDQK	|||||||||||||||	FVALVPQEEELDDQK	15	15
+scan27453	top candidate	massspec18_k8	P11310	165	1	21	149	169	MTEEPLMCAYCVTEPGAGSDV	|||||||||||||||||||||	MTEEPLMCAYCVTEPGAGSDV	21	21
+scan27516	top candidate	massspec18_k8	P62263	131	1	18	67	84	DESSPYAAMLAAQDVAQR	||||||||||||||||||	DESSPYAAMLAAQDVAQR	18	18
+scan27715	top candidate	massspec18_k8	P07910	100	1	16	74	89	LMAGQVLDLNLAAEPK	  ||||||:|||||||	MIAGQVLDINLAAEPK	13	16
+scan27767	top candidate	massspec18_k8	P82912	112	1	15	60	74	FSLYPPLPGEESSLR	||:|||:||||||||	FSIYPPIPGEESSLR	13	15
+scan28177	top candidate	massspec18_k8	Q9Y3E5	107	1	15	120	134	APDEETLLALLAHAK	|||||||:|||||||	APDEETLIALLAHAK	14	15
+scan28242	top candidate	massspec18_k8	P09661	122	1	17	4	20	LTAELLEQAAQYTNAVR	|||||:|||||||||||	LTAELIEQAAQYTNAVR	16	17
+scan28348	top candidate	massspec18_k8	P49368	69	3	11	494	502	GLWEPLAVK	|:|||||||	GIWEPLAVK	8	9
+scan28560	top candidate	massspec18_k8	Q8TAQ2	121	1	18	343	359	MDDEPSPVPNVEEVTLPK	| ||||||||||||||||	M-DEPSPVPNVEEVTLPK	17	18
+scan28597	top candidate	massspec18_k8	Q8WUM0	104	6	18	696	708	VDTLCECLLEHEE	|||:|||||||||	VDTICECLLEHEE	12	13
+scan28623	top candidate	massspec18_k8	P50991	124	1	19	175	193	VVNTYSSLLSPMSVNAVMK	||  |||||||||||||||	VVSQYSSLLSPMSVNAVMK	17	19
+scan28928	top candidate	massspec18_k8	P00492	94	1	13	129	141	NVLLVEDLLDTGK	|||:|||::||||	NVLIVEDIIDTGK	10	13
+scan29397	top candidate	massspec18_k8	Q13619	80	1	11	123	133	EDSLDSVLFLK	|||||||||||	EDSLDSVLFLK	11	11
+scan29651	top candidate	massspec18_k8	O75369	96	1	16	2059	2074	VSYFPTVPVGYLVSTK	||||||||  |:||||	VSYFPTVPGVYIVSTK	13	16
+scan29749	top candidate	massspec18_k8	Q8NCW5	85	5	16	234	245	QPDLLLSLTAPK	|||||:||||||	QPDLLISLTAPK	11	12
+scan29929	top candidate	massspec18_k8	P60709	98	3	20	294	312	YLDTVLS-NTTMYPGLADR	|  ||||  ||||||:|||	YANTVLSGGTTMYPGIADR	14	19
+scan30173	top candidate	massspec18_k8	Q04837	128	1	18	128	145	QATTLLADNLLFLSDQTK	||||::|||::|||||||	QATTIIADNIIFLSDQTK	14	18
+scan30649	top candidate	massspec18_k8	Q00839	131	3	22	467	484	FPLKEPEEYTFLQNVPLEDR	||:  ||||||:||||||||	FPI--PEEYTFIQNVPLEDR	16	20
+scan30830	top candidate	massspec18_k8	Q8N7H5	97	3	14	201	212	PVEVMPVFPDFK	||||||||||||	PVEVMPVFPDFK	12	12
+scan31422	top candidate	massspec18_k8	P50991	95	1	13	307	319	DALSDLALHFLNK	|||||||||||||	DALSDLALHFLNK	13	13
+scan32311	top candidate	massspec18_k8	P49588	69	2	12	154	165	QL-QNLGLDDTK	|: |||||||||	QIWQNLGLDDTK	10	12
+scan32515	top candidate	massspec18_k8	A6NIZ1	76	1	12	152	163	LNVNELFYDVLR	:||||:|||  |	INVNEIFYDLVR	8	12
+scan32721	top candidate	massspec18_k8	Q8NC51	124	1	16	17	32	FDQLFDDESDPFEVLK	||||||||||||||||	FDQLFDDESDPFEVLK	16	16
+scan33344	top candidate	massspec18_k8	P78527	117	3	18	1576	1591	DLAVLELMQSSVDNTK	||||||||||||||||	DLAVLELMQSSVDNTK	16	16
+scan34224	top candidate	massspec18_k8	Q14137	79	13	23	285	295	AQEDPNAVLGR	|||||||||||	AQEDPNAVLGR	11	11
+scan34514	top candidate	massspec18_k8	Q7Z4Q2	82	1	11	122	132	DLMTPLVALLK	|:|||||||||	DIMTPLVALLK	10	11
+scan4887	top candidate	massspec18_k8	O95447	56	4	11	240	247	DLLQALKK	|:||||:|	DILQALQK	6	8
+scan5380	top candidate	massspec18_k8	P04899	89	1	12	55	66	LLHEDGYSEDEC	::||||||| ||	IIHEDGYSEEEC	9	12
+scan9051	top candidate	massspec18_k8	Q9H0E9	59	2	11	1006	1015	PLVAEKPLKE	|||||||| |	PLVAEKPLGE	9	10
+scan11568	top candidate	massspec18_k8	Q8N3F9	62	2	12	7	17	GPAAAAAPEAG	|||||||| ||	GPAAAAAPAAG	10	11
+scan14894	top candidate	massspec18_k8	Q96I24	85	1	15	196	210	MVMLQDGPQNTGADK	|||:||||  |||||	MVMIQDGPLPTGADK	12	15
+scan24806	top candidate	massspec18_k8	Q08752	73	3	12	128	137	NGSQFFLTTV	||||||:|||	NGSQFFITTV	9	10
+scan26439	top candidate	massspec18_k8	Q9P281	61	8	15	1935	1942	PPDLYSLV	|||:||:|	PPDIYSIV	6	8
+scan462	top candidate	comparison	Q8IV33	51	2	8	379	385	LLEKSDR	:||||||	ILEKSDR	6	7
+scan862	top candidate	comparison	O75369	79	1	11	837	847	VKVDPSHDASK	|||||||||||	VKVDPSHDASK	11	11
+scan1027	top candidate	comparison	Q14643	67	1	9	92	100	LHHAADLEK	|||||||||	LHHAADLEK	9	9
+scan1123	top candidate	comparison	Q8TF64	60	1	11	41	51	TQLAHSGPTGK	|||||  ||||	TQLAHGSPTGK	9	11
+scan1136	top candidate	comparison	P50914	51	1	7	122	128	LLKNEVK	::|||||	IIKNEVK	5	7
+scan1173	top candidate	comparison	O60869	58	3	10	136	143	DLGKPLEK	|:|||:||	DIGKPIEK	6	8
+scan1311	top candidate	comparison	P54577	84	1	12	136	147	LSSVVTQHDSKK	||||||||||||	LSSVVTQHDSKK	12	12
+scan2164	top candidate	comparison	P61513	47	1	7	7	13	KVGLVGK	|||:|||	KVGIVGK	6	7
+scan2422	top candidate	comparison	P61981	73	1	10	153	162	AYSEAHELSK	|||||||:||	AYSEAHEISK	9	10
+scan2509	top candidate	comparison	P60709	84	1	11	40	50	HQGVMVGMGQK	|||||||||||	HQGVMVGMGQK	11	11
+scan2862	top candidate	comparison	P0DMV8	59	1	8	510	517	LSKEELER	|||||:||	LSKEEIER	7	8
+scan3347	top candidate	comparison	Q9H2M9	54	1	13	1220	1230	VVSAAVQADKGHS	|||||||| : ||	VVSAAVQA-Q-HS	10	13
+scan3384	top candidate	comparison	P05787	63	3	10	305	312	TELSEMNR	||:|||||	TEISEMNR	7	8
+scan3464	top candidate	comparison	P39687	59	1	8	68	75	KLELSDNR	||||||||	KLELSDNR	8	8
+scan3572	top candidate	comparison	P26038	63	1	10	360	370	QA-QELEEQTR	:| ||||||||	KAQQELEEQTR	9	11
+scan3620	top candidate	comparison	Q96CS3	44	5	10	131	136	DPVGDL	|||||:	DPVGDI	5	6
+scan3989	top candidate	comparison	P04843	82	1	11	537	547	LKTEGSDLCDR	|||||||||||	LKTEGSDLCDR	11	11
+scan4103	top candidate	comparison	Q8IWY4	48	1	7	547	553	HLTADFE	|:|| ||	HITAEFE	5	7
+scan4504	top candidate	comparison	Q9Y263	61	1	8	296	303	VFTESEDR	||||||||	VFTESEDR	8	8
+scan4539	top candidate	comparison	P52888	56	3	10	629	636	QEGVLNSK	||||||||	QEGVLNSK	8	8
+scan4699	top candidate	comparison	Q04637	67	1	9	880	888	LKEELEEAR	|||||||||	LKEELEEAR	9	9
+scan4732	top candidate	comparison	Q13451	52	2	13	3	14	THDGAKNNGEAP	|  ||||| | |	TDEGAKNNEESP	8	12
+scan5007	top candidate	comparison	Q96NL6	50	1	11	99	109	HSELQGAAAQK	||||: |  :|	HSELKDAVEKK	6	11
+scan5075	top candidate	comparison	P39023	51	1	7	367	373	FLDTTSK	|:|||||	FIDTTSK	6	7
+scan5099	top candidate	comparison	P08621	59	1	9	192	200	LGGGLGGTR	|||||||||	LGGGLGGTR	9	9
+scan5299	top candidate	comparison	P02771	45	1	6	252	257	FTELQK	|||:||	FTEIQK	5	6
+scan5307	top candidate	comparison	P68104	73	1	10	21	30	STTTGHLLYK	|||||||:||	STTTGHLIYK	9	10
+scan5511	top candidate	comparison	Q99575	53	3	9	373	379	TELPDEK	|||||||	TELPDEK	7	7
+scan5630	top candidate	comparison	P35637	43	1	6	366	371	VSFATR	||||||	VSFATR	6	6
+scan5755	top candidate	comparison	P62888	43	3	8	12	17	ESLNSR	||:|||	ESINSR	5	6
+scan5775	top candidate	comparison	O75616	48	1	6	425	430	CDVDLR	||||:|	CDVDIR	5	6
+scan6007	top candidate	comparison	Q8IZL8	62	1	9	49	57	TGSAVAPVH	|||||||||	TGSAVAPVH	9	9
+scan6158	top candidate	comparison	P06748	63	1	9	240	248	GPSSVEDLK	|||||||:|	GPSSVEDIK	8	9
+scan6294	top candidate	comparison	P31327	59	1	7	936	942	NLHPWVK	|:|||||	NIHPWVK	6	7
+scan6393	top candidate	comparison	P61978	89	2	14	23	35	PREDMEEEQAFKR	| |||||||||||	PAEDMEEEQAFKR	12	13
+scan6565	top candidate	comparison	P68104	47	1	6	167	172	YEELVK	|||:||	YEEIVK	5	6
+scan6966	top candidate	comparison	P09012	69	1	10	61	70	EVSSATNALR	||||||||||	EVSSATNALR	10	10
+scan7143	top candidate	comparison	Q8WWI1	91	3	15	1578	1590	TTGVATTQSPTPR	|||||||||||||	TTGVATTQSPTPR	13	13
+scan7210	top candidate	comparison	P20073	64	1	8	298	305	CYQSEFGR	||||||||	CYQSEFGR	8	8
+scan7339	top candidate	comparison	O00566	106	1	14	485	498	TAEEENPEHVELQK	|||||||||||:||	TAEEENPEHVEIQK	13	14
+scan7442	top candidate	comparison	P14866	52	1	7	449	455	LNVCVSK	|||||||	LNVCVSK	7	7
+scan7445	top candidate	comparison	Q99615	76	1	11	80	90	EALGDAQQSVR	|||||||||||	EALGDAQQSVR	11	11
+scan7924	top candidate	comparison	P04075	76	1	11	332	342	ALANSLACQGK	|||||||||||	ALANSLACQGK	11	11
+scan8335	top candidate	comparison	Q14566	80	3	13	316	326	RDEEQTAESLK	|||||||||:|	RDEEQTAESIK	10	11
+scan8453	top candidate	comparison	Q13838	69	1	9	164	172	NCPHLVVGT	||||:||||	NCPHIVVGT	8	9
+scan8577	top candidate	comparison	P09496	64	1	9	121	129	LEALDANSR	|||||||||	LEALDANSR	9	9
+scan8677	top candidate	comparison	Q9BVL2	50	1	7	321	327	NAELALR	|||:|||	NAEIALR	6	7
+scan8928	top candidate	comparison	P57721	60	1	8	79	86	LNLSEGNC	:|:|||||	INISEGNC	6	8
+scan9394	top candidate	comparison	P05787	100	1	13	402	414	LESGMQNMSLHTK	|||||||||:|||	LESGMQNMSIHTK	12	13
+scan9592	top candidate	comparison	P26038	77	1	10	439	448	ESEAVEWQQK	||||||||||	ESEAVEWQQK	10	10
+scan9763	top candidate	comparison	O75390	81	1	11	341	351	VVPGYGHAVLR	|||||||||||	VVPGYGHAVLR	11	11
+scan9857	top candidate	comparison	O15427	95	1	13	416	428	EPQPEVAAAEEEK	|||||||||||||	EPQPEVAAAEEEK	13	13
+scan9878	top candidate	comparison	P54868	44	3	8	5	10	LTPVQR	||||:|	LTPVKR	5	6
+scan9895	top candidate	comparison	A0A1B0GUW6	40	1	5	515	519	YLELR	|||||	YLELR	5	5
+scan10008	top candidate	comparison	Q02218	62	1	8	565	572	LCEEAFAR	:|||||||	ICEEAFAR	7	8
+scan10303	top candidate	comparison	P18124	70	1	12	77	88	KANGFYVPAEPK	||  ||||||||	KAGNFYVPAEPK	10	12
+scan10413	top candidate	comparison	O43424	37	1	5	154	158	DVLLR	||:||	DVILR	4	5
+scan10427	top candidate	comparison	A6NK89	41	1	6	429	434	LQGLLK	|||||:	LQGLLQ	5	6
+scan10449	top candidate	comparison	Q9P2J5	55	1	7	237	243	YTLYSPK	||:||||	YTIYSPK	6	7
+scan10582	top candidate	comparison	Q9BQ39	63	1	8	468	475	DVESYLHR	|||||:||	DVESYIHR	7	8
+scan10599	top candidate	comparison	Q9UKR5	59	1	8	128	135	LEVEPVSR	||||||||	LEVEPVSR	8	8
+scan10673	top candidate	comparison	Q5JPB2	46	2	8	977	983	ASFVGSG	|||||||	ASFVGSG	7	7
+scan10787	top candidate	comparison	P05198	76	1	10	114	123	HVAEVLEYTK	||||||||||	HVAEVLEYTK	10	10
+scan10863	top candidate	comparison	O75121	44	2	7	72	77	GLPDPK	|:|||:	GIPDPQ	4	6
+scan10918	top candidate	comparison	O43809	90	1	12	24	35	YLQQTKPLTLER	|:||||||||||	YIQQTKPLTLER	11	12
+scan11135	top candidate	comparison	P50914	87	1	12	12	23	VAYVSFGPHAGK	||||||||||||	VAYVSFGPHAGK	12	12
+scan11155	top candidate	comparison	P11802	41	2	8	249	255	FPPTGPR	||| |||	FPPRGPR	6	7
+scan11185	top candidate	comparison	O75369	52	1	8	1426	1433	LAGPGLGS	:|||||||	IAGPGLGS	7	8
+scan11262	top candidate	comparison	P21291	92	1	15	66	84	YG----GYGQGAGTLSTDK	||    |||||||||||||	YGPKGYGYGQGAGTLSTDK	15	19
+scan11419	top candidate	comparison	P02545	79	1	11	79	89	AAYEAELGDAR	|||||||||||	AAYEAELGDAR	11	11
+scan11514	top candidate	comparison	Q96HB5	49	1	7	59	65	QEAELTG	|||||||	QEAELTG	7	7
+scan11758	top candidate	comparison	P08754	73	1	10	133	142	DGGVQACFSR	||||||||||	DGGVQACFSR	10	10
+scan12180	top candidate	comparison	P0CG47	42	1	6	43	48	LLFAGK	|:||||	LIFAGK	5	6
+scan12665	top candidate	comparison	P28356	52	1	7	100	106	VPPPPLA	|||||||	VPPPPLA	7	7
+scan12681	top candidate	comparison	P11142	62	1	11	128	137	KEMLAEAYLGK	|| :|||||||	KE-IAEAYLGK	9	11
+scan13009	top candidate	comparison	P35659	65	1	9	76	84	EPFTLAQGK	||||:||||	EPFTIAQGK	8	9
+scan13188	top candidate	comparison	P22003	43	1	6	308	313	SEVLLR	||||||	SEVLLR	6	6
+scan13254	top candidate	comparison	P38646	120	1	15	596	610	MEEFKDQLPADECNK	|||||||||||||||	MEEFKDQLPADECNK	15	15
+scan13264	top candidate	comparison	P67809	81	8	19	126	137	TGPGGVPVQGSK	||||||||||||	TGPGGVPVQGSK	12	12
+scan13291	top candidate	comparison	P53621	85	1	12	171	182	NLSPGAVESDVR	||||||||||||	NLSPGAVESDVR	12	12
+scan13354	top candidate	comparison	Q9Y2T3	74	1	10	436	445	NLEEVYVGGK	|:||||||||	NIEEVYVGGK	9	10
+scan13458	top candidate	comparison	O43151	49	2	12	1773	1783	TSSAVTAASYA	| ||||  |||	TDSAVTVSSYA	8	11
+scan13581	top candidate	comparison	P68431	50	1	7	58	64	STELLLR	|||||:|	STELLIR	6	7
+scan13939	top candidate	comparison	P30405	43	1	6	62	67	VVLELK	||||||	VVLELK	6	6
+scan14187	top candidate	comparison	O75380	44	1	7	69	75	LELLAEK	: |:||:	IDLIAEQ	3	7
+scan14211	top candidate	comparison	P49589	45	1	6	413	418	NFLTLK	||:|:|	NFITIK	4	6
+scan14242	top candidate	comparison	O14548	95	1	13	45	57	LTSDSTVYDYAGK	|||||||||||||	LTSDSTVYDYAGK	13	13
+scan14754	top candidate	comparison	Q13409	101	1	14	42	55	EAVAPVQEESDLEK	||||||||||||||	EAVAPVQEESDLEK	14	14
+scan14784	top candidate	comparison	Q07955	78	1	10	29	38	TKDLEDVFYK	|||:||||||	TKDIEDVFYK	9	10
+scan14895	top candidate	comparison	P23526	83	1	12	215	226	VAVVAGYGDVGK	||||||||||||	VAVVAGYGDVGK	12	12
+scan14965	top candidate	comparison	Q86VI4	60	1	7	94	100	MVAPWTR	|||||||	MVAPWTR	7	7
+scan15220	top candidate	comparison	P11142	88	1	14	328	342	QS-LHDLVLVGGSTR	:| :||:||||||||	KSQIHDIVLVGGSTR	11	15
+scan15359	top candidate	comparison	P63244	127	1	16	140	155	YTVQDESHSEWVSCVR	||||||||||||||||	YTVQDESHSEWVSCVR	16	16
+scan15412	top candidate	comparison	A5A3E0	80	1	11	729	739	AVFPSLVGRPR	|||||:|||||	AVFPSIVGRPR	10	11
+scan15484	top candidate	comparison	P30086	76	3	15	50	62	PRNLSWDGLDSGK	|  :|||||||||	PTSISWDGLDSGK	10	13
+scan15548	top candidate	comparison	Q07020	65	3	11	41	49	STFNQVVLK	|||||||||	STFNQVVLK	9	9
+scan16236	top candidate	comparison	Q04837	75	1	9	114	122	LDYGEYMDK	:||||||||	IDYGEYMDK	8	9
+scan16284	top candidate	comparison	P05387	101	1	14	25	38	KLLDSVGLEADDDR	|:|||||:||||||	KILDSVGIEADDDR	12	14
+scan16332	top candidate	comparison	P21926	74	1	10	170	179	KDVLETFTVK	||||||||||	KDVLETFTVK	10	10
+scan16343	top candidate	comparison	P62826	76	1	10	143	152	NLQYYDLSAK	||||||:|||	NLQYYDISAK	9	10
+scan16531	top candidate	comparison	P00505	98	1	13	69	81	DDNGKPYVLPSVR	|||||||||||||	DDNGKPYVLPSVR	13	13
+scan16556	top candidate	comparison	Q9Y4L1	58	1	12	252	262	EAGMQPGALQLR	||||||  ||:|	EAGMQP-QLQIR	9	12
+scan16628	top candidate	comparison	P38646	90	2	15	580	594	DAVNMAEGLLHD-ET	 |||||||::|| ||	EAVNMAEGIIHDTET	11	15
+scan16630	top candidate	comparison	Q96LD4	110	1	15	341	355	LALEDGCGPGPGPPR	|||||||||||||||	LALEDGCGPGPGPPR	15	15
+scan16746	top candidate	comparison	Q99259	46	3	9	236	242	LVGWASK	:||| ||	IVGWSSK	5	7
+scan16775	top candidate	comparison	P43897	96	1	13	234	246	YGALVLCETSEQK	|||||:|||||||	YGALVICETSEQK	12	13
+scan16912	top candidate	comparison	Q9Y4L1	57	1	8	68	75	TPVLVTLK	|||:||||	TPVIVTLK	7	8
+scan17194	top candidate	comparison	P48047	69	1	10	163	172	SFLSQGQVLK	||||||||||	SFLSQGQVLK	10	10
+scan17295	top candidate	comparison	Q96AE4	58	1	8	163	170	LLDQLVEK	||||:|||	LLDQIVEK	7	8
+scan17344	top candidate	comparison	O60841	99	1	14	285	298	VTVDTGVLPASEEK	|||||||:||||||	VTVDTGVIPASEEK	13	14
+scan17651	top candidate	comparison	P54577	89	1	12	419	430	LVVVLCNLKPQK	||||||||||||	LVVVLCNLKPQK	12	12
+scan17842	top candidate	comparison	P11310	97	1	13	396	408	LYQLYEGTSQLQR	:||:||||||:||	IYQIYEGTSQIQR	10	13
+scan17854	top candidate	comparison	O00148	67	1	8	200	207	MLEQLDMR	||||||||	MLEQLDMR	8	8
+scan17907	top candidate	comparison	Q16555	74	2	12	64	75	M-LPGGLDVHTR	| :|||:|||||	MVIPGGIDVHTR	9	12
+scan17955	top candidate	comparison	P09493	74	1	11	168	178	KLVLLEADLER	|||::| ||||	KLVIIESDLER	8	11
+scan18476	top candidate	comparison	P38646	108	1	17	468	485	QS-VFSTAADGQTQVELK	:| |||||||||||||:|	KSQVFSTAADGQTQVEIK	15	18
+scan18638	top candidate	comparison	Q15046	71	1	9	394	402	LNMVEELEK	:||||||||	INMVEELEK	8	9
+scan18830	top candidate	comparison	Q5JWF2	71	1	10	845	854	VLTSGLFETK	|||||:||||	VLTSGIFETK	9	10
+scan18839	top candidate	comparison	Q8IUD2	76	1	11	661	671	VSLLQGDLSEK	|||||||||||	VSLLQGDLSEK	11	11
+scan19109	top candidate	comparison	P57740	124	1	17	32	48	VLLQASQDENFGNTTPR	|||||||||||||||||	VLLQASQDENFGNTTPR	17	17
+scan19437	top candidate	comparison	Q13370	51	3	10	1011	1018	GQWLGAEE	|||| |||	GQWLEAEE	7	8
+scan19447	top candidate	comparison	Q99996	54	1	8	873	880	QVKNDLED	:|| ||||	KVKDDLED	6	8
+scan19557	top candidate	comparison	Q96HS1	92	1	12	274	285	TLGDTGFMPPDK	||||||||||||	TLGDTGFMPPDK	12	12
+scan19580	top candidate	comparison	P82914	71	1	12	63	74	LDDDPPSPTLLK	||||||  ||||	LDDDPPPSTLLK	10	12
+scan19918	top candidate	comparison	P78559	56	6	22	2171	2194	SKMKP-------PAEPSSAPAGAL	|  :|       |||| ||| | |	SSLQPAPPQLPSPAEPRSAPCGSL	11	24
+scan20032	top candidate	comparison	O75396	86	1	12	134	145	NLGSLNTELQDV	||||:|||||||	NLGSINTELQDV	11	12
+scan20089	top candidate	comparison	Q6KC79	88	1	12	342	353	AAMYDLLSSPSK	|||||::|||||	AAMYDIISSPSK	10	12
+scan20281	top candidate	comparison	P47712	65	1	8	607	614	LDPYVFDR	:|||||||	IDPYVFDR	7	8
+scan21062	top candidate	comparison	P04075	114	1	20	154	173	LADHTASPLALMENANVLAR	:  || | ||:|||||||||	IGEHTPSALAIMENANVLAR	14	20
+scan21246	top candidate	comparison	P61313	110	1	14	115	128	VLNSYWVGEDSTYK	||||||||||||||	VLNSYWVGEDSTYK	14	14
+scan21386	top candidate	comparison	P60709	94	3	18	100	113	EHPVLLGLTEAPLNPK	|||||  |||||||||	EHPVL--LTEAPLNPK	14	16
+scan21753	top candidate	comparison	Q02978	60	1	8	163	170	NVFNALLR	||||||:|	NVFNALIR	7	8
+scan22023	top candidate	comparison	Q6P2Q9	62	1	8	2114	2121	FLCLSDLR	|:|:||||	FICISDLR	6	8
+scan22110	top candidate	comparison	P11586	75	1	14	139	150	DLGGGDCFLPCTPK	||   |||:|||||	DL--NDCFIPCTPK	10	14
+scan22525	top candidate	comparison	P78527	82	1	11	3325	3335	DQNLLLGTTYR	|||:|||||||	DQNILLGTTYR	10	11
+scan22620	top candidate	comparison	P31327	91	1	12	1248	1259	GNDVLVLECNLR	||||||:|||||	GNDVLVIECNLR	11	12
+scan22757	top candidate	comparison	O75828	98	1	13	59	71	FHQLDLDDLQSLR	|||||:|||||:|	FHQLDIDDLQSIR	11	13
+scan22762	top candidate	comparison	A0A2R8Y619	63	1	9	97	105	LLLPGELAK	|||||||||	LLLPGELAK	9	9
+scan22801	top candidate	comparison	O95373	128	1	17	72	88	ETAPGDLSPYTLPEEDR	||||||:||||:|||||	ETAPGDISPYTIPEEDR	15	17
+scan22823	top candidate	comparison	P53621	106	1	15	1203	1217	VTTVTELGKDVLGLR	||||||:||||:|||	VTTVTEIGKDVIGLR	13	15
+scan22831	top candidate	comparison	Q14566	111	1	15	755	769	ELESELDSEEELLNK	|:|||:||||||:||	EIESEIDSEEELINK	12	15
+scan23004	top candidate	comparison	P04843	133	1	17	216	232	VHYENNSPFLTLTSMTR	|||||||||||:|||||	VHYENNSPFLTITSMTR	16	17
+scan23078	top candidate	comparison	Q14204	88	1	13	324	340	QALETVNDYNP----FP	|||||||||||    ||	QALETVNDYNPLMKDFP	13	17
+scan23194	top candidate	comparison	P62805	98	1	13	81	93	TVTAMDVVYALKR	|||||||||||||	TVTAMDVVYALKR	13	13
+scan23265	top candidate	comparison	Q14204	94	1	13	4330	4342	VLLTTQGVDMLSK	||||||||||:||	VLLTTQGVDMISK	12	13
+scan23281	top candidate	comparison	O95757	136	1	17	655	671	LEDTENWLYEDGEDQPK	|||||||||||||||||	LEDTENWLYEDGEDQPK	17	17
+scan23615	top candidate	comparison	P78527	158	1	22	3336	3357	LLANALSSEPACLAELEEDKAR	::|||||||||||||:||||||	IIANALSSEPACLAEIEEDKAR	19	22
+scan23839	top candidate	comparison	P09525	70	1	9	276	284	AELDMLDLR	||:||||:|	AEIDMLDIR	7	9
+scan23923	top candidate	comparison	O75874	85	1	11	250	260	LLDDMVAQAMK	|:|||||||||	LIDDMVAQAMK	10	11
+scan24509	top candidate	comparison	P62937	67	1	9	20	28	VSFELFADK	|||||||||	VSFELFADK	9	9
+scan24543	top candidate	comparison	Q9Y2L1	129	1	17	879	895	DKPNPQLLYDDELPSLK	|||||||:||||:||||	DKPNPQLIYDDEIPSLK	15	17
+scan24686	top candidate	comparison	P11169	116	1	15	229	243	LWGTQDVSQDLQEMK	||||||||||:||||	LWGTQDVSQDIQEMK	14	15
+scan25067	top candidate	comparison	P60903	111	3	17	40	54	PGFLENQKDPLAVDK	|||||||||||||||	PGFLENQKDPLAVDK	15	15
+scan25107	top candidate	comparison	P0CG38	56	1	8	884	891	EVTDYLMK	| ||||||	ELTDYLMK	7	8
+scan25178	top candidate	comparison	P60842	71	1	10	325	334	VLLTTDLLAR	||:|||||||	VLITTDLLAR	9	10
+scan25185	top candidate	comparison	Q13451	75	1	10	74	83	NEPFVFSLGK	||||||||||	NEPFVFSLGK	10	10
+scan25317	top candidate	comparison	P56182	107	1	17	330	347	KLQDLA-NLFPEDELPEK	||||||  :|||||:|||	KLQDLAGGIFPEDEIPEK	14	18
+scan25376	top candidate	comparison	Q16543	122	1	17	353	369	EGEEAGPGDPLLEAVPK	|||||||||||||||||	EGEEAGPGDPLLEAVPK	17	17
+scan25616	top candidate	comparison	P48643	128	1	21	418	439	VVY-GNAAELSCALAVSQEADK	||| | |||:||||||||||||	VVYGGGAAEISCALAVSQEADK	19	22
+scan26071	top candidate	comparison	Q9UPQ0	95	1	13	199	211	DDSFDSLDSFGSR	|||||||||||||	DDSFDSLDSFGSR	13	13
+scan26462	top candidate	comparison	P33992	96	4	16	630	642	PFATEADVEEALR	|||||||||||||	PFATEADVEEALR	13	13
+scan26613	top candidate	comparison	Q9BZE4	85	1	10	416	425	YWDLMNLSEK	||||||||||	YWDLMNLSEK	10	10
+scan26681	top candidate	comparison	P08670	71	1	10	130	139	LLLAELEQLK	:|||||||||	ILLAELEQLK	9	10
+scan26787	top candidate	comparison	P05141	70	3	13	13	23	LAGGVAAALSK	||||||||:||	LAGGVAAAISK	10	11
+scan26798	top candidate	comparison	P09972	147	3	23	114	134	VPLAGTDGETTTQGLDGLSER	|||||||||||||||||||||	VPLAGTDGETTTQGLDGLSER	21	21
+scan26903	top candidate	comparison	P78527	125	5	21	2603	2619	TPMFVETQASQGTLQTR	|||||||||||||||||	TPMFVETQASQGTLQTR	17	17
+scan26970	top candidate	comparison	Q92688	82	1	11	76	86	LFGGLDMLAEK	:||||||||||	IFGGLDMLAEK	10	11
+scan26989	top candidate	comparison	Q15233	129	1	21	435	456	FGQAATMEGL-QLGGTPPAFNR	|||||||||:  :|||||||||	FGQAATMEGIGAIGGTPPAFNR	18	22
+scan27012	top candidate	comparison	Q9UIG0	128	1	17	827	843	FEPQVDTEAEDMLSAVK	||||||||||||:||||	FEPQVDTEAEDMISAVK	16	17
+scan27430	top candidate	comparison	P50395	143	1	19	36	54	NPYYGGESASLTPLEDLYK	||||||||||:||||||||	NPYYGGESASITPLEDLYK	18	19
+scan27440	top candidate	comparison	P12956	112	7	21	410	424	FVALVPQEEELDDQK	|||||||||||||||	FVALVPQEEELDDQK	15	15
+scan27453	top candidate	comparison	P11310	165	1	21	149	169	MTEEPLMCAYCVTEPGAGSDV	|||||||||||||||||||||	MTEEPLMCAYCVTEPGAGSDV	21	21
+scan27516	top candidate	comparison	P62263	131	1	18	67	84	DESSPYAAMLAAQDVAQR	||||||||||||||||||	DESSPYAAMLAAQDVAQR	18	18
+scan27703	top candidate	comparison	Q9H4A6	59	4	14	272	282	LDLDEPVECLK	||||  |||||	LDLDPEVECLK	9	11
+scan27715	top candidate	comparison	P07910	100	1	16	74	89	LMAGQVLDLNLAAEPK	  ||||||:|||||||	MIAGQVLDINLAAEPK	13	16
+scan27767	top candidate	comparison	P82912	112	1	15	60	74	FSLYPPLPGEESSLR	||:|||:||||||||	FSIYPPIPGEESSLR	13	15
+scan28177	top candidate	comparison	Q9Y3E5	107	1	15	120	134	APDEETLLALLAHAK	|||||||:|||||||	APDEETLIALLAHAK	14	15
+scan28242	top candidate	comparison	P09661	122	1	17	4	20	LTAELLEQAAQYTNAVR	|||||:|||||||||||	LTAELIEQAAQYTNAVR	16	17
+scan28348	top candidate	comparison	P49368	69	3	11	494	502	GLWEPLAVK	|:|||||||	GIWEPLAVK	8	9
+scan28560	top candidate	comparison	Q8TAQ2	121	1	18	343	359	MDDEPSPVPNVEEVTLPK	| ||||||||||||||||	M-DEPSPVPNVEEVTLPK	17	18
+scan28597	top candidate	comparison	Q8WUM0	104	6	18	696	708	VDTLCECLLEHEE	|||:|||||||||	VDTICECLLEHEE	12	13
+scan28623	top candidate	comparison	P50991	124	1	19	175	193	VVNTYSSLLSPMSVNAVMK	||  |||||||||||||||	VVSQYSSLLSPMSVNAVMK	17	19
+scan28906	top candidate	comparison	Q9H0A8	49	1	7	51	57	LLQLTAD	:|:||||	ILKLTAD	5	7
+scan28917	top candidate	comparison	P36578	78	1	14	144	157	LEEVPELLP-VVEDK	:||||| || |||||	IEEVPE-LPLVVEDK	12	15
+scan28928	top candidate	comparison	P00492	94	1	13	129	141	NVLLVEDLLDTGK	|||:|||::||||	NVLIVEDIIDTGK	10	13
+scan29397	top candidate	comparison	Q13619	80	1	11	123	133	EDSLDSVLFLK	|||||||||||	EDSLDSVLFLK	11	11
+scan29651	top candidate	comparison	O75369	96	1	16	2059	2074	VSYFPTVPVGYLVSTK	||||||||  |:||||	VSYFPTVPGVYIVSTK	13	16
+scan29749	top candidate	comparison	Q8NCW5	85	5	16	234	245	QPDLLLSLTAPK	|||||:||||||	QPDLLISLTAPK	11	12
+scan29929	top candidate	comparison	P60709	98	3	20	294	312	YLDTVLS-NTTMYPGLADR	|  ||||  ||||||:|||	YANTVLSGGTTMYPGIADR	14	19
+scan30173	top candidate	comparison	Q04837	128	1	18	128	145	QATTLLADNLLFLSDQTK	||||::|||::|||||||	QATTIIADNIIFLSDQTK	14	18
+scan30649	top candidate	comparison	Q00839	131	3	22	467	484	FPLKEPEEYTFLQNVPLEDR	||:  ||||||:||||||||	FPI--PEEYTFIQNVPLEDR	16	20
+scan30830	top candidate	comparison	Q8N7H5	97	3	14	201	212	PVEVMPVFPDFK	||||||||||||	PVEVMPVFPDFK	12	12
+scan31422	top candidate	comparison	P50991	95	1	13	307	319	DALSDLALHFLNK	|||||||||||||	DALSDLALHFLNK	13	13
+scan32311	top candidate	comparison	P49588	69	2	12	154	165	QL-QNLGLDDTK	|: |||||||||	QIWQNLGLDDTK	10	12
+scan32515	top candidate	comparison	A6NIZ1	76	1	12	152	163	LNVNELFYDVLR	:||||:|||  |	INVNEIFYDLVR	8	12
+scan32721	top candidate	comparison	Q8NC51	124	1	16	17	32	FDQLFDDESDPFEVLK	||||||||||||||||	FDQLFDDESDPFEVLK	16	16
+scan33344	top candidate	comparison	P78527	117	3	18	1576	1591	DLAVLELMQSSVDNTK	||||||||||||||||	DLAVLELMQSSVDNTK	16	16
+scan34224	top candidate	comparison	Q14137	79	13	23	285	295	AQEDPNAVLGR	|||||||||||	AQEDPNAVLGR	11	11
+scan34514	top candidate	comparison	Q7Z4Q2	82	1	11	122	132	DLMTPLVALLK	|:|||||||||	DIMTPLVALLK	10	11
+scan38947	top candidate	comparison	Q92674	56	2	11	585	594	PALFYGALLS	| :|| ||||	PGIFYSALLS	7	10
+scan1165	top candidate	comparison	A8MWY0	45	2	7	63	68	DKDYHF	 |||||	EKDYHF	5	6
+scan2566	top candidate	comparison	P06737	45	1	7	459	465	LHSELVK	:|| :||	IHSDIVK	4	7
+scan3012	top candidate	comparison	O00472	49	1	10	195	204	TPSSSSLSQR	| ||| :|||	THSSSTISQR	7	10
+scan4853	top candidate	comparison	Q8NCQ7	46	4	9	75	80	TGHLLY	|||::|	TGHIIY	4	6
+scan4872	top candidate	comparison	Q96CT2	45	2	9	325	332	AQAFTHLK	|:||| ||	AKAFTDLK	6	8
+scan4887	top candidate	comparison	B2RXH8	60	1	11	176	185	KGDDLLQALKK	|||| |||:|:	KGDD-LQAIKQ	8	11
+scan5187	top candidate	comparison	Q9Y2R4	38	4	9	10	15	LGAGAK	||||||	LGAGAK	6	6
+scan5380	top candidate	comparison	P04899	89	1	12	55	66	LLHEDGYSEDEC	::||||||| ||	IIHEDGYSEEEC	9	12
+scan5807	top candidate	comparison	Q8N4X5	49	1	8	708	715	VLSSLEQK	|| |||||	VLASLEQK	7	8
+scan6464	top candidate	comparison	O95782	45	1	6	970	975	CELLAK	|||||:	CELLAQ	5	6
+scan6620	top candidate	comparison	Q6KC79	54	1	9	612	620	EMQQSEAQL	||:|||  |	EMKQSESRL	6	9
+scan6965	top candidate	comparison	Q8N584	49	1	7	27	33	LQDAELA	|||||||	LQDAELA	7	7
+scan7199	top candidate	comparison	P50570	49	3	11	36	44	VVGDQSAGK	||| |||||	VVGGQSAGK	8	9
+scan7592	top candidate	comparison	P12268	58	2	12	440	450	AQGVSGSLQDK	||||||  |||	AQGVSGAVQDK	9	11
+scan7822	top candidate	comparison	Q9NQT8	49	1	8	610	617	LLSSLEQK	:| ||||:	ILNSLEQQ	5	8
+scan9051	top candidate	comparison	Q9H0E9	59	2	11	1006	1015	PLVAEKPLKE	|||||||| |	PLVAEKPLGE	9	10
+scan9611	top candidate	comparison	Q8NBM8	67	1	12	161	172	YQSHDYAFSSVE	|| | |||| ||	YQAHGYAFSGVE	9	12
+scan9769	top candidate	comparison	Q76LX8	46	1	7	664	670	EFGNLTR	| |||||	EYGNLTR	6	7
+scan11238	top candidate	comparison	Q12767	46	2	8	33	39	VLDGHLR	|| ||||	VLEGHLR	6	7
+scan11568	top candidate	comparison	P31268	65	1	15	192	205	EGPAAAAAPEAGASP	||| |||||| || |	EGPTAAAAPE-GAVP	12	15
+scan12397	top candidate	comparison	O75970	49	2	10	1325	1333	DDADEFGYS	|  ||||||	DKEDEFGYS	7	9
+scan12479	top candidate	comparison	Q92620	48	1	11	1142	1153	AEVSPM-YGVQK	||  || | |::	AELGPMFYSVKQ	6	12
+scan13429	top candidate	comparison	Q9NR30	53	8	16	466	474	SMHGDMPQK	| ||| |||	SLHGDIPQK	7	9
+scan14894	top candidate	comparison	Q96I24	85	1	15	196	210	MVMLQDGPQNTGADK	|||:||||  |||||	MVMIQDGPLPTGADK	12	15
+scan14943	top candidate	comparison	Q9P2F8	54	1	7	566	572	LKEVLEY	|||||||	LKEVLEY	7	7
+scan15711	top candidate	comparison	Q86TB3	58	3	14	1417	1428	AGQFEPSETTAK	||: |||||| :	AGKPEPSETTPQ	8	12
+scan16433	top candidate	comparison	Q8WVM7	50	4	10	448	454	EEALAQR	|||||:|	EEALAKR	6	7
+scan16438	top candidate	comparison	Q6ZUG5	57	3	12	35	44	YLGDLHPSDL	 || ||||||	FLGALHPSDL	8	10
+scan17105	top candidate	comparison	O14678	53	1	12	353	369	DLSMKST-----GESEW	| | ||      |||||	DMSLKSQDCEILGESEW	9	17
+scan17281	top candidate	comparison	Q7Z2K8	54	3	13	607	625	GSLP--------TTQTDPR	||||        ||: |||	GSLPLEKGSPVTTTKADPR	9	19
+scan17388	top candidate	comparison	Q92736	51	8	16	1379	1387	EKPSALQQR	|||| |:||	EKPSRLKQR	7	9
+scan18187	top candidate	comparison	P98164	51	1	14	3307	3323	LAQHCVLASN--C-DEP	|||||| | |  | | |	LAQHCVDANNTFCFDNP	11	17
+scan18206	top candidate	comparison	Q15173	52	6	12	220	226	VYGQFLG	|||:|||	VYGKFLG	6	7
+scan18654	top candidate	comparison	O00469	62	1	9	441	449	SEDYVELVQ	||||| :||	SEDYVDIVQ	7	9
+scan19780	top candidate	comparison	Q01668	51	2	9	2149	2156	EELANEML	| || ||:	EDLADEMI	5	8
+scan20534	top candidate	comparison	P17987	59	1	12	485	496	WLGLDLSD-KGPR	|:|||||  | ||	WIGLDLSNGK-PR	9	13
+scan22218	top candidate	comparison	Q8WXE0	51	1	11	1095	1105	VPGSGTEPEPV	||| || | ||	VPGAGTAPKPV	8	11
+scan22265	top candidate	comparison	Q13885	83	1	12	163	174	LMNTFSVVPSPK	:|||||| ||||	IMNTFSVMPSPK	10	12
+scan22406	top candidate	comparison	Q5VTH9	53	1	16	671	684	QDATNL-LAGTEATLGH	:| ||: |||||   ||	KD-TNIYLAGTEE--GH	10	17
+scan22643	top candidate	comparison	Q96E35	48	4	10	54	60	YPFDQNR	| ||:||	YAFDKNR	5	7
+scan23791	top candidate	comparison	Q8NCL9	51	2	10	185	193	CLDALPLTM	|| || |||	CLEALGLTM	7	9
+scan24169	top candidate	comparison	P17844	75	3	13	441	451	AYTFFTPGNLK	||||||| |:|	AYTFFTPNNIK	9	11
+scan24492	top candidate	comparison	Q8IVF4	49	3	8	2362	2367	FDEYLK	||||:|	FDEYIK	5	6
+scan24806	top candidate	comparison	Q08752	73	3	12	128	137	NGSQFFLTTV	||||||:|||	NGSQFFITTV	9	10
+scan24820	top candidate	comparison	Q9P032	55	4	15	117	128	VEALTALNHYQL	||||| ||  :|	VEALTLLNNHKL	8	12
+scan26439	top candidate	comparison	Q9P281	61	8	15	1935	1942	PPDLYSLV	|||:||:|	PPDIYSIV	6	8
+scan26659	top candidate	comparison	O60890	62	2	15	518	531	LMVPSGNMGV-FDPT	|| || |||| | ||	LMTPS-NMGVIFGPT	11	15
+scan27310	top candidate	comparison	O95704	52	3	15	266	276	PEPLSPELEYLPR	| |:|||   |||	PDPISPE-D-LPR	8	13
+scan28825	top candidate	comparison	Q8IYH5	58	9	19	211	226	AVLNCAD-----NTQK	||:|| |     ||::	AVINCDDCQPDGNTKQ	7	16
+scan29642	top candidate	comparison	Q9H254	61	9	20	458	469	GFDLPAVEAATK	|  ||||||| |	GYELPAVEAAMK	9	12
