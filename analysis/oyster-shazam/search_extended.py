@@ -77,7 +77,7 @@ def main():
                     raise ValueError('Unexpected reference match')
                 if not queries <= {r['query_id'] for r in rows}:
                     raise ValueError('Search returned an unknown query')
-                if any(float(h['intersect_hashes'])<=0 for h in hits):
+                if any(int(h['intersect_hashes'])<=0 for h in hits):
                     raise ValueError('Search returned a row with no shared hashes')
                 if len({(h['query_name'],h['match_name']) for h in hits})!=len(hits):
                     raise ValueError('Search returned a duplicate query/run pair')
