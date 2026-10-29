@@ -1,7 +1,7 @@
 # nf-core/rnaseq 3.27.0, pre-processing only, on the Botryllus germline young-vs-old reads.
 # Run on Sherlock from this directory. The Nextflow head runs as a SLURM job (scripts/nf-head).
 #
-#   make test    2 samples x 200_000 read pairs, checks the setup end to end (about 1 h)
+#   make test    2 samples x 200_000 read pairs, checks the setup end to end (about 40 min)
 #   make run     all 18 samples
 #   make watch [HEAD_JOBNAME=nf-botryllus-rnaseq-test HEAD_SESSION=botryllus-rnaseq-test]
 #                attach to the running head's live task table (detach: Ctrl-b d)
