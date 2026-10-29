@@ -1,0 +1,40 @@
+{
+  "source": "Observed stdout from Sherlock Slurm job49221765, preserved locally after SSH credentials became unavailable",
+  "moltype": "hp",
+  "k": 30,
+  "query_id": "splash:all:0:13858:AAAATTTTATAAGATAATTACATCGAGAATG",
+  "reference_run": "SRR942484",
+  "index": "public-bivalve-indexes/hp.scaled5.rocksdb",
+  "cases": [
+    {
+      "scaled": 10,
+      "threshold": 0.01,
+      "output_all_comparisons": true,
+      "match_returned": false
+    },
+    {
+      "scaled": 10,
+      "threshold": 0.0,
+      "output_all_comparisons": true,
+      "match_returned": true,
+      "intersect_hashes": 1,
+      "containment": 0.004830917874396135
+    },
+    {
+      "scaled": 100,
+      "threshold": 0.01,
+      "output_all_comparisons": true,
+      "match_returned": true,
+      "intersect_hashes": 1,
+      "containment": 0.038461538461538464
+    },
+    {
+      "scaled": 100,
+      "threshold": 0.0,
+      "output_all_comparisons": true,
+      "match_returned": true,
+      "intersect_hashes": 1,
+      "containment": 0.038461538461538464
+    }
+  ]
+}

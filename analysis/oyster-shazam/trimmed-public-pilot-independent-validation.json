@@ -1,0 +1,37 @@
+{
+  "run": "DRR350416",
+  "scales": [
+    10,
+    100
+  ],
+  "checks": [
+    {
+      "moltype": "dna",
+      "pairs10": 3520,
+      "pairs100": 45,
+      "lost": 3475,
+      "self_containment": 1.0
+    },
+    {
+      "moltype": "protein",
+      "pairs10": 281806,
+      "pairs100": 77189,
+      "lost": 204617,
+      "self_containment": 1.0
+    },
+    {
+      "moltype": "dayhoff",
+      "pairs10": 297546,
+      "pairs100": 96367,
+      "lost": 201179,
+      "self_containment": 1.0
+    },
+    {
+      "moltype": "hp",
+      "pairs10": 41816,
+      "pairs100": 12527,
+      "lost": 29289,
+      "self_containment": 1.0
+    }
+  ]
+}

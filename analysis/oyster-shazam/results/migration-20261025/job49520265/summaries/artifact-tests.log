@@ -1,0 +1,12 @@
+test_corruption_rejected (test_artifacts.AdoptionTest.test_corruption_rejected) ... ok
+test_exact_matches_and_all_original_ids (test_artifacts.AdoptionTest.test_exact_matches_and_all_original_ids) ... ok
+test_incomplete_log_rejected (test_artifacts.AdoptionTest.test_incomplete_log_rejected) ... ok
+test_query_change_and_missing_membership (test_artifacts.AdoptionTest.test_query_change_and_missing_membership) ... ok
+test_unknown_missing_duplicate_wrong_count_pairs_rejected (test_artifacts.AdoptionTest.test_unknown_missing_duplicate_wrong_count_pairs_rejected) ... ok
+test_wrong_protocol_ownership_and_missing_provenance (test_artifacts.AdoptionTest.test_wrong_protocol_ownership_and_missing_provenance) ... ok
+test_zero_matches_requires_independent_zero (test_artifacts.AdoptionTest.test_zero_matches_requires_independent_zero) ... ok
+
+----------------------------------------------------------------------
+Ran 7 tests in 0.056s
+
+OK

@@ -1,0 +1,283 @@
+{
+  "queries": 380867,
+  "references": [
+    "DRR001454",
+    "DRR001605",
+    "DRR001606",
+    "DRR001607",
+    "DRR019449",
+    "DRR019450",
+    "DRR023887",
+    "DRR023888"
+  ],
+  "collections": [
+    {
+      "query_set": "splash-full-000",
+      "queries": 17232,
+      "empty": 7828,
+      "pairs": 9,
+      "sha256": "49ede03a18ad30fecc87e8bde3ad89d484f35eb867c0f9e175b8add205d3d63b"
+    },
+    {
+      "query_set": "dekupl-full-000",
+      "queries": 10000,
+      "empty": 8183,
+      "pairs": 0,
+      "sha256": "f67b26dbcce93cbc1865bf7bd9655301f760abfb8f90242f34784c1e5fac032a"
+    },
+    {
+      "query_set": "dekupl-full-001",
+      "queries": 10000,
+      "empty": 7810,
+      "pairs": 0,
+      "sha256": "1316b4b92e03ca87cf54fc37223071a2d8b0d6ecb788568f6b4fdd537260a2bf"
+    },
+    {
+      "query_set": "dekupl-full-002",
+      "queries": 10000,
+      "empty": 7844,
+      "pairs": 0,
+      "sha256": "7534f237f30f1489c2dcb335b11750007ebba30a35fdd68b574333879325a285"
+    },
+    {
+      "query_set": "dekupl-full-003",
+      "queries": 10000,
+      "empty": 7855,
+      "pairs": 0,
+      "sha256": "e75f84b07a8ba58bc03ae839ca9dc48f188570ca38d67b218c0bf8bc1f568b2f"
+    },
+    {
+      "query_set": "dekupl-full-004",
+      "queries": 10000,
+      "empty": 7852,
+      "pairs": 0,
+      "sha256": "c45abb90db2106dcba0b92a0673b4bcd5eb336612a642240719157ee51fca7aa"
+    },
+    {
+      "query_set": "dekupl-full-005",
+      "queries": 10000,
+      "empty": 7835,
+      "pairs": 0,
+      "sha256": "17aa5e531afd5365337b2bd6cdb06478059182a061491270d9ee0060a4107c8b"
+    },
+    {
+      "query_set": "dekupl-full-006",
+      "queries": 10000,
+      "empty": 7914,
+      "pairs": 1,
+      "sha256": "b094c8bf28cc6e458ed78d2ffaafb2a6e10ec8f7c25fece048429747b220cf47"
+    },
+    {
+      "query_set": "dekupl-full-007",
+      "queries": 10000,
+      "empty": 7825,
+      "pairs": 0,
+      "sha256": "68468990934dfc2e40562556cea8b679052bd1be9d0ccf4dd6d2694ca9051118"
+    },
+    {
+      "query_set": "dekupl-full-008",
+      "queries": 10000,
+      "empty": 7878,
+      "pairs": 3,
+      "sha256": "35af576c49f32b090c7b3025e296bd0c5e9947a8e069d94e9934a439eec9e180"
+    },
+    {
+      "query_set": "dekupl-full-009",
+      "queries": 10000,
+      "empty": 7936,
+      "pairs": 0,
+      "sha256": "669a062146db6ffb5fd8617991aa4b7af8d63c2a8871c9e1902e93984615eeaf"
+    },
+    {
+      "query_set": "dekupl-full-010",
+      "queries": 10000,
+      "empty": 7986,
+      "pairs": 0,
+      "sha256": "c54090c9cd6c5e364bc1878fbb4fc112a720ed90bbe7c347046876226c0cbc6c"
+    },
+    {
+      "query_set": "dekupl-full-011",
+      "queries": 10000,
+      "empty": 7891,
+      "pairs": 0,
+      "sha256": "0630de6fcb785d8033a22c4cfbca752655b136110ca9d8fbe9f4c710b2ecd34e"
+    },
+    {
+      "query_set": "dekupl-full-012",
+      "queries": 10000,
+      "empty": 7964,
+      "pairs": 0,
+      "sha256": "a2dd92c0853f9569f50358dccee5e5dd4ce769a92b3f7d7ea91bb679866e95ef"
+    },
+    {
+      "query_set": "dekupl-full-013",
+      "queries": 10000,
+      "empty": 7921,
+      "pairs": 3,
+      "sha256": "328feb5ca3be1df6ee5e832c86339492a47f364484817a0ece45c9a91177fbd3"
+    },
+    {
+      "query_set": "dekupl-full-014",
+      "queries": 10000,
+      "empty": 8008,
+      "pairs": 0,
+      "sha256": "4d50e5bfd6fcc5c5c9a65745aad5accc7102d7d300a92d6f49c798d4d587f33f"
+    },
+    {
+      "query_set": "dekupl-full-015",
+      "queries": 10000,
+      "empty": 7904,
+      "pairs": 1,
+      "sha256": "a49085684a4e30f07a0dc45f09a68edd053bbaec9d8dffaf6463db30915a3e9b"
+    },
+    {
+      "query_set": "dekupl-full-016",
+      "queries": 10000,
+      "empty": 7989,
+      "pairs": 2,
+      "sha256": "c3f3c98db793def85f89c9e4b3bce6db26a446ae29f976e62c2d41136843c745"
+    },
+    {
+      "query_set": "dekupl-full-017",
+      "queries": 10000,
+      "empty": 7871,
+      "pairs": 0,
+      "sha256": "6fdf7d19657513ce41117ac437613e6654b25e12f6d62b0b7d924cede8eec1cb"
+    },
+    {
+      "query_set": "dekupl-full-018",
+      "queries": 10000,
+      "empty": 7942,
+      "pairs": 0,
+      "sha256": "cbcaad79dd760dabcad3e0c57cd0fbf58df430ad0d04e25e5e4e9c127ddcd317"
+    },
+    {
+      "query_set": "dekupl-full-019",
+      "queries": 10000,
+      "empty": 7832,
+      "pairs": 1,
+      "sha256": "a515bc819ba8af3efaa72ca31f1599d71a1f14d6a3b5a9d7888483881322a560"
+    },
+    {
+      "query_set": "dekupl-full-020",
+      "queries": 10000,
+      "empty": 7862,
+      "pairs": 0,
+      "sha256": "bc1964a764efeb3cd095693e401ca5a002290aff5f6ce1a65f5943bd4d790054"
+    },
+    {
+      "query_set": "dekupl-full-021",
+      "queries": 10000,
+      "empty": 7871,
+      "pairs": 1,
+      "sha256": "9116ff6fea5f30adc217addd91bbf014756d0133c3e1b99d8023aa02fa4d090e"
+    },
+    {
+      "query_set": "dekupl-full-022",
+      "queries": 10000,
+      "empty": 7934,
+      "pairs": 0,
+      "sha256": "344be2b48fc06b1880bef9990113431f52d0e7db5a3a1a0671d223b812ffb90a"
+    },
+    {
+      "query_set": "dekupl-full-023",
+      "queries": 10000,
+      "empty": 7981,
+      "pairs": 0,
+      "sha256": "589d75235effc2199d1b428ab84d34ee267b79fa768a609c17e0143ead7658e4"
+    },
+    {
+      "query_set": "dekupl-full-024",
+      "queries": 10000,
+      "empty": 7916,
+      "pairs": 0,
+      "sha256": "d4a9f2784f5aecb8f7d96f9529b0668ecfa55760e27127c93a091dde091d2251"
+    },
+    {
+      "query_set": "dekupl-full-025",
+      "queries": 10000,
+      "empty": 8037,
+      "pairs": 1,
+      "sha256": "f8e265c0981a77e99c3ac9f652d23767c4c4f782d089f93a65a246825f05473d"
+    },
+    {
+      "query_set": "dekupl-full-026",
+      "queries": 10000,
+      "empty": 7915,
+      "pairs": 7,
+      "sha256": "54ed3ccb38216a2f0bc7aa83e5cc5bb89d89e013d450186dd275c229a3b8919c"
+    },
+    {
+      "query_set": "dekupl-full-027",
+      "queries": 10000,
+      "empty": 7915,
+      "pairs": 1,
+      "sha256": "d77adfefc428ef0eb2cf4371b2b7bf3f627866791772e32efa93555a75158d5f"
+    },
+    {
+      "query_set": "dekupl-full-028",
+      "queries": 10000,
+      "empty": 7912,
+      "pairs": 2,
+      "sha256": "39b7ca0930f09b88d3b6813fc014fa154834d207cfe6fceb85a3e9c376f5001c"
+    },
+    {
+      "query_set": "dekupl-full-029",
+      "queries": 10000,
+      "empty": 7962,
+      "pairs": 0,
+      "sha256": "811c0b3658e91f17ac52214be4d76bb83f5995312a997c80b55d751456918961"
+    },
+    {
+      "query_set": "dekupl-full-030",
+      "queries": 10000,
+      "empty": 7963,
+      "pairs": 2,
+      "sha256": "81a96502d8b454c68e9e69d72aa02b47e8698472d75d776b13fcc9de453fee94"
+    },
+    {
+      "query_set": "dekupl-full-031",
+      "queries": 10000,
+      "empty": 7966,
+      "pairs": 1,
+      "sha256": "a14267c0755ed6f111692428b87c2725d39fcdbad798a85afb8d68fa7ed1f66c"
+    },
+    {
+      "query_set": "dekupl-full-032",
+      "queries": 10000,
+      "empty": 7980,
+      "pairs": 0,
+      "sha256": "c6ec231743b28bad2acd0e39c440e0ba1c1c9ebed44de4218d77c02918ca4d5a"
+    },
+    {
+      "query_set": "dekupl-full-033",
+      "queries": 10000,
+      "empty": 7997,
+      "pairs": 0,
+      "sha256": "08efa32d6c55b7913c6acb30a243740202430cac7e06e4a14f8dbd00411540d6"
+    },
+    {
+      "query_set": "dekupl-full-034",
+      "queries": 10000,
+      "empty": 8034,
+      "pairs": 0,
+      "sha256": "3b536de8f15fe3d3a47249a674eb6396f7f1f48237588e2c82ccc3e79ad16dd8"
+    },
+    {
+      "query_set": "dekupl-full-035",
+      "queries": 10000,
+      "empty": 7996,
+      "pairs": 1,
+      "sha256": "7b718e0c7b62ea5791bd36a81359144cc2e5210368b3e9b8c424d37dd1a375b6"
+    },
+    {
+      "query_set": "dekupl-full-036",
+      "queries": 3635,
+      "empty": 2940,
+      "pairs": 0,
+      "sha256": "ae857ad8a9df65b71f154e096d6650c13b3cc8593d12d8d4074d7b11e00863dc"
+    }
+  ],
+  "match_pairs": 36,
+  "validation": "All original DNA hashes and exact pair/intersection equality; historical build code/version unrecorded"
+}

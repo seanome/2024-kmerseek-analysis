@@ -1,0 +1,566 @@
+{
+  "protocol": "all-six-frames split stop/X; compare minimum1 vs20aa; DNA unchanged",
+  "scope": "1000 systematic DE contigs,1000 systematic first-batch SPLASH extensions; entire small public run",
+  "reference": {
+    "run_accession": "SRR5945967",
+    "study_accession": "PRJNA398984",
+    "secondary_study_accession": "SRP115712",
+    "sample_accession": "SAMN07520777",
+    "scientific_name": "Mya truncata",
+    "tax_id": "156761",
+    "experiment_title": "Illumina HiSeq 2000 sequencing: RNASeq of Mya truncata : Mantle tissue 5 DAYS DAMAGED Vs ex11 3.3D",
+    "sample_title": "Mya truncata:LIB20612:5 DAYS DAMAGED:Vs ex11 3.3D",
+    "study_title": "The Molluscan Shell Secretome: Unlocking Calcium Pathways in a Changing World",
+    "library_layout": "PAIRED",
+    "library_strategy": "RNA-Seq",
+    "library_source": "TRANSCRIPTOMIC",
+    "library_selection": "cDNA",
+    "instrument_platform": "ILLUMINA",
+    "read_count": "955",
+    "base_count": "192910",
+    "fastq_bytes": "89236;86868",
+    "fastq_ftp": "ftp.sra.ebi.ac.uk/vol1/fastq/SRR594/007/SRR5945967/SRR5945967_1.fastq.gz;ftp.sra.ebi.ac.uk/vol1/fastq/SRR594/007/SRR5945967/SRR5945967_2.fastq.gz",
+    "fastq_md5": "c1722f4571636a13387c5c138b248d04;62720f1ef4680873955f63a3f54b96f3",
+    "tissue_type": "Mantle",
+    "tissue_lib": "",
+    "dev_stage": "Adult",
+    "sex": "",
+    "first_public": "2018-03-03"
+  },
+  "source_hashes": {
+    "splash": "5f97dada71b75fc5810133e97dcf9d8f61a65bf78547b011122d965c255e6884",
+    "de_export": "680db97457ab55ec8efd3865154209edebffd24ffc825ca64d862d1bfdf69410",
+    "sample": "724d7f9ba46f70bc7784d53186259136853542f779806d952c0f7352b944bebb"
+  },
+  "arms": {
+    "1": {
+      "stretches": {
+        "splash": {
+          "records": 1000,
+          "represented": 1000,
+          "stretches": 17591,
+          "amino_acids": 233826
+        },
+        "dekupl": {
+          "records": 1000,
+          "represented": 1000,
+          "stretches": 10694,
+          "amino_acids": 110062
+        },
+        "reference": {
+          "records": 1881,
+          "represented": 1881,
+          "stretches": 26368,
+          "amino_acids": 344777
+        }
+      },
+      "measurements": [
+        {
+          "group": "splash",
+          "moltype": "protein",
+          "scaled": 10,
+          "queries": 1000,
+          "nonempty": 999,
+          "hashes": 14467,
+          "signature_bytes": 193535,
+          "matches": 10,
+          "match_ids": [
+            "splash:full:0:11717:AAAAAACGCGACGCAGTCGGATAAAGTGAAA",
+            "splash:full:0:13027:AAAAAATTGATAAAGAGAGAGTTGATGAAGA",
+            "splash:full:0:13320:AAAAACAAGGAGCAACGATGGGTAAGGAAAA",
+            "splash:full:0:14578:AAAAACTTTAAACAGTGAAATATTACCTTGT",
+            "splash:full:0:15457:AAAAACAAAGAGAATGTCAAATTCAAGGTCA",
+            "splash:full:0:16077:AAAAAAATTGTTCATCCATTTTGTTAAAGTA",
+            "splash:full:0:16680:AAAAACAGTCAGCTTTGACAGAGTATAAAAC",
+            "splash:full:0:17197:AAAAAATGATGTGGCAAAAATGCTGCATTAA",
+            "splash:full:0:17214:AAAAAATGATGTGGCAAAAATGCTGCATTAA",
+            "splash:full:0:3291:AAAAAACTTTTGGAAAGCAAAATACGTCTGA"
+          ]
+        },
+        {
+          "group": "dekupl",
+          "moltype": "protein",
+          "scaled": 10,
+          "queries": 1000,
+          "nonempty": 944,
+          "hashes": 5721,
+          "signature_bytes": 100429,
+          "matches": 5,
+          "match_ids": [
+            "dekupl:full:127636:5268d1f7c4173d18",
+            "dekupl:full:193454:5587cc4a56a96642",
+            "dekupl:full:1:50e93277439f8d45",
+            "dekupl:full:240363:b6bb34ac0b810330",
+            "dekupl:full:324727:cd7a7af53f5f5aa6"
+          ]
+        },
+        {
+          "group": "reference",
+          "moltype": "protein",
+          "scaled": 10,
+          "records": 1881,
+          "hashes": 16292,
+          "signature_bytes": 147912
+        },
+        {
+          "group": "splash",
+          "moltype": "protein",
+          "scaled": 100,
+          "queries": 1000,
+          "nonempty": 678,
+          "hashes": 1492,
+          "signature_bytes": 55237,
+          "matches": 2,
+          "match_ids": [
+            "splash:full:0:14578:AAAAACTTTAAACAGTGAAATATTACCTTGT",
+            "splash:full:0:3291:AAAAAACTTTTGGAAAGCAAAATACGTCTGA"
+          ]
+        },
+        {
+          "group": "dekupl",
+          "moltype": "protein",
+          "scaled": 100,
+          "queries": 1000,
+          "nonempty": 382,
+          "hashes": 584,
+          "signature_bytes": 34106,
+          "matches": 0,
+          "match_ids": []
+        },
+        {
+          "group": "reference",
+          "moltype": "protein",
+          "scaled": 100,
+          "records": 1881,
+          "hashes": 1649,
+          "signature_bytes": 14860
+        },
+        {
+          "group": "splash",
+          "moltype": "dayhoff",
+          "scaled": 10,
+          "queries": 1000,
+          "nonempty": 987,
+          "hashes": 9745,
+          "signature_bytes": 145783,
+          "matches": 23,
+          "match_ids": [
+            "splash:full:0:12114:AAAAAAGGCTGTCCAAATGATGTTGAGGCCT",
+            "splash:full:0:12631:AAAAAATCCCTGGGGGCAGGGCTTGTCACAA",
+            "splash:full:0:13130:AAAAACAAAAATGGGGTGAGGAGGCGCGTGT",
+            "splash:full:0:13320:AAAAACAAGGAGCAACGATGGGTAAGGAAAA",
+            "splash:full:0:13440:AAAAACACCCTCACCCAAACCAGGAACCCCT",
+            "splash:full:0:15215:AAAAAATAGAGTAATGGAATGTCAAAGTCTG",
+            "splash:full:0:15457:AAAAACAAAGAGAATGTCAAATTCAAGGTCA",
+            "splash:full:0:15560:AAAAACACCTCTGGGCGTCTGTACCTGAATA",
+            "splash:full:0:15663:AAAAACATTCCATGACCAAATCTAGGTAAGG",
+            "splash:full:0:15681:AAAAACCAACCCAAGGCCATGGAAATTCCTG",
+            "splash:full:0:15991:AAAAAGAAACACTACAACGGCGTAGCCAGCC",
+            "splash:full:0:1602:AAAAAAATCCGTACATTAGAGAGCCCATAAA",
+            "splash:full:0:16111:AAAAAAGAAACAAAAGTTTTGAAATCTCCTC",
+            "splash:full:0:16404:AAAAACGAATAGACCACACAAGAGACAATTT",
+            "splash:full:0:16422:AAAAACGGCTCACAATACTGAACTTTCTGGC",
+            "splash:full:0:16559:AAAAAACGGGTGACCCAGTATCACTTTACAG",
+            "splash:full:0:16749:AAAAACTGATGATAAAGATAGAACAGGACAC",
+            "splash:full:0:17059:AAAAAAGCATTATCATACGTGTGATCCCATA",
+            "splash:full:0:17163:AAAAAAGCATTATCATACGTGTGATCCCATA",
+            "splash:full:0:17197:AAAAAATGATGTGGCAAAAATGCTGCATTAA",
+            "splash:full:0:17214:AAAAAATGATGTGGCAAAAATGCTGCATTAA",
+            "splash:full:0:3343:AAAAAAGAAACAGAGAAAGCTGATAATACCA",
+            "splash:full:0:5531:AAAAAATCCGTACATTAGAGAGCCCATAAAA"
+          ]
+        },
+        {
+          "group": "dekupl",
+          "moltype": "dayhoff",
+          "scaled": 10,
+          "queries": 1000,
+          "nonempty": 573,
+          "hashes": 2939,
+          "signature_bytes": 63925,
+          "matches": 12,
+          "match_ids": [
+            "dekupl:full:128000:2b0ee60efedff46e",
+            "dekupl:full:158182:16e16e4388dc387e",
+            "dekupl:full:169091:a089ad35f1c3819c",
+            "dekupl:full:191636:6d1aebd0292730e6",
+            "dekupl:full:219272:57a6222a27788baa",
+            "dekupl:full:235272:eb1fe65f0c627eb1",
+            "dekupl:full:246181:bfc58edc8239a32a",
+            "dekupl:full:257818:78dc5739f2791acb",
+            "dekupl:full:303999:e47ef72bb4a88aae",
+            "dekupl:full:319636:daca4a8c2bbe0849",
+            "dekupl:full:40728:8816595a9b016235",
+            "dekupl:full:41091:e68f86be69cc1196"
+          ]
+        },
+        {
+          "group": "reference",
+          "moltype": "dayhoff",
+          "scaled": 10,
+          "records": 1881,
+          "hashes": 11088,
+          "signature_bytes": 101430
+        },
+        {
+          "group": "splash",
+          "moltype": "dayhoff",
+          "scaled": 100,
+          "queries": 1000,
+          "nonempty": 535,
+          "hashes": 997,
+          "signature_bytes": 46755,
+          "matches": 5,
+          "match_ids": [
+            "splash:full:0:15560:AAAAACACCTCTGGGCGTCTGTACCTGAATA",
+            "splash:full:0:15681:AAAAACCAACCCAAGGCCATGGAAATTCCTG",
+            "splash:full:0:16559:AAAAAACGGGTGACCCAGTATCACTTTACAG",
+            "splash:full:0:17059:AAAAAAGCATTATCATACGTGTGATCCCATA",
+            "splash:full:0:17163:AAAAAAGCATTATCATACGTGTGATCCCATA"
+          ]
+        },
+        {
+          "group": "dekupl",
+          "moltype": "dayhoff",
+          "scaled": 100,
+          "queries": 1000,
+          "nonempty": 173,
+          "hashes": 289,
+          "signature_bytes": 26056,
+          "matches": 2,
+          "match_ids": [
+            "dekupl:full:235272:eb1fe65f0c627eb1",
+            "dekupl:full:257818:78dc5739f2791acb"
+          ]
+        },
+        {
+          "group": "reference",
+          "moltype": "dayhoff",
+          "scaled": 100,
+          "records": 1881,
+          "hashes": 1148,
+          "signature_bytes": 10465
+        },
+        {
+          "group": "splash",
+          "moltype": "hp",
+          "scaled": 10,
+          "queries": 1000,
+          "nonempty": 313,
+          "hashes": 2081,
+          "signature_bytes": 52473,
+          "matches": 0,
+          "match_ids": []
+        },
+        {
+          "group": "dekupl",
+          "moltype": "hp",
+          "scaled": 10,
+          "queries": 1000,
+          "nonempty": 65,
+          "hashes": 519,
+          "signature_bytes": 25775,
+          "matches": 0,
+          "match_ids": []
+        },
+        {
+          "group": "reference",
+          "moltype": "hp",
+          "scaled": 10,
+          "records": 1881,
+          "hashes": 1089,
+          "signature_bytes": 10492
+        },
+        {
+          "group": "splash",
+          "moltype": "hp",
+          "scaled": 100,
+          "queries": 1000,
+          "nonempty": 118,
+          "hashes": 201,
+          "signature_bytes": 28131,
+          "matches": 0,
+          "match_ids": []
+        },
+        {
+          "group": "dekupl",
+          "moltype": "hp",
+          "scaled": 100,
+          "queries": 1000,
+          "nonempty": 26,
+          "hashes": 46,
+          "signature_bytes": 19326,
+          "matches": 0,
+          "match_ids": []
+        },
+        {
+          "group": "reference",
+          "moltype": "hp",
+          "scaled": 100,
+          "records": 1881,
+          "hashes": 118,
+          "signature_bytes": 1333
+        }
+      ],
+      "segment_comparisons": 163959,
+      "manysketch_sha256": "f0c09298858dce34e87a23baaf6db47238c3af63224cbcc1109dbb7c3353b494"
+    },
+    "20": {
+      "stretches": {
+        "splash": {
+          "records": 1000,
+          "represented": 989,
+          "stretches": 4151,
+          "amino_acids": 129194
+        },
+        "dekupl": {
+          "records": 1000,
+          "represented": 341,
+          "stretches": 1137,
+          "amino_acids": 32866
+        },
+        "reference": {
+          "records": 1881,
+          "represented": 1823,
+          "stretches": 6812,
+          "amino_acids": 193413
+        }
+      },
+      "measurements": [
+        {
+          "group": "splash",
+          "moltype": "protein",
+          "scaled": 10,
+          "queries": 1000,
+          "nonempty": 971,
+          "hashes": 10372,
+          "signature_bytes": 151609,
+          "matches": 7,
+          "match_ids": [
+            "splash:full:0:13027:AAAAAATTGATAAAGAGAGAGTTGATGAAGA",
+            "splash:full:0:13320:AAAAACAAGGAGCAACGATGGGTAAGGAAAA",
+            "splash:full:0:14578:AAAAACTTTAAACAGTGAAATATTACCTTGT",
+            "splash:full:0:15457:AAAAACAAAGAGAATGTCAAATTCAAGGTCA",
+            "splash:full:0:16680:AAAAACAGTCAGCTTTGACAGAGTATAAAAC",
+            "splash:full:0:17197:AAAAAATGATGTGGCAAAAATGCTGCATTAA",
+            "splash:full:0:17214:AAAAAATGATGTGGCAAAAATGCTGCATTAA"
+          ]
+        },
+        {
+          "group": "dekupl",
+          "moltype": "protein",
+          "scaled": 10,
+          "queries": 1000,
+          "nonempty": 319,
+          "hashes": 2626,
+          "signature_bytes": 54741,
+          "matches": 2,
+          "match_ids": [
+            "dekupl:full:127636:5268d1f7c4173d18",
+            "dekupl:full:240363:b6bb34ac0b810330"
+          ]
+        },
+        {
+          "group": "reference",
+          "moltype": "protein",
+          "scaled": 10,
+          "records": 1881,
+          "hashes": 12109,
+          "signature_bytes": 110474
+        },
+        {
+          "group": "splash",
+          "moltype": "protein",
+          "scaled": 100,
+          "queries": 1000,
+          "nonempty": 530,
+          "hashes": 1081,
+          "signature_bytes": 47624,
+          "matches": 1,
+          "match_ids": [
+            "splash:full:0:14578:AAAAACTTTAAACAGTGAAATATTACCTTGT"
+          ]
+        },
+        {
+          "group": "dekupl",
+          "moltype": "protein",
+          "scaled": 100,
+          "queries": 1000,
+          "nonempty": 151,
+          "hashes": 261,
+          "signature_bytes": 24938,
+          "matches": 0,
+          "match_ids": []
+        },
+        {
+          "group": "reference",
+          "moltype": "protein",
+          "scaled": 100,
+          "records": 1881,
+          "hashes": 1222,
+          "signature_bytes": 11117
+        },
+        {
+          "group": "splash",
+          "moltype": "dayhoff",
+          "scaled": 10,
+          "queries": 1000,
+          "nonempty": 959,
+          "hashes": 8415,
+          "signature_bytes": 131858,
+          "matches": 18,
+          "match_ids": [
+            "splash:full:0:12114:AAAAAAGGCTGTCCAAATGATGTTGAGGCCT",
+            "splash:full:0:12631:AAAAAATCCCTGGGGGCAGGGCTTGTCACAA",
+            "splash:full:0:13320:AAAAACAAGGAGCAACGATGGGTAAGGAAAA",
+            "splash:full:0:13440:AAAAACACCCTCACCCAAACCAGGAACCCCT",
+            "splash:full:0:15215:AAAAAATAGAGTAATGGAATGTCAAAGTCTG",
+            "splash:full:0:15560:AAAAACACCTCTGGGCGTCTGTACCTGAATA",
+            "splash:full:0:15663:AAAAACATTCCATGACCAAATCTAGGTAAGG",
+            "splash:full:0:15681:AAAAACCAACCCAAGGCCATGGAAATTCCTG",
+            "splash:full:0:15991:AAAAAGAAACACTACAACGGCGTAGCCAGCC",
+            "splash:full:0:1602:AAAAAAATCCGTACATTAGAGAGCCCATAAA",
+            "splash:full:0:16404:AAAAACGAATAGACCACACAAGAGACAATTT",
+            "splash:full:0:16559:AAAAAACGGGTGACCCAGTATCACTTTACAG",
+            "splash:full:0:16749:AAAAACTGATGATAAAGATAGAACAGGACAC",
+            "splash:full:0:17059:AAAAAAGCATTATCATACGTGTGATCCCATA",
+            "splash:full:0:17163:AAAAAAGCATTATCATACGTGTGATCCCATA",
+            "splash:full:0:17197:AAAAAATGATGTGGCAAAAATGCTGCATTAA",
+            "splash:full:0:17214:AAAAAATGATGTGGCAAAAATGCTGCATTAA",
+            "splash:full:0:5531:AAAAAATCCGTACATTAGAGAGCCCATAAAA"
+          ]
+        },
+        {
+          "group": "dekupl",
+          "moltype": "dayhoff",
+          "scaled": 10,
+          "queries": 1000,
+          "nonempty": 312,
+          "hashes": 2045,
+          "signature_bytes": 48307,
+          "matches": 8,
+          "match_ids": [
+            "dekupl:full:128000:2b0ee60efedff46e",
+            "dekupl:full:158182:16e16e4388dc387e",
+            "dekupl:full:169091:a089ad35f1c3819c",
+            "dekupl:full:191636:6d1aebd0292730e6",
+            "dekupl:full:235272:eb1fe65f0c627eb1",
+            "dekupl:full:246181:bfc58edc8239a32a",
+            "dekupl:full:319636:daca4a8c2bbe0849",
+            "dekupl:full:40728:8816595a9b016235"
+          ]
+        },
+        {
+          "group": "reference",
+          "moltype": "dayhoff",
+          "scaled": 10,
+          "records": 1881,
+          "hashes": 9579,
+          "signature_bytes": 87846
+        },
+        {
+          "group": "splash",
+          "moltype": "dayhoff",
+          "scaled": 100,
+          "queries": 1000,
+          "nonempty": 476,
+          "hashes": 862,
+          "signature_bytes": 44326,
+          "matches": 5,
+          "match_ids": [
+            "splash:full:0:15560:AAAAACACCTCTGGGCGTCTGTACCTGAATA",
+            "splash:full:0:15681:AAAAACCAACCCAAGGCCATGGAAATTCCTG",
+            "splash:full:0:16559:AAAAAACGGGTGACCCAGTATCACTTTACAG",
+            "splash:full:0:17059:AAAAAAGCATTATCATACGTGTGATCCCATA",
+            "splash:full:0:17163:AAAAAAGCATTATCATACGTGTGATCCCATA"
+          ]
+        },
+        {
+          "group": "dekupl",
+          "moltype": "dayhoff",
+          "scaled": 100,
+          "queries": 1000,
+          "nonempty": 108,
+          "hashes": 205,
+          "signature_bytes": 23139,
+          "matches": 1,
+          "match_ids": [
+            "dekupl:full:235272:eb1fe65f0c627eb1"
+          ]
+        },
+        {
+          "group": "reference",
+          "moltype": "dayhoff",
+          "scaled": 100,
+          "records": 1881,
+          "hashes": 988,
+          "signature_bytes": 9064
+        },
+        {
+          "group": "splash",
+          "moltype": "hp",
+          "scaled": 10,
+          "queries": 1000,
+          "nonempty": 313,
+          "hashes": 2081,
+          "signature_bytes": 52473,
+          "matches": 0,
+          "match_ids": []
+        },
+        {
+          "group": "dekupl",
+          "moltype": "hp",
+          "scaled": 10,
+          "queries": 1000,
+          "nonempty": 65,
+          "hashes": 519,
+          "signature_bytes": 25775,
+          "matches": 0,
+          "match_ids": []
+        },
+        {
+          "group": "reference",
+          "moltype": "hp",
+          "scaled": 10,
+          "records": 1881,
+          "hashes": 1089,
+          "signature_bytes": 10492
+        },
+        {
+          "group": "splash",
+          "moltype": "hp",
+          "scaled": 100,
+          "queries": 1000,
+          "nonempty": 118,
+          "hashes": 201,
+          "signature_bytes": 28131,
+          "matches": 0,
+          "match_ids": []
+        },
+        {
+          "group": "dekupl",
+          "moltype": "hp",
+          "scaled": 100,
+          "queries": 1000,
+          "nonempty": 26,
+          "hashes": 46,
+          "signature_bytes": 19326,
+          "matches": 0,
+          "match_ids": []
+        },
+        {
+          "group": "reference",
+          "moltype": "hp",
+          "scaled": 100,
+          "records": 1881,
+          "hashes": 118,
+          "signature_bytes": 1333
+        }
+      ],
+      "segment_comparisons": 36300,
+      "manysketch_sha256": "3e2c2821ae8c2887aaeed3031bffe35b6839ee22e74a1884e65f6280fc538d4b"
+    }
+  },
+  "wall_seconds": 46.05087834503502,
+  "match_method": "Exact nonzero shared sampled hashes; independent of search index; candidate matches only"
+}

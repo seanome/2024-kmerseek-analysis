@@ -1,0 +1,11 @@
+{
+  "selected": 5538699,
+  "threshold": 0.05,
+  "comparison": "<",
+  "source": "/scratch/users/olgabot/oyster-mvp-20261023/splash/full-memory-corrected/oyster.after_correction.scores.tsv",
+  "source_sha256": "4312b75c216d9f62767c2457b531e80d0bbb1343a013634c44f850751e8e5f9e",
+  "discovery": "Complete trimmed read1 from each of six libraries",
+  "extension_context": "Both complete trimmed mates, twelve FASTQs",
+  "batches": 554,
+  "job": "49221554"
+}

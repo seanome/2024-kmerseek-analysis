@@ -1,0 +1,415 @@
+{
+  "completed_batches": [
+    8,
+    9,
+    10
+  ],
+  "total_batches": 554,
+  "extended_records_searched": 66401,
+  "reference_runs": 8,
+  "reference_studies": 8,
+  "scope": "Full-depth all-significant-anchor extensions against eight complete untrimmed public runs; partial query coverage. Trimmed full-archive results are separate.",
+  "rule": "Any nonzero shared-hash match; candidate occurrence only, not validated homology or function.",
+  "encodings": {
+    "dna": {
+      "matches_10": 2126,
+      "queries_with_overlap_10": 1768,
+      "empty_10": 105,
+      "matches_100": 600,
+      "queries_with_overlap_100": 519,
+      "empty_100": 28421,
+      "lost_pairs": 1526,
+      "retained_pairs": 600
+    },
+    "protein": {
+      "matches_10": 297371,
+      "queries_with_overlap_10": 64883,
+      "empty_10": 0,
+      "matches_100": 60895,
+      "queries_with_overlap_100": 28275,
+      "empty_100": 11935,
+      "lost_pairs": 236476,
+      "retained_pairs": 60895
+    },
+    "dayhoff": {
+      "matches_10": 287613,
+      "queries_with_overlap_10": 61458,
+      "empty_10": 0,
+      "matches_100": 66325,
+      "queries_with_overlap_100": 24363,
+      "empty_100": 15998,
+      "lost_pairs": 221288,
+      "retained_pairs": 66325
+    },
+    "hp": {
+      "matches_10": 20698,
+      "queries_with_overlap_10": 9975,
+      "empty_10": 37375,
+      "matches_100": 4901,
+      "queries_with_overlap_100": 2557,
+      "empty_100": 44414,
+      "lost_pairs": 15797,
+      "retained_pairs": 4901
+    }
+  },
+  "lost_examples": [
+    {
+      "batch": 8,
+      "query_id": "splash:full:8:10004:AAACTGGGATGACATGGAGAAAATCTGGCAT",
+      "run": "SRR10403264",
+      "study": "PRJNA588016",
+      "species": "Mytilus trossulus",
+      "encoding": "dna",
+      "shared_hashes_scaled10": "1",
+      "containment_scaled10": "0.1",
+      "reason_at_scaled100": "no retained shared hash"
+    },
+    {
+      "batch": 8,
+      "query_id": "splash:full:8:10004:AAACTGGGATGACATGGAGAAAATCTGGCAT",
+      "run": "SRR330464",
+      "study": "PRJNA72139",
+      "species": "Yoldia limatula",
+      "encoding": "dna",
+      "shared_hashes_scaled10": "2",
+      "containment_scaled10": "0.2",
+      "reason_at_scaled100": "no retained shared hash"
+    },
+    {
+      "batch": 8,
+      "query_id": "splash:full:8:10004:AAACTGGGATGACATGGAGAAAATCTGGCAT",
+      "run": "SRR942484",
+      "study": "PRJNA213113",
+      "species": "Limnoperna fortunei",
+      "encoding": "dna",
+      "shared_hashes_scaled10": "1",
+      "containment_scaled10": "0.1",
+      "reason_at_scaled100": "no retained shared hash"
+    },
+    {
+      "batch": 8,
+      "query_id": "splash:full:8:10005:AAACTGGGATGACATGGAGAAAATCTGGCAT",
+      "run": "SRR10403264",
+      "study": "PRJNA588016",
+      "species": "Mytilus trossulus",
+      "encoding": "dna",
+      "shared_hashes_scaled10": "1",
+      "containment_scaled10": "0.125",
+      "reason_at_scaled100": "empty query sketch"
+    },
+    {
+      "batch": 8,
+      "query_id": "splash:full:8:10005:AAACTGGGATGACATGGAGAAAATCTGGCAT",
+      "run": "SRR12227931",
+      "study": "PRJNA566166",
+      "species": "Panopea generosa",
+      "encoding": "dna",
+      "shared_hashes_scaled10": "1",
+      "containment_scaled10": "0.125",
+      "reason_at_scaled100": "empty query sketch"
+    },
+    {
+      "batch": 8,
+      "query_id": "splash:full:8:10005:AAACTGGGATGACATGGAGAAAATCTGGCAT",
+      "run": "SRR18575420",
+      "study": "PRJNA822432",
+      "species": "Crassostrea tulipa",
+      "encoding": "dna",
+      "shared_hashes_scaled10": "3",
+      "containment_scaled10": "0.375",
+      "reason_at_scaled100": "empty query sketch"
+    },
+    {
+      "batch": 8,
+      "query_id": "splash:full:8:10005:AAACTGGGATGACATGGAGAAAATCTGGCAT",
+      "run": "SRR330464",
+      "study": "PRJNA72139",
+      "species": "Yoldia limatula",
+      "encoding": "dna",
+      "shared_hashes_scaled10": "1",
+      "containment_scaled10": "0.125",
+      "reason_at_scaled100": "empty query sketch"
+    },
+    {
+      "batch": 8,
+      "query_id": "splash:full:8:10005:AAACTGGGATGACATGGAGAAAATCTGGCAT",
+      "run": "SRR942484",
+      "study": "PRJNA213113",
+      "species": "Limnoperna fortunei",
+      "encoding": "dna",
+      "shared_hashes_scaled10": "1",
+      "containment_scaled10": "0.125",
+      "reason_at_scaled100": "empty query sketch"
+    },
+    {
+      "batch": 8,
+      "query_id": "splash:full:8:10006:AAACTGGGATGACATGGAGAAAATCTGGCAT",
+      "run": "SRR18575420",
+      "study": "PRJNA822432",
+      "species": "Crassostrea tulipa",
+      "encoding": "dna",
+      "shared_hashes_scaled10": "1",
+      "containment_scaled10": "0.25",
+      "reason_at_scaled100": "empty query sketch"
+    },
+    {
+      "batch": 8,
+      "query_id": "splash:full:8:10186:AAACTGGTCCACTTACAGTCCAAGGAGTCGT",
+      "run": "DRR350416",
+      "study": "PRJDB13068",
+      "species": "Pinctada fucata",
+      "encoding": "dna",
+      "shared_hashes_scaled10": "1",
+      "containment_scaled10": "0.3333333333333333",
+      "reason_at_scaled100": "empty query sketch"
+    },
+    {
+      "batch": 8,
+      "query_id": "splash:full:8:10190:AAACTGGTCCCCCAAAAGCCACATAAACTGG",
+      "run": "SRR18575420",
+      "study": "PRJNA822432",
+      "species": "Crassostrea tulipa",
+      "encoding": "dna",
+      "shared_hashes_scaled10": "1",
+      "containment_scaled10": "0.2",
+      "reason_at_scaled100": "empty query sketch"
+    },
+    {
+      "batch": 8,
+      "query_id": "splash:full:8:10191:AAACTGGTCCCCCAAAAGCCACATAAACTGG",
+      "run": "SRR18575420",
+      "study": "PRJNA822432",
+      "species": "Crassostrea tulipa",
+      "encoding": "dna",
+      "shared_hashes_scaled10": "1",
+      "containment_scaled10": "0.14285714285714285",
+      "reason_at_scaled100": "empty query sketch"
+    },
+    {
+      "batch": 8,
+      "query_id": "splash:full:8:10285:AAACTGGTGTTTTCATCACTTGGCGTCCGTT",
+      "run": "SRR18575420",
+      "study": "PRJNA822432",
+      "species": "Crassostrea tulipa",
+      "encoding": "dna",
+      "shared_hashes_scaled10": "1",
+      "containment_scaled10": "0.125",
+      "reason_at_scaled100": "empty query sketch"
+    },
+    {
+      "batch": 8,
+      "query_id": "splash:full:8:10462:AAACTGTACATAATTTACAAGTGTCGATCTC",
+      "run": "SRR18575420",
+      "study": "PRJNA822432",
+      "species": "Crassostrea tulipa",
+      "encoding": "dna",
+      "shared_hashes_scaled10": "1",
+      "containment_scaled10": "0.14285714285714285",
+      "reason_at_scaled100": "empty query sketch"
+    },
+    {
+      "batch": 8,
+      "query_id": "splash:full:8:10547:AAACTGTAGGGCTTCCTCATCTTCTTCATTT",
+      "run": "SRR18575420",
+      "study": "PRJNA822432",
+      "species": "Crassostrea tulipa",
+      "encoding": "dna",
+      "shared_hashes_scaled10": "1",
+      "containment_scaled10": "0.2",
+      "reason_at_scaled100": "no retained shared hash"
+    },
+    {
+      "batch": 8,
+      "query_id": "splash:full:8:10686:AAACTGTCAGATATTGCATGCTTATTGCACA",
+      "run": "SRR18575420",
+      "study": "PRJNA822432",
+      "species": "Crassostrea tulipa",
+      "encoding": "dna",
+      "shared_hashes_scaled10": "3",
+      "containment_scaled10": "0.25",
+      "reason_at_scaled100": "no retained shared hash"
+    },
+    {
+      "batch": 8,
+      "query_id": "splash:full:8:11020:AAACTGTGCTCGATGTGTACCAAAAGACAAG",
+      "run": "SRR18575420",
+      "study": "PRJNA822432",
+      "species": "Crassostrea tulipa",
+      "encoding": "dna",
+      "shared_hashes_scaled10": "1",
+      "containment_scaled10": "0.5",
+      "reason_at_scaled100": "empty query sketch"
+    },
+    {
+      "batch": 8,
+      "query_id": "splash:full:8:11020:AAACTGTGCTCGATGTGTACCAAAAGACAAG",
+      "run": "SRR7640806",
+      "study": "PRJNA484309",
+      "species": "Mytilus galloprovincialis",
+      "encoding": "dna",
+      "shared_hashes_scaled10": "1",
+      "containment_scaled10": "0.5",
+      "reason_at_scaled100": "empty query sketch"
+    },
+    {
+      "batch": 8,
+      "query_id": "splash:full:8:11021:AAACTGTGCTCGATGTGTACCAAAAGACAAG",
+      "run": "SRR7640806",
+      "study": "PRJNA484309",
+      "species": "Mytilus galloprovincialis",
+      "encoding": "dna",
+      "shared_hashes_scaled10": "1",
+      "containment_scaled10": "0.3333333333333333",
+      "reason_at_scaled100": "empty query sketch"
+    },
+    {
+      "batch": 8,
+      "query_id": "splash:full:8:11022:AAACTGTGCTCGATGTGTACCAAAAGACAAG",
+      "run": "SRR7640806",
+      "study": "PRJNA484309",
+      "species": "Mytilus galloprovincialis",
+      "encoding": "dna",
+      "shared_hashes_scaled10": "1",
+      "containment_scaled10": "0.16666666666666666",
+      "reason_at_scaled100": "no retained shared hash"
+    },
+    {
+      "batch": 8,
+      "query_id": "splash:full:8:11069:AAACTGTGGTAATCTTGTAGCATCCTGGACA",
+      "run": "SRR18575420",
+      "study": "PRJNA822432",
+      "species": "Crassostrea tulipa",
+      "encoding": "dna",
+      "shared_hashes_scaled10": "1",
+      "containment_scaled10": "0.25",
+      "reason_at_scaled100": "no retained shared hash"
+    },
+    {
+      "batch": 8,
+      "query_id": "splash:full:8:11070:AAACTGTGGTAATCTTGTAGCATCCTGGACA",
+      "run": "SRR18575420",
+      "study": "PRJNA822432",
+      "species": "Crassostrea tulipa",
+      "encoding": "dna",
+      "shared_hashes_scaled10": "1",
+      "containment_scaled10": "0.14285714285714285",
+      "reason_at_scaled100": "no retained shared hash"
+    },
+    {
+      "batch": 8,
+      "query_id": "splash:full:8:11582:AAACTTAACATTTAATCAAAACACAACCATC",
+      "run": "SRR12227931",
+      "study": "PRJNA566166",
+      "species": "Panopea generosa",
+      "encoding": "dna",
+      "shared_hashes_scaled10": "1",
+      "containment_scaled10": "0.16666666666666666",
+      "reason_at_scaled100": "no retained shared hash"
+    },
+    {
+      "batch": 8,
+      "query_id": "splash:full:8:11582:AAACTTAACATTTAATCAAAACACAACCATC",
+      "run": "SRR330464",
+      "study": "PRJNA72139",
+      "species": "Yoldia limatula",
+      "encoding": "dna",
+      "shared_hashes_scaled10": "1",
+      "containment_scaled10": "0.16666666666666666",
+      "reason_at_scaled100": "no retained shared hash"
+    },
+    {
+      "batch": 8,
+      "query_id": "splash:full:8:11710:AAACTTACAAACGATACTAAAAAGCAAGAGA",
+      "run": "SRR18575420",
+      "study": "PRJNA822432",
+      "species": "Crassostrea tulipa",
+      "encoding": "dna",
+      "shared_hashes_scaled10": "2",
+      "containment_scaled10": "0.25",
+      "reason_at_scaled100": "no retained shared hash"
+    },
+    {
+      "batch": 8,
+      "query_id": "splash:full:8:1193:AAACGGAAGGGGATATTTGACACATGAAGAC",
+      "run": "SRR18575420",
+      "study": "PRJNA822432",
+      "species": "Crassostrea tulipa",
+      "encoding": "dna",
+      "shared_hashes_scaled10": "2",
+      "containment_scaled10": "0.4",
+      "reason_at_scaled100": "empty query sketch"
+    },
+    {
+      "batch": 8,
+      "query_id": "splash:full:8:11960:AAACTTATCCCATGTTTGGACATAAATGACC",
+      "run": "SRR18575420",
+      "study": "PRJNA822432",
+      "species": "Crassostrea tulipa",
+      "encoding": "dna",
+      "shared_hashes_scaled10": "1",
+      "containment_scaled10": "0.2",
+      "reason_at_scaled100": "empty query sketch"
+    },
+    {
+      "batch": 8,
+      "query_id": "splash:full:8:12336:AAACTTCATGTAAATCTGTTCACATTCTCTA",
+      "run": "SRR18575420",
+      "study": "PRJNA822432",
+      "species": "Crassostrea tulipa",
+      "encoding": "dna",
+      "shared_hashes_scaled10": "4",
+      "containment_scaled10": "0.5714285714285714",
+      "reason_at_scaled100": "empty query sketch"
+    },
+    {
+      "batch": 8,
+      "query_id": "splash:full:8:1248:AAACGGAATTTGGAATCTCTGTCCTTCCTGT",
+      "run": "SRR18575420",
+      "study": "PRJNA822432",
+      "species": "Crassostrea tulipa",
+      "encoding": "dna",
+      "shared_hashes_scaled10": "1",
+      "containment_scaled10": "0.16666666666666666",
+      "reason_at_scaled100": "no retained shared hash"
+    },
+    {
+      "batch": 8,
+      "query_id": "splash:full:8:12597:AAACGATTCATCCCAAGCCAACAGAAAAGAC",
+      "run": "SRR18575420",
+      "study": "PRJNA822432",
+      "species": "Crassostrea tulipa",
+      "encoding": "dna",
+      "shared_hashes_scaled10": "1",
+      "containment_scaled10": "0.06666666666666667",
+      "reason_at_scaled100": "no retained shared hash"
+    }
+  ],
+  "loss_table": "full-matches-lost-at-scaled100.tsv.gz",
+  "loss_table_sha256": "cd3cf76601fa20199e62a6a018408f9043e03632e4182dda5b7cc8c8891a8636",
+  "loss_tables": {
+    "dna": {
+      "file": "full-matches-lost-at-scaled100-dna.tsv.gz",
+      "sha256": "971b9e8e5cfd14854f40fe42bd834897afec5f3f6b51b84ef9a94da0821a8e57",
+      "rows": 1526,
+      "bytes": 17837
+    },
+    "protein": {
+      "file": "full-matches-lost-at-scaled100-protein.tsv.gz",
+      "sha256": "a52e63b7f6209d112673fe770de66573e7c7e8b65ddb2a3af2f3f7242317853b",
+      "rows": 236476,
+      "bytes": 2037788
+    },
+    "dayhoff": {
+      "file": "full-matches-lost-at-scaled100-dayhoff.tsv.gz",
+      "sha256": "7cc81dfb37bce906760e0ddfc90fc91df7bbf40ad90a83292f9fc0aaab458668",
+      "rows": 221288,
+      "bytes": 1912297
+    },
+    "hp": {
+      "file": "full-matches-lost-at-scaled100-hp.tsv.gz",
+      "sha256": "e6507279dde4d659d1796664acfe0b4e975169dbc193687e2e759ea18dfb60bb",
+      "rows": 15797,
+      "bytes": 185638
+    }
+  }
+}

@@ -1,0 +1,302 @@
+{
+  "evidence": [
+    {
+      "file": "analysis/oyster-shazam/results/migration-20261025/job49520265/summaries/migration--first.trace.tsv",
+      "sha256": "6fa6c4d33c2fb6413094ad9a9d24ea9ef4afe0594550d47f3594cfd0dcc5f2e0",
+      "tasks": [
+        {
+          "name": "ADOPT_QUERY",
+          "status": "COMPLETED",
+          "exit": "0",
+          "realtime": "2.5s",
+          "peak_rss": "132.8 MB"
+        },
+        {
+          "name": "ADOPT_REFERENCE",
+          "status": "COMPLETED",
+          "exit": "0",
+          "realtime": "1.4s",
+          "peak_rss": "91.8 MB"
+        },
+        {
+          "name": "INDEX",
+          "status": "COMPLETED",
+          "exit": "0",
+          "realtime": "1.7s",
+          "peak_rss": "87.8 MB"
+        },
+        {
+          "name": "SEARCH",
+          "status": "COMPLETED",
+          "exit": "0",
+          "realtime": "1.5s",
+          "peak_rss": "95 MB"
+        },
+        {
+          "name": "AUDIT",
+          "status": "FAILED",
+          "exit": "1",
+          "realtime": "2.6s",
+          "peak_rss": "-"
+        }
+      ]
+    },
+    {
+      "file": "analysis/oyster-shazam/results/migration-20261025/job49521583/summaries/migration--after-stop.trace.tsv",
+      "sha256": "787440db89f7d25e300f48bccad4e53bd006f54435f0efbcc849bbed3915985d",
+      "tasks": [
+        {
+          "name": "ADOPT_REFERENCE",
+          "status": "CACHED",
+          "exit": "0",
+          "realtime": "1.1s",
+          "peak_rss": "107.4 MB"
+        },
+        {
+          "name": "ADOPT_QUERY",
+          "status": "CACHED",
+          "exit": "0",
+          "realtime": "1.6s",
+          "peak_rss": "100.9 MB"
+        },
+        {
+          "name": "INDEX",
+          "status": "CACHED",
+          "exit": "0",
+          "realtime": "1.5s",
+          "peak_rss": "98.4 MB"
+        },
+        {
+          "name": "SEARCH",
+          "status": "COMPLETED",
+          "exit": "0",
+          "realtime": "1.2s",
+          "peak_rss": "105.1 MB"
+        },
+        {
+          "name": "AUDIT",
+          "status": "COMPLETED",
+          "exit": "0",
+          "realtime": "1.8s",
+          "peak_rss": "100.8 MB"
+        }
+      ]
+    },
+    {
+      "file": "analysis/oyster-shazam/results/migration-20261025/job49521583/summaries/migration--corrupt.trace.tsv",
+      "sha256": "879bea44b16c908d47031cf57afb7650f96f4522bb00df008f2851134d32ff88",
+      "tasks": [
+        {
+          "name": "ADOPT_REFERENCE",
+          "status": "CACHED",
+          "exit": "0",
+          "realtime": "1.1s",
+          "peak_rss": "107.4 MB"
+        },
+        {
+          "name": "INDEX",
+          "status": "CACHED",
+          "exit": "0",
+          "realtime": "1.5s",
+          "peak_rss": "98.4 MB"
+        },
+        {
+          "name": "ADOPT_QUERY",
+          "status": "FAILED",
+          "exit": "1",
+          "realtime": "175ms",
+          "peak_rss": "-"
+        }
+      ]
+    },
+    {
+      "file": "analysis/oyster-shazam/results/migration-20261025/job49521583/summaries/migration--first.trace.tsv",
+      "sha256": "8ff66040dd595a0ae2fc8a60faaed1e70810616af4308b3b19cd7205c7a1b037",
+      "tasks": [
+        {
+          "name": "ADOPT_QUERY",
+          "status": "COMPLETED",
+          "exit": "0",
+          "realtime": "2.2s",
+          "peak_rss": "136.5 MB"
+        },
+        {
+          "name": "ADOPT_REFERENCE",
+          "status": "COMPLETED",
+          "exit": "0",
+          "realtime": "1.1s",
+          "peak_rss": "107.4 MB"
+        },
+        {
+          "name": "INDEX",
+          "status": "COMPLETED",
+          "exit": "0",
+          "realtime": "1.5s",
+          "peak_rss": "98.4 MB"
+        },
+        {
+          "name": "SEARCH",
+          "status": "COMPLETED",
+          "exit": "0",
+          "realtime": "1.3s",
+          "peak_rss": "99.7 MB"
+        },
+        {
+          "name": "AUDIT",
+          "status": "COMPLETED",
+          "exit": "0",
+          "realtime": "2.4s",
+          "peak_rss": "136.6 MB"
+        }
+      ]
+    },
+    {
+      "file": "analysis/oyster-shazam/results/migration-20261025/job49521583/summaries/migration--query-change.trace.tsv",
+      "sha256": "fb506731816b04ea6f3ad87cea67adffa94409937e0085ae70284eb6a54cc414",
+      "tasks": [
+        {
+          "name": "ADOPT_REFERENCE",
+          "status": "CACHED",
+          "exit": "0",
+          "realtime": "1.1s",
+          "peak_rss": "107.4 MB"
+        },
+        {
+          "name": "INDEX",
+          "status": "CACHED",
+          "exit": "0",
+          "realtime": "1.5s",
+          "peak_rss": "98.4 MB"
+        },
+        {
+          "name": "ADOPT_QUERY",
+          "status": "COMPLETED",
+          "exit": "0",
+          "realtime": "1.6s",
+          "peak_rss": "99.8 MB"
+        },
+        {
+          "name": "SEARCH",
+          "status": "COMPLETED",
+          "exit": "0",
+          "realtime": "1.2s",
+          "peak_rss": "116.9 MB"
+        },
+        {
+          "name": "AUDIT",
+          "status": "COMPLETED",
+          "exit": "0",
+          "realtime": "1.8s",
+          "peak_rss": "100.4 MB"
+        }
+      ]
+    },
+    {
+      "file": "analysis/oyster-shazam/results/migration-20261025/job49521583/summaries/migration--resume.trace.tsv",
+      "sha256": "b7dcb138ffa7237df0cd928630c931fe625dc586772877b67c28c1923ed3ba1d",
+      "tasks": [
+        {
+          "name": "ADOPT_QUERY",
+          "status": "CACHED",
+          "exit": "0",
+          "realtime": "2.2s",
+          "peak_rss": "136.5 MB"
+        },
+        {
+          "name": "ADOPT_REFERENCE",
+          "status": "CACHED",
+          "exit": "0",
+          "realtime": "1.1s",
+          "peak_rss": "107.4 MB"
+        },
+        {
+          "name": "INDEX",
+          "status": "CACHED",
+          "exit": "0",
+          "realtime": "1.5s",
+          "peak_rss": "98.4 MB"
+        },
+        {
+          "name": "SEARCH",
+          "status": "CACHED",
+          "exit": "0",
+          "realtime": "1.3s",
+          "peak_rss": "99.7 MB"
+        },
+        {
+          "name": "AUDIT",
+          "status": "CACHED",
+          "exit": "0",
+          "realtime": "2.4s",
+          "peak_rss": "136.6 MB"
+        }
+      ]
+    },
+    {
+      "file": "analysis/oyster-shazam/results/migration-20261025/job49521583/summaries/migration--stopped.trace.tsv",
+      "sha256": "8e67f77ec518679f23cc53c129c903ac55b85a8c948a5259f6e3621d64ac3cfb",
+      "tasks": [
+        {
+          "name": "ADOPT_REFERENCE",
+          "status": "CACHED",
+          "exit": "0",
+          "realtime": "1.1s",
+          "peak_rss": "107.4 MB"
+        },
+        {
+          "name": "INDEX",
+          "status": "CACHED",
+          "exit": "0",
+          "realtime": "1.5s",
+          "peak_rss": "98.4 MB"
+        },
+        {
+          "name": "ADOPT_QUERY",
+          "status": "COMPLETED",
+          "exit": "0",
+          "realtime": "1.6s",
+          "peak_rss": "100.9 MB"
+        },
+        {
+          "name": "SEARCH",
+          "status": "FAILED",
+          "exit": "75",
+          "realtime": "16ms",
+          "peak_rss": "-"
+        }
+      ]
+    },
+    {
+      "file": "analysis/oyster-shazam/results/migration-20261025/job49521583/summaries/migration--wrong-protocol.trace.tsv",
+      "sha256": "56d093b398f2718a8a8ffa9b90c9f8199bef860e8de5ad7dde71f0878e2b6372",
+      "tasks": [
+        {
+          "name": "ADOPT_REFERENCE",
+          "status": "CACHED",
+          "exit": "0",
+          "realtime": "1.1s",
+          "peak_rss": "107.4 MB"
+        },
+        {
+          "name": "INDEX",
+          "status": "CACHED",
+          "exit": "0",
+          "realtime": "1.5s",
+          "peak_rss": "98.4 MB"
+        },
+        {
+          "name": "ADOPT_QUERY",
+          "status": "FAILED",
+          "exit": "1",
+          "realtime": "171ms",
+          "peak_rss": "-"
+        }
+      ]
+    }
+  ],
+  "cpus": 4,
+  "memory": "16 GB",
+  "time": "4h",
+  "rationale": "Previous grouped audit peaked at 1.37 GiB. Each corrected build remains bounded at 2000 records. Full 380867-query grouped runtime has no measurement; four-hour ceiling is a model, not an ETA.",
+  "expected_repeated_resource_failures": 0
+}

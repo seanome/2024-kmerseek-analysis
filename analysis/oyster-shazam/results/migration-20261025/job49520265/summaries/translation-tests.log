@@ -1,0 +1,10 @@
+test_all_frames_and_coordinates (test_peptide_protocol.PeptideProtocolTest.test_all_frames_and_coordinates) ... ok
+test_boundary_lengths (test_peptide_protocol.PeptideProtocolTest.test_boundary_lengths) ... ok
+test_duplicate_ids_and_empty_input_fail_without_completion (test_peptide_protocol.PeptideProtocolTest.test_duplicate_ids_and_empty_input_fail_without_completion) ... ok
+test_membership_empty_and_refuse_overwrite (test_peptide_protocol.PeptideProtocolTest.test_membership_empty_and_refuse_overwrite) ... ok
+test_x_is_internal_and_stops_are_boundaries (test_peptide_protocol.PeptideProtocolTest.test_x_is_internal_and_stops_are_boundaries) ... ok
+
+----------------------------------------------------------------------
+Ran 5 tests in 0.003s
+
+OK
