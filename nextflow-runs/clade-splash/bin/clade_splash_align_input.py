@@ -92,7 +92,10 @@ def cmd_align_input(a: argparse.Namespace) -> None:
                     for line in fh:
                         if line.startswith(">"):
                             save_sequence()
-                            query = line[1:].split()[0]
+                            fields = line[1:].split()
+                            if not fields:
+                                raise ValueError(f"Empty FASTA header in {path}")
+                            query = fields[0]
                             name = query
                             seq = []
                         elif name is not None:
