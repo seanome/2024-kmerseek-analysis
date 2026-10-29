@@ -142,10 +142,12 @@ def read_taxonomy(path):
     """Read parent links from a versioned NCBI nodes.dmp snapshot."""
     parents = {}
     with Path(path).open() as handle:
-        for line in handle:
+        for number, line in enumerate(handle, start=1):
+            if not line.strip():
+                continue
             fields = line.split("|")
             if len(fields) < 2:
-                raise ValueError("malformed NCBI taxonomy row")
+                raise ValueError(f"malformed NCBI taxonomy row at line {number}")
             node = str(positive_integer(fields[0].strip(), "taxon"))
             parent = str(positive_integer(fields[1].strip(), "parent taxon"))
             if node in parents:

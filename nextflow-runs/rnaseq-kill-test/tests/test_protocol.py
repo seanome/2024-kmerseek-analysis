@@ -336,6 +336,18 @@ class ProtocolTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             p.overlap_curve(["u1", "u1"], ["g1"], overlaps)
 
+    def test_taxonomy_skips_blank_lines_and_names_bad_line(self):
+        import tempfile
+
+        with tempfile.TemporaryDirectory() as folder:
+            good = Path(folder) / "good.dmp"
+            good.write_text("1\t|\t1\t|\n\n2\t|\t1\t|\n\n")
+            self.assertEqual(p.read_taxonomy(good), {"1": "1", "2": "1"})
+            bad = Path(folder) / "bad.dmp"
+            bad.write_text("1\t|\t1\t|\nbroken\n")
+            with self.assertRaisesRegex(ValueError, "line 2"):
+                p.read_taxonomy(bad)
+
 
 if __name__ == "__main__":
     unittest.main()
