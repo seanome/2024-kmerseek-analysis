@@ -51,16 +51,18 @@ def read_fasta(path):
 
 def protein_lengths(path):
     """Length of every protein, in file order, without keeping the sequences."""
-    lengths, n = [], 0
+    lengths, n, started = [], 0, False
     with gzip.open(path, "rt") as fh:
         for line in fh:
             if line.startswith(">"):
-                if lengths or n:
+                if started:
                     lengths.append(n)
+                started = True
                 n = 0
             else:
                 n += len(line.rstrip())
-    lengths.append(n)
+    if started:
+        lengths.append(n)
     return np.array(lengths, dtype=np.int64)
 
 
