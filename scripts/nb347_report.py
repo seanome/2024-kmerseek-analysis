@@ -63,13 +63,18 @@ def residues_example(variants, groups_df, enc):
     import invisible_mutations_utils as im
 
     g = (
-        groups_df.filter((pl.col("encoding") == enc) & ~pl.col("is_reference_group"))
-        .sort("range", descending=True)
+        groups_df.filter(
+            (pl.col("encoding") == enc)
+            & ~pl.col("is_reference_group")
+            & (pl.col("n_positions") == 1)
+        )
+        .sort(["range", "group"], descending=[True, False])
         .row(0, named=True)
     )
     by = {r["hgvs_pro"]: r for r in variants.iter_rows(named=True)}
     members = sorted(g["members"].split(";"), key=lambda m: by[m]["y"])
     lo, hi = by[members[0]], by[members[-1]]
+    assert lo["position"] == hi["position"], "example window needs a same-position group"
     p = lo["position"]
     a, b = max(0, p - 11), min(len(lo["sequence"]), p + 10)
     sa, sb = lo["sequence"][a:b], hi["sequence"][a:b]
