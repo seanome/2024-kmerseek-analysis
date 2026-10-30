@@ -1,0 +1,13 @@
+sample	run	treatment	genotype	cohort	age_days	days_after_day0	timepoint_inferred	clock	stage	read_pairs	gb	usable	r1	r2	md5_1	md5_2	alias
+ctrl1	simulated	control	sim	sim	0	0	control			1000000	0	yes					simulated from botznik transcripts, seed 11
+pec1	simulated	PEC	sim	sim	0	0	control			1000000	0	yes					simulated from botznik transcripts, seed 11
+ctrl2	simulated	control	sim	sim	0	0	control			1000000	0	yes					simulated from botznik transcripts, seed 11
+pec2	simulated	PEC	sim	sim	0	0	control			1000000	0	yes					simulated from botznik transcripts, seed 11
+ctrl3	simulated	control	sim	sim	0	0	control			1000000	0	yes					simulated from botznik transcripts, seed 11
+pec3	simulated	PEC	sim	sim	0	0	control			1000000	0	yes					simulated from botznik transcripts, seed 11
+ctrl4	simulated	control	sim	sim	0	0	control			1000000	0	yes					simulated from botznik transcripts, seed 11
+pec4	simulated	PEC	sim	sim	0	0	control			1000000	0	yes					simulated from botznik transcripts, seed 11
+ctrl5	simulated	control	sim	sim	0	0	control			1000000	0	yes					simulated from botznik transcripts, seed 11
+pec5	simulated	PEC	sim	sim	0	0	control			1000000	0	yes					simulated from botznik transcripts, seed 11
+ctrl6	simulated	control	sim	sim	0	0	control			1000000	0	yes					simulated from botznik transcripts, seed 11
+pec6	simulated	PEC	sim	sim	0	0	control			1000000	0	yes					simulated from botznik transcripts, seed 11

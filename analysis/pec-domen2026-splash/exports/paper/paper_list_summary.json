@@ -1,0 +1,145 @@
+{
+ "excel_date_gene_names": [
+  [
+   "g19772",
+   "2026-09-06",
+   "Septin-6 [Homo sapiens]"
+  ],
+  [
+   "g202",
+   "2026-09-06",
+   "Septin-6 [Homo sapiens]"
+  ],
+  [
+   "g24973",
+   "2026-09-03",
+   "Neuronal-specific septin-3 [Mus musculus]"
+  ],
+  [
+   "g37044",
+   "2026-09-02",
+   "Septin-2 [Homo sapiens]"
+  ],
+  [
+   "g38053",
+   "2026-09-06",
+   "Septin-6 [Homo sapiens]"
+  ],
+  [
+   "g50219",
+   "2026-09-07",
+   "Septin-7 [Homo sapiens]"
+  ],
+  [
+   "g51952",
+   "2026-09-07",
+   "Septin-7 [Mus musculus]"
+  ],
+  [
+   "g58519",
+   "2026-09-15",
+   "15 kDa selenoprotein [Homo sapiens]"
+  ],
+  [
+   "g71572",
+   "2026-09-03",
+   "Neuronal-specific septin-3 [Homo sapiens]"
+  ]
+ ],
+ "young_2h_up": {
+  "named_list_genes": 43,
+  "named_list_n_in_header": 43,
+  "deseq_nominal_p005_lfc1": 94,
+  "deseq_nominal_with_gene_name": 37,
+  "named_list_genes_found_in_nominal": 32,
+  "deseq_padj005_lfc1": 0
+ },
+ "young_2h_down": {
+  "named_list_genes": 237,
+  "named_list_n_in_header": 237,
+  "deseq_nominal_p005_lfc1": 552,
+  "deseq_nominal_with_gene_name": 259,
+  "named_list_genes_found_in_nominal": 207,
+  "deseq_padj005_lfc1": 0
+ },
+ "young_24h_up": {
+  "named_list_genes": 252,
+  "named_list_n_in_header": 252,
+  "deseq_nominal_p005_lfc1": 689,
+  "deseq_nominal_with_gene_name": 221,
+  "named_list_genes_found_in_nominal": 205,
+  "deseq_padj005_lfc1": 0
+ },
+ "young_24h_down": {
+  "named_list_genes": 98,
+  "named_list_n_in_header": 98,
+  "deseq_nominal_p005_lfc1": 127,
+  "deseq_nominal_with_gene_name": 79,
+  "named_list_genes_found_in_nominal": 72,
+  "deseq_padj005_lfc1": 1
+ },
+ "old_24h_up": {
+  "named_list_genes": 57,
+  "named_list_n_in_header": 58,
+  "deseq_nominal_p005_lfc1": 128,
+  "deseq_nominal_with_gene_name": 48,
+  "named_list_genes_found_in_nominal": 42,
+  "deseq_padj005_lfc1": 0
+ },
+ "old_24h_down": {
+  "named_list_genes": 3,
+  "named_list_n_in_header": 3,
+  "deseq_nominal_p005_lfc1": 8,
+  "deseq_nominal_with_gene_name": 4,
+  "named_list_genes_found_in_nominal": 3,
+  "deseq_padj005_lfc1": 0
+ },
+ "young_13_49d_up": {
+  "named_list_genes": 18,
+  "named_list_n_in_header": 18,
+  "deseq_nominal_p005_lfc1": 37,
+  "deseq_nominal_with_gene_name": 19,
+  "named_list_genes_found_in_nominal": 17,
+  "deseq_padj005_lfc1": 0
+ },
+ "young_13_49d_down": {
+  "named_list_genes": 48,
+  "named_list_n_in_header": 48,
+  "deseq_nominal_p005_lfc1": 57,
+  "deseq_nominal_with_gene_name": 37,
+  "named_list_genes_found_in_nominal": 34,
+  "deseq_padj005_lfc1": 0
+ },
+ "young_132d_up": {
+  "named_list_genes": 40,
+  "named_list_n_in_header": 40,
+  "deseq_nominal_p005_lfc1": 92,
+  "deseq_nominal_with_gene_name": 30,
+  "named_list_genes_found_in_nominal": 29,
+  "deseq_padj005_lfc1": 7
+ },
+ "young_132d_down": {
+  "named_list_genes": 46,
+  "named_list_n_in_header": 46,
+  "deseq_nominal_p005_lfc1": 87,
+  "deseq_nominal_with_gene_name": 39,
+  "named_list_genes_found_in_nominal": 35,
+  "deseq_padj005_lfc1": 4
+ },
+ "old_41_93d_up": {
+  "named_list_genes": 19,
+  "named_list_n_in_header": 19,
+  "deseq_nominal_p005_lfc1": 29,
+  "deseq_nominal_with_gene_name": 16,
+  "named_list_genes_found_in_nominal": 15,
+  "deseq_padj005_lfc1": 0
+ },
+ "old_41_93d_down": {
+  "named_list_genes": 17,
+  "named_list_n_in_header": 18,
+  "deseq_nominal_p005_lfc1": 35,
+  "deseq_nominal_with_gene_name": 9,
+  "named_list_genes_found_in_nominal": 8,
+  "deseq_padj005_lfc1": 0
+ }
+}
