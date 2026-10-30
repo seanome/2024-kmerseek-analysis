@@ -21,6 +21,7 @@ N=$SLURM_CPUS_PER_TASK
 # SLURM_MEM_PER_NODE is unset with --mem-per-cpu or a partition default; fall back to per-cpu memory
 MEM_MB_TOTAL=${SLURM_MEM_PER_NODE:-$(( ${SLURM_MEM_PER_CPU:-4096} * ${SLURM_CPUS_PER_TASK:-1} ))}
 MEM_GB=$(( MEM_MB_TOTAL / 1024 ))
+echo "memory used for limits: SLURM_MEM_PER_NODE=${SLURM_MEM_PER_NODE:-unset} -> ${MEM_GB:-${MEM_MB:-}}"
 KMC_GB=$(( MEM_GB / 3 > 1 ? MEM_GB / 3 : 1 ))
 /usr/bin/time -v -o ../splash.time "$PEC_ROOT/splash/splash" \
   --bin_path "$PEC_ROOT/splash" \

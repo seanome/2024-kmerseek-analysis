@@ -155,3 +155,28 @@ the stated thresholds.
   is steadier. On the control, DE-kupl with DESeq2 was run first (17 min) and is kept and scored
   as `dekupl_DESeq2`, so the two tests can be compared on known answers. The PyDESeq2 fit on
   SPLASH anchor counts stays as its own channel.
+* 2026-10-30, answering the 2026-10-27 and 2026-10-29 reviews on PR 201. Written after the
+  anchor-count fits of young_13_49d, young_132d and old_41_93d had run, but before any of their
+  results was looked at; the main contrasts (young_2h, young_24h, old_24h) had not run.
+  - **Primary anchor-count design per contrast.** `~ pair + condition` when the contrast has at
+    least 2 pairs (young_2h, young_24h: 6; old_24h: 2; young_13_49d: 3; old_41_93d: 2; unpaired
+    samples there are their own level and add nothing to the PEC effect). young_132d has no pair
+    (ages 2 or more days apart), so its primary design is `~ genotype + condition` (each of its 3
+    genotypes has one control and one PEC sample). `~ condition` is reported for every contrast.
+  - **Anchor, target and gap lengths** were not passed explicitly; every SPLASH run records the
+    values it used in `splash.stdout` (anchor 31, target 31, gap 0, the 2.11.9 defaults).
+  - **Null for the overlap with the paper's lists.** Before the comparison is run: for each
+    contrast, channel and direction, the fraction of the paper's listed genes that the channel
+    reaches is compared with the same fraction in 1,000 random sets of the paper's genes, each the
+    same size as the list and drawn to match its baseMean deciles (from the paper's DESeq2 sheet
+    of that contrast). Reported: observed fraction, null median and 95 % range, and the share of
+    random sets at or above the observed value.
+  - **old_24h** has 2 pairs from one colony. Its results are marked low power wherever reported,
+    and none of its calls generalises beyond that colony.
+  - **SPLASH and DE-kupl treat every sample as independent.** In young_2h and young_24h, two
+    genotypes appear twice and samples come in matched pairs, so their p-values are likely too
+    small. This is stated next to every SPLASH and DE-kupl count; only the anchor-count model
+    blocks on pair.
+  - The DIAMOND sentences in the sections above are superseded by the 2026-10-23 entry (no DIAMOND).
+  - The SI lists 57 genes under its header "group 3 24HR old DE up n=58" and 17 under "group 6 41
+    to 93 days old DE down n=18"; the headers are off by one, nothing is lost in parsing.
