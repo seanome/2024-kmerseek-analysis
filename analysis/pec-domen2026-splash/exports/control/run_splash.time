@@ -1,0 +1,23 @@
+	Command being timed: "/scratch/users/olgabot/nb361-pec/splash/splash --bin_path /scratch/users/olgabot/nb361-pec/splash --Cjs_samplesheet ../cjs.csv --pvals_correction_col_name Cjs_0_pval --with_effect_size_cts --n_most_freq_targets 4 --dump_sample_anchor_target_count_binary --without_compactors --n_threads_stage_1 4 --n_threads_stage_1_internal 4 --n_threads_stage_2 16 --kmc_max_mem_GB 21 --tmp_dir /lscratch/olgabot/splash_tmp_49197194 --logs_dir logs --outname_prefix result ../input.txt"
+	User time (seconds): 820.75
+	System time (seconds): 32.73
+	Percent of CPU this job got: 877%
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 1:37.28
+	Average shared text size (kbytes): 0
+	Average unshared data size (kbytes): 0
+	Average stack size (kbytes): 0
+	Average total size (kbytes): 0
+	Maximum resident set size (kbytes): 2260924
+	Average resident set size (kbytes): 0
+	Major (requiring I/O) page faults: 0
+	Minor (reclaiming a frame) page faults: 12777188
+	Voluntary context switches: 305165
+	Involuntary context switches: 68768
+	Swaps: 0
+	File system inputs: 2324616
+	File system outputs: 33533432
+	Socket messages sent: 0
+	Socket messages received: 0
+	Signals delivered: 0
+	Page size (bytes): 4096
+	Exit status: 0

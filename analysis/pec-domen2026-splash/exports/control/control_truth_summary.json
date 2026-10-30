@@ -1,0 +1,253 @@
+{
+ "tested_anchors": 3308551,
+ "splash_scores_rows": 10300,
+ "supervised_q_column": "Cjs_0_pval_corrected",
+ "channels": {
+  "splash": {
+   "significant_anchors": 10300,
+   "placement": {
+    "multi": 7247,
+    "one_gene": 3053
+   },
+   "genes_found": {
+    "abundance_down": 0,
+    "abundance_up": 0,
+    "isoform_switch": 56,
+    "unchanged": 0
+   },
+   "genes_in_class": {
+    "abundance_down": 150,
+    "abundance_up": 150,
+    "isoform_switch": 100,
+    "unchanged": 2600
+   },
+   "recall": {
+    "abundance_down": 0.0,
+    "abundance_up": 0.0,
+    "isoform_switch": 0.56,
+    "unchanged": 0.0
+   },
+   "significant_anchors_by_class": {
+    "abundance_down": 0,
+    "abundance_up": 0,
+    "isoform_switch": 3053,
+    "unchanged": 0
+   },
+   "shared_anchor_split": {
+    "includes_planted_change": 6756,
+    "all_unchanged": 491
+   },
+   "planted_genes_found_only_through_shared_anchors": {
+    "abundance_down": 23,
+    "abundance_up": 28,
+    "isoform_switch": 5,
+    "unchanged": 0
+   }
+  },
+  "splash_opt": {
+   "significant_anchors": 23532,
+   "placement": {
+    "multi": 20514,
+    "one_gene": 3018
+   },
+   "genes_found": {
+    "abundance_down": 0,
+    "abundance_up": 0,
+    "isoform_switch": 56,
+    "unchanged": 0
+   },
+   "genes_in_class": {
+    "abundance_down": 150,
+    "abundance_up": 150,
+    "isoform_switch": 100,
+    "unchanged": 2600
+   },
+   "recall": {
+    "abundance_down": 0.0,
+    "abundance_up": 0.0,
+    "isoform_switch": 0.56,
+    "unchanged": 0.0
+   },
+   "significant_anchors_by_class": {
+    "abundance_down": 0,
+    "abundance_up": 0,
+    "isoform_switch": 3018,
+    "unchanged": 0
+   },
+   "shared_anchor_split": {
+    "includes_planted_change": 11814,
+    "all_unchanged": 8700
+   },
+   "planted_genes_found_only_through_shared_anchors": {
+    "abundance_down": 26,
+    "abundance_up": 32,
+    "isoform_switch": 11,
+    "unchanged": 0
+   }
+  },
+  "abundance": {
+   "significant_anchors": 325009,
+   "placement": {
+    "one_gene": 299000,
+    "multi": 26009
+   },
+   "genes_found": {
+    "abundance_down": 80,
+    "abundance_up": 121,
+    "isoform_switch": 54,
+    "unchanged": 380
+   },
+   "genes_in_class": {
+    "abundance_down": 150,
+    "abundance_up": 150,
+    "isoform_switch": 100,
+    "unchanged": 2600
+   },
+   "recall": {
+    "abundance_down": 0.5333,
+    "abundance_up": 0.8067,
+    "isoform_switch": 0.54,
+    "unchanged": 0.1462
+   },
+   "significant_anchors_by_class": {
+    "abundance_down": 103565,
+    "abundance_up": 172530,
+    "isoform_switch": 13963,
+    "unchanged": 8942
+   },
+   "shared_anchor_split": {
+    "includes_planted_change": 25627,
+    "all_unchanged": 382
+   },
+   "planted_genes_found_only_through_shared_anchors": {
+    "abundance_down": 9,
+    "abundance_up": 6,
+    "isoform_switch": 4,
+    "unchanged": 0
+   }
+  },
+  "abundance_condition_only": {
+   "significant_anchors": 311795,
+   "placement": {
+    "one_gene": 286686,
+    "multi": 25109
+   },
+   "genes_found": {
+    "abundance_down": 80,
+    "abundance_up": 120,
+    "isoform_switch": 51,
+    "unchanged": 100
+   },
+   "genes_in_class": {
+    "abundance_down": 150,
+    "abundance_up": 150,
+    "isoform_switch": 100,
+    "unchanged": 2600
+   },
+   "recall": {
+    "abundance_down": 0.5333,
+    "abundance_up": 0.8,
+    "isoform_switch": 0.51,
+    "unchanged": 0.0385
+   },
+   "significant_anchors_by_class": {
+    "abundance_down": 102230,
+    "abundance_up": 167154,
+    "isoform_switch": 13811,
+    "unchanged": 3491
+   },
+   "shared_anchor_split": {
+    "includes_planted_change": 25060,
+    "all_unchanged": 49
+   },
+   "planted_genes_found_only_through_shared_anchors": {
+    "abundance_down": 7,
+    "abundance_up": 4,
+    "isoform_switch": 4,
+    "unchanged": 0
+   }
+  },
+  "dekupl_limma": {
+   "significant_anchors": 10419,
+   "placement": {
+    "one_gene": 10419
+   },
+   "genes_found": {
+    "abundance_down": 86,
+    "abundance_up": 66,
+    "isoform_switch": 42,
+    "unchanged": 3
+   },
+   "genes_in_class": {
+    "abundance_down": 150,
+    "abundance_up": 150,
+    "isoform_switch": 100,
+    "unchanged": 2600
+   },
+   "recall": {
+    "abundance_down": 0.5733,
+    "abundance_up": 0.44,
+    "isoform_switch": 0.42,
+    "unchanged": 0.0012
+   },
+   "significant_anchors_by_class": {
+    "abundance_down": 4662,
+    "abundance_up": 2222,
+    "isoform_switch": 3477,
+    "unchanged": 58
+   },
+   "shared_anchor_split": {},
+   "planted_genes_found_only_through_shared_anchors": {
+    "abundance_down": 0,
+    "abundance_up": 0,
+    "isoform_switch": 0,
+    "unchanged": 0
+   }
+  },
+  "dekupl_DESeq2": {
+   "significant_anchors": 248757,
+   "placement": {
+    "one_gene": 233429,
+    "multi": 15191,
+    "none": 137
+   },
+   "genes_found": {
+    "abundance_down": 135,
+    "abundance_up": 148,
+    "isoform_switch": 88,
+    "unchanged": 128
+   },
+   "genes_in_class": {
+    "abundance_down": 150,
+    "abundance_up": 150,
+    "isoform_switch": 100,
+    "unchanged": 2600
+   },
+   "recall": {
+    "abundance_down": 0.9,
+    "abundance_up": 0.9867,
+    "isoform_switch": 0.88,
+    "unchanged": 0.0492
+   },
+   "significant_anchors_by_class": {
+    "abundance_down": 89517,
+    "abundance_up": 126895,
+    "isoform_switch": 12900,
+    "unchanged": 4117
+   },
+   "shared_anchor_split": {
+    "includes_planted_change": 15191
+   },
+   "planted_genes_found_only_through_shared_anchors": {
+    "abundance_down": 2,
+    "abundance_up": 1,
+    "isoform_switch": 0,
+    "unchanged": 0
+   }
+  }
+ },
+ "tested_anchor_placement": {
+  "one_gene": 3066036,
+  "multi": 242515
+ }
+}
