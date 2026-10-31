@@ -37,6 +37,19 @@ PR 201, branch `olgabot/nb361-pec-splash-reproduction`. Code in
 reproduces Domen et al. 2026 PNAS: 47 of 64 RNA-seq runs (PRJNA1219309), six PEC vs
 control contrasts, plus a control set with a known answer.
 
+Since 2026-10-30 these steps run as one Nextflow pipeline, `nextflow-runs/pec-domen2026/`
+(on PR 201). The known-answer control is made by the `simulate_control` step: 12 samples
+(6 control, 6 PEC, 1 M read pairs each) simulated from the 3,100 control transcripts, with
+150 genes raised 4x, 150 lowered 4x, 100 isoform pairs switched 9x and 2,600 unchanged.
+Those reads go through the same fastp, SPLASH, anchor-count and DE-kupl steps as the real
+runs, and `control_truth` scores what each step found. The map does not draw
+`simulate_control` as its own station: nf-metro 2.1.0 could not route any version of this
+map with that station added.
+
+The map is two sections wide (2026-10-31; it was four wide and hard to read). nf-metro
+routed only 2 of the 48 two-column arrangements that keep the inputs top left and the
+outputs on the bottom row; this is the narrower of the two.
+
 ![PEC nb361 metro map](shazam_pec_nb361_metro.svg)
 
 ## Rebuilding the maps
