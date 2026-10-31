@@ -49,9 +49,9 @@ contrast cannot stop the others.
 | compactors | 32 CPU, 64 GB, 12 h | 41 s, 2.7 GB | |
 | anchor_counts | 16 CPU, 128 GB, 24 h | 55 min, 17 GB (control, 3.3 M anchors) | the main contrasts may test more anchors |
 | dekupl | 32 CPU, 128 GB, 48 h | 17 min, 3.1 GB (control, DESeq2 test) | k-mer counting scales with reads |
-| search | 16 CPU, 64 GB, 24 h | 3 min (control) | |
+| search | 16 CPU, 64 GB, 24 h | 6 min (young_13_49d, 3 GB of manysearch CSV) | young_2h (725,806 peptides, 34 GB of CSV) was killed at 64 GB on 2026-10-31 because make_pairs read each CSV whole; make_pairs now streams them (commit 2c688c34) |
 | small, small_mem | 4 CPU 8 GB / 2 CPU 32 GB | | simulation, control scoring |
 
-No first attempt in the history above failed on memory or time; the only failures were two
+Before 2026-10-31 no first attempt failed on memory or time; the only failures were two
 corrupted downloads (MD5 mismatch). The download step refuses a file whose MD5 differs from
 ENA's, and the `download` label retries any failure up to 3 times.
