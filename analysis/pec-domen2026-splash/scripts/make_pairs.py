@@ -12,6 +12,7 @@ Each CSV is read in batches and only the running top 5 per query is held, so mem
 grow with the file. The young_2h compactor search wrote 34 GB of CSV (one Swiss-Prot file was
 18 GB), which did not fit in 64 GB when every file was read whole (2026-10-31).
 """
+import os
 import re
 import sys
 
@@ -31,6 +32,8 @@ def top_matches(df, sort_cols):
 
 
 def read_one(path, db, mol, k, s):
+    if os.path.getsize(path) == 0:  # manysearch writes an empty file when nothing matches
+        return None
     header = pacsv.open_csv(path, read_options=pacsv.ReadOptions(block_size=1 << 20)).schema.names
     prob = [x for x in header if x.startswith("prob_overlap")]
     cols = ["query_name", "match_name", "containment", "intersect_hashes", *prob]

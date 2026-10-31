@@ -236,14 +236,21 @@ process search {
     ${prep}
     ${PECTOOLS} translate seqs.tsv pep 20 \$COL 2> translate.log
     if [ -s pep.peptides.faa ]; then
-      sourmash scripts manysketch <(printf 'name,genome_filename,protein_filename\\npep,,%s\\n' "\$PWD/pep.peptides.faa") \\
-        --singleton -p protein,k=7,scaled=5 -p dayhoff,k=12,scaled=5 -p hp,k=30,scaled=5 -c ${task.cpus} -o pep.scaled5.zip
-      for db in proteome swissprot botznik; do
-        for spec in protein:7 dayhoff:12 hp:30; do
-          m=\${spec%:*}; k=\${spec#*:}
-          for s in 10 100 5; do
-            sourmash scripts manysearch pep.scaled5.zip ${DB}/\$db.\$m.k\$k.s\$s.rocksdb -m \$m -k \$k -s \$s \\
-              -t 0.000001 -N -c ${task.cpus} -o ms.\$db.\$m.k\$k.s\$s.csv 2>> manysearch.log
+      # Sketch and search in chunks of 500,000 peptides. young_24h's 3.19 M peptides made one
+      # 8.6 GB sketch zip that manysearch could not load ("No query signatures loaded"); the
+      # 1.9 GB zip of young_2h's 725,806 peptides loaded fine.
+      seqkit split2 -s 500000 -O chunks pep.peptides.faa 2> split.log
+      for fa in chunks/*.faa; do
+        c=\$(basename \$fa .faa); c=\${c##*.}
+        sourmash scripts manysketch <(printf 'name,genome_filename,protein_filename\\n%s,,%s\\n' "\$c" "\$PWD/\$fa") \\
+          --singleton -p protein,k=7,scaled=5 -p dayhoff,k=12,scaled=5 -p hp,k=30,scaled=5 -c ${task.cpus} -o \$c.scaled5.zip
+        for db in proteome swissprot botznik; do
+          for spec in protein:7 dayhoff:12 hp:30; do
+            m=\${spec%:*}; k=\${spec#*:}
+            for s in 10 100 5; do
+              sourmash scripts manysearch \$c.scaled5.zip ${DB}/\$db.\$m.k\$k.s\$s.rocksdb -m \$m -k \$k -s \$s \\
+                -t 0.000001 -N -c ${task.cpus} -o ms.\$c.\$db.\$m.k\$k.s\$s.csv 2>> manysearch.log
+            done
           done
         done
       done

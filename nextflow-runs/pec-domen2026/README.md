@@ -49,7 +49,7 @@ contrast cannot stop the others.
 | compactors | 32 CPU, 64 GB, 12 h | 41 s, 2.7 GB | |
 | anchor_counts | 16 CPU, 128 GB, 24 h | 55 min, 17 GB (control, 3.3 M anchors) | the main contrasts may test more anchors |
 | dekupl | 32 CPU, 128 GB, 48 h | 17 min, 3.1 GB (control, DESeq2 test) | k-mer counting scales with reads |
-| search | 16 CPU, 64 GB, 24 h | 6 min (young_13_49d, 3 GB of manysearch CSV) | young_2h (725,806 peptides, 34 GB of CSV) was killed at 64 GB on 2026-10-31 because make_pairs read each CSV whole; make_pairs now streams them (commit 2c688c34) |
+| search | 16 CPU, 64 GB, 24 h | 6 min (young_13_49d, 3 GB of manysearch CSV) | young_2h (725,806 peptides, 34 GB of CSV) was killed at 64 GB on 2026-10-31 because make_pairs read each CSV whole; make_pairs now streams them (commit 2c688c34). young_24h (3.19 M peptides) made one 8.6 GB sketch zip that manysearch could not load; peptides are now sketched and searched in chunks of 500,000 |
 | small, small_mem | 4 CPU 8 GB / 2 CPU 32 GB | | simulation, control scoring |
 
 Before 2026-10-31 no first attempt failed on memory or time; the only failures were two
