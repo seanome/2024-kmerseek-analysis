@@ -38,17 +38,31 @@ reproduces Domen et al. 2026 PNAS: 47 of 64 RNA-seq runs (PRJNA1219309), six PEC
 control contrasts, plus a control set with a known answer.
 
 Since 2026-10-30 these steps run as one Nextflow pipeline, `nextflow-runs/pec-domen2026/`
-(on PR 201). The known-answer control is made by the `simulate_control` step: 12 samples
-(6 control, 6 PEC, 1 M read pairs each) simulated from the 3,100 control transcripts, with
-150 genes raised 4x, 150 lowered 4x, 100 isoform pairs switched 9x and 2,600 unchanged.
-Those reads go through the same fastp, SPLASH, anchor-count and DE-kupl steps as the real
-runs, and `control_truth` scores what each step found. The map does not draw
-`simulate_control` as its own station: nf-metro 2.1.0 could not route any version of this
-map with that station added.
+(on PR 201). The map has one station for each of its 9 processes: `download`, `fastp`,
+`simulate_control`, `splash`, `compactors`, `anchor_counts`, `dekupl`, `search` and
+`control_truth`. Each is tied to its process with a `%%metro process:` line. Stations
+marked "(script)" or "(planned)" are not pipeline processes. The sample design and the
+protein indexes are made before the run (`freeze_design`, `06_db_sketch`), so they appear
+as input files.
 
-The map is two sections wide (2026-10-31; it was four wide and hard to read). nf-metro
-routed only 2 of the 48 two-column arrangements that keep the inputs top left and the
-outputs on the bottom row; this is the narrower of the two.
+`simulate_control` makes the known-answer control: 12 samples (6 control, 6 PEC, 1 M read
+pairs each) simulated from the 3,100 control transcripts, with 150 genes raised 4x, 150
+lowered 4x, 100 isoform pairs switched 9x and 2,600 unchanged. Those reads go through the
+same fastp, SPLASH, anchor-count and DE-kupl steps as the real runs, and `control_truth`
+scores what each step found.
+
+Check that the map still covers every process after the pipeline changes:
+
+```bash
+grep '^process ' nextflow-runs/pec-domen2026/main.nf | awk '{print $2}' > /tmp/pec_processes.txt
+nf-metro check-mapping docs/shazam-workflows/shazam_pec_nb361_metro.mmd --processes /tmp/pec_processes.txt
+```
+
+The map is two sections wide (2026-10-31; it was four wide and hard to read). SPLASH and
+DE-kupl have separate sections, because DE-kupl reads the trimmed reads directly, not
+SPLASH's output. nf-metro 2.1.0 could not draw most layouts of this map. The script used
+to try every arrangement is not kept. Of the layouts it could draw, this one reads in order
+(1 to 5, left to right, top to bottom) and is 1504 x 1634, close to square.
 
 ![PEC nb361 metro map](shazam_pec_nb361_metro.svg)
 
