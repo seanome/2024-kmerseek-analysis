@@ -1,0 +1,18 @@
+{
+ "dekupl_contigs": {
+  "n": 363635,
+  "bases": 21355714,
+  "median": 48,
+  "n_ge_90bp": 37302,
+  "bases_ge_90bp": 5652402
+ },
+ "splash_compactors": {
+  "n": 69110,
+  "bases": 6238148,
+  "median": 85,
+  "n_ge_90bp": 6737,
+  "bases_ge_90bp": 936443
+ },
+ "oyster_full_trimmed_reads": 307256356,
+ "oyster_full_trimmed_bases_upper": 46088453400
+}
