@@ -1,0 +1,9 @@
+null,n_exons,observed,observed_pct,null_median_pct,null_max_pct,null_mean_exons,excess_exons,frac_draws_ge_obs,min_decoys_per_exon
+"A: any other pair, same species, target len >= exon end",1669,1090,65.31,58.78,62.25,979.8,110.2,0.0,1
+B: decoy pair must also have both AlphaFold models,1646,1068,64.88,59.9,63.61,985.6,82.4,0.0,1
+C: decoy pair has >=1 kmerseek call,1669,1090,65.31,59.02,62.97,984.8,105.2,0.0,1
+D: decoy target length within +-20%,1669,1090,65.31,59.86,62.97,999.2,90.8,0.0,1
+E: decoy pair's kmerseek call count within 0.8x-1.25x,1609,1050,65.26,61.09,64.33,982.4,67.6,0.0,1
+F: decoy length +-20% AND calls per residue 0.8x-1.25x,1503,999,66.47,63.74,67.0,958.1,40.9,0.004,1
+"G: same pair, same-length window anywhere on the same target",1669,1090,65.31,62.73,66.33,1046.8,43.2,0.007,
+"H: same pair, same-length window not touching the exon",1664,1085,65.2,62.32,65.26,1037.1,47.9,0.002,

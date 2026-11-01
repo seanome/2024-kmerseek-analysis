@@ -1,0 +1,14 @@
+COLLINEAR filter 0.1 calls kept: 1086967
+pairs: 546  with no target_len (no exon table entry): 5  with >=1 kmerseek call: 535
+real landings from matrix: 1090 of 1669
+{"null": "A: any other pair, same species, target len >= exon end", "n_exons": 1669, "observed": 1090, "observed_pct": 65.31, "null_median_pct": 58.78, "null_max_pct": 62.25, "null_mean_exons": 979.8, "excess_exons": 110.2, "frac_draws_ge_obs": 0.0, "min_decoys_per_exon": 1}
+{"null": "B: decoy pair must also have both AlphaFold models", "n_exons": 1646, "observed": 1068, "observed_pct": 64.88, "null_median_pct": 59.9, "null_max_pct": 63.61, "null_mean_exons": 985.6, "excess_exons": 82.4, "frac_draws_ge_obs": 0.0, "min_decoys_per_exon": 1}
+{"null": "C: decoy pair has >=1 kmerseek call", "n_exons": 1669, "observed": 1090, "observed_pct": 65.31, "null_median_pct": 59.02, "null_max_pct": 62.97, "null_mean_exons": 984.8, "excess_exons": 105.2, "frac_draws_ge_obs": 0.0, "min_decoys_per_exon": 1}
+{"null": "D: decoy target length within +-20%", "n_exons": 1669, "observed": 1090, "observed_pct": 65.31, "null_median_pct": 59.86, "null_max_pct": 62.97, "null_mean_exons": 999.2, "excess_exons": 90.8, "frac_draws_ge_obs": 0.0, "min_decoys_per_exon": 1}
+{"null": "E: decoy pair's kmerseek call count within 0.8x-1.25x", "n_exons": 1609, "observed": 1050, "observed_pct": 65.26, "null_median_pct": 61.09, "null_max_pct": 64.33, "null_mean_exons": 982.4, "excess_exons": 67.6, "frac_draws_ge_obs": 0.0, "min_decoys_per_exon": 1}
+{"null": "F: decoy length +-20% AND calls per residue 0.8x-1.25x", "n_exons": 1503, "observed": 999, "observed_pct": 66.47, "null_median_pct": 63.74, "null_max_pct": 67.0, "null_mean_exons": 958.1, "excess_exons": 40.9, "frac_draws_ge_obs": 0.004, "min_decoys_per_exon": 1}
+{"null": "G: same pair, same-length window anywhere on the same target", "n_exons": 1669, "observed": 1090, "observed_pct": 65.31, "null_median_pct": 62.73, "null_max_pct": 66.33, "null_mean_exons": 1046.8, "excess_exons": 43.2, "frac_draws_ge_obs": 0.007}
+{"null": "H: same pair, same-length window not touching the exon", "n_exons": 1664, "observed": 1085, "observed_pct": 65.2, "null_median_pct": 62.32, "null_max_pct": 65.26, "null_mean_exons": 1037.1, "excess_exons": 47.9, "frac_draws_ge_obs": 0.002}
+pair-bootstrap excess, A: 110.2 exons, 95% CI [50.0, 175.3], P(excess<=0)=0.0004, pairs=261
+pair-bootstrap excess, F: 40.9 exons, 95% CI [-0.1, 82.3], P(excess<=0)=0.0256, pairs=240
+pair-bootstrap excess, H: 47.9 exons, 95% CI [15.1, 81.5], P(excess<=0)=0.0030, pairs=258

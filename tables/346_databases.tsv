@@ -1,0 +1,5 @@
+database	file	n_proteins	n_residues	file_date
+human GENCODE v49 canonical	/Users/olga/data/gencode/human/v49/gencode.v49.pc_translations.canonical.fa	19732	11347201	2026-02-20
+C. elegans UniProt UP000001940	/Users/olga/data/uniprot/reference_proteomes/UP000001940_6239.fasta.gz	19792	8123346	2026-10-13
+B. burgdorferi B31 UniProt UP000001807	/Users/olga/data/uniprot/reference_proteomes/UP000001807_224326.fasta.gz	1291	381768	2026-10-13
+Swiss-Prot	/Users/olga/data/uniprot/uniprot_sprot.fasta.gz	572970	207621817	2025-07-03
