@@ -70,6 +70,12 @@ so they still point at their old bases.
   161 merges but its "scoring, metrics and report" check failed. The check results on
   all ten are from before the base changed; GitHub does not rerun them for a base change,
   so each needs a new push or rerun before it can merge.
+  Rerun against main the same day (each PR closed and reopened, which starts fresh
+  `pull_request` runs): 8 pass every check: 128, 129, 130, 131, 134, 145, 156, 184.
+  139 fails the 256-colour check, in both the PNG workflow and the notebooks job:
+  `notebooks/284_exact_run_vs_blosum62_segment_pfam_seed.ipynb` would shrink from 890 KB
+  to 503 KB. 161 fails one test, `test_refdb_calls.py::test_both_parsers_reproduce_the_committed_fixture`:
+  one score differs in the last digit (`4.481486060122112` against `...113`, ZNF99 PF00096).
 - Conflict with main (9): 52, 85, 96, 106, 119, 148, 149, 152, 175.
 - 85, 96, 106, 148 and 149 sat on branches that had commits after their PR merged, or
   whose PR was closed. Those commits are now part of their diffs.
