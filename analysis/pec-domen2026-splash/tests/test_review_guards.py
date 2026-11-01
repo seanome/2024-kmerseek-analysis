@@ -130,8 +130,16 @@ def test_bh_keeps_missing_fitted_anchors_in_declared_test_family():
     assert np.isnan(q[1])
 
 
-@pytest.mark.parametrize("mode", ["mismatch", "missing", "duplicate"])
-def test_ena_comparison_fails_on_changed_or_missing_runs(tmp_path, mode):
+@pytest.mark.parametrize(
+    "mode,message",
+    [
+        ("match", None),
+        ("mismatch", "ENA metadata differs from the handoff"),
+        ("missing", "ENA and handoff run sets differ"),
+        ("duplicate", "ENA report repeats run accessions"),
+    ],
+)
+def test_ena_comparison_fails_on_changed_or_missing_runs(tmp_path, mode, message):
     handoff = tmp_path / "handoff.tsv"
     handoff.write_text("run\tmd5_1\tmd5_2\tread_pairs\nR1\ta\tb\t1\n")
     row = "R1\tu_1.fastq.gz;u_2.fastq.gz\ta;b\t1\n"
@@ -151,7 +159,13 @@ def test_ena_comparison_fails_on_changed_or_missing_runs(tmp_path, mode):
         text=True,
         capture_output=True,
     )
-    assert result.returncode != 0
+    if message is None:
+        assert result.returncode == 0, result.stderr
+        assert "mismatches 0" in result.stdout
+    else:
+        assert result.returncode != 0
+        assert message in result.stderr
+        assert "Traceback" not in result.stderr
 
 
 def test_control_truth_uses_same_all_tested_anchor_bh_family(monkeypatch):
