@@ -328,6 +328,8 @@ def test_score_rules_on_unlabelled_copies(synthetic, tmp_path):
     assert v["median_reduction"] == pytest.approx(0.9)
     expect = "PASS" if (n_a >= 20 and n_a >= v["yields"]["B"]["n"]) else "FAIL"
     assert v["verdict"] == expect, v
+    # every card has a review row, so no "no row in the review sheet" reason may appear
+    assert not any("have no row in the review sheet" in r for r in v["reasons"]), v
     print("unlabelled-copy check:", n_a, v["yields"]["B"]["n"], v["verdict"])
     # useful only where A found the card: B's yield cannot exceed A's, so the rule passes
     # whenever A has 20 useful queries

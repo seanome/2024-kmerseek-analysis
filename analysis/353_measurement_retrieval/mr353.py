@@ -1387,7 +1387,8 @@ def cmd_score(a):
             else False
         ):
             reasons.append("review judgments are synthetic fixtures")
-        kk = dict(csv.reader(open(key)))
+        with open(key) as fh:
+            kk = dict(list(csv.reader(fh))[1:])  # drop the card_id,workflows header row
         useful_by = defaultdict(set)
         bad_rows = 0
         for r in rv.iter_rows(named=True):
