@@ -129,7 +129,10 @@ def read_fasta_text(handle):
 
 
 def accession(header):
-    word = header[1:].split()[0]
+    words = header[1:].split()
+    if not words:
+        raise ValueError("FASTA header with no name: %r" % header)
+    word = words[0]
     fields = word.split("|")
     return fields[1] if len(fields) >= 3 else word
 

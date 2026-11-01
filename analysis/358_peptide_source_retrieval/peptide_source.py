@@ -129,7 +129,10 @@ def read_fasta(path: Path) -> list[tuple[str, str]]:
             if line.startswith(">"):
                 if name is not None:
                     records.append((name, "".join(parts)))
-                word = line[1:].split()[0]
+                words = line[1:].split()
+                if not words:
+                    raise ValueError("%s: FASTA header with no name: %r" % (path, line))
+                word = words[0]
                 fields = word.split("|")
                 name = fields[1] if len(fields) >= 3 else word
                 parts = []
