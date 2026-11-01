@@ -1,0 +1,57 @@
+setting	query	reference	stage	expected	observed	passed
+cys2.k12.mask	fx_base	fx_exact_duplicate	A	top	score 420.0, duplicate 420.0	true
+cys2.k12.mask	fx_base	fx_exact_duplicate	C	hit	candidate	true
+cys2.k12.mask	fx_base	fx_substitution	C	hit	candidate	true
+cys2.k12.mask	fx_base	fx_insertion	A	hit	score 401.0, duplicate 420.0	true
+cys2.k12.mask	fx_base	fx_insertion	C	hit	candidate	true
+cys2.k12.mask	fx_base	fx_reduced_twin	B	ties_duplicate	score 37.7, duplicate 37.7	true
+cys2.k12.mask	fx_base	fx_reduced_twin	A	below_duplicate	score 30.0, duplicate 420.0	true
+cys2.k12.mask	fx_base	fx_reduced_twin	C	hit	candidate	true
+cys2.k12.mask	fx_base	fx_short	C	miss	not a candidate	true
+cys2.k12.mask	fx_short_query	fx_exact_duplicate	C	miss	not a candidate	true
+cys2.k12.mask	fx_empty_sketch_query	fx_empty_sketch	C	hit	candidate	true
+cys2.k12.mask	fx_empty_sketch_query	fx_empty_sketch	D	miss	not a candidate	true
+cys2.k12.mask	fx_base	fx_exact_duplicate	seed count, scaled 1	24	24.0	true
+cys2.k12.mask	fx_base	fx_exact_duplicate	seed count, scaled 10	4	4.0	true
+dayhoff6.k9	fx_base	fx_exact_duplicate	A	top	score 420.0, duplicate 420.0	true
+dayhoff6.k9	fx_base	fx_exact_duplicate	C	hit	candidate	true
+dayhoff6.k9	fx_base	fx_substitution	C	hit	candidate	true
+dayhoff6.k9	fx_base	fx_insertion	A	hit	score 401.0, duplicate 420.0	true
+dayhoff6.k9	fx_base	fx_insertion	C	hit	candidate	true
+dayhoff6.k9	fx_base	fx_reduced_twin	B	ties_duplicate	score 230.6, duplicate 230.6	true
+dayhoff6.k9	fx_base	fx_reduced_twin	A	below_duplicate	score 85.0, duplicate 420.0	true
+dayhoff6.k9	fx_base	fx_reduced_twin	C	hit	candidate	true
+dayhoff6.k9	fx_base	fx_short	C	miss	not a candidate	true
+dayhoff6.k9	fx_short_query	fx_exact_duplicate	C	miss	not a candidate	true
+dayhoff6.k9	fx_empty_sketch_query	fx_empty_sketch	C	hit	candidate	true
+dayhoff6.k9	fx_empty_sketch_query	fx_empty_sketch	D	miss	not a candidate	true
+dayhoff6.k9	fx_base	fx_exact_duplicate	seed count, scaled 1	64	64.0	true
+dayhoff6.k9	fx_base	fx_exact_duplicate	seed count, scaled 10	3	3.0	true
+hp_lehninger2.k17	fx_base	fx_exact_duplicate	A	top	score 420.0, duplicate 420.0	true
+hp_lehninger2.k17	fx_base	fx_exact_duplicate	C	hit	candidate	true
+hp_lehninger2.k17	fx_base	fx_substitution	C	hit	candidate	true
+hp_lehninger2.k17	fx_base	fx_insertion	A	hit	score 401.0, duplicate 420.0	true
+hp_lehninger2.k17	fx_base	fx_insertion	C	hit	candidate	true
+hp_lehninger2.k17	fx_base	fx_reduced_twin	B	ties_duplicate	score 80.8, duplicate 80.8	true
+hp_lehninger2.k17	fx_base	fx_reduced_twin	A	below_duplicate	score 18.0, duplicate 420.0	true
+hp_lehninger2.k17	fx_base	fx_reduced_twin	C	hit	candidate	true
+hp_lehninger2.k17	fx_base	fx_short	C	miss	not a candidate	true
+hp_lehninger2.k17	fx_short_query	fx_exact_duplicate	C	miss	not a candidate	true
+hp_lehninger2.k17	fx_empty_sketch_query	fx_empty_sketch	C	hit	candidate	true
+hp_lehninger2.k17	fx_empty_sketch_query	fx_empty_sketch	D	miss	not a candidate	true
+hp_lehninger2.k17	fx_base	fx_exact_duplicate	seed count, scaled 1	56	56.0	true
+hp_lehninger2.k17	fx_base	fx_exact_duplicate	seed count, scaled 10	7	7.0	true
+sdm12.k7	fx_base	fx_exact_duplicate	A	top	score 420.0, duplicate 420.0	true
+sdm12.k7	fx_base	fx_exact_duplicate	C	hit	candidate	true
+sdm12.k7	fx_base	fx_substitution	C	hit	candidate	true
+sdm12.k7	fx_base	fx_insertion	A	hit	score 401.0, duplicate 420.0	true
+sdm12.k7	fx_base	fx_insertion	C	hit	candidate	true
+sdm12.k7	fx_base	fx_reduced_twin	B	ties_duplicate	score 341.0, duplicate 341.0	true
+sdm12.k7	fx_base	fx_reduced_twin	A	below_duplicate	score 275.0, duplicate 420.0	true
+sdm12.k7	fx_base	fx_reduced_twin	C	hit	candidate	true
+sdm12.k7	fx_base	fx_short	C	miss	not a candidate	true
+sdm12.k7	fx_short_query	fx_exact_duplicate	C	miss	not a candidate	true
+sdm12.k7	fx_empty_sketch_query	fx_empty_sketch	C	hit	candidate	true
+sdm12.k7	fx_empty_sketch_query	fx_empty_sketch	D	miss	not a candidate	true
+sdm12.k7	fx_base	fx_exact_duplicate	seed count, scaled 1	66	66.0	true
+sdm12.k7	fx_base	fx_exact_duplicate	seed count, scaled 10	9	9.0	true

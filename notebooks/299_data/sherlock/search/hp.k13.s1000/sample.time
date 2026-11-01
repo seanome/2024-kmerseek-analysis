@@ -1,0 +1,23 @@
+	Command being timed: "/scratch/users/olgabot/299-omrgc-pilot/env/bin/sourmash scripts manysearch /scratch/users/olgabot/299-omrgc-pilot/search/hp.k13.s1000/queries.sig.zip /scratch/users/olgabot/299-omrgc-pilot/search/hp.k13.s1000/sample.txt -k 13 -m hp -s 1000 -c 32 --ignore-abundance -N -o /scratch/users/olgabot/299-omrgc-pilot/search/hp.k13.s1000/sample.fifo"
+	User time (seconds): 223.90
+	System time (seconds): 66.35
+	Percent of CPU this job got: 216%
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 2:14.24
+	Average shared text size (kbytes): 0
+	Average unshared data size (kbytes): 0
+	Average stack size (kbytes): 0
+	Average total size (kbytes): 0
+	Maximum resident set size (kbytes): 2623576
+	Average resident set size (kbytes): 0
+	Major (requiring I/O) page faults: 0
+	Minor (reclaiming a frame) page faults: 2405874
+	Voluntary context switches: 29644191
+	Involuntary context switches: 9152
+	Swaps: 0
+	File system inputs: 2319288
+	File system outputs: 192
+	Socket messages sent: 0
+	Socket messages received: 0
+	Signals delivered: 0
+	Page size (bytes): 4096
+	Exit status: 0

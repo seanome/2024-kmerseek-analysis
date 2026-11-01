@@ -1,0 +1,22 @@
+{
+ "slice_gb": 1.000000547,
+ "catalog_fna_gb": 32.595788344,
+ "catalog_genes": 46775154,
+ "budget_cpu_hours": 1536.0,
+ "per_scaled": [
+  {
+   "scaled": 100,
+   "all_nine_cpu_hours_arithmetic": 540.9107854278778,
+   "any_lower_bound": true,
+   "fits_two_compute_days": null
+  },
+  {
+   "scaled": 1000,
+   "all_nine_cpu_hours_arithmetic": 3259.5770514113524,
+   "any_lower_bound": true,
+   "fits_two_compute_days": false
+  }
+ ],
+ "fits_at_some_scaled": false,
+ "verdict": "DEAD at step 1: the whole catalog does not fit in two compute days at either scaled"
+}

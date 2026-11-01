@@ -1,0 +1,53 @@
+{
+ "verdict": "INSUFFICIENT_EVIDENCE",
+ "reasons": [
+  "evaluation queries are synthetic fixtures, not an analyst's queue",
+  "review judgments are synthetic fixtures",
+  "timings are synthetic fixtures"
+ ],
+ "carryover": {
+  "A": {
+   "median_seconds_first_look": 430.5,
+   "median_seconds_later_look": 424.5,
+   "useful_first_look": 7,
+   "useful_later_look": 6
+  },
+  "B": {
+   "median_seconds_first_look": 431.0,
+   "median_seconds_later_look": 434.5,
+   "useful_first_look": 12,
+   "useful_later_look": 11
+  }
+ },
+ "median_reduction_when_A_first": 0.08683337615921885,
+ "median_reduction_when_A_later": 0.014962399323632806,
+ "yields": {
+  "A": {
+   "n": 13,
+   "of": 100,
+   "ci95": [
+    0.0776,
+    0.2098
+   ]
+  },
+  "B": {
+   "n": 23,
+   "of": 100,
+   "ci95": [
+    0.1584,
+    0.3215
+   ]
+  }
+ },
+ "strongest_comparison": "B",
+ "median_reduction": 0.061313868613138686,
+ "median_reduction_ci95": [
+  -0.0496,
+  0.1535
+ ],
+ "criteria": {
+  "1_at_least_20_useful": false,
+  "2_yield_not_below_strongest": false,
+  "3_median_reduction_at_least_50pct": false
+ }
+}
