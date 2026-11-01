@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Per contrast: how many sequences each method keeps, and whether the k-mer tests lack power.
 
-Usage: power_check.py <contrasts_dir> <out.tsv>
+Usage: power_check.py <contrasts_dir> <out.tsv> <out_hist.tsv>
 
 For each contrast it reads the p-values each test already wrote and reports:
 - the number of tests, the smallest p-value and the smallest Benjamini-Hochberg corrected p;
@@ -22,7 +22,9 @@ from pathlib import Path
 import numpy as np
 import polars as pl
 
-contrasts_dir, out_tsv = Path(sys.argv[1]), sys.argv[2]
+contrasts_dir, out_tsv, out_hist = Path(sys.argv[1]), sys.argv[2], sys.argv[3]
+BINS = np.linspace(0, 1, 21)  # p-value histogram, 20 bins of width 0.05
+hist_rows = []
 CONTRASTS = ["control", "young_2h", "young_24h", "old_24h", "young_13_49d", "young_132d", "old_41_93d"]
 
 
@@ -47,6 +49,9 @@ def describe(method, contrast, p, extra=None):
         "p_le_0.001": int((p <= 0.001).sum()), "chance_p_le_0.001": round(0.001 * m),
     }
     row.update(extra or {})
+    counts, _ = np.histogram(p, bins=BINS)
+    hist_rows.extend({"contrast": contrast, "method": method, "bin_low": float(lo), "n": int(n)}
+                     for lo, n in zip(BINS[:-1], counts))
     print(row, flush=True)
     return row
 
@@ -79,4 +84,5 @@ for r in rows:
         r["control_kept_if_this_many_tests"] = kept
 
 pl.DataFrame(rows).write_csv(out_tsv, separator="\t")
+pl.DataFrame(hist_rows).write_csv(out_hist, separator="\t")
 print("wrote", out_tsv)
