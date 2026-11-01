@@ -72,7 +72,7 @@ pilot:
 	    --max_per_class 8 --max_classes 6 --proteins_per_chunk 200000
 
 measure-resources:
-	python3 bin/measure_resources.py --history 'run/clade_splash.*.trace.txt' '$(PILOT_DIR)/run-pilot/clade_splash.*.trace.txt' --outdir run/measured
+	python3 $(MAKEFILE_DIR)/bin/measure_resources.py --history '$(MAKEFILE_DIR)/run/clade_splash.*.trace.txt' '$(PILOT_DIR)/run-pilot/clade_splash.*.trace.txt' --outdir $(MAKEFILE_DIR)/run/measured
 
 run: measure-resources
 	mkdir -p run
