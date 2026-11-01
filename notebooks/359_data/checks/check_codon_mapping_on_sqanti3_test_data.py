@@ -99,7 +99,7 @@ def main(d):
             int(float(r["CDS_genomic_end"])),
         )
         pieces_ok = all(trans[s[0] : s[1]] == prot[s[0] : s[1]] for s in tiles)
-        good = trans == prot and tiled and pieces_ok
+        good = trans == prot and tiled and pieces_ok and span_ok
         ok += good
         print(
             f"{r['isoform']}\t{t['strand']}\texons={len(t['exons'])}\taa={len(prot)}\t"
