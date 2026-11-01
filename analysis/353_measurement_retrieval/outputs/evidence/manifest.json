@@ -1,0 +1,88 @@
+{
+ "built": "2026-10-20",
+ "inputs": {
+  "elm/elms_index.tsv": "fd01e8796e04f4ddafed1a847144a342d1cebe7cb0db2351e440307ecd5e67dc",
+  "elm/instances.fasta": "f8bc42d7b36844f6eb50a42e8f93c44eb7aae8203ba518173677fb9821945aa0",
+  "elm/instances.tsv": "68c1832950fc3ed30399a247059979a60c4e95974a5d18c9dbc291c8ee578592",
+  "sanborn2021/elife-68068-fig1-data1-v3.xlsx": "089a060cfece0ced072c1866f00e05405feac05a3168b66f09e6f72fbcf62c1e",
+  "sanborn2021/elife-68068-fig1-data2-v3.xlsx": "9277ee476eb8538b03bbb837a7749cd94a94c880a614887fbac840c8417d2e77",
+  "sanborn2021_text/PMC8137143.xml": "5061bf5ed2adc82e13747179272168ca28cfcd210f230e2ca9f30849110dcd85",
+  "uniprot_sequence_versions.tsv": "f96697f35b545e151fd1b7902ead7814fa60bd092999a4d75504be17d549f3dd"
+ },
+ "outputs": {
+  "evidence.csv": "4925ab0b3b845d3a3f7e1708bd2f40d1ea48bb7cf31e7c1512a9a187504fe2e6",
+  "evidence.parquet": "f45a37419eb5a545b4ba474d6498980c1ea79f9d065d23d28c8921b124d1969f",
+  "evidence_proteins.fasta": "3dce3dcb8221fd5beda1d120cd1766358b64df8519af5c73aadc7c048cb85075"
+ },
+ "duplicates_merged": 2,
+ "records": 11732,
+ "proteins": 2883,
+ "by_source_and_outcome": [
+  {
+   "source": "ELM",
+   "outcome": "false positive",
+   "len": 73
+  },
+  {
+   "source": "ELM",
+   "outcome": "true negative",
+   "len": 33
+  },
+  {
+   "source": "ELM",
+   "outcome": "true positive",
+   "len": 4045
+  },
+  {
+   "source": "ELM",
+   "outcome": "unknown",
+   "len": 124
+  },
+  {
+   "source": "Sanborn2021",
+   "outcome": "active",
+   "len": 448
+  },
+  {
+   "source": "Sanborn2021",
+   "outcome": "inactive",
+   "len": 6564
+  },
+  {
+   "source": "Sanborn2021",
+   "outcome": "not measured",
+   "len": 87
+  },
+  {
+   "source": "Sanborn2021",
+   "outcome": "weak",
+   "len": 358
+  }
+ ],
+ "sequence_matches_current_uniprot": [
+  {
+   "source": "ELM",
+   "sequence_matches_uniprot": true,
+   "len": 4006
+  },
+  {
+   "source": "ELM",
+   "sequence_matches_uniprot": null,
+   "len": 143
+  },
+  {
+   "source": "ELM",
+   "sequence_matches_uniprot": false,
+   "len": 126
+  },
+  {
+   "source": "Sanborn2021",
+   "sequence_matches_uniprot": true,
+   "len": 7457
+  }
+ ],
+ "elm_instances_in_file": 4277,
+ "sanborn_tf_tiles_in_file": 7457,
+ "sanborn_paper_says": 7460,
+ "skipped": {}
+}

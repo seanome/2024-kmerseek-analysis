@@ -1,0 +1,9 @@
+accession	organism	what_the_file_is	usable_as_de_novo_list	checked_by
+PXD030708	human gut (mucosal-luminal interface)	MetaNovo: de novo tags build a database, then MaxQuant searches it; the txt zip is MaxQuant database-search output	no	project dataProcessingProtocol, 2026-10-21
+PXD043896	honeybee gut	.peaks files are PEAKS project binaries; the study's results are MaxQuant database search	no	project dataProcessingProtocol, 2026-10-21
+PXD051792	mouse faeces	uMetaP_novoMP_DB_whole.fasta is a protein database built from de novo hits, not a peptide list	no	project dataProcessingProtocol, 2026-10-21
+PXD060439	sheep faeces	QuantifiedPeaks.tsv is a quantification table from MetaLab-MAG database search	no	project dataProcessingProtocol, 2026-10-21
+PXD070030	mouse (Prevotella arthritis model)	Maeda_PEAKS_results.zip is 10 KB; PEAKS DB search on mouse and Prevotella	no	project dataProcessingProtocol and file size, 2026-10-21
+PXD073688	mouse colon	two 7z archives of 1.8 and 2.1 TB, novoMP database strategy, then search	no	project dataProcessingProtocol, 2026-10-21
+PXD077115	chicken caecum	QuantifiedPeaks.tsv from MetaLab-MAG database search	no	project dataProcessingProtocol, 2026-10-21
+PXD077163	chicken caecum	QuantifiedPeaks.tsv from MetaLab-MAG database search (same file as PXD077115)	no	file name and size, 2026-10-21

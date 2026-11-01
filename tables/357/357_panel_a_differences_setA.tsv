@@ -1,0 +1,7 @@
+measure	comparison	difference	lo	hi
+a1 no Pfam residue	included more in neurons minus unchanged	0.31167161301585616	0.23740324772067914	0.38760715566763787
+a1 no Pfam residue	skipped more in neurons minus unchanged	0.30104969183359015	0.19412295092522758	0.40588133777188345
+a1 no Pfam residue	changed (both classes) minus unchanged	0.3082612302951286	0.24668352149064898	0.3681499211095914
+a2 IUPred mean >= 0.5	included more in neurons minus unchanged	0.26027158113657234	0.18539053599435265	0.33600372589604527
+a2 IUPred mean >= 0.5	skipped more in neurons minus unchanged	0.276948510529019	0.16850018332147276	0.38267765064981235
+a2 IUPred mean >= 0.5	changed (both classes) minus unchanged	0.26562604676090307	0.20176727581055365	0.3284569586802615
