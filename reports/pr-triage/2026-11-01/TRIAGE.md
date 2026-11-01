@@ -60,6 +60,20 @@ PNGs and notebooks the PR adds or changes, then merged once every check passed. 
   with one review wording pass. In each conflicting block 54's own text was kept: PR 54
   owns notebook 245 and its latest wording edit was reviewed at its head commit.
 
+## Bases changed to main on 2026-11-01
+
+Olga asked for every open PR whose base branch belongs to a merged or closed PR to point
+at main instead. 21 such PRs; 19 changed. GitHub refused 83 and 146 ("part of a stack"),
+so they still point at their old bases.
+
+- Merge cleanly into main (10): 128, 129, 130, 131, 134, 139, 145, 156, 184, and 161.
+  161 merges but its "scoring, metrics and report" check failed. The check results on
+  all ten are from before the base changed; GitHub does not rerun them for a base change,
+  so each needs a new push or rerun before it can merge.
+- Conflict with main (9): 52, 85, 96, 106, 119, 148, 149, 152, 175.
+- 85, 96, 106, 148 and 149 sat on branches that had commits after their PR merged, or
+  whose PR was closed. Those commits are now part of their diffs.
+
 ## Closed on 2026-11-01
 
 Olga approved these in chat. Each got a comment saying why; every branch was kept, so
