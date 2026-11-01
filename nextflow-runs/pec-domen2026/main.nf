@@ -359,6 +359,30 @@ process control_truth {
     """
 }
 
+// ---------------------------------------------------------------- comparison with the paper's lists
+
+// Fraction of each paper gene list reached by each channel, against 1,000 baseMean-matched random
+// gene sets (null frozen in design/ANALYSIS_PLAN.md, 2026-10-30). Reads the search outputs in place
+// under pec_root, so it waits for every compactor search to finish.
+process paper_recovery {
+    label 'small_mem'
+    publishDir "${params.pec_root}/paper_recovery", mode: 'copy'
+
+    input:
+    val(searches)
+
+    output:
+    path("paper_recovery.tsv")
+    path("paper_recovery.log")
+
+    script:
+    def P = params.pec_root
+    """
+    ${ENV}/python ${SCRIPTS}/paper_recovery.py ${P}/contrasts ${P}/paper/paper_deseq_all.parquet \\
+      ${P}/paper/paper_named_lists.tsv ${P}/db/botznik.id_map.tsv paper_recovery.tsv > paper_recovery.log 2>&1
+    """
+}
+
 // ---------------------------------------------------------------- workflow
 
 workflow {
@@ -406,13 +430,17 @@ workflow {
     km = kamrat(dk.join(per_contrast.map { c, cjs, dsg, il, pairs -> tuple(c, dsg) })
                   .map { c, d, dsg -> tuple(c, dsg, d) })
 
-    an = compactors_nominal(ac.map { c, a, d -> tuple(c, d) }
+    // the control has no paper list, so it gets no paper-cutoff compactors
+    an = compactors_nominal(ac.filter { it[0] != 'control' }.map { c, a, d -> tuple(c, d) }
                               .join(per_contrast.map { c, cjs, dsg, il, pairs -> tuple(c, il) }))
 
-    search(comp.map { c, d -> tuple(c, 'compactors', d) }
+    sr = search(comp.map { c, d -> tuple(c, 'compactors', d) }
                .mix(an.map { c, d -> tuple(c, 'compactors_anchor_nominal', d) })
                .mix(dk.map { c, d -> tuple(c, "dekupl_${params.dekupl_method}", d) })
                .mix(km.map { c, d -> tuple(c, 'kamrat_ttest', d) }))
+
+    paper_recovery(sr.filter { c, src, d -> c != 'control' && src.startsWith('compactors') }
+                     .map { c, src, d -> "${c}/${src}" }.collect())
 
     if (params.control) {
         control_truth(sp.join(ac).join(dk).join(km).filter { it[0] == 'control' }
