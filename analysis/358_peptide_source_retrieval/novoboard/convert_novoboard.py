@@ -35,9 +35,10 @@ csv.field_size_limit(1 << 30)
 
 
 def read_member(z, name):
-    """Rows of one CSV member of the zip, as dicts."""
+    """Rows of one CSV member of the zip, as dicts, one at a time (nothing is kept)."""
     with z.open(name) as raw:
-        return list(csv.DictReader(io.TextIOWrapper(raw, encoding="utf-8", newline="")))
+        for row in csv.DictReader(io.TextIOWrapper(raw, encoding="utf-8", newline="")):
+            yield row
 
 
 def scan_number(text):
@@ -91,14 +92,20 @@ def inspect(zip_path):
     for info in z.infolist():
         entry = {"name": info.filename, "bytes": info.file_size}
         if info.filename.endswith(".csv"):
-            rows = read_member(z, info.filename)
-            sources = Counter(r.get("Source File", "") for r in rows)
-            entry["rows"] = len(rows)
-            entry["columns"] = list(rows[0].keys()) if rows else []
+            n_rows, columns, sources, real_scans = 0, [], Counter(), set()
+            for r in read_member(z, info.filename):
+                if n_rows == 0:
+                    columns = list(r.keys())
+                n_rows += 1
+                source = r.get("Source File", "")
+                sources[source] += 1
+                if source == REAL_MGF:
+                    real_scans.add(scan_number(r["Scan"]))
+            entry["rows"] = n_rows
+            entry["columns"] = columns
             entry["source_files"] = dict(sources)
-            real = [r for r in rows if r.get("Source File") == REAL_MGF]
-            entry["distinct_scans_real_mgf"] = len({scan_number(r["Scan"]) for r in real})
-            scans[info.filename] = {scan_number(r["Scan"]) for r in real}
+            entry["distinct_scans_real_mgf"] = len(real_scans)
+            scans[info.filename] = real_scans
         elif info.filename.endswith(".mgf") and "/decoy" not in info.filename:
             with z.open(info.filename) as raw:
                 entry["spectra"] = sum(1 for line in raw if line.startswith(b"BEGIN IONS"))
