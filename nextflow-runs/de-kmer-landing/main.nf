@@ -21,7 +21,7 @@ nextflow.enable.dsl = 2
 
 params.key_dir     = '/scratch/users/olgabot/360-de-kmer-landing/key'
 params.pfam_seed   = '/scratch/users/olgabot/360-de-kmer-landing/downloads/Pfam-A.seed.gz'
-params.organisms   = 'ciona,zebrafish'
+params.organisms   = 'drosophila,zebrafish,ciona'
 params.settings    = "${projectDir}/assets/kmerseek_settings.tsv"
 params.labellings  = "${projectDir}/assets/labellings.tsv"
 params.outdir      = "${launchDir}/results"

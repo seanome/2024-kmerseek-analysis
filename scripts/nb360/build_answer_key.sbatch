@@ -33,10 +33,16 @@ dl() {
   fi
 }
 
-dl $ENS/ciona_intestinalis/cdna/Ciona_intestinalis.KH.cdna.all.fa.gz  downloads/ciona.cdna.fa.gz
-dl $ENS/ciona_intestinalis/pep/Ciona_intestinalis.KH.pep.all.fa.gz    downloads/ciona.pep.fa.gz
-dl $ENS/danio_rerio/cdna/Danio_rerio.GRCz11.cdna.all.fa.gz            downloads/zebrafish.cdna.fa.gz
-dl $ENS/danio_rerio/pep/Danio_rerio.GRCz11.pep.all.fa.gz              downloads/zebrafish.pep.fa.gz
+# organism:genus:Ensembl species dir:Ensembl file prefix. Build only the organisms named
+# in ORGS: rewriting an existing key changes its files' times, and Nextflow's -resume then
+# reruns every task downstream of it (2026-11-01, when Drosophila replaced Ciona as the
+# main organism and zebrafish's finished run had to be kept).
+ORGS=${ORGS:-"ciona:Ciona:ciona_intestinalis:Ciona_intestinalis.KH zebrafish:Danio:danio_rerio:Danio_rerio.GRCz11 drosophila:Drosophila:drosophila_melanogaster:Drosophila_melanogaster.BDGP6.54"}
+for spec in $ORGS; do
+  IFS=: read -r org genus sp prefix <<< "$spec"
+  dl $ENS/$sp/cdna/$prefix.cdna.all.fa.gz downloads/$org.cdna.fa.gz
+  dl $ENS/$sp/pep/$prefix.pep.all.fa.gz   downloads/$org.pep.fa.gz
+done
 dl $PFAM/Pfam-A.clans.tsv.gz downloads/Pfam-A.clans.tsv.gz
 dl $PFAM/Pfam-A.seed.gz      downloads/Pfam-A.seed.gz
 dl $PFAM/relnotes.txt        downloads/pfam_relnotes.txt
@@ -53,11 +59,13 @@ dl $PFAM/relnotes.txt        downloads/pfam_relnotes.txt
 
 [ -s swissprot.parquet ] || $PY "$REPO/scripts/nb360/parse_swissprot.py" "$SPROT" swissprot.parquet
 
-# The MD5s any Pfam row could be needed for: Swiss-Prot and both organisms' peptides.
-$PY - <<'EOF'
-import gzip, hashlib, polars as pl
+# The MD5s any Pfam row could be needed for: Swiss-Prot and every organism's peptides.
+ORG_NAMES=$(for spec in $ORGS; do echo -n "${spec%%:*} "; done)
+TAG=$(echo $ORG_NAMES | tr ' ' '_')
+ORG_NAMES="$ORG_NAMES" TAG="$TAG" $PY - <<'EOF'
+import gzip, hashlib, os, polars as pl
 md5s = set(pl.read_parquet("swissprot.parquet")["md5"].to_list())
-for org in ("ciona", "zebrafish"):
+for org in os.environ["ORG_NAMES"].split():
     seq = []
     with gzip.open(f"downloads/{org}.pep.fa.gz", "rt") as fh:
         for line in fh:
@@ -67,21 +75,22 @@ for org in ("ciona", "zebrafish"):
             else:
                 seq.append(line.strip())
     if seq: md5s.add(hashlib.md5("".join(seq).rstrip("*").upper().encode()).hexdigest())
-open("wanted_md5.txt", "w").write("\n".join(sorted(md5s)) + "\n")
+open(f"wanted_md5.{os.environ['TAG']}.txt", "w").write("\n".join(sorted(md5s)) + "\n")
 print(len(md5s), "MD5s wanted")
 EOF
 
-if [ ! -s pfam_regions.wanted.tsv ]; then
-  zcat "$PFAM_REGIONS" | awk -F'\t' 'NR==FNR { want[$1]=1; next } FNR==1 || ($4 in want)' wanted_md5.txt - > pfam_regions.wanted.tsv.part
-  mv pfam_regions.wanted.tsv.part pfam_regions.wanted.tsv
+REGIONS=pfam_regions.wanted.$TAG.tsv
+if [ ! -s $REGIONS ]; then
+  zcat "$PFAM_REGIONS" | awk -F'\t' 'NR==FNR { want[$1]=1; next } FNR==1 || ($4 in want)' wanted_md5.$TAG.txt - > $REGIONS.part
+  mv $REGIONS.part $REGIONS
 fi
-wc -l pfam_regions.wanted.tsv
+wc -l $REGIONS
 
-for spec in ciona:Ciona zebrafish:Danio; do
-  org=${spec%%:*}; genus=${spec##*:}
+for spec in $ORGS; do
+  IFS=: read -r org genus sp prefix <<< "$spec"
   $PY "$REPO/scripts/nb360/build_answer_key.py" --organism $org \
       --pep downloads/$org.pep.fa.gz --cdna downloads/$org.cdna.fa.gz \
-      --regions pfam_regions.wanted.tsv --clans downloads/Pfam-A.clans.tsv.gz \
+      --regions $REGIONS --clans downloads/Pfam-A.clans.tsv.gz \
       --sprot swissprot.parquet --exclude-genus $genus --out key/$org
 done
 echo done

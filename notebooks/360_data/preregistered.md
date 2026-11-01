@@ -30,7 +30,7 @@ often on real labels than on label-swapped data.
    would reward false positives. Olga chose: key-domain landings on real labels at least
    5x the median key-domain landings on the 9 swaps.
 3. **Both paths search the same database:** Swiss-Prot proteins that have at least one
-   Pfam 38.2 row, minus every protein of the organism's own genus (Ciona, or Danio).
+   Pfam 38.2 row, minus every protein of the organism's own genus (Drosophila, Danio, or Ciona).
 4. **One k per alphabet, with the bits of protein20 at k = 7.** Changed by Olga on
    2026-10-21, after the answer key was built and reads were simulated but before any
    kmerseek index or search had run, so no landing had been seen. Her words: "let's use 1
@@ -42,13 +42,29 @@ often on real labels than on label-swapped data.
 
 ## Organisms
 
-- **Ciona intestinalis** (tunicate), UniProt reference proteome UP000008144. Pfam coverage
-  checked on 2026-10-21 from the UniProt REST API: 11,276 of 17,311 proteins (65%) have a
-  Pfam cross-reference. That is enough to pick 200 genes, so Ciona is the main organism and
-  decides the verdict.
+**Changed on 2026-11-01: Drosophila melanogaster replaces Ciona intestinalis as the organism
+that decides the verdict.** Olga's words: "Use some other species instead of [Ciona] because
+[Ciona] isn't annotated well". She picked Drosophila from a list (Ciona savignyi, sea urchin,
+Drosophila) on 2026-11-01. What had been seen before the change, so the reader can judge it:
+the full run for Ciona and zebrafish had finished, and a Codex session (2026-10-22 and 23,
+see `species_change_2026-10-22.md` and `adversarial_review.md`) had already computed both
+verdicts under this rule: FAIL in both. Ciona R = mmseqs12 k8, 61 of 100 recovered against
+Trinity + DIAMOND's 87; zebrafish R = hsdm17 k7, 77 against 98. That session had made
+zebrafish the replacement organism; this change makes Drosophila the deciding organism
+instead, with zebrafish back to the second organism. The rule is unchanged. Ciona's and
+zebrafish's results stay in the notebook as reported results.
+
+- **Drosophila melanogaster** (insect), UniProt reference proteome UP000000803, Ensembl 116
+  (BDGP6.54). 18,179 of 21,947 proteins (82%) have a Pfam cross-reference (UniProt REST,
+  2026-11-01). Decides the verdict. Its genus leaves the search database: 6,225 Drosophila
+  Swiss-Prot entries in UniProt (fewer of them have Pfam rows). Fly proteins are common in
+  Pfam seed alignments, so these genes are expected to sit closer to Pfam than Ciona's;
+  section 1 of the notebook measures it.
 - **Danio rerio** (zebrafish, vertebrate), UP000000437: 65,026 of 69,241 (94%). Same design,
   run as the second organism to measure how distance from Pfam changes the result. It does
   not enter the verdict.
+- **Ciona intestinalis** (tunicate), UP000008144: 11,276 of 17,311 (65%). The first main
+  organism (2026-10-21 to 2026-11-01); its run is complete and reported, not in the verdict.
 
 ## Answer key (built and committed before any read is simulated)
 
@@ -170,7 +186,7 @@ For each path, each kmerseek setting, and each of the 10 labellings:
 ## Pass/fail rule
 
 Let R be the reduced-alphabet setting (any setting except protein20) with the highest
-recovery on the real labels in Ciona; ties go to the one with fewer outside landings,
+recovery on the real labels in Drosophila (Ciona until 2026-11-01); ties go to the one with fewer outside landings,
 then to the alphabet name first in alphabetical order.
 
 **PASS** if both hold, else **FAIL**:
@@ -191,7 +207,7 @@ Known weaknesses, written down now so they are not found later and explained awa
 Run in both organisms. For each key gene, the distance to Pfam is measured, not assumed:
 the highest percent identity between the gene's protein and any Pfam 38.2 seed sequence
 (`Pfam-A.seed.gz`) of its family, by DIAMOND 2.2.8 blastp `--ultra-sensitive`. Recovery is
-reported per distance bin for each path. Zebrafish's result is reported beside Ciona's
+reported per distance bin for each path. Zebrafish's and Ciona's results are reported beside Drosophila's
 and does not change the verdict.
 
 ## Adversarial check
