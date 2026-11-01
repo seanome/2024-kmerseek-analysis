@@ -3,8 +3,11 @@
 This estimates what it would take to build sourmash branchwater protein sketches (protein
 k=10) and their RocksDB indexes for three collections, under four ways of turning DNA into
 protein. Every rate comes from a job run on Sherlock (hns nodes, AMD EPYC 7543), one core
-per tool. The rates are measured, except the Swiss-Prot lookup for choice (d), which is
-assumed (limitation 2). The totals are those rates times the collection sizes.
+per tool. The rates are measured on the inputs named below, with three exceptions: the
+Swiss-Prot lookup for choice (d) is assumed (limitation 2); the unitig rows apply contig
+rates to unitigs that were not measured (limitation 4); and the SPLASH and DE-kupl amino
+acids and sketch bytes are modelled from 150 bp reads (limitation 5). The totals are those
+rates times the collection sizes.
 
 ```mermaid
 flowchart LR
