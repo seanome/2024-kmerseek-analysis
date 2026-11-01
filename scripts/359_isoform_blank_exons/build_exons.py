@@ -223,6 +223,7 @@ def main(a):
         ~pl.col("source").is_in(list(STRUCTURE_SOURCES | WHOLE_TRANSCRIPT_SOURCES))
         & pl.col("pos_type").is_in(["P", "T", "G"])
         & pl.col("start").is_not_null()
+        & pl.col("end").is_not_null()
     )
     feat_by_iso = collections.defaultdict(list)
     for r in positional.iter_rows(named=True):
