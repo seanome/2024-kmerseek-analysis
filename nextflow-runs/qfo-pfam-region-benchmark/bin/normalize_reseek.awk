@@ -10,10 +10,17 @@
 # 200-residue stride, numbering each fragment's residues from 1. A hit on F<n> is therefore
 # offset by (n-1)*200 from the full-sequence coordinates Pfam uses. Verified directly on
 # AF-A0A087WUL8-F2: auth_seq_id 1..1400, SIFTS xref UniProt 201..1600.
-function af_offset(leaf,   n) {
-    if (match(leaf, /-F[0-9]+/)) {
-        n = substr(leaf, RSTART + 2, RLENGTH - 2) + 0
-        return (n - 1) * 200
+#
+# The fragment number is the token right after the accession, matched from the START of
+# the name. TrEMBL accessions can themselves start with F and a digit (F6SXM4, F7B1X4), and
+# an unanchored /-F[0-9]+/ matched those first: AF-F6SXM4-F1.cif was read as fragment 6
+# and every position moved by 1000. Anchoring at the end does not work either: Reseek
+# drops the extension and appends the chain, so it labels rows AF-Q03001-F21_A.
+function af_offset(leaf,   tok, p) {
+    if (match(leaf, /^AF-[A-Z0-9]+-F[0-9]+/)) {
+        tok = substr(leaf, RSTART, RLENGTH)     # AF-<acc>-F<n>
+        split(tok, p, "-")
+        return (substr(p[3], 2) + 0 - 1) * 200
     }
     return 0
 }

@@ -1,0 +1,21 @@
+family	accession	entry_name	common_name	organism	length	signal_peptide	label	positions	residues	swissprot_features	evidence_codes
+globin	P02144	MYG_HUMAN	human myoglobin	Homo sapiens	154		heme iron histidine	94	H	Binding site: proximal binding residue (heme b)	ECO:0000269,ECO:0007744
+globin	P69905	HBA_HUMAN	human hemoglobin alpha	Homo sapiens	142		heme iron histidine	88	H	Binding site: proximal binding residue (heme b)	ECO:0000255
+globin	P68871	HBB_HUMAN	human hemoglobin beta	Homo sapiens	147		heme iron histidine	93	H	Binding site: proximal binding residue (heme b)	
+globin	P02185	MYG_PHYMC	sperm whale myoglobin	Physeter macrocephalus	154		heme iron histidine	94	H	Binding site: proximal binding residue (heme b)	ECO:0000255,ECO:0000269,ECO:0007744
+globin	P02238	LGB3_SOYBN	soybean leghemoglobin A	Glycine max	144		heme iron histidine	93	H	Binding site: proximal binding residue (heme b)	ECO:0000255,ECO:0000269
+globin	P02229	GLB3_CHITH	midge erythrocruorin III	Chironomus thummi thummi	151	1-15	heme iron histidine	73,102	HH	Binding site: axial binding residue (heme b)	
+globin	P02216	GLB1_GLYDI	bloodworm monomeric globin	Glycera dibranchiata	147		heme iron histidine	90	H	Binding site: axial binding residue (heme b)	
+globin	Q42831	HBL_HORVU	barley non-symbiotic hemoglobin	Hordeum vulgare	162		heme iron histidine	105	H	Binding site: proximal binding residue (heme b)	ECO:0000255,ECO:0000269,ECO:0007744
+lysozyme_lactalbumin	P00698	LYSC_CHICK	hen egg-white lysozyme	Gallus gallus	147	1-18	catalytic residue	53,70	ED	Active site	
+lysozyme_lactalbumin	P61626	LYSC_HUMAN	human lysozyme	Homo sapiens	148	1-18	catalytic residue	53,71	ED	Active site	
+lysozyme_lactalbumin	P00709	LALBA_HUMAN	human alpha-lactalbumin	Homo sapiens	142	1-19	calcium-binding residue	57,58,98,100,101,102,103,106,107	TQKLDDDDD	Binding site (Ca(2+))	ECO:0000269,ECO:0007744
+lysozyme_lactalbumin	P00711	LALBA_BOVIN	bovine alpha-lactalbumin	Bos taurus	142	1-19	calcium-binding residue	98,101,103,106,107	KDDDD	Binding site (Ca(2+))	ECO:0000269,ECO:0007744
+cystatin	P01038	CYT_CHICK	chicken egg-white cystatin	Gallus gallus	139	1-23	reactive site	32	G	Site: Reactive site	
+cystatin	P01038	CYT_CHICK	chicken egg-white cystatin	Gallus gallus	139	1-23	secondary area of contact	76,77,78,79,80	QLVSG	Motif: Secondary area of contact	
+cystatin	P01034	CYTC_HUMAN	human cystatin C	Homo sapiens	146	1-26	reactive site	37	G	Site: Reactive site	
+cystatin	P01034	CYTC_HUMAN	human cystatin C	Homo sapiens	146	1-26	secondary area of contact	81,82,83,84,85	QIVAG	Motif: Secondary area of contact	
+cystatin	P04080	CYTB_HUMAN	human stefin B	Homo sapiens	98		reactive site	4	G	Site: Reactive site	
+cystatin	P04080	CYTB_HUMAN	human stefin B	Homo sapiens	98		secondary area of contact	46,47,48,49,50	QVVAG	Motif: Secondary area of contact	
+cystatin	P01040	CYTA_HUMAN	human stefin A	Homo sapiens	98		reactive site	4	G	Site: Reactive site	
+cystatin	P01040	CYTA_HUMAN	human stefin A	Homo sapiens	98		secondary area of contact	46,47,48,49,50	QVVAG	Motif: Secondary area of contact	

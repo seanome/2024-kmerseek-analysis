@@ -1,0 +1,260 @@
+# Time-split test for notebook 280: would kmerseek have placed Pfam domains before Pfam
+# did? t0 = Pfam 33.1 (May 2020), t1 = Pfam 38.2 (June 2026). Runs on Sherlock.
+#
+#   make download        fetch Pfam 33.1, 38.2, 38.0 pfamseq and Swiss-Prot 2019_08 (batch job)
+#   make stop1           build the query set, count every step, identity of 500 instances
+#   make inputs          Stop 2/3 search inputs: reference, settings, pilot and full query sets
+#   make smoke           2 queries x 1 alphabet-k through every tool, to check the wiring
+#   make pilot           Stop 2: 200 sample queries + 20 positive controls + decoys, every tool
+#   make score-partial   score the pilot searches finished so far (tune half only)
+#   make mmseqs-one-round   rescore with MMseqs2 run as one round instead of three
+#   make full            Stop 3: the 8_329 approved queries + decoys, every tool, 38 kmerseek settings
+#   make choose-settings the 19 alphabet-k pairs of the full run, from the pilot tune half
+#   make stub            laptop wiring check with -stub, two query chunks
+#   make seed-reference  second reference: Pfam 33.1 seed members, with counts.json
+#   make hash-check OLD=<commit>   smoke-size run of OLD, then of this checkout with -resume,
+#                        in hashcheck/: every task hash the two share is listed side by side
+#   make seed-pilot      Stop B: the pilot's queries against the seed reference
+#   make seed-self-check queries already in a Pfam 33.1 seed, and the instances they cover
+#   make seed-spectrum   k-mer spectrum load of both references at four settings (sizing)
+#   make plddt           AlphaFold DB models of every real query; mean pLDDT per instance
+#   make running         what is running on this account
+#
+# Code is read from this checkout; data, work dirs and outputs go to RUN_DIR. Nothing is
+# shared with the dark-set run.
+SHELL        := /bin/bash
+MAKEFILE_DIR := $(abspath $(dir $(firstword $(MAKEFILE_LIST))))
+RUN_DIR      ?= $(SCRATCH)/280-time-split
+SBATCH_ENV    = --chdir=$(RUN_DIR) --export=ALL,TIME_SPLIT_BIN=$(MAKEFILE_DIR)/bin
+PY            = apptainer exec --bind /scratch $(RUN_DIR)/images/kmerseek-0.4.0-rc5.sif python3
+SB            = sbatch --account=ayeletv --partition=hns,normal --chdir=$(RUN_DIR) --output=%x-%j.log
+
+NF_COMMON = $(MAKEFILE_DIR)/main.nf -profile sherlock \
+            --reference_dir $(RUN_DIR)/inputs/reference \
+            --pfam_hmm $(RUN_DIR)/data/Pfam33.1/Pfam-A.hmm.gz \
+            --index_cache $(RUN_DIR)/kmerseek_index --hmm_cache $(RUN_DIR)/hmm
+# The seed reference: its own reference dir, index tag, index cache and outdirs, so no
+# index or output of the Swiss-Prot runs can be read as a seed one. hmmscan is read from
+# the Swiss-Prot run of the same queries.
+SEED      = pfamseed33_1
+NF_SEED   = $(MAKEFILE_DIR)/main.nf -profile sherlock \
+            --reference_dir $(RUN_DIR)/inputs/reference-$(SEED) --reference_tag $(SEED) \
+            --pfam_hmm $(RUN_DIR)/data/Pfam33.1/Pfam-A.hmm.gz \
+            --index_cache $(RUN_DIR)/kmerseek_index_$(SEED) --hmm_cache $(RUN_DIR)/hmm
+
+# The head runs on hns alone: the normal partition caps a job at 2 days, and with
+# "hns,normal" sbatch refuses a 7-day head (QOSMaxWallDurationPerJobLimit), as the dark set found.
+HEAD = HEAD_ACCOUNT=ayeletv HEAD_PARTITION=hns HEAD_QOS=normal HEAD_TIME=7-00:00:00 \
+       HEAD_CPUS=2 HEAD_MEM=16G HEAD_HINT_WATCH="tmux attach" HEAD_HINT_STOP="scancel"
+
+.PHONY: leaderboard download stop1 controls inputs stub smoke pilot score-partial mmseqs-one-round full choose-settings seed-reference hash-check seed-pilot seed-self-check seed-spectrum plddt running
+
+download:
+	@mkdir -p $(RUN_DIR)/data
+	sbatch $(SBATCH_ENV) $(MAKEFILE_DIR)/bin/download.sbatch
+
+stop1:
+	sbatch $(SBATCH_ENV) $(MAKEFILE_DIR)/bin/stop1.sbatch
+
+# Identity of 3_000 more random instances, to find positive controls (>= 90% identical to
+# their closest t0 Swiss-Prot domain over >= 80% of the t1 domain).
+controls:
+	$(SB) --job-name=280-controls --cpus-per-task=8 --mem=32G --time=4:00:00 \
+	  --wrap 'set -e; W=$(RUN_DIR)/controls_identity; mkdir -p $$W/m8; \
+	  $(PY) $(MAKEFILE_DIR)/bin/stop1_identity.py prepare --qs query_set --work $$W --n 3000 --seed 282; \
+	  while IFS=$$'"'"'\t'"'"' read -r i fam; do [ -s $$W/m8/$$i.m8 ] && continue; \
+	    apptainer exec --bind /scratch images/fasta3-36.3.8i.sif ssearch36 -q -m 8CB -s BL62 -f -11 -g -1 \
+	      -E 1000000 -b 5 -d 0 -T 8 $$W/q/$$i.fa $$W/lib/$$fam.fa > $$W/m8/$$i.m8.tmp && mv $$W/m8/$$i.m8.tmp $$W/m8/$$i.m8; \
+	  done < $$W/jobs.tsv; \
+	  $(PY) $(MAKEFILE_DIR)/bin/stop1_identity.py collect --qs query_set --work $$W --no-examples'
+
+inputs:
+	$(SB) --job-name=280-inputs --cpus-per-task=4 --mem=64G --time=2:00:00 \
+	  --wrap 'set -e; B=$(MAKEFILE_DIR); A=$$B/assets; \
+	  $(PY) $$B/bin/make_search_inputs.py reference --qs query_set --out inputs/reference; \
+	  $(PY) $$B/bin/make_search_inputs.py settings --ranges $$A/kmerseek_ksize_range_per_alphabet.tsv --kappa $$A/kappa_by_alphabet.tsv --out inputs; \
+	  $(PY) $$B/bin/make_search_inputs.py queries --qs query_set --sample query_set/proposed_sample_queries.csv --n-pilot 200 --controls controls_identity/identity_sample.csv --n-controls 20 --out inputs/pilot; \
+	  $(PY) $$B/bin/make_search_inputs.py queries --qs query_set --sample query_set/proposed_sample_queries.csv --out inputs/full; \
+	  $(PY) $$B/bin/make_search_inputs.py queries --qs query_set --sample query_set/proposed_sample_queries.csv --n-pilot 2 --out inputs/smoke'
+
+# Laptop wiring check with -stub (no search runs): 4 queries in chunks of 2, so two chunks,
+# two settings. Passes when every output is named by its chunk (chunk001, chunk002) and
+# scoreTransfers is staged one file per setting, arm and chunk. Writes only to STUB_DIR.
+NEXTFLOW ?= nextflow
+STUB_DIR ?= $(MAKEFILE_DIR)/stub-test
+stub:
+	command rm -rf $(STUB_DIR) && mkdir -p $(STUB_DIR)/inputs $(STUB_DIR)/reference
+	printf '>Q1\nMKVLAAGIVG\n>Q2\nMSTNPKPQRK\n>DECOY_Q1\nMKAVLGAIVG\n>DECOY_Q2\nMSNTPKQPRK\n' > $(STUB_DIR)/inputs/queries.fasta
+	printf '>P1\nMKVLAAGIVGAAA\n' > $(STUB_DIR)/reference/reference.fasta
+	printf 'sp_acc\tpfam_acc\tsp_start\tsp_end\nP1\tPF00001\t1\t10\n' > $(STUB_DIR)/reference/sprot_domains.tsv
+	printf 'alphabet\tksize\tc_opt\nprotein20\t7\t0.14\nhp_pbotc_1st_ed2\t29\t1.59\nwass14\t5\t0.17\ngbmr4\t13\t0.67\n' > $(STUB_DIR)/settings.tsv
+	touch $(STUB_DIR)/Pfam-A.hmm.gz
+	cd $(STUB_DIR) && $(NEXTFLOW) run $(MAKEFILE_DIR)/main.nf -stub -profile stub \
+	  --inputs $(STUB_DIR)/inputs --reference_dir $(STUB_DIR)/reference --settings $(STUB_DIR)/settings.tsv \
+	  --skip_settings gbmr4:13 --pfam_hmm $(STUB_DIR)/Pfam-A.hmm.gz --query_chunk_size 2 \
+	  --index_cache $(STUB_DIR)/index --hmm_cache $(STUB_DIR)/hmm --outdir $(STUB_DIR)/results --run_tag stub
+	python3 $(MAKEFILE_DIR)/bin/check_stub.py $(STUB_DIR)/results
+
+# Wiring check: two sample queries and their decoys, one cheap alphabet-k.
+smoke:
+	cd $(RUN_DIR) && mkdir -p launch-smoke && cd launch-smoke && \
+	  printf 'alphabet\tksize\tc_opt\nhp_pbotc_1st_ed2\t29\t1.59\n' > settings.smoke.tsv && \
+	  $(subst HEAD_TIME=7-00:00:00,HEAD_TIME=8:00:00,$(HEAD)) HEAD_SESSION=nf280smoke HEAD_JOBNAME=nfdrv-280-smoke \
+	  $(MAKEFILE_DIR)/../../scripts/nf-head bash -lc 'ml load biology nextflow && nextflow run $(NF_COMMON) --settings settings.smoke.tsv \
+	    --inputs $(RUN_DIR)/inputs/smoke --outdir $(RUN_DIR)/results-smoke --run_tag smoke -resume'
+
+# Settings the pilot and the full run leave out. Their searches ask 396-477 GB, more than
+# any hns or normal node has, so they pended with BadConstraints (2026-10-13). The dark-set
+# run drops the same five.
+SKIP_SETTINGS = funcgroups8:7,gbmr4:13,hsdm17:5,polarity4:11,dayhoff6:8
+
+pilot:
+	cd $(RUN_DIR) && mkdir -p launch-pilot && cd launch-pilot && \
+	  $(HEAD) HEAD_SESSION=nf280pilot HEAD_JOBNAME=nfdrv-280-pilot \
+	  $(MAKEFILE_DIR)/../../scripts/nf-head bash -lc 'ml load biology nextflow && nextflow run $(NF_COMMON) \
+	    --settings $(RUN_DIR)/inputs/settings.tsv --skip_settings $(SKIP_SETTINGS) --inputs $(RUN_DIR)/inputs/pilot --outdir $(RUN_DIR)/results-pilot --run_tag pilot --queue_size 100 -resume'
+
+# Score the pilot searches that have finished, while the rest still run. Reads what the
+# pilot published to results-pilot/ (kmerseek search outputs and their stats files, MMseqs2,
+# phmmer, hmmscan) and writes results-pilot/scores-partial/. The test half is dropped, as
+# in the pilot's own scoring step. Sizing: the scorer holds one search output at a time;
+# the largest pilot file is 1.1 GB gzipped (~27 million rows). The first try (64 GB, job
+# 47666740) read all 185 files and was killed holding every decoy-family pair; those now
+# go to disk. 100 GB fits a normal node (128,000 MB; 128G does not). The log prints peak
+# memory per step: read it before changing the ask.
+# MMSEQS2_DIR and SCORE_OUT pick the MMseqs2 output and the output folder (both under
+# results-pilot/), e.g. MMSEQS2_DIR=mmseqs2-one-round SCORE_OUT=scores-partial-projected.
+MMSEQS2_DIR ?= mmseqs2
+SCORE_OUT   ?= scores-partial
+score-partial:
+	$(SB) --job-name=280-score-partial --cpus-per-task=4 --mem=100G --time=4:00:00 \
+	  --wrap 'set -e; R=$(RUN_DIR)/results-pilot; O=$$R/$(SCORE_OUT); command rm -rf $$O; mkdir -p $$O; \
+	  $(PY) $(MAKEFILE_DIR)/bin/score_transfers.py --kmerseek $$R/kmerseek --stats $$R/kmerseek \
+	    --mmseqs2 $$R/$(MMSEQS2_DIR) --phmmer $$R/phmmer --hmmscan $$R/hmmscan --inputs $(RUN_DIR)/inputs/pilot \
+	    --reference $(RUN_DIR)/inputs/reference --settings $(RUN_DIR)/inputs/settings.tsv --out $$O'
+
+# Does MMseqs2's 3-round profile search give shuffled decoys strong hits? One tune decoy
+# (DECOY_A0A2P4ZFP6) reaches E 1e-22, which set MMseqs2's tune cutoff at E 1.5e-22. This
+# searches the pilot queries again with one round, otherwise as mmseqsSearch in main.nf
+# (same image, -s 7, -e 10), and rescores with it in place of the 3-round output. Only
+# the tune half and the positive controls are searched: the sample test half stays unread.
+# Sizing: the pilot's 3-round search of all 440 queries took 47 s and 2.2 GB; the scorer
+# peaked at 20 GB (sacct, job 47672527).
+MMSEQS_IMG = $(SCRATCH)/apptainer-cache/quay.io-biocontainers-mmseqs2@sha256-3503bfe576d560e550df2872af86a1ad1bcc1c06cfb7caadd3e7a95649f5f0ef.img
+mmseqs-one-round:
+	$(SB) --job-name=280-mmseqs-one-round --cpus-per-task=4 --mem=32G --time=2:00:00 \
+	  --wrap 'set -euo pipefail; R=$(RUN_DIR)/results-pilot; W=$$R/mmseqs2-one-round; command rm -rf $$W; mkdir -p $$W/tmp; \
+	  awk -F"\t" "NR>1 && !(\$$6==\"sample\" && \$$5==\"test\") {print \$$1}" $(RUN_DIR)/inputs/pilot/queries.tsv > $$W/names.txt; \
+	  awk "NR==FNR{k[\$$1]=1; next} /^>/{p=(substr(\$$1,2) in k)} p" $$W/names.txt $(RUN_DIR)/inputs/pilot/queries.fasta > $$W/queries.fasta; \
+	  echo "queries: $$(grep -c ">" $$W/queries.fasta) of $$(wc -l < $$W/names.txt) wanted"; \
+	  M="apptainer exec --bind /scratch $(MMSEQS_IMG) mmseqs"; cd $$W/tmp; \
+	  $$M createdb $$W/queries.fasta qdb > /dev/null; $$M createdb $(RUN_DIR)/inputs/reference/reference.fasta tdb > /dev/null; \
+	  $$M search qdb tdb res tmp -s 7 --num-iterations 1 -e 10.0 --threads 4 > search.log; \
+	  $$M convertalis qdb tdb res out.tsv --format-output "query,target,qstart,qend,tstart,tend,pident,bits,evalue" > /dev/null; \
+	  gzip -c out.tsv > $$W/chunk.mmseqs2.tsv.gz; cd $$W; command rm -rf tmp; \
+	  O=$$R/scores-partial-mmseqs-one-round; command rm -rf $$O; mkdir -p $$O; \
+	  $(PY) $(MAKEFILE_DIR)/bin/score_transfers.py --kmerseek $$R/kmerseek --stats $$R/kmerseek \
+	    --mmseqs2 $$W --phmmer $$R/phmmer --hmmscan $$R/hmmscan --inputs $(RUN_DIR)/inputs/pilot \
+	    --reference $(RUN_DIR)/inputs/reference --settings $(RUN_DIR)/inputs/settings.tsv --out $$O'
+
+# The full run searches one alphabet-k pair per alphabet, extend and exact: 19 pairs, 38
+# kmerseek settings (assets/leaderboard_settings.tsv, from `make choose-settings` on the
+# pilot's tune half). None of the five SKIP_SETTINGS is in it: they were never searched in
+# the pilot, so choose_leaderboard_settings.py cannot pick them. All 19 indexes are already
+# in the index cache, so the full run builds none.
+LEADERBOARD_SETTINGS = $(MAKEFILE_DIR)/assets/leaderboard_settings.tsv
+full:
+	cd $(RUN_DIR) && mkdir -p launch-full && cd launch-full && \
+	  $(HEAD) HEAD_SESSION=nf280full HEAD_JOBNAME=nfdrv-280-full \
+	  $(MAKEFILE_DIR)/../../scripts/nf-head bash -lc 'ml load biology nextflow && nextflow run $(NF_COMMON) \
+	    --settings $(LEADERBOARD_SETTINGS) --inputs $(RUN_DIR)/inputs/full --outdir $(RUN_DIR)/results-full --run_tag full --read_test_half true -resume'
+
+# Re-derive assets/leaderboard_settings.tsv from the pilot's scores (tune half only; the
+# pilot scorer never read the test half). Writes to RUN_DIR/leaderboard-settings; copy the
+# two files into assets/ and tables/leaderboard_settings/ by hand if they ever change.
+choose-settings:
+	$(SB) --job-name=280-choose-settings --cpus-per-task=1 --mem=8G --time=0:30:00 \
+	  --wrap '$(PY) $(MAKEFILE_DIR)/bin/choose_leaderboard_settings.py --scores results-pilot/scores \
+	    --inputs inputs/pilot --settings inputs/settings.tsv --skip $(SKIP_SETTINGS) --out leaderboard-settings'
+
+# Seed members of every Pfam 33.1 family, gaps removed, one entry per distinct sequence.
+# A member that is a query, or lies inside one (any queries.fasta of any run, decoys
+# included), is dropped and counted. Sizing: the seed file is 145 MB gzipped, 1.24 million
+# members; the query k-mer index of 16_658 sequences holds about 7 million 20-mers.
+seed-reference:
+	$(SB) --job-name=280-seed-reference --cpus-per-task=2 --mem=32G --time=2:00:00 \
+	  --wrap 'set -e; O=inputs/reference-$(SEED); mkdir -p $$O; \
+	  $(PY) $(MAKEFILE_DIR)/bin/make_search_inputs.py reference-pfam-seed --seed data/Pfam33.1/Pfam-A.seed.gz \
+	    --sprot inputs/reference/reference.fasta \
+	    --queries inputs/smoke/queries.fasta inputs/pilot/queries.fasta inputs/full/queries.fasta --out $$O; \
+	  cat inputs/reference/pfam_clans_t1.tsv > $$O/pfam_clans_t1.tsv'
+
+# Do the Swiss-Prot tasks keep their hashes under this checkout? Runs the smoke set (2
+# queries + decoys, hp_pbotc_1st_ed2 k29, real Swiss-Prot reference) with the code of
+# OLD, then with this checkout's HEAD and -resume, in one launch dir with its own index
+# cache, so nothing of the pilot is read or locked. Checks out OLD in THIS clone for the
+# first run: use it only in a clone no run depends on. A failed task still has its hash in
+# the trace, so the old run may fail (its scorer stops on the 2-query smoke set: no decoy
+# pair at all) and the new run still runs.
+hash-check:
+	@test -n "$(OLD)" || { echo "make hash-check OLD=<commit>"; exit 1; }
+	cd $(MAKEFILE_DIR) && test -z "$$(git status --porcelain --untracked-files=no)"
+	$(SB) --job-name=nfdrv-280-hashcheck --cpus-per-task=2 --mem=8G --time=6:00:00 --partition=hns \
+	  --wrap 'set -e; ml load biology nextflow; NEW=$$(cd $(MAKEFILE_DIR) && git rev-parse HEAD); \
+	  H=$(RUN_DIR)/hashcheck; mkdir -p $$H; cd $$H; \
+	  printf "alphabet\tksize\tc_opt\nhp_pbotc_1st_ed2\t29\t1.59\n" > settings.tsv; \
+	  ARGS="$(subst --index_cache $(RUN_DIR)/kmerseek_index,--index_cache $(RUN_DIR)/hashcheck/kmerseek_index,$(NF_COMMON)) --settings settings.tsv --inputs $(RUN_DIR)/inputs/smoke --outdir $$H/results"; \
+	  (cd $(MAKEFILE_DIR) && git checkout -q $(OLD)); nextflow run $$ARGS --run_tag old -resume || echo "old run exited $$?"; \
+	  (cd $(MAKEFILE_DIR) && git checkout -q $$NEW); nextflow run $$ARGS --run_tag new -resume; \
+	  echo "old=$(OLD) new=$$NEW"'
+
+seed-self-check:
+	$(SB) --job-name=280-seed-self-check --cpus-per-task=1 --mem=16G --time=1:00:00 \
+	  --wrap '$(PY) $(MAKEFILE_DIR)/bin/seed_self_check.py --run-dir $(RUN_DIR) --out $(RUN_DIR)/inputs/reference-$(SEED)/self_check'
+
+# Spectrum load, the predictor of kmerseek search memory, for Swiss-Prot 2019_08 and the
+# seeds, checked against the hash-check run's kmerseek spectrum (hp_pbotc_1st_ed2 k29).
+# Sizing: four int64 arrays of 200 million residues, about 8 GB at the np.unique peak.
+seed-spectrum:
+	$(SB) --job-name=280-seed-spectrum --cpus-per-task=1 --mem=32G --time=2:00:00 \
+	  --wrap '$(PY) $(MAKEFILE_DIR)/bin/spectrum_load.py --fasta inputs/reference/reference.fasta inputs/reference-$(SEED)/reference.fasta \
+	    --out inputs/reference-$(SEED)/spectrum_load.csv \
+	    --check inputs/reference/reference.fasta hp_pbotc_1st_ed2 29 hashcheck/kmerseek_index/sprot2019_08.hp_pbotc_1st_ed2.k29.kmerseek.rocksdb/spectrum.csv.gz'
+
+seed-pilot:
+	cd $(RUN_DIR) && mkdir -p launch-pilot-$(SEED) && cd launch-pilot-$(SEED) && \
+	  $(HEAD) HEAD_SESSION=nf280seedpilot HEAD_JOBNAME=nfdrv-280-seed-pilot \
+	  $(MAKEFILE_DIR)/../../scripts/nf-head bash -lc 'ml load biology nextflow && nextflow run $(NF_SEED) \
+	    --settings $(RUN_DIR)/inputs/settings.tsv --skip_settings $(SKIP_SETTINGS) --inputs $(RUN_DIR)/inputs/pilot --outdir $(RUN_DIR)/results-pilot-$(SEED) \
+	    --hmmscan_dir $(RUN_DIR)/results-pilot/hmmscan --run_tag seed-pilot --queue_size 100 -resume'
+
+# Mean pLDDT of each instance's query residues inside its t1 domain, from the query's
+# AlphaFold DB model (one file per accession, fetched by the QfO benchmark's script; 8_349
+# real queries, 4 connections). A model of a different sequence counts as no model.
+plddt:
+	$(SB) --job-name=280-plddt --cpus-per-task=4 --mem=8G --time=12:00:00 \
+	  --wrap 'set -e; P=inputs/plddt; mkdir -p $$P/acc $$P/structures; \
+	  cut -f1 inputs/pilot/queries.tsv inputs/full/queries.tsv | grep -v -e "^DECOY_" -e "^query$$" | sort -u > $$P/acc/timesplit.accessions; \
+	  FLAT_CACHE=$$P/no-cache PARALLEL=4 ALLOW_LARGE_PER_ACCESSION=1 \
+	    bash $(MAKEFILE_DIR)/../qfo-pfam-region-benchmark/bin/fetch_alphafold_structures.sh $$P/structures $$P/acc timesplit; \
+	  $(PY) $(MAKEFILE_DIR)/bin/instance_plddt.py --structures $$P/structures/timesplit \
+	    --inputs inputs/pilot inputs/full --out $$P/instance_plddt.tsv'
+
+# Leaderboard rows of the full run (bin/leaderboard_rows.py). It reads the test half once,
+# logging the read in results-full/scores/TEST_HALF_READ, so the script is first run on the
+# pilot's scores in tune mode (no test half there) and the test-half read is chained to
+# start only if that check succeeded.
+leaderboard:
+	@c=$$(cd $(MAKEFILE_DIR) && git rev-parse HEAD); \
+	  check=$$($(SB) --parsable --job-name=280-leaderboard-check --cpus-per-task=2 --mem=16G --time=1:00:00 \
+	    --wrap "$(PY) $(MAKEFILE_DIR)/bin/leaderboard_rows.py --scores results-pilot/scores --inputs inputs/pilot \
+	      --settings inputs/settings.tsv --commit $$c --half tune --out leaderboard-check"); \
+	  echo "check $$check"; \
+	  $(SB) --parsable --dependency=afterok:$$check --job-name=280-leaderboard --cpus-per-task=2 --mem=32G --time=2:00:00 \
+	    --wrap "$(PY) $(MAKEFILE_DIR)/bin/leaderboard_rows.py --scores results-full/scores --inputs inputs/full \
+	      --trace launch-full/trace.full.txt --index-cache kmerseek_index --settings $(LEADERBOARD_SETTINGS) \
+	      --commit $$c --half test --out leaderboard"
+
+## Read TIME carefully. squeue formats it [DD-[HH:]]MM:SS, so `4:03` is four minutes.
+running:
+	@python3 $(MAKEFILE_DIR)/../../scripts/nf-running --jobs "$(MAKEFILE_DIR)"

@@ -1,0 +1,10 @@
+dataset	setting	dev_candidate_recall	dev_candidates_per_query	chosen
+ice_binding	dayhoff6.k9	0.12303039622671759	163.32432432432432	true
+ice_binding	sdm12.k7	0.020782731697631736	45.37837837837838	false
+ice_binding	hp_lehninger2.k17	0.06603224700457118	128.7027027027027	false
+toxin_scaffold	cys2.k12.mask	0.7149425287356321	959.1	true
+toxin_scaffold	dayhoff6.k9	0.14712643678160922	7.533333333333333	false
+toxin_scaffold	sdm12.k7	0.14597701149425285	7.533333333333333	false
+toxin_target	cys2.k12.mask	0.8403954802259886	1102.7916666666667	true
+toxin_target	dayhoff6.k9	0.030367231638418073	6.25	false
+toxin_target	sdm12.k7	0.04661016949152542	5.666666666666667	false

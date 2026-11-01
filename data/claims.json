@@ -1,0 +1,533 @@
+{
+ "about": "Claims about kmerseek, each tied to rows of data/experiments.json. Every number shown with a claim is looked up from that file by row id and number name, so it is never typed twice. Written 2026-09-29.",
+ "claims": [
+  {
+   "id": "short-features",
+   "name": "Short features placed",
+   "status": "supported",
+   "statement": "kmerseek places short protein features (under 60 amino acids) on the matching stretch of a closely related protein, and its call stops where the feature stops. On most of these features, Foldseek's call runs past the feature.",
+   "claim_tag": "short-feature placement",
+   "evidence": [
+    {
+     "row": "244",
+     "name": "cases_passing_every_criterion",
+     "bearing": "for",
+     "say": "short features where kmerseek draws the boundary and every other tool's call runs past it"
+    },
+    {
+     "row": "244",
+     "name": "foldseek_spills_on_223_rows",
+     "bearing": "for",
+     "say": "of 223 short features kmerseek placed, the number where Foldseek's call ran past the feature"
+    },
+    {
+     "row": "244",
+     "name": "hero_kmerseek_call",
+     "bearing": "for",
+     "say": "COL9A1 Collagen-like 7 in chicken: kmerseek's call"
+    },
+    {
+     "row": "244",
+     "name": "hero_foldseek_call_iou",
+     "bearing": "for",
+     "say": "the same feature: Foldseek's call"
+    },
+    {
+     "row": "254",
+     "name": "exact_beats_best_tool_cases",
+     "bearing": "for",
+     "say": "of the 87 cases, where exact seeds still beat the best other tool after a rebuild"
+    },
+    {
+     "row": "254",
+     "name": "cases_extension_keeps_iou_within_0.05",
+     "bearing": "limit",
+     "say": "cases where growing the seed outward keeps the boundary; so this claim is about exact seeds only"
+    },
+    {
+     "row": "231",
+     "name": "kmerseek arms above a Kyte-Doolittle scan (no search) on all features",
+     "bearing": "against",
+     "say": "across all Swiss-Prot features, not only the short ones, a hydrophobicity scan with no database beats every kmerseek setting"
+    }
+   ],
+   "caveats": "The comparison tools do not include a per-family Pfam search (hmmscan), which draws one box per domain unit. That is the first test a reviewer will ask for, and it has not been run.",
+   "open_prs": [
+    78,
+    77
+   ]
+  },
+  {
+   "id": "short-pfam",
+   "name": "Short Pfam domain boundaries",
+   "status": "partly",
+   "statement": "For Pfam domains that are a small part of their protein, kmerseek draws the domain boundary more often than structure search, and less often than phmmer and MMseqs2.",
+   "claim_tag": "short Pfam delimitation",
+   "evidence": [
+    {
+     "row": "238",
+     "name": "domains under 25% of protein length: delimited by kmerseek hp_thomas_dill2 k26",
+     "bearing": "for",
+     "say": "domains under a quarter of their protein, boundary drawn by kmerseek (hp_thomas_dill2, k = 26)"
+    },
+    {
+     "row": "238",
+     "name": "domains under 25%: delimited by Foldseek",
+     "bearing": "for",
+     "say": "the same, Foldseek"
+    },
+    {
+     "row": "238",
+     "name": "domains under 25%: delimited by Reseek",
+     "bearing": "for",
+     "say": "the same, Reseek"
+    },
+    {
+     "row": "238",
+     "name": "domains under 25%: delimited by phmmer",
+     "bearing": "against",
+     "say": "the same, phmmer"
+    },
+    {
+     "row": "238",
+     "name": "domains under 25%: delimited by iterative MMseqs2",
+     "bearing": "against",
+     "say": "the same, iterative MMseqs2"
+    },
+    {
+     "row": "227",
+     "name": "boundary matched, domains <50 aa: kmerseek k=19 vs phmmer",
+     "bearing": "limit",
+     "say": "domains under 50 aa on the full MHC run, kmerseek against phmmer"
+    },
+    {
+     "row": "227",
+     "name": "Foldseek boundary matched, domains <50 aa",
+     "bearing": "for",
+     "say": "the same domains, Foldseek"
+    }
+   ],
+   "caveats": "Notebook 238 is a pilot on the 255 MHC-region queries. The full run is pull request 75.",
+   "open_prs": [
+    75
+   ]
+  },
+  {
+   "id": "hp-conserved",
+   "name": "H/P pattern kept in homologs",
+   "status": "partly",
+   "statement": "Homologous proteins keep their hydrophobic/polar pattern at 20 to 30% identity, well above chance. BLOSUM62 predicts nearly the same share of class-keeping substitutions, so this is not specific to the 2-letter alphabet.",
+   "claim_tag": "H/P conservation",
+   "evidence": [
+    {
+     "row": "230",
+     "name": "hp_thomas_dill2 kappa, Pfam seed pairs at 20-30% identity",
+     "bearing": "for",
+     "say": "agreement of the H/P class at aligned positions, Cohen's kappa (0 = chance, 1 = always the same)"
+    },
+    {
+     "row": "230",
+     "name": "protein20 kappa, Pfam seed pairs at 20-30% identity",
+     "bearing": "for",
+     "say": "the same for the 20-letter alphabet"
+    },
+    {
+     "row": "234",
+     "name": "observed share of substitutions keeping the Thomas-Dill class, 20-30%",
+     "bearing": "limit",
+     "say": "share of substitutions that keep the H/P class"
+    },
+    {
+     "row": "234",
+     "name": "BLOSUM62 expectation for the same",
+     "bearing": "limit",
+     "say": "what BLOSUM62 predicts for that share"
+    }
+   ],
+   "caveats": "",
+   "open_prs": [
+    76
+   ]
+  },
+  {
+   "id": "remote-homology",
+   "name": "Remote homologs",
+   "status": "not",
+   "statement": "On remote homologs, kmerseek stops placing labels at a higher identity than Foldseek and phmmer. The H/P pattern is kept, but in runs too short for an exact seed to stand out from chance.",
+   "claim_tag": "remote homology",
+   "evidence": [
+    {
+     "row": "230",
+     "name": "share of Pfam 20-30% pairs sharing an exact hp_thomas_dill2 23-mer (column 23)",
+     "bearing": "against",
+     "say": "remote homolog pairs that share even one exact 23-letter H/P seed"
+    },
+    {
+     "row": "252",
+     "name": "globin_lowest_identity_correct_kmerseek_best_of_150",
+     "bearing": "against",
+     "say": "globins: lowest identity (%) at which kmerseek's best of 150 settings still places the label"
+    },
+    {
+     "row": "252",
+     "name": "globin_lowest_identity_correct_foldseek",
+     "bearing": "against",
+     "say": "the same, Foldseek"
+    },
+    {
+     "row": "252",
+     "name": "globin_lowest_identity_correct_phmmer",
+     "bearing": "against",
+     "say": "the same, phmmer"
+    },
+    {
+     "row": "241",
+     "name": "bcl2_share_of_random_draws_as_good_or_better",
+     "bearing": "against",
+     "say": "Ced9 against human: share of random human proteins that rank as well as BCL2 or better"
+    },
+    {
+     "row": "245",
+     "name": "bcl2_best_evalue_bits_short_of_e1",
+     "bearing": "against",
+     "say": "BCL2's best measured E-value, in bits short of E = 1"
+    },
+    {
+     "row": "237",
+     "name": "pairs with a region / at E <= 0.01 / at E <= 0.1",
+     "bearing": "against",
+     "say": "cross-family SCOPe pairs under 20% identity found by the real kmerseek search at E ≤ 0.01"
+    },
+    {
+     "row": "236",
+     "name": "crossover divergence vs phmmer",
+     "bearing": "against",
+     "say": "species distance from human beyond which kmerseek transfers Pfam domains worse than phmmer"
+    }
+   ],
+   "caveats": "kmerseek's lowest identity is its best of 150 settings, picked after seeing the results. The distance where phmmer overtakes kmerseek (notebook 236) depends on how duplicate transfers are counted; a project note records about 166 Mya on the duplicate-removed tables, against the 108 Mya printed in notebook 236.",
+   "open_prs": []
+  },
+  {
+   "id": "seed-extension",
+   "name": "Grown seeds for remote homologs",
+   "status": "not",
+   "statement": "A short seed grown outward while the H/P classes mostly agree reaches remote homologs in a test on aligned pairs, but not yet in a real database search, and growing the seed loses the tight boundary on short features.",
+   "claim_tag": "remote homology",
+   "evidence": [
+    {
+     "row": "232",
+     "name": "recall at null FPR 0.001, hp_thomas_dill2 seed 10, Pfam 20-30%",
+     "bearing": "for",
+     "say": "aligned remote homolog pairs found by a 10-letter seed plus growth, at 1 false hit per 1,000"
+    },
+    {
+     "row": "232",
+     "name": "recall at null FPR 0.001, exact 23-mer (seed 23), Pfam 20-30%",
+     "bearing": "for",
+     "say": "the same with an exact 23-letter seed"
+    },
+    {
+     "row": "233",
+     "name": "Pfam 20-30%: found by the primitive only",
+     "bearing": "against",
+     "say": "share of those pairs that phmmer and MMseqs2 both miss"
+    },
+    {
+     "row": "237",
+     "name": "pairs with a region / at E <= 0.01 / at E <= 0.1",
+     "bearing": "against",
+     "say": "the same idea in the real kmerseek search: pairs at E ≤ 0.01"
+    },
+    {
+     "row": "254",
+     "name": "median_iou_exact_vs_extended",
+     "bearing": "against",
+     "say": "boundary overlap on the 87 short features, exact seeds against grown seeds"
+    }
+   ],
+   "caveats": "",
+   "open_prs": []
+  },
+  {
+   "id": "scope",
+   "name": "SCOPe40 against Foldseek",
+   "status": "not",
+   "statement": "kmerseek does not beat Foldseek on the SCOPe40 structural benchmark. Earlier wins came from scoring only the queries where kmerseek made a call, and from counting a same-family hit as a superfamily hit.",
+   "claim_tag": "SCOPe",
+   "evidence": [
+    {
+     "row": "235",
+     "name": "sensitivity to first false positive, kmerseek",
+     "bearing": "against",
+     "say": "share of true relatives found before the first wrong hit, kmerseek"
+    },
+    {
+     "row": "235",
+     "name": "sensitivity to first false positive, Foldseek",
+     "bearing": "against",
+     "say": "the same, Foldseek"
+    },
+    {
+     "row": "068",
+     "name": "kmerseek_k27_superfamily_auc_156_queries",
+     "bearing": "against",
+     "say": "superfamily AUC under the Foldseek paper's scoring rule, kmerseek k = 27"
+    },
+    {
+     "row": "068",
+     "name": "foldseek_superfamily_auc",
+     "bearing": "against",
+     "say": "the same, Foldseek"
+    },
+    {
+     "row": "076",
+     "name": "benchmark queries only kmerseek detects",
+     "bearing": "against",
+     "say": "benchmark queries kmerseek detects and Foldseek misses"
+    },
+    {
+     "row": "066",
+     "name": "kmerseek_k27_superfamily_auc_156_queries",
+     "bearing": "against",
+     "say": "the earlier superfamily AUC, from the mixed scoring rule (a bug)"
+    }
+   ],
+   "caveats": "",
+   "open_prs": [
+    67
+   ]
+  },
+  {
+   "id": "elm",
+   "name": "ELM motifs",
+   "status": "not",
+   "statement": "kmerseek does not place short linear motifs (ELM, 3 to 15 amino acids) that other tools miss, and it puts fewer motifs at the right position than jackhmmer.",
+   "claim_tag": "ELM motifs",
+   "evidence": [
+    {
+     "row": "253",
+     "name": "motifs_only_kmerseek_places",
+     "bearing": "against",
+     "say": "chicken: motifs kmerseek places on the ortholog and no other tool does"
+    },
+    {
+     "row": "253",
+     "name": "kmerseek_best_arm_on_position_share",
+     "bearing": "against",
+     "say": "chicken: share of motifs put on position, kmerseek's best setting"
+    },
+    {
+     "row": "253",
+     "name": "jackhmmer_on_position_share",
+     "bearing": "against",
+     "say": "the same, jackhmmer"
+    },
+    {
+     "row": "250",
+     "name": "share_run_ge_19_ciona",
+     "bearing": "against",
+     "say": "Ciona: motifs whose flanks keep a 19-letter H/P run, the length an exact seed needs"
+    }
+   ],
+   "caveats": "Chicken only. The seven farther species are pull request 72, not run yet.",
+   "open_prs": [
+    72,
+    71,
+    69
+   ]
+  },
+  {
+   "id": "ranking",
+   "name": "Ranking score",
+   "status": "not",
+   "statement": "kmerseek's per-region score region_mean_idf rises with the length of the call, so a list sorted by it tends to put long calls first.",
+   "claim_tag": "ranking score",
+   "evidence": [
+    {
+     "row": "253",
+     "name": "spearman_region_mean_idf_vs_call_length_median",
+     "bearing": "against",
+     "say": "rank correlation of region_mean_idf with call length, median over 266 settings (ELM, chicken)"
+    },
+    {
+     "row": "251",
+     "name": "spearman_mean_idf_vs_call_length_median",
+     "bearing": "against",
+     "say": "the same on DisProt regions"
+    },
+    {
+     "row": "243",
+     "name": "heldout_average_precision_all_19_alphabets",
+     "bearing": "against",
+     "say": "a model trained on all 19 alphabets' scores: held-out average precision"
+    },
+    {
+     "row": "242",
+     "name": "bcl2_combined_rank_mean_idf",
+     "bearing": "against",
+     "say": "BCL2's rank for Ced9 after combining alphabets"
+    }
+   ],
+   "caveats": "Pull request 71 changes the cut to keep a target if either region_mean_idf or region_evalue ranks it in the top 1,000.",
+   "open_prs": [
+    71
+   ]
+  },
+  {
+   "id": "bhf",
+   "name": "BHF",
+   "status": "not",
+   "statement": "kmerseek has not found a human protein that matches BHF better than chance, and BHF is not among the Botryllus proteins that human MHC queries hit.",
+   "claim_tag": "BHF",
+   "evidence": [
+    {
+     "row": "241",
+     "name": "bhf_best_evalue_any_human_protein",
+     "bearing": "against",
+     "say": "BHF against the human proteome: the best E-value over 152 settings. E = 1 means one hit this good is expected by chance in a single search, so the best of 152 searches falling below 1 is expected too"
+    },
+    {
+     "row": "228",
+     "name": "BHF among the hits",
+     "bearing": "against",
+     "say": "BHF among the Botryllus proteins that human MHC queries hit"
+    }
+   ],
+   "caveats": "BHF's membrane localization is a lab measurement and does not rest on kmerseek.",
+   "open_prs": []
+  },
+  {
+   "id": "cost",
+   "name": "Cost and memory",
+   "status": "partly",
+   "statement": "Among the tools notebook 227 timed, kmerseek uses the fewest CPU-hours per proteome search. A Swiss-Prot-sized search needs far more memory than MMseqs2 or DIAMOND and answers fewer queries per second.",
+   "claim_tag": "speed",
+   "evidence": [
+    {
+     "row": "227-cost",
+     "name": "kmerseek CPU-hours per search including index",
+     "bearing": "for",
+     "say": "CPU-hours for one search of the human queries against one proteome, index included"
+    },
+    {
+     "row": "227-cost",
+     "name": "MMseqs2 CPU-hours per search",
+     "bearing": "for",
+     "say": "the same, MMseqs2"
+    },
+    {
+     "row": "239",
+     "name": "kmerseek hp k15 scaled10 search peak memory (GB)",
+     "bearing": "against",
+     "say": "Swiss-Prot, 1,000 queries: kmerseek peak memory (GB)"
+    },
+    {
+     "row": "239",
+     "name": "DIAMOND --sensitive search peak memory (GB)",
+     "bearing": "against",
+     "say": "the same, DIAMOND"
+    },
+    {
+     "row": "239",
+     "name": "kmerseek search queries per second",
+     "bearing": "against",
+     "say": "kmerseek queries per second"
+    },
+    {
+     "row": "239",
+     "name": "DIAMOND queries per second",
+     "bearing": "against",
+     "say": "DIAMOND queries per second"
+    },
+    {
+     "row": "PR50-kmerseek-0.4-cost",
+     "name": "kmerseek_0.4_scaled1_median_wall_min",
+     "bearing": "against",
+     "say": "kmerseek 0.4 without subsampling: median minutes per search chunk"
+    },
+    {
+     "row": "PR50-kmerseek-0.4-cost",
+     "name": "MMseqs2_median_wall_min",
+     "bearing": "against",
+     "say": "the same chunk, MMseqs2"
+    },
+    {
+     "row": "PR50-kmerseek-0.4-cost",
+     "name": "kmerseek_0.4_scaled1_median_rss_gb",
+     "bearing": "against",
+     "say": "kmerseek 0.4 without subsampling: median peak memory (GB)"
+    },
+    {
+     "row": "PR50-kmerseek-0.4-cost",
+     "name": "kmerseek_0.3_median_wall_min",
+     "bearing": "for",
+     "say": "kmerseek 0.3 on the same chunk: median minutes"
+    }
+   ],
+   "caveats": "Notebook 239 ran kmerseek with k-mer subsampling (scaled 10); pull request 50 compares kmerseek 0.4 with and without it.",
+   "open_prs": [
+    50
+   ]
+  },
+  {
+   "id": "orthology",
+   "name": "Human-mouse orthologs",
+   "status": "partly",
+   "statement": "With the 20-letter alphabet, kmerseek calls human-mouse orthologs nearly as well as OrthoFinder. With a 2-letter H/P alphabet it does worse.",
+   "claim_tag": "orthology",
+   "evidence": [
+    {
+     "row": "200",
+     "name": "best kmerseek F1 (protein k=15)",
+     "bearing": "for",
+     "say": "kmerseek F1, 20-letter alphabet, k = 15"
+    },
+    {
+     "row": "200",
+     "name": "OrthoFinder F1 on the same genes (protein k=15)",
+     "bearing": "for",
+     "say": "OrthoFinder F1 on the same genes"
+    },
+    {
+     "row": "200",
+     "name": "best H/P F1 (hp_pbotc_1st_ed k=30)",
+     "bearing": "limit",
+     "say": "best H/P alphabet F1"
+    }
+   ],
+   "caveats": "The paper plan of 2026-09-11 moves whole-gene orthology to the supplement.",
+   "open_prs": [
+    64
+   ]
+  },
+  {
+   "id": "dark-set",
+   "name": "Invertebrate dark set",
+   "status": "untested",
+   "statement": "kmerseek labels proteins in an invertebrate proteome (Botryllus) that sequence search leaves without a label, and the labels beat a shuffled-sequence control.",
+   "claim_tag": "remote homology",
+   "evidence": [
+    {
+     "row": "dark-set-0.4-midi",
+     "name": null,
+     "bearing": "open",
+     "say": "the kmerseek 0.4 run on the dark set stopped on 2026-09-28 and has no results in the repo"
+    },
+    {
+     "row": "PR30-invertebrate-dark-set",
+     "name": null,
+     "bearing": "open",
+     "say": "the pipeline that defines the dark set; figures only, no results table committed"
+    }
+   ],
+   "caveats": "This is the one result that could add a new claim. No number exists yet.",
+   "open_prs": [
+    57,
+    30,
+    47
+   ]
+  }
+ ],
+ "open_prs_note": "Open pull requests in seanome/2024-kmerseek-analysis on 2026-09-29, with the claim each could change."
+}
