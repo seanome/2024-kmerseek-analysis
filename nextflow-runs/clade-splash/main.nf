@@ -374,8 +374,10 @@ process pfamOverlap {
 
 process alignInput {
     label 'python'
-    memory { "${16 * task.attempt} GB" }
-    time { "${4 * task.attempt}h" }
+    // Measured on the full run: 93.3 GiB peak, about 22 h. measure_resources.py writes the
+    // same asks into resources.config; these defaults cover launches without it.
+    memory { "${128 * task.attempt} GB" }
+    time { "${36 * task.attempt}h" }
 
     input:
     path pfam
