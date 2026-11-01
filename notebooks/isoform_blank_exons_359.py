@@ -161,6 +161,11 @@ def landed_at(best: dict[str, float], t: float) -> set[str]:
     return {k for k, v in best.items() if v <= t}
 
 
+def decoy_cap(rate: float, n_blank: int) -> int:
+    """floor(rate * n_blank), safe against float error (0.29 * 100 is 28.999999999999996)."""
+    return math.floor(rate * n_blank + 1e-9)
+
+
 def threshold_at_decoy_rate(
     decoy_best: dict[str, float], n_blank: int, max_rate: float = 0.01
 ) -> float:
@@ -170,7 +175,7 @@ def threshold_at_decoy_rate(
     any landing call (every real landing counts); otherwise the float just below the
     (cap+1)-th smallest decoy score. That value is finite, never -inf: real exons with a
     score below it still land."""
-    cap = math.floor(max_rate * n_blank)
+    cap = decoy_cap(max_rate, n_blank)
     scores = sorted(decoy_best.values())
     if len(scores) <= cap:
         return math.inf
@@ -193,7 +198,7 @@ def union_thresholds(
     exons over all settings stays at or below floor(max_rate * n_blank). Returns
     ({setting: threshold}, q).
     """
-    cap = math.floor(max_rate * n_blank)
+    cap = decoy_cap(max_rate, n_blank)
     best_q = 0.0
     best_t = {
         s: threshold_at_decoy_rate(d, n_blank, 0.0)

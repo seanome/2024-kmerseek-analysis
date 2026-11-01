@@ -131,3 +131,9 @@ def test_cds_fits_exons():
     assert ib.cds_fits_exons(ex, 1, 4)
     assert not ib.cds_fits_exons(ex, 1, 5)
     assert not ib.cds_fits_exons(ex, 5, 3)
+
+
+def test_decoy_cap_float_edge():
+    assert math.floor(0.29 * 100) == 28  # the float trap
+    assert ib.decoy_cap(0.29, 100) == 29
+    assert ib.decoy_cap(0.01, 350) == 3
