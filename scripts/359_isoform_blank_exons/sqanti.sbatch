@@ -18,6 +18,7 @@ set -euo pipefail
 WORK=$(pwd)
 D=$WORK/data
 SQ=/scratch/users/olgabot/apptainer-cache/docker.io-anaconesalab-sqanti3-v6.0.1.img
+IMG=/scratch/users/olgabot/apptainer-cache/docker.io-olgabot-kmerseek-0.4.1-rc1.img
 GFF3=$(find "$D/tappas" -name '*.gff3' | head -1)
 mkdir -p "$WORK/sqanti/qc" "$WORK/sqanti/filter"
 run() { apptainer exec --bind /scratch "$SQ" /conda/miniconda3/bin/conda run --no-capture-output -n sqanti3 "$@"; }
@@ -39,7 +40,7 @@ run python "$SQDIR/sqanti3_filter.py" rules \
     -c 16 --skip_report \
     -d "$WORK/sqanti/filter" -o wtc11
 
-python3 code/scripts/359_isoform_blank_exons/write_orfs.py \
+apptainer exec --bind /scratch "$IMG" python3 code/scripts/359_isoform_blank_exons/write_orfs.py \
     "$WORK/sqanti/qc/wtc11_classification.txt" \
     "$WORK/sqanti/filter/wtc11_pass_isoforms.txt" \
     "$WORK/sqanti/orfs_pass_coding.fasta"
