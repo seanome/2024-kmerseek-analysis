@@ -1,0 +1,13 @@
+{
+  "threshold": 7.781783898143929e-10,
+  "n_target": 33,
+  "n_decoy": 1,
+  "nofit": false,
+  "label": "kmerseek.regionsshared.w10.polarity4_k11_s1",
+  "calls_total": 752377085,
+  "decoy_calls_total": 344396086,
+  "max_decoy_rate": 0.05,
+  "features_found": 27,
+  "features_found_aligned": 27,
+  "features_total": 7174
+}

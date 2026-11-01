@@ -1,0 +1,2271 @@
+landing_rule	tool	index	window	setting	identity_bin	features	found	recall
+aligned piece	kmerseek	pfam	w10	dayhoff6_k9_s1	30-50%	583	44	0.07547169811320754
+whole call	kmerseek	pfam	w10	dayhoff6_k9_s1	30-50%	583	52	0.08919382504288165
+whole call	kmerseek	pfamshared	w10	dayhoff6_k9_s1	30-50%	583	52	0.08919382504288165
+aligned piece	kmerseek	pfamshared	w10	dayhoff6_k9_s1	30-50%	583	44	0.07547169811320754
+aligned piece	kmerseek	regions	w10	dayhoff6_k9_s1	30-50%	583	60	0.10291595197255575
+whole call	kmerseek	regions	w10	dayhoff6_k9_s1	30-50%	583	71	0.12178387650085763
+whole call	kmerseek	regionsshared	w10	dayhoff6_k9_s1	30-50%	583	64	0.1097770154373928
+aligned piece	kmerseek	regionsshared	w10	dayhoff6_k9_s1	30-50%	583	55	0.09433962264150944
+aligned piece	kmerseek	whole	w10	dayhoff6_k9_s1	30-50%	583	80	0.137221269296741
+whole call	kmerseek	whole	w10	dayhoff6_k9_s1	30-50%	583	55	0.09433962264150944
+whole call	kmerseek	wholeannot	w10	dayhoff6_k9_s1	30-50%	583	21	0.036020583190394515
+aligned piece	kmerseek	wholeannot	w10	dayhoff6_k9_s1	30-50%	583	20	0.03430531732418525
+whole call	kmerseek	pfam	w20	dayhoff6_k9_s1	30-50%	583	60	0.10291595197255575
+aligned piece	kmerseek	pfam	w20	dayhoff6_k9_s1	30-50%	583	52	0.08919382504288165
+aligned piece	kmerseek	pfamshared	w20	dayhoff6_k9_s1	30-50%	583	52	0.08919382504288165
+whole call	kmerseek	pfamshared	w20	dayhoff6_k9_s1	30-50%	583	60	0.10291595197255575
+aligned piece	kmerseek	regions	w20	dayhoff6_k9_s1	30-50%	583	33	0.05660377358490566
+whole call	kmerseek	regions	w20	dayhoff6_k9_s1	30-50%	583	45	0.07718696397941681
+whole call	kmerseek	regionsshared	w20	dayhoff6_k9_s1	30-50%	583	64	0.1097770154373928
+aligned piece	kmerseek	regionsshared	w20	dayhoff6_k9_s1	30-50%	583	55	0.09433962264150944
+aligned piece	kmerseek	whole	w20	dayhoff6_k9_s1	30-50%	583	83	0.1423670668953688
+whole call	kmerseek	whole	w20	dayhoff6_k9_s1	30-50%	583	57	0.09777015437392796
+whole call	kmerseek	wholeannot	w20	dayhoff6_k9_s1	30-50%	583	22	0.03773584905660377
+aligned piece	kmerseek	wholeannot	w20	dayhoff6_k9_s1	30-50%	583	20	0.03430531732418525
+whole call	kmerseek	pfam	w10	funcgroups8_k8_s1	30-50%	583	48	0.0823327615780446
+aligned piece	kmerseek	pfam	w10	funcgroups8_k8_s1	30-50%	583	42	0.07204116638078903
+aligned piece	kmerseek	pfamshared	w10	funcgroups8_k8_s1	30-50%	583	40	0.0686106346483705
+whole call	kmerseek	pfamshared	w10	funcgroups8_k8_s1	30-50%	583	46	0.07890222984562607
+aligned piece	kmerseek	regions	w10	funcgroups8_k8_s1	30-50%	583	11	0.018867924528301886
+whole call	kmerseek	regions	w10	funcgroups8_k8_s1	30-50%	583	15	0.025728987993138937
+whole call	kmerseek	regionsshared	w10	funcgroups8_k8_s1	30-50%	583	15	0.025728987993138937
+aligned piece	kmerseek	regionsshared	w10	funcgroups8_k8_s1	30-50%	583	10	0.017152658662092625
+aligned piece	kmerseek	whole	w10	funcgroups8_k8_s1	30-50%	583	62	0.10634648370497427
+whole call	kmerseek	whole	w10	funcgroups8_k8_s1	30-50%	583	38	0.06518010291595197
+aligned piece	kmerseek	wholeannot	w10	funcgroups8_k8_s1	30-50%	583	18	0.030874785591766724
+whole call	kmerseek	wholeannot	w10	funcgroups8_k8_s1	30-50%	583	15	0.025728987993138937
+whole call	kmerseek	pfam	w20	funcgroups8_k8_s1	30-50%	583	55	0.09433962264150944
+aligned piece	kmerseek	pfam	w20	funcgroups8_k8_s1	30-50%	583	50	0.08576329331046312
+aligned piece	kmerseek	pfamshared	w20	funcgroups8_k8_s1	30-50%	583	45	0.07718696397941681
+whole call	kmerseek	pfamshared	w20	funcgroups8_k8_s1	30-50%	583	52	0.08919382504288165
+aligned piece	kmerseek	regions	w20	funcgroups8_k8_s1	30-50%	583	12	0.02058319039451115
+whole call	kmerseek	regions	w20	funcgroups8_k8_s1	30-50%	583	17	0.029159519725557463
+whole call	kmerseek	regionsshared	w20	funcgroups8_k8_s1	30-50%	583	18	0.030874785591766724
+aligned piece	kmerseek	regionsshared	w20	funcgroups8_k8_s1	30-50%	583	12	0.02058319039451115
+whole call	kmerseek	whole	w20	funcgroups8_k8_s1	30-50%	583	47	0.08061749571183534
+aligned piece	kmerseek	whole	w20	funcgroups8_k8_s1	30-50%	583	71	0.12178387650085763
+aligned piece	kmerseek	wholeannot	w20	funcgroups8_k8_s1	30-50%	583	18	0.030874785591766724
+whole call	kmerseek	wholeannot	w20	funcgroups8_k8_s1	30-50%	583	15	0.025728987993138937
+whole call	kmerseek	pfam	w10	gbmr4_k14_s1	30-50%	583	3	0.005145797598627788
+aligned piece	kmerseek	pfam	w10	gbmr4_k14_s1	30-50%	583	3	0.005145797598627788
+aligned piece	kmerseek	pfamshared	w10	gbmr4_k14_s1	30-50%	583	3	0.005145797598627788
+whole call	kmerseek	pfamshared	w10	gbmr4_k14_s1	30-50%	583	3	0.005145797598627788
+whole call	kmerseek	regions	w10	gbmr4_k14_s1	30-50%	583	2	0.003430531732418525
+aligned piece	kmerseek	regions	w10	gbmr4_k14_s1	30-50%	583	0	0.0
+whole call	kmerseek	regionsshared	w10	gbmr4_k14_s1	30-50%	583	6	0.010291595197255575
+aligned piece	kmerseek	regionsshared	w10	gbmr4_k14_s1	30-50%	583	6	0.010291595197255575
+aligned piece	kmerseek	whole	w10	gbmr4_k14_s1	30-50%	583	17	0.029159519725557463
+whole call	kmerseek	whole	w10	gbmr4_k14_s1	30-50%	583	11	0.018867924528301886
+aligned piece	kmerseek	wholeannot	w10	gbmr4_k14_s1	30-50%	583	12	0.02058319039451115
+whole call	kmerseek	wholeannot	w10	gbmr4_k14_s1	30-50%	583	10	0.017152658662092625
+whole call	kmerseek	pfam	w20	gbmr4_k14_s1	30-50%	583	3	0.005145797598627788
+aligned piece	kmerseek	pfam	w20	gbmr4_k14_s1	30-50%	583	2	0.003430531732418525
+aligned piece	kmerseek	pfamshared	w20	gbmr4_k14_s1	30-50%	583	3	0.005145797598627788
+whole call	kmerseek	pfamshared	w20	gbmr4_k14_s1	30-50%	583	3	0.005145797598627788
+aligned piece	kmerseek	regions	w20	gbmr4_k14_s1	30-50%	583	9	0.015437392795883362
+whole call	kmerseek	regions	w20	gbmr4_k14_s1	30-50%	583	9	0.015437392795883362
+aligned piece	kmerseek	regionsshared	w20	gbmr4_k14_s1	30-50%	583	7	0.012006861063464836
+whole call	kmerseek	regionsshared	w20	gbmr4_k14_s1	30-50%	583	7	0.012006861063464836
+whole call	kmerseek	whole	w20	gbmr4_k14_s1	30-50%	583	9	0.015437392795883362
+aligned piece	kmerseek	whole	w20	gbmr4_k14_s1	30-50%	583	14	0.024013722126929673
+aligned piece	kmerseek	wholeannot	w20	gbmr4_k14_s1	30-50%	583	9	0.015437392795883362
+whole call	kmerseek	wholeannot	w20	gbmr4_k14_s1	30-50%	583	8	0.0137221269296741
+aligned piece	kmerseek	pfamshared	w10	gbmr7_k16_s1	30-50%	583	1	0.0017152658662092624
+whole call	kmerseek	pfamshared	w10	gbmr7_k16_s1	30-50%	583	1	0.0017152658662092624
+whole call	kmerseek	regions	w10	gbmr7_k16_s1	30-50%	583	0	0.0
+aligned piece	kmerseek	regions	w10	gbmr7_k16_s1	30-50%	583	0	0.0
+whole call	kmerseek	regionsshared	w10	gbmr7_k16_s1	30-50%	583	0	0.0
+aligned piece	kmerseek	regionsshared	w10	gbmr7_k16_s1	30-50%	583	0	0.0
+aligned piece	kmerseek	whole	w10	gbmr7_k16_s1	30-50%	583	0	0.0
+whole call	kmerseek	whole	w10	gbmr7_k16_s1	30-50%	583	1	0.0017152658662092624
+aligned piece	kmerseek	wholeannot	w10	gbmr7_k16_s1	30-50%	583	0	0.0
+whole call	kmerseek	wholeannot	w10	gbmr7_k16_s1	30-50%	583	0	0.0
+aligned piece	kmerseek	pfamshared	w20	gbmr7_k16_s1	30-50%	583	0	0.0
+whole call	kmerseek	pfamshared	w20	gbmr7_k16_s1	30-50%	583	0	0.0
+aligned piece	kmerseek	regions	w20	gbmr7_k16_s1	30-50%	583	0	0.0
+whole call	kmerseek	regions	w20	gbmr7_k16_s1	30-50%	583	0	0.0
+whole call	kmerseek	regionsshared	w20	gbmr7_k16_s1	30-50%	583	0	0.0
+aligned piece	kmerseek	regionsshared	w20	gbmr7_k16_s1	30-50%	583	0	0.0
+whole call	kmerseek	whole	w20	gbmr7_k16_s1	30-50%	583	0	0.0
+aligned piece	kmerseek	whole	w20	gbmr7_k16_s1	30-50%	583	0	0.0
+whole call	kmerseek	wholeannot	w20	gbmr7_k16_s1	30-50%	583	0	0.0
+aligned piece	kmerseek	wholeannot	w20	gbmr7_k16_s1	30-50%	583	0	0.0
+whole call	kmerseek	regions	w10	hp_kyte_doolittle2_k22_s1	30-50%	583	24	0.0411663807890223
+aligned piece	kmerseek	regions	w10	hp_kyte_doolittle2_k22_s1	30-50%	583	24	0.0411663807890223
+whole call	kmerseek	pfam	w20	hp_kyte_doolittle2_k22_s1	30-50%	583	7	0.012006861063464836
+aligned piece	kmerseek	pfam	w20	hp_kyte_doolittle2_k22_s1	30-50%	583	7	0.012006861063464836
+whole call	kmerseek	pfamshared	w20	hp_kyte_doolittle2_k22_s1	30-50%	583	7	0.012006861063464836
+aligned piece	kmerseek	pfamshared	w20	hp_kyte_doolittle2_k22_s1	30-50%	583	7	0.012006861063464836
+whole call	kmerseek	regions	w20	hp_kyte_doolittle2_k22_s1	30-50%	583	29	0.04974271012006861
+aligned piece	kmerseek	regions	w20	hp_kyte_doolittle2_k22_s1	30-50%	583	30	0.051457975986277875
+whole call	kmerseek	regionsshared	w20	hp_kyte_doolittle2_k22_s1	30-50%	583	28	0.048027444253859346
+aligned piece	kmerseek	regionsshared	w20	hp_kyte_doolittle2_k22_s1	30-50%	583	29	0.04974271012006861
+aligned piece	kmerseek	whole	w20	hp_kyte_doolittle2_k22_s1	30-50%	583	28	0.048027444253859346
+whole call	kmerseek	whole	w20	hp_kyte_doolittle2_k22_s1	30-50%	583	9	0.015437392795883362
+aligned piece	kmerseek	wholeannot	w20	hp_kyte_doolittle2_k22_s1	30-50%	583	0	0.0
+whole call	kmerseek	wholeannot	w20	hp_kyte_doolittle2_k22_s1	30-50%	583	0	0.0
+aligned piece	kmerseek	pfam	w10	hp_lehninger2_k21_s1	30-50%	583	24	0.0411663807890223
+whole call	kmerseek	pfam	w10	hp_lehninger2_k21_s1	30-50%	583	27	0.04631217838765009
+aligned piece	kmerseek	pfamshared	w10	hp_lehninger2_k21_s1	30-50%	583	24	0.0411663807890223
+whole call	kmerseek	pfamshared	w10	hp_lehninger2_k21_s1	30-50%	583	27	0.04631217838765009
+whole call	kmerseek	regions	w10	hp_lehninger2_k21_s1	30-50%	583	0	0.0
+aligned piece	kmerseek	regions	w10	hp_lehninger2_k21_s1	30-50%	583	0	0.0
+aligned piece	kmerseek	regionsshared	w10	hp_lehninger2_k21_s1	30-50%	583	18	0.030874785591766724
+whole call	kmerseek	regionsshared	w10	hp_lehninger2_k21_s1	30-50%	583	18	0.030874785591766724
+whole call	kmerseek	whole	w10	hp_lehninger2_k21_s1	30-50%	583	33	0.05660377358490566
+aligned piece	kmerseek	whole	w10	hp_lehninger2_k21_s1	30-50%	583	54	0.09262435677530018
+aligned piece	kmerseek	wholeannot	w10	hp_lehninger2_k21_s1	30-50%	583	12	0.02058319039451115
+whole call	kmerseek	wholeannot	w10	hp_lehninger2_k21_s1	30-50%	583	12	0.02058319039451115
+aligned piece	kmerseek	pfam	w20	hp_lehninger2_k21_s1	30-50%	583	23	0.03945111492281304
+whole call	kmerseek	pfam	w20	hp_lehninger2_k21_s1	30-50%	583	26	0.044596912521440824
+aligned piece	kmerseek	pfamshared	w20	hp_lehninger2_k21_s1	30-50%	583	23	0.03945111492281304
+whole call	kmerseek	pfamshared	w20	hp_lehninger2_k21_s1	30-50%	583	26	0.044596912521440824
+whole call	kmerseek	regions	w20	hp_lehninger2_k21_s1	30-50%	583	21	0.036020583190394515
+aligned piece	kmerseek	regions	w20	hp_lehninger2_k21_s1	30-50%	583	19	0.032590051457975985
+whole call	kmerseek	regionsshared	w20	hp_lehninger2_k21_s1	30-50%	583	18	0.030874785591766724
+aligned piece	kmerseek	regionsshared	w20	hp_lehninger2_k21_s1	30-50%	583	18	0.030874785591766724
+aligned piece	kmerseek	whole	w20	hp_lehninger2_k21_s1	30-50%	583	54	0.09262435677530018
+whole call	kmerseek	whole	w20	hp_lehninger2_k21_s1	30-50%	583	33	0.05660377358490566
+whole call	kmerseek	wholeannot	w20	hp_lehninger2_k21_s1	30-50%	583	13	0.022298456260720412
+aligned piece	kmerseek	wholeannot	w20	hp_lehninger2_k21_s1	30-50%	583	13	0.022298456260720412
+whole call	kmerseek	pfam	w10	hp_lehninger_c_nonpolar2_k21_s1	30-50%	583	21	0.036020583190394515
+aligned piece	kmerseek	pfam	w10	hp_lehninger_c_nonpolar2_k21_s1	30-50%	583	22	0.03773584905660377
+whole call	kmerseek	pfamshared	w10	hp_lehninger_c_nonpolar2_k21_s1	30-50%	583	23	0.03945111492281304
+aligned piece	kmerseek	pfamshared	w10	hp_lehninger_c_nonpolar2_k21_s1	30-50%	583	24	0.0411663807890223
+aligned piece	kmerseek	regions	w10	hp_lehninger_c_nonpolar2_k21_s1	30-50%	583	13	0.022298456260720412
+whole call	kmerseek	regions	w10	hp_lehninger_c_nonpolar2_k21_s1	30-50%	583	13	0.022298456260720412
+whole call	kmerseek	regionsshared	w10	hp_lehninger_c_nonpolar2_k21_s1	30-50%	583	14	0.024013722126929673
+aligned piece	kmerseek	regionsshared	w10	hp_lehninger_c_nonpolar2_k21_s1	30-50%	583	14	0.024013722126929673
+aligned piece	kmerseek	whole	w10	hp_lehninger_c_nonpolar2_k21_s1	30-50%	583	51	0.08747855917667238
+whole call	kmerseek	whole	w10	hp_lehninger_c_nonpolar2_k21_s1	30-50%	583	25	0.04288164665523156
+whole call	kmerseek	wholeannot	w10	hp_lehninger_c_nonpolar2_k21_s1	30-50%	583	10	0.017152658662092625
+aligned piece	kmerseek	wholeannot	w10	hp_lehninger_c_nonpolar2_k21_s1	30-50%	583	10	0.017152658662092625
+aligned piece	kmerseek	pfam	w20	hp_lehninger_c_nonpolar2_k21_s1	30-50%	583	22	0.03773584905660377
+whole call	kmerseek	pfam	w20	hp_lehninger_c_nonpolar2_k21_s1	30-50%	583	21	0.036020583190394515
+whole call	kmerseek	pfamshared	w20	hp_lehninger_c_nonpolar2_k21_s1	30-50%	583	20	0.03430531732418525
+aligned piece	kmerseek	pfamshared	w20	hp_lehninger_c_nonpolar2_k21_s1	30-50%	583	21	0.036020583190394515
+whole call	kmerseek	regions	w20	hp_lehninger_c_nonpolar2_k21_s1	30-50%	583	15	0.025728987993138937
+aligned piece	kmerseek	regions	w20	hp_lehninger_c_nonpolar2_k21_s1	30-50%	583	15	0.025728987993138937
+whole call	kmerseek	regionsshared	w20	hp_lehninger_c_nonpolar2_k21_s1	30-50%	583	16	0.0274442538593482
+aligned piece	kmerseek	regionsshared	w20	hp_lehninger_c_nonpolar2_k21_s1	30-50%	583	16	0.0274442538593482
+aligned piece	kmerseek	whole	w20	hp_lehninger_c_nonpolar2_k21_s1	30-50%	583	51	0.08747855917667238
+whole call	kmerseek	whole	w20	hp_lehninger_c_nonpolar2_k21_s1	30-50%	583	25	0.04288164665523156
+whole call	kmerseek	wholeannot	w20	hp_lehninger_c_nonpolar2_k21_s1	30-50%	583	10	0.017152658662092625
+aligned piece	kmerseek	wholeannot	w20	hp_lehninger_c_nonpolar2_k21_s1	30-50%	583	10	0.017152658662092625
+whole call	kmerseek	pfam	w10	hp_lehninger_hpc3_k19_s1	30-50%	583	1	0.0017152658662092624
+aligned piece	kmerseek	pfam	w10	hp_lehninger_hpc3_k19_s1	30-50%	583	1	0.0017152658662092624
+aligned piece	kmerseek	pfamshared	w10	hp_lehninger_hpc3_k19_s1	30-50%	583	1	0.0017152658662092624
+whole call	kmerseek	pfamshared	w10	hp_lehninger_hpc3_k19_s1	30-50%	583	1	0.0017152658662092624
+whole call	kmerseek	regions	w10	hp_lehninger_hpc3_k19_s1	30-50%	583	1	0.0017152658662092624
+aligned piece	kmerseek	regions	w10	hp_lehninger_hpc3_k19_s1	30-50%	583	1	0.0017152658662092624
+aligned piece	kmerseek	regionsshared	w10	hp_lehninger_hpc3_k19_s1	30-50%	583	1	0.0017152658662092624
+whole call	kmerseek	regionsshared	w10	hp_lehninger_hpc3_k19_s1	30-50%	583	1	0.0017152658662092624
+aligned piece	kmerseek	whole	w10	hp_lehninger_hpc3_k19_s1	30-50%	583	1	0.0017152658662092624
+whole call	kmerseek	whole	w10	hp_lehninger_hpc3_k19_s1	30-50%	583	0	0.0
+aligned piece	kmerseek	wholeannot	w10	hp_lehninger_hpc3_k19_s1	30-50%	583	0	0.0
+whole call	kmerseek	wholeannot	w10	hp_lehninger_hpc3_k19_s1	30-50%	583	0	0.0
+whole call	kmerseek	pfam	w20	hp_lehninger_hpc3_k19_s1	30-50%	583	0	0.0
+aligned piece	kmerseek	pfam	w20	hp_lehninger_hpc3_k19_s1	30-50%	583	0	0.0
+whole call	kmerseek	pfamshared	w20	hp_lehninger_hpc3_k19_s1	30-50%	583	0	0.0
+aligned piece	kmerseek	pfamshared	w20	hp_lehninger_hpc3_k19_s1	30-50%	583	0	0.0
+aligned piece	kmerseek	regions	w20	hp_lehninger_hpc3_k19_s1	30-50%	583	1	0.0017152658662092624
+whole call	kmerseek	regions	w20	hp_lehninger_hpc3_k19_s1	30-50%	583	1	0.0017152658662092624
+whole call	kmerseek	regionsshared	w20	hp_lehninger_hpc3_k19_s1	30-50%	583	1	0.0017152658662092624
+aligned piece	kmerseek	regionsshared	w20	hp_lehninger_hpc3_k19_s1	30-50%	583	1	0.0017152658662092624
+aligned piece	kmerseek	whole	w20	hp_lehninger_hpc3_k19_s1	30-50%	583	1	0.0017152658662092624
+whole call	kmerseek	whole	w20	hp_lehninger_hpc3_k19_s1	30-50%	583	0	0.0
+aligned piece	kmerseek	wholeannot	w20	hp_lehninger_hpc3_k19_s1	30-50%	583	0	0.0
+whole call	kmerseek	wholeannot	w20	hp_lehninger_hpc3_k19_s1	30-50%	583	0	0.0
+whole call	kmerseek	pfam	w10	hp_pbotc_1st_ed2_k21_s1	30-50%	583	26	0.044596912521440824
+aligned piece	kmerseek	pfam	w10	hp_pbotc_1st_ed2_k21_s1	30-50%	583	24	0.0411663807890223
+aligned piece	kmerseek	pfamshared	w10	hp_pbotc_1st_ed2_k21_s1	30-50%	583	24	0.0411663807890223
+whole call	kmerseek	pfamshared	w10	hp_pbotc_1st_ed2_k21_s1	30-50%	583	26	0.044596912521440824
+whole call	kmerseek	regions	w10	hp_pbotc_1st_ed2_k21_s1	30-50%	583	8	0.0137221269296741
+aligned piece	kmerseek	regions	w10	hp_pbotc_1st_ed2_k21_s1	30-50%	583	8	0.0137221269296741
+whole call	kmerseek	regionsshared	w10	hp_pbotc_1st_ed2_k21_s1	30-50%	583	8	0.0137221269296741
+aligned piece	kmerseek	regionsshared	w10	hp_pbotc_1st_ed2_k21_s1	30-50%	583	8	0.0137221269296741
+whole call	kmerseek	whole	w10	hp_pbotc_1st_ed2_k21_s1	30-50%	583	23	0.03945111492281304
+aligned piece	kmerseek	whole	w10	hp_pbotc_1st_ed2_k21_s1	30-50%	583	55	0.09433962264150944
+aligned piece	kmerseek	wholeannot	w10	hp_pbotc_1st_ed2_k21_s1	30-50%	583	2	0.003430531732418525
+whole call	kmerseek	wholeannot	w10	hp_pbotc_1st_ed2_k21_s1	30-50%	583	3	0.005145797598627788
+whole call	kmerseek	pfam	w20	hp_pbotc_1st_ed2_k21_s1	30-50%	583	26	0.044596912521440824
+aligned piece	kmerseek	pfam	w20	hp_pbotc_1st_ed2_k21_s1	30-50%	583	24	0.0411663807890223
+aligned piece	kmerseek	pfamshared	w20	hp_pbotc_1st_ed2_k21_s1	30-50%	583	24	0.0411663807890223
+whole call	kmerseek	pfamshared	w20	hp_pbotc_1st_ed2_k21_s1	30-50%	583	26	0.044596912521440824
+aligned piece	kmerseek	regions	w20	hp_pbotc_1st_ed2_k21_s1	30-50%	583	10	0.017152658662092625
+whole call	kmerseek	regions	w20	hp_pbotc_1st_ed2_k21_s1	30-50%	583	10	0.017152658662092625
+whole call	kmerseek	regionsshared	w20	hp_pbotc_1st_ed2_k21_s1	30-50%	583	11	0.018867924528301886
+aligned piece	kmerseek	regionsshared	w20	hp_pbotc_1st_ed2_k21_s1	30-50%	583	11	0.018867924528301886
+aligned piece	kmerseek	whole	w20	hp_pbotc_1st_ed2_k21_s1	30-50%	583	57	0.09777015437392796
+whole call	kmerseek	whole	w20	hp_pbotc_1st_ed2_k21_s1	30-50%	583	25	0.04288164665523156
+aligned piece	kmerseek	wholeannot	w20	hp_pbotc_1st_ed2_k21_s1	30-50%	583	2	0.003430531732418525
+whole call	kmerseek	wholeannot	w20	hp_pbotc_1st_ed2_k21_s1	30-50%	583	3	0.005145797598627788
+whole call	kmerseek	pfam	w10	hp_thomas_dill2_k22_s1	30-50%	583	16	0.0274442538593482
+aligned piece	kmerseek	pfam	w10	hp_thomas_dill2_k22_s1	30-50%	583	15	0.025728987993138937
+aligned piece	kmerseek	pfamshared	w10	hp_thomas_dill2_k22_s1	30-50%	583	16	0.0274442538593482
+whole call	kmerseek	pfamshared	w10	hp_thomas_dill2_k22_s1	30-50%	583	17	0.029159519725557463
+aligned piece	kmerseek	regions	w10	hp_thomas_dill2_k22_s1	30-50%	583	8	0.0137221269296741
+whole call	kmerseek	regions	w10	hp_thomas_dill2_k22_s1	30-50%	583	9	0.015437392795883362
+whole call	kmerseek	regionsshared	w10	hp_thomas_dill2_k22_s1	30-50%	583	7	0.012006861063464836
+aligned piece	kmerseek	regionsshared	w10	hp_thomas_dill2_k22_s1	30-50%	583	7	0.012006861063464836
+whole call	kmerseek	whole	w10	hp_thomas_dill2_k22_s1	30-50%	583	4	0.00686106346483705
+aligned piece	kmerseek	whole	w10	hp_thomas_dill2_k22_s1	30-50%	583	24	0.0411663807890223
+aligned piece	kmerseek	wholeannot	w10	hp_thomas_dill2_k22_s1	30-50%	583	0	0.0
+whole call	kmerseek	wholeannot	w10	hp_thomas_dill2_k22_s1	30-50%	583	0	0.0
+aligned piece	kmerseek	pfam	w20	hp_thomas_dill2_k22_s1	30-50%	583	16	0.0274442538593482
+whole call	kmerseek	pfam	w20	hp_thomas_dill2_k22_s1	30-50%	583	17	0.029159519725557463
+whole call	kmerseek	pfamshared	w20	hp_thomas_dill2_k22_s1	30-50%	583	18	0.030874785591766724
+aligned piece	kmerseek	pfamshared	w20	hp_thomas_dill2_k22_s1	30-50%	583	18	0.030874785591766724
+aligned piece	kmerseek	regions	w20	hp_thomas_dill2_k22_s1	30-50%	583	7	0.012006861063464836
+whole call	kmerseek	regions	w20	hp_thomas_dill2_k22_s1	30-50%	583	7	0.012006861063464836
+aligned piece	kmerseek	regionsshared	w20	hp_thomas_dill2_k22_s1	30-50%	583	7	0.012006861063464836
+whole call	kmerseek	regionsshared	w20	hp_thomas_dill2_k22_s1	30-50%	583	7	0.012006861063464836
+whole call	kmerseek	whole	w20	hp_thomas_dill2_k22_s1	30-50%	583	4	0.00686106346483705
+aligned piece	kmerseek	whole	w20	hp_thomas_dill2_k22_s1	30-50%	583	24	0.0411663807890223
+whole call	kmerseek	wholeannot	w20	hp_thomas_dill2_k22_s1	30-50%	583	1	0.0017152658662092624
+aligned piece	kmerseek	wholeannot	w20	hp_thomas_dill2_k22_s1	30-50%	583	2	0.003430531732418525
+whole call	kmerseek	pfam	w10	hp_thomas_dill_no_c2_k22_s1	30-50%	583	13	0.022298456260720412
+aligned piece	kmerseek	pfam	w10	hp_thomas_dill_no_c2_k22_s1	30-50%	583	13	0.022298456260720412
+whole call	kmerseek	pfamshared	w10	hp_thomas_dill_no_c2_k22_s1	30-50%	583	14	0.024013722126929673
+aligned piece	kmerseek	pfamshared	w10	hp_thomas_dill_no_c2_k22_s1	30-50%	583	13	0.022298456260720412
+whole call	kmerseek	regions	w10	hp_thomas_dill_no_c2_k22_s1	30-50%	583	33	0.05660377358490566
+aligned piece	kmerseek	regions	w10	hp_thomas_dill_no_c2_k22_s1	30-50%	583	31	0.05317324185248713
+aligned piece	kmerseek	regionsshared	w10	hp_thomas_dill_no_c2_k22_s1	30-50%	583	23	0.03945111492281304
+whole call	kmerseek	regionsshared	w10	hp_thomas_dill_no_c2_k22_s1	30-50%	583	24	0.0411663807890223
+whole call	kmerseek	whole	w10	hp_thomas_dill_no_c2_k22_s1	30-50%	583	8	0.0137221269296741
+aligned piece	kmerseek	whole	w10	hp_thomas_dill_no_c2_k22_s1	30-50%	583	27	0.04631217838765009
+aligned piece	kmerseek	wholeannot	w10	hp_thomas_dill_no_c2_k22_s1	30-50%	583	0	0.0
+whole call	kmerseek	wholeannot	w10	hp_thomas_dill_no_c2_k22_s1	30-50%	583	0	0.0
+aligned piece	kmerseek	pfam	w20	hp_thomas_dill_no_c2_k22_s1	30-50%	583	14	0.024013722126929673
+whole call	kmerseek	pfam	w20	hp_thomas_dill_no_c2_k22_s1	30-50%	583	15	0.025728987993138937
+aligned piece	kmerseek	pfamshared	w20	hp_thomas_dill_no_c2_k22_s1	30-50%	583	14	0.024013722126929673
+whole call	kmerseek	pfamshared	w20	hp_thomas_dill_no_c2_k22_s1	30-50%	583	15	0.025728987993138937
+aligned piece	kmerseek	regions	w20	hp_thomas_dill_no_c2_k22_s1	30-50%	583	21	0.036020583190394515
+whole call	kmerseek	regions	w20	hp_thomas_dill_no_c2_k22_s1	30-50%	583	22	0.03773584905660377
+aligned piece	kmerseek	regionsshared	w20	hp_thomas_dill_no_c2_k22_s1	30-50%	583	23	0.03945111492281304
+whole call	kmerseek	regionsshared	w20	hp_thomas_dill_no_c2_k22_s1	30-50%	583	24	0.0411663807890223
+aligned piece	kmerseek	whole	w20	hp_thomas_dill_no_c2_k22_s1	30-50%	583	27	0.04631217838765009
+whole call	kmerseek	whole	w20	hp_thomas_dill_no_c2_k22_s1	30-50%	583	8	0.0137221269296741
+whole call	kmerseek	wholeannot	w20	hp_thomas_dill_no_c2_k22_s1	30-50%	583	2	0.003430531732418525
+aligned piece	kmerseek	wholeannot	w20	hp_thomas_dill_no_c2_k22_s1	30-50%	583	3	0.005145797598627788
+aligned piece	kmerseek	pfam	w10	hsdm17_k6_s1	30-50%	583	66	0.11320754716981132
+whole call	kmerseek	pfam	w10	hsdm17_k6_s1	30-50%	583	77	0.1320754716981132
+aligned piece	kmerseek	pfamshared	w10	hsdm17_k6_s1	30-50%	583	68	0.11663807890222985
+whole call	kmerseek	pfamshared	w10	hsdm17_k6_s1	30-50%	583	79	0.13550600343053174
+aligned piece	kmerseek	regions	w10	hsdm17_k6_s1	30-50%	583	0	0.0
+whole call	kmerseek	regions	w10	hsdm17_k6_s1	30-50%	583	3	0.005145797598627788
+whole call	kmerseek	regionsshared	w10	hsdm17_k6_s1	30-50%	583	57	0.09777015437392796
+aligned piece	kmerseek	regionsshared	w10	hsdm17_k6_s1	30-50%	583	47	0.08061749571183534
+whole call	kmerseek	whole	w10	hsdm17_k6_s1	30-50%	583	63	0.10806174957118353
+aligned piece	kmerseek	whole	w10	hsdm17_k6_s1	30-50%	583	78	0.13379073756432247
+whole call	kmerseek	wholeannot	w10	hsdm17_k6_s1	30-50%	583	39	0.06689536878216124
+aligned piece	kmerseek	wholeannot	w10	hsdm17_k6_s1	30-50%	583	42	0.07204116638078903
+whole call	kmerseek	pfam	w20	hsdm17_k6_s1	30-50%	583	88	0.1509433962264151
+aligned piece	kmerseek	pfam	w20	hsdm17_k6_s1	30-50%	583	78	0.13379073756432247
+aligned piece	kmerseek	pfamshared	w20	hsdm17_k6_s1	30-50%	583	78	0.13379073756432247
+whole call	kmerseek	pfamshared	w20	hsdm17_k6_s1	30-50%	583	89	0.15265866209262435
+aligned piece	kmerseek	regions	w20	hsdm17_k6_s1	30-50%	583	46	0.07890222984562607
+whole call	kmerseek	regions	w20	hsdm17_k6_s1	30-50%	583	56	0.09605488850771869
+aligned piece	kmerseek	regionsshared	w20	hsdm17_k6_s1	30-50%	583	60	0.10291595197255575
+whole call	kmerseek	regionsshared	w20	hsdm17_k6_s1	30-50%	583	71	0.12178387650085763
+aligned piece	kmerseek	whole	w20	hsdm17_k6_s1	30-50%	583	85	0.1457975986277873
+whole call	kmerseek	whole	w20	hsdm17_k6_s1	30-50%	583	70	0.12006861063464837
+aligned piece	kmerseek	wholeannot	w20	hsdm17_k6_s1	30-50%	583	47	0.08061749571183534
+whole call	kmerseek	wholeannot	w20	hsdm17_k6_s1	30-50%	583	45	0.07718696397941681
+aligned piece	kmerseek	pfam	w10	mmseqs12_k6_s1	30-50%	583	122	0.20926243567753003
+whole call	kmerseek	pfam	w10	mmseqs12_k6_s1	30-50%	583	129	0.22126929674099485
+whole call	kmerseek	pfamshared	w10	mmseqs12_k6_s1	30-50%	583	130	0.22298456260720412
+aligned piece	kmerseek	pfamshared	w10	mmseqs12_k6_s1	30-50%	583	123	0.2109777015437393
+aligned piece	kmerseek	regions	w10	mmseqs12_k6_s1	30-50%	583	12	0.02058319039451115
+whole call	kmerseek	regions	w10	mmseqs12_k6_s1	30-50%	583	18	0.030874785591766724
+whole call	kmerseek	regionsshared	w10	mmseqs12_k6_s1	30-50%	583	124	0.21269296740994853
+aligned piece	kmerseek	regionsshared	w10	mmseqs12_k6_s1	30-50%	583	108	0.18524871355060035
+whole call	kmerseek	whole	w10	mmseqs12_k6_s1	30-50%	583	92	0.15780445969125215
+aligned piece	kmerseek	whole	w10	mmseqs12_k6_s1	30-50%	583	117	0.2006861063464837
+aligned piece	kmerseek	wholeannot	w10	mmseqs12_k6_s1	30-50%	583	66	0.11320754716981132
+whole call	kmerseek	wholeannot	w10	mmseqs12_k6_s1	30-50%	583	68	0.11663807890222985
+aligned piece	kmerseek	pfam	w20	mmseqs12_k6_s1	30-50%	583	148	0.2538593481989708
+whole call	kmerseek	pfam	w20	mmseqs12_k6_s1	30-50%	583	155	0.2658662092624357
+whole call	kmerseek	pfamshared	w20	mmseqs12_k6_s1	30-50%	583	157	0.2692967409948542
+aligned piece	kmerseek	pfamshared	w20	mmseqs12_k6_s1	30-50%	583	149	0.2555746140651801
+aligned piece	kmerseek	regions	w20	mmseqs12_k6_s1	30-50%	583	4	0.00686106346483705
+whole call	kmerseek	regions	w20	mmseqs12_k6_s1	30-50%	583	7	0.012006861063464836
+aligned piece	kmerseek	regionsshared	w20	mmseqs12_k6_s1	30-50%	583	119	0.20411663807890223
+whole call	kmerseek	regionsshared	w20	mmseqs12_k6_s1	30-50%	583	130	0.22298456260720412
+aligned piece	kmerseek	whole	w20	mmseqs12_k6_s1	30-50%	583	122	0.20926243567753003
+whole call	kmerseek	whole	w20	mmseqs12_k6_s1	30-50%	583	96	0.1646655231560892
+whole call	kmerseek	wholeannot	w20	mmseqs12_k6_s1	30-50%	583	71	0.12178387650085763
+aligned piece	kmerseek	wholeannot	w20	mmseqs12_k6_s1	30-50%	583	70	0.12006861063464837
+aligned piece	kmerseek	pfam	w10	polarity4_k11_s1	30-50%	583	8	0.0137221269296741
+whole call	kmerseek	pfam	w10	polarity4_k11_s1	30-50%	583	10	0.017152658662092625
+aligned piece	kmerseek	pfamshared	w10	polarity4_k11_s1	30-50%	583	8	0.0137221269296741
+whole call	kmerseek	pfamshared	w10	polarity4_k11_s1	30-50%	583	10	0.017152658662092625
+whole call	kmerseek	regions	w10	polarity4_k11_s1	30-50%	583	0	0.0
+aligned piece	kmerseek	regions	w10	polarity4_k11_s1	30-50%	583	0	0.0
+aligned piece	kmerseek	regionsshared	w10	polarity4_k11_s1	30-50%	583	0	0.0
+whole call	kmerseek	regionsshared	w10	polarity4_k11_s1	30-50%	583	0	0.0
+whole call	kmerseek	whole	w10	polarity4_k11_s1	30-50%	583	16	0.0274442538593482
+aligned piece	kmerseek	whole	w10	polarity4_k11_s1	30-50%	583	27	0.04631217838765009
+aligned piece	kmerseek	wholeannot	w10	polarity4_k11_s1	30-50%	583	4	0.00686106346483705
+whole call	kmerseek	wholeannot	w10	polarity4_k11_s1	30-50%	583	4	0.00686106346483705
+whole call	kmerseek	pfam	w20	polarity4_k11_s1	30-50%	583	10	0.017152658662092625
+aligned piece	kmerseek	pfam	w20	polarity4_k11_s1	30-50%	583	8	0.0137221269296741
+aligned piece	kmerseek	pfamshared	w20	polarity4_k11_s1	30-50%	583	8	0.0137221269296741
+whole call	kmerseek	pfamshared	w20	polarity4_k11_s1	30-50%	583	10	0.017152658662092625
+aligned piece	kmerseek	regions	w20	polarity4_k11_s1	30-50%	583	0	0.0
+whole call	kmerseek	regions	w20	polarity4_k11_s1	30-50%	583	0	0.0
+whole call	kmerseek	regionsshared	w20	polarity4_k11_s1	30-50%	583	0	0.0
+aligned piece	kmerseek	regionsshared	w20	polarity4_k11_s1	30-50%	583	0	0.0
+aligned piece	kmerseek	whole	w20	polarity4_k11_s1	30-50%	583	28	0.048027444253859346
+whole call	kmerseek	whole	w20	polarity4_k11_s1	30-50%	583	17	0.029159519725557463
+aligned piece	kmerseek	wholeannot	w20	polarity4_k11_s1	30-50%	583	5	0.008576329331046312
+whole call	kmerseek	wholeannot	w20	polarity4_k11_s1	30-50%	583	6	0.010291595197255575
+whole call	kmerseek	pfam	w10	protein20_k5_s1	30-50%	583	111	0.19039451114922812
+aligned piece	kmerseek	pfam	w10	protein20_k5_s1	30-50%	583	103	0.17667238421955403
+whole call	kmerseek	pfamshared	w10	protein20_k5_s1	30-50%	583	111	0.19039451114922812
+aligned piece	kmerseek	pfamshared	w10	protein20_k5_s1	30-50%	583	103	0.17667238421955403
+aligned piece	kmerseek	regions	w10	protein20_k5_s1	30-50%	583	84	0.14408233276157806
+whole call	kmerseek	regions	w10	protein20_k5_s1	30-50%	583	103	0.17667238421955403
+whole call	kmerseek	regionsshared	w10	protein20_k5_s1	30-50%	583	97	0.16638078902229847
+aligned piece	kmerseek	regionsshared	w10	protein20_k5_s1	30-50%	583	80	0.137221269296741
+whole call	kmerseek	whole	w10	protein20_k5_s1	30-50%	583	70	0.12006861063464837
+aligned piece	kmerseek	whole	w10	protein20_k5_s1	30-50%	583	82	0.14065180102915953
+whole call	kmerseek	wholeannot	w10	protein20_k5_s1	30-50%	583	50	0.08576329331046312
+aligned piece	kmerseek	wholeannot	w10	protein20_k5_s1	30-50%	583	49	0.08404802744425385
+whole call	kmerseek	pfam	w20	protein20_k5_s1	30-50%	583	139	0.23842195540308747
+aligned piece	kmerseek	pfam	w20	protein20_k5_s1	30-50%	583	127	0.21783876500857632
+aligned piece	kmerseek	pfamshared	w20	protein20_k5_s1	30-50%	583	127	0.21783876500857632
+whole call	kmerseek	pfamshared	w20	protein20_k5_s1	30-50%	583	139	0.23842195540308747
+aligned piece	kmerseek	regions	w20	protein20_k5_s1	30-50%	583	92	0.15780445969125215
+whole call	kmerseek	regions	w20	protein20_k5_s1	30-50%	583	110	0.18867924528301888
+whole call	kmerseek	regionsshared	w20	protein20_k5_s1	30-50%	583	106	0.18181818181818182
+aligned piece	kmerseek	regionsshared	w20	protein20_k5_s1	30-50%	583	89	0.15265866209262435
+whole call	kmerseek	whole	w20	protein20_k5_s1	30-50%	583	73	0.12521440823327615
+aligned piece	kmerseek	whole	w20	protein20_k5_s1	30-50%	583	84	0.14408233276157806
+whole call	kmerseek	wholeannot	w20	protein20_k5_s1	30-50%	583	56	0.09605488850771869
+aligned piece	kmerseek	wholeannot	w20	protein20_k5_s1	30-50%	583	55	0.09433962264150944
+aligned piece	kmerseek	pfam	w10	sdm12_k7_s1	30-50%	583	100	0.17152658662092624
+whole call	kmerseek	pfam	w10	sdm12_k7_s1	30-50%	583	103	0.17667238421955403
+aligned piece	kmerseek	pfamshared	w10	sdm12_k7_s1	30-50%	583	100	0.17152658662092624
+whole call	kmerseek	pfamshared	w10	sdm12_k7_s1	30-50%	583	103	0.17667238421955403
+whole call	kmerseek	regions	w10	sdm12_k7_s1	30-50%	583	10	0.017152658662092625
+aligned piece	kmerseek	regions	w10	sdm12_k7_s1	30-50%	583	6	0.010291595197255575
+aligned piece	kmerseek	regionsshared	w10	sdm12_k7_s1	30-50%	583	68	0.11663807890222985
+whole call	kmerseek	regionsshared	w10	sdm12_k7_s1	30-50%	583	78	0.13379073756432247
+aligned piece	kmerseek	whole	w10	sdm12_k7_s1	30-50%	583	109	0.18696397941680962
+whole call	kmerseek	whole	w10	sdm12_k7_s1	30-50%	583	86	0.14751286449399656
+aligned piece	kmerseek	wholeannot	w10	sdm12_k7_s1	30-50%	583	72	0.1234991423670669
+whole call	kmerseek	wholeannot	w10	sdm12_k7_s1	30-50%	583	73	0.12521440823327615
+aligned piece	kmerseek	pfam	w20	sdm12_k7_s1	30-50%	583	110	0.18867924528301888
+whole call	kmerseek	pfam	w20	sdm12_k7_s1	30-50%	583	114	0.1955403087478559
+aligned piece	kmerseek	pfamshared	w20	sdm12_k7_s1	30-50%	583	109	0.18696397941680962
+whole call	kmerseek	pfamshared	w20	sdm12_k7_s1	30-50%	583	111	0.19039451114922812
+aligned piece	kmerseek	regions	w20	sdm12_k7_s1	30-50%	583	53	0.09090909090909091
+whole call	kmerseek	regions	w20	sdm12_k7_s1	30-50%	583	61	0.10463121783876501
+whole call	kmerseek	regionsshared	w20	sdm12_k7_s1	30-50%	583	82	0.14065180102915953
+aligned piece	kmerseek	regionsshared	w20	sdm12_k7_s1	30-50%	583	74	0.1269296740994854
+whole call	kmerseek	whole	w20	sdm12_k7_s1	30-50%	583	89	0.15265866209262435
+aligned piece	kmerseek	whole	w20	sdm12_k7_s1	30-50%	583	117	0.2006861063464837
+aligned piece	kmerseek	wholeannot	w20	sdm12_k7_s1	30-50%	583	77	0.1320754716981132
+whole call	kmerseek	wholeannot	w20	sdm12_k7_s1	30-50%	583	75	0.12864493996569468
+whole call	kmerseek	pfam	w10	uniprot18_k5_s1	30-50%	583	73	0.12521440823327615
+aligned piece	kmerseek	pfam	w10	uniprot18_k5_s1	30-50%	583	68	0.11663807890222985
+aligned piece	kmerseek	pfamshared	w10	uniprot18_k5_s1	30-50%	583	68	0.11663807890222985
+whole call	kmerseek	pfamshared	w10	uniprot18_k5_s1	30-50%	583	73	0.12521440823327615
+whole call	kmerseek	regions	w10	uniprot18_k5_s1	30-50%	583	93	0.1595197255574614
+aligned piece	kmerseek	regions	w10	uniprot18_k5_s1	30-50%	583	72	0.1234991423670669
+whole call	kmerseek	regionsshared	w10	uniprot18_k5_s1	30-50%	583	89	0.15265866209262435
+aligned piece	kmerseek	regionsshared	w10	uniprot18_k5_s1	30-50%	583	72	0.1234991423670669
+aligned piece	kmerseek	whole	w10	uniprot18_k5_s1	30-50%	583	69	0.1183533447684391
+whole call	kmerseek	whole	w10	uniprot18_k5_s1	30-50%	583	57	0.09777015437392796
+aligned piece	kmerseek	wholeannot	w10	uniprot18_k5_s1	30-50%	583	33	0.05660377358490566
+whole call	kmerseek	wholeannot	w10	uniprot18_k5_s1	30-50%	583	30	0.051457975986277875
+whole call	kmerseek	pfam	w20	uniprot18_k5_s1	30-50%	583	88	0.1509433962264151
+aligned piece	kmerseek	pfam	w20	uniprot18_k5_s1	30-50%	583	78	0.13379073756432247
+aligned piece	kmerseek	pfamshared	w20	uniprot18_k5_s1	30-50%	583	78	0.13379073756432247
+whole call	kmerseek	pfamshared	w20	uniprot18_k5_s1	30-50%	583	88	0.1509433962264151
+whole call	kmerseek	regionsshared	w20	uniprot18_k5_s1	30-50%	583	98	0.1680960548885077
+aligned piece	kmerseek	regionsshared	w20	uniprot18_k5_s1	30-50%	583	79	0.13550600343053174
+whole call	kmerseek	whole	w20	uniprot18_k5_s1	30-50%	583	60	0.10291595197255575
+aligned piece	kmerseek	whole	w20	uniprot18_k5_s1	30-50%	583	72	0.1234991423670669
+whole call	kmerseek	wholeannot	w20	uniprot18_k5_s1	30-50%	583	37	0.0634648370497427
+aligned piece	kmerseek	wholeannot	w20	uniprot18_k5_s1	30-50%	583	39	0.06689536878216124
+whole call	kmerseek	pfam	w10	wass14_k6_s1	30-50%	583	46	0.07890222984562607
+aligned piece	kmerseek	pfam	w10	wass14_k6_s1	30-50%	583	41	0.07032590051457976
+aligned piece	kmerseek	pfamshared	w10	wass14_k6_s1	30-50%	583	41	0.07032590051457976
+whole call	kmerseek	pfamshared	w10	wass14_k6_s1	30-50%	583	46	0.07890222984562607
+whole call	kmerseek	regions	w10	wass14_k6_s1	30-50%	583	1	0.0017152658662092624
+aligned piece	kmerseek	regions	w10	wass14_k6_s1	30-50%	583	0	0.0
+aligned piece	kmerseek	regionsshared	w10	wass14_k6_s1	30-50%	583	63	0.10806174957118353
+whole call	kmerseek	regionsshared	w10	wass14_k6_s1	30-50%	583	70	0.12006861063464837
+aligned piece	kmerseek	whole	w10	wass14_k6_s1	30-50%	583	77	0.1320754716981132
+whole call	kmerseek	whole	w10	wass14_k6_s1	30-50%	583	60	0.10291595197255575
+aligned piece	kmerseek	wholeannot	w10	wass14_k6_s1	30-50%	583	43	0.07375643224699828
+whole call	kmerseek	wholeannot	w10	wass14_k6_s1	30-50%	583	39	0.06689536878216124
+whole call	kmerseek	pfam	w20	wass14_k6_s1	30-50%	583	51	0.08747855917667238
+aligned piece	kmerseek	pfam	w20	wass14_k6_s1	30-50%	583	46	0.07890222984562607
+aligned piece	kmerseek	pfamshared	w20	wass14_k6_s1	30-50%	583	46	0.07890222984562607
+whole call	kmerseek	pfamshared	w20	wass14_k6_s1	30-50%	583	51	0.08747855917667238
+whole call	kmerseek	regionsshared	w20	wass14_k6_s1	30-50%	583	74	0.1269296740994854
+aligned piece	kmerseek	regionsshared	w20	wass14_k6_s1	30-50%	583	68	0.11663807890222985
+whole call	kmerseek	whole	w20	wass14_k6_s1	30-50%	583	64	0.1097770154373928
+aligned piece	kmerseek	whole	w20	wass14_k6_s1	30-50%	583	80	0.137221269296741
+whole call	kmerseek	wholeannot	w20	wass14_k6_s1	30-50%	583	42	0.07204116638078903
+aligned piece	kmerseek	wholeannot	w20	wass14_k6_s1	30-50%	583	47	0.08061749571183534
+aligned piece	kmerseek	pfam	w10	wwmj5_k10_s1	30-50%	583	61	0.10463121783876501
+whole call	kmerseek	pfam	w10	wwmj5_k10_s1	30-50%	583	62	0.10634648370497427
+aligned piece	kmerseek	pfamshared	w10	wwmj5_k10_s1	30-50%	583	59	0.10120068610634649
+whole call	kmerseek	pfamshared	w10	wwmj5_k10_s1	30-50%	583	60	0.10291595197255575
+whole call	kmerseek	regions	w10	wwmj5_k10_s1	30-50%	583	6	0.010291595197255575
+aligned piece	kmerseek	regions	w10	wwmj5_k10_s1	30-50%	583	4	0.00686106346483705
+whole call	kmerseek	regionsshared	w10	wwmj5_k10_s1	30-50%	583	15	0.025728987993138937
+aligned piece	kmerseek	regionsshared	w10	wwmj5_k10_s1	30-50%	583	10	0.017152658662092625
+whole call	kmerseek	whole	w10	wwmj5_k10_s1	30-50%	583	87	0.14922813036020582
+aligned piece	kmerseek	whole	w10	wwmj5_k10_s1	30-50%	583	126	0.21612349914236706
+whole call	kmerseek	wholeannot	w10	wwmj5_k10_s1	30-50%	583	61	0.10463121783876501
+aligned piece	kmerseek	wholeannot	w10	wwmj5_k10_s1	30-50%	583	67	0.11492281303602059
+whole call	kmerseek	pfam	w20	wwmj5_k10_s1	30-50%	583	66	0.11320754716981132
+aligned piece	kmerseek	pfam	w20	wwmj5_k10_s1	30-50%	583	65	0.11149228130360206
+aligned piece	kmerseek	pfamshared	w20	wwmj5_k10_s1	30-50%	583	64	0.1097770154373928
+whole call	kmerseek	pfamshared	w20	wwmj5_k10_s1	30-50%	583	65	0.11149228130360206
+whole call	kmerseek	regions	w20	wwmj5_k10_s1	30-50%	583	8	0.0137221269296741
+aligned piece	kmerseek	regions	w20	wwmj5_k10_s1	30-50%	583	6	0.010291595197255575
+whole call	kmerseek	regionsshared	w20	wwmj5_k10_s1	30-50%	583	17	0.029159519725557463
+aligned piece	kmerseek	regionsshared	w20	wwmj5_k10_s1	30-50%	583	12	0.02058319039451115
+aligned piece	kmerseek	whole	w20	wwmj5_k10_s1	30-50%	583	129	0.22126929674099485
+whole call	kmerseek	whole	w20	wwmj5_k10_s1	30-50%	583	90	0.15437392795883362
+whole call	kmerseek	wholeannot	w20	wwmj5_k10_s1	30-50%	583	62	0.10634648370497427
+aligned piece	kmerseek	wholeannot	w20	wwmj5_k10_s1	30-50%	583	67	0.11492281303602059
+whole call	mmseqs2	pfam	w10	mmseqs2	30-50%	583	267	0.45797598627787306
+aligned piece	mmseqs2	pfam	w10	mmseqs2	30-50%	583	271	0.4648370497427101
+whole call	mmseqs2	regions	w10	mmseqs2	30-50%	583	389	0.6672384219554031
+aligned piece	mmseqs2	regions	w10	mmseqs2	30-50%	583	402	0.6895368782161235
+whole call	mmseqs2	whole	w10	mmseqs2	30-50%	583	265	0.45454545454545453
+aligned piece	mmseqs2	whole	w10	mmseqs2	30-50%	583	441	0.7564322469982847
+aligned piece	mmseqs2	wholeannot	w10	mmseqs2	30-50%	583	252	0.4322469982847341
+whole call	mmseqs2	wholeannot	w10	mmseqs2	30-50%	583	218	0.37392795883361923
+aligned piece	mmseqs2	pfam	w20	mmseqs2	30-50%	583	272	0.4665523156089194
+whole call	mmseqs2	pfam	w20	mmseqs2	30-50%	583	267	0.45797598627787306
+whole call	mmseqs2	regions	w20	mmseqs2	30-50%	583	390	0.6689536878216124
+aligned piece	mmseqs2	regions	w20	mmseqs2	30-50%	583	403	0.6912521440823327
+whole call	mmseqs2	whole	w20	mmseqs2	30-50%	583	265	0.45454545454545453
+aligned piece	mmseqs2	whole	w20	mmseqs2	30-50%	583	442	0.758147512864494
+whole call	mmseqs2	wholeannot	w20	mmseqs2	30-50%	583	218	0.37392795883361923
+aligned piece	mmseqs2	wholeannot	w20	mmseqs2	30-50%	583	252	0.4322469982847341
+aligned piece	kmerseek	pfam	w10	dayhoff6_k9_s1	50-90%	1902	398	0.2092534174553102
+whole call	kmerseek	pfam	w10	dayhoff6_k9_s1	50-90%	1902	297	0.15615141955835962
+whole call	kmerseek	pfamshared	w10	dayhoff6_k9_s1	50-90%	1902	297	0.15615141955835962
+aligned piece	kmerseek	pfamshared	w10	dayhoff6_k9_s1	50-90%	1902	396	0.2082018927444795
+whole call	kmerseek	regions	w10	dayhoff6_k9_s1	50-90%	1902	444	0.2334384858044164
+aligned piece	kmerseek	regions	w10	dayhoff6_k9_s1	50-90%	1902	650	0.34174553101997895
+aligned piece	kmerseek	regionsshared	w10	dayhoff6_k9_s1	50-90%	1902	561	0.2949526813880126
+whole call	kmerseek	regionsshared	w10	dayhoff6_k9_s1	50-90%	1902	377	0.1982124079915878
+whole call	kmerseek	whole	w10	dayhoff6_k9_s1	50-90%	1902	241	0.12670872765509988
+aligned piece	kmerseek	whole	w10	dayhoff6_k9_s1	50-90%	1902	972	0.5110410094637224
+aligned piece	kmerseek	wholeannot	w10	dayhoff6_k9_s1	50-90%	1902	148	0.07781282860147214
+whole call	kmerseek	wholeannot	w10	dayhoff6_k9_s1	50-90%	1902	119	0.06256572029442692
+whole call	kmerseek	pfam	w20	dayhoff6_k9_s1	50-90%	1902	380	0.19978969505783387
+aligned piece	kmerseek	pfam	w20	dayhoff6_k9_s1	50-90%	1902	450	0.23659305993690852
+aligned piece	kmerseek	pfamshared	w20	dayhoff6_k9_s1	50-90%	1902	449	0.23606729758149317
+whole call	kmerseek	pfamshared	w20	dayhoff6_k9_s1	50-90%	1902	382	0.20084121976866456
+aligned piece	kmerseek	regions	w20	dayhoff6_k9_s1	50-90%	1902	478	0.2513144058885384
+whole call	kmerseek	regions	w20	dayhoff6_k9_s1	50-90%	1902	344	0.1808622502628812
+aligned piece	kmerseek	regionsshared	w20	dayhoff6_k9_s1	50-90%	1902	561	0.2949526813880126
+whole call	kmerseek	regionsshared	w20	dayhoff6_k9_s1	50-90%	1902	377	0.1982124079915878
+whole call	kmerseek	whole	w20	dayhoff6_k9_s1	50-90%	1902	246	0.12933753943217666
+aligned piece	kmerseek	whole	w20	dayhoff6_k9_s1	50-90%	1902	983	0.5168243953732913
+whole call	kmerseek	wholeannot	w20	dayhoff6_k9_s1	50-90%	1902	125	0.06572029442691903
+aligned piece	kmerseek	wholeannot	w20	dayhoff6_k9_s1	50-90%	1902	156	0.08201892744479496
+whole call	kmerseek	pfam	w10	funcgroups8_k8_s1	50-90%	1902	415	0.2181913774973712
+aligned piece	kmerseek	pfam	w10	funcgroups8_k8_s1	50-90%	1902	441	0.23186119873817035
+aligned piece	kmerseek	pfamshared	w10	funcgroups8_k8_s1	50-90%	1902	424	0.22292323869610936
+whole call	kmerseek	pfamshared	w10	funcgroups8_k8_s1	50-90%	1902	398	0.2092534174553102
+aligned piece	kmerseek	regions	w10	funcgroups8_k8_s1	50-90%	1902	400	0.2103049421661409
+whole call	kmerseek	regions	w10	funcgroups8_k8_s1	50-90%	1902	307	0.16140904311251314
+aligned piece	kmerseek	regionsshared	w10	funcgroups8_k8_s1	50-90%	1902	394	0.20715036803364878
+whole call	kmerseek	regionsshared	w10	funcgroups8_k8_s1	50-90%	1902	299	0.15720294426919032
+whole call	kmerseek	whole	w10	funcgroups8_k8_s1	50-90%	1902	321	0.16876971608832808
+aligned piece	kmerseek	whole	w10	funcgroups8_k8_s1	50-90%	1902	827	0.43480546792849634
+whole call	kmerseek	wholeannot	w10	funcgroups8_k8_s1	50-90%	1902	149	0.07833859095688749
+aligned piece	kmerseek	wholeannot	w10	funcgroups8_k8_s1	50-90%	1902	241	0.12670872765509988
+aligned piece	kmerseek	pfam	w20	funcgroups8_k8_s1	50-90%	1902	447	0.23501577287066247
+whole call	kmerseek	pfam	w20	funcgroups8_k8_s1	50-90%	1902	423	0.222397476340694
+whole call	kmerseek	pfamshared	w20	funcgroups8_k8_s1	50-90%	1902	418	0.21976866456361724
+aligned piece	kmerseek	pfamshared	w20	funcgroups8_k8_s1	50-90%	1902	444	0.2334384858044164
+aligned piece	kmerseek	regions	w20	funcgroups8_k8_s1	50-90%	1902	419	0.2202944269190326
+whole call	kmerseek	regions	w20	funcgroups8_k8_s1	50-90%	1902	328	0.17245005257623555
+aligned piece	kmerseek	regionsshared	w20	funcgroups8_k8_s1	50-90%	1902	409	0.21503680336487907
+whole call	kmerseek	regionsshared	w20	funcgroups8_k8_s1	50-90%	1902	307	0.16140904311251314
+aligned piece	kmerseek	whole	w20	funcgroups8_k8_s1	50-90%	1902	837	0.4400630914826498
+whole call	kmerseek	whole	w20	funcgroups8_k8_s1	50-90%	1902	328	0.17245005257623555
+whole call	kmerseek	wholeannot	w20	funcgroups8_k8_s1	50-90%	1902	151	0.0793901156677182
+aligned piece	kmerseek	wholeannot	w20	funcgroups8_k8_s1	50-90%	1902	244	0.12828601472134596
+whole call	kmerseek	pfam	w10	gbmr4_k14_s1	50-90%	1902	9	0.00473186119873817
+aligned piece	kmerseek	pfam	w10	gbmr4_k14_s1	50-90%	1902	9	0.00473186119873817
+aligned piece	kmerseek	pfamshared	w10	gbmr4_k14_s1	50-90%	1902	9	0.00473186119873817
+whole call	kmerseek	pfamshared	w10	gbmr4_k14_s1	50-90%	1902	9	0.00473186119873817
+whole call	kmerseek	regions	w10	gbmr4_k14_s1	50-90%	1902	23	0.012092534174553101
+aligned piece	kmerseek	regions	w10	gbmr4_k14_s1	50-90%	1902	19	0.009989484752891693
+aligned piece	kmerseek	regionsshared	w10	gbmr4_k14_s1	50-90%	1902	49	0.02576235541535226
+whole call	kmerseek	regionsshared	w10	gbmr4_k14_s1	50-90%	1902	45	0.02365930599369085
+whole call	kmerseek	whole	w10	gbmr4_k14_s1	50-90%	1902	50	0.026288117770767613
+aligned piece	kmerseek	whole	w10	gbmr4_k14_s1	50-90%	1902	203	0.10672975814931651
+aligned piece	kmerseek	wholeannot	w10	gbmr4_k14_s1	50-90%	1902	67	0.035226077812828605
+whole call	kmerseek	wholeannot	w10	gbmr4_k14_s1	50-90%	1902	40	0.02103049421661409
+aligned piece	kmerseek	pfam	w20	gbmr4_k14_s1	50-90%	1902	5	0.0026288117770767614
+whole call	kmerseek	pfam	w20	gbmr4_k14_s1	50-90%	1902	7	0.003680336487907466
+whole call	kmerseek	pfamshared	w20	gbmr4_k14_s1	50-90%	1902	10	0.005257623554153523
+aligned piece	kmerseek	pfamshared	w20	gbmr4_k14_s1	50-90%	1902	10	0.005257623554153523
+whole call	kmerseek	regions	w20	gbmr4_k14_s1	50-90%	1902	47	0.024710830704521555
+aligned piece	kmerseek	regions	w20	gbmr4_k14_s1	50-90%	1902	51	0.026813880126182965
+aligned piece	kmerseek	regionsshared	w20	gbmr4_k14_s1	50-90%	1902	51	0.026813880126182965
+whole call	kmerseek	regionsshared	w20	gbmr4_k14_s1	50-90%	1902	47	0.024710830704521555
+aligned piece	kmerseek	whole	w20	gbmr4_k14_s1	50-90%	1902	200	0.10515247108307045
+whole call	kmerseek	whole	w20	gbmr4_k14_s1	50-90%	1902	47	0.024710830704521555
+whole call	kmerseek	wholeannot	w20	gbmr4_k14_s1	50-90%	1902	36	0.01892744479495268
+aligned piece	kmerseek	wholeannot	w20	gbmr4_k14_s1	50-90%	1902	64	0.033648790746582544
+whole call	kmerseek	pfamshared	w10	gbmr7_k16_s1	50-90%	1902	2	0.0010515247108307045
+aligned piece	kmerseek	pfamshared	w10	gbmr7_k16_s1	50-90%	1902	2	0.0010515247108307045
+aligned piece	kmerseek	regions	w10	gbmr7_k16_s1	50-90%	1902	0	0.0
+whole call	kmerseek	regions	w10	gbmr7_k16_s1	50-90%	1902	0	0.0
+whole call	kmerseek	regionsshared	w10	gbmr7_k16_s1	50-90%	1902	0	0.0
+aligned piece	kmerseek	regionsshared	w10	gbmr7_k16_s1	50-90%	1902	0	0.0
+aligned piece	kmerseek	whole	w10	gbmr7_k16_s1	50-90%	1902	2	0.0010515247108307045
+whole call	kmerseek	whole	w10	gbmr7_k16_s1	50-90%	1902	2	0.0010515247108307045
+whole call	kmerseek	wholeannot	w10	gbmr7_k16_s1	50-90%	1902	0	0.0
+aligned piece	kmerseek	wholeannot	w10	gbmr7_k16_s1	50-90%	1902	0	0.0
+whole call	kmerseek	pfamshared	w20	gbmr7_k16_s1	50-90%	1902	1	0.0005257623554153522
+aligned piece	kmerseek	pfamshared	w20	gbmr7_k16_s1	50-90%	1902	1	0.0005257623554153522
+whole call	kmerseek	regions	w20	gbmr7_k16_s1	50-90%	1902	0	0.0
+aligned piece	kmerseek	regions	w20	gbmr7_k16_s1	50-90%	1902	0	0.0
+whole call	kmerseek	regionsshared	w20	gbmr7_k16_s1	50-90%	1902	0	0.0
+aligned piece	kmerseek	regionsshared	w20	gbmr7_k16_s1	50-90%	1902	0	0.0
+whole call	kmerseek	whole	w20	gbmr7_k16_s1	50-90%	1902	0	0.0
+aligned piece	kmerseek	whole	w20	gbmr7_k16_s1	50-90%	1902	0	0.0
+aligned piece	kmerseek	wholeannot	w20	gbmr7_k16_s1	50-90%	1902	0	0.0
+whole call	kmerseek	wholeannot	w20	gbmr7_k16_s1	50-90%	1902	0	0.0
+whole call	kmerseek	regions	w10	hp_kyte_doolittle2_k22_s1	50-90%	1902	181	0.09516298633017876
+aligned piece	kmerseek	regions	w10	hp_kyte_doolittle2_k22_s1	50-90%	1902	232	0.12197686645636173
+whole call	kmerseek	pfam	w20	hp_kyte_doolittle2_k22_s1	50-90%	1902	79	0.04153522607781283
+aligned piece	kmerseek	pfam	w20	hp_kyte_doolittle2_k22_s1	50-90%	1902	76	0.03995793901156677
+aligned piece	kmerseek	pfamshared	w20	hp_kyte_doolittle2_k22_s1	50-90%	1902	75	0.03943217665615142
+whole call	kmerseek	pfamshared	w20	hp_kyte_doolittle2_k22_s1	50-90%	1902	78	0.04100946372239748
+aligned piece	kmerseek	regions	w20	hp_kyte_doolittle2_k22_s1	50-90%	1902	257	0.13512092534174552
+whole call	kmerseek	regions	w20	hp_kyte_doolittle2_k22_s1	50-90%	1902	192	0.10094637223974763
+whole call	kmerseek	regionsshared	w20	hp_kyte_doolittle2_k22_s1	50-90%	1902	196	0.10304942166140904
+aligned piece	kmerseek	regionsshared	w20	hp_kyte_doolittle2_k22_s1	50-90%	1902	268	0.14090431125131442
+whole call	kmerseek	whole	w20	hp_kyte_doolittle2_k22_s1	50-90%	1902	100	0.052576235541535225
+aligned piece	kmerseek	whole	w20	hp_kyte_doolittle2_k22_s1	50-90%	1902	470	0.24710830704521555
+whole call	kmerseek	wholeannot	w20	hp_kyte_doolittle2_k22_s1	50-90%	1902	14	0.007360672975814932
+aligned piece	kmerseek	wholeannot	w20	hp_kyte_doolittle2_k22_s1	50-90%	1902	30	0.015772870662460567
+aligned piece	kmerseek	pfam	w10	hp_lehninger2_k21_s1	50-90%	1902	173	0.09095688748685594
+whole call	kmerseek	pfam	w10	hp_lehninger2_k21_s1	50-90%	1902	171	0.08990536277602523
+aligned piece	kmerseek	pfamshared	w10	hp_lehninger2_k21_s1	50-90%	1902	176	0.09253417455310199
+whole call	kmerseek	pfamshared	w10	hp_lehninger2_k21_s1	50-90%	1902	173	0.09095688748685594
+whole call	kmerseek	regions	w10	hp_lehninger2_k21_s1	50-90%	1902	30	0.015772870662460567
+aligned piece	kmerseek	regions	w10	hp_lehninger2_k21_s1	50-90%	1902	30	0.015772870662460567
+aligned piece	kmerseek	regionsshared	w10	hp_lehninger2_k21_s1	50-90%	1902	180	0.0946372239747634
+whole call	kmerseek	regionsshared	w10	hp_lehninger2_k21_s1	50-90%	1902	193	0.10147213459516298
+aligned piece	kmerseek	whole	w10	hp_lehninger2_k21_s1	50-90%	1902	836	0.4395373291272345
+whole call	kmerseek	whole	w10	hp_lehninger2_k21_s1	50-90%	1902	209	0.10988433228180862
+aligned piece	kmerseek	wholeannot	w10	hp_lehninger2_k21_s1	50-90%	1902	121	0.06361724500525763
+whole call	kmerseek	wholeannot	w10	hp_lehninger2_k21_s1	50-90%	1902	94	0.04942166140904311
+whole call	kmerseek	pfam	w20	hp_lehninger2_k21_s1	50-90%	1902	170	0.08937960042060988
+aligned piece	kmerseek	pfam	w20	hp_lehninger2_k21_s1	50-90%	1902	172	0.0904311251314406
+whole call	kmerseek	pfamshared	w20	hp_lehninger2_k21_s1	50-90%	1902	172	0.0904311251314406
+aligned piece	kmerseek	pfamshared	w20	hp_lehninger2_k21_s1	50-90%	1902	174	0.0914826498422713
+whole call	kmerseek	regions	w20	hp_lehninger2_k21_s1	50-90%	1902	208	0.10935856992639327
+aligned piece	kmerseek	regions	w20	hp_lehninger2_k21_s1	50-90%	1902	188	0.09884332281808622
+whole call	kmerseek	regionsshared	w20	hp_lehninger2_k21_s1	50-90%	1902	199	0.1046267087276551
+aligned piece	kmerseek	regionsshared	w20	hp_lehninger2_k21_s1	50-90%	1902	184	0.09674027339642481
+aligned piece	kmerseek	whole	w20	hp_lehninger2_k21_s1	50-90%	1902	839	0.4411146161934805
+whole call	kmerseek	whole	w20	hp_lehninger2_k21_s1	50-90%	1902	209	0.10988433228180862
+whole call	kmerseek	wholeannot	w20	hp_lehninger2_k21_s1	50-90%	1902	95	0.049947423764458466
+aligned piece	kmerseek	wholeannot	w20	hp_lehninger2_k21_s1	50-90%	1902	124	0.06519453207150368
+aligned piece	kmerseek	pfam	w10	hp_lehninger_c_nonpolar2_k21_s1	50-90%	1902	177	0.09305993690851735
+whole call	kmerseek	pfam	w10	hp_lehninger_c_nonpolar2_k21_s1	50-90%	1902	175	0.09200841219768664
+whole call	kmerseek	pfamshared	w10	hp_lehninger_c_nonpolar2_k21_s1	50-90%	1902	175	0.09200841219768664
+aligned piece	kmerseek	pfamshared	w10	hp_lehninger_c_nonpolar2_k21_s1	50-90%	1902	177	0.09305993690851735
+whole call	kmerseek	regions	w10	hp_lehninger_c_nonpolar2_k21_s1	50-90%	1902	195	0.10252365930599369
+aligned piece	kmerseek	regions	w10	hp_lehninger_c_nonpolar2_k21_s1	50-90%	1902	182	0.09568874868559411
+whole call	kmerseek	regionsshared	w10	hp_lehninger_c_nonpolar2_k21_s1	50-90%	1902	196	0.10304942166140904
+aligned piece	kmerseek	regionsshared	w10	hp_lehninger_c_nonpolar2_k21_s1	50-90%	1902	183	0.09621451104100946
+whole call	kmerseek	whole	w10	hp_lehninger_c_nonpolar2_k21_s1	50-90%	1902	203	0.10672975814931651
+aligned piece	kmerseek	whole	w10	hp_lehninger_c_nonpolar2_k21_s1	50-90%	1902	854	0.4490010515247108
+aligned piece	kmerseek	wholeannot	w10	hp_lehninger_c_nonpolar2_k21_s1	50-90%	1902	107	0.05625657202944269
+whole call	kmerseek	wholeannot	w10	hp_lehninger_c_nonpolar2_k21_s1	50-90%	1902	84	0.04416403785488959
+whole call	kmerseek	pfam	w20	hp_lehninger_c_nonpolar2_k21_s1	50-90%	1902	175	0.09200841219768664
+aligned piece	kmerseek	pfam	w20	hp_lehninger_c_nonpolar2_k21_s1	50-90%	1902	177	0.09305993690851735
+whole call	kmerseek	pfamshared	w20	hp_lehninger_c_nonpolar2_k21_s1	50-90%	1902	173	0.09095688748685594
+aligned piece	kmerseek	pfamshared	w20	hp_lehninger_c_nonpolar2_k21_s1	50-90%	1902	174	0.0914826498422713
+whole call	kmerseek	regions	w20	hp_lehninger_c_nonpolar2_k21_s1	50-90%	1902	201	0.1056782334384858
+aligned piece	kmerseek	regions	w20	hp_lehninger_c_nonpolar2_k21_s1	50-90%	1902	188	0.09884332281808622
+aligned piece	kmerseek	regionsshared	w20	hp_lehninger_c_nonpolar2_k21_s1	50-90%	1902	188	0.09884332281808622
+whole call	kmerseek	regionsshared	w20	hp_lehninger_c_nonpolar2_k21_s1	50-90%	1902	200	0.10515247108307045
+aligned piece	kmerseek	whole	w20	hp_lehninger_c_nonpolar2_k21_s1	50-90%	1902	861	0.4526813880126183
+whole call	kmerseek	whole	w20	hp_lehninger_c_nonpolar2_k21_s1	50-90%	1902	203	0.10672975814931651
+aligned piece	kmerseek	wholeannot	w20	hp_lehninger_c_nonpolar2_k21_s1	50-90%	1902	111	0.0583596214511041
+whole call	kmerseek	wholeannot	w20	hp_lehninger_c_nonpolar2_k21_s1	50-90%	1902	88	0.046267087276550996
+whole call	kmerseek	pfam	w10	hp_lehninger_hpc3_k19_s1	50-90%	1902	4	0.002103049421661409
+aligned piece	kmerseek	pfam	w10	hp_lehninger_hpc3_k19_s1	50-90%	1902	7	0.003680336487907466
+whole call	kmerseek	pfamshared	w10	hp_lehninger_hpc3_k19_s1	50-90%	1902	4	0.002103049421661409
+aligned piece	kmerseek	pfamshared	w10	hp_lehninger_hpc3_k19_s1	50-90%	1902	7	0.003680336487907466
+aligned piece	kmerseek	regions	w10	hp_lehninger_hpc3_k19_s1	50-90%	1902	0	0.0
+whole call	kmerseek	regions	w10	hp_lehninger_hpc3_k19_s1	50-90%	1902	0	0.0
+whole call	kmerseek	regionsshared	w10	hp_lehninger_hpc3_k19_s1	50-90%	1902	0	0.0
+aligned piece	kmerseek	regionsshared	w10	hp_lehninger_hpc3_k19_s1	50-90%	1902	0	0.0
+aligned piece	kmerseek	whole	w10	hp_lehninger_hpc3_k19_s1	50-90%	1902	44	0.023133543638275498
+whole call	kmerseek	whole	w10	hp_lehninger_hpc3_k19_s1	50-90%	1902	1	0.0005257623554153522
+whole call	kmerseek	wholeannot	w10	hp_lehninger_hpc3_k19_s1	50-90%	1902	0	0.0
+aligned piece	kmerseek	wholeannot	w10	hp_lehninger_hpc3_k19_s1	50-90%	1902	0	0.0
+whole call	kmerseek	pfam	w20	hp_lehninger_hpc3_k19_s1	50-90%	1902	2	0.0010515247108307045
+aligned piece	kmerseek	pfam	w20	hp_lehninger_hpc3_k19_s1	50-90%	1902	3	0.0015772870662460567
+whole call	kmerseek	pfamshared	w20	hp_lehninger_hpc3_k19_s1	50-90%	1902	2	0.0010515247108307045
+aligned piece	kmerseek	pfamshared	w20	hp_lehninger_hpc3_k19_s1	50-90%	1902	3	0.0015772870662460567
+aligned piece	kmerseek	regions	w20	hp_lehninger_hpc3_k19_s1	50-90%	1902	2	0.0010515247108307045
+whole call	kmerseek	regions	w20	hp_lehninger_hpc3_k19_s1	50-90%	1902	2	0.0010515247108307045
+aligned piece	kmerseek	regionsshared	w20	hp_lehninger_hpc3_k19_s1	50-90%	1902	2	0.0010515247108307045
+whole call	kmerseek	regionsshared	w20	hp_lehninger_hpc3_k19_s1	50-90%	1902	2	0.0010515247108307045
+whole call	kmerseek	whole	w20	hp_lehninger_hpc3_k19_s1	50-90%	1902	1	0.0005257623554153522
+aligned piece	kmerseek	whole	w20	hp_lehninger_hpc3_k19_s1	50-90%	1902	40	0.02103049421661409
+aligned piece	kmerseek	wholeannot	w20	hp_lehninger_hpc3_k19_s1	50-90%	1902	0	0.0
+whole call	kmerseek	wholeannot	w20	hp_lehninger_hpc3_k19_s1	50-90%	1902	0	0.0
+whole call	kmerseek	pfam	w10	hp_pbotc_1st_ed2_k21_s1	50-90%	1902	195	0.10252365930599369
+aligned piece	kmerseek	pfam	w10	hp_pbotc_1st_ed2_k21_s1	50-90%	1902	196	0.10304942166140904
+aligned piece	kmerseek	pfamshared	w10	hp_pbotc_1st_ed2_k21_s1	50-90%	1902	195	0.10252365930599369
+whole call	kmerseek	pfamshared	w10	hp_pbotc_1st_ed2_k21_s1	50-90%	1902	194	0.10199789695057834
+aligned piece	kmerseek	regions	w10	hp_pbotc_1st_ed2_k21_s1	50-90%	1902	121	0.06361724500525763
+whole call	kmerseek	regions	w10	hp_pbotc_1st_ed2_k21_s1	50-90%	1902	129	0.06782334384858044
+aligned piece	kmerseek	regionsshared	w10	hp_pbotc_1st_ed2_k21_s1	50-90%	1902	122	0.06414300736067298
+whole call	kmerseek	regionsshared	w10	hp_pbotc_1st_ed2_k21_s1	50-90%	1902	130	0.0683491062039958
+whole call	kmerseek	whole	w10	hp_pbotc_1st_ed2_k21_s1	50-90%	1902	182	0.09568874868559411
+aligned piece	kmerseek	whole	w10	hp_pbotc_1st_ed2_k21_s1	50-90%	1902	839	0.4411146161934805
+whole call	kmerseek	wholeannot	w10	hp_pbotc_1st_ed2_k21_s1	50-90%	1902	56	0.029442691903259727
+aligned piece	kmerseek	wholeannot	w10	hp_pbotc_1st_ed2_k21_s1	50-90%	1902	79	0.04153522607781283
+aligned piece	kmerseek	pfam	w20	hp_pbotc_1st_ed2_k21_s1	50-90%	1902	197	0.10357518401682439
+whole call	kmerseek	pfam	w20	hp_pbotc_1st_ed2_k21_s1	50-90%	1902	195	0.10252365930599369
+aligned piece	kmerseek	pfamshared	w20	hp_pbotc_1st_ed2_k21_s1	50-90%	1902	196	0.10304942166140904
+whole call	kmerseek	pfamshared	w20	hp_pbotc_1st_ed2_k21_s1	50-90%	1902	194	0.10199789695057834
+whole call	kmerseek	regions	w20	hp_pbotc_1st_ed2_k21_s1	50-90%	1902	163	0.08569926393270241
+aligned piece	kmerseek	regions	w20	hp_pbotc_1st_ed2_k21_s1	50-90%	1902	155	0.08149316508937961
+whole call	kmerseek	regionsshared	w20	hp_pbotc_1st_ed2_k21_s1	50-90%	1902	166	0.08727655099894847
+aligned piece	kmerseek	regionsshared	w20	hp_pbotc_1st_ed2_k21_s1	50-90%	1902	159	0.083596214511041
+aligned piece	kmerseek	whole	w20	hp_pbotc_1st_ed2_k21_s1	50-90%	1902	915	0.4810725552050473
+whole call	kmerseek	whole	w20	hp_pbotc_1st_ed2_k21_s1	50-90%	1902	190	0.09989484752891693
+aligned piece	kmerseek	wholeannot	w20	hp_pbotc_1st_ed2_k21_s1	50-90%	1902	81	0.04258675078864353
+whole call	kmerseek	wholeannot	w20	hp_pbotc_1st_ed2_k21_s1	50-90%	1902	57	0.02996845425867508
+aligned piece	kmerseek	pfam	w10	hp_thomas_dill2_k22_s1	50-90%	1902	120	0.06309148264984227
+whole call	kmerseek	pfam	w10	hp_thomas_dill2_k22_s1	50-90%	1902	122	0.06414300736067298
+whole call	kmerseek	pfamshared	w10	hp_thomas_dill2_k22_s1	50-90%	1902	123	0.06466876971608833
+aligned piece	kmerseek	pfamshared	w10	hp_thomas_dill2_k22_s1	50-90%	1902	121	0.06361724500525763
+aligned piece	kmerseek	regions	w10	hp_thomas_dill2_k22_s1	50-90%	1902	120	0.06309148264984227
+whole call	kmerseek	regions	w10	hp_thomas_dill2_k22_s1	50-90%	1902	126	0.06624605678233439
+aligned piece	kmerseek	regionsshared	w10	hp_thomas_dill2_k22_s1	50-90%	1902	118	0.06203995793901157
+whole call	kmerseek	regionsshared	w10	hp_thomas_dill2_k22_s1	50-90%	1902	124	0.06519453207150368
+whole call	kmerseek	whole	w10	hp_thomas_dill2_k22_s1	50-90%	1902	96	0.050473186119873815
+aligned piece	kmerseek	whole	w10	hp_thomas_dill2_k22_s1	50-90%	1902	499	0.26235541535226076
+whole call	kmerseek	wholeannot	w10	hp_thomas_dill2_k22_s1	50-90%	1902	15	0.007886435331230283
+aligned piece	kmerseek	wholeannot	w10	hp_thomas_dill2_k22_s1	50-90%	1902	29	0.015247108307045216
+aligned piece	kmerseek	pfam	w20	hp_thomas_dill2_k22_s1	50-90%	1902	123	0.06466876971608833
+whole call	kmerseek	pfam	w20	hp_thomas_dill2_k22_s1	50-90%	1902	125	0.06572029442691903
+aligned piece	kmerseek	pfamshared	w20	hp_thomas_dill2_k22_s1	50-90%	1902	126	0.06624605678233439
+whole call	kmerseek	pfamshared	w20	hp_thomas_dill2_k22_s1	50-90%	1902	128	0.06729758149316509
+whole call	kmerseek	regions	w20	hp_thomas_dill2_k22_s1	50-90%	1902	120	0.06309148264984227
+aligned piece	kmerseek	regions	w20	hp_thomas_dill2_k22_s1	50-90%	1902	114	0.05993690851735016
+whole call	kmerseek	regionsshared	w20	hp_thomas_dill2_k22_s1	50-90%	1902	124	0.06519453207150368
+aligned piece	kmerseek	regionsshared	w20	hp_thomas_dill2_k22_s1	50-90%	1902	118	0.06203995793901157
+whole call	kmerseek	whole	w20	hp_thomas_dill2_k22_s1	50-90%	1902	96	0.050473186119873815
+aligned piece	kmerseek	whole	w20	hp_thomas_dill2_k22_s1	50-90%	1902	499	0.26235541535226076
+whole call	kmerseek	wholeannot	w20	hp_thomas_dill2_k22_s1	50-90%	1902	28	0.014721345951629864
+aligned piece	kmerseek	wholeannot	w20	hp_thomas_dill2_k22_s1	50-90%	1902	44	0.023133543638275498
+whole call	kmerseek	pfam	w10	hp_thomas_dill_no_c2_k22_s1	50-90%	1902	124	0.06519453207150368
+aligned piece	kmerseek	pfam	w10	hp_thomas_dill_no_c2_k22_s1	50-90%	1902	123	0.06466876971608833
+whole call	kmerseek	pfamshared	w10	hp_thomas_dill_no_c2_k22_s1	50-90%	1902	124	0.06519453207150368
+aligned piece	kmerseek	pfamshared	w10	hp_thomas_dill_no_c2_k22_s1	50-90%	1902	123	0.06466876971608833
+whole call	kmerseek	regions	w10	hp_thomas_dill_no_c2_k22_s1	50-90%	1902	225	0.11829652996845426
+aligned piece	kmerseek	regions	w10	hp_thomas_dill_no_c2_k22_s1	50-90%	1902	281	0.14773922187171398
+whole call	kmerseek	regionsshared	w10	hp_thomas_dill_no_c2_k22_s1	50-90%	1902	195	0.10252365930599369
+aligned piece	kmerseek	regionsshared	w10	hp_thomas_dill_no_c2_k22_s1	50-90%	1902	201	0.1056782334384858
+whole call	kmerseek	whole	w10	hp_thomas_dill_no_c2_k22_s1	50-90%	1902	94	0.04942166140904311
+aligned piece	kmerseek	whole	w10	hp_thomas_dill_no_c2_k22_s1	50-90%	1902	462	0.24290220820189273
+whole call	kmerseek	wholeannot	w10	hp_thomas_dill_no_c2_k22_s1	50-90%	1902	21	0.011041009463722398
+aligned piece	kmerseek	wholeannot	w10	hp_thomas_dill_no_c2_k22_s1	50-90%	1902	37	0.019453207150368034
+whole call	kmerseek	pfam	w20	hp_thomas_dill_no_c2_k22_s1	50-90%	1902	128	0.06729758149316509
+aligned piece	kmerseek	pfam	w20	hp_thomas_dill_no_c2_k22_s1	50-90%	1902	127	0.06677181913774974
+aligned piece	kmerseek	pfamshared	w20	hp_thomas_dill_no_c2_k22_s1	50-90%	1902	128	0.06729758149316509
+whole call	kmerseek	pfamshared	w20	hp_thomas_dill_no_c2_k22_s1	50-90%	1902	128	0.06729758149316509
+whole call	kmerseek	regions	w20	hp_thomas_dill_no_c2_k22_s1	50-90%	1902	182	0.09568874868559411
+aligned piece	kmerseek	regions	w20	hp_thomas_dill_no_c2_k22_s1	50-90%	1902	179	0.09411146161934805
+aligned piece	kmerseek	regionsshared	w20	hp_thomas_dill_no_c2_k22_s1	50-90%	1902	202	0.10620399579390116
+whole call	kmerseek	regionsshared	w20	hp_thomas_dill_no_c2_k22_s1	50-90%	1902	196	0.10304942166140904
+aligned piece	kmerseek	whole	w20	hp_thomas_dill_no_c2_k22_s1	50-90%	1902	462	0.24290220820189273
+whole call	kmerseek	whole	w20	hp_thomas_dill_no_c2_k22_s1	50-90%	1902	94	0.04942166140904311
+aligned piece	kmerseek	wholeannot	w20	hp_thomas_dill_no_c2_k22_s1	50-90%	1902	46	0.024185068349106203
+whole call	kmerseek	wholeannot	w20	hp_thomas_dill_no_c2_k22_s1	50-90%	1902	29	0.015247108307045216
+whole call	kmerseek	pfam	w10	hsdm17_k6_s1	50-90%	1902	542	0.28496319663512093
+aligned piece	kmerseek	pfam	w10	hsdm17_k6_s1	50-90%	1902	557	0.2928496319663512
+whole call	kmerseek	pfamshared	w10	hsdm17_k6_s1	50-90%	1902	542	0.28496319663512093
+aligned piece	kmerseek	pfamshared	w10	hsdm17_k6_s1	50-90%	1902	556	0.29232386961093587
+whole call	kmerseek	regions	w10	hsdm17_k6_s1	50-90%	1902	163	0.08569926393270241
+aligned piece	kmerseek	regions	w10	hsdm17_k6_s1	50-90%	1902	129	0.06782334384858044
+whole call	kmerseek	regionsshared	w10	hsdm17_k6_s1	50-90%	1902	563	0.2960042060988433
+aligned piece	kmerseek	regionsshared	w10	hsdm17_k6_s1	50-90%	1902	681	0.3580441640378549
+aligned piece	kmerseek	whole	w10	hsdm17_k6_s1	50-90%	1902	1014	0.5331230283911672
+whole call	kmerseek	whole	w10	hsdm17_k6_s1	50-90%	1902	402	0.2113564668769716
+aligned piece	kmerseek	wholeannot	w10	hsdm17_k6_s1	50-90%	1902	382	0.20084121976866456
+whole call	kmerseek	wholeannot	w10	hsdm17_k6_s1	50-90%	1902	248	0.13038906414300735
+whole call	kmerseek	pfam	w20	hsdm17_k6_s1	50-90%	1902	566	0.29758149316508936
+aligned piece	kmerseek	pfam	w20	hsdm17_k6_s1	50-90%	1902	583	0.30651945320715035
+whole call	kmerseek	pfamshared	w20	hsdm17_k6_s1	50-90%	1902	567	0.2981072555205047
+aligned piece	kmerseek	pfamshared	w20	hsdm17_k6_s1	50-90%	1902	583	0.30651945320715035
+aligned piece	kmerseek	regions	w20	hsdm17_k6_s1	50-90%	1902	716	0.3764458464773922
+whole call	kmerseek	regions	w20	hsdm17_k6_s1	50-90%	1902	602	0.31650893796004204
+aligned piece	kmerseek	regionsshared	w20	hsdm17_k6_s1	50-90%	1902	746	0.3922187171398528
+whole call	kmerseek	regionsshared	w20	hsdm17_k6_s1	50-90%	1902	622	0.3270241850683491
+aligned piece	kmerseek	whole	w20	hsdm17_k6_s1	50-90%	1902	1038	0.5457413249211357
+whole call	kmerseek	whole	w20	hsdm17_k6_s1	50-90%	1902	425	0.2234490010515247
+aligned piece	kmerseek	wholeannot	w20	hsdm17_k6_s1	50-90%	1902	442	0.2323869610935857
+whole call	kmerseek	wholeannot	w20	hsdm17_k6_s1	50-90%	1902	276	0.14511041009463724
+aligned piece	kmerseek	pfam	w10	mmseqs12_k6_s1	50-90%	1902	647	0.3401682439537329
+whole call	kmerseek	pfam	w10	mmseqs12_k6_s1	50-90%	1902	649	0.3412197686645636
+aligned piece	kmerseek	pfamshared	w10	mmseqs12_k6_s1	50-90%	1902	647	0.3401682439537329
+whole call	kmerseek	pfamshared	w10	mmseqs12_k6_s1	50-90%	1902	648	0.34069400630914826
+whole call	kmerseek	regions	w10	mmseqs12_k6_s1	50-90%	1902	308	0.1619348054679285
+aligned piece	kmerseek	regions	w10	mmseqs12_k6_s1	50-90%	1902	326	0.17139852786540483
+aligned piece	kmerseek	regionsshared	w10	mmseqs12_k6_s1	50-90%	1902	1062	0.5583596214511041
+whole call	kmerseek	regionsshared	w10	mmseqs12_k6_s1	50-90%	1902	818	0.43007360672975814
+whole call	kmerseek	whole	w10	mmseqs12_k6_s1	50-90%	1902	511	0.268664563617245
+aligned piece	kmerseek	whole	w10	mmseqs12_k6_s1	50-90%	1902	1216	0.6393270241850684
+aligned piece	kmerseek	wholeannot	w10	mmseqs12_k6_s1	50-90%	1902	523	0.27497371188222924
+whole call	kmerseek	wholeannot	w10	mmseqs12_k6_s1	50-90%	1902	332	0.17455310199789695
+aligned piece	kmerseek	pfam	w20	mmseqs12_k6_s1	50-90%	1902	674	0.35436382754994744
+whole call	kmerseek	pfam	w20	mmseqs12_k6_s1	50-90%	1902	673	0.3538380651945321
+aligned piece	kmerseek	pfamshared	w20	mmseqs12_k6_s1	50-90%	1902	674	0.35436382754994744
+whole call	kmerseek	pfamshared	w20	mmseqs12_k6_s1	50-90%	1902	675	0.3548895899053628
+whole call	kmerseek	regions	w20	mmseqs12_k6_s1	50-90%	1902	253	0.13301787592008413
+aligned piece	kmerseek	regions	w20	mmseqs12_k6_s1	50-90%	1902	235	0.12355415352260778
+whole call	kmerseek	regionsshared	w20	mmseqs12_k6_s1	50-90%	1902	848	0.4458464773922187
+aligned piece	kmerseek	regionsshared	w20	mmseqs12_k6_s1	50-90%	1902	1105	0.5809674027339643
+whole call	kmerseek	whole	w20	mmseqs12_k6_s1	50-90%	1902	535	0.2812828601472135
+aligned piece	kmerseek	whole	w20	mmseqs12_k6_s1	50-90%	1902	1235	0.64931650893796
+whole call	kmerseek	wholeannot	w20	mmseqs12_k6_s1	50-90%	1902	363	0.19085173501577288
+aligned piece	kmerseek	wholeannot	w20	mmseqs12_k6_s1	50-90%	1902	548	0.288117770767613
+whole call	kmerseek	pfam	w10	polarity4_k11_s1	50-90%	1902	103	0.054153522607781286
+aligned piece	kmerseek	pfam	w10	polarity4_k11_s1	50-90%	1902	172	0.0904311251314406
+aligned piece	kmerseek	pfamshared	w10	polarity4_k11_s1	50-90%	1902	171	0.08990536277602523
+whole call	kmerseek	pfamshared	w10	polarity4_k11_s1	50-90%	1902	101	0.05310199789695058
+whole call	kmerseek	regions	w10	polarity4_k11_s1	50-90%	1902	23	0.012092534174553101
+aligned piece	kmerseek	regions	w10	polarity4_k11_s1	50-90%	1902	22	0.011566771819137749
+aligned piece	kmerseek	regionsshared	w10	polarity4_k11_s1	50-90%	1902	22	0.011566771819137749
+whole call	kmerseek	regionsshared	w10	polarity4_k11_s1	50-90%	1902	23	0.012092534174553101
+whole call	kmerseek	whole	w10	polarity4_k11_s1	50-90%	1902	149	0.07833859095688749
+aligned piece	kmerseek	whole	w10	polarity4_k11_s1	50-90%	1902	526	0.2765509989484753
+whole call	kmerseek	wholeannot	w10	polarity4_k11_s1	50-90%	1902	40	0.02103049421661409
+aligned piece	kmerseek	wholeannot	w10	polarity4_k11_s1	50-90%	1902	64	0.033648790746582544
+whole call	kmerseek	pfam	w20	polarity4_k11_s1	50-90%	1902	104	0.054679284963196635
+aligned piece	kmerseek	pfam	w20	polarity4_k11_s1	50-90%	1902	177	0.09305993690851735
+aligned piece	kmerseek	pfamshared	w20	polarity4_k11_s1	50-90%	1902	166	0.08727655099894847
+whole call	kmerseek	pfamshared	w20	polarity4_k11_s1	50-90%	1902	97	0.05099894847528917
+aligned piece	kmerseek	regions	w20	polarity4_k11_s1	50-90%	1902	23	0.012092534174553101
+whole call	kmerseek	regions	w20	polarity4_k11_s1	50-90%	1902	24	0.012618296529968454
+whole call	kmerseek	regionsshared	w20	polarity4_k11_s1	50-90%	1902	24	0.012618296529968454
+aligned piece	kmerseek	regionsshared	w20	polarity4_k11_s1	50-90%	1902	23	0.012092534174553101
+aligned piece	kmerseek	whole	w20	polarity4_k11_s1	50-90%	1902	528	0.277602523659306
+whole call	kmerseek	whole	w20	polarity4_k11_s1	50-90%	1902	151	0.0793901156677182
+whole call	kmerseek	wholeannot	w20	polarity4_k11_s1	50-90%	1902	42	0.022082018927444796
+aligned piece	kmerseek	wholeannot	w20	polarity4_k11_s1	50-90%	1902	66	0.03470031545741325
+whole call	kmerseek	pfam	w10	protein20_k5_s1	50-90%	1902	615	0.32334384858044163
+aligned piece	kmerseek	pfam	w10	protein20_k5_s1	50-90%	1902	608	0.3196635120925342
+whole call	kmerseek	pfamshared	w10	protein20_k5_s1	50-90%	1902	615	0.32334384858044163
+aligned piece	kmerseek	pfamshared	w10	protein20_k5_s1	50-90%	1902	608	0.3196635120925342
+aligned piece	kmerseek	regions	w10	protein20_k5_s1	50-90%	1902	1008	0.5299684542586751
+whole call	kmerseek	regions	w10	protein20_k5_s1	50-90%	1902	824	0.4332281808622503
+aligned piece	kmerseek	regionsshared	w10	protein20_k5_s1	50-90%	1902	978	0.5141955835962145
+whole call	kmerseek	regionsshared	w10	protein20_k5_s1	50-90%	1902	790	0.4153522607781283
+aligned piece	kmerseek	whole	w10	protein20_k5_s1	50-90%	1902	1056	0.555205047318612
+whole call	kmerseek	whole	w10	protein20_k5_s1	50-90%	1902	428	0.22502628811777076
+whole call	kmerseek	wholeannot	w10	protein20_k5_s1	50-90%	1902	274	0.1440588853838065
+aligned piece	kmerseek	wholeannot	w10	protein20_k5_s1	50-90%	1902	438	0.2302839116719243
+whole call	kmerseek	pfam	w20	protein20_k5_s1	50-90%	1902	648	0.34069400630914826
+aligned piece	kmerseek	pfam	w20	protein20_k5_s1	50-90%	1902	639	0.3359621451104101
+whole call	kmerseek	pfamshared	w20	protein20_k5_s1	50-90%	1902	648	0.34069400630914826
+aligned piece	kmerseek	pfamshared	w20	protein20_k5_s1	50-90%	1902	639	0.3359621451104101
+aligned piece	kmerseek	regions	w20	protein20_k5_s1	50-90%	1902	1062	0.5583596214511041
+whole call	kmerseek	regions	w20	protein20_k5_s1	50-90%	1902	876	0.4605678233438486
+whole call	kmerseek	regionsshared	w20	protein20_k5_s1	50-90%	1902	854	0.4490010515247108
+aligned piece	kmerseek	regionsshared	w20	protein20_k5_s1	50-90%	1902	1051	0.5525762355415352
+aligned piece	kmerseek	whole	w20	protein20_k5_s1	50-90%	1902	1065	0.5599369085173501
+whole call	kmerseek	whole	w20	protein20_k5_s1	50-90%	1902	459	0.24132492113564669
+aligned piece	kmerseek	wholeannot	w20	protein20_k5_s1	50-90%	1902	502	0.26393270241850686
+whole call	kmerseek	wholeannot	w20	protein20_k5_s1	50-90%	1902	311	0.16351209253417456
+whole call	kmerseek	pfam	w10	sdm12_k7_s1	50-90%	1902	621	0.3264984227129338
+aligned piece	kmerseek	pfam	w10	sdm12_k7_s1	50-90%	1902	631	0.33175604626708727
+whole call	kmerseek	pfamshared	w10	sdm12_k7_s1	50-90%	1902	621	0.3264984227129338
+aligned piece	kmerseek	pfamshared	w10	sdm12_k7_s1	50-90%	1902	631	0.33175604626708727
+whole call	kmerseek	regions	w10	sdm12_k7_s1	50-90%	1902	230	0.12092534174553102
+aligned piece	kmerseek	regions	w10	sdm12_k7_s1	50-90%	1902	215	0.11303890641430074
+aligned piece	kmerseek	regionsshared	w10	sdm12_k7_s1	50-90%	1902	767	0.4032597266035752
+whole call	kmerseek	regionsshared	w10	sdm12_k7_s1	50-90%	1902	591	0.3107255520504732
+aligned piece	kmerseek	whole	w10	sdm12_k7_s1	50-90%	1902	1140	0.5993690851735016
+whole call	kmerseek	whole	w10	sdm12_k7_s1	50-90%	1902	503	0.2644584647739222
+whole call	kmerseek	wholeannot	w10	sdm12_k7_s1	50-90%	1902	347	0.18243953732912724
+aligned piece	kmerseek	wholeannot	w10	sdm12_k7_s1	50-90%	1902	516	0.27129337539432175
+whole call	kmerseek	pfam	w20	sdm12_k7_s1	50-90%	1902	633	0.33280757097791797
+aligned piece	kmerseek	pfam	w20	sdm12_k7_s1	50-90%	1902	642	0.33753943217665616
+whole call	kmerseek	pfamshared	w20	sdm12_k7_s1	50-90%	1902	634	0.3333333333333333
+aligned piece	kmerseek	pfamshared	w20	sdm12_k7_s1	50-90%	1902	643	0.3380651945320715
+aligned piece	kmerseek	regions	w20	sdm12_k7_s1	50-90%	1902	722	0.37960042060988436
+whole call	kmerseek	regions	w20	sdm12_k7_s1	50-90%	1902	583	0.30651945320715035
+whole call	kmerseek	regionsshared	w20	sdm12_k7_s1	50-90%	1902	616	0.323869610935857
+aligned piece	kmerseek	regionsshared	w20	sdm12_k7_s1	50-90%	1902	802	0.4216614090431125
+whole call	kmerseek	whole	w20	sdm12_k7_s1	50-90%	1902	522	0.2744479495268139
+aligned piece	kmerseek	whole	w20	sdm12_k7_s1	50-90%	1902	1154	0.6067297581493165
+aligned piece	kmerseek	wholeannot	w20	sdm12_k7_s1	50-90%	1902	539	0.2833859095688749
+whole call	kmerseek	wholeannot	w20	sdm12_k7_s1	50-90%	1902	365	0.19190325972660358
+whole call	kmerseek	pfam	w10	uniprot18_k5_s1	50-90%	1902	534	0.2807570977917981
+aligned piece	kmerseek	pfam	w10	uniprot18_k5_s1	50-90%	1902	521	0.27392218717139855
+aligned piece	kmerseek	pfamshared	w10	uniprot18_k5_s1	50-90%	1902	521	0.27392218717139855
+whole call	kmerseek	pfamshared	w10	uniprot18_k5_s1	50-90%	1902	535	0.2812828601472135
+aligned piece	kmerseek	regions	w10	uniprot18_k5_s1	50-90%	1902	914	0.480546792849632
+whole call	kmerseek	regions	w10	uniprot18_k5_s1	50-90%	1902	707	0.37171398527865407
+aligned piece	kmerseek	regionsshared	w10	uniprot18_k5_s1	50-90%	1902	906	0.47634069400630913
+whole call	kmerseek	regionsshared	w10	uniprot18_k5_s1	50-90%	1902	691	0.36330178759200843
+aligned piece	kmerseek	whole	w10	uniprot18_k5_s1	50-90%	1902	1014	0.5331230283911672
+whole call	kmerseek	whole	w10	uniprot18_k5_s1	50-90%	1902	375	0.1971608832807571
+aligned piece	kmerseek	wholeannot	w10	uniprot18_k5_s1	50-90%	1902	287	0.1508937960042061
+whole call	kmerseek	wholeannot	w10	uniprot18_k5_s1	50-90%	1902	217	0.11409043112513144
+aligned piece	kmerseek	pfam	w20	uniprot18_k5_s1	50-90%	1902	573	0.30126182965299686
+whole call	kmerseek	pfam	w20	uniprot18_k5_s1	50-90%	1902	586	0.30809674027339645
+whole call	kmerseek	pfamshared	w20	uniprot18_k5_s1	50-90%	1902	586	0.30809674027339645
+aligned piece	kmerseek	pfamshared	w20	uniprot18_k5_s1	50-90%	1902	573	0.30126182965299686
+aligned piece	kmerseek	regionsshared	w20	uniprot18_k5_s1	50-90%	1902	963	0.5063091482649842
+whole call	kmerseek	regionsshared	w20	uniprot18_k5_s1	50-90%	1902	762	0.40063091482649843
+aligned piece	kmerseek	whole	w20	uniprot18_k5_s1	50-90%	1902	1031	0.5420609884332281
+whole call	kmerseek	whole	w20	uniprot18_k5_s1	50-90%	1902	395	0.20767613038906416
+whole call	kmerseek	wholeannot	w20	uniprot18_k5_s1	50-90%	1902	236	0.12407991587802314
+aligned piece	kmerseek	wholeannot	w20	uniprot18_k5_s1	50-90%	1902	319	0.16771819137749738
+whole call	kmerseek	pfam	w10	wass14_k6_s1	50-90%	1902	381	0.20031545741324921
+aligned piece	kmerseek	pfam	w10	wass14_k6_s1	50-90%	1902	440	0.231335436382755
+whole call	kmerseek	pfamshared	w10	wass14_k6_s1	50-90%	1902	384	0.20189274447949526
+aligned piece	kmerseek	pfamshared	w10	wass14_k6_s1	50-90%	1902	438	0.2302839116719243
+aligned piece	kmerseek	regions	w10	wass14_k6_s1	50-90%	1902	1	0.0005257623554153522
+whole call	kmerseek	regions	w10	wass14_k6_s1	50-90%	1902	1	0.0005257623554153522
+aligned piece	kmerseek	regionsshared	w10	wass14_k6_s1	50-90%	1902	869	0.4568874868559411
+whole call	kmerseek	regionsshared	w10	wass14_k6_s1	50-90%	1902	641	0.3370136698212408
+whole call	kmerseek	whole	w10	wass14_k6_s1	50-90%	1902	389	0.20452155625657203
+aligned piece	kmerseek	whole	w10	wass14_k6_s1	50-90%	1902	1046	0.5499474237644585
+whole call	kmerseek	wholeannot	w10	wass14_k6_s1	50-90%	1902	226	0.11882229232386961
+aligned piece	kmerseek	wholeannot	w10	wass14_k6_s1	50-90%	1902	318	0.167192429022082
+whole call	kmerseek	pfam	w20	wass14_k6_s1	50-90%	1902	414	0.21766561514195584
+aligned piece	kmerseek	pfam	w20	wass14_k6_s1	50-90%	1902	450	0.23659305993690852
+aligned piece	kmerseek	pfamshared	w20	wass14_k6_s1	50-90%	1902	451	0.23711882229232387
+whole call	kmerseek	pfamshared	w20	wass14_k6_s1	50-90%	1902	414	0.21766561514195584
+whole call	kmerseek	regionsshared	w20	wass14_k6_s1	50-90%	1902	686	0.36067297581493163
+aligned piece	kmerseek	regionsshared	w20	wass14_k6_s1	50-90%	1902	909	0.47791798107255523
+aligned piece	kmerseek	whole	w20	wass14_k6_s1	50-90%	1902	1058	0.5562565720294427
+whole call	kmerseek	whole	w20	wass14_k6_s1	50-90%	1902	392	0.20609884332281808
+whole call	kmerseek	wholeannot	w20	wass14_k6_s1	50-90%	1902	242	0.12723449001051526
+aligned piece	kmerseek	wholeannot	w20	wass14_k6_s1	50-90%	1902	353	0.18559411146161936
+aligned piece	kmerseek	pfam	w10	wwmj5_k10_s1	50-90%	1902	447	0.23501577287066247
+whole call	kmerseek	pfam	w10	wwmj5_k10_s1	50-90%	1902	335	0.176130389064143
+whole call	kmerseek	pfamshared	w10	wwmj5_k10_s1	50-90%	1902	334	0.17560462670872765
+aligned piece	kmerseek	pfamshared	w10	wwmj5_k10_s1	50-90%	1902	446	0.23449001051524712
+whole call	kmerseek	regions	w10	wwmj5_k10_s1	50-90%	1902	198	0.10410094637223975
+aligned piece	kmerseek	regions	w10	wwmj5_k10_s1	50-90%	1902	180	0.0946372239747634
+whole call	kmerseek	regionsshared	w10	wwmj5_k10_s1	50-90%	1902	239	0.1256572029442692
+aligned piece	kmerseek	regionsshared	w10	wwmj5_k10_s1	50-90%	1902	223	0.11724500525762356
+aligned piece	kmerseek	whole	w10	wwmj5_k10_s1	50-90%	1902	1129	0.5935856992639327
+whole call	kmerseek	whole	w10	wwmj5_k10_s1	50-90%	1902	390	0.20504731861198738
+aligned piece	kmerseek	wholeannot	w10	wwmj5_k10_s1	50-90%	1902	304	0.1598317560462671
+whole call	kmerseek	wholeannot	w10	wwmj5_k10_s1	50-90%	1902	234	0.12302839116719243
+whole call	kmerseek	pfam	w20	wwmj5_k10_s1	50-90%	1902	371	0.1950578338590957
+aligned piece	kmerseek	pfam	w20	wwmj5_k10_s1	50-90%	1902	468	0.24605678233438485
+aligned piece	kmerseek	pfamshared	w20	wwmj5_k10_s1	50-90%	1902	471	0.2476340694006309
+whole call	kmerseek	pfamshared	w20	wwmj5_k10_s1	50-90%	1902	374	0.19663512092534174
+whole call	kmerseek	regions	w20	wwmj5_k10_s1	50-90%	1902	208	0.10935856992639327
+aligned piece	kmerseek	regions	w20	wwmj5_k10_s1	50-90%	1902	182	0.09568874868559411
+whole call	kmerseek	regionsshared	w20	wwmj5_k10_s1	50-90%	1902	256	0.13459516298633017
+aligned piece	kmerseek	regionsshared	w20	wwmj5_k10_s1	50-90%	1902	240	0.12618296529968454
+whole call	kmerseek	whole	w20	wwmj5_k10_s1	50-90%	1902	399	0.20977917981072555
+aligned piece	kmerseek	whole	w20	wwmj5_k10_s1	50-90%	1902	1145	0.6019978969505784
+whole call	kmerseek	wholeannot	w20	wwmj5_k10_s1	50-90%	1902	256	0.13459516298633017
+aligned piece	kmerseek	wholeannot	w20	wwmj5_k10_s1	50-90%	1902	340	0.17875920084121977
+whole call	mmseqs2	pfam	w10	mmseqs2	50-90%	1902	772	0.4058885383806519
+aligned piece	mmseqs2	pfam	w10	mmseqs2	50-90%	1902	818	0.43007360672975814
+whole call	mmseqs2	regions	w10	mmseqs2	50-90%	1902	1385	0.7281808622502629
+aligned piece	mmseqs2	regions	w10	mmseqs2	50-90%	1902	1703	0.8953732912723449
+whole call	mmseqs2	whole	w10	mmseqs2	50-90%	1902	756	0.39747634069400634
+aligned piece	mmseqs2	whole	w10	mmseqs2	50-90%	1902	1787	0.9395373291272345
+whole call	mmseqs2	wholeannot	w10	mmseqs2	50-90%	1902	630	0.3312302839116719
+aligned piece	mmseqs2	wholeannot	w10	mmseqs2	50-90%	1902	868	0.45636172450052576
+whole call	mmseqs2	pfam	w20	mmseqs2	50-90%	1902	772	0.4058885383806519
+aligned piece	mmseqs2	pfam	w20	mmseqs2	50-90%	1902	818	0.43007360672975814
+aligned piece	mmseqs2	regions	w20	mmseqs2	50-90%	1902	1704	0.8958990536277602
+whole call	mmseqs2	regions	w20	mmseqs2	50-90%	1902	1385	0.7281808622502629
+whole call	mmseqs2	whole	w20	mmseqs2	50-90%	1902	754	0.3964248159831756
+aligned piece	mmseqs2	whole	w20	mmseqs2	50-90%	1902	1788	0.9400630914826499
+aligned piece	mmseqs2	wholeannot	w20	mmseqs2	50-90%	1902	865	0.4547844374342797
+whole call	mmseqs2	wholeannot	w20	mmseqs2	50-90%	1902	626	0.3291272344900105
+aligned piece	kmerseek	pfam	w10	dayhoff6_k9_s1	<30%	59	0	0.0
+whole call	kmerseek	pfam	w10	dayhoff6_k9_s1	<30%	59	0	0.0
+aligned piece	kmerseek	pfamshared	w10	dayhoff6_k9_s1	<30%	59	0	0.0
+whole call	kmerseek	pfamshared	w10	dayhoff6_k9_s1	<30%	59	0	0.0
+aligned piece	kmerseek	regions	w10	dayhoff6_k9_s1	<30%	59	1	0.01694915254237288
+whole call	kmerseek	regions	w10	dayhoff6_k9_s1	<30%	59	1	0.01694915254237288
+whole call	kmerseek	regionsshared	w10	dayhoff6_k9_s1	<30%	59	1	0.01694915254237288
+aligned piece	kmerseek	regionsshared	w10	dayhoff6_k9_s1	<30%	59	1	0.01694915254237288
+whole call	kmerseek	whole	w10	dayhoff6_k9_s1	<30%	59	0	0.0
+aligned piece	kmerseek	whole	w10	dayhoff6_k9_s1	<30%	59	2	0.03389830508474576
+whole call	kmerseek	wholeannot	w10	dayhoff6_k9_s1	<30%	59	0	0.0
+aligned piece	kmerseek	wholeannot	w10	dayhoff6_k9_s1	<30%	59	1	0.01694915254237288
+whole call	kmerseek	pfam	w20	dayhoff6_k9_s1	<30%	59	0	0.0
+aligned piece	kmerseek	pfam	w20	dayhoff6_k9_s1	<30%	59	0	0.0
+whole call	kmerseek	pfamshared	w20	dayhoff6_k9_s1	<30%	59	0	0.0
+aligned piece	kmerseek	pfamshared	w20	dayhoff6_k9_s1	<30%	59	0	0.0
+whole call	kmerseek	regions	w20	dayhoff6_k9_s1	<30%	59	0	0.0
+aligned piece	kmerseek	regions	w20	dayhoff6_k9_s1	<30%	59	0	0.0
+aligned piece	kmerseek	regionsshared	w20	dayhoff6_k9_s1	<30%	59	1	0.01694915254237288
+whole call	kmerseek	regionsshared	w20	dayhoff6_k9_s1	<30%	59	1	0.01694915254237288
+aligned piece	kmerseek	whole	w20	dayhoff6_k9_s1	<30%	59	2	0.03389830508474576
+whole call	kmerseek	whole	w20	dayhoff6_k9_s1	<30%	59	0	0.0
+whole call	kmerseek	wholeannot	w20	dayhoff6_k9_s1	<30%	59	0	0.0
+aligned piece	kmerseek	wholeannot	w20	dayhoff6_k9_s1	<30%	59	1	0.01694915254237288
+aligned piece	kmerseek	pfam	w10	funcgroups8_k8_s1	<30%	59	0	0.0
+whole call	kmerseek	pfam	w10	funcgroups8_k8_s1	<30%	59	0	0.0
+aligned piece	kmerseek	pfamshared	w10	funcgroups8_k8_s1	<30%	59	0	0.0
+whole call	kmerseek	pfamshared	w10	funcgroups8_k8_s1	<30%	59	0	0.0
+aligned piece	kmerseek	regions	w10	funcgroups8_k8_s1	<30%	59	0	0.0
+whole call	kmerseek	regions	w10	funcgroups8_k8_s1	<30%	59	0	0.0
+whole call	kmerseek	regionsshared	w10	funcgroups8_k8_s1	<30%	59	1	0.01694915254237288
+aligned piece	kmerseek	regionsshared	w10	funcgroups8_k8_s1	<30%	59	1	0.01694915254237288
+whole call	kmerseek	whole	w10	funcgroups8_k8_s1	<30%	59	1	0.01694915254237288
+aligned piece	kmerseek	whole	w10	funcgroups8_k8_s1	<30%	59	2	0.03389830508474576
+whole call	kmerseek	wholeannot	w10	funcgroups8_k8_s1	<30%	59	0	0.0
+aligned piece	kmerseek	wholeannot	w10	funcgroups8_k8_s1	<30%	59	0	0.0
+aligned piece	kmerseek	pfam	w20	funcgroups8_k8_s1	<30%	59	0	0.0
+whole call	kmerseek	pfam	w20	funcgroups8_k8_s1	<30%	59	0	0.0
+whole call	kmerseek	pfamshared	w20	funcgroups8_k8_s1	<30%	59	0	0.0
+aligned piece	kmerseek	pfamshared	w20	funcgroups8_k8_s1	<30%	59	0	0.0
+whole call	kmerseek	regions	w20	funcgroups8_k8_s1	<30%	59	1	0.01694915254237288
+aligned piece	kmerseek	regions	w20	funcgroups8_k8_s1	<30%	59	1	0.01694915254237288
+whole call	kmerseek	regionsshared	w20	funcgroups8_k8_s1	<30%	59	1	0.01694915254237288
+aligned piece	kmerseek	regionsshared	w20	funcgroups8_k8_s1	<30%	59	1	0.01694915254237288
+aligned piece	kmerseek	whole	w20	funcgroups8_k8_s1	<30%	59	2	0.03389830508474576
+whole call	kmerseek	whole	w20	funcgroups8_k8_s1	<30%	59	1	0.01694915254237288
+whole call	kmerseek	wholeannot	w20	funcgroups8_k8_s1	<30%	59	0	0.0
+aligned piece	kmerseek	wholeannot	w20	funcgroups8_k8_s1	<30%	59	0	0.0
+aligned piece	kmerseek	pfam	w10	gbmr4_k14_s1	<30%	59	0	0.0
+whole call	kmerseek	pfam	w10	gbmr4_k14_s1	<30%	59	0	0.0
+aligned piece	kmerseek	pfamshared	w10	gbmr4_k14_s1	<30%	59	0	0.0
+whole call	kmerseek	pfamshared	w10	gbmr4_k14_s1	<30%	59	0	0.0
+whole call	kmerseek	regions	w10	gbmr4_k14_s1	<30%	59	0	0.0
+aligned piece	kmerseek	regions	w10	gbmr4_k14_s1	<30%	59	0	0.0
+whole call	kmerseek	regionsshared	w10	gbmr4_k14_s1	<30%	59	0	0.0
+aligned piece	kmerseek	regionsshared	w10	gbmr4_k14_s1	<30%	59	0	0.0
+aligned piece	kmerseek	whole	w10	gbmr4_k14_s1	<30%	59	3	0.05084745762711865
+whole call	kmerseek	whole	w10	gbmr4_k14_s1	<30%	59	1	0.01694915254237288
+whole call	kmerseek	wholeannot	w10	gbmr4_k14_s1	<30%	59	1	0.01694915254237288
+aligned piece	kmerseek	wholeannot	w10	gbmr4_k14_s1	<30%	59	1	0.01694915254237288
+aligned piece	kmerseek	pfam	w20	gbmr4_k14_s1	<30%	59	0	0.0
+whole call	kmerseek	pfam	w20	gbmr4_k14_s1	<30%	59	0	0.0
+whole call	kmerseek	pfamshared	w20	gbmr4_k14_s1	<30%	59	0	0.0
+aligned piece	kmerseek	pfamshared	w20	gbmr4_k14_s1	<30%	59	0	0.0
+aligned piece	kmerseek	regions	w20	gbmr4_k14_s1	<30%	59	1	0.01694915254237288
+whole call	kmerseek	regions	w20	gbmr4_k14_s1	<30%	59	1	0.01694915254237288
+aligned piece	kmerseek	regionsshared	w20	gbmr4_k14_s1	<30%	59	1	0.01694915254237288
+whole call	kmerseek	regionsshared	w20	gbmr4_k14_s1	<30%	59	1	0.01694915254237288
+aligned piece	kmerseek	whole	w20	gbmr4_k14_s1	<30%	59	3	0.05084745762711865
+whole call	kmerseek	whole	w20	gbmr4_k14_s1	<30%	59	1	0.01694915254237288
+aligned piece	kmerseek	wholeannot	w20	gbmr4_k14_s1	<30%	59	1	0.01694915254237288
+whole call	kmerseek	wholeannot	w20	gbmr4_k14_s1	<30%	59	1	0.01694915254237288
+aligned piece	kmerseek	pfamshared	w10	gbmr7_k16_s1	<30%	59	0	0.0
+whole call	kmerseek	pfamshared	w10	gbmr7_k16_s1	<30%	59	0	0.0
+aligned piece	kmerseek	regions	w10	gbmr7_k16_s1	<30%	59	0	0.0
+whole call	kmerseek	regions	w10	gbmr7_k16_s1	<30%	59	0	0.0
+aligned piece	kmerseek	regionsshared	w10	gbmr7_k16_s1	<30%	59	0	0.0
+whole call	kmerseek	regionsshared	w10	gbmr7_k16_s1	<30%	59	0	0.0
+aligned piece	kmerseek	whole	w10	gbmr7_k16_s1	<30%	59	0	0.0
+whole call	kmerseek	whole	w10	gbmr7_k16_s1	<30%	59	0	0.0
+aligned piece	kmerseek	wholeannot	w10	gbmr7_k16_s1	<30%	59	0	0.0
+whole call	kmerseek	wholeannot	w10	gbmr7_k16_s1	<30%	59	0	0.0
+aligned piece	kmerseek	pfamshared	w20	gbmr7_k16_s1	<30%	59	0	0.0
+whole call	kmerseek	pfamshared	w20	gbmr7_k16_s1	<30%	59	0	0.0
+whole call	kmerseek	regions	w20	gbmr7_k16_s1	<30%	59	0	0.0
+aligned piece	kmerseek	regions	w20	gbmr7_k16_s1	<30%	59	0	0.0
+aligned piece	kmerseek	regionsshared	w20	gbmr7_k16_s1	<30%	59	0	0.0
+whole call	kmerseek	regionsshared	w20	gbmr7_k16_s1	<30%	59	0	0.0
+aligned piece	kmerseek	whole	w20	gbmr7_k16_s1	<30%	59	0	0.0
+whole call	kmerseek	whole	w20	gbmr7_k16_s1	<30%	59	0	0.0
+aligned piece	kmerseek	wholeannot	w20	gbmr7_k16_s1	<30%	59	0	0.0
+whole call	kmerseek	wholeannot	w20	gbmr7_k16_s1	<30%	59	0	0.0
+whole call	kmerseek	regions	w10	hp_kyte_doolittle2_k22_s1	<30%	59	0	0.0
+aligned piece	kmerseek	regions	w10	hp_kyte_doolittle2_k22_s1	<30%	59	0	0.0
+whole call	kmerseek	pfam	w20	hp_kyte_doolittle2_k22_s1	<30%	59	0	0.0
+aligned piece	kmerseek	pfam	w20	hp_kyte_doolittle2_k22_s1	<30%	59	0	0.0
+aligned piece	kmerseek	pfamshared	w20	hp_kyte_doolittle2_k22_s1	<30%	59	0	0.0
+whole call	kmerseek	pfamshared	w20	hp_kyte_doolittle2_k22_s1	<30%	59	0	0.0
+whole call	kmerseek	regions	w20	hp_kyte_doolittle2_k22_s1	<30%	59	0	0.0
+aligned piece	kmerseek	regions	w20	hp_kyte_doolittle2_k22_s1	<30%	59	0	0.0
+aligned piece	kmerseek	regionsshared	w20	hp_kyte_doolittle2_k22_s1	<30%	59	0	0.0
+whole call	kmerseek	regionsshared	w20	hp_kyte_doolittle2_k22_s1	<30%	59	0	0.0
+aligned piece	kmerseek	whole	w20	hp_kyte_doolittle2_k22_s1	<30%	59	1	0.01694915254237288
+whole call	kmerseek	whole	w20	hp_kyte_doolittle2_k22_s1	<30%	59	0	0.0
+aligned piece	kmerseek	wholeannot	w20	hp_kyte_doolittle2_k22_s1	<30%	59	0	0.0
+whole call	kmerseek	wholeannot	w20	hp_kyte_doolittle2_k22_s1	<30%	59	0	0.0
+aligned piece	kmerseek	pfam	w10	hp_lehninger2_k21_s1	<30%	59	0	0.0
+whole call	kmerseek	pfam	w10	hp_lehninger2_k21_s1	<30%	59	0	0.0
+whole call	kmerseek	pfamshared	w10	hp_lehninger2_k21_s1	<30%	59	0	0.0
+aligned piece	kmerseek	pfamshared	w10	hp_lehninger2_k21_s1	<30%	59	0	0.0
+aligned piece	kmerseek	regions	w10	hp_lehninger2_k21_s1	<30%	59	0	0.0
+whole call	kmerseek	regions	w10	hp_lehninger2_k21_s1	<30%	59	0	0.0
+aligned piece	kmerseek	regionsshared	w10	hp_lehninger2_k21_s1	<30%	59	0	0.0
+whole call	kmerseek	regionsshared	w10	hp_lehninger2_k21_s1	<30%	59	0	0.0
+whole call	kmerseek	whole	w10	hp_lehninger2_k21_s1	<30%	59	0	0.0
+aligned piece	kmerseek	whole	w10	hp_lehninger2_k21_s1	<30%	59	3	0.05084745762711865
+whole call	kmerseek	wholeannot	w10	hp_lehninger2_k21_s1	<30%	59	0	0.0
+aligned piece	kmerseek	wholeannot	w10	hp_lehninger2_k21_s1	<30%	59	0	0.0
+whole call	kmerseek	pfam	w20	hp_lehninger2_k21_s1	<30%	59	0	0.0
+aligned piece	kmerseek	pfam	w20	hp_lehninger2_k21_s1	<30%	59	0	0.0
+whole call	kmerseek	pfamshared	w20	hp_lehninger2_k21_s1	<30%	59	0	0.0
+aligned piece	kmerseek	pfamshared	w20	hp_lehninger2_k21_s1	<30%	59	0	0.0
+aligned piece	kmerseek	regions	w20	hp_lehninger2_k21_s1	<30%	59	0	0.0
+whole call	kmerseek	regions	w20	hp_lehninger2_k21_s1	<30%	59	0	0.0
+aligned piece	kmerseek	regionsshared	w20	hp_lehninger2_k21_s1	<30%	59	0	0.0
+whole call	kmerseek	regionsshared	w20	hp_lehninger2_k21_s1	<30%	59	0	0.0
+aligned piece	kmerseek	whole	w20	hp_lehninger2_k21_s1	<30%	59	3	0.05084745762711865
+whole call	kmerseek	whole	w20	hp_lehninger2_k21_s1	<30%	59	0	0.0
+aligned piece	kmerseek	wholeannot	w20	hp_lehninger2_k21_s1	<30%	59	0	0.0
+whole call	kmerseek	wholeannot	w20	hp_lehninger2_k21_s1	<30%	59	0	0.0
+whole call	kmerseek	pfam	w10	hp_lehninger_c_nonpolar2_k21_s1	<30%	59	0	0.0
+aligned piece	kmerseek	pfam	w10	hp_lehninger_c_nonpolar2_k21_s1	<30%	59	0	0.0
+aligned piece	kmerseek	pfamshared	w10	hp_lehninger_c_nonpolar2_k21_s1	<30%	59	0	0.0
+whole call	kmerseek	pfamshared	w10	hp_lehninger_c_nonpolar2_k21_s1	<30%	59	0	0.0
+whole call	kmerseek	regions	w10	hp_lehninger_c_nonpolar2_k21_s1	<30%	59	0	0.0
+aligned piece	kmerseek	regions	w10	hp_lehninger_c_nonpolar2_k21_s1	<30%	59	0	0.0
+aligned piece	kmerseek	regionsshared	w10	hp_lehninger_c_nonpolar2_k21_s1	<30%	59	0	0.0
+whole call	kmerseek	regionsshared	w10	hp_lehninger_c_nonpolar2_k21_s1	<30%	59	0	0.0
+whole call	kmerseek	whole	w10	hp_lehninger_c_nonpolar2_k21_s1	<30%	59	0	0.0
+aligned piece	kmerseek	whole	w10	hp_lehninger_c_nonpolar2_k21_s1	<30%	59	2	0.03389830508474576
+whole call	kmerseek	wholeannot	w10	hp_lehninger_c_nonpolar2_k21_s1	<30%	59	0	0.0
+aligned piece	kmerseek	wholeannot	w10	hp_lehninger_c_nonpolar2_k21_s1	<30%	59	0	0.0
+whole call	kmerseek	pfam	w20	hp_lehninger_c_nonpolar2_k21_s1	<30%	59	0	0.0
+aligned piece	kmerseek	pfam	w20	hp_lehninger_c_nonpolar2_k21_s1	<30%	59	0	0.0
+aligned piece	kmerseek	pfamshared	w20	hp_lehninger_c_nonpolar2_k21_s1	<30%	59	0	0.0
+whole call	kmerseek	pfamshared	w20	hp_lehninger_c_nonpolar2_k21_s1	<30%	59	0	0.0
+aligned piece	kmerseek	regions	w20	hp_lehninger_c_nonpolar2_k21_s1	<30%	59	0	0.0
+whole call	kmerseek	regions	w20	hp_lehninger_c_nonpolar2_k21_s1	<30%	59	0	0.0
+aligned piece	kmerseek	regionsshared	w20	hp_lehninger_c_nonpolar2_k21_s1	<30%	59	0	0.0
+whole call	kmerseek	regionsshared	w20	hp_lehninger_c_nonpolar2_k21_s1	<30%	59	0	0.0
+aligned piece	kmerseek	whole	w20	hp_lehninger_c_nonpolar2_k21_s1	<30%	59	2	0.03389830508474576
+whole call	kmerseek	whole	w20	hp_lehninger_c_nonpolar2_k21_s1	<30%	59	0	0.0
+whole call	kmerseek	wholeannot	w20	hp_lehninger_c_nonpolar2_k21_s1	<30%	59	0	0.0
+aligned piece	kmerseek	wholeannot	w20	hp_lehninger_c_nonpolar2_k21_s1	<30%	59	0	0.0
+aligned piece	kmerseek	pfam	w10	hp_lehninger_hpc3_k19_s1	<30%	59	0	0.0
+whole call	kmerseek	pfam	w10	hp_lehninger_hpc3_k19_s1	<30%	59	0	0.0
+aligned piece	kmerseek	pfamshared	w10	hp_lehninger_hpc3_k19_s1	<30%	59	0	0.0
+whole call	kmerseek	pfamshared	w10	hp_lehninger_hpc3_k19_s1	<30%	59	0	0.0
+aligned piece	kmerseek	regions	w10	hp_lehninger_hpc3_k19_s1	<30%	59	0	0.0
+whole call	kmerseek	regions	w10	hp_lehninger_hpc3_k19_s1	<30%	59	0	0.0
+whole call	kmerseek	regionsshared	w10	hp_lehninger_hpc3_k19_s1	<30%	59	0	0.0
+aligned piece	kmerseek	regionsshared	w10	hp_lehninger_hpc3_k19_s1	<30%	59	0	0.0
+aligned piece	kmerseek	whole	w10	hp_lehninger_hpc3_k19_s1	<30%	59	0	0.0
+whole call	kmerseek	whole	w10	hp_lehninger_hpc3_k19_s1	<30%	59	0	0.0
+whole call	kmerseek	wholeannot	w10	hp_lehninger_hpc3_k19_s1	<30%	59	0	0.0
+aligned piece	kmerseek	wholeannot	w10	hp_lehninger_hpc3_k19_s1	<30%	59	0	0.0
+whole call	kmerseek	pfam	w20	hp_lehninger_hpc3_k19_s1	<30%	59	0	0.0
+aligned piece	kmerseek	pfam	w20	hp_lehninger_hpc3_k19_s1	<30%	59	0	0.0
+whole call	kmerseek	pfamshared	w20	hp_lehninger_hpc3_k19_s1	<30%	59	0	0.0
+aligned piece	kmerseek	pfamshared	w20	hp_lehninger_hpc3_k19_s1	<30%	59	0	0.0
+whole call	kmerseek	regions	w20	hp_lehninger_hpc3_k19_s1	<30%	59	0	0.0
+aligned piece	kmerseek	regions	w20	hp_lehninger_hpc3_k19_s1	<30%	59	0	0.0
+whole call	kmerseek	regionsshared	w20	hp_lehninger_hpc3_k19_s1	<30%	59	0	0.0
+aligned piece	kmerseek	regionsshared	w20	hp_lehninger_hpc3_k19_s1	<30%	59	0	0.0
+whole call	kmerseek	whole	w20	hp_lehninger_hpc3_k19_s1	<30%	59	0	0.0
+aligned piece	kmerseek	whole	w20	hp_lehninger_hpc3_k19_s1	<30%	59	0	0.0
+whole call	kmerseek	wholeannot	w20	hp_lehninger_hpc3_k19_s1	<30%	59	0	0.0
+aligned piece	kmerseek	wholeannot	w20	hp_lehninger_hpc3_k19_s1	<30%	59	0	0.0
+aligned piece	kmerseek	pfam	w10	hp_pbotc_1st_ed2_k21_s1	<30%	59	0	0.0
+whole call	kmerseek	pfam	w10	hp_pbotc_1st_ed2_k21_s1	<30%	59	0	0.0
+whole call	kmerseek	pfamshared	w10	hp_pbotc_1st_ed2_k21_s1	<30%	59	0	0.0
+aligned piece	kmerseek	pfamshared	w10	hp_pbotc_1st_ed2_k21_s1	<30%	59	0	0.0
+whole call	kmerseek	regions	w10	hp_pbotc_1st_ed2_k21_s1	<30%	59	0	0.0
+aligned piece	kmerseek	regions	w10	hp_pbotc_1st_ed2_k21_s1	<30%	59	0	0.0
+whole call	kmerseek	regionsshared	w10	hp_pbotc_1st_ed2_k21_s1	<30%	59	0	0.0
+aligned piece	kmerseek	regionsshared	w10	hp_pbotc_1st_ed2_k21_s1	<30%	59	0	0.0
+aligned piece	kmerseek	whole	w10	hp_pbotc_1st_ed2_k21_s1	<30%	59	2	0.03389830508474576
+whole call	kmerseek	whole	w10	hp_pbotc_1st_ed2_k21_s1	<30%	59	0	0.0
+aligned piece	kmerseek	wholeannot	w10	hp_pbotc_1st_ed2_k21_s1	<30%	59	0	0.0
+whole call	kmerseek	wholeannot	w10	hp_pbotc_1st_ed2_k21_s1	<30%	59	0	0.0
+whole call	kmerseek	pfam	w20	hp_pbotc_1st_ed2_k21_s1	<30%	59	0	0.0
+aligned piece	kmerseek	pfam	w20	hp_pbotc_1st_ed2_k21_s1	<30%	59	0	0.0
+whole call	kmerseek	pfamshared	w20	hp_pbotc_1st_ed2_k21_s1	<30%	59	0	0.0
+aligned piece	kmerseek	pfamshared	w20	hp_pbotc_1st_ed2_k21_s1	<30%	59	0	0.0
+whole call	kmerseek	regions	w20	hp_pbotc_1st_ed2_k21_s1	<30%	59	0	0.0
+aligned piece	kmerseek	regions	w20	hp_pbotc_1st_ed2_k21_s1	<30%	59	0	0.0
+whole call	kmerseek	regionsshared	w20	hp_pbotc_1st_ed2_k21_s1	<30%	59	0	0.0
+aligned piece	kmerseek	regionsshared	w20	hp_pbotc_1st_ed2_k21_s1	<30%	59	0	0.0
+aligned piece	kmerseek	whole	w20	hp_pbotc_1st_ed2_k21_s1	<30%	59	2	0.03389830508474576
+whole call	kmerseek	whole	w20	hp_pbotc_1st_ed2_k21_s1	<30%	59	0	0.0
+whole call	kmerseek	wholeannot	w20	hp_pbotc_1st_ed2_k21_s1	<30%	59	0	0.0
+aligned piece	kmerseek	wholeannot	w20	hp_pbotc_1st_ed2_k21_s1	<30%	59	0	0.0
+aligned piece	kmerseek	pfam	w10	hp_thomas_dill2_k22_s1	<30%	59	0	0.0
+whole call	kmerseek	pfam	w10	hp_thomas_dill2_k22_s1	<30%	59	0	0.0
+aligned piece	kmerseek	pfamshared	w10	hp_thomas_dill2_k22_s1	<30%	59	0	0.0
+whole call	kmerseek	pfamshared	w10	hp_thomas_dill2_k22_s1	<30%	59	0	0.0
+aligned piece	kmerseek	regions	w10	hp_thomas_dill2_k22_s1	<30%	59	0	0.0
+whole call	kmerseek	regions	w10	hp_thomas_dill2_k22_s1	<30%	59	0	0.0
+aligned piece	kmerseek	regionsshared	w10	hp_thomas_dill2_k22_s1	<30%	59	0	0.0
+whole call	kmerseek	regionsshared	w10	hp_thomas_dill2_k22_s1	<30%	59	0	0.0
+aligned piece	kmerseek	whole	w10	hp_thomas_dill2_k22_s1	<30%	59	2	0.03389830508474576
+whole call	kmerseek	whole	w10	hp_thomas_dill2_k22_s1	<30%	59	0	0.0
+aligned piece	kmerseek	wholeannot	w10	hp_thomas_dill2_k22_s1	<30%	59	0	0.0
+whole call	kmerseek	wholeannot	w10	hp_thomas_dill2_k22_s1	<30%	59	0	0.0
+whole call	kmerseek	pfam	w20	hp_thomas_dill2_k22_s1	<30%	59	0	0.0
+aligned piece	kmerseek	pfam	w20	hp_thomas_dill2_k22_s1	<30%	59	0	0.0
+whole call	kmerseek	pfamshared	w20	hp_thomas_dill2_k22_s1	<30%	59	0	0.0
+aligned piece	kmerseek	pfamshared	w20	hp_thomas_dill2_k22_s1	<30%	59	0	0.0
+aligned piece	kmerseek	regions	w20	hp_thomas_dill2_k22_s1	<30%	59	0	0.0
+whole call	kmerseek	regions	w20	hp_thomas_dill2_k22_s1	<30%	59	0	0.0
+whole call	kmerseek	regionsshared	w20	hp_thomas_dill2_k22_s1	<30%	59	0	0.0
+aligned piece	kmerseek	regionsshared	w20	hp_thomas_dill2_k22_s1	<30%	59	0	0.0
+aligned piece	kmerseek	whole	w20	hp_thomas_dill2_k22_s1	<30%	59	2	0.03389830508474576
+whole call	kmerseek	whole	w20	hp_thomas_dill2_k22_s1	<30%	59	0	0.0
+aligned piece	kmerseek	wholeannot	w20	hp_thomas_dill2_k22_s1	<30%	59	0	0.0
+whole call	kmerseek	wholeannot	w20	hp_thomas_dill2_k22_s1	<30%	59	0	0.0
+whole call	kmerseek	pfam	w10	hp_thomas_dill_no_c2_k22_s1	<30%	59	0	0.0
+aligned piece	kmerseek	pfam	w10	hp_thomas_dill_no_c2_k22_s1	<30%	59	0	0.0
+aligned piece	kmerseek	pfamshared	w10	hp_thomas_dill_no_c2_k22_s1	<30%	59	0	0.0
+whole call	kmerseek	pfamshared	w10	hp_thomas_dill_no_c2_k22_s1	<30%	59	0	0.0
+whole call	kmerseek	regions	w10	hp_thomas_dill_no_c2_k22_s1	<30%	59	0	0.0
+aligned piece	kmerseek	regions	w10	hp_thomas_dill_no_c2_k22_s1	<30%	59	0	0.0
+whole call	kmerseek	regionsshared	w10	hp_thomas_dill_no_c2_k22_s1	<30%	59	0	0.0
+aligned piece	kmerseek	regionsshared	w10	hp_thomas_dill_no_c2_k22_s1	<30%	59	0	0.0
+whole call	kmerseek	whole	w10	hp_thomas_dill_no_c2_k22_s1	<30%	59	0	0.0
+aligned piece	kmerseek	whole	w10	hp_thomas_dill_no_c2_k22_s1	<30%	59	3	0.05084745762711865
+aligned piece	kmerseek	wholeannot	w10	hp_thomas_dill_no_c2_k22_s1	<30%	59	0	0.0
+whole call	kmerseek	wholeannot	w10	hp_thomas_dill_no_c2_k22_s1	<30%	59	0	0.0
+whole call	kmerseek	pfam	w20	hp_thomas_dill_no_c2_k22_s1	<30%	59	0	0.0
+aligned piece	kmerseek	pfam	w20	hp_thomas_dill_no_c2_k22_s1	<30%	59	0	0.0
+aligned piece	kmerseek	pfamshared	w20	hp_thomas_dill_no_c2_k22_s1	<30%	59	0	0.0
+whole call	kmerseek	pfamshared	w20	hp_thomas_dill_no_c2_k22_s1	<30%	59	0	0.0
+whole call	kmerseek	regions	w20	hp_thomas_dill_no_c2_k22_s1	<30%	59	0	0.0
+aligned piece	kmerseek	regions	w20	hp_thomas_dill_no_c2_k22_s1	<30%	59	0	0.0
+aligned piece	kmerseek	regionsshared	w20	hp_thomas_dill_no_c2_k22_s1	<30%	59	0	0.0
+whole call	kmerseek	regionsshared	w20	hp_thomas_dill_no_c2_k22_s1	<30%	59	0	0.0
+whole call	kmerseek	whole	w20	hp_thomas_dill_no_c2_k22_s1	<30%	59	0	0.0
+aligned piece	kmerseek	whole	w20	hp_thomas_dill_no_c2_k22_s1	<30%	59	3	0.05084745762711865
+aligned piece	kmerseek	wholeannot	w20	hp_thomas_dill_no_c2_k22_s1	<30%	59	0	0.0
+whole call	kmerseek	wholeannot	w20	hp_thomas_dill_no_c2_k22_s1	<30%	59	0	0.0
+aligned piece	kmerseek	pfam	w10	hsdm17_k6_s1	<30%	59	2	0.03389830508474576
+whole call	kmerseek	pfam	w10	hsdm17_k6_s1	<30%	59	2	0.03389830508474576
+aligned piece	kmerseek	pfamshared	w10	hsdm17_k6_s1	<30%	59	2	0.03389830508474576
+whole call	kmerseek	pfamshared	w10	hsdm17_k6_s1	<30%	59	2	0.03389830508474576
+aligned piece	kmerseek	regions	w10	hsdm17_k6_s1	<30%	59	0	0.0
+whole call	kmerseek	regions	w10	hsdm17_k6_s1	<30%	59	0	0.0
+aligned piece	kmerseek	regionsshared	w10	hsdm17_k6_s1	<30%	59	0	0.0
+whole call	kmerseek	regionsshared	w10	hsdm17_k6_s1	<30%	59	0	0.0
+whole call	kmerseek	whole	w10	hsdm17_k6_s1	<30%	59	0	0.0
+aligned piece	kmerseek	whole	w10	hsdm17_k6_s1	<30%	59	2	0.03389830508474576
+whole call	kmerseek	wholeannot	w10	hsdm17_k6_s1	<30%	59	0	0.0
+aligned piece	kmerseek	wholeannot	w10	hsdm17_k6_s1	<30%	59	1	0.01694915254237288
+whole call	kmerseek	pfam	w20	hsdm17_k6_s1	<30%	59	4	0.06779661016949153
+aligned piece	kmerseek	pfam	w20	hsdm17_k6_s1	<30%	59	4	0.06779661016949153
+aligned piece	kmerseek	pfamshared	w20	hsdm17_k6_s1	<30%	59	4	0.06779661016949153
+whole call	kmerseek	pfamshared	w20	hsdm17_k6_s1	<30%	59	4	0.06779661016949153
+whole call	kmerseek	regions	w20	hsdm17_k6_s1	<30%	59	0	0.0
+aligned piece	kmerseek	regions	w20	hsdm17_k6_s1	<30%	59	0	0.0
+aligned piece	kmerseek	regionsshared	w20	hsdm17_k6_s1	<30%	59	0	0.0
+whole call	kmerseek	regionsshared	w20	hsdm17_k6_s1	<30%	59	0	0.0
+aligned piece	kmerseek	whole	w20	hsdm17_k6_s1	<30%	59	2	0.03389830508474576
+whole call	kmerseek	whole	w20	hsdm17_k6_s1	<30%	59	0	0.0
+aligned piece	kmerseek	wholeannot	w20	hsdm17_k6_s1	<30%	59	1	0.01694915254237288
+whole call	kmerseek	wholeannot	w20	hsdm17_k6_s1	<30%	59	0	0.0
+aligned piece	kmerseek	pfam	w10	mmseqs12_k6_s1	<30%	59	2	0.03389830508474576
+whole call	kmerseek	pfam	w10	mmseqs12_k6_s1	<30%	59	3	0.05084745762711865
+aligned piece	kmerseek	pfamshared	w10	mmseqs12_k6_s1	<30%	59	2	0.03389830508474576
+whole call	kmerseek	pfamshared	w10	mmseqs12_k6_s1	<30%	59	3	0.05084745762711865
+aligned piece	kmerseek	regions	w10	mmseqs12_k6_s1	<30%	59	0	0.0
+whole call	kmerseek	regions	w10	mmseqs12_k6_s1	<30%	59	0	0.0
+aligned piece	kmerseek	regionsshared	w10	mmseqs12_k6_s1	<30%	59	1	0.01694915254237288
+whole call	kmerseek	regionsshared	w10	mmseqs12_k6_s1	<30%	59	1	0.01694915254237288
+aligned piece	kmerseek	whole	w10	mmseqs12_k6_s1	<30%	59	3	0.05084745762711865
+whole call	kmerseek	whole	w10	mmseqs12_k6_s1	<30%	59	1	0.01694915254237288
+whole call	kmerseek	wholeannot	w10	mmseqs12_k6_s1	<30%	59	0	0.0
+aligned piece	kmerseek	wholeannot	w10	mmseqs12_k6_s1	<30%	59	2	0.03389830508474576
+whole call	kmerseek	pfam	w20	mmseqs12_k6_s1	<30%	59	4	0.06779661016949153
+aligned piece	kmerseek	pfam	w20	mmseqs12_k6_s1	<30%	59	3	0.05084745762711865
+whole call	kmerseek	pfamshared	w20	mmseqs12_k6_s1	<30%	59	4	0.06779661016949153
+aligned piece	kmerseek	pfamshared	w20	mmseqs12_k6_s1	<30%	59	3	0.05084745762711865
+aligned piece	kmerseek	regions	w20	mmseqs12_k6_s1	<30%	59	0	0.0
+whole call	kmerseek	regions	w20	mmseqs12_k6_s1	<30%	59	0	0.0
+whole call	kmerseek	regionsshared	w20	mmseqs12_k6_s1	<30%	59	1	0.01694915254237288
+aligned piece	kmerseek	regionsshared	w20	mmseqs12_k6_s1	<30%	59	1	0.01694915254237288
+aligned piece	kmerseek	whole	w20	mmseqs12_k6_s1	<30%	59	3	0.05084745762711865
+whole call	kmerseek	whole	w20	mmseqs12_k6_s1	<30%	59	1	0.01694915254237288
+whole call	kmerseek	wholeannot	w20	mmseqs12_k6_s1	<30%	59	0	0.0
+aligned piece	kmerseek	wholeannot	w20	mmseqs12_k6_s1	<30%	59	2	0.03389830508474576
+aligned piece	kmerseek	pfam	w10	polarity4_k11_s1	<30%	59	0	0.0
+whole call	kmerseek	pfam	w10	polarity4_k11_s1	<30%	59	0	0.0
+aligned piece	kmerseek	pfamshared	w10	polarity4_k11_s1	<30%	59	0	0.0
+whole call	kmerseek	pfamshared	w10	polarity4_k11_s1	<30%	59	0	0.0
+whole call	kmerseek	regions	w10	polarity4_k11_s1	<30%	59	0	0.0
+aligned piece	kmerseek	regions	w10	polarity4_k11_s1	<30%	59	0	0.0
+whole call	kmerseek	regionsshared	w10	polarity4_k11_s1	<30%	59	0	0.0
+aligned piece	kmerseek	regionsshared	w10	polarity4_k11_s1	<30%	59	0	0.0
+aligned piece	kmerseek	whole	w10	polarity4_k11_s1	<30%	59	1	0.01694915254237288
+whole call	kmerseek	whole	w10	polarity4_k11_s1	<30%	59	1	0.01694915254237288
+aligned piece	kmerseek	wholeannot	w10	polarity4_k11_s1	<30%	59	1	0.01694915254237288
+whole call	kmerseek	wholeannot	w10	polarity4_k11_s1	<30%	59	1	0.01694915254237288
+aligned piece	kmerseek	pfam	w20	polarity4_k11_s1	<30%	59	0	0.0
+whole call	kmerseek	pfam	w20	polarity4_k11_s1	<30%	59	0	0.0
+aligned piece	kmerseek	pfamshared	w20	polarity4_k11_s1	<30%	59	0	0.0
+whole call	kmerseek	pfamshared	w20	polarity4_k11_s1	<30%	59	0	0.0
+aligned piece	kmerseek	regions	w20	polarity4_k11_s1	<30%	59	0	0.0
+whole call	kmerseek	regions	w20	polarity4_k11_s1	<30%	59	0	0.0
+whole call	kmerseek	regionsshared	w20	polarity4_k11_s1	<30%	59	0	0.0
+aligned piece	kmerseek	regionsshared	w20	polarity4_k11_s1	<30%	59	0	0.0
+aligned piece	kmerseek	whole	w20	polarity4_k11_s1	<30%	59	1	0.01694915254237288
+whole call	kmerseek	whole	w20	polarity4_k11_s1	<30%	59	1	0.01694915254237288
+whole call	kmerseek	wholeannot	w20	polarity4_k11_s1	<30%	59	1	0.01694915254237288
+aligned piece	kmerseek	wholeannot	w20	polarity4_k11_s1	<30%	59	1	0.01694915254237288
+whole call	kmerseek	pfam	w10	protein20_k5_s1	<30%	59	2	0.03389830508474576
+aligned piece	kmerseek	pfam	w10	protein20_k5_s1	<30%	59	2	0.03389830508474576
+whole call	kmerseek	pfamshared	w10	protein20_k5_s1	<30%	59	2	0.03389830508474576
+aligned piece	kmerseek	pfamshared	w10	protein20_k5_s1	<30%	59	2	0.03389830508474576
+aligned piece	kmerseek	regions	w10	protein20_k5_s1	<30%	59	0	0.0
+whole call	kmerseek	regions	w10	protein20_k5_s1	<30%	59	0	0.0
+whole call	kmerseek	regionsshared	w10	protein20_k5_s1	<30%	59	0	0.0
+aligned piece	kmerseek	regionsshared	w10	protein20_k5_s1	<30%	59	0	0.0
+aligned piece	kmerseek	whole	w10	protein20_k5_s1	<30%	59	1	0.01694915254237288
+whole call	kmerseek	whole	w10	protein20_k5_s1	<30%	59	0	0.0
+aligned piece	kmerseek	wholeannot	w10	protein20_k5_s1	<30%	59	1	0.01694915254237288
+whole call	kmerseek	wholeannot	w10	protein20_k5_s1	<30%	59	0	0.0
+whole call	kmerseek	pfam	w20	protein20_k5_s1	<30%	59	3	0.05084745762711865
+aligned piece	kmerseek	pfam	w20	protein20_k5_s1	<30%	59	3	0.05084745762711865
+aligned piece	kmerseek	pfamshared	w20	protein20_k5_s1	<30%	59	3	0.05084745762711865
+whole call	kmerseek	pfamshared	w20	protein20_k5_s1	<30%	59	3	0.05084745762711865
+whole call	kmerseek	regions	w20	protein20_k5_s1	<30%	59	0	0.0
+aligned piece	kmerseek	regions	w20	protein20_k5_s1	<30%	59	0	0.0
+aligned piece	kmerseek	regionsshared	w20	protein20_k5_s1	<30%	59	0	0.0
+whole call	kmerseek	regionsshared	w20	protein20_k5_s1	<30%	59	0	0.0
+whole call	kmerseek	whole	w20	protein20_k5_s1	<30%	59	0	0.0
+aligned piece	kmerseek	whole	w20	protein20_k5_s1	<30%	59	1	0.01694915254237288
+aligned piece	kmerseek	wholeannot	w20	protein20_k5_s1	<30%	59	1	0.01694915254237288
+whole call	kmerseek	wholeannot	w20	protein20_k5_s1	<30%	59	0	0.0
+whole call	kmerseek	pfam	w10	sdm12_k7_s1	<30%	59	3	0.05084745762711865
+aligned piece	kmerseek	pfam	w10	sdm12_k7_s1	<30%	59	3	0.05084745762711865
+whole call	kmerseek	pfamshared	w10	sdm12_k7_s1	<30%	59	3	0.05084745762711865
+aligned piece	kmerseek	pfamshared	w10	sdm12_k7_s1	<30%	59	3	0.05084745762711865
+whole call	kmerseek	regions	w10	sdm12_k7_s1	<30%	59	0	0.0
+aligned piece	kmerseek	regions	w10	sdm12_k7_s1	<30%	59	0	0.0
+aligned piece	kmerseek	regionsshared	w10	sdm12_k7_s1	<30%	59	0	0.0
+whole call	kmerseek	regionsshared	w10	sdm12_k7_s1	<30%	59	0	0.0
+whole call	kmerseek	whole	w10	sdm12_k7_s1	<30%	59	2	0.03389830508474576
+aligned piece	kmerseek	whole	w10	sdm12_k7_s1	<30%	59	2	0.03389830508474576
+aligned piece	kmerseek	wholeannot	w10	sdm12_k7_s1	<30%	59	2	0.03389830508474576
+whole call	kmerseek	wholeannot	w10	sdm12_k7_s1	<30%	59	0	0.0
+aligned piece	kmerseek	pfam	w20	sdm12_k7_s1	<30%	59	4	0.06779661016949153
+whole call	kmerseek	pfam	w20	sdm12_k7_s1	<30%	59	3	0.05084745762711865
+aligned piece	kmerseek	pfamshared	w20	sdm12_k7_s1	<30%	59	4	0.06779661016949153
+whole call	kmerseek	pfamshared	w20	sdm12_k7_s1	<30%	59	3	0.05084745762711865
+aligned piece	kmerseek	regions	w20	sdm12_k7_s1	<30%	59	0	0.0
+whole call	kmerseek	regions	w20	sdm12_k7_s1	<30%	59	0	0.0
+whole call	kmerseek	regionsshared	w20	sdm12_k7_s1	<30%	59	0	0.0
+aligned piece	kmerseek	regionsshared	w20	sdm12_k7_s1	<30%	59	0	0.0
+aligned piece	kmerseek	whole	w20	sdm12_k7_s1	<30%	59	2	0.03389830508474576
+whole call	kmerseek	whole	w20	sdm12_k7_s1	<30%	59	2	0.03389830508474576
+aligned piece	kmerseek	wholeannot	w20	sdm12_k7_s1	<30%	59	2	0.03389830508474576
+whole call	kmerseek	wholeannot	w20	sdm12_k7_s1	<30%	59	1	0.01694915254237288
+whole call	kmerseek	pfam	w10	uniprot18_k5_s1	<30%	59	0	0.0
+aligned piece	kmerseek	pfam	w10	uniprot18_k5_s1	<30%	59	0	0.0
+aligned piece	kmerseek	pfamshared	w10	uniprot18_k5_s1	<30%	59	0	0.0
+whole call	kmerseek	pfamshared	w10	uniprot18_k5_s1	<30%	59	0	0.0
+aligned piece	kmerseek	regions	w10	uniprot18_k5_s1	<30%	59	0	0.0
+whole call	kmerseek	regions	w10	uniprot18_k5_s1	<30%	59	0	0.0
+aligned piece	kmerseek	regionsshared	w10	uniprot18_k5_s1	<30%	59	0	0.0
+whole call	kmerseek	regionsshared	w10	uniprot18_k5_s1	<30%	59	0	0.0
+whole call	kmerseek	whole	w10	uniprot18_k5_s1	<30%	59	0	0.0
+aligned piece	kmerseek	whole	w10	uniprot18_k5_s1	<30%	59	1	0.01694915254237288
+aligned piece	kmerseek	wholeannot	w10	uniprot18_k5_s1	<30%	59	1	0.01694915254237288
+whole call	kmerseek	wholeannot	w10	uniprot18_k5_s1	<30%	59	0	0.0
+aligned piece	kmerseek	pfam	w20	uniprot18_k5_s1	<30%	59	1	0.01694915254237288
+whole call	kmerseek	pfam	w20	uniprot18_k5_s1	<30%	59	1	0.01694915254237288
+whole call	kmerseek	pfamshared	w20	uniprot18_k5_s1	<30%	59	1	0.01694915254237288
+aligned piece	kmerseek	pfamshared	w20	uniprot18_k5_s1	<30%	59	1	0.01694915254237288
+whole call	kmerseek	regionsshared	w20	uniprot18_k5_s1	<30%	59	0	0.0
+aligned piece	kmerseek	regionsshared	w20	uniprot18_k5_s1	<30%	59	0	0.0
+aligned piece	kmerseek	whole	w20	uniprot18_k5_s1	<30%	59	1	0.01694915254237288
+whole call	kmerseek	whole	w20	uniprot18_k5_s1	<30%	59	0	0.0
+aligned piece	kmerseek	wholeannot	w20	uniprot18_k5_s1	<30%	59	1	0.01694915254237288
+whole call	kmerseek	wholeannot	w20	uniprot18_k5_s1	<30%	59	0	0.0
+whole call	kmerseek	pfam	w10	wass14_k6_s1	<30%	59	0	0.0
+aligned piece	kmerseek	pfam	w10	wass14_k6_s1	<30%	59	0	0.0
+whole call	kmerseek	pfamshared	w10	wass14_k6_s1	<30%	59	0	0.0
+aligned piece	kmerseek	pfamshared	w10	wass14_k6_s1	<30%	59	0	0.0
+whole call	kmerseek	regions	w10	wass14_k6_s1	<30%	59	0	0.0
+aligned piece	kmerseek	regions	w10	wass14_k6_s1	<30%	59	0	0.0
+whole call	kmerseek	regionsshared	w10	wass14_k6_s1	<30%	59	0	0.0
+aligned piece	kmerseek	regionsshared	w10	wass14_k6_s1	<30%	59	0	0.0
+whole call	kmerseek	whole	w10	wass14_k6_s1	<30%	59	0	0.0
+aligned piece	kmerseek	whole	w10	wass14_k6_s1	<30%	59	1	0.01694915254237288
+whole call	kmerseek	wholeannot	w10	wass14_k6_s1	<30%	59	0	0.0
+aligned piece	kmerseek	wholeannot	w10	wass14_k6_s1	<30%	59	1	0.01694915254237288
+aligned piece	kmerseek	pfam	w20	wass14_k6_s1	<30%	59	0	0.0
+whole call	kmerseek	pfam	w20	wass14_k6_s1	<30%	59	0	0.0
+whole call	kmerseek	pfamshared	w20	wass14_k6_s1	<30%	59	0	0.0
+aligned piece	kmerseek	pfamshared	w20	wass14_k6_s1	<30%	59	0	0.0
+whole call	kmerseek	regionsshared	w20	wass14_k6_s1	<30%	59	0	0.0
+aligned piece	kmerseek	regionsshared	w20	wass14_k6_s1	<30%	59	0	0.0
+whole call	kmerseek	whole	w20	wass14_k6_s1	<30%	59	0	0.0
+aligned piece	kmerseek	whole	w20	wass14_k6_s1	<30%	59	1	0.01694915254237288
+whole call	kmerseek	wholeannot	w20	wass14_k6_s1	<30%	59	0	0.0
+aligned piece	kmerseek	wholeannot	w20	wass14_k6_s1	<30%	59	1	0.01694915254237288
+aligned piece	kmerseek	pfam	w10	wwmj5_k10_s1	<30%	59	2	0.03389830508474576
+whole call	kmerseek	pfam	w10	wwmj5_k10_s1	<30%	59	1	0.01694915254237288
+whole call	kmerseek	pfamshared	w10	wwmj5_k10_s1	<30%	59	1	0.01694915254237288
+aligned piece	kmerseek	pfamshared	w10	wwmj5_k10_s1	<30%	59	1	0.01694915254237288
+aligned piece	kmerseek	regions	w10	wwmj5_k10_s1	<30%	59	0	0.0
+whole call	kmerseek	regions	w10	wwmj5_k10_s1	<30%	59	0	0.0
+whole call	kmerseek	regionsshared	w10	wwmj5_k10_s1	<30%	59	0	0.0
+aligned piece	kmerseek	regionsshared	w10	wwmj5_k10_s1	<30%	59	0	0.0
+aligned piece	kmerseek	whole	w10	wwmj5_k10_s1	<30%	59	4	0.06779661016949153
+whole call	kmerseek	whole	w10	wwmj5_k10_s1	<30%	59	2	0.03389830508474576
+aligned piece	kmerseek	wholeannot	w10	wwmj5_k10_s1	<30%	59	2	0.03389830508474576
+whole call	kmerseek	wholeannot	w10	wwmj5_k10_s1	<30%	59	1	0.01694915254237288
+aligned piece	kmerseek	pfam	w20	wwmj5_k10_s1	<30%	59	2	0.03389830508474576
+whole call	kmerseek	pfam	w20	wwmj5_k10_s1	<30%	59	1	0.01694915254237288
+aligned piece	kmerseek	pfamshared	w20	wwmj5_k10_s1	<30%	59	2	0.03389830508474576
+whole call	kmerseek	pfamshared	w20	wwmj5_k10_s1	<30%	59	1	0.01694915254237288
+aligned piece	kmerseek	regions	w20	wwmj5_k10_s1	<30%	59	0	0.0
+whole call	kmerseek	regions	w20	wwmj5_k10_s1	<30%	59	0	0.0
+whole call	kmerseek	regionsshared	w20	wwmj5_k10_s1	<30%	59	0	0.0
+aligned piece	kmerseek	regionsshared	w20	wwmj5_k10_s1	<30%	59	0	0.0
+whole call	kmerseek	whole	w20	wwmj5_k10_s1	<30%	59	2	0.03389830508474576
+aligned piece	kmerseek	whole	w20	wwmj5_k10_s1	<30%	59	4	0.06779661016949153
+aligned piece	kmerseek	wholeannot	w20	wwmj5_k10_s1	<30%	59	3	0.05084745762711865
+whole call	kmerseek	wholeannot	w20	wwmj5_k10_s1	<30%	59	1	0.01694915254237288
+aligned piece	mmseqs2	pfam	w10	mmseqs2	<30%	59	10	0.1694915254237288
+whole call	mmseqs2	pfam	w10	mmseqs2	<30%	59	10	0.1694915254237288
+whole call	mmseqs2	regions	w10	mmseqs2	<30%	59	24	0.4067796610169492
+aligned piece	mmseqs2	regions	w10	mmseqs2	<30%	59	24	0.4067796610169492
+whole call	mmseqs2	whole	w10	mmseqs2	<30%	59	15	0.2542372881355932
+aligned piece	mmseqs2	whole	w10	mmseqs2	<30%	59	25	0.423728813559322
+whole call	mmseqs2	wholeannot	w10	mmseqs2	<30%	59	9	0.15254237288135594
+aligned piece	mmseqs2	wholeannot	w10	mmseqs2	<30%	59	11	0.1864406779661017
+aligned piece	mmseqs2	pfam	w20	mmseqs2	<30%	59	10	0.1694915254237288
+whole call	mmseqs2	pfam	w20	mmseqs2	<30%	59	10	0.1694915254237288
+whole call	mmseqs2	regions	w20	mmseqs2	<30%	59	24	0.4067796610169492
+aligned piece	mmseqs2	regions	w20	mmseqs2	<30%	59	24	0.4067796610169492
+whole call	mmseqs2	whole	w20	mmseqs2	<30%	59	15	0.2542372881355932
+aligned piece	mmseqs2	whole	w20	mmseqs2	<30%	59	25	0.423728813559322
+whole call	mmseqs2	wholeannot	w20	mmseqs2	<30%	59	9	0.15254237288135594
+aligned piece	mmseqs2	wholeannot	w20	mmseqs2	<30%	59	10	0.1694915254237288
+aligned piece	kmerseek	pfam	w10	dayhoff6_k9_s1	>=90%	356	61	0.17134831460674158
+whole call	kmerseek	pfam	w10	dayhoff6_k9_s1	>=90%	356	39	0.10955056179775281
+aligned piece	kmerseek	pfamshared	w10	dayhoff6_k9_s1	>=90%	356	62	0.17415730337078653
+whole call	kmerseek	pfamshared	w10	dayhoff6_k9_s1	>=90%	356	40	0.11235955056179775
+whole call	kmerseek	regions	w10	dayhoff6_k9_s1	>=90%	356	78	0.21910112359550563
+aligned piece	kmerseek	regions	w10	dayhoff6_k9_s1	>=90%	356	201	0.5646067415730337
+aligned piece	kmerseek	regionsshared	w10	dayhoff6_k9_s1	>=90%	356	186	0.5224719101123596
+whole call	kmerseek	regionsshared	w10	dayhoff6_k9_s1	>=90%	356	66	0.1853932584269663
+aligned piece	kmerseek	whole	w10	dayhoff6_k9_s1	>=90%	356	289	0.8117977528089888
+whole call	kmerseek	whole	w10	dayhoff6_k9_s1	>=90%	356	33	0.09269662921348315
+aligned piece	kmerseek	wholeannot	w10	dayhoff6_k9_s1	>=90%	356	17	0.047752808988764044
+whole call	kmerseek	wholeannot	w10	dayhoff6_k9_s1	>=90%	356	15	0.042134831460674156
+whole call	kmerseek	pfam	w20	dayhoff6_k9_s1	>=90%	356	47	0.13202247191011235
+aligned piece	kmerseek	pfam	w20	dayhoff6_k9_s1	>=90%	356	64	0.1797752808988764
+whole call	kmerseek	pfamshared	w20	dayhoff6_k9_s1	>=90%	356	48	0.1348314606741573
+aligned piece	kmerseek	pfamshared	w20	dayhoff6_k9_s1	>=90%	356	64	0.1797752808988764
+aligned piece	kmerseek	regions	w20	dayhoff6_k9_s1	>=90%	356	163	0.45786516853932585
+whole call	kmerseek	regions	w20	dayhoff6_k9_s1	>=90%	356	65	0.18258426966292135
+aligned piece	kmerseek	regionsshared	w20	dayhoff6_k9_s1	>=90%	356	185	0.5196629213483146
+whole call	kmerseek	regionsshared	w20	dayhoff6_k9_s1	>=90%	356	66	0.1853932584269663
+whole call	kmerseek	whole	w20	dayhoff6_k9_s1	>=90%	356	33	0.09269662921348315
+aligned piece	kmerseek	whole	w20	dayhoff6_k9_s1	>=90%	356	289	0.8117977528089888
+whole call	kmerseek	wholeannot	w20	dayhoff6_k9_s1	>=90%	356	15	0.042134831460674156
+aligned piece	kmerseek	wholeannot	w20	dayhoff6_k9_s1	>=90%	356	17	0.047752808988764044
+aligned piece	kmerseek	pfam	w10	funcgroups8_k8_s1	>=90%	356	66	0.1853932584269663
+whole call	kmerseek	pfam	w10	funcgroups8_k8_s1	>=90%	356	57	0.1601123595505618
+whole call	kmerseek	pfamshared	w10	funcgroups8_k8_s1	>=90%	356	55	0.1544943820224719
+aligned piece	kmerseek	pfamshared	w10	funcgroups8_k8_s1	>=90%	356	65	0.18258426966292135
+whole call	kmerseek	regions	w10	funcgroups8_k8_s1	>=90%	356	62	0.17415730337078653
+aligned piece	kmerseek	regions	w10	funcgroups8_k8_s1	>=90%	356	129	0.36235955056179775
+whole call	kmerseek	regionsshared	w10	funcgroups8_k8_s1	>=90%	356	63	0.17696629213483145
+aligned piece	kmerseek	regionsshared	w10	funcgroups8_k8_s1	>=90%	356	131	0.36797752808988765
+aligned piece	kmerseek	whole	w10	funcgroups8_k8_s1	>=90%	356	261	0.7331460674157303
+whole call	kmerseek	whole	w10	funcgroups8_k8_s1	>=90%	356	39	0.10955056179775281
+aligned piece	kmerseek	wholeannot	w10	funcgroups8_k8_s1	>=90%	356	37	0.10393258426966293
+whole call	kmerseek	wholeannot	w10	funcgroups8_k8_s1	>=90%	356	16	0.0449438202247191
+aligned piece	kmerseek	pfam	w20	funcgroups8_k8_s1	>=90%	356	67	0.18820224719101122
+whole call	kmerseek	pfam	w20	funcgroups8_k8_s1	>=90%	356	57	0.1601123595505618
+whole call	kmerseek	pfamshared	w20	funcgroups8_k8_s1	>=90%	356	59	0.16573033707865167
+aligned piece	kmerseek	pfamshared	w20	funcgroups8_k8_s1	>=90%	356	69	0.19382022471910113
+aligned piece	kmerseek	regions	w20	funcgroups8_k8_s1	>=90%	356	134	0.37640449438202245
+whole call	kmerseek	regions	w20	funcgroups8_k8_s1	>=90%	356	65	0.18258426966292135
+whole call	kmerseek	regionsshared	w20	funcgroups8_k8_s1	>=90%	356	64	0.1797752808988764
+aligned piece	kmerseek	regionsshared	w20	funcgroups8_k8_s1	>=90%	356	133	0.37359550561797755
+aligned piece	kmerseek	whole	w20	funcgroups8_k8_s1	>=90%	356	262	0.7359550561797753
+whole call	kmerseek	whole	w20	funcgroups8_k8_s1	>=90%	356	40	0.11235955056179775
+aligned piece	kmerseek	wholeannot	w20	funcgroups8_k8_s1	>=90%	356	37	0.10393258426966293
+whole call	kmerseek	wholeannot	w20	funcgroups8_k8_s1	>=90%	356	15	0.042134831460674156
+aligned piece	kmerseek	pfam	w10	gbmr4_k14_s1	>=90%	356	2	0.0056179775280898875
+whole call	kmerseek	pfam	w10	gbmr4_k14_s1	>=90%	356	2	0.0056179775280898875
+whole call	kmerseek	pfamshared	w10	gbmr4_k14_s1	>=90%	356	2	0.0056179775280898875
+aligned piece	kmerseek	pfamshared	w10	gbmr4_k14_s1	>=90%	356	2	0.0056179775280898875
+whole call	kmerseek	regions	w10	gbmr4_k14_s1	>=90%	356	3	0.008426966292134831
+aligned piece	kmerseek	regions	w10	gbmr4_k14_s1	>=90%	356	3	0.008426966292134831
+whole call	kmerseek	regionsshared	w10	gbmr4_k14_s1	>=90%	356	5	0.014044943820224719
+aligned piece	kmerseek	regionsshared	w10	gbmr4_k14_s1	>=90%	356	6	0.016853932584269662
+aligned piece	kmerseek	whole	w10	gbmr4_k14_s1	>=90%	356	42	0.11797752808988764
+whole call	kmerseek	whole	w10	gbmr4_k14_s1	>=90%	356	5	0.014044943820224719
+aligned piece	kmerseek	wholeannot	w10	gbmr4_k14_s1	>=90%	356	4	0.011235955056179775
+whole call	kmerseek	wholeannot	w10	gbmr4_k14_s1	>=90%	356	4	0.011235955056179775
+whole call	kmerseek	pfam	w20	gbmr4_k14_s1	>=90%	356	1	0.0028089887640449437
+aligned piece	kmerseek	pfam	w20	gbmr4_k14_s1	>=90%	356	1	0.0028089887640449437
+aligned piece	kmerseek	pfamshared	w20	gbmr4_k14_s1	>=90%	356	2	0.0056179775280898875
+whole call	kmerseek	pfamshared	w20	gbmr4_k14_s1	>=90%	356	2	0.0056179775280898875
+aligned piece	kmerseek	regions	w20	gbmr4_k14_s1	>=90%	356	8	0.02247191011235955
+whole call	kmerseek	regions	w20	gbmr4_k14_s1	>=90%	356	6	0.016853932584269662
+whole call	kmerseek	regionsshared	w20	gbmr4_k14_s1	>=90%	356	6	0.016853932584269662
+aligned piece	kmerseek	regionsshared	w20	gbmr4_k14_s1	>=90%	356	8	0.02247191011235955
+aligned piece	kmerseek	whole	w20	gbmr4_k14_s1	>=90%	356	42	0.11797752808988764
+whole call	kmerseek	whole	w20	gbmr4_k14_s1	>=90%	356	5	0.014044943820224719
+aligned piece	kmerseek	wholeannot	w20	gbmr4_k14_s1	>=90%	356	4	0.011235955056179775
+whole call	kmerseek	wholeannot	w20	gbmr4_k14_s1	>=90%	356	4	0.011235955056179775
+aligned piece	kmerseek	pfamshared	w10	gbmr7_k16_s1	>=90%	356	1	0.0028089887640449437
+whole call	kmerseek	pfamshared	w10	gbmr7_k16_s1	>=90%	356	0	0.0
+aligned piece	kmerseek	regions	w10	gbmr7_k16_s1	>=90%	356	0	0.0
+whole call	kmerseek	regions	w10	gbmr7_k16_s1	>=90%	356	0	0.0
+aligned piece	kmerseek	regionsshared	w10	gbmr7_k16_s1	>=90%	356	0	0.0
+whole call	kmerseek	regionsshared	w10	gbmr7_k16_s1	>=90%	356	0	0.0
+aligned piece	kmerseek	whole	w10	gbmr7_k16_s1	>=90%	356	0	0.0
+whole call	kmerseek	whole	w10	gbmr7_k16_s1	>=90%	356	0	0.0
+aligned piece	kmerseek	wholeannot	w10	gbmr7_k16_s1	>=90%	356	0	0.0
+whole call	kmerseek	wholeannot	w10	gbmr7_k16_s1	>=90%	356	0	0.0
+aligned piece	kmerseek	pfamshared	w20	gbmr7_k16_s1	>=90%	356	1	0.0028089887640449437
+whole call	kmerseek	pfamshared	w20	gbmr7_k16_s1	>=90%	356	0	0.0
+whole call	kmerseek	regions	w20	gbmr7_k16_s1	>=90%	356	0	0.0
+aligned piece	kmerseek	regions	w20	gbmr7_k16_s1	>=90%	356	0	0.0
+whole call	kmerseek	regionsshared	w20	gbmr7_k16_s1	>=90%	356	0	0.0
+aligned piece	kmerseek	regionsshared	w20	gbmr7_k16_s1	>=90%	356	0	0.0
+aligned piece	kmerseek	whole	w20	gbmr7_k16_s1	>=90%	356	0	0.0
+whole call	kmerseek	whole	w20	gbmr7_k16_s1	>=90%	356	0	0.0
+whole call	kmerseek	wholeannot	w20	gbmr7_k16_s1	>=90%	356	0	0.0
+aligned piece	kmerseek	wholeannot	w20	gbmr7_k16_s1	>=90%	356	0	0.0
+whole call	kmerseek	regions	w10	hp_kyte_doolittle2_k22_s1	>=90%	356	35	0.09831460674157304
+aligned piece	kmerseek	regions	w10	hp_kyte_doolittle2_k22_s1	>=90%	356	102	0.28651685393258425
+whole call	kmerseek	pfam	w20	hp_kyte_doolittle2_k22_s1	>=90%	356	11	0.03089887640449438
+aligned piece	kmerseek	pfam	w20	hp_kyte_doolittle2_k22_s1	>=90%	356	11	0.03089887640449438
+aligned piece	kmerseek	pfamshared	w20	hp_kyte_doolittle2_k22_s1	>=90%	356	11	0.03089887640449438
+whole call	kmerseek	pfamshared	w20	hp_kyte_doolittle2_k22_s1	>=90%	356	11	0.03089887640449438
+aligned piece	kmerseek	regions	w20	hp_kyte_doolittle2_k22_s1	>=90%	356	110	0.3089887640449438
+whole call	kmerseek	regions	w20	hp_kyte_doolittle2_k22_s1	>=90%	356	35	0.09831460674157304
+whole call	kmerseek	regionsshared	w20	hp_kyte_doolittle2_k22_s1	>=90%	356	35	0.09831460674157304
+aligned piece	kmerseek	regionsshared	w20	hp_kyte_doolittle2_k22_s1	>=90%	356	115	0.32303370786516855
+aligned piece	kmerseek	whole	w20	hp_kyte_doolittle2_k22_s1	>=90%	356	190	0.5337078651685393
+whole call	kmerseek	whole	w20	hp_kyte_doolittle2_k22_s1	>=90%	356	13	0.03651685393258427
+whole call	kmerseek	wholeannot	w20	hp_kyte_doolittle2_k22_s1	>=90%	356	0	0.0
+aligned piece	kmerseek	wholeannot	w20	hp_kyte_doolittle2_k22_s1	>=90%	356	2	0.0056179775280898875
+aligned piece	kmerseek	pfam	w10	hp_lehninger2_k21_s1	>=90%	356	39	0.10955056179775281
+whole call	kmerseek	pfam	w10	hp_lehninger2_k21_s1	>=90%	356	32	0.0898876404494382
+aligned piece	kmerseek	pfamshared	w10	hp_lehninger2_k21_s1	>=90%	356	39	0.10955056179775281
+whole call	kmerseek	pfamshared	w10	hp_lehninger2_k21_s1	>=90%	356	32	0.0898876404494382
+whole call	kmerseek	regions	w10	hp_lehninger2_k21_s1	>=90%	356	8	0.02247191011235955
+aligned piece	kmerseek	regions	w10	hp_lehninger2_k21_s1	>=90%	356	8	0.02247191011235955
+whole call	kmerseek	regionsshared	w10	hp_lehninger2_k21_s1	>=90%	356	44	0.12359550561797752
+aligned piece	kmerseek	regionsshared	w10	hp_lehninger2_k21_s1	>=90%	356	44	0.12359550561797752
+whole call	kmerseek	whole	w10	hp_lehninger2_k21_s1	>=90%	356	26	0.07303370786516854
+aligned piece	kmerseek	whole	w10	hp_lehninger2_k21_s1	>=90%	356	272	0.7640449438202247
+whole call	kmerseek	wholeannot	w10	hp_lehninger2_k21_s1	>=90%	356	10	0.028089887640449437
+aligned piece	kmerseek	wholeannot	w10	hp_lehninger2_k21_s1	>=90%	356	14	0.03932584269662921
+aligned piece	kmerseek	pfam	w20	hp_lehninger2_k21_s1	>=90%	356	39	0.10955056179775281
+whole call	kmerseek	pfam	w20	hp_lehninger2_k21_s1	>=90%	356	32	0.0898876404494382
+aligned piece	kmerseek	pfamshared	w20	hp_lehninger2_k21_s1	>=90%	356	39	0.10955056179775281
+whole call	kmerseek	pfamshared	w20	hp_lehninger2_k21_s1	>=90%	356	32	0.0898876404494382
+aligned piece	kmerseek	regions	w20	hp_lehninger2_k21_s1	>=90%	356	47	0.13202247191011235
+whole call	kmerseek	regions	w20	hp_lehninger2_k21_s1	>=90%	356	45	0.12640449438202248
+aligned piece	kmerseek	regionsshared	w20	hp_lehninger2_k21_s1	>=90%	356	45	0.12640449438202248
+whole call	kmerseek	regionsshared	w20	hp_lehninger2_k21_s1	>=90%	356	45	0.12640449438202248
+whole call	kmerseek	whole	w20	hp_lehninger2_k21_s1	>=90%	356	26	0.07303370786516854
+aligned piece	kmerseek	whole	w20	hp_lehninger2_k21_s1	>=90%	356	272	0.7640449438202247
+whole call	kmerseek	wholeannot	w20	hp_lehninger2_k21_s1	>=90%	356	10	0.028089887640449437
+aligned piece	kmerseek	wholeannot	w20	hp_lehninger2_k21_s1	>=90%	356	14	0.03932584269662921
+aligned piece	kmerseek	pfam	w10	hp_lehninger_c_nonpolar2_k21_s1	>=90%	356	43	0.12078651685393259
+whole call	kmerseek	pfam	w10	hp_lehninger_c_nonpolar2_k21_s1	>=90%	356	34	0.09550561797752809
+whole call	kmerseek	pfamshared	w10	hp_lehninger_c_nonpolar2_k21_s1	>=90%	356	34	0.09550561797752809
+aligned piece	kmerseek	pfamshared	w10	hp_lehninger_c_nonpolar2_k21_s1	>=90%	356	44	0.12359550561797752
+whole call	kmerseek	regions	w10	hp_lehninger_c_nonpolar2_k21_s1	>=90%	356	41	0.1151685393258427
+aligned piece	kmerseek	regions	w10	hp_lehninger_c_nonpolar2_k21_s1	>=90%	356	40	0.11235955056179775
+aligned piece	kmerseek	regionsshared	w10	hp_lehninger_c_nonpolar2_k21_s1	>=90%	356	41	0.1151685393258427
+whole call	kmerseek	regionsshared	w10	hp_lehninger_c_nonpolar2_k21_s1	>=90%	356	42	0.11797752808988764
+aligned piece	kmerseek	whole	w10	hp_lehninger_c_nonpolar2_k21_s1	>=90%	356	272	0.7640449438202247
+whole call	kmerseek	whole	w10	hp_lehninger_c_nonpolar2_k21_s1	>=90%	356	28	0.07865168539325842
+aligned piece	kmerseek	wholeannot	w10	hp_lehninger_c_nonpolar2_k21_s1	>=90%	356	15	0.042134831460674156
+whole call	kmerseek	wholeannot	w10	hp_lehninger_c_nonpolar2_k21_s1	>=90%	356	10	0.028089887640449437
+aligned piece	kmerseek	pfam	w20	hp_lehninger_c_nonpolar2_k21_s1	>=90%	356	43	0.12078651685393259
+whole call	kmerseek	pfam	w20	hp_lehninger_c_nonpolar2_k21_s1	>=90%	356	34	0.09550561797752809
+whole call	kmerseek	pfamshared	w20	hp_lehninger_c_nonpolar2_k21_s1	>=90%	356	34	0.09550561797752809
+aligned piece	kmerseek	pfamshared	w20	hp_lehninger_c_nonpolar2_k21_s1	>=90%	356	41	0.1151685393258427
+aligned piece	kmerseek	regions	w20	hp_lehninger_c_nonpolar2_k21_s1	>=90%	356	41	0.1151685393258427
+whole call	kmerseek	regions	w20	hp_lehninger_c_nonpolar2_k21_s1	>=90%	356	42	0.11797752808988764
+aligned piece	kmerseek	regionsshared	w20	hp_lehninger_c_nonpolar2_k21_s1	>=90%	356	41	0.1151685393258427
+whole call	kmerseek	regionsshared	w20	hp_lehninger_c_nonpolar2_k21_s1	>=90%	356	42	0.11797752808988764
+whole call	kmerseek	whole	w20	hp_lehninger_c_nonpolar2_k21_s1	>=90%	356	28	0.07865168539325842
+aligned piece	kmerseek	whole	w20	hp_lehninger_c_nonpolar2_k21_s1	>=90%	356	272	0.7640449438202247
+whole call	kmerseek	wholeannot	w20	hp_lehninger_c_nonpolar2_k21_s1	>=90%	356	10	0.028089887640449437
+aligned piece	kmerseek	wholeannot	w20	hp_lehninger_c_nonpolar2_k21_s1	>=90%	356	15	0.042134831460674156
+whole call	kmerseek	pfam	w10	hp_lehninger_hpc3_k19_s1	>=90%	356	0	0.0
+aligned piece	kmerseek	pfam	w10	hp_lehninger_hpc3_k19_s1	>=90%	356	2	0.0056179775280898875
+whole call	kmerseek	pfamshared	w10	hp_lehninger_hpc3_k19_s1	>=90%	356	0	0.0
+aligned piece	kmerseek	pfamshared	w10	hp_lehninger_hpc3_k19_s1	>=90%	356	2	0.0056179775280898875
+aligned piece	kmerseek	regions	w10	hp_lehninger_hpc3_k19_s1	>=90%	356	0	0.0
+whole call	kmerseek	regions	w10	hp_lehninger_hpc3_k19_s1	>=90%	356	0	0.0
+whole call	kmerseek	regionsshared	w10	hp_lehninger_hpc3_k19_s1	>=90%	356	0	0.0
+aligned piece	kmerseek	regionsshared	w10	hp_lehninger_hpc3_k19_s1	>=90%	356	0	0.0
+aligned piece	kmerseek	whole	w10	hp_lehninger_hpc3_k19_s1	>=90%	356	6	0.016853932584269662
+whole call	kmerseek	whole	w10	hp_lehninger_hpc3_k19_s1	>=90%	356	0	0.0
+whole call	kmerseek	wholeannot	w10	hp_lehninger_hpc3_k19_s1	>=90%	356	0	0.0
+aligned piece	kmerseek	wholeannot	w10	hp_lehninger_hpc3_k19_s1	>=90%	356	0	0.0
+aligned piece	kmerseek	pfam	w20	hp_lehninger_hpc3_k19_s1	>=90%	356	2	0.0056179775280898875
+whole call	kmerseek	pfam	w20	hp_lehninger_hpc3_k19_s1	>=90%	356	0	0.0
+aligned piece	kmerseek	pfamshared	w20	hp_lehninger_hpc3_k19_s1	>=90%	356	2	0.0056179775280898875
+whole call	kmerseek	pfamshared	w20	hp_lehninger_hpc3_k19_s1	>=90%	356	0	0.0
+whole call	kmerseek	regions	w20	hp_lehninger_hpc3_k19_s1	>=90%	356	0	0.0
+aligned piece	kmerseek	regions	w20	hp_lehninger_hpc3_k19_s1	>=90%	356	0	0.0
+whole call	kmerseek	regionsshared	w20	hp_lehninger_hpc3_k19_s1	>=90%	356	0	0.0
+aligned piece	kmerseek	regionsshared	w20	hp_lehninger_hpc3_k19_s1	>=90%	356	0	0.0
+aligned piece	kmerseek	whole	w20	hp_lehninger_hpc3_k19_s1	>=90%	356	6	0.016853932584269662
+whole call	kmerseek	whole	w20	hp_lehninger_hpc3_k19_s1	>=90%	356	0	0.0
+aligned piece	kmerseek	wholeannot	w20	hp_lehninger_hpc3_k19_s1	>=90%	356	0	0.0
+whole call	kmerseek	wholeannot	w20	hp_lehninger_hpc3_k19_s1	>=90%	356	0	0.0
+whole call	kmerseek	pfam	w10	hp_pbotc_1st_ed2_k21_s1	>=90%	356	32	0.0898876404494382
+aligned piece	kmerseek	pfam	w10	hp_pbotc_1st_ed2_k21_s1	>=90%	356	38	0.10674157303370786
+aligned piece	kmerseek	pfamshared	w10	hp_pbotc_1st_ed2_k21_s1	>=90%	356	38	0.10674157303370786
+whole call	kmerseek	pfamshared	w10	hp_pbotc_1st_ed2_k21_s1	>=90%	356	32	0.0898876404494382
+aligned piece	kmerseek	regions	w10	hp_pbotc_1st_ed2_k21_s1	>=90%	356	28	0.07865168539325842
+whole call	kmerseek	regions	w10	hp_pbotc_1st_ed2_k21_s1	>=90%	356	29	0.08146067415730338
+whole call	kmerseek	regionsshared	w10	hp_pbotc_1st_ed2_k21_s1	>=90%	356	30	0.08426966292134831
+aligned piece	kmerseek	regionsshared	w10	hp_pbotc_1st_ed2_k21_s1	>=90%	356	29	0.08146067415730338
+aligned piece	kmerseek	whole	w10	hp_pbotc_1st_ed2_k21_s1	>=90%	356	275	0.7724719101123596
+whole call	kmerseek	whole	w10	hp_pbotc_1st_ed2_k21_s1	>=90%	356	24	0.06741573033707865
+whole call	kmerseek	wholeannot	w10	hp_pbotc_1st_ed2_k21_s1	>=90%	356	5	0.014044943820224719
+aligned piece	kmerseek	wholeannot	w10	hp_pbotc_1st_ed2_k21_s1	>=90%	356	9	0.025280898876404494
+aligned piece	kmerseek	pfam	w20	hp_pbotc_1st_ed2_k21_s1	>=90%	356	38	0.10674157303370786
+whole call	kmerseek	pfam	w20	hp_pbotc_1st_ed2_k21_s1	>=90%	356	32	0.0898876404494382
+aligned piece	kmerseek	pfamshared	w20	hp_pbotc_1st_ed2_k21_s1	>=90%	356	38	0.10674157303370786
+whole call	kmerseek	pfamshared	w20	hp_pbotc_1st_ed2_k21_s1	>=90%	356	32	0.0898876404494382
+whole call	kmerseek	regions	w20	hp_pbotc_1st_ed2_k21_s1	>=90%	356	35	0.09831460674157304
+aligned piece	kmerseek	regions	w20	hp_pbotc_1st_ed2_k21_s1	>=90%	356	33	0.09269662921348315
+aligned piece	kmerseek	regionsshared	w20	hp_pbotc_1st_ed2_k21_s1	>=90%	356	35	0.09831460674157304
+whole call	kmerseek	regionsshared	w20	hp_pbotc_1st_ed2_k21_s1	>=90%	356	37	0.10393258426966293
+aligned piece	kmerseek	whole	w20	hp_pbotc_1st_ed2_k21_s1	>=90%	356	279	0.7837078651685393
+whole call	kmerseek	whole	w20	hp_pbotc_1st_ed2_k21_s1	>=90%	356	26	0.07303370786516854
+aligned piece	kmerseek	wholeannot	w20	hp_pbotc_1st_ed2_k21_s1	>=90%	356	11	0.03089887640449438
+whole call	kmerseek	wholeannot	w20	hp_pbotc_1st_ed2_k21_s1	>=90%	356	7	0.019662921348314606
+aligned piece	kmerseek	pfam	w10	hp_thomas_dill2_k22_s1	>=90%	356	24	0.06741573033707865
+whole call	kmerseek	pfam	w10	hp_thomas_dill2_k22_s1	>=90%	356	22	0.06179775280898876
+whole call	kmerseek	pfamshared	w10	hp_thomas_dill2_k22_s1	>=90%	356	22	0.06179775280898876
+aligned piece	kmerseek	pfamshared	w10	hp_thomas_dill2_k22_s1	>=90%	356	24	0.06741573033707865
+aligned piece	kmerseek	regions	w10	hp_thomas_dill2_k22_s1	>=90%	356	22	0.06179775280898876
+whole call	kmerseek	regions	w10	hp_thomas_dill2_k22_s1	>=90%	356	23	0.06460674157303371
+whole call	kmerseek	regionsshared	w10	hp_thomas_dill2_k22_s1	>=90%	356	23	0.06460674157303371
+aligned piece	kmerseek	regionsshared	w10	hp_thomas_dill2_k22_s1	>=90%	356	22	0.06179775280898876
+aligned piece	kmerseek	whole	w10	hp_thomas_dill2_k22_s1	>=90%	356	190	0.5337078651685393
+whole call	kmerseek	whole	w10	hp_thomas_dill2_k22_s1	>=90%	356	11	0.03089887640449438
+whole call	kmerseek	wholeannot	w10	hp_thomas_dill2_k22_s1	>=90%	356	0	0.0
+aligned piece	kmerseek	wholeannot	w10	hp_thomas_dill2_k22_s1	>=90%	356	1	0.0028089887640449437
+whole call	kmerseek	pfam	w20	hp_thomas_dill2_k22_s1	>=90%	356	22	0.06179775280898876
+aligned piece	kmerseek	pfam	w20	hp_thomas_dill2_k22_s1	>=90%	356	24	0.06741573033707865
+aligned piece	kmerseek	pfamshared	w20	hp_thomas_dill2_k22_s1	>=90%	356	24	0.06741573033707865
+whole call	kmerseek	pfamshared	w20	hp_thomas_dill2_k22_s1	>=90%	356	22	0.06179775280898876
+aligned piece	kmerseek	regions	w20	hp_thomas_dill2_k22_s1	>=90%	356	22	0.06179775280898876
+whole call	kmerseek	regions	w20	hp_thomas_dill2_k22_s1	>=90%	356	23	0.06460674157303371
+whole call	kmerseek	regionsshared	w20	hp_thomas_dill2_k22_s1	>=90%	356	23	0.06460674157303371
+aligned piece	kmerseek	regionsshared	w20	hp_thomas_dill2_k22_s1	>=90%	356	22	0.06179775280898876
+aligned piece	kmerseek	whole	w20	hp_thomas_dill2_k22_s1	>=90%	356	190	0.5337078651685393
+whole call	kmerseek	whole	w20	hp_thomas_dill2_k22_s1	>=90%	356	11	0.03089887640449438
+aligned piece	kmerseek	wholeannot	w20	hp_thomas_dill2_k22_s1	>=90%	356	5	0.014044943820224719
+whole call	kmerseek	wholeannot	w20	hp_thomas_dill2_k22_s1	>=90%	356	3	0.008426966292134831
+aligned piece	kmerseek	pfam	w10	hp_thomas_dill_no_c2_k22_s1	>=90%	356	22	0.06179775280898876
+whole call	kmerseek	pfam	w10	hp_thomas_dill_no_c2_k22_s1	>=90%	356	22	0.06179775280898876
+whole call	kmerseek	pfamshared	w10	hp_thomas_dill_no_c2_k22_s1	>=90%	356	22	0.06179775280898876
+aligned piece	kmerseek	pfamshared	w10	hp_thomas_dill_no_c2_k22_s1	>=90%	356	23	0.06460674157303371
+aligned piece	kmerseek	regions	w10	hp_thomas_dill_no_c2_k22_s1	>=90%	356	119	0.3342696629213483
+whole call	kmerseek	regions	w10	hp_thomas_dill_no_c2_k22_s1	>=90%	356	42	0.11797752808988764
+aligned piece	kmerseek	regionsshared	w10	hp_thomas_dill_no_c2_k22_s1	>=90%	356	82	0.2303370786516854
+whole call	kmerseek	regionsshared	w10	hp_thomas_dill_no_c2_k22_s1	>=90%	356	40	0.11235955056179775
+whole call	kmerseek	whole	w10	hp_thomas_dill_no_c2_k22_s1	>=90%	356	10	0.028089887640449437
+aligned piece	kmerseek	whole	w10	hp_thomas_dill_no_c2_k22_s1	>=90%	356	174	0.4887640449438202
+aligned piece	kmerseek	wholeannot	w10	hp_thomas_dill_no_c2_k22_s1	>=90%	356	2	0.0056179775280898875
+whole call	kmerseek	wholeannot	w10	hp_thomas_dill_no_c2_k22_s1	>=90%	356	1	0.0028089887640449437
+aligned piece	kmerseek	pfam	w20	hp_thomas_dill_no_c2_k22_s1	>=90%	356	24	0.06741573033707865
+whole call	kmerseek	pfam	w20	hp_thomas_dill_no_c2_k22_s1	>=90%	356	23	0.06460674157303371
+whole call	kmerseek	pfamshared	w20	hp_thomas_dill_no_c2_k22_s1	>=90%	356	24	0.06741573033707865
+aligned piece	kmerseek	pfamshared	w20	hp_thomas_dill_no_c2_k22_s1	>=90%	356	25	0.0702247191011236
+whole call	kmerseek	regions	w20	hp_thomas_dill_no_c2_k22_s1	>=90%	356	38	0.10674157303370786
+aligned piece	kmerseek	regions	w20	hp_thomas_dill_no_c2_k22_s1	>=90%	356	61	0.17134831460674158
+aligned piece	kmerseek	regionsshared	w20	hp_thomas_dill_no_c2_k22_s1	>=90%	356	83	0.23314606741573032
+whole call	kmerseek	regionsshared	w20	hp_thomas_dill_no_c2_k22_s1	>=90%	356	40	0.11235955056179775
+aligned piece	kmerseek	whole	w20	hp_thomas_dill_no_c2_k22_s1	>=90%	356	174	0.4887640449438202
+whole call	kmerseek	whole	w20	hp_thomas_dill_no_c2_k22_s1	>=90%	356	10	0.028089887640449437
+aligned piece	kmerseek	wholeannot	w20	hp_thomas_dill_no_c2_k22_s1	>=90%	356	5	0.014044943820224719
+whole call	kmerseek	wholeannot	w20	hp_thomas_dill_no_c2_k22_s1	>=90%	356	2	0.0056179775280898875
+whole call	kmerseek	pfam	w10	hsdm17_k6_s1	>=90%	356	71	0.199438202247191
+aligned piece	kmerseek	pfam	w10	hsdm17_k6_s1	>=90%	356	81	0.22752808988764045
+whole call	kmerseek	pfamshared	w10	hsdm17_k6_s1	>=90%	356	71	0.199438202247191
+aligned piece	kmerseek	pfamshared	w10	hsdm17_k6_s1	>=90%	356	81	0.22752808988764045
+whole call	kmerseek	regions	w10	hsdm17_k6_s1	>=90%	356	51	0.14325842696629212
+aligned piece	kmerseek	regions	w10	hsdm17_k6_s1	>=90%	356	60	0.16853932584269662
+aligned piece	kmerseek	regionsshared	w10	hsdm17_k6_s1	>=90%	356	256	0.7191011235955056
+whole call	kmerseek	regionsshared	w10	hsdm17_k6_s1	>=90%	356	111	0.31179775280898875
+aligned piece	kmerseek	whole	w10	hsdm17_k6_s1	>=90%	356	283	0.7949438202247191
+whole call	kmerseek	whole	w10	hsdm17_k6_s1	>=90%	356	50	0.1404494382022472
+whole call	kmerseek	wholeannot	w10	hsdm17_k6_s1	>=90%	356	35	0.09831460674157304
+aligned piece	kmerseek	wholeannot	w10	hsdm17_k6_s1	>=90%	356	68	0.19101123595505617
+aligned piece	kmerseek	pfam	w20	hsdm17_k6_s1	>=90%	356	86	0.24157303370786518
+whole call	kmerseek	pfam	w20	hsdm17_k6_s1	>=90%	356	77	0.21629213483146068
+aligned piece	kmerseek	pfamshared	w20	hsdm17_k6_s1	>=90%	356	86	0.24157303370786518
+whole call	kmerseek	pfamshared	w20	hsdm17_k6_s1	>=90%	356	77	0.21629213483146068
+aligned piece	kmerseek	regions	w20	hsdm17_k6_s1	>=90%	356	263	0.7387640449438202
+whole call	kmerseek	regions	w20	hsdm17_k6_s1	>=90%	356	120	0.33707865168539325
+whole call	kmerseek	regionsshared	w20	hsdm17_k6_s1	>=90%	356	118	0.33146067415730335
+aligned piece	kmerseek	regionsshared	w20	hsdm17_k6_s1	>=90%	356	271	0.7612359550561798
+whole call	kmerseek	whole	w20	hsdm17_k6_s1	>=90%	356	57	0.1601123595505618
+aligned piece	kmerseek	whole	w20	hsdm17_k6_s1	>=90%	356	286	0.8033707865168539
+aligned piece	kmerseek	wholeannot	w20	hsdm17_k6_s1	>=90%	356	73	0.2050561797752809
+whole call	kmerseek	wholeannot	w20	hsdm17_k6_s1	>=90%	356	39	0.10955056179775281
+aligned piece	kmerseek	pfam	w10	mmseqs12_k6_s1	>=90%	356	93	0.2612359550561798
+whole call	kmerseek	pfam	w10	mmseqs12_k6_s1	>=90%	356	87	0.2443820224719101
+aligned piece	kmerseek	pfamshared	w10	mmseqs12_k6_s1	>=90%	356	93	0.2612359550561798
+whole call	kmerseek	pfamshared	w10	mmseqs12_k6_s1	>=90%	356	87	0.2443820224719101
+aligned piece	kmerseek	regions	w10	mmseqs12_k6_s1	>=90%	356	138	0.38764044943820225
+whole call	kmerseek	regions	w10	mmseqs12_k6_s1	>=90%	356	57	0.1601123595505618
+whole call	kmerseek	regionsshared	w10	mmseqs12_k6_s1	>=90%	356	132	0.3707865168539326
+aligned piece	kmerseek	regionsshared	w10	mmseqs12_k6_s1	>=90%	356	285	0.800561797752809
+whole call	kmerseek	whole	w10	mmseqs12_k6_s1	>=90%	356	57	0.1601123595505618
+aligned piece	kmerseek	whole	w10	mmseqs12_k6_s1	>=90%	356	310	0.8707865168539326
+whole call	kmerseek	wholeannot	w10	mmseqs12_k6_s1	>=90%	356	38	0.10674157303370786
+aligned piece	kmerseek	wholeannot	w10	mmseqs12_k6_s1	>=90%	356	71	0.199438202247191
+aligned piece	kmerseek	pfam	w20	mmseqs12_k6_s1	>=90%	356	94	0.2640449438202247
+whole call	kmerseek	pfam	w20	mmseqs12_k6_s1	>=90%	356	89	0.25
+whole call	kmerseek	pfamshared	w20	mmseqs12_k6_s1	>=90%	356	89	0.25
+aligned piece	kmerseek	pfamshared	w20	mmseqs12_k6_s1	>=90%	356	94	0.2640449438202247
+aligned piece	kmerseek	regions	w20	mmseqs12_k6_s1	>=90%	356	93	0.2612359550561798
+whole call	kmerseek	regions	w20	mmseqs12_k6_s1	>=90%	356	56	0.15730337078651685
+aligned piece	kmerseek	regionsshared	w20	mmseqs12_k6_s1	>=90%	356	289	0.8117977528089888
+whole call	kmerseek	regionsshared	w20	mmseqs12_k6_s1	>=90%	356	139	0.3904494382022472
+whole call	kmerseek	whole	w20	mmseqs12_k6_s1	>=90%	356	63	0.17696629213483145
+aligned piece	kmerseek	whole	w20	mmseqs12_k6_s1	>=90%	356	310	0.8707865168539326
+whole call	kmerseek	wholeannot	w20	mmseqs12_k6_s1	>=90%	356	40	0.11235955056179775
+aligned piece	kmerseek	wholeannot	w20	mmseqs12_k6_s1	>=90%	356	72	0.20224719101123595
+aligned piece	kmerseek	pfam	w10	polarity4_k11_s1	>=90%	356	37	0.10393258426966293
+whole call	kmerseek	pfam	w10	polarity4_k11_s1	>=90%	356	19	0.05337078651685393
+aligned piece	kmerseek	pfamshared	w10	polarity4_k11_s1	>=90%	356	38	0.10674157303370786
+whole call	kmerseek	pfamshared	w10	polarity4_k11_s1	>=90%	356	19	0.05337078651685393
+whole call	kmerseek	regions	w10	polarity4_k11_s1	>=90%	356	4	0.011235955056179775
+aligned piece	kmerseek	regions	w10	polarity4_k11_s1	>=90%	356	4	0.011235955056179775
+aligned piece	kmerseek	regionsshared	w10	polarity4_k11_s1	>=90%	356	4	0.011235955056179775
+whole call	kmerseek	regionsshared	w10	polarity4_k11_s1	>=90%	356	4	0.011235955056179775
+whole call	kmerseek	whole	w10	polarity4_k11_s1	>=90%	356	22	0.06179775280898876
+aligned piece	kmerseek	whole	w10	polarity4_k11_s1	>=90%	356	163	0.45786516853932585
+whole call	kmerseek	wholeannot	w10	polarity4_k11_s1	>=90%	356	6	0.016853932584269662
+aligned piece	kmerseek	wholeannot	w10	polarity4_k11_s1	>=90%	356	8	0.02247191011235955
+aligned piece	kmerseek	pfam	w20	polarity4_k11_s1	>=90%	356	39	0.10955056179775281
+whole call	kmerseek	pfam	w20	polarity4_k11_s1	>=90%	356	19	0.05337078651685393
+aligned piece	kmerseek	pfamshared	w20	polarity4_k11_s1	>=90%	356	37	0.10393258426966293
+whole call	kmerseek	pfamshared	w20	polarity4_k11_s1	>=90%	356	18	0.05056179775280899
+aligned piece	kmerseek	regions	w20	polarity4_k11_s1	>=90%	356	7	0.019662921348314606
+whole call	kmerseek	regions	w20	polarity4_k11_s1	>=90%	356	7	0.019662921348314606
+aligned piece	kmerseek	regionsshared	w20	polarity4_k11_s1	>=90%	356	6	0.016853932584269662
+whole call	kmerseek	regionsshared	w20	polarity4_k11_s1	>=90%	356	6	0.016853932584269662
+aligned piece	kmerseek	whole	w20	polarity4_k11_s1	>=90%	356	164	0.4606741573033708
+whole call	kmerseek	whole	w20	polarity4_k11_s1	>=90%	356	22	0.06179775280898876
+aligned piece	kmerseek	wholeannot	w20	polarity4_k11_s1	>=90%	356	13	0.03651685393258427
+whole call	kmerseek	wholeannot	w20	polarity4_k11_s1	>=90%	356	6	0.016853932584269662
+aligned piece	kmerseek	pfam	w10	protein20_k5_s1	>=90%	356	91	0.2556179775280899
+whole call	kmerseek	pfam	w10	protein20_k5_s1	>=90%	356	81	0.22752808988764045
+whole call	kmerseek	pfamshared	w10	protein20_k5_s1	>=90%	356	81	0.22752808988764045
+aligned piece	kmerseek	pfamshared	w10	protein20_k5_s1	>=90%	356	91	0.2556179775280899
+whole call	kmerseek	regions	w10	protein20_k5_s1	>=90%	356	149	0.41853932584269665
+aligned piece	kmerseek	regions	w10	protein20_k5_s1	>=90%	356	308	0.8651685393258427
+whole call	kmerseek	regionsshared	w10	protein20_k5_s1	>=90%	356	146	0.4101123595505618
+aligned piece	kmerseek	regionsshared	w10	protein20_k5_s1	>=90%	356	303	0.851123595505618
+aligned piece	kmerseek	whole	w10	protein20_k5_s1	>=90%	356	279	0.7837078651685393
+whole call	kmerseek	whole	w10	protein20_k5_s1	>=90%	356	59	0.16573033707865167
+whole call	kmerseek	wholeannot	w10	protein20_k5_s1	>=90%	356	34	0.09550561797752809
+aligned piece	kmerseek	wholeannot	w10	protein20_k5_s1	>=90%	356	61	0.17134831460674158
+aligned piece	kmerseek	pfam	w20	protein20_k5_s1	>=90%	356	93	0.2612359550561798
+whole call	kmerseek	pfam	w20	protein20_k5_s1	>=90%	356	86	0.24157303370786518
+whole call	kmerseek	pfamshared	w20	protein20_k5_s1	>=90%	356	86	0.24157303370786518
+aligned piece	kmerseek	pfamshared	w20	protein20_k5_s1	>=90%	356	93	0.2612359550561798
+aligned piece	kmerseek	regions	w20	protein20_k5_s1	>=90%	356	310	0.8707865168539326
+whole call	kmerseek	regions	w20	protein20_k5_s1	>=90%	356	161	0.45224719101123595
+aligned piece	kmerseek	regionsshared	w20	protein20_k5_s1	>=90%	356	309	0.8679775280898876
+whole call	kmerseek	regionsshared	w20	protein20_k5_s1	>=90%	356	159	0.44662921348314605
+aligned piece	kmerseek	whole	w20	protein20_k5_s1	>=90%	356	280	0.7865168539325843
+whole call	kmerseek	whole	w20	protein20_k5_s1	>=90%	356	65	0.18258426966292135
+whole call	kmerseek	wholeannot	w20	protein20_k5_s1	>=90%	356	39	0.10955056179775281
+aligned piece	kmerseek	wholeannot	w20	protein20_k5_s1	>=90%	356	74	0.20786516853932585
+aligned piece	kmerseek	pfam	w10	sdm12_k7_s1	>=90%	356	88	0.24719101123595505
+whole call	kmerseek	pfam	w10	sdm12_k7_s1	>=90%	356	78	0.21910112359550563
+aligned piece	kmerseek	pfamshared	w10	sdm12_k7_s1	>=90%	356	88	0.24719101123595505
+whole call	kmerseek	pfamshared	w10	sdm12_k7_s1	>=90%	356	78	0.21910112359550563
+whole call	kmerseek	regions	w10	sdm12_k7_s1	>=90%	356	63	0.17696629213483145
+aligned piece	kmerseek	regions	w10	sdm12_k7_s1	>=90%	356	72	0.20224719101123595
+aligned piece	kmerseek	regionsshared	w10	sdm12_k7_s1	>=90%	356	216	0.6067415730337079
+whole call	kmerseek	regionsshared	w10	sdm12_k7_s1	>=90%	356	96	0.2696629213483146
+aligned piece	kmerseek	whole	w10	sdm12_k7_s1	>=90%	356	299	0.8398876404494382
+whole call	kmerseek	whole	w10	sdm12_k7_s1	>=90%	356	63	0.17696629213483145
+aligned piece	kmerseek	wholeannot	w10	sdm12_k7_s1	>=90%	356	82	0.2303370786516854
+whole call	kmerseek	wholeannot	w10	sdm12_k7_s1	>=90%	356	45	0.12640449438202248
+aligned piece	kmerseek	pfam	w20	sdm12_k7_s1	>=90%	356	88	0.24719101123595505
+whole call	kmerseek	pfam	w20	sdm12_k7_s1	>=90%	356	79	0.22191011235955055
+whole call	kmerseek	pfamshared	w20	sdm12_k7_s1	>=90%	356	79	0.22191011235955055
+aligned piece	kmerseek	pfamshared	w20	sdm12_k7_s1	>=90%	356	88	0.24719101123595505
+aligned piece	kmerseek	regions	w20	sdm12_k7_s1	>=90%	356	222	0.6235955056179775
+whole call	kmerseek	regions	w20	sdm12_k7_s1	>=90%	356	111	0.31179775280898875
+whole call	kmerseek	regionsshared	w20	sdm12_k7_s1	>=90%	356	104	0.29213483146067415
+aligned piece	kmerseek	regionsshared	w20	sdm12_k7_s1	>=90%	356	225	0.6320224719101124
+aligned piece	kmerseek	whole	w20	sdm12_k7_s1	>=90%	356	303	0.851123595505618
+whole call	kmerseek	whole	w20	sdm12_k7_s1	>=90%	356	68	0.19101123595505617
+whole call	kmerseek	wholeannot	w20	sdm12_k7_s1	>=90%	356	48	0.1348314606741573
+aligned piece	kmerseek	wholeannot	w20	sdm12_k7_s1	>=90%	356	83	0.23314606741573032
+aligned piece	kmerseek	pfam	w10	uniprot18_k5_s1	>=90%	356	80	0.2247191011235955
+whole call	kmerseek	pfam	w10	uniprot18_k5_s1	>=90%	356	68	0.19101123595505617
+whole call	kmerseek	pfamshared	w10	uniprot18_k5_s1	>=90%	356	69	0.19382022471910113
+aligned piece	kmerseek	pfamshared	w10	uniprot18_k5_s1	>=90%	356	81	0.22752808988764045
+whole call	kmerseek	regions	w10	uniprot18_k5_s1	>=90%	356	132	0.3707865168539326
+aligned piece	kmerseek	regions	w10	uniprot18_k5_s1	>=90%	356	297	0.8342696629213483
+aligned piece	kmerseek	regionsshared	w10	uniprot18_k5_s1	>=90%	356	295	0.8286516853932584
+whole call	kmerseek	regionsshared	w10	uniprot18_k5_s1	>=90%	356	132	0.3707865168539326
+aligned piece	kmerseek	whole	w10	uniprot18_k5_s1	>=90%	356	287	0.8061797752808989
+whole call	kmerseek	whole	w10	uniprot18_k5_s1	>=90%	356	52	0.14606741573033707
+whole call	kmerseek	wholeannot	w10	uniprot18_k5_s1	>=90%	356	27	0.07584269662921349
+aligned piece	kmerseek	wholeannot	w10	uniprot18_k5_s1	>=90%	356	49	0.13764044943820225
+whole call	kmerseek	pfam	w20	uniprot18_k5_s1	>=90%	356	75	0.21067415730337077
+aligned piece	kmerseek	pfam	w20	uniprot18_k5_s1	>=90%	356	83	0.23314606741573032
+whole call	kmerseek	pfamshared	w20	uniprot18_k5_s1	>=90%	356	75	0.21067415730337077
+aligned piece	kmerseek	pfamshared	w20	uniprot18_k5_s1	>=90%	356	83	0.23314606741573032
+aligned piece	kmerseek	regionsshared	w20	uniprot18_k5_s1	>=90%	356	298	0.8370786516853933
+whole call	kmerseek	regionsshared	w20	uniprot18_k5_s1	>=90%	356	141	0.3960674157303371
+aligned piece	kmerseek	whole	w20	uniprot18_k5_s1	>=90%	356	290	0.8146067415730337
+whole call	kmerseek	whole	w20	uniprot18_k5_s1	>=90%	356	53	0.14887640449438203
+aligned piece	kmerseek	wholeannot	w20	uniprot18_k5_s1	>=90%	356	52	0.14606741573033707
+whole call	kmerseek	wholeannot	w20	uniprot18_k5_s1	>=90%	356	28	0.07865168539325842
+aligned piece	kmerseek	pfam	w10	wass14_k6_s1	>=90%	356	68	0.19101123595505617
+whole call	kmerseek	pfam	w10	wass14_k6_s1	>=90%	356	51	0.14325842696629212
+whole call	kmerseek	pfamshared	w10	wass14_k6_s1	>=90%	356	51	0.14325842696629212
+aligned piece	kmerseek	pfamshared	w10	wass14_k6_s1	>=90%	356	68	0.19101123595505617
+aligned piece	kmerseek	regions	w10	wass14_k6_s1	>=90%	356	0	0.0
+whole call	kmerseek	regions	w10	wass14_k6_s1	>=90%	356	0	0.0
+whole call	kmerseek	regionsshared	w10	wass14_k6_s1	>=90%	356	123	0.3455056179775281
+aligned piece	kmerseek	regionsshared	w10	wass14_k6_s1	>=90%	356	289	0.8117977528089888
+aligned piece	kmerseek	whole	w10	wass14_k6_s1	>=90%	356	291	0.8174157303370787
+whole call	kmerseek	whole	w10	wass14_k6_s1	>=90%	356	52	0.14606741573033707
+whole call	kmerseek	wholeannot	w10	wass14_k6_s1	>=90%	356	22	0.06179775280898876
+aligned piece	kmerseek	wholeannot	w10	wass14_k6_s1	>=90%	356	49	0.13764044943820225
+whole call	kmerseek	pfam	w20	wass14_k6_s1	>=90%	356	54	0.15168539325842698
+aligned piece	kmerseek	pfam	w20	wass14_k6_s1	>=90%	356	69	0.19382022471910113
+aligned piece	kmerseek	pfamshared	w20	wass14_k6_s1	>=90%	356	69	0.19382022471910113
+whole call	kmerseek	pfamshared	w20	wass14_k6_s1	>=90%	356	54	0.15168539325842698
+aligned piece	kmerseek	regionsshared	w20	wass14_k6_s1	>=90%	356	293	0.8230337078651685
+whole call	kmerseek	regionsshared	w20	wass14_k6_s1	>=90%	356	131	0.36797752808988765
+aligned piece	kmerseek	whole	w20	wass14_k6_s1	>=90%	356	292	0.8202247191011236
+whole call	kmerseek	whole	w20	wass14_k6_s1	>=90%	356	54	0.15168539325842698
+aligned piece	kmerseek	wholeannot	w20	wass14_k6_s1	>=90%	356	57	0.1601123595505618
+whole call	kmerseek	wholeannot	w20	wass14_k6_s1	>=90%	356	25	0.0702247191011236
+whole call	kmerseek	pfam	w10	wwmj5_k10_s1	>=90%	356	51	0.14325842696629212
+aligned piece	kmerseek	pfam	w10	wwmj5_k10_s1	>=90%	356	73	0.2050561797752809
+whole call	kmerseek	pfamshared	w10	wwmj5_k10_s1	>=90%	356	50	0.1404494382022472
+aligned piece	kmerseek	pfamshared	w10	wwmj5_k10_s1	>=90%	356	73	0.2050561797752809
+whole call	kmerseek	regions	w10	wwmj5_k10_s1	>=90%	356	44	0.12359550561797752
+aligned piece	kmerseek	regions	w10	wwmj5_k10_s1	>=90%	356	46	0.12921348314606743
+whole call	kmerseek	regionsshared	w10	wwmj5_k10_s1	>=90%	356	42	0.11797752808988764
+aligned piece	kmerseek	regionsshared	w10	wwmj5_k10_s1	>=90%	356	52	0.14606741573033707
+whole call	kmerseek	whole	w10	wwmj5_k10_s1	>=90%	356	52	0.14606741573033707
+aligned piece	kmerseek	whole	w10	wwmj5_k10_s1	>=90%	356	303	0.851123595505618
+aligned piece	kmerseek	wholeannot	w10	wwmj5_k10_s1	>=90%	356	52	0.14606741573033707
+whole call	kmerseek	wholeannot	w10	wwmj5_k10_s1	>=90%	356	32	0.0898876404494382
+aligned piece	kmerseek	pfam	w20	wwmj5_k10_s1	>=90%	356	74	0.20786516853932585
+whole call	kmerseek	pfam	w20	wwmj5_k10_s1	>=90%	356	53	0.14887640449438203
+whole call	kmerseek	pfamshared	w20	wwmj5_k10_s1	>=90%	356	52	0.14606741573033707
+aligned piece	kmerseek	pfamshared	w20	wwmj5_k10_s1	>=90%	356	74	0.20786516853932585
+whole call	kmerseek	regions	w20	wwmj5_k10_s1	>=90%	356	43	0.12078651685393259
+aligned piece	kmerseek	regions	w20	wwmj5_k10_s1	>=90%	356	45	0.12640449438202248
+whole call	kmerseek	regionsshared	w20	wwmj5_k10_s1	>=90%	356	50	0.1404494382022472
+aligned piece	kmerseek	regionsshared	w20	wwmj5_k10_s1	>=90%	356	65	0.18258426966292135
+aligned piece	kmerseek	whole	w20	wwmj5_k10_s1	>=90%	356	310	0.8707865168539326
+whole call	kmerseek	whole	w20	wwmj5_k10_s1	>=90%	356	55	0.1544943820224719
+aligned piece	kmerseek	wholeannot	w20	wwmj5_k10_s1	>=90%	356	55	0.1544943820224719
+whole call	kmerseek	wholeannot	w20	wwmj5_k10_s1	>=90%	356	34	0.09550561797752809
+whole call	mmseqs2	pfam	w10	mmseqs2	>=90%	356	98	0.2752808988764045
+aligned piece	mmseqs2	pfam	w10	mmseqs2	>=90%	356	103	0.2893258426966292
+aligned piece	mmseqs2	regions	w10	mmseqs2	>=90%	356	347	0.9747191011235955
+whole call	mmseqs2	regions	w10	mmseqs2	>=90%	356	226	0.6348314606741573
+whole call	mmseqs2	whole	w10	mmseqs2	>=90%	356	94	0.2640449438202247
+aligned piece	mmseqs2	whole	w10	mmseqs2	>=90%	356	347	0.9747191011235955
+whole call	mmseqs2	wholeannot	w10	mmseqs2	>=90%	356	83	0.23314606741573032
+aligned piece	mmseqs2	wholeannot	w10	mmseqs2	>=90%	356	122	0.34269662921348315
+aligned piece	mmseqs2	pfam	w20	mmseqs2	>=90%	356	103	0.2893258426966292
+whole call	mmseqs2	pfam	w20	mmseqs2	>=90%	356	98	0.2752808988764045
+whole call	mmseqs2	regions	w20	mmseqs2	>=90%	356	225	0.6320224719101124
+aligned piece	mmseqs2	regions	w20	mmseqs2	>=90%	356	347	0.9747191011235955
+whole call	mmseqs2	whole	w20	mmseqs2	>=90%	356	94	0.2640449438202247
+aligned piece	mmseqs2	whole	w20	mmseqs2	>=90%	356	347	0.9747191011235955
+aligned piece	mmseqs2	wholeannot	w20	mmseqs2	>=90%	356	122	0.34269662921348315
+whole call	mmseqs2	wholeannot	w20	mmseqs2	>=90%	356	83	0.23314606741573032
+aligned piece	kmerseek	pfam	w10	dayhoff6_k9_s1	no same-type entry found	4274	2	0.0004679457182966776
+whole call	kmerseek	pfam	w10	dayhoff6_k9_s1	no same-type entry found	4274	2	0.0004679457182966776
+whole call	kmerseek	pfamshared	w10	dayhoff6_k9_s1	no same-type entry found	4274	2	0.0004679457182966776
+aligned piece	kmerseek	pfamshared	w10	dayhoff6_k9_s1	no same-type entry found	4274	2	0.0004679457182966776
+whole call	kmerseek	regions	w10	dayhoff6_k9_s1	no same-type entry found	4274	38	0.008890968647636874
+aligned piece	kmerseek	regions	w10	dayhoff6_k9_s1	no same-type entry found	4274	77	0.018015910154422086
+aligned piece	kmerseek	regionsshared	w10	dayhoff6_k9_s1	no same-type entry found	4274	40	0.009358914365933552
+whole call	kmerseek	regionsshared	w10	dayhoff6_k9_s1	no same-type entry found	4274	18	0.004211511464670099
+whole call	kmerseek	whole	w10	dayhoff6_k9_s1	no same-type entry found	4274	44	0.010294805802526907
+aligned piece	kmerseek	whole	w10	dayhoff6_k9_s1	no same-type entry found	4274	344	0.08048666354702855
+whole call	kmerseek	wholeannot	w10	dayhoff6_k9_s1	no same-type entry found	4274	5	0.001169864295741694
+aligned piece	kmerseek	wholeannot	w10	dayhoff6_k9_s1	no same-type entry found	4274	34	0.007955077211043519
+aligned piece	kmerseek	pfam	w20	dayhoff6_k9_s1	no same-type entry found	4274	4	0.0009358914365933552
+whole call	kmerseek	pfam	w20	dayhoff6_k9_s1	no same-type entry found	4274	3	0.0007019185774450163
+whole call	kmerseek	pfamshared	w20	dayhoff6_k9_s1	no same-type entry found	4274	3	0.0007019185774450163
+aligned piece	kmerseek	pfamshared	w20	dayhoff6_k9_s1	no same-type entry found	4274	4	0.0009358914365933552
+whole call	kmerseek	regions	w20	dayhoff6_k9_s1	no same-type entry found	4274	22	0.005147402901263453
+aligned piece	kmerseek	regions	w20	dayhoff6_k9_s1	no same-type entry found	4274	30	0.0070191857744501636
+whole call	kmerseek	regionsshared	w20	dayhoff6_k9_s1	no same-type entry found	4274	17	0.0039775386055217596
+aligned piece	kmerseek	regionsshared	w20	dayhoff6_k9_s1	no same-type entry found	4274	40	0.009358914365933552
+aligned piece	kmerseek	whole	w20	dayhoff6_k9_s1	no same-type entry found	4274	354	0.08282639213851194
+whole call	kmerseek	whole	w20	dayhoff6_k9_s1	no same-type entry found	4274	46	0.010762751520823585
+whole call	kmerseek	wholeannot	w20	dayhoff6_k9_s1	no same-type entry found	4274	7	0.0016378100140383716
+aligned piece	kmerseek	wholeannot	w20	dayhoff6_k9_s1	no same-type entry found	4274	36	0.008423022929340197
+whole call	kmerseek	pfam	w10	funcgroups8_k8_s1	no same-type entry found	4274	1	0.0002339728591483388
+aligned piece	kmerseek	pfam	w10	funcgroups8_k8_s1	no same-type entry found	4274	2	0.0004679457182966776
+aligned piece	kmerseek	pfamshared	w10	funcgroups8_k8_s1	no same-type entry found	4274	2	0.0004679457182966776
+whole call	kmerseek	pfamshared	w10	funcgroups8_k8_s1	no same-type entry found	4274	1	0.0002339728591483388
+whole call	kmerseek	regions	w10	funcgroups8_k8_s1	no same-type entry found	4274	17	0.0039775386055217596
+aligned piece	kmerseek	regions	w10	funcgroups8_k8_s1	no same-type entry found	4274	39	0.009124941506785214
+aligned piece	kmerseek	regionsshared	w10	funcgroups8_k8_s1	no same-type entry found	4274	39	0.009124941506785214
+whole call	kmerseek	regionsshared	w10	funcgroups8_k8_s1	no same-type entry found	4274	17	0.0039775386055217596
+whole call	kmerseek	whole	w10	funcgroups8_k8_s1	no same-type entry found	4274	43	0.010060832943378568
+aligned piece	kmerseek	whole	w10	funcgroups8_k8_s1	no same-type entry found	4274	259	0.060598970519419745
+aligned piece	kmerseek	wholeannot	w10	funcgroups8_k8_s1	no same-type entry found	4274	54	0.012634534394010294
+whole call	kmerseek	wholeannot	w10	funcgroups8_k8_s1	no same-type entry found	4274	20	0.004679457182966776
+aligned piece	kmerseek	pfam	w20	funcgroups8_k8_s1	no same-type entry found	4274	2	0.0004679457182966776
+whole call	kmerseek	pfam	w20	funcgroups8_k8_s1	no same-type entry found	4274	1	0.0002339728591483388
+aligned piece	kmerseek	pfamshared	w20	funcgroups8_k8_s1	no same-type entry found	4274	3	0.0007019185774450163
+whole call	kmerseek	pfamshared	w20	funcgroups8_k8_s1	no same-type entry found	4274	2	0.0004679457182966776
+whole call	kmerseek	regions	w20	funcgroups8_k8_s1	no same-type entry found	4274	20	0.004679457182966776
+aligned piece	kmerseek	regions	w20	funcgroups8_k8_s1	no same-type entry found	4274	44	0.010294805802526907
+aligned piece	kmerseek	regionsshared	w20	funcgroups8_k8_s1	no same-type entry found	4274	40	0.009358914365933552
+whole call	kmerseek	regionsshared	w20	funcgroups8_k8_s1	no same-type entry found	4274	18	0.004211511464670099
+whole call	kmerseek	whole	w20	funcgroups8_k8_s1	no same-type entry found	4274	46	0.010762751520823585
+aligned piece	kmerseek	whole	w20	funcgroups8_k8_s1	no same-type entry found	4274	266	0.062236780533458116
+whole call	kmerseek	wholeannot	w20	funcgroups8_k8_s1	no same-type entry found	4274	21	0.004913430042115114
+aligned piece	kmerseek	wholeannot	w20	funcgroups8_k8_s1	no same-type entry found	4274	55	0.012868507253158634
+whole call	kmerseek	pfam	w10	gbmr4_k14_s1	no same-type entry found	4274	0	0.0
+aligned piece	kmerseek	pfam	w10	gbmr4_k14_s1	no same-type entry found	4274	0	0.0
+aligned piece	kmerseek	pfamshared	w10	gbmr4_k14_s1	no same-type entry found	4274	0	0.0
+whole call	kmerseek	pfamshared	w10	gbmr4_k14_s1	no same-type entry found	4274	0	0.0
+aligned piece	kmerseek	regions	w10	gbmr4_k14_s1	no same-type entry found	4274	0	0.0
+whole call	kmerseek	regions	w10	gbmr4_k14_s1	no same-type entry found	4274	2	0.0004679457182966776
+whole call	kmerseek	regionsshared	w10	gbmr4_k14_s1	no same-type entry found	4274	7	0.0016378100140383716
+aligned piece	kmerseek	regionsshared	w10	gbmr4_k14_s1	no same-type entry found	4274	18	0.004211511464670099
+aligned piece	kmerseek	whole	w10	gbmr4_k14_s1	no same-type entry found	4274	112	0.026204960224613945
+whole call	kmerseek	whole	w10	gbmr4_k14_s1	no same-type entry found	4274	25	0.00584932147870847
+whole call	kmerseek	wholeannot	w10	gbmr4_k14_s1	no same-type entry found	4274	25	0.00584932147870847
+aligned piece	kmerseek	wholeannot	w10	gbmr4_k14_s1	no same-type entry found	4274	83	0.01941974730931212
+whole call	kmerseek	pfam	w20	gbmr4_k14_s1	no same-type entry found	4274	0	0.0
+aligned piece	kmerseek	pfam	w20	gbmr4_k14_s1	no same-type entry found	4274	0	0.0
+aligned piece	kmerseek	pfamshared	w20	gbmr4_k14_s1	no same-type entry found	4274	0	0.0
+whole call	kmerseek	pfamshared	w20	gbmr4_k14_s1	no same-type entry found	4274	0	0.0
+whole call	kmerseek	regions	w20	gbmr4_k14_s1	no same-type entry found	4274	11	0.0025737014506317267
+aligned piece	kmerseek	regions	w20	gbmr4_k14_s1	no same-type entry found	4274	25	0.00584932147870847
+whole call	kmerseek	regionsshared	w20	gbmr4_k14_s1	no same-type entry found	4274	11	0.0025737014506317267
+aligned piece	kmerseek	regionsshared	w20	gbmr4_k14_s1	no same-type entry found	4274	25	0.00584932147870847
+aligned piece	kmerseek	whole	w20	gbmr4_k14_s1	no same-type entry found	4274	110	0.02573701450631727
+whole call	kmerseek	whole	w20	gbmr4_k14_s1	no same-type entry found	4274	25	0.00584932147870847
+whole call	kmerseek	wholeannot	w20	gbmr4_k14_s1	no same-type entry found	4274	25	0.00584932147870847
+aligned piece	kmerseek	wholeannot	w20	gbmr4_k14_s1	no same-type entry found	4274	82	0.01918577445016378
+whole call	kmerseek	pfamshared	w10	gbmr7_k16_s1	no same-type entry found	4274	0	0.0
+aligned piece	kmerseek	pfamshared	w10	gbmr7_k16_s1	no same-type entry found	4274	0	0.0
+whole call	kmerseek	regions	w10	gbmr7_k16_s1	no same-type entry found	4274	0	0.0
+aligned piece	kmerseek	regions	w10	gbmr7_k16_s1	no same-type entry found	4274	0	0.0
+aligned piece	kmerseek	regionsshared	w10	gbmr7_k16_s1	no same-type entry found	4274	0	0.0
+whole call	kmerseek	regionsshared	w10	gbmr7_k16_s1	no same-type entry found	4274	0	0.0
+whole call	kmerseek	whole	w10	gbmr7_k16_s1	no same-type entry found	4274	1	0.0002339728591483388
+aligned piece	kmerseek	whole	w10	gbmr7_k16_s1	no same-type entry found	4274	2	0.0004679457182966776
+whole call	kmerseek	wholeannot	w10	gbmr7_k16_s1	no same-type entry found	4274	0	0.0
+aligned piece	kmerseek	wholeannot	w10	gbmr7_k16_s1	no same-type entry found	4274	0	0.0
+whole call	kmerseek	pfamshared	w20	gbmr7_k16_s1	no same-type entry found	4274	0	0.0
+aligned piece	kmerseek	pfamshared	w20	gbmr7_k16_s1	no same-type entry found	4274	0	0.0
+aligned piece	kmerseek	regions	w20	gbmr7_k16_s1	no same-type entry found	4274	0	0.0
+whole call	kmerseek	regions	w20	gbmr7_k16_s1	no same-type entry found	4274	0	0.0
+aligned piece	kmerseek	regionsshared	w20	gbmr7_k16_s1	no same-type entry found	4274	0	0.0
+whole call	kmerseek	regionsshared	w20	gbmr7_k16_s1	no same-type entry found	4274	0	0.0
+whole call	kmerseek	whole	w20	gbmr7_k16_s1	no same-type entry found	4274	0	0.0
+aligned piece	kmerseek	whole	w20	gbmr7_k16_s1	no same-type entry found	4274	0	0.0
+whole call	kmerseek	wholeannot	w20	gbmr7_k16_s1	no same-type entry found	4274	0	0.0
+aligned piece	kmerseek	wholeannot	w20	gbmr7_k16_s1	no same-type entry found	4274	0	0.0
+whole call	kmerseek	regions	w10	hp_kyte_doolittle2_k22_s1	no same-type entry found	4274	1	0.0002339728591483388
+aligned piece	kmerseek	regions	w10	hp_kyte_doolittle2_k22_s1	no same-type entry found	4274	8	0.0018717828731867104
+aligned piece	kmerseek	pfam	w20	hp_kyte_doolittle2_k22_s1	no same-type entry found	4274	0	0.0
+whole call	kmerseek	pfam	w20	hp_kyte_doolittle2_k22_s1	no same-type entry found	4274	0	0.0
+aligned piece	kmerseek	pfamshared	w20	hp_kyte_doolittle2_k22_s1	no same-type entry found	4274	0	0.0
+whole call	kmerseek	pfamshared	w20	hp_kyte_doolittle2_k22_s1	no same-type entry found	4274	0	0.0
+whole call	kmerseek	regions	w20	hp_kyte_doolittle2_k22_s1	no same-type entry found	4274	4	0.0009358914365933552
+aligned piece	kmerseek	regions	w20	hp_kyte_doolittle2_k22_s1	no same-type entry found	4274	15	0.0035095928872250818
+aligned piece	kmerseek	regionsshared	w20	hp_kyte_doolittle2_k22_s1	no same-type entry found	4274	20	0.004679457182966776
+whole call	kmerseek	regionsshared	w20	hp_kyte_doolittle2_k22_s1	no same-type entry found	4274	7	0.0016378100140383716
+aligned piece	kmerseek	whole	w20	hp_kyte_doolittle2_k22_s1	no same-type entry found	4274	223	0.05217594759007955
+whole call	kmerseek	whole	w20	hp_kyte_doolittle2_k22_s1	no same-type entry found	4274	34	0.007955077211043519
+aligned piece	kmerseek	wholeannot	w20	hp_kyte_doolittle2_k22_s1	no same-type entry found	4274	3	0.0007019185774450163
+whole call	kmerseek	wholeannot	w20	hp_kyte_doolittle2_k22_s1	no same-type entry found	4274	1	0.0002339728591483388
+whole call	kmerseek	pfam	w10	hp_lehninger2_k21_s1	no same-type entry found	4274	2	0.0004679457182966776
+aligned piece	kmerseek	pfam	w10	hp_lehninger2_k21_s1	no same-type entry found	4274	2	0.0004679457182966776
+aligned piece	kmerseek	pfamshared	w10	hp_lehninger2_k21_s1	no same-type entry found	4274	2	0.0004679457182966776
+whole call	kmerseek	pfamshared	w10	hp_lehninger2_k21_s1	no same-type entry found	4274	2	0.0004679457182966776
+whole call	kmerseek	regions	w10	hp_lehninger2_k21_s1	no same-type entry found	4274	0	0.0
+aligned piece	kmerseek	regions	w10	hp_lehninger2_k21_s1	no same-type entry found	4274	0	0.0
+whole call	kmerseek	regionsshared	w10	hp_lehninger2_k21_s1	no same-type entry found	4274	1	0.0002339728591483388
+aligned piece	kmerseek	regionsshared	w10	hp_lehninger2_k21_s1	no same-type entry found	4274	1	0.0002339728591483388
+whole call	kmerseek	whole	w10	hp_lehninger2_k21_s1	no same-type entry found	4274	18	0.004211511464670099
+aligned piece	kmerseek	whole	w10	hp_lehninger2_k21_s1	no same-type entry found	4274	338	0.07908282639213851
+whole call	kmerseek	wholeannot	w10	hp_lehninger2_k21_s1	no same-type entry found	4274	2	0.0004679457182966776
+aligned piece	kmerseek	wholeannot	w10	hp_lehninger2_k21_s1	no same-type entry found	4274	49	0.011464670098268601
+aligned piece	kmerseek	pfam	w20	hp_lehninger2_k21_s1	no same-type entry found	4274	2	0.0004679457182966776
+whole call	kmerseek	pfam	w20	hp_lehninger2_k21_s1	no same-type entry found	4274	2	0.0004679457182966776
+whole call	kmerseek	pfamshared	w20	hp_lehninger2_k21_s1	no same-type entry found	4274	2	0.0004679457182966776
+aligned piece	kmerseek	pfamshared	w20	hp_lehninger2_k21_s1	no same-type entry found	4274	2	0.0004679457182966776
+aligned piece	kmerseek	regions	w20	hp_lehninger2_k21_s1	no same-type entry found	4274	2	0.0004679457182966776
+whole call	kmerseek	regions	w20	hp_lehninger2_k21_s1	no same-type entry found	4274	2	0.0004679457182966776
+whole call	kmerseek	regionsshared	w20	hp_lehninger2_k21_s1	no same-type entry found	4274	2	0.0004679457182966776
+aligned piece	kmerseek	regionsshared	w20	hp_lehninger2_k21_s1	no same-type entry found	4274	2	0.0004679457182966776
+aligned piece	kmerseek	whole	w20	hp_lehninger2_k21_s1	no same-type entry found	4274	342	0.08001871782873186
+whole call	kmerseek	whole	w20	hp_lehninger2_k21_s1	no same-type entry found	4274	19	0.004445484323818437
+aligned piece	kmerseek	wholeannot	w20	hp_lehninger2_k21_s1	no same-type entry found	4274	52	0.012166588675713618
+whole call	kmerseek	wholeannot	w20	hp_lehninger2_k21_s1	no same-type entry found	4274	2	0.0004679457182966776
+aligned piece	kmerseek	pfam	w10	hp_lehninger_c_nonpolar2_k21_s1	no same-type entry found	4274	1	0.0002339728591483388
+whole call	kmerseek	pfam	w10	hp_lehninger_c_nonpolar2_k21_s1	no same-type entry found	4274	1	0.0002339728591483388
+whole call	kmerseek	pfamshared	w10	hp_lehninger_c_nonpolar2_k21_s1	no same-type entry found	4274	2	0.0004679457182966776
+aligned piece	kmerseek	pfamshared	w10	hp_lehninger_c_nonpolar2_k21_s1	no same-type entry found	4274	2	0.0004679457182966776
+whole call	kmerseek	regions	w10	hp_lehninger_c_nonpolar2_k21_s1	no same-type entry found	4274	0	0.0
+aligned piece	kmerseek	regions	w10	hp_lehninger_c_nonpolar2_k21_s1	no same-type entry found	4274	1	0.0002339728591483388
+whole call	kmerseek	regionsshared	w10	hp_lehninger_c_nonpolar2_k21_s1	no same-type entry found	4274	0	0.0
+aligned piece	kmerseek	regionsshared	w10	hp_lehninger_c_nonpolar2_k21_s1	no same-type entry found	4274	1	0.0002339728591483388
+aligned piece	kmerseek	whole	w10	hp_lehninger_c_nonpolar2_k21_s1	no same-type entry found	4274	347	0.08118858212447357
+whole call	kmerseek	whole	w10	hp_lehninger_c_nonpolar2_k21_s1	no same-type entry found	4274	17	0.0039775386055217596
+whole call	kmerseek	wholeannot	w10	hp_lehninger_c_nonpolar2_k21_s1	no same-type entry found	4274	2	0.0004679457182966776
+aligned piece	kmerseek	wholeannot	w10	hp_lehninger_c_nonpolar2_k21_s1	no same-type entry found	4274	41	0.00959288722508189
+whole call	kmerseek	pfam	w20	hp_lehninger_c_nonpolar2_k21_s1	no same-type entry found	4274	1	0.0002339728591483388
+aligned piece	kmerseek	pfam	w20	hp_lehninger_c_nonpolar2_k21_s1	no same-type entry found	4274	1	0.0002339728591483388
+whole call	kmerseek	pfamshared	w20	hp_lehninger_c_nonpolar2_k21_s1	no same-type entry found	4274	1	0.0002339728591483388
+aligned piece	kmerseek	pfamshared	w20	hp_lehninger_c_nonpolar2_k21_s1	no same-type entry found	4274	1	0.0002339728591483388
+whole call	kmerseek	regions	w20	hp_lehninger_c_nonpolar2_k21_s1	no same-type entry found	4274	0	0.0
+aligned piece	kmerseek	regions	w20	hp_lehninger_c_nonpolar2_k21_s1	no same-type entry found	4274	1	0.0002339728591483388
+whole call	kmerseek	regionsshared	w20	hp_lehninger_c_nonpolar2_k21_s1	no same-type entry found	4274	0	0.0
+aligned piece	kmerseek	regionsshared	w20	hp_lehninger_c_nonpolar2_k21_s1	no same-type entry found	4274	1	0.0002339728591483388
+whole call	kmerseek	whole	w20	hp_lehninger_c_nonpolar2_k21_s1	no same-type entry found	4274	20	0.004679457182966776
+aligned piece	kmerseek	whole	w20	hp_lehninger_c_nonpolar2_k21_s1	no same-type entry found	4274	351	0.08212447356106692
+aligned piece	kmerseek	wholeannot	w20	hp_lehninger_c_nonpolar2_k21_s1	no same-type entry found	4274	41	0.00959288722508189
+whole call	kmerseek	wholeannot	w20	hp_lehninger_c_nonpolar2_k21_s1	no same-type entry found	4274	2	0.0004679457182966776
+whole call	kmerseek	pfam	w10	hp_lehninger_hpc3_k19_s1	no same-type entry found	4274	0	0.0
+aligned piece	kmerseek	pfam	w10	hp_lehninger_hpc3_k19_s1	no same-type entry found	4274	0	0.0
+whole call	kmerseek	pfamshared	w10	hp_lehninger_hpc3_k19_s1	no same-type entry found	4274	0	0.0
+aligned piece	kmerseek	pfamshared	w10	hp_lehninger_hpc3_k19_s1	no same-type entry found	4274	0	0.0
+aligned piece	kmerseek	regions	w10	hp_lehninger_hpc3_k19_s1	no same-type entry found	4274	0	0.0
+whole call	kmerseek	regions	w10	hp_lehninger_hpc3_k19_s1	no same-type entry found	4274	0	0.0
+aligned piece	kmerseek	regionsshared	w10	hp_lehninger_hpc3_k19_s1	no same-type entry found	4274	0	0.0
+whole call	kmerseek	regionsshared	w10	hp_lehninger_hpc3_k19_s1	no same-type entry found	4274	0	0.0
+aligned piece	kmerseek	whole	w10	hp_lehninger_hpc3_k19_s1	no same-type entry found	4274	7	0.0016378100140383716
+whole call	kmerseek	whole	w10	hp_lehninger_hpc3_k19_s1	no same-type entry found	4274	2	0.0004679457182966776
+whole call	kmerseek	wholeannot	w10	hp_lehninger_hpc3_k19_s1	no same-type entry found	4274	0	0.0
+aligned piece	kmerseek	wholeannot	w10	hp_lehninger_hpc3_k19_s1	no same-type entry found	4274	0	0.0
+whole call	kmerseek	pfam	w20	hp_lehninger_hpc3_k19_s1	no same-type entry found	4274	0	0.0
+aligned piece	kmerseek	pfam	w20	hp_lehninger_hpc3_k19_s1	no same-type entry found	4274	0	0.0
+whole call	kmerseek	pfamshared	w20	hp_lehninger_hpc3_k19_s1	no same-type entry found	4274	0	0.0
+aligned piece	kmerseek	pfamshared	w20	hp_lehninger_hpc3_k19_s1	no same-type entry found	4274	0	0.0
+aligned piece	kmerseek	regions	w20	hp_lehninger_hpc3_k19_s1	no same-type entry found	4274	0	0.0
+whole call	kmerseek	regions	w20	hp_lehninger_hpc3_k19_s1	no same-type entry found	4274	0	0.0
+whole call	kmerseek	regionsshared	w20	hp_lehninger_hpc3_k19_s1	no same-type entry found	4274	0	0.0
+aligned piece	kmerseek	regionsshared	w20	hp_lehninger_hpc3_k19_s1	no same-type entry found	4274	0	0.0
+whole call	kmerseek	whole	w20	hp_lehninger_hpc3_k19_s1	no same-type entry found	4274	2	0.0004679457182966776
+aligned piece	kmerseek	whole	w20	hp_lehninger_hpc3_k19_s1	no same-type entry found	4274	7	0.0016378100140383716
+aligned piece	kmerseek	wholeannot	w20	hp_lehninger_hpc3_k19_s1	no same-type entry found	4274	0	0.0
+whole call	kmerseek	wholeannot	w20	hp_lehninger_hpc3_k19_s1	no same-type entry found	4274	0	0.0
+aligned piece	kmerseek	pfam	w10	hp_pbotc_1st_ed2_k21_s1	no same-type entry found	4274	0	0.0
+whole call	kmerseek	pfam	w10	hp_pbotc_1st_ed2_k21_s1	no same-type entry found	4274	0	0.0
+aligned piece	kmerseek	pfamshared	w10	hp_pbotc_1st_ed2_k21_s1	no same-type entry found	4274	0	0.0
+whole call	kmerseek	pfamshared	w10	hp_pbotc_1st_ed2_k21_s1	no same-type entry found	4274	0	0.0
+aligned piece	kmerseek	regions	w10	hp_pbotc_1st_ed2_k21_s1	no same-type entry found	4274	0	0.0
+whole call	kmerseek	regions	w10	hp_pbotc_1st_ed2_k21_s1	no same-type entry found	4274	0	0.0
+whole call	kmerseek	regionsshared	w10	hp_pbotc_1st_ed2_k21_s1	no same-type entry found	4274	0	0.0
+aligned piece	kmerseek	regionsshared	w10	hp_pbotc_1st_ed2_k21_s1	no same-type entry found	4274	0	0.0
+whole call	kmerseek	whole	w10	hp_pbotc_1st_ed2_k21_s1	no same-type entry found	4274	19	0.004445484323818437
+aligned piece	kmerseek	whole	w10	hp_pbotc_1st_ed2_k21_s1	no same-type entry found	4274	364	0.08516612072999533
+aligned piece	kmerseek	wholeannot	w10	hp_pbotc_1st_ed2_k21_s1	no same-type entry found	4274	36	0.008423022929340197
+whole call	kmerseek	wholeannot	w10	hp_pbotc_1st_ed2_k21_s1	no same-type entry found	4274	1	0.0002339728591483388
+whole call	kmerseek	pfam	w20	hp_pbotc_1st_ed2_k21_s1	no same-type entry found	4274	0	0.0
+aligned piece	kmerseek	pfam	w20	hp_pbotc_1st_ed2_k21_s1	no same-type entry found	4274	0	0.0
+whole call	kmerseek	pfamshared	w20	hp_pbotc_1st_ed2_k21_s1	no same-type entry found	4274	0	0.0
+aligned piece	kmerseek	pfamshared	w20	hp_pbotc_1st_ed2_k21_s1	no same-type entry found	4274	0	0.0
+whole call	kmerseek	regions	w20	hp_pbotc_1st_ed2_k21_s1	no same-type entry found	4274	0	0.0
+aligned piece	kmerseek	regions	w20	hp_pbotc_1st_ed2_k21_s1	no same-type entry found	4274	0	0.0
+whole call	kmerseek	regionsshared	w20	hp_pbotc_1st_ed2_k21_s1	no same-type entry found	4274	1	0.0002339728591483388
+aligned piece	kmerseek	regionsshared	w20	hp_pbotc_1st_ed2_k21_s1	no same-type entry found	4274	1	0.0002339728591483388
+whole call	kmerseek	whole	w20	hp_pbotc_1st_ed2_k21_s1	no same-type entry found	4274	23	0.0053813757604117924
+aligned piece	kmerseek	whole	w20	hp_pbotc_1st_ed2_k21_s1	no same-type entry found	4274	406	0.09499298081422555
+whole call	kmerseek	wholeannot	w20	hp_pbotc_1st_ed2_k21_s1	no same-type entry found	4274	1	0.0002339728591483388
+aligned piece	kmerseek	wholeannot	w20	hp_pbotc_1st_ed2_k21_s1	no same-type entry found	4274	36	0.008423022929340197
+whole call	kmerseek	pfam	w10	hp_thomas_dill2_k22_s1	no same-type entry found	4274	0	0.0
+aligned piece	kmerseek	pfam	w10	hp_thomas_dill2_k22_s1	no same-type entry found	4274	0	0.0
+aligned piece	kmerseek	pfamshared	w10	hp_thomas_dill2_k22_s1	no same-type entry found	4274	0	0.0
+whole call	kmerseek	pfamshared	w10	hp_thomas_dill2_k22_s1	no same-type entry found	4274	0	0.0
+aligned piece	kmerseek	regions	w10	hp_thomas_dill2_k22_s1	no same-type entry found	4274	0	0.0
+whole call	kmerseek	regions	w10	hp_thomas_dill2_k22_s1	no same-type entry found	4274	0	0.0
+aligned piece	kmerseek	regionsshared	w10	hp_thomas_dill2_k22_s1	no same-type entry found	4274	0	0.0
+whole call	kmerseek	regionsshared	w10	hp_thomas_dill2_k22_s1	no same-type entry found	4274	0	0.0
+aligned piece	kmerseek	whole	w10	hp_thomas_dill2_k22_s1	no same-type entry found	4274	177	0.04141319606925597
+whole call	kmerseek	whole	w10	hp_thomas_dill2_k22_s1	no same-type entry found	4274	5	0.001169864295741694
+aligned piece	kmerseek	wholeannot	w10	hp_thomas_dill2_k22_s1	no same-type entry found	4274	0	0.0
+whole call	kmerseek	wholeannot	w10	hp_thomas_dill2_k22_s1	no same-type entry found	4274	0	0.0
+aligned piece	kmerseek	pfam	w20	hp_thomas_dill2_k22_s1	no same-type entry found	4274	0	0.0
+whole call	kmerseek	pfam	w20	hp_thomas_dill2_k22_s1	no same-type entry found	4274	0	0.0
+aligned piece	kmerseek	pfamshared	w20	hp_thomas_dill2_k22_s1	no same-type entry found	4274	0	0.0
+whole call	kmerseek	pfamshared	w20	hp_thomas_dill2_k22_s1	no same-type entry found	4274	0	0.0
+aligned piece	kmerseek	regions	w20	hp_thomas_dill2_k22_s1	no same-type entry found	4274	0	0.0
+whole call	kmerseek	regions	w20	hp_thomas_dill2_k22_s1	no same-type entry found	4274	0	0.0
+whole call	kmerseek	regionsshared	w20	hp_thomas_dill2_k22_s1	no same-type entry found	4274	0	0.0
+aligned piece	kmerseek	regionsshared	w20	hp_thomas_dill2_k22_s1	no same-type entry found	4274	0	0.0
+aligned piece	kmerseek	whole	w20	hp_thomas_dill2_k22_s1	no same-type entry found	4274	177	0.04141319606925597
+whole call	kmerseek	whole	w20	hp_thomas_dill2_k22_s1	no same-type entry found	4274	5	0.001169864295741694
+aligned piece	kmerseek	wholeannot	w20	hp_thomas_dill2_k22_s1	no same-type entry found	4274	17	0.0039775386055217596
+whole call	kmerseek	wholeannot	w20	hp_thomas_dill2_k22_s1	no same-type entry found	4274	0	0.0
+aligned piece	kmerseek	pfam	w10	hp_thomas_dill_no_c2_k22_s1	no same-type entry found	4274	0	0.0
+whole call	kmerseek	pfam	w10	hp_thomas_dill_no_c2_k22_s1	no same-type entry found	4274	0	0.0
+aligned piece	kmerseek	pfamshared	w10	hp_thomas_dill_no_c2_k22_s1	no same-type entry found	4274	0	0.0
+whole call	kmerseek	pfamshared	w10	hp_thomas_dill_no_c2_k22_s1	no same-type entry found	4274	0	0.0
+aligned piece	kmerseek	regions	w10	hp_thomas_dill_no_c2_k22_s1	no same-type entry found	4274	12	0.0028076743097800653
+whole call	kmerseek	regions	w10	hp_thomas_dill_no_c2_k22_s1	no same-type entry found	4274	5	0.001169864295741694
+whole call	kmerseek	regionsshared	w10	hp_thomas_dill_no_c2_k22_s1	no same-type entry found	4274	0	0.0
+aligned piece	kmerseek	regionsshared	w10	hp_thomas_dill_no_c2_k22_s1	no same-type entry found	4274	2	0.0004679457182966776
+whole call	kmerseek	whole	w10	hp_thomas_dill_no_c2_k22_s1	no same-type entry found	4274	6	0.0014038371548900327
+aligned piece	kmerseek	whole	w10	hp_thomas_dill_no_c2_k22_s1	no same-type entry found	4274	181	0.04234908750584932
+aligned piece	kmerseek	wholeannot	w10	hp_thomas_dill_no_c2_k22_s1	no same-type entry found	4274	7	0.0016378100140383716
+whole call	kmerseek	wholeannot	w10	hp_thomas_dill_no_c2_k22_s1	no same-type entry found	4274	0	0.0
+aligned piece	kmerseek	pfam	w20	hp_thomas_dill_no_c2_k22_s1	no same-type entry found	4274	0	0.0
+whole call	kmerseek	pfam	w20	hp_thomas_dill_no_c2_k22_s1	no same-type entry found	4274	0	0.0
+whole call	kmerseek	pfamshared	w20	hp_thomas_dill_no_c2_k22_s1	no same-type entry found	4274	0	0.0
+aligned piece	kmerseek	pfamshared	w20	hp_thomas_dill_no_c2_k22_s1	no same-type entry found	4274	0	0.0
+whole call	kmerseek	regions	w20	hp_thomas_dill_no_c2_k22_s1	no same-type entry found	4274	0	0.0
+aligned piece	kmerseek	regions	w20	hp_thomas_dill_no_c2_k22_s1	no same-type entry found	4274	1	0.0002339728591483388
+aligned piece	kmerseek	regionsshared	w20	hp_thomas_dill_no_c2_k22_s1	no same-type entry found	4274	2	0.0004679457182966776
+whole call	kmerseek	regionsshared	w20	hp_thomas_dill_no_c2_k22_s1	no same-type entry found	4274	0	0.0
+whole call	kmerseek	whole	w20	hp_thomas_dill_no_c2_k22_s1	no same-type entry found	4274	6	0.0014038371548900327
+aligned piece	kmerseek	whole	w20	hp_thomas_dill_no_c2_k22_s1	no same-type entry found	4274	181	0.04234908750584932
+whole call	kmerseek	wholeannot	w20	hp_thomas_dill_no_c2_k22_s1	no same-type entry found	4274	0	0.0
+aligned piece	kmerseek	wholeannot	w20	hp_thomas_dill_no_c2_k22_s1	no same-type entry found	4274	19	0.004445484323818437
+whole call	kmerseek	pfam	w10	hsdm17_k6_s1	no same-type entry found	4274	3	0.0007019185774450163
+aligned piece	kmerseek	pfam	w10	hsdm17_k6_s1	no same-type entry found	4274	3	0.0007019185774450163
+aligned piece	kmerseek	pfamshared	w10	hsdm17_k6_s1	no same-type entry found	4274	3	0.0007019185774450163
+whole call	kmerseek	pfamshared	w10	hsdm17_k6_s1	no same-type entry found	4274	3	0.0007019185774450163
+aligned piece	kmerseek	regions	w10	hsdm17_k6_s1	no same-type entry found	4274	3	0.0007019185774450163
+whole call	kmerseek	regions	w10	hsdm17_k6_s1	no same-type entry found	4274	21	0.004913430042115114
+whole call	kmerseek	regionsshared	w10	hsdm17_k6_s1	no same-type entry found	4274	20	0.004679457182966776
+aligned piece	kmerseek	regionsshared	w10	hsdm17_k6_s1	no same-type entry found	4274	96	0.022461394478240523
+aligned piece	kmerseek	whole	w10	hsdm17_k6_s1	no same-type entry found	4274	317	0.0741693963500234
+whole call	kmerseek	whole	w10	hsdm17_k6_s1	no same-type entry found	4274	42	0.009826860084230228
+aligned piece	kmerseek	wholeannot	w10	hsdm17_k6_s1	no same-type entry found	4274	117	0.02737482452035564
+whole call	kmerseek	wholeannot	w10	hsdm17_k6_s1	no same-type entry found	4274	26	0.006083294337856809
+aligned piece	kmerseek	pfam	w20	hsdm17_k6_s1	no same-type entry found	4274	4	0.0009358914365933552
+whole call	kmerseek	pfam	w20	hsdm17_k6_s1	no same-type entry found	4274	4	0.0009358914365933552
+aligned piece	kmerseek	pfamshared	w20	hsdm17_k6_s1	no same-type entry found	4274	4	0.0009358914365933552
+whole call	kmerseek	pfamshared	w20	hsdm17_k6_s1	no same-type entry found	4274	4	0.0009358914365933552
+whole call	kmerseek	regions	w20	hsdm17_k6_s1	no same-type entry found	4274	72	0.016846045858680395
+aligned piece	kmerseek	regions	w20	hsdm17_k6_s1	no same-type entry found	4274	110	0.02573701450631727
+whole call	kmerseek	regionsshared	w20	hsdm17_k6_s1	no same-type entry found	4274	27	0.006317267197005147
+aligned piece	kmerseek	regionsshared	w20	hsdm17_k6_s1	no same-type entry found	4274	109	0.025503041647168927
+whole call	kmerseek	whole	w20	hsdm17_k6_s1	no same-type entry found	4274	48	0.011230697239120261
+aligned piece	kmerseek	whole	w20	hsdm17_k6_s1	no same-type entry found	4274	333	0.07791296209639682
+whole call	kmerseek	wholeannot	w20	hsdm17_k6_s1	no same-type entry found	4274	29	0.006785212915301825
+aligned piece	kmerseek	wholeannot	w20	hsdm17_k6_s1	no same-type entry found	4274	126	0.029480580252690687
+aligned piece	kmerseek	pfam	w10	mmseqs12_k6_s1	no same-type entry found	4274	8	0.0018717828731867104
+whole call	kmerseek	pfam	w10	mmseqs12_k6_s1	no same-type entry found	4274	8	0.0018717828731867104
+whole call	kmerseek	pfamshared	w10	mmseqs12_k6_s1	no same-type entry found	4274	8	0.0018717828731867104
+aligned piece	kmerseek	pfamshared	w10	mmseqs12_k6_s1	no same-type entry found	4274	8	0.0018717828731867104
+whole call	kmerseek	regions	w10	mmseqs12_k6_s1	no same-type entry found	4274	17	0.0039775386055217596
+aligned piece	kmerseek	regions	w10	mmseqs12_k6_s1	no same-type entry found	4274	10	0.002339728591483388
+whole call	kmerseek	regionsshared	w10	mmseqs12_k6_s1	no same-type entry found	4274	42	0.009826860084230228
+aligned piece	kmerseek	regionsshared	w10	mmseqs12_k6_s1	no same-type entry found	4274	167	0.03907346747777258
+whole call	kmerseek	whole	w10	mmseqs12_k6_s1	no same-type entry found	4274	63	0.014740290126345344
+aligned piece	kmerseek	whole	w10	mmseqs12_k6_s1	no same-type entry found	4274	424	0.09920449227889565
+whole call	kmerseek	wholeannot	w10	mmseqs12_k6_s1	no same-type entry found	4274	25	0.00584932147870847
+aligned piece	kmerseek	wholeannot	w10	mmseqs12_k6_s1	no same-type entry found	4274	134	0.0313523631258774
+whole call	kmerseek	pfam	w20	mmseqs12_k6_s1	no same-type entry found	4274	15	0.0035095928872250818
+aligned piece	kmerseek	pfam	w20	mmseqs12_k6_s1	no same-type entry found	4274	16	0.003743565746373421
+aligned piece	kmerseek	pfamshared	w20	mmseqs12_k6_s1	no same-type entry found	4274	18	0.004211511464670099
+whole call	kmerseek	pfamshared	w20	mmseqs12_k6_s1	no same-type entry found	4274	17	0.0039775386055217596
+whole call	kmerseek	regions	w20	mmseqs12_k6_s1	no same-type entry found	4274	11	0.0025737014506317267
+aligned piece	kmerseek	regions	w20	mmseqs12_k6_s1	no same-type entry found	4274	5	0.001169864295741694
+whole call	kmerseek	regionsshared	w20	mmseqs12_k6_s1	no same-type entry found	4274	46	0.010762751520823585
+aligned piece	kmerseek	regionsshared	w20	mmseqs12_k6_s1	no same-type entry found	4274	179	0.041881141787552645
+whole call	kmerseek	whole	w20	mmseqs12_k6_s1	no same-type entry found	4274	70	0.016378100140383715
+aligned piece	kmerseek	whole	w20	mmseqs12_k6_s1	no same-type entry found	4274	440	0.10294805802526907
+aligned piece	kmerseek	wholeannot	w20	mmseqs12_k6_s1	no same-type entry found	4274	155	0.03626579316799251
+whole call	kmerseek	wholeannot	w20	mmseqs12_k6_s1	no same-type entry found	4274	40	0.009358914365933552
+aligned piece	kmerseek	pfam	w10	polarity4_k11_s1	no same-type entry found	4274	3	0.0007019185774450163
+whole call	kmerseek	pfam	w10	polarity4_k11_s1	no same-type entry found	4274	2	0.0004679457182966776
+whole call	kmerseek	pfamshared	w10	polarity4_k11_s1	no same-type entry found	4274	2	0.0004679457182966776
+aligned piece	kmerseek	pfamshared	w10	polarity4_k11_s1	no same-type entry found	4274	3	0.0007019185774450163
+aligned piece	kmerseek	regions	w10	polarity4_k11_s1	no same-type entry found	4274	1	0.0002339728591483388
+whole call	kmerseek	regions	w10	polarity4_k11_s1	no same-type entry found	4274	0	0.0
+whole call	kmerseek	regionsshared	w10	polarity4_k11_s1	no same-type entry found	4274	0	0.0
+aligned piece	kmerseek	regionsshared	w10	polarity4_k11_s1	no same-type entry found	4274	1	0.0002339728591483388
+whole call	kmerseek	whole	w10	polarity4_k11_s1	no same-type entry found	4274	37	0.008656995788488536
+aligned piece	kmerseek	whole	w10	polarity4_k11_s1	no same-type entry found	4274	185	0.043284978942442674
+aligned piece	kmerseek	wholeannot	w10	polarity4_k11_s1	no same-type entry found	4274	12	0.0028076743097800653
+whole call	kmerseek	wholeannot	w10	polarity4_k11_s1	no same-type entry found	4274	5	0.001169864295741694
+whole call	kmerseek	pfam	w20	polarity4_k11_s1	no same-type entry found	4274	2	0.0004679457182966776
+aligned piece	kmerseek	pfam	w20	polarity4_k11_s1	no same-type entry found	4274	3	0.0007019185774450163
+aligned piece	kmerseek	pfamshared	w20	polarity4_k11_s1	no same-type entry found	4274	3	0.0007019185774450163
+whole call	kmerseek	pfamshared	w20	polarity4_k11_s1	no same-type entry found	4274	2	0.0004679457182966776
+aligned piece	kmerseek	regions	w20	polarity4_k11_s1	no same-type entry found	4274	3	0.0007019185774450163
+whole call	kmerseek	regions	w20	polarity4_k11_s1	no same-type entry found	4274	2	0.0004679457182966776
+aligned piece	kmerseek	regionsshared	w20	polarity4_k11_s1	no same-type entry found	4274	3	0.0007019185774450163
+whole call	kmerseek	regionsshared	w20	polarity4_k11_s1	no same-type entry found	4274	2	0.0004679457182966776
+whole call	kmerseek	whole	w20	polarity4_k11_s1	no same-type entry found	4274	41	0.00959288722508189
+aligned piece	kmerseek	whole	w20	polarity4_k11_s1	no same-type entry found	4274	190	0.04445484323818437
+whole call	kmerseek	wholeannot	w20	polarity4_k11_s1	no same-type entry found	4274	10	0.002339728591483388
+aligned piece	kmerseek	wholeannot	w20	polarity4_k11_s1	no same-type entry found	4274	20	0.004679457182966776
+whole call	kmerseek	pfam	w10	protein20_k5_s1	no same-type entry found	4274	3	0.0007019185774450163
+aligned piece	kmerseek	pfam	w10	protein20_k5_s1	no same-type entry found	4274	4	0.0009358914365933552
+aligned piece	kmerseek	pfamshared	w10	protein20_k5_s1	no same-type entry found	4274	4	0.0009358914365933552
+whole call	kmerseek	pfamshared	w10	protein20_k5_s1	no same-type entry found	4274	3	0.0007019185774450163
+aligned piece	kmerseek	regions	w10	protein20_k5_s1	no same-type entry found	4274	200	0.04679457182966776
+whole call	kmerseek	regions	w10	protein20_k5_s1	no same-type entry found	4274	56	0.013102480112306972
+aligned piece	kmerseek	regionsshared	w10	protein20_k5_s1	no same-type entry found	4274	190	0.04445484323818437
+whole call	kmerseek	regionsshared	w10	protein20_k5_s1	no same-type entry found	4274	41	0.00959288722508189
+aligned piece	kmerseek	whole	w10	protein20_k5_s1	no same-type entry found	4274	296	0.06925596630790828
+whole call	kmerseek	whole	w10	protein20_k5_s1	no same-type entry found	4274	40	0.009358914365933552
+aligned piece	kmerseek	wholeannot	w10	protein20_k5_s1	no same-type entry found	4274	108	0.02526906878802059
+whole call	kmerseek	wholeannot	w10	protein20_k5_s1	no same-type entry found	4274	21	0.004913430042115114
+whole call	kmerseek	pfam	w20	protein20_k5_s1	no same-type entry found	4274	9	0.0021057557323350493
+aligned piece	kmerseek	pfam	w20	protein20_k5_s1	no same-type entry found	4274	10	0.002339728591483388
+whole call	kmerseek	pfamshared	w20	protein20_k5_s1	no same-type entry found	4274	9	0.0021057557323350493
+aligned piece	kmerseek	pfamshared	w20	protein20_k5_s1	no same-type entry found	4274	10	0.002339728591483388
+whole call	kmerseek	regions	w20	protein20_k5_s1	no same-type entry found	4274	75	0.01754796443612541
+aligned piece	kmerseek	regions	w20	protein20_k5_s1	no same-type entry found	4274	235	0.054983621899859614
+aligned piece	kmerseek	regionsshared	w20	protein20_k5_s1	no same-type entry found	4274	223	0.05217594759007955
+whole call	kmerseek	regionsshared	w20	protein20_k5_s1	no same-type entry found	4274	62	0.014506317267197005
+whole call	kmerseek	whole	w20	protein20_k5_s1	no same-type entry found	4274	44	0.010294805802526907
+aligned piece	kmerseek	whole	w20	protein20_k5_s1	no same-type entry found	4274	309	0.07229761347683669
+whole call	kmerseek	wholeannot	w20	protein20_k5_s1	no same-type entry found	4274	28	0.006551240056153486
+aligned piece	kmerseek	wholeannot	w20	protein20_k5_s1	no same-type entry found	4274	120	0.028076743097800654
+whole call	kmerseek	pfam	w10	sdm12_k7_s1	no same-type entry found	4274	11	0.0025737014506317267
+aligned piece	kmerseek	pfam	w10	sdm12_k7_s1	no same-type entry found	4274	8	0.0018717828731867104
+whole call	kmerseek	pfamshared	w10	sdm12_k7_s1	no same-type entry found	4274	11	0.0025737014506317267
+aligned piece	kmerseek	pfamshared	w10	sdm12_k7_s1	no same-type entry found	4274	8	0.0018717828731867104
+whole call	kmerseek	regions	w10	sdm12_k7_s1	no same-type entry found	4274	16	0.003743565746373421
+aligned piece	kmerseek	regions	w10	sdm12_k7_s1	no same-type entry found	4274	5	0.001169864295741694
+whole call	kmerseek	regionsshared	w10	sdm12_k7_s1	no same-type entry found	4274	41	0.00959288722508189
+aligned piece	kmerseek	regionsshared	w10	sdm12_k7_s1	no same-type entry found	4274	103	0.024099204492278897
+aligned piece	kmerseek	whole	w10	sdm12_k7_s1	no same-type entry found	4274	421	0.09850257370145063
+whole call	kmerseek	whole	w10	sdm12_k7_s1	no same-type entry found	4274	84	0.019653720168460457
+whole call	kmerseek	wholeannot	w10	sdm12_k7_s1	no same-type entry found	4274	53	0.012400561534861956
+aligned piece	kmerseek	wholeannot	w10	sdm12_k7_s1	no same-type entry found	4274	160	0.03743565746373421
+whole call	kmerseek	pfam	w20	sdm12_k7_s1	no same-type entry found	4274	13	0.0030416471689284044
+aligned piece	kmerseek	pfam	w20	sdm12_k7_s1	no same-type entry found	4274	10	0.002339728591483388
+aligned piece	kmerseek	pfamshared	w20	sdm12_k7_s1	no same-type entry found	4274	10	0.002339728591483388
+whole call	kmerseek	pfamshared	w20	sdm12_k7_s1	no same-type entry found	4274	13	0.0030416471689284044
+aligned piece	kmerseek	regions	w20	sdm12_k7_s1	no same-type entry found	4274	89	0.02082358446420215
+whole call	kmerseek	regions	w20	sdm12_k7_s1	no same-type entry found	4274	61	0.014272344408048667
+whole call	kmerseek	regionsshared	w20	sdm12_k7_s1	no same-type entry found	4274	52	0.012166588675713618
+aligned piece	kmerseek	regionsshared	w20	sdm12_k7_s1	no same-type entry found	4274	116	0.0271408516612073
+whole call	kmerseek	whole	w20	sdm12_k7_s1	no same-type entry found	4274	92	0.02152550304164717
+aligned piece	kmerseek	whole	w20	sdm12_k7_s1	no same-type entry found	4274	440	0.10294805802526907
+aligned piece	kmerseek	wholeannot	w20	sdm12_k7_s1	no same-type entry found	4274	175	0.04094525035095929
+whole call	kmerseek	wholeannot	w20	sdm12_k7_s1	no same-type entry found	4274	61	0.014272344408048667
+aligned piece	kmerseek	pfam	w10	uniprot18_k5_s1	no same-type entry found	4274	1	0.0002339728591483388
+whole call	kmerseek	pfam	w10	uniprot18_k5_s1	no same-type entry found	4274	0	0.0
+aligned piece	kmerseek	pfamshared	w10	uniprot18_k5_s1	no same-type entry found	4274	1	0.0002339728591483388
+whole call	kmerseek	pfamshared	w10	uniprot18_k5_s1	no same-type entry found	4274	0	0.0
+whole call	kmerseek	regions	w10	uniprot18_k5_s1	no same-type entry found	4274	44	0.010294805802526907
+aligned piece	kmerseek	regions	w10	uniprot18_k5_s1	no same-type entry found	4274	164	0.03837154890032756
+whole call	kmerseek	regionsshared	w10	uniprot18_k5_s1	no same-type entry found	4274	29	0.006785212915301825
+aligned piece	kmerseek	regionsshared	w10	uniprot18_k5_s1	no same-type entry found	4274	155	0.03626579316799251
+whole call	kmerseek	whole	w10	uniprot18_k5_s1	no same-type entry found	4274	32	0.007487131492746842
+aligned piece	kmerseek	whole	w10	uniprot18_k5_s1	no same-type entry found	4274	281	0.06574637342068321
+whole call	kmerseek	wholeannot	w10	uniprot18_k5_s1	no same-type entry found	4274	11	0.0025737014506317267
+aligned piece	kmerseek	wholeannot	w10	uniprot18_k5_s1	no same-type entry found	4274	90	0.02105755732335049
+aligned piece	kmerseek	pfam	w20	uniprot18_k5_s1	no same-type entry found	4274	1	0.0002339728591483388
+whole call	kmerseek	pfam	w20	uniprot18_k5_s1	no same-type entry found	4274	0	0.0
+whole call	kmerseek	pfamshared	w20	uniprot18_k5_s1	no same-type entry found	4274	0	0.0
+aligned piece	kmerseek	pfamshared	w20	uniprot18_k5_s1	no same-type entry found	4274	1	0.0002339728591483388
+aligned piece	kmerseek	regionsshared	w20	uniprot18_k5_s1	no same-type entry found	4274	177	0.04141319606925597
+whole call	kmerseek	regionsshared	w20	uniprot18_k5_s1	no same-type entry found	4274	47	0.010996724379971923
+aligned piece	kmerseek	whole	w20	uniprot18_k5_s1	no same-type entry found	4274	291	0.06808610201216658
+whole call	kmerseek	whole	w20	uniprot18_k5_s1	no same-type entry found	4274	34	0.007955077211043519
+aligned piece	kmerseek	wholeannot	w20	uniprot18_k5_s1	no same-type entry found	4274	96	0.022461394478240523
+whole call	kmerseek	wholeannot	w20	uniprot18_k5_s1	no same-type entry found	4274	16	0.003743565746373421
+aligned piece	kmerseek	pfam	w10	wass14_k6_s1	no same-type entry found	4274	0	0.0
+whole call	kmerseek	pfam	w10	wass14_k6_s1	no same-type entry found	4274	0	0.0
+aligned piece	kmerseek	pfamshared	w10	wass14_k6_s1	no same-type entry found	4274	0	0.0
+whole call	kmerseek	pfamshared	w10	wass14_k6_s1	no same-type entry found	4274	0	0.0
+aligned piece	kmerseek	regions	w10	wass14_k6_s1	no same-type entry found	4274	0	0.0
+whole call	kmerseek	regions	w10	wass14_k6_s1	no same-type entry found	4274	0	0.0
+whole call	kmerseek	regionsshared	w10	wass14_k6_s1	no same-type entry found	4274	26	0.006083294337856809
+aligned piece	kmerseek	regionsshared	w10	wass14_k6_s1	no same-type entry found	4274	146	0.034160037435657466
+aligned piece	kmerseek	whole	w10	wass14_k6_s1	no same-type entry found	4274	322	0.07533926064576509
+whole call	kmerseek	whole	w10	wass14_k6_s1	no same-type entry found	4274	40	0.009358914365933552
+whole call	kmerseek	wholeannot	w10	wass14_k6_s1	no same-type entry found	4274	18	0.004211511464670099
+aligned piece	kmerseek	wholeannot	w10	wass14_k6_s1	no same-type entry found	4274	99	0.02316331305568554
+aligned piece	kmerseek	pfam	w20	wass14_k6_s1	no same-type entry found	4274	0	0.0
+whole call	kmerseek	pfam	w20	wass14_k6_s1	no same-type entry found	4274	0	0.0
+whole call	kmerseek	pfamshared	w20	wass14_k6_s1	no same-type entry found	4274	0	0.0
+aligned piece	kmerseek	pfamshared	w20	wass14_k6_s1	no same-type entry found	4274	0	0.0
+whole call	kmerseek	regionsshared	w20	wass14_k6_s1	no same-type entry found	4274	37	0.008656995788488536
+aligned piece	kmerseek	regionsshared	w20	wass14_k6_s1	no same-type entry found	4274	170	0.0397753860552176
+whole call	kmerseek	whole	w20	wass14_k6_s1	no same-type entry found	4274	44	0.010294805802526907
+aligned piece	kmerseek	whole	w20	wass14_k6_s1	no same-type entry found	4274	332	0.07767898923724847
+aligned piece	kmerseek	wholeannot	w20	wass14_k6_s1	no same-type entry found	4274	110	0.02573701450631727
+whole call	kmerseek	wholeannot	w20	wass14_k6_s1	no same-type entry found	4274	22	0.005147402901263453
+whole call	kmerseek	pfam	w10	wwmj5_k10_s1	no same-type entry found	4274	4	0.0009358914365933552
+aligned piece	kmerseek	pfam	w10	wwmj5_k10_s1	no same-type entry found	4274	5	0.001169864295741694
+whole call	kmerseek	pfamshared	w10	wwmj5_k10_s1	no same-type entry found	4274	4	0.0009358914365933552
+aligned piece	kmerseek	pfamshared	w10	wwmj5_k10_s1	no same-type entry found	4274	5	0.001169864295741694
+whole call	kmerseek	regions	w10	wwmj5_k10_s1	no same-type entry found	4274	2	0.0004679457182966776
+aligned piece	kmerseek	regions	w10	wwmj5_k10_s1	no same-type entry found	4274	0	0.0
+whole call	kmerseek	regionsshared	w10	wwmj5_k10_s1	no same-type entry found	4274	2	0.0004679457182966776
+aligned piece	kmerseek	regionsshared	w10	wwmj5_k10_s1	no same-type entry found	4274	6	0.0014038371548900327
+whole call	kmerseek	whole	w10	wwmj5_k10_s1	no same-type entry found	4274	80	0.018717828731867104
+aligned piece	kmerseek	whole	w10	wwmj5_k10_s1	no same-type entry found	4274	517	0.12096396817969116
+aligned piece	kmerseek	wholeannot	w10	wwmj5_k10_s1	no same-type entry found	4274	175	0.04094525035095929
+whole call	kmerseek	wholeannot	w10	wwmj5_k10_s1	no same-type entry found	4274	32	0.007487131492746842
+aligned piece	kmerseek	pfam	w20	wwmj5_k10_s1	no same-type entry found	4274	6	0.0014038371548900327
+whole call	kmerseek	pfam	w20	wwmj5_k10_s1	no same-type entry found	4274	5	0.001169864295741694
+aligned piece	kmerseek	pfamshared	w20	wwmj5_k10_s1	no same-type entry found	4274	6	0.0014038371548900327
+whole call	kmerseek	pfamshared	w20	wwmj5_k10_s1	no same-type entry found	4274	5	0.001169864295741694
+aligned piece	kmerseek	regions	w20	wwmj5_k10_s1	no same-type entry found	4274	0	0.0
+whole call	kmerseek	regions	w20	wwmj5_k10_s1	no same-type entry found	4274	0	0.0
+whole call	kmerseek	regionsshared	w20	wwmj5_k10_s1	no same-type entry found	4274	4	0.0009358914365933552
+aligned piece	kmerseek	regionsshared	w20	wwmj5_k10_s1	no same-type entry found	4274	9	0.0021057557323350493
+aligned piece	kmerseek	whole	w20	wwmj5_k10_s1	no same-type entry found	4274	534	0.12494150678521292
+whole call	kmerseek	whole	w20	wwmj5_k10_s1	no same-type entry found	4274	90	0.02105755732335049
+aligned piece	kmerseek	wholeannot	w20	wwmj5_k10_s1	no same-type entry found	4274	198	0.04632662611137108
+whole call	kmerseek	wholeannot	w20	wwmj5_k10_s1	no same-type entry found	4274	39	0.009124941506785214
+whole call	mmseqs2	pfam	w10	mmseqs2	no same-type entry found	4274	17	0.0039775386055217596
+aligned piece	mmseqs2	pfam	w10	mmseqs2	no same-type entry found	4274	26	0.006083294337856809
+whole call	mmseqs2	regions	w10	mmseqs2	no same-type entry found	4274	241	0.05638745905474965
+aligned piece	mmseqs2	regions	w10	mmseqs2	no same-type entry found	4274	860	0.20121665886757137
+whole call	mmseqs2	whole	w10	mmseqs2	no same-type entry found	4274	64	0.014974262985493684
+aligned piece	mmseqs2	whole	w10	mmseqs2	no same-type entry found	4274	1351	0.3160973327094057
+whole call	mmseqs2	wholeannot	w10	mmseqs2	no same-type entry found	4274	37	0.008656995788488536
+aligned piece	mmseqs2	wholeannot	w10	mmseqs2	no same-type entry found	4274	248	0.05802526906878802
+whole call	mmseqs2	pfam	w20	mmseqs2	no same-type entry found	4274	17	0.0039775386055217596
+aligned piece	mmseqs2	pfam	w20	mmseqs2	no same-type entry found	4274	26	0.006083294337856809
+aligned piece	mmseqs2	regions	w20	mmseqs2	no same-type entry found	4274	858	0.20074871314927467
+whole call	mmseqs2	regions	w20	mmseqs2	no same-type entry found	4274	242	0.056621431913897985
+whole call	mmseqs2	whole	w20	mmseqs2	no same-type entry found	4274	63	0.014740290126345344
+aligned piece	mmseqs2	whole	w20	mmseqs2	no same-type entry found	4274	1346	0.31492746841366404
+whole call	mmseqs2	wholeannot	w20	mmseqs2	no same-type entry found	4274	35	0.008189050070191857
+aligned piece	mmseqs2	wholeannot	w20	mmseqs2	no same-type entry found	4274	243	0.05685540477304633
