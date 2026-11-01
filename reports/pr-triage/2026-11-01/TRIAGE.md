@@ -44,6 +44,22 @@ commit.
 
 Main's black and lint checks passed after the merges.
 
+## PNG fixes merged on 2026-11-01
+
+Olga asked for the 11 PRs that failed only the 256-colour PNG check to be fixed and
+merged. On each branch: main merged in, `scripts/shrink_png.py` (main's copy) run on the
+PNGs and notebooks the PR adds or changes, then merged once every check passed. Merged:
+141, 172, 173, 176, 190, 192, 194, 54, 63, 140, 169. 48 analysis PRs remain open.
+
+- 190 and 54 also failed the notebooks job; that job runs the same PNG hook, and the
+  shrink fixed it. 54 also needed black on its notebook and `bits_ceiling_utils.py`.
+- 176 conflicted with main in notebook 294, which PR 143 had merged. Main's copy is
+  newer (it has the finished kmerseek chaining results), so both nb294 files were set
+  to main's copy. PR 176 is about notebook 346 and no longer changes notebook 294.
+- 54 then conflicted with main in notebook 245, because 176 carried an older copy of it
+  with one review wording pass. In each conflicting block 54's own text was kept: PR 54
+  owns notebook 245 and its latest wording edit was reviewed at its head commit.
+
 ## Closed on 2026-11-01
 
 Olga approved these in chat. Each got a comment saying why; every branch was kept, so
