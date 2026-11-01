@@ -341,7 +341,7 @@ PREFETCH_CONTAINERS ?= $(ALL_CONTAINERS)
         mini-testset mini-testset-sherlock mhc-testset run-mhc-local \
         midi-testset-sherlock run-midi fetch-structures-login \
         midi-plus-testset-sherlock run-midi-plus pull-report-midi-plus \
-        run-midi-plus-all-qfo queue-empty \
+        run-midi-plus-all-qfo queue-empty reduce-delimitation reduce-delimitation-list \
         watch attach stop \
         fetch-structures-mac \
         run-mini run-mini-local pull-mini \
@@ -2505,6 +2505,54 @@ purge-empty-kmerseek-regions:
 	 find $(KMERSEEK_REGIONS_DIR) -maxdepth 1 -name '*.regions.parquet' -size 0 | sort | sed 's/^/  /'; \
 	 find $(KMERSEEK_REGIONS_DIR) -maxdepth 1 -name '*.regions.parquet' -size 0 -exec /bin/rm -f {} +; \
 	 echo "deleted $$n; the next -resume runs those searches again"
+
+## Notebook 238 on the full midi-plus run: for every human Pfam instance, does a significant
+## region of each arm cover it (half the domain) and delimit it (IoU >= 0.5)? One job per
+## kmerseek region parquet and per comparison-tool TSV of the ten midi-plus targets, scored
+## by scripts/delimitation_pre_transfer.py --results as a SLURM array of at most
+## DELIM_TASKS tasks. That is 5, fewer than reduce-elm-cover's 20: a 2.9 GB region file
+## scores in seconds, so 20 tasks would each finish in a few minutes, and Sherlock asks for
+## tasks of at least 10 minutes. A second job, queued to start only if
+## every array task succeeds, joins the outputs into
+## $(DELIM_REDUCE_DIR)/238_delimitation_pre_transfer_full{,.hits}.parquet.
+##
+## The code runs from a git archive of HEAD in $(DELIM_REDUCE_DIR)/code, so a later `git pull`
+## cannot change it under a running array. DELIM_RESULTS is an absolute path so this also
+## runs from a second clone while another run holds the first one's checkout.
+## DELIM_ONLY=<regex> scores only the matching files, for a test.
+DELIM_RESULTS    ?= $(SCRATCH)/2024-kmerseek-analysis/nextflow-runs/qfo-pfam-region-benchmark/data/midi-plus/results
+DELIM_REDUCE_DIR ?= $(SCRATCH)/238-delimitation
+DELIM_IMAGE      ?= $(SCRATCH)/apptainer-cache/docker.io-olgabot-kmerseek-0.4.0-rc5.img
+DELIM_TASKS      ?= 5
+DELIM_ONLY       ?=
+DELIM_LIST = apptainer exec --bind /scratch $(DELIM_IMAGE) python3 $(DELIM_REDUCE_DIR)/code/scripts/delimitation_pre_transfer.py \
+	--results $(DELIM_RESULTS) --list $(if $(DELIM_ONLY),--only '$(DELIM_ONLY)')
+
+reduce-delimitation-list:
+	$(call require_cluster)
+	@test -d $(DELIM_RESULTS)/kmerseek || { echo "  no midi-plus kmerseek regions at $(DELIM_RESULTS)"; exit 1; }
+	mkdir -p $(DELIM_REDUCE_DIR)/code
+	cd ../.. && git archive HEAD | tar -x -C $(DELIM_REDUCE_DIR)/code
+	$(DELIM_LIST) > $(DELIM_REDUCE_DIR)/jobs.tsv
+	@awk -F'\t' '{split($$1, a, "."); n[a[1]]++; b += $$2} \
+	  END {for (t in n) printf "  %-20s %5d files\n", t, n[t]; printf "  %d jobs, %.0f GB of input\n", NR, b / 1e9}' \
+	  $(DELIM_REDUCE_DIR)/jobs.tsv
+
+reduce-delimitation: reduce-delimitation-list
+	mkdir -p $(DELIM_REDUCE_DIR)/logs
+	@cd $(DELIM_REDUCE_DIR) && \
+	  n=$$(wc -l < jobs.tsv); t=$$(( n < $(DELIM_TASKS) ? n : $(DELIM_TASKS) )); \
+	  test $$n -gt 0 || { echo "  no jobs"; exit 1; }; \
+	  a=$$(DELIM_RESULTS=$(DELIM_RESULTS) DELIM_IMAGE=$(DELIM_IMAGE) DELIM_ONLY='$(DELIM_ONLY)' \
+	       sbatch --parsable --export=ALL --account=$(SLURM_ACCOUNT) --partition=$(SLURM_PARTITION) \
+	         --array=0-$$(( t - 1 )) code/scripts/reduce_delimitation.sbatch); \
+	  c=$$(sbatch --parsable --dependency=afterok:$$a --account=$(SLURM_ACCOUNT) --partition=$(SLURM_PARTITION) \
+	         --job-name=238-delimitation-concat --cpus-per-task=8 --mem=32G --time=02:00:00 \
+	         --output=logs/concat_%j.log \
+	         --wrap "apptainer exec --bind /scratch $(DELIM_IMAGE) python3 code/scripts/concat_delimitation_pre_transfer.py \
+	                 --in-dir per-job --out 238_delimitation_pre_transfer_full.parquet"); \
+	  echo "  array $$a: $$n jobs over $$t tasks; join job $$c starts when every task succeeds"; \
+	  echo "  logs: $(DELIM_REDUCE_DIR)/logs"
 
 ## How much disk the shared cache is holding, and how much is left. Check this before
 ## launching the full sweep. Everything under results/ is shared between run-midi and run:
