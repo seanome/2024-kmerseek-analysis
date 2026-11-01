@@ -74,6 +74,7 @@ search)
     mkdir -p "$(dirname "$out")"
     # Query chunk: records i with i mod N_CHUNKS == chunk, so exons and decoys spread evenly.
     q=${TMPDIR:-/tmp}/357.q.$slug.$chunk.fasta
+    trap 'rm -f "$q" "$out.part"' EXIT
     awk -v n=$N_CHUNKS -v c="$chunk" '/^>/ { r++ } (r - 1) % n == c' "$QUERIES" > "$q"
     echo "357: $slug chunk $chunk, $(grep -c '>' "$q") queries, fit K $KA_K r_database $KA_R"
     # kmerseek writes regions 0-based and end-exclusive; the call file is 1-based and
