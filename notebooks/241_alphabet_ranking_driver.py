@@ -444,6 +444,9 @@ def one_arm(
         if rc == 0 and part.exists():
             part.rename(search_csv)
         else:
+            if rc == 0:
+                # Exit 0 but no file at the -o name: count it as a failed search.
+                rc = 1
             part.unlink(missing_ok=True)
         rec["search_rc"], rec["search_s"] = rc, round(dt, 1)
     else:
