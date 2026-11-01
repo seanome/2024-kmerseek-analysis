@@ -40,6 +40,20 @@ def read_fasta(p):
     return {k: "".join(v) for k, v in seqs.items()}
 
 
+def read_supported_align(path):
+    """Align parquet, or an empty frame when the file is missing or has no `supported` column.
+
+    pair_align.py writes only query and target when there are no pairs, so a channel with
+    no peptide hits has no `supported`, `evalue` or `pct_identity` column.
+    """
+    empty = pl.DataFrame(schema={"query": pl.Utf8, "target": pl.Utf8, "supported": pl.Boolean,
+                                 "evalue": pl.Float64, "pct_identity": pl.Float64})
+    if not path.exists():
+        return empty
+    a = pl.read_parquet(path)
+    return a if "supported" in a.columns else empty
+
+
 def gene_of(t):
     return t.rsplit("_iso", 1)[0] if "_iso" in t else t
 
@@ -52,7 +66,7 @@ def main():
     truth = pl.read_csv(truth_p, separator="\t")
     gene_class = {gene_of(t): c for t, c in zip(truth["transcript"], truth["class"])}
 
-    a = pl.read_parquet(tx_align)
+    a = read_supported_align(Path(tx_align))
     right_tx = (a.filter((pl.col("supported") == True) & (pl.col("evalue") <= 1e-10))
                 .sort(["query", "evalue", "target"]).group_by("query", maintain_order=True).head(1))
     right = defaultdict(set)
@@ -93,7 +107,7 @@ def main():
         if not (d / "search.done").exists():
             continue
         pep = pl.read_csv(d / "pep.peptides.tsv", separator="\t", infer_schema_length=0)
-        al = pl.read_parquet(d / "align.proteome.parquet")
+        al = read_supported_align(d / "align.proteome.parquet")
         best = (al.filter(pl.col("supported") == True).join(
                     pep.select(pl.col("peptide_id").alias("query"), "seq_id"), on="query")
                 .sort(["seq_id", "evalue", "target"]).group_by("seq_id", maintain_order=True).head(1))
