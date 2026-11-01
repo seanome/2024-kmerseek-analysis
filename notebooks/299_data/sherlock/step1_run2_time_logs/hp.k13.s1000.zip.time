@@ -1,0 +1,23 @@
+	Command being timed: "timeout 40000 /scratch/users/olgabot/299-omrgc-pilot/env/bin/python /scratch/users/olgabot/2024-kmerseek-analysis-299/notebooks/299_omrgc_sketch_pilot.py drop-empty /scratch/users/olgabot/299-omrgc-pilot/step1/hp.k13.s1000.sig.gz /scratch/users/olgabot/299-omrgc-pilot/step1/hp.k13.s1000.sig.zip"
+	User time (seconds): 179.74
+	System time (seconds): 7.01
+	Percent of CPU this job got: 99%
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 3:07.16
+	Average shared text size (kbytes): 0
+	Average unshared data size (kbytes): 0
+	Average stack size (kbytes): 0
+	Average total size (kbytes): 0
+	Maximum resident set size (kbytes): 5379716
+	Average resident set size (kbytes): 0
+	Major (requiring I/O) page faults: 0
+	Minor (reclaiming a frame) page faults: 1939253
+	Voluntary context switches: 157
+	Involuntary context switches: 2659
+	Swaps: 0
+	File system inputs: 16
+	File system outputs: 903248
+	Socket messages sent: 0
+	Socket messages received: 0
+	Signals delivered: 0
+	Page size (bytes): 4096
+	Exit status: 0

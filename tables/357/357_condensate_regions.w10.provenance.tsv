@@ -1,0 +1,5 @@
+region table	tables/357/357_condensate_regions_phasepro_disprot.tsv	md5 c3591f4b29e30a9abf0cf22eb75b7362
+target FASTA	scripts/357_condensate_index_fasta.py	88 records from 105 regions
+decoy script	nextflow-runs/regions-index-pilot/bin/make_window_decoys.py on olgabot/regions-index-pilot (PR 114) at 05220334	md5 e16155affc543f35de4ebe8624bf6d50
+decoy window and seed	10	20261006
+decoy FASTA md5	a6ed6cb81dd4911b4b69b2bed11ad621	(PR 114's Swiss-Prot regions decoys: 1dd147349181efd1df7f3990b0883d5f)

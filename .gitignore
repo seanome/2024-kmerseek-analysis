@@ -182,6 +182,10 @@ nextflow-runs/kmer-spectra/results-*/
 .nextflow.log*
 work/
 results/
+# Except the leaderboard tables, which the leaderboard site copies from a commit.
+!/results/
+/results/*
+!/results/leaderboard/
 results-test/
 *.report.html
 *.timeline.html
@@ -211,3 +215,4 @@ trace.*.txt
 /reports/review-*/
 # Scratch output of a local build_multiqc_inputs.py run.
 reg_out/
+notebooks/284_explainer_files/
