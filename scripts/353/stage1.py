@@ -404,9 +404,7 @@ def cmd_score(args):
                 yield_[m].add(r["blind_id"].rsplit("-", 1)[0])
     secs = {
         m: [
-            _seconds(t)
-            for t in times
-            if t["workflow"] == m and _seconds(t) is not None
+            _seconds(t) for t in times if t["workflow"] == m and _seconds(t) is not None
         ]
         for m in ("kmerseek", "comparison")
     }
