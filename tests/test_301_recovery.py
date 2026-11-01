@@ -90,6 +90,66 @@ exit $rc
     assert gzip.open(d / "regions_filtered.chunk000.tsv.gz", "rt").read() == "kept\n"
 
 
+def test_wrong_chunk_count_setting_is_skipped_and_marked_incomplete(tmp_path):
+    import gzip
+    import re
+    import sys
+
+    base = tmp_path / "base"
+    (base / "step2").mkdir(parents=True)
+    (base / "step3").mkdir()
+    (base / "step5").mkdir()
+    (base / "step5/subset_query_ids.txt").write_text("Q\n")
+    (base / "step2/truth.tsv").write_text(
+        "query_id\tfeature_type\tstart\tend\nQ\tdomain\t1\t5\n"
+    )
+    (base / "step3/decoys.tsv").write_text(
+        "decoy_id\tquery_id\tfeature_type\tstart\tend\tunchanged\n"
+        "D\tQ\tdomain\t10\t14\tFalse\n"
+    )
+    for name, n_files in [("good", 1), ("short", 1)]:
+        d = base / "step5" / name
+        tag = d / f"{name}.k5.x"
+        tag.mkdir(parents=True)
+        (d / "status.tsv").write_text("ksize\tfit\n5\tfitted\n")
+        # "short" expects two chunks but has one output, so it must be skipped.
+        (d / "expected_chunks.txt").write_text("1" if name == "good" else "2")
+        for i in range(n_files):
+            with gzip.open(tag / f"regions_filtered.chunk{i:03d}.tsv.gz", "wt") as f:
+                f.write("query_id\ttarget_name\tstart\tend\tregion_evalue\n")
+                f.write("Q\tT\t1\t5\t0.001\n")
+    (base / "step5/nofit").mkdir()
+    out = tmp_path / "out"
+    subprocess.run(
+        [sys.executable, str(ROOT / "scripts/score_301_completed.py")]
+        + ["--base", str(base), "--out", str(out)],
+        check=True,
+        capture_output=True,
+    )
+    skipped = (out / "301_settings_skipped_swissprot.tsv").read_text().splitlines()
+    assert skipped == ["alphabet\tstate", "short\tincomplete"]
+    summary = (out / "301_partial_summary_swissprot.tsv").read_text()
+    assert "good.k5.x" in summary
+    assert "short.k5.x" not in summary
+    # Run the coverage step embedded in the sbatch file on this output.
+    text = (ROOT / "scripts/301_score_after_recovery.sbatch").read_text()
+    code = re.search(r"<<'PY'\n(.*?)\nPY\n", text, re.S).group(1)
+    subprocess.run(
+        [sys.executable, "-I", "-", str(base), str(out)],
+        input=code,
+        text=True,
+        check=True,
+        capture_output=True,
+    )
+    coverage = (out / "301_settings_coverage_swissprot.tsv").read_text().splitlines()
+    assert coverage == [
+        "alphabet\tstate",
+        "good\tcompleted",
+        "nofit\tincomplete_or_no_fit",
+        "short\tincomplete_or_no_fit",
+    ]
+
+
 def test_real_snapshot_zero_evalue_groups_exceed_one_percent():
     import csv
     import gzip
