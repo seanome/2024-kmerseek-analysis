@@ -245,9 +245,7 @@ def fig_bits_have_vs_need(v: dict, path: Path) -> None:
         ax.set_xlabel("bits")
     fig.legend(
         handles=[
-            Patch(
-                color=HAVE, label="observed run rarity or model-average information"
-            ),
+            Patch(color=HAVE, label="observed run rarity or model-average information"),
             Patch(color=NEED, label="bits the human-proteome search needs"),
         ],
         loc="lower left",
