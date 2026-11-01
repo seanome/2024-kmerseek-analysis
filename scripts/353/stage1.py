@@ -328,9 +328,9 @@ def cmd_sheet(args):
             continue
         # One card per measurement per query, whichever workflow found it. kmerseek and BLAST
         # report different stretches of the same record, so the stretch cannot be the key;
-        # the measurement text is unique to a record's measured feature, so two cards with
-        # the same text are the same evidence.
-        key = (c["query_number"], c["measurement"])
+        # the measurement text describes a record's measured feature but can match across
+        # paralogues (ELM text has no accession), so the record accession is part of the key.
+        key = (c["query_number"], c["record_accession"], c["measurement"])
         if key in merged:
             merged[key]["methods"].add(c["method"].split(":")[0])
             dropped_dup += 1
