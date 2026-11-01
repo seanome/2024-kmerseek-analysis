@@ -1,0 +1,560 @@
+#!/usr/bin/env nextflow
+// Time-split test, notebook 280: would kmerseek have placed Pfam domains before Pfam did?
+//
+// Queries: proteins with no Pfam-A domain in Pfam 33.1 (t0) that gained one by Pfam 38.2
+// (t1), plus one dipeptide-shuffled decoy each (bin/make_search_inputs.py). Every tool
+// searches Swiss-Prot as of UniProt 2019_08, the t0 reference; bin/score_transfers.py
+// scores the family each hit transfers against the t1 domains. A second reference, the
+// Pfam 33.1 seed members (make_search_inputs.py reference-pfam-seed), runs through the same
+// processes with --reference_tag pfamseed33_1, its own --index_cache and --outdir, and
+// --hmmscan_dir pointing at the first run's hmmscan output.
+//
+// Tools:
+//   kmerseek  every alphabet, each k of its range (every other k when the range has more
+//             than 5), scaled 1, mask off; two search settings per index: exact, and
+//             extend with the alphabet's C_opt and X-drop 4 x C_opt
+//   MMseqs2   -s 7, one round (the dark-set run uses 3; changed 2026-10-14)
+//   phmmer    --domE 0.001
+//   hmmscan   Pfam 33.1 models, -E 0.001 --domE 0.001, no gathering thresholds
+//
+// The kmerseek index and search processes, and their memory sizing, are copied from
+// nextflow-runs/invertebrate-dark-set/main.nf on olgabot/dark-set-kmerseek-0.4 (PR 57,
+// commit ec9846d). That directory is not edited by this pipeline.
+
+nextflow.enable.dsl = 2
+
+params.inputs          = null   // dir from make_search_inputs.py queries: queries.fasta, queries.tsv, instances.tsv
+params.reference_dir   = null   // dir from make_search_inputs.py reference: reference.fasta, sprot_domains.tsv
+params.settings        = null   // settings.tsv from make_search_inputs.py settings
+params.pfam_hmm        = null   // Pfam 33.1 Pfam-A.hmm.gz
+params.outdir          = null
+params.index_cache     = null   // storeDir for kmerseek indexes, shared by the pilot and the full run
+params.hmm_cache       = null
+params.query_chunk_size = 2000  // the dark-set run's, so its measured search times carry over
+params.read_test_half  = false  // true only for the full run (Stop 3)
+params.only_alphabets  = ''     // comma list, for a smaller pilot; empty = every row of settings.tsv
+// Comma list of alphabet:k rows of settings.tsv not to index or search, e.g. 'gbmr4:13'.
+// For settings whose search asks more memory than any hns or normal node has.
+params.skip_settings   = ''
+// Names the reference inside every kmerseek index name. Each reference also needs its own
+// --index_cache and --outdir: storeDir returns any index whose name it already holds, so a
+// second reference under the same tag and cache would be served the first one's indexes.
+params.reference_tag   = 'sprot2019_08'
+// A directory of hmmscan *.hmmscan.domtbl.gz from an earlier run of the same queries.
+// hmmscan does not depend on the reference, so a second reference reads these instead of
+// running hmmscanSearch again. Unset: hmmscan runs, as before.
+params.hmmscan_dir     = null
+
+params.kmerseek_image = 'docker.io/olgabot/kmerseek@sha256:7855826572644933e0c71926102b90174e650c144ae90b3641b760bd9f463afb'  // 0.4.0-rc5
+HMMER  = 'quay.io/biocontainers/hmmer@sha256:7a2b317b8d2fd3650b4924a8482cddeb940d4a0746c6a1501ff03ac1b7439e0c'
+MMSEQS = 'quay.io/biocontainers/mmseqs2@sha256:3503bfe576d560e550df2872af86a1ad1bcc1c06cfb7caadd3e7a95649f5f0ef'
+
+// kmerseek search filters: the dark-set run's values, so the two Figure 4 experiments match.
+params.threshold        = 0.0
+params.min_shared_kmers = 2
+params.max_query_pvalue = 0.05
+params.min_region_score = 1.3
+params.kmerseek_extend_xdrop_per_penalty = 4
+params.kmerseek_chain_max_gap   = 30
+params.kmerseek_chain_max_shift = 10
+params.mmseqs2_sensitivity = 7
+params.mmseqs2_evalue      = 10.0
+
+// Karlin-Altschul fit queries (dark-set kaQueriesFor): 500 up to 30 bits of keyspace,
+// doubling every 3 bits after that, at most 3_000, rounded to 50.
+params.kmerseek_ka_queries                    = 500
+params.kmerseek_ka_queries_bits_base          = 30
+params.kmerseek_ka_queries_bits_per_doubling  = 3
+params.kmerseek_ka_queries_max                = 3000
+
+// Memory model, dark-set values; see the long comment above kmerseekIndexMemory there.
+params.kmerseek_memory_max          = '500 GB'
+params.kmerseek_memory_retry_factor = 2.0
+params.kmerseek_index_memory_floor  = '48 GB'
+params.kmerseek_search_memory_floor = '24 GB'
+params.kmerseek_index_build_gb              = 45
+params.kmerseek_ka_fit_memory_gb_at_12_bits = 300
+params.kmerseek_ka_fit_memory_halving_bits  = 2.5
+params.kmerseek_search_memory_base     = 36
+params.kmerseek_search_memory_slope    = 2.34
+params.kmerseek_search_memory_headroom = 1.5
+
+CLASSES = [protein20: 20, uniprot18: 18, hsdm17: 17, wass14: 14, mmseqs12: 12, sdm12: 12,
+               funcgroups8: 8, gbmr7: 7, dayhoff6: 6, wwmj5: 5, gbmr4: 4, polarity4: 4,
+               hp_lehninger_hpc3: 3]
+def classesOf(String a) { CLASSES.containsKey(a) ? CLASSES[a] : (a.startsWith('hp_') ? 2 : null) }
+def keyspaceBits(String a, int k) { k * (Math.log(classesOf(a) as double) / Math.log(2.0d)) }
+
+def kaQueriesFor(String alphabet, int ksize) {
+    double bits = keyspaceBits(alphabet, ksize)
+    int nq = params.kmerseek_ka_queries as int
+    if (bits <= (params.kmerseek_ka_queries_bits_base as double)) return nq
+    double n = nq * Math.pow(2.0d, (bits - (params.kmerseek_ka_queries_bits_base as double))
+                                   / (params.kmerseek_ka_queries_bits_per_doubling as double))
+    (int) (Math.round(Math.min(params.kmerseek_ka_queries_max as double, n) / 50.0d) * 50)
+}
+
+// 4 x 0.15 is 0.6000000000000001 in a double; the fit stored at index time is looked up by
+// the exact X-drop string, so both processes print it the same short way (dark-set
+// penaltyString).
+def xdropFor(copt) {
+    def sf = String.format('%.2f', (params.kmerseek_extend_xdrop_per_penalty as double) * (copt as double))
+    sf.replaceAll(/0+$/, '').replaceAll(/\.$/, '')
+}
+
+def memoryLadder(double firstGb, int attempt) {
+    long capMb = MemoryUnit.of(params.kmerseek_memory_max).toMega()
+    long askMb = (long) (firstGb * 1024L * Math.pow(params.kmerseek_memory_retry_factor as double, attempt - 1))
+    MemoryUnit.of("${Math.min(capMb, askMb)} MB")
+}
+
+// First asks measured by the dark-set runs: index builds (alphabet|k|scaled -> GB, from its
+// assets and runs/ladder-0.4-midi/measured) and searches (alphabet|k -> largest peak RSS and
+// longest run time of a 2_000-query chunk, from the work dirs of ladder-0.4 and
+// ladder-0.4-midi at scaled 1, read 2026-10-12).
+INDEX_MEASURED = [:]
+file("${projectDir}/assets/kmerseek_index_memory_measured.tsv").readLines().drop(1).each { l ->
+    def c = l.split('\t'); def key = "${c[0]}|${c[1]}|${c[2]}".toString()
+    INDEX_MEASURED[key] = Math.max((INDEX_MEASURED[key] ?: 0) as double, c[3] as double)
+}
+SEARCH_MEASURED = [:]
+file("${projectDir}/assets/darkset_search_measured_s1.csv").readLines().drop(1).each { l ->
+    def c = l.split(','); SEARCH_MEASURED["${c[0]}|${c[1]}".toString()] = [gb: c[6] as double, h: c[5] as double]
+}
+
+// Searches the dark-set runs saw killed for memory, at scaled 1: index name -> the ask its
+// measure-resources tool set (twice the largest killed ask, or the ask that then finished),
+// kept per alphabet|k as the largest over clades. Mostly each alphabet's lowest k, at
+// 250-500 GB.
+SEARCH_KILLED = [:]
+file("${projectDir}/assets/kmerseek_search_memory_measured.tsv").readLines().drop(1).each { l ->
+    def c = l.split('\t')
+    def m = (c[0] =~ /^minus_[A-Za-z]+\.(\w+)\.k(\d+)\.lc\w+$/)
+    if (m.matches()) {
+        def key = "${m.group(1)}|${m.group(2)}".toString()
+        SEARCH_KILLED[key] = Math.max((SEARCH_KILLED[key] ?: 0) as double, c[1] as double)
+    }
+}
+
+def kmerseekIndexMemory(String alphabet, int ksize, int attempt) {
+    double bits = keyspaceBits(alphabet, ksize)
+    int nq      = kaQueriesFor(alphabet, ksize)
+    double fit  = (params.kmerseek_ka_fit_memory_gb_at_12_bits as double) *
+                  Math.pow(2.0d, -(bits - 12.0d) / (params.kmerseek_ka_fit_memory_halving_bits as double)) * (nq / 500.0d)
+    double gb   = 1.4d * Math.max(params.kmerseek_index_build_gb as double, fit)
+    double floorGb  = MemoryUnit.of(params.kmerseek_index_memory_floor).toGiga()
+    double measured = (INDEX_MEASURED["${alphabet}|${ksize}|1".toString()] ?: 0) as double
+    memoryLadder(Math.max(Math.max(floorGb, gb), measured), attempt)
+}
+
+// Spectrum load of an index (dark-set spectrumLoad): sum(occ^2 n) / sum(occ n) over its
+// spectrum.csv.gz. Read in the workflow, where the real path is known, and cached by name.
+SPECTRUM_LOAD = java.util.Collections.synchronizedMap([:])
+def spectrumLoad(Path index_dir) {
+    double num = 0.0d, den = 0.0d
+    new java.util.zip.GZIPInputStream(index_dir.resolve('spectrum.csv.gz').newInputStream()).withReader('UTF-8') { r ->
+        r.eachLine { line ->
+            if (line.startsWith('#') || line.startsWith('moltype')) return
+            def c = line.split(',')
+            double occ = c[2] as double, n = c[3] as double
+            num += occ * occ * n; den += occ * n
+        }
+    }
+    den > 0 ? num / den : 0.0d
+}
+
+// Searches of this pipeline's own pilot: one chunk of 440 queries against the same Swiss-Prot
+// 2019_08 indexes (tables/pilot_trace/pilot_trace_launch-pilot_2026-10-15.tsv, bin/pilot_search_measured.py):
+// alphabet|k|arm -> peak RSS (GiB) and run time (min). The full run's first ask is at least
+// 1.5x the pilot's peak, and its time 1.5x the pilot's run time scaled to the chunk's
+// queries. Memory is not scaled by queries: at hp_pbotc_1st_ed2 k29 the peak went from
+// 12.9 GB with 4 queries (smoke) to 18.6 GB with 440 (pilot), so the index dominates.
+PILOT_MEASURED = [:]
+file("${projectDir}/assets/pilot_search_measured.csv").readLines().drop(1).each { l ->
+    def c = l.split(',')
+    PILOT_MEASURED["${c[0]}|${c[1]}|${c[2]}".toString()] = [gb: c[3] as double, min: c[4] as double, queries: c[5] as double]
+}
+
+// A search asks 1.5x the largest peak the same alphabet and k reached on a dark-set chunk
+// of the same size; with no measurement, the dark-set spectrum-load model. Either way, at
+// least 1.5x the pilot's own peak for that alphabet, k and arm.
+def searchFirstGb(String alphabet, int ksize, String arm, String index_name) {
+    def key = "${alphabet}|${ksize}".toString()
+    def m = SEARCH_MEASURED[key]
+    def p = PILOT_MEASURED["${key}|${arm}".toString()]
+    double pilotGb = p ? 1.5d * p.gb : 0.0d
+    double floorGb = MemoryUnit.of(params.kmerseek_search_memory_floor).toGiga()
+    double killed  = (SEARCH_KILLED[key] ?: 0.0d) as double
+    if (m) return Math.max(pilotGb, Math.max(Math.max(floorGb, 1.5d * m.gb), killed))
+    double load = (SPECTRUM_LOAD[index_name] ?: 0.0d) as double
+    Math.max(pilotGb, Math.max(killed, Math.max(floorGb, (params.kmerseek_search_memory_headroom as double) *
+             ((params.kmerseek_search_memory_base as double) + (params.kmerseek_search_memory_slope as double) * Math.sqrt(load)))))
+}
+def searchHours(String alphabet, int ksize, String arm, int attempt) {
+    def m = SEARCH_MEASURED["${alphabet}|${ksize}".toString()]
+    def p = PILOT_MEASURED["${alphabet}|${ksize}|${arm}".toString()]
+    int first = m ? Math.max(2, (int) Math.ceil(1.5d * m.h)) : 4
+    if (p) first = Math.max(first, (int) Math.ceil(1.5d * p.min / 60.0d * (params.query_chunk_size as double) / p.queries))
+    "${Math.min(first * (1 << (attempt - 1)), 24)}h".toString()
+}
+
+// splitFasta numbers its chunk files from 1 in file order: chunk.<n>.<ext>.
+def chunkNumber(f) {
+    def m = (f.name =~ /^chunk\.(\d+)(\..*)?$/)
+    if (!m.matches()) error "query chunk ${f.name} is not named chunk.<n>"
+    m.group(1) as int
+}
+
+process kmerseekIndex {
+    tag "${alphabet}.k${ksize}"
+    storeDir params.index_cache
+    container params.kmerseek_image
+    cpus 8
+    memory { kmerseekIndexMemory(alphabet, ksize as int, task.attempt) }
+    time   { "${Math.min(4 * task.attempt, 24)}h" }
+
+    input:
+    tuple val(alphabet), val(ksize), val(copt)
+    path reference
+
+    output:
+    tuple val(alphabet), val(ksize), val(copt), path("${params.reference_tag}.${alphabet}.k${ksize}.kmerseek.rocksdb")
+
+    script:
+    def idx = "${params.reference_tag}.${alphabet}.k${ksize}.kmerseek.rocksdb"
+    def xd  = xdropFor(copt)
+    def nq  = kaQueriesFor(alphabet, ksize as int)
+    """
+    set -euo pipefail
+    stamp() { while IFS= read -r line; do printf '%(%Y-%m-%dT%H:%M:%S)T %s\\n' -1 "\$line"; done; }
+    echo start | stamp | tee index.log
+    kmerseek index --alphabet ${alphabet} --ksize ${ksize} --scaled 1 \\
+        --input ${reference} --output ${idx} \\
+        --extend-mismatch-penalty ${copt} --extend-xdrop ${xd} \\
+        --ka-queries ${nq} --ka-survival-out ${idx}/ka_survival.C${copt}.csv \\
+        --kmer-stats-out ${idx}/spectrum.csv.gz 2>&1 | stamp | tee -a index.log
+    cp index.log ${idx}/index.log
+    # Immutable once built (see the dark-set note): read-only files, writable directory.
+    chmod -R a-w ${idx}
+    chmod u+w ${idx}
+    """
+
+    stub:
+    def idx = "${params.reference_tag}.${alphabet}.k${ksize}.kmerseek.rocksdb"
+    """
+    mkdir -p ${idx}
+    printf 'moltype,ksize,occurrences,n_kmers\\n${alphabet},${ksize},1,10\\n' | gzip -c > ${idx}/spectrum.csv.gz
+    """
+}
+
+process kmerseekSearch {
+    tag "${alphabet}.k${ksize}.${arm}.${chunk_id}"
+    container params.kmerseek_image
+    publishDir "${params.outdir}/kmerseek", mode: 'copy'
+    cpus 8
+    memory { memoryLadder(searchFirstGb(alphabet, ksize as int, arm, index_dir.name), task.attempt) }
+    time   { searchHours(alphabet, ksize as int, arm, task.attempt) }
+
+    input:
+    tuple val(alphabet), val(ksize), val(copt), path(index_dir), val(arm), val(chunk_id), path(chunk)
+    path domains
+    path compact_awk
+
+    output:
+    path "${slug}.transfers.tsv.gz", emit: transfers
+    path "${slug}.stats.tsv", emit: stats
+
+    script:
+    slug = "${alphabet}.k${ksize}.${arm}.${chunk_id}"
+    def xd = xdropFor(copt)
+    // --ka-queries 0: the E-value comes from the fit stored at index time for this penalty
+    // and X-drop, or the search is refused (handled below).
+    def flags = arm == 'exact' ? '' :
+        "--extend-mismatch-penalty ${copt} --extend-xdrop ${xd} --ka-queries 0 " +
+        "--chain-max-gap ${params.kmerseek_chain_max_gap} --chain-max-shift ${params.kmerseek_chain_max_shift}"
+    // Nextflow runs this under `#!/bin/bash -ue`, so -e is on: without `set +e` a refused
+    // search stops the script before its exit status is read, and the task fails three
+    // times instead of recording the setting as unfitted (pilot, 2026-10-13: 27 extend
+    // settings, 81 attempts). The dark-set script does the same around its search.
+    """
+    set -uo pipefail
+    set +e
+    kmerseek search --alphabet ${alphabet} --ksize ${ksize} \\
+        --query ${chunk} --target ${index_dir} ${flags} \\
+        --threshold ${params.threshold} --min-shared-kmers ${params.min_shared_kmers} \\
+        --max-query-pvalue ${params.max_query_pvalue} --min-region-score ${params.min_region_score} \\
+        2> ${slug}.log \\
+      | tee >(wc -l > raw_rows.txt) \\
+      | awk -F, -v domains=${domains} -f ${compact_awk} \\
+      | gzip -c > ${slug}.transfers.tsv.gz
+    status=(\${PIPESTATUS[@]})
+    set -e
+    fit=yes
+    if [ "\${status[0]}" -ne 0 ]; then
+        if grep -q "no Karlin-Altschul fit" ${slug}.log; then
+            # The index-time fit was refused for this penalty: the extend setting cannot be
+            # searched on this index. Recorded as unfitted, not as zero transfers.
+            fit=no
+            printf 'query\\tqstart\\tqend\\ttarget\\ttstart\\ttend\\tpfam_acc\\n' | gzip -c > ${slug}.transfers.tsv.gz
+        else
+            cat ${slug}.log >&2; exit 1
+        fi
+    elif [ "\${status[2]}" -ne 0 ] || [ "\${status[3]}" -ne 0 ]; then
+        exit 1
+    fi
+    sleep 1  # let the wc in the process substitution finish writing
+    rows=\$(zcat ${slug}.transfers.tsv.gz | tail -n +2 | wc -l)
+    printf 'alphabet\\tksize\\tarm\\tchunk\\tc_opt\\tfitted\\traw_rows\\ttransfer_rows\\tbytes\\n' > ${slug}.stats.tsv
+    printf '%s\\t%s\\t%s\\t%s\\t%s\\t%s\\t%s\\t%s\\t%s\\n' ${alphabet} ${ksize} ${arm} ${chunk_id} ${copt} \$fit \\
+        "\$(cat raw_rows.txt 2>/dev/null || echo NA)" \$rows \$(stat -c %s ${slug}.transfers.tsv.gz) >> ${slug}.stats.tsv
+    """
+
+    stub:
+    slug = "${alphabet}.k${ksize}.${arm}.${chunk_id}"
+    """
+    printf 'query\\tqstart\\tqend\\ttarget\\ttstart\\ttend\\tpfam_acc\\n' | gzip -c > ${slug}.transfers.tsv.gz
+    printf 'alphabet\\tksize\\tarm\\tchunk\\tc_opt\\tfitted\\traw_rows\\ttransfer_rows\\tbytes\\n' > ${slug}.stats.tsv
+    printf '%s\\t%s\\t%s\\t%s\\t%s\\tyes\\t0\\t0\\t0\\n' ${alphabet} ${ksize} ${arm} ${chunk_id} ${copt} >> ${slug}.stats.tsv
+    """
+}
+
+process mmseqsSearch {
+    tag "${chunk_id}"
+    container MMSEQS
+    publishDir "${params.outdir}/mmseqs2", mode: 'copy'
+    cpus 16
+    memory '64 GB'
+    time { "${Math.min(8 * task.attempt, 48)}h" }
+
+    input:
+    tuple val(chunk_id), path(chunk)
+    path reference
+
+    output:
+    path "${chunk_id}.mmseqs2.tsv.gz"
+
+    script:
+    """
+    set -euo pipefail
+    mmseqs createdb ${chunk} qdb
+    mmseqs createdb ${reference} tdb
+    # One round (Olga, 2026-10-14). The dark-set run's 3-round profile search gave the
+    # pilot's dipeptide-shuffled decoys hits down to E 1e-22 (84 tune-half decoy hits under
+    # E 1e-5; none with one round), which set MMseqs2's matched cutoff at E 1.5e-22.
+    mmseqs search qdb tdb res tmp -s ${params.mmseqs2_sensitivity} --num-iterations 1 \\
+        -e ${params.mmseqs2_evalue} --threads ${task.cpus}
+    mmseqs convertalis qdb tdb res out.tsv \\
+        --format-output 'query,target,qstart,qend,tstart,tend,pident,bits,evalue'
+    gzip -c out.tsv > ${chunk_id}.mmseqs2.tsv.gz
+    """
+
+    stub:
+    """
+    grep '^>' ${chunk} | gzip -c > ${chunk_id}.mmseqs2.tsv.gz
+    """
+}
+
+process phmmerSearch {
+    tag "${chunk_id}"
+    container HMMER
+    publishDir "${params.outdir}/phmmer", mode: 'copy'
+    cpus 8
+    memory '16 GB'
+    time { "${Math.min(12 * task.attempt, 48)}h" }
+
+    input:
+    tuple val(chunk_id), path(chunk)
+    path reference
+
+    output:
+    path "${chunk_id}.phmmer.domtbl.gz"
+
+    script:
+    """
+    set -euo pipefail
+    phmmer --cpu ${task.cpus} --noali -o /dev/null --domtblout out.domtbl --domE 0.001 ${chunk} ${reference}
+    gzip -c out.domtbl > ${chunk_id}.phmmer.domtbl.gz
+    """
+
+    stub:
+    """
+    grep '^>' ${chunk} | gzip -c > ${chunk_id}.phmmer.domtbl.gz
+    """
+}
+
+process hmmpressPfam {
+    storeDir params.hmm_cache
+    container HMMER
+    cpus 1
+    memory '8 GB'
+    time '2h'
+
+    input:
+    path hmm_gz
+
+    output:
+    path "Pfam33.1-A.hmm*"
+
+    script:
+    """
+    set -euo pipefail
+    gzip -dc ${hmm_gz} > Pfam33.1-A.hmm
+    hmmpress Pfam33.1-A.hmm
+    """
+
+    stub:
+    """
+    touch Pfam33.1-A.hmm Pfam33.1-A.hmm.h3f Pfam33.1-A.hmm.h3i Pfam33.1-A.hmm.h3m Pfam33.1-A.hmm.h3p
+    """
+}
+
+process hmmscanSearch {
+    tag "${chunk_id}"
+    container HMMER
+    publishDir "${params.outdir}/hmmscan", mode: 'copy'
+    cpus 8
+    memory '16 GB'
+    time { "${Math.min(12 * task.attempt, 48)}h" }
+
+    input:
+    tuple val(chunk_id), path(chunk)
+    path hmm_files
+
+    output:
+    path "${chunk_id}.hmmscan.domtbl.gz"
+
+    script:
+    // No --cut_ga: the question is whether Pfam's own t0 model saw the domain and only the
+    // gathering threshold kept it out. -E alone filters whole-sequence scores; --domE
+    // filters each domain's i-Evalue.
+    """
+    set -euo pipefail
+    hmmscan --cpu ${task.cpus} --noali -o /dev/null --domtblout out.domtbl -E 0.001 --domE 0.001 \\
+        Pfam33.1-A.hmm ${chunk}
+    gzip -c out.domtbl > ${chunk_id}.hmmscan.domtbl.gz
+    """
+
+    stub:
+    """
+    grep '^>' ${chunk} | gzip -c > ${chunk_id}.hmmscan.domtbl.gz
+    """
+}
+
+process scoreTransfers {
+    container params.kmerseek_image
+    publishDir "${params.outdir}/scores", mode: 'copy'
+    cpus 4
+    // The pilot's three attempts were killed at 64 GB (exit 137, jobs 47815380, 47815901,
+    // 47816673); `make score-partial` on the same searches peaked at 21 GB RSS on 100 GB.
+    // The full run's first attempt was killed at 100 GB (job 48631480, MaxRSS 104_840_420 KB,
+    // 2026-10-20) 319 of 342 files in: peak 55 GiB through uniprot18, then 93.5 and 97.6 GiB
+    // after wass14 k5 extend chunks 003 and 004, ~520 million rows each, five of them still
+    // to read. 256 GB is over twice the measured peak; doubled on retry, capped at 500.
+    memory { "${Math.min(256 * task.attempt, 500)} GB" }
+    // The full run's scoring read 328 GB of kmerseek output in 3 h 47 min (87 GB an hour,
+    // 2026-10-20), and the whole input is 695 GB, so 8 h could not finish; 24 h covers it
+    // with room, doubled on retry and capped at the 48 h a hns,normal job may ask.
+    time { "${Math.min(24 * task.attempt, 48)}h" }
+
+    input:
+    path kmerseek_files, stageAs: 'kmerseek/*'
+    path kmerseek_stats, stageAs: 'stats/*'
+    path mmseqs_files, stageAs: 'mmseqs2/*'
+    path phmmer_files, stageAs: 'phmmer/*'
+    path hmmscan_files, stageAs: 'hmmscan/*'
+    path inputs_dir
+    path reference_dir
+    path settings
+    path score_py
+    path common_py
+
+    output:
+    path "*.{csv,parquet,json}"
+    path "calls"
+
+    script:
+    """
+    python3 ${score_py} --kmerseek kmerseek --stats stats --mmseqs2 mmseqs2 --phmmer phmmer \\
+        --hmmscan hmmscan --inputs ${inputs_dir} --reference ${reference_dir} \\
+        --settings ${settings} --out . ${params.read_test_half ? '--read-test-half' : ''}
+    """
+
+    stub:
+    """
+    ls kmerseek stats mmseqs2 phmmer hmmscan > staged.csv
+    mkdir -p calls
+    """
+}
+
+workflow {
+    def inputs = file(params.inputs, checkIfExists: true)
+    def refdir = file(params.reference_dir, checkIfExists: true)
+    def reference = file("${refdir}/reference.fasta", checkIfExists: true)
+    def domains   = file("${refdir}/sprot_domains.tsv", checkIfExists: true)
+    def only = params.only_alphabets.toString().tokenize(',')*.trim().findAll { it }
+
+    // Each chunk carries its own id, chunk001, chunk002, ... in query-file order, and every
+    // output is named by it. splitFasta names its files chunk.1.fasta, chunk.2.fasta, ...,
+    // whose simpleName is "chunk" for all of them: the full run's 9 chunks would overwrite
+    // each other in publishDir and collide when staged into scoreTransfers.
+    chunks = Channel.fromPath("${inputs}/queries.fasta", checkIfExists: true)
+        .splitFasta(by: params.query_chunk_size as int, file: 'chunk')
+        .toSortedList { a, b -> chunkNumber(a) <=> chunkNumber(b) }
+        .flatMap { it }
+        .map { f -> [String.format('chunk%03d', chunkNumber(f)), f] }
+
+    def skip = params.skip_settings.toString().tokenize(',')*.trim().findAll { it } as Set
+    def settingsLines = file(params.settings, checkIfExists: true).readLines()
+    def header = settingsLines[0].split('\t') as List
+    def ia = header.indexOf('alphabet'), ik = header.indexOf('ksize')
+    def rows = settingsLines.drop(1).findAll { it }
+    def present = rows.collect { def c = it.split('\t'); "${c[ia]}:${c[ik]}".toString() } as Set
+    def unknown = skip - present
+    if (unknown) error "--skip_settings names ${unknown.sort()}, which are not rows of ${params.settings}"
+    def keptRows = rows.findAll {
+        def c = it.split('\t')
+        (!only || c[ia] in only) && !("${c[ia]}:${c[ik]}".toString() in skip)
+    }
+    // scoreTransfers lists every setting in the file it is given, and calls one with no output
+    // failed, so it gets the kept rows only. Rewritten only when they change, so -resume holds.
+    def keptSettings = file("${workflow.workDir}/settings.kept.tsv")
+    def keptText = ([settingsLines[0]] + keptRows).join('\n') + '\n'
+    if (!keptSettings.exists() || keptSettings.text != keptText) keptSettings.text = keptText
+    if (skip) log.info "skip_settings: not indexed or searched: ${skip.sort().join(', ')}"
+
+    settings = Channel.fromPath(keptSettings)
+        .splitCsv(header: true, sep: '\t')
+        .map { [it.alphabet, it.ksize as int, it.c_opt] }
+
+    indexes = kmerseekIndex(settings, reference)
+        .map { a, k, c, idx -> SPECTRUM_LOAD[idx.name] = spectrumLoad(idx); [a, k, c, idx] }
+
+    searches = indexes
+        .combine(Channel.of('exact', 'extend'))
+        .combine(chunks)
+        .map { a, k, c, idx, arm, cid, ch -> [a, k, c, idx, arm, cid, ch] }
+    kmerseekSearch(searches, domains, file("${projectDir}/bin/compact_kmerseek.awk"))
+
+    mm  = mmseqsSearch(chunks, reference)
+    ph  = phmmerSearch(chunks, reference)
+    if (params.hmmscan_dir) {
+        // One file per query chunk, named as hmmscanSearch names it; stop if any is missing.
+        def chunkNames = chunks.map { cid, f -> "${cid}.hmmscan.domtbl.gz".toString() }.toSortedList()
+        hmm = Channel.fromPath("${params.hmmscan_dir}/*.hmmscan.domtbl.gz", checkIfExists: true)
+            .toSortedList { a, b -> a.name <=> b.name }
+            .map { [it] }.combine(chunkNames.map { [it] })
+            .map { files, want ->
+                def have = files*.name.sort()
+                if (have != want.sort()) error "hmmscan_dir holds ${have}, the query chunks need ${want}"
+                files
+            }
+    } else {
+        hmm = hmmscanSearch(chunks, hmmpressPfam(file(params.pfam_hmm, checkIfExists: true)).collect())
+    }
+
+    scoreTransfers(
+        kmerseekSearch.out.transfers.collect(), kmerseekSearch.out.stats.collect(),
+        mm.collect(), ph.collect(), params.hmmscan_dir ? hmm : hmm.collect(),
+        inputs, refdir, keptSettings,
+        file("${projectDir}/bin/score_transfers.py"), file("${projectDir}/bin/time_split_common.py"))
+}

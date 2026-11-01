@@ -1,0 +1,64 @@
+query,partner,e_cut,count,proteins_with_a_call,proteome_max,proteins_at_max,genes_at_max,partner_value,proteins_with_more
+Ced9,BCL2,all regions,n_alphabets,19720,18,1,TKT,4,4848
+Ced9,BCL2,all regions,n_families,19720,13,1,TKT,2,11683
+Ced9,BCL2,all regions,n_families_identity_as_one,19720,10,1,TKTL1,2,11216
+Ced9,BCL2,E < 100000,n_alphabets,18806,8,2,"TKT,USP38",1,11705
+Ced9,BCL2,E < 100000,n_families,18806,7,2,"DCLRE1B,SLC30A8",1,4336
+Ced9,BCL2,E < 100000,n_families_identity_as_one,18806,6,2,"BPTF,USP38",1,4189
+Ced9,BCL2,E < 10000,n_alphabets,17392,8,1,USP38,1,7917
+Ced9,BCL2,E < 10000,n_families,17392,7,1,DCLRE1B,1,2660
+Ced9,BCL2,E < 10000,n_families_identity_as_one,17392,6,1,USP38,1,2482
+Ced9,BCL2,E < 1000,n_alphabets,10221,6,3,"NRK,SCART1,WNT10A",0,10221
+Ced9,BCL2,E < 1000,n_families,10221,6,3,"NRK,SCART1,WNT10A",0,10221
+Ced9,BCL2,E < 1000,n_families_identity_as_one,10221,4,3,"ACSBG2,ATP2C1,KBTBD3",0,10221
+Ced9,BCL2,E < 100,n_alphabets,2059,4,5,"ABCA1,ABCA7,CDHR2,NRK,SACM1L",0,2059
+Ced9,BCL2,E < 100,n_families,2059,4,2,"CDHR2,NRK",0,2059
+Ced9,BCL2,E < 100,n_families_identity_as_one,2059,2,16,"ABO,ACSBG2,ACVR1C,AHNAK,DFFB",0,2059
+Ced9,BCL2,E < 10,n_alphabets,170,2,11,"ANK3,C16orf96,CHD3,CHD4,EEPD1",0,170
+Ced9,BCL2,E < 10,n_families,170,2,1,TRIO,0,170
+Ced9,BCL2,E < 10,n_families_identity_as_one,170,1,170,"ABCA1,ABCA10,ABCA7,ADAMTS13,AGTPBP1",0,170
+Ced9,BCL2,E < 1,n_alphabets,9,2,2,"ANK3,FBXO41",0,9
+Ced9,BCL2,E < 1,n_families,9,1,9,"ANK3,C16orf96,CBLB,FBXO41,GRAMD1C",0,9
+Ced9,BCL2,E < 1,n_families_identity_as_one,9,1,9,"ANK3,C16orf96,CBLB,FBXO41,GRAMD1C",0,9
+P66,CD47,all regions,n_alphabets,19728,19,1,CD55,3,13246
+P66,CD47,all regions,n_families,19728,13,1,CD55,3,8355
+P66,CD47,all regions,n_families_identity_as_one,19728,9,2,"ANKRD30B,CFAP100",3,6611
+P66,CD47,E < 100000,n_alphabets,19434,10,1,NLGN3,2,7639
+P66,CD47,E < 100000,n_families,19434,8,2,"DSG2,NLGN3",1,7728
+P66,CD47,E < 100000,n_families_identity_as_one,19434,6,1,SPINDOC,1,7455
+P66,CD47,E < 10000,n_alphabets,18273,10,1,NLGN3,2,3087
+P66,CD47,E < 10000,n_families,18273,8,1,NLGN3,1,3937
+P66,CD47,E < 10000,n_families_identity_as_one,18273,6,1,SPINDOC,1,3510
+P66,CD47,E < 1000,n_alphabets,10414,7,1,ARF6,1,2724
+P66,CD47,E < 1000,n_families,10414,7,1,ARF6,1,879
+P66,CD47,E < 1000,n_families_identity_as_one,10414,4,3,"IQCH,KLRD1,SPINDOC",1,398
+P66,CD47,E < 100,n_alphabets,1769,5,1,VPS13A,0,1769
+P66,CD47,E < 100,n_families,1769,4,1,NUMB,0,1769
+P66,CD47,E < 100,n_families_identity_as_one,1769,3,2,"DSG2,SYMPK",0,1769
+P66,CD47,E < 10,n_alphabets,124,2,14,"AHNAK,CELSR2,CHRM1,HTT,IPO8",0,124
+P66,CD47,E < 10,n_families,124,1,124,"AADAC,AARS1,ACLY,ADCY7,ADNP",0,124
+P66,CD47,E < 10,n_families_identity_as_one,124,1,124,"AADAC,AARS1,ACLY,ADCY7,ADNP",0,124
+P66,CD47,E < 1,n_alphabets,3,1,3,"GEMIN5,NLRP1,TLR6",0,3
+P66,CD47,E < 1,n_families,3,1,3,"GEMIN5,NLRP1,TLR6",0,3
+P66,CD47,E < 1,n_families_identity_as_one,3,1,3,"GEMIN5,NLRP1,TLR6",0,3
+BHF,,all regions,n_alphabets,19717,16,1,CWF19L2,,
+BHF,,all regions,n_families,19717,12,5,"MGAM,PPFIA1,PPFIA3,PPFIA4,SLC5A7",,
+BHF,,all regions,n_families_identity_as_one,19717,9,2,"GALR2,RGS12",,
+BHF,,E < 100000,n_alphabets,18023,9,1,PPIL3,,
+BHF,,E < 100000,n_families,18023,9,1,PPIL3,,
+BHF,,E < 100000,n_families_identity_as_one,18023,5,2,"CCDC42,EPHA1",,
+BHF,,E < 10000,n_alphabets,15962,9,1,PPIL3,,
+BHF,,E < 10000,n_families,15962,9,1,PPIL3,,
+BHF,,E < 10000,n_families_identity_as_one,15962,5,1,CCDC42,,
+BHF,,E < 1000,n_alphabets,8048,7,1,PPIL3,,
+BHF,,E < 1000,n_families,8048,7,1,PPIL3,,
+BHF,,E < 1000,n_families_identity_as_one,8048,3,15,"ARHGAP8,BPTF,CHD4,CLCC1,CRACDL",,
+BHF,,E < 100,n_alphabets,1445,3,19,"ARHGAP8,ARHGEF6,ARSB,ASTN1,DMRTC1",,
+BHF,,E < 100,n_families,1445,3,14,"ARHGAP8,ARHGEF6,ARSB,ASTN1,DOCK10",,
+BHF,,E < 100,n_families_identity_as_one,1445,3,2,"ARHGAP8,PRR5-ARHGAP8",,
+BHF,,E < 10,n_alphabets,96,2,9,"ARHGEF37,CUEDC1,FAM83B,LRIG3,MYBPC3",,
+BHF,,E < 10,n_families,96,1,96,"ACAT2,ADAMTS15,ADAMTSL4,ANKIB1,APCDD1L",,
+BHF,,E < 10,n_families_identity_as_one,96,1,96,"ACAT2,ADAMTS15,ADAMTSL4,ANKIB1,APCDD1L",,
+BHF,,E < 1,n_alphabets,3,1,3,"FXYD5,SCN10A,SFI1",,
+BHF,,E < 1,n_families,3,1,3,"FXYD5,SCN10A,SFI1",,
+BHF,,E < 1,n_families_identity_as_one,3,1,3,"FXYD5,SCN10A,SFI1",,

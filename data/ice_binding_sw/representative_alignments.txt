@@ -1,0 +1,271 @@
+Real residues shown; '|' identical residue, ':' same class in the alphabet aligned, ' ' different class.
+
+## protein20_B62_g11e1 | query origin AFP1_flounder | best cross_origin_positive
+query  P09031 (Ice-structuring protein (ISP) (Antifreeze protein) (AFP)) 1-42
+target P04368 (Ice-structuring protein SS-8 (ISP SS-8) (Antifreeze peptide SS-8)) 4-45
+score 96.0 half bits, E = 7.4e-07
+
+  query  DTASDAAAAAAATAAAAAKAAADTAAAAAKAAADTAAAAAEA
+          |    ||  || || ||| ||| || ||  ||  ||||| |
+  target ETPAQKAARLAAAAALAAKTAADAAAKAAAKAAAIAAAAASA
+
+## protein20_B62_g11e1 | query origin AFP1_flounder | best real_negative
+query  B1P0S1 (Antifreeze protein Maxi (5a-like AFP) (Type 1 hyperactive antifreeze protein) (AFP Hyp-1)) 2-160
+target Q40237 (Major pollen allergen Lol p 5b) 148-309
+score 151.0 half bits, E = 2.76e-09
+
+  query  IDPAARAAAAAAASKAAVTAADAAAAAATIAASAASVAAATAADDAAASIATINAASAAAKSIAAAAAMAAKDTAAAAASAAAAAVASAAKALETINVKAAYAAATTAN------TAAAAAAATATTAAAAAAAKATIDNAAAAKAAAVATAVSDAAATAATAAA
+           |||      |   | |   |   ||   || ||   || | |       | | |       |           ||   | ||  | |     |    |   | |         | |||| || | ||| | |      | |  ||| |||   |||||  |||
+  target VKPAAEEVKVGAIPAAEVQLIDKVDAAYRTAATAAN--AAPANDKFTVFENTFNNAIKVSLGAAYDSYKFIPTLVAAVKQAYAAKQATAPEVKYTVSETALKKAVTAMSEAEKEATPAAAATATPTPAAATATATPAAAYATATPAAATATA-TPAAATATPAAA
+
+## protein20_B62_g11e1 | query origin AFP1_sculpin | best cross_origin_positive
+query  P04368 (Ice-structuring protein SS-8 (ISP SS-8) (Antifreeze peptide SS-8)) 4-45
+target P09031 (Ice-structuring protein (ISP) (Antifreeze protein) (AFP)) 1-42
+score 96.0 half bits, E = 7.4e-07
+
+  query  ETPAQKAARLAAAAALAAKTAADAAAKAAAKAAAIAAAAASA
+          |    ||  || || ||| ||| || ||  ||  ||||| |
+  target DTASDAAAAAAATAAAAAKAAADTAAAAAKAAADTAAAAAEA
+
+## protein20_B62_g11e1 | query origin AFP1_sculpin | best real_negative
+query  P04368 (Ice-structuring protein SS-8 (ISP SS-8) (Antifreeze peptide SS-8)) 4-42
+target O18881 (Signal recognition particle 14 kDa protein (Fragment)) 35-73
+score 72.0 half bits, E = 5.47e-05
+
+  query  ETPAQKAARLAAAAALAAKTAADAAAKAAAKAAAIAAAA
+          |   |||  ||||| ||  |  |||  |  |   | ||
+  target KTKKTKAAAAAAAAAVAAAAAPTAAATTATPATPAATAA
+
+## protein20_B62_g11e1 | query origin DUF3494_IBP | best cross_origin_positive
+query  Q086E4 (Ice-binding protein 1 (Antifreeze protein 1) (AFP 1) (Ice adhesin 1)) 398-542
+target B1P0S1 (Antifreeze protein Maxi (5a-like AFP) (Type 1 hyperactive antifreeze protein) (AFP Hyp-1)) 34-168
+score 82.0 half bits, E = 0.00055
+
+  query  SLANITASVTWSSADTLVATVNNSGLASGIETGSSLISASSGALSGSTNLTITGAALNSIVVSPTNLSLVKGMNKQFAATATYSDGSVADISTSVTWSSADTLVATIDVNGLANGKAAGSSLITATSGAQSNSTNLTVTDATLNS
+         | |   |      |    || |    |         | |        |      ||          |          ||  |      |   |  |   |    ||||    |   |       |   |    |   |  |||  
+  target SAASVAAATAADDAAASIATINAASAA------AKSIAAAAAMAAKDTAAAAASAAAAAVASAAKALETI-NVKAAYAAATTANTAAAAAAATATTAAAAAAAKATIDNAAAAKAAAVATAVSDAAATA---ATAAAVAAATLEA
+
+## protein20_B62_g11e1 | query origin DUF3494_IBP | best real_negative
+query  Q086E4 (Ice-binding protein 1 (Antifreeze protein 1) (AFP 1) (Ice adhesin 1)) 228-532
+target Q75JC9 (Uncharacterized protein DDB_G0271670) 40-344
+score 163.0 half bits, E = 1.97e-09
+
+  query  VDITASSNWSSADTLVATMNTSGAAKGVSIGSSIITADFQAQSATSLLTVTDASLTSIMLTPANPHIPKGNTLQLTATGIYSDGISVDITSSAIWSSADTLIATVNADGVVSGITSGSAIITATSAALSATTTVTVTDTTLTSIAVTPGNQTIVKGSNKQLTATGTYSDGSLANITASVTWSSADTLVATVNNSGLASGIETGSSLISASSGALSGSTNLTITGAALNSIVVSPTNLSLVKGMNKQFAATATYSDGSVADISTSVTWSSADTLVATIDVNGLANGKAAGSSLITATSGAQSNSTN
+          |   ||  ||          |      |  ||         |  |       |  |                        |   |    ||   ||              |   | |      |   |             |             |          |  |      |   ||          |   |     ||  | ||   | |           |   |    |               |  |    | |   ||                    ||     |   | |  
+  target LDTSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSS
+
+## protein20_B62_g11e1 | query origin IAFP_beetle | best cross_origin_positive
+query  O16119 (Thermal hysteresis protein YL-1 (THP YL-1) (Beta-helix antifreeze protein 2-14) (THP 2-14)) 7-81
+target Q9GSA6 (Antifreeze protein isoform 501 (AFP 501) (Long AFP isoform 501) (Thermal hysteresis protein AFT 501)) 34-116
+score 56.0 half bits, E = 0.00223
+
+  query  DCTSCTGACTGCGNCPNAVT--CTNSQHCVKANTCTGS-------TDCNTAQTCTNSKDCFEANTCTDSTNCYKATACTNSSGC
+         |   ||       |    ||  |      |   |||||           |  |      |    |||         |    |||
+  target DTSICTRSQYSDANVKKSVTTDCNIDKSQVYLTTCTGSQYNGIYIRSSTTTGTSISGPGC-SISTCTITRGVATPAAACKISGC
+
+## protein20_B62_g11e1 | query origin IAFP_beetle | best real_negative
+query  O16119 (Thermal hysteresis protein YL-1 (THP YL-1) (Beta-helix antifreeze protein 2-14) (THP 2-14)) 2-44
+target P07438 (Metallothionein-1B) 15-55
+score 62.0 half bits, E = 0.000425
+
+  query  CTGGADCTSCTGACTGCGNCPNAVTCTNSQHCVKANTCTGSTD
+         | |   |  |   || |  |           |     | ||  
+  target CAGSCKCKEC--KCTSCKKCCCSCCPVGCAKCAQGCVCKGSSE
+
+## protein20_B62_g11e1 | query origin THP_moth | best cross_origin_positive
+query  Q9GSA6 (Antifreeze protein isoform 501 (AFP 501) (Long AFP isoform 501) (Thermal hysteresis protein AFT 501)) 34-116
+target O16119 (Thermal hysteresis protein YL-1 (THP YL-1) (Beta-helix antifreeze protein 2-14) (THP 2-14)) 7-81
+score 56.0 half bits, E = 0.00223
+
+  query  DTSICTRSQYSDANVKKSVTTDCNIDKSQVYLTTCTGSQYNGIYIRSSTTTGTSISGPGC-SISTCTITRGVATPAAACKISGC
+         |   ||       |    ||  |      |   |||||           |  |      |    |||         |    |||
+  target DCTSCTGACTGCGNCPNAVT--CTNSQHCVKANTCTGS-------TDCNTAQTCTNSKDCFEANTCTDSTNCYKATACTNSSGC
+
+## protein20_B62_g11e1 | query origin THP_moth | best real_negative
+query  Q9GT00 (Antifreeze protein isoform 339 (AFP 339) (Short AFP isoform 339) (Thermal hysteresis protein AFT 339)) 23-84
+target Q5JM82 (Metallothionein-like protein 2B) 7-68
+score 59.0 half bits, E = 0.000961
+
+  query  NCYIDNSEVYGTTCTGSRYDGVHITSSTTTGTSASGPGCTISSCTITGGVPAPSAPCRISGC
+         ||    |   |  | |  |  |  |  ||    |   |    |     |    |  |    |
+  target NCGCGSSCQCGNGCGGCKYSEVEPTTTTTFLADATNKGSGAASGGSEMGAENGSCGCNTCKC
+
+## hp_lehninger2_B45_g4e1 | query origin AFP1_flounder | best cross_origin_positive
+query  B1P0S1 (Antifreeze protein Maxi (5a-like AFP) (Type 1 hyperactive antifreeze protein) (AFP Hyp-1)) 18-169
+target Q76CE8 (Ice-binding protein K1-A (Antifreeze protein 8) (AFP8) (TAFP-3) (TisAFP8)) 69-221
+score 56.9 half bits, E = 0.005
+
+  query  AVTAADA-AAAAATIAASAASVAAATAADDAAASIATINAASAAAKSIAAAAAMAAKDTAAAAASA-AAAAVASAAKALETINVKAAYAAATTANTAAAAAAATATTAAAAAAAKATIDNAAAAKAAAV------ATAVSDAAATAATAAAVAAATLEAA
+         |:::::: : :: |::::::: |:::||:: ::::::|  : :::|   :::::::| | :::||| : ::: |  ::: :| :::::||   ::::::|::|:|:::::::|: ::|: :| ::::::      :: :|:: :::::  |||: :::::
+  target AADYGTPTPSILTTAIGDMGT-AYVNAATRSGPNFLEIYTGALGGK---ILPPGLYKWTSPVGASADFTIIGTSTDTWIFQIAGTLGLAA---GKKIILAGGAQAKNIVWVVAGAVSIEAGAKFEGVILAKTAVTLKTGSSLNGRILSQTAVALQKATVV
+
+## hp_lehninger2_B45_g4e1 | query origin AFP1_flounder | best real_negative
+query  B1P0S1 (Antifreeze protein Maxi (5a-like AFP) (Type 1 hyperactive antifreeze protein) (AFP Hyp-1)) 2-195
+target Q7PWV1 (Aquaporin AQPAn.G) 32-229
+score 76.3 half bits, E = 0.0002
+
+  query  IDPAARAAAAA---AASKAAVTAADAAAAAATIAASAASVAA-ATAAD-DAAASIATINAASAAAKSIAAAAAMAAKDTAAAAASAAAAAVASAAKALETINVKAAYAAATTANTAAAAAAATATTAAAAAAAKATIDNAAAAKAAAV----ATAVSDAAATAATAAAVAAATLEAAAAKAAATAVSAAAAAAAAAIAFAAAP
+         ::::: |::::   ::::: :|: ::|: :: ::|::|:::: ::: : ::|::|: |  |::   ||: :|:::::::::|:| ||:: :|:: :::  : |::::::::|:: ::: |::|:  :::: ::: : :: : ::|:::    :||:: ||:: :|:| : :|: ::::| ::::: :::::::::::::::|:
+  target GTFFLVAIGIGSTTGWTDYSPTLTQIAFTFGLVVATLAQAFGHVSGCHINPAVTIGLIVTADV---SILKGAFYIVSQCIGAIAGAAVIKAATPSEVVGGLGVTGIAPGLSTGQGVLIEALITFMLVFVVHGVCDNRRTDVKGSAPLAIGLSITAGHLAAIK-YTGASMNPAR-SFGPAVVMGNYTDLWVYWVGPIVGGIVAG
+
+## hp_lehninger2_B45_g4e1 | query origin AFP1_sculpin | best cross_origin_positive
+query  P04368 (Ice-structuring protein SS-8 (ISP SS-8) (Antifreeze peptide SS-8)) 9-41
+target P07835 (Ice-structuring protein 2A7 (ISP 2A7) (Antifreeze protein IIA7) (AFP)) 12-44
+score 24.4 half bits, E = 0.0703
+
+  query  KAARLAAAAALAAKTAADAAAKAAAKAAAIAAA
+         :||::|||||: | |||:|||  ||:|||:|||
+  target TAATAAAAAAATAATAAKAAALTAANAAAAAAA
+
+## hp_lehninger2_B45_g4e1 | query origin AFP1_sculpin | best real_negative
+query  P04368 (Ice-structuring protein SS-8 (ISP SS-8) (Antifreeze peptide SS-8)) 2-29
+target P14662 (Bactericidin B-2) 6-33
+score 23.2 half bits, E = 0.0613
+
+  query  NGETPAQKAARLAAAAALAAKTAADAAA
+         ::|:::|:: :::: ||:|: |:::|||
+  target ELERAGQRVRDAVISAAPAVATVGQAAA
+
+## hp_lehninger2_B45_g4e1 | query origin DUF3494_IBP | best cross_origin_positive
+query  Q76CE8 (Ice-binding protein K1-A (Antifreeze protein 8) (AFP8) (TAFP-3) (TisAFP8)) 69-221
+target B1P0S1 (Antifreeze protein Maxi (5a-like AFP) (Type 1 hyperactive antifreeze protein) (AFP Hyp-1)) 18-169
+score 56.9 half bits, E = 0.005
+
+  query  AADYGTPTPSILTTAIGDMGT-AYVNAATRSGPNFLEIYTGALGGK---ILPPGLYKWTSPVGASADFTIIGTSTDTWIFQIAGTLGLAA---GKKIILAGGAQAKNIVWVVAGAVSIEAGAKFEGVILAKTAVTLKTGSSLNGRILSQTAVALQKATVV
+         |:::::: : :: |::::::: |:::||:: ::::::|  : :::|   :::::::| | :::||| : ::: |  ::: :| :::::||   ::::::|::|:|:::::::|: ::|: :| ::::::      :: :|:: :::::  |||: :::::
+  target AVTAADA-AAAAATIAASAASVAAATAADDAAASIATINAASAAAKSIAAAAAMAAKDTAAAAASA-AAAAVASAAKALETINVKAAYAAATTANTAAAAAAATATTAAAAAAAKATIDNAAAAKAAAV------ATAVSDAAATAATAAAVAAATLEAA
+
+## hp_lehninger2_B45_g4e1 | query origin DUF3494_IBP | best real_negative
+query  Q086E4 (Ice-binding protein 1 (Antifreeze protein 1) (AFP 1) (Ice adhesin 1)) 95-867
+target P25062 (Cell surface glycoprotein) 8-722
+score 184.5 half bits, E = 2.57e-11
+
+  query  NEQSATTTLTITDATLTALAITPVNPSLAKGLTKQFMATGTY--SDGTSPDVTTSVTWSSANTLVATVNASGLASGVAIGSSI-ITASLGSDETTTELNITDAILSSIALTPVEPSIAKGITQQFTAIGTYSDGISVDITASS-NWSSADTLVATMNTSGA--AKGVSIGSSIITADFQAQSATSLLTVTDASLTSIMLTPA-NPHIPKGNTLQLTATGIYSDGISVDITSSAIWSSADTLIATVNADGVVSGITSGSAIITATSAALSATTTVTVTDTTLTSIAVTPGNQTIV-----KGSNKQLTAT-GTYSDGSLANITASVTWSSADTLVATVNNSGLASGIETGSSLISASSGALSGSTNLTITGAALNSIVVSPTNLSLVKGMNKQFAATATYSDGSVADISTSVTWSSADTLVATIDVNGLAN-GKAAGSSLITATSGAQSNSTN--LTVTDATLNS-IDVTP-INPSIIKNSSQNFVATGHY-SDGSTTNITSTVMWSSADTLVATLN-PNEQLNSGRATAIEVGSSV-IQASLSGVFADTTLNVTAALPNNPLAPELGEVARFAMLASQA-ITTTSGSAI---VDGDLGILDQARSYYA----GFTPGVNAGEFDELTNGLSYAGDDSTPPYVVPVPYASMVAFINQSRTDLGIAYNFLAADPNPNAATQVCPIELGNLTLTRGVYKTAADVTLQTGTLTLDGEGDPDSVFIFTIGGNLTSGAPGG-DIVLINGAQAKNIYWRTAGKTVIG-TNTNFSGNVFAWSEVNVRTG--ANVTGRLFAVTDQVTLDANAVTK
+         :::|:::  ||:::: :::::: :: ::: :: :::::|||:  |:| |:|::: :  :: |::::|::::| :|    :::: :|: ::: :::: |: ::::  :: ::::: |  ::::  ::| ::|::: :|::|::: ::::::: |::::::::  ::::|  |::: : ::::: ::::::      :|:|::| ::::::::: ::|:|:  :| | ::::|:  ::::::  :::::: :::| ::: ::::::::      : ::|:::::::: ::|::: |     :::|:::: | :|::::::| : :::   :: ::|: :::::| :  ::::  ::: :::      :::|:|:::::  :: :|:: :|:::  : ::|:: : : ::: ::|::| |:::: :: :| :: ::::|:: |:::|  : ::::  |:: :::::| :::|: ::: :|: |: :::::|:: ::::|:::||  ::|| ::: :| : :: |::::::::: ::::: ::::::: :|:   :| :::::: : ::    :: : : |:: :::::::::   ::::: ||: :|: ::    ::::: |::::::    |::::|:                 ::|:::::  : :::   :: :: ::::         ::::::: :::  :: ::: :: :|: :::::::::::::::::| : : ::  :::  : :: |::|:: :::::: :: :: |:: :::  :::|:::  :::: |:::::|::
+  target DSESFNK--TIQSGD-RVFLGEEISTDAG-LGASNPLLTGTAGNSEGVSLDLSSPIPQTTENQPLGTYDVDGSGS----ATTPNVTLLAPRITDSEILT-SSGG--DVTGSAISSS--DAGNLYVNADYNYESAEKVEVTVEDPSGTDITNEVLSGTDTFVDDGSIGSTSSTGGGVGIDMSD-QDAGEY------TIILEGAEDLDFGDATE-TMTLTISSQDEIGIELDSE-SVTQGTD--VQYTVTNGIDGNEHV-VAMDLSDL------QNDATTEQAKEVFRNIGDTSEVGIANSSATNTSGSSTGPTVETADIAYAVVEI---DGASAVGGIETQYLDD--SEVD--LEVYDAG------VSATAAVGQDATNDI-TLTIEEGGTT--LSSPTGQYVVGSEVDINGTATSSDSVAIYVRDDGDWQLLEIGGDNEISVDSDDTFEEEDIALSGLSGDGSSILSLTGTYRIGVIDASDADVGGDGSVDDSLTTSEFTS--GVSSSNSIRVTDQALTGQFTTINGQVA-PVETGTVDINGTASGAN---SVLVIFVDERGNVN----YQEVSVDSDGTYDEDDITVGLTQGRVTAHILSVGRDSAIGDGSLPSGPSNGATLND----LTGYLDT-----------------LDQNNNNGEQINELI---ASETVDETAS---------DDLIVTETFRLAESSTSID-SIYPDAAEAAGINPVATGETMVIAGSTNLKPDDNTISIEVTNEDGTSVALEDTDEWNNDGQWMVEIDTTDFETGTFTVEADDGDNTDTVNVEVVSE
+
+## hp_lehninger2_B45_g4e1 | query origin IAFP_beetle | best cross_origin_positive
+query  O16119 (Thermal hysteresis protein YL-1 (THP YL-1) (Beta-helix antifreeze protein 2-14) (THP 2-14)) 6-82
+target Q9GSA7 (Antifreeze protein isoform 10 (AFP 10) (Long AFP isoform 10) (Thermal hysteresis protein AFT 10)) 11-99
+score 50.8 half bits, E = 0.00331
+
+  query  ADCTSCTGACTGCGNCP---NAVTCTNSQHCVKA------NTCTGSTDCNTAQTCTNSKDCFE---ANTCTDSTNCYKATACTNSSGCP
+         ::::| :: :|::::::   :: ::|::::::::      :|:: : ::::::|:|:::::::   ::::|:::::::: ||: |: ::
+  target VSENSWCVRSTLTFCNIDNSQLESTTCTRSQYNGAYVVSSRTTNCNIRNSQLHTTTCTNSQYDGVYITSSTTTNTRISGPACSISRCTI
+
+## hp_lehninger2_B45_g4e1 | query origin IAFP_beetle | best real_negative
+query  O16119 (Thermal hysteresis protein YL-1 (THP YL-1) (Beta-helix antifreeze protein 2-14) (THP 2-14)) 6-79
+target Q156A1 (Ataxin-8) 1-74
+score 45.8 half bits, E = 0.00519
+
+  query  ADCTSCTGACTGCGNCPNAVTCTNSQHCVKANTCTGSTDCNTAQTCTNSKDCFEANTCTDSTNCYKATACTNSS
+         :::::::  :: : :: :  :::::|:: : :::: :::::: |:::::::: : ::::::::: : : :::::
+  target MQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQ
+
+## hp_lehninger2_B45_g4e1 | query origin THP_moth | best cross_origin_positive
+query  Q9GSA7 (Antifreeze protein isoform 10 (AFP 10) (Long AFP isoform 10) (Thermal hysteresis protein AFT 10)) 11-99
+target O16119 (Thermal hysteresis protein YL-1 (THP YL-1) (Beta-helix antifreeze protein 2-14) (THP 2-14)) 6-82
+score 50.8 half bits, E = 0.00331
+
+  query  VSENSWCVRSTLTFCNIDNSQLESTTCTRSQYNGAYVVSSRTTNCNIRNSQLHTTTCTNSQYDGVYITSSTTTNTRISGPACSISRCTI
+         ::::| :: :|::::::   :: ::|::::::::      :|:: : ::::::|:|:::::::   ::::|:::::::: ||: |: ::
+  target ADCTSCTGACTGCGNCP---NAVTCTNSQHCVKA------NTCTGSTDCNTAQTCTNSKDCFE---ANTCTDSTNCYKATACTNSSGCP
+
+## hp_lehninger2_B45_g4e1 | query origin THP_moth | best real_negative
+query  Q9GSA6 (Antifreeze protein isoform 501 (AFP 501) (Long AFP isoform 501) (Thermal hysteresis protein AFT 501)) 3-98
+target Q08907 (Facilitator of iron transport 3) 5-107
+score 57.9 half bits, E = 0.00193
+
+  query  TCVNTNSQITANSQCVKST------ATNCYIDNSQLVDTSICTRSQY-SDANVKKSVTTDCNIDKSQVYLTTCTGSQYNGIYIRSSTTTGTSISGPGCSISTC
+         |::: :::::: :::|:::      ::::|:::::::::|: ::| : ::| :::|:  :::: ::: :::|:::::::|  |::: |  :::::: ::::::
+  target TTITATKNGHVYTKTVTQDATFVWGGEDSYASSTSAAESSAAETSAAETSAAATTSAAATTSAAETSSAAETSSADEGSGSSITTTITATKNGHVYTKTVTQD
+
+## dayhoff6_B45_g6e1 | query origin AFP1_flounder | best cross_origin_positive
+query  B1P0S1 (Antifreeze protein Maxi (5a-like AFP) (Type 1 hyperactive antifreeze protein) (AFP Hyp-1)) 8-195
+target B8XC04 (Ice-binding protein (Antifreeze protein) (AFP)) 1-200
+score 124.5 half bits, E = 3.93e-06
+
+  query  AAAAAAASKAAVTAADAAAAAATIAASAASV----AAATAADDAAASIATINAASAAAKSIAAAAAMAAKDTAAAAASAAAAAVASAAKA--LETINVKAAYAAATTANTAAAAAAATATTAAAAAAAKATIDNAAAAKAAAVATAVSDAAATAATAAAVAAATLEAAAAKA-AATAVSAAAAA-------AAAAIAFAAAP
+         |::: : :  :::::  : ::::|: :::::    :::::| :|::  |::| ::|:  :| | :::::   :  ::  : ::::::| :   ||::  : :|::    :   ||: :|:|::: ::| : :: |    :: |::  :: :::  ::  ::::    ::| :  :|:|: |:::        :|:::||||:
+  target APGGISVGPISIGPGGISLGPGGISIGPGGINLGPGGGPGAINAGP--AAVNLGTAGNYAILAKSGISTVPESIISGNIGVSPISTTAFTGFSETLDSTGKFATSQQVVGELFAASFAAPTPTTLTTAVSDMQTAFNDATGRVTPDFTNLGGGELGGLVLTPGLYKWTGAVSVNSTGVTIAGTPLDHFIFQIPATLGFAAAS
+
+## dayhoff6_B45_g6e1 | query origin AFP1_flounder | best real_negative
+query  B1P0S1 (Antifreeze protein Maxi (5a-like AFP) (Type 1 hyperactive antifreeze protein) (AFP Hyp-1)) 2-195
+target Q75JC9 (Uncharacterized protein DDB_G0271670) 40-233
+score 240.7 half bits, E = 1.06e-12
+
+  query  IDPAARAAAAAAASKAAVTAADAAAAAATIAASAASVAAATAADDAAASIATINAASAAAKSIAAAAAMAAKDTAAAAASAAAAAVASAAKALETINVKAAYAAATTANTAAAAAAATATTAAAAAAAKATIDNAAAAKAAAVATAVSDAAATAATAAAVAAATLEAAAAKAAATAVSAAAAAAAAAIAFAAAP
+         :|::: :::::::| :: ::: ::::::: ::|::| ::::::  :::| ::  ::|::: | ::::: ::  ::::::|::::: :|:: :  :    :: :::::: ::::::::::::::::::: ::   :::: ::: ::: | :::::::::: ::::  :::: ::::: |::::::::: : ::::
+  target LDTSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSS
+
+## dayhoff6_B45_g6e1 | query origin AFP1_sculpin | best cross_origin_positive
+query  P04368 (Ice-structuring protein SS-8 (ISP SS-8) (Antifreeze peptide SS-8)) 4-44
+target P09031 (Ice-structuring protein (ISP) (Antifreeze protein) (AFP)) 1-40
+score 60.6 half bits, E = 0.000797
+
+  query  ETPAQKAARLAAAAALAAKTAADAAAKAAAKAAAIAAAAAS
+         :|::: ||  ||:|| |||:|||:|| ||||||| :||||:
+  target DTASDAAAAAAATAAAAAKAAADTAA-AAAKAAADTAAAAA
+
+## dayhoff6_B45_g6e1 | query origin AFP1_sculpin | best real_negative
+query  P04368 (Ice-structuring protein SS-8 (ISP SS-8) (Antifreeze peptide SS-8)) 9-45
+target O18881 (Signal recognition particle 14 kDa protein (Fragment)) 37-73
+score 47.2 half bits, E = 0.00709
+
+  query  KAARLAAAAALAAKTAADAAAKAAAKAAAIAAAAASA
+         | :: ||||| || :|| |:: ||: |:: ::||::|
+  target KKTKAAAAAAAAAVAAAAAPTAAATTATPATPAATAA
+
+## dayhoff6_B45_g6e1 | query origin DUF3494_IBP | best cross_origin_positive
+query  B8XC04 (Ice-binding protein (Antifreeze protein) (AFP)) 1-200
+target B1P0S1 (Antifreeze protein Maxi (5a-like AFP) (Type 1 hyperactive antifreeze protein) (AFP Hyp-1)) 8-195
+score 124.5 half bits, E = 3.93e-06
+
+  query  APGGISVGPISIGPGGISLGPGGISIGPGGINLGPGGGPGAINAGP--AAVNLGTAGNYAILAKSGISTVPESIISGNIGVSPISTTAFTGFSETLDSTGKFATSQQVVGELFAASFAAPTPTTLTTAVSDMQTAFNDATGRVTPDFTNLGGGELGGLVLTPGLYKWTGAVSVNSTGVTIAGTPLDHFIFQIPATLGFAAAS
+         |::: : :  :::::  : ::::|: :::::    :::::| :|::  |::| ::|:  :| | :::::   :  ::  : ::::::| :   ||::  : :|::    :   ||: :|:|::: ::| : :: |    :: |::  :: :::  ::  ::::    ::| :  :|:|: |:::        :|:::||||:
+  target AAAAAAASKAAVTAADAAAAAATIAASAASV----AAATAADDAAASIATINAASAAAKSIAAAAAMAAKDTAAAAASAAAAAVASAAKA--LETINVKAAYAAATTANTAAAAAAATATTAAAAAAAKATIDNAAAAKAAAVATAVSDAAATAATAAAVAAATLEAAAAKA-AATAVSAAAAA-------AAAAIAFAAAP
+
+## dayhoff6_B45_g6e1 | query origin DUF3494_IBP | best real_negative
+query  Q086E4 (Ice-binding protein 1 (Antifreeze protein 1) (AFP 1) (Ice adhesin 1)) 183-857
+target Q9XD84 (Autotransporter adhesin/invasin TibA) 5-698
+score 244.9 half bits, E = 7.24e-12
+
+  query  DETTTELNITDAILSSIALTPVEPSIAKGITQQFTAIGTYSDGISVDITASSNW-SSADTLVATMNTSGAAKGVSIGSSIITADFQAQSATSLLTVTDASLTSIMLTPANPHIPKGNTLQLTATGIYSDGISVDITSSAIWSSADTLI--ATVNADG---VVSGITSGSAIITATS----AALSATTTVTV-TDTTLTSIAVTPGNQTIVKGSNKQLTATGTYSDGSL-----------ANITASVTWSSADTLVATVNNSGLASGI--ETGSSLISASSGALSGSTN---LTI-TGAALNSIVVSPTNLSLVKGMNKQFAATATYSDGSVADISTSVTWSSA-----DTLVATI-----DVNGLANGKAAGSSLITATSGAQSNSTN-----LTVTDATL-----NSIDVTPIN----------PSI-IKNSSQNFVATGHYSD-GSTTNIT--STVMW-SSADTLVATLNPNE-QLNSGRATAIEVGSSV--IQASLSGVFADTTLNVTAALPNNPLAPELGEV-----ARFAM----LASQAITTTSGSAIVDGDLGILDQARSYYAGFTPGVNAGEFDELTNGLSYA-GDDSTPPYVVPVPYASMVAFINQSRTDLGIAYNFLAADPNPNAATQVCPIELGNLTLTRGVYKTAADVTLQTGTLTLDGEGDPDSVFIFTIGGNLTSGAPGGDIVLINGAQAKNIYWRTAGKTVIGTNTNFSGNVFA-WSEVNVRTGANVTGRLFAVTDQ
+         ::| :  : : ::  | : |: :::|  : : |: : |: : : :::|::     |:: :  :|:|::|  : || |:|   :  :  :  :: : : :::::|: ::::  :       :::::  | :::   :::  : |: :::  ::||: |   |  | ::: :::  |:    :: ::::  |: : :::   : :::  :|  |:   ::::|: :::::           :|:| : | :|: :::  |: :| || :  ::|:::|: :|:|:||: :    :| :|:|:| ::  :: |::  |  :| : |   |||::   |::| ::::      :||: :     ::  | |: |: :: :|:|::   :::|     |   |:::      :: : :::          ::: : |::   :::   :| :::::::  :: :|   :|: |::|  ::  ::   :|:  ::::   :  :|::: : :| :: : ::  : :::: :|     : | :     : ::::::::  :|::       : : ::  :: |:|| ::       |: : : |  |: : : :: |:   :: :| : | |  |::|::  :      : ||   :::   :::     |:: ::   :        :: : |: :::::   : | ::  |: :|   :: :  ||  :| |:: ::  : | ::  ::  :::|::
+  target NQTIGRGETSKSMHLSAGDTAKNTTI-NSGGKQYVSSGGSATSTTINIGGVQHVSSGGSATSSTINSGGHQH-VSSGGSATNTTVNNGGRQTVFS-GGSAMGTIINSGGDQYV-------ISGGSATSASVT---SGARQFVSSGGIVKATSVNSGGRQYVRDGGSATDTVLNNTGRQFVSSGGSAAKTTINSGGGMYLYGGSATGTSIYNGGRQYVSSGGSATNTTVYSGGRQHVYIDGNVTET-TITSG-GML-QVEAGGSASKVIQNSGGAVITNTSAAVSGTNDNGSFSIAGGSAVNMLLENGGYLTVFDG--HQASDTMVGSDGTLDVRSGGVLYGTTTLTDKGALVGDVVTNEGNLYYLNNSTATFTGTLTGTGTLTQEGGNTRFSGLLSQDGGIFLQSGGAMTMDALQAKANVTTQSGTTLTLDNGT--ILTGNVAGDSTGAGDMAVKGASVWHLDGDSTVGALTLDNGTVDFRPSTTTRMTPAFQAVSLALGSLSGSGTFQMNTDIA--SHTGDMLNVAGNASGNFVLDIKNTGLEPVSAGAPLQVVQT-----GGGDAAFTLKGGKVDAGTWE-------YGLSKENTNWYLKADT-PPPVTPPTNPDADNPDAGNPDAGNPDAGNP------DAGNPDAGKP---GTGKPDAGTSSSPVRRTTK-------SVDAVLGMATAPA--YVFN-SELDNLRFR---HGDVMQNTRAPGGVWGRYTGSDNRISGGASS-GYTLTQN
+
+## dayhoff6_B45_g6e1 | query origin IAFP_beetle | best cross_origin_positive
+query  O16119 (Thermal hysteresis protein YL-1 (THP YL-1) (Beta-helix antifreeze protein 2-14) (THP 2-14)) 26-78
+target Q9GSA5 (Antifreeze protein isoform 104 (AFP 104) (Long AFP isoform 1041) (Thermal hysteresis protein AFT 104)) 3-70
+score 67.5 half bits, E = 0.00147
+
+  query  TCTNSQHCVKANT-CTGS--TDC--NTAQ----TCTNSKDCFEAN--TCTDSTNC------YKATACTNS
+         || |::  : ||: |::|  |:|  : :|    ||| |   :::     : :|||       ::|:||||
+  target TCRNTNSQISANSLCASSTLTNCYIDDSQLESTTCTRSQ--YNGAYVVSSRTTNCNIRNSQVHTTTCTNS
+
+## dayhoff6_B45_g6e1 | query origin IAFP_beetle | best real_negative
+query  O16119 (Thermal hysteresis protein YL-1 (THP YL-1) (Beta-helix antifreeze protein 2-14) (THP 2-14)) 1-81
+target Q92044 (Metallothionein A) 5-59
+score 116.2 half bits, E = 1.14e-06
+
+  query  QCTGGADCTSCTGACTGCGNCPNAVTCTNSQHCVKANTCTGSTDCNTAQTCTNSKDCFEANTCTDSTNCYKATACTNSSGC
+         :|: :: |  |:::| :|:||    :|    :| |   |:    | :: :|:    |  | :|     | |: :| : | |
+  target ECSKTGKC-NCGTSC-TCTNC----SC----KCCKKSCCS----CCPS-GCS---KC--ASGCV----C-KGNSC-DKSCC
+
+## dayhoff6_B45_g6e1 | query origin THP_moth | best cross_origin_positive
+query  Q9GSA5 (Antifreeze protein isoform 104 (AFP 104) (Long AFP isoform 1041) (Thermal hysteresis protein AFT 104)) 3-70
+target O16119 (Thermal hysteresis protein YL-1 (THP YL-1) (Beta-helix antifreeze protein 2-14) (THP 2-14)) 26-78
+score 67.5 half bits, E = 0.00147
+
+  query  TCRNTNSQISANSLCASSTLTNCYIDDSQLESTTCTRSQ--YNGAYVVSSRTTNCNIRNSQVHTTTCTNS
+         || |::  : ||: |::|  |:|  : :|    ||| |   :::     : :|||       ::|:||||
+  target TCTNSQHCVKANT-CTGS--TDC--NTAQ----TCTNSKDCFEAN--TCTDSTNC------YKATACTNS
+
+## dayhoff6_B45_g6e1 | query origin THP_moth | best real_negative
+query  Q9GT00 (Antifreeze protein isoform 339 (AFP 339) (Short AFP isoform 339) (Thermal hysteresis protein AFT 339)) 6-86
+target K1XVG1 (Effector CFEM1) 1-73
+score 74.8 half bits, E = 0.000951
+
+  query  NTNSQITN--SKCVNSVPTNCYIDNSEVYGTTCTGSRYDGVHITSSTTTGTSASGPGCTISSCTITGGVPAPSAPCRISGCTL
+         :: ::::   : | ::    |    : : |::||:: | :    :::  : :||:::| ||:||   :: :  ::  |  |:|
+  target QSTAELAAQIPSCAQT----CL--ATAITGAGCTAGDY-ACQ-CGTSQNTITASATPCVISACTSEEALNTQRTTSQI--CAL

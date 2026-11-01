@@ -1,0 +1,97 @@
+{
+  "verdict": "FAIL",
+  "per_setting": {
+    "massspec18_k8": {
+      "rules": {
+        "rule1_recovery": {
+          "value": 0.7,
+          "needed": 0.95,
+          "holds": false
+        },
+        "rule2_false_assignment": {
+          "value": 0.08,
+          "needed": 0.01,
+          "holds": false
+        },
+        "rule3_median_list": {
+          "value": 1.0,
+          "needed": 5,
+          "holds": true
+        },
+        "rule4a_recovery_gain": {
+          "value": 0.16499999999999992,
+          "comparison_recovery_at_same_false_rate": 0.535,
+          "false_rate": 0.08,
+          "needed": 0.1,
+          "holds": true
+        },
+        "rule4b_speedup": {
+          "value": 4.615030913302521,
+          "matched_recovery": true,
+          "needed": 5.0,
+          "holds": false
+        }
+      },
+      "pass": false
+    }
+  },
+  "metrics": {
+    "massspec18_k8": {
+      "tau": 62,
+      "recovery_top5": 0.7,
+      "n_present": 200,
+      "n_recovered": 140,
+      "false_assignment": 0.08,
+      "n_absent": 50,
+      "n_false": 4,
+      "median_list_length": 1.0,
+      "median_candidates_before_check": 1.0,
+      "control_assigned_composition": 0.0104,
+      "control_assigned_dipeptide": 0.336,
+      "wall_s": {
+        "build": 18.7033106777817,
+        "search": 8.26682868693024,
+        "verify": 0.007119555026292801
+      },
+      "cpu_s": {
+        "build": 15.661292122999999,
+        "search": 7.026753557999999,
+        "verify": 0.007119657999999918
+      },
+      "wall_total_s": 26.977258919738233,
+      "cpu_total_s": 22.695165339
+    },
+    "comparison": {
+      "tau": 66,
+      "recovery_top5": 0.64,
+      "n_present": 200,
+      "n_recovered": 128,
+      "false_assignment": 0.12,
+      "n_absent": 50,
+      "n_false": 6,
+      "median_list_length": 1.0,
+      "median_candidates_before_check": 221.0,
+      "control_assigned_composition": 0.0152,
+      "control_assigned_dipeptide": 0.356,
+      "wall_s": {
+        "build": 14.087781609967351,
+        "search": 109.07191382534802,
+        "verify": 1.3411884354427457
+      },
+      "cpu_s": {
+        "build": 13.762551734999999,
+        "search": 108.84489989599999,
+        "verify": 1.341095718
+      },
+      "wall_total_s": 124.50088387075812,
+      "cpu_total_s": 123.94854734899998
+    }
+  },
+  "diagnostics": {
+    "absent_calls_with_exact_peptide_in_another_protein": 1,
+    "present_calls_with_exact_peptide_in_accepted_source": 119,
+    "present_calls_denovo_equals_db_search": 119,
+    "n_present": 200,
+    "n_absent": 50
+  }
+}

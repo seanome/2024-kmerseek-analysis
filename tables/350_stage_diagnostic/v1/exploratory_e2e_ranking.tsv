@@ -1,0 +1,17 @@
+dataset	positives	ranking	heldout_recall
+ice_binding	positive	pipeline ranking	0.0
+ice_binding	positive	best region Poisson score	0.0
+ice_binding	positive	reported pairs rescored by B	0.004124999999999999
+ice_binding	positive	all scaled-1 candidates rescored by B	0.007166666666666666
+ice_binding	same-origin homolog	pipeline ranking	0.14912280701754385
+ice_binding	same-origin homolog	best region Poisson score	0.6140350877192983
+ice_binding	same-origin homolog	reported pairs rescored by B	0.9144736842105263
+ice_binding	same-origin homolog	all scaled-1 candidates rescored by B	0.9407894736842105
+toxin_scaffold	positive	pipeline ranking	0.08160919540229884
+toxin_scaffold	positive	best region Poisson score	0.08160919540229884
+toxin_scaffold	positive	reported pairs rescored by B	0.210344827586207
+toxin_scaffold	positive	all scaled-1 candidates rescored by B	0.2310344827586208
+toxin_target	positive	pipeline ranking	0.01694915254237288
+toxin_target	positive	best region Poisson score	0.01694915254237288
+toxin_target	positive	reported pairs rescored by B	0.03697996918335902
+toxin_target	positive	all scaled-1 candidates rescored by B	0.03697996918335902

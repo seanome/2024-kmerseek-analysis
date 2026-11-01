@@ -1,0 +1,11 @@
+alphabet	ksize	requested_memory_gb	requested_hours	requested_cpus	status	basis
+massspec18	7	674	6	8	ready	1.5x linear maximum of build and search memory; 2x linear time plus 4h fit allowance
+protein20	7	687	6	8	ready	1.5x linear maximum of build and search memory; 2x linear time plus 4h fit allowance
+uniprot18	7	683	6	8	ready	1.5x linear maximum of build and search memory; 2x linear time plus 4h fit allowance
+dayhoff6	13	680	6	8	ready	1.5x linear maximum of build and search memory; 2x linear time plus 4h fit allowance
+funcgroups8	11	689	6	8	ready	1.5x linear maximum of build and search memory; 2x linear time plus 4h fit allowance
+hsdm17	8	683	6	8	ready	1.5x linear maximum of build and search memory; 2x linear time plus 4h fit allowance
+mmseqs12	9	683	6	8	ready	1.5x linear maximum of build and search memory; 2x linear time plus 4h fit allowance
+sdm12	9	661	6	8	ready	1.5x linear maximum of build and search memory; 2x linear time plus 4h fit allowance
+wass14	8	683	6	8	ready	1.5x linear maximum of build and search memory; 2x linear time plus 4h fit allowance
+wwmj5	13	672	6	8	ready	1.5x linear maximum of build and search memory; 2x linear time plus 4h fit allowance

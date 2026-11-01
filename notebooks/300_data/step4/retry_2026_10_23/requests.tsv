@@ -1,0 +1,8 @@
+alphabet	ksize	previous_job_id	previous_state	elapsed_seconds	batch_maxrss_gib	previous_memory_gib	requested_memory_gib	requested_hours	requested_cpus	basis
+protein20	7	49026084	TIMEOUT	21632	42.233	687.0	687	18	8	3x failed 6h limit; calibration was not reached, retain memory
+dayhoff6	13	49026091	TIMEOUT	21607	24.913	680.0	680	18	8	3x failed 6h limit; calibration was not reached, retain memory
+funcgroups8	11	49026093	TIMEOUT	21607	33.666	689.0	689	18	8	3x failed 6h limit; calibration was not reached, retain memory
+hsdm17	8	49026095	TIMEOUT	21632	36.178	683.0	683	18	8	3x failed 6h limit; calibration was not reached, retain memory
+mmseqs12	9	49026098	TIMEOUT	21607	42.868	683.0	683	18	8	3x failed 6h limit; calibration was not reached, retain memory
+sdm12	9	49026102	OUT_OF_MEMORY	8059	661.0	661.0	1322	6	8	2x killed memory; retain 6h allowance
+wass14	8	49026104	TIMEOUT	21607	43.378	683.0	683	18	8	3x failed 6h limit; calibration was not reached, retain memory

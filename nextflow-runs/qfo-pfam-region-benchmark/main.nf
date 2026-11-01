@@ -171,6 +171,33 @@ params.kmerseek_combos    = null
 // sweep nothing and build a report over it.
 params.kmerseek_stored_only = false
 
+// Two-letter partitions that are not kmerseek alphabets, for notebook 246 (experiment A:
+// is the H/P result about hydrophobicity or about any 2-letter alphabet). Read only by
+// `-entry randomAlphabets`; the main workflow ignores every param in this block.
+//
+// One or more manifest TSVs, comma-separated ('#' lines skipped), with columns name,
+// partition_tsv and optionally alphabet. partition_tsv is a residue/class file next to
+// the manifest (see bin/encode_partition.py) or '-' for a kmerseek alphabet used as is.
+// With a partition, query and target FASTAs are rewritten class 1 -> A, class 2 -> D and
+// searched as protein20, which is the same exact k-mer match a built-in 2-letter alphabet
+// with that partition makes. The name is the arm's label in every file name:
+//   human_vs_<species>.<name>.k<k>.lcfalse.extend-c<C>.regions.parquet
+// Mask off only: kmerseek's low-complexity mask would be computed on the A/D string,
+// which is not what it computes for a built-in alphabet.
+//
+// kmerseek 0.4 only. Every search extends its exact k-mer runs through mismatches at
+// each penalty C, chains runs on nearby diagonals, and reports region_evalue from a
+// Karlin-Altschul fit stored in the index, one fit per C. The same settings as the
+// invertebrate dark set: X-drop 4 x C, chains up to 30 residues apart and 10 off the
+// diagonal, 500 fit queries. One C for every arm, so the arms differ only in partition.
+params.extra_encoded_alphabets        = null
+params.extra_encoded_ksizes           = '19'
+params.extra_encoded_penalties        = '1.63,2'
+params.extra_encoded_xdrop_per_penalty = 4
+params.extra_encoded_chain_max_gap    = 30
+params.extra_encoded_chain_max_shift  = 10
+params.extra_encoded_ka_queries       = 500
+
 // Low-complexity k-mer removal. Swept as a toggle when it was an open question -- every
 // alphabet and ksize with and without it, which doubled the search count -- and now fixed
 // OFF, because the sweep answered it: dropping low-complexity k-mers did not move the
@@ -909,6 +936,11 @@ def KMERSEEK_TIMER_SH = '''# GNU date's %N is nanoseconds. BSD date (macOS, when
 // Class count is the trailing number in every encoding name: protein20, gbmr4,
 // hp_lehninger_hpc3, hp_thomas_dill_no_c2.
 def alphabetClasses = { label ->
+    // random2_07 is partition 7 of the 2-class draws (notebook 246): the class count is
+    // the number before the underscore, and 07 read as a class count would size memory for
+    // a 1-letter alphabet.
+    def r = label =~ /^random(\d+)_\d+$/
+    if (r) return (r[0][1] as int)
     def m = label =~ /(\d+)$/
     m ? (m[0][1] as int) : 20
 }
@@ -1880,6 +1912,182 @@ PYEOF
     printf '{"process":"kmerseekSearch","tag":"%s","cpus":%s,"realtime_s":%s,"command_s":%s,"n_queries_all":%s}\\n' \\
         "${species}_${label}_k${ksize}_lc${lowcomp}" "${task.cpus}" \\
         "\$(_elapsed_s \$_task_t0)" "\$_cmd_s" "\$n_queries" >> ${timings}
+    """
+}
+
+process encodeFastaPartition {
+    /*
+     * Rewrite one proteome under one 2-letter partition (bin/encode_partition.py) for
+     * `-entry randomAlphabets`. Stored beside the other per-proteome databases, so the ten
+     * random partitions are encoded once per proteome however often the entry is rerun.
+     * One output file, so storeDir has nothing to trip on.
+     */
+    tag "${label}_${name}"
+    container params.kmerseek_image
+    storeDir "${DB_CACHE}/encoded_fasta"
+    cpus 1
+    memory '2 GB'
+    time '1h'
+    errorStrategy { retryOnKill(task) }
+    maxRetries 2
+
+    input:
+    tuple val(label), path(fasta), val(name), path(partition)
+
+    output:
+    path "${label}.${name}.fasta"
+
+    script:
+    """
+    encode_partition.py --partition ${partition} --input ${fasta} --output ${label}.${name}.fasta
+    """
+}
+
+// "1.63" stays "1.63", "2.0" becomes "2": the same string names the stored fit, the
+// file name and the command-line value, because kmerseek looks a fit up by exact penalty
+// and X-drop.
+def penaltyString = { double c ->
+    def sf = String.format('%.2f', c)
+    sf.contains('.') ? sf.replaceAll(/0+$/, '').replaceAll(/\.$/, '') : sf
+}
+def extendPenalties = { ->
+    params.extra_encoded_penalties.toString().tokenize(',')*.trim().findAll { it }
+        .collect { penaltyString(it as double) }.unique()
+}
+def extendXdrop = { String c ->
+    penaltyString((params.extra_encoded_xdrop_per_penalty as double) * (c as double))
+}
+
+// Index memory for an index that carries Karlin-Altschul fits. The fit is a search of
+// --ka-queries target sequences against the index just built, and at 2 letters it, not
+// the build, sets the peak: 44 GB for 2-letter k19 at 500 queries in the dark-set
+// ladder-0.4 run (2026-09-20), falling by half every 2.5 keyspace bits. The dark set's
+// model, 300 x 2^(-(bits - 12) / 2.5) GB at 500 queries, with its 1.4 headroom, and never
+// below what kmerseekIndex asks for the same proteome.
+def kmerseekExtendIndexMemory = { targetBytes, label, ksize, attempt ->
+    double bits = keyspaceBits(label, ksize)
+    double fitGb = 300.0d * Math.pow(2.0d, -(bits - 12.0d) / 2.5d) *
+                   ((params.extra_encoded_ka_queries as double) / 500.0d)
+    def plain = kmerseekIndexMemory(targetBytes, 1)
+    long mb = Math.max(plain.toMega(), (long) (1.4d * fitGb * 1024L))
+    MemoryUnit.of("${mb} MB") * attempt
+}
+
+process kmerseekExtendIndex {
+    /*
+     * kmerseekIndex for `-entry randomAlphabets`, under kmerseek 0.4, with one
+     * Karlin-Altschul fit stored per extension penalty: `kmerseek index` fits the first,
+     * `kmerseek calibrate` adds the rest. The histogram each fit was read from is kept in
+     * the index as ka_survival.C<penalty>.csv, fitted or refused.
+     *
+     * Its own store, <index cache>/ka_fit, so an exact-only index of the same name that
+     * another run builds can never be mistaken for one that has the fits.
+     *
+     * Files read-only after the build, the directory itself left writable so the storeDir
+     * rename still works (see the dark set's kmerseekIndex, 2026-09-17 and 2026-09-19).
+     */
+    tag "${species}_${label}_k${ksize}"
+    container params.kmerseek_image
+    storeDir "${KMERSEEK_INDEX_CACHE}/ka_fit"
+    cpus 8
+    memory { kmerseekExtendIndexMemory(species_fasta.size(), label, ksize, task.attempt) }
+    errorStrategy { retryOnKill(task) }
+    maxRetries 2
+
+    input:
+    tuple val(species), path(species_fasta), val(cli_flag), val(label), val(ksize)
+
+    output:
+    path "${species}.${label}.k${ksize}.lcfalse.kmerseek.rocksdb"
+
+    script:
+    def idx  = "${species}.${label}.k${ksize}.lcfalse.kmerseek.rocksdb"
+    def pens = extendPenalties()
+    def nq   = params.extra_encoded_ka_queries
+    def more = pens.drop(1).collect { c ->
+        "kmerseek calibrate --target ${idx} --extend-mismatch-penalty ${c} " +
+        "--extend-xdrop ${extendXdrop(c)} --ka-queries ${nq} " +
+        "--ka-survival-out ${idx}/ka_survival.C${c}.csv 2>&1 | tee -a index.log"
+    }.join('\n    ')
+    """
+    set -euo pipefail
+    kmerseek index \\
+        --alphabet ${cli_flag} --ksize ${ksize} \\
+        --input  ${species_fasta} --output ${idx} \\
+        --extend-mismatch-penalty ${pens[0]} --extend-xdrop ${extendXdrop(pens[0])} \\
+        --ka-queries ${nq} --ka-survival-out ${idx}/ka_survival.C${pens[0]}.csv \\
+        --kmer-stats-out ${idx}/spectrum.csv.gz 2>&1 | tee index.log
+    ${more}
+    mv index.log ${idx}/
+    chmod -R a-w ${idx}
+    chmod u+w ${idx}
+    """
+}
+
+process kmerseekExtendSearch {
+    /*
+     * kmerseekSearch for `-entry randomAlphabets`, under kmerseek 0.4: the same four
+     * filters, plus extension at one penalty, chaining, and region_evalue from the fit
+     * stored in the index (--ka-queries 0, so a missing fit refuses rather than refits).
+     *
+     * A refused fit is not a no-hit result. The search exits with "no Karlin-Altschul
+     * fit"; this task then exits 3, errorStrategy ignores it, and nothing is stored, so
+     * that arm is absent from scoring rather than present as a zero. The run log names it.
+     */
+    tag "${species}_${label}_k${ksize}_C${penalty}"
+    container params.kmerseek_image
+    storeDir "${params.outdir}/kmerseek"
+    memory { kmerseekSearchMemory(label, ksize, target_bytes, task.attempt) }
+    errorStrategy { task.exitStatus == 3 ? 'ignore' : retryOnKillElseIgnore(task) }
+    maxRetries 2
+
+    input:
+    tuple val(species), val(cli_flag), val(label), val(ksize), val(penalty),
+          val(target_bytes), path(index_dir), path(human_fasta)
+
+    output:
+    path "human_vs_${species}.${label}.k${ksize}.lcfalse.extend-c${penalty}.regions.parquet"
+
+    script:
+    def slug   = "human_vs_${species}.${label}.k${ksize}.lcfalse.extend-c${penalty}"
+    """
+    set -euo pipefail
+    set +e
+    kmerseek search \\
+        --alphabet ${cli_flag} --ksize ${ksize} \\
+        --query  ${human_fasta} --target ${index_dir} \\
+        --extend-mismatch-penalty ${penalty} --extend-xdrop ${extendXdrop(penalty)} \\
+        --ka-queries 0 \\
+        --chain-max-gap ${params.extra_encoded_chain_max_gap} \\
+        --chain-max-shift ${params.extra_encoded_chain_max_shift} \\
+        --threshold         ${params.threshold} \\
+        --min-shared-kmers  ${params.min_shared_kmers} \\
+        --max-query-pvalue  ${params.max_query_pvalue} \\
+        --min-region-score  ${params.min_region_score} \\
+        2> ${slug}.log \\
+        | zstd -T2 -o ${slug}.regions.csv.zst
+    rc=(\${PIPESTATUS[@]})
+    set -e
+    if [ "\${rc[0]}" -ne 0 ] && grep -q "no Karlin-Altschul fit" ${slug}.log; then
+        grep -m1 "no Karlin-Altschul fit" ${slug}.log >&2
+        exit 3
+    fi
+    # A signal death is a kill, not a result: re-raise it so the retry doubles memory.
+    if [ "\${rc[0]}" -ge 128 ] && [ "\${rc[0]}" -le 143 ]; then exit "\${rc[0]}"; fi
+    [ "\${rc[0]}" -eq 0 ] && [ "\${rc[1]}" -eq 0 ] || { cat ${slug}.log >&2; exit 1; }
+
+    if [ -n "\$(zstd -dc ${slug}.regions.csv.zst | head -c 1)" ]; then
+        python3 - << 'PYEOF'
+import polars as pl
+DROP = ["query_md5", "target_md5", "region_subseq", "target_subseq", "moltype_seq"]
+lf = pl.scan_csv("${slug}.regions.csv.zst", ignore_errors=True)
+cols = [c for c in lf.collect_schema().names() if c not in DROP]
+lf.select(cols).sink_parquet("${slug}.regions.parquet", compression="zstd", compression_level=9)
+PYEOF
+    else
+        touch ${slug}.regions.parquet
+    fi
+    rm -f ${slug}.regions.csv.zst
     """
 }
 
@@ -4532,6 +4740,105 @@ workflow {
 
 
 // ---------------------------------------------------------------------------
+// `nextflow run main.nf -entry randomAlphabets --extra_encoded_alphabets <manifest>`
+//
+// kmerseek index and search for 2-letter partitions that are not kmerseek alphabets
+// (notebook 246). Searches only: the region tables go to ${outdir}/kmerseek under the same
+// names the main workflow uses, and are scored outside the pipeline
+// (scripts/reduce_swissprot_instance_landing.py), the same way notebook 244 scored the
+// real arms. The same two processes as the main sweep, so memory, retries and storeDir
+// behave the same; a partition's label sizes its memory as a 2-class alphabet (see
+// alphabetClasses).
+// ---------------------------------------------------------------------------
+workflow randomAlphabets {
+    if (!params.extra_encoded_alphabets) {
+        error "-entry randomAlphabets needs --extra_encoded_alphabets <manifest.tsv>"
+    }
+    def ARMS = params.extra_encoded_alphabets.toString().tokenize(',').collectMany { mpath ->
+      def manifest = file(mpath.trim())
+      if (!manifest.exists()) error "no manifest at ${manifest}"
+      def lines  = manifest.readLines().findAll { it.trim() && !it.startsWith('#') }
+      def header = lines[0].split('\t') as List
+      ['name', 'partition_tsv'].each { col ->
+          if (!(col in header)) error "${manifest}: no '${col}' column in ${header}"
+      }
+      lines.drop(1).collect { line ->
+        def row = [header, line.split('\t') as List].transpose().collectEntries()
+        def part = row.partition_tsv == '-' ? null : manifest.parent.resolve(row.partition_tsv)
+        if (part && !part.exists()) error "${manifest}: partition file ${part} does not exist"
+        if (row.name.startsWith('hp_') && part) {
+            error "${row.name}: an encoded partition may not be named hp_*, which names kmerseek's own alphabets"
+        }
+        [name: row.name, partition: part, alphabet: row.alphabet ?: 'protein20']
+      }
+    }
+    def dupNames = ARMS*.name.countBy { it }.findAll { _n, c -> c > 1 }*.key
+    if (dupNames) error "arm names repeated across the manifests: ${dupNames.join(', ')}"
+    def PENALTIES = extendPenalties()
+    def ksizes = params.extra_encoded_ksizes.toString().tokenize(',').collect { it.trim() as int }
+
+    def human_fasta = file("${params.qfo_dir}/Eukaryota/UP000005640_9606.fasta")
+    def human_label = "human-" + java.security.MessageDigest.getInstance('MD5')
+        .digest(human_fasta.bytes).encodeHex().toString().take(8)
+    def targets = SPECIES.collect { s ->
+        tuple(s.label, file("${params.qfo_dir}/${s.subdir}/${s.proteome}_${s.taxon}.fasta"))
+    }
+    log.info """
+    |  randomAlphabets
+    |  arms    : ${ARMS*.name.join(', ')}
+    |  ksizes  : ${ksizes.join(', ')}, low-complexity mask off
+    |  extend  : C = ${PENALTIES.join(', ')}, X-drop ${PENALTIES.collect { extendXdrop(it) }.join(', ')}, chain gap ${params.extra_encoded_chain_max_gap} / shift ${params.extra_encoded_chain_max_shift}
+    |  image   : ${params.kmerseek_image}
+    |  query   : ${human_fasta} (${human_label})
+    |  targets : ${targets*.get(0).join(', ')}
+    |  indexes : ${ARMS.size()} x ${ksizes.size()} x ${targets.size()} = ${ARMS.size() * ksizes.size() * targets.size()}
+    |  searches: x ${PENALTIES.size()} penalties = ${ARMS.size() * ksizes.size() * targets.size() * PENALTIES.size()}
+    """.stripMargin()
+
+    // Every proteome, human included, under every partition that has one. An arm with no
+    // partition (the built-in alphabet in the laptop control manifest) uses the FASTA as is.
+    def encoded_arms = ARMS.findAll { it.partition }
+    def proteomes = [tuple(human_label, human_fasta)] + targets
+    enc_in = Channel.fromList(proteomes.collectMany { lab, fa ->
+        encoded_arms.collect { a -> tuple(lab, fa, a.name, a.partition) }
+    })
+    encoded = encodeFastaPartition(enc_in).map { f ->
+        def m = (f.name =~ /^(.+?)\.(.+)\.fasta$/)
+        tuple(m[0][1], m[0][2], f)
+    }
+    plain = Channel.fromList(proteomes.collectMany { lab, fa ->
+        ARMS.findAll { !it.partition }.collect { a -> tuple(lab, a.name, fa) }
+    })
+    // (proteome label, arm name, fasta) for every proteome under every arm
+    fastas = encoded.mix(plain)
+
+    def alphabetOf = ARMS.collectEntries { [it.name, it.alphabet] }
+    index_in = fastas
+        .filter { lab, _name, _f -> lab != human_label }
+        .combine(Channel.fromList(ksizes))
+        .map { sp, name, f, k -> tuple(sp, f, alphabetOf[name], name, k) }
+    idx_out = kmerseekExtendIndex(index_in)
+
+    target_bytes = index_in.map { sp, f, _cli, name, k -> tuple("${sp}|${name}|${k}".toString(), f.size()) }
+    query_for = fastas.filter { lab, _n, _f -> lab == human_label }.map { _l, name, f -> tuple(name, f) }
+    search_in = idx_out
+        .map { d ->
+            def m = (d.name =~ /^(.+?)\.(.+)\.k(\d+)\.lcfalse\.kmerseek\.rocksdb$/)
+            if (!m) error "cannot parse kmerseek index directory name: ${d.name}"
+            tuple("${m[0][1]}|${m[0][2]}|${m[0][3]}".toString(), m[0][1], m[0][2], m[0][3] as int, d)
+        }
+        .join(target_bytes)
+        .map { _key, sp, name, k, d, bytes -> tuple(name, sp, k, d, bytes) }
+        .combine(query_for, by: 0)
+        .combine(Channel.fromList(PENALTIES))
+        .map { name, sp, k, d, bytes, q, c ->
+            tuple(sp, alphabetOf[name], name, k, c, bytes, d, q)
+        }
+    kmerseekExtendSearch(search_in)
+}
+
+
+// ---------------------------------------------------------------------------
 // One HTML report. Shared by the main workflow and the `report` entry, so a rebuild from
 // published results goes through exactly the code path the pipeline itself used.
 // ---------------------------------------------------------------------------
@@ -4733,4 +5040,510 @@ workflow report {
         Channel.of(bpe.exists() ? bpe : file("${projectDir}/assets/NO_BPE")),
         Channel.of(ks_spectra),
     )
+}
+
+// =========================================================================================
+// No-search baselines: what a reader scores with no database at all.
+//
+// Run as its own entry after a finished run, on that run's query set and truth tables
+// (`make run-no-search-baselines` writes the command):
+//
+//   nextflow run main.nf -entry noSearchBaselines -profile sherlock \
+//       --baseline_run_dir ../data/midi-plus/results --outdir ../data/midi-plus/results ...
+//
+// It reads, and never rewrites, the finished run's truth/ and truth_swissprot/ folders and
+// the Pfam-N truth, so the baselines are scored against exactly the tables every search
+// tool in that run was scored against. Everything it writes goes under
+// ${params.outdir}/no_search. bin/no_search_baselines.py says what each baseline is;
+// assets/no_search_baselines.tsv says which truth set and feature type each can address.
+//
+// Every task is small. On the midi-plus queries the closest measured tasks are
+// proteomeDisorder (metapredict on the same 998 queries, job 41567300: 12.3 s, 3.3 GB
+// peak), buildSwissprotTruth (reads the whole Swiss-Prot flat file, job 42866517: 47.7 s,
+// 654.5 MB peak) and scoreHmmscanCeiling (direct scoring on the Pfam truth, job 42867710:
+// 4.6 s, 109.8 MB peak), all in run-midi-plus/qfo_pfam_region.2026-09-*.trace.txt.
+// =========================================================================================
+
+params.baseline_run_dir              = null
+params.baseline_reference_fasta      = null   // whole human proteome, for the frequency bins
+params.baseline_reference_annotation = null   // whole-proteome human_pfam_domains.parquet
+// IUPred is under an academic licence that forbids passing it on, so it is never put in an
+// image or in git. `make stage-iupred` copies iupred_string.c and its two data files
+// (histo, ss) from InterProScan's bin/mobidb/idrpred/bin/IUPred/src.zip into a folder on
+// Sherlock, and iupredLong compiles it there, as notebook 341 compiled the same file.
+params.iupred_dir                    = null
+// IUPred long (Dosztanyi et al. 2005) and metapredict v3 both read a score above 0.5 as
+// disordered.
+params.disorder_cutoff               = 0.5
+// Images used only here, so they are params rather than `container '...'` literals: the
+// Makefile's ALL_CONTAINERS collects every literal, and every main-run launch would then
+// pull and convert these two as well (gcc alone is about 1.4 GB).
+// gcc 14.2.0, by digest; a Debian userland, so bash, awk and ps are present.
+params.gcc_image   = 'docker.io/library/gcc@sha256:b99b86a28812b1e6453a231a947dc43d76fe192788a12f344a9b568bf9f5d24c'
+// BLAST+ 2.16.0 (build h66d330f_5). Its segmasker is NCBI's copy of SEG (Wootton and
+// Federhen 1993); `segmasker -version` printed "segmasker: 1.0.0, blast 2.16.0" from this
+// image on 2026-10-16.
+params.blast_image = 'quay.io/biocontainers/blast@sha256:9dfc69f990c0aeb936276ee591ed32919a79f46dfa34060055e05a050a17959c'
+params.disorder_min_length           = 20
+
+// <tool>.<variant> names of every call file, in one place so script and stub agree with
+// assets/no_search_baselines.tsv.
+def baselineVariants = { tool ->
+    def tag = "t${params.disorder_cutoff}_min${params.disorder_min_length}"
+    [
+        iupred:      ["long_${tag}_disordered", "long_${tag}_compbias", "long_${tag}_region"],
+        metapredict: ["v3_${tag}_disordered", "v3_${tag}_compbias", "v3_${tag}_region"],
+        seg:         ["segmasker_default_compbias", "segmasker_default_repeat"],
+    ][tool]
+}
+
+process kdScan {
+    tag "kyte_doolittle"
+    label 'no_search'
+    container params.kmerseek_image
+    cpus 1
+    memory { 4.GB * task.attempt }
+    time   { 1.h * task.attempt }
+    errorStrategy { retryOnKill(task) }
+    maxRetries 2
+    publishDir "${params.outdir}/no_search/calls_raw", mode: 'copy'
+
+    input:
+    path query_fasta
+
+    output:
+    path "kyte_doolittle.*.tsv", emit: calls
+
+    script:
+    """
+    no_search_baselines.py kd --fasta ${query_fasta} \\
+        --label TRANSMEM --out kyte_doolittle.w19_t1.6_transmem.tsv \\
+        --label INTRAMEM --out kyte_doolittle.w19_t1.6_intramem.tsv
+    """
+
+    stub:
+    """
+    printf 'sp|P1|A_HUMAN\\tTRANSMEM\\t10\\t30\\t2.0\\tNA\\n' > kyte_doolittle.w19_t1.6_transmem.tsv
+    printf 'sp|P1|A_HUMAN\\tINTRAMEM\\t10\\t30\\t2.0\\tNA\\n' > kyte_doolittle.w19_t1.6_intramem.tsv
+    """
+}
+
+process iupredLong {
+    tag "iupred long"
+    label 'no_search'
+    container params.gcc_image
+    cpus 1
+    memory { 4.GB * task.attempt }
+    time   { 1.h * task.attempt }
+    errorStrategy { retryOnKill(task) }
+    maxRetries 2
+    publishDir "${params.outdir}/no_search/residue_scores", mode: 'copy'
+
+    input:
+    tuple path(query_fasta), path(iupred_dir)
+
+    output:
+    path "iupred_long.residue_scores.tsv", emit: scores
+
+    script:
+    """
+    gcc -O2 -o iupred_string ${iupred_dir}/iupred_string.c -lm
+    export IUPred_PATH=\$(readlink -f ${iupred_dir})
+    # One line per protein: accession <tab> sequence. Accession as
+    # no_search_baselines.accession_of: the second |-field of a UniProt name.
+    awk '/^>/ { if (s != "") print n "\\t" s
+                split(substr(\$1, 2), f, "|"); n = (f[2] != "" ? f[2] : substr(\$1, 2))
+                s = ""; next }
+         { s = s \$0 }
+         END { if (s != "") print n "\\t" s }' ${query_fasta} > seqs.tsv
+    : > iupred_long.residue_scores.tsv
+    while IFS=\$'\\t' read -r acc seq; do
+        ./iupred_string "\$seq" long \\
+          | awk -v a="\$acc" '\$1 ~ /^[0-9]+\$/ && NF == 3 { print a "\\t" \$1 "\\t" \$3 }' \\
+          >> iupred_long.residue_scores.tsv
+    done < seqs.tsv
+    # Every residue scored, or fail here rather than as missing calls later.
+    want=\$(awk -F'\\t' '{ n += length(\$2) } END { print n }' seqs.tsv)
+    got=\$(wc -l < iupred_long.residue_scores.tsv)
+    [ "\$want" -eq "\$got" ] || { echo "IUPred scored \$got of \$want residues" >&2; exit 1; }
+    """
+
+    stub:
+    """
+    printf 'P1\\t1\\t0.9\\n' > iupred_long.residue_scores.tsv
+    """
+}
+
+process metapredictScores {
+    tag "metapredict"
+    label 'no_search'
+    container params.metapredict_image
+    cpus 1
+    // 3.3 GB peak for the same model on the same 998 queries (proteomeDisorder, job
+    // 41567300), so 8 GB rather than 4 on the first attempt.
+    memory { 8.GB * task.attempt }
+    time   { 1.h * task.attempt }
+    errorStrategy { retryOnKill(task) }
+    maxRetries 2
+    publishDir "${params.outdir}/no_search/residue_scores", mode: 'copy'
+
+    input:
+    path query_fasta
+
+    output:
+    path "metapredict.residue_scores.tsv", emit: scores
+
+    script:
+    """
+    metapredict_residue_scores.py --fasta ${query_fasta} --out metapredict.residue_scores.tsv
+    """
+
+    stub:
+    """
+    printf 'P1\\t1\\t0.9\\n' > metapredict.residue_scores.tsv
+    """
+}
+
+process segmasker {
+    tag "seg"
+    label 'no_search'
+    container params.blast_image
+    cpus 1
+    memory { 4.GB * task.attempt }
+    time   { 1.h * task.attempt }
+    errorStrategy { retryOnKill(task) }
+    maxRetries 2
+    publishDir "${params.outdir}/no_search/residue_scores", mode: 'copy'
+
+    input:
+    path query_fasta
+
+    output:
+    path "seg.intervals.txt", emit: intervals
+
+    script:
+    // No -window, -locut or -hicut: segmasker's defaults (12, 2.2, 2.5) are SEG's own.
+    """
+    segmasker -version
+    segmasker -in ${query_fasta} -infmt fasta -outfmt interval -out seg.intervals.txt
+    """
+
+    stub:
+    """
+    printf '>sp|P1|A_HUMAN\\n0 - 11\\n' > seg.intervals.txt
+    """
+}
+
+process baselineCalls {
+    // The per-residue outputs above become calls here, through one run-finding function.
+    tag "${tool}"
+    label 'no_search'
+    container params.kmerseek_image
+    cpus 1
+    memory { 4.GB * task.attempt }
+    time   { 1.h * task.attempt }
+    errorStrategy { retryOnKill(task) }
+    maxRetries 2
+    publishDir "${params.outdir}/no_search/calls_raw", mode: 'copy'
+
+    input:
+    tuple val(tool), path(raw)
+
+    output:
+    path "${tool}.*.tsv", emit: calls
+
+    script:
+    def v = baselineVariants(tool)
+    if (tool == 'seg')
+        """
+        no_search_baselines.py seg --intervals ${raw} \\
+            --label COMPBIAS --out seg.${v[0]}.tsv \\
+            --label REPEAT   --out seg.${v[1]}.tsv
+        """
+    else
+        """
+        no_search_baselines.py runs --scores ${raw} \\
+            --cutoff ${params.disorder_cutoff} --min-length ${params.disorder_min_length} \\
+            --label REGION_DISORDERED --out ${tool}.${v[0]}.tsv \\
+            --label COMPBIAS          --out ${tool}.${v[1]}.tsv \\
+            --label REGION            --out ${tool}.${v[2]}.tsv
+        """
+
+    stub:
+    def v = baselineVariants(tool)
+    """
+    printf 'P1\\tCOMPBIAS\\t1\\t20\\t1.0\\tNA\\n' > ${tool}.${v[0]}.tsv
+    printf 'P1\\tCOMPBIAS\\t1\\t20\\t1.0\\tNA\\n' > ${tool}.${v[1]}.tsv
+    if [ "${v.size()}" -gt 2 ]; then
+        printf 'P1\\tREGION\\t1\\t20\\t1.0\\tNA\\n' > ${tool}.${v[2]}.tsv
+    fi
+    """
+}
+
+process familyFrequency {
+    tag "pfam_family_frequency"
+    label 'no_search'
+    container params.kmerseek_image
+    cpus 1
+    memory { 4.GB * task.attempt }
+    time   { 1.h * task.attempt }
+    errorStrategy { retryOnKill(task) }
+    maxRetries 2
+    publishDir "${params.outdir}/no_search/calls_raw", mode: 'copy'
+
+    input:
+    // The query FASTA and the reference proteome can share a file name (both are
+    // UP000005640_9606.fasta for human), so each is staged in its own folder.
+    tuple path(query_fasta, stageAs: 'query/*'), path(reference_fasta, stageAs: 'reference/*'),
+          path(reference_annotation)
+
+    output:
+    path "pfam_family_frequency.length_bin.tsv", emit: calls
+    path "pfam_family_frequency.bins.tsv",       emit: table
+
+    script:
+    """
+    no_search_baselines.py frequency --fasta ${query_fasta} \\
+        --reference-fasta ${reference_fasta} \\
+        --reference-annotation ${reference_annotation} \\
+        --table-out pfam_family_frequency.bins.tsv \\
+        --out pfam_family_frequency.length_bin.tsv
+    """
+
+    stub:
+    """
+    printf 'P1\\tPF00001\\t1\\t100\\t0.1\\tNA\\n' > pfam_family_frequency.length_bin.tsv
+    printf 'bin\\tpfam_id\\n' > pfam_family_frequency.bins.tsv
+    """
+}
+
+process buildDisorderTruth {
+    tag "swissprot_disordered, swissprot_compbias"
+    label 'no_search'
+    container params.kmerseek_image
+    cpus 1
+    // buildSwissprotTruth reads the same flat file: 654.5 MB peak, 47.7 s (job 42866517).
+    memory { 4.GB * task.attempt }
+    time   { 1.h * task.attempt }
+    errorStrategy { retryOnKill(task) }
+    maxRetries 2
+    publishDir "${params.outdir}/no_search/truth", mode: 'copy'
+
+    input:
+    tuple path(sprot_dat), path(query_fasta)
+
+    output:
+    path "human_swissprot_disordered_truth.parquet", emit: disordered
+    path "human_swissprot_compbias_truth.parquet",   emit: compbias
+    path "swissprot_disorder_summary.json",          emit: summary
+
+    script:
+    """
+    build_sprot_disorder_truth.py --sprot-dat ${sprot_dat} --query-fasta ${query_fasta} \\
+        --disordered-out human_swissprot_disordered_truth.parquet \\
+        --compbias-out   human_swissprot_compbias_truth.parquet \\
+        --summary-out    swissprot_disorder_summary.json
+    """
+
+    stub:
+    """
+    touch human_swissprot_disordered_truth.parquet human_swissprot_compbias_truth.parquet
+    echo '{}' > swissprot_disorder_summary.json
+    """
+}
+
+process scoreBaselines {
+    /*
+     * One task per truth set: every baseline call file that can address that truth set,
+     * scored by evaluate_domain_calls.py the way scoreHmmscanCeiling scores hmmscan
+     * (--direct-annotation, --species all: no target proteome is read). Only the "off"
+     * dedup mode, because transfer dedup acts on target-side transfers and there are none.
+     */
+    tag "${truth_set} (${tools.size()} baselines)"
+    label 'no_search'
+    container params.kmerseek_image
+    cpus 1
+    // scoreHmmscanCeiling, direct scoring on the same Pfam truth: 109.8 MB peak, 4.6 s
+    // (job 42867710). The Pfam-N truth is the whole human proteome (44_315 instances), 18x
+    // the Pfam table, and 4 GB still leaves a wide margin.
+    memory { 4.GB * task.attempt }
+    time   { 1.h * task.attempt }
+    errorStrategy { retryOnKill(task) }
+    maxRetries 2
+    publishDir "${params.outdir}/no_search/calls",   mode: 'copy', pattern: '*.calls.parquet'
+    publishDir "${params.outdir}/no_search/metrics", mode: 'copy', pattern: '*.metrics.parquet'
+    publishDir "${params.outdir}/no_search/curves",  mode: 'copy', pattern: '*.curve.parquet'
+
+    input:
+    tuple val(truth_set), path(truth, stageAs: 'truth/*'), val(tools), val(variants),
+          path(calls, stageAs: 'calls*/*'), path(covariates)
+
+    output:
+    path "*.metrics.parquet", arity: '1..*', emit: metrics
+    path "*.calls.parquet",   arity: '1..*', emit: calls
+    path "*.curve.parquet",   arity: '1..*', emit: curve
+
+    script:
+    def files = calls instanceof List ? calls : [calls]
+    def rows = [tools, variants, files].transpose()
+        .collect { t, v, c -> "${t}\t${v}\t${c}" }.join("\n")
+    """
+    cat > manifest.tsv << 'MANIFEST_EOF'
+${rows}
+MANIFEST_EOF
+    evaluate_domain_calls.py \\
+        --manifest     manifest.tsv \\
+        --species      all \\
+        --truth        ${truth} \\
+        --direct-annotation \\
+        --covariates   ${covariates} \\
+        --min-overlap  ${params.min_overlap} \\
+        --strict-iou   ${params.strict_iou} \\
+        --dedup-transfer-modes off \\
+        --truth-set    ${truth_set} < /dev/null
+    """
+
+    stub:
+    def stems = [tools, variants].transpose().collect { t, v -> "${truth_set}.${t}.${v}.all" }
+    """
+    for s in ${stems.join(' ')}; do
+        touch \$s.metrics.parquet \$s.calls.parquet \$s.curve.parquet
+    done
+    """
+}
+
+process restrictBaselineTruth {
+    /*
+     * The Pfam-N truth table is built from the whole human annotation: 44_315 regions on
+     * 18_724 proteins, of which the 998 midi-plus queries hold 2_218 on 966. Scored as it
+     * stands, recall is divided by regions nobody searched (memory note and PR 165, which
+     * adds restrictTruthToQueries to the main workflow). The 2026-10-19 run of this entry
+     * scored the Pfam family frequency baseline against the whole table and got Fmax 0.002;
+     * against the queries' own rows it is 0.035.
+     */
+    tag "${truth_set}"
+    label 'no_search'
+    container params.kmerseek_image
+    cpus 1
+    memory { 4.GB * task.attempt }
+    time   { 1.h * task.attempt }
+    errorStrategy { retryOnKill(task) }
+    maxRetries 2
+
+    input:
+    tuple val(truth_set), path(truth, stageAs: 'full/*'), path(query_fasta)
+
+    output:
+    tuple val(truth_set), path("human_${truth_set}_truth.queries.parquet")
+
+    script:
+    """
+    no_search_baselines.py restrict --truth ${truth} --fasta ${query_fasta} \\
+        --out human_${truth_set}_truth.queries.parquet
+    """
+
+    stub:
+    """
+    touch human_${truth_set}_truth.queries.parquet
+    """
+}
+
+process aggregateNoSearch {
+    tag "no-search baselines"
+    label 'no_search'
+    container params.kmerseek_image
+    cpus 1
+    memory { 4.GB * task.attempt }
+    time   { 1.h * task.attempt }
+    errorStrategy { retryOnKill(task) }
+    maxRetries 2
+    publishDir "${params.outdir}/no_search", mode: 'copy'
+
+    input:
+    path 'metrics/*'
+    path applies
+
+    output:
+    path "no_search_baseline_metrics.parquet"
+
+    script:
+    """
+    no_search_baselines.py concat --metrics-dir metrics --applies ${applies} \\
+        --out no_search_baseline_metrics.parquet
+    """
+
+    stub:
+    """
+    touch no_search_baseline_metrics.parquet
+    """
+}
+
+workflow noSearchBaselines {
+    if (!params.baseline_run_dir) error "--baseline_run_dir: the finished run's results folder"
+    def run_dir     = file(params.baseline_run_dir)
+    def query_fasta = file("${params.qfo_dir}/Eukaryota/UP000005640_9606.fasta")
+    def must = { f, what ->
+        def p = f ? file(f) : null
+        if (p == null || !p.exists()) error "no-search baselines: ${what} not found at ${f}"
+        p
+    }
+    must(query_fasta, 'query FASTA')
+    def covariates = must("${run_dir}/truth/human_query_covariates.parquet", 'query covariates')
+    def applies    = must("${projectDir}/assets/no_search_baselines.tsv", 'applicability table')
+
+    // (truth set, truth table): the same files the finished run scored every tool against.
+    def truth_list = [
+        tuple('pfam',      must("${run_dir}/truth/human_domain_truth.parquet", 'Pfam truth')),
+        tuple('swissprot', must("${run_dir}/truth_swissprot/human_swissprot_truth.parquet",
+                                'Swiss-Prot truth')),
+    ]
+    // Pfam-N's table covers the whole proteome, so it is cut to the queries first; the Pfam
+    // and Swiss-Prot tables of the finished run already hold only the queries.
+    pfamn_truth = params.pfamn_dir
+        ? restrictBaselineTruth(Channel.of(tuple(
+              'pfamn', must("${params.pfamn_dir}/human_pfamn_truth.parquet", 'Pfam-N truth'),
+              query_fasta)))
+        : Channel.empty()
+
+    dis = buildDisorderTruth(
+        Channel.of(tuple(must(params.swissprot_dat, 'Swiss-Prot flat file'), query_fasta)))
+    disorder_truth = dis.disordered.map { t -> tuple('swissprot_disordered', t) }
+        .mix(dis.compbias.map { t -> tuple('swissprot_compbias', t) })
+
+    kd   = kdScan(query_fasta).calls
+    freq = familyFrequency(Channel.of(tuple(
+        query_fasta,
+        must(params.baseline_reference_fasta, 'reference FASTA'),
+        must(params.baseline_reference_annotation, 'reference Pfam annotation')))).calls
+    iu   = iupredLong(Channel.of(tuple(query_fasta,
+                                       must(params.iupred_dir, 'IUPred folder')))).scores
+    mp   = metapredictScores(query_fasta).scores
+    sg   = segmasker(query_fasta).intervals
+    per_residue = baselineCalls(
+        iu.map { f -> tuple('iupred', f) }
+          .mix(mp.map { f -> tuple('metapredict', f) })
+          .mix(sg.map { f -> tuple('seg', f) })
+    ).calls
+
+    // Every call file is <tool>.<variant>.tsv; the applicability table says which truth
+    // sets each (tool, variant) is scored against. A file the table does not list is an
+    // error, not a silent drop.
+    def table = applies.readLines().drop(1).findAll { it.trim() }.collect { it.split('\t') }
+    scored_in = kd.flatten().mix(freq, per_residue.flatten())
+        .flatMap { f ->
+            def stem    = f.name.replaceAll(/\.tsv$/, '')
+            def tool    = stem.tokenize('.')[0]
+            def variant = stem.substring(tool.length() + 1)
+            def sets = table.findAll { it[0] == tool && it[1] == variant }
+                            .collect { it[3] }.unique()
+            if (!sets) error "no-search baselines: ${f.name} is not in ${applies.name}"
+            sets.collect { ts -> tuple(ts, tool, variant, f) }
+        }
+        .groupTuple()
+        .join(Channel.fromList(truth_list).mix(disorder_truth, pfamn_truth))
+        .map { ts, tools, variants, files, truth ->
+            tuple(ts, truth, tools, variants, files, covariates) }
+
+    scored = scoreBaselines(scored_in)
+    aggregateNoSearch(scored.metrics.flatten().collect(), applies)
 }
