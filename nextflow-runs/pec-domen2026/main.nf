@@ -157,6 +157,33 @@ process compactors {
     """
 }
 
+// Compactors of the anchors that pass the paper's own cutoff in the anchor-count DESeq2 fit
+// (uncorrected p <= 0.05, |log2FC| > 1), so they can be matched to the paper's gene lists.
+// Primary design per contrast, as frozen in design/ANALYSIS_PLAN.md (2026-10-30):
+// ~ pair + condition, except young_132d (no pairs): ~ genotype + condition.
+process compactors_nominal {
+    tag "${contrast}"
+    label 'compactors'
+    storeDir "${params.pec_root}/contrasts/${contrast}"
+
+    input:
+    tuple val(contrast), path(deseq), path(il)
+
+    output:
+    tuple val(contrast), path("compactors_anchor_nominal")
+
+    script:
+    def design = contrast == 'young_132d' ? 'genotype_condition' : 'pair_condition'
+    """
+    mkdir compactors_anchor_nominal && cd compactors_anchor_nominal
+    for f in ../*.il.fastq.gz; do readlink -f \$f; done > input_list.txt
+    ${ENV}/python ${SCRIPTS}/select_nominal_anchors.py ../${deseq}/deseq_${design}.parquet anchors_nominal.tsv > select.log
+    ${SPLASH}/compactors --max_length 186 --num_threads ${task.cpus} --epsilon 0.001 --beta 0.5 \\
+      --num_kmers 2 --input_format fastq input_list.txt anchors_nominal.tsv compactors.tsv > compactors.log 2>&1
+    test -s compactors.tsv
+    """
+}
+
 process anchor_counts {
     tag "${contrast}"
     label 'anchor_counts'
@@ -269,9 +296,9 @@ process search {
     tuple val(contrast), val(src), path("search_${src}")
 
     script:
-    // compactors: compactors/compactors.tsv, column compactor; DE-kupl: its merged contigs, column contig
+    // compactors, compactors_anchor_nominal: <dir>/compactors.tsv, column compactor; DE-kupl: its merged contigs, column contig
     // KaMRaT: its contigs with representative corrected p <= 0.05, column contig
-    def prep = src == 'compactors'
+    def prep = src.startsWith('compactors')
         ? "ln -s ../${seqdir}/compactors.tsv seqs.tsv; COL=compactor"
         : src == 'kamrat_ttest'
         ? "ln -s ../${seqdir}/contigs.tsv seqs.tsv; COL=contig"
@@ -379,7 +406,11 @@ workflow {
     km = kamrat(dk.join(per_contrast.map { c, cjs, dsg, il, pairs -> tuple(c, dsg) })
                   .map { c, d, dsg -> tuple(c, dsg, d) })
 
+    an = compactors_nominal(ac.map { c, a, d -> tuple(c, d) }
+                              .join(per_contrast.map { c, cjs, dsg, il, pairs -> tuple(c, il) }))
+
     search(comp.map { c, d -> tuple(c, 'compactors', d) }
+               .mix(an.map { c, d -> tuple(c, 'compactors_anchor_nominal', d) })
                .mix(dk.map { c, d -> tuple(c, "dekupl_${params.dekupl_method}", d) })
                .mix(km.map { c, d -> tuple(c, 'kamrat_ttest', d) }))
 
