@@ -1,0 +1,791 @@
+{
+ "about": "How the pull requests, notebooks and Sherlock runs feed the kmerseek paper. Each part of the paper (\"paper\" below) lists the pull requests (seanome/2024-kmerseek-analysis unless repo says otherwise), notebooks, Sherlock runs and claims (ids in data/claims.json) behind it. The page joins these with data/open_prs.json (what each pull request changes, from GitHub), data/pr_review.json (review status) and data/experiments.json (each notebook's numbers). Written 2026-10-13. Two different notebooks are numbered 245; the P66/CD47 one is called 245-p66 here (notebook_aliases).",
+ "written": "2026-10-13",
+ "sources": [
+  {
+   "what": "Paper figures, the three examples, the benchmarks and their numbers",
+   "where": "docs/progress_2026-10-13.md on branch olgabot/progress-summary-2026-10-13 (PR 127)"
+  },
+  {
+   "what": "Which run feeds which pull request and notebook, and the queue at about 10:00 PDT",
+   "where": "chat \"#121 #97 nb280 pilot scoring + experiments page\", 2026-10-13 (squeue snapshot and Sankey drawing)"
+  },
+  {
+   "what": "The queue and the run progress shown here",
+   "where": "squeue --me on Sherlock and each run's Nextflow trace file, read 2026-10-13 10:20 PDT"
+  },
+  {
+   "what": "Review status and what stops each pull request merging",
+   "where": "pr_status.py (weekly-pr-status skill) for 2026-10-12 to 2026-10-18, read 2026-10-13, by the same rules as the week 41 review chat \"#143 w41 PR Status\""
+  },
+  {
+   "what": "Pull requests 128 to 131 and 126, opened after the progress summary",
+   "where": "their titles on GitHub"
+  }
+ ],
+ "groups": [
+  {
+   "id": "figures",
+   "name": "Paper figures"
+  },
+  {
+   "id": "examples",
+   "name": "The three examples"
+  },
+  {
+   "id": "cases",
+   "name": "Hero examples and case gallery"
+  },
+  {
+   "id": "alphabets",
+   "name": "Alphabet evidence"
+  },
+  {
+   "id": "benchmarks",
+   "name": "Benchmarks"
+  },
+  {
+   "id": "side",
+   "name": "Side project"
+  }
+ ],
+ "paper": [
+  {
+   "id": "fig1",
+   "group": "figures",
+   "name": "Figure 1",
+   "what": "Related proteins keep their H/P pattern in runs of about 12 residues, so the seed length trades homologs reached against chance hits.",
+   "number": "Mean longest same-class run 12.0 residues (median 11) at 20-30% identity; 13.4% of pairs share a run of 17 or more.",
+   "status": "draft",
+   "prs": [
+    95
+   ],
+   "notebooks": [
+    "275"
+   ],
+   "figures": [
+    "fig1.png"
+   ],
+   "runs": [],
+   "claims": [
+    "hp-conserved"
+   ]
+  },
+  {
+   "id": "suppfig1",
+   "group": "figures",
+   "name": "Supplementary Figure 1",
+   "what": "Alphabets with fewer letters carry fewer bits per letter, so each needs a longer seed: classes, bits per letter, and the k-sizes to test for all 19 alphabets.",
+   "number": "k* runs from 7 (protein20) to 30 (hp_kyte_doolittle2).",
+   "status": "draft",
+   "prs": [
+    106,
+    100,
+    101,
+    51
+   ],
+   "notebooks": [
+    "230",
+    "274",
+    "250"
+   ],
+   "figures": [
+    "suppfig1.png"
+   ],
+   "runs": [],
+   "claims": []
+  },
+  {
+   "id": "alphabet-figs",
+   "group": "figures",
+   "name": "Alphabet figures, no figure number yet",
+   "what": "Bits of information per letter for all 19 alphabets, and the seven H/P alphabets differing only on C, G, P, W and Y.",
+   "number": null,
+   "status": "draft",
+   "prs": [
+    92,
+    116
+   ],
+   "notebooks": [],
+   "figures": [
+    "bits_per_letter_by_alphabet_swissprot_human.png",
+    "hp_borderline_residues.png"
+   ],
+   "runs": [],
+   "claims": []
+  },
+  {
+   "id": "seed-reach",
+   "group": "figures",
+   "name": "Seed reach at k*, place in the paper not decided",
+   "what": "No alphabet shares a seed along the alignment in more than 5.6% of Pfam seed pairs at 20-30% identity.",
+   "number": "mmseqs12 is highest (2,060 of 37,085 pairs); protein20 reaches 4.9%, the 2-3 letter alphabets 0.47-0.85%.",
+   "status": "draft, its own figure",
+   "prs": [
+    106
+   ],
+   "notebooks": [],
+   "figures": [
+    "seed_reach_at_kstar_pfam_seed_20-30pct.png"
+   ],
+   "runs": [],
+   "claims": [
+    "remote-homology"
+   ]
+  },
+  {
+   "id": "png-format",
+   "group": "figures",
+   "name": "Figure files saved as 256-colour PNGs",
+   "what": "pf.save and shrink_png, and 321 committed PNGs re-saved with 256 colours.",
+   "number": null,
+   "status": "draft",
+   "prs": [
+    123
+   ],
+   "notebooks": [],
+   "figures": [],
+   "runs": [],
+   "claims": []
+  },
+  {
+   "id": "ced9-bcl2",
+   "group": "examples",
+   "name": "CED-9 and BCL2",
+   "what": "The known homolog pair, the gold standard. They share the BH1 region.",
+   "number": "BCL2 is among CED-9's hits for 13 of 19 alphabets but never ranks better than 213 of 18,064 human proteins hit; best E-value 1,955. Only 4 of 19 alphabets agree on BCL2's best spot.",
+   "status": "not a positive result yet",
+   "prs": [
+    46,
+    48,
+    125,
+    117,
+    113,
+    67,
+    128,
+    129,
+    130,
+    131,
+    82
+   ],
+   "notebooks": [
+    "241",
+    "242",
+    "243",
+    "284",
+    "247",
+    "246",
+    "220",
+    "285",
+    "288",
+    "286",
+    "287"
+   ],
+   "figures": [],
+   "runs": [
+    "241-reciprocal",
+    "286-step1"
+   ],
+   "claims": [
+    "remote-homology"
+   ]
+  },
+  {
+   "id": "p66-cd47",
+   "group": "examples",
+   "name": "P66 and CD47",
+   "what": "A published claim that the Borreliella burgdorferi protein P66 mimics human CD47. The stretch case.",
+   "number": "CD47's best rank is 166 of 18,775, best E-value 707. P66's fold scores below all 20 unrelated immunoglobulin domains against CD47 (TM-score 0.342).",
+   "status": "not supported by structure",
+   "prs": [
+    46,
+    96,
+    118,
+    113,
+    129,
+    130,
+    131
+   ],
+   "notebooks": [
+    "241",
+    "245-p66",
+    "276",
+    "246",
+    "288",
+    "286",
+    "287"
+   ],
+   "figures": [],
+   "runs": [
+    "241-reciprocal",
+    "286-step1"
+   ],
+   "claims": [
+    "remote-homology"
+   ]
+  },
+  {
+   "id": "bhf",
+   "group": "examples",
+   "name": "BHF",
+   "what": "Botryllus histocompatibility factor, the application: BLAST and HMMER find nothing for it.",
+   "number": "By E-value, 3 of 61 settings beat 95% of dipeptide-shuffled copies of BHF, against 3.1 expected by chance.",
+   "status": "at chance so far",
+   "prs": [
+    83,
+    124,
+    46,
+    82
+   ],
+   "notebooks": [
+    "256",
+    "258",
+    "283",
+    "241"
+   ],
+   "figures": [],
+   "runs": [
+    "283-bhf-lc"
+   ],
+   "claims": [
+    "bhf"
+   ]
+  },
+  {
+   "id": "hero-cases",
+   "group": "cases",
+   "name": "Hero examples and case gallery",
+   "what": "Short Swiss-Prot features that kmerseek places on a related protein, with figures and pages for all 183 cases.",
+   "number": null,
+   "status": "draft",
+   "prs": [
+    49,
+    77,
+    78,
+    80,
+    81,
+    82
+   ],
+   "notebooks": [
+    "244",
+    "254",
+    "272"
+   ],
+   "figures": [],
+   "runs": [],
+   "claims": [
+    "short-features"
+   ]
+  },
+  {
+   "id": "hp-agreement",
+   "group": "alphabets",
+   "name": "H/P agreement in related proteins",
+   "what": "How often H/P classes agree at aligned positions of Pfam seed pairs at 20-30% identity, against chance.",
+   "number": "73.9 of 100 aligned positions agree, against 51.4 by chance; H/P carries 0.162 bits per aligned position, the 20 amino acids 0.251.",
+   "status": "result",
+   "prs": [
+    99
+   ],
+   "notebooks": [
+    "273"
+   ],
+   "figures": [],
+   "runs": [],
+   "claims": [
+    "hp-conserved"
+   ]
+  },
+  {
+   "id": "hp-blosum",
+   "group": "alphabets",
+   "name": "H/P against BLOSUM62",
+   "what": "Evidence per aligned position for every kmerseek alphabet against BLOSUM62.",
+   "number": "H/P gives about half BLOSUM62's evidence; no alphabet beats BLOSUM62 (0 of 108 scorings). hp_thomas_dill2 leads exact matching at the SCOPe fold level (1.78 times protein20).",
+   "status": "result, found after looking",
+   "prs": [
+    119
+   ],
+   "notebooks": [
+    "278"
+   ],
+   "figures": [],
+   "runs": [],
+   "claims": [
+    "hp-conserved"
+   ]
+  },
+  {
+   "id": "kappa-krange",
+   "group": "alphabets",
+   "name": "Agreement and k-sizes for 19 alphabets",
+   "what": "Cohen's kappa and usable k for all 19 alphabets, and the k-sizes to test per alphabet from k_min to k_max.",
+   "number": null,
+   "status": "result",
+   "prs": [
+    100,
+    101
+   ],
+   "notebooks": [
+    "230",
+    "274"
+   ],
+   "figures": [],
+   "runs": [],
+   "claims": [
+    "hp-conserved"
+   ]
+  },
+  {
+   "id": "bits-seed",
+   "group": "alphabets",
+   "name": "Bits a seed carries",
+   "what": "Bits an exact reduced-alphabet seed carries, against the bits a search of this database size needs.",
+   "number": null,
+   "status": "result",
+   "prs": [
+    54
+   ],
+   "notebooks": [
+    "245"
+   ],
+   "figures": [],
+   "runs": [],
+   "claims": [
+    "remote-homology"
+   ]
+  },
+  {
+   "id": "mismatch-seeds",
+   "group": "alphabets",
+   "name": "Seeds that allow mismatches",
+   "what": "Seeds with mismatches on CED-9/BCL2 and P66/CD47.",
+   "number": null,
+   "status": "result",
+   "prs": [
+    113
+   ],
+   "notebooks": [
+    "246"
+   ],
+   "figures": [],
+   "runs": [],
+   "claims": [
+    "remote-homology"
+   ]
+  },
+  {
+   "id": "dark-set",
+   "group": "benchmarks",
+   "name": "Dark proteins",
+   "what": "Proteins with no phmmer, jackhmmer or MMseqs2 hit in Swiss-Prot once the query's own clade is removed.",
+   "number": "The best setting reaches 12-26% of dark proteins at E < 1, against 38-73% of proteins that have a hit. The reached ones are enriched for compositional bias (human: 58.7% against 36.2%).",
+   "status": "needs the low-complexity regions dropped",
+   "prs": [
+    120,
+    57,
+    30,
+    47
+   ],
+   "notebooks": [
+    "279"
+   ],
+   "figures": [],
+   "runs": [],
+   "claims": [
+    "dark-set"
+   ]
+  },
+  {
+   "id": "pfam-aligners",
+   "group": "benchmarks",
+   "name": "Pfam domains, kmerseek against aligners",
+   "what": "Held-out half of 21,915 human Pfam instance by species rows.",
+   "number": "No held-out domain is placed only by kmerseek; in 183 cases kmerseek's boundary is tighter.",
+   "status": "result",
+   "prs": [
+    86
+   ],
+   "notebooks": [],
+   "figures": [],
+   "runs": [],
+   "claims": [
+    "short-pfam"
+   ]
+  },
+  {
+   "id": "elm",
+   "group": "benchmarks",
+   "name": "ELM short linear motifs",
+   "what": "Moving ELM motif labels across species.",
+   "number": "kmerseek places no motif that all the other tools miss, in 8 species.",
+   "status": "negative",
+   "prs": [
+    51,
+    58,
+    69,
+    71,
+    72
+   ],
+   "notebooks": [
+    "250",
+    "253"
+   ],
+   "figures": [],
+   "runs": [],
+   "claims": [
+    "elm"
+   ]
+  },
+  {
+   "id": "length",
+   "group": "benchmarks",
+   "name": "Recall against domain length",
+   "what": "Share of Pfam domains placed, by domain length.",
+   "number": "Best setting: 0.365 of domains under 50 residues, 0.060 of domains of 200 or more; phmmer and Foldseek rise with length.",
+   "status": "result",
+   "prs": [
+    37
+   ],
+   "notebooks": [
+    "227"
+   ],
+   "figures": [],
+   "runs": [],
+   "claims": [
+    "short-pfam"
+   ]
+  },
+  {
+   "id": "scope40",
+   "group": "benchmarks",
+   "name": "SCOPe40 with kmerseek 0.4",
+   "what": "19 alphabets, every k from k_min to k_max, six search settings; then k below k_min, by identity band.",
+   "number": "Best family AUC 0.122 (hsdm17, k = 5) against 0.403 for MMseqs2, measured against all true pairs. The best k sits at the bottom of the tested range.",
+   "status": "run going",
+   "prs": [
+    107
+   ],
+   "notebooks": [
+    "277"
+   ],
+   "figures": [],
+   "runs": [
+    "scope40-below-kmin"
+   ],
+   "claims": [
+    "scope"
+   ]
+  },
+  {
+   "id": "time-split",
+   "group": "benchmarks",
+   "name": "Time-split Pfam test",
+   "what": "Would kmerseek have placed domains that Pfam added between release 33.1 (2020) and 38.2 (2026)?",
+   "number": null,
+   "status": "pilot running",
+   "prs": [
+    121
+   ],
+   "notebooks": [
+    "280"
+   ],
+   "figures": [],
+   "runs": [
+    "t280-pilot"
+   ],
+   "claims": []
+  },
+  {
+   "id": "combiners",
+   "group": "benchmarks",
+   "name": "Combining settings",
+   "what": "Three ways to combine alphabet-ksize pairs (intersection, best of n, consensus vote), against the single best pair, phmmer and a Kyte-Doolittle scan.",
+   "number": null,
+   "status": "draft",
+   "prs": [
+    98,
+    102,
+    103,
+    104
+   ],
+   "notebooks": [
+    "261",
+    "262",
+    "263",
+    "264"
+   ],
+   "figures": [],
+   "runs": [],
+   "claims": [
+    "ranking"
+   ]
+  },
+  {
+   "id": "shuffled",
+   "group": "benchmarks",
+   "name": "Shuffled-query check",
+   "what": "One dipeptide shuffle of each of the 998 queries, searched against zebrafish.",
+   "number": "335 calls at E < 10 for shuffled queries against 891 for real ones (38%); at E < 1, 22 against 673 (3%).",
+   "status": "result",
+   "prs": [
+    103
+   ],
+   "notebooks": [
+    "263"
+   ],
+   "figures": [],
+   "runs": [],
+   "claims": []
+  },
+  {
+   "id": "disprot",
+   "group": "benchmarks",
+   "name": "DisProt region transfer",
+   "what": "Moving a DisProt function label onto a disordered region of another protein.",
+   "number": null,
+   "status": "result",
+   "prs": [
+    53,
+    115
+   ],
+   "notebooks": [
+    "251"
+   ],
+   "figures": [],
+   "runs": [],
+   "claims": []
+  },
+  {
+   "id": "deep-twilight",
+   "group": "benchmarks",
+   "name": "Deep-twilight controls",
+   "what": "Label transfer on globins, lysozymes and cystatins.",
+   "number": null,
+   "status": "result",
+   "prs": [
+    55
+   ],
+   "notebooks": [
+    "252"
+   ],
+   "figures": [],
+   "runs": [],
+   "claims": [
+    "remote-homology"
+   ]
+  },
+  {
+   "id": "other-benchmarks",
+   "group": "benchmarks",
+   "name": "Other benchmark pull requests",
+   "what": "Listed under benchmarks in the progress summary, with no result given there.",
+   "number": null,
+   "status": "no result in the progress summary",
+   "prs": [
+    59,
+    63,
+    64,
+    66,
+    75,
+    84,
+    85,
+    87,
+    88,
+    93,
+    114
+   ],
+   "notebooks": [],
+   "figures": [],
+   "runs": [],
+   "claims": []
+  },
+  {
+   "id": "ohnologs",
+   "group": "side",
+   "name": "Ohnolog split or narrow",
+   "what": "Whether vertebrate gene copies from the two genome duplications split their ancestor's cell types or one copy narrows, with Botryllus as the ancestor stand-in.",
+   "number": null,
+   "status": "waits on an OrthoFinder run",
+   "prs": [
+    122
+   ],
+   "notebooks": [
+    "282"
+   ],
+   "figures": [],
+   "runs": [],
+   "claims": []
+  }
+ ],
+ "runs": [
+  {
+   "id": "scope40-below-kmin",
+   "name": "SCOPe40 below k_min, step 3 (identity bands)",
+   "prs": [
+    107
+   ],
+   "notebooks": [
+    "277"
+   ],
+   "head_job": "47646307",
+   "jobs": {
+    "running": 41,
+    "finishing": 3,
+    "waiting": 7
+   },
+   "waiting_why": "priority",
+   "progress": "1,473 of 1,520 searches done (148 reused from the run before)",
+   "feeds": [
+    "277_scope40_kmerseek_v040_identity_under_20.png"
+   ],
+   "feeds_inferred": true,
+   "note": "Should feed notebook 277's identity figures. That link is inferred: notebook 277 does not read this run yet."
+  },
+  {
+   "id": "t280-pilot",
+   "name": "Time-split Pfam pilot",
+   "prs": [
+    121
+   ],
+   "notebooks": [
+    "280"
+   ],
+   "head_job": "47646693",
+   "jobs": {
+    "running": 1,
+    "waiting": 68
+   },
+   "waiting_why": "57 on priority, 11 for 396-500 GB nodes",
+   "progress": "126 indexes and 185 of 256 searches done; 49 search attempts failed in the trace",
+   "feeds": [],
+   "feeds_inferred": false,
+   "note": "No figures yet. The 185 finished searches are being scored in the chat \"#121 #97 nb280 pilot scoring + experiments page\"."
+  },
+  {
+   "id": "241-reciprocal",
+   "name": "Notebook 241, reverse direction",
+   "prs": [
+    46
+   ],
+   "notebooks": [
+    "241"
+   ],
+   "head_job": "47664560",
+   "jobs": {
+    "waiting": 1
+   },
+   "waiting_why": "priority",
+   "progress": "BCL2 against C. elegans, CD47 against B. burgdorferi",
+   "feeds": [],
+   "feeds_inferred": false,
+   "note": "Writes top_hits.csv; no figure yet."
+  },
+  {
+   "id": "283-bhf-lc",
+   "name": "BHF against copies that keep its low-complexity stretches",
+   "prs": [
+    124
+   ],
+   "notebooks": [
+    "283"
+   ],
+   "head_job": "47666091",
+   "jobs": {
+    "waiting": 1
+   },
+   "waiting_why": "priority",
+   "progress": "not started",
+   "feeds": [],
+   "feeds_inferred": false,
+   "note": "Joined the queue after the chat's snapshot."
+  },
+  {
+   "id": "286-step1",
+   "name": "Notebook 286 step 1 pilot: Ced9 and P66 through a human protein",
+   "prs": [
+    130
+   ],
+   "notebooks": [
+    "286"
+   ],
+   "head_job": "47666151",
+   "jobs": {
+    "waiting": 1
+   },
+   "waiting_why": "another job finishing first",
+   "progress": "not started",
+   "feeds": [],
+   "feeds_inferred": false,
+   "note": "Joined the queue after the chat's snapshot."
+  },
+  {
+   "id": "281-query-positions",
+   "name": "Botryllus tool hits with query positions (notebook 281)",
+   "prs": [
+    126
+   ],
+   "notebooks": [
+    "281"
+   ],
+   "head_job": "47665232 and 47665233",
+   "jobs": {
+    "finishing": 2,
+    "waiting": 10
+   },
+   "waiting_why": "priority",
+   "progress": "2 of 16 array tasks finishing, 10 waiting (the other 4 already left the queue)",
+   "feeds": [],
+   "feeds_inferred": false,
+   "note": "Joined the queue after the chat's snapshot."
+  }
+ ],
+ "runs_read": "2026-10-13 10:20 PDT",
+ "steps": [
+  {
+   "id": "look-again",
+   "name": "Look again",
+   "when": "When you sit down to review, open these first: you left comments, and new commits came after.",
+   "rule": "review is look again"
+  },
+  {
+   "id": "runs",
+   "name": "Runs to read",
+   "when": "When a Sherlock run finishes, read it in its notebook before reviewing the pull request.",
+   "rule": "a run in the queue belongs to it"
+  },
+  {
+   "id": "figures",
+   "name": "Figure PRs",
+   "when": "When step 1 is done, review the pull requests behind the paper figures.",
+   "rule": "feeds a paper figure"
+  },
+  {
+   "id": "examples",
+   "name": "Example PRs",
+   "when": "When the figure pull requests are reviewed, review the ones behind the three examples, lowest in each stack first.",
+   "rule": "feeds one of the three examples"
+  },
+  {
+   "id": "evidence",
+   "name": "Evidence PRs",
+   "when": "When the examples are reviewed, review the alphabet evidence and benchmark pull requests.",
+   "rule": "feeds another part of the paper"
+  },
+  {
+   "id": "engine",
+   "name": "kmerseek PRs",
+   "when": "When you switch to the search engine, review these seanome/kmerseek pull requests.",
+   "rule": "in seanome/kmerseek"
+  },
+  {
+   "id": "unplaced",
+   "name": "Decide",
+   "when": "When the rest is reviewed, decide for each of these: fold it into a part of the paper, keep it as a tool, or close it.",
+   "rule": "feeds no part of the paper yet"
+  }
+ ],
+ "notebook_aliases": {
+  "notebooks/245_p66_cd47_pair_coordinates.ipynb": "245-p66"
+ }
+}
