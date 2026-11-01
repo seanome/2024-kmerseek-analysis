@@ -307,7 +307,12 @@ def score_claims(measurements):
     for claim, limits in rules.items():
         known = {name for name, _, _ in limits}
         if claim == "5":  # score_swaps also reports these counts; they have no limit
-            known |= {"true_significant_units", "swap_count"}
+            known |= {
+                "true_significant_units",
+                "swap_count",
+                "secondary_true_exceeds_every_swap_without_complement",
+                "secondary_swap_count",
+            }
         unknown = set(measurements.get(claim, {})) - known
         if unknown:
             raise ValueError(
@@ -375,11 +380,20 @@ def score_swaps(rows, expected_assignments):
     swaps = [n for key, n in counts.items() if key != true_key[0]]
     if not swaps:
         raise ValueError("no swaps")
+    # Secondary result: also leave out the complement (conditions exchanged).
+    no_complement = [
+        counts[key]
+        for key, r in expected.items()
+        if not r["is_true"] and not r["is_complement"]
+    ]
     return {
         "true_exceeds_every_swap": all(true > n for n in swaps),
         "median_swap_to_true_ratio": statistics.median(swaps) / true if true else None,
         "true_significant_units": true,
         "swap_count": len(swaps),
+        "secondary_true_exceeds_every_swap_without_complement": bool(no_complement)
+        and all(true > n for n in no_complement),
+        "secondary_swap_count": len(no_complement),
     }
 
 

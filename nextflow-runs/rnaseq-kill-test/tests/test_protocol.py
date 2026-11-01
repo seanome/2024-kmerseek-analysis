@@ -158,6 +158,8 @@ class ProtocolTests(unittest.TestCase):
         values = p.score_swaps(rows, expected)
         self.assertFalse(values["true_exceeds_every_swap"])
         self.assertEqual(values["swap_count"], 69)
+        self.assertTrue(values["secondary_true_exceeds_every_swap_without_complement"])
+        self.assertEqual(values["secondary_swap_count"], 68)
         self.assertEqual(p.score_claims({"5": values})["5"]["verdict"], "FAIL")
         with self.assertRaisesRegex(ValueError, "every balanced"):
             p.score_swaps(rows[:-1], expected)
