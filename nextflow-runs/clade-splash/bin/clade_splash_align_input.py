@@ -12,6 +12,7 @@ import os
 import sqlite3
 import shutil
 import tempfile
+from contextlib import closing
 from itertools import groupby
 from pathlib import Path
 
@@ -45,8 +46,9 @@ def cmd_align_input(a: argparse.Namespace) -> None:
     out = Path(a.outdir)
     out.mkdir(parents=True, exist_ok=True)
     manifest = []
+    seen_tags = set()
     with tempfile.TemporaryDirectory(prefix="align-input-", dir=scratch) as tmp:
-        with sqlite3.connect(str(Path(tmp) / "alignment.sqlite")) as db:
+        with closing(sqlite3.connect(str(Path(tmp) / "alignment.sqlite"))) as db:
             db.execute("PRAGMA cache_size=-65536")  # 64 MiB, independent of input size
             db.execute("PRAGMA temp_store=FILE")
             db.execute("PRAGMA journal_mode=OFF")  # disposable database, never a cache
@@ -152,10 +154,11 @@ def cmd_align_input(a: argparse.Namespace) -> None:
                     "ORDER BY tag, species, protein, pos, lo"
                 )
                 for tag, group in groupby(rows, key=lambda r: r[0]):
-                    if (out / f"{tag}.fa").exists():
+                    if tag in seen_tags:
                         raise ValueError(
                             f"Anchor {tag} occurs in more than one hash bucket"
                         )
+                    seen_tags.add(tag)
                     with open(out / f"{tag}.fa", "w") as fh:
                         for (
                             _,
