@@ -1,0 +1,768 @@
+{
+ "histogram": {
+  "Ced9": {
+   "n_targets": 19720,
+   "counts": {
+    "1": 723,
+    "2": 3514,
+    "3": 6047,
+    "4": 4588,
+    "5": 2715,
+    "6": 1251,
+    "7": 558,
+    "8": 198,
+    "9": 79,
+    "10": 35,
+    "11": 8,
+    "12": 2,
+    "14": 1,
+    "18": 1
+   }
+  },
+  "P66": {
+   "n_targets": 19728,
+   "counts": {
+    "1": 260,
+    "2": 1387,
+    "3": 4835,
+    "4": 5084,
+    "5": 3428,
+    "6": 2054,
+    "7": 1322,
+    "8": 990,
+    "9": 265,
+    "10": 69,
+    "11": 24,
+    "12": 6,
+    "13": 3,
+    "19": 1
+   }
+  }
+ },
+ "cases": [
+  {
+   "query": "Ced9",
+   "gene": "BCL2",
+   "why": "true partner",
+   "rank": 4849,
+   "n_alphabets": 4,
+   "n_families": 2,
+   "n_below_e10": 0,
+   "qs": 162,
+   "qe": 188,
+   "ts": 138,
+   "te": 164,
+   "query_len": 280,
+   "target_len": 239,
+   "query_res": "QCPMSYGRLIGLISFGGFVAAKMMES",
+   "target_res": "RDGVNWGRIVAFFEFGGVMCVESVNR",
+   "identical": 5,
+   "longest_identical_run": 3,
+   "alphabets": [
+    {
+     "alphabet": "hp_lehninger2",
+     "qs": 162,
+     "qe": 188,
+     "ks": [
+      16,
+      17,
+      19
+     ],
+     "best_e": 11172.693332342471
+    },
+    {
+     "alphabet": "hp_lehninger_c_nonpolar2",
+     "qs": 164,
+     "qe": 188,
+     "ks": [
+      16,
+      20
+     ],
+     "best_e": null
+    },
+    {
+     "alphabet": "hp_lehninger_hpc3",
+     "qs": 162,
+     "qe": 188,
+     "ks": [
+      14
+     ],
+     "best_e": null
+    },
+    {
+     "alphabet": "wwmj5",
+     "qs": 162,
+     "qe": 181,
+     "ks": [
+      7
+     ],
+     "best_e": null
+    }
+   ]
+  },
+  {
+   "query": "Ced9",
+   "gene": "TKT",
+   "why": "most alphabets agree",
+   "rank": 1,
+   "n_alphabets": 18,
+   "n_families": 13,
+   "n_below_e10": 0,
+   "qs": 219,
+   "qe": 280,
+   "ts": 470,
+   "te": 531,
+   "query_len": 280,
+   "target_len": 623,
+   "query_res": "SWDDFMTLGKQMKEDYERAEAEKVGRRKQNRRWSMIGAGVTAGAIGIVGVVVCGRMMFSLK",
+   "target_res": "RTSRPENAIIYNNNEDFQVGQAKVVLKSKDDQVTVIGAGVTLHEALAAAELLKKEKINIRV",
+   "identical": 8,
+   "longest_identical_run": 6,
+   "alphabets": [
+    {
+     "alphabet": "dayhoff6",
+     "qs": 241,
+     "qe": 260,
+     "ks": [
+      7
+     ],
+     "best_e": 7156.871462708335
+    },
+    {
+     "alphabet": "funcgroups8",
+     "qs": 254,
+     "qe": 261,
+     "ks": [
+      6,
+      7
+     ],
+     "best_e": null
+    },
+    {
+     "alphabet": "gbmr4",
+     "qs": 231,
+     "qe": 260,
+     "ks": [
+      10,
+      13
+     ],
+     "best_e": null
+    },
+    {
+     "alphabet": "gbmr7",
+     "qs": 235,
+     "qe": 280,
+     "ks": [
+      8
+     ],
+     "best_e": null
+    },
+    {
+     "alphabet": "hp_lehninger2",
+     "qs": 241,
+     "qe": 272,
+     "ks": [
+      16
+     ],
+     "best_e": 12335.265758286394
+    },
+    {
+     "alphabet": "hp_lehninger_c_nonpolar2",
+     "qs": 241,
+     "qe": 271,
+     "ks": [
+      16
+     ],
+     "best_e": 31503.516501723352
+    },
+    {
+     "alphabet": "hp_lehninger_hpc3",
+     "qs": 219,
+     "qe": 271,
+     "ks": [
+      14
+     ],
+     "best_e": null
+    },
+    {
+     "alphabet": "hp_pbotc_1st_ed2",
+     "qs": 245,
+     "qe": 262,
+     "ks": [
+      16
+     ],
+     "best_e": 88489.05819184148
+    },
+    {
+     "alphabet": "hp_thomas_dill2",
+     "qs": 245,
+     "qe": 262,
+     "ks": [
+      17
+     ],
+     "best_e": 25665.16252134179
+    },
+    {
+     "alphabet": "hp_thomas_dill_no_c2",
+     "qs": 245,
+     "qe": 274,
+     "ks": [
+      17
+     ],
+     "best_e": 2410.1041780283226
+    },
+    {
+     "alphabet": "hsdm17",
+     "qs": 254,
+     "qe": 260,
+     "ks": [
+      5,
+      6
+     ],
+     "best_e": null
+    },
+    {
+     "alphabet": "mmseqs12",
+     "qs": 241,
+     "qe": 260,
+     "ks": [
+      5,
+      6
+     ],
+     "best_e": 851.2694983328128
+    },
+    {
+     "alphabet": "polarity4",
+     "qs": 251,
+     "qe": 271,
+     "ks": [
+      9
+     ],
+     "best_e": null
+    },
+    {
+     "alphabet": "protein20",
+     "qs": 254,
+     "qe": 260,
+     "ks": [
+      5,
+      6
+     ],
+     "best_e": null
+    },
+    {
+     "alphabet": "sdm12",
+     "qs": 252,
+     "qe": 260,
+     "ks": [
+      5,
+      6,
+      8
+     ],
+     "best_e": null
+    },
+    {
+     "alphabet": "uniprot18",
+     "qs": 254,
+     "qe": 260,
+     "ks": [
+      5,
+      6
+     ],
+     "best_e": null
+    },
+    {
+     "alphabet": "wass14",
+     "qs": 254,
+     "qe": 260,
+     "ks": [
+      6
+     ],
+     "best_e": null
+    },
+    {
+     "alphabet": "wwmj5",
+     "qs": 241,
+     "qe": 260,
+     "ks": [
+      7
+     ],
+     "best_e": 5148.198088535938
+    }
+   ]
+  },
+  {
+   "query": "P66",
+   "gene": "CD47",
+   "why": "true partner",
+   "rank": 13247,
+   "n_alphabets": 3,
+   "n_families": 3,
+   "n_below_e10": 0,
+   "qs": 533,
+   "qe": 559,
+   "ts": 43,
+   "te": 69,
+   "query_len": 597,
+   "target_len": 323,
+   "query_res": "SNKLSSDATKIYLKTGLSLEKLIRFT",
+   "target_res": "TNMEAQNTTEVYVKWKFKGRDIYTFD",
+   "identical": 5,
+   "longest_identical_run": 1,
+   "alphabets": [
+    {
+     "alphabet": "gbmr4",
+     "qs": 533,
+     "qe": 559,
+     "ks": [
+      10
+     ],
+     "best_e": null
+    },
+    {
+     "alphabet": "hsdm17",
+     "qs": 541,
+     "qe": 547,
+     "ks": [
+      5,
+      6
+     ],
+     "best_e": null
+    },
+    {
+     "alphabet": "sdm12",
+     "qs": 533,
+     "qe": 547,
+     "ks": [
+      5,
+      6
+     ],
+     "best_e": null
+    }
+   ]
+  },
+  {
+   "query": "P66",
+   "gene": "CD55",
+   "why": "most alphabets agree",
+   "rank": 1,
+   "n_alphabets": 19,
+   "n_families": 13,
+   "n_below_e10": 0,
+   "qs": 458,
+   "qe": 520,
+   "ts": 290,
+   "te": 352,
+   "query_len": 597,
+   "target_len": 381,
+   "query_res": "RQKSVENYPTTISSTTENNQTEQSSTSTKTTTPNLTFEDAMKLGLALYLDYAIPIASISTEA",
+   "target_res": "KVPPTVQKPTTVNVPTTEVSPTSQKTTTKTTTPNAQATRSTPVSRTTKHFHETTPNKGSGTT",
+   "identical": 13,
+   "longest_identical_run": 7,
+   "alphabets": [
+    {
+     "alphabet": "dayhoff6",
+     "qs": 458,
+     "qe": 492,
+     "ks": [
+      7,
+      9
+     ],
+     "best_e": null
+    },
+    {
+     "alphabet": "funcgroups8",
+     "qs": 483,
+     "qe": 493,
+     "ks": [
+      6,
+      7,
+      9,
+      10
+     ],
+     "best_e": null
+    },
+    {
+     "alphabet": "gbmr4",
+     "qs": 464,
+     "qe": 520,
+     "ks": [
+      10,
+      13
+     ],
+     "best_e": null
+    },
+    {
+     "alphabet": "gbmr7",
+     "qs": 483,
+     "qe": 495,
+     "ks": [
+      8
+     ],
+     "best_e": null
+    },
+    {
+     "alphabet": "hp_kyte_doolittle2",
+     "qs": 464,
+     "qe": 497,
+     "ks": [
+      17
+     ],
+     "best_e": null
+    },
+    {
+     "alphabet": "hp_lehninger2",
+     "qs": 466,
+     "qe": 497,
+     "ks": [
+      16,
+      17
+     ],
+     "best_e": null
+    },
+    {
+     "alphabet": "hp_lehninger_c_nonpolar2",
+     "qs": 466,
+     "qe": 497,
+     "ks": [
+      16
+     ],
+     "best_e": null
+    },
+    {
+     "alphabet": "hp_lehninger_hpc3",
+     "qs": 464,
+     "qe": 497,
+     "ks": [
+      14,
+      18
+     ],
+     "best_e": null
+    },
+    {
+     "alphabet": "hp_pbotc_1st_ed2",
+     "qs": 466,
+     "qe": 497,
+     "ks": [
+      16
+     ],
+     "best_e": null
+    },
+    {
+     "alphabet": "hp_thomas_dill2",
+     "qs": 466,
+     "qe": 497,
+     "ks": [
+      17
+     ],
+     "best_e": null
+    },
+    {
+     "alphabet": "hp_thomas_dill_no_c2",
+     "qs": 466,
+     "qe": 497,
+     "ks": [
+      17
+     ],
+     "best_e": null
+    },
+    {
+     "alphabet": "hsdm17",
+     "qs": 483,
+     "qe": 492,
+     "ks": [
+      5,
+      6,
+      7
+     ],
+     "best_e": null
+    },
+    {
+     "alphabet": "mmseqs12",
+     "qs": 483,
+     "qe": 492,
+     "ks": [
+      5,
+      6,
+      7,
+      8
+     ],
+     "best_e": null
+    },
+    {
+     "alphabet": "polarity4",
+     "qs": 464,
+     "qe": 495,
+     "ks": [
+      9,
+      11
+     ],
+     "best_e": null
+    },
+    {
+     "alphabet": "protein20",
+     "qs": 483,
+     "qe": 492,
+     "ks": [
+      5,
+      6,
+      7
+     ],
+     "best_e": null
+    },
+    {
+     "alphabet": "sdm12",
+     "qs": 466,
+     "qe": 494,
+     "ks": [
+      5,
+      6,
+      8,
+      9
+     ],
+     "best_e": null
+    },
+    {
+     "alphabet": "uniprot18",
+     "qs": 483,
+     "qe": 492,
+     "ks": [
+      5,
+      6,
+      7
+     ],
+     "best_e": null
+    },
+    {
+     "alphabet": "wass14",
+     "qs": 483,
+     "qe": 492,
+     "ks": [
+      6,
+      7
+     ],
+     "best_e": null
+    },
+    {
+     "alphabet": "wwmj5",
+     "qs": 464,
+     "qe": 492,
+     "ks": [
+      7
+     ],
+     "best_e": 167346.80021179738
+    }
+   ]
+  }
+ ],
+ "e10": {
+  "Ced9": {
+   "max_alphabets_below_e10": 2
+  },
+  "P66": {
+   "max_alphabets_below_e10": 2
+  }
+ },
+ "identity_by_agreement": {
+  "Ced9": [
+   {
+    "n_alphabets": 1,
+    "median": 1.0,
+    "q25": 1.0,
+    "q75": 2.0,
+    "n_spots": 1477606
+   },
+   {
+    "n_alphabets": 2,
+    "median": 1.0,
+    "q25": 1.0,
+    "q75": 2.0,
+    "n_spots": 115664
+   },
+   {
+    "n_alphabets": 3,
+    "median": 1.0,
+    "q25": 1.0,
+    "q75": 2.0,
+    "n_spots": 34678
+   },
+   {
+    "n_alphabets": 4,
+    "median": 1.0,
+    "q25": 1.0,
+    "q75": 2.0,
+    "n_spots": 10565
+   },
+   {
+    "n_alphabets": 5,
+    "median": 2.0,
+    "q25": 1.0,
+    "q75": 3.0,
+    "n_spots": 3948
+   },
+   {
+    "n_alphabets": 6,
+    "median": 2.0,
+    "q25": 1.0,
+    "q75": 5.0,
+    "n_spots": 1487
+   },
+   {
+    "n_alphabets": 7,
+    "median": 3.0,
+    "q25": 1.0,
+    "q75": 5.0,
+    "n_spots": 613
+   },
+   {
+    "n_alphabets": 8,
+    "median": 5.0,
+    "q25": 2.0,
+    "q75": 5.0,
+    "n_spots": 206
+   },
+   {
+    "n_alphabets": 9,
+    "median": 5.0,
+    "q25": 3.0,
+    "q75": 6.0,
+    "n_spots": 79
+   },
+   {
+    "n_alphabets": 10,
+    "median": 5.0,
+    "q25": 5.0,
+    "q75": 6.0,
+    "n_spots": 35
+   },
+   {
+    "n_alphabets": 11,
+    "median": 6.0,
+    "q25": 5.0,
+    "q75": 6.0,
+    "n_spots": 8
+   },
+   {
+    "n_alphabets": 12,
+    "median": 5.5,
+    "q25": 5.0,
+    "q75": 6.0,
+    "n_spots": 2
+   },
+   {
+    "n_alphabets": 14,
+    "median": 4.0,
+    "q25": 4.0,
+    "q75": 4.0,
+    "n_spots": 1
+   },
+   {
+    "n_alphabets": 18,
+    "median": 6.0,
+    "q25": 6.0,
+    "q75": 6.0,
+    "n_spots": 1
+   }
+  ],
+  "P66": [
+   {
+    "n_alphabets": 1,
+    "median": 1.0,
+    "q25": 1.0,
+    "q75": 2.0,
+    "n_spots": 2619801
+   },
+   {
+    "n_alphabets": 2,
+    "median": 1.0,
+    "q25": 1.0,
+    "q75": 2.0,
+    "n_spots": 213035
+   },
+   {
+    "n_alphabets": 3,
+    "median": 1.0,
+    "q25": 1.0,
+    "q75": 2.0,
+    "n_spots": 89965
+   },
+   {
+    "n_alphabets": 4,
+    "median": 1.0,
+    "q25": 1.0,
+    "q75": 2.0,
+    "n_spots": 26279
+   },
+   {
+    "n_alphabets": 5,
+    "median": 2.0,
+    "q25": 1.0,
+    "q75": 4.0,
+    "n_spots": 8115
+   },
+   {
+    "n_alphabets": 6,
+    "median": 3.0,
+    "q25": 1.0,
+    "q75": 5.0,
+    "n_spots": 3412
+   },
+   {
+    "n_alphabets": 7,
+    "median": 2.0,
+    "q25": 1.0,
+    "q75": 5.0,
+    "n_spots": 1899
+   },
+   {
+    "n_alphabets": 8,
+    "median": 2.0,
+    "q25": 1.0,
+    "q75": 2.0,
+    "n_spots": 1208
+   },
+   {
+    "n_alphabets": 9,
+    "median": 3.0,
+    "q25": 2.0,
+    "q75": 5.0,
+    "n_spots": 274
+   },
+   {
+    "n_alphabets": 10,
+    "median": 5.0,
+    "q25": 2.0,
+    "q75": 6.0,
+    "n_spots": 70
+   },
+   {
+    "n_alphabets": 11,
+    "median": 4.5,
+    "q25": 3.0,
+    "q75": 6.0,
+    "n_spots": 24
+   },
+   {
+    "n_alphabets": 12,
+    "median": 3.5,
+    "q25": 3.0,
+    "q75": 6.0,
+    "n_spots": 6
+   },
+   {
+    "n_alphabets": 13,
+    "median": 7.0,
+    "q25": 7.0,
+    "q75": 7.0,
+    "n_spots": 3
+   },
+   {
+    "n_alphabets": 19,
+    "median": 7.0,
+    "q25": 7.0,
+    "q75": 7.0,
+    "n_spots": 1
+   }
+  ]
+ }
+}

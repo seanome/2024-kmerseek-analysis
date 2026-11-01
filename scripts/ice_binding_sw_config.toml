@@ -1,0 +1,208 @@
+# Notebook 349: seedless local alignment on ice-binding proteins.
+#
+# Everything the benchmark does is set here. The parameter grid, the selection rule, the
+# false-hit budgets, the subgroups and the decision thresholds were written on 2026-10-19,
+# before any alignment score was computed. The run refuses to score the evaluation split
+# until the development split has written its selection file, and records that file's md5.
+
+[inputs]
+uniprot_release = "2026_03"
+swissprot_fasta = "/Users/olga/data/uniprot/uniprot_sprot.2026_03.fasta.gz"
+swissprot_md5 = "bc9d398533e6df582b563c6c03093bd0"
+# Truth set and its UniProt flat file, copied byte for byte from branch convergence-afp
+# (PR 141) at commit 7b1704f94c8044ce3ec30228e526f9ba03b7fee1, script
+# scripts/convergence_afp_truth.py on that branch.
+truth_set = "data/convergence_afp/truth_set.tsv"
+truth_flat_file = "data/convergence_afp/raw/truth_entries.txt"
+# kmerseek's own class tables (kmerseek commit 3c353d4, src/rust/alphabets.rs), as copied
+# into PR 141's assets/alphabet_classes.tsv.
+alphabet_classes = "data/ice_binding_sw/alphabet_classes.tsv"
+out_dir = "data/ice_binding_sw"
+
+[seeds]
+background_pool = 349
+shuffles = 3490
+hard_control_split = 34900
+
+[panel]
+# Matched background: per positive representative, this many Swiss-Prot entries whose
+# length is within the log2 ratio below and whose residue composition is closest
+# (Hellinger distance over the 20 amino acids).
+matched_per_positive = 8
+matched_max_abs_log2_length_ratio = 0.5
+background_pool_size = 60_000
+pool_min_length = 10
+pool_max_length = 1_000
+# Composition extremes and repeats, drawn from all of Swiss-Prot (length range below).
+hard_extreme_per_category = 12
+hard_min_length = 30
+hard_max_length = 400
+# Controls fetched from UniProt by annotation, at most this many each.
+hard_annotated_per_category = 12
+secreted_per_split = 15
+# Composition-preserving shuffles of each positive representative.
+shuffles_per_positive = 3
+
+[dedupe]
+# Two sequences are redundant when a BLOSUM62 local alignment (gap 11/1) covers at least
+# min_coverage of the shorter sequence at identity >= min_identity. Identity = identical
+# columns / alignment columns.
+within_split_identity = 0.90
+within_split_coverage = 0.80
+# Leakage: an evaluation sequence is removed when it is this close to any development one.
+leak_identity = 0.40
+leak_coverage = 0.50
+# ... over at least this many alignment columns. Without it, 10-15 residue local matches
+# between short peptides (16-31 residue AFGPs, short matched peptides) pass the identity
+# rule by chance; the first panel run removed 198 of 220 evaluation controls that way.
+leak_min_columns = 30
+# ... and only when the BLOSUM62 score beats the same evaluation sequence aligned to
+# shuffles of the development sequence by this many standard deviations. Identity alone
+# calls any two alanine-rich proteins homologs; the second panel run removed every
+# alanine-rich and cysteine-rich evaluation control that way.
+leak_shuffle_z = 3.0
+leak_shuffles = 10
+
+[split]
+# Origins, not species, are split. AFGP and type III were the held-out lineages of
+# notebook 298, so they are already inspected; they go to development. Every evaluation
+# origin was a query in notebook 295, so no split is a pristine test set.
+dev_origins = ["AFGP_notothenioid", "AFGP_gadid", "AFP2_lectin_like", "AFP3_sialic_acid_synthase_like"]
+eval_origins = ["AFP1_flounder", "AFP1_sculpin", "THP_moth", "IAFP_beetle", "DUF3494_IBP"]
+# Annotated controls that are homologs of one positive origin go with that origin's split.
+hard_homolog_split = { c_type_lectin = "dev", sialic_acid_synthase = "dev", apolipoprotein_a1_a4_e = "eval" }
+
+# Alignment settings. Biopython PairwiseAligner, mode "local" (Smith-Waterman-Gotoh, no
+# k-mer prefilter: every query is aligned to every target in its split).
+# Gap costs are given the NCBI way: a gap of length L costs open + L * extend. In
+# Biopython that is open_gap_score = -(open + extend), extend_gap_score = -extend.
+# Reduced-alphabet matrices are the source matrix collapsed onto the classes:
+#   s(A, B) = 2 * log2( P(A, B) / (P(A) P(B)) )  (half bits, like BLOSUM)
+# with P(a, b) = q_a q_b 2^(s_ab / 2), normalised, q = Swiss-Prot 2026_03 residue
+# frequencies, summed over the residues in each class. Scores stay in half bits, so the
+# same gap costs mean the same thing in every alphabet.
+[[grid]]
+setting = "protein20_B62_g11e1"
+alphabet = "protein20"
+matrix = "BLOSUM62"
+gap_open = 11
+gap_extend = 1
+[[grid]]
+setting = "protein20_B62_g7e1"
+alphabet = "protein20"
+matrix = "BLOSUM62"
+gap_open = 7
+gap_extend = 1
+[[grid]]
+setting = "protein20_B45_g15e2"
+alphabet = "protein20"
+matrix = "BLOSUM45"
+gap_open = 15
+gap_extend = 2
+[[grid]]
+setting = "protein20_B45_g10e2"
+alphabet = "protein20"
+matrix = "BLOSUM45"
+gap_open = 10
+gap_extend = 2
+[[grid]]
+setting = "hp_lehninger2_B62_g11e1"
+alphabet = "hp_lehninger2"
+matrix = "BLOSUM62"
+gap_open = 11
+gap_extend = 1
+[[grid]]
+setting = "hp_lehninger2_B62_g4e1"
+alphabet = "hp_lehninger2"
+matrix = "BLOSUM62"
+gap_open = 4
+gap_extend = 1
+[[grid]]
+setting = "hp_lehninger2_B45_g15e2"
+alphabet = "hp_lehninger2"
+matrix = "BLOSUM45"
+gap_open = 15
+gap_extend = 2
+[[grid]]
+setting = "hp_lehninger2_B45_g4e1"
+alphabet = "hp_lehninger2"
+matrix = "BLOSUM45"
+gap_open = 4
+gap_extend = 1
+[[grid]]
+setting = "dayhoff6_B62_g11e1"
+alphabet = "dayhoff6"
+matrix = "BLOSUM62"
+gap_open = 11
+gap_extend = 1
+[[grid]]
+setting = "dayhoff6_B62_g6e1"
+alphabet = "dayhoff6"
+matrix = "BLOSUM62"
+gap_open = 6
+gap_extend = 1
+[[grid]]
+setting = "dayhoff6_B45_g15e2"
+alphabet = "dayhoff6"
+matrix = "BLOSUM45"
+gap_open = 15
+gap_extend = 2
+[[grid]]
+setting = "dayhoff6_B45_g6e1"
+alphabet = "dayhoff6"
+matrix = "BLOSUM45"
+gap_open = 6
+gap_extend = 1
+
+[selection]
+# On the development split only, per alphabet, keep the setting with the highest mean
+# cross-origin average precision over development queries (score = calibrated E-value,
+# lower is better; negatives = real background and hard controls; same-origin positives
+# and shuffles left out). Ties broken by mean within-origin recall at the 1% budget,
+# then by grid order.
+primary = "mean_cross_origin_average_precision"
+tie_break = "mean_within_origin_recall_fpr_0.01"
+# Also scored on evaluation whatever development picks: the usual BLAST protein setting.
+reference_settings = ["protein20_B62_g11e1"]
+
+[budgets]
+# Per query: recall of positives scoring above the (b+1)-th highest negative, where
+# b = floor(rate * number of negatives). Rate 0 is "recall before the first false hit".
+per_query_false_hit_rates = [0.0, 0.01, 0.05]
+# Pooled over all queries of a split, ranked by calibrated E-value.
+pooled_false_positive_rates = [0.001, 0.01, 0.05]
+
+[decision]
+# An alignment setting "separates" ice-binding proteins of different origins from controls
+# on the evaluation split when all three hold:
+#   pooled cross-origin recall at pooled FPR 1% >= min_pooled_recall,
+#   that recall exceeds the best simple baseline's by >= min_margin_over_baseline,
+#   AUC of the true cross-origin targets against shuffles of those same targets
+#   (same query, same setting) >= min_auc_vs_shuffles.
+min_pooled_recall = 0.25
+min_margin_over_baseline = 0.10
+min_auc_vs_shuffles = 0.75
+# Outcomes, checked in this order:
+#   a reduced alphabet separates       -> "reduced alignment works; kmerseek's retrieval may be the bottleneck"
+#   only protein20 separates           -> "full-sequence signal exists, reduced signal does not"
+#   no setting separates, a subgroup does -> "only a narrow subgroup shows signal"
+#   nothing separates                  -> "no tested linear scoring method separates positives from controls"
+
+# Subgroups declared before the run, each with an existing annotation behind it. A subgroup
+# is scored with the same rule, on queries and targets inside it only.
+[[subgroup]]
+name = "type I helical AFPs, flounder vs sculpin"
+origins = ["AFP1_flounder", "AFP1_sculpin"]
+basis = "Graham et al. 2013 PLoS One, doi:10.1371/journal.pone.0081285: Ala-rich alpha-helical type I AFPs arose separately in flounders and sculpins"
+[[subgroup]]
+name = "AFGP, notothenioid vs gadid"
+origins = ["AFGP_notothenioid", "AFGP_gadid"]
+basis = "Chen, DeVries and Cheng 1997 PNAS, doi:10.1073/pnas.94.8.3817: near-identical AFGPs evolved separately"
+[[subgroup]]
+name = "insect beta-helix AFPs, moth vs beetle"
+origins = ["THP_moth", "IAFP_beetle"]
+basis = "Liou et al. 2000 Nature doi:10.1038/35018604 (beetle, 12-residue beta-helix coils) and Doucet et al. 2000 Eur J Biochem doi:10.1046/j.1432-1327.2000.01694.x (moth, 15-residue beta-helix coils); separate UniProt families; no cited phylogeny tests a common origin"
+
+# Baselines with no alignment. Higher = more similar.
+[baselines]
+names = ["length", "composition20", "composition_hp_lehninger2", "composition_dayhoff6", "distinct_3mer_fraction", "target_ala_thr_fraction"]

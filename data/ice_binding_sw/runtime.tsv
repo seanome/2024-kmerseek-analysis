@@ -1,0 +1,24 @@
+step	detail	wall_seconds	peak_rss_mb	finished_at
+manifest		0.01	214.3	2026-10-19T14:21:27
+panel		50.44	442.5	2026-10-19T14:22:18
+panel		44.24	450.5	2026-10-19T14:23:23
+panel		47.21	452.4	2026-10-19T14:24:31
+align	dev protein20_B62_g11e1 2954 pairs	0.73	233.5	2026-10-19T14:24:52
+align	dev protein20_B62_g7e1 2954 pairs	0.81	235.2	2026-10-19T14:24:52
+align	dev protein20_B45_g15e2 2954 pairs	0.73	238.0	2026-10-19T14:24:53
+align	dev protein20_B45_g10e2 2954 pairs	0.78	240.2	2026-10-19T14:24:54
+align	dev hp_lehninger2_B62_g11e1 2954 pairs	0.66	240.5	2026-10-19T14:24:55
+align	dev hp_lehninger2_B62_g4e1 2954 pairs	0.85	241.9	2026-10-19T14:24:55
+align	dev hp_lehninger2_B45_g15e2 2954 pairs	0.70	243.8	2026-10-19T14:24:56
+align	dev hp_lehninger2_B45_g4e1 2954 pairs	0.92	246.7	2026-10-19T14:24:57
+align	dev dayhoff6_B62_g11e1 2954 pairs	0.70	248.8	2026-10-19T14:24:58
+align	dev dayhoff6_B62_g6e1 2954 pairs	0.79	249.6	2026-10-19T14:24:58
+align	dev dayhoff6_B45_g15e2 2954 pairs	0.67	250.5	2026-10-19T14:24:59
+align	dev dayhoff6_B45_g6e1 2954 pairs	0.85	251.3	2026-10-19T14:25:00
+align	dev	9.22	290.9	2026-10-19T14:25:00
+select		0.38	279.3	2026-10-19T14:25:01
+align	eval protein20_B62_g11e1 6336 pairs	3.44	234.8	2026-10-19T14:26:26
+align	eval hp_lehninger2_B45_g4e1 6336 pairs	4.48	240.7	2026-10-19T14:26:30
+align	eval dayhoff6_B45_g6e1 6336 pairs	3.97	243.8	2026-10-19T14:26:34
+align	eval	11.93	265.9	2026-10-19T14:26:34
+evaluate		1.97	415.7	2026-10-19T14:26:37

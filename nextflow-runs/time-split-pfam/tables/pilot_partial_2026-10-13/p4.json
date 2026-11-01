@@ -1,0 +1,14 @@
+{
+ "comparators": [
+  "MMseqs2",
+  "hmmscan Pfam 33.1",
+  "phmmer"
+ ],
+ "kmerseek_settings": 185,
+ "chosen": "kmerseek mmseqs12 k9 extend",
+ "tune_unique_finds": 3,
+ "tune_p4_queries": 52,
+ "tune_decoy_rate": 0.009615384615384616,
+ "tune_expected": 0.5,
+ "tune_unique_minus_expected": 2.5
+}
