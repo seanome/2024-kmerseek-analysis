@@ -310,8 +310,12 @@ workflow {
     trimmed = fastp(reads)
 
     // group trimmed samples by contrast; the control's samples are ctrl1-6 and pec1-6
-    keyed = trimmed.map { s, p1, p2, il, js, ht, d -> tuple(sample2contrast.get(s, 'control'), s, il, [p1, p2]) }
-    all_contrasts = contrasts + (params.control ? ['control'] : [])
+    // an unknown sample is an error, not a control sample
+    keyed = trimmed.map { s, p1, p2, il, js, ht, d ->
+        def c = sample2contrast.get(s) ?: (params.control && s ==~ /^(ctrl|pec)\d+$/ ? 'control' : null)
+        if (c == null) throw new IllegalStateException("sample ${s} is not in the frozen design and is not a control sample")
+        tuple(c, s, il, [p1, p2])
+    }
     per_contrast = keyed.groupTuple().map { c, ss, ils, pairs ->
         def dsg = c == 'control' ? file("${params.code_dir}/control/control.design.tsv")
                                  : file("${params.code_dir}/design/contrast_${c}.design.tsv")
