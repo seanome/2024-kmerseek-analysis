@@ -43,8 +43,11 @@ for s in $SETTINGS; do
         fit_job=$(squeue --me -h -n "342-index-whole-$a" -o %i | head -1 | sed 's/_.*//')
         [ -n "$fit_job" ] || { echo "$a k$k: SKIPPED, no fit at $fit and no 342-index-whole-$a job queued"; continue; }
     fi
-    index=$(submit "index-$a" "" "$(ask index "$a")" --export=ALL,STEP=index,ALPHABET=$a,KSIZE=$k)
-    search=$(submit "search-$a" "$index${fit_job:+:$fit_job}" "$(ask search "$a")" \
+    # Ask first: a failure inside $(...) as an argument would not stop the script.
+    res_index=$(ask index "$a") || { echo "357: no index row for $a in $TABLE" >&2; exit 1; }
+    res_search=$(ask search "$a") || { echo "357: no search row for $a in $TABLE" >&2; exit 1; }
+    index=$(submit "index-$a" "" "$res_index" --export=ALL,STEP=index,ALPHABET=$a,KSIZE=$k)
+    search=$(submit "search-$a" "$index${fit_job:+:$fit_job}" "$res_search" \
                  --array=0-9 --export=ALL,STEP=search,ALPHABET=$a,KSIZE=$k)
     echo "$a k$k: index $index, search $search (array 0-9)${fit_job:+, waits for nb 342 fit job $fit_job}"
 done
