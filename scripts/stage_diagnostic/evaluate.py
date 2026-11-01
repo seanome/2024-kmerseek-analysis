@@ -506,6 +506,11 @@ def run(cfg, data_dir: Path, results: Path) -> None:
         agree = chk.filter(
             pl.col("C_shared").cast(pl.Int64) == pl.col("our_shared_s1").fill_null(0)
         ).height
+        if agree != chk.height:
+            raise SystemExit(
+                f"{ds}: adapter check failed at scaled 1: {agree} of {chk.height} candidate "
+                "pairs have the same shared-seed count as kmerseek"
+            )
         all_cost.append(
             dict(
                 dataset=ds,
@@ -532,6 +537,11 @@ def run(cfg, data_dir: Path, results: Path) -> None:
         all_cost[-1]["n_seed_count_agree_s10"] = both.filter(
             pl.col("D_shared").cast(pl.Int64).fill_null(0) == pl.col("our_shared_s10").fill_null(0)
         ).height
+        if all_cost[-1]["n_seed_count_agree_s10"] != both.height:
+            raise SystemExit(
+                f"{ds}: adapter check failed at scaled 10: {all_cost[-1]['n_seed_count_agree_s10']}"
+                f" of {both.height} pairs have the same shared-seed count as kmerseek"
+            )
 
         # per-query summary
         n_c = f.filter(pl.col("C_cand")).group_by("query").len().rename({"len": "candidates_C"})
