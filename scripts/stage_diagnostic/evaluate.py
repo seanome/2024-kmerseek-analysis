@@ -196,11 +196,6 @@ def positive_detail(f: pl.DataFrame, budgets: list[int], headline: int) -> pl.Da
     )
 
 
-def macro(pq: pl.DataFrame, queries: list[str]) -> float:
-    s = pq.filter(pl.col("query").is_in(queries))
-    return float(s["recall"].mean()) if s.height else float("nan")
-
-
 def bootstrap(values_by_query: dict, groups: dict, reps: int, seed: int, fn=np.mean):
     """Resample groups (origin / framework / family) with replacement; the statistic is the
     mean over every query of the drawn groups. Returns (2.5%, 97.5%)."""

@@ -30,16 +30,6 @@ CLUSTERS: dict[str, list[str]] = {
     "funcgroups8": ["GVALI", "ST", "CM", "FY", "WHP", "NQ", "DE", "KR"],
 }
 
-# letters kmerseek writes for each class. Only the sourmash-encoded ones matter for hashing
-# (they are hashed as these letters); table-backed alphabets are written with their own
-# letters by kmerseek, and for those we hash the class index letter below, which gives the
-# same k-mer *sets* (a relabelling), which is all the seed counts need.
-SOURMASH_LETTERS = {
-    "dayhoff6": "abcdef",
-    "hp_lehninger2": "hp",
-}
-
-
 def class_letters(alphabet: str) -> str:
     """One letter per class. Uppercase A.. so Biopython's aligner can use them."""
     n = len(CLUSTERS[alphabet])
@@ -62,14 +52,4 @@ def residue_map(alphabet: str) -> dict[str, str]:
 
 def encode(seq: str, alphabet: str) -> str:
     m = residue_map(alphabet)
-    return "".join(m[r] for r in seq)
-
-
-def sourmash_encode(seq: str, alphabet: str) -> str:
-    """The string sourmash would hash for this alphabet (dayhoff6 and HP only)."""
-    letters = SOURMASH_LETTERS[alphabet]
-    m = {}
-    for letter, members in zip(letters, CLUSTERS[alphabet]):
-        for r in members:
-            m[r] = letter
     return "".join(m[r] for r in seq)
