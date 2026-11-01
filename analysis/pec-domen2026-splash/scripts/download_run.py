@@ -57,7 +57,7 @@ def count_records(path):
 
 def main():
     report, run, reads_dir = sys.argv[1], sys.argv[2], Path(sys.argv[3])
-    reuse_dir = Path(sys.argv[4]) if len(sys.argv) > 4 else None
+    reuse_dir = Path(sys.argv[4]) if len(sys.argv) > 4 and sys.argv[4] else None
     rows = {}
     with open(report) as f:
         header = f.readline().rstrip("\n").split("\t")
