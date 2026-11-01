@@ -161,7 +161,7 @@ No tolerance for prediction error is established for this assay and none was sup
 
 Panel a shows the range of every collision group, so the three largest (selected extremes) can be seen against the rest. Panels b and c show those three and three groups drawn at random, per encoding. All 12 are in `tables/347_invisible_mutations_examples.tsv`.
 
-Residues 195-215 of PTEN, the two ends of the hp_lehninger2 group at position 205 (5 variants, range 1.32):
+Residues 195-215 of PTEN, the two ends of the hp_lehninger2 group with the largest range among groups at one position (position 205; 5 variants, range 1.32):
 
 ```text
 protein20      FHKMMFETIPDFSGGTCNPQF   p.Met205Asp (score -0.22 ± 0.13 s.e., n=2)
@@ -173,7 +173,7 @@ hp_lehninger2  hpphhhpphhphphhppphph
 hp_lehninger2  hpphhhpphhphphhppphph
 ```
 
-Residues 390-403 of PTEN, the two ends of the dayhoff6 group at position 400 (3 variants, range 1.09):
+Residues 390-403 of PTEN, the two ends of the dayhoff6 group with the largest range among groups at one position (position 400; 3 variants, range 1.09):
 
 ```text
 protein20      EPFDEDQHTQDTKV   p.Ile400Asp (score -0.02 ± 0.21 s.e., n=2)

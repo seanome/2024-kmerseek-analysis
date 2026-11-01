@@ -86,8 +86,8 @@ def residues_example(variants, groups_df, enc):
     lab_b = f"{hi['hgvs_pro']} (score {hi['y']:.2f} ± {hi['se']:.2f} s.e., n={hi['n_replicates']})"
     w = 15
     return (
-        f"Residues {a + 1}-{b} of PTEN, the two ends of the {enc} group at position {p} "
-        f"({g['n_variants']} variants, range {g['range']:.2f}):\n\n"
+        f"Residues {a + 1}-{b} of PTEN, the two ends of the {enc} group with the largest range among groups at one position (position {p}; "
+        f"{g['n_variants']} variants, range {g['range']:.2f}):\n\n"
         "```text\n"
         f"{'protein20':<{w}}{sa}   {lab_a}\n"
         f"{'':<{w}}{match}   {n_id} of {len(sa)} identical\n"
