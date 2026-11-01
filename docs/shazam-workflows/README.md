@@ -51,7 +51,10 @@ lowered 4x, 100 isoform pairs switched 9x and 2,600 unchanged. Those reads go th
 same fastp, SPLASH, anchor-count and DE-kupl steps as the real runs, and `control_truth`
 scores what each step found.
 
-Check that the map still covers every process after the pipeline changes:
+Check that the map still covers every process after the pipeline changes. Run this from a
+checkout that has PR 201, because `nextflow-runs/pec-domen2026/main.nf` is not on this
+branch. The 9 stations were compared by hand with the 9 `process` blocks of `main.nf` at PR
+201 commit `08c66ff` (2026-10-31); `nf-metro check-mapping` itself was not run.
 
 ```bash
 grep '^process ' nextflow-runs/pec-domen2026/main.nf | awk '{print $2}' > /tmp/pec_processes.txt
