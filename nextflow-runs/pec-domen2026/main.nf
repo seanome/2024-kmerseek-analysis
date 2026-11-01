@@ -8,6 +8,7 @@
  *      corrected p <= 0.05  -> six-frame peptides -> sourmash manysearch -> parasail pair check
  *   -> SPLASH anchor counts -> PyDESeq2
  *   -> DE-kupl 1.3.5 (limma test) -> contigs -> the same peptide search
+ *      -> KaMRaT v1.2 on DE-kupl's k-mer counts (t-test, merge) -> contigs -> the same search
  * plus the known-answer control (simulated reads, same stages, scored against the truth).
  *
  * Every result is kept with storeDir under params.pec_root, in the same places the earlier
@@ -213,6 +214,46 @@ process dekupl {
     """
 }
 
+// ---------------------------------------------------------------- KaMRaT channel
+
+// KaMRaT v1.2 (Xue et al. 2024, Bioinformatics 40:btae090) on DE-kupl's k-mer count table
+// (k = 31, unstranded, k-mers seen at least 5 times in at least 2 samples). Every k-mer gets a
+// t-test on log2(count + 1) between PEC and control, BH-corrected across all k-mers; then all
+// k-mers are merged into contigs (overlap 30 to 15, Pearson distance <= 0.20 between neighbours),
+// each contig represented by its smallest corrected p. Outputs: k-mers with corrected p <= 0.05,
+// contigs whose representative k-mer has corrected p <= 0.05, and every contig.
+process kamrat {
+    tag "${contrast}"
+    label 'kamrat'
+    storeDir "${params.pec_root}/contrasts/${contrast}"
+
+    input:
+    tuple val(contrast), path(design), path(dekupl_dir)
+
+    output:
+    tuple val(contrast), path("kamrat_ttest")
+
+    script:
+    """
+    mkdir kamrat_ttest && cd kamrat_ttest
+    K="apptainer exec --bind /scratch ${params.pec_root}/images/kamrat_v1.2.sif kamrat"
+    awk -F'\\t' 'NR > 1 { print \$1 "\\t" \$2 }' ../${design} > design.txt
+    \$K index -intab ../${dekupl_dir}/DEkupl_result/kmer_counts/raw-counts.tsv.gz -outdir idx \\
+      -klen 31 -unstrand -nfbase 1000000000 > kamrat.log 2>&1
+    \$K score -idxdir idx -scoreby ttest.padj -design design.txt -outfmt bin -outpath score.bin >> kamrat.log 2>&1
+    \$K score -idxdir idx -scoreby ttest.padj -design design.txt -outfmt tab -outpath score.tsv >> kamrat.log 2>&1
+    \$K merge -idxdir idx -overlap 30-15 -with score.bin:min -interv pearson:0.20 \\
+      -outfmt tab -counts mean:float -outpath contigs_all.tsv >> kamrat.log 2>&1
+    awk -F'\\t' 'NR == 1 || \$2 <= 0.05' score.tsv | gzip > kmers_padj05.tsv.gz
+    awk -F'\\t' 'NR == 1 || \$3 <= 0.05' contigs_all.tsv > contigs.tsv
+    awk -F'\\t' 'NR > 1 { n++ } NR > 1 && \$2 <= 0.05 { s++ } END { print "kmers tested " n ", corrected p <= 0.05: " s }' score.tsv > summary.txt
+    awk -F'\\t' 'NR > 1 { n++ } NR > 1 && \$3 <= 0.05 { s++ } END { print "contigs " n ", representative corrected p <= 0.05: " s }' contigs_all.tsv >> summary.txt
+    gzip contigs_all.tsv
+    rm -rf idx score.bin score.tsv
+    test -s contigs.tsv
+    """
+}
+
 // ---------------------------------------------------------------- protein search
 
 process search {
@@ -228,8 +269,11 @@ process search {
 
     script:
     // compactors: compactors/compactors.tsv, column compactor; DE-kupl: its merged contigs, column contig
+    // KaMRaT: its contigs with representative corrected p <= 0.05, column contig
     def prep = src == 'compactors'
         ? "ln -s ../${seqdir}/compactors.tsv seqs.tsv; COL=compactor"
+        : src == 'kamrat_ttest'
+        ? "ln -s ../${seqdir}/contigs.tsv seqs.tsv; COL=contig"
         : "zcat ../${seqdir}/DEkupl_result/control_vs_PEC_kmer_counts/merged-diff-counts.tsv.gz > dekupl_contigs.tsv; ln -s dekupl_contigs.tsv seqs.tsv; COL=contig"
     """
     export PATH=${ENV}:\$PATH
@@ -269,10 +313,11 @@ process search {
 
 process control_truth {
     label 'small_mem'
-    storeDir "${params.pec_root}/control_eval"
+    // a new folder since KaMRaT was added (2026-11-01): storeDir would reuse the old files without it
+    storeDir "${params.pec_root}/control_eval/with_kamrat"
 
     input:
-    tuple path(splash_out), path(anchor_counts), path(deseq), path(dekupl_dir)
+    tuple path(splash_out), path(anchor_counts), path(deseq), path(dekupl_dir), path(kamrat_dir)
 
     output:
     path("control_truth_summary.json")
@@ -280,7 +325,7 @@ process control_truth {
 
     script:
     """
-    mkdir -p cdir && cd cdir && ln -s ../${splash_out} splash_out && ln -s ../${deseq} deseq && ln -s ../${dekupl_dir} ${dekupl_dir}
+    mkdir -p cdir && cd cdir && ln -s ../${splash_out} splash_out && ln -s ../${deseq} deseq && ln -s ../${dekupl_dir} ${dekupl_dir} && ln -s ../${kamrat_dir} ${kamrat_dir}
     ${ENV}/python ${SCRIPTS}/control_truth.py ${params.code_dir}/control/control_transcripts.fa \\
       ${params.code_dir}/control/truth_design.tsv . .. > ../control_truth.log 2>&1
     """
@@ -330,11 +375,15 @@ workflow {
     ac = anchor_counts(sp.join(per_contrast.map { c, cjs, dsg, il, pairs -> tuple(c, dsg) }))
     dk = dekupl(per_contrast.map { c, cjs, dsg, il, pairs -> tuple(c, dsg, pairs) })
 
+    km = kamrat(dk.join(per_contrast.map { c, cjs, dsg, il, pairs -> tuple(c, dsg) })
+                  .map { c, d, dsg -> tuple(c, dsg, d) })
+
     search(comp.map { c, d -> tuple(c, 'compactors', d) }
-               .mix(dk.map { c, d -> tuple(c, "dekupl_${params.dekupl_method}", d) }))
+               .mix(dk.map { c, d -> tuple(c, "dekupl_${params.dekupl_method}", d) })
+               .mix(km.map { c, d -> tuple(c, 'kamrat_ttest', d) }))
 
     if (params.control) {
-        control_truth(sp.join(ac).join(dk).filter { it[0] == 'control' }
-                        .map { c, s, a, d, k -> tuple(s, a, d, k) })
+        control_truth(sp.join(ac).join(dk).join(km).filter { it[0] == 'control' }
+                        .map { c, s, a, d, k, m -> tuple(s, a, d, k, m) })
     }
 }

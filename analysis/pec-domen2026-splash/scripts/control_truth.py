@@ -15,6 +15,8 @@ Channels:
   dekupl_limma, dekupl_DESeq2   DE-kupl's differential k-mers with each test (column `tag`; every row of diff-counts.tsv.gz is taken,
               so any p-value and fold-change cut is the one set in the DE-kupl config, not applied here;
               a missing output is listed under `channels_not_run`, not scored as zero hits), placed in genes the same way as anchors
+  kamrat_ttest   KaMRaT t-test on DE-kupl's k-mer counts: k-mers with BH-corrected p <= 0.05
+              (kamrat_ttest/kmers_padj05.tsv.gz, column `tag`), placed in genes the same way
 
 A gene is found by a channel if at least one of its anchors is significant in that channel.
 Anchors shared by two or more genes (paralogs in the old gene models) are not given to any gene;
@@ -89,6 +91,12 @@ def main():
         else:
             dekupl_not_run.append(method)
             print(f"WARNING: {dk_path} is missing; dekupl_{method} is reported as not run", file=sys.stderr)
+    km_path = cdir / "kamrat_ttest/kmers_padj05.tsv.gz"
+    if km_path.exists():
+        dekupl_kmers["kamrat"] = set(pl.read_csv(km_path, separator="\t", columns=["tag"])["tag"].to_list())
+    else:
+        dekupl_not_run.append("kamrat")
+        print(f"WARNING: {km_path} is missing; kamrat_ttest is reported as not run", file=sys.stderr)
     wanted = anchors.union(*dekupl_kmers.values())
     kmer_genes = defaultdict(set)
     for t, s in tx.items():
@@ -137,14 +145,14 @@ def main():
         )
         sig[name] = set(hit["anchor"].to_list())
     for method, kmers in dekupl_kmers.items():
-        sig[f"dekupl_{method}"] = kmers
+        sig["kamrat_ttest" if method == "kamrat" else f"dekupl_{method}"] = kmers
 
     rows, summary = [], dict(
         tested_anchors=len(anchors),
         splash_scores_rows=scores_n,
         supervised_q_column=corr[0] if corr else "BH(Cjs_0_pval) computed here",
         channels={},
-        channels_not_run=[f"dekupl_{m}" for m in dekupl_not_run],
+        channels_not_run=["kamrat_ttest" if m == "kamrat" else f"dekupl_{m}" for m in dekupl_not_run],
     )
     placement = Counter(
         place(a) if place(a) in ("multi", "none") else "one_gene" for a in anchors
