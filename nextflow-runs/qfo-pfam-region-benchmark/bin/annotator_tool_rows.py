@@ -85,7 +85,10 @@ METRICS = [
 ]
 # Metrics that need the call's position on the query. A tool without per-residue
 # coordinates gets "not applicable" for these on its card.
-POSITION_METRICS = {"median_iou_tp"}
+# Every score except family_fmax counts a call as right only when it overlaps the true
+# domain (IoU), so it needs the call's position on the query. A tool without per-residue
+# coordinates gets "not applicable" for these on its card and no rows for them.
+POSITION_METRICS = set(METRICS) - {"family_fmax"}
 STRATUM_AXES = ["all", "identity", "plddt", "feature_type", "feature_length_bin"]
 
 # One entry per tool. `group` is the site's column group. `graded_on` says what the
@@ -113,11 +116,44 @@ TOOL_INFO = {
         "search_step": "mmseqsBestHitSearch",
         "db_steps": ["mmseqsBestHitDb"],
     },
+    "interproscan": {
+        "name": "InterProScan (all member databases)",
+        "group": "reference-database tool, graded on its own models",
+        "graded_on": "its own Pfam member matches; InterPro's Pfam models are the source "
+        "of the Pfam truth, and its databases contain human",
+        "has_query_coordinates": True,
+        "needs_gpu": False,
+        "authors": "InterPro team, EMBL-EBI (InterProScan)",
+        "search_step": "interproscanSearch",
+        "db_steps": [],
+        "target_db": "InterPro member databases (InterProScan 5.78-109.0 data)",
+        "target_db_version": "InterProScan 5.78-109.0",
+    },
+    "eggnog_mapper": {
+        "name": "eggNOG-mapper (default DIAMOND search)",
+        "group": "reference-database tool, graded on its own models",
+        "graded_on": "the PFAMs column (family names from the seed ortholog's group, no "
+        "coordinates); eggNOG 5 contains human",
+        "has_query_coordinates": False,
+        "needs_gpu": False,
+        "authors": "Carlos P. Cantalapiedra, Jaime Huerta-Cepas (eggNOG-mapper)",
+        "search_step": "eggnogMapperSearch",
+        "db_steps": ["pfamNameMap"],
+        "target_db": "eggNOG 5.0 (emapperdb 5.0.2)",
+        "target_db_version": "emapperdb 5.0.2",
+    },
 }
 # Steps every tool of one run uses once. Their cost is reported once, as its own rows,
 # and on each card as "shared", never split among the tools by a made-up rule.
 SHARED_STEPS = {"cladeExcludedReference", "hitTargets", "hmmscanHitTargets"}
-PER_SETTING_STEPS = {"placeBestHitDomains", "scoreAnnotatorTool"}
+PER_SETTING_STEPS = {
+    "placeBestHitDomains",
+    "scoreAnnotatorTool",
+    "interproscanSearch",
+    "interproscanCalls",
+    "eggnogMapperSearch",
+    "eggnogCalls",
+}
 
 _DURATION = re.compile(r"(\d+(?:\.\d+)?)(ms|d|h|m|s)")
 _SECONDS = {"ms": 1e-3, "s": 1.0, "m": 60.0, "h": 3600.0, "d": 86400.0}
@@ -186,6 +222,8 @@ def task_setting(step: str, tag: str | None) -> tuple[str, str] | None:
         return ("diamond_besthit", "database build")
     if step == "mmseqsBestHitDb":
         return ("mmseqs2_besthit", "database build")
+    if step == "pfamNameMap":
+        return ("eggnog_mapper", "database build")
     if step == "diamondBestHitSearch":
         return ("diamond_besthit", tag.removeprefix("diamond ").strip())
     if step == "mmseqsBestHitSearch":
@@ -268,6 +306,15 @@ def compute_rows(
     return tidy(pl.DataFrame(out, infer_schema_length=None), COMPUTE_SCHEMA)
 
 
+def target_db(tool: str, a) -> str:
+    """The best-hit tools search --target-db; a reference-database tool its own."""
+    return TOOL_INFO[tool].get("target_db", a.target_db)
+
+
+def target_db_version(tool: str, a) -> str:
+    return TOOL_INFO[tool].get("target_db_version", a.target_db_version)
+
+
 def run_version(results: Path, tool: str, setting: str, species: str) -> str | None:
     """The `version:` line of the search task's run.txt, wherever the tool's module
     publishes it (hits/<tool>.<setting>.run.txt or hits/<tool>/<tool>.<target>.run.txt).
@@ -292,6 +339,8 @@ def metric_rows(
         (pl.col("split") == "all") & pl.col("stratum_axis").is_in(STRATUM_AXES)
     )
     metrics = [c for c in METRICS if c in m.columns]
+    if not TOOL_INFO[m["tool"][0]]["has_query_coordinates"]:
+        metrics = [c for c in metrics if c not in POSITION_METRICS]
     index = [
         "tool",
         "variant",
@@ -314,8 +363,8 @@ def metric_rows(
             .alias("container_digest"),
             pl.col("variant").alias("setting"),
             pl.lit(a.query_set).alias("query_set"),
-            pl.lit(a.target_db).alias("target_db"),
-            pl.lit(a.target_db_version).alias("target_db_version"),
+            pl.lit(target_db(m["tool"][0], a)).alias("target_db"),
+            pl.lit(target_db_version(m["tool"][0], a)).alias("target_db_version"),
             pl.lit(None, dtype=pl.Float64).alias("target_mya_to_human"),
             pl.col("stratum").cast(pl.String).alias("stratum_bin"),
             pl.col("n_truth_instances").cast(pl.Int64).alias("n_instances"),
@@ -413,16 +462,12 @@ def card(
         "needs_gpu": info["needs_gpu"],
         "has_query_coordinates": info["has_query_coordinates"],
         "query_set": a.query_set,
-        "target_db": a.target_db,
-        "target_db_version": a.target_db_version,
+        "target_db": target_db(tool, a),
+        "target_db_version": target_db_version(tool, a),
         "truth": f"Pfam-A domain instances, {a.truth_version}",
-        "queries": {
-            "n_queries": qc.get("n_queries"),
-            "n_queries_with_hit": qc.get("n_queries_with_hit"),
-            "n_best_hits_with_pfam_domain": qc.get("n_best_hits_with_pfam_domain"),
-            "n_queries_with_call": qc.get("n_queries_with_call"),
-            "n_calls": qc.get("n_calls"),
-        },
+        # The step's own QC counts, as written (place_qc.json or calls_qc.json).
+        "queries": {k: v for k, v in qc.items() if k not in ("tool", "setting")},
+        "database_size": run.get("database_size"),
         "scores_split_all": scores,
         "cost_this_setting": cost(own),
         "cost_database_build_shared_by_tool_settings": cost(db),
@@ -499,8 +544,8 @@ def main() -> None:
         calls = a.results / "calls" / f.name.replace(".metrics.", ".calls.")
         if TOOL_INFO[tool]["has_query_coordinates"] and calls.exists():
             pile.append(pileup_calls(calls, tool, setting))
-        qc_path = a.results / "regions" / f"{tool}.{setting}.place_qc.json"
-        qc = json.loads(qc_path.read_text()) if qc_path.exists() else {}
+        qc_paths = sorted((a.results / "regions").glob(f"{tool}.{setting}.*qc.json"))
+        qc = json.loads(qc_paths[0].read_text()) if qc_paths else {}
         n_queries = n_queries or qc.get("n_queries")
         run_path = a.results / "hits" / f"{tool}.{setting}.run.txt"
         run = read_run_info(run_path) if run_path.exists() else {}
