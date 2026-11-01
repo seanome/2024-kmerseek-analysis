@@ -378,6 +378,17 @@ def useful(row) -> bool:
     )
 
 
+def _seconds(t):
+    """Seconds as a float; None for a blank or missing cell; nan for text that is not a number."""
+    raw = (t.get("seconds") or "").strip()
+    if raw == "":
+        return None
+    try:
+        return float(raw)
+    except ValueError:
+        return float("nan")
+
+
 def cmd_score(args):
     sheet = read_tsv(args.sheet)
     key = {r["blind_id"]: r["found_by"].split("+") for r in read_tsv(args.key)}
@@ -393,9 +404,9 @@ def cmd_score(args):
                 yield_[m].add(r["blind_id"].rsplit("-", 1)[0])
     secs = {
         m: [
-            float(t["seconds"])
+            _seconds(t)
             for t in times
-            if t["workflow"] == m and t["seconds"].strip() != ""
+            if t["workflow"] == m and _seconds(t) is not None
         ]
         for m in ("kmerseek", "comparison")
     }
@@ -419,7 +430,7 @@ def cmd_score(args):
         and {
             t["query_number"]
             for t in times
-            if t["workflow"] == m and t["seconds"].strip() != ""
+            if t["workflow"] == m and _seconds(t) is not None
         }
         == set(qs)
         and all(math.isfinite(t) and t >= 0 for t in secs[m])
