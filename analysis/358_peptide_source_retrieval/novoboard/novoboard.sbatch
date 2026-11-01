@@ -33,16 +33,26 @@ printf 'file\turl\tbytes\tlast_modified\tdate_downloaded\tsha256\n' > "$manifest
 for file in eval_human.zip uniprot_sprot-only2024_01.tar.gz crap.fasta; do
   url=${URLS[$file]}
   last_modified=$(curl -sIL "$url" | tr -d '\r' | awk -F': ' 'tolower($1)=="last-modified"{print $2}' | tail -1) || last_modified=
+  downloaded=no
   for attempt in 1 2 3 4 5 6 7 8 9 10; do
     if curl -fsSL -C - --retry 5 --speed-limit 100000 --speed-time 60 -o "$file" "$url"; then
+      downloaded=yes
       break
     fi
     echo "attempt $attempt for $file stopped; resuming" >&2
     sleep 30
   done
+  if [[ $downloaded != yes ]]; then
+    echo "$file: all 10 download attempts failed" >&2
+    exit 1
+  fi
   bytes=$(stat -c %s "$file")
   if [[ -n "${BYTES[$file]:-}" && "$bytes" != "${BYTES[$file]}" ]]; then
     echo "$file is $bytes bytes, expected ${BYTES[$file]}" >&2
+    exit 1
+  fi
+  if [[ $file == crap.fasta ]] && [[ ! -s $file || $(head -c 1 "$file") != ">" ]]; then
+    echo "$file is empty or does not start with '>'" >&2
     exit 1
   fi
   printf '%s\t%s\t%s\t%s\t%s\t%s\n' "$file" "$url" "$bytes" "$last_modified" \
