@@ -1,388 +1,169 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
-     width="1397" height="1670" viewBox="0 0 1397 1670" style="color-scheme: light">
-<defs>
-</defs>
-<metadata id="diagram-manifest" data-schema-version="1.0"><![CDATA[{"groups":[{"color":"#0570b0","id":"splash","label":"SPLASH anchors (reference-free)"},{"color":"#2db572","id":"counts","label":"Anchor counts, PyDESeq2"},{"color":"#e6550d","id":"dekupl","label":"DE-kupl contigs, limma"},{"color":"#756bb1","id":"protein","label":"Protein sketches and search"},{"color":"#7f7f7f","id":"check","label":"Checks: known-answer control, paper gene lists"},{"color":"#e7298a","id":"kamrat","label":"KaMRaT contigs, t-test"}],"height":1670,"match":{"flags":"i","target":"fqProcessName","type":"regex"},"nodes":[{"groups":["counts","dekupl","kamrat","splash"],"h":22.0,"id":"reads_in","label":"reads_in","patterns":[],"r":5.0,"region":"reads","rx":5.0,"w":10.0,"x":116.0,"y":201.2},{"groups":["counts","dekupl","kamrat","splash"],"h":22.0,"id":"ctrlfa_in","label":"ctrlfa_in","patterns":[],"r":5.0,"region":"reads","rx":5.0,"w":10.0,"x":116.0,"y":276.4},{"groups":["counts","dekupl","kamrat","splash"],"h":22.0,"id":"ctrltsv_in","label":"ctrltsv_in","patterns":[],"r":5.0,"region":"reads","rx":5.0,"w":10.0,"x":116.0,"y":351.6},{"groups":["counts","dekupl","kamrat","splash"],"h":22.0,"id":"download","label":"download\nmd5 + read count","patterns":["^download$"],"r":5.0,"region":"reads","rx":5.0,"w":10.0,"x":256.0,"y":201.2},{"groups":["counts","dekupl","kamrat","splash"],"h":22.0,"id":"simulate_control","label":"simulate_control\n12 samples x 1 M pairs","patterns":["^simulate_control$"],"r":5.0,"region":"reads","rx":5.0,"w":10.0,"x":256.0,"y":351.6},{"groups":["counts","dekupl","kamrat","splash"],"h":22.0,"id":"fastp","label":"fastp","patterns":["^fastp$"],"r":5.0,"region":"reads","rx":5.0,"w":10.0,"x":352.0,"y":276.4},{"groups":["counts","splash"],"h":14.0,"id":"design_in","label":"design_in","patterns":[],"r":5.0,"region":"find","rx":5.0,"w":10.0,"x":783.5,"y":197.2},{"groups":["counts","splash"],"h":14.0,"id":"splash","label":"splash\nSPLASH 2.11.9","patterns":["^splash$"],"r":5.0,"region":"find","rx":5.0,"w":10.0,"x":941.0,"y":272.4},{"groups":["splash"],"h":10.0,"id":"compactors","label":"compactors","patterns":["^compactors$"],"r":5.0,"region":"find","rx":5.0,"w":10.0,"x":1098.5,"y":195.2},{"groups":["counts"],"h":10.0,"id":"anchor_counts","label":"anchor_counts\nPyDESeq2","patterns":["^anchor_counts$"],"r":5.0,"region":"find","rx":5.0,"w":10.0,"x":1098.5,"y":424.8},{"groups":["splash"],"h":10.0,"id":"anch_out","label":"anch_out","patterns":[],"r":5.0,"region":"find","rx":5.0,"w":10.0,"x":1063.5,"y":345.6},{"groups":["splash"],"h":10.0,"id":"comp_out","label":"comp_out","patterns":[],"r":5.0,"region":"find","rx":5.0,"w":10.0,"x":1168.5,"y":120.0},{"groups":["counts"],"h":10.0,"id":"deseq_out","label":"deseq_out","patterns":[],"r":5.0,"region":"find","rx":5.0,"w":10.0,"x":1221.0,"y":500.0},{"groups":["dekupl","kamrat"],"h":14.0,"id":"design_dk","label":"design_dk","patterns":[],"r":5.0,"region":"dk","rx":5.0,"w":10.0,"x":116.0,"y":680.0},{"groups":["dekupl","kamrat"],"h":14.0,"id":"dekupl","label":"dekupl\nDE-kupl 1.3.5, limma","patterns":["^dekupl$"],"r":5.0,"region":"dk","rx":5.0,"w":10.0,"x":266.0,"y":755.2},{"groups":["kamrat"],"h":10.0,"id":"kamrat","label":"kamrat\nKaMRaT 1.2, t-test","patterns":["^kamrat$"],"r":5.0,"region":"dk","rx":5.0,"w":10.0,"x":416.0,"y":836.4},{"groups":["dekupl"],"h":10.0,"id":"dekupl_out","label":"dekupl_out","patterns":[],"r":5.0,"region":"dk","rx":5.0,"w":10.0,"x":336.0,"y":903.6},{"groups":["kamrat"],"h":10.0,"id":"kamrat_out","label":"kamrat_out","patterns":[],"r":5.0,"region":"dk","rx":5.0,"w":10.0,"x":561.0,"y":907.6},{"groups":["protein"],"h":10.0,"id":"db_in","label":"db_in","patterns":[],"r":5.0,"region":"srch","rx":5.0,"w":10.0,"x":783.5,"y":911.6},{"groups":["dekupl","kamrat","protein","splash"],"h":22.0,"id":"search","label":"search\ntranslate, manysearch,\nparasail","patterns":["^search$"],"r":5.0,"region":"srch","rx":5.0,"w":10.0,"x":923.5,"y":759.2},{"groups":["dekupl","kamrat","protein","splash"],"h":18.0,"id":"aln_out","label":"aln_out","patterns":[],"r":5.0,"region":"srch","rx":5.0,"w":10.0,"x":993.5,"y":682.0},{"groups":["check"],"h":10.0,"id":"si_in","label":"si_in","patterns":[],"r":5.0,"region":"checks","rx":5.0,"w":10.0,"x":152.0,"y":1264.0},{"groups":["check","counts","dekupl","splash"],"h":22.0,"id":"control_truth","label":"control_truth","patterns":["^control_truth$"],"r":5.0,"region":"checks","rx":5.0,"w":10.0,"x":152.0,"y":1329.2},{"groups":["check"],"h":10.0,"id":"paper","label":"paper_gene_lists\n(script)","patterns":[],"r":5.0,"region":"checks","rx":5.0,"w":10.0,"x":302.5,"y":1264.0},{"groups":["check","counts","dekupl","kamrat","protein","splash"],"h":30.0,"id":"recover","label":"paper-list recovery,\nnotebook 361 (planned)","patterns":[],"r":5.0,"region":"checks","rx":5.0,"w":10.0,"x":565.5,"y":1107.6},{"groups":["check"],"h":10.0,"id":"ctrlj_out","label":"ctrlj_out","patterns":[],"r":5.0,"region":"checks","rx":5.0,"w":10.0,"x":274.5,"y":1414.4},{"groups":["check"],"h":10.0,"id":"paper_out","label":"paper_out","patterns":[],"r":5.0,"region":"checks","rx":5.0,"w":10.0,"x":438.5,"y":1339.2},{"groups":["check","counts","dekupl","kamrat","protein","splash"],"h":30.0,"id":"nb_out","label":"nb_out","patterns":[],"r":5.0,"region":"checks","rx":5.0,"w":10.0,"x":625.5,"y":1107.6}],"regions":[{"id":"reads","label":"Reads"},{"id":"find","label":"SPLASH, PEC +1 vs control -1"},{"id":"dk","label":"DE-kupl and KaMRaT, PEC vs control"},{"id":"srch","label":"Translate and search"},{"id":"checks","label":"Checks and results"}],"title":"Shazam for Biology, Botryllus electrical stimulation (PEC), nb361","version":"1.0","width":1397}]]></metadata>
-<style>.nf-metro-bg { fill: var(--nfm-map-bg, light-dark(#f5f5f5, #2b2b2b)); }
-.nf-metro-title { fill: var(--nfm-map-title-color, light-dark(#111111, #ffffff)); }
-.nf-metro-station-label { fill: var(--nfm-map-label-color, light-dark(#333333, #e0e0e0)); }
-.nf-metro-section-box { fill: var(--nfm-map-section-fill, light-dark(#ededed, #373737)); stroke: var(--nfm-map-section-stroke, light-dark(#e6e6e6, #595959)); }
-.nf-metro-section-label { fill: var(--nfm-map-section-label-color, light-dark(#666666, #c8c8c8)); }
-.nf-metro-group-label { fill: var(--nfm-map-section-label-color, light-dark(#666666, #c8c8c8)); }
-.nf-metro-group-underline { stroke: var(--nfm-map-section-label-color, light-dark(#666666, #c8c8c8)); }
-.nf-metro-legend-bg { fill: var(--nfm-map-legend-bg, light-dark(rgba(255, 255, 255, 0.8), rgba(0, 0, 0, 0.3))); }
-.nf-metro-legend-text { fill: var(--nfm-map-legend-text-color, light-dark(#333333, #e0e0e0)); }
-.nf-metro-marker-stroke { stroke: var(--nfm-map-marker-stroke, light-dark(#333333, #f0f0f0)); }
-.nf-metro-label-halo { fill: var(--nfm-map-bg, light-dark(#f5f5f5, #2b2b2b)); stroke: var(--nfm-map-bg, light-dark(#f5f5f5, #2b2b2b)); }</style>
-<rect x="0" y="0" width="1397" height="1670" fill="#f5f5f5" class="nf-metro-bg" />
-<text x="60.0" y="30.0" font-size="24.0" fill="#111111" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-weight="bold" class="nf-metro-title">Shazam for Biology, Botryllus electrical stimulation (PEC), nb361</text>
-<rect x="58.0" y="145.20000000000005" width="344.0" height="258.2" rx="8" ry="8" fill="#ededed" stroke="#e6e6e6" stroke-width="1.0" class="nf-metro-section-box" data-section-id="reads" data-section-lines="counts,dekupl,kamrat,splash" />
-<circle cx="69.0" cy="130.20000000000005" r="11" fill="#333333" class="nf-metro-section-num-circle" data-section-id="reads" />
-<text x="69.0" y="130.20000000000005" font-size="12" fill="#ffffff" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-weight="bold" text-anchor="middle" dy="0.3em" data-section-id="reads">1</text>
-<text x="85.0" y="130.20000000000005" font-size="16.0" fill="#666666" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-weight="bold" dy="0.3em" class="nf-metro-section-label" data-section-id="reads">Reads</text>
-<rect x="725.5" y="70.0" width="581.5" height="476.0" rx="8" ry="8" fill="#ededed" stroke="#e6e6e6" stroke-width="1.0" class="nf-metro-section-box" data-section-id="find" data-section-lines="counts,splash" />
-<circle cx="736.5" cy="55.0" r="11" fill="#333333" class="nf-metro-section-num-circle" data-section-id="find" />
-<text x="736.5" y="55.0" font-size="12" fill="#ffffff" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-weight="bold" text-anchor="middle" dy="0.3em" data-section-id="find">2</text>
-<text x="752.5" y="55.0" font-size="16.0" fill="#666666" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-weight="bold" dy="0.3em" class="nf-metro-section-label" data-section-id="find">SPLASH, PEC +1 vs control -1</text>
-<rect x="58.0" y="628.0" width="589.0" height="325.60000000000014" rx="8" ry="8" fill="#ededed" stroke="#e6e6e6" stroke-width="1.0" class="nf-metro-section-box" data-section-id="dk" data-section-lines="dekupl,kamrat" />
-<circle cx="69.0" cy="613.0" r="11" fill="#333333" class="nf-metro-section-num-circle" data-section-id="dk" />
-<text x="69.0" y="613.0" font-size="12" fill="#ffffff" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-weight="bold" text-anchor="middle" dy="0.3em" data-section-id="dk">3</text>
-<text x="85.0" y="613.0" font-size="16.0" fill="#666666" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-weight="bold" dy="0.3em" class="nf-metro-section-label" data-section-id="dk">DE-kupl and KaMRaT, PEC vs control</text>
-<rect x="725.5" y="628.0" width="326.0" height="325.60000000000014" rx="8" ry="8" fill="#ededed" stroke="#e6e6e6" stroke-width="1.0" class="nf-metro-section-box" data-section-id="srch" data-section-lines="dekupl,kamrat,protein,splash" />
-<circle cx="736.5" cy="613.0" r="11" fill="#333333" class="nf-metro-section-num-circle" data-section-id="srch" />
-<text x="736.5" y="613.0" font-size="12" fill="#ffffff" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-weight="bold" text-anchor="middle" dy="0.3em" data-section-id="srch">4</text>
-<text x="752.5" y="613.0" font-size="16.0" fill="#666666" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-weight="bold" dy="0.3em" class="nf-metro-section-label" data-section-id="srch">Translate and search</text>
-<rect x="66.0" y="1047.6000000000001" width="617.5" height="400.79999999999995" rx="8" ry="8" fill="#ededed" stroke="#e6e6e6" stroke-width="1.0" class="nf-metro-section-box" data-section-id="checks" data-section-lines="check,counts,dekupl,kamrat,protein,splash" />
-<circle cx="77.0" cy="1032.6000000000001" r="11" fill="#333333" class="nf-metro-section-num-circle" data-section-id="checks" />
-<text x="77.0" y="1032.6000000000001" font-size="12" fill="#ffffff" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-weight="bold" text-anchor="middle" dy="0.3em" data-section-id="checks">5</text>
-<text x="93.0" y="1032.6000000000001" font-size="16.0" fill="#666666" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-weight="bold" dy="0.3em" class="nf-metro-section-label" data-section-id="checks">Checks and results</text>
-<path d="M116.0,207.20000000000005 L256.0,207.20000000000005" stroke="#e7298a" stroke-width="3.0" stroke-linecap="round" class="metro-line-kamrat" data-line-id="kamrat" />
-<path d="M256.0,207.20000000000005 L285.43378711294736,207.20000000000005 Q295.43378711294736,207.20000000000005,299.1391741823349,216.48817025393143 L321.7284000435598,273.11182974606857 Q325.43378711294736,282.4,335.43378711294736,282.4 L352.0,282.4" stroke="#e7298a" stroke-width="3.0" fill="none" stroke-linecap="round" stroke-linejoin="round" class="metro-line-kamrat" data-line-id="kamrat" />
-<path d="M116.0,282.40000000000003 L116.0,282.40000000000003 Q126.0,282.40000000000003,129.7053870693875,291.6881702539314 L152.2946129306125,348.3118297460686 Q156.0,357.6,166.0,357.6 L256.0,357.6" stroke="#e7298a" stroke-width="3.0" fill="none" stroke-linecap="round" stroke-linejoin="round" class="metro-line-kamrat" data-line-id="kamrat" />
-<path d="M116.0,357.6 L256.0,357.6" stroke="#e7298a" stroke-width="3.0" stroke-linecap="round" class="metro-line-kamrat" data-line-id="kamrat" />
-<path d="M256.0,357.6 L293.56621288705264,357.6 Q303.56621288705264,357.6,307.2715999564402,348.3118297460686 L329.8608258176651,291.6881702539314 Q333.56621288705264,282.4,343.56621288705264,282.4 L352.0,282.4" stroke="#e7298a" stroke-width="3.0" fill="none" stroke-linecap="round" stroke-linejoin="round" class="metro-line-kamrat" data-line-id="kamrat" />
-<path d="M116.0,682.0 L134.64459570431578,682.0 Q144.64459570431578,682.0,148.3499827737033,691.2881702539314 L170.93920863492826,747.9118297460686 Q174.64459570431578,757.2,184.64459570431578,757.2 L266.0,757.2" stroke="#e7298a" stroke-width="3.0" fill="none" stroke-linecap="round" stroke-linejoin="round" class="metro-line-kamrat" data-line-id="kamrat" />
-<path d="M266.0,757.2 L346.0,757.2 Q356.0,757.2,359.54227062609795,766.5515944528986 L382.45772937390205,827.0484055471014 Q386.0,836.4,396.0,836.4 L416.0,836.4" stroke="#e7298a" stroke-width="3.0" fill="none" stroke-linecap="round" stroke-linejoin="round" class="metro-line-kamrat" data-line-id="kamrat" />
-<path d="M416.0,836.4 L491.0,836.4 Q501.0,836.4,504.8828843818462,845.6153789329151 L527.1171156181538,898.3846210670849 Q531.0,907.6,541.0,907.6 L561.0,907.6" stroke="#e7298a" stroke-width="3.0" fill="none" stroke-linecap="round" stroke-linejoin="round" class="metro-line-kamrat" data-line-id="kamrat" />
-<path d="M923.5,765.2 L931.6324257741053,765.2 Q941.6324257741053,765.2,945.1746964002033,755.8484055471015 L968.0901551480073,695.3515944528986 Q971.6324257741053,686.0,981.6324257741053,686.0 L993.5,686.0" stroke="#e7298a" stroke-width="3.0" fill="none" stroke-linecap="round" stroke-linejoin="round" class="metro-line-kamrat" data-line-id="kamrat" />
-<path d="M565.5,1113.6 L625.5,1113.6" stroke="#e7298a" stroke-width="3.0" stroke-linecap="round" class="metro-line-kamrat" data-line-id="kamrat" />
-<path d="M352.0,282.4 L402.0,282.40000000000003" stroke="#e7298a" stroke-width="3.0" stroke-linecap="round" class="metro-line-kamrat" data-line-id="kamrat" />
-<path d="M58.0,757.2 L266.0,757.2" stroke="#e7298a" stroke-width="3.0" stroke-linecap="round" class="metro-line-kamrat" data-line-id="kamrat" />
-<path d="M416.0,836.4 L647.0,836.4" stroke="#e7298a" stroke-width="3.0" stroke-linecap="round" class="metro-line-kamrat" data-line-id="kamrat" />
-<path d="M725.5,836.4 L735.4213898035009,836.4 Q745.4213898035009,836.4,749.1935323099107,827.1387397773664 L770.6492472970912,774.4612602226337 Q774.4213898035009,765.2,784.4213898035009,765.2 L923.5,765.2" stroke="#e7298a" stroke-width="3.0" fill="none" stroke-linecap="round" stroke-linejoin="round" class="metro-line-kamrat" data-line-id="kamrat" />
-<path d="M923.5,765.2 L1051.5,765.2" stroke="#e7298a" stroke-width="3.0" stroke-linecap="round" class="metro-line-kamrat" data-line-id="kamrat" />
-<path d="M66.0,1113.6 L565.5,1113.6" stroke="#e7298a" stroke-width="3.0" stroke-linecap="round" class="metro-line-kamrat" data-line-id="kamrat" />
-<path d="M402.0,282.40000000000003 L412.0,282.40000000000003" stroke="#e7298a" stroke-width="3.0" stroke-linecap="round" class="metro-line-kamrat" data-line-id="kamrat" />
-<path d="M412.0,282.40000000000003 L547.75,282.40000000000003 Q557.75,282.40000000000003,557.75,292.40000000000003 L557.75,486.70000000000005 Q557.75,496.70000000000005,547.75,496.70000000000005 L44.0,496.70000000000005 Q30.0,496.70000000000005,30.0,510.70000000000005 L30.0,743.2 Q30.0,757.2,44.0,757.2 L58.0,757.2" stroke="#e7298a" stroke-width="3.0" fill="none" stroke-linecap="round" stroke-linejoin="round" class="metro-line-kamrat" data-line-id="kamrat" />
-<path d="M647.0,836.4 L657.0,836.4" stroke="#e7298a" stroke-width="3.0" stroke-linecap="round" class="metro-line-kamrat" data-line-id="kamrat" />
-<path d="M657.0,836.4 L725.5,836.4" stroke="#e7298a" stroke-width="3.0" stroke-linecap="round" class="metro-line-kamrat" data-line-id="kamrat" />
-<path d="M1051.5,765.2 L1057.5,765.2 Q1067.5,765.2,1067.5,775.2 L1067.5,969.6000000000001 Q1067.5,979.6000000000001,1057.5,979.6000000000001 L60.0,979.6000000000001 Q34.0,979.6000000000001,34.0,1005.6000000000001 L34.0,1087.6 Q34.0,1113.6,60.0,1113.6 L66.0,1113.6" stroke="#e7298a" stroke-width="3.0" fill="none" stroke-linecap="round" stroke-linejoin="round" class="metro-line-kamrat" data-line-id="kamrat" />
-<path d="M152.0,1335.2000000000003 L204.5,1335.2000000000003 Q214.5,1335.2000000000003,218.04227062609795,1344.5515944528988 L240.95772937390205,1405.0484055471015 Q244.5,1414.4,254.5,1414.4 L274.5,1414.4" stroke="#7f7f7f" stroke-width="3.0" fill="none" stroke-linecap="round" stroke-linejoin="round" class="metro-line-check" data-line-id="check" stroke-dasharray="8,4" />
-<path d="M152.0,1264.0 L302.5,1264.0" stroke="#7f7f7f" stroke-width="3.0" stroke-linecap="round" class="metro-line-check" data-line-id="check" stroke-dasharray="8,4" />
-<path d="M302.5,1264.0 L368.5,1264.0 Q378.5,1264.0,382.2053870693875,1273.2881702539314 L404.7946129306125,1329.9118297460689 Q408.5,1339.2000000000003,418.5,1339.2000000000003 L438.5,1339.2000000000003" stroke="#7f7f7f" stroke-width="3.0" fill="none" stroke-linecap="round" stroke-linejoin="round" class="metro-line-check" data-line-id="check" stroke-dasharray="8,4" />
-<path d="M152.0,1335.2000000000003 L400.90425531914894,1335.2000000000003 M412.90425531914894,1335.2000000000003 L426.5,1335.2000000000003 Q436.5,1335.2000000000003,437.8657577575254,1325.2937037320826 L465.1342422424746,1127.5062962679176 Q466.5,1117.6,476.5,1117.6 L565.5,1117.6" stroke="#7f7f7f" stroke-width="3.0" fill="none" stroke-linecap="round" stroke-linejoin="round" class="metro-line-check" data-line-id="check" stroke-dasharray="8,4" />
-<path d="M302.5,1264.0 L426.5,1264.0 Q436.5,1264.0,438.50746559424164,1254.2035679001008 L464.49253440575836,1127.3964320998991 Q466.5,1117.6,476.5,1117.6 L565.5,1117.6" stroke="#7f7f7f" stroke-width="3.0" fill="none" stroke-linecap="round" stroke-linejoin="round" class="metro-line-check" data-line-id="check" stroke-dasharray="8,4" />
-<path d="M565.5,1117.6 L625.5,1117.6" stroke="#7f7f7f" stroke-width="3.0" stroke-linecap="round" class="metro-line-check" data-line-id="check" stroke-dasharray="8,4" />
-<path d="M783.5,911.6 L786.1404632678336,911.6 Q796.1404632678336,911.6,798.0966086053793,901.7931913744379 L824.184317930288,771.0068086255621 Q826.1404632678336,761.2,836.1404632678336,761.2 L923.5,761.2" stroke="#756bb1" stroke-width="3.0" fill="none" stroke-linecap="round" stroke-linejoin="round" class="metro-line-protein" data-line-id="protein" />
-<path d="M923.5,761.2 L928.9216171827369,761.2 Q938.9216171827369,761.2,942.6270042521244,751.9118297460686 L965.2162301133494,695.2881702539314 Q968.9216171827369,686.0,978.9216171827369,686.0 L993.5,686.0" stroke="#756bb1" stroke-width="3.0" fill="none" stroke-linecap="round" stroke-linejoin="round" class="metro-line-protein" data-line-id="protein" />
-<path d="M565.5,1109.6 L625.5,1109.6" stroke="#756bb1" stroke-width="3.0" stroke-linecap="round" class="metro-line-protein" data-line-id="protein" />
-<path d="M923.5,761.2 L1051.5,761.2" stroke="#756bb1" stroke-width="3.0" stroke-linecap="round" class="metro-line-protein" data-line-id="protein" />
-<path d="M66.0,1109.6 L565.5,1109.6" stroke="#756bb1" stroke-width="3.0" stroke-linecap="round" class="metro-line-protein" data-line-id="protein" />
-<path d="M1051.5,761.2 L1057.5,761.2 Q1071.5,761.2,1071.5,775.2 L1071.5,969.6000000000001 Q1071.5,983.6000000000001,1057.5,983.6000000000001 L60.0,983.6000000000001 Q38.0,983.6000000000001,38.0,1005.6000000000001 L38.0,1087.6 Q38.0,1109.6,60.0,1109.6 L66.0,1109.6" stroke="#756bb1" stroke-width="3.0" fill="none" stroke-linecap="round" stroke-linejoin="round" class="metro-line-protein" data-line-id="protein" />
-<path d="M116.0,203.20000000000005 L256.0,203.20000000000005" stroke="#e6550d" stroke-width="3.0" stroke-linecap="round" class="metro-line-dekupl" data-line-id="dekupl" />
-<path d="M256.0,203.20000000000005 L288.1445957043158,203.20000000000005 Q298.1445957043158,203.20000000000005,301.84998277370335,212.48817025393143 L324.43920863492826,269.11182974606857 Q328.1445957043158,278.4,338.1445957043158,278.4 L352.0,278.4" stroke="#e6550d" stroke-width="3.0" fill="none" stroke-linecap="round" stroke-linejoin="round" class="metro-line-dekupl" data-line-id="dekupl" />
-<path d="M116.0,278.40000000000003 L118.71080859136845,278.40000000000003 Q128.71080859136845,278.40000000000003,132.41619566075596,287.6881702539314 L155.00542152198094,344.3118297460686 Q158.71080859136845,353.6,168.71080859136845,353.6 L256.0,353.6" stroke="#e6550d" stroke-width="3.0" fill="none" stroke-linecap="round" stroke-linejoin="round" class="metro-line-dekupl" data-line-id="dekupl" />
-<path d="M116.0,353.6 L256.0,353.6" stroke="#e6550d" stroke-width="3.0" stroke-linecap="round" class="metro-line-dekupl" data-line-id="dekupl" />
-<path d="M256.0,353.6 L290.8554042956842,353.6 Q300.8554042956842,353.6,304.56079136507174,344.3118297460686 L327.15001722629665,287.6881702539314 Q330.8554042956842,278.4,340.8554042956842,278.4 L352.0,278.4" stroke="#e6550d" stroke-width="3.0" fill="none" stroke-linecap="round" stroke-linejoin="round" class="metro-line-dekupl" data-line-id="dekupl" />
-<path d="M116.0,678.0 L137.35540429568422,678.0 Q147.35540429568422,678.0,151.06079136507174,687.2881702539314 L173.6500172262967,743.9118297460686 Q177.35540429568422,753.2,187.35540429568422,753.2 L266.0,753.2" stroke="#e6550d" stroke-width="3.0" fill="none" stroke-linecap="round" stroke-linejoin="round" class="metro-line-dekupl" data-line-id="dekupl" />
-<path d="M266.0,753.2 L333.0,753.2 Q343.0,753.2,343.0,763.2 L343.0,896.6000000000001 Q343.0,903.6000000000001,336.0,903.6000000000001 L336.0,903.6000000000001" stroke="#e6550d" stroke-width="3.0" fill="none" stroke-linecap="round" stroke-linejoin="round" class="metro-line-dekupl" data-line-id="dekupl" />
-<path d="M923.5,757.2 L926.2108085913684,757.2 Q936.2108085913684,757.2,939.9161956607559,747.9118297460686 L962.5054215219809,691.2881702539314 Q966.2108085913684,682.0,976.2108085913684,682.0 L993.5,682.0" stroke="#e6550d" stroke-width="3.0" fill="none" stroke-linecap="round" stroke-linejoin="round" class="metro-line-dekupl" data-line-id="dekupl" />
-<path d="M565.5,1105.6 L625.5,1105.6" stroke="#e6550d" stroke-width="3.0" stroke-linecap="round" class="metro-line-dekupl" data-line-id="dekupl" />
-<path d="M352.0,278.4 L402.0,278.40000000000003" stroke="#e6550d" stroke-width="3.0" stroke-linecap="round" class="metro-line-dekupl" data-line-id="dekupl" />
-<path d="M58.0,753.2 L266.0,753.2" stroke="#e6550d" stroke-width="3.0" stroke-linecap="round" class="metro-line-dekupl" data-line-id="dekupl" />
-<path d="M725.5,832.4 L728.8595367321664,832.4 Q738.8595367321664,832.4,742.4576402399232,823.0697453867824 L764.2614332244095,766.5302546132176 Q767.8595367321664,757.2,777.8595367321664,757.2 L923.5,757.2" stroke="#e6550d" stroke-width="3.0" fill="none" stroke-linecap="round" stroke-linejoin="round" class="metro-line-dekupl" data-line-id="dekupl" />
-<path d="M66.0,1105.6 L67.49670319482703,1105.6 Q77.49670319482703,1105.6,78.81488655996876,1115.5127389058657 L106.17851982968531,1321.2872610941345 Q107.49670319482703,1331.2000000000003,117.49670319482703,1331.2000000000003 L152.0,1331.2000000000003" stroke="#e6550d" stroke-width="3.0" fill="none" stroke-linecap="round" stroke-linejoin="round" class="metro-line-dekupl" data-line-id="dekupl" />
-<path d="M923.5,757.2 L1051.5,757.2" stroke="#e6550d" stroke-width="3.0" stroke-linecap="round" class="metro-line-dekupl" data-line-id="dekupl" />
-<path d="M66.0,1105.6 L565.5,1105.6" stroke="#e6550d" stroke-width="3.0" stroke-linecap="round" class="metro-line-dekupl" data-line-id="dekupl" />
-<path d="M402.0,278.40000000000003 L412.0,278.40000000000003" stroke="#e6550d" stroke-width="3.0" stroke-linecap="round" class="metro-line-dekupl" data-line-id="dekupl" />
-<path d="M412.0,278.40000000000003 L547.75,278.40000000000003 Q561.75,278.40000000000003,561.75,292.40000000000003 L561.75,486.70000000000005 Q561.75,500.70000000000005,547.75,500.70000000000005 L44.0,500.70000000000005 Q34.0,500.70000000000005,34.0,510.70000000000005 L34.0,743.2 Q34.0,753.2,44.0,753.2 L58.0,753.2" stroke="#e6550d" stroke-width="3.0" fill="none" stroke-linecap="round" stroke-linejoin="round" class="metro-line-dekupl" data-line-id="dekupl" />
-<path d="M647.0,832.4 L657.0,832.4" stroke="#e6550d" stroke-width="3.0" stroke-linecap="round" class="metro-line-dekupl" data-line-id="dekupl" />
-<path d="M657.0,832.4 L725.5,832.4" stroke="#e6550d" stroke-width="3.0" stroke-linecap="round" class="metro-line-dekupl" data-line-id="dekupl" />
-<path d="M657.0,832.4 L674.25,832.4 Q688.25,832.4,688.25,846.4 L688.25,969.6000000000001 Q688.25,987.6000000000001,670.25,987.6000000000001 L60.0,987.6000000000001 Q42.0,987.6000000000001,42.0,1005.6000000000001 L42.0,1087.6 Q42.0,1105.6,60.0,1105.6 L66.0,1105.6" stroke="#e6550d" stroke-width="3.0" fill="none" stroke-linecap="round" stroke-linejoin="round" class="metro-line-dekupl" data-line-id="dekupl" />
-<path d="M1051.5,757.2 L1057.5,757.2 Q1075.5,757.2,1075.5,775.2 L1075.5,969.6000000000001 Q1075.5,987.6000000000001,1057.5,987.6000000000001 L60.0,987.6000000000001 Q42.0,987.6000000000001,42.0,1005.6000000000001 L42.0,1087.6 Q42.0,1105.6,60.0,1105.6 L66.0,1105.6" stroke="#e6550d" stroke-width="3.0" fill="none" stroke-linecap="round" stroke-linejoin="round" class="metro-line-dekupl" data-line-id="dekupl" />
-<path d="M266.0,753.2 L416.0,753.2" stroke="#e6550d" stroke-width="3.0" stroke-linecap="round" class="metro-line-dekupl" data-line-id="dekupl" />
-<path d="M416.0,753.2 L426.0,753.2 Q436.0,753.2,439.54227062609795,762.5515944528986 L462.45772937390205,823.0484055471014 Q466.0,832.4,476.0,832.4 L647.0,832.4" stroke="#e6550d" stroke-width="3.0" fill="none" stroke-linecap="round" stroke-linejoin="round" class="metro-line-dekupl" data-line-id="dekupl" />
-<path d="M116.0,199.20000000000005 L256.0,199.20000000000005" stroke="#2db572" stroke-width="3.0" stroke-linecap="round" class="metro-line-counts" data-line-id="counts" />
-<path d="M256.0,199.20000000000005 L290.8554042956842,199.20000000000005 Q300.8554042956842,199.20000000000005,304.56079136507174,208.48817025393143 L327.15001722629665,265.11182974606857 Q330.8554042956842,274.4,340.8554042956842,274.4 L352.0,274.4" stroke="#2db572" stroke-width="3.0" fill="none" stroke-linecap="round" stroke-linejoin="round" class="metro-line-counts" data-line-id="counts" />
-<path d="M116.0,274.40000000000003 L121.42161718273687,274.40000000000003 Q131.42161718273687,274.40000000000003,135.12700425212438,283.6881702539314 L157.71623011334935,340.3118297460686 Q161.42161718273687,349.6,171.42161718273687,349.6 L256.0,349.6" stroke="#2db572" stroke-width="3.0" fill="none" stroke-linecap="round" stroke-linejoin="round" class="metro-line-counts" data-line-id="counts" />
-<path d="M116.0,349.6 L256.0,349.6" stroke="#2db572" stroke-width="3.0" stroke-linecap="round" class="metro-line-counts" data-line-id="counts" />
-<path d="M256.0,349.6 L288.1445957043158,349.6 Q298.1445957043158,349.6,301.84998277370335,340.3118297460686 L324.43920863492826,283.6881702539314 Q328.1445957043158,274.4,338.1445957043158,274.4 L352.0,274.4" stroke="#2db572" stroke-width="3.0" fill="none" stroke-linecap="round" stroke-linejoin="round" class="metro-line-counts" data-line-id="counts" />
-<path d="M783.5,199.2 L841.1445957043157,199.2 Q851.1445957043157,199.2,854.8499827737032,208.48817025393137 L877.4392086349283,265.1118297460687 Q881.1445957043157,274.40000000000003,891.1445957043157,274.40000000000003 L941.0,274.40000000000003" stroke="#2db572" stroke-width="3.0" fill="none" stroke-linecap="round" stroke-linejoin="round" class="metro-line-counts" data-line-id="counts" />
-<path d="M941.0,274.40000000000003 L986.7891914086315,274.40000000000003 Q996.7891914086315,274.40000000000003,998.7453367461771,284.2068086255621 L1024.8330460710858,414.99319137443797 Q1026.7891914086315,424.8,1036.7891914086315,424.8 L1098.5,424.8" stroke="#2db572" stroke-width="3.0" fill="none" stroke-linecap="round" stroke-linejoin="round" class="metro-line-counts" data-line-id="counts" />
-<path d="M1098.5,424.8 L1151.0,424.8 Q1161.0,424.8,1164.7053870693876,434.08817025393137 L1187.2946129306124,490.7118297460686 Q1191.0,500.0,1201.0,500.0 L1221.0,500.0" stroke="#2db572" stroke-width="3.0" fill="none" stroke-linecap="round" stroke-linejoin="round" class="metro-line-counts" data-line-id="counts" />
-<path d="M565.5,1101.6 L625.5,1101.6" stroke="#2db572" stroke-width="3.0" stroke-linecap="round" class="metro-line-counts" data-line-id="counts" />
-<path d="M352.0,274.4 L402.0,274.40000000000003" stroke="#2db572" stroke-width="3.0" stroke-linecap="round" class="metro-line-counts" data-line-id="counts" />
-<path d="M725.5,274.40000000000003 L941.0,274.40000000000003" stroke="#2db572" stroke-width="3.0" stroke-linecap="round" class="metro-line-counts" data-line-id="counts" />
-<path d="M1098.5,424.8 L1252.0,424.8 Q1262.0,424.8,1264.570227035097,415.1359463480351 L1289.429772964903,321.6640536519649 Q1292.0,312.0,1302.0,312.0 L1307.0,312.0" stroke="#2db572" stroke-width="3.0" fill="none" stroke-linecap="round" stroke-linejoin="round" class="metro-line-counts" data-line-id="counts" />
-<path d="M66.0,1101.6 L71.0,1101.6 Q81.0,1101.6,82.31818336514172,1111.5127389058657 L109.68181663485828,1317.2872610941345 Q111.0,1327.2000000000003,121.0,1327.2000000000003 L152.0,1327.2000000000003" stroke="#2db572" stroke-width="3.0" fill="none" stroke-linecap="round" stroke-linejoin="round" class="metro-line-counts" data-line-id="counts" />
-<path d="M66.0,1101.6 L565.5,1101.6" stroke="#2db572" stroke-width="3.0" stroke-linecap="round" class="metro-line-counts" data-line-id="counts" />
-<path d="M402.0,274.40000000000003 L412.0,274.40000000000003" stroke="#2db572" stroke-width="3.0" stroke-linecap="round" class="metro-line-counts" data-line-id="counts" />
-<path d="M412.0,274.40000000000003 L725.5,274.40000000000003" stroke="#2db572" stroke-width="3.0" stroke-linecap="round" class="metro-line-counts" data-line-id="counts" />
-<path d="M1307.0,312.0 L1317.0,312.0" stroke="#2db572" stroke-width="3.0" stroke-linecap="round" class="metro-line-counts" data-line-id="counts" />
-<path d="M1317.0,312.0 L1323.0,312.0 Q1333.0,312.0,1333.0,322.0 L1333.0,981.6000000000001 Q1333.0,991.6000000000001,1323.0,991.6000000000001 L60.0,991.6000000000001 Q46.0,991.6000000000001,46.0,1005.6000000000001 L46.0,1087.6 Q46.0,1101.6,60.0,1101.6 L66.0,1101.6" stroke="#2db572" stroke-width="3.0" fill="none" stroke-linecap="round" stroke-linejoin="round" class="metro-line-counts" data-line-id="counts" />
-<path d="M116.0,195.20000000000005 L256.0,195.20000000000005" stroke="#0570b0" stroke-width="3.0" stroke-linecap="round" class="metro-line-splash" data-line-id="splash" />
-<path d="M256.0,195.20000000000005 L293.56621288705264,195.20000000000005 Q303.56621288705264,195.20000000000005,307.2715999564402,204.48817025393143 L329.8608258176651,261.11182974606857 Q333.56621288705264,270.4,343.56621288705264,270.4 L352.0,270.4" stroke="#0570b0" stroke-width="3.0" fill="none" stroke-linecap="round" stroke-linejoin="round" class="metro-line-splash" data-line-id="splash" />
-<path d="M116.0,270.40000000000003 L124.13242577410531,270.40000000000003 Q134.13242577410531,270.40000000000003,137.83781284349283,279.6881702539314 L160.4270387047178,336.3118297460686 Q164.13242577410531,345.6,174.13242577410531,345.6 L256.0,345.6" stroke="#0570b0" stroke-width="3.0" fill="none" stroke-linecap="round" stroke-linejoin="round" class="metro-line-splash" data-line-id="splash" />
-<path d="M116.0,345.6 L256.0,345.6" stroke="#0570b0" stroke-width="3.0" stroke-linecap="round" class="metro-line-splash" data-line-id="splash" />
-<path d="M256.0,345.6 L285.43378711294736,345.6 Q295.43378711294736,345.6,299.1391741823349,336.3118297460686 L321.7284000435598,279.6881702539314 Q325.43378711294736,270.4,335.43378711294736,270.4 L352.0,270.4" stroke="#0570b0" stroke-width="3.0" fill="none" stroke-linecap="round" stroke-linejoin="round" class="metro-line-splash" data-line-id="splash" />
-<path d="M783.5,195.2 L843.8554042956843,195.2 Q853.8554042956843,195.2,857.5607913650717,204.48817025393137 L880.1500172262968,261.1118297460687 Q883.8554042956843,270.40000000000003,893.8554042956843,270.40000000000003 L941.0,270.40000000000003" stroke="#0570b0" stroke-width="3.0" fill="none" stroke-linecap="round" stroke-linejoin="round" class="metro-line-splash" data-line-id="splash" />
-<path d="M941.0,270.40000000000003 L989.5,270.40000000000003 Q999.5,270.40000000000003,1003.2053870693875,261.1118297460687 L1025.7946129306124,204.48817025393137 Q1029.5,195.2,1039.5,195.2 L1098.5,195.2" stroke="#0570b0" stroke-width="3.0" fill="none" stroke-linecap="round" stroke-linejoin="round" class="metro-line-splash" data-line-id="splash" />
-<path d="M941.0,270.40000000000003 L993.5,270.40000000000003 Q1003.5,270.40000000000003,1007.2053870693875,279.6881702539314 L1029.7946129306124,336.3118297460686 Q1033.5,345.6,1043.5,345.6 L1063.5,345.6" stroke="#0570b0" stroke-width="3.0" fill="none" stroke-linecap="round" stroke-linejoin="round" class="metro-line-splash" data-line-id="splash" />
-<path d="M1098.5,195.2 L1098.5,195.2 Q1108.5,195.2,1112.2053870693876,185.9118297460686 L1134.7946129306124,129.28817025393136 Q1138.5,119.99999999999999,1148.5,119.99999999999999 L1168.5,119.99999999999999" stroke="#0570b0" stroke-width="3.0" fill="none" stroke-linecap="round" stroke-linejoin="round" class="metro-line-splash" data-line-id="splash" />
-<path d="M923.5,753.2 L923.5,753.2 Q933.5,753.2,937.2053870693875,743.9118297460686 L959.7946129306125,687.2881702539314 Q963.5,678.0,973.5,678.0 L993.5,678.0" stroke="#0570b0" stroke-width="3.0" fill="none" stroke-linecap="round" stroke-linejoin="round" class="metro-line-splash" data-line-id="splash" />
-<path d="M565.5,1097.6 L625.5,1097.6" stroke="#0570b0" stroke-width="3.0" stroke-linecap="round" class="metro-line-splash" data-line-id="splash" />
-<path d="M352.0,270.4 L402.0,270.40000000000003" stroke="#0570b0" stroke-width="3.0" stroke-linecap="round" class="metro-line-splash" data-line-id="splash" />
-<path d="M725.5,270.40000000000003 L941.0,270.40000000000003" stroke="#0570b0" stroke-width="3.0" stroke-linecap="round" class="metro-line-splash" data-line-id="splash" />
-<path d="M1098.5,195.2 L1252.0,195.2 Q1262.0,195.2,1264.570227035097,204.8640536519649 L1289.429772964903,298.3359463480351 Q1292.0,308.0,1302.0,308.0 L1307.0,308.0" stroke="#0570b0" stroke-width="3.0" fill="none" stroke-linecap="round" stroke-linejoin="round" class="metro-line-splash" data-line-id="splash" />
-<path d="M725.5,828.4 L725.5786101964991,828.4 Q735.5786101964991,828.4,739.1767137042559,819.0697453867824 L760.9805066887423,762.5302546132176 Q764.5786101964991,753.2,774.5786101964991,753.2 L923.5,753.2" stroke="#0570b0" stroke-width="3.0" fill="none" stroke-linecap="round" stroke-linejoin="round" class="metro-line-splash" data-line-id="splash" />
-<path d="M66.0,1097.6 L74.50329680517297,1097.6 Q84.50329680517297,1097.6,85.82148017031469,1107.5127389058657 L113.18511344003124,1313.2872610941345 Q114.50329680517297,1323.2000000000003,124.50329680517297,1323.2000000000003 L152.0,1323.2000000000003" stroke="#0570b0" stroke-width="3.0" fill="none" stroke-linecap="round" stroke-linejoin="round" class="metro-line-splash" data-line-id="splash" />
-<path d="M923.5,753.2 L1051.5,753.2" stroke="#0570b0" stroke-width="3.0" stroke-linecap="round" class="metro-line-splash" data-line-id="splash" />
-<path d="M66.0,1097.6 L565.5,1097.6" stroke="#0570b0" stroke-width="3.0" stroke-linecap="round" class="metro-line-splash" data-line-id="splash" />
-<path d="M402.0,270.40000000000003 L412.0,270.40000000000003" stroke="#0570b0" stroke-width="3.0" stroke-linecap="round" class="metro-line-splash" data-line-id="splash" />
-<path d="M412.0,270.40000000000003 L725.5,270.40000000000003" stroke="#0570b0" stroke-width="3.0" stroke-linecap="round" class="metro-line-splash" data-line-id="splash" />
-<path d="M1307.0,308.0 L1317.0,308.0" stroke="#0570b0" stroke-width="3.0" stroke-linecap="round" class="metro-line-splash" data-line-id="splash" />
-<path d="M1317.0,308.0 L1323.0,308.0 Q1337.0,308.0,1337.0,322.0 L1337.0,562.0 Q1337.0,576.0,1323.0,576.0 L719.5,576.0 Q709.5,576.0,709.5,586.0 L709.5,818.4 Q709.5,828.4,719.5,828.4 L725.5,828.4" stroke="#0570b0" stroke-width="3.0" fill="none" stroke-linecap="round" stroke-linejoin="round" class="metro-line-splash" data-line-id="splash" />
-<path d="M1317.0,308.0 L1323.0,308.0 Q1337.0,308.0,1337.0,322.0 L1337.0,981.6000000000001 Q1337.0,995.6000000000001,1323.0,995.6000000000001 L60.0,995.6000000000001 Q50.0,995.6000000000001,50.0,1005.6000000000001 L50.0,1087.6 Q50.0,1097.6,60.0,1097.6 L66.0,1097.6" stroke="#0570b0" stroke-width="3.0" fill="none" stroke-linecap="round" stroke-linejoin="round" class="metro-line-splash" data-line-id="splash" />
-<path d="M1051.5,753.2 L1057.5,753.2 Q1079.5,753.2,1079.5,775.2 L1079.5,969.6000000000001 Q1079.5,995.6000000000001,1053.5,995.6000000000001 L60.0,995.6000000000001 Q50.0,995.6000000000001,50.0,1005.6000000000001 L50.0,1087.6 Q50.0,1097.6,60.0,1097.6 L66.0,1097.6" stroke="#0570b0" stroke-width="3.0" fill="none" stroke-linecap="round" stroke-linejoin="round" class="metro-line-splash" data-line-id="splash" />
-<path d="M941.0,270.40000000000003 L1038.5,270.40000000000003 Q1048.5,270.40000000000003,1052.2053870693876,279.6881702539314 L1074.7946129306124,336.3118297460686 Q1078.5,345.6,1088.5,345.6 L1098.5,345.6" stroke="#0570b0" stroke-width="3.0" fill="none" stroke-linecap="round" stroke-linejoin="round" class="metro-line-splash" data-line-id="splash" />
-<path d="M1098.5,345.6 L1108.5,345.6 Q1118.5,345.6,1124.736804062602,337.7832055748721 L1142.263195937398,315.8167944251279 Q1148.5,308.0,1158.5,308.0 L1307.0,308.0" stroke="#0570b0" stroke-width="3.0" fill="none" stroke-linecap="round" stroke-linejoin="round" class="metro-line-splash" data-line-id="splash" />
-<g class="nf-metro-station-group" data-node-id="reads_in" data-node-cx="116.0" data-node-cy="201.2" data-node-r="5.0" data-node-groups="counts,dekupl,kamrat,splash" data-node-region="reads" data-node-w="10.0" data-node-h="22.0" data-node-rx="5.0">
-<rect x="111.0" y="190.20000000000005" width="10.0" height="22.0" fill="#ffffff" stroke="#333333" stroke-width="1.5" class="nf-metro-station" data-station-id="reads_in" data-station-lines="counts,dekupl,kamrat,splash" data-station-label="reads_in" data-section-id="reads" data-section-name="Reads" />
-<g data-station-id="reads_in">
-<path d="M74.8,181.00000000000006 L92.8,181.00000000000006 L100.8,189.00000000000006 L100.8,211.00000000000006 Q100.8,213.00000000000006,98.8,213.00000000000006 L74.8,213.00000000000006 Q72.8,213.00000000000006,72.8,211.00000000000006 L72.8,183.00000000000006 Q72.8,181.00000000000006,74.8,181.00000000000006 Z" fill="#ffffff" stroke="#333333" stroke-width="1.5" stroke-linejoin="round" />
-<path d="M92.8,181.00000000000006 L92.8,189.00000000000006 L100.8,189.00000000000006 Z" fill="#333333" opacity="0.15" stroke="none" />
-<path d="M92.8,181.00000000000006 L92.8,189.00000000000006 L100.8,189.00000000000006" fill="none" stroke="#333333" stroke-width="0.8999999999999999" />
-<path d="M79.0,185.20000000000005 L97.0,185.20000000000005 L105.0,193.20000000000005 L105.0,215.20000000000005 Q105.0,217.20000000000005,103.0,217.20000000000005 L79.0,217.20000000000005 Q77.0,217.20000000000005,77.0,215.20000000000005 L77.0,187.20000000000005 Q77.0,185.20000000000005,79.0,185.20000000000005 Z" fill="#ffffff" stroke="#333333" stroke-width="1.5" stroke-linejoin="round" />
-<path d="M97.0,185.20000000000005 L97.0,193.20000000000005 L105.0,193.20000000000005 Z" fill="#333333" opacity="0.15" stroke="none" />
-<path d="M97.0,185.20000000000005 L97.0,193.20000000000005 L105.0,193.20000000000005" fill="none" stroke="#333333" stroke-width="0.8999999999999999" />
-<text x="91.0" y="202.40000000000003" font-size="4.791666666666667" fill="#000000" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-weight="bold" text-anchor="middle" dy="0.3em">FASTQ.GZ</text>
-<text x="94.32" y="221.20000000000005" font-size="7.8" fill="#333333" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-weight="bold" text-anchor="middle" dominant-baseline="hanging" class="nf-metro-station-label"><tspan x="94.32" dy="0em">64 runs, 47 used</tspan><tspan x="94.32" dy="1em">78 GB</tspan></text>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 540" width="1200" height="540" font-family="Arial, Helvetica, sans-serif">
+<rect width="1200" height="540" fill="#ffffff"/>
+<text x="20" y="28" font-size="15" font-weight="bold" text-anchor="start" fill="#222">Botryllus electrical stimulation (PEC), notebook 361: Nextflow pipeline nextflow-runs/pec-domen2026</text>
+<line x1="20" y1="52" x2="46" y2="52" stroke="#0570b0" stroke-width="5"/>
+<text x="52" y="56" font-size="11.5" font-weight="normal" text-anchor="start" fill="#222">SPLASH anchors</text>
+<line x1="162.2" y1="52" x2="188.2" y2="52" stroke="#2db572" stroke-width="5"/>
+<text x="194.2" y="56" font-size="11.5" font-weight="normal" text-anchor="start" fill="#222">anchor counts, PyDESeq2</text>
+<line x1="361.1" y1="52" x2="387.1" y2="52" stroke="#e6550d" stroke-width="5"/>
+<text x="393.1" y="56" font-size="11.5" font-weight="normal" text-anchor="start" fill="#222">DE-kupl k-mers, limma</text>
+<line x1="547.4" y1="52" x2="573.4" y2="52" stroke="#e7298a" stroke-width="5"/>
+<text x="579.4" y="56" font-size="11.5" font-weight="normal" text-anchor="start" fill="#222">KaMRaT contigs, t-test</text>
+<line x1="740.0" y1="52" x2="766.0" y2="52" stroke="#756bb1" stroke-width="5"/>
+<text x="772.0" y="56" font-size="11.5" font-weight="normal" text-anchor="start" fill="#222">protein search hits</text>
+<line x1="913.7" y1="52" x2="939.7" y2="52" stroke="#7f7f7f" stroke-width="5" stroke-dasharray="7 4"/>
+<text x="945.7" y="56" font-size="11.5" font-weight="normal" text-anchor="start" fill="#222">known answers: control, paper gene lists</text>
+<rect x="20" y="67" width="12" height="14" rx="6" fill="#fff" stroke="#222" stroke-width="2"/>
+<text x="38" y="78" font-size="11.5" font-weight="normal" text-anchor="start" fill="#222">step (white mark across the lines it reads)</text>
+<path d="M320,66 h9 l4,4 v12 h-13 z" fill="#fff" stroke="#222" stroke-width="1.2"/>
+<text x="340" y="78" font-size="11.5" font-weight="normal" text-anchor="start" fill="#222">file, with its type and what it holds; thin grey link = read or written by the step</text>
+<rect x="20" y="92" width="260" height="418" rx="8" fill="#f3f3f3"/>
+<circle cx="34" cy="108" r="9" fill="#333"/>
+<text x="34" y="112" font-size="11" font-weight="bold" text-anchor="middle" fill="#fff">1</text>
+<text x="48" y="112" font-size="12.5" font-weight="bold" text-anchor="start" fill="#444">Reads</text>
+<rect x="290" y="92" width="300" height="418" rx="8" fill="#f3f3f3"/>
+<circle cx="304" cy="108" r="9" fill="#333"/>
+<text x="304" y="112" font-size="11" font-weight="bold" text-anchor="middle" fill="#fff">2</text>
+<text x="318" y="112" font-size="12.5" font-weight="bold" text-anchor="start" fill="#444">Find changed sequences, PEC vs control</text>
+<rect x="600" y="92" width="280" height="418" rx="8" fill="#f3f3f3"/>
+<circle cx="614" cy="108" r="9" fill="#333"/>
+<text x="614" y="112" font-size="11" font-weight="bold" text-anchor="middle" fill="#fff">3</text>
+<text x="628" y="112" font-size="12.5" font-weight="bold" text-anchor="start" fill="#444">Search proteins; score the control</text>
+<rect x="890" y="92" width="290" height="418" rx="8" fill="#f3f3f3"/>
+<circle cx="904" cy="108" r="9" fill="#333"/>
+<text x="904" y="112" font-size="11" font-weight="bold" text-anchor="middle" fill="#fff">4</text>
+<text x="918" y="112" font-size="12.5" font-weight="bold" text-anchor="start" fill="#444">Paper gene lists, notebook</text>
+<g transform="translate(0,45)">
+<line x1="62" y1="150" x2="140" y2="150" stroke="#999" stroke-width="1.3"/>
+<line x1="62" y1="262" x2="140" y2="300" stroke="#999" stroke-width="1.3"/>
+<line x1="62" y1="330" x2="140" y2="300" stroke="#999" stroke-width="1.3"/>
+<line x1="390" y1="148" x2="390" y2="236" stroke="#999" stroke-width="1.3"/>
+<line x1="390" y1="266" x2="390" y2="352" stroke="#999" stroke-width="1.3"/>
+<line x1="680" y1="210" x2="740" y2="154" stroke="#999" stroke-width="1.3"/>
+<line x1="820" y1="100" x2="748" y2="124" stroke="#999" stroke-width="1.3"/>
+<text x="846" y="98" font-size="10" font-weight="normal" text-anchor="start" fill="#444">3 protein</text>
+<text x="846" y="110" font-size="10" font-weight="normal" text-anchor="start" fill="#444">indexes</text>
+<line x1="800" y1="410" x2="744" y2="352" stroke="#999" stroke-width="1.3"/>
+<line x1="920" y1="380" x2="1000" y2="380" stroke="#999" stroke-width="1.3"/>
+<line x1="1100" y1="230" x2="1006" y2="230" stroke="#999" stroke-width="1.3"/>
+<path d="M140.0,139.5 L177.7,139.5 Q191.7,139.5 197.6,152.2 L221.8,203.9 Q226.7,214.5 238.3,214.5 L250.0,214.5" fill="none" stroke="#fff" stroke-width="8.5" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M140.0,139.5 L177.7,139.5 Q191.7,139.5 197.6,152.2 L221.8,203.9 Q226.7,214.5 238.3,214.5 L250.0,214.5" fill="none" stroke="#0570b0" stroke-width="4.5" stroke-linejoin="round"/>
+<path d="M140.0,289.5 L164.3,289.5 Q178.3,289.5 184.2,276.8 L207.4,227.2 Q213.3,214.5 227.3,214.5 L250.0,214.5" fill="none" stroke="#fff" stroke-width="8.5" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M140.0,289.5 L164.3,289.5 Q178.3,289.5 184.2,276.8 L207.4,227.2 Q213.3,214.5 227.3,214.5 L250.0,214.5" fill="none" stroke="#0570b0" stroke-width="4.5" stroke-linejoin="round"/>
+<path d="M140.0,146.5 L173.2,146.5 Q187.2,146.5 193.1,159.2 L216.4,208.9 Q222.2,221.5 236.1,221.5 L250.0,221.5" fill="none" stroke="#fff" stroke-width="8.5" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M140.0,146.5 L173.2,146.5 Q187.2,146.5 193.1,159.2 L216.4,208.9 Q222.2,221.5 236.1,221.5 L250.0,221.5" fill="none" stroke="#2db572" stroke-width="4.5" stroke-linejoin="round"/>
+<path d="M140.0,296.5 L168.8,296.5 Q182.8,296.5 188.7,283.8 L211.9,234.2 Q217.8,221.5 231.8,221.5 L250.0,221.5" fill="none" stroke="#fff" stroke-width="8.5" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M140.0,296.5 L168.8,296.5 Q182.8,296.5 188.7,283.8 L211.9,234.2 Q217.8,221.5 231.8,221.5 L250.0,221.5" fill="none" stroke="#2db572" stroke-width="4.5" stroke-linejoin="round"/>
+<path d="M140.0,153.5 L168.8,153.5 Q182.8,153.5 188.7,166.2 L211.9,215.8 Q217.8,228.5 231.8,228.5 L250.0,228.5" fill="none" stroke="#fff" stroke-width="8.5" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M140.0,153.5 L168.8,153.5 Q182.8,153.5 188.7,166.2 L211.9,215.8 Q217.8,228.5 231.8,228.5 L250.0,228.5" fill="none" stroke="#e6550d" stroke-width="4.5" stroke-linejoin="round"/>
+<path d="M140.0,303.5 L173.2,303.5 Q187.2,303.5 193.1,290.8 L216.4,241.1 Q222.2,228.5 236.1,228.5 L250.0,228.5" fill="none" stroke="#fff" stroke-width="8.5" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M140.0,303.5 L173.2,303.5 Q187.2,303.5 193.1,290.8 L216.4,241.1 Q222.2,228.5 236.1,228.5 L250.0,228.5" fill="none" stroke="#e6550d" stroke-width="4.5" stroke-linejoin="round"/>
+<path d="M140.0,160.5 L164.3,160.5 Q178.3,160.5 184.2,173.2 L207.4,222.8 Q213.3,235.5 227.3,235.5 L250.0,235.5" fill="none" stroke="#fff" stroke-width="8.5" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M140.0,160.5 L164.3,160.5 Q178.3,160.5 184.2,173.2 L207.4,222.8 Q213.3,235.5 227.3,235.5 L250.0,235.5" fill="none" stroke="#e7298a" stroke-width="4.5" stroke-linejoin="round"/>
+<path d="M140.0,310.5 L177.7,310.5 Q191.7,310.5 197.6,297.8 L221.8,246.1 Q226.7,235.5 238.3,235.5 L250.0,235.5" fill="none" stroke="#fff" stroke-width="8.5" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M140.0,310.5 L177.7,310.5 Q191.7,310.5 197.6,297.8 L221.8,246.1 Q226.7,235.5 238.3,235.5 L250.0,235.5" fill="none" stroke="#e7298a" stroke-width="4.5" stroke-linejoin="round"/>
+<path d="M250.0,214.5 L273.9,214.5 Q287.9,214.5 294.2,202.0 L321.5,149.0 Q327.9,136.5 341.9,136.5 L390.0,136.5" fill="none" stroke="#fff" stroke-width="8.5" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M250.0,214.5 L273.9,214.5 Q287.9,214.5 294.2,202.0 L321.5,149.0 Q327.9,136.5 341.9,136.5 L390.0,136.5" fill="none" stroke="#0570b0" stroke-width="4.5" stroke-linejoin="round"/>
+<path d="M250.0,221.5 L278.1,221.5 Q292.1,221.5 298.5,209.0 L325.8,156.0 Q332.1,143.5 346.1,143.5 L390.0,143.5" fill="none" stroke="#fff" stroke-width="8.5" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M250.0,221.5 L278.1,221.5 Q292.1,221.5 298.5,209.0 L325.8,156.0 Q332.1,143.5 346.1,143.5 L390.0,143.5" fill="none" stroke="#2db572" stroke-width="4.5" stroke-linejoin="round"/>
+<path d="M250.0,228.5 L278.6,228.5 Q292.6,228.5 296.7,241.9 L328.4,343.1 Q332.6,356.5 346.6,356.5 L390.0,356.5" fill="none" stroke="#fff" stroke-width="8.5" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M250.0,228.5 L278.6,228.5 Q292.6,228.5 296.7,241.9 L328.4,343.1 Q332.6,356.5 346.6,356.5 L390.0,356.5" fill="none" stroke="#e6550d" stroke-width="4.5" stroke-linejoin="round"/>
+<path d="M250.0,235.5 L273.4,235.5 Q287.4,235.5 291.6,248.9 L323.3,350.1 Q327.4,363.5 341.4,363.5 L390.0,363.5" fill="none" stroke="#fff" stroke-width="8.5" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M250.0,235.5 L273.4,235.5 Q287.4,235.5 291.6,248.9 L323.3,350.1 Q327.4,363.5 341.4,363.5 L390.0,363.5" fill="none" stroke="#e7298a" stroke-width="4.5" stroke-linejoin="round"/>
+<path d="M390.0,136.5 L426.0,136.5 Q440.0,136.5 448.7,125.5 L456.3,116.0 Q465.0,105.0 479.0,105.0 L586.0,105.0 Q600.0,105.0 609.8,115.0 L620.2,125.5 Q630.0,135.5 644.0,135.5 L740.0,135.5" fill="none" stroke="#fff" stroke-width="8.5" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M390.0,136.5 L426.0,136.5 Q440.0,136.5 448.7,125.5 L456.3,116.0 Q465.0,105.0 479.0,105.0 L586.0,105.0 Q600.0,105.0 609.8,115.0 L620.2,125.5 Q630.0,135.5 644.0,135.5 L740.0,135.5" fill="none" stroke="#0570b0" stroke-width="4.5" stroke-linejoin="round"/>
+<path d="M390.0,136.5 L556.0,136.5 Q570.0,136.5 570.0,150.5 L570.0,305.5 Q570.0,319.5 584.0,319.5 L740.0,319.5" fill="none" stroke="#fff" stroke-width="8.5" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M390.0,136.5 L556.0,136.5 Q570.0,136.5 570.0,150.5 L570.0,305.5 Q570.0,319.5 584.0,319.5 L740.0,319.5" fill="none" stroke="#0570b0" stroke-width="4.5" stroke-linejoin="round"/>
+<path d="M390.0,143.5 L426.0,143.5 Q440.0,143.5 448.7,154.5 L456.3,164.0 Q465.0,175.0 479.0,175.0 L541.0,175.0 Q555.0,175.0 555.0,189.0 L555.0,312.5 Q555.0,326.5 569.0,326.5 L740.0,326.5" fill="none" stroke="#fff" stroke-width="8.5" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M390.0,143.5 L426.0,143.5 Q440.0,143.5 448.7,154.5 L456.3,164.0 Q465.0,175.0 479.0,175.0 L541.0,175.0 Q555.0,175.0 555.0,189.0 L555.0,312.5 Q555.0,326.5 569.0,326.5 L740.0,326.5" fill="none" stroke="#2db572" stroke-width="4.5" stroke-linejoin="round"/>
+<path d="M390.0,356.5 L686.0,356.5 Q700.0,356.5 709.2,345.9 L713.4,341.0 Q720.0,333.5 730.0,333.5 L740.0,333.5" fill="none" stroke="#fff" stroke-width="8.5" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M390.0,356.5 L686.0,356.5 Q700.0,356.5 709.2,345.9 L713.4,341.0 Q720.0,333.5 730.0,333.5 L740.0,333.5" fill="none" stroke="#e6550d" stroke-width="4.5" stroke-linejoin="round"/>
+<path d="M390.0,356.5 L601.0,356.5 Q615.0,356.5 615.0,342.5 L615.0,156.5 Q615.0,142.5 629.0,142.5 L740.0,142.5" fill="none" stroke="#fff" stroke-width="8.5" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M390.0,356.5 L601.0,356.5 Q615.0,356.5 615.0,342.5 L615.0,156.5 Q615.0,142.5 629.0,142.5 L740.0,142.5" fill="none" stroke="#e6550d" stroke-width="4.5" stroke-linejoin="round"/>
+<path d="M390.0,363.5 L426.0,363.5 Q440.0,363.5 447.9,375.1 L457.1,388.4 Q465.0,400.0 479.0,400.0 L696.0,400.0 Q710.0,400.0 714.5,386.7 L728.4,345.2 Q730.0,340.5 735.0,340.5 L740.0,340.5" fill="none" stroke="#fff" stroke-width="8.5" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M390.0,363.5 L426.0,363.5 Q440.0,363.5 447.9,375.1 L457.1,388.4 Q465.0,400.0 479.0,400.0 L696.0,400.0 Q710.0,400.0 714.5,386.7 L728.4,345.2 Q730.0,340.5 735.0,340.5 L740.0,340.5" fill="none" stroke="#e7298a" stroke-width="4.5" stroke-linejoin="round"/>
+<path d="M390.0,363.5 L426.0,363.5 Q440.0,363.5 447.9,375.1 L457.1,388.4 Q465.0,400.0 479.0,400.0 L616.0,400.0 Q630.0,400.0 630.0,386.0 L630.0,163.5 Q630.0,149.5 644.0,149.5 L740.0,149.5" fill="none" stroke="#fff" stroke-width="8.5" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M390.0,363.5 L426.0,363.5 Q440.0,363.5 447.9,375.1 L457.1,388.4 Q465.0,400.0 479.0,400.0 L616.0,400.0 Q630.0,400.0 630.0,386.0 L630.0,163.5 Q630.0,149.5 644.0,149.5 L740.0,149.5" fill="none" stroke="#e7298a" stroke-width="4.5" stroke-linejoin="round"/>
+<path d="M740.0,128.5 L881.0,128.5 Q895.0,128.5 901.6,140.8 L933.4,200.2 Q940.0,212.5 954.0,212.5 L1000.0,212.5" fill="none" stroke="#fff" stroke-width="8.5" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M740.0,128.5 L881.0,128.5 Q895.0,128.5 901.6,140.8 L933.4,200.2 Q940.0,212.5 954.0,212.5 L1000.0,212.5" fill="none" stroke="#756bb1" stroke-width="4.5" stroke-linejoin="round"/>
+<path d="M740.0,135.5 L881.0,135.5 Q895.0,135.5 901.6,147.8 L933.4,207.2 Q940.0,219.5 954.0,219.5 L1000.0,219.5" fill="none" stroke="#fff" stroke-width="8.5" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M740.0,135.5 L881.0,135.5 Q895.0,135.5 901.6,147.8 L933.4,207.2 Q940.0,219.5 954.0,219.5 L1000.0,219.5" fill="none" stroke="#0570b0" stroke-width="4.5" stroke-linejoin="round"/>
+<path d="M740.0,142.5 L881.0,142.5 Q895.0,142.5 901.6,154.8 L933.4,214.2 Q940.0,226.5 954.0,226.5 L1000.0,226.5" fill="none" stroke="#fff" stroke-width="8.5" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M740.0,142.5 L881.0,142.5 Q895.0,142.5 901.6,154.8 L933.4,214.2 Q940.0,226.5 954.0,226.5 L1000.0,226.5" fill="none" stroke="#e6550d" stroke-width="4.5" stroke-linejoin="round"/>
+<path d="M740.0,149.5 L881.0,149.5 Q895.0,149.5 901.6,161.8 L933.4,221.2 Q940.0,233.5 954.0,233.5 L1000.0,233.5" fill="none" stroke="#fff" stroke-width="8.5" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M740.0,149.5 L881.0,149.5 Q895.0,149.5 901.6,161.8 L933.4,221.2 Q940.0,233.5 954.0,233.5 L1000.0,233.5" fill="none" stroke="#e7298a" stroke-width="4.5" stroke-linejoin="round"/>
+<path d="M740.0,326.5 L881.0,326.5 Q895.0,326.5 901.5,314.1 L933.5,252.9 Q940.0,240.5 954.0,240.5 L1000.0,240.5" fill="none" stroke="#fff" stroke-width="8.5" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M740.0,326.5 L881.0,326.5 Q895.0,326.5 901.5,314.1 L933.5,252.9 Q940.0,240.5 954.0,240.5 L1000.0,240.5" fill="none" stroke="#2db572" stroke-width="4.5" stroke-linejoin="round"/>
+<path d="M740.0,347.5 L881.0,347.5 Q895.0,347.5 901.3,335.0 L938.7,260.0 Q945.0,247.5 959.0,247.5 L1000.0,247.5" fill="none" stroke="#fff" stroke-width="8.5" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M740.0,347.5 L881.0,347.5 Q895.0,347.5 901.3,335.0 L938.7,260.0 Q945.0,247.5 959.0,247.5 L1000.0,247.5" fill="none" stroke="#7f7f7f" stroke-width="4.5" stroke-linejoin="round" stroke-dasharray="7 4"/>
+<path d="M1000.0,380.0 L1000.0,250.0" fill="none" stroke="#fff" stroke-width="8.5" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M1000.0,380.0 L1000.0,250.0" fill="none" stroke="#7f7f7f" stroke-width="4.5" stroke-linejoin="round" stroke-dasharray="7 4"/>
+<rect x="133.5" y="133.0" width="13" height="34.0" rx="6.5" fill="#fff" stroke="#222" stroke-width="2"/>
+<rect x="133.5" y="283.0" width="13" height="34.0" rx="6.5" fill="#fff" stroke="#222" stroke-width="2"/>
+<rect x="243.5" y="208.0" width="13" height="34.0" rx="6.5" fill="#fff" stroke="#222" stroke-width="2"/>
+<rect x="383.5" y="130.0" width="13" height="20.0" rx="6.5" fill="#fff" stroke="#222" stroke-width="2"/>
+<rect x="383.5" y="350.0" width="13" height="20.0" rx="6.5" fill="#fff" stroke="#222" stroke-width="2"/>
+<rect x="493.5" y="98.5" width="13" height="13" rx="6.5" fill="#fff" stroke="#222" stroke-width="2"/>
+<rect x="493.5" y="168.5" width="13" height="13" rx="6.5" fill="#fff" stroke="#222" stroke-width="2"/>
+<rect x="493.5" y="393.5" width="13" height="13" rx="6.5" fill="#fff" stroke="#222" stroke-width="2"/>
+<rect x="733.5" y="122.0" width="13" height="34.0" rx="6.5" fill="#fff" stroke="#222" stroke-width="2"/>
+<rect x="733.5" y="313.0" width="13" height="41.0" rx="6.5" fill="#fff" stroke="#222" stroke-width="2"/>
+<rect x="993.5" y="206.0" width="13" height="48.0" rx="6.5" fill="#fff" stroke="#222" stroke-width="2"/>
+<rect x="993.5" y="373.5" width="13" height="13" rx="6.5" fill="#fff" stroke="#222" stroke-width="2"/>
+<path d="M42.0,134.0 h32 l8,8 v24 h-40 z" fill="#fff" stroke="#222" stroke-width="1.3"/>
+<text x="62" y="154" font-size="6.5" font-weight="bold" text-anchor="middle" fill="#222">FASTQ.GZ</text>
+<text x="62" y="178.0" font-size="10" font-weight="normal" text-anchor="middle" fill="#444">47 of 64 runs</text>
+<text x="62" y="190.0" font-size="10" font-weight="normal" text-anchor="middle" fill="#444">78 GB</text>
+<path d="M49.0,246.0 h18 l8,8 v24 h-26 z" fill="#fff" stroke="#222" stroke-width="1.3"/>
+<text x="62" y="266" font-size="8.5" font-weight="bold" text-anchor="middle" fill="#222">FA</text>
+<text x="62" y="290.0" font-size="10" font-weight="normal" text-anchor="middle" fill="#444">control</text>
+<text x="62" y="302.0" font-size="10" font-weight="normal" text-anchor="middle" fill="#444">3,100 transcripts</text>
+<path d="M49.0,314.0 h18 l8,8 v24 h-26 z" fill="#fff" stroke="#222" stroke-width="1.3"/>
+<text x="62" y="334" font-size="8.5" font-weight="bold" text-anchor="middle" fill="#222">TSV</text>
+<text x="62" y="358.0" font-size="10" font-weight="normal" text-anchor="middle" fill="#444">control</text>
+<text x="62" y="370.0" font-size="10" font-weight="normal" text-anchor="middle" fill="#444">planted changes</text>
+<path d="M377.0,234.0 h18 l8,8 v24 h-26 z" fill="#fff" stroke="#222" stroke-width="1.3"/>
+<text x="390" y="254" font-size="8.5" font-weight="bold" text-anchor="middle" fill="#222">TSV</text>
+<path d="M660.0,194.0 h32 l8,8 v24 h-40 z" fill="#fff" stroke="#222" stroke-width="1.3"/>
+<text x="680" y="214" font-size="7" font-weight="bold" text-anchor="middle" fill="#222">PARQUET</text>
+<text x="680" y="238.0" font-size="10" font-weight="normal" text-anchor="middle" fill="#444">peptide hits,</text>
+<text x="680" y="250.0" font-size="10" font-weight="normal" text-anchor="middle" fill="#444">alignments</text>
+<path d="M800.0,84.0 h32 l8,8 v24 h-40 z" fill="#fff" stroke="#222" stroke-width="1.3"/>
+<text x="820" y="104" font-size="7" font-weight="bold" text-anchor="middle" fill="#222">ROCKSDB</text>
+<path d="M787.0,394.0 h18 l8,8 v24 h-26 z" fill="#fff" stroke="#222" stroke-width="1.3"/>
+<text x="800" y="414" font-size="8.5" font-weight="bold" text-anchor="middle" fill="#222">JSON</text>
+<text x="800" y="438.0" font-size="10" font-weight="normal" text-anchor="middle" fill="#444">control recall</text>
+<path d="M907.0,364.0 h18 l8,8 v24 h-26 z" fill="#fff" stroke="#222" stroke-width="1.3"/>
+<text x="920" y="384" font-size="8.5" font-weight="bold" text-anchor="middle" fill="#222">XLSX</text>
+<text x="920" y="408.0" font-size="10" font-weight="normal" text-anchor="middle" fill="#444">PNAS Dataset S1</text>
+<path d="M1083.0,214.0 h26 l8,8 v24 h-34 z" fill="#fff" stroke="#222" stroke-width="1.3"/>
+<text x="1100" y="234" font-size="8.5" font-weight="bold" text-anchor="middle" fill="#222">IPYNB</text>
+<text x="1100" y="258.0" font-size="10" font-weight="normal" text-anchor="middle" fill="#444">notebook 361,</text>
+<text x="1100" y="270.0" font-size="10" font-weight="normal" text-anchor="middle" fill="#444">figures, report</text>
+<text x="1100" y="282.0" font-size="10" font-weight="normal" text-anchor="middle" fill="#444">(planned)</text>
+<text x="410" y="247" font-size="10" font-weight="normal" text-anchor="start" fill="#444">design:</text>
+<text x="410" y="259" font-size="10" font-weight="normal" text-anchor="start" fill="#444">PEC +1,</text>
+<text x="410" y="271" font-size="10" font-weight="normal" text-anchor="start" fill="#444">control -1</text>
+<text x="140" y="116" font-size="12" font-weight="bold" text-anchor="middle" fill="#222">download</text>
+<text x="140" y="129" font-size="10.5" font-weight="normal" text-anchor="middle" fill="#555">md5, read count</text>
+<text x="140" y="330" font-size="12" font-weight="bold" text-anchor="middle" fill="#222">simulate_control</text>
+<text x="140" y="343" font-size="10.5" font-weight="normal" text-anchor="middle" fill="#555">12 samples,</text>
+<text x="140" y="356" font-size="10.5" font-weight="normal" text-anchor="middle" fill="#555">1 M read pairs each</text>
+<text x="250" y="258" font-size="12" font-weight="bold" text-anchor="middle" fill="#222">fastp</text>
+<text x="390" y="120" font-size="12" font-weight="bold" text-anchor="middle" fill="#222">splash</text>
+<text x="500" y="90" font-size="12" font-weight="bold" text-anchor="middle" fill="#222">compactors</text>
+<text x="500" y="192" font-size="12" font-weight="bold" text-anchor="middle" fill="#222">anchor_counts</text>
+<text x="500" y="205" font-size="10.5" font-weight="normal" text-anchor="middle" fill="#555">PyDESeq2</text>
+<text x="390" y="386" font-size="12" font-weight="bold" text-anchor="middle" fill="#222">dekupl</text>
+<text x="390" y="399" font-size="10.5" font-weight="normal" text-anchor="middle" fill="#555">DE-kupl 1.3.5</text>
+<text x="500" y="418" font-size="12" font-weight="bold" text-anchor="middle" fill="#222">kamrat</text>
+<text x="500" y="431" font-size="10.5" font-weight="normal" text-anchor="middle" fill="#555">KaMRaT 1.2</text>
+<text x="735" y="112" font-size="12" font-weight="bold" text-anchor="end" fill="#222">search</text>
+<text x="800" y="300" font-size="12" font-weight="bold" text-anchor="middle" fill="#222">control_truth</text>
+<text x="1000" y="190" font-size="12" font-weight="bold" text-anchor="middle" fill="#222">paper-list recovery</text>
+<text x="1000" y="203" font-size="10.5" font-weight="normal" text-anchor="middle" fill="#555">(planned)</text>
+<text x="1012" y="398" font-size="12" font-weight="bold" text-anchor="start" fill="#222">paper_gene_lists</text>
+<text x="1012" y="411" font-size="10.5" font-weight="normal" text-anchor="start" fill="#555">(script)</text>
 </g>
-</g>
-<g class="nf-metro-station-group" data-node-id="ctrlfa_in" data-node-cx="116.0" data-node-cy="276.4" data-node-r="5.0" data-node-groups="counts,dekupl,kamrat,splash" data-node-region="reads" data-node-w="10.0" data-node-h="22.0" data-node-rx="5.0">
-<rect x="111.0" y="265.40000000000003" width="10.0" height="22.0" fill="#ffffff" stroke="#333333" stroke-width="1.5" class="nf-metro-station" data-station-id="ctrlfa_in" data-station-lines="counts,dekupl,kamrat,splash" data-station-label="ctrlfa_in" data-section-id="reads" data-section-name="Reads" />
-<g data-station-id="ctrlfa_in">
-<path d="M79.0,260.40000000000003 L97.0,260.40000000000003 L105.0,268.40000000000003 L105.0,290.40000000000003 Q105.0,292.40000000000003,103.0,292.40000000000003 L79.0,292.40000000000003 Q77.0,292.40000000000003,77.0,290.40000000000003 L77.0,262.40000000000003 Q77.0,260.40000000000003,79.0,260.40000000000003 Z" fill="#ffffff" stroke="#333333" stroke-width="1.5" stroke-linejoin="round" />
-<path d="M97.0,260.40000000000003 L97.0,268.40000000000003 L105.0,268.40000000000003 Z" fill="#333333" opacity="0.15" stroke="none" />
-<path d="M97.0,260.40000000000003 L97.0,268.40000000000003 L105.0,268.40000000000003" fill="none" stroke="#333333" stroke-width="0.8999999999999999" />
-<text x="91.0" y="277.6" font-size="7.5" fill="#000000" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-weight="bold" text-anchor="middle" dy="0.3em">FA</text>
-<text x="96.465" y="296.40000000000003" font-size="7.8" fill="#333333" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-weight="bold" text-anchor="middle" dominant-baseline="hanging" class="nf-metro-station-label"><tspan x="96.465" dy="0em">control</tspan><tspan x="96.465" dy="1em">3,100 transcripts</tspan></text>
-</g>
-</g>
-<g class="nf-metro-station-group" data-node-id="ctrltsv_in" data-node-cx="116.0" data-node-cy="351.6" data-node-r="5.0" data-node-groups="counts,dekupl,kamrat,splash" data-node-region="reads" data-node-w="10.0" data-node-h="22.0" data-node-rx="5.0">
-<rect x="111.0" y="340.6" width="10.0" height="22.0" fill="#ffffff" stroke="#333333" stroke-width="1.5" class="nf-metro-station" data-station-id="ctrltsv_in" data-station-lines="counts,dekupl,kamrat,splash" data-station-label="ctrltsv_in" data-section-id="reads" data-section-name="Reads" />
-<g data-station-id="ctrltsv_in">
-<path d="M79.0,335.6 L97.0,335.6 L105.0,343.6 L105.0,365.6 Q105.0,367.6,103.0,367.6 L79.0,367.6 Q77.0,367.6,77.0,365.6 L77.0,337.6 Q77.0,335.6,79.0,335.6 Z" fill="#ffffff" stroke="#333333" stroke-width="1.5" stroke-linejoin="round" />
-<path d="M97.0,335.6 L97.0,343.6 L105.0,343.6 Z" fill="#333333" opacity="0.15" stroke="none" />
-<path d="M97.0,335.6 L97.0,343.6 L105.0,343.6" fill="none" stroke="#333333" stroke-width="0.8999999999999999" />
-<text x="91.0" y="352.8" font-size="7.5" fill="#000000" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-weight="bold" text-anchor="middle" dy="0.3em">TSV</text>
-<text x="92.17500000000001" y="371.6" font-size="7.8" fill="#333333" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-weight="bold" text-anchor="middle" dominant-baseline="hanging" class="nf-metro-station-label"><tspan x="92.17500000000001" dy="0em">control</tspan><tspan x="92.17500000000001" dy="1em">planted changes</tspan></text>
-</g>
-</g>
-<g class="nf-metro-station-group" data-node-id="download" data-node-cx="256.0" data-node-cy="201.2" data-node-r="5.0" data-node-groups="counts,dekupl,kamrat,splash" data-node-region="reads" data-node-w="10.0" data-node-h="22.0" data-node-rx="5.0">
-<rect x="251.0" y="190.20000000000005" width="10.0" height="22.0" rx="5.0" ry="5.0" fill="#ffffff" stroke="#333333" stroke-width="1.5" class="nf-metro-station" data-station-id="download" data-station-lines="counts,dekupl,kamrat,splash" data-station-label="download
-md5 + read count" data-section-id="reads" data-section-name="Reads" />
-</g>
-<g class="nf-metro-station-group" data-node-id="simulate_control" data-node-cx="256.0" data-node-cy="351.6" data-node-r="5.0" data-node-groups="counts,dekupl,kamrat,splash" data-node-region="reads" data-node-w="10.0" data-node-h="22.0" data-node-rx="5.0">
-<rect x="251.0" y="340.6" width="10.0" height="22.0" rx="5.0" ry="5.0" fill="#ffffff" stroke="#333333" stroke-width="1.5" class="nf-metro-station" data-station-id="simulate_control" data-station-lines="counts,dekupl,kamrat,splash" data-station-label="simulate_control
-12 samples x 1 M pairs" data-section-id="reads" data-section-name="Reads" />
-</g>
-<g class="nf-metro-station-group" data-node-id="fastp" data-node-cx="352.0" data-node-cy="276.4" data-node-r="5.0" data-node-groups="counts,dekupl,kamrat,splash" data-node-region="reads" data-node-w="10.0" data-node-h="22.0" data-node-rx="5.0">
-<rect x="347.0" y="265.4" width="10.0" height="22.0" rx="5.0" ry="5.0" fill="#ffffff" stroke="#333333" stroke-width="1.5" class="nf-metro-station" data-station-id="fastp" data-station-lines="counts,dekupl,kamrat,splash" data-station-label="fastp" data-section-id="reads" data-section-name="Reads" />
-</g>
-<g class="nf-metro-station-group" data-node-id="design_in" data-node-cx="783.5" data-node-cy="197.2" data-node-r="5.0" data-node-groups="counts,splash" data-node-region="find" data-node-w="10.0" data-node-h="14.0" data-node-rx="5.0">
-<rect x="778.5" y="190.2" width="10.0" height="14.0" fill="#ffffff" stroke="#333333" stroke-width="1.5" class="nf-metro-station" data-station-id="design_in" data-station-lines="counts,splash" data-station-label="design_in" data-section-id="find" data-section-name="SPLASH, PEC +1 vs control -1" />
-<g data-station-id="design_in">
-<path d="M746.5,181.2 L764.5,181.2 L772.5,189.2 L772.5,211.2 Q772.5,213.2,770.5,213.2 L746.5,213.2 Q744.5,213.2,744.5,211.2 L744.5,183.2 Q744.5,181.2,746.5,181.2 Z" fill="#ffffff" stroke="#333333" stroke-width="1.5" stroke-linejoin="round" />
-<path d="M764.5,181.2 L764.5,189.2 L772.5,189.2 Z" fill="#333333" opacity="0.15" stroke="none" />
-<path d="M764.5,181.2 L764.5,189.2 L772.5,189.2" fill="none" stroke="#333333" stroke-width="0.8999999999999999" />
-<text x="758.5" y="198.39999999999998" font-size="7.5" fill="#000000" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-weight="bold" text-anchor="middle" dy="0.3em">TSV</text>
-<text x="759.675" y="217.2" font-size="7.8" fill="#333333" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-weight="bold" text-anchor="middle" dominant-baseline="hanging" class="nf-metro-station-label"><tspan x="759.675" dy="0em">design + c_j</tspan><tspan x="759.675" dy="1em">(freeze_design)</tspan></text>
-</g>
-</g>
-<g class="nf-metro-station-group" data-node-id="splash" data-node-cx="941.0" data-node-cy="272.4" data-node-r="5.0" data-node-groups="counts,splash" data-node-region="find" data-node-w="10.0" data-node-h="14.0" data-node-rx="5.0">
-<rect x="936.0" y="265.40000000000003" width="10.0" height="14.0" rx="5.0" ry="5.0" fill="#ffffff" stroke="#333333" stroke-width="1.5" class="nf-metro-station" data-station-id="splash" data-station-lines="counts,splash" data-station-label="splash
-SPLASH 2.11.9" data-section-id="find" data-section-name="SPLASH, PEC +1 vs control -1" />
-</g>
-<g class="nf-metro-station-group" data-node-id="compactors" data-node-cx="1098.5" data-node-cy="195.2" data-node-r="5.0" data-node-groups="splash" data-node-region="find" data-node-w="10.0" data-node-h="10.0" data-node-rx="5.0">
-<rect x="1093.5" y="190.2" width="10.0" height="10.0" rx="5.0" ry="5.0" fill="#ffffff" stroke="#333333" stroke-width="1.5" class="nf-metro-station" data-station-id="compactors" data-station-lines="splash" data-station-label="compactors" data-section-id="find" data-section-name="SPLASH, PEC +1 vs control -1" />
-</g>
-<g class="nf-metro-station-group" data-node-id="anchor_counts" data-node-cx="1098.5" data-node-cy="424.8" data-node-r="5.0" data-node-groups="counts" data-node-region="find" data-node-w="10.0" data-node-h="10.0" data-node-rx="5.0">
-<rect x="1093.5" y="419.8" width="10.0" height="10.0" rx="5.0" ry="5.0" fill="#ffffff" stroke="#333333" stroke-width="1.5" class="nf-metro-station" data-station-id="anchor_counts" data-station-lines="counts" data-station-label="anchor_counts
-PyDESeq2" data-section-id="find" data-section-name="SPLASH, PEC +1 vs control -1" />
-</g>
-<g class="nf-metro-station-group" data-node-id="anch_out" data-node-cx="1063.5" data-node-cy="345.6" data-node-r="5.0" data-node-groups="splash" data-node-region="find" data-node-w="10.0" data-node-h="10.0" data-node-rx="5.0">
-<rect x="1058.5" y="340.6" width="10.0" height="10.0" fill="#ffffff" stroke="#333333" stroke-width="1.5" class="nf-metro-station" data-station-id="anch_out" data-station-lines="splash" data-station-label="anch_out" data-section-id="find" data-section-name="SPLASH, PEC +1 vs control -1" />
-<g data-station-id="anch_out">
-<path d="M1076.5,329.6 L1094.5,329.6 L1102.5,337.6 L1102.5,359.6 Q1102.5,361.6,1100.5,361.6 L1076.5,361.6 Q1074.5,361.6,1074.5,359.6 L1074.5,331.6 Q1074.5,329.6,1076.5,329.6 Z" fill="#ffffff" stroke="#333333" stroke-width="1.5" stroke-linejoin="round" />
-<path d="M1094.5,329.6 L1094.5,337.6 L1102.5,337.6 Z" fill="#333333" opacity="0.15" stroke="none" />
-<path d="M1094.5,329.6 L1094.5,337.6 L1102.5,337.6" fill="none" stroke="#333333" stroke-width="0.8999999999999999" />
-<text x="1088.5" y="346.8" font-size="7.5" fill="#000000" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-weight="bold" text-anchor="middle" dy="0.3em">TSV</text>
-<text x="1088.5" y="365.6" font-size="7.8" fill="#333333" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-weight="bold" text-anchor="middle" dominant-baseline="hanging" class="nf-metro-station-label">anchors, q at most 0.05</text>
-</g>
-</g>
-<g class="nf-metro-station-group" data-node-id="comp_out" data-node-cx="1168.5" data-node-cy="120.0" data-node-r="5.0" data-node-groups="splash" data-node-region="find" data-node-w="10.0" data-node-h="10.0" data-node-rx="5.0">
-<rect x="1163.5" y="114.99999999999999" width="10.0" height="10.0" fill="#ffffff" stroke="#333333" stroke-width="1.5" class="nf-metro-station" data-station-id="comp_out" data-station-lines="splash" data-station-label="comp_out" data-section-id="find" data-section-name="SPLASH, PEC +1 vs control -1" />
-<g data-station-id="comp_out">
-<path d="M1181.5,103.99999999999999 L1199.5,103.99999999999999 L1207.5,111.99999999999999 L1207.5,134.0 Q1207.5,136.0,1205.5,136.0 L1181.5,136.0 Q1179.5,136.0,1179.5,134.0 L1179.5,105.99999999999999 Q1179.5,103.99999999999999,1181.5,103.99999999999999 Z" fill="#ffffff" stroke="#333333" stroke-width="1.5" stroke-linejoin="round" />
-<path d="M1199.5,103.99999999999999 L1199.5,111.99999999999999 L1207.5,111.99999999999999 Z" fill="#333333" opacity="0.15" stroke="none" />
-<path d="M1199.5,103.99999999999999 L1199.5,111.99999999999999 L1207.5,111.99999999999999" fill="none" stroke="#333333" stroke-width="0.8999999999999999" />
-<text x="1193.5" y="121.19999999999999" font-size="7.5" fill="#000000" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-weight="bold" text-anchor="middle" dy="0.3em">TSV</text>
-<text x="1193.5" y="140.0" font-size="7.8" fill="#333333" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-weight="bold" text-anchor="middle" dominant-baseline="hanging" class="nf-metro-station-label">compactors</text>
-</g>
-</g>
-<g class="nf-metro-station-group" data-node-id="deseq_out" data-node-cx="1221.0" data-node-cy="500.0" data-node-r="5.0" data-node-groups="counts" data-node-region="find" data-node-w="10.0" data-node-h="10.0" data-node-rx="5.0">
-<rect x="1216.0" y="495.0" width="10.0" height="10.0" fill="#ffffff" stroke="#333333" stroke-width="1.5" class="nf-metro-station" data-station-id="deseq_out" data-station-lines="counts" data-station-label="deseq_out" data-section-id="find" data-section-name="SPLASH, PEC +1 vs control -1" />
-<g data-station-id="deseq_out">
-<path d="M1234.0,484.0 L1252.0,484.0 L1260.0,492.0 L1260.0,514.0 Q1260.0,516.0,1258.0,516.0 L1234.0,516.0 Q1232.0,516.0,1232.0,514.0 L1232.0,486.0 Q1232.0,484.0,1234.0,484.0 Z" fill="#ffffff" stroke="#333333" stroke-width="1.5" stroke-linejoin="round" />
-<path d="M1252.0,484.0 L1252.0,492.0 L1260.0,492.0 Z" fill="#333333" opacity="0.15" stroke="none" />
-<path d="M1252.0,484.0 L1252.0,492.0 L1260.0,492.0" fill="none" stroke="#333333" stroke-width="0.8999999999999999" />
-<text x="1246.0" y="501.2" font-size="5.476190476190476" fill="#000000" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-weight="bold" text-anchor="middle" dy="0.3em">PARQUET</text>
-<text x="1246.0" y="520.0" font-size="7.8" fill="#333333" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-weight="bold" text-anchor="middle" dominant-baseline="hanging" class="nf-metro-station-label">anchor DESeq2</text>
-</g>
-</g>
-<g class="nf-metro-station-group" data-node-id="design_dk" data-node-cx="116.0" data-node-cy="680.0" data-node-r="5.0" data-node-groups="dekupl,kamrat" data-node-region="dk" data-node-w="10.0" data-node-h="14.0" data-node-rx="5.0">
-<rect x="111.0" y="673.0" width="10.0" height="14.0" fill="#ffffff" stroke="#333333" stroke-width="1.5" class="nf-metro-station" data-station-id="design_dk" data-station-lines="dekupl,kamrat" data-station-label="design_dk" data-section-id="dk" data-section-name="DE-kupl and KaMRaT, PEC vs control" />
-<g data-station-id="design_dk">
-<path d="M79.0,664.0 L97.0,664.0 L105.0,672.0 L105.0,694.0 Q105.0,696.0,103.0,696.0 L79.0,696.0 Q77.0,696.0,77.0,694.0 L77.0,666.0 Q77.0,664.0,79.0,664.0 Z" fill="#ffffff" stroke="#333333" stroke-width="1.5" stroke-linejoin="round" />
-<path d="M97.0,664.0 L97.0,672.0 L105.0,672.0 Z" fill="#333333" opacity="0.15" stroke="none" />
-<path d="M97.0,664.0 L97.0,672.0 L105.0,672.0" fill="none" stroke="#333333" stroke-width="0.8999999999999999" />
-<text x="91.0" y="681.2" font-size="7.5" fill="#000000" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-weight="bold" text-anchor="middle" dy="0.3em">TSV</text>
-<text x="92.17500000000001" y="700.0" font-size="7.8" fill="#333333" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-weight="bold" text-anchor="middle" dominant-baseline="hanging" class="nf-metro-station-label"><tspan x="92.17500000000001" dy="0em">design</tspan><tspan x="92.17500000000001" dy="1em">(freeze_design)</tspan></text>
-</g>
-</g>
-<g class="nf-metro-station-group" data-node-id="dekupl" data-node-cx="266.0" data-node-cy="755.2" data-node-r="5.0" data-node-groups="dekupl,kamrat" data-node-region="dk" data-node-w="10.0" data-node-h="14.0" data-node-rx="5.0">
-<rect x="261.0" y="748.2" width="10.0" height="14.0" rx="5.0" ry="5.0" fill="#ffffff" stroke="#333333" stroke-width="1.5" class="nf-metro-station" data-station-id="dekupl" data-station-lines="dekupl,kamrat" data-station-label="dekupl
-DE-kupl 1.3.5, limma" data-section-id="dk" data-section-name="DE-kupl and KaMRaT, PEC vs control" />
-</g>
-<g class="nf-metro-station-group" data-node-id="kamrat" data-node-cx="416.0" data-node-cy="836.4" data-node-r="5.0" data-node-groups="kamrat" data-node-region="dk" data-node-w="10.0" data-node-h="10.0" data-node-rx="5.0">
-<rect x="411.0" y="831.4" width="10.0" height="10.0" rx="5.0" ry="5.0" fill="#ffffff" stroke="#333333" stroke-width="1.5" class="nf-metro-station" data-station-id="kamrat" data-station-lines="kamrat" data-station-label="kamrat
-KaMRaT 1.2, t-test" data-section-id="dk" data-section-name="DE-kupl and KaMRaT, PEC vs control" />
-</g>
-<g class="nf-metro-station-group" data-node-id="dekupl_out" data-node-cx="336.0" data-node-cy="903.6" data-node-r="5.0" data-node-groups="dekupl" data-node-region="dk" data-node-w="10.0" data-node-h="10.0" data-node-rx="5.0">
-<rect x="331.0" y="898.6000000000001" width="10.0" height="10.0" fill="#ffffff" stroke="#333333" stroke-width="1.5" class="nf-metro-station" data-station-id="dekupl_out" data-station-lines="dekupl" data-station-label="dekupl_out" data-section-id="dk" data-section-name="DE-kupl and KaMRaT, PEC vs control" />
-<g data-station-id="dekupl_out">
-<path d="M349.0,887.6000000000001 L367.0,887.6000000000001 L375.0,895.6000000000001 L375.0,917.6000000000001 Q375.0,919.6000000000001,373.0,919.6000000000001 L349.0,919.6000000000001 Q347.0,919.6000000000001,347.0,917.6000000000001 L347.0,889.6000000000001 Q347.0,887.6000000000001,349.0,887.6000000000001 Z" fill="#ffffff" stroke="#333333" stroke-width="1.5" stroke-linejoin="round" />
-<path d="M367.0,887.6000000000001 L367.0,895.6000000000001 L375.0,895.6000000000001 Z" fill="#333333" opacity="0.15" stroke="none" />
-<path d="M367.0,887.6000000000001 L367.0,895.6000000000001 L375.0,895.6000000000001" fill="none" stroke="#333333" stroke-width="0.8999999999999999" />
-<text x="361.0" y="904.8000000000002" font-size="6.388888888888889" fill="#000000" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-weight="bold" text-anchor="middle" dy="0.3em">TSV.GZ</text>
-<text x="361.0" y="923.6000000000001" font-size="7.8" fill="#333333" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-weight="bold" text-anchor="middle" dominant-baseline="hanging" class="nf-metro-station-label">k-mers, contigs</text>
-</g>
-</g>
-<g class="nf-metro-station-group" data-node-id="kamrat_out" data-node-cx="561.0" data-node-cy="907.6" data-node-r="5.0" data-node-groups="kamrat" data-node-region="dk" data-node-w="10.0" data-node-h="10.0" data-node-rx="5.0">
-<rect x="556.0" y="902.6" width="10.0" height="10.0" fill="#ffffff" stroke="#333333" stroke-width="1.5" class="nf-metro-station" data-station-id="kamrat_out" data-station-lines="kamrat" data-station-label="kamrat_out" data-section-id="dk" data-section-name="DE-kupl and KaMRaT, PEC vs control" />
-<g data-station-id="kamrat_out">
-<path d="M574.0,891.6 L592.0,891.6 L600.0,899.6 L600.0,921.6 Q600.0,923.6,598.0,923.6 L574.0,923.6 Q572.0,923.6,572.0,921.6 L572.0,893.6 Q572.0,891.6,574.0,891.6 Z" fill="#ffffff" stroke="#333333" stroke-width="1.5" stroke-linejoin="round" />
-<path d="M592.0,891.6 L592.0,899.6 L600.0,899.6 Z" fill="#333333" opacity="0.15" stroke="none" />
-<path d="M592.0,891.6 L592.0,899.6 L600.0,899.6" fill="none" stroke="#333333" stroke-width="0.8999999999999999" />
-<text x="586.0" y="908.8000000000001" font-size="7.5" fill="#000000" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-weight="bold" text-anchor="middle" dy="0.3em">TSV</text>
-<text x="586.0" y="927.6" font-size="7.8" fill="#333333" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-weight="bold" text-anchor="middle" dominant-baseline="hanging" class="nf-metro-station-label">k-mers, contigs</text>
-</g>
-</g>
-<g class="nf-metro-station-group" data-node-id="db_in" data-node-cx="783.5" data-node-cy="911.6" data-node-r="5.0" data-node-groups="protein" data-node-region="srch" data-node-w="10.0" data-node-h="10.0" data-node-rx="5.0">
-<rect x="778.5" y="906.6" width="10.0" height="10.0" fill="#ffffff" stroke="#333333" stroke-width="1.5" class="nf-metro-station" data-station-id="db_in" data-station-lines="protein" data-station-label="db_in" data-section-id="srch" data-section-name="Translate and search" />
-<g data-station-id="db_in">
-<path d="M746.5,895.6 L764.5,895.6 L772.5,903.6 L772.5,925.6 Q772.5,927.6,770.5,927.6 L746.5,927.6 Q744.5,927.6,744.5,925.6 L744.5,897.6 Q744.5,895.6,746.5,895.6 Z" fill="#ffffff" stroke="#333333" stroke-width="1.5" stroke-linejoin="round" />
-<path d="M764.5,895.6 L764.5,903.6 L772.5,903.6 Z" fill="#333333" opacity="0.15" stroke="none" />
-<path d="M764.5,895.6 L764.5,903.6 L772.5,903.6" fill="none" stroke="#333333" stroke-width="0.8999999999999999" />
-<text x="758.5" y="912.8000000000001" font-size="5.476190476190476" fill="#000000" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-weight="bold" text-anchor="middle" dy="0.3em">ROCKSDB</text>
-<text x="763.965" y="931.6" font-size="7.8" fill="#333333" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-weight="bold" text-anchor="middle" dominant-baseline="hanging" class="nf-metro-station-label"><tspan x="763.965" dy="0em">3 protein indexes</tspan><tspan x="763.965" dy="1em">(06_db_sketch)</tspan></text>
-</g>
-</g>
-<g class="nf-metro-station-group" data-node-id="search" data-node-cx="923.5" data-node-cy="759.2" data-node-r="5.0" data-node-groups="dekupl,kamrat,protein,splash" data-node-region="srch" data-node-w="10.0" data-node-h="22.0" data-node-rx="5.0">
-<rect x="918.5" y="748.2" width="10.0" height="22.0" rx="5.0" ry="5.0" fill="#ffffff" stroke="#333333" stroke-width="1.5" class="nf-metro-station" data-station-id="search" data-station-lines="dekupl,kamrat,protein,splash" data-station-label="search
-translate, manysearch,
-parasail" data-section-id="srch" data-section-name="Translate and search" />
-</g>
-<g class="nf-metro-station-group" data-node-id="aln_out" data-node-cx="993.5" data-node-cy="682.0" data-node-r="5.0" data-node-groups="dekupl,kamrat,protein,splash" data-node-region="srch" data-node-w="10.0" data-node-h="18.0" data-node-rx="5.0">
-<rect x="988.5" y="673.0" width="10.0" height="18.0" fill="#ffffff" stroke="#333333" stroke-width="1.5" class="nf-metro-station" data-station-id="aln_out" data-station-lines="dekupl,kamrat,protein,splash" data-station-label="aln_out" data-section-id="srch" data-section-name="Translate and search" />
-<g data-station-id="aln_out">
-<path d="M1006.5,666.0 L1024.5,666.0 L1032.5,674.0 L1032.5,696.0 Q1032.5,698.0,1030.5,698.0 L1006.5,698.0 Q1004.5,698.0,1004.5,696.0 L1004.5,668.0 Q1004.5,666.0,1006.5,666.0 Z" fill="#ffffff" stroke="#333333" stroke-width="1.5" stroke-linejoin="round" />
-<path d="M1024.5,666.0 L1024.5,674.0 L1032.5,674.0 Z" fill="#333333" opacity="0.15" stroke="none" />
-<path d="M1024.5,666.0 L1024.5,674.0 L1032.5,674.0" fill="none" stroke="#333333" stroke-width="0.8999999999999999" />
-<text x="1018.5" y="683.2" font-size="5.476190476190476" fill="#000000" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-weight="bold" text-anchor="middle" dy="0.3em">PARQUET</text>
-<text x="1018.5" y="702.0" font-size="7.8" fill="#333333" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-weight="bold" text-anchor="middle" dominant-baseline="hanging" class="nf-metro-station-label"><tspan x="1018.5" dy="0em">peptide hits +</tspan><tspan x="1018.5" dy="1em">alignments</tspan></text>
-</g>
-</g>
-<g class="nf-metro-station-group" data-node-id="si_in" data-node-cx="152.0" data-node-cy="1264.0" data-node-r="5.0" data-node-groups="check" data-node-region="checks" data-node-w="10.0" data-node-h="10.0" data-node-rx="5.0">
-<rect x="147.0" y="1259.0" width="10.0" height="10.0" fill="#ffffff" stroke="#333333" stroke-width="1.5" class="nf-metro-station" data-station-id="si_in" data-station-lines="check" data-station-label="si_in" data-section-id="checks" data-section-name="Checks and results" />
-<g data-station-id="si_in">
-<path d="M115.0,1248.0 L133.0,1248.0 L141.0,1256.0 L141.0,1278.0 Q141.0,1280.0,139.0,1280.0 L115.0,1280.0 Q113.0,1280.0,113.0,1278.0 L113.0,1250.0 Q113.0,1248.0,115.0,1248.0 Z" fill="#ffffff" stroke="#333333" stroke-width="1.5" stroke-linejoin="round" />
-<path d="M133.0,1248.0 L133.0,1256.0 L141.0,1256.0 Z" fill="#333333" opacity="0.15" stroke="none" />
-<path d="M133.0,1248.0 L133.0,1256.0 L141.0,1256.0" fill="none" stroke="#333333" stroke-width="0.8999999999999999" />
-<text x="127.0" y="1265.2" font-size="7.5" fill="#000000" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-weight="bold" text-anchor="middle" dy="0.3em">XLSX</text>
-<text x="127.0" y="1284.0" font-size="7.8" fill="#333333" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-weight="bold" text-anchor="middle" dominant-baseline="hanging" class="nf-metro-station-label">PNAS Dataset S1</text>
-</g>
-</g>
-<g class="nf-metro-station-group" data-node-id="control_truth" data-node-cx="152.0" data-node-cy="1329.2" data-node-r="5.0" data-node-groups="check,counts,dekupl,splash" data-node-region="checks" data-node-w="10.0" data-node-h="22.0" data-node-rx="5.0">
-<rect x="147.0" y="1318.2000000000003" width="10.0" height="22.0" rx="5.0" ry="5.0" fill="#ffffff" stroke="#333333" stroke-width="1.5" class="nf-metro-station" data-station-id="control_truth" data-station-lines="check,counts,dekupl,splash" data-station-label="control_truth" data-section-id="checks" data-section-name="Checks and results" />
-</g>
-<g class="nf-metro-station-group" data-node-id="paper" data-node-cx="302.5" data-node-cy="1264.0" data-node-r="5.0" data-node-groups="check" data-node-region="checks" data-node-w="10.0" data-node-h="10.0" data-node-rx="5.0">
-<rect x="297.5" y="1259.0" width="10.0" height="10.0" rx="5.0" ry="5.0" fill="#ffffff" stroke="#333333" stroke-width="1.5" class="nf-metro-station" data-station-id="paper" data-station-lines="check" data-station-label="paper_gene_lists
-(script)" data-section-id="checks" data-section-name="Checks and results" />
-</g>
-<g class="nf-metro-station-group" data-node-id="recover" data-node-cx="565.5" data-node-cy="1107.6" data-node-r="5.0" data-node-groups="check,counts,dekupl,kamrat,protein,splash" data-node-region="checks" data-node-w="10.0" data-node-h="30.0" data-node-rx="5.0">
-<rect x="560.5" y="1092.6" width="10.0" height="30.0" rx="5.0" ry="5.0" fill="#ffffff" stroke="#333333" stroke-width="1.5" class="nf-metro-station" data-station-id="recover" data-station-lines="check,counts,dekupl,kamrat,protein,splash" data-station-label="paper-list recovery,
-notebook 361 (planned)" data-section-id="checks" data-section-name="Checks and results" />
-</g>
-<g class="nf-metro-station-group" data-node-id="ctrlj_out" data-node-cx="274.5" data-node-cy="1414.4" data-node-r="5.0" data-node-groups="check" data-node-region="checks" data-node-w="10.0" data-node-h="10.0" data-node-rx="5.0">
-<rect x="269.5" y="1409.4" width="10.0" height="10.0" fill="#ffffff" stroke="#333333" stroke-width="1.5" class="nf-metro-station" data-station-id="ctrlj_out" data-station-lines="check" data-station-label="ctrlj_out" data-section-id="checks" data-section-name="Checks and results" />
-<g data-station-id="ctrlj_out">
-<path d="M287.5,1398.4 L305.5,1398.4 L313.5,1406.4 L313.5,1428.4 Q313.5,1430.4,311.5,1430.4 L287.5,1430.4 Q285.5,1430.4,285.5,1428.4 L285.5,1400.4 Q285.5,1398.4,287.5,1398.4 Z" fill="#ffffff" stroke="#333333" stroke-width="1.5" stroke-linejoin="round" />
-<path d="M305.5,1398.4 L305.5,1406.4 L313.5,1406.4 Z" fill="#333333" opacity="0.15" stroke="none" />
-<path d="M305.5,1398.4 L305.5,1406.4 L313.5,1406.4" fill="none" stroke="#333333" stroke-width="0.8999999999999999" />
-<text x="299.5" y="1415.6000000000001" font-size="7.5" fill="#000000" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-weight="bold" text-anchor="middle" dy="0.3em">JSON</text>
-<text x="299.5" y="1434.4" font-size="7.8" fill="#333333" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-weight="bold" text-anchor="middle" dominant-baseline="hanging" class="nf-metro-station-label">control recall</text>
-</g>
-</g>
-<g class="nf-metro-station-group" data-node-id="paper_out" data-node-cx="438.5" data-node-cy="1339.2" data-node-r="5.0" data-node-groups="check" data-node-region="checks" data-node-w="10.0" data-node-h="10.0" data-node-rx="5.0">
-<rect x="433.5" y="1334.2000000000003" width="10.0" height="10.0" fill="#ffffff" stroke="#333333" stroke-width="1.5" class="nf-metro-station" data-station-id="paper_out" data-station-lines="check" data-station-label="paper_out" data-section-id="checks" data-section-name="Checks and results" />
-<g data-station-id="paper_out">
-<path d="M451.5,1323.2000000000003 L469.5,1323.2000000000003 L477.5,1331.2000000000003 L477.5,1353.2000000000003 Q477.5,1355.2000000000003,475.5,1355.2000000000003 L451.5,1355.2000000000003 Q449.5,1355.2000000000003,449.5,1353.2000000000003 L449.5,1325.2000000000003 Q449.5,1323.2000000000003,451.5,1323.2000000000003 Z" fill="#ffffff" stroke="#333333" stroke-width="1.5" stroke-linejoin="round" />
-<path d="M469.5,1323.2000000000003 L469.5,1331.2000000000003 L477.5,1331.2000000000003 Z" fill="#333333" opacity="0.15" stroke="none" />
-<path d="M469.5,1323.2000000000003 L469.5,1331.2000000000003 L477.5,1331.2000000000003" fill="none" stroke="#333333" stroke-width="0.8999999999999999" />
-<text x="463.5" y="1340.4000000000003" font-size="7.5" fill="#000000" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-weight="bold" text-anchor="middle" dy="0.3em">TSV</text>
-<text x="463.5" y="1359.2000000000003" font-size="7.8" fill="#333333" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-weight="bold" text-anchor="middle" dominant-baseline="hanging" class="nf-metro-station-label">paper gene lists</text>
-</g>
-</g>
-<g class="nf-metro-station-group" data-node-id="nb_out" data-node-cx="625.5" data-node-cy="1107.6" data-node-r="5.0" data-node-groups="check,counts,dekupl,kamrat,protein,splash" data-node-region="checks" data-node-w="10.0" data-node-h="30.0" data-node-rx="5.0">
-<rect x="620.5" y="1092.6" width="10.0" height="30.0" fill="#ffffff" stroke="#333333" stroke-width="1.5" class="nf-metro-station" data-station-id="nb_out" data-station-lines="check,counts,dekupl,kamrat,protein,splash" data-station-label="nb_out" data-section-id="checks" data-section-name="Checks and results" />
-<g data-station-id="nb_out">
-<path d="M638.5,1091.6 L656.5,1091.6 L664.5,1099.6 L664.5,1121.6 Q664.5,1123.6,662.5,1123.6 L638.5,1123.6 Q636.5,1123.6,636.5,1121.6 L636.5,1093.6 Q636.5,1091.6,638.5,1091.6 Z" fill="#ffffff" stroke="#333333" stroke-width="1.5" stroke-linejoin="round" />
-<path d="M656.5,1091.6 L656.5,1099.6 L664.5,1099.6 Z" fill="#333333" opacity="0.15" stroke="none" />
-<path d="M656.5,1091.6 L656.5,1099.6 L664.5,1099.6" fill="none" stroke="#333333" stroke-width="0.8999999999999999" />
-<text x="650.5" y="1108.8" font-size="7.5" fill="#000000" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-weight="bold" text-anchor="middle" dy="0.3em">IPYNB</text>
-<text x="649.325" y="1127.6" font-size="7.8" fill="#333333" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-weight="bold" text-anchor="middle" dominant-baseline="hanging" class="nf-metro-station-label"><tspan x="649.325" dy="0em">notebook 361,</tspan><tspan x="649.325" dy="1em">figures, report</tspan><tspan x="649.325" dy="1em">(planned)</tspan></text>
-</g>
-</g>
-<text x="152.0" y="1346.2000000000003" font-size="13.0" fill="#f5f5f5" stroke="#f5f5f5" stroke-width="3.0" stroke-linejoin="round" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-weight="bold" aria-hidden="true" class="nf-metro-label-halo" text-anchor="middle" dominant-baseline="hanging">control_truth</text>
-<text x="152.0" y="1346.2000000000003" font-size="13.0" fill="#333333" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-weight="bold" text-anchor="middle" dominant-baseline="hanging" data-station-id="control_truth" class="nf-metro-station-label">control_truth</text>
-<text x="256.0" y="168.60000000000005" font-size="13.0" fill="#f5f5f5" stroke="#f5f5f5" stroke-width="3.0" stroke-linejoin="round" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-weight="bold" aria-hidden="true" class="nf-metro-label-halo" text-anchor="middle" dominant-baseline="auto"><tspan x="256.0" dy="0em">download</tspan><tspan x="256.0" dy="1.2em">md5 + read count</tspan></text>
-<text x="256.0" y="168.60000000000005" font-size="13.0" fill="#333333" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-weight="bold" text-anchor="middle" dominant-baseline="auto" data-station-id="download" class="nf-metro-station-label"><tspan x="256.0" dy="0em">download</tspan><tspan x="256.0" dy="1.2em">md5 + read count</tspan></text>
-<text x="941.0" y="240.80000000000004" font-size="13.0" fill="#f5f5f5" stroke="#f5f5f5" stroke-width="3.0" stroke-linejoin="round" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-weight="bold" aria-hidden="true" class="nf-metro-label-halo" text-anchor="middle" dominant-baseline="auto"><tspan x="941.0" dy="0em">splash</tspan><tspan x="941.0" dy="1.2em">SPLASH 2.11.9</tspan></text>
-<text x="941.0" y="240.80000000000004" font-size="13.0" fill="#333333" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-weight="bold" text-anchor="middle" dominant-baseline="auto" data-station-id="splash" class="nf-metro-station-label"><tspan x="941.0" dy="0em">splash</tspan><tspan x="941.0" dy="1.2em">SPLASH 2.11.9</tspan></text>
-<text x="923.5" y="776.2" font-size="13.0" fill="#f5f5f5" stroke="#f5f5f5" stroke-width="3.0" stroke-linejoin="round" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-weight="bold" aria-hidden="true" class="nf-metro-label-halo" text-anchor="middle" dominant-baseline="hanging"><tspan x="923.5" dy="0em">search</tspan><tspan x="923.5" dy="1.2em">translate, manysearch,</tspan><tspan x="923.5" dy="1.2em">parasail</tspan></text>
-<text x="923.5" y="776.2" font-size="13.0" fill="#333333" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-weight="bold" text-anchor="middle" dominant-baseline="hanging" data-station-id="search" class="nf-metro-station-label"><tspan x="923.5" dy="0em">search</tspan><tspan x="923.5" dy="1.2em">translate, manysearch,</tspan><tspan x="923.5" dy="1.2em">parasail</tspan></text>
-<text x="256.0" y="368.6" font-size="13.0" fill="#f5f5f5" stroke="#f5f5f5" stroke-width="3.0" stroke-linejoin="round" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-weight="bold" aria-hidden="true" class="nf-metro-label-halo" text-anchor="middle" dominant-baseline="hanging"><tspan x="256.0" dy="0em">simulate_control</tspan><tspan x="256.0" dy="1.2em">12 samples x 1 M pairs</tspan></text>
-<text x="256.0" y="368.6" font-size="13.0" fill="#333333" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-weight="bold" text-anchor="middle" dominant-baseline="hanging" data-station-id="simulate_control" class="nf-metro-station-label"><tspan x="256.0" dy="0em">simulate_control</tspan><tspan x="256.0" dy="1.2em">12 samples x 1 M pairs</tspan></text>
-<text x="266.0" y="723.6" font-size="13.0" fill="#f5f5f5" stroke="#f5f5f5" stroke-width="3.0" stroke-linejoin="round" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-weight="bold" aria-hidden="true" class="nf-metro-label-halo" text-anchor="middle" dominant-baseline="auto"><tspan x="266.0" dy="0em">dekupl</tspan><tspan x="266.0" dy="1.2em">DE-kupl 1.3.5, limma</tspan></text>
-<text x="266.0" y="723.6" font-size="13.0" fill="#333333" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-weight="bold" text-anchor="middle" dominant-baseline="auto" data-station-id="dekupl" class="nf-metro-station-label"><tspan x="266.0" dy="0em">dekupl</tspan><tspan x="266.0" dy="1.2em">DE-kupl 1.3.5, limma</tspan></text>
-<text x="302.5" y="1275.0" font-size="13.0" fill="#f5f5f5" stroke="#f5f5f5" stroke-width="3.0" stroke-linejoin="round" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-weight="bold" aria-hidden="true" class="nf-metro-label-halo" text-anchor="middle" dominant-baseline="hanging"><tspan x="302.5" dy="0em">paper_gene_lists</tspan><tspan x="302.5" dy="1.2em">(script)</tspan></text>
-<text x="302.5" y="1275.0" font-size="13.0" fill="#333333" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-weight="bold" text-anchor="middle" dominant-baseline="hanging" data-station-id="paper" class="nf-metro-station-label"><tspan x="302.5" dy="0em">paper_gene_lists</tspan><tspan x="302.5" dy="1.2em">(script)</tspan></text>
-<text x="1098.5" y="206.2" font-size="13.0" fill="#f5f5f5" stroke="#f5f5f5" stroke-width="3.0" stroke-linejoin="round" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-weight="bold" aria-hidden="true" class="nf-metro-label-halo" text-anchor="middle" dominant-baseline="hanging">compactors</text>
-<text x="1098.5" y="206.2" font-size="13.0" fill="#333333" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-weight="bold" text-anchor="middle" dominant-baseline="hanging" data-station-id="compactors" class="nf-metro-station-label">compactors</text>
-<text x="352.6" y="296.4" font-size="13.0" fill="#f5f5f5" stroke="#f5f5f5" stroke-width="3.0" stroke-linejoin="round" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-weight="bold" aria-hidden="true" class="nf-metro-label-halo" text-anchor="middle" dominant-baseline="hanging">fastp</text>
-<text x="352.6" y="296.4" font-size="13.0" fill="#333333" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-weight="bold" text-anchor="middle" dominant-baseline="hanging" data-station-id="fastp" class="nf-metro-station-label">fastp</text>
-<text x="565.5" y="1068.0" font-size="13.0" fill="#f5f5f5" stroke="#f5f5f5" stroke-width="3.0" stroke-linejoin="round" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-weight="bold" aria-hidden="true" class="nf-metro-label-halo" text-anchor="middle" dominant-baseline="auto"><tspan x="565.5" dy="0em">paper-list recovery,</tspan><tspan x="565.5" dy="1.2em">notebook 361 (planned)</tspan></text>
-<text x="565.5" y="1068.0" font-size="13.0" fill="#333333" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-weight="bold" text-anchor="middle" dominant-baseline="auto" data-station-id="recover" class="nf-metro-station-label"><tspan x="565.5" dy="0em">paper-list recovery,</tspan><tspan x="565.5" dy="1.2em">notebook 361 (planned)</tspan></text>
-<text x="1098.5" y="435.8" font-size="13.0" fill="#f5f5f5" stroke="#f5f5f5" stroke-width="3.0" stroke-linejoin="round" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-weight="bold" aria-hidden="true" class="nf-metro-label-halo" text-anchor="middle" dominant-baseline="hanging"><tspan x="1098.5" dy="0em">anchor_counts</tspan><tspan x="1098.5" dy="1.2em">PyDESeq2</tspan></text>
-<text x="1098.5" y="435.8" font-size="13.0" fill="#333333" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-weight="bold" text-anchor="middle" dominant-baseline="hanging" data-station-id="anchor_counts" class="nf-metro-station-label"><tspan x="1098.5" dy="0em">anchor_counts</tspan><tspan x="1098.5" dy="1.2em">PyDESeq2</tspan></text>
-<text x="416.0" y="847.4" font-size="13.0" fill="#f5f5f5" stroke="#f5f5f5" stroke-width="3.0" stroke-linejoin="round" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-weight="bold" aria-hidden="true" class="nf-metro-label-halo" text-anchor="middle" dominant-baseline="hanging"><tspan x="416.0" dy="0em">kamrat</tspan><tspan x="416.0" dy="1.2em">KaMRaT 1.2, t-test</tspan></text>
-<text x="416.0" y="847.4" font-size="13.0" fill="#333333" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-weight="bold" text-anchor="middle" dominant-baseline="hanging" data-station-id="kamrat" class="nf-metro-station-label"><tspan x="416.0" dy="0em">kamrat</tspan><tspan x="416.0" dy="1.2em">KaMRaT 1.2, t-test</tspan></text>
-<rect x="30.0" y="1478.4" width="414.20000000000005" height="168.0" rx="6" ry="6" fill="rgba(255, 255, 255, 0.8)" class="nf-metro-legend-bg" />
-<path d="M42.0,1502.4 L66.0,1502.4" stroke="#0570b0" stroke-width="3.0" stroke-linecap="round" />
-<text x="78.0" y="1502.4" font-size="14.0" fill="#333333" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" dy="0.3em" class="nf-metro-legend-text">SPLASH anchors (reference-free)</text>
-<path d="M42.0,1526.4 L66.0,1526.4" stroke="#2db572" stroke-width="3.0" stroke-linecap="round" />
-<text x="78.0" y="1526.4" font-size="14.0" fill="#333333" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" dy="0.3em" class="nf-metro-legend-text">Anchor counts, PyDESeq2</text>
-<path d="M42.0,1550.4 L66.0,1550.4" stroke="#e6550d" stroke-width="3.0" stroke-linecap="round" />
-<text x="78.0" y="1550.4" font-size="14.0" fill="#333333" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" dy="0.3em" class="nf-metro-legend-text">DE-kupl contigs, limma</text>
-<path d="M42.0,1574.4 L66.0,1574.4" stroke="#756bb1" stroke-width="3.0" stroke-linecap="round" />
-<text x="78.0" y="1574.4" font-size="14.0" fill="#333333" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" dy="0.3em" class="nf-metro-legend-text">Protein sketches and search</text>
-<path d="M42.0,1598.4 L66.0,1598.4" stroke="#7f7f7f" stroke-width="3.0" stroke-linecap="round" stroke-dasharray="8,4" />
-<text x="78.0" y="1598.4" font-size="14.0" fill="#333333" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" dy="0.3em" class="nf-metro-legend-text">Checks: known-answer control, paper gene lists</text>
-<path d="M42.0,1622.4 L66.0,1622.4" stroke="#e7298a" stroke-width="3.0" stroke-linecap="round" />
-<text x="78.0" y="1622.4" font-size="14.0" fill="#333333" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" dy="0.3em" class="nf-metro-legend-text">KaMRaT contigs, t-test</text>
-<text x="1367.0" y="1662.0" font-size="8" fill="rgba(150, 150, 150, 0.6)" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" text-anchor="end">created with nf-metro v2.1.0</text>
-<text x="30.0" y="1662.0" font-size="11" fill="rgba(200, 200, 200, 0.85)" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" text-anchor="start">Every station not marked (script) or (planned) is one of the 10 processes of nextflow-runs/pec-domen2026. File icon = file type, with what it holds below it. "(planned)" = not built yet.</text>
+<text x="20" y="528" font-size="11" font-weight="normal" text-anchor="start" fill="#555">Every step is a process of the pipeline unless marked (script) or (planned). A line through a step means the step reads that data.</text>
 </svg>
