@@ -59,7 +59,8 @@ process fastp {
     storeDir "${store}"
 
     input:
-    tuple val(sample), val(store), path(r1), path(r2)
+    // staged under names that cannot match the outputs (control inputs are named <sample>_<mate>.fastq.gz)
+    tuple val(sample), val(store), path(r1, stageAs: 'in_1.fastq.gz'), path(r2, stageAs: 'in_2.fastq.gz')
 
     output:
     tuple val(sample), path("${sample}_1.fastq.gz"), path("${sample}_2.fastq.gz"), path("${sample}.il.fastq.gz"), path("${sample}.fastp.json"), path("${sample}.fastp.html"), path("${sample}.done")
