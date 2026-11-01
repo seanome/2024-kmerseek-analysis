@@ -155,15 +155,19 @@ def main(a):
     # ---- coding isoforms and their ORFs -----------------------------------------------
     coding = cls.filter((pl.col("coding") == "coding") & ~pl.col("ORF_seq").fill_null("").is_in(["", "NA"]))
     summary["isoforms_pass_coding"] = coding.height
-    proteins, cds_start, bad_frame = {}, {}, 0
+    proteins, cds_start, bad_frame, outside_exons = {}, {}, 0, 0
     for r in coding.iter_rows(named=True):
         prot = ib.usable_orf(r["ORF_seq"], r["CDS_start"], r["CDS_end"])
         if prot is None:
             bad_frame += 1
             continue
+        if not ib.cds_fits_exons(tx[r["isoform"]]["exons"], int(float(r["CDS_start"])), len(prot)):
+            outside_exons += 1  # CDS runs past the last exon: skip this isoform, keep going
+            continue
         proteins[r["isoform"]] = prot
         cds_start[r["isoform"]] = int(float(r["CDS_start"]))
     summary["isoforms_dropped_orf_length_mismatch"] = bad_frame
+    summary["isoforms_dropped_cds_outside_exons"] = outside_exons
     summary["isoforms_coding_used"] = len(proteins)
 
     # ---- one row per (coding isoform, exon) -------------------------------------------

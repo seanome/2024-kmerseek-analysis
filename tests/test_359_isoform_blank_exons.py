@@ -124,3 +124,10 @@ def test_region_name_and_named_rule():
     assert r["description"] == "" and not ib.is_named(r["feature_type"], r["description"])
     r = ib.parse_region_name("A0A017SE85|COMPBIAS|Low_complexity|80-102")
     assert r["description"] == "Low complexity" and ib.is_named(r["feature_type"], r["description"])
+
+
+def test_cds_fits_exons():
+    ex = [ib.Exon(1, 6), ib.Exon(11, 16)]  # 12 transcript bases
+    assert ib.cds_fits_exons(ex, 1, 4)
+    assert not ib.cds_fits_exons(ex, 1, 5)
+    assert not ib.cds_fits_exons(ex, 5, 3)
