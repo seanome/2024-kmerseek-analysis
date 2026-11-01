@@ -122,6 +122,7 @@ whole protein.
 rows = [
     ("1: kmerseek best of all lands >= 50%", *v["rule_1"]["kmerseek_best_of_all_lands"], v["rule_1"]["pass"]),
     *[(f"2: {t} lands < 15%", *x, x[2] is not None and x[2] < 0.15) for t, x in v["rule_2"]["structure_tools_land"].items()],
+    *[(f"2: {t} missing from the call tables", 0, 0, None, False) for t in v["rule_2"].get("missing_tools", [])],
     ("3: kmerseek lands with p_place < 0.05", *v["rule_3"]["kmerseek_lands_with_p_place_lt_0.05"], None),
     ("3: Kyte-Doolittle scan lands", *v["rule_3"]["kd_scan_lands"], None),
 ]
