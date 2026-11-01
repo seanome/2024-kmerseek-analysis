@@ -1,0 +1,2214 @@
+<metalink xmlns="http://www.metalinker.org/" version="3.0">
+  <publisher>
+    <name>UniProt Consortium</name>
+    <url>http://www.uniprot.org/</url>
+  </publisher>
+  <license>
+    <name>Creative Commons Attribution 4.0 International (CC BY 4.0)</name>
+    <url>http://creativecommons.org/licenses/by/4.0/</url>
+  </license>
+  <description>UniProt</description>
+  <version>2026_03</version>
+  <files>
+    <file name="uniparc_active_p181.fasta.gz">
+      <size>1199530527</size>
+      <verification>
+        <hash type="md5">055c98c7d3145a84edc7b1e8e3b9840b</hash>
+      </verification>
+      <resources>
+        <url type="ftp" location="ch" preference="100">ftp://ftp.expasy.org/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p181.fasta.gz</url>
+        <url type="ftp" location="uk" preference="100">ftp://ftp.ebi.ac.uk/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p181.fasta.gz</url>
+        <url type="ftp" location="us" preference="100">ftp://ftp.uniprot.org/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p181.fasta.gz</url>
+      </resources>
+    </file>
+  <file name="uniparc_active_p39.fasta.gz">
+      <size>1329713687</size>
+      <verification>
+        <hash type="md5">8480a0b3895c12bdce167505b5a8c69c</hash>
+      </verification>
+      <resources>
+        <url type="ftp" location="ch" preference="100">ftp://ftp.expasy.org/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p39.fasta.gz</url>
+        <url type="ftp" location="uk" preference="100">ftp://ftp.ebi.ac.uk/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p39.fasta.gz</url>
+        <url type="ftp" location="us" preference="100">ftp://ftp.uniprot.org/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p39.fasta.gz</url>
+      </resources>
+    </file>
+  <file name="uniparc_active_p11.fasta.gz">
+      <size>1245498008</size>
+      <verification>
+        <hash type="md5">839c9b3f55884c1ca9175a87e5b32197</hash>
+      </verification>
+      <resources>
+        <url type="ftp" location="ch" preference="100">ftp://ftp.expasy.org/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p11.fasta.gz</url>
+        <url type="ftp" location="uk" preference="100">ftp://ftp.ebi.ac.uk/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p11.fasta.gz</url>
+        <url type="ftp" location="us" preference="100">ftp://ftp.uniprot.org/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p11.fasta.gz</url>
+      </resources>
+    </file>
+  <file name="uniparc_active_p2.fasta.gz">
+      <size>1240899910</size>
+      <verification>
+        <hash type="md5">33dce9dad387ba04d60e654171dfb335</hash>
+      </verification>
+      <resources>
+        <url type="ftp" location="ch" preference="100">ftp://ftp.expasy.org/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p2.fasta.gz</url>
+        <url type="ftp" location="uk" preference="100">ftp://ftp.ebi.ac.uk/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p2.fasta.gz</url>
+        <url type="ftp" location="us" preference="100">ftp://ftp.uniprot.org/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p2.fasta.gz</url>
+      </resources>
+    </file>
+  <file name="uniparc_active_p185.fasta.gz">
+      <size>1242090466</size>
+      <verification>
+        <hash type="md5">9f2af65759b931c81a5f950bbe647173</hash>
+      </verification>
+      <resources>
+        <url type="ftp" location="ch" preference="100">ftp://ftp.expasy.org/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p185.fasta.gz</url>
+        <url type="ftp" location="uk" preference="100">ftp://ftp.ebi.ac.uk/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p185.fasta.gz</url>
+        <url type="ftp" location="us" preference="100">ftp://ftp.uniprot.org/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p185.fasta.gz</url>
+      </resources>
+    </file>
+  <file name="uniparc_active_p177.fasta.gz">
+      <size>1228142775</size>
+      <verification>
+        <hash type="md5">dc272c97e96190784d5926b2a9b1ec89</hash>
+      </verification>
+      <resources>
+        <url type="ftp" location="ch" preference="100">ftp://ftp.expasy.org/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p177.fasta.gz</url>
+        <url type="ftp" location="uk" preference="100">ftp://ftp.ebi.ac.uk/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p177.fasta.gz</url>
+        <url type="ftp" location="us" preference="100">ftp://ftp.uniprot.org/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p177.fasta.gz</url>
+      </resources>
+    </file>
+  <file name="uniparc_active_p20.fasta.gz">
+      <size>1245453446</size>
+      <verification>
+        <hash type="md5">23110b91af0223585a213d7c50a894b6</hash>
+      </verification>
+      <resources>
+        <url type="ftp" location="ch" preference="100">ftp://ftp.expasy.org/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p20.fasta.gz</url>
+        <url type="ftp" location="uk" preference="100">ftp://ftp.ebi.ac.uk/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p20.fasta.gz</url>
+        <url type="ftp" location="us" preference="100">ftp://ftp.uniprot.org/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p20.fasta.gz</url>
+      </resources>
+    </file>
+  <file name="uniparc_active_p123.fasta.gz">
+      <size>1229837512</size>
+      <verification>
+        <hash type="md5">5ae8d2413899c2714f9316d692f1c596</hash>
+      </verification>
+      <resources>
+        <url type="ftp" location="ch" preference="100">ftp://ftp.expasy.org/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p123.fasta.gz</url>
+        <url type="ftp" location="uk" preference="100">ftp://ftp.ebi.ac.uk/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p123.fasta.gz</url>
+        <url type="ftp" location="us" preference="100">ftp://ftp.uniprot.org/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p123.fasta.gz</url>
+      </resources>
+    </file>
+  <file name="uniparc_active_p175.fasta.gz">
+      <size>1195168309</size>
+      <verification>
+        <hash type="md5">1148e8d93bd8d0bb89b5467a43225159</hash>
+      </verification>
+      <resources>
+        <url type="ftp" location="ch" preference="100">ftp://ftp.expasy.org/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p175.fasta.gz</url>
+        <url type="ftp" location="uk" preference="100">ftp://ftp.ebi.ac.uk/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p175.fasta.gz</url>
+        <url type="ftp" location="us" preference="100">ftp://ftp.uniprot.org/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p175.fasta.gz</url>
+      </resources>
+    </file>
+  <file name="uniparc_active_p145.fasta.gz">
+      <size>1224514979</size>
+      <verification>
+        <hash type="md5">2ee50678ab9c35ba2049984b22849c89</hash>
+      </verification>
+      <resources>
+        <url type="ftp" location="ch" preference="100">ftp://ftp.expasy.org/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p145.fasta.gz</url>
+        <url type="ftp" location="uk" preference="100">ftp://ftp.ebi.ac.uk/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p145.fasta.gz</url>
+        <url type="ftp" location="us" preference="100">ftp://ftp.uniprot.org/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p145.fasta.gz</url>
+      </resources>
+    </file>
+  <file name="uniparc_active_p93.fasta.gz">
+      <size>1183726250</size>
+      <verification>
+        <hash type="md5">0de8588c94f43229b031698ace5b927d</hash>
+      </verification>
+      <resources>
+        <url type="ftp" location="ch" preference="100">ftp://ftp.expasy.org/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p93.fasta.gz</url>
+        <url type="ftp" location="uk" preference="100">ftp://ftp.ebi.ac.uk/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p93.fasta.gz</url>
+        <url type="ftp" location="us" preference="100">ftp://ftp.uniprot.org/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p93.fasta.gz</url>
+      </resources>
+    </file>
+  <file name="uniparc_active_p172.fasta.gz">
+      <size>1264289690</size>
+      <verification>
+        <hash type="md5">60c8c0c7aae3830e26498a8f2e463adb</hash>
+      </verification>
+      <resources>
+        <url type="ftp" location="ch" preference="100">ftp://ftp.expasy.org/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p172.fasta.gz</url>
+        <url type="ftp" location="uk" preference="100">ftp://ftp.ebi.ac.uk/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p172.fasta.gz</url>
+        <url type="ftp" location="us" preference="100">ftp://ftp.uniprot.org/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p172.fasta.gz</url>
+      </resources>
+    </file>
+  <file name="uniparc_active_p70.fasta.gz">
+      <size>1262908542</size>
+      <verification>
+        <hash type="md5">6c50471b5e1710742925d84a3a4cd49a</hash>
+      </verification>
+      <resources>
+        <url type="ftp" location="ch" preference="100">ftp://ftp.expasy.org/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p70.fasta.gz</url>
+        <url type="ftp" location="uk" preference="100">ftp://ftp.ebi.ac.uk/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p70.fasta.gz</url>
+        <url type="ftp" location="us" preference="100">ftp://ftp.uniprot.org/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p70.fasta.gz</url>
+      </resources>
+    </file>
+  <file name="uniparc_active_p182.fasta.gz">
+      <size>1222536976</size>
+      <verification>
+        <hash type="md5">40e7e3ef9d86451e833bfa5f59784b25</hash>
+      </verification>
+      <resources>
+        <url type="ftp" location="ch" preference="100">ftp://ftp.expasy.org/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p182.fasta.gz</url>
+        <url type="ftp" location="uk" preference="100">ftp://ftp.ebi.ac.uk/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p182.fasta.gz</url>
+        <url type="ftp" location="us" preference="100">ftp://ftp.uniprot.org/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p182.fasta.gz</url>
+      </resources>
+    </file>
+  <file name="uniparc_active_p171.fasta.gz">
+      <size>1238524335</size>
+      <verification>
+        <hash type="md5">272952513f965ea2baf06ebe1633b1df</hash>
+      </verification>
+      <resources>
+        <url type="ftp" location="ch" preference="100">ftp://ftp.expasy.org/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p171.fasta.gz</url>
+        <url type="ftp" location="uk" preference="100">ftp://ftp.ebi.ac.uk/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p171.fasta.gz</url>
+        <url type="ftp" location="us" preference="100">ftp://ftp.uniprot.org/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p171.fasta.gz</url>
+      </resources>
+    </file>
+  <file name="uniparc_active_p102.fasta.gz">
+      <size>1285955994</size>
+      <verification>
+        <hash type="md5">1874f47ff5174b7b0b1034729e6e07a1</hash>
+      </verification>
+      <resources>
+        <url type="ftp" location="ch" preference="100">ftp://ftp.expasy.org/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p102.fasta.gz</url>
+        <url type="ftp" location="uk" preference="100">ftp://ftp.ebi.ac.uk/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p102.fasta.gz</url>
+        <url type="ftp" location="us" preference="100">ftp://ftp.uniprot.org/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p102.fasta.gz</url>
+      </resources>
+    </file>
+  <file name="uniparc_active_p103.fasta.gz">
+      <size>1258707342</size>
+      <verification>
+        <hash type="md5">b99174fd77b0bc404073ff21969932c5</hash>
+      </verification>
+      <resources>
+        <url type="ftp" location="ch" preference="100">ftp://ftp.expasy.org/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p103.fasta.gz</url>
+        <url type="ftp" location="uk" preference="100">ftp://ftp.ebi.ac.uk/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p103.fasta.gz</url>
+        <url type="ftp" location="us" preference="100">ftp://ftp.uniprot.org/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p103.fasta.gz</url>
+      </resources>
+    </file>
+  <file name="uniparc_active_p188.fasta.gz">
+      <size>1205586829</size>
+      <verification>
+        <hash type="md5">a161bd0d89f7b21ca5c7448cdf886164</hash>
+      </verification>
+      <resources>
+        <url type="ftp" location="ch" preference="100">ftp://ftp.expasy.org/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p188.fasta.gz</url>
+        <url type="ftp" location="uk" preference="100">ftp://ftp.ebi.ac.uk/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p188.fasta.gz</url>
+        <url type="ftp" location="us" preference="100">ftp://ftp.uniprot.org/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p188.fasta.gz</url>
+      </resources>
+    </file>
+  <file name="uniparc_active_p9.fasta.gz">
+      <size>1236183109</size>
+      <verification>
+        <hash type="md5">c9f7e2985bf3785281599aeb55cde4ba</hash>
+      </verification>
+      <resources>
+        <url type="ftp" location="ch" preference="100">ftp://ftp.expasy.org/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p9.fasta.gz</url>
+        <url type="ftp" location="uk" preference="100">ftp://ftp.ebi.ac.uk/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p9.fasta.gz</url>
+        <url type="ftp" location="us" preference="100">ftp://ftp.uniprot.org/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p9.fasta.gz</url>
+      </resources>
+    </file>
+  <file name="uniparc_active_p107.fasta.gz">
+      <size>1243028929</size>
+      <verification>
+        <hash type="md5">0f148281c15e930c2cff80edc731874d</hash>
+      </verification>
+      <resources>
+        <url type="ftp" location="ch" preference="100">ftp://ftp.expasy.org/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p107.fasta.gz</url>
+        <url type="ftp" location="uk" preference="100">ftp://ftp.ebi.ac.uk/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p107.fasta.gz</url>
+        <url type="ftp" location="us" preference="100">ftp://ftp.uniprot.org/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p107.fasta.gz</url>
+      </resources>
+    </file>
+  <file name="uniparc_active_p158.fasta.gz">
+      <size>1289428289</size>
+      <verification>
+        <hash type="md5">f0a9e6f1c96c9cbb6972f967edc7b382</hash>
+      </verification>
+      <resources>
+        <url type="ftp" location="ch" preference="100">ftp://ftp.expasy.org/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p158.fasta.gz</url>
+        <url type="ftp" location="uk" preference="100">ftp://ftp.ebi.ac.uk/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p158.fasta.gz</url>
+        <url type="ftp" location="us" preference="100">ftp://ftp.uniprot.org/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p158.fasta.gz</url>
+      </resources>
+    </file>
+  <file name="uniparc_active_p75.fasta.gz">
+      <size>1253328171</size>
+      <verification>
+        <hash type="md5">0614beb10ce0077b2c11ef02d48b8c7b</hash>
+      </verification>
+      <resources>
+        <url type="ftp" location="ch" preference="100">ftp://ftp.expasy.org/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p75.fasta.gz</url>
+        <url type="ftp" location="uk" preference="100">ftp://ftp.ebi.ac.uk/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p75.fasta.gz</url>
+        <url type="ftp" location="us" preference="100">ftp://ftp.uniprot.org/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p75.fasta.gz</url>
+      </resources>
+    </file>
+  <file name="uniparc_active_p129.fasta.gz">
+      <size>1239164051</size>
+      <verification>
+        <hash type="md5">6981795a0c42567ba9653a46f4aaaf0d</hash>
+      </verification>
+      <resources>
+        <url type="ftp" location="ch" preference="100">ftp://ftp.expasy.org/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p129.fasta.gz</url>
+        <url type="ftp" location="uk" preference="100">ftp://ftp.ebi.ac.uk/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p129.fasta.gz</url>
+        <url type="ftp" location="us" preference="100">ftp://ftp.uniprot.org/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p129.fasta.gz</url>
+      </resources>
+    </file>
+  <file name="uniparc_active_p132.fasta.gz">
+      <size>1237143726</size>
+      <verification>
+        <hash type="md5">0b3a2d591428cc252a1dc3e5af8d9c3c</hash>
+      </verification>
+      <resources>
+        <url type="ftp" location="ch" preference="100">ftp://ftp.expasy.org/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p132.fasta.gz</url>
+        <url type="ftp" location="uk" preference="100">ftp://ftp.ebi.ac.uk/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p132.fasta.gz</url>
+        <url type="ftp" location="us" preference="100">ftp://ftp.uniprot.org/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p132.fasta.gz</url>
+      </resources>
+    </file>
+  <file name="uniparc_active_p131.fasta.gz">
+      <size>1197675422</size>
+      <verification>
+        <hash type="md5">53f1964b0c3445639c1f5db72ab5ebc8</hash>
+      </verification>
+      <resources>
+        <url type="ftp" location="ch" preference="100">ftp://ftp.expasy.org/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p131.fasta.gz</url>
+        <url type="ftp" location="uk" preference="100">ftp://ftp.ebi.ac.uk/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p131.fasta.gz</url>
+        <url type="ftp" location="us" preference="100">ftp://ftp.uniprot.org/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p131.fasta.gz</url>
+      </resources>
+    </file>
+  <file name="uniparc_active_p86.fasta.gz">
+      <size>1264682193</size>
+      <verification>
+        <hash type="md5">d054fa854d03ad63a4179d3fbae983da</hash>
+      </verification>
+      <resources>
+        <url type="ftp" location="ch" preference="100">ftp://ftp.expasy.org/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p86.fasta.gz</url>
+        <url type="ftp" location="uk" preference="100">ftp://ftp.ebi.ac.uk/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p86.fasta.gz</url>
+        <url type="ftp" location="us" preference="100">ftp://ftp.uniprot.org/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p86.fasta.gz</url>
+      </resources>
+    </file>
+  <file name="uniparc_active_p66.fasta.gz">
+      <size>1228070561</size>
+      <verification>
+        <hash type="md5">71d47903cf2c867607fadfbf98c171f1</hash>
+      </verification>
+      <resources>
+        <url type="ftp" location="ch" preference="100">ftp://ftp.expasy.org/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p66.fasta.gz</url>
+        <url type="ftp" location="uk" preference="100">ftp://ftp.ebi.ac.uk/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p66.fasta.gz</url>
+        <url type="ftp" location="us" preference="100">ftp://ftp.uniprot.org/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p66.fasta.gz</url>
+      </resources>
+    </file>
+  <file name="uniparc_active_p35.fasta.gz">
+      <size>1255810907</size>
+      <verification>
+        <hash type="md5">09093ed90d56139f5839b144b15f04eb</hash>
+      </verification>
+      <resources>
+        <url type="ftp" location="ch" preference="100">ftp://ftp.expasy.org/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p35.fasta.gz</url>
+        <url type="ftp" location="uk" preference="100">ftp://ftp.ebi.ac.uk/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p35.fasta.gz</url>
+        <url type="ftp" location="us" preference="100">ftp://ftp.uniprot.org/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p35.fasta.gz</url>
+      </resources>
+    </file>
+  <file name="uniparc_active_p18.fasta.gz">
+      <size>1279541395</size>
+      <verification>
+        <hash type="md5">d597c2b3b26f05f0a8cdfdb2884cae61</hash>
+      </verification>
+      <resources>
+        <url type="ftp" location="ch" preference="100">ftp://ftp.expasy.org/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p18.fasta.gz</url>
+        <url type="ftp" location="uk" preference="100">ftp://ftp.ebi.ac.uk/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p18.fasta.gz</url>
+        <url type="ftp" location="us" preference="100">ftp://ftp.uniprot.org/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p18.fasta.gz</url>
+      </resources>
+    </file>
+  <file name="uniparc_active_p168.fasta.gz">
+      <size>1251872410</size>
+      <verification>
+        <hash type="md5">ae5bc66116d63bb69f12eb7a3c65db89</hash>
+      </verification>
+      <resources>
+        <url type="ftp" location="ch" preference="100">ftp://ftp.expasy.org/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p168.fasta.gz</url>
+        <url type="ftp" location="uk" preference="100">ftp://ftp.ebi.ac.uk/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p168.fasta.gz</url>
+        <url type="ftp" location="us" preference="100">ftp://ftp.uniprot.org/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p168.fasta.gz</url>
+      </resources>
+    </file>
+  <file name="uniparc_active_p139.fasta.gz">
+      <size>1225756000</size>
+      <verification>
+        <hash type="md5">66ddc026cbc5dcc3ac435bfd7b735f71</hash>
+      </verification>
+      <resources>
+        <url type="ftp" location="ch" preference="100">ftp://ftp.expasy.org/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p139.fasta.gz</url>
+        <url type="ftp" location="uk" preference="100">ftp://ftp.ebi.ac.uk/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p139.fasta.gz</url>
+        <url type="ftp" location="us" preference="100">ftp://ftp.uniprot.org/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p139.fasta.gz</url>
+      </resources>
+    </file>
+  <file name="uniparc_active_p195.fasta.gz">
+      <size>1214962360</size>
+      <verification>
+        <hash type="md5">66dd53afcadeeb0984d352469781ac1c</hash>
+      </verification>
+      <resources>
+        <url type="ftp" location="ch" preference="100">ftp://ftp.expasy.org/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p195.fasta.gz</url>
+        <url type="ftp" location="uk" preference="100">ftp://ftp.ebi.ac.uk/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p195.fasta.gz</url>
+        <url type="ftp" location="us" preference="100">ftp://ftp.uniprot.org/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p195.fasta.gz</url>
+      </resources>
+    </file>
+  <file name="uniparc_active_p87.fasta.gz">
+      <size>1240012994</size>
+      <verification>
+        <hash type="md5">075cbb5dc3f62fda2af860323176201b</hash>
+      </verification>
+      <resources>
+        <url type="ftp" location="ch" preference="100">ftp://ftp.expasy.org/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p87.fasta.gz</url>
+        <url type="ftp" location="uk" preference="100">ftp://ftp.ebi.ac.uk/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p87.fasta.gz</url>
+        <url type="ftp" location="us" preference="100">ftp://ftp.uniprot.org/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p87.fasta.gz</url>
+      </resources>
+    </file>
+  <file name="uniparc_active_p19.fasta.gz">
+      <size>1245405818</size>
+      <verification>
+        <hash type="md5">2f37bb57c42f326ffe9fe99c0cc2b793</hash>
+      </verification>
+      <resources>
+        <url type="ftp" location="ch" preference="100">ftp://ftp.expasy.org/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p19.fasta.gz</url>
+        <url type="ftp" location="uk" preference="100">ftp://ftp.ebi.ac.uk/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p19.fasta.gz</url>
+        <url type="ftp" location="us" preference="100">ftp://ftp.uniprot.org/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p19.fasta.gz</url>
+      </resources>
+    </file>
+  <file name="uniparc_active_p54.fasta.gz">
+      <size>1243143629</size>
+      <verification>
+        <hash type="md5">a7021bbff655204f4a5366cf527e61d0</hash>
+      </verification>
+      <resources>
+        <url type="ftp" location="ch" preference="100">ftp://ftp.expasy.org/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p54.fasta.gz</url>
+        <url type="ftp" location="uk" preference="100">ftp://ftp.ebi.ac.uk/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p54.fasta.gz</url>
+        <url type="ftp" location="us" preference="100">ftp://ftp.uniprot.org/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p54.fasta.gz</url>
+      </resources>
+    </file>
+  <file name="uniparc_active_p152.fasta.gz">
+      <size>1223123510</size>
+      <verification>
+        <hash type="md5">5b8f62f5857d77284f0cf0c370ab7635</hash>
+      </verification>
+      <resources>
+        <url type="ftp" location="ch" preference="100">ftp://ftp.expasy.org/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p152.fasta.gz</url>
+        <url type="ftp" location="uk" preference="100">ftp://ftp.ebi.ac.uk/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p152.fasta.gz</url>
+        <url type="ftp" location="us" preference="100">ftp://ftp.uniprot.org/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p152.fasta.gz</url>
+      </resources>
+    </file>
+  <file name="uniparc_active_p29.fasta.gz">
+      <size>1281332835</size>
+      <verification>
+        <hash type="md5">2c2333a4502898260957ee7577b088c8</hash>
+      </verification>
+      <resources>
+        <url type="ftp" location="ch" preference="100">ftp://ftp.expasy.org/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p29.fasta.gz</url>
+        <url type="ftp" location="uk" preference="100">ftp://ftp.ebi.ac.uk/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p29.fasta.gz</url>
+        <url type="ftp" location="us" preference="100">ftp://ftp.uniprot.org/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p29.fasta.gz</url>
+      </resources>
+    </file>
+  <file name="uniparc_active_p83.fasta.gz">
+      <size>1214451812</size>
+      <verification>
+        <hash type="md5">e85a6a67ad4059b986851e260a413d69</hash>
+      </verification>
+      <resources>
+        <url type="ftp" location="ch" preference="100">ftp://ftp.expasy.org/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p83.fasta.gz</url>
+        <url type="ftp" location="uk" preference="100">ftp://ftp.ebi.ac.uk/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p83.fasta.gz</url>
+        <url type="ftp" location="us" preference="100">ftp://ftp.uniprot.org/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p83.fasta.gz</url>
+      </resources>
+    </file>
+  <file name="uniparc_active_p92.fasta.gz">
+      <size>1299995535</size>
+      <verification>
+        <hash type="md5">9ac4d28ee2cb14a900f2c8a810f20f21</hash>
+      </verification>
+      <resources>
+        <url type="ftp" location="ch" preference="100">ftp://ftp.expasy.org/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p92.fasta.gz</url>
+        <url type="ftp" location="uk" preference="100">ftp://ftp.ebi.ac.uk/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p92.fasta.gz</url>
+        <url type="ftp" location="us" preference="100">ftp://ftp.uniprot.org/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p92.fasta.gz</url>
+      </resources>
+    </file>
+  <file name="uniparc_active_p90.fasta.gz">
+      <size>1209967885</size>
+      <verification>
+        <hash type="md5">ee384469467b7c602a68d3d2e2e94b23</hash>
+      </verification>
+      <resources>
+        <url type="ftp" location="ch" preference="100">ftp://ftp.expasy.org/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p90.fasta.gz</url>
+        <url type="ftp" location="uk" preference="100">ftp://ftp.ebi.ac.uk/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p90.fasta.gz</url>
+        <url type="ftp" location="us" preference="100">ftp://ftp.uniprot.org/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p90.fasta.gz</url>
+      </resources>
+    </file>
+  <file name="uniparc_active_p95.fasta.gz">
+      <size>1273799273</size>
+      <verification>
+        <hash type="md5">ca7741761374742e1cc50c144b33ad10</hash>
+      </verification>
+      <resources>
+        <url type="ftp" location="ch" preference="100">ftp://ftp.expasy.org/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p95.fasta.gz</url>
+        <url type="ftp" location="uk" preference="100">ftp://ftp.ebi.ac.uk/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p95.fasta.gz</url>
+        <url type="ftp" location="us" preference="100">ftp://ftp.uniprot.org/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p95.fasta.gz</url>
+      </resources>
+    </file>
+  <file name="uniparc_active_p52.fasta.gz">
+      <size>1219257480</size>
+      <verification>
+        <hash type="md5">a52b05f2447e84fc34c2ff069985cc66</hash>
+      </verification>
+      <resources>
+        <url type="ftp" location="ch" preference="100">ftp://ftp.expasy.org/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p52.fasta.gz</url>
+        <url type="ftp" location="uk" preference="100">ftp://ftp.ebi.ac.uk/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p52.fasta.gz</url>
+        <url type="ftp" location="us" preference="100">ftp://ftp.uniprot.org/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p52.fasta.gz</url>
+      </resources>
+    </file>
+  <file name="uniparc_active_p160.fasta.gz">
+      <size>1219134037</size>
+      <verification>
+        <hash type="md5">a306650981bb671029dc08bc608ee170</hash>
+      </verification>
+      <resources>
+        <url type="ftp" location="ch" preference="100">ftp://ftp.expasy.org/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p160.fasta.gz</url>
+        <url type="ftp" location="uk" preference="100">ftp://ftp.ebi.ac.uk/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p160.fasta.gz</url>
+        <url type="ftp" location="us" preference="100">ftp://ftp.uniprot.org/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p160.fasta.gz</url>
+      </resources>
+    </file>
+  <file name="uniparc_active_p110.fasta.gz">
+      <size>1156221742</size>
+      <verification>
+        <hash type="md5">b99a01e8b0379b5370376d97eb895dd0</hash>
+      </verification>
+      <resources>
+        <url type="ftp" location="ch" preference="100">ftp://ftp.expasy.org/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p110.fasta.gz</url>
+        <url type="ftp" location="uk" preference="100">ftp://ftp.ebi.ac.uk/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p110.fasta.gz</url>
+        <url type="ftp" location="us" preference="100">ftp://ftp.uniprot.org/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p110.fasta.gz</url>
+      </resources>
+    </file>
+  <file name="uniparc_active_p46.fasta.gz">
+      <size>1309729645</size>
+      <verification>
+        <hash type="md5">f514c76bf07df73c76f9200affdc7bca</hash>
+      </verification>
+      <resources>
+        <url type="ftp" location="ch" preference="100">ftp://ftp.expasy.org/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p46.fasta.gz</url>
+        <url type="ftp" location="uk" preference="100">ftp://ftp.ebi.ac.uk/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p46.fasta.gz</url>
+        <url type="ftp" location="us" preference="100">ftp://ftp.uniprot.org/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p46.fasta.gz</url>
+      </resources>
+    </file>
+  <file name="uniparc_active_p163.fasta.gz">
+      <size>1234587821</size>
+      <verification>
+        <hash type="md5">9578e737b86772bd1944007d4d35f5d3</hash>
+      </verification>
+      <resources>
+        <url type="ftp" location="ch" preference="100">ftp://ftp.expasy.org/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p163.fasta.gz</url>
+        <url type="ftp" location="uk" preference="100">ftp://ftp.ebi.ac.uk/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p163.fasta.gz</url>
+        <url type="ftp" location="us" preference="100">ftp://ftp.uniprot.org/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p163.fasta.gz</url>
+      </resources>
+    </file>
+  <file name="uniparc_active_p162.fasta.gz">
+      <size>1242607910</size>
+      <verification>
+        <hash type="md5">327a44f08d021f02ae1637b91abd7fe0</hash>
+      </verification>
+      <resources>
+        <url type="ftp" location="ch" preference="100">ftp://ftp.expasy.org/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p162.fasta.gz</url>
+        <url type="ftp" location="uk" preference="100">ftp://ftp.ebi.ac.uk/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p162.fasta.gz</url>
+        <url type="ftp" location="us" preference="100">ftp://ftp.uniprot.org/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p162.fasta.gz</url>
+      </resources>
+    </file>
+  <file name="uniparc_active_p124.fasta.gz">
+      <size>1253987786</size>
+      <verification>
+        <hash type="md5">40c05e6060a406e0dee6910e9e74eccc</hash>
+      </verification>
+      <resources>
+        <url type="ftp" location="ch" preference="100">ftp://ftp.expasy.org/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p124.fasta.gz</url>
+        <url type="ftp" location="uk" preference="100">ftp://ftp.ebi.ac.uk/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p124.fasta.gz</url>
+        <url type="ftp" location="us" preference="100">ftp://ftp.uniprot.org/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p124.fasta.gz</url>
+      </resources>
+    </file>
+  <file name="uniparc_active_p15.fasta.gz">
+      <size>1247126431</size>
+      <verification>
+        <hash type="md5">cad7e07aeae9e567269903bab5a47867</hash>
+      </verification>
+      <resources>
+        <url type="ftp" location="ch" preference="100">ftp://ftp.expasy.org/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p15.fasta.gz</url>
+        <url type="ftp" location="uk" preference="100">ftp://ftp.ebi.ac.uk/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p15.fasta.gz</url>
+        <url type="ftp" location="us" preference="100">ftp://ftp.uniprot.org/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p15.fasta.gz</url>
+      </resources>
+    </file>
+  <file name="uniparc_active_p173.fasta.gz">
+      <size>1231719490</size>
+      <verification>
+        <hash type="md5">3630f6d49e22ae07347f30f1b332c61e</hash>
+      </verification>
+      <resources>
+        <url type="ftp" location="ch" preference="100">ftp://ftp.expasy.org/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p173.fasta.gz</url>
+        <url type="ftp" location="uk" preference="100">ftp://ftp.ebi.ac.uk/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p173.fasta.gz</url>
+        <url type="ftp" location="us" preference="100">ftp://ftp.uniprot.org/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p173.fasta.gz</url>
+      </resources>
+    </file>
+  <file name="uniparc_active_p104.fasta.gz">
+      <size>1213220503</size>
+      <verification>
+        <hash type="md5">49490d70f897f3bfd8b166b1437be7f2</hash>
+      </verification>
+      <resources>
+        <url type="ftp" location="ch" preference="100">ftp://ftp.expasy.org/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p104.fasta.gz</url>
+        <url type="ftp" location="uk" preference="100">ftp://ftp.ebi.ac.uk/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p104.fasta.gz</url>
+        <url type="ftp" location="us" preference="100">ftp://ftp.uniprot.org/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p104.fasta.gz</url>
+      </resources>
+    </file>
+  <file name="uniparc_active_p10.fasta.gz">
+      <size>1235854294</size>
+      <verification>
+        <hash type="md5">5f24a2a84aa39b1dfa442e9835b03597</hash>
+      </verification>
+      <resources>
+        <url type="ftp" location="ch" preference="100">ftp://ftp.expasy.org/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p10.fasta.gz</url>
+        <url type="ftp" location="uk" preference="100">ftp://ftp.ebi.ac.uk/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p10.fasta.gz</url>
+        <url type="ftp" location="us" preference="100">ftp://ftp.uniprot.org/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p10.fasta.gz</url>
+      </resources>
+    </file>
+  <file name="uniparc_active_p69.fasta.gz">
+      <size>1214281213</size>
+      <verification>
+        <hash type="md5">88536af3d92932493bd01e318489888d</hash>
+      </verification>
+      <resources>
+        <url type="ftp" location="ch" preference="100">ftp://ftp.expasy.org/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p69.fasta.gz</url>
+        <url type="ftp" location="uk" preference="100">ftp://ftp.ebi.ac.uk/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p69.fasta.gz</url>
+        <url type="ftp" location="us" preference="100">ftp://ftp.uniprot.org/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p69.fasta.gz</url>
+      </resources>
+    </file>
+  <file name="uniparc_active_p78.fasta.gz">
+      <size>1318925864</size>
+      <verification>
+        <hash type="md5">e06cb910940a8fc2bb3b3ccdeb2cc984</hash>
+      </verification>
+      <resources>
+        <url type="ftp" location="ch" preference="100">ftp://ftp.expasy.org/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p78.fasta.gz</url>
+        <url type="ftp" location="uk" preference="100">ftp://ftp.ebi.ac.uk/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p78.fasta.gz</url>
+        <url type="ftp" location="us" preference="100">ftp://ftp.uniprot.org/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p78.fasta.gz</url>
+      </resources>
+    </file>
+  <file name="uniparc_active_p74.fasta.gz">
+      <size>1250452370</size>
+      <verification>
+        <hash type="md5">1bcd6744faed2f7b767c6e3b3870b959</hash>
+      </verification>
+      <resources>
+        <url type="ftp" location="ch" preference="100">ftp://ftp.expasy.org/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p74.fasta.gz</url>
+        <url type="ftp" location="uk" preference="100">ftp://ftp.ebi.ac.uk/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p74.fasta.gz</url>
+        <url type="ftp" location="us" preference="100">ftp://ftp.uniprot.org/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p74.fasta.gz</url>
+      </resources>
+    </file>
+  <file name="uniparc_active_p196.fasta.gz">
+      <size>1237622456</size>
+      <verification>
+        <hash type="md5">c9174a306872c4d4d3d6f1892dba9197</hash>
+      </verification>
+      <resources>
+        <url type="ftp" location="ch" preference="100">ftp://ftp.expasy.org/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p196.fasta.gz</url>
+        <url type="ftp" location="uk" preference="100">ftp://ftp.ebi.ac.uk/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p196.fasta.gz</url>
+        <url type="ftp" location="us" preference="100">ftp://ftp.uniprot.org/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p196.fasta.gz</url>
+      </resources>
+    </file>
+  <file name="uniparc_active_p115.fasta.gz">
+      <size>1230951212</size>
+      <verification>
+        <hash type="md5">0a850119fb42e625a737f58b4af835c6</hash>
+      </verification>
+      <resources>
+        <url type="ftp" location="ch" preference="100">ftp://ftp.expasy.org/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p115.fasta.gz</url>
+        <url type="ftp" location="uk" preference="100">ftp://ftp.ebi.ac.uk/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p115.fasta.gz</url>
+        <url type="ftp" location="us" preference="100">ftp://ftp.uniprot.org/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p115.fasta.gz</url>
+      </resources>
+    </file>
+  <file name="uniparc_active_p114.fasta.gz">
+      <size>1251019997</size>
+      <verification>
+        <hash type="md5">000b427f8216e7e569c6fc581e45e9aa</hash>
+      </verification>
+      <resources>
+        <url type="ftp" location="ch" preference="100">ftp://ftp.expasy.org/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p114.fasta.gz</url>
+        <url type="ftp" location="uk" preference="100">ftp://ftp.ebi.ac.uk/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p114.fasta.gz</url>
+        <url type="ftp" location="us" preference="100">ftp://ftp.uniprot.org/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p114.fasta.gz</url>
+      </resources>
+    </file>
+  <file name="uniparc_active_p27.fasta.gz">
+      <size>1227583523</size>
+      <verification>
+        <hash type="md5">8b33c9fcbd6ca60e8d7b84d338fb0a80</hash>
+      </verification>
+      <resources>
+        <url type="ftp" location="ch" preference="100">ftp://ftp.expasy.org/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p27.fasta.gz</url>
+        <url type="ftp" location="uk" preference="100">ftp://ftp.ebi.ac.uk/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p27.fasta.gz</url>
+        <url type="ftp" location="us" preference="100">ftp://ftp.uniprot.org/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p27.fasta.gz</url>
+      </resources>
+    </file>
+  <file name="uniparc_active_p85.fasta.gz">
+      <size>1251058249</size>
+      <verification>
+        <hash type="md5">ee772ebb9cc08b0c0e6899cbc05fd556</hash>
+      </verification>
+      <resources>
+        <url type="ftp" location="ch" preference="100">ftp://ftp.expasy.org/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p85.fasta.gz</url>
+        <url type="ftp" location="uk" preference="100">ftp://ftp.ebi.ac.uk/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p85.fasta.gz</url>
+        <url type="ftp" location="us" preference="100">ftp://ftp.uniprot.org/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p85.fasta.gz</url>
+      </resources>
+    </file>
+  <file name="uniparc_active_p134.fasta.gz">
+      <size>1240020194</size>
+      <verification>
+        <hash type="md5">0073a947fc6da12f16a5036780a4dba2</hash>
+      </verification>
+      <resources>
+        <url type="ftp" location="ch" preference="100">ftp://ftp.expasy.org/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p134.fasta.gz</url>
+        <url type="ftp" location="uk" preference="100">ftp://ftp.ebi.ac.uk/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p134.fasta.gz</url>
+        <url type="ftp" location="us" preference="100">ftp://ftp.uniprot.org/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p134.fasta.gz</url>
+      </resources>
+    </file>
+  <file name="uniparc_active_p89.fasta.gz">
+      <size>1264959410</size>
+      <verification>
+        <hash type="md5">6db684d5469c418e708a4620bf8f86c3</hash>
+      </verification>
+      <resources>
+        <url type="ftp" location="ch" preference="100">ftp://ftp.expasy.org/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p89.fasta.gz</url>
+        <url type="ftp" location="uk" preference="100">ftp://ftp.ebi.ac.uk/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p89.fasta.gz</url>
+        <url type="ftp" location="us" preference="100">ftp://ftp.uniprot.org/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p89.fasta.gz</url>
+      </resources>
+    </file>
+  <file name="uniparc_active_p198.fasta.gz">
+      <size>1620475118</size>
+      <verification>
+        <hash type="md5">db4aab228f25f5db91b366e64764d723</hash>
+      </verification>
+      <resources>
+        <url type="ftp" location="ch" preference="100">ftp://ftp.expasy.org/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p198.fasta.gz</url>
+        <url type="ftp" location="uk" preference="100">ftp://ftp.ebi.ac.uk/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p198.fasta.gz</url>
+        <url type="ftp" location="us" preference="100">ftp://ftp.uniprot.org/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p198.fasta.gz</url>
+      </resources>
+    </file>
+  <file name="uniparc_active_p22.fasta.gz">
+      <size>1299837375</size>
+      <verification>
+        <hash type="md5">45b75bb9d65f0151efbed7198bb89813</hash>
+      </verification>
+      <resources>
+        <url type="ftp" location="ch" preference="100">ftp://ftp.expasy.org/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p22.fasta.gz</url>
+        <url type="ftp" location="uk" preference="100">ftp://ftp.ebi.ac.uk/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p22.fasta.gz</url>
+        <url type="ftp" location="us" preference="100">ftp://ftp.uniprot.org/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p22.fasta.gz</url>
+      </resources>
+    </file>
+  <file name="uniparc_active_p68.fasta.gz">
+      <size>1193855782</size>
+      <verification>
+        <hash type="md5">1d6479d3d1a0b428728801edd3a3159a</hash>
+      </verification>
+      <resources>
+        <url type="ftp" location="ch" preference="100">ftp://ftp.expasy.org/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p68.fasta.gz</url>
+        <url type="ftp" location="uk" preference="100">ftp://ftp.ebi.ac.uk/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p68.fasta.gz</url>
+        <url type="ftp" location="us" preference="100">ftp://ftp.uniprot.org/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p68.fasta.gz</url>
+      </resources>
+    </file>
+  <file name="uniparc_active_p153.fasta.gz">
+      <size>1244056393</size>
+      <verification>
+        <hash type="md5">24df4d29a12b04904ae9997b53d0da9e</hash>
+      </verification>
+      <resources>
+        <url type="ftp" location="ch" preference="100">ftp://ftp.expasy.org/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p153.fasta.gz</url>
+        <url type="ftp" location="uk" preference="100">ftp://ftp.ebi.ac.uk/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p153.fasta.gz</url>
+        <url type="ftp" location="us" preference="100">ftp://ftp.uniprot.org/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p153.fasta.gz</url>
+      </resources>
+    </file>
+  <file name="uniparc_active_p159.fasta.gz">
+      <size>1243353280</size>
+      <verification>
+        <hash type="md5">e2e9ad1742b398f698bd0f396fe2d4ac</hash>
+      </verification>
+      <resources>
+        <url type="ftp" location="ch" preference="100">ftp://ftp.expasy.org/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p159.fasta.gz</url>
+        <url type="ftp" location="uk" preference="100">ftp://ftp.ebi.ac.uk/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p159.fasta.gz</url>
+        <url type="ftp" location="us" preference="100">ftp://ftp.uniprot.org/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p159.fasta.gz</url>
+      </resources>
+    </file>
+  <file name="uniparc_active_p42.fasta.gz">
+      <size>1223727367</size>
+      <verification>
+        <hash type="md5">f28988b3fd2975a9fe371d6cca9d1979</hash>
+      </verification>
+      <resources>
+        <url type="ftp" location="ch" preference="100">ftp://ftp.expasy.org/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p42.fasta.gz</url>
+        <url type="ftp" location="uk" preference="100">ftp://ftp.ebi.ac.uk/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p42.fasta.gz</url>
+        <url type="ftp" location="us" preference="100">ftp://ftp.uniprot.org/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p42.fasta.gz</url>
+      </resources>
+    </file>
+  <file name="uniparc_active_p200.fasta.gz">
+      <size>927297412</size>
+      <verification>
+        <hash type="md5">11f08f7a99d2129b67af8e920fd39c2a</hash>
+      </verification>
+      <resources>
+        <url type="ftp" location="ch" preference="100">ftp://ftp.expasy.org/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p200.fasta.gz</url>
+        <url type="ftp" location="uk" preference="100">ftp://ftp.ebi.ac.uk/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p200.fasta.gz</url>
+        <url type="ftp" location="us" preference="100">ftp://ftp.uniprot.org/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p200.fasta.gz</url>
+      </resources>
+    </file>
+  <file name="uniparc_active_p101.fasta.gz">
+      <size>1263384459</size>
+      <verification>
+        <hash type="md5">e135b661e31bf260a8a0cd2dab45a1fd</hash>
+      </verification>
+      <resources>
+        <url type="ftp" location="ch" preference="100">ftp://ftp.expasy.org/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p101.fasta.gz</url>
+        <url type="ftp" location="uk" preference="100">ftp://ftp.ebi.ac.uk/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p101.fasta.gz</url>
+        <url type="ftp" location="us" preference="100">ftp://ftp.uniprot.org/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p101.fasta.gz</url>
+      </resources>
+    </file>
+  <file name="uniparc_active_p81.fasta.gz">
+      <size>1253993270</size>
+      <verification>
+        <hash type="md5">51b8611cf8b7cdf6525534b4d73c3e98</hash>
+      </verification>
+      <resources>
+        <url type="ftp" location="ch" preference="100">ftp://ftp.expasy.org/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p81.fasta.gz</url>
+        <url type="ftp" location="uk" preference="100">ftp://ftp.ebi.ac.uk/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p81.fasta.gz</url>
+        <url type="ftp" location="us" preference="100">ftp://ftp.uniprot.org/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p81.fasta.gz</url>
+      </resources>
+    </file>
+  <file name="uniparc_active_p183.fasta.gz">
+      <size>1317207730</size>
+      <verification>
+        <hash type="md5">f4f3caa534694a997e6bfd84225be082</hash>
+      </verification>
+      <resources>
+        <url type="ftp" location="ch" preference="100">ftp://ftp.expasy.org/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p183.fasta.gz</url>
+        <url type="ftp" location="uk" preference="100">ftp://ftp.ebi.ac.uk/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p183.fasta.gz</url>
+        <url type="ftp" location="us" preference="100">ftp://ftp.uniprot.org/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p183.fasta.gz</url>
+      </resources>
+    </file>
+  <file name="uniparc_active_p53.fasta.gz">
+      <size>1282435332</size>
+      <verification>
+        <hash type="md5">03ea87eb806dfee16dfd08d7030b6be0</hash>
+      </verification>
+      <resources>
+        <url type="ftp" location="ch" preference="100">ftp://ftp.expasy.org/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p53.fasta.gz</url>
+        <url type="ftp" location="uk" preference="100">ftp://ftp.ebi.ac.uk/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p53.fasta.gz</url>
+        <url type="ftp" location="us" preference="100">ftp://ftp.uniprot.org/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p53.fasta.gz</url>
+      </resources>
+    </file>
+  <file name="uniparc_active_p12.fasta.gz">
+      <size>1234158048</size>
+      <verification>
+        <hash type="md5">f5b081971948ecb8302918c6246bb1ce</hash>
+      </verification>
+      <resources>
+        <url type="ftp" location="ch" preference="100">ftp://ftp.expasy.org/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p12.fasta.gz</url>
+        <url type="ftp" location="uk" preference="100">ftp://ftp.ebi.ac.uk/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p12.fasta.gz</url>
+        <url type="ftp" location="us" preference="100">ftp://ftp.uniprot.org/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p12.fasta.gz</url>
+      </resources>
+    </file>
+  <file name="uniparc_active_p28.fasta.gz">
+      <size>1219540962</size>
+      <verification>
+        <hash type="md5">10432869472549bc1d8cc77c09aee795</hash>
+      </verification>
+      <resources>
+        <url type="ftp" location="ch" preference="100">ftp://ftp.expasy.org/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p28.fasta.gz</url>
+        <url type="ftp" location="uk" preference="100">ftp://ftp.ebi.ac.uk/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p28.fasta.gz</url>
+        <url type="ftp" location="us" preference="100">ftp://ftp.uniprot.org/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p28.fasta.gz</url>
+      </resources>
+    </file>
+  <file name="uniparc_active_p25.fasta.gz">
+      <size>1274786182</size>
+      <verification>
+        <hash type="md5">7c03b2a7c8590b53ebc3b0b0f45af531</hash>
+      </verification>
+      <resources>
+        <url type="ftp" location="ch" preference="100">ftp://ftp.expasy.org/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p25.fasta.gz</url>
+        <url type="ftp" location="uk" preference="100">ftp://ftp.ebi.ac.uk/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p25.fasta.gz</url>
+        <url type="ftp" location="us" preference="100">ftp://ftp.uniprot.org/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p25.fasta.gz</url>
+      </resources>
+    </file>
+  <file name="uniparc_active_p121.fasta.gz">
+      <size>1256665102</size>
+      <verification>
+        <hash type="md5">5e424f560b5b705fe95d69f6229b0f9c</hash>
+      </verification>
+      <resources>
+        <url type="ftp" location="ch" preference="100">ftp://ftp.expasy.org/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p121.fasta.gz</url>
+        <url type="ftp" location="uk" preference="100">ftp://ftp.ebi.ac.uk/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p121.fasta.gz</url>
+        <url type="ftp" location="us" preference="100">ftp://ftp.uniprot.org/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p121.fasta.gz</url>
+      </resources>
+    </file>
+  <file name="uniparc_active_p1.fasta.gz">
+      <size>1192642445</size>
+      <verification>
+        <hash type="md5">efe44cde7125cfcf367c1324ab1a035c</hash>
+      </verification>
+      <resources>
+        <url type="ftp" location="ch" preference="100">ftp://ftp.expasy.org/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p1.fasta.gz</url>
+        <url type="ftp" location="uk" preference="100">ftp://ftp.ebi.ac.uk/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p1.fasta.gz</url>
+        <url type="ftp" location="us" preference="100">ftp://ftp.uniprot.org/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p1.fasta.gz</url>
+      </resources>
+    </file>
+  <file name="uniparc_active_p169.fasta.gz">
+      <size>1192751457</size>
+      <verification>
+        <hash type="md5">493d714c8afce50f72e74ffcbbc6ee69</hash>
+      </verification>
+      <resources>
+        <url type="ftp" location="ch" preference="100">ftp://ftp.expasy.org/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p169.fasta.gz</url>
+        <url type="ftp" location="uk" preference="100">ftp://ftp.ebi.ac.uk/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p169.fasta.gz</url>
+        <url type="ftp" location="us" preference="100">ftp://ftp.uniprot.org/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p169.fasta.gz</url>
+      </resources>
+    </file>
+  <file name="uniparc_active_p5.fasta.gz">
+      <size>1234977307</size>
+      <verification>
+        <hash type="md5">41ae32a71273fea9ac1b393b41d81825</hash>
+      </verification>
+      <resources>
+        <url type="ftp" location="ch" preference="100">ftp://ftp.expasy.org/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p5.fasta.gz</url>
+        <url type="ftp" location="uk" preference="100">ftp://ftp.ebi.ac.uk/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p5.fasta.gz</url>
+        <url type="ftp" location="us" preference="100">ftp://ftp.uniprot.org/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p5.fasta.gz</url>
+      </resources>
+    </file>
+  <file name="uniparc_active_p189.fasta.gz">
+      <size>1280377046</size>
+      <verification>
+        <hash type="md5">e2470d5be28df92a9fbab959e5dc10c1</hash>
+      </verification>
+      <resources>
+        <url type="ftp" location="ch" preference="100">ftp://ftp.expasy.org/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p189.fasta.gz</url>
+        <url type="ftp" location="uk" preference="100">ftp://ftp.ebi.ac.uk/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p189.fasta.gz</url>
+        <url type="ftp" location="us" preference="100">ftp://ftp.uniprot.org/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p189.fasta.gz</url>
+      </resources>
+    </file>
+  <file name="uniparc_active_p17.fasta.gz">
+      <size>1224737299</size>
+      <verification>
+        <hash type="md5">81fa3b38e852eab1f0ce9381cb8d25d5</hash>
+      </verification>
+      <resources>
+        <url type="ftp" location="ch" preference="100">ftp://ftp.expasy.org/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p17.fasta.gz</url>
+        <url type="ftp" location="uk" preference="100">ftp://ftp.ebi.ac.uk/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p17.fasta.gz</url>
+        <url type="ftp" location="us" preference="100">ftp://ftp.uniprot.org/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p17.fasta.gz</url>
+      </resources>
+    </file>
+  <file name="uniparc_active_p122.fasta.gz">
+      <size>1235032051</size>
+      <verification>
+        <hash type="md5">71ec85b2ff077a33fe697fe4248f66b6</hash>
+      </verification>
+      <resources>
+        <url type="ftp" location="ch" preference="100">ftp://ftp.expasy.org/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p122.fasta.gz</url>
+        <url type="ftp" location="uk" preference="100">ftp://ftp.ebi.ac.uk/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p122.fasta.gz</url>
+        <url type="ftp" location="us" preference="100">ftp://ftp.uniprot.org/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p122.fasta.gz</url>
+      </resources>
+    </file>
+  <file name="uniparc_active_p49.fasta.gz">
+      <size>1203695046</size>
+      <verification>
+        <hash type="md5">6253988f93b63ee54a4f226a33e5b9a9</hash>
+      </verification>
+      <resources>
+        <url type="ftp" location="ch" preference="100">ftp://ftp.expasy.org/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p49.fasta.gz</url>
+        <url type="ftp" location="uk" preference="100">ftp://ftp.ebi.ac.uk/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p49.fasta.gz</url>
+        <url type="ftp" location="us" preference="100">ftp://ftp.uniprot.org/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p49.fasta.gz</url>
+      </resources>
+    </file>
+  <file name="uniparc_active_p62.fasta.gz">
+      <size>1227963716</size>
+      <verification>
+        <hash type="md5">afa479435b0274925e98075162169ddd</hash>
+      </verification>
+      <resources>
+        <url type="ftp" location="ch" preference="100">ftp://ftp.expasy.org/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p62.fasta.gz</url>
+        <url type="ftp" location="uk" preference="100">ftp://ftp.ebi.ac.uk/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p62.fasta.gz</url>
+        <url type="ftp" location="us" preference="100">ftp://ftp.uniprot.org/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p62.fasta.gz</url>
+      </resources>
+    </file>
+  <file name="uniparc_active_p50.fasta.gz">
+      <size>1298774586</size>
+      <verification>
+        <hash type="md5">0e033fe0233d740a532f08d712a9a9e6</hash>
+      </verification>
+      <resources>
+        <url type="ftp" location="ch" preference="100">ftp://ftp.expasy.org/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p50.fasta.gz</url>
+        <url type="ftp" location="uk" preference="100">ftp://ftp.ebi.ac.uk/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p50.fasta.gz</url>
+        <url type="ftp" location="us" preference="100">ftp://ftp.uniprot.org/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p50.fasta.gz</url>
+      </resources>
+    </file>
+  <file name="uniparc_active_p193.fasta.gz">
+      <size>1300186059</size>
+      <verification>
+        <hash type="md5">9fe3ef56db77c0803660289cc9e957a8</hash>
+      </verification>
+      <resources>
+        <url type="ftp" location="ch" preference="100">ftp://ftp.expasy.org/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p193.fasta.gz</url>
+        <url type="ftp" location="uk" preference="100">ftp://ftp.ebi.ac.uk/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p193.fasta.gz</url>
+        <url type="ftp" location="us" preference="100">ftp://ftp.uniprot.org/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p193.fasta.gz</url>
+      </resources>
+    </file>
+  <file name="uniparc_active_p141.fasta.gz">
+      <size>1282128592</size>
+      <verification>
+        <hash type="md5">7742718ea2ca2f691c99c83462fa8305</hash>
+      </verification>
+      <resources>
+        <url type="ftp" location="ch" preference="100">ftp://ftp.expasy.org/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p141.fasta.gz</url>
+        <url type="ftp" location="uk" preference="100">ftp://ftp.ebi.ac.uk/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p141.fasta.gz</url>
+        <url type="ftp" location="us" preference="100">ftp://ftp.uniprot.org/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p141.fasta.gz</url>
+      </resources>
+    </file>
+  <file name="uniparc_active_p31.fasta.gz">
+      <size>1223800261</size>
+      <verification>
+        <hash type="md5">8b20827ac5ee4532b4fad265bb2f760a</hash>
+      </verification>
+      <resources>
+        <url type="ftp" location="ch" preference="100">ftp://ftp.expasy.org/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p31.fasta.gz</url>
+        <url type="ftp" location="uk" preference="100">ftp://ftp.ebi.ac.uk/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p31.fasta.gz</url>
+        <url type="ftp" location="us" preference="100">ftp://ftp.uniprot.org/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p31.fasta.gz</url>
+      </resources>
+    </file>
+  <file name="uniparc_active_p60.fasta.gz">
+      <size>1250848140</size>
+      <verification>
+        <hash type="md5">308cd8967a67f317a919fe8277e5ca43</hash>
+      </verification>
+      <resources>
+        <url type="ftp" location="ch" preference="100">ftp://ftp.expasy.org/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p60.fasta.gz</url>
+        <url type="ftp" location="uk" preference="100">ftp://ftp.ebi.ac.uk/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p60.fasta.gz</url>
+        <url type="ftp" location="us" preference="100">ftp://ftp.uniprot.org/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p60.fasta.gz</url>
+      </resources>
+    </file>
+  <file name="uniparc_active_p140.fasta.gz">
+      <size>1226730999</size>
+      <verification>
+        <hash type="md5">148c58e6868b2e4531dc28cdeb72cef7</hash>
+      </verification>
+      <resources>
+        <url type="ftp" location="ch" preference="100">ftp://ftp.expasy.org/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p140.fasta.gz</url>
+        <url type="ftp" location="uk" preference="100">ftp://ftp.ebi.ac.uk/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p140.fasta.gz</url>
+        <url type="ftp" location="us" preference="100">ftp://ftp.uniprot.org/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p140.fasta.gz</url>
+      </resources>
+    </file>
+  <file name="uniparc_active_p41.fasta.gz">
+      <size>1227362678</size>
+      <verification>
+        <hash type="md5">810984f3d3db0d07f33e7cc18cd9a951</hash>
+      </verification>
+      <resources>
+        <url type="ftp" location="ch" preference="100">ftp://ftp.expasy.org/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p41.fasta.gz</url>
+        <url type="ftp" location="uk" preference="100">ftp://ftp.ebi.ac.uk/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p41.fasta.gz</url>
+        <url type="ftp" location="us" preference="100">ftp://ftp.uniprot.org/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p41.fasta.gz</url>
+      </resources>
+    </file>
+  <file name="uniparc_active_p38.fasta.gz">
+      <size>1194879889</size>
+      <verification>
+        <hash type="md5">79333e74ae8a452c810802cff345a4bd</hash>
+      </verification>
+      <resources>
+        <url type="ftp" location="ch" preference="100">ftp://ftp.expasy.org/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p38.fasta.gz</url>
+        <url type="ftp" location="uk" preference="100">ftp://ftp.ebi.ac.uk/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p38.fasta.gz</url>
+        <url type="ftp" location="us" preference="100">ftp://ftp.uniprot.org/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p38.fasta.gz</url>
+      </resources>
+    </file>
+  <file name="uniparc_active_p133.fasta.gz">
+      <size>1278881160</size>
+      <verification>
+        <hash type="md5">745d36b84daa7c662c163c5af72c80d9</hash>
+      </verification>
+      <resources>
+        <url type="ftp" location="ch" preference="100">ftp://ftp.expasy.org/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p133.fasta.gz</url>
+        <url type="ftp" location="uk" preference="100">ftp://ftp.ebi.ac.uk/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p133.fasta.gz</url>
+        <url type="ftp" location="us" preference="100">ftp://ftp.uniprot.org/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p133.fasta.gz</url>
+      </resources>
+    </file>
+  <file name="uniparc_active_p63.fasta.gz">
+      <size>1158163096</size>
+      <verification>
+        <hash type="md5">aa80f6bfde1bf4f2ba68f15cc8cd6c74</hash>
+      </verification>
+      <resources>
+        <url type="ftp" location="ch" preference="100">ftp://ftp.expasy.org/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p63.fasta.gz</url>
+        <url type="ftp" location="uk" preference="100">ftp://ftp.ebi.ac.uk/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p63.fasta.gz</url>
+        <url type="ftp" location="us" preference="100">ftp://ftp.uniprot.org/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p63.fasta.gz</url>
+      </resources>
+    </file>
+  <file name="uniparc_active_p23.fasta.gz">
+      <size>1199392754</size>
+      <verification>
+        <hash type="md5">f3b713d35e428299a51b8a7b2547d1d7</hash>
+      </verification>
+      <resources>
+        <url type="ftp" location="ch" preference="100">ftp://ftp.expasy.org/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p23.fasta.gz</url>
+        <url type="ftp" location="uk" preference="100">ftp://ftp.ebi.ac.uk/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p23.fasta.gz</url>
+        <url type="ftp" location="us" preference="100">ftp://ftp.uniprot.org/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p23.fasta.gz</url>
+      </resources>
+    </file>
+  <file name="uniparc_active_p71.fasta.gz">
+      <size>1295315134</size>
+      <verification>
+        <hash type="md5">bd4974c8f9a8aefc0743b2c09cb17c7a</hash>
+      </verification>
+      <resources>
+        <url type="ftp" location="ch" preference="100">ftp://ftp.expasy.org/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p71.fasta.gz</url>
+        <url type="ftp" location="uk" preference="100">ftp://ftp.ebi.ac.uk/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p71.fasta.gz</url>
+        <url type="ftp" location="us" preference="100">ftp://ftp.uniprot.org/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p71.fasta.gz</url>
+      </resources>
+    </file>
+  <file name="uniparc_active_p36.fasta.gz">
+      <size>1272822978</size>
+      <verification>
+        <hash type="md5">f2857a5a57190b9d0660998991ee029d</hash>
+      </verification>
+      <resources>
+        <url type="ftp" location="ch" preference="100">ftp://ftp.expasy.org/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p36.fasta.gz</url>
+        <url type="ftp" location="uk" preference="100">ftp://ftp.ebi.ac.uk/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p36.fasta.gz</url>
+        <url type="ftp" location="us" preference="100">ftp://ftp.uniprot.org/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p36.fasta.gz</url>
+      </resources>
+    </file>
+  <file name="uniparc_active_p192.fasta.gz">
+      <size>1228809017</size>
+      <verification>
+        <hash type="md5">9d3e5b3b63220699d028d6c07c1b7afa</hash>
+      </verification>
+      <resources>
+        <url type="ftp" location="ch" preference="100">ftp://ftp.expasy.org/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p192.fasta.gz</url>
+        <url type="ftp" location="uk" preference="100">ftp://ftp.ebi.ac.uk/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p192.fasta.gz</url>
+        <url type="ftp" location="us" preference="100">ftp://ftp.uniprot.org/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p192.fasta.gz</url>
+      </resources>
+    </file>
+  <file name="uniparc_active_p8.fasta.gz">
+      <size>1250945679</size>
+      <verification>
+        <hash type="md5">f48ae3c099c442d1eadb468513e44fde</hash>
+      </verification>
+      <resources>
+        <url type="ftp" location="ch" preference="100">ftp://ftp.expasy.org/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p8.fasta.gz</url>
+        <url type="ftp" location="uk" preference="100">ftp://ftp.ebi.ac.uk/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p8.fasta.gz</url>
+        <url type="ftp" location="us" preference="100">ftp://ftp.uniprot.org/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p8.fasta.gz</url>
+      </resources>
+    </file>
+  <file name="uniparc_active_p180.fasta.gz">
+      <size>1238492746</size>
+      <verification>
+        <hash type="md5">51af2fbe571d11b3233b38d1f41acfff</hash>
+      </verification>
+      <resources>
+        <url type="ftp" location="ch" preference="100">ftp://ftp.expasy.org/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p180.fasta.gz</url>
+        <url type="ftp" location="uk" preference="100">ftp://ftp.ebi.ac.uk/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p180.fasta.gz</url>
+        <url type="ftp" location="us" preference="100">ftp://ftp.uniprot.org/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p180.fasta.gz</url>
+      </resources>
+    </file>
+  <file name="uniparc_active_p3.fasta.gz">
+      <size>1243663392</size>
+      <verification>
+        <hash type="md5">fcd8c65b5cb7e3df0c0b1941172bac74</hash>
+      </verification>
+      <resources>
+        <url type="ftp" location="ch" preference="100">ftp://ftp.expasy.org/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p3.fasta.gz</url>
+        <url type="ftp" location="uk" preference="100">ftp://ftp.ebi.ac.uk/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p3.fasta.gz</url>
+        <url type="ftp" location="us" preference="100">ftp://ftp.uniprot.org/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p3.fasta.gz</url>
+      </resources>
+    </file>
+  <file name="uniparc_active_p125.fasta.gz">
+      <size>1186534912</size>
+      <verification>
+        <hash type="md5">1b050778aabb12811c1c236878fd9fb0</hash>
+      </verification>
+      <resources>
+        <url type="ftp" location="ch" preference="100">ftp://ftp.expasy.org/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p125.fasta.gz</url>
+        <url type="ftp" location="uk" preference="100">ftp://ftp.ebi.ac.uk/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p125.fasta.gz</url>
+        <url type="ftp" location="us" preference="100">ftp://ftp.uniprot.org/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p125.fasta.gz</url>
+      </resources>
+    </file>
+  <file name="uniparc_active_p155.fasta.gz">
+      <size>1271131191</size>
+      <verification>
+        <hash type="md5">e130a5330096fed2729b824583aad17e</hash>
+      </verification>
+      <resources>
+        <url type="ftp" location="ch" preference="100">ftp://ftp.expasy.org/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p155.fasta.gz</url>
+        <url type="ftp" location="uk" preference="100">ftp://ftp.ebi.ac.uk/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p155.fasta.gz</url>
+        <url type="ftp" location="us" preference="100">ftp://ftp.uniprot.org/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p155.fasta.gz</url>
+      </resources>
+    </file>
+  <file name="uniparc_active_p13.fasta.gz">
+      <size>1236378762</size>
+      <verification>
+        <hash type="md5">a8121e9af27af5e8906871d24ec86136</hash>
+      </verification>
+      <resources>
+        <url type="ftp" location="ch" preference="100">ftp://ftp.expasy.org/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p13.fasta.gz</url>
+        <url type="ftp" location="uk" preference="100">ftp://ftp.ebi.ac.uk/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p13.fasta.gz</url>
+        <url type="ftp" location="us" preference="100">ftp://ftp.uniprot.org/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p13.fasta.gz</url>
+      </resources>
+    </file>
+  <file name="uniparc_active_p30.fasta.gz">
+      <size>1233322509</size>
+      <verification>
+        <hash type="md5">9142dda5a686dc895fee0c5a4b1fdbbe</hash>
+      </verification>
+      <resources>
+        <url type="ftp" location="ch" preference="100">ftp://ftp.expasy.org/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p30.fasta.gz</url>
+        <url type="ftp" location="uk" preference="100">ftp://ftp.ebi.ac.uk/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p30.fasta.gz</url>
+        <url type="ftp" location="us" preference="100">ftp://ftp.uniprot.org/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p30.fasta.gz</url>
+      </resources>
+    </file>
+  <file name="uniparc_active_p127.fasta.gz">
+      <size>1250379955</size>
+      <verification>
+        <hash type="md5">4ff117b38e0c63b4f2ce5751710a4af6</hash>
+      </verification>
+      <resources>
+        <url type="ftp" location="ch" preference="100">ftp://ftp.expasy.org/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p127.fasta.gz</url>
+        <url type="ftp" location="uk" preference="100">ftp://ftp.ebi.ac.uk/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p127.fasta.gz</url>
+        <url type="ftp" location="us" preference="100">ftp://ftp.uniprot.org/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p127.fasta.gz</url>
+      </resources>
+    </file>
+  <file name="uniparc_active_p197.fasta.gz">
+      <size>2102261725</size>
+      <verification>
+        <hash type="md5">c6caa53c131ce6fa3a2b7bfa12ba16ab</hash>
+      </verification>
+      <resources>
+        <url type="ftp" location="ch" preference="100">ftp://ftp.expasy.org/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p197.fasta.gz</url>
+        <url type="ftp" location="uk" preference="100">ftp://ftp.ebi.ac.uk/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p197.fasta.gz</url>
+        <url type="ftp" location="us" preference="100">ftp://ftp.uniprot.org/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p197.fasta.gz</url>
+      </resources>
+    </file>
+  <file name="uniparc_active_p21.fasta.gz">
+      <size>1249590441</size>
+      <verification>
+        <hash type="md5">48a90af643d505d9baa3e56883af776e</hash>
+      </verification>
+      <resources>
+        <url type="ftp" location="ch" preference="100">ftp://ftp.expasy.org/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p21.fasta.gz</url>
+        <url type="ftp" location="uk" preference="100">ftp://ftp.ebi.ac.uk/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p21.fasta.gz</url>
+        <url type="ftp" location="us" preference="100">ftp://ftp.uniprot.org/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p21.fasta.gz</url>
+      </resources>
+    </file>
+  <file name="uniparc_active_p59.fasta.gz">
+      <size>1243746869</size>
+      <verification>
+        <hash type="md5">2ec6c9f46fbd164852d1e54737dc5039</hash>
+      </verification>
+      <resources>
+        <url type="ftp" location="ch" preference="100">ftp://ftp.expasy.org/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p59.fasta.gz</url>
+        <url type="ftp" location="uk" preference="100">ftp://ftp.ebi.ac.uk/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p59.fasta.gz</url>
+        <url type="ftp" location="us" preference="100">ftp://ftp.uniprot.org/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p59.fasta.gz</url>
+      </resources>
+    </file>
+  <file name="uniparc_active_p143.fasta.gz">
+      <size>1221485695</size>
+      <verification>
+        <hash type="md5">f251b7feedc536c1f0eeff6965e8feef</hash>
+      </verification>
+      <resources>
+        <url type="ftp" location="ch" preference="100">ftp://ftp.expasy.org/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p143.fasta.gz</url>
+        <url type="ftp" location="uk" preference="100">ftp://ftp.ebi.ac.uk/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p143.fasta.gz</url>
+        <url type="ftp" location="us" preference="100">ftp://ftp.uniprot.org/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p143.fasta.gz</url>
+      </resources>
+    </file>
+  <file name="uniparc_active_p130.fasta.gz">
+      <size>1259331063</size>
+      <verification>
+        <hash type="md5">f8f180fd6e6f1a9d37fa7d1f53b1c9b8</hash>
+      </verification>
+      <resources>
+        <url type="ftp" location="ch" preference="100">ftp://ftp.expasy.org/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p130.fasta.gz</url>
+        <url type="ftp" location="uk" preference="100">ftp://ftp.ebi.ac.uk/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p130.fasta.gz</url>
+        <url type="ftp" location="us" preference="100">ftp://ftp.uniprot.org/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p130.fasta.gz</url>
+      </resources>
+    </file>
+  <file name="uniparc_active_p48.fasta.gz">
+      <size>1177250702</size>
+      <verification>
+        <hash type="md5">b8ba28c10073345d7764dd5766174cf7</hash>
+      </verification>
+      <resources>
+        <url type="ftp" location="ch" preference="100">ftp://ftp.expasy.org/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p48.fasta.gz</url>
+        <url type="ftp" location="uk" preference="100">ftp://ftp.ebi.ac.uk/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p48.fasta.gz</url>
+        <url type="ftp" location="us" preference="100">ftp://ftp.uniprot.org/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p48.fasta.gz</url>
+      </resources>
+    </file>
+  <file name="uniparc_active_p179.fasta.gz">
+      <size>1275837089</size>
+      <verification>
+        <hash type="md5">dfd594cfb33a7277ea5741fea34623d9</hash>
+      </verification>
+      <resources>
+        <url type="ftp" location="ch" preference="100">ftp://ftp.expasy.org/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p179.fasta.gz</url>
+        <url type="ftp" location="uk" preference="100">ftp://ftp.ebi.ac.uk/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p179.fasta.gz</url>
+        <url type="ftp" location="us" preference="100">ftp://ftp.uniprot.org/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p179.fasta.gz</url>
+      </resources>
+    </file>
+  <file name="uniparc_active_p94.fasta.gz">
+      <size>1261334031</size>
+      <verification>
+        <hash type="md5">7716f3ad2278acb9f6d4c62c78ddebb7</hash>
+      </verification>
+      <resources>
+        <url type="ftp" location="ch" preference="100">ftp://ftp.expasy.org/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p94.fasta.gz</url>
+        <url type="ftp" location="uk" preference="100">ftp://ftp.ebi.ac.uk/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p94.fasta.gz</url>
+        <url type="ftp" location="us" preference="100">ftp://ftp.uniprot.org/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p94.fasta.gz</url>
+      </resources>
+    </file>
+  <file name="uniparc_active_p33.fasta.gz">
+      <size>1212637147</size>
+      <verification>
+        <hash type="md5">364757965640873c7862f45dfe0088a5</hash>
+      </verification>
+      <resources>
+        <url type="ftp" location="ch" preference="100">ftp://ftp.expasy.org/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p33.fasta.gz</url>
+        <url type="ftp" location="uk" preference="100">ftp://ftp.ebi.ac.uk/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p33.fasta.gz</url>
+        <url type="ftp" location="us" preference="100">ftp://ftp.uniprot.org/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p33.fasta.gz</url>
+      </resources>
+    </file>
+  <file name="uniparc_active_p166.fasta.gz">
+      <size>1242567687</size>
+      <verification>
+        <hash type="md5">eb2a5261d5ad8f320be2bbd8447c6630</hash>
+      </verification>
+      <resources>
+        <url type="ftp" location="ch" preference="100">ftp://ftp.expasy.org/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p166.fasta.gz</url>
+        <url type="ftp" location="uk" preference="100">ftp://ftp.ebi.ac.uk/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p166.fasta.gz</url>
+        <url type="ftp" location="us" preference="100">ftp://ftp.uniprot.org/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p166.fasta.gz</url>
+      </resources>
+    </file>
+  <file name="uniparc_active_p113.fasta.gz">
+      <size>1191112753</size>
+      <verification>
+        <hash type="md5">4eb4d3c160dea1bc4dc93bb6c5148b98</hash>
+      </verification>
+      <resources>
+        <url type="ftp" location="ch" preference="100">ftp://ftp.expasy.org/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p113.fasta.gz</url>
+        <url type="ftp" location="uk" preference="100">ftp://ftp.ebi.ac.uk/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p113.fasta.gz</url>
+        <url type="ftp" location="us" preference="100">ftp://ftp.uniprot.org/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p113.fasta.gz</url>
+      </resources>
+    </file>
+  <file name="uniparc_active_p4.fasta.gz">
+      <size>1194896446</size>
+      <verification>
+        <hash type="md5">f62a7a5c1ea0bb4b05339dd9dc3dc91e</hash>
+      </verification>
+      <resources>
+        <url type="ftp" location="ch" preference="100">ftp://ftp.expasy.org/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p4.fasta.gz</url>
+        <url type="ftp" location="uk" preference="100">ftp://ftp.ebi.ac.uk/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p4.fasta.gz</url>
+        <url type="ftp" location="us" preference="100">ftp://ftp.uniprot.org/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p4.fasta.gz</url>
+      </resources>
+    </file>
+  <file name="uniparc_active_p199.fasta.gz">
+      <size>1248236692</size>
+      <verification>
+        <hash type="md5">bac791d25d5bbcfcf6059ee0b2bd6947</hash>
+      </verification>
+      <resources>
+        <url type="ftp" location="ch" preference="100">ftp://ftp.expasy.org/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p199.fasta.gz</url>
+        <url type="ftp" location="uk" preference="100">ftp://ftp.ebi.ac.uk/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p199.fasta.gz</url>
+        <url type="ftp" location="us" preference="100">ftp://ftp.uniprot.org/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p199.fasta.gz</url>
+      </resources>
+    </file>
+  <file name="uniparc_active_p84.fasta.gz">
+      <size>1225212009</size>
+      <verification>
+        <hash type="md5">351fe69000c437a1d946e5ca4f615473</hash>
+      </verification>
+      <resources>
+        <url type="ftp" location="ch" preference="100">ftp://ftp.expasy.org/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p84.fasta.gz</url>
+        <url type="ftp" location="uk" preference="100">ftp://ftp.ebi.ac.uk/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p84.fasta.gz</url>
+        <url type="ftp" location="us" preference="100">ftp://ftp.uniprot.org/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p84.fasta.gz</url>
+      </resources>
+    </file>
+  <file name="uniparc_active_p80.fasta.gz">
+      <size>1258024510</size>
+      <verification>
+        <hash type="md5">c00bac56cfdb19600cb2d4827f65e814</hash>
+      </verification>
+      <resources>
+        <url type="ftp" location="ch" preference="100">ftp://ftp.expasy.org/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p80.fasta.gz</url>
+        <url type="ftp" location="uk" preference="100">ftp://ftp.ebi.ac.uk/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p80.fasta.gz</url>
+        <url type="ftp" location="us" preference="100">ftp://ftp.uniprot.org/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p80.fasta.gz</url>
+      </resources>
+    </file>
+  <file name="uniparc_active_p7.fasta.gz">
+      <size>1244883496</size>
+      <verification>
+        <hash type="md5">55e477ec88e98b51bcb4a989d5779674</hash>
+      </verification>
+      <resources>
+        <url type="ftp" location="ch" preference="100">ftp://ftp.expasy.org/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p7.fasta.gz</url>
+        <url type="ftp" location="uk" preference="100">ftp://ftp.ebi.ac.uk/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p7.fasta.gz</url>
+        <url type="ftp" location="us" preference="100">ftp://ftp.uniprot.org/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p7.fasta.gz</url>
+      </resources>
+    </file>
+  <file name="uniparc_active_p154.fasta.gz">
+      <size>1284210593</size>
+      <verification>
+        <hash type="md5">88b9a7751e4d9e0be177f7584d0b9c8b</hash>
+      </verification>
+      <resources>
+        <url type="ftp" location="ch" preference="100">ftp://ftp.expasy.org/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p154.fasta.gz</url>
+        <url type="ftp" location="uk" preference="100">ftp://ftp.ebi.ac.uk/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p154.fasta.gz</url>
+        <url type="ftp" location="us" preference="100">ftp://ftp.uniprot.org/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p154.fasta.gz</url>
+      </resources>
+    </file>
+  <file name="uniparc_active_p96.fasta.gz">
+      <size>1274469739</size>
+      <verification>
+        <hash type="md5">894abdefa299e676642146db1852a303</hash>
+      </verification>
+      <resources>
+        <url type="ftp" location="ch" preference="100">ftp://ftp.expasy.org/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p96.fasta.gz</url>
+        <url type="ftp" location="uk" preference="100">ftp://ftp.ebi.ac.uk/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p96.fasta.gz</url>
+        <url type="ftp" location="us" preference="100">ftp://ftp.uniprot.org/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p96.fasta.gz</url>
+      </resources>
+    </file>
+  <file name="uniparc_active_p64.fasta.gz">
+      <size>1274032438</size>
+      <verification>
+        <hash type="md5">7e0fd9be39170e112f0ef6752322972d</hash>
+      </verification>
+      <resources>
+        <url type="ftp" location="ch" preference="100">ftp://ftp.expasy.org/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p64.fasta.gz</url>
+        <url type="ftp" location="uk" preference="100">ftp://ftp.ebi.ac.uk/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p64.fasta.gz</url>
+        <url type="ftp" location="us" preference="100">ftp://ftp.uniprot.org/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p64.fasta.gz</url>
+      </resources>
+    </file>
+  <file name="uniparc_active_p164.fasta.gz">
+      <size>1213090172</size>
+      <verification>
+        <hash type="md5">f1f9016e25a750a2ac1835d9e5827f89</hash>
+      </verification>
+      <resources>
+        <url type="ftp" location="ch" preference="100">ftp://ftp.expasy.org/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p164.fasta.gz</url>
+        <url type="ftp" location="uk" preference="100">ftp://ftp.ebi.ac.uk/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p164.fasta.gz</url>
+        <url type="ftp" location="us" preference="100">ftp://ftp.uniprot.org/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p164.fasta.gz</url>
+      </resources>
+    </file>
+  <file name="uniparc_active_p161.fasta.gz">
+      <size>1259113754</size>
+      <verification>
+        <hash type="md5">0d80411dd6353e70e7895bcebffdc0e7</hash>
+      </verification>
+      <resources>
+        <url type="ftp" location="ch" preference="100">ftp://ftp.expasy.org/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p161.fasta.gz</url>
+        <url type="ftp" location="uk" preference="100">ftp://ftp.ebi.ac.uk/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p161.fasta.gz</url>
+        <url type="ftp" location="us" preference="100">ftp://ftp.uniprot.org/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p161.fasta.gz</url>
+      </resources>
+    </file>
+  <file name="uniparc_active_p67.fasta.gz">
+      <size>1293857614</size>
+      <verification>
+        <hash type="md5">650afe69c7d6f1d2781e6a3155c61784</hash>
+      </verification>
+      <resources>
+        <url type="ftp" location="ch" preference="100">ftp://ftp.expasy.org/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p67.fasta.gz</url>
+        <url type="ftp" location="uk" preference="100">ftp://ftp.ebi.ac.uk/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p67.fasta.gz</url>
+        <url type="ftp" location="us" preference="100">ftp://ftp.uniprot.org/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p67.fasta.gz</url>
+      </resources>
+    </file>
+  <file name="uniparc_active_p24.fasta.gz">
+      <size>1179464243</size>
+      <verification>
+        <hash type="md5">6c65554649c4fae81a16c96daba034ef</hash>
+      </verification>
+      <resources>
+        <url type="ftp" location="ch" preference="100">ftp://ftp.expasy.org/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p24.fasta.gz</url>
+        <url type="ftp" location="uk" preference="100">ftp://ftp.ebi.ac.uk/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p24.fasta.gz</url>
+        <url type="ftp" location="us" preference="100">ftp://ftp.uniprot.org/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p24.fasta.gz</url>
+      </resources>
+    </file>
+  <file name="uniparc_active_p47.fasta.gz">
+      <size>1209838513</size>
+      <verification>
+        <hash type="md5">d8754c5ec5b9d8d6adea40b091b9910d</hash>
+      </verification>
+      <resources>
+        <url type="ftp" location="ch" preference="100">ftp://ftp.expasy.org/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p47.fasta.gz</url>
+        <url type="ftp" location="uk" preference="100">ftp://ftp.ebi.ac.uk/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p47.fasta.gz</url>
+        <url type="ftp" location="us" preference="100">ftp://ftp.uniprot.org/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p47.fasta.gz</url>
+      </resources>
+    </file>
+  <file name="uniparc_active_p14.fasta.gz">
+      <size>1200635728</size>
+      <verification>
+        <hash type="md5">4717bccdb5779e504aaaf0e146d3605c</hash>
+      </verification>
+      <resources>
+        <url type="ftp" location="ch" preference="100">ftp://ftp.expasy.org/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p14.fasta.gz</url>
+        <url type="ftp" location="uk" preference="100">ftp://ftp.ebi.ac.uk/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p14.fasta.gz</url>
+        <url type="ftp" location="us" preference="100">ftp://ftp.uniprot.org/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p14.fasta.gz</url>
+      </resources>
+    </file>
+  <file name="uniparc_active_p156.fasta.gz">
+      <size>1243446852</size>
+      <verification>
+        <hash type="md5">24b71492013b817d5ccca2fd7fa35e8d</hash>
+      </verification>
+      <resources>
+        <url type="ftp" location="ch" preference="100">ftp://ftp.expasy.org/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p156.fasta.gz</url>
+        <url type="ftp" location="uk" preference="100">ftp://ftp.ebi.ac.uk/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p156.fasta.gz</url>
+        <url type="ftp" location="us" preference="100">ftp://ftp.uniprot.org/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p156.fasta.gz</url>
+      </resources>
+    </file>
+  <file name="uniparc_active_p170.fasta.gz">
+      <size>1234404967</size>
+      <verification>
+        <hash type="md5">6001b22cf756f3a279d58d60c80f4c94</hash>
+      </verification>
+      <resources>
+        <url type="ftp" location="ch" preference="100">ftp://ftp.expasy.org/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p170.fasta.gz</url>
+        <url type="ftp" location="uk" preference="100">ftp://ftp.ebi.ac.uk/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p170.fasta.gz</url>
+        <url type="ftp" location="us" preference="100">ftp://ftp.uniprot.org/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p170.fasta.gz</url>
+      </resources>
+    </file>
+  <file name="uniparc_active_p65.fasta.gz">
+      <size>1246848059</size>
+      <verification>
+        <hash type="md5">1dfffbfba9c9cde4021ad65ce5a9d7b8</hash>
+      </verification>
+      <resources>
+        <url type="ftp" location="ch" preference="100">ftp://ftp.expasy.org/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p65.fasta.gz</url>
+        <url type="ftp" location="uk" preference="100">ftp://ftp.ebi.ac.uk/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p65.fasta.gz</url>
+        <url type="ftp" location="us" preference="100">ftp://ftp.uniprot.org/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p65.fasta.gz</url>
+      </resources>
+    </file>
+  <file name="uniparc_active_p135.fasta.gz">
+      <size>1240507905</size>
+      <verification>
+        <hash type="md5">b6dd122d98a5473527eebb1a7e245102</hash>
+      </verification>
+      <resources>
+        <url type="ftp" location="ch" preference="100">ftp://ftp.expasy.org/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p135.fasta.gz</url>
+        <url type="ftp" location="uk" preference="100">ftp://ftp.ebi.ac.uk/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p135.fasta.gz</url>
+        <url type="ftp" location="us" preference="100">ftp://ftp.uniprot.org/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p135.fasta.gz</url>
+      </resources>
+    </file>
+  <file name="uniparc_active_p111.fasta.gz">
+      <size>1242819338</size>
+      <verification>
+        <hash type="md5">e6785da37e981bb3083bb1f2fb0ef19c</hash>
+      </verification>
+      <resources>
+        <url type="ftp" location="ch" preference="100">ftp://ftp.expasy.org/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p111.fasta.gz</url>
+        <url type="ftp" location="uk" preference="100">ftp://ftp.ebi.ac.uk/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p111.fasta.gz</url>
+        <url type="ftp" location="us" preference="100">ftp://ftp.uniprot.org/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p111.fasta.gz</url>
+      </resources>
+    </file>
+  <file name="uniparc_active_p117.fasta.gz">
+      <size>1217555842</size>
+      <verification>
+        <hash type="md5">4432810d853e6cc29f0d17142ad97312</hash>
+      </verification>
+      <resources>
+        <url type="ftp" location="ch" preference="100">ftp://ftp.expasy.org/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p117.fasta.gz</url>
+        <url type="ftp" location="uk" preference="100">ftp://ftp.ebi.ac.uk/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p117.fasta.gz</url>
+        <url type="ftp" location="us" preference="100">ftp://ftp.uniprot.org/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p117.fasta.gz</url>
+      </resources>
+    </file>
+  <file name="uniparc_active_p72.fasta.gz">
+      <size>1182346916</size>
+      <verification>
+        <hash type="md5">31396e0559b0261bb11610f07716466a</hash>
+      </verification>
+      <resources>
+        <url type="ftp" location="ch" preference="100">ftp://ftp.expasy.org/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p72.fasta.gz</url>
+        <url type="ftp" location="uk" preference="100">ftp://ftp.ebi.ac.uk/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p72.fasta.gz</url>
+        <url type="ftp" location="us" preference="100">ftp://ftp.uniprot.org/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p72.fasta.gz</url>
+      </resources>
+    </file>
+  <file name="uniparc_active_p58.fasta.gz">
+      <size>1214062195</size>
+      <verification>
+        <hash type="md5">e56c4a4f62d9c0001e6b2a66f7cba20c</hash>
+      </verification>
+      <resources>
+        <url type="ftp" location="ch" preference="100">ftp://ftp.expasy.org/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p58.fasta.gz</url>
+        <url type="ftp" location="uk" preference="100">ftp://ftp.ebi.ac.uk/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p58.fasta.gz</url>
+        <url type="ftp" location="us" preference="100">ftp://ftp.uniprot.org/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p58.fasta.gz</url>
+      </resources>
+    </file>
+  <file name="uniparc_active_p157.fasta.gz">
+      <size>1212293450</size>
+      <verification>
+        <hash type="md5">f0adcbe7584c10217c3a41ce2a95d348</hash>
+      </verification>
+      <resources>
+        <url type="ftp" location="ch" preference="100">ftp://ftp.expasy.org/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p157.fasta.gz</url>
+        <url type="ftp" location="uk" preference="100">ftp://ftp.ebi.ac.uk/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p157.fasta.gz</url>
+        <url type="ftp" location="us" preference="100">ftp://ftp.uniprot.org/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p157.fasta.gz</url>
+      </resources>
+    </file>
+  <file name="uniparc_active_p100.fasta.gz">
+      <size>1222839041</size>
+      <verification>
+        <hash type="md5">f7de7201cc48238937ed36900c5b14b9</hash>
+      </verification>
+      <resources>
+        <url type="ftp" location="ch" preference="100">ftp://ftp.expasy.org/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p100.fasta.gz</url>
+        <url type="ftp" location="uk" preference="100">ftp://ftp.ebi.ac.uk/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p100.fasta.gz</url>
+        <url type="ftp" location="us" preference="100">ftp://ftp.uniprot.org/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p100.fasta.gz</url>
+      </resources>
+    </file>
+  <file name="uniparc_active_p109.fasta.gz">
+      <size>1201661964</size>
+      <verification>
+        <hash type="md5">ddb5ed2de3fc4c950d02b8b621520474</hash>
+      </verification>
+      <resources>
+        <url type="ftp" location="ch" preference="100">ftp://ftp.expasy.org/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p109.fasta.gz</url>
+        <url type="ftp" location="uk" preference="100">ftp://ftp.ebi.ac.uk/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p109.fasta.gz</url>
+        <url type="ftp" location="us" preference="100">ftp://ftp.uniprot.org/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p109.fasta.gz</url>
+      </resources>
+    </file>
+  <file name="uniparc_active_p97.fasta.gz">
+      <size>1219948435</size>
+      <verification>
+        <hash type="md5">1ad0b6d043478dd2fcb76b23677c47f6</hash>
+      </verification>
+      <resources>
+        <url type="ftp" location="ch" preference="100">ftp://ftp.expasy.org/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p97.fasta.gz</url>
+        <url type="ftp" location="uk" preference="100">ftp://ftp.ebi.ac.uk/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p97.fasta.gz</url>
+        <url type="ftp" location="us" preference="100">ftp://ftp.uniprot.org/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p97.fasta.gz</url>
+      </resources>
+    </file>
+  <file name="uniparc_active_p150.fasta.gz">
+      <size>1255715253</size>
+      <verification>
+        <hash type="md5">7b2bcce00f9407a4fd334dcdf59c004f</hash>
+      </verification>
+      <resources>
+        <url type="ftp" location="ch" preference="100">ftp://ftp.expasy.org/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p150.fasta.gz</url>
+        <url type="ftp" location="uk" preference="100">ftp://ftp.ebi.ac.uk/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p150.fasta.gz</url>
+        <url type="ftp" location="us" preference="100">ftp://ftp.uniprot.org/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p150.fasta.gz</url>
+      </resources>
+    </file>
+  <file name="uniparc_active_p136.fasta.gz">
+      <size>1211201398</size>
+      <verification>
+        <hash type="md5">cce9dcd40ba75fb3651e74e4654c64d3</hash>
+      </verification>
+      <resources>
+        <url type="ftp" location="ch" preference="100">ftp://ftp.expasy.org/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p136.fasta.gz</url>
+        <url type="ftp" location="uk" preference="100">ftp://ftp.ebi.ac.uk/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p136.fasta.gz</url>
+        <url type="ftp" location="us" preference="100">ftp://ftp.uniprot.org/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p136.fasta.gz</url>
+      </resources>
+    </file>
+  <file name="uniparc_active_p138.fasta.gz">
+      <size>1228720244</size>
+      <verification>
+        <hash type="md5">091c171df1264631c519b62a24e82339</hash>
+      </verification>
+      <resources>
+        <url type="ftp" location="ch" preference="100">ftp://ftp.expasy.org/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p138.fasta.gz</url>
+        <url type="ftp" location="uk" preference="100">ftp://ftp.ebi.ac.uk/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p138.fasta.gz</url>
+        <url type="ftp" location="us" preference="100">ftp://ftp.uniprot.org/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p138.fasta.gz</url>
+      </resources>
+    </file>
+  <file name="uniparc_active_p6.fasta.gz">
+      <size>1232465333</size>
+      <verification>
+        <hash type="md5">55b28b01c209cfa432512a9a0fedfa4b</hash>
+      </verification>
+      <resources>
+        <url type="ftp" location="ch" preference="100">ftp://ftp.expasy.org/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p6.fasta.gz</url>
+        <url type="ftp" location="uk" preference="100">ftp://ftp.ebi.ac.uk/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p6.fasta.gz</url>
+        <url type="ftp" location="us" preference="100">ftp://ftp.uniprot.org/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p6.fasta.gz</url>
+      </resources>
+    </file>
+  <file name="uniparc_active_p194.fasta.gz">
+      <size>1214042074</size>
+      <verification>
+        <hash type="md5">c458b1c7733560d5df5d175730f62e46</hash>
+      </verification>
+      <resources>
+        <url type="ftp" location="ch" preference="100">ftp://ftp.expasy.org/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p194.fasta.gz</url>
+        <url type="ftp" location="uk" preference="100">ftp://ftp.ebi.ac.uk/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p194.fasta.gz</url>
+        <url type="ftp" location="us" preference="100">ftp://ftp.uniprot.org/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p194.fasta.gz</url>
+      </resources>
+    </file>
+  <file name="uniparc_active_p178.fasta.gz">
+      <size>1260677451</size>
+      <verification>
+        <hash type="md5">bb3ac9b9e298b28dc8a749367fab5c28</hash>
+      </verification>
+      <resources>
+        <url type="ftp" location="ch" preference="100">ftp://ftp.expasy.org/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p178.fasta.gz</url>
+        <url type="ftp" location="uk" preference="100">ftp://ftp.ebi.ac.uk/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p178.fasta.gz</url>
+        <url type="ftp" location="us" preference="100">ftp://ftp.uniprot.org/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p178.fasta.gz</url>
+      </resources>
+    </file>
+  <file name="uniparc_active_p73.fasta.gz">
+      <size>1251228051</size>
+      <verification>
+        <hash type="md5">86b0728abb843ce349b9270e23fbe9cf</hash>
+      </verification>
+      <resources>
+        <url type="ftp" location="ch" preference="100">ftp://ftp.expasy.org/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p73.fasta.gz</url>
+        <url type="ftp" location="uk" preference="100">ftp://ftp.ebi.ac.uk/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p73.fasta.gz</url>
+        <url type="ftp" location="us" preference="100">ftp://ftp.uniprot.org/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p73.fasta.gz</url>
+      </resources>
+    </file>
+  <file name="uniparc_active_p120.fasta.gz">
+      <size>1276845675</size>
+      <verification>
+        <hash type="md5">58eeedb06455f6ccf066ba4d49d84aad</hash>
+      </verification>
+      <resources>
+        <url type="ftp" location="ch" preference="100">ftp://ftp.expasy.org/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p120.fasta.gz</url>
+        <url type="ftp" location="uk" preference="100">ftp://ftp.ebi.ac.uk/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p120.fasta.gz</url>
+        <url type="ftp" location="us" preference="100">ftp://ftp.uniprot.org/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p120.fasta.gz</url>
+      </resources>
+    </file>
+  <file name="uniparc_active_p118.fasta.gz">
+      <size>1204350763</size>
+      <verification>
+        <hash type="md5">9d8b6451e9750f9396f688d9977bc849</hash>
+      </verification>
+      <resources>
+        <url type="ftp" location="ch" preference="100">ftp://ftp.expasy.org/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p118.fasta.gz</url>
+        <url type="ftp" location="uk" preference="100">ftp://ftp.ebi.ac.uk/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p118.fasta.gz</url>
+        <url type="ftp" location="us" preference="100">ftp://ftp.uniprot.org/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p118.fasta.gz</url>
+      </resources>
+    </file>
+  <file name="uniparc_active_p91.fasta.gz">
+      <size>1212799204</size>
+      <verification>
+        <hash type="md5">5ae278d5e1737240c57ec1126eaaa540</hash>
+      </verification>
+      <resources>
+        <url type="ftp" location="ch" preference="100">ftp://ftp.expasy.org/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p91.fasta.gz</url>
+        <url type="ftp" location="uk" preference="100">ftp://ftp.ebi.ac.uk/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p91.fasta.gz</url>
+        <url type="ftp" location="us" preference="100">ftp://ftp.uniprot.org/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p91.fasta.gz</url>
+      </resources>
+    </file>
+  <file name="uniparc_active_p112.fasta.gz">
+      <size>1237650963</size>
+      <verification>
+        <hash type="md5">0c69199eec86d9a370deb0d4da14e095</hash>
+      </verification>
+      <resources>
+        <url type="ftp" location="ch" preference="100">ftp://ftp.expasy.org/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p112.fasta.gz</url>
+        <url type="ftp" location="uk" preference="100">ftp://ftp.ebi.ac.uk/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p112.fasta.gz</url>
+        <url type="ftp" location="us" preference="100">ftp://ftp.uniprot.org/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p112.fasta.gz</url>
+      </resources>
+    </file>
+  <file name="uniparc_active_p88.fasta.gz">
+      <size>1240452789</size>
+      <verification>
+        <hash type="md5">2ba455cf4d9fe2591cc77f9ac38aabdc</hash>
+      </verification>
+      <resources>
+        <url type="ftp" location="ch" preference="100">ftp://ftp.expasy.org/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p88.fasta.gz</url>
+        <url type="ftp" location="uk" preference="100">ftp://ftp.ebi.ac.uk/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p88.fasta.gz</url>
+        <url type="ftp" location="us" preference="100">ftp://ftp.uniprot.org/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p88.fasta.gz</url>
+      </resources>
+    </file>
+  <file name="uniparc_active_p151.fasta.gz">
+      <size>1276692076</size>
+      <verification>
+        <hash type="md5">483b373d65d459c74e1d2d2773b5e2eb</hash>
+      </verification>
+      <resources>
+        <url type="ftp" location="ch" preference="100">ftp://ftp.expasy.org/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p151.fasta.gz</url>
+        <url type="ftp" location="uk" preference="100">ftp://ftp.ebi.ac.uk/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p151.fasta.gz</url>
+        <url type="ftp" location="us" preference="100">ftp://ftp.uniprot.org/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p151.fasta.gz</url>
+      </resources>
+    </file>
+  <file name="uniparc_active_p57.fasta.gz">
+      <size>1172279680</size>
+      <verification>
+        <hash type="md5">0c34e093950f94e16f214228fb5c4815</hash>
+      </verification>
+      <resources>
+        <url type="ftp" location="ch" preference="100">ftp://ftp.expasy.org/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p57.fasta.gz</url>
+        <url type="ftp" location="uk" preference="100">ftp://ftp.ebi.ac.uk/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p57.fasta.gz</url>
+        <url type="ftp" location="us" preference="100">ftp://ftp.uniprot.org/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p57.fasta.gz</url>
+      </resources>
+    </file>
+  <file name="uniparc_active_p55.fasta.gz">
+      <size>1243046347</size>
+      <verification>
+        <hash type="md5">609dee646e3480448c60ed0a7fdcf201</hash>
+      </verification>
+      <resources>
+        <url type="ftp" location="ch" preference="100">ftp://ftp.expasy.org/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p55.fasta.gz</url>
+        <url type="ftp" location="uk" preference="100">ftp://ftp.ebi.ac.uk/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p55.fasta.gz</url>
+        <url type="ftp" location="us" preference="100">ftp://ftp.uniprot.org/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p55.fasta.gz</url>
+      </resources>
+    </file>
+  <file name="uniparc_active_p105.fasta.gz">
+      <size>1294163337</size>
+      <verification>
+        <hash type="md5">6c2e830938a1036bef03d67bc6e15f2a</hash>
+      </verification>
+      <resources>
+        <url type="ftp" location="ch" preference="100">ftp://ftp.expasy.org/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p105.fasta.gz</url>
+        <url type="ftp" location="uk" preference="100">ftp://ftp.ebi.ac.uk/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p105.fasta.gz</url>
+        <url type="ftp" location="us" preference="100">ftp://ftp.uniprot.org/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p105.fasta.gz</url>
+      </resources>
+    </file>
+  <file name="uniparc_active_p37.fasta.gz">
+      <size>1261865679</size>
+      <verification>
+        <hash type="md5">808fece4b10a93c334f114a3bca18e16</hash>
+      </verification>
+      <resources>
+        <url type="ftp" location="ch" preference="100">ftp://ftp.expasy.org/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p37.fasta.gz</url>
+        <url type="ftp" location="uk" preference="100">ftp://ftp.ebi.ac.uk/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p37.fasta.gz</url>
+        <url type="ftp" location="us" preference="100">ftp://ftp.uniprot.org/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p37.fasta.gz</url>
+      </resources>
+    </file>
+  <file name="uniparc_active_p108.fasta.gz">
+      <size>1198769657</size>
+      <verification>
+        <hash type="md5">7aeeb834c10e4f39e975d39aff120f41</hash>
+      </verification>
+      <resources>
+        <url type="ftp" location="ch" preference="100">ftp://ftp.expasy.org/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p108.fasta.gz</url>
+        <url type="ftp" location="uk" preference="100">ftp://ftp.ebi.ac.uk/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p108.fasta.gz</url>
+        <url type="ftp" location="us" preference="100">ftp://ftp.uniprot.org/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p108.fasta.gz</url>
+      </resources>
+    </file>
+  <file name="uniparc_active_p191.fasta.gz">
+      <size>1239174899</size>
+      <verification>
+        <hash type="md5">800b41eda904b76a22431350b1f7554a</hash>
+      </verification>
+      <resources>
+        <url type="ftp" location="ch" preference="100">ftp://ftp.expasy.org/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p191.fasta.gz</url>
+        <url type="ftp" location="uk" preference="100">ftp://ftp.ebi.ac.uk/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p191.fasta.gz</url>
+        <url type="ftp" location="us" preference="100">ftp://ftp.uniprot.org/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p191.fasta.gz</url>
+      </resources>
+    </file>
+  <file name="uniparc_active_p40.fasta.gz">
+      <size>1225245533</size>
+      <verification>
+        <hash type="md5">26adfe13f4dda511dbe896b984d2c039</hash>
+      </verification>
+      <resources>
+        <url type="ftp" location="ch" preference="100">ftp://ftp.expasy.org/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p40.fasta.gz</url>
+        <url type="ftp" location="uk" preference="100">ftp://ftp.ebi.ac.uk/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p40.fasta.gz</url>
+        <url type="ftp" location="us" preference="100">ftp://ftp.uniprot.org/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p40.fasta.gz</url>
+      </resources>
+    </file>
+  <file name="uniparc_active_p190.fasta.gz">
+      <size>1273411715</size>
+      <verification>
+        <hash type="md5">f9cb00365aa67aea677836a136360921</hash>
+      </verification>
+      <resources>
+        <url type="ftp" location="ch" preference="100">ftp://ftp.expasy.org/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p190.fasta.gz</url>
+        <url type="ftp" location="uk" preference="100">ftp://ftp.ebi.ac.uk/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p190.fasta.gz</url>
+        <url type="ftp" location="us" preference="100">ftp://ftp.uniprot.org/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p190.fasta.gz</url>
+      </resources>
+    </file>
+  <file name="uniparc_active_p126.fasta.gz">
+      <size>1244785957</size>
+      <verification>
+        <hash type="md5">29e357764fd4e1182d4a8e268d7efff3</hash>
+      </verification>
+      <resources>
+        <url type="ftp" location="ch" preference="100">ftp://ftp.expasy.org/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p126.fasta.gz</url>
+        <url type="ftp" location="uk" preference="100">ftp://ftp.ebi.ac.uk/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p126.fasta.gz</url>
+        <url type="ftp" location="us" preference="100">ftp://ftp.uniprot.org/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p126.fasta.gz</url>
+      </resources>
+    </file>
+  <file name="uniparc_active_p99.fasta.gz">
+      <size>1275685199</size>
+      <verification>
+        <hash type="md5">836cbdf28699a49799bdcf74f9935e5d</hash>
+      </verification>
+      <resources>
+        <url type="ftp" location="ch" preference="100">ftp://ftp.expasy.org/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p99.fasta.gz</url>
+        <url type="ftp" location="uk" preference="100">ftp://ftp.ebi.ac.uk/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p99.fasta.gz</url>
+        <url type="ftp" location="us" preference="100">ftp://ftp.uniprot.org/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p99.fasta.gz</url>
+      </resources>
+    </file>
+  <file name="uniparc_active_p44.fasta.gz">
+      <size>1210248858</size>
+      <verification>
+        <hash type="md5">c2bee96b33b04db099090cd51fb2c392</hash>
+      </verification>
+      <resources>
+        <url type="ftp" location="ch" preference="100">ftp://ftp.expasy.org/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p44.fasta.gz</url>
+        <url type="ftp" location="uk" preference="100">ftp://ftp.ebi.ac.uk/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p44.fasta.gz</url>
+        <url type="ftp" location="us" preference="100">ftp://ftp.uniprot.org/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p44.fasta.gz</url>
+      </resources>
+    </file>
+  <file name="uniparc_active_p61.fasta.gz">
+      <size>1181085417</size>
+      <verification>
+        <hash type="md5">55c623cd2765fed875eeed35adb95f35</hash>
+      </verification>
+      <resources>
+        <url type="ftp" location="ch" preference="100">ftp://ftp.expasy.org/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p61.fasta.gz</url>
+        <url type="ftp" location="uk" preference="100">ftp://ftp.ebi.ac.uk/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p61.fasta.gz</url>
+        <url type="ftp" location="us" preference="100">ftp://ftp.uniprot.org/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p61.fasta.gz</url>
+      </resources>
+    </file>
+  <file name="uniparc_active_p146.fasta.gz">
+      <size>1214385926</size>
+      <verification>
+        <hash type="md5">9126ac3b7e689fbb8c1b25198f4c9b3f</hash>
+      </verification>
+      <resources>
+        <url type="ftp" location="ch" preference="100">ftp://ftp.expasy.org/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p146.fasta.gz</url>
+        <url type="ftp" location="uk" preference="100">ftp://ftp.ebi.ac.uk/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p146.fasta.gz</url>
+        <url type="ftp" location="us" preference="100">ftp://ftp.uniprot.org/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p146.fasta.gz</url>
+      </resources>
+    </file>
+  <file name="uniparc_active_p142.fasta.gz">
+      <size>1221798761</size>
+      <verification>
+        <hash type="md5">29a92e7533cc64109607fbd7800362ec</hash>
+      </verification>
+      <resources>
+        <url type="ftp" location="ch" preference="100">ftp://ftp.expasy.org/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p142.fasta.gz</url>
+        <url type="ftp" location="uk" preference="100">ftp://ftp.ebi.ac.uk/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p142.fasta.gz</url>
+        <url type="ftp" location="us" preference="100">ftp://ftp.uniprot.org/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p142.fasta.gz</url>
+      </resources>
+    </file>
+  <file name="uniparc_active_p128.fasta.gz">
+      <size>1204952576</size>
+      <verification>
+        <hash type="md5">8759f4e715065b40655cc3167cd28402</hash>
+      </verification>
+      <resources>
+        <url type="ftp" location="ch" preference="100">ftp://ftp.expasy.org/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p128.fasta.gz</url>
+        <url type="ftp" location="uk" preference="100">ftp://ftp.ebi.ac.uk/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p128.fasta.gz</url>
+        <url type="ftp" location="us" preference="100">ftp://ftp.uniprot.org/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p128.fasta.gz</url>
+      </resources>
+    </file>
+  <file name="uniparc_active_p148.fasta.gz">
+      <size>1312156811</size>
+      <verification>
+        <hash type="md5">5e38accb2f1c0220e012e98c088179f0</hash>
+      </verification>
+      <resources>
+        <url type="ftp" location="ch" preference="100">ftp://ftp.expasy.org/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p148.fasta.gz</url>
+        <url type="ftp" location="uk" preference="100">ftp://ftp.ebi.ac.uk/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p148.fasta.gz</url>
+        <url type="ftp" location="us" preference="100">ftp://ftp.uniprot.org/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p148.fasta.gz</url>
+      </resources>
+    </file>
+  <file name="uniparc_active_p76.fasta.gz">
+      <size>1221077582</size>
+      <verification>
+        <hash type="md5">4859e335403779b3e9743fc666345e06</hash>
+      </verification>
+      <resources>
+        <url type="ftp" location="ch" preference="100">ftp://ftp.expasy.org/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p76.fasta.gz</url>
+        <url type="ftp" location="uk" preference="100">ftp://ftp.ebi.ac.uk/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p76.fasta.gz</url>
+        <url type="ftp" location="us" preference="100">ftp://ftp.uniprot.org/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p76.fasta.gz</url>
+      </resources>
+    </file>
+  <file name="uniparc_active_p186.fasta.gz">
+      <size>1259864810</size>
+      <verification>
+        <hash type="md5">6b6f5e721dc333cc86ccb87b722f461d</hash>
+      </verification>
+      <resources>
+        <url type="ftp" location="ch" preference="100">ftp://ftp.expasy.org/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p186.fasta.gz</url>
+        <url type="ftp" location="uk" preference="100">ftp://ftp.ebi.ac.uk/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p186.fasta.gz</url>
+        <url type="ftp" location="us" preference="100">ftp://ftp.uniprot.org/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p186.fasta.gz</url>
+      </resources>
+    </file>
+  <file name="uniparc_active_p32.fasta.gz">
+      <size>1255934178</size>
+      <verification>
+        <hash type="md5">b064d598dc914241536bb80e41367124</hash>
+      </verification>
+      <resources>
+        <url type="ftp" location="ch" preference="100">ftp://ftp.expasy.org/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p32.fasta.gz</url>
+        <url type="ftp" location="uk" preference="100">ftp://ftp.ebi.ac.uk/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p32.fasta.gz</url>
+        <url type="ftp" location="us" preference="100">ftp://ftp.uniprot.org/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p32.fasta.gz</url>
+      </resources>
+    </file>
+  <file name="uniparc_active_p45.fasta.gz">
+      <size>1225016409</size>
+      <verification>
+        <hash type="md5">46040c15d85b3dbecd4895985a9fb714</hash>
+      </verification>
+      <resources>
+        <url type="ftp" location="ch" preference="100">ftp://ftp.expasy.org/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p45.fasta.gz</url>
+        <url type="ftp" location="uk" preference="100">ftp://ftp.ebi.ac.uk/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p45.fasta.gz</url>
+        <url type="ftp" location="us" preference="100">ftp://ftp.uniprot.org/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p45.fasta.gz</url>
+      </resources>
+    </file>
+  <file name="uniparc_active_p82.fasta.gz">
+      <size>1267061593</size>
+      <verification>
+        <hash type="md5">4457838afce55340ef37a1a563948257</hash>
+      </verification>
+      <resources>
+        <url type="ftp" location="ch" preference="100">ftp://ftp.expasy.org/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p82.fasta.gz</url>
+        <url type="ftp" location="uk" preference="100">ftp://ftp.ebi.ac.uk/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p82.fasta.gz</url>
+        <url type="ftp" location="us" preference="100">ftp://ftp.uniprot.org/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p82.fasta.gz</url>
+      </resources>
+    </file>
+  <file name="uniparc_active_p165.fasta.gz">
+      <size>1187007041</size>
+      <verification>
+        <hash type="md5">0907e508d819a6f71cede8c083b31724</hash>
+      </verification>
+      <resources>
+        <url type="ftp" location="ch" preference="100">ftp://ftp.expasy.org/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p165.fasta.gz</url>
+        <url type="ftp" location="uk" preference="100">ftp://ftp.ebi.ac.uk/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p165.fasta.gz</url>
+        <url type="ftp" location="us" preference="100">ftp://ftp.uniprot.org/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p165.fasta.gz</url>
+      </resources>
+    </file>
+  <file name="uniparc_active_p106.fasta.gz">
+      <size>1285987308</size>
+      <verification>
+        <hash type="md5">146ad378cbe0255b10ade6e6b810e6db</hash>
+      </verification>
+      <resources>
+        <url type="ftp" location="ch" preference="100">ftp://ftp.expasy.org/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p106.fasta.gz</url>
+        <url type="ftp" location="uk" preference="100">ftp://ftp.ebi.ac.uk/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p106.fasta.gz</url>
+        <url type="ftp" location="us" preference="100">ftp://ftp.uniprot.org/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p106.fasta.gz</url>
+      </resources>
+    </file>
+  <file name="uniparc_active_p51.fasta.gz">
+      <size>1252471951</size>
+      <verification>
+        <hash type="md5">d369f8c5ee03ac5ee21801c9379bb5fb</hash>
+      </verification>
+      <resources>
+        <url type="ftp" location="ch" preference="100">ftp://ftp.expasy.org/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p51.fasta.gz</url>
+        <url type="ftp" location="uk" preference="100">ftp://ftp.ebi.ac.uk/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p51.fasta.gz</url>
+        <url type="ftp" location="us" preference="100">ftp://ftp.uniprot.org/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p51.fasta.gz</url>
+      </resources>
+    </file>
+  <file name="uniparc_active_p149.fasta.gz">
+      <size>1214268494</size>
+      <verification>
+        <hash type="md5">c830e7283be9dc65b74045cba26fc7cb</hash>
+      </verification>
+      <resources>
+        <url type="ftp" location="ch" preference="100">ftp://ftp.expasy.org/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p149.fasta.gz</url>
+        <url type="ftp" location="uk" preference="100">ftp://ftp.ebi.ac.uk/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p149.fasta.gz</url>
+        <url type="ftp" location="us" preference="100">ftp://ftp.uniprot.org/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p149.fasta.gz</url>
+      </resources>
+    </file>
+  <file name="uniparc_active_p56.fasta.gz">
+      <size>1212598225</size>
+      <verification>
+        <hash type="md5">071a5b7be72f1ac307bee1e93ac1c242</hash>
+      </verification>
+      <resources>
+        <url type="ftp" location="ch" preference="100">ftp://ftp.expasy.org/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p56.fasta.gz</url>
+        <url type="ftp" location="uk" preference="100">ftp://ftp.ebi.ac.uk/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p56.fasta.gz</url>
+        <url type="ftp" location="us" preference="100">ftp://ftp.uniprot.org/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p56.fasta.gz</url>
+      </resources>
+    </file>
+  <file name="uniparc_active_p43.fasta.gz">
+      <size>1295708929</size>
+      <verification>
+        <hash type="md5">b71f81ded535ab164ff871368efc5997</hash>
+      </verification>
+      <resources>
+        <url type="ftp" location="ch" preference="100">ftp://ftp.expasy.org/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p43.fasta.gz</url>
+        <url type="ftp" location="uk" preference="100">ftp://ftp.ebi.ac.uk/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p43.fasta.gz</url>
+        <url type="ftp" location="us" preference="100">ftp://ftp.uniprot.org/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p43.fasta.gz</url>
+      </resources>
+    </file>
+  <file name="uniparc_active_p16.fasta.gz">
+      <size>1221124426</size>
+      <verification>
+        <hash type="md5">408c41026b95eba28c0da864daf4a104</hash>
+      </verification>
+      <resources>
+        <url type="ftp" location="ch" preference="100">ftp://ftp.expasy.org/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p16.fasta.gz</url>
+        <url type="ftp" location="uk" preference="100">ftp://ftp.ebi.ac.uk/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p16.fasta.gz</url>
+        <url type="ftp" location="us" preference="100">ftp://ftp.uniprot.org/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p16.fasta.gz</url>
+      </resources>
+    </file>
+  <file name="uniparc_active_p174.fasta.gz">
+      <size>1239940725</size>
+      <verification>
+        <hash type="md5">4e863078738319fed4f3ffd98727755c</hash>
+      </verification>
+      <resources>
+        <url type="ftp" location="ch" preference="100">ftp://ftp.expasy.org/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p174.fasta.gz</url>
+        <url type="ftp" location="uk" preference="100">ftp://ftp.ebi.ac.uk/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p174.fasta.gz</url>
+        <url type="ftp" location="us" preference="100">ftp://ftp.uniprot.org/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p174.fasta.gz</url>
+      </resources>
+    </file>
+  <file name="uniparc_active_p144.fasta.gz">
+      <size>1295061575</size>
+      <verification>
+        <hash type="md5">00e78d882ab9313e9093116833cadeae</hash>
+      </verification>
+      <resources>
+        <url type="ftp" location="ch" preference="100">ftp://ftp.expasy.org/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p144.fasta.gz</url>
+        <url type="ftp" location="uk" preference="100">ftp://ftp.ebi.ac.uk/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p144.fasta.gz</url>
+        <url type="ftp" location="us" preference="100">ftp://ftp.uniprot.org/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p144.fasta.gz</url>
+      </resources>
+    </file>
+  <file name="uniparc_active_p119.fasta.gz">
+      <size>1196146154</size>
+      <verification>
+        <hash type="md5">28346592cf99d1f413cef9e3532b3b9e</hash>
+      </verification>
+      <resources>
+        <url type="ftp" location="ch" preference="100">ftp://ftp.expasy.org/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p119.fasta.gz</url>
+        <url type="ftp" location="uk" preference="100">ftp://ftp.ebi.ac.uk/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p119.fasta.gz</url>
+        <url type="ftp" location="us" preference="100">ftp://ftp.uniprot.org/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p119.fasta.gz</url>
+      </resources>
+    </file>
+  <file name="uniparc_active_p187.fasta.gz">
+      <size>1243251817</size>
+      <verification>
+        <hash type="md5">8df2fcc0a92ed0b9dff2b31a65b84e09</hash>
+      </verification>
+      <resources>
+        <url type="ftp" location="ch" preference="100">ftp://ftp.expasy.org/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p187.fasta.gz</url>
+        <url type="ftp" location="uk" preference="100">ftp://ftp.ebi.ac.uk/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p187.fasta.gz</url>
+        <url type="ftp" location="us" preference="100">ftp://ftp.uniprot.org/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p187.fasta.gz</url>
+      </resources>
+    </file>
+  <file name="uniparc_active_p137.fasta.gz">
+      <size>1259853821</size>
+      <verification>
+        <hash type="md5">10ebac992cd92ddbeda4ed6575bfd749</hash>
+      </verification>
+      <resources>
+        <url type="ftp" location="ch" preference="100">ftp://ftp.expasy.org/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p137.fasta.gz</url>
+        <url type="ftp" location="uk" preference="100">ftp://ftp.ebi.ac.uk/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p137.fasta.gz</url>
+        <url type="ftp" location="us" preference="100">ftp://ftp.uniprot.org/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p137.fasta.gz</url>
+      </resources>
+    </file>
+  <file name="uniparc_active_p26.fasta.gz">
+      <size>1269418936</size>
+      <verification>
+        <hash type="md5">1ebdb9bdaf9d9078e77f300b84593cf1</hash>
+      </verification>
+      <resources>
+        <url type="ftp" location="ch" preference="100">ftp://ftp.expasy.org/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p26.fasta.gz</url>
+        <url type="ftp" location="uk" preference="100">ftp://ftp.ebi.ac.uk/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p26.fasta.gz</url>
+        <url type="ftp" location="us" preference="100">ftp://ftp.uniprot.org/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p26.fasta.gz</url>
+      </resources>
+    </file>
+  <file name="uniparc_active_p116.fasta.gz">
+      <size>1265857162</size>
+      <verification>
+        <hash type="md5">67752f4475256b4506793dde32b3ee3a</hash>
+      </verification>
+      <resources>
+        <url type="ftp" location="ch" preference="100">ftp://ftp.expasy.org/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p116.fasta.gz</url>
+        <url type="ftp" location="uk" preference="100">ftp://ftp.ebi.ac.uk/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p116.fasta.gz</url>
+        <url type="ftp" location="us" preference="100">ftp://ftp.uniprot.org/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p116.fasta.gz</url>
+      </resources>
+    </file>
+  <file name="uniparc_active_p98.fasta.gz">
+      <size>1216532139</size>
+      <verification>
+        <hash type="md5">2aded0341709113d42896def6d919460</hash>
+      </verification>
+      <resources>
+        <url type="ftp" location="ch" preference="100">ftp://ftp.expasy.org/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p98.fasta.gz</url>
+        <url type="ftp" location="uk" preference="100">ftp://ftp.ebi.ac.uk/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p98.fasta.gz</url>
+        <url type="ftp" location="us" preference="100">ftp://ftp.uniprot.org/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p98.fasta.gz</url>
+      </resources>
+    </file>
+  <file name="uniparc_active_p79.fasta.gz">
+      <size>1221231539</size>
+      <verification>
+        <hash type="md5">f12d5f2ea6a026e72643b94a3811af81</hash>
+      </verification>
+      <resources>
+        <url type="ftp" location="ch" preference="100">ftp://ftp.expasy.org/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p79.fasta.gz</url>
+        <url type="ftp" location="uk" preference="100">ftp://ftp.ebi.ac.uk/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p79.fasta.gz</url>
+        <url type="ftp" location="us" preference="100">ftp://ftp.uniprot.org/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p79.fasta.gz</url>
+      </resources>
+    </file>
+  <file name="uniparc_active_p147.fasta.gz">
+      <size>1231486642</size>
+      <verification>
+        <hash type="md5">1f1277be6183b146dd206813881d0172</hash>
+      </verification>
+      <resources>
+        <url type="ftp" location="ch" preference="100">ftp://ftp.expasy.org/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p147.fasta.gz</url>
+        <url type="ftp" location="uk" preference="100">ftp://ftp.ebi.ac.uk/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p147.fasta.gz</url>
+        <url type="ftp" location="us" preference="100">ftp://ftp.uniprot.org/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p147.fasta.gz</url>
+      </resources>
+    </file>
+  <file name="uniparc_active_p34.fasta.gz">
+      <size>1224107076</size>
+      <verification>
+        <hash type="md5">9acc270dbab85870cb27d75e98b92ab6</hash>
+      </verification>
+      <resources>
+        <url type="ftp" location="ch" preference="100">ftp://ftp.expasy.org/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p34.fasta.gz</url>
+        <url type="ftp" location="uk" preference="100">ftp://ftp.ebi.ac.uk/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p34.fasta.gz</url>
+        <url type="ftp" location="us" preference="100">ftp://ftp.uniprot.org/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p34.fasta.gz</url>
+      </resources>
+    </file>
+  <file name="uniparc_active_p176.fasta.gz">
+      <size>1205547812</size>
+      <verification>
+        <hash type="md5">f2aa2f72f04b18bb0232ed902b7144d4</hash>
+      </verification>
+      <resources>
+        <url type="ftp" location="ch" preference="100">ftp://ftp.expasy.org/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p176.fasta.gz</url>
+        <url type="ftp" location="uk" preference="100">ftp://ftp.ebi.ac.uk/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p176.fasta.gz</url>
+        <url type="ftp" location="us" preference="100">ftp://ftp.uniprot.org/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p176.fasta.gz</url>
+      </resources>
+    </file>
+  <file name="uniparc_active_p184.fasta.gz">
+      <size>1197681709</size>
+      <verification>
+        <hash type="md5">a7250c8fa2e533d7ff30a0d7100dbdd3</hash>
+      </verification>
+      <resources>
+        <url type="ftp" location="ch" preference="100">ftp://ftp.expasy.org/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p184.fasta.gz</url>
+        <url type="ftp" location="uk" preference="100">ftp://ftp.ebi.ac.uk/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p184.fasta.gz</url>
+        <url type="ftp" location="us" preference="100">ftp://ftp.uniprot.org/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p184.fasta.gz</url>
+      </resources>
+    </file>
+  <file name="uniparc_active_p77.fasta.gz">
+      <size>1164353529</size>
+      <verification>
+        <hash type="md5">61428c0f4fe92a936106049f483d5266</hash>
+      </verification>
+      <resources>
+        <url type="ftp" location="ch" preference="100">ftp://ftp.expasy.org/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p77.fasta.gz</url>
+        <url type="ftp" location="uk" preference="100">ftp://ftp.ebi.ac.uk/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p77.fasta.gz</url>
+        <url type="ftp" location="us" preference="100">ftp://ftp.uniprot.org/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p77.fasta.gz</url>
+      </resources>
+    </file>
+  <file name="uniparc_active_p167.fasta.gz">
+      <size>1199003076</size>
+      <verification>
+        <hash type="md5">d1a81533be3f29f40c7f851de35f1e37</hash>
+      </verification>
+      <resources>
+        <url type="ftp" location="ch" preference="100">ftp://ftp.expasy.org/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p167.fasta.gz</url>
+        <url type="ftp" location="uk" preference="100">ftp://ftp.ebi.ac.uk/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p167.fasta.gz</url>
+        <url type="ftp" location="us" preference="100">ftp://ftp.uniprot.org/pub/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p167.fasta.gz</url>
+      </resources>
+    </file>
+  </files>
+</metalink>

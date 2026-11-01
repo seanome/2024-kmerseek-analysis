@@ -1,0 +1,176 @@
+split	group	method	recall	n_queries
+dev	conotoxin A superfamily	A	0.288135593220339	1
+dev	conotoxin A superfamily	B	0.0	1
+dev	conotoxin A superfamily	C_A	0.23728813559322035	1
+dev	conotoxin A superfamily	C_B	0.0	1
+dev	conotoxin A superfamily	D_B	0.0	1
+dev	conotoxin A superfamily	E1	0.0	1
+dev	conotoxin A superfamily	E10	0.0	1
+dev	conotoxin B superfamily	A	0.0	1
+dev	conotoxin B superfamily	B	0.0	1
+dev	conotoxin B superfamily	C_A	0.0	1
+dev	conotoxin B superfamily	C_B	0.0	1
+dev	conotoxin B superfamily	D_B	0.0	1
+dev	conotoxin B superfamily	E1	0.0	1
+dev	conotoxin B superfamily	E10	0.0	1
+dev	conotoxin D superfamily	A	0.01694915254237288	1
+dev	conotoxin D superfamily	B	0.01694915254237288	1
+dev	conotoxin D superfamily	C_A	0.01694915254237288	1
+dev	conotoxin D superfamily	C_B	0.01694915254237288	1
+dev	conotoxin D superfamily	D_B	0.01694915254237288	1
+dev	conotoxin D superfamily	E1	0.01694915254237288	1
+dev	conotoxin D superfamily	E10	0.0	1
+dev	hainantoxin family	A	0.0	1
+dev	hainantoxin family	B	0.0	1
+dev	hainantoxin family	C_A	0.0	1
+dev	hainantoxin family	C_B	0.0	1
+dev	hainantoxin family	D_B	0.0	1
+dev	hainantoxin family	E1	0.0	1
+dev	hainantoxin family	E10	0.0	1
+dev	neurotoxin 02 (plectoxin) family	A	0.06779661016949153	1
+dev	neurotoxin 02 (plectoxin) family	B	0.03389830508474576	1
+dev	neurotoxin 02 (plectoxin) family	C_A	0.06779661016949153	1
+dev	neurotoxin 02 (plectoxin) family	C_B	0.03389830508474576	1
+dev	neurotoxin 02 (plectoxin) family	D_B	0.03389830508474576	1
+dev	neurotoxin 02 (plectoxin) family	E1	0.06779661016949153	1
+dev	neurotoxin 02 (plectoxin) family	E10	0.01694915254237288	1
+dev	neurotoxin 04 (omega-agtx) family	A	0.05084745762711865	1
+dev	neurotoxin 04 (omega-agtx) family	B	0.06779661016949153	1
+dev	neurotoxin 04 (omega-agtx) family	C_A	0.05084745762711865	1
+dev	neurotoxin 04 (omega-agtx) family	C_B	0.06779661016949153	1
+dev	neurotoxin 04 (omega-agtx) family	D_B	0.06779661016949153	1
+dev	neurotoxin 04 (omega-agtx) family	E1	0.1016949152542373	1
+dev	neurotoxin 04 (omega-agtx) family	E10	0.01694915254237288	1
+dev	neurotoxin 07 (Beta/delta-agtx) family	A	0.07627118644067796	2
+dev	neurotoxin 07 (Beta/delta-agtx) family	B	0.0847457627118644	2
+dev	neurotoxin 07 (Beta/delta-agtx) family	C_A	0.07627118644067796	2
+dev	neurotoxin 07 (Beta/delta-agtx) family	C_B	0.0847457627118644	2
+dev	neurotoxin 07 (Beta/delta-agtx) family	D_B	0.0847457627118644	2
+dev	neurotoxin 07 (Beta/delta-agtx) family	E1	0.0847457627118644	2
+dev	neurotoxin 07 (Beta/delta-agtx) family	E10	0.0	2
+dev	neurotoxin 10 (Hwtx-1) family	A	0.003389830508474576	5
+dev	neurotoxin 10 (Hwtx-1) family	B	0.0	5
+dev	neurotoxin 10 (Hwtx-1) family	C_A	0.003389830508474576	5
+dev	neurotoxin 10 (Hwtx-1) family	C_B	0.0	5
+dev	neurotoxin 10 (Hwtx-1) family	D_B	0.0	5
+dev	neurotoxin 10 (Hwtx-1) family	E1	0.003389830508474576	5
+dev	neurotoxin 10 (Hwtx-1) family	E10	0.0	5
+dev	neurotoxin 26 (DTX) family	A	0.01694915254237288	1
+dev	neurotoxin 26 (DTX) family	B	0.0	1
+dev	neurotoxin 26 (DTX) family	C_A	0.01694915254237288	1
+dev	neurotoxin 26 (DTX) family	C_B	0.0	1
+dev	neurotoxin 26 (DTX) family	D_B	0.0	1
+dev	neurotoxin 26 (DTX) family	E1	0.0	1
+dev	neurotoxin 26 (DTX) family	E10	0.0	1
+dev	short scorpion toxin superfamily	A	0.25762711864406784	5
+dev	short scorpion toxin superfamily	B	0.08135593220338982	5
+dev	short scorpion toxin superfamily	C_A	0.27796610169491526	5
+dev	short scorpion toxin superfamily	C_B	0.08135593220338982	5
+dev	short scorpion toxin superfamily	D_B	0.08813559322033898	5
+dev	short scorpion toxin superfamily	E1	0.07457627118644068	5
+dev	short scorpion toxin superfamily	E10	0.0	5
+dev	three-finger toxin family	A	0.3615819209039548	3
+dev	three-finger toxin family	B	0.2542372881355932	3
+dev	three-finger toxin family	C_A	0.3615819209039548	3
+dev	three-finger toxin family	C_B	0.2542372881355932	3
+dev	three-finger toxin family	D_B	0.2542372881355932	3
+dev	three-finger toxin family	E1	0.07909604519774012	3
+dev	three-finger toxin family	E10	0.0	3
+dev	unassigned:P0C5F2	A	0.0	1
+dev	unassigned:P0C5F2	B	0.0	1
+dev	unassigned:P0C5F2	C_A	0.0	1
+dev	unassigned:P0C5F2	C_B	0.0	1
+dev	unassigned:P0C5F2	D_B	0.0	1
+dev	unassigned:P0C5F2	E1	0.0	1
+dev	unassigned:P0C5F2	E10	0.0	1
+dev	unassigned:P0DRC4	A	0.0	1
+dev	unassigned:P0DRC4	B	0.0	1
+dev	unassigned:P0DRC4	C_A	0.0	1
+dev	unassigned:P0DRC4	C_B	0.0	1
+dev	unassigned:P0DRC4	D_B	0.0	1
+dev	unassigned:P0DRC4	E1	0.0	1
+dev	unassigned:P0DRC4	E10	0.0	1
+heldout	CRISP family	A	0.05084745762711865	2
+heldout	CRISP family	B	0.03389830508474576	2
+heldout	CRISP family	C_A	0.05084745762711865	2
+heldout	CRISP family	C_B	0.03389830508474576	2
+heldout	CRISP family	D_B	0.03389830508474576	2
+heldout	CRISP family	E1	0.03389830508474576	2
+heldout	CRISP family	E10	0.0	2
+heldout	asilidin-1 family	A	0.06779661016949153	1
+heldout	asilidin-1 family	B	0.1864406779661017	1
+heldout	asilidin-1 family	C_A	0.06779661016949153	1
+heldout	asilidin-1 family	C_B	0.1864406779661017	1
+heldout	asilidin-1 family	D_B	0.1864406779661017	1
+heldout	asilidin-1 family	E1	0.0	1
+heldout	asilidin-1 family	E10	0.0	1
+heldout	conotoxin M superfamily	A	0.0	3
+heldout	conotoxin M superfamily	B	0.0	3
+heldout	conotoxin M superfamily	C_A	0.0	3
+heldout	conotoxin M superfamily	C_B	0.0	3
+heldout	conotoxin M superfamily	D_B	0.0	3
+heldout	conotoxin M superfamily	E1	0.011299435028248588	3
+heldout	conotoxin M superfamily	E10	0.0	3
+heldout	ergtoxin family	A	0.11864406779661017	1
+heldout	ergtoxin family	B	0.03389830508474576	1
+heldout	ergtoxin family	C_A	0.11864406779661017	1
+heldout	ergtoxin family	C_B	0.03389830508474576	1
+heldout	ergtoxin family	D_B	0.11864406779661017	1
+heldout	ergtoxin family	E1	0.0	1
+heldout	ergtoxin family	E10	0.01694915254237288	1
+heldout	long (4 C-C) scorpion toxin superfamily	A	0.2915254237288135	5
+heldout	long (4 C-C) scorpion toxin superfamily	B	0.0983050847457627	5
+heldout	long (4 C-C) scorpion toxin superfamily	C_A	0.2915254237288135	5
+heldout	long (4 C-C) scorpion toxin superfamily	C_B	0.0983050847457627	5
+heldout	long (4 C-C) scorpion toxin superfamily	D_B	0.0983050847457627	5
+heldout	long (4 C-C) scorpion toxin superfamily	E1	0.04406779661016949	5
+heldout	long (4 C-C) scorpion toxin superfamily	E10	0.0	5
+heldout	long chain scorpion toxin family	A	0.0	1
+heldout	long chain scorpion toxin family	B	0.01694915254237288	1
+heldout	long chain scorpion toxin family	C_A	0.0	1
+heldout	long chain scorpion toxin family	C_B	0.01694915254237288	1
+heldout	long chain scorpion toxin family	D_B	0.0	1
+heldout	long chain scorpion toxin family	E1	0.0	1
+heldout	long chain scorpion toxin family	E10	0.0	1
+heldout	phospholipase A2 family	A	0.0	2
+heldout	phospholipase A2 family	B	0.0	2
+heldout	phospholipase A2 family	C_A	0.0	2
+heldout	phospholipase A2 family	C_B	0.0	2
+heldout	phospholipase A2 family	D_B	0.0	2
+heldout	phospholipase A2 family	E1	0.01694915254237288	2
+heldout	phospholipase A2 family	E10	0.00847457627118644	2
+heldout	spiderine family	A	0.03389830508474576	1
+heldout	spiderine family	B	0.01694915254237288	1
+heldout	spiderine family	C_A	0.03389830508474576	1
+heldout	spiderine family	C_B	0.01694915254237288	1
+heldout	spiderine family	D_B	0.01694915254237288	1
+heldout	spiderine family	E1	0.0	1
+heldout	spiderine family	E10	0.0	1
+heldout	unassigned:B3EWH2	A	0.0	1
+heldout	unassigned:B3EWH2	B	0.0	1
+heldout	unassigned:B3EWH2	C_A	0.0	1
+heldout	unassigned:B3EWH2	C_B	0.0	1
+heldout	unassigned:B3EWH2	D_B	0.0	1
+heldout	unassigned:B3EWH2	E1	0.0	1
+heldout	unassigned:B3EWH2	E10	0.0	1
+heldout	unassigned:P0DQM9	A	0.01694915254237288	1
+heldout	unassigned:P0DQM9	B	0.0	1
+heldout	unassigned:P0DQM9	C_A	0.0	1
+heldout	unassigned:P0DQM9	C_B	0.0	1
+heldout	unassigned:P0DQM9	D_B	0.0	1
+heldout	unassigned:P0DQM9	E1	0.0	1
+heldout	unassigned:P0DQM9	E10	0.0	1
+heldout	unassigned:P0DXZ7	A	0.0	1
+heldout	unassigned:P0DXZ7	B	0.0	1
+heldout	unassigned:P0DXZ7	C_A	0.0	1
+heldout	unassigned:P0DXZ7	C_B	0.0	1
+heldout	unassigned:P0DXZ7	D_B	0.0	1
+heldout	unassigned:P0DXZ7	E1	0.0	1
+heldout	unassigned:P0DXZ7	E10	0.0	1
+heldout	venom Kunitz-type family	A	0.022598870056497175	3
+heldout	venom Kunitz-type family	B	0.0	3
+heldout	venom Kunitz-type family	C_A	0.022598870056497175	3
+heldout	venom Kunitz-type family	C_B	0.0	3
+heldout	venom Kunitz-type family	D_B	0.0	3
+heldout	venom Kunitz-type family	E1	0.005649717514124294	3
+heldout	venom Kunitz-type family	E10	0.0	3

@@ -1,0 +1,26 @@
+             JOBID                           NAME      STATE       TIME   MIN_MEMORY TIME_LIMIT NODELIST(REASON)
+          49183041              nb300-retry-sdm12    PENDING       0:00        1322G    6:00:00 (None)
+          49183033          nb300-retry-protein20    PENDING       0:00         687G   18:00:00 (None)
+          49183038           nb300-retry-mmseqs12    PENDING       0:00         683G   18:00:00 (None)
+          49183037             nb300-retry-hsdm17    PENDING       0:00         683G   18:00:00 (None)
+          49183044             nb300-retry-wass14    PENDING       0:00         683G   18:00:00 (None)
+          49183035           nb300-retry-dayhoff6    PENDING       0:00         680G   18:00:00 (None)
+          49183036        nb300-retry-funcgroups8    PENDING       0:00         689G   18:00:00 (None)
+/scratch/users/olgabot/peptide-lookup-300/step4/full/massspec18.k7.s1.C2.X8.masknone.complete 0 1792701105
+e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855  /scratch/users/olgabot/peptide-lookup-300/step4/full/massspec18.k7.s1.C2.X8.masknone.complete
+/scratch/users/olgabot/peptide-lookup-300/step4/full/massspec18.k7.s1.C2.X8.masknone.fit_status.txt 7 1792701105
+a1ebe9fa75d25a1282905ebf96fa841ffe21b7c505bd89a327e04b507e0db365  /scratch/users/olgabot/peptide-lookup-300/step4/full/massspec18.k7.s1.C2.X8.masknone.fit_status.txt
+/scratch/users/olgabot/peptide-lookup-300/step4/full/massspec18.k7.s1.C2.X8.masknone.source_sha.txt 41 1792701105
+5a13601f3ed0c77ba5fcefc788cf6537b9f4e54feb033d08fdedc56ebdcb7a31  /scratch/users/olgabot/peptide-lookup-300/step4/full/massspec18.k7.s1.C2.X8.masknone.source_sha.txt
+/scratch/users/olgabot/peptide-lookup-300/step4/full/uniprot18.k7.s1.C2.X8.masknone.complete 0 1792695360
+e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855  /scratch/users/olgabot/peptide-lookup-300/step4/full/uniprot18.k7.s1.C2.X8.masknone.complete
+/scratch/users/olgabot/peptide-lookup-300/step4/full/uniprot18.k7.s1.C2.X8.masknone.fit_status.txt 7 1792695359
+a1ebe9fa75d25a1282905ebf96fa841ffe21b7c505bd89a327e04b507e0db365  /scratch/users/olgabot/peptide-lookup-300/step4/full/uniprot18.k7.s1.C2.X8.masknone.fit_status.txt
+/scratch/users/olgabot/peptide-lookup-300/step4/full/uniprot18.k7.s1.C2.X8.masknone.source_sha.txt 41 1792695360
+5a13601f3ed0c77ba5fcefc788cf6537b9f4e54feb033d08fdedc56ebdcb7a31  /scratch/users/olgabot/peptide-lookup-300/step4/full/uniprot18.k7.s1.C2.X8.masknone.source_sha.txt
+/scratch/users/olgabot/peptide-lookup-300/step4/full/wwmj5.k13.s1.C2.X8.masknone.complete 0 1792708474
+e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855  /scratch/users/olgabot/peptide-lookup-300/step4/full/wwmj5.k13.s1.C2.X8.masknone.complete
+/scratch/users/olgabot/peptide-lookup-300/step4/full/wwmj5.k13.s1.C2.X8.masknone.fit_status.txt 7 1792708473
+a1ebe9fa75d25a1282905ebf96fa841ffe21b7c505bd89a327e04b507e0db365  /scratch/users/olgabot/peptide-lookup-300/step4/full/wwmj5.k13.s1.C2.X8.masknone.fit_status.txt
+/scratch/users/olgabot/peptide-lookup-300/step4/full/wwmj5.k13.s1.C2.X8.masknone.source_sha.txt 41 1792708474
+5a13601f3ed0c77ba5fcefc788cf6537b9f4e54feb033d08fdedc56ebdcb7a31  /scratch/users/olgabot/peptide-lookup-300/step4/full/wwmj5.k13.s1.C2.X8.masknone.source_sha.txt

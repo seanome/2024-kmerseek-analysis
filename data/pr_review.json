@@ -1,0 +1,1012 @@
+{
+ "about": "Review status of each open pull request, from pr_status.py (weekly-pr-status skill) for 2026-10-12 to 2026-10-18, by the rules in scripts/pr_review_status.py.",
+ "since": "2026-10-12",
+ "until": "2026-10-18",
+ "read": "2026-10-13 17:49 UTC",
+ "repos": {
+  "seanome/kmerseek": {
+   "112": {
+    "review": "reviewed, no commits since",
+    "last_review": "2026-10-03",
+    "blockers": [
+     "its base branch is already in main: retarget to main",
+     "merge conflicts"
+    ],
+    "skill": "rustacean-review",
+    "skill_review": {
+     "mark": "older commit",
+     "date": "2026-09-30"
+    },
+    "size": "+982/-58 in 15 files",
+    "last_commit": "2026-09-30"
+   },
+   "113": {
+    "review": "reviewed, no commits since",
+    "last_review": "2026-10-03",
+    "blockers": [
+     "built on PR 112"
+    ],
+    "skill": "rustacean-review",
+    "skill_review": {
+     "mark": "older commit",
+     "date": "2026-09-30"
+    },
+    "size": "+157/-68 in 6 files",
+    "last_commit": "2026-09-30"
+   },
+   "114": {
+    "review": "not reviewed",
+    "last_review": null,
+    "blockers": [
+     "built on PR 113"
+    ],
+    "skill": "rustacean-review",
+    "skill_review": {
+     "mark": "older commit",
+     "date": "2026-09-30"
+    },
+    "size": "+240/-42 in 7 files",
+    "last_commit": "2026-09-30"
+   },
+   "130": {
+    "review": "not reviewed",
+    "last_review": null,
+    "blockers": [
+     "built on PR 114"
+    ],
+    "skill": "rustacean-review",
+    "skill_review": {
+     "mark": "none"
+    },
+    "size": "+256/-40 in 6 files",
+    "last_commit": "2026-10-01"
+   },
+   "133": {
+    "review": "look again",
+    "last_review": "2026-10-10",
+    "blockers": [
+     "its base branch is already in main: retarget to main"
+    ],
+    "skill": "rustacean-review",
+    "skill_review": {
+     "mark": "none"
+    },
+    "size": "+2153/-52 in 17 files",
+    "last_commit": "2026-10-10"
+   },
+   "134": {
+    "review": "not reviewed",
+    "last_review": null,
+    "blockers": [
+     "built on PR 133"
+    ],
+    "skill": "rustacean-review",
+    "skill_review": {
+     "mark": "none"
+    },
+    "size": "+348/-9 in 6 files",
+    "last_commit": "2026-10-03"
+   },
+   "137": {
+    "review": "reviewed, no commits since",
+    "last_review": "2026-10-06",
+    "blockers": [
+     "merge conflicts"
+    ],
+    "skill": "rustacean-review",
+    "skill_review": {
+     "mark": "current",
+     "date": "2026-10-06"
+    },
+    "size": "+18/-20 in 2 files",
+    "last_commit": "2026-10-06"
+   },
+   "141": {
+    "review": "not reviewed",
+    "last_review": null,
+    "blockers": [
+     "its base branch's PR was closed without merging, so it has no route into main"
+    ],
+    "skill": "rustacean-review",
+    "skill_review": {
+     "mark": "none"
+    },
+    "size": "+178/-39 in 5 files",
+    "last_commit": "2026-10-10"
+   },
+   "142": {
+    "review": "not reviewed",
+    "last_review": null,
+    "blockers": [],
+    "skill": "rustacean-review",
+    "skill_review": {
+     "mark": "none"
+    },
+    "size": "+45/-7 in 2 files",
+    "last_commit": "2026-10-13"
+   },
+   "143": {
+    "review": "not reviewed",
+    "last_review": null,
+    "blockers": [],
+    "skill": "rustacean-review",
+    "skill_review": {
+     "mark": "none"
+    },
+    "size": "+36/-0 in 5 files",
+    "last_commit": "2026-10-13"
+   },
+   "144": {
+    "review": "not reviewed",
+    "last_review": null,
+    "blockers": [],
+    "skill": "rustacean-review",
+    "skill_review": {
+     "mark": "none"
+    },
+    "size": "+142/-11 in 5 files",
+    "last_commit": "2026-10-13"
+   }
+  },
+  "seanome/2024-kmerseek-analysis": {
+   "30": {
+    "review": "not reviewed",
+    "last_review": null,
+    "blockers": [
+     "its base branch is already in main: retarget to main",
+     "fails black, pipeline definition parses"
+    ],
+    "skill": "analysis-review",
+    "skill_review": {
+     "mark": "none"
+    },
+    "size": "+8514/-93 in 31 files",
+    "last_commit": "2026-10-06"
+   },
+   "46": {
+    "review": "look again",
+    "last_review": "2026-10-05",
+    "blockers": [],
+    "skill": "analysis-review",
+    "skill_review": {
+     "mark": "none"
+    },
+    "size": "+8107/-5 in 40 files",
+    "last_commit": "2026-10-06"
+   },
+   "47": {
+    "review": "not reviewed",
+    "last_review": null,
+    "blockers": [
+     "built on PR 57",
+     "fails black"
+    ],
+    "skill": "analysis-review",
+    "skill_review": {
+     "mark": "none"
+    },
+    "size": "+427/-0 in 6 files",
+    "last_commit": "2026-09-23"
+   },
+   "48": {
+    "review": "not reviewed",
+    "last_review": null,
+    "blockers": [
+     "built on PR 46",
+     "fails black"
+    ],
+    "skill": "analysis-review",
+    "skill_review": {
+     "mark": "none"
+    },
+    "size": "+3886/-11 in 31 files",
+    "last_commit": "2026-10-06"
+   },
+   "49": {
+    "review": "not reviewed",
+    "last_review": null,
+    "blockers": [
+     "fails notebooks"
+    ],
+    "skill": "analysis-review",
+    "skill_review": {
+     "mark": "none"
+    },
+    "size": "+44350/-0 in 21 files",
+    "last_commit": "2026-10-06"
+   },
+   "51": {
+    "review": "not reviewed",
+    "last_review": null,
+    "blockers": [
+     "fails notebooks"
+    ],
+    "skill": "analysis-review",
+    "skill_review": {
+     "mark": "none"
+    },
+    "size": "+54158/-64 in 54 files",
+    "last_commit": "2026-10-06"
+   },
+   "52": {
+    "review": "look again",
+    "last_review": "2026-09-25",
+    "blockers": [
+     "its base branch is already in main: retarget to main"
+    ],
+    "skill": "analysis-review",
+    "skill_review": {
+     "mark": "none"
+    },
+    "size": "+176/-14 in 2 files",
+    "last_commit": "2026-09-25"
+   },
+   "53": {
+    "review": "not reviewed",
+    "last_review": null,
+    "blockers": [
+     "built on PR 52",
+     "fails black"
+    ],
+    "skill": "analysis-review",
+    "skill_review": {
+     "mark": "none"
+    },
+    "size": "+6687/-3 in 23 files",
+    "last_commit": "2026-10-06"
+   },
+   "54": {
+    "review": "look again",
+    "last_review": "2026-10-06",
+    "blockers": [],
+    "skill": "analysis-review",
+    "skill_review": {
+     "mark": "none"
+    },
+    "size": "+2722/-0 in 15 files",
+    "last_commit": "2026-10-06"
+   },
+   "55": {
+    "review": "not reviewed",
+    "last_review": null,
+    "blockers": [],
+    "skill": "analysis-review",
+    "skill_review": {
+     "mark": "none"
+    },
+    "size": "+10670/-0 in 33 files",
+    "last_commit": "2026-10-06"
+   },
+   "57": {
+    "review": "not reviewed",
+    "last_review": null,
+    "blockers": [
+     "built on PR 30",
+     "merge conflicts",
+     "fails black"
+    ],
+    "skill": "analysis-review",
+    "skill_review": {
+     "mark": "none"
+    },
+    "size": "+3555/-150 in 25 files",
+    "last_commit": "2026-10-13"
+   },
+   "58": {
+    "review": "not reviewed",
+    "last_review": null,
+    "blockers": [
+     "built on PR 51"
+    ],
+    "skill": "analysis-review",
+    "skill_review": {
+     "mark": "none"
+    },
+    "size": "+6694/-22 in 27 files",
+    "last_commit": "2026-10-06"
+   },
+   "59": {
+    "review": "not reviewed",
+    "last_review": null,
+    "blockers": [
+     "merge conflicts",
+     "fails black, pipeline definition parses"
+    ],
+    "skill": "analysis-review",
+    "skill_review": {
+     "mark": "none"
+    },
+    "size": "+398/-4 in 4 files",
+    "last_commit": "2026-09-05"
+   },
+   "63": {
+    "review": "not reviewed",
+    "last_review": null,
+    "blockers": [
+     "fails black"
+    ],
+    "skill": "analysis-review",
+    "skill_review": {
+     "mark": "none"
+    },
+    "size": "+2799/-0 in 7 files",
+    "last_commit": "2026-09-28"
+   },
+   "64": {
+    "review": "not reviewed",
+    "last_review": null,
+    "blockers": [
+     "merge conflicts"
+    ],
+    "skill": "analysis-review",
+    "skill_review": {
+     "mark": "none"
+    },
+    "size": "+901/-247 in 12 files",
+    "last_commit": "2026-10-06"
+   },
+   "65": {
+    "review": "not reviewed",
+    "last_review": null,
+    "blockers": [
+     "fails black, notebooks"
+    ],
+    "skill": "analysis-review",
+    "skill_review": {
+     "mark": "none"
+    },
+    "size": "+1100/-193 in 11 files",
+    "last_commit": "2026-10-06"
+   },
+   "66": {
+    "review": "not reviewed",
+    "last_review": null,
+    "blockers": [
+     "merge conflicts"
+    ],
+    "skill": "analysis-review",
+    "skill_review": {
+     "mark": "none"
+    },
+    "size": "+789/-143 in 7 files",
+    "last_commit": "2026-09-28"
+   },
+   "67": {
+    "review": "not reviewed",
+    "last_review": null,
+    "blockers": [
+     "fails black, notebooks"
+    ],
+    "skill": "analysis-review",
+    "skill_review": {
+     "mark": "none"
+    },
+    "size": "+761/-0 in 4 files",
+    "last_commit": "2026-10-06"
+   },
+   "69": {
+    "review": "not reviewed",
+    "last_review": null,
+    "blockers": [
+     "built on PR 58",
+     "fails black"
+    ],
+    "skill": "analysis-review",
+    "skill_review": {
+     "mark": "none"
+    },
+    "size": "+4135/-18 in 57 files",
+    "last_commit": "2026-10-06"
+   },
+   "71": {
+    "review": "not reviewed",
+    "last_review": null,
+    "blockers": [
+     "built on PR 58"
+    ],
+    "skill": "analysis-review",
+    "skill_review": {
+     "mark": "none"
+    },
+    "size": "+246/-36 in 23 files",
+    "last_commit": "2026-10-06"
+   },
+   "72": {
+    "review": "not reviewed",
+    "last_review": null,
+    "blockers": [
+     "built on PR 71"
+    ],
+    "skill": "analysis-review",
+    "skill_review": {
+     "mark": "none"
+    },
+    "size": "+243/-29 in 29 files",
+    "last_commit": "2026-10-06"
+   },
+   "75": {
+    "review": "not reviewed",
+    "last_review": null,
+    "blockers": [],
+    "skill": "analysis-review",
+    "skill_review": {
+     "mark": "none"
+    },
+    "size": "+811/-32 in 5 files",
+    "last_commit": "2026-09-29"
+   },
+   "76": {
+    "review": "not reviewed",
+    "last_review": null,
+    "blockers": [],
+    "skill": "analysis-review",
+    "skill_review": {
+     "mark": "none"
+    },
+    "size": "+1962/-5 in 30 files",
+    "last_commit": "2026-09-30"
+   },
+   "77": {
+    "review": "not reviewed",
+    "last_review": null,
+    "blockers": [
+     "built on PR 49"
+    ],
+    "skill": "analysis-review",
+    "skill_review": {
+     "mark": "none"
+    },
+    "size": "+3343/-18 in 26 files",
+    "last_commit": "2026-10-06"
+   },
+   "78": {
+    "review": "not reviewed",
+    "last_review": null,
+    "blockers": [
+     "built on PR 49",
+     "merge conflicts"
+    ],
+    "skill": "analysis-review",
+    "skill_review": {
+     "mark": "none"
+    },
+    "size": "+629188/-137 in 1110 files",
+    "last_commit": "2026-10-06"
+   },
+   "80": {
+    "review": "not reviewed",
+    "last_review": null,
+    "blockers": [
+     "built on PR 78"
+    ],
+    "skill": "analysis-review",
+    "skill_review": {
+     "mark": "none"
+    },
+    "size": "+6700/-12 in 424 files",
+    "last_commit": "2026-10-06"
+   },
+   "81": {
+    "review": "not reviewed",
+    "last_review": null,
+    "blockers": [
+     "built on PR 78",
+     "merge conflicts"
+    ],
+    "skill": "analysis-review",
+    "skill_review": {
+     "mark": "none"
+    },
+    "size": "+0/-0 in 0 files",
+    "last_commit": "2026-10-06"
+   },
+   "82": {
+    "review": "not reviewed",
+    "last_review": null,
+    "blockers": [
+     "built on PR 78"
+    ],
+    "skill": "analysis-review",
+    "skill_review": {
+     "mark": "none"
+    },
+    "size": "+27013/-1847 in 399 files",
+    "last_commit": "2026-10-06"
+   },
+   "83": {
+    "review": "not reviewed",
+    "last_review": null,
+    "blockers": [
+     "built on PR 48",
+     "fails black"
+    ],
+    "skill": "analysis-review",
+    "skill_review": {
+     "mark": "none"
+    },
+    "size": "+3623/-22 in 40 files",
+    "last_commit": "2026-10-06"
+   },
+   "84": {
+    "review": "not reviewed",
+    "last_review": null,
+    "blockers": [],
+    "skill": "analysis-review",
+    "skill_review": {
+     "mark": "none"
+    },
+    "size": "+13057/-0 in 22 files",
+    "last_commit": "2026-10-06"
+   },
+   "85": {
+    "review": "not reviewed",
+    "last_review": null,
+    "blockers": [
+     "built on PR 48",
+     "fails black"
+    ],
+    "skill": "analysis-review",
+    "skill_review": {
+     "mark": "none"
+    },
+    "size": "+174/-22 in 25 files",
+    "last_commit": "2026-10-06"
+   },
+   "87": {
+    "review": "not reviewed",
+    "last_review": null,
+    "blockers": [
+     "built on PR 72",
+     "fails black"
+    ],
+    "skill": "analysis-review",
+    "skill_review": {
+     "mark": "none"
+    },
+    "size": "+4893/-18 in 46 files",
+    "last_commit": "2026-10-06"
+   },
+   "88": {
+    "review": "not reviewed",
+    "last_review": null,
+    "blockers": [
+     "built on PR 87",
+     "merge conflicts",
+     "fails black"
+    ],
+    "skill": "analysis-review",
+    "skill_review": {
+     "mark": "none"
+    },
+    "size": "+2029/-79 in 29 files",
+    "last_commit": "2026-10-06"
+   },
+   "91": {
+    "review": "not reviewed",
+    "last_review": null,
+    "blockers": [],
+    "skill": "analysis-review",
+    "skill_review": {
+     "mark": "none"
+    },
+    "size": "+209/-142 in 3 files",
+    "last_commit": "2026-10-01"
+   },
+   "92": {
+    "review": "not reviewed",
+    "last_review": null,
+    "blockers": [
+     "built on PR 51"
+    ],
+    "skill": "analysis-review",
+    "skill_review": {
+     "mark": "none"
+    },
+    "size": "+1938/-18 in 25 files",
+    "last_commit": "2026-10-06"
+   },
+   "93": {
+    "review": "not reviewed",
+    "last_review": null,
+    "blockers": [],
+    "skill": "analysis-review",
+    "skill_review": {
+     "mark": "none"
+    },
+    "size": "+1533/-0 in 11 files",
+    "last_commit": "2026-10-06"
+   },
+   "95": {
+    "review": "reviewed, no commits since",
+    "last_review": "2026-10-13",
+    "blockers": [
+     "fails black"
+    ],
+    "skill": "analysis-review",
+    "skill_review": {
+     "mark": "none"
+    },
+    "size": "+4577/-0 in 20 files",
+    "last_commit": "2026-10-10"
+   },
+   "96": {
+    "review": "not reviewed",
+    "last_review": null,
+    "blockers": [
+     "built on PR 48",
+     "fails black"
+    ],
+    "skill": "analysis-review",
+    "skill_review": {
+     "mark": "none"
+    },
+    "size": "+11687/-22 in 37 files",
+    "last_commit": "2026-10-06"
+   },
+   "97": {
+    "review": "look again",
+    "last_review": "2026-10-05",
+    "blockers": [],
+    "skill": "analysis-review",
+    "skill_review": {
+     "mark": "none"
+    },
+    "size": "+23374/-0 in 10 files",
+    "last_commit": "2026-10-05"
+   },
+   "98": {
+    "review": "not reviewed",
+    "last_review": null,
+    "blockers": [
+     "built on PR 88",
+     "fails black"
+    ],
+    "skill": "analysis-review",
+    "skill_review": {
+     "mark": "none"
+    },
+    "size": "+1900/-21 in 31 files",
+    "last_commit": "2026-10-06"
+   },
+   "99": {
+    "review": "look again",
+    "last_review": "2026-10-12",
+    "blockers": [
+     "fails black"
+    ],
+    "skill": "analysis-review",
+    "skill_review": {
+     "mark": "older commit",
+     "date": "2026-10-12"
+    },
+    "size": "+4512/-2 in 10 files",
+    "last_commit": "2026-10-12"
+   },
+   "100": {
+    "review": "not reviewed",
+    "last_review": null,
+    "blockers": [],
+    "skill": "analysis-review",
+    "skill_review": {
+     "mark": "none"
+    },
+    "size": "+1306/-52 in 8 files",
+    "last_commit": "2026-10-06"
+   },
+   "101": {
+    "review": "not reviewed",
+    "last_review": null,
+    "blockers": [
+     "fails black, notebooks"
+    ],
+    "skill": "analysis-review",
+    "skill_review": {
+     "mark": "none"
+    },
+    "size": "+7450/-0 in 9 files",
+    "last_commit": "2026-10-06"
+   },
+   "102": {
+    "review": "not reviewed",
+    "last_review": null,
+    "blockers": [
+     "built on PR 98",
+     "fails black"
+    ],
+    "skill": "analysis-review",
+    "skill_review": {
+     "mark": "none"
+    },
+    "size": "+3580/-24 in 40 files",
+    "last_commit": "2026-10-06"
+   },
+   "103": {
+    "review": "not reviewed",
+    "last_review": null,
+    "blockers": [
+     "built on PR 102",
+     "fails black"
+    ],
+    "skill": "analysis-review",
+    "skill_review": {
+     "mark": "none"
+    },
+    "size": "+15084/-32 in 81 files",
+    "last_commit": "2026-10-06"
+   },
+   "104": {
+    "review": "not reviewed",
+    "last_review": null,
+    "blockers": [
+     "built on PR 103",
+     "merge conflicts",
+     "fails black"
+    ],
+    "skill": "analysis-review",
+    "skill_review": {
+     "mark": "none"
+    },
+    "size": "+5588/-40 in 79 files",
+    "last_commit": "2026-10-06"
+   },
+   "106": {
+    "review": "not reviewed",
+    "last_review": null,
+    "blockers": [
+     "built on PR 100",
+     "merge conflicts",
+     "fails black"
+    ],
+    "skill": "analysis-review",
+    "skill_review": {
+     "mark": "none"
+    },
+    "size": "+6244/-33 in 19 files",
+    "last_commit": "2026-10-06"
+   },
+   "107": {
+    "review": "not reviewed",
+    "last_review": null,
+    "blockers": [
+     "fails black, check"
+    ],
+    "skill": "analysis-review",
+    "skill_review": {
+     "mark": "none"
+    },
+    "size": "+7715/-5 in 47 files",
+    "last_commit": "2026-10-13"
+   },
+   "113": {
+    "review": "not reviewed",
+    "last_review": null,
+    "blockers": [],
+    "skill": "analysis-review",
+    "skill_review": {
+     "mark": "none"
+    },
+    "size": "+18305/-0 in 26 files",
+    "last_commit": "2026-10-06"
+   },
+   "114": {
+    "review": "not reviewed",
+    "last_review": null,
+    "blockers": [],
+    "skill": "analysis-review",
+    "skill_review": {
+     "mark": "none"
+    },
+    "size": "+15783/-0 in 51 files",
+    "last_commit": "2026-10-13"
+   },
+   "115": {
+    "review": "not reviewed",
+    "last_review": null,
+    "blockers": [],
+    "skill": "analysis-review",
+    "skill_review": {
+     "mark": "none"
+    },
+    "size": "+198/-19 in 3 files",
+    "last_commit": "2026-10-06"
+   },
+   "116": {
+    "review": "not reviewed",
+    "last_review": null,
+    "blockers": [],
+    "skill": "analysis-review",
+    "skill_review": {
+     "mark": "current",
+     "date": "2026-10-12"
+    },
+    "size": "+2226/-0 in 6 files",
+    "last_commit": "2026-10-10"
+   },
+   "117": {
+    "review": "not reviewed",
+    "last_review": null,
+    "blockers": [],
+    "skill": "analysis-review",
+    "skill_review": {
+     "mark": "none"
+    },
+    "size": "+1066/-0 in 7 files",
+    "last_commit": "2026-10-11"
+   },
+   "118": {
+    "review": "not reviewed",
+    "last_review": null,
+    "blockers": [],
+    "skill": "analysis-review",
+    "skill_review": {
+     "mark": "none"
+    },
+    "size": "+29424/-3 in 80 files",
+    "last_commit": "2026-10-13"
+   },
+   "119": {
+    "review": "not reviewed",
+    "last_review": null,
+    "blockers": [
+     "built on PR 99"
+    ],
+    "skill": "analysis-review",
+    "skill_review": {
+     "mark": "none"
+    },
+    "size": "+3141/-3 in 10 files",
+    "last_commit": "2026-10-12"
+   },
+   "120": {
+    "review": "not reviewed",
+    "last_review": null,
+    "blockers": [
+     "fails check"
+    ],
+    "skill": "analysis-review",
+    "skill_review": {
+     "mark": "none"
+    },
+    "size": "+28435/-0 in 65 files",
+    "last_commit": "2026-10-13"
+   },
+   "121": {
+    "review": "not reviewed",
+    "last_review": null,
+    "blockers": [],
+    "skill": "analysis-review",
+    "skill_review": {
+     "mark": "none"
+    },
+    "size": "+4538/-0 in 36 files",
+    "last_commit": "2026-10-13"
+   },
+   "122": {
+    "review": "not reviewed",
+    "last_review": null,
+    "blockers": [],
+    "skill": "analysis-review",
+    "skill_review": {
+     "mark": "none"
+    },
+    "size": "+6755/-0 in 28 files",
+    "last_commit": "2026-10-13"
+   },
+   "123": {
+    "review": "not reviewed",
+    "last_review": null,
+    "blockers": [],
+    "skill": "analysis-review",
+    "skill_review": {
+     "mark": "none"
+    },
+    "size": "+146/-9 in 327 files",
+    "last_commit": "2026-10-13"
+   },
+   "124": {
+    "review": "not reviewed",
+    "last_review": null,
+    "blockers": [
+     "built on PR 83",
+     "fails black"
+    ],
+    "skill": "analysis-review",
+    "skill_review": {
+     "mark": "none"
+    },
+    "size": "+5141/-0 in 16 files",
+    "last_commit": "2026-10-13"
+   },
+   "125": {
+    "review": "not reviewed",
+    "last_review": null,
+    "blockers": [],
+    "skill": "analysis-review",
+    "skill_review": {
+     "mark": "none"
+    },
+    "size": "+44460/-0 in 31 files",
+    "last_commit": "2026-10-13"
+   },
+   "126": {
+    "review": "not reviewed",
+    "last_review": null,
+    "blockers": [
+     "fails check"
+    ],
+    "skill": "analysis-review",
+    "skill_review": {
+     "mark": "none"
+    },
+    "size": "+35875/-0 in 63 files",
+    "last_commit": "2026-10-13"
+   },
+   "127": {
+    "review": "not reviewed",
+    "last_review": null,
+    "blockers": [],
+    "skill": "analysis-review",
+    "skill_review": {
+     "mark": "none"
+    },
+    "size": "+193/-0 in 1 files",
+    "last_commit": "2026-10-13"
+   },
+   "128": {
+    "review": "not reviewed",
+    "last_review": null,
+    "blockers": [
+     "built on PR 125"
+    ],
+    "skill": "analysis-review",
+    "skill_review": {
+     "mark": "older commit",
+     "date": "2026-10-13"
+    },
+    "size": "+87367/-0 in 50 files",
+    "last_commit": "2026-10-13"
+   },
+   "129": {
+    "review": "not reviewed",
+    "last_review": null,
+    "blockers": [
+     "built on PR 125",
+     "fails check"
+    ],
+    "skill": "analysis-review",
+    "skill_review": {
+     "mark": "none"
+    },
+    "size": "+6285/-0 in 17 files",
+    "last_commit": "2026-10-13"
+   },
+   "130": {
+    "review": "not reviewed",
+    "last_review": null,
+    "blockers": [
+     "built on PR 125"
+    ],
+    "skill": "analysis-review",
+    "skill_review": {
+     "mark": "none"
+    },
+    "size": "+7886/-0 in 11 files",
+    "last_commit": "2026-10-13"
+   },
+   "131": {
+    "review": "not reviewed",
+    "last_review": null,
+    "blockers": [
+     "built on PR 125",
+     "fails check"
+    ],
+    "skill": "analysis-review",
+    "skill_review": {
+     "mark": "none"
+    },
+    "size": "+9495/-0 in 37 files",
+    "last_commit": "2026-10-13"
+   }
+  }
+ }
+}

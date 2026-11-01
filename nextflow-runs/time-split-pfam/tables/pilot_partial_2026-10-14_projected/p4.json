@@ -1,0 +1,14 @@
+{
+ "comparators": [
+  "MMseqs2",
+  "hmmscan Pfam 33.1",
+  "phmmer"
+ ],
+ "kmerseek_settings": 186,
+ "chosen": "kmerseek dayhoff6 k10 exact",
+ "tune_unique_finds": 0,
+ "tune_p4_queries": 52,
+ "tune_decoy_rate": 0.0,
+ "tune_expected": 0.0,
+ "tune_unique_minus_expected": 0.0
+}
