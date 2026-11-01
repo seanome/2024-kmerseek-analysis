@@ -61,11 +61,10 @@ grep '^process ' nextflow-runs/pec-domen2026/main.nf | awk '{print $2}' > /tmp/p
 nf-metro check-mapping docs/shazam-workflows/shazam_pec_nb361_metro.mmd --processes /tmp/pec_processes.txt
 ```
 
-The map is two sections wide (2026-10-31; it was four wide and hard to read). SPLASH and
-DE-kupl have separate sections, because DE-kupl reads the trimmed reads directly, not
-SPLASH's output. nf-metro 2.1.0 could not draw most layouts of this map. The script used
-to try every arrangement is not kept. Of the layouts it could draw, this one reads in order
-(1 to 5, left to right, top to bottom) and is 1504 x 1634, close to square.
+The map is two sections wide (redrawn 2026-10-31; it was four wide and hard to read).
+SPLASH and DE-kupl have separate sections, because DE-kupl reads the trimmed reads
+directly, not SPLASH's output. The sections read in order, 1 to 5, left to right, top to
+bottom. The image is 1504 x 1634 as of commit `977f147`.
 
 ![PEC nb361 metro map](shazam_pec_nb361_metro.svg)
 
