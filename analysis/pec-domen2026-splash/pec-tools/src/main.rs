@@ -167,7 +167,7 @@ fn read_compactor_tsv(path: &str, seq_col: &str) -> Res<Vec<Record>> {
             .zip(f.iter().map(|s| s.to_string()))
             .collect();
         recs.push(Record {
-            id: format!("c{}", i + 1),
+            id: format!("c{}", recs.len() + 1),
             seq: f[si].as_bytes().to_vec(),
             extra,
         });
