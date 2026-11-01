@@ -238,6 +238,7 @@ process kamrat {
     mkdir kamrat_ttest && cd kamrat_ttest
     K="apptainer exec --bind /scratch ${params.pec_root}/images/kamrat_v1.2.sif kamrat"
     awk -F'\\t' 'NR > 1 { print \$1 "\\t" \$2 }' ../${design} > design.txt
+    mkdir idx  # KaMRaT index aborts (exit 134) if its output folder does not exist
     \$K index -intab ../${dekupl_dir}/DEkupl_result/kmer_counts/raw-counts.tsv.gz -outdir idx \\
       -klen 31 -unstrand -nfbase 1000000000 > kamrat.log 2>&1
     \$K score -idxdir idx -scoreby ttest.padj -design design.txt -outfmt bin -outpath score.bin >> kamrat.log 2>&1
