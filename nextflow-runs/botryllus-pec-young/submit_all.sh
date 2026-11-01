@@ -28,9 +28,19 @@ ids=$OUT/job_ids.txt
 # Sherlock's git is 1.8.3, which has no `git -C`.
 echo "# submitted $(date '+%F %T') from $(cd "$REPO" && git rev-parse --short HEAD)" >> "$ids"
 
-# If anything below fails, cancel what this call already queued, so a re-run is not blocked.
+# If anything below fails, or the shell gets Ctrl-C, TERM or HUP, cancel what this call
+# already queued, so a re-run is not blocked.
 submitted=""
-trap '[ -z "$submitted" ] || { echo "submit_all.sh: failed; cancelling $submitted" >&2; scancel $submitted; }' ERR
+cancel_submitted() {
+  [ -z "$submitted" ] && return 0
+  echo "submit_all.sh: failed or interrupted; cancelling $submitted" >&2
+  scancel $submitted || true
+  submitted=""
+}
+trap cancel_submitted ERR
+trap 'cancel_submitted; exit 130' INT
+trap 'cancel_submitted; exit 143' TERM
+trap 'cancel_submitted; exit 129' HUP
 prep=$(sbatch --parsable --chdir "$OUT" "$REPO/splash_prep.sbatch" "$REPO")
 submitted="$prep"
 echo "splash_prep $prep" | tee -a "$ids"
@@ -44,5 +54,5 @@ done
 
 cd "$OUT"
 NF_HEAD_DETACH=1 "$REPO/../../scripts/nf-head" "$REPO/run_pipelines.sh" "$REPO" "$OUT" "$NEXTFLOW"
-trap - ERR
+trap - ERR INT TERM HUP
 echo "nf_head $(cat "$OUT/.nf-head.jobid")" | tee -a "$ids"
