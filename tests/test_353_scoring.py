@@ -294,3 +294,37 @@ def test_stage1_partial_queue_cannot_pass(tmp_path, capsys):
     stage1.write_tsv(args.stopwatch, times, list(times[0]))
     stage1.cmd_score(args)
     assert "INSUFFICIENT_EVIDENCE" in capsys.readouterr().out
+
+
+def test_stage1_blank_or_bad_seconds_cannot_pass(tmp_path, capsys):
+    """A blank or non-numeric seconds cell gives INSUFFICIENT_EVIDENCE, not a crash or a PASS."""
+    from types import SimpleNamespace
+    import stage1
+
+    sheet = [
+        {
+            "blind_id": f"{i}-1",
+            "analyst_had_seen_it (yes/no)": "no",
+            "kept_for_investigation (yes/no)": "yes",
+            "one_line_why": "useful",
+        }
+        for i in range(100)
+    ]
+    key = [{"blind_id": f"{i}-1", "found_by": "kmerseek"} for i in range(100)]
+    for name, rows in [("sheet", sheet), ("key", key)]:
+        stage1.write_tsv(tmp_path / f"{name}.tsv", rows, list(rows[0]))
+    args = SimpleNamespace(
+        sheet=tmp_path / "sheet.tsv",
+        key=tmp_path / "key.tsv",
+        stopwatch=tmp_path / "times.tsv",
+    )
+    for bad in ["", "n/a", "3:20"]:
+        times = [
+            {"query_number": str(i), "workflow": m, "seconds": str(sec)}
+            for i in range(100)
+            for m, sec in [("kmerseek", 40), ("comparison", 100)]
+        ]
+        times[-1]["seconds"] = bad
+        stage1.write_tsv(args.stopwatch, times, list(times[0]))
+        stage1.cmd_score(args)
+        assert "INSUFFICIENT_EVIDENCE" in capsys.readouterr().out
