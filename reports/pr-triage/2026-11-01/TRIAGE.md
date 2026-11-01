@@ -44,7 +44,22 @@ commit.
 
 Main's black and lint checks passed after the merges.
 
-## Still open
+## Closed on 2026-11-01
+
+Olga approved these in chat. Each got a comment saying why; every branch was kept, so
+any of them can be reopened. 33 closed, which leaves 59 analysis PRs open.
+
+- ELM motif and combiner chain (12): 51, 58, 92, 69, 71, 72, 87, 88, 98, 102, 103, 104.
+- Notebook 244 example-case chain (5): 49, 77, 78, 80, 82.
+- Dark-set kmerseek 0.4 chain (6): 30, 57, 47, 133, 155, 163.
+- Conflicting with main, outside the focus (9 more): 59, 64, 65, 66, 101, 107, 123, 135,
+  144. (49 and 51 are counted in their chains above. 174 stays open.)
+- Out-of-date progress summary: 127.
+
+PRs built on a closed PR's branch stay open: 149 (on 123) and 146, 148, 154, 164, 165
+(the leaderboard chain on 144).
+
+## Still open (as of the merges, before the closures)
 
 **Focus, keep open (10).** SPLASH and RNA-seq: 201 (nb361 PEC, running), 207, 197, 198,
 203. Oyster and Shazam: 202, 205 (built on 202), 204. Sketching at scale: 208, 209.
