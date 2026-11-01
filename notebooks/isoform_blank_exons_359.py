@@ -71,7 +71,9 @@ def exon_protein_intervals(
 def cds_fits_exons(exons: list[Exon], cds_start, n_codons: int) -> bool:
     """True when the whole ORF (n_codons codons from the 1-based transcript position
     cds_start) lies inside the summed exon length."""
-    return cds_start >= 1 and cds_start - 1 + 3 * n_codons <= sum(e.length for e in exons)
+    return cds_start >= 1 and cds_start - 1 + 3 * n_codons <= sum(
+        e.length for e in exons
+    )
 
 
 def usable_orf(orf_seq: str, cds_start, cds_end) -> str | None:
