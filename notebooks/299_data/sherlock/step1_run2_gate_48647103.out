@@ -1,0 +1,67 @@
+shape: (18, 13)
+┌─────────────┬──────────┬───────┬────────┬───┬─────────────┬────────────┬────────────┬────────────┐
+│ setting     ┆ alphabet ┆ ksize ┆ scaled ┆ … ┆ slice_max_r ┆ cpu_s_per_ ┆ catalog_cp ┆ is_lower_b │
+│ ---         ┆ ---      ┆ ---   ┆ ---    ┆   ┆ ss_gb       ┆ gb         ┆ u_hours_ar ┆ ound       │
+│ str         ┆ str      ┆ i64   ┆ i64    ┆   ┆ ---         ┆ ---        ┆ ithmetic   ┆ ---        │
+│             ┆          ┆       ┆        ┆   ┆ f64         ┆ f64        ┆ ---        ┆ bool       │
+│             ┆          ┆       ┆        ┆   ┆             ┆            ┆ f64        ┆            │
+╞═════════════╪══════════╪═══════╪════════╪═══╪═════════════╪════════════╪════════════╪════════════╡
+│ protein.k7. ┆ protein  ┆ 7     ┆ 100    ┆ … ┆ 2.655842    ┆ 470.189743 ┆ 4.257279   ┆ false      │
+│ s100        ┆          ┆       ┆        ┆   ┆             ┆            ┆            ┆            │
+│ protein.k10 ┆ protein  ┆ 10    ┆ 100    ┆ … ┆ 2.649918    ┆ 471.039742 ┆ 4.264975   ┆ false      │
+│ .s100       ┆          ┆       ┆        ┆   ┆             ┆            ┆            ┆            │
+│ protein.k13 ┆ protein  ┆ 13    ┆ 100    ┆ … ┆ 2.640411    ┆ 474.59974  ┆ 4.297209   ┆ false      │
+│ .s100       ┆          ┆       ┆        ┆   ┆             ┆            ┆            ┆            │
+│ dayhoff.k7. ┆ dayhoff  ┆ 7     ┆ 100    ┆ … ┆ 2.644329    ┆ 523.989713 ┆ 4.744405   ┆ false      │
+│ s100        ┆          ┆       ┆        ┆   ┆             ┆            ┆            ┆            │
+│ dayhoff.k10 ┆ dayhoff  ┆ 10    ┆ 100    ┆ … ┆ 2.655102    ┆ 512.46972  ┆ 4.640098   ┆ false      │
+│ .s100       ┆          ┆       ┆        ┆   ┆             ┆            ┆            ┆            │
+│ …           ┆ …        ┆ …     ┆ …      ┆ … ┆ …           ┆ …          ┆ …          ┆ …          │
+│ dayhoff.k10 ┆ dayhoff  ┆ 10    ┆ 1000   ┆ … ┆ 2.07021     ┆ 426.699767 ┆ 3.863504   ┆ false      │
+│ .s1000      ┆          ┆       ┆        ┆   ┆             ┆            ┆            ┆            │
+│ dayhoff.k13 ┆ dayhoff  ┆ 13    ┆ 1000   ┆ … ┆ 2.067093    ┆ 431.919764 ┆ 3.910768   ┆ false      │
+│ .s1000      ┆          ┆       ┆        ┆   ┆             ┆            ┆            ┆            │
+│ hp.k7.s1000 ┆ hp       ┆ 7     ┆ 1000   ┆ … ┆ 1.904396    ┆ 346.97981  ┆ 3.141689   ┆ false      │
+│ hp.k10.s100 ┆ hp       ┆ 10    ┆ 1000   ┆ … ┆ 2.068821    ┆ 454.849751 ┆ 4.118385   ┆ false      │
+│ 0           ┆          ┆       ┆        ┆   ┆             ┆            ┆            ┆            │
+│ hp.k13.s100 ┆ hp       ┆ 13    ┆ 1000   ┆ … ┆ 2.069138    ┆ 439.729759 ┆ 3.981483   ┆ false      │
+│ 0           ┆          ┆       ┆        ┆   ┆             ┆            ┆            ┆            │
+└─────────────┴──────────┴───────┴────────┴───┴─────────────┴────────────┴────────────┴────────────┘
+shape: (2, 4)
+┌────────┬───────────────────────────────┬─────────────────┬───────────────────────┐
+│ scaled ┆ all_nine_cpu_hours_arithmetic ┆ any_lower_bound ┆ fits_two_compute_days │
+│ ---    ┆ ---                           ┆ ---             ┆ ---                   │
+│ i64    ┆ f64                           ┆ bool            ┆ bool                  │
+╞════════╪═══════════════════════════════╪═════════════════╪═══════════════════════╡
+│ 100    ┆ 40.780931                     ┆ false           ┆ true                  │
+│ 1000   ┆ 33.591752                     ┆ false           ┆ true                  │
+└────────┴───────────────────────────────┴─────────────────┴───────────────────────┘
+continue to step 2
+{
+ "logan_proteins": 109400000000.0,
+ "genes_in_slice": 1372957,
+ "per_scaled": [
+  {
+   "scaled": 100,
+   "cpu_s_per_gene_all_nine": 0.0031386609736350057,
+   "logan_cpu_hours_arithmetic": 95380.41958768602,
+   "includes_lower_bounds": false
+  },
+  {
+   "scaled": 1000,
+   "cpu_s_per_gene_all_nine": 0.0025853535106984617,
+   "logan_cpu_hours_arithmetic": 78566.02057511435,
+   "includes_lower_bounds": false
+  }
+ ],
+ "note": "Arithmetic, not measured. Per-gene time includes translating DNA in six frames, which Logan's proteins do not need. Where includes_lower_bounds is true, some settings stopped at the step 1 time limit, so the number is not a bound in either direction."
+}
+scaled 100: 4504 CPU-s per GB for all nine settings, 6 chunks of 5.43 GB, predicted 6.8 h and 2.7 GB peak per task
+scaled 1000: 3710 CPU-s per GB for all nine settings, 5 chunks of 6.52 GB, predicted 6.7 h and 2.1 GB peak per task
+sketch scaled 100: job 48648425, 6 catalog chunks + 32 sample parts, 14 h, 11 G each
+sketch scaled 1000: job 48648431, 5 catalog chunks + 32 sample parts, 14 h, 9 G each
+diamond 48648423
+sketch_s100 48648425
+sketch_s1000 48648431
+search 48648449
+finish 48648453

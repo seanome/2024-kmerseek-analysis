@@ -1,0 +1,45 @@
+HGNC ID	Approved symbol	Approved name	Status	Locus type	Previous symbols	Alias symbols	Chromosome	NCBI Gene ID	Ensembl gene ID	Vega gene ID	Group ID	Group name
+HGNC:4931	HLA-A	major histocompatibility complex, class I, A	Approved	gene with protein product			6p22.1	3105	ENSG00000206503	OTTHUMG00000130501	588	Histocompatibility complex
+HGNC:4932	HLA-B	major histocompatibility complex, class I, B	Approved	gene with protein product	AS		6p21.33	3106	ENSG00000234745	OTTHUMG00000031153	588	Histocompatibility complex
+HGNC:4933	HLA-C	major histocompatibility complex, class I, C	Approved	gene with protein product	HLA-JY3, D6S204, PSORS1		6p21.33	3107	ENSG00000204525	OTTHUMG00000031154	588	Histocompatibility complex
+HGNC:4934	HLA-DMA	major histocompatibility complex, class II, DM alpha	Approved	gene with protein product		D6S222E, RING6	6p21.32	3108	ENSG00000204257	OTTHUMG00000031173	588	Histocompatibility complex
+HGNC:4935	HLA-DMB	major histocompatibility complex, class II, DM beta	Approved	gene with protein product		D6S221E, RING7	6p21.32	3109	ENSG00000242574	OTTHUMG00000031176	588	Histocompatibility complex
+HGNC:4936	HLA-DOA	major histocompatibility complex, class II, DO alpha	Approved	gene with protein product	HLA-DZA, HLA-DNA	HLA-D0-alpha	6p21.32	3111	ENSG00000204252	OTTHUMG00000031211	588	Histocompatibility complex
+HGNC:4937	HLA-DOB	major histocompatibility complex, class II, DO beta	Approved	gene with protein product			6p21.32	3112	ENSG00000241106	OTTHUMG00000031213	588	Histocompatibility complex
+HGNC:4938	HLA-DPA1	major histocompatibility complex, class II, DP alpha 1	Approved	gene with protein product	HLA-DP1A		6p21.32	3113	ENSG00000231389	OTTHUMG00000031058	588	Histocompatibility complex
+HGNC:4939	HLA-DPA2	major histocompatibility complex, class II, DP alpha 2 (pseudogene)	Approved	pseudogene	HLA-DP2A		6p21.32	646702	ENSG00000231461	OTTHUMG00000031061	588	Histocompatibility complex
+HGNC:19393	HLA-DPA3	major histocompatibility complex, class II, DP alpha 3 (pseudogene)	Approved	pseudogene			6p21.32	267013	ENSG00000237398	OTTHUMG00000031063	588	Histocompatibility complex
+HGNC:4940	HLA-DPB1	major histocompatibility complex, class II, DP beta 1	Approved	gene with protein product	HLA-DP1B		6p21.32	3115	ENSG00000223865	OTTHUMG00000031076	588	Histocompatibility complex
+HGNC:4941	HLA-DPB2	major histocompatibility complex, class II, DP beta 2 (pseudogene)	Approved	pseudogene	HLA-DP2B	DP2B, DPB2	6p21.32	3116	ENSG00000224557	OTTHUMG00000031080	588	Histocompatibility complex
+HGNC:4942	HLA-DQA1	major histocompatibility complex, class II, DQ alpha 1	Approved	gene with protein product	HLA-DQA	CELIAC1	6p21.32	3117	ENSG00000196735	OTTHUMG00000031106	588	Histocompatibility complex
+HGNC:4943	HLA-DQA2	major histocompatibility complex, class II, DQ alpha 2	Approved	gene with protein product	HLA-DXA		6p21.32	3118	ENSG00000237541	OTTHUMG00000031108	588	Histocompatibility complex
+HGNC:4944	HLA-DQB1	major histocompatibility complex, class II, DQ beta 1	Approved	gene with protein product	HLA-DQB	IDDM1, CELIAC1	6p21.32	3119	ENSG00000179344	OTTHUMG00000031124	588	Histocompatibility complex
+HGNC:4945	HLA-DQB2	major histocompatibility complex, class II, DQ beta 2	Approved	gene with protein product	HLA-DXB		6p21.32	3120	ENSG00000232629	OTTHUMG00000031125	588	Histocompatibility complex
+HGNC:4946	HLA-DQB3	major histocompatibility complex, class II, DQ beta 3	Approved	unknown	HLA-DVB	D6S205, D6S205E, DVB, DQB3	6p21.3	3121	ENSG00000226030	OTTHUMG00000031127	588	Histocompatibility complex
+HGNC:4947	HLA-DRA	major histocompatibility complex, class II, DR alpha	Approved	gene with protein product	HLA-DRA1		6p21.32	3122	ENSG00000204287	OTTHUMG00000031269	588	Histocompatibility complex
+HGNC:4948	HLA-DRB1	major histocompatibility complex, class II, DR beta 1	Approved	gene with protein product	HLA-DR1B		6p21.32	3123	ENSG00000196126	OTTHUMG00000031196	588	Histocompatibility complex
+HGNC:4950	HLA-DRB2	major histocompatibility complex, class II, DR beta 2 (pseudogene)	Approved	pseudogene	HLA-DR2B		6p21.3 alternate reference locus	3124	ENSG00000227442	OTTHUMG00000012608	588	Histocompatibility complex
+HGNC:4951	HLA-DRB3	major histocompatibility complex, class II, DR beta 3	Approved	gene with protein product	HLA-DR3B		6p21.3 alternate reference locus	3125	ENSG00000196101	OTTHUMG00000012609	588	Histocompatibility complex
+HGNC:4952	HLA-DRB4	major histocompatibility complex, class II, DR beta 4	Approved	gene with protein product	HLA-DR4B		6p21.3 alternate reference locus	3126	ENSG00000227357	OTTHUMG00000138996	588	Histocompatibility complex
+HGNC:4953	HLA-DRB5	major histocompatibility complex, class II, DR beta 5	Approved	gene with protein product			6p21.32	3127	ENSG00000198502	OTTHUMG00000031027	588	Histocompatibility complex
+HGNC:4954	HLA-DRB6	major histocompatibility complex, class II, DR beta 6 (pseudogene)	Approved	pseudogene			6p21.32	3128	ENSG00000229391	OTTHUMG00000031028	588	Histocompatibility complex
+HGNC:4955	HLA-DRB7	major histocompatibility complex, class II, DR beta 7 (pseudogene)	Approved	pseudogene			6p21.3 alternate reference locus	3129	ENSG00000227099	OTTHUMG00000139002	588	Histocompatibility complex
+HGNC:4956	HLA-DRB8	major histocompatibility complex, class II, DR beta 8 (pseudogene)	Approved	pseudogene			6p21.3 alternate reference locus	3130	ENSG00000233697	OTTHUMG00000138997	588	Histocompatibility complex
+HGNC:4957	HLA-DRB9	major histocompatibility complex, class II, DR beta 9 (pseudogene)	Approved	pseudogene	HLA-DRB1L, HLA-DR1BL	D6S206, D6S206E	6p21.32	3132	ENSG00000196301	OTTHUMG00000031197	588	Histocompatibility complex
+HGNC:4962	HLA-E	major histocompatibility complex, class I, E	Approved	gene with protein product			6p22.1	3133	ENSG00000204592	OTTHUMG00000031155	588	Histocompatibility complex
+HGNC:4963	HLA-F	major histocompatibility complex, class I, F	Approved	gene with protein product			6p22.1	3134	ENSG00000204642	OTTHUMG00000031156	588	Histocompatibility complex
+HGNC:4964	HLA-G	major histocompatibility complex, class I, G	Approved	gene with protein product			6p22.1	3135	ENSG00000204632	OTTHUMG00000031157	588	Histocompatibility complex
+HGNC:4965	HLA-H	major histocompatibility complex, class I, H (pseudogene)	Approved	pseudogene			6p22.1	3136	ENSG00000206341	OTTHUMG00000031160	588	Histocompatibility complex
+HGNC:4967	HLA-J	major histocompatibility complex, class I, J (pseudogene)	Approved	pseudogene	HLA-CDA12, D6S203	CDA12, HLA-59	6p22.1	3137	ENSG00000204622	OTTHUMG00000031161	588	Histocompatibility complex
+HGNC:4969	HLA-K	major histocompatibility complex, class I, K (pseudogene)	Approved	pseudogene	HLAK, HLA70	HLA-70	6p22.1	3138	ENSG00000230795	OTTHUMG00000031162	588	Histocompatibility complex
+HGNC:4970	HLA-L	major histocompatibility complex, class I, L (pseudogene)	Approved	pseudogene	HLA92, HLAL	HLA-92	6p22.1	3139	ENSG00000243753	OTTHUMG00000031164	588	Histocompatibility complex
+HGNC:19406	HLA-N	major histocompatibility complex, class I, N (pseudogene)	Approved	pseudogene		HLA-30	6p22.1	267014	ENSG00000224372	OTTHUMG00000031167	588	Histocompatibility complex
+HGNC:21196	HLA-P	major histocompatibility complex, class I, P (pseudogene)	Approved	pseudogene	C6orf101, HLA-90	dJ377H14.3	6p22.1	352963	ENSG00000261548	OTTHUMG00000172781	588	Histocompatibility complex
+HGNC:19395	HLA-S	major histocompatibility complex, class I, S (pseudogene)	Approved	pseudogene		HLA-17	6p21.33	267015	ENSG00000225851	OTTHUMG00000031178	588	Histocompatibility complex
+HGNC:23478	HLA-T	major histocompatibility complex, class I, T (pseudogene)	Approved	pseudogene	HLA-16		6p22.1	352964	ENSG00000231130	OTTHUMG00000031232	588	Histocompatibility complex
+HGNC:23477	HLA-U	major histocompatibility complex, class I, U (pseudogene)	Approved	pseudogene	HLA-21	Em:AB023056.13	6p22.1	352965	ENSG00000228078	OTTHUMG00000031245	588	Histocompatibility complex
+HGNC:23482	HLA-V	major histocompatibility complex, class I, V (pseudogene)	Approved	pseudogene	HLA-75	dJ377H14.4	6p22.1	352962	ENSG00000181126	OTTHUMG00000031277	588	Histocompatibility complex
+HGNC:23425	HLA-W	major histocompatibility complex, class I, W (pseudogene)	Approved	pseudogene	HLA-80		6p22.1	352966	ENSG00000235290	OTTHUMG00000031242	588	Histocompatibility complex
+HGNC:19385	HLA-X	major histocompatibility complex, class I, X (pseudogene)	Approved	pseudogene			6p21.3	267016			588	Histocompatibility complex
+HGNC:33913	HLA-Y	major histocompatibility complex, class I, Y (pseudogene)	Approved	pseudogene		HLA-BEL/COQ/DEL	6p21.33	100127173			588	Histocompatibility complex
+HGNC:19394	HLA-Z	major histocompatibility complex, class I, Z (pseudogene)	Approved	pseudogene		HLA-Z1	6p21.32	267017	ENSG00000235301	OTTHUMG00000031189	588	Histocompatibility complex

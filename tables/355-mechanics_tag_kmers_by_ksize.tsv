@@ -1,0 +1,337 @@
+tag_name	category	tag_length_aa	ksize	n_kmers	has_any_kmer
+His6	affinity tag	6	3	4	true
+His6	affinity tag	6	4	3	true
+His6	affinity tag	6	5	2	true
+His6	affinity tag	6	6	1	true
+His6	affinity tag	6	7	0	false
+His6	affinity tag	6	8	0	false
+His6	affinity tag	6	9	0	false
+His6	affinity tag	6	10	0	false
+His6	affinity tag	6	11	0	false
+His6	affinity tag	6	12	0	false
+His6	affinity tag	6	13	0	false
+His6	affinity tag	6	14	0	false
+His6	affinity tag	6	15	0	false
+His6	affinity tag	6	16	0	false
+His6	affinity tag	6	17	0	false
+His6	affinity tag	6	18	0	false
+His6	affinity tag	6	19	0	false
+His6	affinity tag	6	20	0	false
+His6	affinity tag	6	21	0	false
+His6	affinity tag	6	22	0	false
+His6	affinity tag	6	23	0	false
+His6	affinity tag	6	24	0	false
+His6	affinity tag	6	25	0	false
+His6	affinity tag	6	26	0	false
+His6	affinity tag	6	27	0	false
+His6	affinity tag	6	28	0	false
+His6	affinity tag	6	29	0	false
+His6	affinity tag	6	30	0	false
+His8	affinity tag	8	3	6	true
+His8	affinity tag	8	4	5	true
+His8	affinity tag	8	5	4	true
+His8	affinity tag	8	6	3	true
+His8	affinity tag	8	7	2	true
+His8	affinity tag	8	8	1	true
+His8	affinity tag	8	9	0	false
+His8	affinity tag	8	10	0	false
+His8	affinity tag	8	11	0	false
+His8	affinity tag	8	12	0	false
+His8	affinity tag	8	13	0	false
+His8	affinity tag	8	14	0	false
+His8	affinity tag	8	15	0	false
+His8	affinity tag	8	16	0	false
+His8	affinity tag	8	17	0	false
+His8	affinity tag	8	18	0	false
+His8	affinity tag	8	19	0	false
+His8	affinity tag	8	20	0	false
+His8	affinity tag	8	21	0	false
+His8	affinity tag	8	22	0	false
+His8	affinity tag	8	23	0	false
+His8	affinity tag	8	24	0	false
+His8	affinity tag	8	25	0	false
+His8	affinity tag	8	26	0	false
+His8	affinity tag	8	27	0	false
+His8	affinity tag	8	28	0	false
+His8	affinity tag	8	29	0	false
+His8	affinity tag	8	30	0	false
+FLAG	epitope tag	8	3	6	true
+FLAG	epitope tag	8	4	5	true
+FLAG	epitope tag	8	5	4	true
+FLAG	epitope tag	8	6	3	true
+FLAG	epitope tag	8	7	2	true
+FLAG	epitope tag	8	8	1	true
+FLAG	epitope tag	8	9	0	false
+FLAG	epitope tag	8	10	0	false
+FLAG	epitope tag	8	11	0	false
+FLAG	epitope tag	8	12	0	false
+FLAG	epitope tag	8	13	0	false
+FLAG	epitope tag	8	14	0	false
+FLAG	epitope tag	8	15	0	false
+FLAG	epitope tag	8	16	0	false
+FLAG	epitope tag	8	17	0	false
+FLAG	epitope tag	8	18	0	false
+FLAG	epitope tag	8	19	0	false
+FLAG	epitope tag	8	20	0	false
+FLAG	epitope tag	8	21	0	false
+FLAG	epitope tag	8	22	0	false
+FLAG	epitope tag	8	23	0	false
+FLAG	epitope tag	8	24	0	false
+FLAG	epitope tag	8	25	0	false
+FLAG	epitope tag	8	26	0	false
+FLAG	epitope tag	8	27	0	false
+FLAG	epitope tag	8	28	0	false
+FLAG	epitope tag	8	29	0	false
+FLAG	epitope tag	8	30	0	false
+HA	epitope tag	9	3	7	true
+HA	epitope tag	9	4	6	true
+HA	epitope tag	9	5	5	true
+HA	epitope tag	9	6	4	true
+HA	epitope tag	9	7	3	true
+HA	epitope tag	9	8	2	true
+HA	epitope tag	9	9	1	true
+HA	epitope tag	9	10	0	false
+HA	epitope tag	9	11	0	false
+HA	epitope tag	9	12	0	false
+HA	epitope tag	9	13	0	false
+HA	epitope tag	9	14	0	false
+HA	epitope tag	9	15	0	false
+HA	epitope tag	9	16	0	false
+HA	epitope tag	9	17	0	false
+HA	epitope tag	9	18	0	false
+HA	epitope tag	9	19	0	false
+HA	epitope tag	9	20	0	false
+HA	epitope tag	9	21	0	false
+HA	epitope tag	9	22	0	false
+HA	epitope tag	9	23	0	false
+HA	epitope tag	9	24	0	false
+HA	epitope tag	9	25	0	false
+HA	epitope tag	9	26	0	false
+HA	epitope tag	9	27	0	false
+HA	epitope tag	9	28	0	false
+HA	epitope tag	9	29	0	false
+HA	epitope tag	9	30	0	false
+Myc	epitope tag	10	3	8	true
+Myc	epitope tag	10	4	7	true
+Myc	epitope tag	10	5	6	true
+Myc	epitope tag	10	6	5	true
+Myc	epitope tag	10	7	4	true
+Myc	epitope tag	10	8	3	true
+Myc	epitope tag	10	9	2	true
+Myc	epitope tag	10	10	1	true
+Myc	epitope tag	10	11	0	false
+Myc	epitope tag	10	12	0	false
+Myc	epitope tag	10	13	0	false
+Myc	epitope tag	10	14	0	false
+Myc	epitope tag	10	15	0	false
+Myc	epitope tag	10	16	0	false
+Myc	epitope tag	10	17	0	false
+Myc	epitope tag	10	18	0	false
+Myc	epitope tag	10	19	0	false
+Myc	epitope tag	10	20	0	false
+Myc	epitope tag	10	21	0	false
+Myc	epitope tag	10	22	0	false
+Myc	epitope tag	10	23	0	false
+Myc	epitope tag	10	24	0	false
+Myc	epitope tag	10	25	0	false
+Myc	epitope tag	10	26	0	false
+Myc	epitope tag	10	27	0	false
+Myc	epitope tag	10	28	0	false
+Myc	epitope tag	10	29	0	false
+Myc	epitope tag	10	30	0	false
+Strep-tag II	affinity tag	8	3	6	true
+Strep-tag II	affinity tag	8	4	5	true
+Strep-tag II	affinity tag	8	5	4	true
+Strep-tag II	affinity tag	8	6	3	true
+Strep-tag II	affinity tag	8	7	2	true
+Strep-tag II	affinity tag	8	8	1	true
+Strep-tag II	affinity tag	8	9	0	false
+Strep-tag II	affinity tag	8	10	0	false
+Strep-tag II	affinity tag	8	11	0	false
+Strep-tag II	affinity tag	8	12	0	false
+Strep-tag II	affinity tag	8	13	0	false
+Strep-tag II	affinity tag	8	14	0	false
+Strep-tag II	affinity tag	8	15	0	false
+Strep-tag II	affinity tag	8	16	0	false
+Strep-tag II	affinity tag	8	17	0	false
+Strep-tag II	affinity tag	8	18	0	false
+Strep-tag II	affinity tag	8	19	0	false
+Strep-tag II	affinity tag	8	20	0	false
+Strep-tag II	affinity tag	8	21	0	false
+Strep-tag II	affinity tag	8	22	0	false
+Strep-tag II	affinity tag	8	23	0	false
+Strep-tag II	affinity tag	8	24	0	false
+Strep-tag II	affinity tag	8	25	0	false
+Strep-tag II	affinity tag	8	26	0	false
+Strep-tag II	affinity tag	8	27	0	false
+Strep-tag II	affinity tag	8	28	0	false
+Strep-tag II	affinity tag	8	29	0	false
+Strep-tag II	affinity tag	8	30	0	false
+GS linker G4S	linker	5	3	3	true
+GS linker G4S	linker	5	4	2	true
+GS linker G4S	linker	5	5	1	true
+GS linker G4S	linker	5	6	0	false
+GS linker G4S	linker	5	7	0	false
+GS linker G4S	linker	5	8	0	false
+GS linker G4S	linker	5	9	0	false
+GS linker G4S	linker	5	10	0	false
+GS linker G4S	linker	5	11	0	false
+GS linker G4S	linker	5	12	0	false
+GS linker G4S	linker	5	13	0	false
+GS linker G4S	linker	5	14	0	false
+GS linker G4S	linker	5	15	0	false
+GS linker G4S	linker	5	16	0	false
+GS linker G4S	linker	5	17	0	false
+GS linker G4S	linker	5	18	0	false
+GS linker G4S	linker	5	19	0	false
+GS linker G4S	linker	5	20	0	false
+GS linker G4S	linker	5	21	0	false
+GS linker G4S	linker	5	22	0	false
+GS linker G4S	linker	5	23	0	false
+GS linker G4S	linker	5	24	0	false
+GS linker G4S	linker	5	25	0	false
+GS linker G4S	linker	5	26	0	false
+GS linker G4S	linker	5	27	0	false
+GS linker G4S	linker	5	28	0	false
+GS linker G4S	linker	5	29	0	false
+GS linker G4S	linker	5	30	0	false
+GS linker (G4S)x3	linker	15	3	13	true
+GS linker (G4S)x3	linker	15	4	12	true
+GS linker (G4S)x3	linker	15	5	11	true
+GS linker (G4S)x3	linker	15	6	10	true
+GS linker (G4S)x3	linker	15	7	9	true
+GS linker (G4S)x3	linker	15	8	8	true
+GS linker (G4S)x3	linker	15	9	7	true
+GS linker (G4S)x3	linker	15	10	6	true
+GS linker (G4S)x3	linker	15	11	5	true
+GS linker (G4S)x3	linker	15	12	4	true
+GS linker (G4S)x3	linker	15	13	3	true
+GS linker (G4S)x3	linker	15	14	2	true
+GS linker (G4S)x3	linker	15	15	1	true
+GS linker (G4S)x3	linker	15	16	0	false
+GS linker (G4S)x3	linker	15	17	0	false
+GS linker (G4S)x3	linker	15	18	0	false
+GS linker (G4S)x3	linker	15	19	0	false
+GS linker (G4S)x3	linker	15	20	0	false
+GS linker (G4S)x3	linker	15	21	0	false
+GS linker (G4S)x3	linker	15	22	0	false
+GS linker (G4S)x3	linker	15	23	0	false
+GS linker (G4S)x3	linker	15	24	0	false
+GS linker (G4S)x3	linker	15	25	0	false
+GS linker (G4S)x3	linker	15	26	0	false
+GS linker (G4S)x3	linker	15	27	0	false
+GS linker (G4S)x3	linker	15	28	0	false
+GS linker (G4S)x3	linker	15	29	0	false
+GS linker (G4S)x3	linker	15	30	0	false
+GS linker GSG	linker	3	3	1	true
+GS linker GSG	linker	3	4	0	false
+GS linker GSG	linker	3	5	0	false
+GS linker GSG	linker	3	6	0	false
+GS linker GSG	linker	3	7	0	false
+GS linker GSG	linker	3	8	0	false
+GS linker GSG	linker	3	9	0	false
+GS linker GSG	linker	3	10	0	false
+GS linker GSG	linker	3	11	0	false
+GS linker GSG	linker	3	12	0	false
+GS linker GSG	linker	3	13	0	false
+GS linker GSG	linker	3	14	0	false
+GS linker GSG	linker	3	15	0	false
+GS linker GSG	linker	3	16	0	false
+GS linker GSG	linker	3	17	0	false
+GS linker GSG	linker	3	18	0	false
+GS linker GSG	linker	3	19	0	false
+GS linker GSG	linker	3	20	0	false
+GS linker GSG	linker	3	21	0	false
+GS linker GSG	linker	3	22	0	false
+GS linker GSG	linker	3	23	0	false
+GS linker GSG	linker	3	24	0	false
+GS linker GSG	linker	3	25	0	false
+GS linker GSG	linker	3	26	0	false
+GS linker GSG	linker	3	27	0	false
+GS linker GSG	linker	3	28	0	false
+GS linker GSG	linker	3	29	0	false
+GS linker GSG	linker	3	30	0	false
+GS linker GGSGGS	linker	6	3	4	true
+GS linker GGSGGS	linker	6	4	3	true
+GS linker GGSGGS	linker	6	5	2	true
+GS linker GGSGGS	linker	6	6	1	true
+GS linker GGSGGS	linker	6	7	0	false
+GS linker GGSGGS	linker	6	8	0	false
+GS linker GGSGGS	linker	6	9	0	false
+GS linker GGSGGS	linker	6	10	0	false
+GS linker GGSGGS	linker	6	11	0	false
+GS linker GGSGGS	linker	6	12	0	false
+GS linker GGSGGS	linker	6	13	0	false
+GS linker GGSGGS	linker	6	14	0	false
+GS linker GGSGGS	linker	6	15	0	false
+GS linker GGSGGS	linker	6	16	0	false
+GS linker GGSGGS	linker	6	17	0	false
+GS linker GGSGGS	linker	6	18	0	false
+GS linker GGSGGS	linker	6	19	0	false
+GS linker GGSGGS	linker	6	20	0	false
+GS linker GGSGGS	linker	6	21	0	false
+GS linker GGSGGS	linker	6	22	0	false
+GS linker GGSGGS	linker	6	23	0	false
+GS linker GGSGGS	linker	6	24	0	false
+GS linker GGSGGS	linker	6	25	0	false
+GS linker GGSGGS	linker	6	26	0	false
+GS linker GGSGGS	linker	6	27	0	false
+GS linker GGSGGS	linker	6	28	0	false
+GS linker GGSGGS	linker	6	29	0	false
+GS linker GGSGGS	linker	6	30	0	false
+GST (sj26)	fusion partner	218	3	216	true
+GST (sj26)	fusion partner	218	4	215	true
+GST (sj26)	fusion partner	218	5	214	true
+GST (sj26)	fusion partner	218	6	213	true
+GST (sj26)	fusion partner	218	7	212	true
+GST (sj26)	fusion partner	218	8	211	true
+GST (sj26)	fusion partner	218	9	210	true
+GST (sj26)	fusion partner	218	10	209	true
+GST (sj26)	fusion partner	218	11	208	true
+GST (sj26)	fusion partner	218	12	207	true
+GST (sj26)	fusion partner	218	13	206	true
+GST (sj26)	fusion partner	218	14	205	true
+GST (sj26)	fusion partner	218	15	204	true
+GST (sj26)	fusion partner	218	16	203	true
+GST (sj26)	fusion partner	218	17	202	true
+GST (sj26)	fusion partner	218	18	201	true
+GST (sj26)	fusion partner	218	19	200	true
+GST (sj26)	fusion partner	218	20	199	true
+GST (sj26)	fusion partner	218	21	198	true
+GST (sj26)	fusion partner	218	22	197	true
+GST (sj26)	fusion partner	218	23	196	true
+GST (sj26)	fusion partner	218	24	195	true
+GST (sj26)	fusion partner	218	25	194	true
+GST (sj26)	fusion partner	218	26	193	true
+GST (sj26)	fusion partner	218	27	192	true
+GST (sj26)	fusion partner	218	28	191	true
+GST (sj26)	fusion partner	218	29	190	true
+GST (sj26)	fusion partner	218	30	189	true
+MBP (MalE mature chain)	fusion partner	370	3	368	true
+MBP (MalE mature chain)	fusion partner	370	4	367	true
+MBP (MalE mature chain)	fusion partner	370	5	366	true
+MBP (MalE mature chain)	fusion partner	370	6	365	true
+MBP (MalE mature chain)	fusion partner	370	7	364	true
+MBP (MalE mature chain)	fusion partner	370	8	363	true
+MBP (MalE mature chain)	fusion partner	370	9	362	true
+MBP (MalE mature chain)	fusion partner	370	10	361	true
+MBP (MalE mature chain)	fusion partner	370	11	360	true
+MBP (MalE mature chain)	fusion partner	370	12	359	true
+MBP (MalE mature chain)	fusion partner	370	13	358	true
+MBP (MalE mature chain)	fusion partner	370	14	357	true
+MBP (MalE mature chain)	fusion partner	370	15	356	true
+MBP (MalE mature chain)	fusion partner	370	16	355	true
+MBP (MalE mature chain)	fusion partner	370	17	354	true
+MBP (MalE mature chain)	fusion partner	370	18	353	true
+MBP (MalE mature chain)	fusion partner	370	19	352	true
+MBP (MalE mature chain)	fusion partner	370	20	351	true
+MBP (MalE mature chain)	fusion partner	370	21	350	true
+MBP (MalE mature chain)	fusion partner	370	22	349	true
+MBP (MalE mature chain)	fusion partner	370	23	348	true
+MBP (MalE mature chain)	fusion partner	370	24	347	true
+MBP (MalE mature chain)	fusion partner	370	25	346	true
+MBP (MalE mature chain)	fusion partner	370	26	345	true
+MBP (MalE mature chain)	fusion partner	370	27	344	true
+MBP (MalE mature chain)	fusion partner	370	28	343	true
+MBP (MalE mature chain)	fusion partner	370	29	342	true
+MBP (MalE mature chain)	fusion partner	370	30	341	true

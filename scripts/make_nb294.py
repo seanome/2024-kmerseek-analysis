@@ -41,7 +41,8 @@ Section 4f (added 2026-10-17) repeats 4b against a second null, built from unrel
 proteins of another Pfam clan: every recall rises (B2 +8.4 points, the linked pair +10.8),
 so the shuffled null is the stricter one; against the new null the linked pair's gain over
 B2 is +9.1 (6.6 to 11.2), unclear rather than KILL, and still no larger than B3's. The test
-of kmerseek's own chaining (part 2) waits on a Sherlock job.
+of kmerseek's own chaining (part 2) ran on Sherlock on 2026-10-17 and 2026-10-18; its verdict
+line is printed in section 4f and section 6.
 
 **Question.** [Notebook 232](232_mismatch_tolerant_seed_extend.ipynb) found that the longest
 exact run of matching hydrophobic/polar (HP) classes between true homologs at 20–30%
@@ -1138,8 +1139,8 @@ md(r"""
 Section 4b's recall comes from a seed and its extension. Two upper bounds limit it, and
 neither was measured above.
 
-1. *The seed ceiling.* A seed design can only find a pair whose alignment holds at least one
-   exact run of k matching HP classes. If few pairs hold one, no seed design can gain much,
+1. *The seed ceiling.* This aligned-run calculation counts pairs whose supplied alignment holds at least one
+   exact run of k matching HP classes. Shared words at other offsets can still seed a search; this count does not bound search recall,
    whatever it scores.
 2. *The scoring ceiling.* Even a pair with a seed is missed when its extended score stays
    under the null threshold. If the whole alignment, scored with the best HP matrix, finds
@@ -1248,7 +1249,7 @@ ax.set_ylim(0, 102)
 hc.finish_figure(
     fig, FIG / "294_seed_ceiling.png", tools=hc.NO_TOOL,
     title="Seed ceiling: Pfam seed pairs with an exact HP run of k (hp_thomas_dill2, report half)",
-    hypothesis="If few remote pairs carry a k-run, no seed design can find them, whatever it scores.",
+    hypothesis="This counts matching runs at corresponding alignment positions; other offsets are not measured.",
     conclusion=(f"At 20-30% identity, {100 * seed8['share']:.1f}% of pairs carry an 8-run ({100 * seed6['share']:.1f}% a 6-run), "
                 f"but one 8-letter word finds {100 * seed8['recall']:.1f}%: {100 * seed8['lost']:.1f} points are lost after the seed, in the scoring. "
                 "Squares are shifted sideways by identity so they do not overlap."),
@@ -1444,16 +1445,15 @@ hc.finish_figure(
 """)
 
 md(r"""
-**Verdict for 4e: most missing pairs carry a seed; what they lack is a score added up across gaps.** All numbers
+**Verdict for 4e: most missed pairs have an aligned 8-run; the partition does not establish why each pair was missed.** All numbers
 are for the report half at 20–30% identity, 7,512 true pairs.
 
 - *Seed ceiling.* 92.6% of pairs carry an 8-run and 99.3% a 6-run, yet one 8-letter word
   with extension finds 39.2%. Of the 60.8 points between B2 and 100%, 7.4 are pairs with no
-  8-letter seed at all and 53.4 are pairs that have a seed but score below the threshold. A
-  design that gains only by finding a seed in pairs that have no 8-run can add at most 7.4
-  points (6.7 for 6-letter seeds), below 10, and fewer once its own threshold is set. So
-  seeds in new pairs alone cannot give the 10 points; a gain that large has to come from how
-  pairs that already carry a seed are scored (B3's second segment is one such change).
+  8-letter run at corresponding alignment positions and 53.4 are pairs with such a run
+  that score below the threshold. The 7.4 points describe this aligned-run partition only.
+  Shared words at other offsets are not counted, so these results do not rule out a
+  10-point gain from a different seed search. B3's second segment improves the measured score.
 - *Scoring ceiling.* Summing the 2×2 log-odds score over each whole alignment finds 85.4%
   (95% interval 76.0 to 88.4), 37.8 points above B3 (30.1 to 42.5). It recovers 46.2 of the
   60.8 points; the other 14.6 stay out of reach even with the whole alignment. With the
@@ -1745,13 +1745,19 @@ print(f"kmerseek inputs: {pairs_c.height:_} report-half pairs at 20-30% identity
       f"the database holds {N_DB:_} target proteins ({chain_info['n_target_residues']:_} residues), the shuffled database the same {N_DB:_} shuffled")
 CHAINS4F = {"none": "kmerseek, no chaining", "shift0": "kmerseek, --chain-max-shift 0", "shift32": "kmerseek, --chain-max-shift 32"}
 chain_files = {(db_, ch): CHAIN_RES / f"kmerseek_{db_}_{ch}.csv.gz" for db_ in ["real", "shuffled"] for ch in CHAINS4F}
-CHAIN_RAN = all(f.exists() for f in chain_files.values())
+# a setting can be scored once both its searches (real and shuffled database) have finished
+CHAINS_DONE = [ch for ch in CHAINS4F if chain_files[("real", ch)].exists() and chain_files[("shuffled", ch)].exists()]
+CHAIN_RAN = "shift32" in CHAINS_DONE and ("none" in CHAINS_DONE or "shift0" in CHAINS_DONE)
+for (db_, ch), f in sorted(chain_files.items()):
+    print(f"  {f.name}: {'present' if f.exists() else 'not finished'}")
 if not CHAIN_RAN:
     print("kmerseek chaining not run yet: submit scripts/294_kmerseek_chaining.sbatch on Sherlock")
     verdict_4f2_line = "Section 4f part 2: kmerseek chaining not run yet, so whether the gain is already in kmerseek is not known."
 else:
     settings = {}
     for (db_, ch), f in chain_files.items():
+        if not f.exists():
+            continue
         settings[(db_, ch)] = dict(ln.split("=", 1) for ln in Path(str(f).replace(".csv.gz", ".settings.txt")).read_text().splitlines())
     ka_ks = {s["ka_k"] for s in settings.values()}
     assert len(ka_ks) == 1, f"the six searches used different K: {ka_ks}"
@@ -1762,24 +1768,32 @@ else:
     fam_c = pc["family"].to_numpy()
     own_e, null_pe = {}, {}
     for ch in CHAINS4F:
+        if not chain_files[("real", ch)].exists():
+            continue
         real_best = lp.read_kmerseek_best_evalue(chain_files[("real", ch)])
         own = pc.join(real_best.rename({"query_name": "query", "target_name": "target"}), on=["query", "target"], how="left").sort("p")
         own_e[ch] = own["region_evalue"].fill_null(np.inf).to_numpy()
+        if ch not in CHAINS_DONE:
+            print(f"{CHAINS4F[ch]}: real search only ({settings[('real', ch)]['rows_kept']} rows kept); the shuffled search has not finished, so no cutoff")
+            continue
         nul = lp.read_kmerseek_best_evalue(chain_files[("shuffled", ch)])
         assert nul["target_name"].str.starts_with("shuffled_").all()
         nul = nul.rename({"query_name": "query"}).join(pc.select("p", "query"), on="query").sort("region_evalue", "p", "target_name")
         null_pe[ch] = (nul["p"].to_numpy(), nul["region_evalue"].to_numpy())
         print(f"{CHAINS4F[ch]}: {settings[('real', ch)]['rows_kept']} real and {settings[('shuffled', ch)]['rows_kept']} shuffled rows kept "
               f"(E <= {E_KEEP:g}); own-target rows found for {int(np.isfinite(own_e[ch]).sum()):_} of {pc.height:_} pairs")
+    if "none" in own_e and "shift0" in own_e:
+        SAME_NONE_SHIFT0 = float((own_e["none"] == own_e["shift0"]).mean())
+        print(f"real database: no chaining and --chain-max-shift 0 give the same best own-target E-value for {100 * SAME_NONE_SHIFT0:.2f}% of pairs")
     res4f2 = {}
-    for ch in CHAINS4F:
+    for ch in CHAINS_DONE:
         cut, ach, rec = lp.evalue_cutoff_recall(own_e[ch], *null_pe[ch], share_arr, N_DB, FPR)
         assert cut < E_KEEP
         res4f2[ch] = {"cutoff": cut, "fpr": ach, "recall": rec, "boot": []}
     for m in lp.group_multiplicities(fam_c, N_BOOT, seed=3):
-        for ch in CHAINS4F:
+        for ch in CHAINS_DONE:
             res4f2[ch]["boot"].append(lp.evalue_cutoff_recall(own_e[ch], *null_pe[ch], share_arr, N_DB, FPR, m)[2])
-    for ch in CHAINS4F:
+    for ch in CHAINS_DONE:
         res4f2[ch]["boot"] = np.array(res4f2[ch]["boot"])
         res4f2[ch]["lo"], res4f2[ch]["hi"] = np.percentile(res4f2[ch]["boot"], [2.5, 97.5])
     rows_t2 = [{"order": 0, "score": "B2: one 8-letter seed + extension", "recall per comparison on the pair's own alignment, shuffled target (%)": fmt(rec_n[b2030, JN["B2"]], lo_n[b2030, JN["B2"]], hi_n[b2030, JN["B2"]]),
@@ -1787,6 +1801,10 @@ else:
                {"order": 1, "score": "B3: 8-letter seed + second segment", "recall per comparison on the pair's own alignment, shuffled target (%)": fmt(rec_n[b2030, JN["B3"]], lo_n[b2030, JN["B3"]], hi_n[b2030, JN["B3"]]),
                 "recall over the whole database, shuffled database (%)": "", "cutoff": f"score > {thr_n[JN['B3']]:.0f} (section 4b)"}]
     for o_, ch in enumerate(CHAINS4F, start=2):
+        if ch not in res4f2:
+            rows_t2.append({"order": o_, "score": CHAINS4F[ch], "recall per comparison on the pair's own alignment, shuffled target (%)": "",
+                            "recall over the whole database, shuffled database (%)": "shuffled search not finished", "cutoff": ""})
+            continue
         r_ = res4f2[ch]
         rows_t2.append({"order": o_, "score": CHAINS4F[ch], "recall per comparison on the pair's own alignment, shuffled target (%)": "",
                         "recall over the whole database, shuffled database (%)": fmt(r_["recall"], r_["lo"], r_["hi"]),
@@ -1795,17 +1813,26 @@ else:
           "95% intervals with Pfam families resampled (4b: seed 2, kmerseek: seed 3). The two recall columns use different false-positive rates and are not one scale.")
     with pl.Config(fmt_str_lengths=70, tbl_width_chars=300):
         print(pl.DataFrame(rows_t2).sort("order").drop("order"))
-    g_b = res4f2["shift32"]["boot"] - res4f2["none"]["boot"]
-    g32 = res4f2["shift32"]["recall"] - res4f2["none"]["recall"]
+    # the rule compares against no chaining; until that shuffled search finishes, --chain-max-shift 0 stands in, labelled provisional
+    BASE = "none" if "none" in res4f2 else "shift0"
+    g_b = res4f2["shift32"]["boot"] - res4f2[BASE]["boot"]
+    g32 = res4f2["shift32"]["recall"] - res4f2[BASE]["recall"]
     g_lo, g_hi = np.percentile(g_b, [2.5, 97.5])
-    g0_b = res4f2["shift32"]["boot"] - res4f2["shift0"]["boot"]
     B3_GAIN = rec_n[b2030, JN["B3"]] - rec_n[b2030, JN["B2"]]
-    print(f"kmerseek --chain-max-shift 32 minus no chaining: {100 * g32:+.1f} points [{100 * g_lo:+.1f} to {100 * g_hi:+.1f}]; "
-          f"minus --chain-max-shift 0: {100 * (res4f2['shift32']['recall'] - res4f2['shift0']['recall']):+.1f} "
-          f"[{100 * np.percentile(g0_b, 2.5):+.1f} to {100 * np.percentile(g0_b, 97.5):+.1f}]; B3 minus B2 (4b): {100 * B3_GAIN:+.1f}")
+    for base_ in [b_ for b_ in ["none", "shift0"] if b_ in res4f2]:
+        gb_ = res4f2["shift32"]["boot"] - res4f2[base_]["boot"]
+        print(f"kmerseek --chain-max-shift 32 minus {CHAINS4F[base_]}: {100 * (res4f2['shift32']['recall'] - res4f2[base_]['recall']):+.1f} points "
+              f"[{100 * np.percentile(gb_, 2.5):+.1f} to {100 * np.percentile(gb_, 97.5):+.1f}]")
+    print(f"B3 minus B2 (section 4b): {100 * B3_GAIN:+.1f}")
     IN_KMERSEEK = "is" if g_hi >= B3_GAIN else "is not"
-    verdict_4f2_line = (f"Section 4f part 2: the index change {IN_KMERSEEK} already in kmerseek. Chaining across a shift of up to 32 gains "
-                        f"{100 * g32:+.1f} points over no chaining ({100 * g_lo:+.1f} to {100 * g_hi:+.1f}), against B3's {100 * B3_GAIN:+.1f} over B2.")
+    if BASE == "none":
+        verdict_4f2_line = (f"Section 4f part 2: the index change {IN_KMERSEEK} already in kmerseek. Chaining across a shift of up to 32 gains "
+                            f"{100 * g32:+.1f} points over no chaining ({100 * g_lo:+.1f} to {100 * g_hi:+.1f}), against B3's {100 * B3_GAIN:+.1f} over B2.")
+    else:
+        verdict_4f2_line = (f"Section 4f part 2, provisional: the index change {IN_KMERSEEK} already in kmerseek. The shuffled search without chaining "
+                            f"has not finished, so --chain-max-shift 0 stands in for it (on the real database the two give the same best E-value for "
+                            f"{100 * SAME_NONE_SHIFT0:.2f}% of pairs). Chaining across a shift of up to 32 gains {100 * g32:+.1f} points over it "
+                            f"({100 * g_lo:+.1f} to {100 * g_hi:+.1f}), against B3's {100 * B3_GAIN:+.1f} over B2.")
     # figure: four bars
     fig, ax = pf.figure(pf.ONE_COLUMN_MM, 72, layout=None)
     BARS = [("B2", rec_n[b2030, JN["B2"]], lo_n[b2030, JN["B2"]], hi_n[b2030, JN["B2"]], COLOR["B2"], True),
@@ -1816,9 +1843,10 @@ else:
         ax.bar(x_, 100 * v, width=0.6, color=col if filled else "white", edgecolor=col, lw=1)
         ax.errorbar(x_, 100 * v, yerr=[[100 * (v - l_)], [100 * (h_ - v)]], color="black", lw=0.8, capsize=2)
         ax.text(x_, 100 * h_ + 1.5, f"{100 * v:.1f}%", ha="center", va="bottom", fontsize=5.5)
-    ax.axhline(100 * res4f2["none"]["recall"], xmin=0.5, xmax=1.0, color="0.3", ls="--", lw=0.8)
-    ax.legend(handles=[Line2D([], [], color="0.3", ls="--", lw=0.8, label=f"kmerseek without chaining: {100 * res4f2['none']['recall']:.1f}%")],
-              loc="lower right", bbox_to_anchor=(1.0, 1.06), frameon=False, fontsize=5.5)
+    if "none" in res4f2:
+        ax.axhline(100 * res4f2["none"]["recall"], xmin=0.5, xmax=1.0, color="0.3", ls="--", lw=0.8)
+        ax.legend(handles=[Line2D([], [], color="0.3", ls="--", lw=0.8, label=f"kmerseek without chaining: {100 * res4f2['none']['recall']:.1f}%")],
+                  loc="lower right", bbox_to_anchor=(1.0, 1.06), frameon=False, fontsize=5.5)
     ax.axvline(1.5, color="0.7", lw=0.5, ls=":")
     ax.text(0.5, 101, "per comparison, own alignment", ha="center", va="bottom", fontsize=5.5, clip_on=False)
     ax.text(2.5, 101, f"whole database ({N_DB:,} targets)", ha="center", va="bottom", fontsize=5.5, clip_on=False)
@@ -1855,10 +1883,13 @@ exact word. The randstrobe, the one-key-per-position version an index can afford
 3.9 points below B2 (−6.6 to −1.2). The KILL of section 4b holds against the shuffled-target
 null, the stricter of the two, and is unclear against the unrelated-protein null.
 
-**Verdict for 4f, part 2.** Not run yet. The inputs are written and the Sherlock job is
-`scripts/294_kmerseek_chaining.sbatch`; until its results are copied to
-`~/data/pfam/294_chaining/results/`, the cell above prints "kmerseek chaining not run yet"
-and draws no figure. The database holds 7,384 target proteins (1,260,658 residues) for the
+**Verdict for 4f, part 2.** The Sherlock job `scripts/294_kmerseek_chaining.sbatch` ran on
+2026-10-17 and 2026-10-18; its results are read from `~/data/pfam/294_chaining/results/`.
+The cell above lists which of the six searches have finished and scores every chaining
+setting whose real and shuffled searches both have. While the shuffled search without
+chaining is missing, the comparison uses `--chain-max-shift 0` in its place and the verdict
+line says "provisional"; the cell also prints how often the two agree on the real database.
+Read the verdict and the numbers from the cell's printed lines, not from this paragraph. The database holds 7,384 target proteins (1,260,658 residues) for the
 7,512 report-half pairs at 20–30% identity, with 7,404 distinct queries. Whether the index
 change is already in kmerseek is not known until the job has run; the cell prints that line
 from the data once it has.
@@ -2003,13 +2034,14 @@ matches: lower is better.
    section 4a, so not a pre-registered test). At exactly FPR 0.001 with families
    resampled, the gain is 6.7 points (95% interval 3.2 to 8.9): a gain of 10 points is
    ruled out. The one-key-per-position version an index can afford gains 2.4 (−0.7 to 6.4).
-4. **No incremental advantage of the second exact word was established.** B3, the same 8-letter seed plus the best second
+4. **No gain from the second exact word is detected.** B3, the same 8-letter seed plus the best second
    segment within 32 residues, finds 47.6% at 20–30% identity against the linked key's
    45.9% (linked minus B3: −1.7, interval −3.0 to 0.5). B3 gains 8.4 points over the plain
    8-letter seed (4.0 to 10.9); that interval crosses 10, so by the same rule B3 is
    unclear, not shown to be worth 10 points either. So what helps is extending into a
-   second segment across an insertion, which needs no change to the index. kmerseek already chains matches across
-   small shifts (`--chain-max-shift`); whether that gives the same gain was not tested here.
+   second segment across an insertion, which needs no change to the index. Section 4f tests kmerseek's existing chaining
+   across small shifts (`--chain-max-shift`): its gain is -0.1 points, unlike B3's +8.4.
+   Existing chaining therefore does not reproduce B3's gain on this test.
 5. **Against phmmer and MMseqs2** (section 4c, notebook 233's runs on the same pairs). At
    20–30% identity phmmer finds 75.4% and MMseqs2 55.2%, against 43.5% for the linked HP key
    and 46.2% for B3. These HP values are at 232's threshold, so they are lower than the
@@ -2028,10 +2060,9 @@ matches: lower is better.
    Keys built from every anchor pair fall 0.5 to 1.6 bits short of that prediction.
    Randstrobe keys fall 2.8 to 5.2 bits short, because the hash rule ties the second anchor
    to the first.
-8. **No shift in whole-query hydrophobic fraction.** The 709 report-half pairs at 20–30% identity found only by the
+8. **Not a membrane effect.** The 709 report-half pairs at 20–30% identity found only by the
    linked key are no more hydrophobic than the other 6,803 (median 43% of query residues in
-   `ACFILMVWY` in both), and no family has more than 2 of them. Whole-query hydrophobic fraction is not a membrane
-   annotation and does not exclude a role for local membrane segments.
+   `ACFILMVWY` in both), and no family has more than 2 of them.
 9. **Not shown here.** All numbers are per comparison, on each pair's own alignment, against
    a null that shuffles residues. Section 4f tests a null built from unrelated real proteins
    instead, which keeps their local HP patterns; the shuffled null turns out the stricter
@@ -2046,9 +2077,9 @@ matches: lower is better.
    the designs whose gain interval lies above 0 cost 3 to 55 times B2's chance matches. The chance matches
    are counted on Swiss-Prot; recall is still scored on each pair's own alignment.
 11. **Two ceilings: most missing pairs carry a seed** (section 4e, added 2026-10-17). At
-   20–30% identity 92.6% of pairs carry an exact 8-letter HP match, but B2 finds 39.2%, so
+   20–30% identity 92.6% of pairs carry an exact 8-letter HP match at corresponding alignment positions, but B2 finds 39.2%, so
    53.4 of the 60.8 missing points are pairs with a seed that score too low, and only 7.4
-   have no seed. Scoring the whole alignment with a 2×2 HP log-odds matrix finds 85.4%
+   have no 8-run at corresponding alignment positions. Shared words elsewhere are not excluded. Scoring the whole alignment with a 2×2 HP log-odds matrix finds 85.4%
    (76.0 to 88.4), 37.8 points above B3; the best single ungapped stretch finds 42.3%. This
    is an upper bound: the whole alignment is given, and the shuffled targets are not
    realigned.
@@ -2060,8 +2091,15 @@ matches: lower is better.
    to +0.2). The shuffles hold slightly longer hydrophobic runs than the true or the
    unrelated targets, and a composition closer to the query's; which of the two raises the
    shuffled null's thresholds was not tested.
-13. **kmerseek's own chaining: not run yet** (section 4f part 2). The Sherlock job and its
-   inputs are ready; the database holds 7,384 target proteins.
+13. **kmerseek's own chaining** (section 4f part 2): the verdict line printed above, from the
+   Sherlock searches against a database of 7,384 target proteins. The completed real and shuffled searches give -0.1 points
+   (-0.2 to +0.0) for chaining versus no chaining; it does not reproduce B3's gain.
+
+
+The selection and report halves split pairs, not Pfam families. Related pairs can occur
+in both halves. Family resampling describes spread within this design; it does not make
+the report half an independent test on new families. The verdict is a decision for this
+exploratory design and should not be read as a general limit on unseen families.
 """)
 
 nb = {"cells": cells, "metadata": {"kernelspec": {"display_name": "Python 3", "language": "python", "name": "python3"},
