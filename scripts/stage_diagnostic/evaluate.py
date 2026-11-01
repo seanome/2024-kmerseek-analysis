@@ -45,16 +45,13 @@ import polars as pl
 
 import fixtures as fx
 import seeds
+from kmerseek_job import setting_label
 from labels import pairs
 from panels import read_fasta
 from scoring import Scorer
 
 METHODS = ["A", "B", "C_B", "C_A", "D_B", "E1", "E10"]
 NEG = -math.inf
-
-
-def setting_label(s):
-    return f"{s['alphabet']}.k{s['ksize']}" + (".mask" if s["mask"] else "")
 
 
 # --------------------------------------------------------------------------- tables
