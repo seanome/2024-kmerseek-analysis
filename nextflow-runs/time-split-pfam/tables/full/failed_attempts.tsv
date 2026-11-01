@@ -1,0 +1,9 @@
+# From sacct and launch-full/.nextflow.log.1-4 on 2026-10-21; the final trace.full.txt holds only cached rows because each -resume overwrote it.
+job_id	name	state	elapsed	asked	note
+48522303	kmerseekSearch (dayhoff6.k10.exact.chunk005)	OUT_OF_MEMORY	00:30:07	98158M	retry finished at 191.7 GB ask
+48532155	kmerseekSearch (wass14.k5.exact.chunk006)	OUT_OF_MEMORY	01:16:35	230092M	retry 48555798 at 460 GB finished in 3 h 00 min
+48533261	kmerseekSearch (wass14.k5.extend.chunk006)	OUT_OF_MEMORY	01:32:15	200140M	retry 48554925 at 400 GB finished in 3 h 24 min
+48612189	scoreTransfers	CANCELLED	03:50:22	100G	cancelled by Olga: its 8 h limit could not cover 695 GB of input at 87 GB/h (6ea1cec2)
+48631480	scoreTransfers	OUT_OF_MEMORY	06:49:44	100G	MaxRSS 104_840_420 KB, 319 of 342 files read (edf3e7e6)
+48668268	scoreTransfers	CANCELLED	-	100G	retry with the same 100 GB, cancelled before the 256 GB relaunch
+48689164	scoreTransfers	COMPLETED	12:08:11	256G	MaxRSS 144_403_000 KB (trace peak_rss 133.2 GB)
