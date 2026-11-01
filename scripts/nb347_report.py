@@ -441,11 +441,11 @@ def write(path: Path, *, cfg, summary, groups_df, variants, excl, disc, syn_chec
 
     w("## Reproduce\n")
     w(
-        "```bash\n/Users/olga/anaconda3/envs/2025-kmerseek-analysis/bin/python3 scripts/run_nb347_invisible_mutations.py\n```\n"
+        "```bash\npython scripts/run_nb347_invisible_mutations.py\n```\n"
     )
     w("Tests:\n")
     w(
-        "```bash\n/Users/olga/anaconda3/envs/2025-kmerseek-analysis/bin/python3 -m pytest -q tests/test_invisible_mutations_utils.py\n```\n"
+        "```bash\npython -m pytest -q tests/test_invisible_mutations_utils.py\n```\n"
     )
     w("Outputs: `tables/347_invisible_mutations_*.tsv` (variants, collision groups, summary "
       "with intervals, exclusions, class counts, examples, k-mer check, sensitivity), "

@@ -283,13 +283,13 @@ What this does not show:
 ## Reproduce
 
 ```bash
-/Users/olga/anaconda3/envs/2025-kmerseek-analysis/bin/python3 scripts/run_nb347_invisible_mutations.py
+python scripts/run_nb347_invisible_mutations.py
 ```
 
 Tests:
 
 ```bash
-/Users/olga/anaconda3/envs/2025-kmerseek-analysis/bin/python3 -m pytest -q tests/test_invisible_mutations_utils.py
+python -m pytest -q tests/test_invisible_mutations_utils.py
 ```
 
 Outputs: `tables/347_invisible_mutations_*.tsv` (variants, collision groups, summary with intervals, exclusions, class counts, examples, k-mer check, sensitivity), `tables/347_invisible_mutations_provenance.json` (config, checksums, versions, git commit), `tables/347_invisible_mutations_kmer_set_floors.tsv` (every alphabet and k), `figures/347_SF1-4_*`.

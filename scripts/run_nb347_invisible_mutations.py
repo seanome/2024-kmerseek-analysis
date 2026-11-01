@@ -6,8 +6,7 @@ figures/347_SF*_*, and reports/347_invisible_mutations_pten_vamp_seq.md.
 
 Run from the repository root (about one minute on a laptop):
 
-    /Users/olga/anaconda3/envs/2025-kmerseek-analysis/bin/python3 \
-        scripts/run_nb347_invisible_mutations.py
+    python scripts/run_nb347_invisible_mutations.py
 """
 
 from __future__ import annotations
