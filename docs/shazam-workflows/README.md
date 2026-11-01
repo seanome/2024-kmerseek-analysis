@@ -2,8 +2,9 @@
 
 Two metro maps, one per chat working on "Shazam for Biology". Each map shows the input
 files, the step that reads each of them, and the files that come out, with their file types.
-Both maps were drawn on 2026-10-23 from what each chat reported. They show the plan as of
-that day, including steps not built yet.
+The oyster map was drawn on 2026-10-23 from what its chat reported, and shows the plan as
+of that day, including steps not built yet. The PEC map was drawn on 2026-10-23 and redrawn
+on 2026-10-31 from the pipeline's process list (see its section below).
 
 The numbers on the maps (protein counts, file sizes, index sizes, gene counts) were copied
 from the chats. None of them is printed by code or a log in this repo, and the analysis code
