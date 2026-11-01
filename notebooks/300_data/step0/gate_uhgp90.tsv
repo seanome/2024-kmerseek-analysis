@@ -1,0 +1,21 @@
+alphabet	database	best_expected_hits_counting_at_14	best_region_evalue_ka_fit_at_14	best_expected_hits_counting_pair	smallest_ksize	verdict	reason
+protein20	uhgp90	1.2792801573139447e-8	0.003297497995816287	7.37913339155429e-27	5	alive	a 14-residue window or a pair in 30 residues reaches E < 0.01
+dayhoff6	uhgp90	1.6597114282845435	60.39355840576337	2.132495837369655e-10	8	alive	a 14-residue window or a pair in 30 residues reaches E < 0.01
+hp_lehninger2	uhgp90				17	dead	smallest k 17 is longer than 14, and two seeds do not fit in 30 residues
+hp_thomas_dill2	uhgp90				15	dead	smallest k 15 is longer than 14, and two seeds do not fit in 30 residues
+hp_kyte_doolittle2	uhgp90				19	dead	smallest k 19 is longer than 14, and two seeds do not fit in 30 residues
+hp_thomas_dill_no_c2	uhgp90				18	dead	smallest k 18 is longer than 14, and two seeds do not fit in 30 residues
+hp_lehninger_c_nonpolar2	uhgp90				17	dead	smallest k 17 is longer than 14, and two seeds do not fit in 30 residues
+hp_lehninger_hpc3	uhgp90				16	dead	smallest k 16 is longer than 14, and two seeds do not fit in 30 residues
+hp_pbotc_1st_ed2	uhgp90				15	dead	smallest k 15 is longer than 14, and two seeds do not fit in 30 residues
+gbmr4	uhgp90	2227.7468894473604	6136.1040256963	0.0005931232658797402	12	alive	a 14-residue window or a pair in 30 residues reaches E < 0.01
+polarity4	uhgp90	138.25352305394802	1480.5549586503173	4.049877072455331e-6	11	alive	a 14-residue window or a pair in 30 residues reaches E < 0.01
+wwmj5	uhgp90	2.4777676478158424	33.03916591104105	5.488628152382871e-10	8	alive	a 14-residue window or a pair in 30 residues reaches E < 0.01
+gbmr7	uhgp90	63.35772523731438	0.8747108283066378	3.713620697740952e-7	9	alive	a 14-residue window or a pair in 30 residues reaches E < 0.01
+funcgroups8	uhgp90	0.030373817143200144	58.88174578683851	7.214488036367875e-14	7	alive	a 14-residue window or a pair in 30 residues reaches E < 0.01
+sdm12	uhgp90	0.0003688744043799216	0.3304234327611355	7.240903235118346e-18	6	alive	a 14-residue window or a pair in 30 residues reaches E < 0.01
+mmseqs12	uhgp90	0.00009051588424919253	0.003290344132597248	3.0405496509891697e-19	5	alive	a 14-residue window or a pair in 30 residues reaches E < 0.01
+wass14	uhgp90	3.20903656921167e-6	0.0005248135363952818	3.2684004334606076e-22	5	alive	a 14-residue window or a pair in 30 residues reaches E < 0.01
+hsdm17	uhgp90	1.1602127433690972e-6	0.001454639665229258	6.088116928212741e-23	5	alive	a 14-residue window or a pair in 30 residues reaches E < 0.01
+uniprot18	uhgp90	8.602249068036822e-8	0.000032109982273793825	1.8006396245796696e-25	5	alive	a 14-residue window or a pair in 30 residues reaches E < 0.01
+massspec18	uhgp90	1.4059471784145256e-7		2.887916284532218e-24	5	alive	a 14-residue window or a pair in 30 residues reaches E < 0.01
