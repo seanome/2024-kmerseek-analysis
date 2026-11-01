@@ -27,7 +27,7 @@ API = "https://www.ebi.ac.uk/pride/ws/archive/v3"
 KEYWORDS = ["metaproteomics", "metaproteome", "microbiome", "fecal", "stool", "gut"]
 GUT = re.compile(r"\b(gut|fecal|faecal|stool|feces|faeces|intestin|colon)")
 COMMUNITY = re.compile(r"metaprote|microbio|microbiota")
-DENOVO_FILE = re.compile(r"novo|denovo|casanovo|novor|ALC|peaks", re.I)
+DENOVO_FILE = re.compile(r"novo|denovo|casanovo|novor|(?-i:ALC)|peaks", re.I)
 TEXT_FIELDS = [
     "title",
     "projectDescription",
@@ -43,9 +43,11 @@ def get(url):
     for attempt in range(3):
         try:
             return json.load(urllib.request.urlopen(url, timeout=60))
-        except Exception:
+        except Exception as err:
+            print(f"attempt {attempt + 1} failed for {url}: {err}", file=sys.stderr)
+            if attempt == 2:
+                raise
             time.sleep(5)
-    return []
 
 
 def main():
