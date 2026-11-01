@@ -28,7 +28,10 @@ resume:
 test:
 	sbatch --output="$(SCRATCH)/botryllus-nextflow-fixture-%j.log" "$(PIPELINE)/smoke.sbatch" "$(CODE)"
 
+# Needs a Python with Biopython (Bio) and sourmash installed, and GROUP_HOME set.
 check:
+	@python3 -c 'import Bio, sourmash' 2>/dev/null || { echo 'make check needs a python3 with Bio (Biopython) and sourmash installed; activate that environment first.'; exit 1; }
+	@test -n "$$GROUP_HOME" || { echo 'make check needs GROUP_HOME set (see README).'; exit 1; }
 	python3 -m unittest discover -s "$(CODE)/scripts/botryllus_shazam" -p 'test_*.py'
 
 # One snapshot: Sherlock forbids unattended polling loops.
