@@ -7,11 +7,11 @@ def bh_over_fitted_anchors(pvalues):
     """BH q-values, retaining fitted rows with missing p-values in the family size.
 
     Missing p-values remain missing in the output. Their rows count toward the
-    declared all-fitted-anchor multiplicity correction, as if their p-values were1.
+    declared all-fitted-anchor multiplicity correction, as if their p-values were 1.
     """
     p = np.asarray(pvalues, dtype=float)
     if p.ndim != 1 or np.any(np.isinf(p)) or np.any((p < 0) | (p > 1)):
-        raise ValueError("p-values must be between0 and1 or missing")
+        raise ValueError("p-values must be between 0 and 1 or missing")
     valid = ~np.isnan(p)
     q = np.full(p.shape, np.nan)
     if not valid.any():
