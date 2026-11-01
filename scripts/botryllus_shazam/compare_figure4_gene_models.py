@@ -48,7 +48,7 @@ def main():
             finite_p=int(valid.sum()),
             significant_genes=int((model.padj < 0.05).sum()),
             model_sha256=hashlib.sha256(path.read_bytes()).hexdigest(),
-            bh_independently_verified=True,
+            bh_adjustment_reapplied=True,
         )
         if contrast in mapping:
             published = pd.read_csv(args.paper / mapping[contrast], sep="\t")
