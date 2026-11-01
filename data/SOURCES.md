@@ -23,7 +23,8 @@ estimated.
 - Date downloaded: not yet. The setup job (`notebooks/352_setup.sbatch`) writes the date,
   the byte count and the md5 check of every file to `results/download_record.tsv` and
   `results/parts_md5.tsv`; they are copied into `notebooks/352_data/sherlock/results/` and
-  this entry is updated from them.
+  this entry is updated from them. Also copy `$WORK/budget.tsv` (one level above `results/`)
+  to `notebooks/352_data/sherlock/budget.tsv`; the notebook reads the wall time used from it.
 - Residue count: not known until the setup job's first pass
   (`results/histogram_stats.json`).
 

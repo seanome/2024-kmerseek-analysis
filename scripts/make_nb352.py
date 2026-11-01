@@ -108,8 +108,13 @@ if not summaries:
           "or their results have not been copied to notebooks/352_data/sherlock/results.")
 else:
     budget = RESULTS.parent / "budget.tsv"
-    print(f"{len(summaries)} database sizes with a summary; wall time used: "
-          f"{ks.budget_total_h(budget):.2f} of {ks.BUDGET_HOURS:.0f} h")
+    if budget.exists():
+        print(f"{len(summaries)} database sizes with a summary; wall time used: "
+              f"{ks.budget_total_h(budget):.2f} of {ks.BUDGET_HOURS:.0f} h")
+    else:
+        print(f"{len(summaries)} database sizes with a summary. Wall time used: not known, "
+              "because budget.tsv was not copied from Sherlock ($WORK/budget.tsv) "
+              "to notebooks/352_data/sherlock/budget.tsv.")
 """
 )
 
