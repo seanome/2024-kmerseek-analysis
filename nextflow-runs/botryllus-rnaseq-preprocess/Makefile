@@ -5,7 +5,9 @@
 #   make run     all 18 samples
 #   make watch [HEAD_JOBNAME=nf-botryllus-rnaseq-test HEAD_SESSION=botryllus-rnaseq-test]
 #                attach to the running head's live task table (detach: Ctrl-b d)
-#   make stop    ask the running head to shut down cleanly
+#   make stop [HEAD_JOBNAME=nf-botryllus-rnaseq-test]
+#                ask the running head to shut down cleanly (after make test, pass the same
+#                HEAD_JOBNAME as for watch, or stop looks for the full-run head and exits 1)
 
 SHELL := /bin/bash
 
