@@ -17,7 +17,9 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("run_dir", type=Path)
     ap.add_argument("settings", type=Path)
+    ap.add_argument("--organisms", default="drosophila,zebrafish,ciona")
     a = ap.parse_args()
+    organisms = a.organisms.split(",")
     history = {}
     for path in a.run_dir.glob("*trace*.txt"):
         for row in csv.DictReader(path.open(), delimiter="\t"):
@@ -27,14 +29,26 @@ def main():
     settings = [
         r
         for r in csv.DictReader(
-            (line for line in a.settings.open() if not line.startswith("#")), delimiter="\t"
+            (line for line in a.settings.open() if not line.startswith("#")),
+            delimiter="\t",
         )
     ]
     result = []
-    for org in ["ciona", "zebrafish"]:
+    for org in organisms:
         for s in settings:
             tag = f"{org}.{s['alphabet']}.k{s['ksize']}"
             rows = history.get(tag, [])
+            # No history of its own: borrow every other organism's history at this setting
+            # (largest wins below), so a new organism's first attempt asks what the same
+            # setting needed elsewhere.
+            borrowed = not rows
+            if borrowed:
+                rows = [
+                    r
+                    for o in organisms
+                    if o != org
+                    for r in history.get(f"{o}.{s['alphabet']}.k{s['ksize']}", [])
+                ]
             killed = [
                 quantity(r["memory"], {"GB": 1, "MB": 1 / 1024, "TB": 1024})
                 for r in rows
@@ -66,6 +80,9 @@ def main():
                     memory_gb=memory,
                     time_h=max(2, math.ceil(1.5 * max(times, default=0))),
                     basis=(
+                        "borrowed from other organisms: " if borrowed and rows else ""
+                    )
+                    + (
                         "twice largest killed ask"
                         if killed
                         else (
