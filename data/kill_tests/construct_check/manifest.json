@@ -1,0 +1,19 @@
+{
+  "frozen_date": "2026-10-20",
+  "built_by": "scripts/freeze_construct_check_data.py",
+  "uniprot_accessions": {
+    "P03437": "Influenza A virus A/Aichi/2/1968 H3N2 hemagglutinin, source of the HA tag",
+    "P01106": "Human MYC, source of the Myc (9E10) tag",
+    "P08515": "Schistosoma japonicum GST (sj26), the pGEX fusion partner",
+    "P0AEX9": "Escherichia coli K-12 MalE, the maltose-binding protein fusion partner",
+    "P10415": "BCL2_HUMAN",
+    "P41958": "CED9_CAEEL",
+    "Q07820": "MCL1_HUMAN",
+    "Q07812": "BAX_HUMAN",
+    "P04637": "P53_HUMAN",
+    "P00533": "EGFR_HUMAN"
+  },
+  "n_tag_sequences": 12,
+  "submissions_present": false,
+  "submissions_note": "The 200 historical facility construct submissions are not in this directory and were never available to the analysis. See README.md for the format they must arrive in."
+}

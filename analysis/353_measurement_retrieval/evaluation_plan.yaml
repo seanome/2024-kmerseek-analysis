@@ -1,0 +1,149 @@
+# Notebook 353: does reduced-alphabet search help a scientist find existing measurements
+# on a short protein stretch faster than a conventional workflow?
+# Written 2026-10-20, before any analyst query, judgment or timing existed.
+# Not to be edited after its first commit. Deviations go in report.md.
+# `mr353.py freeze` records this file's sha256 with every other input; `mr353.py score`
+# refuses to give PASS or FAIL if any of them changed afterwards.
+
+question: >
+  Given a real 15-60 residue query from an analyst's queue, does kmerseek search retrieve
+  useful existing experimental measurements faster than an effective conventional
+  workflow? A shared pattern is not evidence that two stretches have the same effect; a
+  card only says where a measurement was made.
+
+evidence:
+  sources:
+    - name: ELM
+      files: [instances.tsv, elms_index.tsv, instances.fasta]
+      urls: ["http://elm.eu.org/instances.tsv?q=*", "http://elm.eu.org/elms/elms_index.tsv",
+             "http://elm.eu.org/instances.fasta?q=*"]
+      keep: every instance, every InstanceLogic (true positive, true negative, false positive, unknown)
+      coordinates: ELM Start/End are 1-based inclusive on ELM's own copy of the sequence (instances.fasta)
+    - name: Sanborn2021
+      citation: "Sanborn AL et al. (2021) eLife 10:e68068, doi:10.7554/eLife.68068, PMID 33904398"
+      files: [elife-68068-fig1-data1-v3.xlsx]
+      sheets: ["TF sequences, see Fig 1", "TF tiles, see Fig 1"]
+      keep: every row named A_tiles_* (TF tiles), including tiles with no activation value (labelled 'not measured')
+      not_kept: controls (A_controls*, 8 synonymous-codon copies of 10 known ADs), 50 random sequences, 50 non-nuclear tiles
+      coordinates: the 'position' column is 0-based (checked - every tile sits at that offset in the paper's TF sequence); end = position + 53
+      paper_count: 7460 tiles; the file holds 7457 A_tiles rows (difference unexplained, reported)
+  sanborn_labels:
+    # The paper calls a tile significant at p < 0.0001 by Z-test (451 tiles). One-sided
+    # p < 1e-4 is Z >= 3.719. 'weak' is p < 0.05 (Z >= 1.645) but not significant.
+    active_min_z: 3.719
+    weak_min_z: 1.645
+  sequence_versions: >
+    Each record keeps the sequence its coordinates refer to (ELM's or the paper's), its md5,
+    the current UniProt sequence version of the canonical accession, and whether the two
+    sequences are identical. Isoform accessions are not looked up.
+  duplicates: same source, same sequence (md5), same start and end, same measurement and outcome -> one record, merged ids listed
+
+queries:
+  source: the analyst's existing queue, in arrival order, collected before any result was seen
+  template: templates/analyst_queue.csv
+  min_length: 15
+  max_length: 60
+  exclude:
+    - non-standard letters
+    - copied from the evidence collection (the query occurs letter for letter in an evidence protein, overlapping a measured stretch by >= min(5, stretch length) residues)
+  n_development: 40           # the first 40 usable queries in arrival order
+  n_evaluation: 100           # the next 100 usable queries, consecutive
+  if_absent: >
+    Build the templates and the pipeline, test it on fixtures labelled synthetic, and report
+    INSUFFICIENT_EVIDENCE. Never invent queries, judgments or timings.
+
+controls:
+  seed: 353
+  n_per_kind: 20
+  kinds:
+    composition: random reordering of the query's residues
+    dipeptide: keeps the first and last residue and the count of every adjacent pair (Altschul & Erickson 1985)
+  max_tries: 2000               # attempts per query and kind to find 20 shuffles distinct from the query and each other
+  low_diversity_flag: fewer than 20 distinct shuffles of a kind found in max_tries attempts
+  kind_for_expectation: dipeptide   # the stricter null: it keeps short repeats and pair biases
+  procedure: every shuffle goes through the same search, region choice, evidence mapping, self-record removal and cut-off as the real query
+
+cards:
+  min_overlap: 5                # a hit supports a record if its target span overlaps the record by >= min(5, record length) residues
+  self_records: dropped when the record is on the accession the query came from and overlaps the query's own position there
+  deduplicate: one card per query and evidence record; the best-scoring hit on it is shown
+  shown: query letters and coordinates, target letters and coordinates, the measured stretch with the covered residues marked, source coordinates as published, sequence version, measurement, outcome, value and units, assay, references, link
+  statistics:
+    shuffle_expected_cards: >
+      cards at least this good per shuffled copy of the same query (dipeptide shuffles,
+      n = 20; resolution 0.05). This is the statistic the cut-off uses. It covers database
+      size and region choice; it does not cover the choice of setting, which is made on
+      development queries only.
+    blast_evalue: shown, labelled as BLAST's own (database size and alignment choice; not workflow choice)
+    kmerseek_region_evalue: >
+      shown, labelled 'not calibrated for this use': it counts database size (m x n) and the
+      best region within a pair, but not the choice of alphabet, k or penalty, and notebook 344
+      found it 10-113x too small on low-complexity proteins >= 300 aa.
+
+workflows:
+  A:
+    tool: kmerseek v0.4.0 (git tag v0.4.0, commit 0aed5ca), built on Sherlock
+    index: scaled 1, every option at its default (KA fit for penalty 2, X-drop 8 on 200 database sequences)
+    search: --extend-mismatch-penalty 2 --extend-xdrop 8 --min-shared-kmers 1 --max-query-pvalue 1.0
+    grid:                         # one alphabet and one k are chosen from these on development queries
+      - {alphabet: hp_lehninger2, ksizes: [10, 12, 14]}
+      - {alphabet: gbmr4, ksizes: [6, 8, 10]}
+      - {alphabet: dayhoff6, ksizes: [5, 6, 7]}
+      - {alphabet: sdm12, ksizes: [4, 5, 6]}
+  B:
+    exact: full-length, full-alphabet substring lookup of the query in every evidence protein
+    blast: BLAST+ 2.16.0, database = the evidence proteins (makeblastdb, -parse_seqids)
+    short_task_below: 30        # BLAST manual: blastp-short for queries under 30 residues
+    tasks:
+      blastp-short: {matrix: PAM30, word_size: 2, gapopen: 9, gapextend: 1, comp_based_stats: 0,
+                     seg: "no", evalue: 1000, max_target_seqs: 5000, max_hsps: 5}
+      blastp: {matrix: BLOSUM62, word_size: 3, gapopen: 11, gapextend: 1, comp_based_stats: 0,
+               seg: "no", evalue: 1000, max_target_seqs: 5000, max_hsps: 5}
+    why_not_defaults: >
+      Default blastp keeps E <= 10, 500 targets, and composition-based statistics, which on a
+      15-60 residue query removes most of the score. The cut-off here is set the same way as
+      workflow A's, by shuffles, on development queries.
+  C:
+    what: the analyst's current workflow, as they run it today (described by them in templates/workflow_C_description.md before the evaluation)
+    cards: the measurements the analyst retains, entered as evidence ids or as free citations, judged blind like the others
+
+tuning:
+  data: development queries only, with blind usefulness labels on their cards
+  shuffle_card_cutoffs: [0.0, 0.05, 0.1, 0.25, 0.5, 1.0]
+  max_cutoff: 0.25              # at most 0.25 chance cards expected per query with no relative in the database
+  pick: among cut-offs <= max_cutoff, most development queries with a useful card; ties -> smaller k, then the alphabet listed first, then the stricter cut-off
+  control_check: >
+    the same rule applied to each development shuffle against the other 19 is reported per
+    setting and cut-off (control_cards_per_shuffle); it should be close to the cut-off, at most 0.05 above it.
+    Reported, not used to choose.
+  frozen_by: mr353.py freeze, before the evaluation queries are searched by any person
+
+review:
+  seed: 3531
+  order: >
+    Each evaluation query is handled with every workflow. The orders (AB, BA; or the 6
+    orders of ABC) are dealt so each is used equally often, assigned to queries at random.
+  carryover: every handling after the first of a query is marked prior_exposure = yes; yields and times are also reported by order position
+  blinding: reviewers who judge usefulness see each card once, pooled across workflows and shuffled, without workflow identity
+  useful: >
+    a previously unseen experimental measurement that the analyst retains for the current
+    investigation, with a written reason. A 'yes' without a reason is not counted.
+  times: search, reading and verification seconds, recorded separately per query and workflow
+
+pass_rule:                       # all three must hold
+  min_useful_queries: 20         # 1. at least 20 of 100 evaluation queries yield a useful measurement with workflow A
+  yield_not_below_strongest: true   # 2. A's yield >= the strongest comparison workflow's (highest yield; tie -> the faster one)
+  min_median_time_reduction: 0.5    # 3. median over queries of (T_strongest - T_A) / T_strongest >= 0.5, T = search + reading + verification
+  machine_time: not a substitute for analyst handling time
+
+scoring:
+  uncertainty: Wilson 95% interval on each yield; bootstrap 95% interval on the median time reduction
+  bootstrap: 10000
+  seed: 353
+  report: every query's outcome in results/per_query_outcomes.csv
+
+compute_budget_proposed:
+  laptop: "<= 4 threads, <= 8 GB RAM, <= 1 CPU-hour: import, controls, BLAST, cards, scoring (kmerseek is not run here)"
+  sherlock: "1 kmerseek build (8 CPUs, 1 h) + 12 index-and-search tasks (one per grid setting, 4 CPUs, 16 GB, 2 h each): <= 104 CPU-hours ceiling"
+  disk: "<= 5 GB"
+  status: proposed, not yet agreed; nothing on Sherlock is launched until it is
