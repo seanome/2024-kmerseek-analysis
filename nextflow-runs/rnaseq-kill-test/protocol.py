@@ -86,8 +86,8 @@ def check_samples(path, species):
         "selection_date",
     }
     rows = read_table(path, columns)
-    for col in ("sample", "biological_replicate"):
-        unique([r[col] for r in rows], col)
+    unique([r["sample"] for r in rows], "sample")
+    unique([(r["condition"], r["biological_replicate"]) for r in rows], "replicate")
     runs = [run.strip() for row in rows for run in row["runs"].split(";")]
     if not all(runs):
         raise ValueError("empty sequencing run")

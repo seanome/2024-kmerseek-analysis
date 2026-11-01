@@ -94,6 +94,13 @@ class ProtocolTests(unittest.TestCase):
                 with self.assertRaises(ValueError):
                     p.check_samples(write_table(manifest, changed), "mouse")
 
+    def test_replicate_numbers_may_repeat_across_conditions(self):
+        rows = sample_rows()
+        for i, row in enumerate(rows):
+            row["biological_replicate"] = str(i % 4 + 1)
+        path = write_table(self.path / "samples.tsv", rows)
+        self.assertEqual(len(p.check_samples(path, "mouse")), 8)
+
     def test_duplicate_headers_are_not_silently_overwritten(self):
         path = self.path / "duplicate.tsv"
         path.write_text("sample\tsample\nfirst\tsecond\n")
