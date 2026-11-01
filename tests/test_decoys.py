@@ -9,7 +9,11 @@ import pytest
 
 REPO = Path(__file__).parents[1]
 sys.path.insert(0, str(REPO / "nextflow-runs" / "shared"))
-from decoys import dipeptide_shuffle  # noqa: E402
+from decoys import (  # noqa: E402
+    dipeptide_shuffle,
+    full_shuffle,
+    shuffle_around_fixed,
+)
 
 FASTA = REPO / "data" / "fig1_ced9_bcl2" / "ced9_P41958_bcl2_P10415.fasta"
 
@@ -78,3 +82,42 @@ BCL2_SHUFFLED = {
 @pytest.mark.parametrize("seed", sorted(BCL2_SHUFFLED))
 def test_fixed_seed_gives_fixed_output(seed):
     assert dipeptide_shuffle(BCL2, random.Random(seed)) == BCL2_SHUFFLED[seed]
+
+
+def test_full_shuffle_keeps_only_the_residue_counts():
+    rng = random.Random(0)
+    seq = "CKGKGAKCSRLMYDCCTGSCRSGKC"
+    out = full_shuffle(seq, rng)
+    assert sorted(out) == sorted(seq)
+    assert len(out) == len(seq)
+    # Over many draws the cysteines land somewhere other than their real positions, which
+    # is the point of this control: it breaks the framework.
+    real = [i for i, r in enumerate(seq) if r == "C"]
+    moved = 0
+    for _ in range(50):
+        shuffled = full_shuffle(seq, rng)
+        if [i for i, r in enumerate(shuffled) if r == "C"] != real:
+            moved += 1
+    assert moved >= 45, moved
+
+
+def test_shuffle_around_fixed_keeps_every_cysteine_in_place():
+    rng = random.Random(0)
+    seq = "CKGKGAKCSRLMYDCCTGSCRSGKC"
+    for _ in range(50):
+        out = shuffle_around_fixed(seq, rng)
+        assert len(out) == len(seq)
+        assert sorted(out) == sorted(seq)
+        assert [i for i, r in enumerate(out) if r == "C"] == [
+            i for i, r in enumerate(seq) if r == "C"
+        ]
+
+
+def test_shuffle_around_fixed_does_move_the_other_residues():
+    rng = random.Random(1)
+    seq = "CKGKGAKCSRLMYDCCTGSCRSGKC"
+    assert any(shuffle_around_fixed(seq, rng) != seq for _ in range(50))
+
+
+def test_shuffle_around_fixed_on_an_all_cysteine_sequence_is_unchanged():
+    assert shuffle_around_fixed("CCCC", random.Random(0)) == "CCCC"
