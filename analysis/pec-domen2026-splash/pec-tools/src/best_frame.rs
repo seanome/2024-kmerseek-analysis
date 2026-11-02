@@ -1,8 +1,11 @@
 //! best-frame: for each read, translate all six frames, count how many of each frame's
 //! k-mers occur in a reference protein set (Swiss-Prot), and keep only the frame with the
-//! most matches. Rule `stopfree` first drops frames that contain a stop codon, as orpheum
-//! translate (Botvinnik et al.) does; rule `any` lets every frame compete. Written as a
-//! compiled loop because orpheum's per-read Python is too slow for ~10^9 reads.
+//! most matches. Rule `orpheum` follows orpheum translate (Botvinnik et al.): a read of low
+//! nucleotide complexity (fastp's measure < 0.3) gets no frame, and a frame may be chosen only
+//! if it has no stop codon and is not a low-complexity peptide (distinct k-mers <= half its
+//! windows, which removes simple repeats such as PNPNPN...). Rule `stopfree` drops only frames
+//! with a stop; rule `any` lets every frame compete. Written as a compiled loop because
+//! orpheum's per-read Python is too slow for ~10^9 reads.
 //!
 //! A frame's k-mers are every window of `k` residues; a window that contains a stop (`*`) or
 //! an unknown residue (`X`) cannot match and still counts in the denominator, so
@@ -152,12 +155,34 @@ pub fn six_frames(dna: &[u8]) -> Vec<Vec<u8>> {
     out
 }
 
-/// Which frames may be chosen: `Any` = all six; `StopFree` = only frames with no stop codon,
-/// as orpheum translate does (a read inside a coding sequence has no stop in its true frame).
+/// Which frames may be chosen: `Any` = all six; `StopFree` = only frames with no stop codon
+/// (a read inside a coding sequence has no stop in its true frame); `Orpheum` = stop-free and
+/// not low complexity, on reads that are not low complexity, as orpheum translate does.
 #[derive(Clone, Copy, PartialEq, Debug)]
 pub enum Rule {
     Any,
     StopFree,
+    Orpheum,
+}
+
+/// fastp's complexity, as orpheum uses it: the share of positions whose base differs from the
+/// next one. Below 0.3 the read is low complexity.
+pub fn low_complexity_read(dna: &[u8]) -> bool {
+    if dna.is_empty() {
+        return true;
+    }
+    let diff = dna.windows(2).filter(|w| w[0] != w[1]).count();
+    (diff as f64) / (dna.len() as f64) < 0.3
+}
+
+/// orpheum's peptide rule: low complexity when the distinct k-mers are at most half the
+/// windows (`len - k + 1`).
+pub fn low_complexity_peptide(aa: &[u8], alphabet: &str, k: usize) -> bool {
+    let mut seen = KmerSet::default();
+    let w = for_each_kmer(aa, alphabet, k, |c| {
+        seen.insert(c);
+    });
+    w > 0 && (seen.len() as f64) <= (w as f64) / 2.0
 }
 
 impl std::str::FromStr for Rule {
@@ -166,14 +191,15 @@ impl std::str::FromStr for Rule {
         match s {
             "any" => Ok(Rule::Any),
             "stopfree" => Ok(Rule::StopFree),
-            _ => Err(format!("rule must be any or stopfree, got {s}")),
+            "orpheum" => Ok(Rule::Orpheum),
+            _ => Err(format!("rule must be any, stopfree or orpheum, got {s}")),
         }
     }
 }
 
 /// Among the frames the rule allows, the one with most matches (first in frame order on ties):
-/// (index, matches, windows, frames tied). `None` when the rule allows no frame (StopFree and
-/// every frame has a stop).
+/// (index, matches, windows, frames tied). `None` when the rule allows no frame. The read-level
+/// complexity check of `Orpheum` is in `choose_frame`.
 pub fn best_frame(
     frames: &[Vec<u8>],
     set: &KmerSet,
@@ -182,7 +208,13 @@ pub fn best_frame(
     rule: Rule,
 ) -> Option<(usize, usize, usize, usize)> {
     let allowed: Vec<usize> = (0..frames.len())
-        .filter(|&i| rule == Rule::Any || !frames[i].contains(&b'*'))
+        .filter(|&i| match rule {
+            Rule::Any => true,
+            Rule::StopFree => !frames[i].contains(&b'*'),
+            Rule::Orpheum => {
+                !frames[i].contains(&b'*') && !low_complexity_peptide(&frames[i], alphabet, k)
+            }
+        })
         .collect();
     let scores: Vec<(usize, (usize, usize))> = allowed
         .iter()
@@ -196,6 +228,21 @@ pub fn best_frame(
     }
     let ties = scores.iter().filter(|s| s.1 .0 == best.1 .0).count();
     Some((best.0, best.1 .0, best.1 .1, ties))
+}
+
+/// `best_frame` after the read-level check of `Orpheum` (low-complexity reads get no frame).
+pub fn choose_frame(
+    dna: &[u8],
+    frames: &[Vec<u8>],
+    set: &KmerSet,
+    alphabet: &str,
+    k: usize,
+    rule: Rule,
+) -> Option<(usize, usize, usize, usize)> {
+    if rule == Rule::Orpheum && low_complexity_read(dna) {
+        return None;
+    }
+    best_frame(frames, set, alphabet, k, rule)
 }
 
 /// frame-scores <ref.faa> <alphabet> <k> < reads.fastq > scores.tsv
@@ -217,7 +264,7 @@ pub fn cmd_frame_scores(args: &[String]) -> Res<()> {
     let mut out = BufWriter::with_capacity(1 << 20, stdout.lock());
     writeln!(
         out,
-        "read_id\tread_len\tbest_any\tbest_stopfree\twindows\tm0\tm1\tm2\tm3\tm4\tm5\tstops0\tstops1\tstops2\tstops3\tstops4\tstops5"
+        "read_id\tread_len\tbest_any\tbest_stopfree\tbest_orpheum\twindows\tm0\tm1\tm2\tm3\tm4\tm5\tstops0\tstops1\tstops2\tstops3\tstops4\tstops5"
     )?;
     let mut lines = BufReader::with_capacity(1 << 22, std::io::stdin().lock()).lines();
     let mut n = 0u64;
@@ -239,6 +286,8 @@ pub fn cmd_frame_scores(args: &[String]) -> Res<()> {
         let frames = six_frames(seq.as_bytes());
         let any = best_frame(&frames, &set, alphabet, k, Rule::Any).map_or(-1, |b| b.0 as i64);
         let sf = best_frame(&frames, &set, alphabet, k, Rule::StopFree).map_or(-1, |b| b.0 as i64);
+        let orp = choose_frame(seq.as_bytes(), &frames, &set, alphabet, k, Rule::Orpheum)
+            .map_or(-1, |b| b.0 as i64);
         let w = frames.first().map_or(0, |f| f.len().saturating_sub(k - 1));
         let all: Vec<String> = frames
             .iter()
@@ -250,7 +299,7 @@ pub fn cmd_frame_scores(args: &[String]) -> Res<()> {
             .collect();
         writeln!(
             out,
-            "{id}\t{}\t{any}\t{sf}\t{w}\t{}\t{}",
+            "{id}\t{}\t{any}\t{sf}\t{orp}\t{w}\t{}\t{}",
             seq.len(),
             all.join("\t"),
             stops.join("\t")
@@ -263,9 +312,9 @@ pub fn cmd_frame_scores(args: &[String]) -> Res<()> {
 }
 
 pub fn cmd_best_frame(args: &[String]) -> Res<()> {
-    // best-frame <ref.faa> <alphabet> <k> <out_prefix> <cutoffs,comma> <any|stopfree> [min_piece=6]  (FASTQ on stdin)
+    // best-frame <ref.faa> <alphabet> <k> <out_prefix> <cutoffs,comma> <any|stopfree|orpheum> [min_piece=6]  (FASTQ on stdin)
     if args.len() < 6 {
-        return Err("usage: pec-tools best-frame <ref.faa> <protein|dayhoff|hp> <k> <out_prefix> <cutoff[,cutoff..]> <any|stopfree> [min_piece] < reads.fastq".into());
+        return Err("usage: pec-tools best-frame <ref.faa> <protein|dayhoff|hp> <k> <out_prefix> <cutoff[,cutoff..]> <any|stopfree|orpheum> [min_piece] < reads.fastq".into());
     }
     let rule: Rule = args[5].parse()?;
     let (refp, alphabet, k, prefix) = (
@@ -313,7 +362,8 @@ pub fn cmd_best_frame(args: &[String]) -> Res<()> {
         n += 1;
         bases += seq.len() as u64;
         let frames = six_frames(seq.as_bytes());
-        let Some((bi, m, w, ties)) = best_frame(&frames, &set, alphabet, k, rule) else {
+        let Some((bi, m, w, ties)) = choose_frame(seq.as_bytes(), &frames, &set, alphabet, k, rule)
+        else {
             no_frame += 1;
             continue;
         };
@@ -450,6 +500,35 @@ mod tests {
         );
         let all_stop = vec![b"MA*".to_vec(), b"*KL".to_vec()];
         assert!(best_frame(&all_stop, &set, "protein", 3, Rule::StopFree).is_none());
+    }
+
+    #[test]
+    fn orpheum_rule_drops_repeats() {
+        // PNPNPN... has 2 distinct 7-mers in 44 windows: low complexity, never chosen
+        let rep = b"PNPNPNPNPNPNPNPNPNPNPNPNPNPNPNPNPNPNPNPNPNPNPNPNPN".to_vec();
+        assert!(low_complexity_peptide(&rep, "protein", 7));
+        assert!(!low_complexity_peptide(
+            b"MAEGKLLWRPSTQHDCFIVY",
+            "protein",
+            7
+        ));
+        let set = set_of(&[&rep[..], b"MAEGKLLWRPSTQ"], "protein", 7);
+        let frames = vec![rep.clone(), b"MAEGKLLWRPSTQ".to_vec()];
+        assert_eq!(
+            best_frame(&frames, &set, "protein", 7, Rule::StopFree)
+                .unwrap()
+                .0,
+            0
+        );
+        assert_eq!(
+            best_frame(&frames, &set, "protein", 7, Rule::Orpheum)
+                .unwrap()
+                .0,
+            1
+        );
+        // fastp complexity: a homopolymer read is low complexity, a mixed read is not
+        assert!(low_complexity_read(b"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAC"));
+        assert!(!low_complexity_read(b"ATGGCTGAAGGTAAACTGCTGTGGCGTCCG"));
     }
 
     #[test]

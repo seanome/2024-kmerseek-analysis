@@ -17,7 +17,9 @@ run=$(cut -f1 <<< "$line"); ftp=$(cut -f10 <<< "$line"); md5=$(cut -f11 <<< "$li
 out=reads/$run.fastq.gz
 [ -e "$out.done" ] && { echo "$run already done"; exit 0; }
 for attempt in $(seq 1 20); do
-  if curl -sS -L -C - --retry 5 --retry-delay 10 --speed-limit 100000 --speed-time 60 \
+  # --fail: an HTTP error page must not be saved as the FASTQ (32 runs got the same error page
+  # under 12 concurrent downloads on 2026-11-02; their MD5 check caught it)
+  if curl -sS -L --fail -C - --retry 5 --retry-delay 10 --speed-limit 100000 --speed-time 60 \
        -o "$out.part" "https://$ftp"; then
     break
   fi

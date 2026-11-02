@@ -139,7 +139,7 @@ c.plot([], [], color=pf.GREY, ls=":", label="cutoff 0.5 (Olga's)")
 c.plot([], [], color=pf.GREY, ls="-", label=f"cutoff {chosen} (chosen from this test)")
 c.legend(loc="upper center", bbox_to_anchor=(0.5, -0.2), ncol=2, fontsize=5)
 
-settings = sorted(s for s in summ["setting"].unique() if s.endswith("stopfree"))
+settings = sorted(s for s in summ["setting"].unique() if s.endswith(", orpheum"))
 z = (
     summ.filter(pl.col("cutoff") == 0)
     .group_by("setting", "source")

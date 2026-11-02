@@ -188,6 +188,195 @@ simulated from CDS	random	28034	28034	28034	15054	2326	1750	dayhoff k12, any	0.8
 simulated from CDS	random	28034	28034	28034	15054	1392	1076	dayhoff k12, any	0.9
 simulated from CDS	random	28034	28034	28034	15054	697	548	dayhoff k12, any	0.95
 simulated from CDS	random	28034	28034	28034	15054	439	338	dayhoff k12, any	1.0
+real: no protein hit	none	646631	462740	446715	0	446715	0	dayhoff k12, orpheum	0.0
+real: no protein hit	none	646631	462740	446715	0	442836	0	dayhoff k12, orpheum	0.05
+real: no protein hit	none	646631	462740	446715	0	428168	0	dayhoff k12, orpheum	0.1
+real: no protein hit	none	646631	462740	446715	0	408258	0	dayhoff k12, orpheum	0.15
+real: no protein hit	none	646631	462740	446715	0	388237	0	dayhoff k12, orpheum	0.2
+real: no protein hit	none	646631	462740	446715	0	364783	0	dayhoff k12, orpheum	0.25
+real: no protein hit	none	646631	462740	446715	0	339190	0	dayhoff k12, orpheum	0.3
+real: no protein hit	none	646631	462740	446715	0	313567	0	dayhoff k12, orpheum	0.35
+real: no protein hit	none	646631	462740	446715	0	290839	0	dayhoff k12, orpheum	0.4
+real: no protein hit	none	646631	462740	446715	0	262472	0	dayhoff k12, orpheum	0.45
+real: no protein hit	none	646631	462740	446715	0	245731	0	dayhoff k12, orpheum	0.5
+real: no protein hit	none	646631	462740	446715	0	214678	0	dayhoff k12, orpheum	0.55
+real: no protein hit	none	646631	462740	446715	0	193639	0	dayhoff k12, orpheum	0.6
+real: no protein hit	none	646631	462740	446715	0	169688	0	dayhoff k12, orpheum	0.65
+real: no protein hit	none	646631	462740	446715	0	150392	0	dayhoff k12, orpheum	0.7
+real: no protein hit	none	646631	462740	446715	0	133368	0	dayhoff k12, orpheum	0.75
+real: no protein hit	none	646631	462740	446715	0	116103	0	dayhoff k12, orpheum	0.8
+real: no protein hit	none	646631	462740	446715	0	96529	0	dayhoff k12, orpheum	0.85
+real: no protein hit	none	646631	462740	446715	0	79684	0	dayhoff k12, orpheum	0.9
+real: no protein hit	none	646631	462740	446715	0	63181	0	dayhoff k12, orpheum	0.95
+real: no protein hit	none	646631	462740	446715	0	59376	0	dayhoff k12, orpheum	1.0
+real: partly coding	other genes	103227	88138	87532	29125	87532	29125	dayhoff k12, orpheum	0.0
+real: partly coding	other genes	103227	88138	87532	29125	87162	29063	dayhoff k12, orpheum	0.05
+real: partly coding	other genes	103227	88138	87532	29125	86137	28843	dayhoff k12, orpheum	0.1
+real: partly coding	other genes	103227	88138	87532	29125	84633	28545	dayhoff k12, orpheum	0.15
+real: partly coding	other genes	103227	88138	87532	29125	82809	28124	dayhoff k12, orpheum	0.2
+real: partly coding	other genes	103227	88138	87532	29125	80244	27319	dayhoff k12, orpheum	0.25
+real: partly coding	other genes	103227	88138	87532	29125	77002	26481	dayhoff k12, orpheum	0.3
+real: partly coding	other genes	103227	88138	87532	29125	73357	25472	dayhoff k12, orpheum	0.35
+real: partly coding	other genes	103227	88138	87532	29125	69315	24222	dayhoff k12, orpheum	0.4
+real: partly coding	other genes	103227	88138	87532	29125	64182	22658	dayhoff k12, orpheum	0.45
+real: partly coding	other genes	103227	88138	87532	29125	60139	21265	dayhoff k12, orpheum	0.5
+real: partly coding	other genes	103227	88138	87532	29125	52703	18609	dayhoff k12, orpheum	0.55
+real: partly coding	other genes	103227	88138	87532	29125	46330	16291	dayhoff k12, orpheum	0.6
+real: partly coding	other genes	103227	88138	87532	29125	39531	13731	dayhoff k12, orpheum	0.65
+real: partly coding	other genes	103227	88138	87532	29125	33545	11338	dayhoff k12, orpheum	0.7
+real: partly coding	other genes	103227	88138	87532	29125	28126	9242	dayhoff k12, orpheum	0.75
+real: partly coding	other genes	103227	88138	87532	29125	22695	7200	dayhoff k12, orpheum	0.8
+real: partly coding	other genes	103227	88138	87532	29125	18215	5347	dayhoff k12, orpheum	0.85
+real: partly coding	other genes	103227	88138	87532	29125	14752	3852	dayhoff k12, orpheum	0.9
+real: partly coding	other genes	103227	88138	87532	29125	10886	2436	dayhoff k12, orpheum	0.95
+real: partly coding	other genes	103227	88138	87532	29125	9064	1734	dayhoff k12, orpheum	1.0
+real: partly coding	paper_list	4108	3272	3252	1081	3252	1081	dayhoff k12, orpheum	0.0
+real: partly coding	paper_list	4108	3272	3252	1081	3243	1079	dayhoff k12, orpheum	0.05
+real: partly coding	paper_list	4108	3272	3252	1081	3201	1070	dayhoff k12, orpheum	0.1
+real: partly coding	paper_list	4108	3272	3252	1081	3125	1060	dayhoff k12, orpheum	0.15
+real: partly coding	paper_list	4108	3272	3252	1081	3032	1040	dayhoff k12, orpheum	0.2
+real: partly coding	paper_list	4108	3272	3252	1081	2927	1000	dayhoff k12, orpheum	0.25
+real: partly coding	paper_list	4108	3272	3252	1081	2777	963	dayhoff k12, orpheum	0.3
+real: partly coding	paper_list	4108	3272	3252	1081	2638	914	dayhoff k12, orpheum	0.35
+real: partly coding	paper_list	4108	3272	3252	1081	2484	872	dayhoff k12, orpheum	0.4
+real: partly coding	paper_list	4108	3272	3252	1081	2237	797	dayhoff k12, orpheum	0.45
+real: partly coding	paper_list	4108	3272	3252	1081	2062	731	dayhoff k12, orpheum	0.5
+real: partly coding	paper_list	4108	3272	3252	1081	1781	648	dayhoff k12, orpheum	0.55
+real: partly coding	paper_list	4108	3272	3252	1081	1574	579	dayhoff k12, orpheum	0.6
+real: partly coding	paper_list	4108	3272	3252	1081	1309	497	dayhoff k12, orpheum	0.65
+real: partly coding	paper_list	4108	3272	3252	1081	1072	433	dayhoff k12, orpheum	0.7
+real: partly coding	paper_list	4108	3272	3252	1081	913	385	dayhoff k12, orpheum	0.75
+real: partly coding	paper_list	4108	3272	3252	1081	720	337	dayhoff k12, orpheum	0.8
+real: partly coding	paper_list	4108	3272	3252	1081	521	242	dayhoff k12, orpheum	0.85
+real: partly coding	paper_list	4108	3272	3252	1081	344	148	dayhoff k12, orpheum	0.9
+real: partly coding	paper_list	4108	3272	3252	1081	226	84	dayhoff k12, orpheum	0.95
+real: partly coding	paper_list	4108	3272	3252	1081	171	58	dayhoff k12, orpheum	1.0
+real: partly coding	random	2096	1811	1776	693	1776	693	dayhoff k12, orpheum	0.0
+real: partly coding	random	2096	1811	1776	693	1761	693	dayhoff k12, orpheum	0.05
+real: partly coding	random	2096	1811	1776	693	1747	687	dayhoff k12, orpheum	0.1
+real: partly coding	random	2096	1811	1776	693	1717	687	dayhoff k12, orpheum	0.15
+real: partly coding	random	2096	1811	1776	693	1688	677	dayhoff k12, orpheum	0.2
+real: partly coding	random	2096	1811	1776	693	1633	671	dayhoff k12, orpheum	0.25
+real: partly coding	random	2096	1811	1776	693	1547	645	dayhoff k12, orpheum	0.3
+real: partly coding	random	2096	1811	1776	693	1418	602	dayhoff k12, orpheum	0.35
+real: partly coding	random	2096	1811	1776	693	1319	577	dayhoff k12, orpheum	0.4
+real: partly coding	random	2096	1811	1776	693	1210	533	dayhoff k12, orpheum	0.45
+real: partly coding	random	2096	1811	1776	693	1072	477	dayhoff k12, orpheum	0.5
+real: partly coding	random	2096	1811	1776	693	853	368	dayhoff k12, orpheum	0.55
+real: partly coding	random	2096	1811	1776	693	694	277	dayhoff k12, orpheum	0.6
+real: partly coding	random	2096	1811	1776	693	587	235	dayhoff k12, orpheum	0.65
+real: partly coding	random	2096	1811	1776	693	452	198	dayhoff k12, orpheum	0.7
+real: partly coding	random	2096	1811	1776	693	377	171	dayhoff k12, orpheum	0.75
+real: partly coding	random	2096	1811	1776	693	298	134	dayhoff k12, orpheum	0.8
+real: partly coding	random	2096	1811	1776	693	209	83	dayhoff k12, orpheum	0.85
+real: partly coding	random	2096	1811	1776	693	149	60	dayhoff k12, orpheum	0.9
+real: partly coding	random	2096	1811	1776	693	97	30	dayhoff k12, orpheum	0.95
+real: partly coding	random	2096	1811	1776	693	74	22	dayhoff k12, orpheum	1.0
+real: whole read coding	other genes	224791	223652	222558	111733	222558	111733	dayhoff k12, orpheum	0.0
+real: whole read coding	other genes	224791	223652	222558	111733	222333	111537	dayhoff k12, orpheum	0.05
+real: whole read coding	other genes	224791	223652	222558	111733	221447	110855	dayhoff k12, orpheum	0.1
+real: whole read coding	other genes	224791	223652	222558	111733	219663	109726	dayhoff k12, orpheum	0.15
+real: whole read coding	other genes	224791	223652	222558	111733	217471	108271	dayhoff k12, orpheum	0.2
+real: whole read coding	other genes	224791	223652	222558	111733	214134	106329	dayhoff k12, orpheum	0.25
+real: whole read coding	other genes	224791	223652	222558	111733	208871	103596	dayhoff k12, orpheum	0.3
+real: whole read coding	other genes	224791	223652	222558	111733	202065	100221	dayhoff k12, orpheum	0.35
+real: whole read coding	other genes	224791	223652	222558	111733	194386	96118	dayhoff k12, orpheum	0.4
+real: whole read coding	other genes	224791	223652	222558	111733	183920	90542	dayhoff k12, orpheum	0.45
+real: whole read coding	other genes	224791	223652	222558	111733	176009	86382	dayhoff k12, orpheum	0.5
+real: whole read coding	other genes	224791	223652	222558	111733	161018	78865	dayhoff k12, orpheum	0.55
+real: whole read coding	other genes	224791	223652	222558	111733	148002	72167	dayhoff k12, orpheum	0.6
+real: whole read coding	other genes	224791	223652	222558	111733	132687	64517	dayhoff k12, orpheum	0.65
+real: whole read coding	other genes	224791	223652	222558	111733	119409	57949	dayhoff k12, orpheum	0.7
+real: whole read coding	other genes	224791	223652	222558	111733	107116	51618	dayhoff k12, orpheum	0.75
+real: whole read coding	other genes	224791	223652	222558	111733	94629	45168	dayhoff k12, orpheum	0.8
+real: whole read coding	other genes	224791	223652	222558	111733	81172	38590	dayhoff k12, orpheum	0.85
+real: whole read coding	other genes	224791	223652	222558	111733	68868	32522	dayhoff k12, orpheum	0.9
+real: whole read coding	other genes	224791	223652	222558	111733	55151	25966	dayhoff k12, orpheum	0.95
+real: whole read coding	other genes	224791	223652	222558	111733	50717	23957	dayhoff k12, orpheum	1.0
+real: whole read coding	paper_list	12790	12715	12664	7836	12664	7836	dayhoff k12, orpheum	0.0
+real: whole read coding	paper_list	12790	12715	12664	7836	12663	7835	dayhoff k12, orpheum	0.05
+real: whole read coding	paper_list	12790	12715	12664	7836	12594	7794	dayhoff k12, orpheum	0.1
+real: whole read coding	paper_list	12790	12715	12664	7836	12471	7704	dayhoff k12, orpheum	0.15
+real: whole read coding	paper_list	12790	12715	12664	7836	12289	7605	dayhoff k12, orpheum	0.2
+real: whole read coding	paper_list	12790	12715	12664	7836	11996	7420	dayhoff k12, orpheum	0.25
+real: whole read coding	paper_list	12790	12715	12664	7836	11629	7200	dayhoff k12, orpheum	0.3
+real: whole read coding	paper_list	12790	12715	12664	7836	11192	6977	dayhoff k12, orpheum	0.35
+real: whole read coding	paper_list	12790	12715	12664	7836	10688	6639	dayhoff k12, orpheum	0.4
+real: whole read coding	paper_list	12790	12715	12664	7836	9971	6235	dayhoff k12, orpheum	0.45
+real: whole read coding	paper_list	12790	12715	12664	7836	9603	6023	dayhoff k12, orpheum	0.5
+real: whole read coding	paper_list	12790	12715	12664	7836	8826	5614	dayhoff k12, orpheum	0.55
+real: whole read coding	paper_list	12790	12715	12664	7836	8186	5275	dayhoff k12, orpheum	0.6
+real: whole read coding	paper_list	12790	12715	12664	7836	7428	4852	dayhoff k12, orpheum	0.65
+real: whole read coding	paper_list	12790	12715	12664	7836	6676	4452	dayhoff k12, orpheum	0.7
+real: whole read coding	paper_list	12790	12715	12664	7836	6006	4096	dayhoff k12, orpheum	0.75
+real: whole read coding	paper_list	12790	12715	12664	7836	5310	3714	dayhoff k12, orpheum	0.8
+real: whole read coding	paper_list	12790	12715	12664	7836	4374	3128	dayhoff k12, orpheum	0.85
+real: whole read coding	paper_list	12790	12715	12664	7836	3434	2481	dayhoff k12, orpheum	0.9
+real: whole read coding	paper_list	12790	12715	12664	7836	2652	2020	dayhoff k12, orpheum	0.95
+real: whole read coding	paper_list	12790	12715	12664	7836	2404	1809	dayhoff k12, orpheum	1.0
+real: whole read coding	random	6357	6337	6305	3752	6305	3752	dayhoff k12, orpheum	0.0
+real: whole read coding	random	6357	6337	6305	3752	6299	3746	dayhoff k12, orpheum	0.05
+real: whole read coding	random	6357	6337	6305	3752	6282	3734	dayhoff k12, orpheum	0.1
+real: whole read coding	random	6357	6337	6305	3752	6219	3685	dayhoff k12, orpheum	0.15
+real: whole read coding	random	6357	6337	6305	3752	6140	3617	dayhoff k12, orpheum	0.2
+real: whole read coding	random	6357	6337	6305	3752	6028	3544	dayhoff k12, orpheum	0.25
+real: whole read coding	random	6357	6337	6305	3752	5834	3416	dayhoff k12, orpheum	0.3
+real: whole read coding	random	6357	6337	6305	3752	5682	3311	dayhoff k12, orpheum	0.35
+real: whole read coding	random	6357	6337	6305	3752	5438	3149	dayhoff k12, orpheum	0.4
+real: whole read coding	random	6357	6337	6305	3752	5033	2907	dayhoff k12, orpheum	0.45
+real: whole read coding	random	6357	6337	6305	3752	4706	2711	dayhoff k12, orpheum	0.5
+real: whole read coding	random	6357	6337	6305	3752	4217	2440	dayhoff k12, orpheum	0.55
+real: whole read coding	random	6357	6337	6305	3752	3827	2224	dayhoff k12, orpheum	0.6
+real: whole read coding	random	6357	6337	6305	3752	3427	2005	dayhoff k12, orpheum	0.65
+real: whole read coding	random	6357	6337	6305	3752	3096	1825	dayhoff k12, orpheum	0.7
+real: whole read coding	random	6357	6337	6305	3752	2749	1604	dayhoff k12, orpheum	0.75
+real: whole read coding	random	6357	6337	6305	3752	2443	1444	dayhoff k12, orpheum	0.8
+real: whole read coding	random	6357	6337	6305	3752	2034	1210	dayhoff k12, orpheum	0.85
+real: whole read coding	random	6357	6337	6305	3752	1680	996	dayhoff k12, orpheum	0.9
+real: whole read coding	random	6357	6337	6305	3752	1271	742	dayhoff k12, orpheum	0.95
+real: whole read coding	random	6357	6337	6305	3752	1085	629	dayhoff k12, orpheum	1.0
+simulated from CDS	paper_list	11820	11577	11561	8769	11561	8769	dayhoff k12, orpheum	0.0
+simulated from CDS	paper_list	11820	11577	11561	8769	11545	8756	dayhoff k12, orpheum	0.05
+simulated from CDS	paper_list	11820	11577	11561	8769	11485	8704	dayhoff k12, orpheum	0.1
+simulated from CDS	paper_list	11820	11577	11561	8769	11352	8598	dayhoff k12, orpheum	0.15
+simulated from CDS	paper_list	11820	11577	11561	8769	11125	8419	dayhoff k12, orpheum	0.2
+simulated from CDS	paper_list	11820	11577	11561	8769	10771	8133	dayhoff k12, orpheum	0.25
+simulated from CDS	paper_list	11820	11577	11561	8769	10330	7789	dayhoff k12, orpheum	0.3
+simulated from CDS	paper_list	11820	11577	11561	8769	9724	7322	dayhoff k12, orpheum	0.35
+simulated from CDS	paper_list	11820	11577	11561	8769	8971	6757	dayhoff k12, orpheum	0.4
+simulated from CDS	paper_list	11820	11577	11561	8769	8105	6105	dayhoff k12, orpheum	0.45
+simulated from CDS	paper_list	11820	11577	11561	8769	7457	5630	dayhoff k12, orpheum	0.5
+simulated from CDS	paper_list	11820	11577	11561	8769	6492	4942	dayhoff k12, orpheum	0.55
+simulated from CDS	paper_list	11820	11577	11561	8769	5508	4214	dayhoff k12, orpheum	0.6
+simulated from CDS	paper_list	11820	11577	11561	8769	4515	3502	dayhoff k12, orpheum	0.65
+simulated from CDS	paper_list	11820	11577	11561	8769	3587	2830	dayhoff k12, orpheum	0.7
+simulated from CDS	paper_list	11820	11577	11561	8769	2774	2218	dayhoff k12, orpheum	0.75
+simulated from CDS	paper_list	11820	11577	11561	8769	2108	1711	dayhoff k12, orpheum	0.8
+simulated from CDS	paper_list	11820	11577	11561	8769	1487	1227	dayhoff k12, orpheum	0.85
+simulated from CDS	paper_list	11820	11577	11561	8769	944	800	dayhoff k12, orpheum	0.9
+simulated from CDS	paper_list	11820	11577	11561	8769	564	500	dayhoff k12, orpheum	0.95
+simulated from CDS	paper_list	11820	11577	11561	8769	405	372	dayhoff k12, orpheum	1.0
+simulated from CDS	random	28034	27352	27291	20765	27291	20765	dayhoff k12, orpheum	0.0
+simulated from CDS	random	28034	27352	27291	20765	27221	20700	dayhoff k12, orpheum	0.05
+simulated from CDS	random	28034	27352	27291	20765	26917	20421	dayhoff k12, orpheum	0.1
+simulated from CDS	random	28034	27352	27291	20765	26383	19965	dayhoff k12, orpheum	0.15
+simulated from CDS	random	28034	27352	27291	20765	25539	19245	dayhoff k12, orpheum	0.2
+simulated from CDS	random	28034	27352	27291	20765	24333	18265	dayhoff k12, orpheum	0.25
+simulated from CDS	random	28034	27352	27291	20765	22816	17052	dayhoff k12, orpheum	0.3
+simulated from CDS	random	28034	27352	27291	20765	20874	15548	dayhoff k12, orpheum	0.35
+simulated from CDS	random	28034	27352	27291	20765	18812	13984	dayhoff k12, orpheum	0.4
+simulated from CDS	random	28034	27352	27291	20765	16590	12285	dayhoff k12, orpheum	0.45
+simulated from CDS	random	28034	27352	27291	20765	15004	11089	dayhoff k12, orpheum	0.5
+simulated from CDS	random	28034	27352	27291	20765	12612	9368	dayhoff k12, orpheum	0.55
+simulated from CDS	random	28034	27352	27291	20765	10342	7728	dayhoff k12, orpheum	0.6
+simulated from CDS	random	28034	27352	27291	20765	8212	6156	dayhoff k12, orpheum	0.65
+simulated from CDS	random	28034	27352	27291	20765	6282	4731	dayhoff k12, orpheum	0.7
+simulated from CDS	random	28034	27352	27291	20765	4601	3484	dayhoff k12, orpheum	0.75
+simulated from CDS	random	28034	27352	27291	20765	3235	2472	dayhoff k12, orpheum	0.8
+simulated from CDS	random	28034	27352	27291	20765	2196	1688	dayhoff k12, orpheum	0.85
+simulated from CDS	random	28034	27352	27291	20765	1334	1035	dayhoff k12, orpheum	0.9
+simulated from CDS	random	28034	27352	27291	20765	682	534	dayhoff k12, orpheum	0.95
+simulated from CDS	random	28034	27352	27291	20765	439	338	dayhoff k12, orpheum	1.0
 real: no protein hit	none	646631	482447	462332	0	462332	0	dayhoff k12, stopfree	0.0
 real: no protein hit	none	646631	482447	462332	0	457186	0	dayhoff k12, stopfree	0.05
 real: no protein hit	none	646631	482447	462332	0	440984	0	dayhoff k12, stopfree	0.1
@@ -566,6 +755,195 @@ simulated from CDS	random	28034	28034	28034	20390	28034	20390	protein k5, any	0.
 simulated from CDS	random	28034	28034	28034	20390	28033	20390	protein k5, any	0.9
 simulated from CDS	random	28034	28034	28034	20390	28021	20379	protein k5, any	0.95
 simulated from CDS	random	28034	28034	28034	20390	25721	18478	protein k5, any	1.0
+real: no protein hit	none	646631	458807	458807	0	458807	0	protein k5, orpheum	0.0
+real: no protein hit	none	646631	458807	458807	0	458807	0	protein k5, orpheum	0.05
+real: no protein hit	none	646631	458807	458807	0	458807	0	protein k5, orpheum	0.1
+real: no protein hit	none	646631	458807	458807	0	458807	0	protein k5, orpheum	0.15
+real: no protein hit	none	646631	458807	458807	0	458807	0	protein k5, orpheum	0.2
+real: no protein hit	none	646631	458807	458807	0	458807	0	protein k5, orpheum	0.25
+real: no protein hit	none	646631	458807	458807	0	458807	0	protein k5, orpheum	0.3
+real: no protein hit	none	646631	458807	458807	0	458807	0	protein k5, orpheum	0.35
+real: no protein hit	none	646631	458807	458807	0	458807	0	protein k5, orpheum	0.4
+real: no protein hit	none	646631	458807	458807	0	458807	0	protein k5, orpheum	0.45
+real: no protein hit	none	646631	458807	458807	0	458807	0	protein k5, orpheum	0.5
+real: no protein hit	none	646631	458807	458807	0	458807	0	protein k5, orpheum	0.55
+real: no protein hit	none	646631	458807	458807	0	458807	0	protein k5, orpheum	0.6
+real: no protein hit	none	646631	458807	458807	0	458806	0	protein k5, orpheum	0.65
+real: no protein hit	none	646631	458807	458807	0	458806	0	protein k5, orpheum	0.7
+real: no protein hit	none	646631	458807	458807	0	458806	0	protein k5, orpheum	0.75
+real: no protein hit	none	646631	458807	458807	0	458799	0	protein k5, orpheum	0.8
+real: no protein hit	none	646631	458807	458807	0	458771	0	protein k5, orpheum	0.85
+real: no protein hit	none	646631	458807	458807	0	458632	0	protein k5, orpheum	0.9
+real: no protein hit	none	646631	458807	458807	0	455928	0	protein k5, orpheum	0.95
+real: no protein hit	none	646631	458807	458807	0	437129	0	protein k5, orpheum	1.0
+real: partly coding	other genes	103227	88136	88136	25812	88136	25812	protein k5, orpheum	0.0
+real: partly coding	other genes	103227	88136	88136	25812	88136	25812	protein k5, orpheum	0.05
+real: partly coding	other genes	103227	88136	88136	25812	88136	25812	protein k5, orpheum	0.1
+real: partly coding	other genes	103227	88136	88136	25812	88136	25812	protein k5, orpheum	0.15
+real: partly coding	other genes	103227	88136	88136	25812	88136	25812	protein k5, orpheum	0.2
+real: partly coding	other genes	103227	88136	88136	25812	88136	25812	protein k5, orpheum	0.25
+real: partly coding	other genes	103227	88136	88136	25812	88136	25812	protein k5, orpheum	0.3
+real: partly coding	other genes	103227	88136	88136	25812	88136	25812	protein k5, orpheum	0.35
+real: partly coding	other genes	103227	88136	88136	25812	88136	25812	protein k5, orpheum	0.4
+real: partly coding	other genes	103227	88136	88136	25812	88136	25812	protein k5, orpheum	0.45
+real: partly coding	other genes	103227	88136	88136	25812	88136	25812	protein k5, orpheum	0.5
+real: partly coding	other genes	103227	88136	88136	25812	88136	25812	protein k5, orpheum	0.55
+real: partly coding	other genes	103227	88136	88136	25812	88136	25812	protein k5, orpheum	0.6
+real: partly coding	other genes	103227	88136	88136	25812	88136	25812	protein k5, orpheum	0.65
+real: partly coding	other genes	103227	88136	88136	25812	88136	25812	protein k5, orpheum	0.7
+real: partly coding	other genes	103227	88136	88136	25812	88136	25812	protein k5, orpheum	0.75
+real: partly coding	other genes	103227	88136	88136	25812	88136	25812	protein k5, orpheum	0.8
+real: partly coding	other genes	103227	88136	88136	25812	88132	25812	protein k5, orpheum	0.85
+real: partly coding	other genes	103227	88136	88136	25812	88097	25806	protein k5, orpheum	0.9
+real: partly coding	other genes	103227	88136	88136	25812	87659	25645	protein k5, orpheum	0.95
+real: partly coding	other genes	103227	88136	88136	25812	82530	23399	protein k5, orpheum	1.0
+real: partly coding	paper_list	4108	3271	3271	795	3271	795	protein k5, orpheum	0.0
+real: partly coding	paper_list	4108	3271	3271	795	3271	795	protein k5, orpheum	0.05
+real: partly coding	paper_list	4108	3271	3271	795	3271	795	protein k5, orpheum	0.1
+real: partly coding	paper_list	4108	3271	3271	795	3271	795	protein k5, orpheum	0.15
+real: partly coding	paper_list	4108	3271	3271	795	3271	795	protein k5, orpheum	0.2
+real: partly coding	paper_list	4108	3271	3271	795	3271	795	protein k5, orpheum	0.25
+real: partly coding	paper_list	4108	3271	3271	795	3271	795	protein k5, orpheum	0.3
+real: partly coding	paper_list	4108	3271	3271	795	3271	795	protein k5, orpheum	0.35
+real: partly coding	paper_list	4108	3271	3271	795	3271	795	protein k5, orpheum	0.4
+real: partly coding	paper_list	4108	3271	3271	795	3271	795	protein k5, orpheum	0.45
+real: partly coding	paper_list	4108	3271	3271	795	3271	795	protein k5, orpheum	0.5
+real: partly coding	paper_list	4108	3271	3271	795	3271	795	protein k5, orpheum	0.55
+real: partly coding	paper_list	4108	3271	3271	795	3271	795	protein k5, orpheum	0.6
+real: partly coding	paper_list	4108	3271	3271	795	3271	795	protein k5, orpheum	0.65
+real: partly coding	paper_list	4108	3271	3271	795	3271	795	protein k5, orpheum	0.7
+real: partly coding	paper_list	4108	3271	3271	795	3271	795	protein k5, orpheum	0.75
+real: partly coding	paper_list	4108	3271	3271	795	3271	795	protein k5, orpheum	0.8
+real: partly coding	paper_list	4108	3271	3271	795	3271	795	protein k5, orpheum	0.85
+real: partly coding	paper_list	4108	3271	3271	795	3270	795	protein k5, orpheum	0.9
+real: partly coding	paper_list	4108	3271	3271	795	3267	795	protein k5, orpheum	0.95
+real: partly coding	paper_list	4108	3271	3271	795	3061	677	protein k5, orpheum	1.0
+real: partly coding	random	2096	1811	1811	471	1811	471	protein k5, orpheum	0.0
+real: partly coding	random	2096	1811	1811	471	1811	471	protein k5, orpheum	0.05
+real: partly coding	random	2096	1811	1811	471	1811	471	protein k5, orpheum	0.1
+real: partly coding	random	2096	1811	1811	471	1811	471	protein k5, orpheum	0.15
+real: partly coding	random	2096	1811	1811	471	1811	471	protein k5, orpheum	0.2
+real: partly coding	random	2096	1811	1811	471	1811	471	protein k5, orpheum	0.25
+real: partly coding	random	2096	1811	1811	471	1811	471	protein k5, orpheum	0.3
+real: partly coding	random	2096	1811	1811	471	1811	471	protein k5, orpheum	0.35
+real: partly coding	random	2096	1811	1811	471	1811	471	protein k5, orpheum	0.4
+real: partly coding	random	2096	1811	1811	471	1811	471	protein k5, orpheum	0.45
+real: partly coding	random	2096	1811	1811	471	1811	471	protein k5, orpheum	0.5
+real: partly coding	random	2096	1811	1811	471	1811	471	protein k5, orpheum	0.55
+real: partly coding	random	2096	1811	1811	471	1811	471	protein k5, orpheum	0.6
+real: partly coding	random	2096	1811	1811	471	1811	471	protein k5, orpheum	0.65
+real: partly coding	random	2096	1811	1811	471	1811	471	protein k5, orpheum	0.7
+real: partly coding	random	2096	1811	1811	471	1811	471	protein k5, orpheum	0.75
+real: partly coding	random	2096	1811	1811	471	1811	471	protein k5, orpheum	0.8
+real: partly coding	random	2096	1811	1811	471	1811	471	protein k5, orpheum	0.85
+real: partly coding	random	2096	1811	1811	471	1811	471	protein k5, orpheum	0.9
+real: partly coding	random	2096	1811	1811	471	1809	471	protein k5, orpheum	0.95
+real: partly coding	random	2096	1811	1811	471	1729	425	protein k5, orpheum	1.0
+real: whole read coding	other genes	224791	223652	223652	98308	223652	98308	protein k5, orpheum	0.0
+real: whole read coding	other genes	224791	223652	223652	98308	223652	98308	protein k5, orpheum	0.05
+real: whole read coding	other genes	224791	223652	223652	98308	223652	98308	protein k5, orpheum	0.1
+real: whole read coding	other genes	224791	223652	223652	98308	223652	98308	protein k5, orpheum	0.15
+real: whole read coding	other genes	224791	223652	223652	98308	223652	98308	protein k5, orpheum	0.2
+real: whole read coding	other genes	224791	223652	223652	98308	223652	98308	protein k5, orpheum	0.25
+real: whole read coding	other genes	224791	223652	223652	98308	223652	98308	protein k5, orpheum	0.3
+real: whole read coding	other genes	224791	223652	223652	98308	223652	98308	protein k5, orpheum	0.35
+real: whole read coding	other genes	224791	223652	223652	98308	223652	98308	protein k5, orpheum	0.4
+real: whole read coding	other genes	224791	223652	223652	98308	223652	98308	protein k5, orpheum	0.45
+real: whole read coding	other genes	224791	223652	223652	98308	223652	98308	protein k5, orpheum	0.5
+real: whole read coding	other genes	224791	223652	223652	98308	223652	98308	protein k5, orpheum	0.55
+real: whole read coding	other genes	224791	223652	223652	98308	223652	98308	protein k5, orpheum	0.6
+real: whole read coding	other genes	224791	223652	223652	98308	223652	98308	protein k5, orpheum	0.65
+real: whole read coding	other genes	224791	223652	223652	98308	223652	98308	protein k5, orpheum	0.7
+real: whole read coding	other genes	224791	223652	223652	98308	223652	98308	protein k5, orpheum	0.75
+real: whole read coding	other genes	224791	223652	223652	98308	223652	98308	protein k5, orpheum	0.8
+real: whole read coding	other genes	224791	223652	223652	98308	223648	98304	protein k5, orpheum	0.85
+real: whole read coding	other genes	224791	223652	223652	98308	223624	98284	protein k5, orpheum	0.9
+real: whole read coding	other genes	224791	223652	223652	98308	223222	97998	protein k5, orpheum	0.95
+real: whole read coding	other genes	224791	223652	223652	98308	220255	95989	protein k5, orpheum	1.0
+real: whole read coding	paper_list	12790	12715	12715	5965	12715	5965	protein k5, orpheum	0.0
+real: whole read coding	paper_list	12790	12715	12715	5965	12715	5965	protein k5, orpheum	0.05
+real: whole read coding	paper_list	12790	12715	12715	5965	12715	5965	protein k5, orpheum	0.1
+real: whole read coding	paper_list	12790	12715	12715	5965	12715	5965	protein k5, orpheum	0.15
+real: whole read coding	paper_list	12790	12715	12715	5965	12715	5965	protein k5, orpheum	0.2
+real: whole read coding	paper_list	12790	12715	12715	5965	12715	5965	protein k5, orpheum	0.25
+real: whole read coding	paper_list	12790	12715	12715	5965	12715	5965	protein k5, orpheum	0.3
+real: whole read coding	paper_list	12790	12715	12715	5965	12715	5965	protein k5, orpheum	0.35
+real: whole read coding	paper_list	12790	12715	12715	5965	12715	5965	protein k5, orpheum	0.4
+real: whole read coding	paper_list	12790	12715	12715	5965	12715	5965	protein k5, orpheum	0.45
+real: whole read coding	paper_list	12790	12715	12715	5965	12715	5965	protein k5, orpheum	0.5
+real: whole read coding	paper_list	12790	12715	12715	5965	12715	5965	protein k5, orpheum	0.55
+real: whole read coding	paper_list	12790	12715	12715	5965	12715	5965	protein k5, orpheum	0.6
+real: whole read coding	paper_list	12790	12715	12715	5965	12715	5965	protein k5, orpheum	0.65
+real: whole read coding	paper_list	12790	12715	12715	5965	12715	5965	protein k5, orpheum	0.7
+real: whole read coding	paper_list	12790	12715	12715	5965	12715	5965	protein k5, orpheum	0.75
+real: whole read coding	paper_list	12790	12715	12715	5965	12715	5965	protein k5, orpheum	0.8
+real: whole read coding	paper_list	12790	12715	12715	5965	12715	5965	protein k5, orpheum	0.85
+real: whole read coding	paper_list	12790	12715	12715	5965	12715	5965	protein k5, orpheum	0.9
+real: whole read coding	paper_list	12790	12715	12715	5965	12704	5963	protein k5, orpheum	0.95
+real: whole read coding	paper_list	12790	12715	12715	5965	12581	5889	protein k5, orpheum	1.0
+real: whole read coding	random	6357	6337	6337	2805	6337	2805	protein k5, orpheum	0.0
+real: whole read coding	random	6357	6337	6337	2805	6337	2805	protein k5, orpheum	0.05
+real: whole read coding	random	6357	6337	6337	2805	6337	2805	protein k5, orpheum	0.1
+real: whole read coding	random	6357	6337	6337	2805	6337	2805	protein k5, orpheum	0.15
+real: whole read coding	random	6357	6337	6337	2805	6337	2805	protein k5, orpheum	0.2
+real: whole read coding	random	6357	6337	6337	2805	6337	2805	protein k5, orpheum	0.25
+real: whole read coding	random	6357	6337	6337	2805	6337	2805	protein k5, orpheum	0.3
+real: whole read coding	random	6357	6337	6337	2805	6337	2805	protein k5, orpheum	0.35
+real: whole read coding	random	6357	6337	6337	2805	6337	2805	protein k5, orpheum	0.4
+real: whole read coding	random	6357	6337	6337	2805	6337	2805	protein k5, orpheum	0.45
+real: whole read coding	random	6357	6337	6337	2805	6337	2805	protein k5, orpheum	0.5
+real: whole read coding	random	6357	6337	6337	2805	6337	2805	protein k5, orpheum	0.55
+real: whole read coding	random	6357	6337	6337	2805	6337	2805	protein k5, orpheum	0.6
+real: whole read coding	random	6357	6337	6337	2805	6337	2805	protein k5, orpheum	0.65
+real: whole read coding	random	6357	6337	6337	2805	6337	2805	protein k5, orpheum	0.7
+real: whole read coding	random	6357	6337	6337	2805	6337	2805	protein k5, orpheum	0.75
+real: whole read coding	random	6357	6337	6337	2805	6337	2805	protein k5, orpheum	0.8
+real: whole read coding	random	6357	6337	6337	2805	6337	2805	protein k5, orpheum	0.85
+real: whole read coding	random	6357	6337	6337	2805	6337	2805	protein k5, orpheum	0.9
+real: whole read coding	random	6357	6337	6337	2805	6330	2801	protein k5, orpheum	0.95
+real: whole read coding	random	6357	6337	6337	2805	6288	2769	protein k5, orpheum	1.0
+simulated from CDS	paper_list	11820	11577	11577	7666	11577	7666	protein k5, orpheum	0.0
+simulated from CDS	paper_list	11820	11577	11577	7666	11577	7666	protein k5, orpheum	0.05
+simulated from CDS	paper_list	11820	11577	11577	7666	11577	7666	protein k5, orpheum	0.1
+simulated from CDS	paper_list	11820	11577	11577	7666	11577	7666	protein k5, orpheum	0.15
+simulated from CDS	paper_list	11820	11577	11577	7666	11577	7666	protein k5, orpheum	0.2
+simulated from CDS	paper_list	11820	11577	11577	7666	11577	7666	protein k5, orpheum	0.25
+simulated from CDS	paper_list	11820	11577	11577	7666	11577	7666	protein k5, orpheum	0.3
+simulated from CDS	paper_list	11820	11577	11577	7666	11577	7666	protein k5, orpheum	0.35
+simulated from CDS	paper_list	11820	11577	11577	7666	11577	7666	protein k5, orpheum	0.4
+simulated from CDS	paper_list	11820	11577	11577	7666	11577	7666	protein k5, orpheum	0.45
+simulated from CDS	paper_list	11820	11577	11577	7666	11577	7666	protein k5, orpheum	0.5
+simulated from CDS	paper_list	11820	11577	11577	7666	11577	7666	protein k5, orpheum	0.55
+simulated from CDS	paper_list	11820	11577	11577	7666	11577	7666	protein k5, orpheum	0.6
+simulated from CDS	paper_list	11820	11577	11577	7666	11577	7666	protein k5, orpheum	0.65
+simulated from CDS	paper_list	11820	11577	11577	7666	11577	7666	protein k5, orpheum	0.7
+simulated from CDS	paper_list	11820	11577	11577	7666	11577	7666	protein k5, orpheum	0.75
+simulated from CDS	paper_list	11820	11577	11577	7666	11577	7666	protein k5, orpheum	0.8
+simulated from CDS	paper_list	11820	11577	11577	7666	11577	7666	protein k5, orpheum	0.85
+simulated from CDS	paper_list	11820	11577	11577	7666	11576	7666	protein k5, orpheum	0.9
+simulated from CDS	paper_list	11820	11577	11577	7666	11571	7662	protein k5, orpheum	0.95
+simulated from CDS	paper_list	11820	11577	11577	7666	11147	7329	protein k5, orpheum	1.0
+simulated from CDS	random	28034	27344	27344	19563	27344	19563	protein k5, orpheum	0.0
+simulated from CDS	random	28034	27344	27344	19563	27344	19563	protein k5, orpheum	0.05
+simulated from CDS	random	28034	27344	27344	19563	27344	19563	protein k5, orpheum	0.1
+simulated from CDS	random	28034	27344	27344	19563	27344	19563	protein k5, orpheum	0.15
+simulated from CDS	random	28034	27344	27344	19563	27344	19563	protein k5, orpheum	0.2
+simulated from CDS	random	28034	27344	27344	19563	27344	19563	protein k5, orpheum	0.25
+simulated from CDS	random	28034	27344	27344	19563	27344	19563	protein k5, orpheum	0.3
+simulated from CDS	random	28034	27344	27344	19563	27344	19563	protein k5, orpheum	0.35
+simulated from CDS	random	28034	27344	27344	19563	27344	19563	protein k5, orpheum	0.4
+simulated from CDS	random	28034	27344	27344	19563	27344	19563	protein k5, orpheum	0.45
+simulated from CDS	random	28034	27344	27344	19563	27344	19563	protein k5, orpheum	0.5
+simulated from CDS	random	28034	27344	27344	19563	27344	19563	protein k5, orpheum	0.55
+simulated from CDS	random	28034	27344	27344	19563	27344	19563	protein k5, orpheum	0.6
+simulated from CDS	random	28034	27344	27344	19563	27344	19563	protein k5, orpheum	0.65
+simulated from CDS	random	28034	27344	27344	19563	27344	19563	protein k5, orpheum	0.7
+simulated from CDS	random	28034	27344	27344	19563	27344	19563	protein k5, orpheum	0.75
+simulated from CDS	random	28034	27344	27344	19563	27344	19563	protein k5, orpheum	0.8
+simulated from CDS	random	28034	27344	27344	19563	27344	19563	protein k5, orpheum	0.85
+simulated from CDS	random	28034	27344	27344	19563	27344	19563	protein k5, orpheum	0.9
+simulated from CDS	random	28034	27344	27344	19563	27326	19549	protein k5, orpheum	0.95
+simulated from CDS	random	28034	27344	27344	19563	26096	18571	protein k5, orpheum	1.0
 real: no protein hit	none	646631	482447	482447	0	482447	0	protein k5, stopfree	0.0
 real: no protein hit	none	646631	482447	482447	0	482447	0	protein k5, stopfree	0.05
 real: no protein hit	none	646631	482447	482447	0	482447	0	protein k5, stopfree	0.1
@@ -944,6 +1322,195 @@ simulated from CDS	random	28034	28034	28034	18016	14719	10265	protein k6, any	0.
 simulated from CDS	random	28034	28034	28034	18016	9080	6416	protein k6, any	0.9
 simulated from CDS	random	28034	28034	28034	18016	4238	3024	protein k6, any	0.95
 simulated from CDS	random	28034	28034	28034	18016	909	670	protein k6, any	1.0
+real: no protein hit	none	646631	459154	459154	0	459154	0	protein k6, orpheum	0.0
+real: no protein hit	none	646631	459154	459154	0	459154	0	protein k6, orpheum	0.05
+real: no protein hit	none	646631	459154	459154	0	459152	0	protein k6, orpheum	0.1
+real: no protein hit	none	646631	459154	459154	0	459150	0	protein k6, orpheum	0.15
+real: no protein hit	none	646631	459154	459154	0	459136	0	protein k6, orpheum	0.2
+real: no protein hit	none	646631	459154	459154	0	459093	0	protein k6, orpheum	0.25
+real: no protein hit	none	646631	459154	459154	0	459000	0	protein k6, orpheum	0.3
+real: no protein hit	none	646631	459154	459154	0	458782	0	protein k6, orpheum	0.35
+real: no protein hit	none	646631	459154	459154	0	458380	0	protein k6, orpheum	0.4
+real: no protein hit	none	646631	459154	459154	0	457490	0	protein k6, orpheum	0.45
+real: no protein hit	none	646631	459154	459154	0	456184	0	protein k6, orpheum	0.5
+real: no protein hit	none	646631	459154	459154	0	452120	0	protein k6, orpheum	0.55
+real: no protein hit	none	646631	459154	459154	0	445579	0	protein k6, orpheum	0.6
+real: no protein hit	none	646631	459154	459154	0	432757	0	protein k6, orpheum	0.65
+real: no protein hit	none	646631	459154	459154	0	412753	0	protein k6, orpheum	0.7
+real: no protein hit	none	646631	459154	459154	0	384314	0	protein k6, orpheum	0.75
+real: no protein hit	none	646631	459154	459154	0	334572	0	protein k6, orpheum	0.8
+real: no protein hit	none	646631	459154	459154	0	267948	0	protein k6, orpheum	0.85
+real: no protein hit	none	646631	459154	459154	0	203192	0	protein k6, orpheum	0.9
+real: no protein hit	none	646631	459154	459154	0	128865	0	protein k6, orpheum	0.95
+real: no protein hit	none	646631	459154	459154	0	95712	0	protein k6, orpheum	1.0
+real: partly coding	other genes	103227	88137	88137	26604	88137	26604	protein k6, orpheum	0.0
+real: partly coding	other genes	103227	88137	88137	26604	88137	26604	protein k6, orpheum	0.05
+real: partly coding	other genes	103227	88137	88137	26604	88137	26604	protein k6, orpheum	0.1
+real: partly coding	other genes	103227	88137	88137	26604	88137	26604	protein k6, orpheum	0.15
+real: partly coding	other genes	103227	88137	88137	26604	88137	26604	protein k6, orpheum	0.2
+real: partly coding	other genes	103227	88137	88137	26604	88135	26604	protein k6, orpheum	0.25
+real: partly coding	other genes	103227	88137	88137	26604	88134	26604	protein k6, orpheum	0.3
+real: partly coding	other genes	103227	88137	88137	26604	88122	26604	protein k6, orpheum	0.35
+real: partly coding	other genes	103227	88137	88137	26604	88092	26601	protein k6, orpheum	0.4
+real: partly coding	other genes	103227	88137	88137	26604	87973	26582	protein k6, orpheum	0.45
+real: partly coding	other genes	103227	88137	88137	26604	87773	26539	protein k6, orpheum	0.5
+real: partly coding	other genes	103227	88137	88137	26604	87077	26221	protein k6, orpheum	0.55
+real: partly coding	other genes	103227	88137	88137	26604	85709	25624	protein k6, orpheum	0.6
+real: partly coding	other genes	103227	88137	88137	26604	82981	24574	protein k6, orpheum	0.65
+real: partly coding	other genes	103227	88137	88137	26604	78767	23097	protein k6, orpheum	0.7
+real: partly coding	other genes	103227	88137	88137	26604	72750	21061	protein k6, orpheum	0.75
+real: partly coding	other genes	103227	88137	88137	26604	61371	17229	protein k6, orpheum	0.8
+real: partly coding	other genes	103227	88137	88137	26604	47303	12717	protein k6, orpheum	0.85
+real: partly coding	other genes	103227	88137	88137	26604	32822	8392	protein k6, orpheum	0.9
+real: partly coding	other genes	103227	88137	88137	26604	17824	4623	protein k6, orpheum	0.95
+real: partly coding	other genes	103227	88137	88137	26604	10055	1983	protein k6, orpheum	1.0
+real: partly coding	paper_list	4108	3271	3271	853	3271	853	protein k6, orpheum	0.0
+real: partly coding	paper_list	4108	3271	3271	853	3271	853	protein k6, orpheum	0.05
+real: partly coding	paper_list	4108	3271	3271	853	3271	853	protein k6, orpheum	0.1
+real: partly coding	paper_list	4108	3271	3271	853	3271	853	protein k6, orpheum	0.15
+real: partly coding	paper_list	4108	3271	3271	853	3271	853	protein k6, orpheum	0.2
+real: partly coding	paper_list	4108	3271	3271	853	3271	853	protein k6, orpheum	0.25
+real: partly coding	paper_list	4108	3271	3271	853	3271	853	protein k6, orpheum	0.3
+real: partly coding	paper_list	4108	3271	3271	853	3271	853	protein k6, orpheum	0.35
+real: partly coding	paper_list	4108	3271	3271	853	3271	853	protein k6, orpheum	0.4
+real: partly coding	paper_list	4108	3271	3271	853	3271	853	protein k6, orpheum	0.45
+real: partly coding	paper_list	4108	3271	3271	853	3271	853	protein k6, orpheum	0.5
+real: partly coding	paper_list	4108	3271	3271	853	3254	848	protein k6, orpheum	0.55
+real: partly coding	paper_list	4108	3271	3271	853	3218	834	protein k6, orpheum	0.6
+real: partly coding	paper_list	4108	3271	3271	853	3149	818	protein k6, orpheum	0.65
+real: partly coding	paper_list	4108	3271	3271	853	3025	796	protein k6, orpheum	0.7
+real: partly coding	paper_list	4108	3271	3271	853	2815	724	protein k6, orpheum	0.75
+real: partly coding	paper_list	4108	3271	3271	853	2461	601	protein k6, orpheum	0.8
+real: partly coding	paper_list	4108	3271	3271	853	1935	460	protein k6, orpheum	0.85
+real: partly coding	paper_list	4108	3271	3271	853	1196	281	protein k6, orpheum	0.9
+real: partly coding	paper_list	4108	3271	3271	853	642	161	protein k6, orpheum	0.95
+real: partly coding	paper_list	4108	3271	3271	853	343	91	protein k6, orpheum	1.0
+real: partly coding	random	2096	1811	1811	571	1811	571	protein k6, orpheum	0.0
+real: partly coding	random	2096	1811	1811	571	1811	571	protein k6, orpheum	0.05
+real: partly coding	random	2096	1811	1811	571	1811	571	protein k6, orpheum	0.1
+real: partly coding	random	2096	1811	1811	571	1811	571	protein k6, orpheum	0.15
+real: partly coding	random	2096	1811	1811	571	1811	571	protein k6, orpheum	0.2
+real: partly coding	random	2096	1811	1811	571	1811	571	protein k6, orpheum	0.25
+real: partly coding	random	2096	1811	1811	571	1811	571	protein k6, orpheum	0.3
+real: partly coding	random	2096	1811	1811	571	1811	571	protein k6, orpheum	0.35
+real: partly coding	random	2096	1811	1811	571	1811	571	protein k6, orpheum	0.4
+real: partly coding	random	2096	1811	1811	571	1809	571	protein k6, orpheum	0.45
+real: partly coding	random	2096	1811	1811	571	1804	568	protein k6, orpheum	0.5
+real: partly coding	random	2096	1811	1811	571	1804	568	protein k6, orpheum	0.55
+real: partly coding	random	2096	1811	1811	571	1792	562	protein k6, orpheum	0.6
+real: partly coding	random	2096	1811	1811	571	1778	560	protein k6, orpheum	0.65
+real: partly coding	random	2096	1811	1811	571	1725	548	protein k6, orpheum	0.7
+real: partly coding	random	2096	1811	1811	571	1655	527	protein k6, orpheum	0.75
+real: partly coding	random	2096	1811	1811	571	1439	456	protein k6, orpheum	0.8
+real: partly coding	random	2096	1811	1811	571	1125	326	protein k6, orpheum	0.85
+real: partly coding	random	2096	1811	1811	571	713	179	protein k6, orpheum	0.9
+real: partly coding	random	2096	1811	1811	571	417	83	protein k6, orpheum	0.95
+real: partly coding	random	2096	1811	1811	571	160	21	protein k6, orpheum	1.0
+real: whole read coding	other genes	224791	223652	223652	103769	223652	103769	protein k6, orpheum	0.0
+real: whole read coding	other genes	224791	223652	223652	103769	223652	103769	protein k6, orpheum	0.05
+real: whole read coding	other genes	224791	223652	223652	103769	223652	103769	protein k6, orpheum	0.1
+real: whole read coding	other genes	224791	223652	223652	103769	223652	103769	protein k6, orpheum	0.15
+real: whole read coding	other genes	224791	223652	223652	103769	223650	103767	protein k6, orpheum	0.2
+real: whole read coding	other genes	224791	223652	223652	103769	223646	103763	protein k6, orpheum	0.25
+real: whole read coding	other genes	224791	223652	223652	103769	223633	103751	protein k6, orpheum	0.3
+real: whole read coding	other genes	224791	223652	223652	103769	223609	103731	protein k6, orpheum	0.35
+real: whole read coding	other genes	224791	223652	223652	103769	223559	103694	protein k6, orpheum	0.4
+real: whole read coding	other genes	224791	223652	223652	103769	223366	103571	protein k6, orpheum	0.45
+real: whole read coding	other genes	224791	223652	223652	103769	223099	103402	protein k6, orpheum	0.5
+real: whole read coding	other genes	224791	223652	223652	103769	222111	102660	protein k6, orpheum	0.55
+real: whole read coding	other genes	224791	223652	223652	103769	220824	101888	protein k6, orpheum	0.6
+real: whole read coding	other genes	224791	223652	223652	103769	218206	100482	protein k6, orpheum	0.65
+real: whole read coding	other genes	224791	223652	223652	103769	213960	98157	protein k6, orpheum	0.7
+real: whole read coding	other genes	224791	223652	223652	103769	206521	94497	protein k6, orpheum	0.75
+real: whole read coding	other genes	224791	223652	223652	103769	189932	86577	protein k6, orpheum	0.8
+real: whole read coding	other genes	224791	223652	223652	103769	165864	74575	protein k6, orpheum	0.85
+real: whole read coding	other genes	224791	223652	223652	103769	134097	59793	protein k6, orpheum	0.9
+real: whole read coding	other genes	224791	223652	223652	103769	88632	40328	protein k6, orpheum	0.95
+real: whole read coding	other genes	224791	223652	223652	103769	63282	27079	protein k6, orpheum	1.0
+real: whole read coding	paper_list	12790	12715	12715	7617	12715	7617	protein k6, orpheum	0.0
+real: whole read coding	paper_list	12790	12715	12715	7617	12715	7617	protein k6, orpheum	0.05
+real: whole read coding	paper_list	12790	12715	12715	7617	12715	7617	protein k6, orpheum	0.1
+real: whole read coding	paper_list	12790	12715	12715	7617	12715	7617	protein k6, orpheum	0.15
+real: whole read coding	paper_list	12790	12715	12715	7617	12715	7617	protein k6, orpheum	0.2
+real: whole read coding	paper_list	12790	12715	12715	7617	12715	7617	protein k6, orpheum	0.25
+real: whole read coding	paper_list	12790	12715	12715	7617	12715	7617	protein k6, orpheum	0.3
+real: whole read coding	paper_list	12790	12715	12715	7617	12715	7617	protein k6, orpheum	0.35
+real: whole read coding	paper_list	12790	12715	12715	7617	12715	7617	protein k6, orpheum	0.4
+real: whole read coding	paper_list	12790	12715	12715	7617	12715	7617	protein k6, orpheum	0.45
+real: whole read coding	paper_list	12790	12715	12715	7617	12715	7617	protein k6, orpheum	0.5
+real: whole read coding	paper_list	12790	12715	12715	7617	12682	7589	protein k6, orpheum	0.55
+real: whole read coding	paper_list	12790	12715	12715	7617	12634	7551	protein k6, orpheum	0.6
+real: whole read coding	paper_list	12790	12715	12715	7617	12500	7460	protein k6, orpheum	0.65
+real: whole read coding	paper_list	12790	12715	12715	7617	12316	7324	protein k6, orpheum	0.7
+real: whole read coding	paper_list	12790	12715	12715	7617	11919	7060	protein k6, orpheum	0.75
+real: whole read coding	paper_list	12790	12715	12715	7617	11171	6583	protein k6, orpheum	0.8
+real: whole read coding	paper_list	12790	12715	12715	7617	9787	5747	protein k6, orpheum	0.85
+real: whole read coding	paper_list	12790	12715	12715	7617	7949	4694	protein k6, orpheum	0.9
+real: whole read coding	paper_list	12790	12715	12715	7617	5400	3285	protein k6, orpheum	0.95
+real: whole read coding	paper_list	12790	12715	12715	7617	3725	2123	protein k6, orpheum	1.0
+real: whole read coding	random	6357	6337	6337	3537	6337	3537	protein k6, orpheum	0.0
+real: whole read coding	random	6357	6337	6337	3537	6337	3537	protein k6, orpheum	0.05
+real: whole read coding	random	6357	6337	6337	3537	6337	3537	protein k6, orpheum	0.1
+real: whole read coding	random	6357	6337	6337	3537	6337	3537	protein k6, orpheum	0.15
+real: whole read coding	random	6357	6337	6337	3537	6337	3537	protein k6, orpheum	0.2
+real: whole read coding	random	6357	6337	6337	3537	6337	3537	protein k6, orpheum	0.25
+real: whole read coding	random	6357	6337	6337	3537	6337	3537	protein k6, orpheum	0.3
+real: whole read coding	random	6357	6337	6337	3537	6337	3537	protein k6, orpheum	0.35
+real: whole read coding	random	6357	6337	6337	3537	6337	3537	protein k6, orpheum	0.4
+real: whole read coding	random	6357	6337	6337	3537	6335	3535	protein k6, orpheum	0.45
+real: whole read coding	random	6357	6337	6337	3537	6335	3535	protein k6, orpheum	0.5
+real: whole read coding	random	6357	6337	6337	3537	6332	3532	protein k6, orpheum	0.55
+real: whole read coding	random	6357	6337	6337	3537	6325	3529	protein k6, orpheum	0.6
+real: whole read coding	random	6357	6337	6337	3537	6286	3495	protein k6, orpheum	0.65
+real: whole read coding	random	6357	6337	6337	3537	6203	3437	protein k6, orpheum	0.7
+real: whole read coding	random	6357	6337	6337	3537	6091	3380	protein k6, orpheum	0.75
+real: whole read coding	random	6357	6337	6337	3537	5667	3109	protein k6, orpheum	0.8
+real: whole read coding	random	6357	6337	6337	3537	4991	2705	protein k6, orpheum	0.85
+real: whole read coding	random	6357	6337	6337	3537	4064	2099	protein k6, orpheum	0.9
+real: whole read coding	random	6357	6337	6337	3537	2561	1216	protein k6, orpheum	0.95
+real: whole read coding	random	6357	6337	6337	3537	1458	628	protein k6, orpheum	1.0
+simulated from CDS	paper_list	11820	11577	11577	8371	11577	8371	protein k6, orpheum	0.0
+simulated from CDS	paper_list	11820	11577	11577	8371	11577	8371	protein k6, orpheum	0.05
+simulated from CDS	paper_list	11820	11577	11577	8371	11577	8371	protein k6, orpheum	0.1
+simulated from CDS	paper_list	11820	11577	11577	8371	11577	8371	protein k6, orpheum	0.15
+simulated from CDS	paper_list	11820	11577	11577	8371	11577	8371	protein k6, orpheum	0.2
+simulated from CDS	paper_list	11820	11577	11577	8371	11577	8371	protein k6, orpheum	0.25
+simulated from CDS	paper_list	11820	11577	11577	8371	11577	8371	protein k6, orpheum	0.3
+simulated from CDS	paper_list	11820	11577	11577	8371	11577	8371	protein k6, orpheum	0.35
+simulated from CDS	paper_list	11820	11577	11577	8371	11576	8370	protein k6, orpheum	0.4
+simulated from CDS	paper_list	11820	11577	11577	8371	11572	8367	protein k6, orpheum	0.45
+simulated from CDS	paper_list	11820	11577	11577	8371	11565	8360	protein k6, orpheum	0.5
+simulated from CDS	paper_list	11820	11577	11577	8371	11513	8313	protein k6, orpheum	0.55
+simulated from CDS	paper_list	11820	11577	11577	8371	11440	8250	protein k6, orpheum	0.6
+simulated from CDS	paper_list	11820	11577	11577	8371	11250	8085	protein k6, orpheum	0.65
+simulated from CDS	paper_list	11820	11577	11577	8371	10941	7843	protein k6, orpheum	0.7
+simulated from CDS	paper_list	11820	11577	11577	8371	10314	7349	protein k6, orpheum	0.75
+simulated from CDS	paper_list	11820	11577	11577	8371	8959	6341	protein k6, orpheum	0.8
+simulated from CDS	paper_list	11820	11577	11577	8371	6973	4939	protein k6, orpheum	0.85
+simulated from CDS	paper_list	11820	11577	11577	8371	4839	3477	protein k6, orpheum	0.9
+simulated from CDS	paper_list	11820	11577	11577	8371	2458	1860	protein k6, orpheum	0.95
+simulated from CDS	paper_list	11820	11577	11577	8371	644	537	protein k6, orpheum	1.0
+simulated from CDS	random	28034	27344	27344	20344	27344	20344	protein k6, orpheum	0.0
+simulated from CDS	random	28034	27344	27344	20344	27344	20344	protein k6, orpheum	0.05
+simulated from CDS	random	28034	27344	27344	20344	27344	20344	protein k6, orpheum	0.1
+simulated from CDS	random	28034	27344	27344	20344	27344	20344	protein k6, orpheum	0.15
+simulated from CDS	random	28034	27344	27344	20344	27344	20344	protein k6, orpheum	0.2
+simulated from CDS	random	28034	27344	27344	20344	27344	20344	protein k6, orpheum	0.25
+simulated from CDS	random	28034	27344	27344	20344	27344	20344	protein k6, orpheum	0.3
+simulated from CDS	random	28034	27344	27344	20344	27341	20341	protein k6, orpheum	0.35
+simulated from CDS	random	28034	27344	27344	20344	27334	20335	protein k6, orpheum	0.4
+simulated from CDS	random	28034	27344	27344	20344	27319	20323	protein k6, orpheum	0.45
+simulated from CDS	random	28034	27344	27344	20344	27272	20281	protein k6, orpheum	0.5
+simulated from CDS	random	28034	27344	27344	20344	27163	20190	protein k6, orpheum	0.55
+simulated from CDS	random	28034	27344	27344	20344	26918	19980	protein k6, orpheum	0.6
+simulated from CDS	random	28034	27344	27344	20344	26227	19395	protein k6, orpheum	0.65
+simulated from CDS	random	28034	27344	27344	20344	25170	18548	protein k6, orpheum	0.7
+simulated from CDS	random	28034	27344	27344	20344	23330	17100	protein k6, orpheum	0.75
+simulated from CDS	random	28034	27344	27344	20344	19261	13959	protein k6, orpheum	0.8
+simulated from CDS	random	28034	27344	27344	20344	13923	9989	protein k6, orpheum	0.85
+simulated from CDS	random	28034	27344	27344	20344	8686	6206	protein k6, orpheum	0.9
+simulated from CDS	random	28034	27344	27344	20344	4110	2934	protein k6, orpheum	0.95
+simulated from CDS	random	28034	27344	27344	20344	910	670	protein k6, orpheum	1.0
 real: no protein hit	none	646631	482447	482447	0	482447	0	protein k6, stopfree	0.0
 real: no protein hit	none	646631	482447	482447	0	482447	0	protein k6, stopfree	0.05
 real: no protein hit	none	646631	482447	482447	0	482445	0	protein k6, stopfree	0.1
@@ -1322,6 +1889,195 @@ simulated from CDS	random	28034	28034	28034	12249	201	181	protein k7, any	0.85
 simulated from CDS	random	28034	28034	28034	12249	139	128	protein k7, any	0.9
 simulated from CDS	random	28034	28034	28034	12249	107	99	protein k7, any	0.95
 simulated from CDS	random	28034	28034	28034	12249	87	80	protein k7, any	1.0
+real: no protein hit	none	646631	459657	453560	0	453560	0	protein k7, orpheum	0.0
+real: no protein hit	none	646631	459657	453560	0	447000	0	protein k7, orpheum	0.05
+real: no protein hit	none	646631	459657	453560	0	420673	0	protein k7, orpheum	0.1
+real: no protein hit	none	646631	459657	453560	0	384879	0	protein k7, orpheum	0.15
+real: no protein hit	none	646631	459657	453560	0	340517	0	protein k7, orpheum	0.2
+real: no protein hit	none	646631	459657	453560	0	292983	0	protein k7, orpheum	0.25
+real: no protein hit	none	646631	459657	453560	0	236671	0	protein k7, orpheum	0.3
+real: no protein hit	none	646631	459657	453560	0	186028	0	protein k7, orpheum	0.35
+real: no protein hit	none	646631	459657	453560	0	148084	0	protein k7, orpheum	0.4
+real: no protein hit	none	646631	459657	453560	0	115431	0	protein k7, orpheum	0.45
+real: no protein hit	none	646631	459657	453560	0	94435	0	protein k7, orpheum	0.5
+real: no protein hit	none	646631	459657	453560	0	69452	0	protein k7, orpheum	0.55
+real: no protein hit	none	646631	459657	453560	0	57222	0	protein k7, orpheum	0.6
+real: no protein hit	none	646631	459657	453560	0	43869	0	protein k7, orpheum	0.65
+real: no protein hit	none	646631	459657	453560	0	35094	0	protein k7, orpheum	0.7
+real: no protein hit	none	646631	459657	453560	0	26021	0	protein k7, orpheum	0.75
+real: no protein hit	none	646631	459657	453560	0	15984	0	protein k7, orpheum	0.8
+real: no protein hit	none	646631	459657	453560	0	9470	0	protein k7, orpheum	0.85
+real: no protein hit	none	646631	459657	453560	0	6978	0	protein k7, orpheum	0.9
+real: no protein hit	none	646631	459657	453560	0	3527	0	protein k7, orpheum	0.95
+real: no protein hit	none	646631	459657	453560	0	2425	0	protein k7, orpheum	1.0
+real: partly coding	other genes	103227	88138	87891	29872	87891	29872	protein k7, orpheum	0.0
+real: partly coding	other genes	103227	88138	87891	29872	86694	29620	protein k7, orpheum	0.05
+real: partly coding	other genes	103227	88138	87891	29872	81973	28328	protein k7, orpheum	0.1
+real: partly coding	other genes	103227	88138	87891	29872	73622	25878	protein k7, orpheum	0.15
+real: partly coding	other genes	103227	88138	87891	29872	63347	22504	protein k7, orpheum	0.2
+real: partly coding	other genes	103227	88138	87891	29872	50999	18496	protein k7, orpheum	0.25
+real: partly coding	other genes	103227	88138	87891	29872	37670	13847	protein k7, orpheum	0.3
+real: partly coding	other genes	103227	88138	87891	29872	26701	10067	protein k7, orpheum	0.35
+real: partly coding	other genes	103227	88138	87891	29872	20348	7675	protein k7, orpheum	0.4
+real: partly coding	other genes	103227	88138	87891	29872	15017	5750	protein k7, orpheum	0.45
+real: partly coding	other genes	103227	88138	87891	29872	11291	4424	protein k7, orpheum	0.5
+real: partly coding	other genes	103227	88138	87891	29872	7343	3197	protein k7, orpheum	0.55
+real: partly coding	other genes	103227	88138	87891	29872	5246	2407	protein k7, orpheum	0.6
+real: partly coding	other genes	103227	88138	87891	29872	3642	1772	protein k7, orpheum	0.65
+real: partly coding	other genes	103227	88138	87891	29872	2535	1210	protein k7, orpheum	0.7
+real: partly coding	other genes	103227	88138	87891	29872	1726	829	protein k7, orpheum	0.75
+real: partly coding	other genes	103227	88138	87891	29872	1117	556	protein k7, orpheum	0.8
+real: partly coding	other genes	103227	88138	87891	29872	596	353	protein k7, orpheum	0.85
+real: partly coding	other genes	103227	88138	87891	29872	377	244	protein k7, orpheum	0.9
+real: partly coding	other genes	103227	88138	87891	29872	213	200	protein k7, orpheum	0.95
+real: partly coding	other genes	103227	88138	87891	29872	133	133	protein k7, orpheum	1.0
+real: partly coding	paper_list	4108	3271	3267	1045	3267	1045	protein k7, orpheum	0.0
+real: partly coding	paper_list	4108	3271	3267	1045	3224	1027	protein k7, orpheum	0.05
+real: partly coding	paper_list	4108	3271	3267	1045	3063	1003	protein k7, orpheum	0.1
+real: partly coding	paper_list	4108	3271	3267	1045	2743	932	protein k7, orpheum	0.15
+real: partly coding	paper_list	4108	3271	3267	1045	2370	846	protein k7, orpheum	0.2
+real: partly coding	paper_list	4108	3271	3267	1045	1980	743	protein k7, orpheum	0.25
+real: partly coding	paper_list	4108	3271	3267	1045	1482	636	protein k7, orpheum	0.3
+real: partly coding	paper_list	4108	3271	3267	1045	1016	512	protein k7, orpheum	0.35
+real: partly coding	paper_list	4108	3271	3267	1045	758	433	protein k7, orpheum	0.4
+real: partly coding	paper_list	4108	3271	3267	1045	543	363	protein k7, orpheum	0.45
+real: partly coding	paper_list	4108	3271	3267	1045	434	312	protein k7, orpheum	0.5
+real: partly coding	paper_list	4108	3271	3267	1045	272	216	protein k7, orpheum	0.55
+real: partly coding	paper_list	4108	3271	3267	1045	197	167	protein k7, orpheum	0.6
+real: partly coding	paper_list	4108	3271	3267	1045	134	121	protein k7, orpheum	0.65
+real: partly coding	paper_list	4108	3271	3267	1045	86	80	protein k7, orpheum	0.7
+real: partly coding	paper_list	4108	3271	3267	1045	49	47	protein k7, orpheum	0.75
+real: partly coding	paper_list	4108	3271	3267	1045	30	28	protein k7, orpheum	0.8
+real: partly coding	paper_list	4108	3271	3267	1045	16	14	protein k7, orpheum	0.85
+real: partly coding	paper_list	4108	3271	3267	1045	8	6	protein k7, orpheum	0.9
+real: partly coding	paper_list	4108	3271	3267	1045	4	4	protein k7, orpheum	0.95
+real: partly coding	paper_list	4108	3271	3267	1045	4	4	protein k7, orpheum	1.0
+real: partly coding	random	2096	1811	1811	633	1811	633	protein k7, orpheum	0.0
+real: partly coding	random	2096	1811	1811	633	1799	625	protein k7, orpheum	0.05
+real: partly coding	random	2096	1811	1811	633	1732	612	protein k7, orpheum	0.1
+real: partly coding	random	2096	1811	1811	633	1596	589	protein k7, orpheum	0.15
+real: partly coding	random	2096	1811	1811	633	1392	520	protein k7, orpheum	0.2
+real: partly coding	random	2096	1811	1811	633	1083	444	protein k7, orpheum	0.25
+real: partly coding	random	2096	1811	1811	633	767	312	protein k7, orpheum	0.3
+real: partly coding	random	2096	1811	1811	633	506	208	protein k7, orpheum	0.35
+real: partly coding	random	2096	1811	1811	633	294	125	protein k7, orpheum	0.4
+real: partly coding	random	2096	1811	1811	633	193	89	protein k7, orpheum	0.45
+real: partly coding	random	2096	1811	1811	633	122	59	protein k7, orpheum	0.5
+real: partly coding	random	2096	1811	1811	633	70	40	protein k7, orpheum	0.55
+real: partly coding	random	2096	1811	1811	633	41	26	protein k7, orpheum	0.6
+real: partly coding	random	2096	1811	1811	633	25	20	protein k7, orpheum	0.65
+real: partly coding	random	2096	1811	1811	633	17	13	protein k7, orpheum	0.7
+real: partly coding	random	2096	1811	1811	633	9	7	protein k7, orpheum	0.75
+real: partly coding	random	2096	1811	1811	633	2	0	protein k7, orpheum	0.8
+real: partly coding	random	2096	1811	1811	633	0	0	protein k7, orpheum	0.85
+real: partly coding	random	2096	1811	1811	633	0	0	protein k7, orpheum	0.9
+real: partly coding	random	2096	1811	1811	633	0	0	protein k7, orpheum	0.95
+real: partly coding	random	2096	1811	1811	633	0	0	protein k7, orpheum	1.0
+real: whole read coding	other genes	224791	223652	223085	120371	223085	120371	protein k7, orpheum	0.0
+real: whole read coding	other genes	224791	223652	223085	120371	222249	119701	protein k7, orpheum	0.05
+real: whole read coding	other genes	224791	223652	223085	120371	216706	116099	protein k7, orpheum	0.1
+real: whole read coding	other genes	224791	223652	223085	120371	206942	110707	protein k7, orpheum	0.15
+real: whole read coding	other genes	224791	223652	223085	120371	190712	102244	protein k7, orpheum	0.2
+real: whole read coding	other genes	224791	223652	223085	120371	168802	91478	protein k7, orpheum	0.25
+real: whole read coding	other genes	224791	223652	223085	120371	139864	77674	protein k7, orpheum	0.3
+real: whole read coding	other genes	224791	223652	223085	120371	110687	63848	protein k7, orpheum	0.35
+real: whole read coding	other genes	224791	223652	223085	120371	88683	53563	protein k7, orpheum	0.4
+real: whole read coding	other genes	224791	223652	223085	120371	68744	44397	protein k7, orpheum	0.45
+real: whole read coding	other genes	224791	223652	223085	120371	56687	38357	protein k7, orpheum	0.5
+real: whole read coding	other genes	224791	223652	223085	120371	42281	31153	protein k7, orpheum	0.55
+real: whole read coding	other genes	224791	223652	223085	120371	34795	26529	protein k7, orpheum	0.6
+real: whole read coding	other genes	224791	223652	223085	120371	27117	21848	protein k7, orpheum	0.65
+real: whole read coding	other genes	224791	223652	223085	120371	22099	18234	protein k7, orpheum	0.7
+real: whole read coding	other genes	224791	223652	223085	120371	18012	15316	protein k7, orpheum	0.75
+real: whole read coding	other genes	224791	223652	223085	120371	14644	12920	protein k7, orpheum	0.8
+real: whole read coding	other genes	224791	223652	223085	120371	11465	10750	protein k7, orpheum	0.85
+real: whole read coding	other genes	224791	223652	223085	120371	9511	9204	protein k7, orpheum	0.9
+real: whole read coding	other genes	224791	223652	223085	120371	7638	7523	protein k7, orpheum	0.95
+real: whole read coding	other genes	224791	223652	223085	120371	6760	6650	protein k7, orpheum	1.0
+real: whole read coding	paper_list	12790	12715	12673	8461	12673	8461	protein k7, orpheum	0.0
+real: whole read coding	paper_list	12790	12715	12673	8461	12585	8386	protein k7, orpheum	0.05
+real: whole read coding	paper_list	12790	12715	12673	8461	12293	8197	protein k7, orpheum	0.1
+real: whole read coding	paper_list	12790	12715	12673	8461	11769	7906	protein k7, orpheum	0.15
+real: whole read coding	paper_list	12790	12715	12673	8461	10749	7367	protein k7, orpheum	0.2
+real: whole read coding	paper_list	12790	12715	12673	8461	9484	6695	protein k7, orpheum	0.25
+real: whole read coding	paper_list	12790	12715	12673	8461	7965	5934	protein k7, orpheum	0.3
+real: whole read coding	paper_list	12790	12715	12673	8461	6694	5220	protein k7, orpheum	0.35
+real: whole read coding	paper_list	12790	12715	12673	8461	5552	4578	protein k7, orpheum	0.4
+real: whole read coding	paper_list	12790	12715	12673	8461	4573	3955	protein k7, orpheum	0.45
+real: whole read coding	paper_list	12790	12715	12673	8461	3861	3438	protein k7, orpheum	0.5
+real: whole read coding	paper_list	12790	12715	12673	8461	3100	2872	protein k7, orpheum	0.55
+real: whole read coding	paper_list	12790	12715	12673	8461	2658	2503	protein k7, orpheum	0.6
+real: whole read coding	paper_list	12790	12715	12673	8461	2175	2099	protein k7, orpheum	0.65
+real: whole read coding	paper_list	12790	12715	12673	8461	1707	1660	protein k7, orpheum	0.7
+real: whole read coding	paper_list	12790	12715	12673	8461	1428	1403	protein k7, orpheum	0.75
+real: whole read coding	paper_list	12790	12715	12673	8461	1105	1084	protein k7, orpheum	0.8
+real: whole read coding	paper_list	12790	12715	12673	8461	890	882	protein k7, orpheum	0.85
+real: whole read coding	paper_list	12790	12715	12673	8461	722	714	protein k7, orpheum	0.9
+real: whole read coding	paper_list	12790	12715	12673	8461	598	598	protein k7, orpheum	0.95
+real: whole read coding	paper_list	12790	12715	12673	8461	575	575	protein k7, orpheum	1.0
+real: whole read coding	random	6357	6337	6325	4072	6325	4072	protein k7, orpheum	0.0
+real: whole read coding	random	6357	6337	6325	4072	6316	4063	protein k7, orpheum	0.05
+real: whole read coding	random	6357	6337	6325	4072	6188	3990	protein k7, orpheum	0.1
+real: whole read coding	random	6357	6337	6325	4072	5927	3828	protein k7, orpheum	0.15
+real: whole read coding	random	6357	6337	6325	4072	5503	3602	protein k7, orpheum	0.2
+real: whole read coding	random	6357	6337	6325	4072	4663	3061	protein k7, orpheum	0.25
+real: whole read coding	random	6357	6337	6325	4072	3601	2325	protein k7, orpheum	0.3
+real: whole read coding	random	6357	6337	6325	4072	2531	1640	protein k7, orpheum	0.35
+real: whole read coding	random	6357	6337	6325	4072	1802	1150	protein k7, orpheum	0.4
+real: whole read coding	random	6357	6337	6325	4072	1148	753	protein k7, orpheum	0.45
+real: whole read coding	random	6357	6337	6325	4072	839	565	protein k7, orpheum	0.5
+real: whole read coding	random	6357	6337	6325	4072	532	384	protein k7, orpheum	0.55
+real: whole read coding	random	6357	6337	6325	4072	416	313	protein k7, orpheum	0.6
+real: whole read coding	random	6357	6337	6325	4072	311	249	protein k7, orpheum	0.65
+real: whole read coding	random	6357	6337	6325	4072	233	187	protein k7, orpheum	0.7
+real: whole read coding	random	6357	6337	6325	4072	165	137	protein k7, orpheum	0.75
+real: whole read coding	random	6357	6337	6325	4072	119	95	protein k7, orpheum	0.8
+real: whole read coding	random	6357	6337	6325	4072	97	79	protein k7, orpheum	0.85
+real: whole read coding	random	6357	6337	6325	4072	85	67	protein k7, orpheum	0.9
+real: whole read coding	random	6357	6337	6325	4072	68	56	protein k7, orpheum	0.95
+real: whole read coding	random	6357	6337	6325	4072	58	46	protein k7, orpheum	1.0
+simulated from CDS	paper_list	11820	11577	11567	8784	11567	8784	protein k7, orpheum	0.0
+simulated from CDS	paper_list	11820	11577	11567	8784	11444	8679	protein k7, orpheum	0.05
+simulated from CDS	paper_list	11820	11577	11567	8784	11034	8339	protein k7, orpheum	0.1
+simulated from CDS	paper_list	11820	11577	11567	8784	10151	7668	protein k7, orpheum	0.15
+simulated from CDS	paper_list	11820	11577	11567	8784	8758	6684	protein k7, orpheum	0.2
+simulated from CDS	paper_list	11820	11577	11567	8784	7043	5464	protein k7, orpheum	0.25
+simulated from CDS	paper_list	11820	11577	11567	8784	5095	4075	protein k7, orpheum	0.3
+simulated from CDS	paper_list	11820	11577	11567	8784	3376	2821	protein k7, orpheum	0.35
+simulated from CDS	paper_list	11820	11577	11567	8784	2479	2137	protein k7, orpheum	0.4
+simulated from CDS	paper_list	11820	11577	11567	8784	1814	1615	protein k7, orpheum	0.45
+simulated from CDS	paper_list	11820	11577	11567	8784	1346	1241	protein k7, orpheum	0.5
+simulated from CDS	paper_list	11820	11577	11567	8784	963	922	protein k7, orpheum	0.55
+simulated from CDS	paper_list	11820	11577	11567	8784	777	757	protein k7, orpheum	0.6
+simulated from CDS	paper_list	11820	11577	11567	8784	596	584	protein k7, orpheum	0.65
+simulated from CDS	paper_list	11820	11577	11567	8784	434	429	protein k7, orpheum	0.7
+simulated from CDS	paper_list	11820	11577	11567	8784	342	339	protein k7, orpheum	0.75
+simulated from CDS	paper_list	11820	11577	11567	8784	252	250	protein k7, orpheum	0.8
+simulated from CDS	paper_list	11820	11577	11567	8784	191	189	protein k7, orpheum	0.85
+simulated from CDS	paper_list	11820	11577	11567	8784	138	138	protein k7, orpheum	0.9
+simulated from CDS	paper_list	11820	11577	11567	8784	108	108	protein k7, orpheum	0.95
+simulated from CDS	paper_list	11820	11577	11567	8784	90	90	protein k7, orpheum	1.0
+simulated from CDS	random	28034	27344	27306	20460	27306	20460	protein k7, orpheum	0.0
+simulated from CDS	random	28034	27344	27306	20460	26836	20040	protein k7, orpheum	0.05
+simulated from CDS	random	28034	27344	27306	20460	25217	18649	protein k7, orpheum	0.1
+simulated from CDS	random	28034	27344	27306	20460	22125	16214	protein k7, orpheum	0.15
+simulated from CDS	random	28034	27344	27306	20460	17793	12957	protein k7, orpheum	0.2
+simulated from CDS	random	28034	27344	27306	20460	13002	9429	protein k7, orpheum	0.25
+simulated from CDS	random	28034	27344	27306	20460	8313	6063	protein k7, orpheum	0.3
+simulated from CDS	random	28034	27344	27306	20460	4695	3526	protein k7, orpheum	0.35
+simulated from CDS	random	28034	27344	27306	20460	3067	2342	protein k7, orpheum	0.4
+simulated from CDS	random	28034	27344	27306	20460	1957	1545	protein k7, orpheum	0.45
+simulated from CDS	random	28034	27344	27306	20460	1293	1060	protein k7, orpheum	0.5
+simulated from CDS	random	28034	27344	27306	20460	876	756	protein k7, orpheum	0.55
+simulated from CDS	random	28034	27344	27306	20460	641	583	protein k7, orpheum	0.6
+simulated from CDS	random	28034	27344	27306	20460	501	466	protein k7, orpheum	0.65
+simulated from CDS	random	28034	27344	27306	20460	360	337	protein k7, orpheum	0.7
+simulated from CDS	random	28034	27344	27306	20460	289	267	protein k7, orpheum	0.75
+simulated from CDS	random	28034	27344	27306	20460	228	207	protein k7, orpheum	0.8
+simulated from CDS	random	28034	27344	27306	20460	194	175	protein k7, orpheum	0.85
+simulated from CDS	random	28034	27344	27306	20460	134	124	protein k7, orpheum	0.9
+simulated from CDS	random	28034	27344	27306	20460	104	96	protein k7, orpheum	0.95
+simulated from CDS	random	28034	27344	27306	20460	87	80	protein k7, orpheum	1.0
 real: no protein hit	none	646631	482447	472289	0	472289	0	protein k7, stopfree	0.0
 real: no protein hit	none	646631	482447	472289	0	462519	0	protein k7, stopfree	0.05
 real: no protein hit	none	646631	482447	472289	0	433905	0	protein k7, stopfree	0.1

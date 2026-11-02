@@ -90,69 +90,127 @@ print(
     )
 )
 
+import numpy as np  # noqa: E402
+import seaborn as sns  # noqa: E402
+
+CONTRASTS = [
+    "young_2h",
+    "young_24h",
+    "old_24h",
+    "young_13_49d",
+    "young_132d",
+    "old_41_93d",
+    "not_in_SI",
+]
+order = st.with_columns(
+    o0=(pl.col("dataset") != "PRJNA1219309").cast(pl.Int8),
+    o1=pl.col("contrast").replace_strict(
+        {c: i for i, c in enumerate(CONTRASTS)}, default=99
+    ),
+    o2=(pl.col("condition") == "PEC").cast(pl.Int8),
+).sort("o0", "dataset", "o1", "o2", "all_reads")
+runs_o = order["run"].to_list()
+n = len(runs_o)
+share_bins = [round(i / 20, 2) for i in range(20)]
+count_bins = list(range(1, 51))
+
+
+def matrix(kind, bins):
+    m = np.full((n, len(bins)), np.nan)
+    x = hs.filter(pl.col("kind") == kind)
+    tot = dict(zip(order["run"], order["any_match"]))
+    idx = {b: j for j, b in enumerate(bins)}
+    ridx = {r: i for i, r in enumerate(runs_o)}
+    for r, b, v in x.select("run", "bin", "reads").iter_rows():
+        if r in ridx and b in idx and tot[r]:
+            m[ridx[r], idx[b]] = 100 * v / tot[r]
+    return np.nan_to_num(m, nan=0.0)
+
+
 pf.use_style()
-fig, axs = pf.figure(pf.TWO_COLUMN_MM, 62, ncols=3)
-a, b, c = axs
-COND = {"PEC": pf.OKABE_ITO["reddish_purple"], "control": "black"}
-for r in st.iter_rows(named=True):
-    col = COND.get(r["condition"], pf.GREY)
-    for ax, kind in [(a, "share of k-mers in Swiss-Prot"), (b, "matching k-mers")]:
-        x = hs.filter((pl.col("run") == r["run"]) & (pl.col("kind") == kind)).sort(
-            "bin"
-        )
-        if x.height == 0:
-            continue
-        y = 100 * x["reads"] / r["any_match"]
-        if kind.startswith("share"):
-            ax.step(x["bin"] + 0.05, y, where="pre", color=col, lw=0.5, alpha=0.6)
-        else:
-            ax.plot(x["bin"], y, color=col, lw=0.5, alpha=0.6)
-for cond, col in COND.items():
-    a.plot([], [], color=col, label=f"{cond} run")
-a.plot([], [], color=pf.GREY, label="human run (paper's exercise series)")
-a.axvline(0.5, color=pf.GREY, ls=":", lw=0.8, label="cutoff 0.5 (Olga's)")
-a.axvline(
-    chosen,
-    color=pf.GREY,
-    ls="-",
-    lw=0.8,
-    label=f"cutoff {chosen} (from the Botryllus test)",
+H = min(170, 40 + 0.9 * n)
+fig, axs = pf.figure(
+    pf.TWO_COLUMN_MM,
+    H,
+    ncols=3,
+    sharey=True,
+    gridspec_kw={"width_ratios": [1, 1.2, 0.8]},
 )
-a.set_xlim(0, 1)
-a.set_xlabel("Share of chosen frame's k-mers in Swiss-Prot")
-a.set_ylabel("Reads (% of reads with any match)")
+a, b, c = axs
+cmap = sns.color_palette("mako_r", as_cmap=True)
+A = matrix("share of k-mers in Swiss-Prot", share_bins)
+B = matrix("matching k-mers", [float(x) for x in count_bins])
+vmax = float(np.percentile(np.concatenate([A.ravel(), B.ravel()]), 99))
+ima = a.imshow(
+    A,
+    aspect="auto",
+    cmap=cmap,
+    vmin=0,
+    vmax=vmax,
+    extent=(0, 1, n - 0.5, -0.5),
+    interpolation="nearest",
+)
+b.imshow(
+    B,
+    aspect="auto",
+    cmap=cmap,
+    vmin=0,
+    vmax=vmax,
+    extent=(0.5, 50.5, n - 0.5, -0.5),
+    interpolation="nearest",
+)
+cb = fig.colorbar(ima, ax=[a, b], location="top", fraction=0.04, pad=0.02, shrink=0.6)
+cb.set_label(
+    f"Reads in the bin (% of the run's reads with any Swiss-Prot match; darkest = {vmax:.0f} % or more)"
+)
+a.axvline(0.5, color="white", ls=":", lw=0.8)
+a.axvline(chosen, color="white", ls="-", lw=0.8)
+a.set_xlabel(
+    "Share of chosen frame's k-mers in Swiss-Prot\n(white: cutoff 0.1 solid, 0.5 dotted)"
+)
 b.set_xlabel("Matching k-mers in chosen frame")
-b.set_ylabel("Reads (% of reads with any match)")
-b.set_xlim(0, 50)
-cols = [c for c in st.columns if c.startswith("fraction_ge")]
-order = st.sort("dataset", "condition", "all_reads")
-xs = range(order.height)
+# group labels and separators
+groups = order.with_columns(
+    g=pl.when(pl.col("dataset") == "PRJNA1219309")
+    .then(pl.col("contrast") + " " + pl.col("condition"))
+    .otherwise(pl.lit("human ") + pl.col("dataset"))
+)["g"].to_list()
+ticks, labels, start = [], [], 0
+for i in range(1, n + 1):
+    if i == n or groups[i] != groups[start]:
+        ticks.append((start + i - 1) / 2)
+        labels.append(f"{groups[start].replace('_', ' ')} ({i - start})")
+        if i < n:
+            for ax in axs:
+                ax.axhline(i - 0.5, color="white" if ax is not c else pf.GREY, lw=0.6)
+        start = i
+a.set_yticks(ticks, labels)
+a.set_ylabel("Run (group, number of runs)")
+y = np.arange(n)
 c.scatter(
-    xs,
     100 * order["any_match"] / order["all_reads"],
-    s=6,
+    y,
+    s=5,
     marker="o",
     facecolors="white",
     edgecolors="black",
     lw=0.5,
-    label="any match",
+    label="any Swiss-Prot match",
 )
-marks = ["s", "^", "v"]
-for i, col in enumerate(cols):
+fr = [col for col in order.columns if col.startswith("fraction_ge")]
+for i, col in enumerate(fr):
     c.scatter(
-        xs,
         100 * order[col] / order["all_reads"],
-        s=6,
-        marker=marks[i % 3],
-        color="black",
+        y,
+        s=5,
+        marker=["s", "^"][i % 2],
+        color="black" if i == 0 else pf.OKABE_ITO["reddish_purple"],
         lw=0,
         label=f"share >= {col[len('fraction_ge_'):]}",
     )
-c.set_xlabel("Run (grouped by dataset and condition)")
-c.set_ylabel("Reads kept (% of all reads)")
-c.set_xticks([])
-c.legend(loc="upper right", fontsize=5)
-a.legend(loc="upper right", fontsize=5)
+c.set_xlim(0, 100)
+c.set_xlabel("Reads kept (% of all reads)")
+c.legend(loc="upper center", bbox_to_anchor=(0.5, 1.0 + 12 / H), ncol=1, fontsize=5)
 a.set_title(f"Frame choice: {label}", loc="left")
 for ax, letter in zip(axs, "abc"):
     pf.panel_label(ax, letter)

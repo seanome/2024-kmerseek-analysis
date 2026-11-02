@@ -4,7 +4,7 @@
 #SBATCH --cpus-per-task=2
 #SBATCH --output=logs/%x.%A_%a.out
 # One run of runs.tsv (array index = row, 0-based, header excluded; or RUNS_FILE lists runs).
-# 1. pec-tools best-frame: per read, among frames without a stop codon (FRAME_RULE=stopfree,
+# 1. pec-tools best-frame: per read, among frames without a stop codon and not of low complexity (FRAME_RULE=orpheum,
 #    orpheum's rule), keep the one with the most Swiss-Prot k-mers (alphabet FRAME_ALPHA, k FRAME_K;
 #    orpheum's defaults protein k7) and write it when its matching share >= each cutoff.
 #    CUTOFFS must be written as Rust prints them (0.1, 0.5), because they name the files.
@@ -15,7 +15,7 @@ set -euo pipefail
 export PATH=$PEC_ROOT/env/bin:$PATH
 FRAME_ALPHA=${FRAME_ALPHA:-protein}
 FRAME_K=${FRAME_K:-7}
-FRAME_RULE=${FRAME_RULE:-stopfree}
+FRAME_RULE=${FRAME_RULE:-orpheum}
 W=$PEC_ROOT/sra_search
 cd "$W"
 if [ -n "${RUNS_FILE:-}" ]; then
