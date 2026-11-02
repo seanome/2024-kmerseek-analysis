@@ -1,0 +1,5 @@
+source	reads	orpheum_reads_kept	orpheum_reads_more_than_one_frame	orpheum_right	pectools_reads_kept_ge_0_5	pectools_right	both_kept
+real: no protein hit	12861	1394	402	0	2068	0	1394
+real: partly coding	2187	199	40	80	248	95	199
+real: whole read coding	4952	1172	172	865	1306	913	1172
+simulated from CDS	798	43	0	39	51	47	43
