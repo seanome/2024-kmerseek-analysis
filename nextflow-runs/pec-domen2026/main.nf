@@ -9,6 +9,7 @@
  *   -> SPLASH anchor counts -> PyDESeq2
  *   -> DE-kupl 1.3.5 (limma test) -> contigs -> the same peptide search
  *      -> KaMRaT v1.2 on DE-kupl's k-mer counts (t-test, merge) -> contigs -> the same search
+ *      -> KaMRaT contigs at uncorrected p <= 0.05 and 2-fold -> the same search
  * plus the known-answer control (simulated reads, same stages, scored against the truth).
  *
  * Every result is kept with storeDir under params.pec_root, in the same places the earlier
@@ -287,6 +288,29 @@ process kamrat {
     """
 }
 
+// KaMRaT contigs at the anchor-count route's uncorrected cutoff (added 2026-11-02). KaMRaT 1.2
+// reports only the corrected p, which keeps 0 contigs in every real contrast; this recomputes
+// KaMRaT's own Welch t-test on log2(count + 1) per contig (on its mean normalised counts) and
+// keeps p <= 0.05 and |log2 fold change| >= 1. The control has no paper list, so it is skipped.
+process kamrat_nominal {
+    tag "${contrast}"
+    label 'small_mem'
+    storeDir "${params.pec_root}/contrasts/${contrast}"
+
+    input:
+    tuple val(contrast), path(design), path(kamrat_dir)
+
+    output:
+    tuple val(contrast), path("kamrat_nominal")
+
+    script:
+    """
+    ${ENV}/python ${SCRIPTS}/select_kamrat_nominal.py ${kamrat_dir}/contigs_all.tsv.gz ${design} kamrat_nominal > kamrat_nominal.log
+    mv kamrat_nominal.log kamrat_nominal/
+    test -s kamrat_nominal/contigs.tsv
+    """
+}
+
 // ---------------------------------------------------------------- protein search
 
 process search {
@@ -303,9 +327,10 @@ process search {
     script:
     // compactors, compactors_anchor_nominal: <dir>/compactors.tsv, column compactor; DE-kupl: its merged contigs, column contig
     // KaMRaT: its contigs with representative corrected p <= 0.05, column contig
+    // kamrat_nominal: KaMRaT contigs with uncorrected p <= 0.05 and 2-fold, column contig
     def prep = src.startsWith('compactors')
         ? "ln -s ../${seqdir}/compactors.tsv seqs.tsv; COL=compactor"
-        : src == 'kamrat_ttest'
+        : src in ['kamrat_ttest', 'kamrat_nominal']
         ? "ln -s ../${seqdir}/contigs.tsv seqs.tsv; COL=contig"
         : "zcat ../${seqdir}/DEkupl_result/control_vs_PEC_kmer_counts/merged-diff-counts.tsv.gz > dekupl_contigs.tsv; ln -s dekupl_contigs.tsv seqs.tsv; COL=contig"
     """
@@ -452,6 +477,10 @@ workflow {
     km = kamrat(dk.join(per_contrast.map { c, cjs, dsg, il, pairs -> tuple(c, dsg) })
                   .map { c, d, dsg -> tuple(c, dsg, d) })
 
+    kn = kamrat_nominal(km.filter { it[0] != 'control' }
+                          .join(per_contrast.map { c, cjs, dsg, il, pairs -> tuple(c, dsg) })
+                          .map { c, k, dsg -> tuple(c, dsg, k) })
+
     // the control has no paper list, so it gets no paper-cutoff compactors
     an = compactors_nominal(ac.filter { it[0] != 'control' }.map { c, a, d -> tuple(c, d) }
                               .join(per_contrast.map { c, cjs, dsg, il, pairs -> tuple(c, il) }))
@@ -459,7 +488,8 @@ workflow {
     sr = search(comp.map { c, d -> tuple(c, 'compactors', d) }
                .mix(an.map { c, d -> tuple(c, 'compactors_anchor_nominal', d) })
                .mix(dk.map { c, d -> tuple(c, "dekupl_${params.dekupl_method}", d) })
-               .mix(km.map { c, d -> tuple(c, 'kamrat_ttest', d) }))
+               .mix(km.map { c, d -> tuple(c, 'kamrat_ttest', d) })
+               .mix(kn.map { c, d -> tuple(c, 'kamrat_nominal', d) }))
 
     paper_recovery(sr.filter { c, src, d -> c != 'control' && src.startsWith('compactors') }
                      .map { c, src, d -> "${c}/${src}" }.collect())

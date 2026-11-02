@@ -1,60 +1,60 @@
-contrast	bin	genes	splash_reached	anchor_nominal_reached	binning
-old_24h	1-10	13814	57	62	expression
-old_24h	10-100	2262	58	121	expression
-old_24h	100-1k	379	141	202	expression
-old_24h	<1	19821	60	45	expression
-old_24h	>1k	90	69	53	expression
-old_41_93d	1-10	7512	56	11	expression
-old_41_93d	10-100	1484	70	18	expression
-old_41_93d	100-1k	246	122	42	expression
-old_41_93d	<1	18760	73	5	expression
-old_41_93d	>1k	31	26	15	expression
-young_132d	1-10	6298	22	30	expression
-young_132d	10-100	1655	33	40	expression
-young_132d	100-1k	342	97	103	expression
-young_132d	<1	12698	15	18	expression
-young_132d	>1k	68	56	53	expression
-young_13_49d	1-10	4716	53	22	expression
-young_13_49d	10-100	981	94	31	expression
-young_13_49d	100-1k	219	146	90	expression
-young_13_49d	<1	19607	96	10	expression
-young_13_49d	>1k	25	22	14	expression
-young_24h	1-10	17087	1798	102	expression
-young_24h	10-100	6919	3226	143	expression
-young_24h	100-1k	1635	1448	260	expression
-young_24h	<1	27242	1892	158	expression
-young_24h	>1k	320	310	172	expression
-young_2h	1-10	21358	599	286	expression
-young_2h	10-100	7126	1023	366	expression
-young_2h	100-1k	1458	626	290	expression
-young_2h	<1	21196	596	378	expression
-young_2h	>1k	297	240	120	expression
-old_24h	0.001-0.01	30	7	13	pvalue_baseMean_ge_10
-old_24h	0.01-0.05	49	21	21	pvalue_baseMean_ge_10
-old_24h	0.05-0.2	142	26	31	pvalue_baseMean_ge_10
-old_24h	<0.001	16	5	4	pvalue_baseMean_ge_10
-old_24h	>0.2	2494	209	307	pvalue_baseMean_ge_10
-old_41_93d	0.001-0.01	7	0	4	pvalue_baseMean_ge_10
-old_41_93d	0.01-0.05	20	3	3	pvalue_baseMean_ge_10
-old_41_93d	0.05-0.2	120	18	11	pvalue_baseMean_ge_10
-old_41_93d	>0.2	1596	192	56	pvalue_baseMean_ge_10
-young_132d	0.001-0.01	17	0	1	pvalue_baseMean_ge_10
-young_132d	0.01-0.05	53	5	5	pvalue_baseMean_ge_10
-young_132d	0.05-0.2	187	15	17	pvalue_baseMean_ge_10
-young_132d	<0.001	17	3	7	pvalue_baseMean_ge_10
-young_132d	>0.2	1761	155	161	pvalue_baseMean_ge_10
-young_13_49d	0.001-0.01	3	0	0	pvalue_baseMean_ge_10
-young_13_49d	0.01-0.05	28	2	2	pvalue_baseMean_ge_10
-young_13_49d	0.05-0.2	135	37	12	pvalue_baseMean_ge_10
-young_13_49d	<0.001	1	0	0	pvalue_baseMean_ge_10
-young_13_49d	>0.2	1018	212	117	pvalue_baseMean_ge_10
-young_24h	0.001-0.01	46	22	5	pvalue_baseMean_ge_10
-young_24h	0.01-0.05	243	155	14	pvalue_baseMean_ge_10
-young_24h	0.05-0.2	911	545	55	pvalue_baseMean_ge_10
-young_24h	<0.001	5	2	0	pvalue_baseMean_ge_10
-young_24h	>0.2	6836	3891	470	pvalue_baseMean_ge_10
-young_2h	0.001-0.01	102	33	23	pvalue_baseMean_ge_10
-young_2h	0.01-0.05	320	82	61	pvalue_baseMean_ge_10
-young_2h	0.05-0.2	820	219	116	pvalue_baseMean_ge_10
-young_2h	<0.001	8	5	2	pvalue_baseMean_ge_10
-young_2h	>0.2	6953	1406	486	pvalue_baseMean_ge_10
+contrast	bin	genes	splash_reached	anchor_nominal_reached	kamrat_nominal_reached	binning
+old_24h	1-10	13814	57	62	3	expression
+old_24h	10-100	2262	58	121	13	expression
+old_24h	100-1k	379	141	202	10	expression
+old_24h	<1	19821	60	45	0	expression
+old_24h	>1k	90	69	53	2	expression
+old_41_93d	1-10	7512	56	11	23	expression
+old_41_93d	10-100	1484	70	18	36	expression
+old_41_93d	100-1k	246	122	42	20	expression
+old_41_93d	<1	18760	73	5	11	expression
+old_41_93d	>1k	31	26	15	0	expression
+young_132d	1-10	6298	22	30	48	expression
+young_132d	10-100	1655	33	40	144	expression
+young_132d	100-1k	342	97	103	101	expression
+young_132d	<1	12698	15	18	23	expression
+young_132d	>1k	68	56	53	24	expression
+young_13_49d	1-10	4716	53	22	20	expression
+young_13_49d	10-100	981	94	31	35	expression
+young_13_49d	100-1k	219	146	90	6	expression
+young_13_49d	<1	19607	96	10	17	expression
+young_13_49d	>1k	25	22	14	2	expression
+young_24h	1-10	17087	1798	102	509	expression
+young_24h	10-100	6919	3226	143	767	expression
+young_24h	100-1k	1635	1448	260	117	expression
+young_24h	<1	27242	1892	158	236	expression
+young_24h	>1k	320	310	172	10	expression
+young_2h	1-10	21358	599	286	216	expression
+young_2h	10-100	7126	1023	366	136	expression
+young_2h	100-1k	1458	626	290	23	expression
+young_2h	<1	21196	596	378	147	expression
+young_2h	>1k	297	240	120	2	expression
+old_24h	0.001-0.01	30	7	13	0	pvalue_baseMean_ge_10
+old_24h	0.01-0.05	49	21	21	0	pvalue_baseMean_ge_10
+old_24h	0.05-0.2	142	26	31	2	pvalue_baseMean_ge_10
+old_24h	<0.001	16	5	4	1	pvalue_baseMean_ge_10
+old_24h	>0.2	2494	209	307	22	pvalue_baseMean_ge_10
+old_41_93d	0.001-0.01	7	0	4	3	pvalue_baseMean_ge_10
+old_41_93d	0.01-0.05	20	3	3	3	pvalue_baseMean_ge_10
+old_41_93d	0.05-0.2	120	18	11	9	pvalue_baseMean_ge_10
+old_41_93d	>0.2	1596	192	56	41	pvalue_baseMean_ge_10
+young_132d	0.001-0.01	17	0	1	2	pvalue_baseMean_ge_10
+young_132d	0.01-0.05	53	5	5	8	pvalue_baseMean_ge_10
+young_132d	0.05-0.2	187	15	17	25	pvalue_baseMean_ge_10
+young_132d	<0.001	17	3	7	3	pvalue_baseMean_ge_10
+young_132d	>0.2	1761	155	161	230	pvalue_baseMean_ge_10
+young_13_49d	0.001-0.01	3	0	0	0	pvalue_baseMean_ge_10
+young_13_49d	0.01-0.05	28	2	2	3	pvalue_baseMean_ge_10
+young_13_49d	0.05-0.2	135	37	12	4	pvalue_baseMean_ge_10
+young_13_49d	<0.001	1	0	0	0	pvalue_baseMean_ge_10
+young_13_49d	>0.2	1018	212	117	36	pvalue_baseMean_ge_10
+young_24h	0.001-0.01	46	22	5	4	pvalue_baseMean_ge_10
+young_24h	0.01-0.05	243	155	14	26	pvalue_baseMean_ge_10
+young_24h	0.05-0.2	911	545	55	132	pvalue_baseMean_ge_10
+young_24h	<0.001	5	2	0	1	pvalue_baseMean_ge_10
+young_24h	>0.2	6836	3891	470	717	pvalue_baseMean_ge_10
+young_2h	0.001-0.01	102	33	23	7	pvalue_baseMean_ge_10
+young_2h	0.01-0.05	320	82	61	8	pvalue_baseMean_ge_10
+young_2h	0.05-0.2	820	219	116	25	pvalue_baseMean_ge_10
+young_2h	<0.001	8	5	2	0	pvalue_baseMean_ge_10
+young_2h	>0.2	6953	1406	486	102	pvalue_baseMean_ge_10
