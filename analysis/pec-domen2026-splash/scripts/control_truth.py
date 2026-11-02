@@ -139,7 +139,12 @@ def main():
         ("abundance", "pair_condition"),
         ("abundance_condition_only", "condition"),
     ):
-        d = pl.read_parquet(cdir / f"deseq/deseq_{design}.parquet")
+        dq = cdir / f"deseq/deseq_{design}.parquet"
+        if not dq.exists():  # the equal-depth runs (slurm/20_equal_depth.sbatch) have SPLASH only
+            dekupl_not_run.append(name)
+            print(f"WARNING: {dq} is missing; {name} is reported as not run", file=sys.stderr)
+            continue
+        d = pl.read_parquet(dq)
         hit = d.filter(
             (pl.col("q_bh_all") <= 0.05) & (pl.col("log2FoldChange").abs() > 1)
         )
@@ -152,7 +157,8 @@ def main():
         splash_scores_rows=scores_n,
         supervised_q_column=corr[0] if corr else "BH(Cjs_0_pval) computed here",
         channels={},
-        channels_not_run=["kamrat_ttest" if m == "kamrat" else f"dekupl_{m}" for m in dekupl_not_run],
+        channels_not_run=["kamrat_ttest" if m == "kamrat" else m if m.startswith("abundance") else f"dekupl_{m}"
+                          for m in dekupl_not_run],
     )
     placement = Counter(
         place(a) if place(a) in ("multi", "none") else "one_gene" for a in anchors
