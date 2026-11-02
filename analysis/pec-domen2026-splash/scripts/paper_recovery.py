@@ -14,6 +14,20 @@ protein (botznik IDs g<N>.t<M>, gene g<N>). Channels:
 - anchor_nominal: compactors of the anchors whose anchor-count DESeq2 fit passes the paper's
   cutoff (uncorrected p <= 0.05, |log2FC| > 1; select_nominal_anchors.py). A peptide carries the
   direction of its anchor, and the up list is compared with genes reached by up anchors.
+Added 2026-11-02 (Olga: "what about KaMRaT and DE-kupl here?", then "use nominal p < 0.05 for
+kamrat and de-kupl" and "do KAMRAT + DeSeq2 not just a ttest"). Each has a direction per contig,
+carried into pep.peptides.tsv by the search step's translate (column `direction`, up = higher in PEC):
+- kamrat_nominal: KaMRaT contigs, Welch t-test on log2(count + 1), p <= 0.05 and 2-fold
+  (select_kamrat_nominal.py; scored for comparison, not drawn).
+- kamrat_ttest_p05: the same t-test, p < 0.05, no fold-change cutoff.
+- kamrat_deseq2_p05: KaMRaT contigs tested with PyDESeq2 (kamrat_contig_counts.py,
+  anchor_deseq.py, select_kamrat_deseq.py), p < 0.05, no fold-change cutoff.
+- dekupl_limma_p05: DE-kupl k-mers with limma p < 0.05 (raw_pvals.txt.gz), no fold-change
+  cutoff, merged into contigs per direction (select_dekupl_nominal.py).
+- dekupl_deseq2_p05: the same with DE-kupl's DESeq2 test (19_dekupl_deseq2_p05.sbatch).
+A channel whose search folder is missing is skipped. The two first channels draw their random
+sets from one shared stream (seed 361), as before, so their numbers do not change when channels
+are added; each added channel has its own stream (seed [361, channel number]).
 
 For each contrast, channel and list (up, down), the observed fraction of listed genes reached is
 compared with 1,000 random gene sets of the same size, drawn from the genes in the paper's DESeq2
@@ -40,21 +54,34 @@ deseq = pl.read_parquet(paper_deseq, columns=["Gene_ID", "baseMean", "contrast"]
 lists = pl.read_csv(named_lists, separator="\t")
 
 
+SEARCH = {"splash": "search_compactors", "anchor_nominal": "search_compactors_anchor_nominal",
+          "kamrat_nominal": "search_kamrat_nominal", "kamrat_ttest_p05": "search_kamrat_p05",
+          "kamrat_deseq2_p05": "search_kamrat_deseq2_p05", "dekupl_limma_p05": "search_dekupl_limma_p05",
+          "dekupl_deseq2_p05": "search_dekupl_deseq2_p05"}
+
+
 def reached(contrast, channel):
     """{direction or 'any': set of genes} for one channel, or None when its files are missing."""
-    src = {"splash": "search_compactors", "anchor_nominal": "search_compactors_anchor_nominal"}[channel]
+    src = SEARCH[channel]
     aln = contrasts_dir / contrast / src / "align.botznik.parquet"
     if not aln.exists():
         return None
     hits = (pl.read_parquet(aln, columns=["query", "target", "supported"]).filter(pl.col("supported"))
             .join(bz, on="target").select(pl.col("query").alias("peptide_id"), "gene"))
     out = {"any": set(hits["gene"])}
-    if channel == "anchor_nominal":
-        pep = pl.read_csv(contrasts_dir / contrast / src / "pep.peptides.tsv", separator="\t",
-                          columns=["peptide_id", "anchor"])
-        anchors = pl.read_csv(contrasts_dir / contrast / "compactors_anchor_nominal/anchors_nominal.tsv",
-                              separator="\t", columns=["anchor", "direction"])
-        hd = hits.join(pep, on="peptide_id").join(anchors, on="anchor")
+    if channel != "splash":
+        if channel == "anchor_nominal":
+            pep = pl.read_csv(contrasts_dir / contrast / src / "pep.peptides.tsv", separator="\t",
+                              columns=["peptide_id", "anchor"])
+            anchors = pl.read_csv(contrasts_dir / contrast / "compactors_anchor_nominal/anchors_nominal.tsv",
+                                  separator="\t", columns=["anchor", "direction"])
+            hd = hits.join(pep, on="peptide_id").join(anchors, on="anchor")
+        else:
+            pep = pl.read_csv(contrasts_dir / contrast / src / "pep.peptides.tsv", separator="\t",
+                              columns=["peptide_id", "direction"])
+            hd = hits.join(pep, on="peptide_id")
+        assert set(hd["direction"].unique()) <= {"up", "down"}, (contrast, channel, hd["direction"].unique())
+        assert hd.height == hits.height, f"{contrast} {channel}: peptides without a direction"
         for d in ("up", "down"):
             out[d] = set(hd.filter(pl.col("direction") == d)["gene"])
     return out
@@ -69,7 +96,9 @@ for c in CONTRASTS:
                           .cast(pl.Utf8).alias("decile")))
     decile_of = dict(zip(pool["Gene_ID"], pool["decile"]))
     by_decile = {d: np.array(g) for d, g in pool.group_by("decile").agg("Gene_ID").iter_rows()}
-    for channel in ("splash", "anchor_nominal"):
+    for ci, channel in enumerate(SEARCH):
+        # the first two channels keep the shared stream they always used; added ones get their own
+        r_ = rng if channel in ("splash", "anchor_nominal") else np.random.default_rng([SEED, ci, CONTRASTS.index(c)])
         got = reached(c, channel)
         if got is None:
             print(f"{c} {channel}: no alignment file, skipped", flush=True)
@@ -80,9 +109,11 @@ for c in CONTRASTS:
             hit_set = got.get(direction, got["any"])
             obs = sum(g in hit_set for g in usable) / len(usable) if usable else float("nan")
             need = pl.Series([decile_of[g] for g in usable]).value_counts() if usable else None
+            if usable and r_ is not rng:
+                need = need.sort(need.columns[0])
             null = []
             for _ in range(N_NULL):
-                draw = np.concatenate([rng.choice(by_decile[d], size=n, replace=False)
+                draw = np.concatenate([r_.choice(by_decile[d], size=n, replace=False)
                                        for d, n in need.iter_rows()]) if usable else []
                 null.append(sum(g in hit_set for g in draw) / len(usable) if usable else float("nan"))
             null = np.array(null)

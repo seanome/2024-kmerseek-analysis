@@ -1,7 +1,10 @@
 #!/usr/bin/env python3
 """PyDESeq2 on anchor counts (the abundance channel), as fixed in design/ANALYSIS_PLAN.md.
 
-Usage: anchor_deseq.py <anchor_counts.tsv> <samples.txt> <design.tsv> <out_dir> [n_cpus]
+Usage: anchor_deseq.py <anchor_counts.tsv> <samples.txt> <design.tsv> <out_dir> [n_cpus] [designs]
+
+designs: optional comma list (pair_condition, condition, genotype_condition) to fit only those;
+used by kamrat_deseq.sbatch (2026-11-02), which needs only the design the route reads.
 
 anchor_counts.tsv: no header; columns anchor, n_targets, then one count column per sample in
 the order of samples.txt (output of `pec-tools anchor-counts`).
@@ -26,6 +29,7 @@ from pydeseq2.ds import DeseqStats
 
 counts_path, samples_path, design_path, out_dir = sys.argv[1:5]
 n_cpus = int(sys.argv[5]) if len(sys.argv) > 5 else 8
+only_designs = set(sys.argv[6].split(",")) if len(sys.argv) > 6 else None
 out = Path(out_dir)
 out.mkdir(parents=True, exist_ok=True)
 samples = open(samples_path).read().split()
@@ -75,6 +79,14 @@ elif same_partition:
     )
 else:
     summary["genotype_condition_note"] = "one genotype only; not estimable"
+
+if only_designs is not None:
+    unknown = only_designs - {"pair_condition", "condition", "genotype_condition"}
+    if unknown:
+        raise ValueError(f"unknown designs {unknown}")
+    designs = {k: v for k, v in designs.items() if k in only_designs}
+    if not designs:
+        raise ValueError(f"none of {only_designs} is estimable here")
 
 inference = DefaultInference(n_cpus=n_cpus)
 for name, factors in designs.items():
