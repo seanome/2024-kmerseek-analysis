@@ -8,9 +8,10 @@ with BH-corrected p <= 0.05 and |log2FC| >= 1 in diff-counts.tsv.gz (its config)
 in every real contrast. But it writes the uncorrected p of every tested k-mer to
 control_vs_PEC_kmer_counts/raw_pvals.txt.gz (no header: tag, p), so no rerun is needed.
 
-meanA, meanB and log2FC are rebuilt the way DE-kupl writes them: meanA = mean over control
-samples of count / normalization_factor (kmer_counts/normalization_factors.tsv), meanB the same
-over PEC, log2FC = log2(meanB / meanA). Condition A is control and B is PEC (dekupl_config.py),
+meanA, meanB and log2FC are rebuilt the way DE-kupl's limma step writes them
+(/dekupl/bin/limma_diff_method.R in the dekupl-run 1.3.5 image, lines 180-200): meanA = 1 + the
+mean over control samples of ln(1 + count / normalization_factor, rounded to 2 decimals)
+(kmer_counts/normalization_factors.tsv), meanB the same over PEC, log2FC = log2(meanB / meanA). Condition A is control and B is PEC (dekupl_config.py),
 so log2FC > 0 = higher in PEC = up. The script checks this rebuild against every k-mer DE-kupl
 itself kept in diff-counts.tsv.gz (only the simulated control has any) and stops on a mismatch.
 That rebuild is right for limma, whose log2FC DE-kupl writes as log2(meanB / meanA). With DESeq2,
@@ -44,8 +45,10 @@ counts = pl.read_csv(res / "kmer_counts/raw-counts.tsv.gz", separator="\t")
 n_tested, n_counted = pv.height, counts.height
 d = pv.filter(pl.col("pvalue") < 0.05).join(counts, on="tag", how="inner")
 if data_all is None:
-    d = (d.with_columns(pl.mean_horizontal([pl.col(s) / nf[s] for s in ctrl]).alias("meanA"),
-                        pl.mean_horizontal([pl.col(s) / nf[s] for s in pec]).alias("meanB"))
+    # limma_diff_method.R lines 180-200: log(1 + round(count / nf, 2)), natural log; mean + 1
+    ln1 = lambda s: (1 + (pl.col(s) / nf[s]).round(2)).log()
+    d = (d.with_columns((1 + pl.mean_horizontal([ln1(s) for s in ctrl])).round(6).alias("meanA"),
+                        (1 + pl.mean_horizontal([ln1(s) for s in pec])).round(6).alias("meanB"))
          .with_columns((pl.col("meanB") / pl.col("meanA")).log(2).alias("log2FC")))
 else:
     da = pl.read_csv(data_all, separator="\t", columns=["tag", "meanA", "meanB", "log2FC"], null_values=["NA"],

@@ -25,9 +25,11 @@ carried into pep.peptides.tsv by the search step's translate (column `direction`
 - dekupl_limma_p05: DE-kupl k-mers with limma p < 0.05 (raw_pvals.txt.gz), no fold-change
   cutoff, merged into contigs per direction (select_dekupl_nominal.py).
 - dekupl_deseq2_p05: the same with DE-kupl's DESeq2 test (19_dekupl_deseq2_p05.sbatch).
-A channel whose search folder is missing is skipped. The two first channels draw their random
-sets from one shared stream (seed 361), as before, so their numbers do not change when channels
-are added; each added channel has its own stream (seed [361, channel number]).
+A channel whose search folder is missing is skipped. Each channel and contrast has its own random
+stream (seed [361, channel number, contrast number]), and the deciles and their genes are drawn
+in sorted order, so a rerun gives the same numbers. Before 2026-11-02 one stream was shared and
+the decile order came from polars value_counts, which is not fixed; rerunning that version moved
+12 of the 24 shares of random sets by 0.001 to 0.022 (no list crossed 0.05 or 0.004).
 
 For each contrast, channel and list (up, down), the observed fraction of listed genes reached is
 compared with 1,000 random gene sets of the same size, drawn from the genes in the paper's DESeq2
@@ -60,8 +62,16 @@ SEARCH = {"splash": "search_compactors", "anchor_nominal": "search_compactors_an
           "dekupl_deseq2_p05": "search_dekupl_deseq2_p05"}
 
 
+# DE-kupl's own normalization factors for young_132d are broken (2 samples 0, 4 samples 1e219 to
+# 1e262; DEkupl_result/metadata/sample_conditions_full.tsv), so its limma p-values there are not
+# usable and its DESeq2 test stops ("all(value > 0) is not TRUE"). Not scored (2026-11-02).
+NOT_USABLE = {("young_132d", "dekupl_limma_p05"), ("young_132d", "dekupl_deseq2_p05")}
+
+
 def reached(contrast, channel):
     """{direction or 'any': set of genes} for one channel, or None when its files are missing."""
+    if (contrast, channel) in NOT_USABLE:
+        return None
     src = SEARCH[channel]
     aln = contrasts_dir / contrast / src / "align.botznik.parquet"
     if not aln.exists():
@@ -87,7 +97,6 @@ def reached(contrast, channel):
     return out
 
 
-rng = np.random.default_rng(SEED)
 rows = []
 for c in CONTRASTS:
     pool = (deseq.filter((pl.col("contrast") == c) & pl.col("baseMean").is_not_null()
@@ -95,13 +104,12 @@ for c in CONTRASTS:
             .with_columns(pl.col("baseMean").qcut(10, labels=[str(i) for i in range(10)], allow_duplicates=True)
                           .cast(pl.Utf8).alias("decile")))
     decile_of = dict(zip(pool["Gene_ID"], pool["decile"]))
-    by_decile = {d: np.array(g) for d, g in pool.group_by("decile").agg("Gene_ID").iter_rows()}
+    by_decile = {d: np.array(sorted(g)) for d, g in pool.group_by("decile").agg("Gene_ID").iter_rows()}
     for ci, channel in enumerate(SEARCH):
-        # the first two channels keep the shared stream they always used; added ones get their own
-        r_ = rng if channel in ("splash", "anchor_nominal") else np.random.default_rng([SEED, ci, CONTRASTS.index(c)])
+        r_ = np.random.default_rng([SEED, ci, CONTRASTS.index(c)])
         got = reached(c, channel)
         if got is None:
-            print(f"{c} {channel}: no alignment file, skipped", flush=True)
+            print(f"{c} {channel}: no alignment file or not usable, skipped", flush=True)
             continue
         for direction in ("up", "down"):
             genes = set(lists.filter((pl.col("contrast") == c) & (pl.col("direction") == direction))["gene_id"])
@@ -109,7 +117,7 @@ for c in CONTRASTS:
             hit_set = got.get(direction, got["any"])
             obs = sum(g in hit_set for g in usable) / len(usable) if usable else float("nan")
             need = pl.Series([decile_of[g] for g in usable]).value_counts() if usable else None
-            if usable and r_ is not rng:
+            if usable:
                 need = need.sort(need.columns[0])
             null = []
             for _ in range(N_NULL):
