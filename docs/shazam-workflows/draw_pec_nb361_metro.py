@@ -31,10 +31,12 @@ PROCESSES = [
     "splash",
     "compactors",
     "anchor_counts",
+    "compactors_nominal",
     "dekupl",
     "kamrat",
     "search",
     "control_truth",
+    "paper_recovery",
 ]
 
 COLOURS = dict(
@@ -144,7 +146,7 @@ def build_svg():
         ],
     )  # compactors -> search
     line(
-        "splash", [(390, 136.5), (570, 136.5), (570, 319.5), (740, 319.5)]
+        "splash", [(390, 136.5), (520, 136.5), (520, 319.5), (740, 319.5)]
     )  # -> control_truth
     line(
         "counts",
@@ -152,17 +154,21 @@ def build_svg():
             (390, 143.5),
             (440, 143.5),
             (465, 175),
-            (555, 175),
-            (555, 326.5),
+            (527, 175),
+            (527, 326.5),
             (740, 326.5),
         ],
     )  # anchor_counts -> control_truth
+    line(
+        "counts",
+        [(527, 175), (648, 175), (668, 156.5), (740, 156.5)],
+    )  # anchor_counts -> compactors_nominal -> search
     # after dekupl
     line(
         "dekupl", [(390, 356.5), (700, 356.5), (720, 333.5), (740, 333.5)]
     )  # -> control_truth
     line(
-        "dekupl", [(390, 356.5), (615, 356.5), (615, 142.5), (740, 142.5)]
+        "dekupl", [(390, 356.5), (680, 356.5), (680, 142.5), (740, 142.5)]
     )  # -> search
     line(
         "kamrat",
@@ -181,37 +187,17 @@ def build_svg():
             (390, 363.5),
             (440, 363.5),
             (465, 400),
-            (630, 400),
-            (630, 149.5),
+            (695, 400),
+            (695, 149.5),
             (740, 149.5),
         ],
     )  # kamrat -> search
 
-    # search and control_truth -> paper-list recovery
-    slots = dict(
-        protein=212.5,
-        splash=219.5,
-        dekupl=226.5,
-        kamrat=233.5,
-        counts=240.5,
-        check=247.5,
-    )
-    for n, y in (
-        ("protein", 128.5),
-        ("splash", 135.5),
-        ("dekupl", 142.5),
-        ("kamrat", 149.5),
-    ):
+    # search -> paper_recovery: protein hits of SPLASH and of the anchor-count anchors
+    slots = dict(protein=212.5, splash=219.5, counts=226.5, check=233.5)
+    for n, y in (("protein", 128.5), ("splash", 135.5), ("counts", 156.5)):
         line(n, [(740, y), (895, y), (940, slots[n]), (1000, slots[n])])
-    line(
-        "counts",
-        [(740, 326.5), (895, 326.5), (940, slots["counts"]), (1000, slots["counts"])],
-    )
-    line(
-        "check",
-        [(740, 347.5), (895, 347.5), (945, slots["check"]), (1000, slots["check"])],
-    )
-    line("check", [(1000, 380), (1000, 250)])
+    line("check", [(1000, 380), (1000, 233.5)])  # paper_gene_lists -> paper_recovery
 
     # ---------------- steps ----------------
     step(140, 139.5, 160.5)  # download
@@ -222,9 +208,10 @@ def build_svg():
     step(500, 105, 105)  # compactors
     step(500, 175, 175)  # anchor_counts
     step(500, 400, 400)  # kamrat
-    step(740, 128.5, 149.5)  # search
+    step(588, 175, 175)  # compactors_nominal
+    step(740, 128.5, 156.5)  # search
     step(740, 319.5, 347.5)  # control_truth
-    step(1000, 212.5, 247.5)  # paper-list recovery
+    step(1000, 212.5, 233.5)  # paper_recovery
     step(1000, 380, 380)  # paper_gene_lists
 
     # ---------------- header, legend, section bands ----------------
@@ -286,8 +273,8 @@ def build_svg():
 
     bands = [
         (20, 280, "1", "Reads"),
-        (290, 590, "2", "Find changed sequences, PEC vs control"),
-        (600, 880, "3", "Search proteins; score the control"),
+        (290, 665, "2", "Find changed sequences, PEC vs control"),
+        (675, 885, "3", "Search proteins;|score the control"),
         (890, 1180, "4", "Paper gene lists, notebook"),
     ]
     for x1, x2, num, name in bands:
@@ -296,7 +283,8 @@ def build_svg():
         )
         out.append(f'<circle cx="{x1 + 14}" cy="108" r="9" fill="#333"/>')
         text(x1 + 14, 112, num, 11, "bold", "middle", "#fff")
-        text(x1 + 28, 112, name, 12.5, "bold", "start", "#444")
+        for i, s in enumerate(name.split("|")):
+            text(x1 + 28, 112 + 15 * i, s, 12.5, "bold", "start", "#444")
     out.append('<g transform="translate(0,45)">')
 
     # ---------------- files and their thin links (drawn under the lines) ----------------
@@ -310,10 +298,10 @@ def build_svg():
     out.append(
         f'<line x1="390" y1="266" x2="390" y2="352" stroke="{LINK_GREY}" stroke-width="1.3"/>'
     )
-    icon(680, 210, "PARQUET", "peptide hits,|alignments", (740, 154))
-    icon(820, 100, "ROCKSDB", "", (748, 124))
-    text(846, 98, "3 protein", 10, "normal", "start", "#444")
-    text(846, 110, "indexes", 10, "normal", "start", "#444")
+    icon(820, 215, "PARQUET", "peptide hits,|alignments", (746, 161))
+    icon(820, 106, "ROCKSDB", "", (748, 124))
+    text(846, 104, "3 protein", 10, "normal", "start", "#444")
+    text(846, 116, "indexes", 10, "normal", "start", "#444")
     icon(800, 410, "JSON", "control recall", (744, 352))
     icon(920, 380, "XLSX", "PNAS Dataset S1", (1000, 380))
     icon(1100, 230, "IPYNB", "notebook 361,|figures, report|(planned)", (1006, 230))
@@ -356,12 +344,13 @@ def build_svg():
     label(250, 258, "fastp")
     label(390, 120, "splash")
     label(500, 90, "compactors")
-    label(500, 192, "anchor_counts", "PyDESeq2")
+    label(493, 192, "anchor_counts", "PyDESeq2", anchor="end")
     label(390, 386, "dekupl", "DE-kupl 1.3.5")
     label(500, 418, "kamrat", "KaMRaT 1.2")
+    label(588, 162, "compactors_nominal")
     label(735, 112, "search", anchor="end")
     label(800, 300, "control_truth")
-    label(1000, 190, "paper-list recovery", "(planned)")
+    label(1000, 190, "paper_recovery", "share of each list reached")
     label(1012, 398, "paper_gene_lists", "(script)", anchor="start")
     out.append("</g>")
     text(

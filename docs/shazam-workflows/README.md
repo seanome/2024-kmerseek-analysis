@@ -41,9 +41,9 @@ reproduces Domen et al. 2026 PNAS: 47 of 64 RNA-seq runs (PRJNA1219309), six PEC
 control contrasts, plus a control set with a known answer.
 
 Since 2026-10-30 these steps run as one Nextflow pipeline, `nextflow-runs/pec-domen2026/`
-(on PR 201). The map has one step for each of its 10 processes: `download`, `fastp`,
-`simulate_control`, `splash`, `compactors`, `anchor_counts`, `dekupl`, `kamrat`, `search`
-and `control_truth`. Steps marked "(script)" or "(planned)" are not pipeline processes.
+(on PR 201). The map has one step for each of its 12 processes: `download`, `fastp`,
+`simulate_control`, `splash`, `compactors`, `anchor_counts`, `compactors_nominal`, `dekupl`,
+`kamrat`, `search`, `control_truth` and `paper_recovery`. Steps marked "(script)" or "(planned)" are not pipeline processes.
 The sample design and the protein indexes are made before the run (`freeze_design`,
 `06_db_sketch`), so they appear as input files.
 
@@ -57,6 +57,13 @@ scores what each step found.
 difference between PEC and control with a t-test, joins the k-mers into longer contigs, and
 keeps the k-mers with a corrected p-value of 0.05 or less and the contigs whose best k-mer
 passes that cut. Its contigs go to `search`, and its k-mers go to `control_truth`.
+
+`compactors_nominal` (added 2026-11-01) takes the anchors whose anchor-count DESeq2 fit
+passes the paper's own cutoff (uncorrected p <= 0.05 and more than 2-fold) and extends them
+into longer sequences, as `compactors` does for SPLASH anchors. They go to `search`.
+`paper_recovery` (added 2026-11-01) reads the protein hits from the SPLASH and anchor-count
+sequences, and the paper's gene lists, and reports the share of each list reached against
+1,000 random gene sets matched on expression level.
 
 This map is drawn by a script, `draw_pec_nb361_metro.py`, not by nf-metro. On 2026-11-01,
 nf-metro 2.1.0 could not draw the map once the link from `kamrat` to `control_truth` was
@@ -97,7 +104,7 @@ After the pipeline changes, check that the PEC map still has one step for each p
 and no others. The script compares its list of steps with the `process` blocks of
 `main.nf` and exits with an error if they differ. Run it from a checkout that has PR 201,
 because `nextflow-runs/pec-domen2026/main.nf` is not on this branch. On 2026-11-01, against
-`main.nf` at PR 201 commit `e62d9e3`, it printed "OK: 10 of 10 processes ... have a step on
+`main.nf` at PR 201 commit `5b619eec`, it printed "OK: 12 of 12 processes ... have a step on
 the map".
 
 ```bash
