@@ -23,6 +23,11 @@ params.contrasts    = 'young_2h,young_24h,old_24h,young_13_49d,young_132d,old_41
 params.control      = true
 params.dekupl_method = 'limma'
 params.reuse_dir    = ''        // other run's verified FASTQs, hard-linked when the MD5 matches
+// Label-swap control: a manifest TSV (key, contrast, cjs, design; paths relative to code_dir),
+// made by scripts/make_label_swaps.py. When set, only the SPLASH and anchor-count routes run,
+// on the trimmed reads already in pec_root/trimmed, and every output goes under
+// pec_root/label_swap/<contrast>/<flip>/, never under pec_root/contrasts/.
+params.label_swap   = ''
 
 if (!params.pec_root || !params.code_dir) {
     error "set --pec_root and --code_dir"
@@ -107,7 +112,7 @@ process simulate_control {
 process splash {
     tag "${contrast}"
     label 'splash'
-    storeDir "${params.pec_root}/contrasts/${contrast}"
+    storeDir "${params.pec_root}/${contrast.contains('/') ? 'label_swap' : 'contrasts'}/${contrast}"
 
     input:
     tuple val(contrast), path(cjs), path(il)
@@ -136,7 +141,7 @@ process splash {
 process compactors {
     tag "${contrast}"
     label 'compactors'
-    storeDir "${params.pec_root}/contrasts/${contrast}"
+    storeDir "${params.pec_root}/${contrast.contains('/') ? 'label_swap' : 'contrasts'}/${contrast}"
 
     input:
     tuple val(contrast), path(splash_out), path(il)
@@ -164,7 +169,7 @@ process compactors {
 process compactors_nominal {
     tag "${contrast}"
     label 'compactors'
-    storeDir "${params.pec_root}/contrasts/${contrast}"
+    storeDir "${params.pec_root}/${contrast.contains('/') ? 'label_swap' : 'contrasts'}/${contrast}"
 
     input:
     tuple val(contrast), path(deseq), path(il)
@@ -173,7 +178,7 @@ process compactors_nominal {
     tuple val(contrast), path("compactors_anchor_nominal")
 
     script:
-    def design = contrast == 'young_132d' ? 'genotype_condition' : 'pair_condition'
+    def design = contrast.tokenize('/')[0] == 'young_132d' ? 'genotype_condition' : 'pair_condition'
     """
     mkdir compactors_anchor_nominal && cd compactors_anchor_nominal
     for f in ../*.il.fastq.gz; do readlink -f \$f; done > input_list.txt
@@ -187,7 +192,7 @@ process compactors_nominal {
 process anchor_counts {
     tag "${contrast}"
     label 'anchor_counts'
-    storeDir "${params.pec_root}/contrasts/${contrast}"
+    storeDir "${params.pec_root}/${contrast.contains('/') ? 'label_swap' : 'contrasts'}/${contrast}"
 
     input:
     tuple val(contrast), path(splash_out), path(design)
@@ -287,7 +292,7 @@ process kamrat {
 process search {
     tag "${contrast} ${src}"
     label 'search'
-    storeDir "${params.pec_root}/contrasts/${contrast}"
+    storeDir "${params.pec_root}/${contrast.contains('/') ? 'label_swap' : 'contrasts'}/${contrast}"
 
     input:
     tuple val(contrast), val(src), path(seqdir)
@@ -386,6 +391,23 @@ process paper_recovery {
 // ---------------------------------------------------------------- workflow
 
 workflow {
+  if (params.label_swap) {
+    // label-swap control: the same SPLASH and anchor-count stages on swapped designs
+    swap = Channel.fromList(file(params.label_swap).splitCsv(header: true, sep: '\t')).map { r ->
+        def dsg = file("${params.code_dir}/${r.design}", checkIfExists: true)
+        def cjs = file("${params.code_dir}/${r.cjs}", checkIfExists: true)
+        if (!(r.key ==~ /^[a-z0-9_]+\/[a-z0-9_]+$/)) throw new IllegalArgumentException("label_swap key ${r.key} must be <contrast>/<flip>")
+        def ils = dsg.splitCsv(header: true, sep: '\t').collect {
+            file("${params.pec_root}/trimmed/${it.sample}.il.fastq.gz", checkIfExists: true) }
+        tuple(r.key, cjs, dsg, ils)
+    }
+    sw_sp = splash(swap.map { k, cjs, dsg, il -> tuple(k, cjs, il) })
+    sw_comp = compactors(sw_sp.join(swap.map { k, cjs, dsg, il -> tuple(k, il) }))
+    sw_ac = anchor_counts(sw_sp.join(swap.map { k, cjs, dsg, il -> tuple(k, dsg) }))
+    sw_an = compactors_nominal(sw_ac.map { k, a, d -> tuple(k, d) }.join(swap.map { k, cjs, dsg, il -> tuple(k, il) }))
+    search(sw_comp.map { k, d -> tuple(k, 'compactors', d) }
+             .mix(sw_an.map { k, d -> tuple(k, 'compactors_anchor_nominal', d) }))
+  } else {
     def contrasts = params.contrasts.tokenize(',')
     // frozen design: sample, run, treatment, genotype, age_days, contrast, ...
     def rows = file("${params.code_dir}/design/samples.tsv").splitCsv(header: true, sep: '\t')
@@ -446,4 +468,6 @@ workflow {
         control_truth(sp.join(ac).join(dk).join(km).filter { it[0] == 'control' }
                         .map { c, s, a, d, k, m -> tuple(s, a, d, k, m) })
     }
+}
+  }
 }
