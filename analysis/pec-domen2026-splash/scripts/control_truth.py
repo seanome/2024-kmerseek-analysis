@@ -17,6 +17,14 @@ Channels:
               a missing output is listed under `channels_not_run`, not scored as zero hits), placed in genes the same way as anchors
   kamrat_ttest   KaMRaT t-test on DE-kupl's k-mer counts: k-mers with BH-corrected p <= 0.05
               (kamrat_ttest/kmers_padj05.tsv.gz, column `tag`), placed in genes the same way
+  kamrat_ttest_p05   KaMRaT contigs, the same t-test recomputed per contig, uncorrected p < 0.05,
+              no fold-change cutoff (kamrat_p05/contigs.tsv; select_kamrat_nominal.py ... 0)
+  kamrat_deseq2_p05, kamrat_deseq2_q05   KaMRaT contigs tested with PyDESeq2 ~ pair + condition
+              (kamrat_deseq2/deseq/deseq_pair_condition.parquet): uncorrected p < 0.05, or BH q <= 0.05;
+              no fold-change cutoff. Every 31-mer of a kept contig counts as kept and is placed in
+              genes the same way as an anchor (added 2026-11-02).
+  dekupl_limma_p05, dekupl_DESeq2_p05   every k-mer DE-kupl tested with uncorrected p < 0.05, no fold-change
+              cutoff (raw_pvals.txt.gz), placed in genes the same way (added 2026-11-02)
 
 A gene is found by a channel if at least one of its anchors is significant in that channel.
 Anchors shared by two or more genes (paralogs in the old gene models) are not given to any gene;
@@ -97,7 +105,33 @@ def main():
     else:
         dekupl_not_run.append("kamrat")
         print(f"WARNING: {km_path} is missing; kamrat_ttest is reported as not run", file=sys.stderr)
-    wanted = anchors.union(*dekupl_kmers.values())
+    # KaMRaT contigs (added 2026-11-02): every 31-mer of a kept contig is taken as kept, so a
+    # contig is placed in genes the same way as an anchor
+    contig_sets = {}
+    for name, path, col, cut in (
+        ("kamrat_ttest_p05", cdir / "kamrat_p05/contigs.tsv", "pvalue", 0.05),
+        ("kamrat_deseq2_p05", cdir / "kamrat_deseq2/deseq/deseq_pair_condition.parquet", "pvalue", 0.05),
+        ("kamrat_deseq2_q05", cdir / "kamrat_deseq2/deseq/deseq_pair_condition.parquet", "q_bh_all", 0.05),
+    ):
+        if not path.exists():
+            dekupl_not_run.append(name)
+            print(f"WARNING: {path} is missing; {name} is reported as not run", file=sys.stderr)
+            continue
+        t = pl.read_parquet(path) if path.suffix == ".parquet" else pl.read_csv(path, separator="\t")
+        seq = "anchor" if "anchor" in t.columns else "contig"
+        kept = t.filter(pl.col(col) < cut if col == "pvalue" else pl.col(col) <= cut)[seq].to_list()
+        contig_sets[name] = {c[i : i + K] for c in kept for i in range(len(c) - K + 1)}
+        print(f"{name}: {len(kept)} contigs, {len(contig_sets[name])} 31-mers", file=sys.stderr)
+    # DE-kupl limma, every tested k-mer with uncorrected p < 0.05 (raw_pvals.txt.gz, no header)
+    for method in ("limma", "DESeq2"):
+        rp = cdir / f"dekupl_{method}/DEkupl_result/control_vs_PEC_kmer_counts/raw_pvals.txt.gz"
+        if rp.exists():
+            t = pl.read_csv(rp, separator="\t", has_header=False, new_columns=["tag", "pvalue"],
+                            schema_overrides={"pvalue": pl.Float64}, null_values=["NA"])
+            contig_sets[f"dekupl_{method}_p05"] = set(t.filter(pl.col("pvalue") < 0.05)["tag"].to_list())
+        else:
+            dekupl_not_run.append(f"dekupl_{method}_p05")
+    wanted = anchors.union(*dekupl_kmers.values(), *contig_sets.values())
     kmer_genes = defaultdict(set)
     for t, s in tx.items():
         g = gene_of(t)
@@ -151,13 +185,14 @@ def main():
         sig[name] = set(hit["anchor"].to_list())
     for method, kmers in dekupl_kmers.items():
         sig["kamrat_ttest" if method == "kamrat" else f"dekupl_{method}"] = kmers
+    sig.update(contig_sets)
 
     rows, summary = [], dict(
         tested_anchors=len(anchors),
         splash_scores_rows=scores_n,
         supervised_q_column=corr[0] if corr else "BH(Cjs_0_pval) computed here",
         channels={},
-        channels_not_run=["kamrat_ttest" if m == "kamrat" else m if m.startswith("abundance") else f"dekupl_{m}"
+        channels_not_run=["kamrat_ttest" if m == "kamrat" else m if m.startswith("abundance") or m.startswith("kamrat_") or m.endswith("_p05") else f"dekupl_{m}"
                           for m in dekupl_not_run],
     )
     placement = Counter(

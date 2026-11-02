@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """KaMRaT contigs at the same uncorrected cutoff as the anchor-count route.
 
-Usage: select_kamrat_nominal.py <contigs_all.tsv.gz> <design.tsv> <out_dir>
+Usage: select_kamrat_nominal.py <contigs_all.tsv.gz> <design.tsv> <out_dir> [min_abs_log2fc]
 
 KaMRaT 1.2 reports only the BH-corrected t-test p (score -scoreby ttest.padj), which is 1 for
 nearly every contig in the real contrasts. This recomputes the uncorrected p with KaMRaT's own
@@ -16,6 +16,8 @@ here the test is run once per contig on its mean counts.
 
 log2 fold change = mean of log2(count + 1) in PEC minus the same in control (the difference the
 t-test tests). Kept: p <= 0.05 and |log2 fold change| >= 1, the anchor-count route's cutoff.
+With min_abs_log2fc = 0 (added 2026-11-02, Olga: "use nominal p < 0.05 for kamrat and de-kupl"):
+p < 0.05 and no fold-change cutoff; direction is still the sign of the log2 fold change.
 
 Writes <out_dir>/contigs.tsv (contig, nb-merged-kmer, pvalue, log2fc, direction; up = higher in
 PEC) and <out_dir>/summary.json (contigs tested, p <= 0.05, p <= 0.05 and 2-fold, up, down).
@@ -50,6 +52,7 @@ def welch_log2(x: np.ndarray, is_pec: np.ndarray) -> tuple[np.ndarray, np.ndarra
 
 def main() -> None:
     contigs_all, design, out = sys.argv[1], sys.argv[2], Path(sys.argv[3])
+    min_lfc = float(sys.argv[4]) if len(sys.argv) > 4 else 1.0
     out.mkdir(parents=True, exist_ok=True)
     dsg = pl.read_csv(design, separator="\t")
     d = pl.read_csv(contigs_all, separator="\t")
@@ -61,11 +64,12 @@ def main() -> None:
     p, lfc = welch_log2(d.select(samples).to_numpy(), is_pec)
     assert not np.isnan(p).any(), "NaN p-value"
     d = d.select("contig", "nb-merged-kmer").with_columns(pl.Series("pvalue", p), pl.Series("log2fc", lfc))
-    nominal = d.filter(pl.col("pvalue") <= 0.05)
-    keep = (nominal.filter(pl.col("log2fc").abs() >= 1)
+    nominal = d.filter(pl.col("pvalue") <= 0.05) if min_lfc > 0 else d.filter(pl.col("pvalue") < 0.05)
+    keep = (nominal.filter(pl.col("log2fc").abs() >= min_lfc)
             .with_columns(pl.when(pl.col("log2fc") > 0).then(pl.lit("up")).otherwise(pl.lit("down")).alias("direction")))
     keep.write_csv(out / "contigs.tsv", separator="\t")
-    s = {"contigs_tested": d.height, "p_le_0.05": nominal.height, "p_le_0.05_and_2fold": keep.height,
+    s = {"contigs_tested": d.height, "min_abs_log2fc": min_lfc, "p_le_0.05": nominal.height, "kept": keep.height,
+         "p_le_0.05_and_2fold": int((nominal["log2fc"].abs() >= 1).sum()),
          "up": keep.filter(pl.col("direction") == "up").height,
          "down": keep.filter(pl.col("direction") == "down").height,
          "kmers_in_kept_contigs": int(keep["nb-merged-kmer"].sum()),

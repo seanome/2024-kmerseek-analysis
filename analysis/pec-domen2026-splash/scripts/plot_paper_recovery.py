@@ -3,9 +3,12 @@
 
 Usage: plot_paper_recovery.py <paper_recovery.tsv> <out_stem>
 
-A 2 x 2 grid. Columns are the paper's up lists (genes higher in PEC) and its down lists (genes
-lower in PEC). Rows are the two routes: SPLASH (blue) and anchor counts tested with DESeq2
-(vermillion); the colours mean the same routes in the other figures. Within a panel, one row per
+Columns are the paper's up lists (genes higher in PEC) and its down lists (genes lower in PEC).
+Rows are the routes present in the table: SPLASH (blue), anchor counts tested with DESeq2
+(vermillion), KaMRaT contigs tested with a t-test or with DESeq2 (both reddish purple: the colour
+is the tool, the row title names the test), DE-kupl k-mers tested with limma (bluish green) or
+DESeq2 (orange); the colours mean the same tools in the other figures. kamrat_nominal (2-fold) is
+in the table for comparison but not drawn. Within a panel, one row per
 contrast. The triangle is the share of the real list reached, pointing up for an up list and down
 for a down list. The grey bar is the middle 95 % of 1,000 random gene sets matched to the list's
 baseMean deciles, and the black tick is their median. The text right of each row is
@@ -26,14 +29,22 @@ CONTRASTS = ["young_2h", "young_24h", "old_24h", "young_13_49d", "young_132d", "
 NAME = {"young_2h": "young 2 h", "young_24h": "young 24 h", "old_24h": "old 24 h",
         "young_13_49d": "young 13-49 d", "young_132d": "young 132 d", "old_41_93d": "old 41-93 d"}
 ROUTE = {"splash": "SPLASH anchors (corrected p ≤ 0.05)",
-         "anchor_nominal": "anchor counts, DESeq2 (p ≤ 0.05, 2-fold)"}
-COLOUR = {"splash": pf.OKABE_ITO["blue"], "anchor_nominal": pf.OKABE_ITO["vermillion"]}
+         "anchor_nominal": "anchor counts, DESeq2 (p ≤ 0.05, 2-fold)",
+         "kamrat_ttest_p05": "KaMRaT contigs, t-test (p < 0.05)",
+         "kamrat_deseq2_p05": "KaMRaT contigs, DESeq2 (p < 0.05)",
+         "dekupl_limma_p05": "DE-kupl k-mers, limma (p < 0.05)",
+         "dekupl_deseq2_p05": "DE-kupl k-mers, DESeq2 (p < 0.05)"}
+COLOUR = {"splash": pf.OKABE_ITO["blue"], "anchor_nominal": pf.OKABE_ITO["vermillion"],
+          "kamrat_ttest_p05": pf.OKABE_ITO["reddish_purple"], "kamrat_deseq2_p05": pf.OKABE_ITO["reddish_purple"],
+          "dekupl_limma_p05": pf.OKABE_ITO["bluish_green"], "dekupl_deseq2_p05": pf.OKABE_ITO["orange"]}
+TOOL = {"splash": "SPLASH", "anchor_nominal": "anchor counts, DESeq2", "kamrat_ttest_p05": "KaMRaT",
+        "kamrat_deseq2_p05": "KaMRaT", "dekupl_limma_p05": "DE-kupl, limma", "dekupl_deseq2_p05": "DE-kupl, DESeq2"}
 DIRECTION = {"up": ("▲ UP lists (higher in PEC)", "^"),
              "down": ("▼ DOWN lists (lower in PEC)", "v")}
 routes = [c for c in ROUTE if c in set(d["channel"])]
 
 pf.use_style()
-fig = pf.figure(pf.TWO_COLUMN_MM, 30 + 32 * len(routes))[0]
+fig = pf.figure(pf.TWO_COLUMN_MM, min(pf.MAX_HEIGHT_MM, 30 + (32 if len(routes) <= 2 else 26) * len(routes)))[0]
 fig.clear()
 
 # Legend first, so it sits above every mark in reading order.
@@ -46,8 +57,8 @@ handles = [
            label="middle 95 % of 1,000 baseMean-matched random sets"),
     Line2D([], [], linestyle="none", marker="|", color="black", markersize=6,
            label="median of random sets"),
-] + [Line2D([], [], linestyle="none", marker="s", color=COLOUR[r], markersize=5,
-            label="SPLASH" if r == "splash" else "anchor counts, DESeq2") for r in routes]
+] + [Line2D([], [], linestyle="none", marker="s", color=COLOUR[r], markersize=5, label=TOOL[r])
+      for r in dict.fromkeys(routes) if TOOL[r] not in [TOOL[q] for q in routes[:routes.index(r)]]]
 fig.legend(handles=handles, loc="outside upper center", ncol=3,
            title="text right of each row: reached/listed (share of random sets at or above the real list)")
 
