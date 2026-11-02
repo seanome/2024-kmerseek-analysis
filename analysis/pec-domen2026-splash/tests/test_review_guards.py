@@ -180,3 +180,41 @@ def test_control_truth_uses_same_all_tested_anchor_bh_family(monkeypatch):
     q = module.bh([0.01, float("nan"), 0.04])
     assert np.allclose(q[[0, 2]], [0.03, 0.06])
     assert np.isnan(q[1])
+
+
+def test_kamrat_nominal_matches_welch_and_kamrat_zero_spread_rule(tmp_path):
+    """select_kamrat_nominal.py: Welch t-test on log2(x + 1); p = 1 when both groups are flat."""
+    import numpy as np
+    from scipy import stats
+
+    spec = importlib.util.spec_from_file_location("skn", ROOT / "scripts/select_kamrat_nominal.py")
+    skn = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(skn)
+
+    rng = np.random.default_rng(0)
+    x = rng.gamma(2, 50, size=(200, 7))
+    x[0] = 10  # both groups flat
+    is_pec = np.array([False, True, False, True, False, True, True])
+    p, lfc = skn.welch_log2(x, is_pec)
+    y = np.log2(x + 1)
+    ref = stats.ttest_ind(y[1:, is_pec], y[1:, ~is_pec], axis=1, equal_var=False).pvalue
+    assert np.allclose(p[1:], ref)
+    assert p[0] == 1.0
+    assert np.allclose(lfc, y[:, is_pec].mean(1) - y[:, ~is_pec].mean(1))
+
+    samples = ["s1", "s2", "s3", "s4", "s5", "s6", "s7"]
+    with gzip.open(tmp_path / "c.tsv.gz", "wt") as f:
+        f.write("contig\tnb-merged-kmer\trep-value\ttag\t" + "\t".join(samples) + "\n")
+        for i, row in enumerate(x):
+            f.write(f"C{i}\t1\t1\tC{i}\t" + "\t".join(f"{v:g}" for v in row) + "\n")
+    with open(tmp_path / "design.tsv", "w") as f:
+        f.write("sample\tcondition\n")
+        for s, pec in zip(samples, is_pec):
+            f.write(f"{s}\t{'PEC' if pec else 'control'}\n")
+    subprocess.run([sys.executable, ROOT / "scripts/select_kamrat_nominal.py", tmp_path / "c.tsv.gz",
+                    tmp_path / "design.tsv", tmp_path / "out"], check=True, capture_output=True)
+    s = json.loads((tmp_path / "out/summary.json").read_text())
+    assert s["contigs_tested"] == 200 and s["samples_pec"] == 4
+    kept = list(csv.DictReader(open(tmp_path / "out/contigs.tsv"), delimiter="\t"))
+    assert len(kept) == s["p_le_0.05_and_2fold"]
+    assert all(float(r["pvalue"]) <= 0.05 and abs(float(r["log2fc"])) >= 1 for r in kept)

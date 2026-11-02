@@ -17,7 +17,8 @@ contrasts_dir, id_map, paper, out = Path(sys.argv[1]), sys.argv[2], sys.argv[3],
 out.mkdir(parents=True, exist_ok=True)
 CONTRASTS = ["young_2h", "young_24h", "old_24h", "young_13_49d", "young_132d", "old_41_93d"]
 ROUTES = {"splash": "search_compactors", "anchor_nominal": "search_compactors_anchor_nominal",
-          "dekupl_limma": "search_dekupl_limma", "kamrat_ttest": "search_kamrat_ttest"}
+          "dekupl_limma": "search_dekupl_limma", "kamrat_ttest": "search_kamrat_ttest",
+          "kamrat_nominal": "search_kamrat_nominal"}
 genes = (pl.read_csv(id_map, separator="\t", columns=["stable_id", "original_id"])
          .with_columns(pl.col("original_id").str.replace(r"\.t\d+$", "").alias("gene")))
 parts = []
