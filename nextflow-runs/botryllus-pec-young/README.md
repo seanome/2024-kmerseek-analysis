@@ -128,6 +128,15 @@ on session"), so the first run was not touched.
   The last step, the HTML report, failed while drawing a clustering heatmap
   (`hclust`: "NA/NaN/Inf in foreign function call"), so the Nextflow head ended as FAILED
   and `differentialabundance/report/` is empty.
+- Report fix (2026-11-01), in `params-differentialabundance.yaml`: two report settings
+  changed, each explained there. The heatmap failed because SRR32233947 (236 read pairs)
+  has 0 in all 500 genes it uses on raw counts, so the report now leaves raw counts out.
+  The per-gene boxplots then failed because their colour list had fewer colours than
+  the 12 treatment groups; `exploratory_main_variable: contrasts` fixes that. A copy of
+  the failed report step, rerun with both settings on Sherlock, finished and wrote all
+  sections, including the details for all 6 windows. `make run` resumes: the 52
+  read-joining tasks and 6 SPLASH jobs see their done files and exit, rnaseq reuses every
+  task, and differentialabundance reruns only the steps these settings feed.
 
 Counts per window are in `significant_per_window.tsv`:
 

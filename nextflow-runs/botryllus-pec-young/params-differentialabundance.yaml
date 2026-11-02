@@ -14,3 +14,18 @@ features_metadata_cols: gene_id,gene_name
 # and stop with an error when there are none. Libraries with a few hundred read pairs make
 # that likely, so size factors use DESeq2's "poscounts" estimator, which skips the zeros.
 deseq2_sf_type: poscounts
+
+# The report's clustering heatmap groups libraries by Spearman correlation over the 500
+# most variable genes. On raw counts, SRR32233947 (236 read pairs) has 0 in all 500, so
+# its correlation is undefined and the heatmap stops with "NA/NaN/Inf in foreign function
+# call" (run of 2026-10-27). The report therefore plots only normalised and
+# variance-stabilised values; DESeq2 itself is unaffected.
+exploratory_assay_names: normalised,variance_stabilised
+exploratory_log2_assays: normalised
+
+# The report colours its per-gene boxplots by the contrast column (group: 12 values) but
+# sizes the colour list from the main grouping column, which by default (auto_pca) is the
+# column most tied to the first principal component, here one with fewer values; ggplot
+# then stops with "Insufficient values in manual scale". Using the contrast column as the
+# main grouping gives both the same 12 values.
+exploratory_main_variable: contrasts
