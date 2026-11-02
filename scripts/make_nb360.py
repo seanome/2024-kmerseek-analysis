@@ -475,8 +475,17 @@ Drosophila's changed genes are about as close to their Pfam seeds as zebrafish's
 identity 66-68% against 70-72%) and closer than Ciona's (54%). Its kmerseek recovery is still
 the lowest of the three, so distance from Pfam does not explain the gap.
 
+The E-value cut-off does all the work of keeping real landings apart from noise, and the
+E-values are weak. Every fitted kmerseek index printed `K 0.0000`. In Drosophila, 81,802 of
+hsdm17 k7's 161,472 region rows have `region_evalue` = inf, and nearly all of gbmr7 k11's. With no
+E-value filter, several settings land on 99 to 100 changed families and about 20,000 others.
+Better-calibrated E-values could move the recovery counts; this test cannot say in which
+direction. The standard path does not depend on this: keeping only domains the DIAMOND
+alignment covers by at least half still recovers 85 in Drosophila, with 7 outside instead of 12.
+
 gbmr7 k11 lands on none of the 100 changed families in any organism, while landing on 12 to 15
-families outside the key. Unfitted settings (no Karlin-Altschul fit, so no E-values and no
+families outside the key: in Drosophila only 98 of its 610 million region rows have
+`region_evalue` at most 1. Unfitted settings (no Karlin-Altschul fit, so no E-values and no
 landings): hp_thomas_dill_no_c2 k30 and wwmj5 k13 in Drosophila; dayhoff6 k12,
 hp_thomas_dill2 k30 and hp_thomas_dill_no_c2 k30 in zebrafish; dayhoff6 k12 and
 hp_thomas_dill_no_c2 k30 in Ciona.
