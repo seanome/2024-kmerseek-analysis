@@ -118,3 +118,95 @@ Code: `scripts/frame_shares.py` ran on Sherlock on `sra_search/frame_test/scores
 Dayhoff 9 and 11 were scored with `pec-tools frame-scores` in Sherlock job 50793955. Plot:
 `plot_frame_shares.py exports/frame_shares <out_stem> protein.k7 dayhoff.k12` (and
 `protein.k5 dayhoff.k9 protein.k6 dayhoff.k11` for the second figure). Numbers: `frame_shares.*_summary.tsv`, `frame_shares.*_hist.tsv` (0.02 bins).
+
+## Which way finds a read's reading frame best? (frame_methods)
+
+Asked 2026-11-02: what is the best way to find the reading frame of a 150 nt Botryllus RNA-seq read,
+most of the time? Same reads and truth as above: 39,854 simulated reads cut from new-genome CDS
+(coding sequences) and 243,938 real reads whose true frame comes from a DIAMOND blastx hit to a
+new-genome protein (identity at least 95 %, hit covering at least 90 % of the read). A stop-free
+frame is a frame with no stop codon. The old gene models are the earlier Botryllus annotation
+(72,617 proteins, `db/botznik.faa`), made independently of the new-genome proteins that define the
+truth.
+
+![Right, tied, wrong and no frame for each method](frame_methods.png)
+
+Each bar is one method. Black: the method picks the true frame alone. Grey: the true frame ties
+with a wrong one, so the pick is a coin toss. Yellow: a wrong frame. White: no frame. The number is
+the black share. k-mer methods choose, among stop-free frames, the frame with the largest share of
+its k-mers found in the reference (`pec-tools frame-scores`), with no cutoff; no frame when that
+share is 0.
+
+| method | simulated: right | real: right | real: wrong | real: no frame | CPU s per M reads | wall s per M reads | peak memory |
+|---|---|---|---|---|---|---|---|
+| stop codons: the one stop-free frame | 43 % | 13 % | 2 % | 0.5 % | 14 | 14 | 16 MB |
+| k-mers in Swiss-Prot, protein 7 (orpheum's default) | 72 % | 52 % | 43 % | 0.8 % | 30 | 31 | 1.7 GB |
+| k-mers in old Botryllus gene models, protein 6 | 87 % | 83 % | 14 % | 0.5 % | 19 | 20 | 0.2 GB |
+| k-mers in Swiss-Prot + old gene models, protein 7 | 88 % | 85 % | 12 % | 0.6 % | 32 | 35 | 1.7 GB |
+| DIAMOND blastx to old gene models, default (16 threads) | 77 % | 78 % | 7 % | 15 % | 73 | 7.5 | 0.7 GB |
+| DIAMOND blastx, --fast (16 threads) | 74 % | 76 % | 6 % | 17 % | 54 | 5.9 | 0.7 GB |
+| blastx default, then old-model protein 6-mers for reads with no hit | 90 % | 85 % | 14 % | 0.2 % | 92 | 27 | 0.7 GB |
+| k-mers in half the new-genome genes, read's own gene left out, protein 6 | 78 % | 61 % | 34 % | 0.8 % | 19 | 19 | 0.1 GB |
+| k-mers in all new-genome proteins (read's own gene in it: best case), protein 6 | 95 % | 95 % | 3 % | 0.5 % | 21 | 21 | 0.2 GB |
+
+The stop-codon row leaves out ties: the true frame ties with another stop-free frame in 84 % of
+real reads. All 48 methods, with tied shares, are in `frame_methods.tsv`. Times are per million
+reads, from GNU time on one run over all 1,039,854 test reads (simulated plus the full real subset).
+
+**Recommendation.** Score the stop-free frames by k-mers against the organism's own proteins, here
+the old Botryllus gene models, plus Swiss-Prot, at protein 7-mers. It picks the true frame alone in
+85 % of real reads and 88 % of simulated reads, against 52 % and 72 % for Swiss-Prot alone, in about
+30 CPU seconds and 1.7 GB per million reads on one core. Running DIAMOND blastx against the same
+proteins first, and k-mers only for reads with no hit, adds nothing on real reads (85 %) and 2
+points on simulated reads (90 %), for 3 times the CPU time. If only one reference fits, the old gene
+models alone at protein 6-mers give 83 % and 87 % in 0.2 GB.
+
+What the other methods show:
+- Stop codons alone rarely decide. 86 % of real reads and 52 % of simulated reads have two or more
+  stop-free frames; 0.5 % and 2 % have none. When there is exactly one stop-free frame it is the
+  true one 93-96 % of the time, but that happens in only 14 % of real reads (45 % of simulated).
+  Taking the longest stop-free stretch adds under 3 points, because it differs only for reads with
+  no stop-free frame. The true frame itself has a stop in 3 % of real and 5 % of simulated reads
+  (reads over the end of the CDS).
+- DIAMOND blastx to the old gene models is right in 92 % of the real reads it hits, but finds no
+  hit for 15 % (default) to 17 % (--fast). --fast loses 2-3 points and saves a quarter of the CPU
+  time.
+- The read's own gene is what makes a reference work. With every new-genome protein in the
+  reference (circular: these proteins define the truth) protein 6-mers are right in 95 % of reads.
+  With half the genes left out (random split, seed 361, isoforms of a gene kept together; scored on
+  the 19,814 simulated and 93,518 real reads whose gene is in the left-out half), they drop to 78 %
+  and 61 %, near Swiss-Prot. Related genes elsewhere in the same genome help little.
+- Short k ties: protein 5-mers and Dayhoff 9-mers match nearly every frame, so the true frame ties
+  with a wrong one in 13-81 % of real reads, depending on the reference.
+- Long k finds nothing outside the read's own gene. A 150 nt read has 41 protein 10-mers per frame.
+  The share of reads with no matching k-mer in any of the six frames, real and simulated, at protein
+  10 (Dayhoff 18 in brackets): Swiss-Prot 76 % and 86 % (75 % and 84 %); old gene models 15 % and
+  20 % (24 % and 25 %); Swiss-Prot + old models 12 % and 18 % (21 % and 23 %); new-genome half
+  without the read's gene 66 % and 58 % (73 % and 63 %); all new-genome proteins 0 % and 0 % (7 % and
+  0 %). Dayhoff 18 carries 41.0 bits per k-mer, the closest to protein 10's 41.8 (`bits_per_kmer`).
+  `pec-tools` stores a k-mer as one 64-bit number, so protein k up to 14 and Dayhoff k up to 24 fit;
+  10 and 18 ran without error.
+- Dayhoff letters do not beat protein letters once the reference holds the organism's own proteins
+  (old models, real reads: Dayhoff 11 76 %, protein 6 83 %).
+
+Limits:
+- The real-read truth is itself a DIAMOND blastx hit at 95 % identity over 90 % of the read, so it
+  covers only reads that blastx places easily: 24 % of the 1.0 M real reads. Over all real reads,
+  the recommended k-mer method gives a frame to 81 % and blastx to the old models to 39 %; 18 % have
+  no stop-free frame at all (UTRs, non-coding RNA, or reads over the end of a CDS). Whether those
+  frames are right cannot be checked here.
+- The blastx method uses the same tool as the truth, which may favour it on real reads. Simulated
+  reads do not have this problem and rank the methods in nearly the same order.
+- The old gene models come from an earlier assembly of the same species, so they hold
+  near-identical copies of most genes. For a species with no gene models of its own, expect numbers
+  near the held-out half (61 % real) or Swiss-Prot (52 %).
+- k-mer times include building the reference k-mer set at the start of each run (0.4-15 s); DIAMOND's
+  database build for the old models took 0.3 s. Each time is from one run on a Sherlock node of the
+  normal or hns partition, not repeated.
+
+Code: `slurm/22_frame_methods_submit.sh` submits `slurm/22_frame_methods.sbatch` (Sherlock jobs
+50795519 stop codons, 50795521-50795525 k-mers, 50795526 blastx, 50796391 summary).
+`scripts/frame_stops.py` counts stops per frame, `scripts/frame_heldout_split.py` splits the
+new-genome genes, `scripts/frame_methods.py` scores every method and reads the GNU time files, and
+`scripts/plot_frame_methods.py exports/frame_shares/frame_methods.tsv exports/frame_shares/frame_methods`
+draws the figure.
