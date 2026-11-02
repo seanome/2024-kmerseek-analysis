@@ -18,10 +18,12 @@ deseq2_sf_type: poscounts
 # The report's clustering heatmap groups libraries by Spearman correlation over the 500
 # most variable genes. On raw counts, SRR32233947 (236 read pairs) has 0 in all 500, so
 # its correlation is undefined and the heatmap stops with "NA/NaN/Inf in foreign function
-# call" (run of 2026-10-27). The report therefore plots only normalised and
-# variance-stabilised values; DESeq2 itself is unaffected.
-exploratory_assay_names: normalised,variance_stabilised
-exploratory_log2_assays: normalised
+# call" (run of 2026-10-27). Over all genes it has some counts, so the heatmap uses all
+# genes (-1). Only the report reads this setting.
+# Leaving raw counts out of exploratory_assay_names instead (tried 2026-11-01) does not
+# work: the exploratory plots and the Shiny app are always given all three count tables
+# and stop when the list of names is shorter.
+exploratory_n_features: -1
 
 # The report colours its per-gene boxplots by the contrast column (group: 12 values) but
 # sizes the colour list from the main grouping column, which by default (auto_pca) is the

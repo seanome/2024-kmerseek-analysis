@@ -130,13 +130,19 @@ on session"), so the first run was not touched.
   and `differentialabundance/report/` is empty.
 - Report fix (2026-11-01), in `params-differentialabundance.yaml`: two report settings
   changed, each explained there. The heatmap failed because SRR32233947 (236 read pairs)
-  has 0 in all 500 genes it uses on raw counts, so the report now leaves raw counts out.
+  has 0 in all 500 genes it uses on raw counts, so the heatmap now uses all genes
+  (`exploratory_n_features: -1`), where that library has some counts.
   The per-gene boxplots then failed because their colour list had fewer colours than
   the 12 treatment groups; `exploratory_main_variable: contrasts` fixes that. A copy of
-  the failed report step, rerun with both settings on Sherlock, finished and wrote all
-  sections, including the details for all 6 windows. `make run` resumes: the 52
-  read-joining tasks and 6 SPLASH jobs see their done files and exit, rnaseq reuses every
-  task, and differentialabundance reruns only the steps these settings feed.
+  the failed report step, rerun with both settings on Sherlock, finished in 3.5 minutes
+  and wrote all sections for raw, normalised and variance-stabilised counts, including
+  the details for all 6 windows.
+- A first try left raw counts out of the report instead. The `make run` of 2026-11-01
+  19:07 (head job 50725494) failed on it after 7 minutes: the exploratory plots and the
+  Shiny app are always given all three count tables and stop when fewer names are set.
+  That run did show that resuming works: the 52 read-joining tasks and 6 SPLASH jobs saw
+  their done files and exited, rnaseq reused every task, and differentialabundance reused
+  28 finished steps, including all 6 DESeq2 fits.
 
 Counts per window are in `significant_per_window.tsv`:
 
