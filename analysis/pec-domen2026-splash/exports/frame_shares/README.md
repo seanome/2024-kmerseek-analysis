@@ -47,6 +47,46 @@ Reads, all with a known true frame:
   frames: reads that cover the CDS's own stop). That is why orpheum only allows stop-free frames.
   These curves include every frame, stops or not.
 
+## Shorter k-mers: protein 5 and 6, with Dayhoff k-mers of the same information
+
+Asked 2026-11-02. Each protein k is paired with the Dayhoff k carrying about the same bits of
+sequence information per k-mer (`ortholog_analysis_utils.bits_per_kmer`): protein 5-mers 20.9 bits
+with Dayhoff 9-mers 20.5; protein 6-mers 25.1 with Dayhoff 11-mers 25.1. (Above, protein 7-mers are
+29.2 bits and Dayhoff 12-mers 27.3.)
+
+![Shorter k-mers](frame_shares_short_k.png)
+
+| reads | k-mers | true frame: median | true frame: at least 0.5 | wrong frames: median | wrong frames: at least 0.5 |
+|---|---|---|---|---|---|
+| simulated | protein 5 | 1.00 | 100 % | 0.78-0.84 | 94-98 % |
+| simulated | Dayhoff 9 | 1.00 | 100 % | 0.57-0.68 | 63-78 % |
+| simulated | protein 6 | 0.84 | 99 % | 0.55-0.62 | 61-78 % |
+| simulated | Dayhoff 11 | 0.77 | 87 % | 0.30-0.39 | 23-34 % |
+| simulated | protein 7 | 0.23 | 6 % | 0.09-0.14 | 0.1-0.5 % |
+| simulated | Dayhoff 12 | 0.49 | 49 % | 0.13-0.21 | 5-12 % |
+| real | protein 5 | 1.00 | 100 % | 0.82-0.87 | 95-96 % |
+| real | Dayhoff 9 | 1.00 | 100 % | 0.64-0.74 | 68-75 % |
+| real | protein 6 | 0.84 | 97 % | 0.57-0.67 | 66-79 % |
+| real | Dayhoff 11 | 0.80 | 77 % | 0.31-0.47 | 30-48 % |
+| real | protein 7 | 0.25 | 18 % | 0.10-0.17 | 1-4 % |
+| real | Dayhoff 12 | 0.50 | 51 % | 0.12-0.28 | 10-29 % |
+
+("Wrong frames" is the range over the three wrong-frame groups.)
+
+- Protein 5-mers are almost all in Swiss-Prot: there are 3.2 million possible 5-mers and Swiss-Prot
+  holds about 200 million residues. So nearly every frame, right or wrong, scores high. The true
+  frame still scores highest (near 1.0 against about 0.8), so "frame with the most matches" picks
+  it well, but a share cutoff means nothing at this k.
+- Dayhoff 11-mers separate the frames best of these settings, with the 0.5 cutoff: 87 % (simulated)
+  and 77 % (real) of true frames pass, against 23-48 % of wrong frames. Protein 6-mers keep more
+  true frames but let through more wrong ones.
+- At equal bits, Dayhoff separates better than protein (Dayhoff 9 against protein 5, and Dayhoff
+  11 against protein 6). This fits Dayhoff letters grouping amino acids that substitute for each
+  other, so a Botryllus protein matches a distant Swiss-Prot relative more often, while a wrong
+  frame gains less. That reason is a guess; the numbers are measured.
+
 Code: `scripts/frame_shares.py` ran on Sherlock on `sra_search/frame_test/scores.{protein.k7,dayhoff.k12}.tsv`
 (from `pec-tools frame-scores`) and `real_blastx.tsv`. `scripts/plot_frame_shares.py` draws the figure.
-Numbers: `frame_shares.*_summary.tsv`, `frame_shares.*_hist.tsv` (0.02 bins).
+Dayhoff 9 and 11 were scored with `pec-tools frame-scores` in Sherlock job 50793955. Plot:
+`plot_frame_shares.py exports/frame_shares <out_stem> protein.k7 dayhoff.k12` (and
+`protein.k5 dayhoff.k9 protein.k6 dayhoff.k11` for the second figure). Numbers: `frame_shares.*_summary.tsv`, `frame_shares.*_hist.tsv` (0.02 bins).

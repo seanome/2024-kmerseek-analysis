@@ -1,10 +1,12 @@
 #!/usr/bin/env python3
 """Plot the share of each reading frame's k-mers found in Swiss-Prot, by frame, for Botryllus reads.
 
-Usage: plot_frame_shares.py <exports/frame_shares dir> <out_stem>
+Usage: plot_frame_shares.py <exports/frame_shares dir> <out_stem> <setting> [<setting> ...]
 
-Reads <dir>/frame_shares.{protein.k7,dayhoff.k12}_hist.tsv from frame_shares.py.
-Rows: protein 7-mers, Dayhoff 12-mers (orpheum's two defaults). Columns: simulated reads cut from
+<setting> is e.g. protein.k7 or dayhoff.k12; reads <dir>/frame_shares.<setting>_hist.tsv from
+frame_shares.py. One row per setting, labelled with its bits of information per k-mer
+(ortholog_analysis_utils.bits_per_kmer), so a protein row and a Dayhoff row with about the same
+bits are a fair comparison. Columns: simulated reads cut from
 CDS, real reads wholly in a CDS. Each line is, for one group of frames (the true
 frame, the two other frames on the same strand, the three frames on the opposite strand), the share
 of those frames whose Swiss-Prot share is at least x. A 150 nt read has 44 protein 7-mer windows,
@@ -16,10 +18,15 @@ from pathlib import Path
 import polars as pl
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[3] / "notebooks"))
+import ortholog_analysis_utils as ou  # noqa: E402
 import pubfig as pf  # noqa: E402
 
 d, out_stem = Path(sys.argv[1]), sys.argv[2]
-SETTINGS = [("protein.k7", "protein 7-mers"), ("dayhoff.k12", "Dayhoff 12-mers")]
+SETTINGS = []
+for tag in sys.argv[3:]:
+    enc, k = tag.split(".k")
+    SETTINGS.append((tag, f"{'protein' if enc == 'protein' else 'Dayhoff'} {k}-mers "
+                          f"({ou.bits_per_kmer(enc, int(k)):.0f} bits)"))
 SOURCES = ["simulated reads cut from CDS", "real reads wholly in a CDS"]
 GROUPS = {  # group: (colour, line style)
     "true frame": ("black", "-"),
@@ -28,15 +35,19 @@ GROUPS = {  # group: (colour, line style)
     "opposite strand (3 frames)": ("#888888", ":"),
 }
 
+BINS = pl.DataFrame({"bin": [round(0.02 * i, 2) for i in range(50)]})
+
 pf.use_style()
-fig, axs = pf.figure(pf.TWO_COLUMN_MM, 95, nrows=2, ncols=2, sharex=True, layout="constrained")
+fig, axs = pf.figure(pf.TWO_COLUMN_MM, min(170, 12 + 40 * len(SETTINGS)), nrows=len(SETTINGS), ncols=2, sharex=True, layout="constrained")
 for i, (tag, tname) in enumerate(SETTINGS):
     h = pl.read_csv(d / f"frame_shares.{tag}_hist.tsv", separator="\t")
     for j, src in enumerate(SOURCES):
         ax = axs[i][j]
         for g, (col, ls) in GROUPS.items():
             t = (h.filter((pl.col("source") == src) & (pl.col("group") == g))
-                 .group_by("bin").agg(pl.col("frames").sum()).sort("bin"))
+                 .group_by("bin").agg(pl.col("frames").sum()))
+            # every bin from 0, so a group with no frames in the low bins still starts at 1
+            t = (BINS.join(t, on="bin", how="left").with_columns(pl.col("frames").fill_null(0)).sort("bin"))
             at_least = t["frames"].reverse().cum_sum().reverse() / t["frames"].sum()
             ax.step(t["bin"], at_least, where="post", color=col, linestyle=ls, linewidth=0.9, label=g)
         for c in (0.1, 0.5):
@@ -46,9 +57,9 @@ for i, (tag, tname) in enumerate(SETTINGS):
         ax.set_title(f"{src}, {tname}")
         if j == 0:
             ax.set_ylabel("share of frames with\nat least this share")
-        if i == 1:
+        if i == len(SETTINGS) - 1:
             ax.set_xlabel("share of the frame's k-mers found in Swiss-Prot (x)")
-for a, l in zip(axs.flat, "abcd"):
+for a, l in zip(axs.flat, "abcdefghijkl"):
     pf.panel_label(a, l)
 fig.legend(*axs[0][0].get_legend_handles_labels(), loc="outside upper center", ncols=4, frameon=False,
            title="frame of the read, relative to its true frame (light grey vertical lines: cutoffs 0.1 and 0.5)")
