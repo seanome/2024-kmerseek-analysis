@@ -9,8 +9,9 @@ of its coding part is still known). Reads with no such hit have no known frame (
 Frame index follows pec-tools: 0-2 = offsets 0-2 on the read, 3-5 = offsets 0-2 on its reverse
 complement.
 
-Each scores file comes from `pec-tools frame-scores` and is scored under both rules: "stopfree"
-(only frames without a stop codon may be chosen, orpheum's rule) and "any" (all six frames).
+Each scores file comes from `pec-tools frame-scores` and is scored under three rules:
+"orpheum" (orpheum's rule: no low-complexity reads; only frames with no stop codon and not of
+low complexity), "stopfree" (only frames with no stop codon) and "any" (all six frames).
 The setting name must end in k<k>, e.g. "protein k7".
 
 Usage: python sra_frame_test_score.py <truth_genes.tsv> <blastx.tsv> <out_dir> <setting=scores.tsv> ...
@@ -97,7 +98,7 @@ def main():
             )
         )
         base = pl.concat([sim, real], how="diagonal_relaxed")
-        for rule in ["stopfree", "any"]:
+        for rule in ["orpheum", "stopfree", "any"]:
             setting = f"{name}, {rule}"
             best = pl.col(f"best_{rule}")
             pick = lambda prefix: pl.coalesce(

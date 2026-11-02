@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Compare orpheum 1.0.4's frames with pec-tools best-frame (protein k7, stop-free rule) on the
+"""Compare orpheum 1.0.4's frames with pec-tools best-frame (protein k7, orpheum rule) on the
 same sample of frame-test reads with known frames.
 
 orpheum writes one peptide per frame that passes its cutoff (share of 7-mers in Swiss-Prot >= 0.5),
@@ -41,7 +41,7 @@ sc = sc.with_columns(
         for i in range(6)
     ]
 )
-best = pl.col("best_stopfree")
+best = pl.col("best_orpheum")
 pick = lambda p: pl.coalesce(
     [pl.when(best == i).then(pl.col(f"{p}{i}")) for i in range(6)]
 )  # noqa: E731
@@ -57,7 +57,7 @@ real = (
     .with_columns(pl.col("source").fill_null("real: no protein hit"))
 )
 d = pl.concat([sim, real], how="diagonal_relaxed").select(
-    "read_id", "source", "true_frame", "best_stopfree", "share"
+    "read_id", "source", "true_frame", "best_orpheum", "share"
 )
 # orpheum may report several frames for one read; count the read right if any reported frame is right
 o = orp.group_by("read_id").agg(
@@ -74,7 +74,7 @@ d = (
     )
     .with_columns(
         ours_right=pl.col("ours_kept")
-        & (pl.col("best_stopfree") == pl.col("true_frame"))
+        & (pl.col("best_orpheum") == pl.col("true_frame"))
     )
 )
 summ = (
