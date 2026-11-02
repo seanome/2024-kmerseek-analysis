@@ -18,6 +18,7 @@ from pathlib import Path
 
 import matplotlib.colors as mcolors
 import matplotlib.pyplot as plt
+from matplotlib.patches import Patch
 import numpy as np
 import polars as pl
 import seaborn as sns
@@ -100,17 +101,18 @@ M = mat.drop("query").to_numpy().astype(float)
 
 pf.use_style()
 fig = plt.figure(figsize=(pf.TWO_COLUMN_MM * pf.MM, 150 * pf.MM), layout="constrained")
-gs = fig.add_gridspec(2, 2, height_ratios=[2.2, 1], width_ratios=[1.3, 1])
+gs = fig.add_gridspec(3, 2, height_ratios=[2.2, 0.05, 1], width_ratios=[1.3, 1])
 a = fig.add_subplot(gs[0, :])
-b = fig.add_subplot(gs[1, 0])
-c = fig.add_subplot(gs[1, 1])
+strip = fig.add_subplot(gs[1, :], sharex=a)
+b = fig.add_subplot(gs[2, 0])
+c = fig.add_subplot(gs[2, 1])
 
 cmap = sns.color_palette("mako_r", as_cmap=True).copy()
 cmap.set_bad("#FFFFFF")
 im = a.imshow(
     M, aspect="auto", cmap=cmap, norm=mcolors.Normalize(0, 1), interpolation="nearest"
 )
-cb = fig.colorbar(im, ax=a, fraction=0.025, pad=0.01)
+cb = fig.colorbar(im, ax=[a, strip], fraction=0.025, pad=0.01)
 cb.set_label("Containment of the protein's HP k30 hashes in the run")
 # column groups
 rr = runs.to_dicts()
@@ -125,20 +127,23 @@ for i in range(1, len(rr) + 1):
         start = i
 for x in bounds:
     a.axvline(x, color="white", lw=1.2)
-a.set_xticks(ticks, labels)
-a.tick_params(axis="x", length=0)
-# condition strip under each column: black = control, reddish purple = PEC
-for j, r in enumerate(rr):
-    a.add_patch(
-        plt.Rectangle(
-            (j - 0.5, M.shape[0] + 2),
-            1,
-            12,
-            color="black" if r["condition"] == "control" else LIST_COL,
-            clip_on=False,
-        )
-    )
-a.set_ylim(M.shape[0] + 14, -0.5)
+    strip.axvline(x, color="white", lw=1.2)
+a.tick_params(axis="x", length=0, labelbottom=False)
+# condition strip under the columns: black = control, reddish purple = PEC
+cond = np.array([[0 if r["condition"] == "control" else 1 for r in rr]])
+strip.imshow(
+    cond,
+    aspect="auto",
+    cmap=mcolors.ListedColormap(["black", LIST_COL]),
+    vmin=0,
+    vmax=1,
+    interpolation="nearest",
+)
+strip.set_yticks([])
+strip.set_xticks(ticks, labels)
+strip.tick_params(axis="x", length=0)
+for side in ["left", "bottom"]:
+    strip.spines[side].set_visible(False)
 # row groups
 pr = prot.to_dicts()
 start = 0
@@ -161,7 +166,9 @@ for i in range(1, len(pr) + 1):
         start = i
 a.set_yticks(yt, yl)
 a.tick_params(axis="y", length=0)
-a.set_xlabel("Botryllus run (strip: black = control, purple = PEC)")
+strip.set_xlabel(
+    "Botryllus run, grouped by contrast (strip: black = control, purple = PEC)"
+)
 a.set_ylabel("List protein (first list it is on, number of proteins)")
 a.set_title(
     f"HP k30, reads whose frame has >= {cutoff} of its 7-mers in Swiss-Prot", loc="left"
@@ -221,9 +228,9 @@ for alpha, k in settings:
                     }
                 )
         xt.append(xpos)
-        xl.append(f"{alpha} {k}\n>= {cut}")
+        xl.append(f"{'HP' if alpha == 'hp' else alpha.capitalize()} {k}, >= {cut}")
         xpos += 1
-b.set_xticks(xt, xl, fontsize=5)
+b.set_xticks(xt, xl, rotation=45, ha="right")
 b.set_ylabel("Median containment (protein-run pairs)")
 b.scatter(
     [], [], color=LIST_COL, marker="o", s=10, label="list proteins, Botryllus runs"
@@ -293,9 +300,14 @@ c.set_xticks(
     ha="right",
 )
 c.set_ylabel("Mean containment, PEC - control")
-c.bar([], [], color=LIST_COL, label="paper's up list")
-c.bar([], [], color="white", edgecolor=LIST_COL, lw=0.6, label="paper's down list")
-c.legend(loc="upper right", fontsize=5)
+c.legend(
+    handles=[
+        Patch(facecolor=LIST_COL, edgecolor=LIST_COL, label="paper's up list"),
+        Patch(facecolor="white", edgecolor=LIST_COL, label="paper's down list"),
+    ],
+    loc="upper right",
+    fontsize=5,
+)
 for ax, letter in zip([a, b, c], "abc"):
     pf.panel_label(ax, letter)
 pl.DataFrame(rows + ex, infer_schema_length=None).write_csv(
