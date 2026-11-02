@@ -1,0 +1,1792 @@
+source	set	correct	bin	reads	setting
+real: no protein hit	none		0.0	1821	dayhoff k12, any
+real: no protein hit	none		0.05	6259	dayhoff k12, any
+real: no protein hit	none		0.1	16672	dayhoff k12, any
+real: no protein hit	none		0.15000000000000002	30112	dayhoff k12, any
+real: no protein hit	none		0.2	42513	dayhoff k12, any
+real: no protein hit	none		0.25	50246	dayhoff k12, any
+real: no protein hit	none		0.30000000000000004	50436	dayhoff k12, any
+real: no protein hit	none		0.35000000000000003	44075	dayhoff k12, any
+real: no protein hit	none		0.4	48744	dayhoff k12, any
+real: no protein hit	none		0.45	29274	dayhoff k12, any
+real: no protein hit	none		0.5	47993	dayhoff k12, any
+real: no protein hit	none		0.55	33439	dayhoff k12, any
+real: no protein hit	none		0.6000000000000001	33861	dayhoff k12, any
+real: no protein hit	none		0.65	26865	dayhoff k12, any
+real: no protein hit	none		0.7000000000000001	22326	dayhoff k12, any
+real: no protein hit	none		0.75	22234	dayhoff k12, any
+real: no protein hit	none		0.8	24304	dayhoff k12, any
+real: no protein hit	none		0.8500000000000001	20868	dayhoff k12, any
+real: no protein hit	none		0.9	19273	dayhoff k12, any
+real: no protein hit	none		0.9500000000000001	66500	dayhoff k12, any
+real: partly coding	other genes	false	0.05	39	dayhoff k12, any
+real: partly coding	other genes	false	0.1	151	dayhoff k12, any
+real: partly coding	other genes	false	0.15000000000000002	376	dayhoff k12, any
+real: partly coding	other genes	false	0.2	807	dayhoff k12, any
+real: partly coding	other genes	false	0.25	1638	dayhoff k12, any
+real: partly coding	other genes	false	0.30000000000000004	2685	dayhoff k12, any
+real: partly coding	other genes	false	0.35000000000000003	3754	dayhoff k12, any
+real: partly coding	other genes	false	0.4	5452	dayhoff k12, any
+real: partly coding	other genes	false	0.45	4066	dayhoff k12, any
+real: partly coding	other genes	false	0.5	7298	dayhoff k12, any
+real: partly coding	other genes	false	0.55	5901	dayhoff k12, any
+real: partly coding	other genes	false	0.6000000000000001	5818	dayhoff k12, any
+real: partly coding	other genes	false	0.65	4792	dayhoff k12, any
+real: partly coding	other genes	false	0.7000000000000001	4304	dayhoff k12, any
+real: partly coding	other genes	false	0.75	4334	dayhoff k12, any
+real: partly coding	other genes	false	0.8	3290	dayhoff k12, any
+real: partly coding	other genes	false	0.8500000000000001	2435	dayhoff k12, any
+real: partly coding	other genes	false	0.9	2767	dayhoff k12, any
+real: partly coding	other genes	false	0.9500000000000001	8528	dayhoff k12, any
+real: partly coding	other genes	true	0.05	8	dayhoff k12, any
+real: partly coding	other genes	true	0.1	26	dayhoff k12, any
+real: partly coding	other genes	true	0.15000000000000002	118	dayhoff k12, any
+real: partly coding	other genes	true	0.2	253	dayhoff k12, any
+real: partly coding	other genes	true	0.25	616	dayhoff k12, any
+real: partly coding	other genes	true	0.30000000000000004	1068	dayhoff k12, any
+real: partly coding	other genes	true	0.35000000000000003	1509	dayhoff k12, any
+real: partly coding	other genes	true	0.4	2426	dayhoff k12, any
+real: partly coding	other genes	true	0.45	1986	dayhoff k12, any
+real: partly coding	other genes	true	0.5	3460	dayhoff k12, any
+real: partly coding	other genes	true	0.55	3228	dayhoff k12, any
+real: partly coding	other genes	true	0.6000000000000001	3374	dayhoff k12, any
+real: partly coding	other genes	true	0.65	3056	dayhoff k12, any
+real: partly coding	other genes	true	0.7000000000000001	2728	dayhoff k12, any
+real: partly coding	other genes	true	0.75	2538	dayhoff k12, any
+real: partly coding	other genes	true	0.8	2402	dayhoff k12, any
+real: partly coding	other genes	true	0.8500000000000001	1833	dayhoff k12, any
+real: partly coding	other genes	true	0.9	1605	dayhoff k12, any
+real: partly coding	other genes	true	0.9500000000000001	2534	dayhoff k12, any
+real: partly coding	paper_list	false	0.1	9	dayhoff k12, any
+real: partly coding	paper_list	false	0.15000000000000002	30	dayhoff k12, any
+real: partly coding	paper_list	false	0.2	42	dayhoff k12, any
+real: partly coding	paper_list	false	0.25	72	dayhoff k12, any
+real: partly coding	paper_list	false	0.30000000000000004	134	dayhoff k12, any
+real: partly coding	paper_list	false	0.35000000000000003	150	dayhoff k12, any
+real: partly coding	paper_list	false	0.4	220	dayhoff k12, any
+real: partly coding	paper_list	false	0.45	206	dayhoff k12, any
+real: partly coding	paper_list	false	0.5	318	dayhoff k12, any
+real: partly coding	paper_list	false	0.55	191	dayhoff k12, any
+real: partly coding	paper_list	false	0.6000000000000001	240	dayhoff k12, any
+real: partly coding	paper_list	false	0.65	280	dayhoff k12, any
+real: partly coding	paper_list	false	0.7000000000000001	147	dayhoff k12, any
+real: partly coding	paper_list	false	0.75	184	dayhoff k12, any
+real: partly coding	paper_list	false	0.8	129	dayhoff k12, any
+real: partly coding	paper_list	false	0.8500000000000001	99	dayhoff k12, any
+real: partly coding	paper_list	false	0.9	60	dayhoff k12, any
+real: partly coding	paper_list	false	0.9500000000000001	144	dayhoff k12, any
+real: partly coding	paper_list	true	0.1	1	dayhoff k12, any
+real: partly coding	paper_list	true	0.15000000000000002	3	dayhoff k12, any
+real: partly coding	paper_list	true	0.2	7	dayhoff k12, any
+real: partly coding	paper_list	true	0.25	46	dayhoff k12, any
+real: partly coding	paper_list	true	0.30000000000000004	68	dayhoff k12, any
+real: partly coding	paper_list	true	0.35000000000000003	68	dayhoff k12, any
+real: partly coding	paper_list	true	0.4	111	dayhoff k12, any
+real: partly coding	paper_list	true	0.45	87	dayhoff k12, any
+real: partly coding	paper_list	true	0.5	128	dayhoff k12, any
+real: partly coding	paper_list	true	0.55	120	dayhoff k12, any
+real: partly coding	paper_list	true	0.6000000000000001	163	dayhoff k12, any
+real: partly coding	paper_list	true	0.65	108	dayhoff k12, any
+real: partly coding	paper_list	true	0.7000000000000001	85	dayhoff k12, any
+real: partly coding	paper_list	true	0.75	72	dayhoff k12, any
+real: partly coding	paper_list	true	0.8	114	dayhoff k12, any
+real: partly coding	paper_list	true	0.8500000000000001	110	dayhoff k12, any
+real: partly coding	paper_list	true	0.9	73	dayhoff k12, any
+real: partly coding	paper_list	true	0.9500000000000001	89	dayhoff k12, any
+real: partly coding	random	false	0.15000000000000002	11	dayhoff k12, any
+real: partly coding	random	false	0.2	19	dayhoff k12, any
+real: partly coding	random	false	0.25	52	dayhoff k12, any
+real: partly coding	random	false	0.30000000000000004	68	dayhoff k12, any
+real: partly coding	random	false	0.35000000000000003	85	dayhoff k12, any
+real: partly coding	random	false	0.4	81	dayhoff k12, any
+real: partly coding	random	false	0.45	94	dayhoff k12, any
+real: partly coding	random	false	0.5	126	dayhoff k12, any
+real: partly coding	random	false	0.55	110	dayhoff k12, any
+real: partly coding	random	false	0.6000000000000001	100	dayhoff k12, any
+real: partly coding	random	false	0.65	103	dayhoff k12, any
+real: partly coding	random	false	0.7000000000000001	71	dayhoff k12, any
+real: partly coding	random	false	0.75	57	dayhoff k12, any
+real: partly coding	random	false	0.8	55	dayhoff k12, any
+real: partly coding	random	false	0.8500000000000001	38	dayhoff k12, any
+real: partly coding	random	false	0.9	22	dayhoff k12, any
+real: partly coding	random	false	0.9500000000000001	69	dayhoff k12, any
+real: partly coding	random	true	0.05	2	dayhoff k12, any
+real: partly coding	random	true	0.1	1	dayhoff k12, any
+real: partly coding	random	true	0.15000000000000002	1	dayhoff k12, any
+real: partly coding	random	true	0.2	4	dayhoff k12, any
+real: partly coding	random	true	0.25	18	dayhoff k12, any
+real: partly coding	random	true	0.30000000000000004	40	dayhoff k12, any
+real: partly coding	random	true	0.35000000000000003	48	dayhoff k12, any
+real: partly coding	random	true	0.4	62	dayhoff k12, any
+real: partly coding	random	true	0.45	63	dayhoff k12, any
+real: partly coding	random	true	0.5	153	dayhoff k12, any
+real: partly coding	random	true	0.55	145	dayhoff k12, any
+real: partly coding	random	true	0.6000000000000001	92	dayhoff k12, any
+real: partly coding	random	true	0.65	51	dayhoff k12, any
+real: partly coding	random	true	0.7000000000000001	38	dayhoff k12, any
+real: partly coding	random	true	0.75	52	dayhoff k12, any
+real: partly coding	random	true	0.8	73	dayhoff k12, any
+real: partly coding	random	true	0.8500000000000001	31	dayhoff k12, any
+real: partly coding	random	true	0.9	31	dayhoff k12, any
+real: partly coding	random	true	0.9500000000000001	30	dayhoff k12, any
+real: whole read coding	other genes	false	0.05	34	dayhoff k12, any
+real: whole read coding	other genes	false	0.1	289	dayhoff k12, any
+real: whole read coding	other genes	false	0.15000000000000002	401	dayhoff k12, any
+real: whole read coding	other genes	false	0.2	991	dayhoff k12, any
+real: whole read coding	other genes	false	0.25	2149	dayhoff k12, any
+real: whole read coding	other genes	false	0.30000000000000004	3611	dayhoff k12, any
+real: whole read coding	other genes	false	0.35000000000000003	4479	dayhoff k12, any
+real: whole read coding	other genes	false	0.4	6824	dayhoff k12, any
+real: whole read coding	other genes	false	0.45	4972	dayhoff k12, any
+real: whole read coding	other genes	false	0.5	9664	dayhoff k12, any
+real: whole read coding	other genes	false	0.55	8466	dayhoff k12, any
+real: whole read coding	other genes	false	0.6000000000000001	9951	dayhoff k12, any
+real: whole read coding	other genes	false	0.65	9173	dayhoff k12, any
+real: whole read coding	other genes	false	0.7000000000000001	7502	dayhoff k12, any
+real: whole read coding	other genes	false	0.75	7772	dayhoff k12, any
+real: whole read coding	other genes	false	0.8	8644	dayhoff k12, any
+real: whole read coding	other genes	false	0.8500000000000001	7637	dayhoff k12, any
+real: whole read coding	other genes	false	0.9	8108	dayhoff k12, any
+real: whole read coding	other genes	false	0.9500000000000001	29439	dayhoff k12, any
+real: whole read coding	other genes	true	0.05	29	dayhoff k12, any
+real: whole read coding	other genes	true	0.1	155	dayhoff k12, any
+real: whole read coding	other genes	true	0.15000000000000002	228	dayhoff k12, any
+real: whole read coding	other genes	true	0.2	435	dayhoff k12, any
+real: whole read coding	other genes	true	0.25	921	dayhoff k12, any
+real: whole read coding	other genes	true	0.30000000000000004	1432	dayhoff k12, any
+real: whole read coding	other genes	true	0.35000000000000003	2128	dayhoff k12, any
+real: whole read coding	other genes	true	0.4	3666	dayhoff k12, any
+real: whole read coding	other genes	true	0.45	3002	dayhoff k12, any
+real: whole read coding	other genes	true	0.5	5903	dayhoff k12, any
+real: whole read coding	other genes	true	0.55	5691	dayhoff k12, any
+real: whole read coding	other genes	true	0.6000000000000001	6964	dayhoff k12, any
+real: whole read coding	other genes	true	0.65	6148	dayhoff k12, any
+real: whole read coding	other genes	true	0.7000000000000001	6144	dayhoff k12, any
+real: whole read coding	other genes	true	0.75	6259	dayhoff k12, any
+real: whole read coding	other genes	true	0.8	6523	dayhoff k12, any
+real: whole read coding	other genes	true	0.8500000000000001	6204	dayhoff k12, any
+real: whole read coding	other genes	true	0.9	6741	dayhoff k12, any
+real: whole read coding	other genes	true	0.9500000000000001	26000	dayhoff k12, any
+real: whole read coding	paper_list	false	0.05	4	dayhoff k12, any
+real: whole read coding	paper_list	false	0.1	10	dayhoff k12, any
+real: whole read coding	paper_list	false	0.15000000000000002	49	dayhoff k12, any
+real: whole read coding	paper_list	false	0.2	72	dayhoff k12, any
+real: whole read coding	paper_list	false	0.25	167	dayhoff k12, any
+real: whole read coding	paper_list	false	0.30000000000000004	282	dayhoff k12, any
+real: whole read coding	paper_list	false	0.35000000000000003	296	dayhoff k12, any
+real: whole read coding	paper_list	false	0.4	531	dayhoff k12, any
+real: whole read coding	paper_list	false	0.45	269	dayhoff k12, any
+real: whole read coding	paper_list	false	0.5	572	dayhoff k12, any
+real: whole read coding	paper_list	false	0.55	450	dayhoff k12, any
+real: whole read coding	paper_list	false	0.6000000000000001	477	dayhoff k12, any
+real: whole read coding	paper_list	false	0.65	466	dayhoff k12, any
+real: whole read coding	paper_list	false	0.7000000000000001	376	dayhoff k12, any
+real: whole read coding	paper_list	false	0.75	355	dayhoff k12, any
+real: whole read coding	paper_list	false	0.8	401	dayhoff k12, any
+real: whole read coding	paper_list	false	0.8500000000000001	328	dayhoff k12, any
+real: whole read coding	paper_list	false	0.9	335	dayhoff k12, any
+real: whole read coding	paper_list	false	0.9500000000000001	631	dayhoff k12, any
+real: whole read coding	paper_list	true	0.05	1	dayhoff k12, any
+real: whole read coding	paper_list	true	0.1	2	dayhoff k12, any
+real: whole read coding	paper_list	true	0.15000000000000002	8	dayhoff k12, any
+real: whole read coding	paper_list	true	0.2	19	dayhoff k12, any
+real: whole read coding	paper_list	true	0.25	66	dayhoff k12, any
+real: whole read coding	paper_list	true	0.30000000000000004	79	dayhoff k12, any
+real: whole read coding	paper_list	true	0.35000000000000003	158	dayhoff k12, any
+real: whole read coding	paper_list	true	0.4	303	dayhoff k12, any
+real: whole read coding	paper_list	true	0.45	155	dayhoff k12, any
+real: whole read coding	paper_list	true	0.5	324	dayhoff k12, any
+real: whole read coding	paper_list	true	0.55	306	dayhoff k12, any
+real: whole read coding	paper_list	true	0.6000000000000001	404	dayhoff k12, any
+real: whole read coding	paper_list	true	0.65	378	dayhoff k12, any
+real: whole read coding	paper_list	true	0.7000000000000001	365	dayhoff k12, any
+real: whole read coding	paper_list	true	0.75	391	dayhoff k12, any
+real: whole read coding	paper_list	true	0.8	602	dayhoff k12, any
+real: whole read coding	paper_list	true	0.8500000000000001	667	dayhoff k12, any
+real: whole read coding	paper_list	true	0.9	467	dayhoff k12, any
+real: whole read coding	paper_list	true	0.9500000000000001	2024	dayhoff k12, any
+real: whole read coding	random	false	0.05	2	dayhoff k12, any
+real: whole read coding	random	false	0.1	17	dayhoff k12, any
+real: whole read coding	random	false	0.15000000000000002	13	dayhoff k12, any
+real: whole read coding	random	false	0.2	38	dayhoff k12, any
+real: whole read coding	random	false	0.25	64	dayhoff k12, any
+real: whole read coding	random	false	0.30000000000000004	72	dayhoff k12, any
+real: whole read coding	random	false	0.35000000000000003	125	dayhoff k12, any
+real: whole read coding	random	false	0.4	178	dayhoff k12, any
+real: whole read coding	random	false	0.45	147	dayhoff k12, any
+real: whole read coding	random	false	0.5	364	dayhoff k12, any
+real: whole read coding	random	false	0.55	315	dayhoff k12, any
+real: whole read coding	random	false	0.6000000000000001	311	dayhoff k12, any
+real: whole read coding	random	false	0.65	259	dayhoff k12, any
+real: whole read coding	random	false	0.7000000000000001	194	dayhoff k12, any
+real: whole read coding	random	false	0.75	213	dayhoff k12, any
+real: whole read coding	random	false	0.8	184	dayhoff k12, any
+real: whole read coding	random	false	0.8500000000000001	188	dayhoff k12, any
+real: whole read coding	random	false	0.9	191	dayhoff k12, any
+real: whole read coding	random	false	0.9500000000000001	529	dayhoff k12, any
+real: whole read coding	random	true	0.05	1	dayhoff k12, any
+real: whole read coding	random	true	0.1	13	dayhoff k12, any
+real: whole read coding	random	true	0.15000000000000002	3	dayhoff k12, any
+real: whole read coding	random	true	0.2	11	dayhoff k12, any
+real: whole read coding	random	true	0.25	28	dayhoff k12, any
+real: whole read coding	random	true	0.30000000000000004	21	dayhoff k12, any
+real: whole read coding	random	true	0.35000000000000003	53	dayhoff k12, any
+real: whole read coding	random	true	0.4	88	dayhoff k12, any
+real: whole read coding	random	true	0.45	120	dayhoff k12, any
+real: whole read coding	random	true	0.5	199	dayhoff k12, any
+real: whole read coding	random	true	0.55	201	dayhoff k12, any
+real: whole read coding	random	true	0.6000000000000001	178	dayhoff k12, any
+real: whole read coding	random	true	0.65	179	dayhoff k12, any
+real: whole read coding	random	true	0.7000000000000001	221	dayhoff k12, any
+real: whole read coding	random	true	0.75	171	dayhoff k12, any
+real: whole read coding	random	true	0.8	245	dayhoff k12, any
+real: whole read coding	random	true	0.8500000000000001	213	dayhoff k12, any
+real: whole read coding	random	true	0.9	258	dayhoff k12, any
+real: whole read coding	random	true	0.9500000000000001	742	dayhoff k12, any
+simulated from CDS	paper_list	false	0.15000000000000002	13	dayhoff k12, any
+simulated from CDS	paper_list	false	0.2	60	dayhoff k12, any
+simulated from CDS	paper_list	false	0.25	153	dayhoff k12, any
+simulated from CDS	paper_list	false	0.30000000000000004	266	dayhoff k12, any
+simulated from CDS	paper_list	false	0.35000000000000003	394	dayhoff k12, any
+simulated from CDS	paper_list	false	0.4	542	dayhoff k12, any
+simulated from CDS	paper_list	false	0.45	384	dayhoff k12, any
+simulated from CDS	paper_list	false	0.5	626	dayhoff k12, any
+simulated from CDS	paper_list	false	0.55	534	dayhoff k12, any
+simulated from CDS	paper_list	false	0.6000000000000001	526	dayhoff k12, any
+simulated from CDS	paper_list	false	0.65	427	dayhoff k12, any
+simulated from CDS	paper_list	false	0.7000000000000001	310	dayhoff k12, any
+simulated from CDS	paper_list	false	0.75	223	dayhoff k12, any
+simulated from CDS	paper_list	false	0.8	178	dayhoff k12, any
+simulated from CDS	paper_list	false	0.8500000000000001	130	dayhoff k12, any
+simulated from CDS	paper_list	false	0.9	82	dayhoff k12, any
+simulated from CDS	paper_list	false	0.9500000000000001	65	dayhoff k12, any
+simulated from CDS	paper_list	true	0.1	2	dayhoff k12, any
+simulated from CDS	paper_list	true	0.15000000000000002	7	dayhoff k12, any
+simulated from CDS	paper_list	true	0.2	30	dayhoff k12, any
+simulated from CDS	paper_list	true	0.25	60	dayhoff k12, any
+simulated from CDS	paper_list	true	0.30000000000000004	187	dayhoff k12, any
+simulated from CDS	paper_list	true	0.35000000000000003	310	dayhoff k12, any
+simulated from CDS	paper_list	true	0.4	407	dayhoff k12, any
+simulated from CDS	paper_list	true	0.45	369	dayhoff k12, any
+simulated from CDS	paper_list	true	0.5	570	dayhoff k12, any
+simulated from CDS	paper_list	true	0.55	670	dayhoff k12, any
+simulated from CDS	paper_list	true	0.6000000000000001	692	dayhoff k12, any
+simulated from CDS	paper_list	true	0.65	683	dayhoff k12, any
+simulated from CDS	paper_list	true	0.7000000000000001	624	dayhoff k12, any
+simulated from CDS	paper_list	true	0.75	521	dayhoff k12, any
+simulated from CDS	paper_list	true	0.8	498	dayhoff k12, any
+simulated from CDS	paper_list	true	0.8500000000000001	445	dayhoff k12, any
+simulated from CDS	paper_list	true	0.9	313	dayhoff k12, any
+simulated from CDS	paper_list	true	0.9500000000000001	519	dayhoff k12, any
+simulated from CDS	random	false	0.1	15	dayhoff k12, any
+simulated from CDS	random	false	0.15000000000000002	74	dayhoff k12, any
+simulated from CDS	random	false	0.2	259	dayhoff k12, any
+simulated from CDS	random	false	0.25	629	dayhoff k12, any
+simulated from CDS	random	false	0.30000000000000004	987	dayhoff k12, any
+simulated from CDS	random	false	0.35000000000000003	1353	dayhoff k12, any
+simulated from CDS	random	false	0.4	1523	dayhoff k12, any
+simulated from CDS	random	false	0.45	1055	dayhoff k12, any
+simulated from CDS	random	false	0.5	1596	dayhoff k12, any
+simulated from CDS	random	false	0.55	1379	dayhoff k12, any
+simulated from CDS	random	false	0.6000000000000001	1135	dayhoff k12, any
+simulated from CDS	random	false	0.65	923	dayhoff k12, any
+simulated from CDS	random	false	0.7000000000000001	627	dayhoff k12, any
+simulated from CDS	random	false	0.75	508	dayhoff k12, any
+simulated from CDS	random	false	0.8	341	dayhoff k12, any
+simulated from CDS	random	false	0.8500000000000001	260	dayhoff k12, any
+simulated from CDS	random	false	0.9	167	dayhoff k12, any
+simulated from CDS	random	false	0.9500000000000001	149	dayhoff k12, any
+simulated from CDS	random	true	0.1	4	dayhoff k12, any
+simulated from CDS	random	true	0.15000000000000002	47	dayhoff k12, any
+simulated from CDS	random	true	0.2	128	dayhoff k12, any
+simulated from CDS	random	true	0.25	354	dayhoff k12, any
+simulated from CDS	random	true	0.30000000000000004	623	dayhoff k12, any
+simulated from CDS	random	true	0.35000000000000003	910	dayhoff k12, any
+simulated from CDS	random	true	0.4	1220	dayhoff k12, any
+simulated from CDS	random	true	0.45	970	dayhoff k12, any
+simulated from CDS	random	true	0.5	1481	dayhoff k12, any
+simulated from CDS	random	true	0.55	1501	dayhoff k12, any
+simulated from CDS	random	true	0.6000000000000001	1526	dayhoff k12, any
+simulated from CDS	random	true	0.65	1419	dayhoff k12, any
+simulated from CDS	random	true	0.7000000000000001	1273	dayhoff k12, any
+simulated from CDS	random	true	0.75	1043	dayhoff k12, any
+simulated from CDS	random	true	0.8	805	dayhoff k12, any
+simulated from CDS	random	true	0.8500000000000001	674	dayhoff k12, any
+simulated from CDS	random	true	0.9	528	dayhoff k12, any
+simulated from CDS	random	true	0.9500000000000001	548	dayhoff k12, any
+real: no protein hit	none		0.0	5146	dayhoff k12, stopfree
+real: no protein hit	none		0.05	16202	dayhoff k12, stopfree
+real: no protein hit	none		0.1	20406	dayhoff k12, stopfree
+real: no protein hit	none		0.15000000000000002	20322	dayhoff k12, stopfree
+real: no protein hit	none		0.2	23809	dayhoff k12, stopfree
+real: no protein hit	none		0.25	26035	dayhoff k12, stopfree
+real: no protein hit	none		0.30000000000000004	26105	dayhoff k12, stopfree
+real: no protein hit	none		0.35000000000000003	23156	dayhoff k12, stopfree
+real: no protein hit	none		0.4	28949	dayhoff k12, stopfree
+real: no protein hit	none		0.45	17098	dayhoff k12, stopfree
+real: no protein hit	none		0.5	31741	dayhoff k12, stopfree
+real: no protein hit	none		0.55	21661	dayhoff k12, stopfree
+real: no protein hit	none		0.6000000000000001	24682	dayhoff k12, stopfree
+real: no protein hit	none		0.65	20005	dayhoff k12, stopfree
+real: no protein hit	none		0.7000000000000001	17669	dayhoff k12, stopfree
+real: no protein hit	none		0.75	17942	dayhoff k12, stopfree
+real: no protein hit	none		0.8	20423	dayhoff k12, stopfree
+real: no protein hit	none		0.8500000000000001	17763	dayhoff k12, stopfree
+real: no protein hit	none		0.9	16893	dayhoff k12, stopfree
+real: no protein hit	none		0.9500000000000001	66325	dayhoff k12, stopfree
+real: partly coding	other genes	false	0.0	308	dayhoff k12, stopfree
+real: partly coding	other genes	false	0.05	805	dayhoff k12, stopfree
+real: partly coding	other genes	false	0.1	1206	dayhoff k12, stopfree
+real: partly coding	other genes	false	0.15000000000000002	1403	dayhoff k12, stopfree
+real: partly coding	other genes	false	0.2	1760	dayhoff k12, stopfree
+real: partly coding	other genes	false	0.25	2404	dayhoff k12, stopfree
+real: partly coding	other genes	false	0.30000000000000004	2636	dayhoff k12, stopfree
+real: partly coding	other genes	false	0.35000000000000003	2792	dayhoff k12, stopfree
+real: partly coding	other genes	false	0.4	3570	dayhoff k12, stopfree
+real: partly coding	other genes	false	0.45	2650	dayhoff k12, stopfree
+real: partly coding	other genes	false	0.5	4781	dayhoff k12, stopfree
+real: partly coding	other genes	false	0.55	4056	dayhoff k12, stopfree
+real: partly coding	other genes	false	0.6000000000000001	4239	dayhoff k12, stopfree
+real: partly coding	other genes	false	0.65	3593	dayhoff k12, stopfree
+real: partly coding	other genes	false	0.7000000000000001	3323	dayhoff k12, stopfree
+real: partly coding	other genes	false	0.75	3390	dayhoff k12, stopfree
+real: partly coding	other genes	false	0.8	2627	dayhoff k12, stopfree
+real: partly coding	other genes	false	0.8500000000000001	1968	dayhoff k12, stopfree
+real: partly coding	other genes	false	0.9	2450	dayhoff k12, stopfree
+real: partly coding	other genes	false	0.9500000000000001	8450	dayhoff k12, stopfree
+real: partly coding	other genes	true	0.0	62	dayhoff k12, stopfree
+real: partly coding	other genes	true	0.05	220	dayhoff k12, stopfree
+real: partly coding	other genes	true	0.1	298	dayhoff k12, stopfree
+real: partly coding	other genes	true	0.15000000000000002	421	dayhoff k12, stopfree
+real: partly coding	other genes	true	0.2	805	dayhoff k12, stopfree
+real: partly coding	other genes	true	0.25	838	dayhoff k12, stopfree
+real: partly coding	other genes	true	0.30000000000000004	1009	dayhoff k12, stopfree
+real: partly coding	other genes	true	0.35000000000000003	1250	dayhoff k12, stopfree
+real: partly coding	other genes	true	0.4	1564	dayhoff k12, stopfree
+real: partly coding	other genes	true	0.45	1393	dayhoff k12, stopfree
+real: partly coding	other genes	true	0.5	2656	dayhoff k12, stopfree
+real: partly coding	other genes	true	0.55	2319	dayhoff k12, stopfree
+real: partly coding	other genes	true	0.6000000000000001	2560	dayhoff k12, stopfree
+real: partly coding	other genes	true	0.65	2394	dayhoff k12, stopfree
+real: partly coding	other genes	true	0.7000000000000001	2096	dayhoff k12, stopfree
+real: partly coding	other genes	true	0.75	2042	dayhoff k12, stopfree
+real: partly coding	other genes	true	0.8	1853	dayhoff k12, stopfree
+real: partly coding	other genes	true	0.8500000000000001	1495	dayhoff k12, stopfree
+real: partly coding	other genes	true	0.9	1416	dayhoff k12, stopfree
+real: partly coding	other genes	true	0.9500000000000001	2436	dayhoff k12, stopfree
+real: partly coding	paper_list	false	0.0	7	dayhoff k12, stopfree
+real: partly coding	paper_list	false	0.05	33	dayhoff k12, stopfree
+real: partly coding	paper_list	false	0.1	66	dayhoff k12, stopfree
+real: partly coding	paper_list	false	0.15000000000000002	73	dayhoff k12, stopfree
+real: partly coding	paper_list	false	0.2	65	dayhoff k12, stopfree
+real: partly coding	paper_list	false	0.25	113	dayhoff k12, stopfree
+real: partly coding	paper_list	false	0.30000000000000004	90	dayhoff k12, stopfree
+real: partly coding	paper_list	false	0.35000000000000003	112	dayhoff k12, stopfree
+real: partly coding	paper_list	false	0.4	172	dayhoff k12, stopfree
+real: partly coding	paper_list	false	0.45	109	dayhoff k12, stopfree
+real: partly coding	paper_list	false	0.5	198	dayhoff k12, stopfree
+real: partly coding	paper_list	false	0.55	138	dayhoff k12, stopfree
+real: partly coding	paper_list	false	0.6000000000000001	183	dayhoff k12, stopfree
+real: partly coding	paper_list	false	0.65	173	dayhoff k12, stopfree
+real: partly coding	paper_list	false	0.7000000000000001	111	dayhoff k12, stopfree
+real: partly coding	paper_list	false	0.75	145	dayhoff k12, stopfree
+real: partly coding	paper_list	false	0.8	104	dayhoff k12, stopfree
+real: partly coding	paper_list	false	0.8500000000000001	83	dayhoff k12, stopfree
+real: partly coding	paper_list	false	0.9	54	dayhoff k12, stopfree
+real: partly coding	paper_list	false	0.9500000000000001	142	dayhoff k12, stopfree
+real: partly coding	paper_list	true	0.0	2	dayhoff k12, stopfree
+real: partly coding	paper_list	true	0.05	9	dayhoff k12, stopfree
+real: partly coding	paper_list	true	0.1	10	dayhoff k12, stopfree
+real: partly coding	paper_list	true	0.15000000000000002	20	dayhoff k12, stopfree
+real: partly coding	paper_list	true	0.2	40	dayhoff k12, stopfree
+real: partly coding	paper_list	true	0.25	37	dayhoff k12, stopfree
+real: partly coding	paper_list	true	0.30000000000000004	49	dayhoff k12, stopfree
+real: partly coding	paper_list	true	0.35000000000000003	42	dayhoff k12, stopfree
+real: partly coding	paper_list	true	0.4	75	dayhoff k12, stopfree
+real: partly coding	paper_list	true	0.45	66	dayhoff k12, stopfree
+real: partly coding	paper_list	true	0.5	83	dayhoff k12, stopfree
+real: partly coding	paper_list	true	0.55	69	dayhoff k12, stopfree
+real: partly coding	paper_list	true	0.6000000000000001	82	dayhoff k12, stopfree
+real: partly coding	paper_list	true	0.65	64	dayhoff k12, stopfree
+real: partly coding	paper_list	true	0.7000000000000001	48	dayhoff k12, stopfree
+real: partly coding	paper_list	true	0.75	48	dayhoff k12, stopfree
+real: partly coding	paper_list	true	0.8	95	dayhoff k12, stopfree
+real: partly coding	paper_list	true	0.8500000000000001	94	dayhoff k12, stopfree
+real: partly coding	paper_list	true	0.9	64	dayhoff k12, stopfree
+real: partly coding	paper_list	true	0.9500000000000001	84	dayhoff k12, stopfree
+real: partly coding	random	false	0.0	15	dayhoff k12, stopfree
+real: partly coding	random	false	0.05	8	dayhoff k12, stopfree
+real: partly coding	random	false	0.1	30	dayhoff k12, stopfree
+real: partly coding	random	false	0.15000000000000002	19	dayhoff k12, stopfree
+real: partly coding	random	false	0.2	49	dayhoff k12, stopfree
+real: partly coding	random	false	0.25	60	dayhoff k12, stopfree
+real: partly coding	random	false	0.30000000000000004	86	dayhoff k12, stopfree
+real: partly coding	random	false	0.35000000000000003	74	dayhoff k12, stopfree
+real: partly coding	random	false	0.4	65	dayhoff k12, stopfree
+real: partly coding	random	false	0.45	82	dayhoff k12, stopfree
+real: partly coding	random	false	0.5	110	dayhoff k12, stopfree
+real: partly coding	random	false	0.55	68	dayhoff k12, stopfree
+real: partly coding	random	false	0.6000000000000001	65	dayhoff k12, stopfree
+real: partly coding	random	false	0.65	98	dayhoff k12, stopfree
+real: partly coding	random	false	0.7000000000000001	48	dayhoff k12, stopfree
+real: partly coding	random	false	0.75	42	dayhoff k12, stopfree
+real: partly coding	random	false	0.8	38	dayhoff k12, stopfree
+real: partly coding	random	false	0.8500000000000001	37	dayhoff k12, stopfree
+real: partly coding	random	false	0.9	22	dayhoff k12, stopfree
+real: partly coding	random	false	0.9500000000000001	67	dayhoff k12, stopfree
+real: partly coding	random	true	0.05	6	dayhoff k12, stopfree
+real: partly coding	random	true	0.15000000000000002	10	dayhoff k12, stopfree
+real: partly coding	random	true	0.2	6	dayhoff k12, stopfree
+real: partly coding	random	true	0.25	26	dayhoff k12, stopfree
+real: partly coding	random	true	0.30000000000000004	43	dayhoff k12, stopfree
+real: partly coding	random	true	0.35000000000000003	25	dayhoff k12, stopfree
+real: partly coding	random	true	0.4	44	dayhoff k12, stopfree
+real: partly coding	random	true	0.45	56	dayhoff k12, stopfree
+real: partly coding	random	true	0.5	109	dayhoff k12, stopfree
+real: partly coding	random	true	0.55	91	dayhoff k12, stopfree
+real: partly coding	random	true	0.6000000000000001	42	dayhoff k12, stopfree
+real: partly coding	random	true	0.65	37	dayhoff k12, stopfree
+real: partly coding	random	true	0.7000000000000001	27	dayhoff k12, stopfree
+real: partly coding	random	true	0.75	37	dayhoff k12, stopfree
+real: partly coding	random	true	0.8	51	dayhoff k12, stopfree
+real: partly coding	random	true	0.8500000000000001	23	dayhoff k12, stopfree
+real: partly coding	random	true	0.9	30	dayhoff k12, stopfree
+real: partly coding	random	true	0.9500000000000001	30	dayhoff k12, stopfree
+real: whole read coding	other genes	false	0.0	29	dayhoff k12, stopfree
+real: whole read coding	other genes	false	0.05	204	dayhoff k12, stopfree
+real: whole read coding	other genes	false	0.1	655	dayhoff k12, stopfree
+real: whole read coding	other genes	false	0.15000000000000002	737	dayhoff k12, stopfree
+real: whole read coding	other genes	false	0.2	1395	dayhoff k12, stopfree
+real: whole read coding	other genes	false	0.25	2530	dayhoff k12, stopfree
+real: whole read coding	other genes	false	0.30000000000000004	3431	dayhoff k12, stopfree
+real: whole read coding	other genes	false	0.35000000000000003	3576	dayhoff k12, stopfree
+real: whole read coding	other genes	false	0.4	4890	dayhoff k12, stopfree
+real: whole read coding	other genes	false	0.45	3751	dayhoff k12, stopfree
+real: whole read coding	other genes	false	0.5	7474	dayhoff k12, stopfree
+real: whole read coding	other genes	false	0.55	6318	dayhoff k12, stopfree
+real: whole read coding	other genes	false	0.6000000000000001	7665	dayhoff k12, stopfree
+real: whole read coding	other genes	false	0.65	6710	dayhoff k12, stopfree
+real: whole read coding	other genes	false	0.7000000000000001	5962	dayhoff k12, stopfree
+real: whole read coding	other genes	false	0.75	6037	dayhoff k12, stopfree
+real: whole read coding	other genes	false	0.8	6879	dayhoff k12, stopfree
+real: whole read coding	other genes	false	0.8500000000000001	6236	dayhoff k12, stopfree
+real: whole read coding	other genes	false	0.9	7161	dayhoff k12, stopfree
+real: whole read coding	other genes	false	0.9500000000000001	29185	dayhoff k12, stopfree
+real: whole read coding	other genes	true	0.0	196	dayhoff k12, stopfree
+real: whole read coding	other genes	true	0.05	682	dayhoff k12, stopfree
+real: whole read coding	other genes	true	0.1	1129	dayhoff k12, stopfree
+real: whole read coding	other genes	true	0.15000000000000002	1455	dayhoff k12, stopfree
+real: whole read coding	other genes	true	0.2	1942	dayhoff k12, stopfree
+real: whole read coding	other genes	true	0.25	2733	dayhoff k12, stopfree
+real: whole read coding	other genes	true	0.30000000000000004	3375	dayhoff k12, stopfree
+real: whole read coding	other genes	true	0.35000000000000003	4103	dayhoff k12, stopfree
+real: whole read coding	other genes	true	0.4	5576	dayhoff k12, stopfree
+real: whole read coding	other genes	true	0.45	4160	dayhoff k12, stopfree
+real: whole read coding	other genes	true	0.5	7517	dayhoff k12, stopfree
+real: whole read coding	other genes	true	0.55	6698	dayhoff k12, stopfree
+real: whole read coding	other genes	true	0.6000000000000001	7650	dayhoff k12, stopfree
+real: whole read coding	other genes	true	0.65	6568	dayhoff k12, stopfree
+real: whole read coding	other genes	true	0.7000000000000001	6331	dayhoff k12, stopfree
+real: whole read coding	other genes	true	0.75	6450	dayhoff k12, stopfree
+real: whole read coding	other genes	true	0.8	6578	dayhoff k12, stopfree
+real: whole read coding	other genes	true	0.8500000000000001	6068	dayhoff k12, stopfree
+real: whole read coding	other genes	true	0.9	6556	dayhoff k12, stopfree
+real: whole read coding	other genes	true	0.9500000000000001	25966	dayhoff k12, stopfree
+real: whole read coding	paper_list	false	0.05	28	dayhoff k12, stopfree
+real: whole read coding	paper_list	false	0.1	33	dayhoff k12, stopfree
+real: whole read coding	paper_list	false	0.15000000000000002	83	dayhoff k12, stopfree
+real: whole read coding	paper_list	false	0.2	108	dayhoff k12, stopfree
+real: whole read coding	paper_list	false	0.25	147	dayhoff k12, stopfree
+real: whole read coding	paper_list	false	0.30000000000000004	214	dayhoff k12, stopfree
+real: whole read coding	paper_list	false	0.35000000000000003	166	dayhoff k12, stopfree
+real: whole read coding	paper_list	false	0.4	313	dayhoff k12, stopfree
+real: whole read coding	paper_list	false	0.45	156	dayhoff k12, stopfree
+real: whole read coding	paper_list	false	0.5	368	dayhoff k12, stopfree
+real: whole read coding	paper_list	false	0.55	301	dayhoff k12, stopfree
+real: whole read coding	paper_list	false	0.6000000000000001	335	dayhoff k12, stopfree
+real: whole read coding	paper_list	false	0.65	352	dayhoff k12, stopfree
+real: whole read coding	paper_list	false	0.7000000000000001	314	dayhoff k12, stopfree
+real: whole read coding	paper_list	false	0.75	314	dayhoff k12, stopfree
+real: whole read coding	paper_list	false	0.8	350	dayhoff k12, stopfree
+real: whole read coding	paper_list	false	0.8500000000000001	293	dayhoff k12, stopfree
+real: whole read coding	paper_list	false	0.9	321	dayhoff k12, stopfree
+real: whole read coding	paper_list	false	0.9500000000000001	632	dayhoff k12, stopfree
+real: whole read coding	paper_list	true	0.0	1	dayhoff k12, stopfree
+real: whole read coding	paper_list	true	0.05	41	dayhoff k12, stopfree
+real: whole read coding	paper_list	true	0.1	90	dayhoff k12, stopfree
+real: whole read coding	paper_list	true	0.15000000000000002	99	dayhoff k12, stopfree
+real: whole read coding	paper_list	true	0.2	185	dayhoff k12, stopfree
+real: whole read coding	paper_list	true	0.25	220	dayhoff k12, stopfree
+real: whole read coding	paper_list	true	0.30000000000000004	223	dayhoff k12, stopfree
+real: whole read coding	paper_list	true	0.35000000000000003	338	dayhoff k12, stopfree
+real: whole read coding	paper_list	true	0.4	404	dayhoff k12, stopfree
+real: whole read coding	paper_list	true	0.45	212	dayhoff k12, stopfree
+real: whole read coding	paper_list	true	0.5	409	dayhoff k12, stopfree
+real: whole read coding	paper_list	true	0.55	339	dayhoff k12, stopfree
+real: whole read coding	paper_list	true	0.6000000000000001	423	dayhoff k12, stopfree
+real: whole read coding	paper_list	true	0.65	400	dayhoff k12, stopfree
+real: whole read coding	paper_list	true	0.7000000000000001	356	dayhoff k12, stopfree
+real: whole read coding	paper_list	true	0.75	382	dayhoff k12, stopfree
+real: whole read coding	paper_list	true	0.8	586	dayhoff k12, stopfree
+real: whole read coding	paper_list	true	0.8500000000000001	647	dayhoff k12, stopfree
+real: whole read coding	paper_list	true	0.9	461	dayhoff k12, stopfree
+real: whole read coding	paper_list	true	0.9500000000000001	2020	dayhoff k12, stopfree
+real: whole read coding	random	false	0.05	5	dayhoff k12, stopfree
+real: whole read coding	random	false	0.1	14	dayhoff k12, stopfree
+real: whole read coding	random	false	0.15000000000000002	11	dayhoff k12, stopfree
+real: whole read coding	random	false	0.2	39	dayhoff k12, stopfree
+real: whole read coding	random	false	0.25	66	dayhoff k12, stopfree
+real: whole read coding	random	false	0.30000000000000004	47	dayhoff k12, stopfree
+real: whole read coding	random	false	0.35000000000000003	82	dayhoff k12, stopfree
+real: whole read coding	random	false	0.4	163	dayhoff k12, stopfree
+real: whole read coding	random	false	0.45	131	dayhoff k12, stopfree
+real: whole read coding	random	false	0.5	218	dayhoff k12, stopfree
+real: whole read coding	random	false	0.55	174	dayhoff k12, stopfree
+real: whole read coding	random	false	0.6000000000000001	181	dayhoff k12, stopfree
+real: whole read coding	random	false	0.65	151	dayhoff k12, stopfree
+real: whole read coding	random	false	0.7000000000000001	126	dayhoff k12, stopfree
+real: whole read coding	random	false	0.75	146	dayhoff k12, stopfree
+real: whole read coding	random	false	0.8	175	dayhoff k12, stopfree
+real: whole read coding	random	false	0.8500000000000001	140	dayhoff k12, stopfree
+real: whole read coding	random	false	0.9	155	dayhoff k12, stopfree
+real: whole read coding	random	false	0.9500000000000001	529	dayhoff k12, stopfree
+real: whole read coding	random	true	0.0	6	dayhoff k12, stopfree
+real: whole read coding	random	true	0.05	12	dayhoff k12, stopfree
+real: whole read coding	random	true	0.1	49	dayhoff k12, stopfree
+real: whole read coding	random	true	0.15000000000000002	68	dayhoff k12, stopfree
+real: whole read coding	random	true	0.2	73	dayhoff k12, stopfree
+real: whole read coding	random	true	0.25	128	dayhoff k12, stopfree
+real: whole read coding	random	true	0.30000000000000004	105	dayhoff k12, stopfree
+real: whole read coding	random	true	0.35000000000000003	162	dayhoff k12, stopfree
+real: whole read coding	random	true	0.4	242	dayhoff k12, stopfree
+real: whole read coding	random	true	0.45	196	dayhoff k12, stopfree
+real: whole read coding	random	true	0.5	271	dayhoff k12, stopfree
+real: whole read coding	random	true	0.55	216	dayhoff k12, stopfree
+real: whole read coding	random	true	0.6000000000000001	219	dayhoff k12, stopfree
+real: whole read coding	random	true	0.65	180	dayhoff k12, stopfree
+real: whole read coding	random	true	0.7000000000000001	221	dayhoff k12, stopfree
+real: whole read coding	random	true	0.75	160	dayhoff k12, stopfree
+real: whole read coding	random	true	0.8	234	dayhoff k12, stopfree
+real: whole read coding	random	true	0.8500000000000001	214	dayhoff k12, stopfree
+real: whole read coding	random	true	0.9	254	dayhoff k12, stopfree
+real: whole read coding	random	true	0.9500000000000001	742	dayhoff k12, stopfree
+simulated from CDS	paper_list	false	0.0	3	dayhoff k12, stopfree
+simulated from CDS	paper_list	false	0.05	8	dayhoff k12, stopfree
+simulated from CDS	paper_list	false	0.1	27	dayhoff k12, stopfree
+simulated from CDS	paper_list	false	0.15000000000000002	47	dayhoff k12, stopfree
+simulated from CDS	paper_list	false	0.2	68	dayhoff k12, stopfree
+simulated from CDS	paper_list	false	0.25	97	dayhoff k12, stopfree
+simulated from CDS	paper_list	false	0.30000000000000004	139	dayhoff k12, stopfree
+simulated from CDS	paper_list	false	0.35000000000000003	188	dayhoff k12, stopfree
+simulated from CDS	paper_list	false	0.4	214	dayhoff k12, stopfree
+simulated from CDS	paper_list	false	0.45	173	dayhoff k12, stopfree
+simulated from CDS	paper_list	false	0.5	277	dayhoff k12, stopfree
+simulated from CDS	paper_list	false	0.55	256	dayhoff k12, stopfree
+simulated from CDS	paper_list	false	0.6000000000000001	281	dayhoff k12, stopfree
+simulated from CDS	paper_list	false	0.65	256	dayhoff k12, stopfree
+simulated from CDS	paper_list	false	0.7000000000000001	201	dayhoff k12, stopfree
+simulated from CDS	paper_list	false	0.75	159	dayhoff k12, stopfree
+simulated from CDS	paper_list	false	0.8	137	dayhoff k12, stopfree
+simulated from CDS	paper_list	false	0.8500000000000001	114	dayhoff k12, stopfree
+simulated from CDS	paper_list	false	0.9	79	dayhoff k12, stopfree
+simulated from CDS	paper_list	false	0.9500000000000001	63	dayhoff k12, stopfree
+simulated from CDS	paper_list	true	0.0	13	dayhoff k12, stopfree
+simulated from CDS	paper_list	true	0.05	52	dayhoff k12, stopfree
+simulated from CDS	paper_list	true	0.1	106	dayhoff k12, stopfree
+simulated from CDS	paper_list	true	0.15000000000000002	179	dayhoff k12, stopfree
+simulated from CDS	paper_list	true	0.2	286	dayhoff k12, stopfree
+simulated from CDS	paper_list	true	0.25	344	dayhoff k12, stopfree
+simulated from CDS	paper_list	true	0.30000000000000004	467	dayhoff k12, stopfree
+simulated from CDS	paper_list	true	0.35000000000000003	565	dayhoff k12, stopfree
+simulated from CDS	paper_list	true	0.4	652	dayhoff k12, stopfree
+simulated from CDS	paper_list	true	0.45	475	dayhoff k12, stopfree
+simulated from CDS	paper_list	true	0.5	688	dayhoff k12, stopfree
+simulated from CDS	paper_list	true	0.55	728	dayhoff k12, stopfree
+simulated from CDS	paper_list	true	0.6000000000000001	712	dayhoff k12, stopfree
+simulated from CDS	paper_list	true	0.65	672	dayhoff k12, stopfree
+simulated from CDS	paper_list	true	0.7000000000000001	612	dayhoff k12, stopfree
+simulated from CDS	paper_list	true	0.75	507	dayhoff k12, stopfree
+simulated from CDS	paper_list	true	0.8	484	dayhoff k12, stopfree
+simulated from CDS	paper_list	true	0.8500000000000001	427	dayhoff k12, stopfree
+simulated from CDS	paper_list	true	0.9	300	dayhoff k12, stopfree
+simulated from CDS	paper_list	true	0.9500000000000001	505	dayhoff k12, stopfree
+simulated from CDS	random	false	0.0	5	dayhoff k12, stopfree
+simulated from CDS	random	false	0.05	25	dayhoff k12, stopfree
+simulated from CDS	random	false	0.1	78	dayhoff k12, stopfree
+simulated from CDS	random	false	0.15000000000000002	124	dayhoff k12, stopfree
+simulated from CDS	random	false	0.2	226	dayhoff k12, stopfree
+simulated from CDS	random	false	0.25	304	dayhoff k12, stopfree
+simulated from CDS	random	false	0.30000000000000004	438	dayhoff k12, stopfree
+simulated from CDS	random	false	0.35000000000000003	498	dayhoff k12, stopfree
+simulated from CDS	random	false	0.4	523	dayhoff k12, stopfree
+simulated from CDS	random	false	0.45	390	dayhoff k12, stopfree
+simulated from CDS	random	false	0.5	671	dayhoff k12, stopfree
+simulated from CDS	random	false	0.55	630	dayhoff k12, stopfree
+simulated from CDS	random	false	0.6000000000000001	558	dayhoff k12, stopfree
+simulated from CDS	random	false	0.65	505	dayhoff k12, stopfree
+simulated from CDS	random	false	0.7000000000000001	434	dayhoff k12, stopfree
+simulated from CDS	random	false	0.75	354	dayhoff k12, stopfree
+simulated from CDS	random	false	0.8	255	dayhoff k12, stopfree
+simulated from CDS	random	false	0.8500000000000001	209	dayhoff k12, stopfree
+simulated from CDS	random	false	0.9	151	dayhoff k12, stopfree
+simulated from CDS	random	false	0.9500000000000001	148	dayhoff k12, stopfree
+simulated from CDS	random	true	0.0	65	dayhoff k12, stopfree
+simulated from CDS	random	true	0.05	279	dayhoff k12, stopfree
+simulated from CDS	random	true	0.1	456	dayhoff k12, stopfree
+simulated from CDS	random	true	0.15000000000000002	720	dayhoff k12, stopfree
+simulated from CDS	random	true	0.2	980	dayhoff k12, stopfree
+simulated from CDS	random	true	0.25	1213	dayhoff k12, stopfree
+simulated from CDS	random	true	0.30000000000000004	1504	dayhoff k12, stopfree
+simulated from CDS	random	true	0.35000000000000003	1564	dayhoff k12, stopfree
+simulated from CDS	random	true	0.4	1699	dayhoff k12, stopfree
+simulated from CDS	random	true	0.45	1196	dayhoff k12, stopfree
+simulated from CDS	random	true	0.5	1721	dayhoff k12, stopfree
+simulated from CDS	random	true	0.55	1640	dayhoff k12, stopfree
+simulated from CDS	random	true	0.6000000000000001	1572	dayhoff k12, stopfree
+simulated from CDS	random	true	0.65	1425	dayhoff k12, stopfree
+simulated from CDS	random	true	0.7000000000000001	1247	dayhoff k12, stopfree
+simulated from CDS	random	true	0.75	1012	dayhoff k12, stopfree
+simulated from CDS	random	true	0.8	784	dayhoff k12, stopfree
+simulated from CDS	random	true	0.8500000000000001	653	dayhoff k12, stopfree
+simulated from CDS	random	true	0.9	501	dayhoff k12, stopfree
+simulated from CDS	random	true	0.9500000000000001	534	dayhoff k12, stopfree
+real: no protein hit	none		0.0	4	protein k5, any
+real: no protein hit	none		0.05	4	protein k5, any
+real: no protein hit	none		0.1	1	protein k5, any
+real: no protein hit	none		0.15000000000000002	1	protein k5, any
+real: no protein hit	none		0.25	2	protein k5, any
+real: no protein hit	none		0.45	2	protein k5, any
+real: no protein hit	none		0.5	11	protein k5, any
+real: no protein hit	none		0.55	28	protein k5, any
+real: no protein hit	none		0.6000000000000001	244	protein k5, any
+real: no protein hit	none		0.65	1239	protein k5, any
+real: no protein hit	none		0.7000000000000001	3090	protein k5, any
+real: no protein hit	none		0.75	14014	protein k5, any
+real: no protein hit	none		0.8	22846	protein k5, any
+real: no protein hit	none		0.8500000000000001	81554	protein k5, any
+real: no protein hit	none		0.9	23118	protein k5, any
+real: no protein hit	none		0.9500000000000001	500455	protein k5, any
+real: partly coding	other genes	false	0.7000000000000001	5	protein k5, any
+real: partly coding	other genes	false	0.75	193	protein k5, any
+real: partly coding	other genes	false	0.8	868	protein k5, any
+real: partly coding	other genes	false	0.8500000000000001	5490	protein k5, any
+real: partly coding	other genes	false	0.9	2019	protein k5, any
+real: partly coding	other genes	false	0.9500000000000001	64814	protein k5, any
+real: partly coding	other genes	true	0.7000000000000001	4	protein k5, any
+real: partly coding	other genes	true	0.75	43	protein k5, any
+real: partly coding	other genes	true	0.8	319	protein k5, any
+real: partly coding	other genes	true	0.8500000000000001	2411	protein k5, any
+real: partly coding	other genes	true	0.9	497	protein k5, any
+real: partly coding	other genes	true	0.9500000000000001	26564	protein k5, any
+real: partly coding	paper_list	false	0.7000000000000001	3	protein k5, any
+real: partly coding	paper_list	false	0.75	12	protein k5, any
+real: partly coding	paper_list	false	0.8	34	protein k5, any
+real: partly coding	paper_list	false	0.8500000000000001	401	protein k5, any
+real: partly coding	paper_list	false	0.9	92	protein k5, any
+real: partly coding	paper_list	false	0.9500000000000001	2572	protein k5, any
+real: partly coding	paper_list	true	0.7000000000000001	5	protein k5, any
+real: partly coding	paper_list	true	0.75	3	protein k5, any
+real: partly coding	paper_list	true	0.8	5	protein k5, any
+real: partly coding	paper_list	true	0.8500000000000001	117	protein k5, any
+real: partly coding	paper_list	true	0.9	18	protein k5, any
+real: partly coding	paper_list	true	0.9500000000000001	846	protein k5, any
+real: partly coding	random	false	0.75	6	protein k5, any
+real: partly coding	random	false	0.8	15	protein k5, any
+real: partly coding	random	false	0.8500000000000001	110	protein k5, any
+real: partly coding	random	false	0.9	36	protein k5, any
+real: partly coding	random	false	0.9500000000000001	1387	protein k5, any
+real: partly coding	random	true	0.75	1	protein k5, any
+real: partly coding	random	true	0.8	2	protein k5, any
+real: partly coding	random	true	0.8500000000000001	47	protein k5, any
+real: partly coding	random	true	0.9	5	protein k5, any
+real: partly coding	random	true	0.9500000000000001	487	protein k5, any
+real: whole read coding	other genes	false	0.75	11	protein k5, any
+real: whole read coding	other genes	false	0.8	16	protein k5, any
+real: whole read coding	other genes	false	0.8500000000000001	48	protein k5, any
+real: whole read coding	other genes	false	0.9	483	protein k5, any
+real: whole read coding	other genes	false	0.9500000000000001	125737	protein k5, any
+real: whole read coding	other genes	true	0.75	5	protein k5, any
+real: whole read coding	other genes	true	0.8	5	protein k5, any
+real: whole read coding	other genes	true	0.8500000000000001	60	protein k5, any
+real: whole read coding	other genes	true	0.9	648	protein k5, any
+real: whole read coding	other genes	true	0.9500000000000001	97778	protein k5, any
+real: whole read coding	paper_list	false	0.8500000000000001	2	protein k5, any
+real: whole read coding	paper_list	false	0.9	13	protein k5, any
+real: whole read coding	paper_list	false	0.9500000000000001	6773	protein k5, any
+real: whole read coding	paper_list	true	0.8500000000000001	2	protein k5, any
+real: whole read coding	paper_list	true	0.9	27	protein k5, any
+real: whole read coding	paper_list	true	0.9500000000000001	5973	protein k5, any
+real: whole read coding	random	false	0.8500000000000001	2	protein k5, any
+real: whole read coding	random	false	0.9	11	protein k5, any
+real: whole read coding	random	false	0.9500000000000001	3542	protein k5, any
+real: whole read coding	random	true	0.8500000000000001	1	protein k5, any
+real: whole read coding	random	true	0.9	15	protein k5, any
+real: whole read coding	random	true	0.9500000000000001	2786	protein k5, any
+simulated from CDS	paper_list	false	0.9500000000000001	3869	protein k5, any
+simulated from CDS	paper_list	true	0.9	3	protein k5, any
+simulated from CDS	paper_list	true	0.9500000000000001	7948	protein k5, any
+simulated from CDS	random	false	0.8500000000000001	1	protein k5, any
+simulated from CDS	random	false	0.9	1	protein k5, any
+simulated from CDS	random	false	0.9500000000000001	7642	protein k5, any
+simulated from CDS	random	true	0.9	11	protein k5, any
+simulated from CDS	random	true	0.9500000000000001	20379	protein k5, any
+real: no protein hit	none		0.6000000000000001	1	protein k5, stopfree
+real: no protein hit	none		0.75	7	protein k5, stopfree
+real: no protein hit	none		0.8	28	protein k5, stopfree
+real: no protein hit	none		0.8500000000000001	139	protein k5, stopfree
+real: no protein hit	none		0.9	2700	protein k5, stopfree
+real: no protein hit	none		0.9500000000000001	479572	protein k5, stopfree
+real: partly coding	other genes	false	0.8	4	protein k5, stopfree
+real: partly coding	other genes	false	0.8500000000000001	29	protein k5, stopfree
+real: partly coding	other genes	false	0.9	277	protein k5, stopfree
+real: partly coding	other genes	false	0.9500000000000001	62016	protein k5, stopfree
+real: partly coding	other genes	true	0.8500000000000001	6	protein k5, stopfree
+real: partly coding	other genes	true	0.9	161	protein k5, stopfree
+real: partly coding	other genes	true	0.9500000000000001	25651	protein k5, stopfree
+real: partly coding	paper_list	false	0.8500000000000001	1	protein k5, stopfree
+real: partly coding	paper_list	false	0.9	3	protein k5, stopfree
+real: partly coding	paper_list	false	0.9500000000000001	2472	protein k5, stopfree
+real: partly coding	paper_list	true	0.9500000000000001	796	protein k5, stopfree
+real: partly coding	random	false	0.9	2	protein k5, stopfree
+real: partly coding	random	false	0.9500000000000001	1338	protein k5, stopfree
+real: partly coding	random	true	0.9500000000000001	471	protein k5, stopfree
+real: whole read coding	other genes	false	0.8500000000000001	4	protein k5, stopfree
+real: whole read coding	other genes	false	0.9	116	protein k5, stopfree
+real: whole read coding	other genes	false	0.9500000000000001	125224	protein k5, stopfree
+real: whole read coding	other genes	true	0.8	4	protein k5, stopfree
+real: whole read coding	other genes	true	0.8500000000000001	20	protein k5, stopfree
+real: whole read coding	other genes	true	0.9	286	protein k5, stopfree
+real: whole read coding	other genes	true	0.9500000000000001	97998	protein k5, stopfree
+real: whole read coding	paper_list	false	0.9	9	protein k5, stopfree
+real: whole read coding	paper_list	false	0.9500000000000001	6741	protein k5, stopfree
+real: whole read coding	paper_list	true	0.9	2	protein k5, stopfree
+real: whole read coding	paper_list	true	0.9500000000000001	5963	protein k5, stopfree
+real: whole read coding	random	false	0.9	3	protein k5, stopfree
+real: whole read coding	random	false	0.9500000000000001	3529	protein k5, stopfree
+real: whole read coding	random	true	0.9	4	protein k5, stopfree
+real: whole read coding	random	true	0.9500000000000001	2801	protein k5, stopfree
+simulated from CDS	paper_list	false	0.8500000000000001	1	protein k5, stopfree
+simulated from CDS	paper_list	false	0.9	1	protein k5, stopfree
+simulated from CDS	paper_list	false	0.9500000000000001	3907	protein k5, stopfree
+simulated from CDS	paper_list	true	0.9	4	protein k5, stopfree
+simulated from CDS	paper_list	true	0.9500000000000001	7664	protein k5, stopfree
+simulated from CDS	random	false	0.9	4	protein k5, stopfree
+simulated from CDS	random	false	0.9500000000000001	7769	protein k5, stopfree
+simulated from CDS	random	true	0.9	14	protein k5, stopfree
+simulated from CDS	random	true	0.9500000000000001	19565	protein k5, stopfree
+real: no protein hit	none		0.0	5	protein k6, any
+real: no protein hit	none		0.05	1	protein k6, any
+real: no protein hit	none		0.1	1	protein k6, any
+real: no protein hit	none		0.15000000000000002	1	protein k6, any
+real: no protein hit	none		0.25	3	protein k6, any
+real: no protein hit	none		0.30000000000000004	17	protein k6, any
+real: no protein hit	none		0.35000000000000003	51	protein k6, any
+real: no protein hit	none		0.4	330	protein k6, any
+real: no protein hit	none		0.45	775	protein k6, any
+real: no protein hit	none		0.5	4637	protein k6, any
+real: no protein hit	none		0.55	11115	protein k6, any
+real: no protein hit	none		0.6000000000000001	28339	protein k6, any
+real: no protein hit	none		0.65	41954	protein k6, any
+real: no protein hit	none		0.7000000000000001	59411	protein k6, any
+real: no protein hit	none		0.75	88712	protein k6, any
+real: no protein hit	none		0.8	97038	protein k6, any
+real: no protein hit	none		0.8500000000000001	79371	protein k6, any
+real: no protein hit	none		0.9	84664	protein k6, any
+real: no protein hit	none		0.9500000000000001	150185	protein k6, any
+real: partly coding	other genes	false	0.4	7	protein k6, any
+real: partly coding	other genes	false	0.45	8	protein k6, any
+real: partly coding	other genes	false	0.5	81	protein k6, any
+real: partly coding	other genes	false	0.55	310	protein k6, any
+real: partly coding	other genes	false	0.6000000000000001	1580	protein k6, any
+real: partly coding	other genes	false	0.65	3359	protein k6, any
+real: partly coding	other genes	false	0.7000000000000001	5841	protein k6, any
+real: partly coding	other genes	false	0.75	11058	protein k6, any
+real: partly coding	other genes	false	0.8	13597	protein k6, any
+real: partly coding	other genes	false	0.8500000000000001	12248	protein k6, any
+real: partly coding	other genes	false	0.9	12008	protein k6, any
+real: partly coding	other genes	false	0.9500000000000001	13428	protein k6, any
+real: partly coding	other genes	true	0.5	26	protein k6, any
+real: partly coding	other genes	true	0.55	57	protein k6, any
+real: partly coding	other genes	true	0.6000000000000001	566	protein k6, any
+real: partly coding	other genes	true	0.65	1268	protein k6, any
+real: partly coding	other genes	true	0.7000000000000001	2474	protein k6, any
+real: partly coding	other genes	true	0.75	5181	protein k6, any
+real: partly coding	other genes	true	0.8	6169	protein k6, any
+real: partly coding	other genes	true	0.8500000000000001	5155	protein k6, any
+real: partly coding	other genes	true	0.9	4115	protein k6, any
+real: partly coding	other genes	true	0.9500000000000001	4691	protein k6, any
+real: partly coding	paper_list	false	0.5	11	protein k6, any
+real: partly coding	paper_list	false	0.55	20	protein k6, any
+real: partly coding	paper_list	false	0.6000000000000001	41	protein k6, any
+real: partly coding	paper_list	false	0.65	136	protein k6, any
+real: partly coding	paper_list	false	0.7000000000000001	254	protein k6, any
+real: partly coding	paper_list	false	0.75	370	protein k6, any
+real: partly coding	paper_list	false	0.8	503	protein k6, any
+real: partly coding	paper_list	false	0.8500000000000001	622	protein k6, any
+real: partly coding	paper_list	false	0.9	489	protein k6, any
+real: partly coding	paper_list	false	0.9500000000000001	515	protein k6, any
+real: partly coding	paper_list	true	0.6000000000000001	7	protein k6, any
+real: partly coding	paper_list	true	0.65	45	protein k6, any
+real: partly coding	paper_list	true	0.7000000000000001	108	protein k6, any
+real: partly coding	paper_list	true	0.75	201	protein k6, any
+real: partly coding	paper_list	true	0.8	246	protein k6, any
+real: partly coding	paper_list	true	0.8500000000000001	219	protein k6, any
+real: partly coding	paper_list	true	0.9	153	protein k6, any
+real: partly coding	paper_list	true	0.9500000000000001	168	protein k6, any
+real: partly coding	random	false	0.55	1	protein k6, any
+real: partly coding	random	false	0.6000000000000001	16	protein k6, any
+real: partly coding	random	false	0.65	29	protein k6, any
+real: partly coding	random	false	0.7000000000000001	75	protein k6, any
+real: partly coding	random	false	0.75	207	protein k6, any
+real: partly coding	random	false	0.8	245	protein k6, any
+real: partly coding	random	false	0.8500000000000001	311	protein k6, any
+real: partly coding	random	false	0.9	215	protein k6, any
+real: partly coding	random	false	0.9500000000000001	336	protein k6, any
+real: partly coding	random	true	0.55	1	protein k6, any
+real: partly coding	random	true	0.6000000000000001	2	protein k6, any
+real: partly coding	random	true	0.65	10	protein k6, any
+real: partly coding	random	true	0.7000000000000001	18	protein k6, any
+real: partly coding	random	true	0.75	94	protein k6, any
+real: partly coding	random	true	0.8	164	protein k6, any
+real: partly coding	random	true	0.8500000000000001	181	protein k6, any
+real: partly coding	random	true	0.9	108	protein k6, any
+real: partly coding	random	true	0.9500000000000001	83	protein k6, any
+real: whole read coding	other genes	false	0.4	1	protein k6, any
+real: whole read coding	other genes	false	0.45	8	protein k6, any
+real: whole read coding	other genes	false	0.5	66	protein k6, any
+real: whole read coding	other genes	false	0.55	276	protein k6, any
+real: whole read coding	other genes	false	0.6000000000000001	968	protein k6, any
+real: whole read coding	other genes	false	0.65	2081	protein k6, any
+real: whole read coding	other genes	false	0.7000000000000001	4605	protein k6, any
+real: whole read coding	other genes	false	0.75	10614	protein k6, any
+real: whole read coding	other genes	false	0.8	15714	protein k6, any
+real: whole read coding	other genes	false	0.8500000000000001	19211	protein k6, any
+real: whole read coding	other genes	false	0.9	27672	protein k6, any
+real: whole read coding	other genes	false	0.9500000000000001	48583	protein k6, any
+real: whole read coding	other genes	true	0.45	6	protein k6, any
+real: whole read coding	other genes	true	0.5	38	protein k6, any
+real: whole read coding	other genes	true	0.55	176	protein k6, any
+real: whole read coding	other genes	true	0.6000000000000001	301	protein k6, any
+real: whole read coding	other genes	true	0.65	787	protein k6, any
+real: whole read coding	other genes	true	0.7000000000000001	2046	protein k6, any
+real: whole read coding	other genes	true	0.75	6233	protein k6, any
+real: whole read coding	other genes	true	0.8	10986	protein k6, any
+real: whole read coding	other genes	true	0.8500000000000001	14461	protein k6, any
+real: whole read coding	other genes	true	0.9	19538	protein k6, any
+real: whole read coding	other genes	true	0.9500000000000001	40420	protein k6, any
+real: whole read coding	paper_list	false	0.55	5	protein k6, any
+real: whole read coding	paper_list	false	0.6000000000000001	52	protein k6, any
+real: whole read coding	paper_list	false	0.65	64	protein k6, any
+real: whole read coding	paper_list	false	0.7000000000000001	202	protein k6, any
+real: whole read coding	paper_list	false	0.75	428	protein k6, any
+real: whole read coding	paper_list	false	0.8	767	protein k6, any
+real: whole read coding	paper_list	false	0.8500000000000001	908	protein k6, any
+real: whole read coding	paper_list	false	0.9	1196	protein k6, any
+real: whole read coding	paper_list	false	0.9500000000000001	2140	protein k6, any
+real: whole read coding	paper_list	true	0.55	2	protein k6, any
+real: whole read coding	paper_list	true	0.6000000000000001	21	protein k6, any
+real: whole read coding	paper_list	true	0.65	44	protein k6, any
+real: whole read coding	paper_list	true	0.7000000000000001	140	protein k6, any
+real: whole read coding	paper_list	true	0.75	320	protein k6, any
+real: whole read coding	paper_list	true	0.8	714	protein k6, any
+real: whole read coding	paper_list	true	0.8500000000000001	1035	protein k6, any
+real: whole read coding	paper_list	true	0.9	1441	protein k6, any
+real: whole read coding	paper_list	true	0.9500000000000001	3311	protein k6, any
+real: whole read coding	random	false	0.45	2	protein k6, any
+real: whole read coding	random	false	0.55	1	protein k6, any
+real: whole read coding	random	false	0.6000000000000001	4	protein k6, any
+real: whole read coding	random	false	0.65	31	protein k6, any
+real: whole read coding	random	false	0.7000000000000001	70	protein k6, any
+real: whole read coding	random	false	0.75	229	protein k6, any
+real: whole read coding	random	false	0.8	368	protein k6, any
+real: whole read coding	random	false	0.8500000000000001	358	protein k6, any
+real: whole read coding	random	false	0.9	665	protein k6, any
+real: whole read coding	random	false	0.9500000000000001	1354	protein k6, any
+real: whole read coding	random	true	0.6000000000000001	9	protein k6, any
+real: whole read coding	random	true	0.65	13	protein k6, any
+real: whole read coding	random	true	0.7000000000000001	29	protein k6, any
+real: whole read coding	random	true	0.75	167	protein k6, any
+real: whole read coding	random	true	0.8	355	protein k6, any
+real: whole read coding	random	true	0.8500000000000001	599	protein k6, any
+real: whole read coding	random	true	0.9	886	protein k6, any
+real: whole read coding	random	true	0.9500000000000001	1217	protein k6, any
+simulated from CDS	paper_list	false	0.55	4	protein k6, any
+simulated from CDS	paper_list	false	0.6000000000000001	33	protein k6, any
+simulated from CDS	paper_list	false	0.65	113	protein k6, any
+simulated from CDS	paper_list	false	0.7000000000000001	260	protein k6, any
+simulated from CDS	paper_list	false	0.75	671	protein k6, any
+simulated from CDS	paper_list	false	0.8	943	protein k6, any
+simulated from CDS	paper_list	false	0.8500000000000001	808	protein k6, any
+simulated from CDS	paper_list	false	0.9	800	protein k6, any
+simulated from CDS	paper_list	false	0.9500000000000001	604	protein k6, any
+simulated from CDS	paper_list	true	0.55	3	protein k6, any
+simulated from CDS	paper_list	true	0.6000000000000001	13	protein k6, any
+simulated from CDS	paper_list	true	0.65	93	protein k6, any
+simulated from CDS	paper_list	true	0.7000000000000001	288	protein k6, any
+simulated from CDS	paper_list	true	0.75	773	protein k6, any
+simulated from CDS	paper_list	true	0.8	1328	protein k6, any
+simulated from CDS	paper_list	true	0.8500000000000001	1490	protein k6, any
+simulated from CDS	paper_list	true	0.9	1671	protein k6, any
+simulated from CDS	paper_list	true	0.9500000000000001	1925	protein k6, any
+simulated from CDS	random	false	0.45	1	protein k6, any
+simulated from CDS	random	false	0.5	5	protein k6, any
+simulated from CDS	random	false	0.55	23	protein k6, any
+simulated from CDS	random	false	0.6000000000000001	163	protein k6, any
+simulated from CDS	random	false	0.65	415	protein k6, any
+simulated from CDS	random	false	0.7000000000000001	844	protein k6, any
+simulated from CDS	random	false	0.75	1890	protein k6, any
+simulated from CDS	random	false	0.8	2223	protein k6, any
+simulated from CDS	random	false	0.8500000000000001	1790	protein k6, any
+simulated from CDS	random	false	0.9	1450	protein k6, any
+simulated from CDS	random	false	0.9500000000000001	1214	protein k6, any
+simulated from CDS	random	true	0.5	3	protein k6, any
+simulated from CDS	random	true	0.55	11	protein k6, any
+simulated from CDS	random	true	0.6000000000000001	121	protein k6, any
+simulated from CDS	random	true	0.65	349	protein k6, any
+simulated from CDS	random	true	0.7000000000000001	937	protein k6, any
+simulated from CDS	random	true	0.75	2476	protein k6, any
+simulated from CDS	random	true	0.8	3854	protein k6, any
+simulated from CDS	random	true	0.8500000000000001	3849	protein k6, any
+simulated from CDS	random	true	0.9	3392	protein k6, any
+simulated from CDS	random	true	0.9500000000000001	3024	protein k6, any
+real: no protein hit	none		0.05	2	protein k6, stopfree
+real: no protein hit	none		0.1	2	protein k6, stopfree
+real: no protein hit	none		0.15000000000000002	14	protein k6, stopfree
+real: no protein hit	none		0.2	41	protein k6, stopfree
+real: no protein hit	none		0.25	93	protein k6, stopfree
+real: no protein hit	none		0.30000000000000004	217	protein k6, stopfree
+real: no protein hit	none		0.35000000000000003	402	protein k6, stopfree
+real: no protein hit	none		0.4	890	protein k6, stopfree
+real: no protein hit	none		0.45	1305	protein k6, stopfree
+real: no protein hit	none		0.5	4070	protein k6, stopfree
+real: no protein hit	none		0.55	6539	protein k6, stopfree
+real: no protein hit	none		0.6000000000000001	12814	protein k6, stopfree
+real: no protein hit	none		0.65	20009	protein k6, stopfree
+real: no protein hit	none		0.7000000000000001	28456	protein k6, stopfree
+real: no protein hit	none		0.75	49814	protein k6, stopfree
+real: no protein hit	none		0.8	67011	protein k6, stopfree
+real: no protein hit	none		0.8500000000000001	65676	protein k6, stopfree
+real: no protein hit	none		0.9	76215	protein k6, stopfree
+real: no protein hit	none		0.9500000000000001	148877	protein k6, stopfree
+real: partly coding	other genes	false	0.2	2	protein k6, stopfree
+real: partly coding	other genes	false	0.25	1	protein k6, stopfree
+real: partly coding	other genes	false	0.30000000000000004	12	protein k6, stopfree
+real: partly coding	other genes	false	0.35000000000000003	27	protein k6, stopfree
+real: partly coding	other genes	false	0.4	100	protein k6, stopfree
+real: partly coding	other genes	false	0.45	157	protein k6, stopfree
+real: partly coding	other genes	false	0.5	378	protein k6, stopfree
+real: partly coding	other genes	false	0.55	771	protein k6, stopfree
+real: partly coding	other genes	false	0.6000000000000001	1678	protein k6, stopfree
+real: partly coding	other genes	false	0.65	2737	protein k6, stopfree
+real: partly coding	other genes	false	0.7000000000000001	3981	protein k6, stopfree
+real: partly coding	other genes	false	0.75	7547	protein k6, stopfree
+real: partly coding	other genes	false	0.8	9557	protein k6, stopfree
+real: partly coding	other genes	false	0.8500000000000001	10156	protein k6, stopfree
+real: partly coding	other genes	false	0.9	11230	protein k6, stopfree
+real: partly coding	other genes	false	0.9500000000000001	13202	protein k6, stopfree
+real: partly coding	other genes	true	0.35000000000000003	3	protein k6, stopfree
+real: partly coding	other genes	true	0.4	19	protein k6, stopfree
+real: partly coding	other genes	true	0.45	43	protein k6, stopfree
+real: partly coding	other genes	true	0.5	318	protein k6, stopfree
+real: partly coding	other genes	true	0.55	597	protein k6, stopfree
+real: partly coding	other genes	true	0.6000000000000001	1050	protein k6, stopfree
+real: partly coding	other genes	true	0.65	1477	protein k6, stopfree
+real: partly coding	other genes	true	0.7000000000000001	2036	protein k6, stopfree
+real: partly coding	other genes	true	0.75	3832	protein k6, stopfree
+real: partly coding	other genes	true	0.8	4512	protein k6, stopfree
+real: partly coding	other genes	true	0.8500000000000001	4326	protein k6, stopfree
+real: partly coding	other genes	true	0.9	3769	protein k6, stopfree
+real: partly coding	other genes	true	0.9500000000000001	4626	protein k6, stopfree
+real: partly coding	paper_list	false	0.5	12	protein k6, stopfree
+real: partly coding	paper_list	false	0.55	22	protein k6, stopfree
+real: partly coding	paper_list	false	0.6000000000000001	53	protein k6, stopfree
+real: partly coding	paper_list	false	0.65	102	protein k6, stopfree
+real: partly coding	paper_list	false	0.7000000000000001	138	protein k6, stopfree
+real: partly coding	paper_list	false	0.75	231	protein k6, stopfree
+real: partly coding	paper_list	false	0.8	385	protein k6, stopfree
+real: partly coding	paper_list	false	0.8500000000000001	560	protein k6, stopfree
+real: partly coding	paper_list	false	0.9	434	protein k6, stopfree
+real: partly coding	paper_list	false	0.9500000000000001	481	protein k6, stopfree
+real: partly coding	paper_list	true	0.5	5	protein k6, stopfree
+real: partly coding	paper_list	true	0.55	14	protein k6, stopfree
+real: partly coding	paper_list	true	0.6000000000000001	16	protein k6, stopfree
+real: partly coding	paper_list	true	0.65	22	protein k6, stopfree
+real: partly coding	paper_list	true	0.7000000000000001	72	protein k6, stopfree
+real: partly coding	paper_list	true	0.75	123	protein k6, stopfree
+real: partly coding	paper_list	true	0.8	141	protein k6, stopfree
+real: partly coding	paper_list	true	0.8500000000000001	179	protein k6, stopfree
+real: partly coding	paper_list	true	0.9	121	protein k6, stopfree
+real: partly coding	paper_list	true	0.9500000000000001	161	protein k6, stopfree
+real: partly coding	random	false	0.4	2	protein k6, stopfree
+real: partly coding	random	false	0.45	2	protein k6, stopfree
+real: partly coding	random	false	0.55	6	protein k6, stopfree
+real: partly coding	random	false	0.6000000000000001	12	protein k6, stopfree
+real: partly coding	random	false	0.65	41	protein k6, stopfree
+real: partly coding	random	false	0.7000000000000001	49	protein k6, stopfree
+real: partly coding	random	false	0.75	145	protein k6, stopfree
+real: partly coding	random	false	0.8	184	protein k6, stopfree
+real: partly coding	random	false	0.8500000000000001	265	protein k6, stopfree
+real: partly coding	random	false	0.9	200	protein k6, stopfree
+real: partly coding	random	false	0.9500000000000001	334	protein k6, stopfree
+real: partly coding	random	true	0.45	3	protein k6, stopfree
+real: partly coding	random	true	0.55	6	protein k6, stopfree
+real: partly coding	random	true	0.6000000000000001	2	protein k6, stopfree
+real: partly coding	random	true	0.65	12	protein k6, stopfree
+real: partly coding	random	true	0.7000000000000001	21	protein k6, stopfree
+real: partly coding	random	true	0.75	71	protein k6, stopfree
+real: partly coding	random	true	0.8	130	protein k6, stopfree
+real: partly coding	random	true	0.8500000000000001	147	protein k6, stopfree
+real: partly coding	random	true	0.9	96	protein k6, stopfree
+real: partly coding	random	true	0.9500000000000001	83	protein k6, stopfree
+real: whole read coding	other genes	false	0.25	1	protein k6, stopfree
+real: whole read coding	other genes	false	0.30000000000000004	4	protein k6, stopfree
+real: whole read coding	other genes	false	0.35000000000000003	13	protein k6, stopfree
+real: whole read coding	other genes	false	0.4	70	protein k6, stopfree
+real: whole read coding	other genes	false	0.45	98	protein k6, stopfree
+real: whole read coding	other genes	false	0.5	246	protein k6, stopfree
+real: whole read coding	other genes	false	0.55	515	protein k6, stopfree
+real: whole read coding	other genes	false	0.6000000000000001	1212	protein k6, stopfree
+real: whole read coding	other genes	false	0.65	1921	protein k6, stopfree
+real: whole read coding	other genes	false	0.7000000000000001	3779	protein k6, stopfree
+real: whole read coding	other genes	false	0.75	8669	protein k6, stopfree
+real: whole read coding	other genes	false	0.8	12066	protein k6, stopfree
+real: whole read coding	other genes	false	0.8500000000000001	16985	protein k6, stopfree
+real: whole read coding	other genes	false	0.9	26000	protein k6, stopfree
+real: whole read coding	other genes	false	0.9500000000000001	48304	protein k6, stopfree
+real: whole read coding	other genes	true	0.15000000000000002	2	protein k6, stopfree
+real: whole read coding	other genes	true	0.2	4	protein k6, stopfree
+real: whole read coding	other genes	true	0.25	12	protein k6, stopfree
+real: whole read coding	other genes	true	0.30000000000000004	20	protein k6, stopfree
+real: whole read coding	other genes	true	0.35000000000000003	37	protein k6, stopfree
+real: whole read coding	other genes	true	0.4	123	protein k6, stopfree
+real: whole read coding	other genes	true	0.45	169	protein k6, stopfree
+real: whole read coding	other genes	true	0.5	742	protein k6, stopfree
+real: whole read coding	other genes	true	0.55	772	protein k6, stopfree
+real: whole read coding	other genes	true	0.6000000000000001	1406	protein k6, stopfree
+real: whole read coding	other genes	true	0.65	2325	protein k6, stopfree
+real: whole read coding	other genes	true	0.7000000000000001	3660	protein k6, stopfree
+real: whole read coding	other genes	true	0.75	7920	protein k6, stopfree
+real: whole read coding	other genes	true	0.8	12002	protein k6, stopfree
+real: whole read coding	other genes	true	0.8500000000000001	14782	protein k6, stopfree
+real: whole read coding	other genes	true	0.9	19465	protein k6, stopfree
+real: whole read coding	other genes	true	0.9500000000000001	40328	protein k6, stopfree
+real: whole read coding	paper_list	false	0.5	5	protein k6, stopfree
+real: whole read coding	paper_list	false	0.55	10	protein k6, stopfree
+real: whole read coding	paper_list	false	0.6000000000000001	43	protein k6, stopfree
+real: whole read coding	paper_list	false	0.65	48	protein k6, stopfree
+real: whole read coding	paper_list	false	0.7000000000000001	133	protein k6, stopfree
+real: whole read coding	paper_list	false	0.75	271	protein k6, stopfree
+real: whole read coding	paper_list	false	0.8	548	protein k6, stopfree
+real: whole read coding	paper_list	false	0.8500000000000001	785	protein k6, stopfree
+real: whole read coding	paper_list	false	0.9	1140	protein k6, stopfree
+real: whole read coding	paper_list	false	0.9500000000000001	2115	protein k6, stopfree
+real: whole read coding	paper_list	true	0.5	28	protein k6, stopfree
+real: whole read coding	paper_list	true	0.55	38	protein k6, stopfree
+real: whole read coding	paper_list	true	0.6000000000000001	91	protein k6, stopfree
+real: whole read coding	paper_list	true	0.65	136	protein k6, stopfree
+real: whole read coding	paper_list	true	0.7000000000000001	264	protein k6, stopfree
+real: whole read coding	paper_list	true	0.75	477	protein k6, stopfree
+real: whole read coding	paper_list	true	0.8	836	protein k6, stopfree
+real: whole read coding	paper_list	true	0.8500000000000001	1053	protein k6, stopfree
+real: whole read coding	paper_list	true	0.9	1409	protein k6, stopfree
+real: whole read coding	paper_list	true	0.9500000000000001	3285	protein k6, stopfree
+real: whole read coding	random	false	0.55	4	protein k6, stopfree
+real: whole read coding	random	false	0.6000000000000001	5	protein k6, stopfree
+real: whole read coding	random	false	0.65	25	protein k6, stopfree
+real: whole read coding	random	false	0.7000000000000001	55	protein k6, stopfree
+real: whole read coding	random	false	0.75	153	protein k6, stopfree
+real: whole read coding	random	false	0.8	272	protein k6, stopfree
+real: whole read coding	random	false	0.8500000000000001	321	protein k6, stopfree
+real: whole read coding	random	false	0.9	620	protein k6, stopfree
+real: whole read coding	random	false	0.9500000000000001	1345	protein k6, stopfree
+real: whole read coding	random	true	0.4	2	protein k6, stopfree
+real: whole read coding	random	true	0.5	3	protein k6, stopfree
+real: whole read coding	random	true	0.55	3	protein k6, stopfree
+real: whole read coding	random	true	0.6000000000000001	34	protein k6, stopfree
+real: whole read coding	random	true	0.65	58	protein k6, stopfree
+real: whole read coding	random	true	0.7000000000000001	57	protein k6, stopfree
+real: whole read coding	random	true	0.75	271	protein k6, stopfree
+real: whole read coding	random	true	0.8	404	protein k6, stopfree
+real: whole read coding	random	true	0.8500000000000001	606	protein k6, stopfree
+real: whole read coding	random	true	0.9	883	protein k6, stopfree
+real: whole read coding	random	true	0.9500000000000001	1216	protein k6, stopfree
+simulated from CDS	paper_list	false	0.4	1	protein k6, stopfree
+simulated from CDS	paper_list	false	0.5	5	protein k6, stopfree
+simulated from CDS	paper_list	false	0.55	10	protein k6, stopfree
+simulated from CDS	paper_list	false	0.6000000000000001	25	protein k6, stopfree
+simulated from CDS	paper_list	false	0.65	67	protein k6, stopfree
+simulated from CDS	paper_list	false	0.7000000000000001	133	protein k6, stopfree
+simulated from CDS	paper_list	false	0.75	347	protein k6, stopfree
+simulated from CDS	paper_list	false	0.8	584	protein k6, stopfree
+simulated from CDS	paper_list	false	0.8500000000000001	672	protein k6, stopfree
+simulated from CDS	paper_list	false	0.9	764	protein k6, stopfree
+simulated from CDS	paper_list	false	0.9500000000000001	597	protein k6, stopfree
+simulated from CDS	paper_list	true	0.35000000000000003	1	protein k6, stopfree
+simulated from CDS	paper_list	true	0.4	3	protein k6, stopfree
+simulated from CDS	paper_list	true	0.45	7	protein k6, stopfree
+simulated from CDS	paper_list	true	0.5	47	protein k6, stopfree
+simulated from CDS	paper_list	true	0.55	63	protein k6, stopfree
+simulated from CDS	paper_list	true	0.6000000000000001	165	protein k6, stopfree
+simulated from CDS	paper_list	true	0.65	242	protein k6, stopfree
+simulated from CDS	paper_list	true	0.7000000000000001	494	protein k6, stopfree
+simulated from CDS	paper_list	true	0.75	1008	protein k6, stopfree
+simulated from CDS	paper_list	true	0.8	1402	protein k6, stopfree
+simulated from CDS	paper_list	true	0.8500000000000001	1462	protein k6, stopfree
+simulated from CDS	paper_list	true	0.9	1617	protein k6, stopfree
+simulated from CDS	paper_list	true	0.9500000000000001	1861	protein k6, stopfree
+simulated from CDS	random	false	0.35000000000000003	1	protein k6, stopfree
+simulated from CDS	random	false	0.4	3	protein k6, stopfree
+simulated from CDS	random	false	0.45	5	protein k6, stopfree
+simulated from CDS	random	false	0.5	18	protein k6, stopfree
+simulated from CDS	random	false	0.55	35	protein k6, stopfree
+simulated from CDS	random	false	0.6000000000000001	106	protein k6, stopfree
+simulated from CDS	random	false	0.65	210	protein k6, stopfree
+simulated from CDS	random	false	0.7000000000000001	392	protein k6, stopfree
+simulated from CDS	random	false	0.75	927	protein k6, stopfree
+simulated from CDS	random	false	0.8	1365	protein k6, stopfree
+simulated from CDS	random	false	0.8500000000000001	1453	protein k6, stopfree
+simulated from CDS	random	false	0.9	1304	protein k6, stopfree
+simulated from CDS	random	false	0.9500000000000001	1176	protein k6, stopfree
+simulated from CDS	random	true	0.30000000000000004	3	protein k6, stopfree
+simulated from CDS	random	true	0.35000000000000003	6	protein k6, stopfree
+simulated from CDS	random	true	0.4	12	protein k6, stopfree
+simulated from CDS	random	true	0.45	42	protein k6, stopfree
+simulated from CDS	random	true	0.5	91	protein k6, stopfree
+simulated from CDS	random	true	0.55	210	protein k6, stopfree
+simulated from CDS	random	true	0.6000000000000001	585	protein k6, stopfree
+simulated from CDS	random	true	0.65	847	protein k6, stopfree
+simulated from CDS	random	true	0.7000000000000001	1448	protein k6, stopfree
+simulated from CDS	random	true	0.75	3141	protein k6, stopfree
+simulated from CDS	random	true	0.8	3970	protein k6, stopfree
+simulated from CDS	random	true	0.8500000000000001	3783	protein k6, stopfree
+simulated from CDS	random	true	0.9	3274	protein k6, stopfree
+simulated from CDS	random	true	0.9500000000000001	2945	protein k6, stopfree
+real: no protein hit	none		0.0	3859	protein k7, any
+real: no protein hit	none		0.05	12424	protein k7, any
+real: no protein hit	none		0.1	33448	protein k7, any
+real: no protein hit	none		0.15000000000000002	62129	protein k7, any
+real: no protein hit	none		0.2	80263	protein k7, any
+real: no protein hit	none		0.25	91366	protein k7, any
+real: no protein hit	none		0.30000000000000004	84754	protein k7, any
+real: no protein hit	none		0.35000000000000003	62672	protein k7, any
+real: no protein hit	none		0.4	50448	protein k7, any
+real: no protein hit	none		0.45	31497	protein k7, any
+real: no protein hit	none		0.5	33929	protein k7, any
+real: no protein hit	none		0.55	17115	protein k7, any
+real: no protein hit	none		0.6000000000000001	17468	protein k7, any
+real: no protein hit	none		0.65	12332	protein k7, any
+real: no protein hit	none		0.7000000000000001	11495	protein k7, any
+real: no protein hit	none		0.75	12389	protein k7, any
+real: no protein hit	none		0.8	8446	protein k7, any
+real: no protein hit	none		0.8500000000000001	3892	protein k7, any
+real: no protein hit	none		0.9	5774	protein k7, any
+real: no protein hit	none		0.9500000000000001	6047	protein k7, any
+real: partly coding	other genes	false	0.05	374	protein k7, any
+real: partly coding	other genes	false	0.1	2369	protein k7, any
+real: partly coding	other genes	false	0.15000000000000002	7583	protein k7, any
+real: partly coding	other genes	false	0.2	11932	protein k7, any
+real: partly coding	other genes	false	0.25	14291	protein k7, any
+real: partly coding	other genes	false	0.30000000000000004	11641	protein k7, any
+real: partly coding	other genes	false	0.35000000000000003	6068	protein k7, any
+real: partly coding	other genes	false	0.4	4210	protein k7, any
+real: partly coding	other genes	false	0.45	2568	protein k7, any
+real: partly coding	other genes	false	0.5	2693	protein k7, any
+real: partly coding	other genes	false	0.55	1782	protein k7, any
+real: partly coding	other genes	false	0.6000000000000001	1278	protein k7, any
+real: partly coding	other genes	false	0.65	777	protein k7, any
+real: partly coding	other genes	false	0.7000000000000001	544	protein k7, any
+real: partly coding	other genes	false	0.75	409	protein k7, any
+real: partly coding	other genes	false	0.8	351	protein k7, any
+real: partly coding	other genes	false	0.8500000000000001	111	protein k7, any
+real: partly coding	other genes	false	0.9	120	protein k7, any
+real: partly coding	other genes	false	0.9500000000000001	13	protein k7, any
+real: partly coding	other genes	true	0.05	110	protein k7, any
+real: partly coding	other genes	true	0.1	718	protein k7, any
+real: partly coding	other genes	true	0.15000000000000002	2131	protein k7, any
+real: partly coding	other genes	true	0.2	4116	protein k7, any
+real: partly coding	other genes	true	0.25	5583	protein k7, any
+real: partly coding	other genes	true	0.30000000000000004	5437	protein k7, any
+real: partly coding	other genes	true	0.35000000000000003	3832	protein k7, any
+real: partly coding	other genes	true	0.4	2946	protein k7, any
+real: partly coding	other genes	true	0.45	2154	protein k7, any
+real: partly coding	other genes	true	0.5	2064	protein k7, any
+real: partly coding	other genes	true	0.55	1306	protein k7, any
+real: partly coding	other genes	true	0.6000000000000001	995	protein k7, any
+real: partly coding	other genes	true	0.65	883	protein k7, any
+real: partly coding	other genes	true	0.7000000000000001	616	protein k7, any
+real: partly coding	other genes	true	0.75	443	protein k7, any
+real: partly coding	other genes	true	0.8	344	protein k7, any
+real: partly coding	other genes	true	0.8500000000000001	171	protein k7, any
+real: partly coding	other genes	true	0.9	64	protein k7, any
+real: partly coding	other genes	true	0.9500000000000001	200	protein k7, any
+real: partly coding	paper_list	false	0.0	1	protein k7, any
+real: partly coding	paper_list	false	0.05	15	protein k7, any
+real: partly coding	paper_list	false	0.1	85	protein k7, any
+real: partly coding	paper_list	false	0.15000000000000002	279	protein k7, any
+real: partly coding	paper_list	false	0.2	391	protein k7, any
+real: partly coding	paper_list	false	0.25	509	protein k7, any
+real: partly coding	paper_list	false	0.30000000000000004	401	protein k7, any
+real: partly coding	paper_list	false	0.35000000000000003	249	protein k7, any
+real: partly coding	paper_list	false	0.4	213	protein k7, any
+real: partly coding	paper_list	false	0.45	75	protein k7, any
+real: partly coding	paper_list	false	0.5	72	protein k7, any
+real: partly coding	paper_list	false	0.55	30	protein k7, any
+real: partly coding	paper_list	false	0.6000000000000001	19	protein k7, any
+real: partly coding	paper_list	false	0.65	7	protein k7, any
+real: partly coding	paper_list	false	0.7000000000000001	4	protein k7, any
+real: partly coding	paper_list	false	0.9	2	protein k7, any
+real: partly coding	paper_list	true	0.05	5	protein k7, any
+real: partly coding	paper_list	true	0.1	37	protein k7, any
+real: partly coding	paper_list	true	0.15000000000000002	117	protein k7, any
+real: partly coding	paper_list	true	0.2	161	protein k7, any
+real: partly coding	paper_list	true	0.25	234	protein k7, any
+real: partly coding	paper_list	true	0.30000000000000004	249	protein k7, any
+real: partly coding	paper_list	true	0.35000000000000003	183	protein k7, any
+real: partly coding	paper_list	true	0.4	144	protein k7, any
+real: partly coding	paper_list	true	0.45	106	protein k7, any
+real: partly coding	paper_list	true	0.5	164	protein k7, any
+real: partly coding	paper_list	true	0.55	96	protein k7, any
+real: partly coding	paper_list	true	0.6000000000000001	69	protein k7, any
+real: partly coding	paper_list	true	0.65	70	protein k7, any
+real: partly coding	paper_list	true	0.7000000000000001	65	protein k7, any
+real: partly coding	paper_list	true	0.75	26	protein k7, any
+real: partly coding	paper_list	true	0.8	15	protein k7, any
+real: partly coding	paper_list	true	0.8500000000000001	9	protein k7, any
+real: partly coding	paper_list	true	0.9	2	protein k7, any
+real: partly coding	paper_list	true	0.9500000000000001	4	protein k7, any
+real: partly coding	random	false	0.1	24	protein k7, any
+real: partly coding	random	false	0.15000000000000002	116	protein k7, any
+real: partly coding	random	false	0.2	266	protein k7, any
+real: partly coding	random	false	0.25	307	protein k7, any
+real: partly coding	random	false	0.30000000000000004	279	protein k7, any
+real: partly coding	random	false	0.35000000000000003	170	protein k7, any
+real: partly coding	random	false	0.4	76	protein k7, any
+real: partly coding	random	false	0.45	44	protein k7, any
+real: partly coding	random	false	0.5	42	protein k7, any
+real: partly coding	random	false	0.55	22	protein k7, any
+real: partly coding	random	false	0.6000000000000001	12	protein k7, any
+real: partly coding	random	false	0.65	1	protein k7, any
+real: partly coding	random	false	0.7000000000000001	2	protein k7, any
+real: partly coding	random	false	0.75	1	protein k7, any
+real: partly coding	random	false	0.8	2	protein k7, any
+real: partly coding	random	true	0.1	5	protein k7, any
+real: partly coding	random	true	0.15000000000000002	39	protein k7, any
+real: partly coding	random	true	0.2	82	protein k7, any
+real: partly coding	random	true	0.25	152	protein k7, any
+real: partly coding	random	true	0.30000000000000004	157	protein k7, any
+real: partly coding	random	true	0.35000000000000003	92	protein k7, any
+real: partly coding	random	true	0.4	70	protein k7, any
+real: partly coding	random	true	0.45	44	protein k7, any
+real: partly coding	random	true	0.5	27	protein k7, any
+real: partly coding	random	true	0.55	20	protein k7, any
+real: partly coding	random	true	0.6000000000000001	18	protein k7, any
+real: partly coding	random	true	0.65	11	protein k7, any
+real: partly coding	random	true	0.7000000000000001	8	protein k7, any
+real: partly coding	random	true	0.75	7	protein k7, any
+real: whole read coding	other genes	false	0.0	10	protein k7, any
+real: whole read coding	other genes	false	0.05	709	protein k7, any
+real: whole read coding	other genes	false	0.1	2908	protein k7, any
+real: whole read coding	other genes	false	0.15000000000000002	8511	protein k7, any
+real: whole read coding	other genes	false	0.2	14256	protein k7, any
+real: whole read coding	other genes	false	0.25	21562	protein k7, any
+real: whole read coding	other genes	false	0.30000000000000004	22017	protein k7, any
+real: whole read coding	other genes	false	0.35000000000000003	17213	protein k7, any
+real: whole read coding	other genes	false	0.4	14885	protein k7, any
+real: whole read coding	other genes	false	0.45	8061	protein k7, any
+real: whole read coding	other genes	false	0.5	8851	protein k7, any
+real: whole read coding	other genes	false	0.55	3271	protein k7, any
+real: whole read coding	other genes	false	0.6000000000000001	3204	protein k7, any
+real: whole read coding	other genes	false	0.65	1493	protein k7, any
+real: whole read coding	other genes	false	0.7000000000000001	1225	protein k7, any
+real: whole read coding	other genes	false	0.75	990	protein k7, any
+real: whole read coding	other genes	false	0.8	1029	protein k7, any
+real: whole read coding	other genes	false	0.8500000000000001	408	protein k7, any
+real: whole read coding	other genes	false	0.9	192	protein k7, any
+real: whole read coding	other genes	false	0.9500000000000001	115	protein k7, any
+real: whole read coding	other genes	true	0.0	5	protein k7, any
+real: whole read coding	other genes	true	0.05	224	protein k7, any
+real: whole read coding	other genes	true	0.1	878	protein k7, any
+real: whole read coding	other genes	true	0.15000000000000002	2774	protein k7, any
+real: whole read coding	other genes	true	0.2	5479	protein k7, any
+real: whole read coding	other genes	true	0.25	9865	protein k7, any
+real: whole read coding	other genes	true	0.30000000000000004	11391	protein k7, any
+real: whole read coding	other genes	true	0.35000000000000003	9540	protein k7, any
+real: whole read coding	other genes	true	0.4	8812	protein k7, any
+real: whole read coding	other genes	true	0.45	5970	protein k7, any
+real: whole read coding	other genes	true	0.5	7214	protein k7, any
+real: whole read coding	other genes	true	0.55	4740	protein k7, any
+real: whole read coding	other genes	true	0.6000000000000001	4771	protein k7, any
+real: whole read coding	other genes	true	0.65	3679	protein k7, any
+real: whole read coding	other genes	true	0.7000000000000001	2945	protein k7, any
+real: whole read coding	other genes	true	0.75	2442	protein k7, any
+real: whole read coding	other genes	true	0.8	2193	protein k7, any
+real: whole read coding	other genes	true	0.8500000000000001	1587	protein k7, any
+real: whole read coding	other genes	true	0.9	1801	protein k7, any
+real: whole read coding	other genes	true	0.9500000000000001	7569	protein k7, any
+real: whole read coding	paper_list	false	0.05	31	protein k7, any
+real: whole read coding	paper_list	false	0.1	214	protein k7, any
+real: whole read coding	paper_list	false	0.15000000000000002	637	protein k7, any
+real: whole read coding	paper_list	false	0.2	805	protein k7, any
+real: whole read coding	paper_list	false	0.25	1133	protein k7, any
+real: whole read coding	paper_list	false	0.30000000000000004	960	protein k7, any
+real: whole read coding	paper_list	false	0.35000000000000003	697	protein k7, any
+real: whole read coding	paper_list	false	0.4	478	protein k7, any
+real: whole read coding	paper_list	false	0.45	234	protein k7, any
+real: whole read coding	paper_list	false	0.5	226	protein k7, any
+real: whole read coding	paper_list	false	0.55	91	protein k7, any
+real: whole read coding	paper_list	false	0.6000000000000001	90	protein k7, any
+real: whole read coding	paper_list	false	0.65	41	protein k7, any
+real: whole read coding	paper_list	false	0.7000000000000001	26	protein k7, any
+real: whole read coding	paper_list	false	0.75	6	protein k7, any
+real: whole read coding	paper_list	false	0.8	15	protein k7, any
+real: whole read coding	paper_list	false	0.9	8	protein k7, any
+real: whole read coding	paper_list	true	0.05	8	protein k7, any
+real: whole read coding	paper_list	true	0.1	61	protein k7, any
+real: whole read coding	paper_list	true	0.15000000000000002	205	protein k7, any
+real: whole read coding	paper_list	true	0.2	360	protein k7, any
+real: whole read coding	paper_list	true	0.25	560	protein k7, any
+real: whole read coding	paper_list	true	0.30000000000000004	657	protein k7, any
+real: whole read coding	paper_list	true	0.35000000000000003	614	protein k7, any
+real: whole read coding	paper_list	true	0.4	623	protein k7, any
+real: whole read coding	paper_list	true	0.45	515	protein k7, any
+real: whole read coding	paper_list	true	0.5	568	protein k7, any
+real: whole read coding	paper_list	true	0.55	381	protein k7, any
+real: whole read coding	paper_list	true	0.6000000000000001	418	protein k7, any
+real: whole read coding	paper_list	true	0.65	447	protein k7, any
+real: whole read coding	paper_list	true	0.7000000000000001	258	protein k7, any
+real: whole read coding	paper_list	true	0.75	324	protein k7, any
+real: whole read coding	paper_list	true	0.8	205	protein k7, any
+real: whole read coding	paper_list	true	0.8500000000000001	172	protein k7, any
+real: whole read coding	paper_list	true	0.9	120	protein k7, any
+real: whole read coding	paper_list	true	0.9500000000000001	598	protein k7, any
+real: whole read coding	random	false	0.05	16	protein k7, any
+real: whole read coding	random	false	0.1	46	protein k7, any
+real: whole read coding	random	false	0.15000000000000002	183	protein k7, any
+real: whole read coding	random	false	0.2	353	protein k7, any
+real: whole read coding	random	false	0.25	585	protein k7, any
+real: whole read coding	random	false	0.30000000000000004	731	protein k7, any
+real: whole read coding	random	false	0.35000000000000003	466	protein k7, any
+real: whole read coding	random	false	0.4	403	protein k7, any
+real: whole read coding	random	false	0.45	173	protein k7, any
+real: whole read coding	random	false	0.5	201	protein k7, any
+real: whole read coding	random	false	0.55	70	protein k7, any
+real: whole read coding	random	false	0.6000000000000001	54	protein k7, any
+real: whole read coding	random	false	0.65	18	protein k7, any
+real: whole read coding	random	false	0.7000000000000001	18	protein k7, any
+real: whole read coding	random	false	0.75	6	protein k7, any
+real: whole read coding	random	false	0.8	8	protein k7, any
+real: whole read coding	random	false	0.9	6	protein k7, any
+real: whole read coding	random	false	0.9500000000000001	12	protein k7, any
+real: whole read coding	random	true	0.05	8	protein k7, any
+real: whole read coding	random	true	0.1	22	protein k7, any
+real: whole read coding	random	true	0.15000000000000002	96	protein k7, any
+real: whole read coding	random	true	0.2	281	protein k7, any
+real: whole read coding	random	true	0.25	464	protein k7, any
+real: whole read coding	random	true	0.30000000000000004	556	protein k7, any
+real: whole read coding	random	true	0.35000000000000003	455	protein k7, any
+real: whole read coding	random	true	0.4	363	protein k7, any
+real: whole read coding	random	true	0.45	188	protein k7, any
+real: whole read coding	random	true	0.5	181	protein k7, any
+real: whole read coding	random	true	0.55	70	protein k7, any
+real: whole read coding	random	true	0.6000000000000001	64	protein k7, any
+real: whole read coding	random	true	0.65	62	protein k7, any
+real: whole read coding	random	true	0.7000000000000001	50	protein k7, any
+real: whole read coding	random	true	0.75	43	protein k7, any
+real: whole read coding	random	true	0.8	18	protein k7, any
+real: whole read coding	random	true	0.8500000000000001	12	protein k7, any
+real: whole read coding	random	true	0.9	11	protein k7, any
+real: whole read coding	random	true	0.9500000000000001	56	protein k7, any
+simulated from CDS	paper_list	false	0.05	14	protein k7, any
+simulated from CDS	paper_list	false	0.1	209	protein k7, any
+simulated from CDS	paper_list	false	0.15000000000000002	734	protein k7, any
+simulated from CDS	paper_list	false	0.2	1164	protein k7, any
+simulated from CDS	paper_list	false	0.25	1367	protein k7, any
+simulated from CDS	paper_list	false	0.30000000000000004	1091	protein k7, any
+simulated from CDS	paper_list	false	0.35000000000000003	447	protein k7, any
+simulated from CDS	paper_list	false	0.4	221	protein k7, any
+simulated from CDS	paper_list	false	0.45	144	protein k7, any
+simulated from CDS	paper_list	false	0.5	96	protein k7, any
+simulated from CDS	paper_list	false	0.55	23	protein k7, any
+simulated from CDS	paper_list	false	0.6000000000000001	11	protein k7, any
+simulated from CDS	paper_list	false	0.65	9	protein k7, any
+simulated from CDS	paper_list	false	0.7000000000000001	1	protein k7, any
+simulated from CDS	paper_list	false	0.75	1	protein k7, any
+simulated from CDS	paper_list	false	0.8500000000000001	2	protein k7, any
+simulated from CDS	paper_list	true	0.05	5	protein k7, any
+simulated from CDS	paper_list	true	0.1	93	protein k7, any
+simulated from CDS	paper_list	true	0.15000000000000002	337	protein k7, any
+simulated from CDS	paper_list	true	0.2	717	protein k7, any
+simulated from CDS	paper_list	true	0.25	1121	protein k7, any
+simulated from CDS	paper_list	true	0.30000000000000004	1134	protein k7, any
+simulated from CDS	paper_list	true	0.35000000000000003	673	protein k7, any
+simulated from CDS	paper_list	true	0.4	525	protein k7, any
+simulated from CDS	paper_list	true	0.45	385	protein k7, any
+simulated from CDS	paper_list	true	0.5	338	protein k7, any
+simulated from CDS	paper_list	true	0.55	171	protein k7, any
+simulated from CDS	paper_list	true	0.6000000000000001	179	protein k7, any
+simulated from CDS	paper_list	true	0.65	156	protein k7, any
+simulated from CDS	paper_list	true	0.7000000000000001	101	protein k7, any
+simulated from CDS	paper_list	true	0.75	93	protein k7, any
+simulated from CDS	paper_list	true	0.8	63	protein k7, any
+simulated from CDS	paper_list	true	0.8500000000000001	53	protein k7, any
+simulated from CDS	paper_list	true	0.9	30	protein k7, any
+simulated from CDS	paper_list	true	0.9500000000000001	112	protein k7, any
+simulated from CDS	random	false	0.05	66	protein k7, any
+simulated from CDS	random	false	0.1	949	protein k7, any
+simulated from CDS	random	false	0.15000000000000002	2421	protein k7, any
+simulated from CDS	random	false	0.2	3577	protein k7, any
+simulated from CDS	random	false	0.25	3811	protein k7, any
+simulated from CDS	random	false	0.30000000000000004	2770	protein k7, any
+simulated from CDS	random	false	0.35000000000000003	996	protein k7, any
+simulated from CDS	random	false	0.4	586	protein k7, any
+simulated from CDS	random	false	0.45	283	protein k7, any
+simulated from CDS	random	false	0.5	182	protein k7, any
+simulated from CDS	random	false	0.55	78	protein k7, any
+simulated from CDS	random	false	0.6000000000000001	29	protein k7, any
+simulated from CDS	random	false	0.65	13	protein k7, any
+simulated from CDS	random	false	0.7000000000000001	1	protein k7, any
+simulated from CDS	random	false	0.75	1	protein k7, any
+simulated from CDS	random	false	0.8	2	protein k7, any
+simulated from CDS	random	false	0.8500000000000001	9	protein k7, any
+simulated from CDS	random	false	0.9	3	protein k7, any
+simulated from CDS	random	false	0.9500000000000001	8	protein k7, any
+simulated from CDS	random	true	0.05	46	protein k7, any
+simulated from CDS	random	true	0.1	336	protein k7, any
+simulated from CDS	random	true	0.15000000000000002	1220	protein k7, any
+simulated from CDS	random	true	0.2	2086	protein k7, any
+simulated from CDS	random	true	0.25	2730	protein k7, any
+simulated from CDS	random	true	0.30000000000000004	2281	protein k7, any
+simulated from CDS	random	true	0.35000000000000003	1156	protein k7, any
+simulated from CDS	random	true	0.4	810	protein k7, any
+simulated from CDS	random	true	0.45	483	protein k7, any
+simulated from CDS	random	true	0.5	316	protein k7, any
+simulated from CDS	random	true	0.55	180	protein k7, any
+simulated from CDS	random	true	0.6000000000000001	127	protein k7, any
+simulated from CDS	random	true	0.65	129	protein k7, any
+simulated from CDS	random	true	0.7000000000000001	72	protein k7, any
+simulated from CDS	random	true	0.75	63	protein k7, any
+simulated from CDS	random	true	0.8	33	protein k7, any
+simulated from CDS	random	true	0.8500000000000001	53	protein k7, any
+simulated from CDS	random	true	0.9	29	protein k7, any
+simulated from CDS	random	true	0.9500000000000001	99	protein k7, any
+real: no protein hit	none		0.0	9770	protein k7, stopfree
+real: no protein hit	none		0.05	28614	protein k7, stopfree
+real: no protein hit	none		0.1	35986	protein k7, stopfree
+real: no protein hit	none		0.15000000000000002	44393	protein k7, stopfree
+real: no protein hit	none		0.2	47553	protein k7, stopfree
+real: no protein hit	none		0.25	56344	protein k7, stopfree
+real: no protein hit	none		0.30000000000000004	50717	protein k7, stopfree
+real: no protein hit	none		0.35000000000000003	38114	protein k7, stopfree
+real: no protein hit	none		0.4	32893	protein k7, stopfree
+real: no protein hit	none		0.45	21310	protein k7, stopfree
+real: no protein hit	none		0.5	25585	protein k7, stopfree
+real: no protein hit	none		0.55	12843	protein k7, stopfree
+real: no protein hit	none		0.6000000000000001	14173	protein k7, stopfree
+real: no protein hit	none		0.65	9884	protein k7, stopfree
+real: no protein hit	none		0.7000000000000001	10116	protein k7, stopfree
+real: no protein hit	none		0.75	11390	protein k7, stopfree
+real: no protein hit	none		0.8	7948	protein k7, stopfree
+real: no protein hit	none		0.8500000000000001	3620	protein k7, stopfree
+real: no protein hit	none		0.9	5061	protein k7, stopfree
+real: no protein hit	none		0.9500000000000001	5975	protein k7, stopfree
+real: partly coding	other genes	false	0.0	945	protein k7, stopfree
+real: partly coding	other genes	false	0.05	3429	protein k7, stopfree
+real: partly coding	other genes	false	0.1	5901	protein k7, stopfree
+real: partly coding	other genes	false	0.15000000000000002	6901	protein k7, stopfree
+real: partly coding	other genes	false	0.2	8340	protein k7, stopfree
+real: partly coding	other genes	false	0.25	8680	protein k7, stopfree
+real: partly coding	other genes	false	0.30000000000000004	7189	protein k7, stopfree
+real: partly coding	other genes	false	0.35000000000000003	3961	protein k7, stopfree
+real: partly coding	other genes	false	0.4	3406	protein k7, stopfree
+real: partly coding	other genes	false	0.45	2400	protein k7, stopfree
+real: partly coding	other genes	false	0.5	2722	protein k7, stopfree
+real: partly coding	other genes	false	0.55	1307	protein k7, stopfree
+real: partly coding	other genes	false	0.6000000000000001	969	protein k7, stopfree
+real: partly coding	other genes	false	0.65	547	protein k7, stopfree
+real: partly coding	other genes	false	0.7000000000000001	429	protein k7, stopfree
+real: partly coding	other genes	false	0.75	336	protein k7, stopfree
+real: partly coding	other genes	false	0.8	318	protein k7, stopfree
+real: partly coding	other genes	false	0.8500000000000001	110	protein k7, stopfree
+real: partly coding	other genes	false	0.9	120	protein k7, stopfree
+real: partly coding	other genes	false	0.9500000000000001	13	protein k7, stopfree
+real: partly coding	other genes	true	0.0	252	protein k7, stopfree
+real: partly coding	other genes	true	0.05	1292	protein k7, stopfree
+real: partly coding	other genes	true	0.1	2450	protein k7, stopfree
+real: partly coding	other genes	true	0.15000000000000002	3374	protein k7, stopfree
+real: partly coding	other genes	true	0.2	4008	protein k7, stopfree
+real: partly coding	other genes	true	0.25	4649	protein k7, stopfree
+real: partly coding	other genes	true	0.30000000000000004	3780	protein k7, stopfree
+real: partly coding	other genes	true	0.35000000000000003	2392	protein k7, stopfree
+real: partly coding	other genes	true	0.4	1925	protein k7, stopfree
+real: partly coding	other genes	true	0.45	1326	protein k7, stopfree
+real: partly coding	other genes	true	0.5	1227	protein k7, stopfree
+real: partly coding	other genes	true	0.55	791	protein k7, stopfree
+real: partly coding	other genes	true	0.6000000000000001	635	protein k7, stopfree
+real: partly coding	other genes	true	0.65	561	protein k7, stopfree
+real: partly coding	other genes	true	0.7000000000000001	381	protein k7, stopfree
+real: partly coding	other genes	true	0.75	275	protein k7, stopfree
+real: partly coding	other genes	true	0.8	203	protein k7, stopfree
+real: partly coding	other genes	true	0.8500000000000001	109	protein k7, stopfree
+real: partly coding	other genes	true	0.9	44	protein k7, stopfree
+real: partly coding	other genes	true	0.9500000000000001	200	protein k7, stopfree
+real: partly coding	paper_list	false	0.0	25	protein k7, stopfree
+real: partly coding	paper_list	false	0.05	137	protein k7, stopfree
+real: partly coding	paper_list	false	0.1	249	protein k7, stopfree
+real: partly coding	paper_list	false	0.15000000000000002	287	protein k7, stopfree
+real: partly coding	paper_list	false	0.2	287	protein k7, stopfree
+real: partly coding	paper_list	false	0.25	391	protein k7, stopfree
+real: partly coding	paper_list	false	0.30000000000000004	342	protein k7, stopfree
+real: partly coding	paper_list	false	0.35000000000000003	179	protein k7, stopfree
+real: partly coding	paper_list	false	0.4	145	protein k7, stopfree
+real: partly coding	paper_list	false	0.45	58	protein k7, stopfree
+real: partly coding	paper_list	false	0.5	66	protein k7, stopfree
+real: partly coding	paper_list	false	0.55	26	protein k7, stopfree
+real: partly coding	paper_list	false	0.6000000000000001	17	protein k7, stopfree
+real: partly coding	paper_list	false	0.65	7	protein k7, stopfree
+real: partly coding	paper_list	false	0.7000000000000001	4	protein k7, stopfree
+real: partly coding	paper_list	false	0.9	2	protein k7, stopfree
+real: partly coding	paper_list	true	0.0	18	protein k7, stopfree
+real: partly coding	paper_list	true	0.05	24	protein k7, stopfree
+real: partly coding	paper_list	true	0.1	71	protein k7, stopfree
+real: partly coding	paper_list	true	0.15000000000000002	86	protein k7, stopfree
+real: partly coding	paper_list	true	0.2	103	protein k7, stopfree
+real: partly coding	paper_list	true	0.25	107	protein k7, stopfree
+real: partly coding	paper_list	true	0.30000000000000004	124	protein k7, stopfree
+real: partly coding	paper_list	true	0.35000000000000003	79	protein k7, stopfree
+real: partly coding	paper_list	true	0.4	70	protein k7, stopfree
+real: partly coding	paper_list	true	0.45	51	protein k7, stopfree
+real: partly coding	paper_list	true	0.5	96	protein k7, stopfree
+real: partly coding	paper_list	true	0.55	49	protein k7, stopfree
+real: partly coding	paper_list	true	0.6000000000000001	46	protein k7, stopfree
+real: partly coding	paper_list	true	0.65	42	protein k7, stopfree
+real: partly coding	paper_list	true	0.7000000000000001	33	protein k7, stopfree
+real: partly coding	paper_list	true	0.75	19	protein k7, stopfree
+real: partly coding	paper_list	true	0.8	14	protein k7, stopfree
+real: partly coding	paper_list	true	0.8500000000000001	8	protein k7, stopfree
+real: partly coding	paper_list	true	0.9	2	protein k7, stopfree
+real: partly coding	paper_list	true	0.9500000000000001	4	protein k7, stopfree
+real: partly coding	random	false	0.0	4	protein k7, stopfree
+real: partly coding	random	false	0.05	54	protein k7, stopfree
+real: partly coding	random	false	0.1	113	protein k7, stopfree
+real: partly coding	random	false	0.15000000000000002	135	protein k7, stopfree
+real: partly coding	random	false	0.2	233	protein k7, stopfree
+real: partly coding	random	false	0.25	184	protein k7, stopfree
+real: partly coding	random	false	0.30000000000000004	157	protein k7, stopfree
+real: partly coding	random	false	0.35000000000000003	129	protein k7, stopfree
+real: partly coding	random	false	0.4	65	protein k7, stopfree
+real: partly coding	random	false	0.45	41	protein k7, stopfree
+real: partly coding	random	false	0.5	33	protein k7, stopfree
+real: partly coding	random	false	0.55	15	protein k7, stopfree
+real: partly coding	random	false	0.6000000000000001	10	protein k7, stopfree
+real: partly coding	random	false	0.65	1	protein k7, stopfree
+real: partly coding	random	false	0.7000000000000001	2	protein k7, stopfree
+real: partly coding	random	false	0.8	2	protein k7, stopfree
+real: partly coding	random	true	0.0	8	protein k7, stopfree
+real: partly coding	random	true	0.05	13	protein k7, stopfree
+real: partly coding	random	true	0.1	23	protein k7, stopfree
+real: partly coding	random	true	0.15000000000000002	69	protein k7, stopfree
+real: partly coding	random	true	0.2	76	protein k7, stopfree
+real: partly coding	random	true	0.25	132	protein k7, stopfree
+real: partly coding	random	true	0.30000000000000004	104	protein k7, stopfree
+real: partly coding	random	true	0.35000000000000003	83	protein k7, stopfree
+real: partly coding	random	true	0.4	36	protein k7, stopfree
+real: partly coding	random	true	0.45	30	protein k7, stopfree
+real: partly coding	random	true	0.5	19	protein k7, stopfree
+real: partly coding	random	true	0.55	14	protein k7, stopfree
+real: partly coding	random	true	0.6000000000000001	6	protein k7, stopfree
+real: partly coding	random	true	0.65	7	protein k7, stopfree
+real: partly coding	random	true	0.7000000000000001	6	protein k7, stopfree
+real: partly coding	random	true	0.75	7	protein k7, stopfree
+real: whole read coding	other genes	false	0.0	166	protein k7, stopfree
+real: whole read coding	other genes	false	0.05	1941	protein k7, stopfree
+real: whole read coding	other genes	false	0.1	4372	protein k7, stopfree
+real: whole read coding	other genes	false	0.15000000000000002	7767	protein k7, stopfree
+real: whole read coding	other genes	false	0.2	11144	protein k7, stopfree
+real: whole read coding	other genes	false	0.25	15134	protein k7, stopfree
+real: whole read coding	other genes	false	0.30000000000000004	15351	protein k7, stopfree
+real: whole read coding	other genes	false	0.35000000000000003	11719	protein k7, stopfree
+real: whole read coding	other genes	false	0.4	10773	protein k7, stopfree
+real: whole read coding	other genes	false	0.45	6017	protein k7, stopfree
+real: whole read coding	other genes	false	0.5	7202	protein k7, stopfree
+real: whole read coding	other genes	false	0.55	2862	protein k7, stopfree
+real: whole read coding	other genes	false	0.6000000000000001	2997	protein k7, stopfree
+real: whole read coding	other genes	false	0.65	1404	protein k7, stopfree
+real: whole read coding	other genes	false	0.7000000000000001	1169	protein k7, stopfree
+real: whole read coding	other genes	false	0.75	972	protein k7, stopfree
+real: whole read coding	other genes	false	0.8	1009	protein k7, stopfree
+real: whole read coding	other genes	false	0.8500000000000001	408	protein k7, stopfree
+real: whole read coding	other genes	false	0.9	192	protein k7, stopfree
+real: whole read coding	other genes	false	0.9500000000000001	115	protein k7, stopfree
+real: whole read coding	other genes	true	0.0	670	protein k7, stopfree
+real: whole read coding	other genes	true	0.05	3602	protein k7, stopfree
+real: whole read coding	other genes	true	0.1	5392	protein k7, stopfree
+real: whole read coding	other genes	true	0.15000000000000002	8463	protein k7, stopfree
+real: whole read coding	other genes	true	0.2	10766	protein k7, stopfree
+real: whole read coding	other genes	true	0.25	13804	protein k7, stopfree
+real: whole read coding	other genes	true	0.30000000000000004	13826	protein k7, stopfree
+real: whole read coding	other genes	true	0.35000000000000003	10285	protein k7, stopfree
+real: whole read coding	other genes	true	0.4	9166	protein k7, stopfree
+real: whole read coding	other genes	true	0.45	6040	protein k7, stopfree
+real: whole read coding	other genes	true	0.5	7204	protein k7, stopfree
+real: whole read coding	other genes	true	0.55	4624	protein k7, stopfree
+real: whole read coding	other genes	true	0.6000000000000001	4681	protein k7, stopfree
+real: whole read coding	other genes	true	0.65	3614	protein k7, stopfree
+real: whole read coding	other genes	true	0.7000000000000001	2918	protein k7, stopfree
+real: whole read coding	other genes	true	0.75	2396	protein k7, stopfree
+real: whole read coding	other genes	true	0.8	2170	protein k7, stopfree
+real: whole read coding	other genes	true	0.8500000000000001	1546	protein k7, stopfree
+real: whole read coding	other genes	true	0.9	1681	protein k7, stopfree
+real: whole read coding	other genes	true	0.9500000000000001	7523	protein k7, stopfree
+real: whole read coding	paper_list	false	0.0	13	protein k7, stopfree
+real: whole read coding	paper_list	false	0.05	103	protein k7, stopfree
+real: whole read coding	paper_list	false	0.1	233	protein k7, stopfree
+real: whole read coding	paper_list	false	0.15000000000000002	481	protein k7, stopfree
+real: whole read coding	paper_list	false	0.2	593	protein k7, stopfree
+real: whole read coding	paper_list	false	0.25	758	protein k7, stopfree
+real: whole read coding	paper_list	false	0.30000000000000004	557	protein k7, stopfree
+real: whole read coding	paper_list	false	0.35000000000000003	500	protein k7, stopfree
+real: whole read coding	paper_list	false	0.4	356	protein k7, stopfree
+real: whole read coding	paper_list	false	0.45	195	protein k7, stopfree
+real: whole read coding	paper_list	false	0.5	195	protein k7, stopfree
+real: whole read coding	paper_list	false	0.55	73	protein k7, stopfree
+real: whole read coding	paper_list	false	0.6000000000000001	79	protein k7, stopfree
+real: whole read coding	paper_list	false	0.65	29	protein k7, stopfree
+real: whole read coding	paper_list	false	0.7000000000000001	22	protein k7, stopfree
+real: whole read coding	paper_list	false	0.75	4	protein k7, stopfree
+real: whole read coding	paper_list	false	0.8	13	protein k7, stopfree
+real: whole read coding	paper_list	false	0.9	8	protein k7, stopfree
+real: whole read coding	paper_list	true	0.0	75	protein k7, stopfree
+real: whole read coding	paper_list	true	0.05	189	protein k7, stopfree
+real: whole read coding	paper_list	true	0.1	291	protein k7, stopfree
+real: whole read coding	paper_list	true	0.15000000000000002	539	protein k7, stopfree
+real: whole read coding	paper_list	true	0.2	672	protein k7, stopfree
+real: whole read coding	paper_list	true	0.25	761	protein k7, stopfree
+real: whole read coding	paper_list	true	0.30000000000000004	714	protein k7, stopfree
+real: whole read coding	paper_list	true	0.35000000000000003	642	protein k7, stopfree
+real: whole read coding	paper_list	true	0.4	623	protein k7, stopfree
+real: whole read coding	paper_list	true	0.45	517	protein k7, stopfree
+real: whole read coding	paper_list	true	0.5	566	protein k7, stopfree
+real: whole read coding	paper_list	true	0.55	369	protein k7, stopfree
+real: whole read coding	paper_list	true	0.6000000000000001	404	protein k7, stopfree
+real: whole read coding	paper_list	true	0.65	439	protein k7, stopfree
+real: whole read coding	paper_list	true	0.7000000000000001	257	protein k7, stopfree
+real: whole read coding	paper_list	true	0.75	319	protein k7, stopfree
+real: whole read coding	paper_list	true	0.8	202	protein k7, stopfree
+real: whole read coding	paper_list	true	0.8500000000000001	168	protein k7, stopfree
+real: whole read coding	paper_list	true	0.9	116	protein k7, stopfree
+real: whole read coding	paper_list	true	0.9500000000000001	598	protein k7, stopfree
+real: whole read coding	random	false	0.05	55	protein k7, stopfree
+real: whole read coding	random	false	0.1	99	protein k7, stopfree
+real: whole read coding	random	false	0.15000000000000002	198	protein k7, stopfree
+real: whole read coding	random	false	0.2	299	protein k7, stopfree
+real: whole read coding	random	false	0.25	326	protein k7, stopfree
+real: whole read coding	random	false	0.30000000000000004	385	protein k7, stopfree
+real: whole read coding	random	false	0.35000000000000003	239	protein k7, stopfree
+real: whole read coding	random	false	0.4	257	protein k7, stopfree
+real: whole read coding	random	false	0.45	121	protein k7, stopfree
+real: whole read coding	random	false	0.5	126	protein k7, stopfree
+real: whole read coding	random	false	0.55	45	protein k7, stopfree
+real: whole read coding	random	false	0.6000000000000001	41	protein k7, stopfree
+real: whole read coding	random	false	0.65	16	protein k7, stopfree
+real: whole read coding	random	false	0.7000000000000001	18	protein k7, stopfree
+real: whole read coding	random	false	0.75	4	protein k7, stopfree
+real: whole read coding	random	false	0.8	6	protein k7, stopfree
+real: whole read coding	random	false	0.9	6	protein k7, stopfree
+real: whole read coding	random	false	0.9500000000000001	12	protein k7, stopfree
+real: whole read coding	random	true	0.0	9	protein k7, stopfree
+real: whole read coding	random	true	0.05	73	protein k7, stopfree
+real: whole read coding	random	true	0.1	162	protein k7, stopfree
+real: whole read coding	random	true	0.15000000000000002	226	protein k7, stopfree
+real: whole read coding	random	true	0.2	541	protein k7, stopfree
+real: whole read coding	random	true	0.25	736	protein k7, stopfree
+real: whole read coding	random	true	0.30000000000000004	685	protein k7, stopfree
+real: whole read coding	random	true	0.35000000000000003	490	protein k7, stopfree
+real: whole read coding	random	true	0.4	397	protein k7, stopfree
+real: whole read coding	random	true	0.45	188	protein k7, stopfree
+real: whole read coding	random	true	0.5	181	protein k7, stopfree
+real: whole read coding	random	true	0.55	71	protein k7, stopfree
+real: whole read coding	random	true	0.6000000000000001	64	protein k7, stopfree
+real: whole read coding	random	true	0.65	62	protein k7, stopfree
+real: whole read coding	random	true	0.7000000000000001	50	protein k7, stopfree
+real: whole read coding	random	true	0.75	42	protein k7, stopfree
+real: whole read coding	random	true	0.8	16	protein k7, stopfree
+real: whole read coding	random	true	0.8500000000000001	12	protein k7, stopfree
+real: whole read coding	random	true	0.9	11	protein k7, stopfree
+real: whole read coding	random	true	0.9500000000000001	56	protein k7, stopfree
+simulated from CDS	paper_list	false	0.0	18	protein k7, stopfree
+simulated from CDS	paper_list	false	0.05	70	protein k7, stopfree
+simulated from CDS	paper_list	false	0.1	212	protein k7, stopfree
+simulated from CDS	paper_list	false	0.15000000000000002	409	protein k7, stopfree
+simulated from CDS	paper_list	false	0.2	495	protein k7, stopfree
+simulated from CDS	paper_list	false	0.25	559	protein k7, stopfree
+simulated from CDS	paper_list	false	0.30000000000000004	465	protein k7, stopfree
+simulated from CDS	paper_list	false	0.35000000000000003	213	protein k7, stopfree
+simulated from CDS	paper_list	false	0.4	142	protein k7, stopfree
+simulated from CDS	paper_list	false	0.45	94	protein k7, stopfree
+simulated from CDS	paper_list	false	0.5	63	protein k7, stopfree
+simulated from CDS	paper_list	false	0.55	21	protein k7, stopfree
+simulated from CDS	paper_list	false	0.6000000000000001	8	protein k7, stopfree
+simulated from CDS	paper_list	false	0.65	7	protein k7, stopfree
+simulated from CDS	paper_list	false	0.7000000000000001	2	protein k7, stopfree
+simulated from CDS	paper_list	false	0.75	1	protein k7, stopfree
+simulated from CDS	paper_list	false	0.8500000000000001	2	protein k7, stopfree
+simulated from CDS	paper_list	true	0.0	105	protein k7, stopfree
+simulated from CDS	paper_list	true	0.05	340	protein k7, stopfree
+simulated from CDS	paper_list	true	0.1	671	protein k7, stopfree
+simulated from CDS	paper_list	true	0.15000000000000002	984	protein k7, stopfree
+simulated from CDS	paper_list	true	0.2	1220	protein k7, stopfree
+simulated from CDS	paper_list	true	0.25	1389	protein k7, stopfree
+simulated from CDS	paper_list	true	0.30000000000000004	1254	protein k7, stopfree
+simulated from CDS	paper_list	true	0.35000000000000003	684	protein k7, stopfree
+simulated from CDS	paper_list	true	0.4	522	protein k7, stopfree
+simulated from CDS	paper_list	true	0.45	374	protein k7, stopfree
+simulated from CDS	paper_list	true	0.5	319	protein k7, stopfree
+simulated from CDS	paper_list	true	0.55	165	protein k7, stopfree
+simulated from CDS	paper_list	true	0.6000000000000001	173	protein k7, stopfree
+simulated from CDS	paper_list	true	0.65	155	protein k7, stopfree
+simulated from CDS	paper_list	true	0.7000000000000001	92	protein k7, stopfree
+simulated from CDS	paper_list	true	0.75	89	protein k7, stopfree
+simulated from CDS	paper_list	true	0.8	61	protein k7, stopfree
+simulated from CDS	paper_list	true	0.8500000000000001	51	protein k7, stopfree
+simulated from CDS	paper_list	true	0.9	30	protein k7, stopfree
+simulated from CDS	paper_list	true	0.9500000000000001	108	protein k7, stopfree
+simulated from CDS	random	false	0.0	50	protein k7, stopfree
+simulated from CDS	random	false	0.05	228	protein k7, stopfree
+simulated from CDS	random	false	0.1	662	protein k7, stopfree
+simulated from CDS	random	false	0.15000000000000002	1078	protein k7, stopfree
+simulated from CDS	random	false	0.2	1263	protein k7, stopfree
+simulated from CDS	random	false	0.25	1323	protein k7, stopfree
+simulated from CDS	random	false	0.30000000000000004	1081	protein k7, stopfree
+simulated from CDS	random	false	0.35000000000000003	444	protein k7, stopfree
+simulated from CDS	random	false	0.4	313	protein k7, stopfree
+simulated from CDS	random	false	0.45	179	protein k7, stopfree
+simulated from CDS	random	false	0.5	113	protein k7, stopfree
+simulated from CDS	random	false	0.55	62	protein k7, stopfree
+simulated from CDS	random	false	0.6000000000000001	23	protein k7, stopfree
+simulated from CDS	random	false	0.65	12	protein k7, stopfree
+simulated from CDS	random	false	0.7000000000000001	1	protein k7, stopfree
+simulated from CDS	random	false	0.75	1	protein k7, stopfree
+simulated from CDS	random	false	0.8	2	protein k7, stopfree
+simulated from CDS	random	false	0.8500000000000001	9	protein k7, stopfree
+simulated from CDS	random	false	0.9	2	protein k7, stopfree
+simulated from CDS	random	false	0.9500000000000001	8	protein k7, stopfree
+simulated from CDS	random	true	0.0	420	protein k7, stopfree
+simulated from CDS	random	true	0.05	1391	protein k7, stopfree
+simulated from CDS	random	true	0.1	2435	protein k7, stopfree
+simulated from CDS	random	true	0.15000000000000002	3257	protein k7, stopfree
+simulated from CDS	random	true	0.2	3528	protein k7, stopfree
+simulated from CDS	random	true	0.25	3366	protein k7, stopfree
+simulated from CDS	random	true	0.30000000000000004	2537	protein k7, stopfree
+simulated from CDS	random	true	0.35000000000000003	1184	protein k7, stopfree
+simulated from CDS	random	true	0.4	797	protein k7, stopfree
+simulated from CDS	random	true	0.45	485	protein k7, stopfree
+simulated from CDS	random	true	0.5	304	protein k7, stopfree
+simulated from CDS	random	true	0.55	173	protein k7, stopfree
+simulated from CDS	random	true	0.6000000000000001	117	protein k7, stopfree
+simulated from CDS	random	true	0.65	129	protein k7, stopfree
+simulated from CDS	random	true	0.7000000000000001	70	protein k7, stopfree
+simulated from CDS	random	true	0.75	60	protein k7, stopfree
+simulated from CDS	random	true	0.8	32	protein k7, stopfree
+simulated from CDS	random	true	0.8500000000000001	51	protein k7, stopfree
+simulated from CDS	random	true	0.9	28	protein k7, stopfree
+simulated from CDS	random	true	0.9500000000000001	96	protein k7, stopfree

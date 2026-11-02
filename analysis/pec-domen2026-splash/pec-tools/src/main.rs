@@ -2,8 +2,12 @@
 //!
 //! translate  — six-frame translation of compactors (TSV or FASTA) into stop-free
 //!              peptides of at least `min_aa` residues, with DNA coordinates.
+//! best-frame — per read, keep the one translated frame with the most Swiss-Prot k-mers
+//!              (orpheum's frame rule), for sketching reads.
 //! simulate   — paired-end read simulator from a transcript FASTA with a planted
 //!              design (used only for the known-answer control).
+mod best_frame;
+
 use std::collections::HashMap;
 use std::fs::File;
 use std::io::{BufRead, BufReader, BufWriter, Read, Write};
@@ -567,7 +571,9 @@ fn main() -> Res<()> {
         Some("translate") => cmd_translate(&args[2..]),
         Some("simulate") => cmd_simulate(&args[2..]),
         Some("anchor-counts") => cmd_anchor_counts(&args[2..]),
-        _ => Err("usage: pec-tools <translate|simulate|anchor-counts> ...".into()),
+        Some("best-frame") => best_frame::cmd_best_frame(&args[2..]),
+        Some("frame-scores") => best_frame::cmd_frame_scores(&args[2..]),
+        _ => Err("usage: pec-tools <translate|simulate|anchor-counts|best-frame> ...".into()),
     }
 }
 
