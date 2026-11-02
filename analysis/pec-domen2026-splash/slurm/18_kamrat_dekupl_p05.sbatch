@@ -78,7 +78,7 @@ if [ ! -s "$D/dekupl_limma_p05/contigs.tsv" ]; then
   # one table with a direction column; translate carries every column into pep.peptides.tsv
   python - <<'EOF'
 import polars as pl
-parts = [pl.read_csv(f"{d}.merged.tsv.gz", separator="\t").select("contig", "nb_merged_kmers", "pvalue", "log2FC")
+parts = [pl.read_csv(f"{d}.merged.tsv.gz", separator="\t", schema_overrides={"contig": pl.String, "nb_merged_kmers": pl.Int64, "pvalue": pl.Float64, "log2FC": pl.Float64}).select("contig", "nb_merged_kmers", "pvalue", "log2FC")
          .with_columns(pl.lit(d).alias("direction")) for d in ("up", "down")]
 t = pl.concat(parts)
 bad = t.filter(((pl.col("direction") == "up") & (pl.col("log2FC") <= 0)) | ((pl.col("direction") == "down") & (pl.col("log2FC") >= 0)))

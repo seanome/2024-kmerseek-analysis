@@ -71,7 +71,8 @@ for sf, direction in zip(subfigs, ("up", "down")):
         for y, c in enumerate(CONTRASTS):
             r = d.filter((pl.col("channel") == route) & (pl.col("contrast") == c)
                          & (pl.col("list") == direction))
-            if r.height == 0:
+            if r.height == 0:  # e.g. DE-kupl in young 132 d, whose sample scaling failed (README)
+                ax.text(1.02, y, "no result", transform=ax.get_yaxis_transform(), va="center", color=pf.GREY)
                 continue
             r = r.row(0, named=True)
             ax.plot([r["null_2_5"], r["null_97_5"]], [y, y], color=pf.GREY, linewidth=3,
