@@ -2,6 +2,8 @@
 #
 #   make run        every contrast + the known-answer control
 #   make run-test   young_132d + the control only (most results already exist; a wiring check)
+#   make run-label-swap   label-swap control: SPLASH + anchor counts on swapped PEC/control labels
+#                   (design/label_swap/manifest.tsv), outputs under $(PEC_ROOT)/label_swap/
 #   make watch      attach to the live Nextflow table (read-only); Ctrl-b d to leave
 #   make stop       ask the run to cancel its jobs and exit
 #   make running    every Nextflow run in the queue, then this folder's jobs
@@ -45,7 +47,7 @@ define require_cluster
 	fi
 endef
 
-.PHONY: run run-test watch attach stop status running
+.PHONY: run run-test run-label-swap watch attach stop status running
 
 run:
 	$(call require_cluster)
@@ -56,6 +58,17 @@ run-test:
 	$(call require_cluster)
 	mkdir -p run-test && cd run-test && ml load biology nextflow && \
 	  $(HEAD_SUBMIT) $(NF_COMMON) --contrasts young_132d $(NF_ARGS)
+
+## Its own head job name and tmux session, so watch/stop for the main run are not confused with it:
+##   make watch HEAD_JOBNAME=nf-pec361-swap HEAD_SESSION=pec361swap
+run-label-swap: HEAD_TIME := 3-00:00:00
+run-label-swap: HEAD_JOBNAME := nf-pec361-swap
+run-label-swap: HEAD_SESSION := pec361swap
+run-label-swap: SLURM_PARTITION := normal,hns
+run-label-swap:
+	$(call require_cluster)
+	mkdir -p run-label-swap && cd run-label-swap && ml load biology nextflow && \
+	  $(HEAD_SUBMIT) $(NF_COMMON) --control false --label_swap $(CODE_DIR)/design/label_swap/manifest.tsv $(NF_ARGS)
 
 watch: HEAD_ATTACH := -r
 attach: HEAD_ATTACH :=
