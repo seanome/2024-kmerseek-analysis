@@ -76,14 +76,17 @@ ctrl = pl.read_csv(control_tsv, separator="\t", schema_overrides={"pairs_per_sam
 ctrl = ctrl.with_columns(pl.when(pl.col("pairs_per_sample").str.starts_with("full")).then(pl.lit("1000000"))
                          .otherwise(pl.col("pairs_per_sample")).cast(pl.Int64).alias("pairs"))
 ax = axs[2]
-CLASS = {"isoform_switch": ("isoform switch", "o"), "abundance_up": ("higher in PEC", "^"),
-         "abundance_down": ("lower in PEC", "v"), "unchanged": ("unchanged (false calls)", "s")}
-for cls, (lab, mk) in CLASS.items():
-    t = ctrl.filter(pl.col("truth_class") == cls).sort("pairs")
-    ax.plot(t["pairs"] / 1e6, t["recall"], marker=mk, markersize=3, color=BLUE, linewidth=0.9,
-            markerfacecolor="white" if cls == "unchanged" else BLUE, markeredgewidth=0.7)
-    ax.annotate(lab, (t["pairs"][-1] / 1e6, t["recall"][-1]), xytext=(4, 0), textcoords="offset points",
-                va="center", fontsize=5, color=BLUE)
+t = ctrl.filter(pl.col("truth_class") == "isoform_switch").sort("pairs")
+ax.plot(t["pairs"] / 1e6, t["recall"], marker="o", markersize=3, color=BLUE, linewidth=0.9)
+ax.annotate("isoform switch", (t["pairs"][-1] / 1e6, t["recall"][-1]), xytext=(4, 0), textcoords="offset points",
+            va="center", fontsize=5, color=BLUE)
+# the other three classes are 0 at every depth; one line and one label say so
+zero = ctrl.filter(pl.col("truth_class") != "isoform_switch")
+assert (zero["recall"] == 0).all(), zero
+ax.plot(t["pairs"] / 1e6, [0] * t.height, marker="s", markersize=3, color=BLUE, linewidth=0.9,
+        markerfacecolor="white", markeredgewidth=0.7)
+ax.annotate("higher in PEC, lower in PEC,\nand unchanged (false calls):\n0 at every depth", (t["pairs"][-1] / 1e6, 0),
+            xytext=(4, 14), textcoords="offset points", va="bottom", fontsize=5, color=BLUE)
 ax.set_xscale("log")
 ax.set_xticks([0.125, 0.25, 0.5, 1], ["0.125", "0.25", "0.5", "1\n(full)"])
 ax.minorticks_off()
