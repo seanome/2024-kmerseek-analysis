@@ -85,6 +85,34 @@ with Dayhoff 9-mers 20.5; protein 6-mers 25.1 with Dayhoff 11-mers 25.1. (Above,
   other, so a Botryllus protein matches a distant Swiss-Prot relative more often, while a wrong
   frame gains less. That reason is a guess; the numbers are measured.
 
+## Does a 0.9 cutoff on protein 5-mers work? Choosing the frame per read
+
+Asked 2026-11-02: protein 5-mers at 0.9 or more looked good. Per frame, they are: 97 % of true
+frames reach 0.9. But the search keeps one frame per read, the one with the highest share, so the
+question is whether that frame is the true one. `scripts/frame_cutoff_check.py` answers this per
+read, choosing among frames with no stop codon (orpheum's rule, without its low-complexity filter).
+Numbers: `frame_cutoff_check.tsv` (also all six frames allowed).
+
+| k-mers | reads | cutoff | reads kept | true frame alone best | true frame tied with a wrong one | wrong frame best |
+|---|---|---|---|---|---|---|
+| protein 5 | simulated | 0.9 | 98 % | 48 % | 46 % | 6 % |
+| protein 5 | real | 0.9 | 99 % | 15 % | 79 % | 6 % |
+| Dayhoff 9 | simulated | 0.9 | 93 % | 61 % | 23 % | 16 % |
+| Dayhoff 9 | real | 0.9 | 98 % | 22 % | 53 % | 25 % |
+| protein 6 | simulated | 0.5 | 98 % | 73 % | 2 % | 25 % |
+| protein 6 | real | 0.5 | 99 % | 43 % | 10 % | 48 % |
+| Dayhoff 11 | simulated | 0.5 | 91 % | 75 % | 2 % | 24 % |
+| Dayhoff 11 | real | 0.5 | 96 % | 44 % | 12 % | 44 % |
+| protein 7 | simulated | 0.5 | 7 % | 87 % | 0.2 % | 13 % |
+| protein 7 | real | 0.5 | 25 % | 69 % | 1 % | 31 % |
+
+- At protein 5-mers a 0.9 cutoff keeps almost every read, so it filters nothing, and in most real
+  reads a wrong stop-free frame also scores 1.0. The true frame is rarely wrong outright (6 %), but
+  it is tied for best in 79 % of real reads, so the read's frame is a coin toss among the tied
+  frames. Keeping every tied frame would give the true frame and one or more wrong ones.
+- No setting picks the true frame alone in more than about half of real reads, except protein
+  7-mers at 0.5 (69 %), which keeps only a quarter of the reads.
+
 Code: `scripts/frame_shares.py` ran on Sherlock on `sra_search/frame_test/scores.{protein.k7,dayhoff.k12}.tsv`
 (from `pec-tools frame-scores`) and `real_blastx.tsv`. `scripts/plot_frame_shares.py` draws the figure.
 Dayhoff 9 and 11 were scored with `pec-tools frame-scores` in Sherlock job 50793955. Plot:
