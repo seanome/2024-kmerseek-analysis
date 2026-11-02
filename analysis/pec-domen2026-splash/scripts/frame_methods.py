@@ -49,7 +49,7 @@ def frame_of_hit(qstart, qend, qlen):
 
 def best_hits(path, cols):
     return (pl.read_csv(path, separator="\t", has_header=False, new_columns=cols,
-                        schema_overrides={"read_id": pl.Utf8})
+                        schema_overrides={"read_id": pl.Utf8, "pident": pl.Float64})
             .sort(["read_id", "bits"], descending=[False, True]).unique("read_id", keep="first"))
 
 
@@ -151,7 +151,8 @@ def read_time(name):
 
 def resources(m):
     parts = combos.get(m, [m])
-    parts = ["stops" if p.startswith("stops.") else p for p in parts]
+    parts = ["stops" if p.startswith("stops.") else p if p.startswith("blastx.") else f"scores.{p}"
+             for p in parts]
     ts = [read_time(p) for p in dict.fromkeys(parts)]
     if any(t is None for t in ts):
         return dict(wall_s=None, cpu_s=None, peak_gb=None)
