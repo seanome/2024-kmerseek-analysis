@@ -145,6 +145,31 @@ Counts per window are in `significant_per_window.tsv`:
 `splash_out/result.after_correction.scores.tsv`. Treated and control libraries come from
 the same colonies in every window. In 21-28 d all 5 libraries have under 20,000 read pairs.
 
+### Compared with the paper
+
+The paper's Dataset S1 has its own DESeq2 results for four young-colony comparisons
+(sheets Group1, group2, Group4 and group5). By adjusted p < 0.05 those find 0 genes at 2 h,
+1 at 24 h, 0 at 13 and 49 days pooled, and 11 at 132 days. The gene lists the paper
+reports (its sheet "annotated DE all groups young": 43 up and 237 down at 2 h, 252 and 98
+at 24 h, 18 and 48 at 13-49 d, 40 and 46 at 132 d) are therefore not adjusted-p lists.
+Their size is near the number of named genes with unadjusted p < 0.05 (37 and 259 at 2 h,
+221 and 79 at 24 h), but not equal, so the paper's exact rule is not known.
+
+| Comparison | Paper, adjusted p < 0.05 | Paper, listed up / down | This run, adjusted p < 0.05 up / down | This run, unadjusted p < 0.05 up / down |
+|---|---:|---:|---:|---:|
+| 2 h | 0 | 43 / 237 | 2 / 138 | 4 / 279 |
+| 24 h | 1 | 252 / 98 | 27 / 49 | 82 / 175 |
+| 13-49 d (this run: 13-17 d) | 0 | 18 / 48 | 23 / 153 | 39 / 327 |
+| 13-49 d (this run: 49-52 d) | 0 | 18 / 48 | 77 / 11 | 358 / 31 |
+| 132 d (this run: 104-132 d) | 11 | 40 / 46 | 5 / 46 | 64 / 252 |
+
+The 2 h comparison goes the same way in both (mostly lower in treated). At 24 h the paper
+lists mostly higher in treated and this run finds mostly lower. The two analyses differ in
+gene models (the paper's 72,115 `g` genes, this run's 35,541 `FUN_` genes), in the model
+(the paper fits each comparison alone; this run fits all 52 libraries with colony as a
+blocking factor), and in how 13-49 days are grouped, so genes cannot yet be matched one to
+one. Table: `paper_comparison.tsv`.
+
 ## Outputs
 
 In `$SCRATCH/botryllus-pec-young/`:
