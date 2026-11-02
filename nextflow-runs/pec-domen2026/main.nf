@@ -468,6 +468,5 @@ workflow {
         control_truth(sp.join(ac).join(dk).join(km).filter { it[0] == 'control' }
                         .map { c, s, a, d, k, m -> tuple(s, a, d, k, m) })
     }
-}
   }
 }
