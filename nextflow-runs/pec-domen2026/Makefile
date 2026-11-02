@@ -61,7 +61,7 @@ run-test:
 
 ## Its own head job name and tmux session, so watch/stop for the main run are not confused with it:
 ##   make watch HEAD_JOBNAME=nf-pec361-swap HEAD_SESSION=pec361swap
-run-label-swap: HEAD_TIME := 3-00:00:00
+run-label-swap: HEAD_TIME := 2-00:00:00
 run-label-swap: HEAD_JOBNAME := nf-pec361-swap
 run-label-swap: HEAD_SESSION := pec361swap
 run-label-swap: SLURM_PARTITION := normal,hns
