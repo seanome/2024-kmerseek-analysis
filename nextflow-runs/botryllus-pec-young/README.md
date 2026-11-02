@@ -119,6 +119,32 @@ already finished `SRR32233964.fq.gz` at 13:47:52, so that file is the first roun
 the `.part` file is a leftover. Its Nextflow head stopped at once ("Unable to acquire lock
 on session"), so the first run was not touched.
 
+### Result of the 2026-10-27 run
+
+- SPLASH: all 6 windows finished (jobs 49841893-49841918, 16 s to 29 min each).
+- nf-core/rnaseq: finished at 17:23, 1,466 tasks, none failed. Its summary says 7 of 52
+  libraries failed the strand check (not yet looked at).
+- nf-core/differentialabundance: DESeq2 finished for all 6 windows and wrote its tables.
+  The last step, the HTML report, failed while drawing a clustering heatmap
+  (`hclust`: "NA/NaN/Inf in foreign function call"), so the Nextflow head ended as FAILED
+  and `differentialabundance/report/` is empty.
+
+Counts per window are in `significant_per_window.tsv`:
+
+| Window | Genes with adjusted p < 0.05 | Higher in treated | Lower in treated | SPLASH anchors with corrected p < 0.05 |
+|---|---:|---:|---:|---:|
+| 2 h | 140 | 2 | 138 | 86,283 |
+| 24 h | 76 | 27 | 49 | 936,510 |
+| 13-17 d | 176 | 23 | 153 | 10,757 |
+| 21-28 d | 151 | 101 | 50 | 1 |
+| 49-52 d | 88 | 77 | 11 | 704 |
+| 104-132 d | 51 | 5 | 46 | 9,049 |
+
+35,541 genes were tested in each window. Gene counts are from `padj` in
+`*.deseq2.results.tsv`; anchor counts from `Cjs_0_pval_corrected` in
+`splash_out/result.after_correction.scores.tsv`. Treated and control libraries come from
+the same colonies in every window. In 21-28 d all 5 libraries have under 20,000 read pairs.
+
 ## Outputs
 
 In `$SCRATCH/botryllus-pec-young/`:
