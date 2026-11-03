@@ -15,7 +15,8 @@
 //! Output: for every cutoff `c`, the chosen frame of each read with `fraction >= c` is written
 //! to `<prefix>.ge<c>.faa`, split at stops into pieces of at least `min_piece` residues.
 //! `<prefix>.hist.tsv` counts reads by (windows, matches) of the chosen frame, and
-//! `<prefix>.summary.tsv` counts reads at each step.
+//! `<prefix>.summary.tsv` counts reads at each step; `no_allowed_frame` includes the reads
+//! dropped as low complexity, which `low_complexity_read` also counts on its own.
 use std::collections::HashSet;
 use std::fs::File;
 use std::hash::{BuildHasherDefault, Hasher};
@@ -346,6 +347,8 @@ pub fn cmd_best_frame(args: &[String]) -> Res<()> {
     let mut hist: std::collections::HashMap<(usize, usize), u64> = Default::default();
     let (mut n, mut no_window, mut zero, mut tied, mut bases, mut no_frame) =
         (0u64, 0u64, 0u64, 0u64, 0u64, 0u64);
+    // reads dropped by orpheum's read-level complexity check; also counted in `no_frame`
+    let mut low_read = 0u64;
     let stdin = std::io::stdin();
     let mut lines = BufReader::with_capacity(1 << 22, stdin.lock()).lines();
     while let Some(h) = lines.next() {
@@ -361,6 +364,11 @@ pub fn cmd_best_frame(args: &[String]) -> Res<()> {
         lines.next().ok_or("truncated FASTQ")??;
         n += 1;
         bases += seq.len() as u64;
+        if rule == Rule::Orpheum && low_complexity_read(seq.as_bytes()) {
+            low_read += 1;
+            no_frame += 1;
+            continue;
+        }
         let frames = six_frames(seq.as_bytes());
         let Some((bi, m, w, ties)) = choose_frame(seq.as_bytes(), &frames, &set, alphabet, k, rule)
         else {
@@ -408,6 +416,8 @@ pub fn cmd_best_frame(args: &[String]) -> Res<()> {
     writeln!(sm, "all_reads\t{n}")?;
     writeln!(sm, "bases\t{bases}")?;
     writeln!(sm, "no_allowed_frame\t{no_frame}")?;
+    // part of no_allowed_frame: the read itself is low complexity (rule orpheum only)
+    writeln!(sm, "low_complexity_read\t{low_read}")?;
     writeln!(sm, "no_window\t{no_window}")?;
     writeln!(sm, "zero_match\t{zero}")?;
     writeln!(sm, "any_match\t{}", n - no_frame - no_window - zero)?;
