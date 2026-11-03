@@ -25,7 +25,9 @@ case "$ftp" in *";"*) echo "$run is paired; this script handles single-end runs 
 out=$OUT_DIR/$run.fastq.gz
 if [ -e "$out" ]; then echo "$run already done"; exit 0; fi
 for attempt in $(seq 1 20); do
-  if curl -sS -L --fail -C - --retry 5 --retry-delay 10 --speed-limit 100000 --speed-time 60 \
+  # no --retry: curl restarts a retried transfer from byte 0 (seen 2026-11-03, a 1.68 GB part fell
+  # back to 317 MB); the loop below resumes with -C - instead
+  if curl -sS -L --fail -C - --speed-limit 100000 --speed-time 60 \
        -o "$out.part" "https://$ftp"; then
     break
   fi

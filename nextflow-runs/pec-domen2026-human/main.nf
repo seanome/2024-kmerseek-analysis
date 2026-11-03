@@ -97,8 +97,9 @@ process download {
       ln "\$reuse/\$out" \$out.part   # hard link: same file system, no copy
     else
       for attempt in \$(seq 1 20); do
-        # --fail: an HTTP error page must never be saved as the FASTQ
-        if curl -sS -L --fail -C - --retry 5 --retry-delay 10 --speed-limit 100000 --speed-time 60 \\
+        # --fail: an HTTP error page must never be saved as the FASTQ. No --retry: curl restarts a
+        # retried transfer from byte 0; this loop resumes with -C - instead.
+        if curl -sS -L --fail -C - --speed-limit 100000 --speed-time 60 \\
              -o \$out.part "https://${ftp}"; then break; fi
         echo "attempt \$attempt stalled or failed; resuming"; sleep 20
       done
