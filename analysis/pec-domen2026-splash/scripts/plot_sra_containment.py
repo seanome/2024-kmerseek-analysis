@@ -1,7 +1,10 @@
 #!/usr/bin/env python3
 """Containment of the paper's list proteins in each searched run.
 
-Usage: plot_sra_containment.py <gene_run_containment.tsv.gz> <containment_by_setting.tsv> <cutoff> <out_stem>
+Usage: plot_sra_containment.py <gene_run_containment.tsv.gz> <containment_by_setting.tsv> <cutoff> <out_stem> [frame_label]
+
+frame_label describes how the reads' frames were chosen, for the heat map title. Settings are
+read from containment_by_setting.tsv (every alphabet, k and cutoff in it, in that order).
 
 a: heat map, HP k30, at <cutoff>: one row per list protein (grouped by list direction, then
    contrast), one column per Botryllus run (grouped by contrast, then control before PEC).
@@ -26,7 +29,12 @@ import seaborn as sns
 sys.path.insert(0, str(Path(__file__).resolve().parents[3] / "notebooks"))
 import pubfig as pf  # noqa: E402
 
-tab_p, summ_p, cutoff, out_stem = sys.argv[1:]  # summ_p: containment_by_setting.tsv
+tab_p, summ_p, cutoff, out_stem = sys.argv[1:5]  # summ_p: containment_by_setting.tsv
+FRAME_LABEL = (
+    sys.argv[5]
+    if len(sys.argv) > 5
+    else f"reads whose frame has >= {cutoff} of its 7-mers in Swiss-Prot"
+)
 d = pl.read_csv(
     tab_p,
     separator="\t",
@@ -52,7 +60,9 @@ NAME = {
     "old_41_93d": "old 41-93 d",
     "not_in_SI": "not in the paper's SI",
 }
-LIST_COL, RAND_COL = pf.OKABE_ITO["reddish_purple"], "black"
+# reddish purple means KaMRaT elsewhere in this PR, so list proteins are sky blue here
+LIST_COL, RAND_COL = pf.OKABE_ITO["sky_blue"], "black"
+PEC_COL, CONTROL_COL = "black", pf.GREY
 
 bot = d.filter(
     (pl.col("dataset") == "PRJNA1219309")
@@ -129,12 +139,12 @@ for x in bounds:
     a.axvline(x, color="white", lw=1.2)
     strip.axvline(x, color="white", lw=1.2)
 a.tick_params(axis="x", length=0, labelbottom=False)
-# condition strip under the columns: black = control, reddish purple = PEC
+# condition strip under the columns: grey = control, black = PEC
 cond = np.array([[0 if r["condition"] == "control" else 1 for r in rr]])
 strip.imshow(
     cond,
     aspect="auto",
-    cmap=mcolors.ListedColormap(["black", LIST_COL]),
+    cmap=mcolors.ListedColormap([CONTROL_COL, PEC_COL]),
     vmin=0,
     vmax=1,
     interpolation="nearest",
@@ -167,23 +177,14 @@ for i in range(1, len(pr) + 1):
 a.set_yticks(yt, yl)
 a.tick_params(axis="y", length=0)
 strip.set_xlabel(
-    "Botryllus run, grouped by contrast (strip: black = control, purple = PEC)"
+    "Botryllus run, grouped by contrast (strip: grey = control, black = PEC)"
 )
 a.set_ylabel("List protein (first list it is on, number of proteins)")
-a.set_title(
-    f"HP k30, reads whose frame has >= {cutoff} of its 7-mers in Swiss-Prot", loc="left"
-)
+a.set_title(f"HP k30, {FRAME_LABEL}", loc="left")
 
 # b: alphabets and k sizes
 rows = []
-settings = [
-    ("hp", 27),
-    ("hp", 30),
-    ("dayhoff", 12),
-    ("dayhoff", 13),
-    ("protein", 6),
-    ("protein", 7),
-]
+settings = summ.select("alphabet", "k").unique(maintain_order=True).rows()
 cuts = sorted(summ["cutoff"].unique())
 xpos = 0
 xt, xl = [], []
@@ -228,7 +229,8 @@ for alpha, k in settings:
                     }
                 )
         xt.append(xpos)
-        xl.append(f"{'HP' if alpha == 'hp' else alpha.capitalize()} {k}, >= {cut}")
+        name = f"{'HP' if alpha == 'hp' else alpha.capitalize()} {k}"
+        xl.append(name if len(cuts) == 1 else f"{name}, >= {cut}")
         xpos += 1
 b.set_xticks(xt, xl, rotation=45, ha="right")
 b.set_ylabel("Median containment (protein-run pairs)")
