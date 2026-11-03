@@ -1,0 +1,12 @@
+series	contrast	reference	other	meaning	n_reference	n_other	paired	deseq_design	reads_million	mean_read_nt_range
+GSE99963	gse99963_sed_post_vs_pre	Pre	Post	Sedentary arm (9 days of high-fat diet alone): after vs before, paired by subject	7	7	True	pair_condition	184.7	81.0-81.0
+GSE99963	gse99963_ex_post_vs_pre	Pre	Post	Exercise arm (9 days of high-fat diet with resistance exercise): after vs before, paired by subject	7	7	True	pair_condition	224.3	81.0-81.0
+GSE144304	gse144304_female_frail_vs_fit	Fit	Frail	old females, (pre-)frail vs fit (GEO group, Fried criteria), not paired	15	11	False	condition	447.3	76.0-76.0
+GSE144304	gse144304_male_frail_vs_fit	Fit	Frail	old males, (pre-)frail vs fit (GEO group, Fried criteria), not paired	15	13	False	condition	485.1	76.0-76.0
+GSE144304	gse144304_female_old_vs_young	Young	Old	females, old (fit and frail) vs young, not paired	13	26	False	condition	699.5	76.0-76.0
+GSE144304	gse144304_male_old_vs_young	Young	Old	males, old (fit and frail) vs young, not paired	13	28	False	condition	732.8	76.0-76.0
+GSE120862	gse120862_untrained_1h_ex_vs_ne	NE	Ex	untrained, 1 h after one-legged exercise: exercised vs rested leg, paired by subject	7	7	True	pair_condition	646.5	51.0-76.8
+GSE120862	gse120862_untrained_4h_ex_vs_ne	NE	Ex	untrained, 4 h after one-legged exercise: exercised vs rested leg, paired by subject	7	7	True	pair_condition	664.2	51.0-76.7
+GSE120862	gse120862_trained_1h_ex_vs_ne	NE	Ex	trained, 1 h after one-legged exercise: exercised vs rested leg, paired by subject	7	7	True	pair_condition	677.3	51.0-76.7
+GSE120862	gse120862_trained_4h_ex_vs_ne	NE	Ex	trained, 4 h after one-legged exercise: exercised vs rested leg, paired by subject	7	7	True	pair_condition	680.8	51.0-76.7
+GSE120862	gse120862_baseline_trained_vs_untrained	untrained	trained	rest (baseline), rested (NE) leg: after vs before 2 months of aerobic training, paired by subject	7	7	True	pair_condition	672.2	51.0-76.8

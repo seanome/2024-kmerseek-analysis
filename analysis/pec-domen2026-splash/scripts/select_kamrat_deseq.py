@@ -9,7 +9,7 @@ contig sequence). Added 2026-11-02 at Olga's request: "do KAMRAT + DeSeq2 not ju
 PEC (anchor_deseq.py tests PEC against control). Contigs whose p is missing (all-zero or
 Cook's-distance outliers) are not kept.
 
-Writes <out_dir>/contigs.tsv (contig, direction, log2FoldChange, pvalue, baseMean; the search
+Writes <out_dir>/contigs.tsv (contig, direction, log2FoldChange, pvalue, q_bh_all, baseMean; the search
 step reads the column `contig`) and <out_dir>/summary.json.
 """
 import json
@@ -24,7 +24,7 @@ d = pl.read_parquet(deseq, columns=["anchor", "baseMean", "log2FoldChange", "pva
 keep = (
     d.filter(pl.col("pvalue") < 0.05)
     .with_columns(pl.when(pl.col("log2FoldChange") > 0).then(pl.lit("up")).otherwise(pl.lit("down")).alias("direction"))
-    .select(pl.col("anchor").alias("contig"), "direction", "log2FoldChange", "pvalue", "baseMean")
+    .select(pl.col("anchor").alias("contig"), "direction", "log2FoldChange", "pvalue", "q_bh_all", "baseMean")
     .sort("contig")
 )
 keep.write_csv(out / "contigs.tsv", separator="\t")
