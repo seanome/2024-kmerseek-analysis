@@ -71,8 +71,11 @@ for r in contrasts.iter_rows(named=True):
         pt = sd / "pep.peptides.tsv"
         pep = pl.read_csv(pt, separator="\t", infer_schema_length=0) if pt.exists() else pl.DataFrame()
         al = sd / "align.gencode.parquet"
-        align = (pl.read_parquet(al, columns=["query", "target", "supported"]).filter(pl.col("supported"))
-                 .select("query", "target") if al.exists() else pl.DataFrame(schema={"query": pl.String, "target": pl.String}))
+        align = pl.DataFrame(schema={"query": pl.String, "target": pl.String})
+        # pair_align.py writes only query and target when there was no pair to align
+        if al.exists() and "supported" in pl.read_parquet_schema(al):
+            align = (pl.read_parquet(al, columns=["query", "target", "supported"]).filter(pl.col("supported"))
+                     .select("query", "target"))
         # every kept sequence, with its id as translate numbered it (c1, c2, ... in file order)
         if src == "compactors":
             seqs = pl.read_csv(cdir / c / "compactors" / "compactors.tsv", separator="\t", infer_schema_length=0)

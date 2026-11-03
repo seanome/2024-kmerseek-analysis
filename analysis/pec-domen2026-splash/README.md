@@ -20,6 +20,7 @@ Status: in progress. Results and the report are added as stages finish.
 | `control/` | known-answer control design (3,000 parent transcripts, 3,100 sequences including paired isoforms) |
 | `exports/control/` | scored known-answer control results (`control_truth_summary.json`, `control_genes_found.tsv`) and the run times of the control stages |
 | `../../nextflow-runs/pec-domen2026/` | Nextflow wrapper (`main.nf`, `nextflow.config`) that runs the stages and reuses finished results via `storeDir` |
+| `design/human/`, `exports/human/`, `../../nextflow-runs/pec-domen2026-human/` | the same routes on the human exercise series GSE99963, GSE144304 and GSE120862 |
 | `scripts/`, `slurm/` | stage scripts; every stage writes a done-marker and is restartable |
 
 Runs on Sherlock under `$SCRATCH/nb361-pec`.
