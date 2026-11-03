@@ -167,3 +167,41 @@ def test_real_snapshot_zero_evalue_groups_exceed_one_percent():
                         queries.add(row["query_id"])
         assert len(queries) == expected
         assert len(queries) / 1356 > 0.01
+
+
+def test_recovery_ask_doubles_latest_killed_job_and_borrows_slowest_chunk(tmp_path):
+    import subprocess
+    import sys
+
+    logs = tmp_path / "step5"
+    done = logs / "a/a.k5"
+    done.mkdir(parents=True)
+    (done / "search.chunk000.time").write_text(
+        "Elapsed (wall clock) time (h:mm:ss or m:ss): 29:26.32\n"
+        "Maximum resident set size (kbytes): 100\n"
+    )
+    killed = logs / "b/b.k5"
+    killed.mkdir(parents=True)
+    (killed / "index.time").write_text(
+        "Command terminated by signal 9\nMaximum resident set size (kbytes): 100\n"
+    )
+    acc = tmp_path / "acc.txt"
+    acc.write_text(
+        "1|301-a|COMPLETED|00:00:10|96G|16\n"
+        "2|301-b|OUT_OF_MEMORY|00:05:00|96G|16\n"
+        "3|301-resume-b|OUT_OF_MEMORY|00:05:00|248G|16\n"
+    )
+    out = tmp_path / "res.tsv"
+    subprocess.run(
+        [sys.executable, str(ROOT / "scripts/measure_301_recovery.py")]
+        + ["--logs", str(logs), "--accounting", str(acc), "--out", str(out)],
+        check=True,
+        capture_output=True,
+    )
+    rows = [r.split("\t") for r in out.read_text().splitlines()]
+    col = {name: i for i, name in enumerate(rows[0])}
+    b = next(r for r in rows if r[0] == "b")
+    assert b[col["previous_job_id"]] == "3"
+    assert b[col["requested_memory_gib"]] == "496"
+    # 18 chunks x 1766 s x 1.5 + 1 h, borrowed from alphabet a.
+    assert b[col["requested_hours"]] == "15"
