@@ -1,0 +1,11 @@
+labelling	sample_01	sample_02	sample_03	sample_04	sample_05	sample_06
+real	A	A	A	B	B	B
+swap1	A	A	B	A	B	B
+swap2	A	A	B	B	A	B
+swap3	A	A	B	B	B	A
+swap4	A	B	A	A	B	B
+swap5	A	B	A	B	A	B
+swap6	A	B	A	B	B	A
+swap7	A	B	B	A	A	B
+swap8	A	B	B	A	B	A
+swap9	A	B	B	B	A	A
