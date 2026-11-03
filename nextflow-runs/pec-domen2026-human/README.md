@@ -64,8 +64,8 @@ the largest Botryllus one 83 Gbp in 12 samples (young 24 h).
 | compactors | 32 CPU, 96 GB, 12 h | 56 GB, 25 min (old 24 h) | |
 | dekupl (counting + limma) | 32 CPU, 64 GB, 24 h | 25 GB, 86 min (young 2 h, 66 Gbp) | count joining grows with samples |
 | kamrat | 4 CPU, 64 GB, 12 h | 12 GB, 62 min (young 24 h, 12 samples) | index memory grows with samples, 3.4x |
-| kamrat_deseq (t-test + PyDESeq2) | 16 CPU, 128 GB, 24 h | 25 GB (young 2 h, 2.0 M contigs, 12 samples) | PyDESeq2 memory grows with samples, 3.4x |
-| search (GENCODE only) | 16 CPU, 96 GB, 24 h | 67 GB, 58 min (young 24 h, 3 databases) | one database here |
+| kamrat_deseq (t-test + PyDESeq2) | 16 CPU, 32 GB, 24 h | 25 GB (young 2 h, 2.0 M contigs, 12 samples); 15.5 GB on human, 41 samples | lowered from 128 GB on 2026-11-03: the human peak did not grow with samples |
+| search (GENCODE only) | 16 CPU, 48 GB, 24 h | 67 GB, 58 min (young 24 h, 3 databases); 26.2 GB on human | one database here; lowered from 96 GB on 2026-11-03 |
 | small_mem | 2 CPU, 32 GB, 2 h | | gene table |
 
 The measured human values are in `analysis/pec-domen2026-splash/exports/human/resources.tsv`
