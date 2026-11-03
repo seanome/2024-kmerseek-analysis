@@ -1,0 +1,117 @@
+%%metro title: Oyster — complete reads to public sequence matches
+%%metro style: seqera
+%%metro legend: tl
+%%metro line: focal | Oyster SPLASH | #0072B2
+%%metro line: dekupl | Oyster DE-kupl | #009E73
+%%metro line: archive | Public bivalve RNA-seq | #D55E00
+%%metro line: genes | Gene expression | #8C6D31
+%%metro line: swiss | Swiss-Prot — pending | #8A4298 | dashed
+%%metro grid: inputs | 0,0
+%%metro grid: trim | 1,0
+%%metro grid: discover | 2,0
+%%metro grid: extensions | 3,0
+%%metro grid: querybuild | 4,0
+%%metro grid: refs | 0,1
+%%metro grid: sketches | 1,1
+%%metro grid: search | 2,1
+%%metro grid: output | 3,1
+%%metro grid: geneinput | 0,2
+%%metro grid: quant | 1,2
+%%metro grid: fit | 2,2
+%%metro grid: geneout | 3,2
+%%metro file: raw | FASTQ.gz | Six complete paired libraries
+%%metro file: r1 | FQ.gz | Complete trimmed R1
+%%metro file: r2 | FQ.gz | Complete trimmed R2
+%%metro file: dna | TSV | All DNA extensions
+%%metro file: diff | TSV.gz | Differential DE-kupl contigs
+%%metro file: publicreads | FASTQ.gz | Public bivalve runs
+%%metro file: swissfa | FASTA.gz | Swiss-Prot proteins
+%%metro file: runsigs | SIG.zip | One sketch set per run
+%%metro file: swisssigs | SIG.zip | Protein sketches
+%%metro file: querysigs | SIG.gz / ZIP | Per-query sketches
+%%metro file: matches | CSV.gz | Public run matches
+%%metro file: genepairs | FQ.gz | Six complete trimmed pairs
+%%metro file: abundance | TSV | Abundances
+%%metro file: geneDE | TSV | 22,959 tested genes
+%%metro file: losses | TSV.gz | Lost at 100
+
+graph LR
+ subgraph inputs [Experimental inputs]
+  raw[ ]
+ end
+ subgraph trim [Trimming — complete]
+  trimming[Trim Galore]
+  r1[ ]
+  r2[ ]
+  trimming -->|focal| r1
+  trimming -->|focal| r2
+ end
+ subgraph discover [Differential discovery]
+  splash[SPLASH — complete]
+  select[Every adjusted P < 0.05 anchor]
+  dekupl[DE-kupl — complete]
+  splash -->|focal| select
+ end
+ subgraph extensions [Recover DNA]
+  compact[Compactors — both mates]
+  dna[ ]
+  diff[ ]
+  compact -->|focal| dna
+ end
+ subgraph refs [Reference inputs]
+  publicreads[ ]
+  swissfa[ ]
+ end
+ subgraph sketches [Build sketches]
+  pubtrim[Trim + sketch runs]
+  runsigs[ ]
+  swsketch[manysketch]
+  swisssigs[ ]
+  pubtrim -->|archive| runsigs
+  swsketch -->|swiss| swisssigs
+ end
+ subgraph querybuild [Build query sketches]
+  queries[manysketch — new builds]
+  querysigs[ ]
+  queries -->|focal| querysigs
+ end
+ subgraph search [Search sequences]
+  many[Branchwater index + manysearch]
+ end
+ querysigs -->|focal| many
+ subgraph output [Compare and report]
+  matches[ ]
+  compare[Audit coverage + scale losses]
+  losses[ ]
+  matches -->|archive| compare
+  compare -->|archive| losses
+ end
+ subgraph geneinput [Gene inputs]
+  genepairs[ ]
+ end
+ subgraph quant [Quantify — complete]
+  quantify[Salmon]
+  abundance[ ]
+  quantify -->|genes| abundance
+ end
+ subgraph fit [Gene DE]
+  deseq[R DESeq2]
+ end
+ subgraph geneout [Gene results]
+  geneDE[ ]
+ end
+ genepairs -->|genes| quantify
+ abundance -->|genes| deseq
+ deseq -->|genes| geneDE
+ raw -->|focal| trimming
+ r1 -->|focal| splash
+ r2 -->|dekupl| dekupl
+ select -->|focal| compact
+ dekupl -->|dekupl| diff
+ dna -->|focal| queries
+ diff -->|dekupl| queries
+ publicreads -->|archive| pubtrim
+ swissfa -->|swiss| swsketch
+ runsigs -->|archive| many
+ swisssigs -->|swiss| many
+ many -->|archive| matches
