@@ -10,7 +10,7 @@ GSE120862 (5 contrasts) is still downloading; its results are not here yet.
 ![Sequences kept and genes reached](human_routes.png)
 
 **a**, sequences each route kept per contrast. **b**, genes those sequences reached. Up triangle:
-higher in the study's second group (after, frail, old); down triangle: lower; circle: SPLASH
+higher after the diet, in frail or in old people; down triangle: lower; circle: SPLASH
 compactors, which have no direction. Blue is SPLASH, reddish purple KaMRaT, as in the Botryllus
 figures. Counts are on a log axis as count + 1, so 0 sits at the left edge.
 
