@@ -46,7 +46,10 @@ list of 0.05 or less; the stricter column corrects for the 12 lists (Bonferroni,
 | KaMRaT contigs, t-test, p < 0.05 | 12 | 6 | 1 |
 | KaMRaT contigs, DESeq2, p < 0.05 | 12 | 9 | 7 |
 | DE-kupl k-mers, limma, p < 0.05 | 10 | 3 | 2 |
-| DE-kupl k-mers, DESeq2, p < 0.05 | 6 so far | 4 | 3 |
+| DE-kupl k-mers, DESeq2, p < 0.05 | 10 | 8 | 7 |
+
+(Updated 2026-11-03: DE-kupl DESeq2 now includes young 2 h and young 24 h, and every share comes
+from the rerun with the fixed random-draw order; see "Numbers" below for what changed.)
 
 KaMRaT contigs tested with DESeq2 beat random on the most lists, 9 of 12, and 7 of 12 after
 correction. In every contrast it reaches the up list more often than random; it reaches no gene
@@ -54,19 +57,33 @@ on the down lists of old 24 h, young 13-49 d and old 41-93 d. Its null sits near
 0.007 to 1.3 % of the genes in the pool), so a list reached by a few genes stands out; the real
 lists are reached at 5 to 44 %.
 
+DE-kupl k-mers tested with DESeq2 beat random on 8 of the 10 lists it could score (young 132 d
+has no DE-kupl result), 7 after correction: both lists of young 2 h, young 24 h and young
+13-49 d, and the up lists of old 24 h and old 41-93 d (old 41-93 d up, 0.015, drops out after
+correction). It reaches no gene on the down lists of old 24 h (3 genes) and old 41-93 d. Its null
+also sits near zero (0.004 to 0.6 % of the genes in the pool); the lists it beats are reached at
+6 to 32 %.
+
 The KaMRaT t-test reaches mostly down-list genes (29 of 98 in young 24 h); with 6 PEC and 6 control
 samples a t-test on log counts finds few contigs higher in PEC (young 2 h: 1,972 up, 27,329 down).
 
 DE-kupl's limma test reaches no gene on the up lists of young 2 h, young 24 h, old 24 h and
 old 41-93 d. It keeps few k-mers at p < 0.05 (young 2 h: 108,577 of 48 million tested, 0.2 %).
 
-Numbers: `paper_recovery.tsv`, written by `scripts/paper_recovery.py` in Slurm job 50801147
-(2026-11-02). A share of random sets of 0.000 means none of the 1,000 reached the real share.
-In that run the random draws of SPLASH and anchor counts were not in a fixed order; the
-committed script now fixes the order (one stream per route and contrast, deciles and genes
-sorted), and its rerun was not copied back before the connection to Sherlock was lost. Rerunning
-the old script on the same files moved 12 of 24 shares by 0.001 to 0.022 and moved no list
-across 0.05 or 0.004.
+Numbers: `paper_recovery.tsv`, written by `scripts/paper_recovery.py` in Slurm job 50912662
+(2026-11-03), with the random draws in a fixed order (one stream per route and contrast, deciles
+and genes sorted). A share of random sets of 0.000 means none of the 1,000 reached the real
+share. The rerun is reproducible: its rows match those of an earlier run of the same script
+(job 50801734, 2026-11-02) exactly.
+
+What changed from the previous version of this file (job 50801147, draws not in a fixed order):
+- DE-kupl DESeq2 rows for young 2 h and young 24 h added (4 lists, all at 0.000).
+- 26 of the 64 shares of random sets of the drawn routes moved, by 0.001 to 0.048 (largest:
+  anchor counts young 132 d down, 0.613 to 0.565). No list crossed 0.05 or 0.004, so no count of
+  lists beating random changed. The moves in the text below: KaMRaT t-test young 2 h up 0.050
+  to 0.029; KaMRaT DESeq2 old 41-93 d up 0.005 to 0.007; SPLASH young 2 h down 0.004 to 0.002
+  and young 24 h up 0.037 to 0.045.
+- No count of genes reached changed.
 
 ### How each new route was made
 
@@ -92,10 +109,12 @@ across 0.05 or 0.004.
   run. `slurm/19_dekupl_deseq2_p05.sbatch` runs DE-kupl's DESeq2 test step
   (`/dekupl/bin/DESeq2_diff_method.R` in the dekupl-run 1.3.5 image) on the limma run's k-mer
   counts, with its filters opened (corrected p <= 1, |log2FC| >= 0) so every k-mer keeps its
-  DESeq2 fold change, then the same selection and joining. Young 2 h (48 M k-mers) and young 24 h
-  (53 M) were still running when this was written: 16 of 49 and 16 of 53 chunks of 1 M k-mers
-  were done 47 minutes after the start (at 10:53), so the test should end near 13:15; the
-  selection, joining and protein search add about an hour.
+  DESeq2 fold change, then the same selection and joining. Slurm job 50796061: young 2 h
+  (48,121,412 k-mers tested; 117,104 at p < 0.05, 62,338 higher in PEC and 54,766 lower; 3,509
+  peptides) and young 24 h (52,904,962 tested; 231,076 at p < 0.05, 124,761 higher and 106,315
+  lower; 7,258 peptides) ended about 13:00 on 2026-11-02, test, selection, joining and protein
+  search all in that job. DESeq2 gave no p-value for 5,286,937 k-mers in young 2 h and 3,878,426
+  in young 24 h (the reason was not checked); those k-mers are not kept.
 
 Direction: up = higher in PEC in every route. Checked on the KaMRaT t-test's strongest up and
 down contigs in young 132 d: the up contig has 0 counts in all 3 controls and 84-86 in all 3 PEC
@@ -114,17 +133,17 @@ depth between control and PEC.
 
 | list | reached | real share | null median (95 % range) | random sets at or above |
 |---|---|---|---|---|
-| young 2 h up | 11/43 | 0.26 | 0.19 (0.09-0.33) | 0.220 |
-| young 2 h down | 56/237 | 0.24 | 0.17 (0.13-0.22) | 0.004 |
-| young 24 h up | 115/252 | 0.46 | 0.41 (0.36-0.46) | 0.037 |
-| young 24 h down | 36/98 | 0.37 | 0.33 (0.24-0.41) | 0.180 |
+| young 2 h up | 11/43 | 0.26 | 0.19 (0.09-0.33) | 0.212 |
+| young 2 h down | 56/237 | 0.24 | 0.16 (0.12-0.22) | 0.002 |
+| young 24 h up | 115/252 | 0.46 | 0.41 (0.36-0.46) | 0.045 |
+| young 24 h down | 36/98 | 0.37 | 0.33 (0.24-0.41) | 0.172 |
 | old 24 h up | 21/57 | 0.37 | 0.04 (0.00-0.09) | 0.000 |
 | old 24 h down | 0/3 | 0.00 | 0.00 (0.00-0.33) | 1.000 |
-| young 13-49 d up | 2/18 | 0.11 | 0.06 (0.00-0.17) | 0.204 |
-| young 13-49 d down | 4/48 | 0.08 | 0.04 (0.00-0.10) | 0.151 |
-| young 132 d up | 3/40 | 0.07 | 0.03 (0.00-0.10) | 0.115 |
-| young 132 d down | 1/46 | 0.02 | 0.02 (0.00-0.09) | 0.747 |
-| old 41-93 d up | 1/19 | 0.05 | 0.00 (0.00-0.16) | 0.479 |
+| young 13-49 d up | 2/18 | 0.11 | 0.06 (0.00-0.17) | 0.203 |
+| young 13-49 d down | 4/48 | 0.08 | 0.04 (0.00-0.10) | 0.164 |
+| young 132 d up | 3/40 | 0.07 | 0.03 (0.00-0.10) | 0.120 |
+| young 132 d down | 1/46 | 0.02 | 0.02 (0.00-0.09) | 0.743 |
+| old 41-93 d up | 1/19 | 0.05 | 0.00 (0.00-0.16) | 0.496 |
 | old 41-93 d down | 0/17 | 0.00 | 0.00 (0.00-0.12) | 1.000 |
 
 Beat random: young 2 h down, young 24 h up, old 24 h up; after correction young 2 h down and
@@ -147,16 +166,16 @@ The anchors whose anchor-count DESeq2 fit passes the paper's own cutoff (primary
 
 | list | reached | real share | null median (95 % range) | random sets at or above |
 |---|---|---|---|---|
-| young 2 h up | 6/43 | 0.14 | 0.02 (0.00-0.09) | 0.002 |
+| young 2 h up | 6/43 | 0.14 | 0.02 (0.00-0.07) | 0.001 |
 | young 2 h down | 40/237 | 0.17 | 0.05 (0.03-0.08) | 0.000 |
-| young 24 h up | 10/252 | 0.04 | 0.02 (0.00-0.04) | 0.023 |
-| young 24 h down | 1/98 | 0.01 | 0.02 (0.00-0.06) | 0.896 |
+| young 24 h up | 10/252 | 0.04 | 0.02 (0.00-0.04) | 0.020 |
+| young 24 h down | 1/98 | 0.01 | 0.02 (0.00-0.05) | 0.894 |
 | old 24 h up | 22/57 | 0.39 | 0.02 (0.00-0.05) | 0.000 |
 | old 24 h down | 0/3 | 0.00 | 0.00 (0.00-0.33) | 1.000 |
-| young 13-49 d up | 1/18 | 0.06 | 0.00 (0.00-0.11) | 0.292 |
+| young 13-49 d up | 1/18 | 0.06 | 0.00 (0.00-0.11) | 0.298 |
 | young 13-49 d down | 0/48 | 0.00 | 0.00 (0.00-0.02) | 1.000 |
-| young 132 d up | 5/40 | 0.12 | 0.03 (0.00-0.07) | 0.002 |
-| young 132 d down | 1/46 | 0.02 | 0.02 (0.00-0.07) | 0.613 |
+| young 132 d up | 5/40 | 0.12 | 0.03 (0.00-0.07) | 0.000 |
+| young 132 d down | 1/46 | 0.02 | 0.02 (0.00-0.07) | 0.565 |
 | old 41-93 d up | 0/19 | 0.00 | 0.00 (0.00-0.05) | 1.000 |
 | old 41-93 d down | 0/17 | 0.00 | 0.00 (0.00-0.06) | 1.000 |
 
@@ -172,20 +191,20 @@ all but young 24 h up.
 
 | list | reached | real share | null median (95 % range) | random sets at or above |
 |---|---|---|---|---|
-| young 2 h up | 1/43 | 0.02 | 0.00 (0.00-0.02) | 0.050 |
-| young 2 h down | 9/237 | 0.04 | 0.02 (0.00-0.03) | 0.017 |
+| young 2 h up | 1/43 | 0.02 | 0.00 (0.00-0.02) | 0.029 |
+| young 2 h down | 9/237 | 0.04 | 0.02 (0.00-0.03) | 0.015 |
 | young 24 h up | 1/252 | 0.00 | 0.00 (0.00-0.00) | 0.115 |
 | young 24 h down | 29/98 | 0.30 | 0.07 (0.03-0.12) | 0.000 |
 | old 24 h up | 0/57 | 0.00 | 0.00 (0.00-0.00) | 1.000 |
 | old 24 h down | 0/3 | 0.00 | 0.00 (0.00-0.00) | 1.000 |
-| young 13-49 d up | 2/18 | 0.11 | 0.00 (0.00-0.06) | 0.012 |
+| young 13-49 d up | 2/18 | 0.11 | 0.00 (0.00-0.06) | 0.010 |
 | young 13-49 d down | 0/48 | 0.00 | 0.00 (0.00-0.00) | 1.000 |
 | young 132 d up | 1/40 | 0.03 | 0.00 (0.00-0.03) | 0.030 |
-| young 132 d down | 6/46 | 0.13 | 0.04 (0.00-0.11) | 0.017 |
-| old 41-93 d up | 1/19 | 0.05 | 0.00 (0.00-0.05) | 0.101 |
+| young 132 d down | 6/46 | 0.13 | 0.04 (0.00-0.11) | 0.013 |
+| old 41-93 d up | 1/19 | 0.05 | 0.00 (0.00-0.05) | 0.123 |
 | old 41-93 d down | 0/17 | 0.00 | 0.00 (0.00-0.06) | 1.000 |
 
-Beat random: young 2 h up (0.050) and down, young 24 h down, young 13-49 d up, young 132 d up and
+Beat random: young 2 h up and down, young 24 h down, young 13-49 d up, young 132 d up and
 down; after correction young 24 h down. The same contigs at the earlier 2-fold cutoff
 (`kamrat_nominal`, in the table, not drawn) give the same reached counts in every list.
 
@@ -194,12 +213,13 @@ down; after correction young 24 h down. The same contigs at the earlier 2-fold c
 | contrast | contigs fitted | p < 0.05 | up | down | corrected p <= 0.05 |
 |---|---|---|---|---|---|
 | young_2h | 2015561 | 27781 | 9694 | 18087 | 24 |
+| young_24h | 3172653 | 40462 | 16524 | 23938 | 12 |
 | old_24h | 643205 | 9246 | 2684 | 6562 | 0 |
 | young_13_49d | 224704 | 5415 | 5142 | 273 | 0 |
 | young_132d | 177389 | 12741 | 7410 | 5331 | 452 |
 | old_41_93d | 246989 | 2191 | 1149 | 1042 | 5 |
 
-(young 24 h: `contrasts/young_24h/kamrat_deseq2_p05/summary.json` on Sherlock, not copied back.)
+(young 24 h read on 2026-11-03 from `contrasts/young_24h/kamrat_deseq2_p05/summary.json` on Sherlock.)
 
 | list | reached | real share | null median (95 % range) | random sets at or above |
 |---|---|---|---|---|
@@ -209,15 +229,15 @@ down; after correction young 24 h down. The same contigs at the earlier 2-fold c
 | young 24 h down | 6/98 | 0.06 | 0.01 (0.00-0.04) | 0.008 |
 | old 24 h up | 6/57 | 0.11 | 0.00 (0.00-0.02) | 0.000 |
 | old 24 h down | 0/3 | 0.00 | 0.00 (0.00-0.67) | 1.000 |
-| young 13-49 d up | 8/18 | 0.44 | 0.06 (0.00-0.17) | 0.000 |
+| young 13-49 d up | 8/18 | 0.44 | 0.06 (0.00-0.22) | 0.000 |
 | young 13-49 d down | 0/48 | 0.00 | 0.00 (0.00-0.02) | 1.000 |
-| young 132 d up | 4/40 | 0.10 | 0.00 (0.00-0.03) | 0.000 |
+| young 132 d up | 4/40 | 0.10 | 0.00 (0.00-0.05) | 0.001 |
 | young 132 d down | 8/46 | 0.17 | 0.04 (0.00-0.11) | 0.000 |
-| old 41-93 d up | 3/19 | 0.16 | 0.00 (0.00-0.11) | 0.005 |
+| old 41-93 d up | 3/19 | 0.16 | 0.00 (0.00-0.11) | 0.007 |
 | old 41-93 d down | 0/17 | 0.00 | 0.00 (0.00-0.06) | 1.000 |
 
 Beat random: 9 lists, all but the down lists of old 24 h, young 13-49 d and old 41-93 d; after
-correction 7 (young 24 h down at 0.008 and old 41-93 d up at 0.005 drop out).
+correction 7 (young 24 h down at 0.008 and old 41-93 d up at 0.007 drop out).
 
 ### DE-kupl k-mers, limma (p < 0.05)
 
@@ -229,29 +249,33 @@ correction 7 (young 24 h down at 0.008 and old 41-93 d up at 0.005 drop out).
 | young 24 h down | 13/98 | 0.13 | 0.05 (0.01-0.09) | 0.001 |
 | old 24 h up | 0/57 | 0.00 | 0.00 (0.00-0.02) | 1.000 |
 | old 24 h down | 0/3 | 0.00 | 0.00 (0.00-0.33) | 1.000 |
-| young 13-49 d up | 2/18 | 0.11 | 0.00 (0.00-0.06) | 0.010 |
+| young 13-49 d up | 2/18 | 0.11 | 0.00 (0.00-0.06) | 0.009 |
 | young 13-49 d down | 0/48 | 0.00 | 0.00 (0.00-0.00) | 1.000 |
 | young 132 d | no result (scaling factors) | | | |
 | old 41-93 d up | 0/19 | 0.00 | 0.00 (0.00-0.00) | 1.000 |
-| old 41-93 d down | 1/17 | 0.06 | 0.00 (0.00-0.06) | 0.144 |
+| old 41-93 d down | 1/17 | 0.06 | 0.00 (0.00-0.06) | 0.125 |
 
 Beat random: young 2 h down, young 24 h down, young 13-49 d up; after correction young 2 h down
 and young 24 h down.
 
-### DE-kupl k-mers, DESeq2 (p < 0.05), partial
+### DE-kupl k-mers, DESeq2 (p < 0.05)
 
 | list | reached | real share | null median (95 % range) | random sets at or above |
 |---|---|---|---|---|
-| young 2 h, young 24 h | still running (see above) | | | |
+| young 2 h up | 10/43 | 0.23 | 0.00 (0.00-0.05) | 0.000 |
+| young 2 h down | 18/237 | 0.08 | 0.00 (0.00-0.02) | 0.000 |
+| young 24 h up | 29/252 | 0.12 | 0.01 (0.00-0.03) | 0.000 |
+| young 24 h down | 13/98 | 0.13 | 0.01 (0.00-0.05) | 0.000 |
 | old 24 h up | 18/57 | 0.32 | 0.00 (0.00-0.04) | 0.000 |
 | old 24 h down | 0/3 | 0.00 | 0.00 (0.00-0.00) | 1.000 |
-| young 13-49 d up | 4/18 | 0.22 | 0.00 (0.00-0.11) | 0.000 |
-| young 13-49 d down | 3/48 | 0.06 | 0.00 (0.00-0.04) | 0.002 |
+| young 13-49 d up | 4/18 | 0.22 | 0.00 (0.00-0.11) | 0.001 |
+| young 13-49 d down | 3/48 | 0.06 | 0.00 (0.00-0.04) | 0.001 |
 | young 132 d | no result (scaling factors) | | | |
 | old 41-93 d up | 2/19 | 0.11 | 0.00 (0.00-0.05) | 0.015 |
 | old 41-93 d down | 0/17 | 0.00 | 0.00 (0.00-0.00) | 1.000 |
 
-Beat random: 4 of the 6 lists scored so far; after correction 3.
+Beat random: 8 of 10 lists, all but the down lists of old 24 h and old 41-93 d; after correction
+7 (old 41-93 d up at 0.015 drops out).
 
 ## The same routes on the simulated control
 
@@ -277,9 +301,39 @@ of false finds among kept sequences there is likely higher.
 
 ## Run time and memory
 
-Asked for: wall time, CPU hours and peak memory of each route, per contrast. Done so far, from
-the Nextflow traces of `nextflow-runs/pec-domen2026` (runs 2026-10-31 and 2026-11-01; CPU hours =
-realtime x %cpu): the steps the three large contrasts share.
+Asked for: wall time, CPU hours and peak memory of each route, per contrast. Every step of every
+route is in `resources.tsv` (`scripts/route_resources.py`, Slurm job 50912662, 2026-11-03), read
+from the six Nextflow traces of `nextflow-runs/pec-domen2026` (runs 2026-10-31 and 2026-11-01;
+CPU hours = realtime x %cpu), the `/usr/bin/time -v` file each new step wrote, or Slurm's record
+(`sacct`); the `source` column names which. The table below adds up each route's steps, run one
+after the other, including the steps it shares with other routes (SPLASH for both anchor routes;
+DE-kupl's k-mer counting for every DE-kupl and KaMRaT route), and gives the largest peak memory
+of any step.
+
+| route | young 2 h | young 24 h | old 24 h | young 13-49 d | young 132 d | old 41-93 d |
+|---|---|---|---|---|---|---|
+| SPLASH | 0.83 h, 4.0 CPU h, 41 GB | 1.49 h, 6.4, 84 GB | 0.57 h, 1.3, 81 GB | 0.08 h, 0.2, 5.9 GB | incomplete (a) | 0.08 h, 0.3, 5.8 GB |
+| anchor counts, DESeq2 | 2.46 h, 17.4, 41 GB | 2.61 h, 22.8, 84 GB | 0.76 h, 3.0, 81 GB | 0.18 h, 1.4, 3.8 GB | 0.08 h, 0.5, 3.9 GB | 0.15 h, 1.0, 4.3 GB |
+| KaMRaT, t-test | 2.34 h, 8.7, 25 GB | 2.27 h, 8.5, 25 GB | 0.30 h, 1.7, 3.9 GB | 0.14 h, 0.4, 2.7 GB | 0.11 h, 0.3, 1.2 GB | 0.13 h, 0.4, 2.7 GB |
+| KaMRaT, DESeq2 | 2.57 h, 11.5, 25 GB | 2.73 h, 12.4, 25 GB | 0.51 h, 2.8, 3.9 GB | 0.15 h, 0.6, 2.7 GB | 0.12 h, 0.4, 1.2 GB | 0.15 h, 0.6, 2.7 GB |
+| DE-kupl, limma | 1.45 h, 7.8, 25 GB | 1.23 h, 7.4, 25 GB | 0.21 h, 1.7, 3.9 GB | 0.10 h, 0.3, 2.7 GB | (b) | 0.10 h, 0.3, 2.7 GB |
+| DE-kupl, DESeq2 | 4.42 h, 37.3, 25 GB | 4.14 h, 35.1, 25 GB | 0.49 h, 2.2, 3.9 GB | 0.33 h, 0.5, 2.7 GB | (b) | 0.42 h, 0.6, 2.7 GB |
+
+Each cell: wall time, CPU hours, peak memory. (a) young 132 d: the trace has no completed record
+of the protein search of its compactors, so the SPLASH total there (0.01 h) misses that step.
+(b) no result in young 132 d (DE-kupl's scaling factors, above); its DE-kupl counting took
+0.06 h, 0.2 CPU h and 1.2 GB.
+
+- DE-kupl's DESeq2 test is the most expensive step of any route: 2.95 h and 29.5 CPU hours in
+  young 2 h, 2.90 h and 27.7 CPU hours in young 24 h (16 CPUs).
+- KaMRaT + DESeq2 adds 0.25 h and 2.8 CPU hours (young 2 h) to 0.50 h and 4.0 CPU hours (young
+  24 h) to the counting it shares with the DE-kupl routes.
+- SPLASH needs the most memory (41-84 GB in the three large contrasts); every KaMRaT and DE-kupl
+  step peaks at 25.2 GB or less (the most: DE-kupl counting in young 2 h).
+- The protein searches of the new routes are small (1-9 min, under 1 GB) because they translate
+  few contigs (young 2 h DE-kupl DESeq2: 3,509 peptides).
+
+Steps the three large contrasts share, from the traces:
 
 | step | contrast | wall | CPU hours | peak memory | used by |
 |---|---|---|---|---|---|
@@ -294,17 +348,16 @@ realtime x %cpu): the steps the three large contrasts share.
 | DE-kupl counting + limma | young 2 h / 24 h / old 24 h | 86 / 73 / 11 min | 7.8 / 7.4 / 1.6 | 25 / 25 / 4 GB | every DE-kupl and KaMRaT route |
 | KaMRaT index, t-test, merge | young 2 h / 24 h / old 24 h | 53 / 62 / 4 min | 0.9 / 1.0 / 0.07 | 10 / 12 / 0.9 GB | both KaMRaT routes |
 
-The new steps (KaMRaT t-test selection, contig counts + PyDESeq2, DE-kupl selection and joining,
-DE-kupl's DESeq2 test, and their protein searches) wrote a `/usr/bin/time -v` file per step on
-Sherlock; `scripts/route_resources.py` collects them, the traces and Slurm's records (`sacct`)
-into `resources.tsv`. It was not run: the connection to Sherlock was lost first. Whole Slurm
-tasks, which include all three new routes' steps for one contrast: young 2 h 25 min, young 24 h
-34 min, old 24 h 18 min, the small contrasts 4-5 min (16 CPUs each; job 50795835, with the DE-kupl
-limma part redone in job 50798824 in 1-4 min per contrast).
+Whole Slurm tasks, which include the KaMRaT t-test, KaMRaT DESeq2 and DE-kupl limma steps for one
+contrast: young 2 h 25 min, young 24 h 34 min, old 24 h 18 min, the small contrasts 4-5 min (16
+CPUs each; job 50795835, with the DE-kupl limma part redone in job 50798824 in 1-4 min per
+contrast).
 
 Limits:
 - old 24 h is 2 control and 2 PEC samples from one colony, so it is low power and says nothing
   beyond that colony (ANALYSIS_PLAN.md).
+- With PEC and control labels swapped, SPLASH reaches about as many genes as with the real
+  labels (`../label_swap/`), so a list reached by SPLASH is weak evidence of a PEC effect.
 - SPLASH treats every sample as independent, so its anchors in young 2 h and young 24 h, where
   samples come in pairs, are likely too many.
 - The paper's lists and our routes come from the same reads. Agreement is corroboration, not
