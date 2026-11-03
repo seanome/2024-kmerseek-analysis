@@ -1,0 +1,598 @@
+{
+  "checked_at": "2026-10-25T13:26:04.346402+00:00",
+  "validated_raw_runs": 64,
+  "validated_raw_pairs": 654672879,
+  "runs": [
+    "SRR32233926",
+    "SRR32233927",
+    "SRR32233928",
+    "SRR32233929",
+    "SRR32233930",
+    "SRR32233931",
+    "SRR32233932",
+    "SRR32233933",
+    "SRR32233934",
+    "SRR32233935",
+    "SRR32233936",
+    "SRR32233937",
+    "SRR32233938",
+    "SRR32233939",
+    "SRR32233940",
+    "SRR32233941",
+    "SRR32233942",
+    "SRR32233943",
+    "SRR32233944",
+    "SRR32233945",
+    "SRR32233946",
+    "SRR32233947",
+    "SRR32233948",
+    "SRR32233949",
+    "SRR32233950",
+    "SRR32233951",
+    "SRR32233952",
+    "SRR32233953",
+    "SRR32233954",
+    "SRR32233955",
+    "SRR32233956",
+    "SRR32233957",
+    "SRR32233958",
+    "SRR32233959",
+    "SRR32233960",
+    "SRR32233961",
+    "SRR32233962",
+    "SRR32233963",
+    "SRR32233964",
+    "SRR32233965",
+    "SRR32233966",
+    "SRR32233967",
+    "SRR32233968",
+    "SRR32233969",
+    "SRR32233970",
+    "SRR32233971",
+    "SRR32233972",
+    "SRR32233973",
+    "SRR32233974",
+    "SRR32233975",
+    "SRR32233976",
+    "SRR32233977",
+    "SRR32233978",
+    "SRR32233979",
+    "SRR32233980",
+    "SRR32233981",
+    "SRR32233982",
+    "SRR32233983",
+    "SRR32233984",
+    "SRR32233985",
+    "SRR32233986",
+    "SRR32233987",
+    "SRR32233988",
+    "SRR32233989"
+  ],
+  "total_runs": 64,
+  "trimmed_complete": false,
+  "index_pilot_complete": true,
+  "annotation_complete": true,
+  "jobs": [
+    {
+      "id": "49188713_0",
+      "name": "botryllus-PEC-full-download",
+      "state": "FAILED",
+      "elapsed": "00:25:33",
+      "exit_code": "1:0"
+    },
+    {
+      "id": "49188713_1",
+      "name": "botryllus-PEC-full-download",
+      "state": "FAILED",
+      "elapsed": "05:50:03",
+      "exit_code": "1:0"
+    },
+    {
+      "id": "49188713_2",
+      "name": "botryllus-PEC-full-download",
+      "state": "COMPLETED",
+      "elapsed": "01:29:24",
+      "exit_code": "0:0"
+    },
+    {
+      "id": "49188713_3",
+      "name": "botryllus-PEC-full-download",
+      "state": "FAILED",
+      "elapsed": "01:39:41",
+      "exit_code": "1:0"
+    },
+    {
+      "id": "49188713_4",
+      "name": "botryllus-PEC-full-download",
+      "state": "FAILED",
+      "elapsed": "01:35:06",
+      "exit_code": "1:0"
+    },
+    {
+      "id": "49188713_5",
+      "name": "botryllus-PEC-full-download",
+      "state": "FAILED",
+      "elapsed": "02:51:07",
+      "exit_code": "1:0"
+    },
+    {
+      "id": "49188713_6",
+      "name": "botryllus-PEC-full-download",
+      "state": "FAILED",
+      "elapsed": "00:02:39",
+      "exit_code": "1:0"
+    },
+    {
+      "id": "49188713_7",
+      "name": "botryllus-PEC-full-download",
+      "state": "FAILED",
+      "elapsed": "00:57:38",
+      "exit_code": "1:0"
+    },
+    {
+      "id": "49191037",
+      "name": "botryllus-PEC-annotation-maskX",
+      "state": "COMPLETED",
+      "elapsed": "00:42:09",
+      "exit_code": "0:0"
+    },
+    {
+      "id": "49192201",
+      "name": "botryllus-PEC-download-recovery",
+      "state": "COMPLETED",
+      "elapsed": "00:41:25",
+      "exit_code": "0:0"
+    },
+    {
+      "id": "49192465",
+      "name": "botryllus-four-sketch-pilot",
+      "state": "COMPLETED",
+      "elapsed": "01:53:13",
+      "exit_code": "0:0"
+    },
+    {
+      "id": "49205641_3",
+      "name": "botryllus-PEC-download-recovery",
+      "state": "COMPLETED",
+      "elapsed": "00:06:48",
+      "exit_code": "0:0"
+    },
+    {
+      "id": "49205641_6",
+      "name": "botryllus-PEC-download-recovery",
+      "state": "FAILED",
+      "elapsed": "03:48:19",
+      "exit_code": "1:0"
+    },
+    {
+      "id": "49205641_7",
+      "name": "botryllus-PEC-download-recovery",
+      "state": "COMPLETED",
+      "elapsed": "02:10:36",
+      "exit_code": "0:0"
+    },
+    {
+      "id": "49205669",
+      "name": "botryllus-PEC-nfcore-trim",
+      "state": "CANCELLED",
+      "elapsed": "00:00:00",
+      "exit_code": "0:0"
+    },
+    {
+      "id": "49206896",
+      "name": "botryllus-Sourmash-primary-pilot",
+      "state": "COMPLETED",
+      "elapsed": "00:11:59",
+      "exit_code": "0:0"
+    },
+    {
+      "id": "49206899",
+      "name": "botryllus-full-SPLASH-all-anchors",
+      "state": "CANCELLED",
+      "elapsed": "00:00:00",
+      "exit_code": "0:0"
+    },
+    {
+      "id": "49210194",
+      "name": "botryllus-SwissProt-size-comparison",
+      "state": "COMPLETED",
+      "elapsed": "00:03:26",
+      "exit_code": "0:0"
+    },
+    {
+      "id": "49211401_4",
+      "name": "botryllus-PEC-download-recovery",
+      "state": "COMPLETED",
+      "elapsed": "08:41:14",
+      "exit_code": "0:0"
+    },
+    {
+      "id": "49211406",
+      "name": "botryllus-PEC-nfcore-trim",
+      "state": "CANCELLED",
+      "elapsed": "00:00:00",
+      "exit_code": "0:0"
+    },
+    {
+      "id": "49211416",
+      "name": "botryllus-full-SPLASH-all-anchors",
+      "state": "CANCELLED",
+      "elapsed": "00:00:00",
+      "exit_code": "0:0"
+    },
+    {
+      "id": "49212645",
+      "name": "botryllus-storage-Branchwater",
+      "state": "COMPLETED",
+      "elapsed": "00:43:40",
+      "exit_code": "0:0"
+    },
+    {
+      "id": "49215765",
+      "name": "botryllus-manysearch-comparison",
+      "state": "FAILED",
+      "elapsed": "00:00:20",
+      "exit_code": "1:0"
+    },
+    {
+      "id": "49241354",
+      "name": "botryllus-manysearch-comparison",
+      "state": "CANCELLED by 363520",
+      "elapsed": "00:00:00",
+      "exit_code": "0:0"
+    },
+    {
+      "id": "49241657",
+      "name": "botryllus-external-SRA-manysearch",
+      "state": "CANCELLED by 363520",
+      "elapsed": "00:00:00",
+      "exit_code": "0:0"
+    },
+    {
+      "id": "49242047",
+      "name": "botryllus-manysearch-attended",
+      "state": "COMPLETED",
+      "elapsed": "00:03:08",
+      "exit_code": "0:0"
+    },
+    {
+      "id": "49242789",
+      "name": "botryllus-external-SRA-attended",
+      "state": "COMPLETED",
+      "elapsed": "00:28:06",
+      "exit_code": "0:0"
+    },
+    {
+      "id": "49244019_1",
+      "name": "botryllus-PEC-download-recovery",
+      "state": "COMPLETED",
+      "elapsed": "00:51:21",
+      "exit_code": "0:0"
+    },
+    {
+      "id": "49244019_5",
+      "name": "botryllus-PEC-download-recovery",
+      "state": "FAILED",
+      "elapsed": "01:30:58",
+      "exit_code": "1:0"
+    },
+    {
+      "id": "49244019_6",
+      "name": "botryllus-PEC-download-recovery",
+      "state": "COMPLETED",
+      "elapsed": "07:16:10",
+      "exit_code": "0:0"
+    },
+    {
+      "id": "49244021",
+      "name": "botryllus-PEC-nfcore-trim",
+      "state": "CANCELLED",
+      "elapsed": "00:00:00",
+      "exit_code": "0:0"
+    },
+    {
+      "id": "49244023",
+      "name": "botryllus-full-SPLASH-all-anchors",
+      "state": "CANCELLED",
+      "elapsed": "00:00:00",
+      "exit_code": "0:0"
+    },
+    {
+      "id": "49347856",
+      "name": "botryllus-remaining-inputs",
+      "state": "FAILED",
+      "elapsed": "01:30:40",
+      "exit_code": "1:0"
+    },
+    {
+      "id": "49347857",
+      "name": "botryllus-PEC-nfcore-trim",
+      "state": "CANCELLED",
+      "elapsed": "00:00:00",
+      "exit_code": "0:0"
+    },
+    {
+      "id": "49347864",
+      "name": "botryllus-full-SPLASH-all-anchors",
+      "state": "CANCELLED",
+      "elapsed": "00:00:00",
+      "exit_code": "0:0"
+    },
+    {
+      "id": "49348714",
+      "name": "botryllus-full-depth-manysearch",
+      "state": "CANCELLED",
+      "elapsed": "00:00:00",
+      "exit_code": "0:0"
+    },
+    {
+      "id": "49350166",
+      "name": "botryllus-DEkupl-setup-test",
+      "state": "FAILED",
+      "elapsed": "00:00:45",
+      "exit_code": "255:0"
+    },
+    {
+      "id": "49350957",
+      "name": "botryllus-DEkupl-conda-test",
+      "state": "FAILED",
+      "elapsed": "00:00:09",
+      "exit_code": "1:0"
+    },
+    {
+      "id": "49351304",
+      "name": "botryllus-DEkupl-conda-test",
+      "state": "FAILED",
+      "elapsed": "00:00:23",
+      "exit_code": "1:0"
+    },
+    {
+      "id": "49351544",
+      "name": "botryllus-blocked-model-test",
+      "state": "CANCELLED",
+      "elapsed": "00:00:00",
+      "exit_code": "0:0"
+    },
+    {
+      "id": "49351548",
+      "name": "botryllus-DEkupl-gene-DE",
+      "state": "CANCELLED",
+      "elapsed": "00:00:00",
+      "exit_code": "0:0"
+    },
+    {
+      "id": "49368817",
+      "name": "botryllus-remaining-inputs",
+      "state": "COMPLETED",
+      "elapsed": "01:01:40",
+      "exit_code": "0:0"
+    },
+    {
+      "id": "49368820",
+      "name": "botryllus-PEC-nfcore-trim",
+      "state": "FAILED",
+      "elapsed": "00:01:03",
+      "exit_code": "1:0"
+    },
+    {
+      "id": "49368823",
+      "name": "botryllus-full-SPLASH-all-anchors",
+      "state": "CANCELLED",
+      "elapsed": "00:00:00",
+      "exit_code": "0:0"
+    },
+    {
+      "id": "49368824",
+      "name": "botryllus-full-depth-manysearch",
+      "state": "CANCELLED",
+      "elapsed": "00:00:00",
+      "exit_code": "0:0"
+    },
+    {
+      "id": "49369242",
+      "name": "botryllus-DEkupl-software-checks",
+      "state": "COMPLETED",
+      "elapsed": "00:00:27",
+      "exit_code": "0:0"
+    },
+    {
+      "id": "49369243",
+      "name": "botryllus-DEkupl-gene-DE",
+      "state": "CANCELLED",
+      "elapsed": "00:00:00",
+      "exit_code": "0:0"
+    },
+    {
+      "id": "49369247",
+      "name": "botryllus-SPLASH-DE-evidence",
+      "state": "CANCELLED",
+      "elapsed": "00:00:00",
+      "exit_code": "0:0"
+    },
+    {
+      "id": "49373978",
+      "name": "botryllus-Fig4-SPLASH-DEkupl-recovery",
+      "state": "CANCELLED",
+      "elapsed": "00:00:00",
+      "exit_code": "0:0"
+    },
+    {
+      "id": "49387733",
+      "name": "botryllus-Fig4-supplied-count-refit",
+      "state": "COMPLETED",
+      "elapsed": "00:00:58",
+      "exit_code": "0:0"
+    },
+    {
+      "id": "49490914",
+      "name": "botryllus-PEC-nfcore-trim",
+      "state": "FAILED",
+      "elapsed": "00:01:43",
+      "exit_code": "1:0"
+    },
+    {
+      "id": "49490915",
+      "name": "botryllus-full-SPLASH-all-anchors",
+      "state": "CANCELLED",
+      "elapsed": "00:00:00",
+      "exit_code": "0:0"
+    },
+    {
+      "id": "49490916",
+      "name": "botryllus-DEkupl-gene-DE",
+      "state": "CANCELLED",
+      "elapsed": "00:00:00",
+      "exit_code": "0:0"
+    },
+    {
+      "id": "49490917",
+      "name": "botryllus-full-depth-manysearch",
+      "state": "CANCELLED",
+      "elapsed": "00:00:00",
+      "exit_code": "0:0"
+    },
+    {
+      "id": "49490918",
+      "name": "botryllus-SPLASH-DE-evidence",
+      "state": "CANCELLED",
+      "elapsed": "00:00:00",
+      "exit_code": "0:0"
+    },
+    {
+      "id": "49490919",
+      "name": "botryllus-Fig4-SPLASH-DEkupl-recovery",
+      "state": "CANCELLED",
+      "elapsed": "00:00:00",
+      "exit_code": "0:0"
+    },
+    {
+      "id": "49492080",
+      "name": "botryllus-PEC-nfcore-trim",
+      "state": "RUNNING",
+      "elapsed": "00:00:47",
+      "exit_code": "0:0"
+    },
+    {
+      "id": "49492084",
+      "name": "botryllus-full-SPLASH-all-anchors",
+      "state": "PENDING",
+      "elapsed": "00:00:00",
+      "exit_code": "0:0"
+    },
+    {
+      "id": "49492085",
+      "name": "botryllus-DEkupl-gene-DE",
+      "state": "PENDING",
+      "elapsed": "00:00:00",
+      "exit_code": "0:0"
+    },
+    {
+      "id": "49492088",
+      "name": "botryllus-full-depth-manysearch",
+      "state": "PENDING",
+      "elapsed": "00:00:00",
+      "exit_code": "0:0"
+    },
+    {
+      "id": "49492092",
+      "name": "botryllus-SPLASH-DE-evidence",
+      "state": "PENDING",
+      "elapsed": "00:00:00",
+      "exit_code": "0:0"
+    },
+    {
+      "id": "49492096",
+      "name": "botryllus-Fig4-SPLASH-DEkupl-recovery",
+      "state": "PENDING",
+      "elapsed": "00:00:00",
+      "exit_code": "0:0"
+    },
+    {
+      "id": "49492098",
+      "name": "botryllus-DEkupl-read-extension-manysearch",
+      "state": "PENDING",
+      "elapsed": "00:00:00",
+      "exit_code": "0:0"
+    }
+  ],
+  "scope": "Verified timestamped Sherlock snapshot; no automatic polling.",
+  "current_pipeline": [
+    {
+      "id": "49492080",
+      "name": "botryllus-PEC-nfcore-trim",
+      "state": "RUNNING",
+      "elapsed": "00:00:47",
+      "exit_code": "0:0",
+      "scope": "Paired-read and pinned-workflow preflight, then trim all 64 libraries"
+    },
+    {
+      "id": "49492084",
+      "name": "botryllus-full-SPLASH-all-anchors",
+      "state": "PENDING",
+      "elapsed": "00:00:00",
+      "exit_code": "0:0",
+      "scope": "Full-depth SPLASH: all adjusted P < 0.05 anchors"
+    },
+    {
+      "id": "49492085",
+      "name": "botryllus-DEkupl-gene-DE",
+      "state": "PENDING",
+      "elapsed": "00:00:00",
+      "exit_code": "0:0",
+      "scope": "DE-kupl counts and genotype/collection-blocked abundance tests"
+    },
+    {
+      "id": "49492088",
+      "name": "botryllus-full-depth-manysearch",
+      "state": "PENDING",
+      "elapsed": "00:00:00",
+      "exit_code": "0:0",
+      "scope": "SPLASH queries: Swiss-Prot and four prepared SRA runs"
+    },
+    {
+      "id": "49492092",
+      "name": "botryllus-SPLASH-DE-evidence",
+      "state": "PENDING",
+      "elapsed": "00:00:00",
+      "exit_code": "0:0",
+      "scope": "SPLASH / gene DE / candidate sequence evidence"
+    },
+    {
+      "id": "49492096",
+      "name": "botryllus-Fig4-SPLASH-DEkupl-recovery",
+      "state": "PENDING",
+      "elapsed": "00:00:00",
+      "exit_code": "0:0",
+      "scope": "Paper gene recovery with SPLASH protein matches"
+    },
+    {
+      "id": "49492098",
+      "name": "botryllus-DEkupl-read-extension-manysearch",
+      "state": "PENDING",
+      "elapsed": "00:00:00",
+      "exit_code": "0:0",
+      "scope": "DE-kupl seed reads, Compactors extensions and Branchwater manysearch"
+    },
+    {
+      "id": "49387733",
+      "name": "botryllus-Fig4-supplied-count-refit",
+      "state": "COMPLETED",
+      "elapsed": "00:00:58",
+      "exit_code": "0:0",
+      "scope": "Completed supplied-count adjusted expression refits"
+    }
+  ],
+  "dekupl_read_tool_check": {
+    "status": "passed",
+    "synthetic_fixture": true,
+    "recruitment": {
+      "input_pairs": 25,
+      "recruited_pairs": 24,
+      "occurrences": 24
+    },
+    "compactors_extended_seed": true,
+    "branchwater_manysketch_manysearch_self": true,
+    "job": "49492080"
+  },
+  "latest_trim_check": "2026-10-25T13:29:38.333920+00:00"
+}

@@ -1,0 +1,53 @@
+%%metro title: 5. Metadata and retained execution records — inputs, audits and provenance
+%%metro style: nfcore
+%%metro legend: tl
+%%metro line: metadata | Metadata and design audit | #0072B2
+%%metro line: records | Execution and provenance records | #D55E00 | dashed
+%%metro file: ena | TSV | ENA runs and download URLs
+%%metro file: bio | XML | Public BioSample metadata
+%%metro file: paper | PDF | Published supplement
+%%metro file: workbook | XLSX | Dataset S1
+%%metro file: samples | TSV | samples.tsv; exact times and genotypes
+%%metro file: audit | JSON | Sample audit; unresolved design flags
+%%metro file: logs | LOG | Separate log for each program
+%%metro file: commands | JSON | Commands, exit codes and elapsed time
+%%metro file: resources | JSON | Resource model and requests
+%%metro file: completion | JSON | Validated completion markers
+%%metro file: hashes | SHA256 | Input and output fingerprints
+%%metro file: report | HTML | Nextflow execution report
+%%metro file: timeline | HTML | Nextflow execution timeline
+
+graph LR
+ subgraph sample_design [Study identity; no automatic pooling of genotypes or times]
+  ena[ ]
+  bio[ ]
+  paper[ ]
+  workbook[ ]
+  join[Python / openpyxl / metadata audit]
+  samples[ ]
+  audit[ ]
+  ena -->|metadata| join
+  bio -->|metadata| join
+  paper -->|metadata| join
+  workbook -->|metadata| join
+  join -->|metadata| samples
+  join -->|metadata| audit
+ end
+ subgraph execution_records [Retained beside every executed stage; not substitutes for biological results]
+  execution[Slurm / Nextflow / upstream programs]
+  logs[ ]
+  commands[ ]
+  resources[ ]
+  completion[ ]
+  hashes[ ]
+  report[ ]
+  timeline[ ]
+  execution -->|records| logs
+  execution -->|records| commands
+  execution -->|records| resources
+  execution -->|records| completion
+  execution -->|records| hashes
+  execution -->|records| report
+  execution -->|records| timeline
+ end
+ samples -->|records| execution
