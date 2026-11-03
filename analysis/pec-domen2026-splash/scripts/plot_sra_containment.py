@@ -8,7 +8,8 @@ read from containment_by_setting.tsv (every alphabet, k and cutoff in it, in tha
 
 a: heat map, HP k30, at <cutoff>: one row per list protein (grouped by list direction, then
    contrast), one column per Botryllus run (grouped by contrast, then control before PEC).
-b: per setting (alphabet, k, cutoff), median containment over protein-run pairs in Botryllus
+b: per setting (alphabet, k, cutoff), mean containment over protein-run pairs (the median is 0
+   at HP k27 and k30, so it hides the difference) in Botryllus
    runs, for list proteins and length-matched random proteins; human runs alongside (open).
 c: sanity check per contrast: mean containment of the contrast's "up" and "down" proteins in
    its PEC runs minus its control runs (HP k30). Containment is presence, not abundance, and
@@ -207,7 +208,7 @@ for alpha, k in settings:
                 y = y.row(0, named=True)
                 b.scatter(
                     xpos + (0.12 if st == "random_length_matched" else -0.12),
-                    y["median_containment"],
+                    y["mean_containment"],
                     marker=marker,
                     s=10,
                     lw=0.6,
@@ -233,7 +234,7 @@ for alpha, k in settings:
         xl.append(name if len(cuts) == 1 else f"{name}, >= {cut}")
         xpos += 1
 b.set_xticks(xt, xl, rotation=45, ha="right")
-b.set_ylabel("Median containment (protein-run pairs)")
+b.set_ylabel("Mean containment (protein-run pairs)")
 b.scatter(
     [], [], color=LIST_COL, marker="o", s=10, label="list proteins, Botryllus runs"
 )
@@ -307,7 +308,7 @@ c.legend(
         Patch(facecolor=LIST_COL, edgecolor=LIST_COL, label="paper's up list"),
         Patch(facecolor="white", edgecolor=LIST_COL, label="paper's down list"),
     ],
-    loc="upper right",
+    loc="lower right",
     fontsize=5,
 )
 for ax, letter in zip([a, b, c], "abc"):

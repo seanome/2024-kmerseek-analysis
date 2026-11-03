@@ -72,9 +72,9 @@ for r in runs.iter_rows(named=True):
         "kept": kept,
         "kept_share": kept / s["all_reads"] if s["all_reads"] else None,
         "kept_frame_tied": s["any_match_frame_tied"],
-        "mean_residues_per_kept_read": w["residues"] / w["peptides"]
-        if w["peptides"]
-        else None,
+        "mean_residues_per_kept_read": (
+            w["residues"] / w["peptides"] if w["peptides"] else None
+        ),
     }
     for k in (24, 27, 30):
         row[f"windows_per_kept_read_k{k}"] = (

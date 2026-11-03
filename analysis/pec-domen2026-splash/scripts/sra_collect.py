@@ -66,7 +66,9 @@ for f in sorted(search.glob("ms.ge*.csv")):
     cut, alpha, k = m.group(1), m.group(2), int(m.group(3))
     rdesc = (
         pl.read_csv(search / f"runs.ge{cut}.describe.csv")
-        .select(pl.col("md5").alias("match_md5"), pl.col("n_hashes").alias("run_hashes"))
+        .select(
+            pl.col("md5").alias("match_md5"), pl.col("n_hashes").alias("run_hashes")
+        )
         .unique("match_md5")
     )
     d = pl.read_csv(f).select(
