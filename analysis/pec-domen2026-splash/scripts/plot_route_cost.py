@@ -13,7 +13,8 @@ only (control_truth.py). Per route:
   accuracy    = (planted found + unchanged not found) / 3,000
 Cost is the detection steps only, up to the kept sequences, on the control's 12 samples; the
 protein search after them is left out because the control places sequences on genes directly.
-Rows: the five measures. Columns: CPU hours, wall time, peak memory.
+Rows: the five measures. Columns: CPU hours, wall time, peak memory, each axis reversed so that
+less cost is to the right: up and to the right is better.
 Writes <out_stem>.tsv with every number drawn, and prints it.
 """
 import json
@@ -63,7 +64,7 @@ with pl.Config(tbl_rows=20, tbl_cols=20, tbl_width_chars=250):
     print(t)
 
 METRICS = ["sensitivity", "specificity", "precision", "F1", "accuracy"]
-COSTS = [("cpu_hours", "CPU hours"), ("wall_minutes", "wall time (minutes)"), ("peak_gb", "peak memory (GB)")]
+COSTS = [("cpu_hours", "CPU hours"), ("wall_minutes", "wall time (minutes)"), ("peak_gb", "peak memory (GB)")]  # all lower is better
 TICKS = [[0.2, 0.5, 1, 2, 5], [1, 2, 5, 10, 20, 50], [0.5, 1, 2, 5, 10, 20]]
 pf.use_style()
 fig, axs = pf.figure(pf.TWO_COLUMN_MM, 165, nrows=len(METRICS), ncols=len(COSTS), sharex="col", sharey="row",
@@ -83,10 +84,11 @@ for j, (_, lab) in enumerate(COSTS):
     axs[-1, j].set_xscale("log")
     axs[-1, j].set_xticks(TICKS[j], [f"{v:g}" for v in TICKS[j]])
     axs[-1, j].minorticks_off()
-    axs[-1, j].set_xlabel(lab)
+    axs[-1, j].invert_xaxis()
+    axs[-1, j].set_xlabel(f"{lab}\n← more    less →")
 for a, l in zip(axs[:, 0], "abcde"):
     pf.panel_label(a, l)
 fig.legend(*axs[0, 0].get_legend_handles_labels(), loc="outside upper center", ncols=2, frameon=False,
-           title="colour: tool and test; square: DESeq2 test; filled: corrected cutoff, open: p < 0.05")
+           title="up and to the right is better.   colour: tool and test; square: DESeq2 test; filled: corrected cutoff, open: p < 0.05")
 pf.save(fig, out_stem)
 print("wrote", out_stem)

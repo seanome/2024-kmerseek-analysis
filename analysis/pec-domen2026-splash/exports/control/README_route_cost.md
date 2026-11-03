@@ -5,6 +5,8 @@ time for SPLASH, KaMRaT and DE-kupl.
 
 ![Accuracy against cost](route_cost.png)
 
+Each cost axis runs from more (left) to less (right), so up and to the right is better.
+
 The control has 3,000 simulated genes in 12 samples: 400 with a planted change (150 raised 4x,
 150 lowered 4x, 100 with isoforms switched 9x) and 2,600 unchanged. A gene is found when a kept
 sequence lies in that gene only.
