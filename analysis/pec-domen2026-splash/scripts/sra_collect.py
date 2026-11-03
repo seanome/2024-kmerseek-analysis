@@ -52,15 +52,22 @@ runs = pl.read_csv(runs_p, separator="\t", infer_schema_length=0).select(
     pl.col("condition"),
     pl.col("contrast").alias("run_contrast"),
 )
-qdesc = pl.read_csv(search / "queries.describe.csv").select(
-    pl.col("md5").alias("query_md5"), pl.col("n_hashes").alias("query_hashes")
+# One row per md5. Signatures with the same md5 hold the same hashes, so the same n_hashes; all
+# empty sketches share one md5 (80 human runs at HP k27 and k30), which without this made the
+# joins below many-to-many and ran out of memory.
+qdesc = (
+    pl.read_csv(search / "queries.describe.csv")
+    .select(pl.col("md5").alias("query_md5"), pl.col("n_hashes").alias("query_hashes"))
+    .unique("query_md5")
 )
 parts = []
 for f in sorted(search.glob("ms.ge*.csv")):
     m = re.match(r"ms\.ge([\d.]+)\.(\w+)\.k(\d+)\.csv$", f.name)
     cut, alpha, k = m.group(1), m.group(2), int(m.group(3))
-    rdesc = pl.read_csv(search / f"runs.ge{cut}.describe.csv").select(
-        pl.col("md5").alias("match_md5"), pl.col("n_hashes").alias("run_hashes")
+    rdesc = (
+        pl.read_csv(search / f"runs.ge{cut}.describe.csv")
+        .select(pl.col("md5").alias("match_md5"), pl.col("n_hashes").alias("run_hashes"))
+        .unique("match_md5")
     )
     d = pl.read_csv(f).select(
         "query_name",
