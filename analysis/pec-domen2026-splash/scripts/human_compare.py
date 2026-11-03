@@ -23,18 +23,21 @@ reached = pl.read_csv(hg, separator="\t")
 lists = pl.read_csv(pub, separator="\t")
 pool_all = pl.read_csv(base, separator="\t")
 N_DRAW = 1000
+ROUTES = ["splash_compactors", "kamrat_ttest_corrected", "kamrat_ttest_p05", "kamrat_deseq2_corrected",
+          "kamrat_deseq2_p05"]
 rows = []
 for (series, contrast), L in lists.group_by(["series", "contrast"], maintain_order=True):
     pool = (pool_all.filter(pl.col("contrast") == contrast).group_by("gene").agg(pl.col("baseMean").max())
             .sort("gene"))
-    if pool.height == 0:
-        continue
+    if pool.height == 0 or contrast not in set(reached["contrast"]):
+        continue  # no count table, or the contrast has no finished route yet
     q = np.quantile(pool["baseMean"].to_numpy(), np.linspace(0, 1, 11)[1:-1])
     dec = dict(zip(pool["gene"].to_list(), np.searchsorted(q, pool["baseMean"].to_numpy(), side="right").tolist()))
     by_dec = {d: sorted(g for g, x in dec.items() if x == d) for d in range(10)}
     src = L["source"][0]
     R = reached.filter(pl.col("contrast") == contrast)
-    for route in sorted(R["route"].unique().to_list()) if R.height else []:
+    # every route is scored, also one that reached no gene (share 0)
+    for route in ROUTES:
         for direction in ("up", "down"):
             lst = sorted(set(L.filter(pl.col("direction") == direction)["gene"]) & set(dec))
             rr = R.filter((pl.col("route") == route) & pl.col("direction").is_in([direction, "none"]))
@@ -47,13 +50,14 @@ for (series, contrast), L in lists.group_by(["series", "contrast"], maintain_ord
             if lst:
                 need = np.bincount([dec[g] for g in lst], minlength=10)
                 rng = np.random.default_rng([361, len(rows)])
-                null = np.empty(N_DRAW)
+                # per decile, whether each pool gene is reached; a draw counts the reached genes picked
+                flags = {d: np.array([g in hit for g in by_dec[d]]) for d in range(10)}
+                null = np.zeros(N_DRAW)
                 for i in range(N_DRAW):
-                    pick = []
                     for d in range(10):
                         if need[d]:
-                            pick += list(rng.choice(by_dec[d], size=need[d], replace=False))
-                    null[i] = sum(g in hit for g in pick) / len(lst)
+                            null[i] += flags[d][rng.choice(len(by_dec[d]), size=need[d], replace=False)].sum()
+                null /= len(lst)
                 row.update(null_median=float(np.median(null)), null_lo=float(np.quantile(null, 0.025)),
                            null_hi=float(np.quantile(null, 0.975)),
                            share_random_at_or_above=float((null >= row["share"] - 1e-12).mean()))
