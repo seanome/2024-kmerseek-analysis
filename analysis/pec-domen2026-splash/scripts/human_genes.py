@@ -43,7 +43,8 @@ rows, summ = [], []
 
 def add(series, c, route, seqs, peps, align):
     """seqs: seq_id, direction; peps: peptide_id, seq_id; align: query, target (supported only)."""
-    for d in sorted(seqs["direction"].unique().to_list()):
+    # every direction gets a row, also when the route kept nothing
+    for d in (["none"] if route == "splash_compactors" else ["down", "up"]):
         s = seqs.filter(pl.col("direction") == d)
         p = peps.join(s.select("seq_id"), on="seq_id")
         a = (align.join(p, left_on="query", right_on="peptide_id")
