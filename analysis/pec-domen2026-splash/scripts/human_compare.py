@@ -11,7 +11,8 @@ genes as in the list. Seed 361, genes and deciles sorted, one random stream per 
 
 A route's up list is compared with genes it reached through sequences higher in the second
 group, its down list with sequences lower there. SPLASH compactors have no direction and are
-compared with both lists alike.
+compared with both lists alike. reached_opposite_only counts list genes reached only by
+sequences going the other way, a check of direction.
 """
 import sys
 
@@ -43,8 +44,12 @@ for (series, contrast), L in lists.group_by(["series", "contrast"], maintain_ord
             rr = R.filter((pl.col("route") == route) & pl.col("direction").is_in([direction, "none"]))
             hit = set(rr["gene"].to_list())
             obs = sum(g in hit for g in lst)
+            # direction check: list genes the route reached only through sequences going the other way
+            other = {"up": "down", "down": "up"}[direction]
+            opp = set(R.filter((pl.col("route") == route) & (pl.col("direction") == other))["gene"].to_list()) - hit
             row = dict(series=series, contrast=contrast, list_source=src, route=route, direction=direction,
-                       list_genes=len(lst), reached=obs, share=obs / len(lst) if lst else np.nan,
+                       list_genes=len(lst), reached=obs, reached_opposite_only=sum(g in opp for g in lst),
+                       share=obs / len(lst) if lst else np.nan,
                        route_genes_in_pool=len(hit & set(dec)), null_median=np.nan, null_lo=np.nan,
                        null_hi=np.nan, share_random_at_or_above=np.nan)
             if lst:
@@ -65,5 +70,5 @@ for (series, contrast), L in lists.group_by(["series", "contrast"], maintain_ord
 res = pl.DataFrame(rows)
 res.write_csv(out, separator="\t")
 with pl.Config(tbl_rows=300, tbl_cols=20, tbl_width_chars=250):
-    print(res.select("contrast", "route", "direction", "list_genes", "reached", "share", "null_median",
+    print(res.select("contrast", "route", "direction", "list_genes", "reached", "reached_opposite_only", "share", "null_median",
                      "null_hi", "share_random_at_or_above"))

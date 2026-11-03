@@ -1,0 +1,61 @@
+series	contrast	list_source	route	direction	list_genes	reached	reached_opposite_only	share	route_genes_in_pool	null_median	null_lo	null_hi	share_random_at_or_above
+GSE99963	gse99963_sed_post_vs_pre	published (Laker 2017 Table S1, FDR < 0.1)	splash_compactors	up	758	11	0	0.014511873350923483	198	0.013192612137203167	0.006596306068601583	0.022427440633245383	0.489
+GSE99963	gse99963_sed_post_vs_pre	published (Laker 2017 Table S1, FDR < 0.1)	splash_compactors	down	566	23	0	0.04063604240282685	198	0.0176678445229682	0.0088339222614841	0.028268551236749116	0.0
+GSE99963	gse99963_sed_post_vs_pre	published (Laker 2017 Table S1, FDR < 0.1)	kamrat_ttest_corrected	up	758	0	0	0.0	0	0.0	0.0	0.0	1.0
+GSE99963	gse99963_sed_post_vs_pre	published (Laker 2017 Table S1, FDR < 0.1)	kamrat_ttest_corrected	down	566	0	0	0.0	0	0.0	0.0	0.0	1.0
+GSE99963	gse99963_sed_post_vs_pre	published (Laker 2017 Table S1, FDR < 0.1)	kamrat_ttest_p05	up	758	408	0	0.5382585751978892	1874	0.15567282321899736	0.13192612137203166	0.17810026385224276	0.0
+GSE99963	gse99963_sed_post_vs_pre	published (Laker 2017 Table S1, FDR < 0.1)	kamrat_ttest_p05	down	566	72	13	0.127208480565371	165	0.024734982332155476	0.012367491166077738	0.037102473498233215	0.0
+GSE99963	gse99963_sed_post_vs_pre	published (Laker 2017 Table S1, FDR < 0.1)	kamrat_deseq2_corrected	up	758	19	0	0.025065963060686015	49	0.00395778364116095	0.0	0.009234828496042216	0.0
+GSE99963	gse99963_sed_post_vs_pre	published (Laker 2017 Table S1, FDR < 0.1)	kamrat_deseq2_corrected	down	566	5	0	0.0088339222614841	6	0.0	0.0	0.0035335689045936395	0.0
+GSE99963	gse99963_sed_post_vs_pre	published (Laker 2017 Table S1, FDR < 0.1)	kamrat_deseq2_p05	up	758	379	3	0.5	1415	0.11741424802110818	0.09630606860158311	0.1372361477572559	0.0
+GSE99963	gse99963_sed_post_vs_pre	published (Laker 2017 Table S1, FDR < 0.1)	kamrat_deseq2_p05	down	566	143	9	0.25265017667844525	475	0.0636042402826855	0.044169611307420496	0.08303886925795052	0.0
+GSE99963	gse99963_ex_post_vs_pre	published (Laker 2017 Table S1, FDR < 0.1)	splash_compactors	up	1823	59	0	0.03236423477783873	597	0.0405924300603401	0.03235052111903456	0.04936917169500823	0.975
+GSE99963	gse99963_ex_post_vs_pre	published (Laker 2017 Table S1, FDR < 0.1)	splash_compactors	down	1396	77	0	0.05515759312320917	597	0.04656160458452722	0.036532951289398284	0.05730659025787966	0.066
+GSE99963	gse99963_ex_post_vs_pre	published (Laker 2017 Table S1, FDR < 0.1)	kamrat_ttest_corrected	up	1823	87	2	0.047723532638507954	127	0.008228195282501372	0.004388370817334065	0.012616566099835436	0.0
+GSE99963	gse99963_ex_post_vs_pre	published (Laker 2017 Table S1, FDR < 0.1)	kamrat_ttest_corrected	down	1396	76	8	0.054441260744985676	126	0.015759312320916905	0.01002865329512894	0.02148997134670487	0.0
+GSE99963	gse99963_ex_post_vs_pre	published (Laker 2017 Table S1, FDR < 0.1)	kamrat_ttest_p05	up	1823	784	24	0.43006034009873834	1669	0.11629182665935271	0.10367526055951728	0.12945693911135492	0.0
+GSE99963	gse99963_ex_post_vs_pre	published (Laker 2017 Table S1, FDR < 0.1)	kamrat_ttest_p05	down	1396	728	13	0.5214899713467048	1656	0.18839541547277938	0.17118553008595988	0.20560530085959886	0.0
+GSE99963	gse99963_ex_post_vs_pre	published (Laker 2017 Table S1, FDR < 0.1)	kamrat_deseq2_corrected	up	1823	225	0	0.12342292923752057	321	0.020844761382336808	0.015359297860669226	0.027427317608337904	0.0
+GSE99963	gse99963_ex_post_vs_pre	published (Laker 2017 Table S1, FDR < 0.1)	kamrat_deseq2_corrected	down	1396	19	11	0.013610315186246419	24	0.0035816618911174787	0.0014326647564469914	0.0064469914040114614	0.0
+GSE99963	gse99963_ex_post_vs_pre	published (Laker 2017 Table S1, FDR < 0.1)	kamrat_deseq2_p05	up	1823	882	3	0.48381788261108066	1990	0.13768513439385627	0.12397147558968732	0.151947339550192	0.0
+GSE99963	gse99963_ex_post_vs_pre	published (Laker 2017 Table S1, FDR < 0.1)	kamrat_deseq2_p05	down	1396	157	31	0.11246418338108882	267	0.0336676217765043	0.025071633237822348	0.04156518624641832	0.0
+GSE144304	gse144304_female_frail_vs_fit	rebuilt (PyDESeq2 on GEO counts, ~ condition, p < 0.01)	splash_compactors	up	212	9	0	0.04245283018867924	747	0.07075471698113207	0.03773584905660377	0.10377358490566038	0.972
+GSE144304	gse144304_female_frail_vs_fit	rebuilt (PyDESeq2 on GEO counts, ~ condition, p < 0.01)	splash_compactors	down	328	16	0	0.04878048780487805	747	0.051829268292682924	0.03048780487804878	0.07621951219512195	0.62
+GSE144304	gse144304_female_frail_vs_fit	rebuilt (PyDESeq2 on GEO counts, ~ condition, p < 0.01)	kamrat_ttest_corrected	up	212	0	0	0.0	0	0.0	0.0	0.0	1.0
+GSE144304	gse144304_female_frail_vs_fit	rebuilt (PyDESeq2 on GEO counts, ~ condition, p < 0.01)	kamrat_ttest_corrected	down	328	0	0	0.0	0	0.0	0.0	0.0	1.0
+GSE144304	gse144304_female_frail_vs_fit	rebuilt (PyDESeq2 on GEO counts, ~ condition, p < 0.01)	kamrat_ttest_p05	up	212	150	0	0.7075471698113207	1752	0.1650943396226415	0.1179245283018868	0.2169811320754717	0.0
+GSE144304	gse144304_female_frail_vs_fit	rebuilt (PyDESeq2 on GEO counts, ~ condition, p < 0.01)	kamrat_ttest_p05	down	328	140	2	0.4268292682926829	1133	0.07317073170731707	0.04878048780487805	0.10060975609756098	0.0
+GSE144304	gse144304_female_frail_vs_fit	rebuilt (PyDESeq2 on GEO counts, ~ condition, p < 0.01)	kamrat_deseq2_corrected	up	212	0	0	0.0	0	0.0	0.0	0.0	1.0
+GSE144304	gse144304_female_frail_vs_fit	rebuilt (PyDESeq2 on GEO counts, ~ condition, p < 0.01)	kamrat_deseq2_corrected	down	328	0	0	0.0	0	0.0	0.0	0.0	1.0
+GSE144304	gse144304_female_frail_vs_fit	rebuilt (PyDESeq2 on GEO counts, ~ condition, p < 0.01)	kamrat_deseq2_p05	up	212	91	1	0.42924528301886794	711	0.0660377358490566	0.03773584905660377	0.09905660377358491	0.0
+GSE144304	gse144304_female_frail_vs_fit	rebuilt (PyDESeq2 on GEO counts, ~ condition, p < 0.01)	kamrat_deseq2_p05	down	328	108	2	0.32926829268292684	731	0.04878048780487805	0.027439024390243903	0.07621951219512195	0.0
+GSE144304	gse144304_male_frail_vs_fit	rebuilt (PyDESeq2 on GEO counts, ~ condition, p < 0.01)	splash_compactors	up	203	11	0	0.054187192118226604	898	0.059113300492610835	0.034482758620689655	0.09359605911330049	0.701
+GSE144304	gse144304_male_frail_vs_fit	rebuilt (PyDESeq2 on GEO counts, ~ condition, p < 0.01)	splash_compactors	down	127	10	0	0.07874015748031496	898	0.07086614173228346	0.031496062992125984	0.11811023622047244	0.455
+GSE144304	gse144304_male_frail_vs_fit	rebuilt (PyDESeq2 on GEO counts, ~ condition, p < 0.01)	kamrat_ttest_corrected	up	203	0	0	0.0	0	0.0	0.0	0.0	1.0
+GSE144304	gse144304_male_frail_vs_fit	rebuilt (PyDESeq2 on GEO counts, ~ condition, p < 0.01)	kamrat_ttest_corrected	down	127	0	0	0.0	0	0.0	0.0	0.0	1.0
+GSE144304	gse144304_male_frail_vs_fit	rebuilt (PyDESeq2 on GEO counts, ~ condition, p < 0.01)	kamrat_ttest_p05	up	203	134	0	0.6600985221674877	2344	0.16748768472906403	0.11822660098522167	0.22167487684729065	0.0
+GSE144304	gse144304_male_frail_vs_fit	rebuilt (PyDESeq2 on GEO counts, ~ condition, p < 0.01)	kamrat_ttest_p05	down	127	71	1	0.5590551181102362	992	0.08661417322834646	0.03937007874015748	0.13385826771653545	0.0
+GSE144304	gse144304_male_frail_vs_fit	rebuilt (PyDESeq2 on GEO counts, ~ condition, p < 0.01)	kamrat_deseq2_corrected	up	203	8	0	0.03940886699507389	19	0.0	0.0	0.009852216748768473	0.0
+GSE144304	gse144304_male_frail_vs_fit	rebuilt (PyDESeq2 on GEO counts, ~ condition, p < 0.01)	kamrat_deseq2_corrected	down	127	3	0	0.023622047244094488	3	0.0	0.0	0.007874015748031496	0.0
+GSE144304	gse144304_male_frail_vs_fit	rebuilt (PyDESeq2 on GEO counts, ~ condition, p < 0.01)	kamrat_deseq2_p05	up	203	76	0	0.37438423645320196	1057	0.06896551724137931	0.03940886699507389	0.11330049261083744	0.0
+GSE144304	gse144304_male_frail_vs_fit	rebuilt (PyDESeq2 on GEO counts, ~ condition, p < 0.01)	kamrat_deseq2_p05	down	127	40	0	0.31496062992125984	555	0.047244094488188976	0.015748031496062992	0.08661417322834646	0.0
+GSE144304	gse144304_female_old_vs_young	rebuilt (PyDESeq2 on GEO counts, ~ condition, p < 0.01)	splash_compactors	up	2499	192	0	0.07683073229291716	1446	0.09523809523809523	0.08563425370148059	0.10605242096838735	1.0
+GSE144304	gse144304_female_old_vs_young	rebuilt (PyDESeq2 on GEO counts, ~ condition, p < 0.01)	splash_compactors	down	2255	326	0	0.14456762749445676	1446	0.13259423503325943	0.121940133037694	0.14501108647450112	0.033
+GSE144304	gse144304_female_old_vs_young	rebuilt (PyDESeq2 on GEO counts, ~ condition, p < 0.01)	kamrat_ttest_corrected	up	2499	1592	13	0.6370548219287715	5178	0.3513405362144858	0.3345338135254102	0.36494597839135656	0.0
+GSE144304	gse144304_female_old_vs_young	rebuilt (PyDESeq2 on GEO counts, ~ condition, p < 0.01)	kamrat_ttest_corrected	down	2255	1293	152	0.5733924611973392	2016	0.21685144124168515	0.2031042128603104	0.23148558758314855	0.0
+GSE144304	gse144304_female_old_vs_young	rebuilt (PyDESeq2 on GEO counts, ~ condition, p < 0.01)	kamrat_ttest_p05	up	2499	1688	11	0.6754701880752301	5436	0.3697478991596639	0.35413165266106444	0.3861544617847139	0.0
+GSE144304	gse144304_female_old_vs_young	rebuilt (PyDESeq2 on GEO counts, ~ condition, p < 0.01)	kamrat_ttest_p05	down	2255	1164	167	0.5161862527716187	1814	0.18647450110864744	0.17427937915742794	0.20045454545454544	0.0
+GSE144304	gse144304_female_old_vs_young	rebuilt (PyDESeq2 on GEO counts, ~ condition, p < 0.01)	kamrat_deseq2_corrected	up	2499	675	7	0.27010804321728693	1218	0.07723089235694278	0.06762705082032813	0.0860344137655062	0.0
+GSE144304	gse144304_female_old_vs_young	rebuilt (PyDESeq2 on GEO counts, ~ condition, p < 0.01)	kamrat_deseq2_corrected	down	2255	567	36	0.25144124168514415	712	0.08514412416851441	0.07582039911308204	0.09445676274944567	0.0
+GSE144304	gse144304_female_old_vs_young	rebuilt (PyDESeq2 on GEO counts, ~ condition, p < 0.01)	kamrat_deseq2_p05	up	2499	1249	18	0.49979991996798717	2728	0.18047218887555022	0.1676670668267307	0.19367747098839536	0.0
+GSE144304	gse144304_female_old_vs_young	rebuilt (PyDESeq2 on GEO counts, ~ condition, p < 0.01)	kamrat_deseq2_p05	down	2255	1057	57	0.4687361419068736	1616	0.17383592017738358	0.1614079822616408	0.18669623059866963	0.0
+GSE144304	gse144304_male_old_vs_young	rebuilt (PyDESeq2 on GEO counts, ~ condition, p < 0.01)	splash_compactors	up	1635	133	0	0.08134556574923547	1405	0.09969418960244648	0.08623853211009175	0.11376146788990826	0.999
+GSE144304	gse144304_male_old_vs_young	rebuilt (PyDESeq2 on GEO counts, ~ condition, p < 0.01)	splash_compactors	down	1615	217	0	0.13436532507739937	1405	0.1256965944272446	0.11145510835913312	0.13993808049535603	0.132
+GSE144304	gse144304_male_old_vs_young	rebuilt (PyDESeq2 on GEO counts, ~ condition, p < 0.01)	kamrat_ttest_corrected	up	1635	809	9	0.4948012232415902	2387	0.17553516819571865	0.15900611620795108	0.1926605504587156	0.0
+GSE144304	gse144304_male_old_vs_young	rebuilt (PyDESeq2 on GEO counts, ~ condition, p < 0.01)	kamrat_ttest_corrected	down	1615	664	33	0.41114551083591333	1177	0.11764705882352941	0.10402476780185758	0.13126934984520125	0.0
+GSE144304	gse144304_male_old_vs_young	rebuilt (PyDESeq2 on GEO counts, ~ condition, p < 0.01)	kamrat_ttest_p05	up	1635	1058	11	0.6470948012232416	3691	0.27033639143730887	0.25076452599388377	0.2892966360856269	0.0
+GSE144304	gse144304_male_old_vs_young	rebuilt (PyDESeq2 on GEO counts, ~ condition, p < 0.01)	kamrat_ttest_p05	down	1615	924	43	0.5721362229102167	1625	0.15294117647058825	0.13808049535603714	0.16843653250773993	0.0
+GSE144304	gse144304_male_old_vs_young	rebuilt (PyDESeq2 on GEO counts, ~ condition, p < 0.01)	kamrat_deseq2_corrected	up	1635	273	8	0.1669724770642202	465	0.03241590214067278	0.02507645259938838	0.04036697247706422	0.0
+GSE144304	gse144304_male_old_vs_young	rebuilt (PyDESeq2 on GEO counts, ~ condition, p < 0.01)	kamrat_deseq2_corrected	down	1615	365	14	0.2260061919504644	473	0.051393188854489166	0.042105263157894736	0.06068111455108359	0.0
+GSE144304	gse144304_male_old_vs_young	rebuilt (PyDESeq2 on GEO counts, ~ condition, p < 0.01)	kamrat_deseq2_p05	up	1635	671	15	0.41039755351681956	1629	0.1180428134556575	0.10336391437308869	0.1327217125382263	0.0
+GSE144304	gse144304_male_old_vs_young	rebuilt (PyDESeq2 on GEO counts, ~ condition, p < 0.01)	kamrat_deseq2_p05	down	1615	807	22	0.4996904024767802	1518	0.15046439628482972	0.13434984520123838	0.1653250773993808	0.0
