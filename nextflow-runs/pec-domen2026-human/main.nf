@@ -28,6 +28,10 @@ params.code_dir  = null   // .../analysis/pec-domen2026-splash
 params.series    = 'GSE99963,GSE144304,GSE120862'
 params.contrasts = ''     // comma list to run only these contrasts; empty = every contrast of params.series
 params.reuse_dir = ''     // folder of earlier MD5-checked downloads (<run>.fastq.gz + .done), hard-linked
+// compactors: k-mers per extension segment. Botryllus used the default 2 (anchor 31 + 2 x 27 = 85 nt
+// inside one read); the human reads are 51-81 nt, so with 2 no read qualifies and no compactor is
+// made (pilot, 2026-11-03: "0 reads found for 0 anchors", 1,881 anchors). 1 needs 58 nt.
+params.compactors_num_kmers = 1
 
 if (!params.pec_root || !params.out_root || !params.code_dir) {
     error "set --pec_root, --out_root and --code_dir"
@@ -182,10 +186,11 @@ process compactors {
       printf 'anchor\\tcompactor\\n' > compactors.tsv   # no significant anchor: nothing to extend
     else
       ${TIME} compactors.time ${SPLASH}/compactors --max_length 186 --num_threads ${task.cpus} --epsilon 0.001 --beta 0.5 \\
-        --num_kmers 2 --input_format fastq input_list.txt ../${splash_out}/result.after_correction.scores.tsv \\
+        --num_kmers ${params.compactors_num_kmers} --input_format fastq input_list.txt ../${splash_out}/result.after_correction.scores.tsv \\
         compactors.tsv > compactors.log 2>&1
     fi
     test -s compactors.tsv
+    echo "compactors: \$(( \$(wc -l < compactors.tsv) - 1 ))" >> n_input_anchors.txt
     """
 }
 

@@ -56,6 +56,13 @@ Choices not fixed by the papers, made the conservative way:
   (anchor + target) inside one read, so those reads give SPLASH no counts: in GSE120862 SPLASH
   effectively sees subjects P5-P7 only. The k-mer routes (DE-kupl, KaMRaT, k = 31) use every subject.
   The 31 + 31 setting was kept so that SPLASH is the same test as for Botryllus.
+- Compactors use `--num_kmers 1` instead of the default 2 (changed 2026-11-03, after the pilot
+  and before any gene was looked at). With 2, a read must hold the 31-nt anchor plus two 27-nt
+  k-mers, 85 nt, and every human read is shorter (51-81 nt): on gse99963_sed_post_vs_pre
+  compactors found "0 reads found for 0 anchors" for 1,881 significant anchors. With 1 (58 nt)
+  the same anchors gave 14,959 compactors. GSE120862's 51-nt reads still give none.
+- GSE99963 run SRR5678750 (subject S3, before) has 179,404 reads, about 1 % of the others. It is
+  kept, as in the study.
 - GSE99963 libraries are stranded (TruSeq Stranded Total RNA) and GSE144304 too (NEBNext
   directional); k-mers are still counted on both strands (unstranded), as for Botryllus.
 - KaMRaT + DESeq2 uses `~ pair + condition` (pair = subject) for paired contrasts and
