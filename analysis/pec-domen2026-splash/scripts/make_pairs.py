@@ -74,10 +74,12 @@ def read_one(path, db, mol, k, s):
 
 out_pairs, out_hits, *csvs = sys.argv[1:]
 frames, sort_cols = [], ["containment"]
+dbs = set()  # one pairs file per database searched (even when it has no match)
 for c in csvs:
     m = re.search(r"\.(\w+)\.(protein|dayhoff|hp)\.k(\d+)\.s(\d+)\.csv$", c)
     if not m:
         raise SystemExit(f"cannot parse setting from {c}")
+    dbs.add(m.group(1))
     got = read_one(c, *m.groups())
     if got is not None:
         frames.append(got[0])
@@ -90,7 +92,7 @@ if hits.height:
 hits.write_parquet(out_hits)
 pairs = hits.select("query", "target", "db").unique() if hits.height else pl.DataFrame(
     schema={"query": pl.Utf8, "target": pl.Utf8, "db": pl.Utf8})
-for db in ("proteome", "swissprot", "botznik"):
+for db in sorted(dbs):
     pairs.filter(pl.col("db") == db).select("query", "target").write_csv(
         out_pairs.replace(".tsv", f".{db}.tsv"), separator="\t")
 print(f"hits kept {hits.height}, pairs {pairs.height}")

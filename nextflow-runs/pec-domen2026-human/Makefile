@@ -18,9 +18,10 @@ REUSE_DIR    ?= $(PEC_ROOT)/sra_search/reads
 SERIES       ?= GSE99963,GSE144304,GSE120862
 
 SLURM_ACCOUNT   ?= ayeletv
-SLURM_PARTITION ?= normal,hns
+# the head needs up to 4 days; the normal partition refuses that (QOSMaxWallDurationPerJobLimit)
+SLURM_PARTITION ?= hns
 HEAD_QOS     ?= normal
-HEAD_TIME    ?= 5-00:00:00
+HEAD_TIME    ?= 4-00:00:00
 HEAD_CPUS    ?= 2
 HEAD_MEM     ?= 16G
 HEAD_SESSION ?= pec361h
