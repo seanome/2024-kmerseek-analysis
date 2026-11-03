@@ -157,11 +157,11 @@ def main():
     keys = ["series", "run", "gsm", "biosample", "title", "subject", "sex", "arm", "time", "group",
             "training", "leg", "reads", "mean_read_nt", "fastq_ftp", "fastq_md5"]
     with open(out_dir / "samples.tsv", "w") as f:
-        w = csv.DictWriter(f, keys, delimiter="\t", extrasaction="ignore", restval="")
+        w = csv.DictWriter(f, keys, delimiter="\t", extrasaction="ignore", restval="", lineterminator="\n")
         w.writeheader()
         w.writerows(samples)
     with open(out_dir / "contrasts.tsv", "w") as f:
-        w = csv.DictWriter(f, list(contrasts[0]), delimiter="\t")
+        w = csv.DictWriter(f, list(contrasts[0]), delimiter="\t", lineterminator="\n")
         w.writeheader()
         w.writerows(contrasts)
     for c in contrasts:
