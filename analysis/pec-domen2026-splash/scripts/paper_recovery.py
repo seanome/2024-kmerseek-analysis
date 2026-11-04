@@ -129,6 +129,7 @@ for c in CONTRASTS:
                 contrast=c, channel=channel, list=direction, compared_with=direction if direction in got else "any",
                 list_genes=len(genes), list_genes_with_protein=len(usable),
                 reached=sum(g in hit_set for g in usable), fraction_reached=obs,
+                reached_either_way=sum(g in got["any"] for g in usable),
                 null_median=float(np.median(null)), null_2_5=float(np.quantile(null, 0.025)),
                 null_97_5=float(np.quantile(null, 0.975)), share_null_at_or_above=float((null >= obs).mean()),
                 pool_genes=pool.height, pool_fraction_reached=sum(g in hit_set for g in pool["Gene_ID"]) / pool.height,

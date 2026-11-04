@@ -29,6 +29,12 @@ params.reuse_dir    = ''        // other run's verified FASTQs, hard-linked when
 // on the trimmed reads already in pec_root/trimmed, and every output goes under
 // pec_root/label_swap/<contrast>/<flip>/, never under pec_root/contrasts/.
 params.label_swap   = ''
+// KaMRaT + DESeq2 on swapped labels: a manifest TSV (key, contrast, flip, design, deseq_design; paths
+// relative to code_dir), made by scripts/make_kamrat_label_swaps.py. DE-kupl's k-mer counts do not
+// depend on the labels (human swaps: same k-mers and counts), so they are reused. KaMRaT's contigs do:
+// 20 % of contigs differed between real and swapped human labels, so KaMRaT, DESeq2 and the protein
+// search all run again.
+params.kamrat_swap  = ''
 
 if (!params.pec_root || !params.code_dir) {
     error "set --pec_root and --code_dir"
@@ -258,7 +264,7 @@ process dekupl {
 process kamrat {
     tag "${contrast}"
     label 'kamrat'
-    storeDir "${params.pec_root}/contrasts/${contrast}"
+    storeDir "${params.pec_root}/${contrast.contains('/') ? 'label_swap' : 'contrasts'}/${contrast}"
 
     input:
     tuple val(contrast), path(design), path(dekupl_dir)
@@ -311,6 +317,36 @@ process kamrat_nominal {
     """
 }
 
+// PyDESeq2 on one swap's KaMRaT contigs, then contigs with p < 0.05, as for the real labels
+// (slurm/18_kamrat_dekupl_p05.sbatch). No fold-change cutoff.
+process kamrat_swap_deseq {
+    tag "${key}"
+    label 'kamrat_deseq'
+    storeDir "${params.pec_root}/label_swap/${key}"
+
+    input:
+    tuple val(key), path(design), val(deseq_design), path(kamrat_dir), path(dekupl_dir)
+
+    output:
+    tuple val(key), path("kamrat_deseq2_p05")
+
+    script:
+    """
+    export PATH=${ENV}:\$PATH
+    W=\$PWD
+    mkdir -p kamrat_deseq2 kamrat_deseq2_p05
+    python ${SCRIPTS}/kamrat_contig_counts.py ${kamrat_dir}/contigs_all.tsv.gz \\
+      ${dekupl_dir}/DEkupl_result/kmer_counts/raw-counts.tsv.gz ${design} kamrat_deseq2 > kamrat_deseq2/counts.log
+    (cd ${SCRIPTS} && /usr/bin/time -v -o \$W/kamrat_deseq2/deseq.time python anchor_deseq.py \\
+      \$W/kamrat_deseq2/contig_counts.tsv \$W/kamrat_deseq2/samples.txt \$W/${design} \$W/kamrat_deseq2/deseq ${task.cpus} ${deseq_design} \\
+      > \$W/kamrat_deseq2/deseq.log 2>&1)
+    rm kamrat_deseq2/contig_counts.tsv
+    python ${SCRIPTS}/select_kamrat_deseq.py kamrat_deseq2/deseq/deseq_${deseq_design}.parquet kamrat_deseq2_p05 > kamrat_deseq2_p05/select.log
+    mv kamrat_deseq2 kamrat_deseq2_p05/
+    test -s kamrat_deseq2_p05/contigs.tsv
+    """
+}
+
 // ---------------------------------------------------------------- protein search
 
 process search {
@@ -330,7 +366,7 @@ process search {
     // kamrat_nominal: KaMRaT contigs with uncorrected p <= 0.05 and 2-fold, column contig
     def prep = src.startsWith('compactors')
         ? "ln -s ../${seqdir}/compactors.tsv seqs.tsv; COL=compactor"
-        : src in ['kamrat_ttest', 'kamrat_nominal']
+        : src in ['kamrat_ttest', 'kamrat_nominal', 'kamrat_deseq2_p05']
         ? "ln -s ../${seqdir}/contigs.tsv seqs.tsv; COL=contig"
         : "zcat ../${seqdir}/DEkupl_result/control_vs_PEC_kmer_counts/merged-diff-counts.tsv.gz > dekupl_contigs.tsv; ln -s dekupl_contigs.tsv seqs.tsv; COL=contig"
     """
@@ -416,7 +452,18 @@ process paper_recovery {
 // ---------------------------------------------------------------- workflow
 
 workflow {
-  if (params.label_swap) {
+  if (params.kamrat_swap) {
+    // KaMRaT + DESeq2 on swapped labels, from the real contrast's DE-kupl k-mer counts
+    ks = Channel.fromList(file(params.kamrat_swap).splitCsv(header: true, sep: '\t')).map { r ->
+        if (!(r.key ==~ /^[a-z0-9_]+\/[a-z0-9_]+$/)) throw new IllegalArgumentException("kamrat_swap key ${r.key} must be <contrast>/<flip>")
+        tuple(r.key, file("${params.code_dir}/${r.design}", checkIfExists: true), r.deseq_design,
+              file("${params.pec_root}/contrasts/${r.contrast}/dekupl_limma", checkIfExists: true))
+    }
+    km = kamrat(ks.map { k, dsg, dd, dk -> tuple(k, dsg, dk) })
+    kd = kamrat_swap_deseq(ks.map { k, dsg, dd, dk -> tuple(k, dsg, dd, dk) }.join(km)
+        .map { k, dsg, dd, dk, kdir -> tuple(k, dsg, dd, kdir, dk) })
+    search(kd.map { k, d -> tuple(k, 'kamrat_deseq2_p05', d) })
+  } else if (params.label_swap) {
     // label-swap control: the same SPLASH and anchor-count stages on swapped designs
     swap = Channel.fromList(file(params.label_swap).splitCsv(header: true, sep: '\t')).map { r ->
         def dsg = file("${params.code_dir}/${r.design}", checkIfExists: true)

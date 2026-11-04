@@ -4,6 +4,8 @@
 #   make run-test   young_132d + the control only (most results already exist; a wiring check)
 #   make run-label-swap   label-swap control: SPLASH + anchor counts on swapped PEC/control labels
 #                   (design/label_swap/manifest.tsv), outputs under $(PEC_ROOT)/label_swap/
+#   make run-kamrat-swap  KaMRaT + DESeq2 on swapped labels (design/label_swap_kamrat/manifest.tsv),
+#                   outputs under $(PEC_ROOT)/label_swap/
 #   make watch      attach to the live Nextflow table (read-only); Ctrl-b d to leave
 #   make stop       ask the run to cancel its jobs and exit
 #   make running    every Nextflow run in the queue, then this folder's jobs
@@ -47,7 +49,7 @@ define require_cluster
 	fi
 endef
 
-.PHONY: run run-test run-label-swap watch attach stop status running
+.PHONY: run run-test run-label-swap run-kamrat-swap watch attach stop status running
 
 run:
 	$(call require_cluster)
@@ -69,6 +71,15 @@ run-label-swap:
 	$(call require_cluster)
 	mkdir -p run-label-swap && cd run-label-swap && ml load biology nextflow && \
 	  $(HEAD_SUBMIT) $(NF_COMMON) --control false --label_swap $(CODE_DIR)/design/label_swap/manifest.tsv $(NF_ARGS)
+
+run-kamrat-swap: HEAD_TIME := 12:00:00
+run-kamrat-swap: HEAD_JOBNAME := nf-pec361-kswap
+run-kamrat-swap: HEAD_SESSION := pec361kswap
+run-kamrat-swap: SLURM_PARTITION := normal,hns
+run-kamrat-swap:
+	$(call require_cluster)
+	mkdir -p run-kamrat-swap && cd run-kamrat-swap && ml load biology nextflow && \
+	  $(HEAD_SUBMIT) $(NF_COMMON) --control false --kamrat_swap $(CODE_DIR)/design/label_swap_kamrat/manifest.tsv $(NF_ARGS)
 
 watch: HEAD_ATTACH := -r
 attach: HEAD_ATTACH :=
