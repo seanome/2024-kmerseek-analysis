@@ -19,7 +19,7 @@ import sys
 
 import pandas as pd
 
-d = pd.read_csv(sys.argv[1], sep="\t").drop(columns=["transcript_id(s)"]).set_index("gene_id")
+d = pd.read_csv(sys.argv[1], sep="\t").drop(columns=["gene_name"]).set_index("gene_id")
 assert len(d.columns) == 47, len(d.columns)
 d.round().astype(int).to_csv(sys.argv[2], sep="\t")
 PYEOF
