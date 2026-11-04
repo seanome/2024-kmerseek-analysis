@@ -62,7 +62,8 @@ with open(f"{out}/longest_stretch_GPL1211.tsv", "w") as f:
     for floor in (0, 30, 50, 100, 150):
         kept = [(frame, truth) for length, frame, truth in annotated if length >= floor]
         right = sum(frame == truth for frame, truth in kept)
-        f.write(f"{floor}\t{len(kept)}\t{right}\t{right / len(kept):.3f}\n")
+        share = f"{right / len(kept):.3f}" if kept else ""
+        f.write(f"{floor}\t{len(kept)}\t{right}\t{share}\n")
 
 with open(f"{out}/longest_vs_proteome.tsv", "w") as f:
     f.write("array\tproteome\talphabet\tk\tsequences_with_passing_stretch_100aa\tlongest_stretch_same_frame\tshare\n")

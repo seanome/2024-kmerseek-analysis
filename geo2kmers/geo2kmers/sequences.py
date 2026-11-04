@@ -1,5 +1,6 @@
 """Get one sequence per probe from a GEO platform table."""
 
+import http.client
 import os
 import re
 import time
@@ -97,6 +98,12 @@ def fetch_accessions(accessions, email, api_key=None, post=post_efetch, sleep=ti
             elif len(batch) > 1:
                 middle = len(batch) // 2
                 queue[:0] = [batch[:middle], batch[middle:]]
+        except (OSError, http.client.HTTPException) as e:  # no answer at all: try the same batch again
+            failures += 1
+            if failures > 5:
+                raise Geo2KmersError(f"could not reach NCBI: {e}") from e
+            queue.insert(0, batch)
+            sleep(2**failures)
         sleep(pause)
     return found
 

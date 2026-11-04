@@ -61,7 +61,8 @@ python -m geo2kmers sequences data/GSE2183/GPL1799.txt --out data/GSE2183/probes
 - Otherwise it comes from NCBI, using the row's GenBank accession (columns GB_ACC, GB_LIST and similar).
   Requests go in batches of 200 with at least 0.34 seconds between them, or 0.11 seconds if
   `NCBI_API_KEY` is set. NCBI asks for a contact address, so the tool reads it from `NCBI_EMAIL` and
-  stops if it is not set. Fetched sequences are kept in `genbank_cache.fasta`.
+  stops if it is not set. If NCBI does not answer, the batch is tried again up to 5 times, then the command
+  stops. Fetched sequences are kept in `genbank_cache.fasta`.
 - For an Affymetrix platform with no SEQUENCE column it stops and suggests the Bioconductor probe package
   that holds the 25-letter probes, such as `hgu133plus2probe`. That name is worked out from the platform
   title and not checked, and on newer arrays it can be wrong: Human Gene 1.0 ST's package is
@@ -85,7 +86,8 @@ python -m geo2kmers sketch --fasta data/GSE2183/probes.fasta \
   --sample GSM39421 --channel ch2 --k 31 --alphabet dna --mode weighted --out GSM39421.tsv
 ```
 
-`--intensities` takes a series matrix, one GSM table, or a folder of GSM tables.
+`--intensities` takes a series matrix, one GSM table, or a folder of GSM tables, plain or gzipped. A probe's
+name in the FASTA is its whole header, or the header's first word if the intensity table has no such name.
 
 Alphabets:
 - `dna`: every k-mer of each probe in canonical form, meaning the smaller of the k-mer and its reverse
@@ -120,7 +122,7 @@ python -m geo2kmers sketch --fasta data/GSE2183/probes.fasta \
 dayhoff and 63 for hp. It does not apply to `dna`. `<out>.frames.tsv` lists each probe's stretch: frame (0 to
 2 read the given strand, 3 to 5 the other), start and length in amino acids, and the share in the proteome,
 empty with no proteome. In the workflow, set `--proteome` to absolute paths joined by commas. Each sketch
-reads the proteome itself, which took 38 to 46 seconds and at most 1.5 GB per sketch on the mussel proteome
+reads the proteome itself, which took 40 to 48 seconds and at most 1.5 GB per sketch on the mussel proteome
 (`results/GSE2183_proteome/geo2kmers.trace.txt`).
 
 A 25 nt probe gives at most 8 amino acids in a frame, so protein k must be 8 or less on short-probe
@@ -200,7 +202,7 @@ environment built from `environment.yml`. All numbers below come from the file n
 that folder. The sketches themselves are too large to keep here.
 
 - 66 tasks ran, each on the first try, with exit status 0 (`geo2kmers.trace.txt`).
-- The run took 94 seconds (`wall_time.txt`), under the 10 minutes set for this test.
+- The run took 154 seconds (`wall_time.txt`), under the 10 minutes set for this test.
 - The platform has 3840 probes. 3344 got a sequence from GenBank, 30 point to a whole genome record and
   so have no sequence, and 466 have no accession. The 3344 are 1672 distinct sequences,
   each spotted twice. Lengths run from 101 to 650 nt, median 512
@@ -218,7 +220,7 @@ that folder. The sketches themselves are too large to keep here.
   is the least conserved part of a gene and so cross-hybridises least with related genes. So many of these
   k-mers are probably not from a protein (`sketch_summary.tsv`).
 - The same with the species' own proteome: 652 of the 3344 probes give k-mers, 45727 distinct. That run
-  took 586 seconds, close to the 10 minute limit, because each sketch reads the proteome again
+  took 646 seconds, over the 10 minute limit, because each sketch reads the proteome again
   (`results/GSE2183_proteome/`).
 - 30 spots (15 clones) list accession AY484747, which NCBI titles "Mytilus edulis mitochondrion, complete
   genome". The platform table names one gene for each clone, such as Mitochondrial-ND6, and one clone
@@ -254,6 +256,8 @@ sequences at dayhoff k = 15 and 23 at k = 19, against 24 at protein k = 10. Dayh
 shuffled sequences pass too (`mussel_vs_oyster.tsv`, with `mussel_vs_human_mouse.tsv` and
 `mussel_vs_same_species.tsv`). So dayhoff k = 19 is in the workflow's default for comparing sketches, not
 for picking frames. No comparison between sketches has been run yet.
+
+`results/frame_test/frame_choice_human_mussel.png`, drawn by `figure_frames.py`, shows the two main results.
 
 Where the proteome picks a stretch of 100 amino acids or more, the plain longest stretch is in the same
 frame for 316 of 326 mussel sequences, 1667 of 1821 mouse and 6002 of 6484 human (`longest_vs_proteome.tsv`).
@@ -294,4 +298,13 @@ such check. Frames are only as right as NCBI's annotation of each record.
 python -m pytest tests
 ```
 
-`tests/README.md` describes the test series and the known-answer checks.
+`tests/README.md` describes the test series and the known-answer checks. `tests/test_helpers.py` runs each
+script on small files whose answers are worked out by hand, and `tests/test_workflow.py` reads `main.nf`.
+
+The tests that run `main.nf` are skipped unless asked for, because they need Nextflow and the network, and
+take a few minutes. They check the sketch count, that a killed task is retried, and that a failed task stops
+the run. Run them on a machine meant for it, as `run_sherlock.sbatch` does:
+
+```bash
+GEO2KMERS_TEST_NEXTFLOW=1 python -m pytest tests/test_workflow.py
+```

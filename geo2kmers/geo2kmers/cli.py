@@ -1,6 +1,7 @@
 """Command line: geo2kmers fetch, sequences and sketch."""
 
 import argparse
+import http.client
 import sys
 from pathlib import Path
 
@@ -21,8 +22,8 @@ def run_sequences(args):
 
 
 def run_sketch(args):
-    probes = sketch.read_fasta(args.fasta)
     values, detection, source = sketch.load_intensities(args.intensities, args.sample, args.channel, args.column)
+    probes = sketch.match_names(sketch.read_fasta(args.fasta, whole_name=True), values)
     print(f"intensities come from {source}")
     table, report = sketch.build_sketch(probes, values, args.k, args.alphabet, args.mode, detection, args.proteome)
     report["intensity_source"] = source
@@ -84,7 +85,7 @@ def main(argv=None):
     args = parser().parse_args(argv)
     try:
         args.run(args)
-    except geo.Geo2KmersError as e:
+    except (geo.Geo2KmersError, OSError, http.client.HTTPException) as e:
         print(f"geo2kmers: {e}", file=sys.stderr)
         return 1
     return 0

@@ -17,7 +17,7 @@ params.sample_tables = false // also download every GSM table, which hold detect
 // alphabet:k pairs, and the modes to run for each
 params.sketches = 'dna:31,protein:10,dayhoff:19,hp:30'
 params.modes    = 'weighted,present'
-params.proteome = ''      // comma-separated absolute paths: pick protein and hp frames with these proteins
+params.proteome = ''      // comma-separated absolute paths: pick protein, dayhoff and hp frames with these proteins
 // absolute paths to the python of each process's conda environment
 params.python_fetch     = "/scratch/users/olgabot/nb361-pec/env/bin/python"
 params.python_sequences = params.python_fetch
@@ -86,7 +86,7 @@ process SKETCH {
     // 'finish': a failed sketch stops new work and the run exits with an error, so it cannot pass unseen
     errorStrategy { killedFromOutside(task.exitStatus) && task.attempt <= 3 ? 'retry' : 'finish' }
     maxRetries 3
-    // holding a proteome's k-mers peaked at 3.3 GB on GENCODE human, 2.2 GB on the mussel proteome
+    // holding a proteome's k-mers peaked at 3.0 GB on GENCODE human, 1.5 GB on the mussel proteome
     memory { (alphabet != 'dna' && params.proteome ? 4.GB : 2.GB) * task.attempt }
     publishDir "${params.outdir}/sketches", mode: 'copy'
 

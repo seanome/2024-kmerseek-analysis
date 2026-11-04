@@ -36,15 +36,15 @@ MIN_SHARE_IN_PROTEOME = 0.9
 AMINO_ACIDS = "ACDEFGHIKLMNPQRSTVWY"
 
 
-def read_fasta(path):
-    """Return {name: sequence}, upper case."""
+def read_fasta(path, whole_name=False):
+    """Return {name: sequence}, upper case. A name is the first word of the header, or all of it if whole_name."""
     records, name = {}, None
     with gzip.open(path, "rt") if str(path).endswith(".gz") else open(path) as f:
         for line in f:
             if not line.strip():
                 continue
             if line.startswith(">"):
-                name = line[1:].split()[0]
+                name = line[1:].strip() if whole_name else line[1:].split()[0]
                 if name in records:
                     raise Geo2KmersError(f"{path} has the name {name} twice")
                 records[name] = []
@@ -216,17 +216,24 @@ def to_float(text):
     return value if math.isfinite(value) else None
 
 
+def gsm_table(folder, sample):
+    """A sample's table in a folder, plain or gzipped."""
+    plain = Path(folder) / f"{sample}.txt"
+    gzipped = Path(folder) / f"{sample}.txt.gz"
+    return gzipped if gzipped.exists() and not plain.exists() else plain
+
+
 def load_intensities(path, sample, channel=None, column=None):
     """Return (probe to intensity, probe to passed detection or None, text naming the source)."""
     path = Path(path)
-    table = path / f"{sample}.txt" if path.is_dir() else path
+    table = gsm_table(path, sample) if path.is_dir() else path
     if not path.is_dir() and "series_matrix" in path.name:
         meta, samples, rows = read_series_matrix(path)
         if sample not in samples:
             raise Geo2KmersError(f"{sample} is not in {path}")
         counts = dict(zip(samples, meta.get("Sample_channel_count", [[]])[0]))
         if counts.get(sample, "1") != "1":
-            sibling = path.parent / "gsm" / f"{sample}.txt"
+            sibling = gsm_table(path.parent / "gsm", sample)
             if (channel or column) and sibling.exists():
                 table = sibling
             else:
@@ -240,7 +247,7 @@ def load_intensities(path, sample, channel=None, column=None):
             index = samples.index(sample)
             values = {p: to_float(r[index]) for p, r in rows.items()}
             check_not_ratio(values, sample)
-            sibling = path.parent / "gsm" / f"{sample}.txt"
+            sibling = gsm_table(path.parent / "gsm", sample)
             detection = read_detection(*read_table(sibling, "sample")[1:]) if sibling.exists() else None
             return values, detection, f"VALUE column of {path.name}"
     meta, columns, rows = read_table(table, "sample")
@@ -276,6 +283,14 @@ def check_not_ratio(values, sample):
         )
     if numbers and max(numbers) < LOG_SCALE_LIMIT:
         print(f"warning: every value of {sample} is below {LOG_SCALE_LIMIT}, so they may be logarithms of intensity")
+
+
+def match_names(probes, values):
+    """Key probes by the name in the intensity table: the whole FASTA header, or else its first word."""
+    matched = {name if name in values else name.split()[0]: sequence for name, sequence in probes.items()}
+    if len(matched) < len(probes):
+        raise Geo2KmersError("two FASTA headers share a first word and neither is in the intensity table")
+    return matched
 
 
 def add_probe(table, kmers, weight, probe_index):

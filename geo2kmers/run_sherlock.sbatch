@@ -12,7 +12,7 @@ set -uo pipefail
 ml load biology nextflow
 export NXF_OPTS="-Xms512m -Xmx2g"
 top=$PWD
-(cd "$CODE" && "$PYTHON" -m pytest tests -q -p no:cacheprovider | tail -3)
+(cd "$CODE" && GEO2KMERS_TEST_NEXTFLOW=1 "$PYTHON" -m pytest tests -q -rs -p no:cacheprovider | tail -5)
 run() {
   mkdir -p "$top/$1" && cd "$top/$1" || exit 1
   local out=$top/$1/results/GSE2183 start status
