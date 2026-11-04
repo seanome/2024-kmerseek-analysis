@@ -8,9 +8,9 @@ k. `geo2kmers/schema.py` checks a table against this file, and `sketch` checks e
 | `kmer` | yes | the k-mer, once per table. DNA k-mers are in canonical form: the smaller of the k-mer and its reverse complement |
 | `alphabet` | yes | `dna`, `protein`, `dayhoff` or `hp` |
 | `k` | yes | k-mer length: bases for `dna`, residues for the others |
-| `setting` | yes | kmerseek's name for the alphabet, then k: `dna_k31`, `protein20_k10`, `dayhoff6_k19` or `hp_lehninger2_k30`. Tables with different settings are never joined |
+| `setting` | yes | the alphabet's name, then k: `dna_k31`, or with kmerseek's names `protein20_k10`, `dayhoff6_k19`, `hp_lehninger2_k30`. kmerseek has no DNA alphabet, so `dna` is this format's own name. Tables with different settings are never joined |
 | value column | no | see below |
-| `n_probes` | no | array tables only: how many probes hold the k-mer |
+| `n_probes` | no | array tables only, so never beside `count`: how many probes hold the k-mer, a whole number above 0 |
 
 Letters: `dna` uses A C G T. `protein` uses the 20 amino acids. `dayhoff` uses a to f and `hp` uses h
 and p, with the groups in the main README. Columns come in the order above.

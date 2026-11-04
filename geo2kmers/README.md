@@ -78,6 +78,15 @@ python -m geo2kmers sequences data/GSE2183/GPL1799.txt --out data/GSE2183/probes
 `probe_sequence_source.tsv` has one row per probe: probe_id, source (gpl_sequence, genbank_fetch,
 record_too_long or missing) and length_nt. For record_too_long, length_nt is the record's length.
 
+### land
+
+```bash
+python -m geo2kmers land --fasta probes.fasta --proteome proteins.fasta.gz --out landing.tsv
+```
+
+Finds the protein each probe lands on, with the rule the platform's probe length calls for (below). On 25-letter
+arrays, name each probe `<probe set>/<number>`, and the table gives probe sets.
+
 ### sketch
 
 ```bash
@@ -133,7 +142,7 @@ has floor(n / 3) - k + 1 k-mers:
 
 | probe length | residues per frame | k-mers at k = 12 | rule chosen from the platform's median length |
 |---|---:|---:|---|
-| 25 nt (Affymetrix) | 8 | 0 | `probe_set`: a probe lands with one k-mer at k = 7, and a probe set lands on a protein when 3 of its probes land on it. `geo2kmers land` does this, and `sketch` stops and says so |
+| 25 nt (Affymetrix) | 8 | 0 | `probe_set`: a probe set is the group of probes reported as one value. A probe lands with one k-mer at k = 7, and a probe set lands on a protein when 3 different probes land on it. `geo2kmers land` does this, and `sketch` stops and says so |
 | 50 nt (Illumina) | 16 | 5 | `short_oligo`: the longest frame with no stop, with at least half its k-mers in the proteome at k = 7 |
 | 60 nt (Agilent) | 20 | 9 | `short_oligo` |
 | 100 nt or more | 33 or more | 22 or more | `long_probe`: the rule above |
@@ -141,7 +150,7 @@ has floor(n / 3) - k + 1 k-mers:
 `PLATFORM_RULES` in `geo2kmers/sketch.py` holds these numbers and the reason for each. `--k` sets k, and the
 setting column of each table keeps tables of different k apart. `probe_summary.tsv` gives the median probe
 length as `probe_length`, with `residues_per_frame`. `sketch_summary.tsv` gives `landing_share`: the probes
-with at least one k-mer in the proteome, in any frame, divided by all probes. Most expression probes sit at
+with at least one k-mer in the proteome, in any frame, divided by all probes in the intensity table. Most expression probes sit at
 the 3' end of a transcript and many are in untranslated sequence, so this share can be well below 1.
 
 These protein, dayhoff and hp sketches differ from what sourmash makes when it translates DNA itself. Sourmash
@@ -240,7 +249,7 @@ that folder. The sketches themselves are too large to keep here.
   k-mers are probably not from a protein (`sketch_summary.tsv`).
 - The same with the species' own proteome: 652 of the 3344 probes give k-mers, 45727 distinct. That run
   took 124 seconds, in 70 tasks. Three of them read the proteome, for 39 to 40 seconds and at most 1.5 GB each,
-  and every sketch reads the saved result in about 2 seconds (`results/GSE2183_proteome/geo2kmers.trace.txt`).
+  and each sketch task then takes a few seconds (`results/GSE2183_proteome/geo2kmers.trace.txt`).
   With this proteome, `landing_share` is 0.6167 at protein k = 10 (`results/GSE2183_proteome/sketch_summary.tsv`).
   (`results/GSE2183_proteome/`).
 - 30 spots (15 clones) list accession AY484747, which NCBI titles "Mytilus edulis mitochondrion, complete
@@ -304,35 +313,57 @@ such check. Frames are only as right as NCBI's annotation of each record.
 
 ## A test against a published figure
 
-Domen et al. 2026 (PNAS) Fig. 4C-D scores exercise datasets on a list of 338 macrophage genes and reports an
-AUC for each: the chance that a post-exercise sample scores above a pre-exercise one, where 0.5 means no
-difference. `fig4.nf` tries to get the same answer with no gene annotation: probes land on the proteins of those
-genes through protein k-mers alone. Results are in `results/fig4/`, described in `fig4/README.md`.
+**The result does not show that this method recovers the signature.** Domen et al. 2026 (PNAS) Fig. 4C-D scores
+exercise datasets on a list of 280 macrophage genes, called 338 in the paper because some are listed twice, and
+reports an AUC for each: the chance that a post-exercise sample scores above a pre-exercise one, where 0.5 means
+no difference. `fig4.nf` tries to get the same answer with no gene annotation: probes land on the proteins of
+those genes through protein k-mers alone. `fig4/README.md` describes the method and the files in `results/fig4/`.
 
-| Series | comparison | published AUC | this test | Ghosh weights |
+| Series | comparison | published AUC | planned score | second score |
 |---|---|---:|---:|---:|
-| GSE104079 | 45 min | 0.18 | 0.452 | 0.356 |
-| GSE27536 | all | 0.17 | **0.277** | **0.277** |
-| GSE83578 | 30 min | 0.07 | 0.352 | **0.094** |
-| GSE83578 | 3 h | 0.07 | 0.262 | **0.102** |
-| GSE83578 | 24 h | 0.54 | **0.637** | **0.582** |
-| GSE111555 | 18 weeks | 0.93 | **0.791** | **0.900** |
-| GSE28998 | 12 weeks | 0.80 | 0.531 | 0.551 |
+| GSE104079 | as in the authors' code | 0.18 | 0.495 | **0.322** |
+| GSE27536 | as in the authors' code | 0.17 | **0.277** | **0.277** |
+| GSE83578 | 30 min | 0.07 | 0.340 | **0.094** |
+| GSE83578 | 3 h | 0.07 | 0.266 | **0.105** |
+| GSE83578 | 24 h | 0.54 | **0.648** | **0.598** |
+| GSE111555 | 18 weeks | 0.93 | **0.786** | **0.900** |
+| GSE28998 | 12 weeks | 0.80 | 0.531 | 0.592 |
 
 Bold means on the same side of 0.5 as the published AUC and within 0.15 of it, the rule fixed before running
-(`auc.tsv`). The rule also asked for a landing share of at least 0.2, and no series has one: they run from
-0.0079 to 0.0355, because the denominator is every probe on the array and the proteome is 262 proteins
-(`platforms.tsv`). So no dataset qualified, and the task passes under that rule without testing anything.
-That part of the rule was the wrong one. The table is the real result: 3 of 7 comparisons with the planned
-score, and 5 of 7 with the second score, which was added after the plan and read after the first run. It uses
-Ghosh et al. 2023's own weights, -1, 1 and 2 on sums of clusters 13, 14 and 3. GSE120862, GSE99963 and GSE144304
-are RNA-seq, which geo2kmers does not cover.
+(`auc.tsv`). The planned score is the M2 proteins' mean minus the M1 proteins' mean, where M1 and M2 are the
+paper's two groups of genes. The second score was added after the plan: it puts the weights of Ghosh et al.
+2023 on sums, which PR 212 found the published code does. For GSE27536 both scores use M1 alone and are the
+same number.
+
+Chance explains these counts as well as the method does (`chance_test.tsv`, 1000 draws):
+
+| score | comparisons passing | if the landings mean nothing (random features) | if the gene groups mean nothing (shuffled labels) |
+|---|---:|---|---|
+| planned | 3 of 7 | 1.31 on average, 3 or more in 12.8 % of draws | 1.34 on average, 3 or more in 14.0 % |
+| second | 6 of 7 | 1.56 on average, 6 or more in 0.0 % of draws | 4.87 on average, 6 or more in 19.3 % |
+
+So the planned score is not separated from chance. The second score beats random features but not shuffled
+labels: the proteins that landed move together after exercise, whichever gene group they are given. Most of that
+score's passes come from its weights, not from which genes are M1 or M2. Single passes need care too. GSE83578 at 24 h
+passes in 43.5 % of random draws on the planned score, because its published 0.54 is close to no difference
+(`chance_by_comparison.tsv`).
+
+The rule also asked that a series have a landing share of at least 0.2, and none does: they run from 0.0079 to
+0.0354, because the denominator is every probe with a sequence and the proteome is 262 proteins (`platforms.tsv`).
+So no series qualified, and the task passes under that rule without testing anything. That part of the rule
+was the wrong one, and the tables above are the real result. GSE120862, GSE99963 and GSE144304 are RNA-seq, which
+geo2kmers does not cover. The groups are those in the authors' code, which PR 212 found differ from what some
+panels say. GSE104079 is mouse, landing on human proteins.
 
 ## Limits
 
-- On tiled arrays such as GPL17586, a probe set can pass the 3 probe rule on one k-mer, because neighbouring
-  probes overlap. Only 8.0 % of its landings with an annotation agree with it, against 76.2 % and 83.8 % on the
-  two older Affymetrix platforms (`results/fig4/annotation_control.tsv`).
+- Chance and repeats land too. Landing on backward proteins, which code for nothing, gives 22 landings on GPL13912
+  against 81 real ones, 7 against 316 on GPL570, 16 against 433 on GPL13667, and 2353 against 3484 on GPL17586
+  (`results/fig4/platforms.tsv`).
+- On arrays with overlapping probes, such as GPL17586, a probe set can pass the 3 probe rule on one k-mer. Its
+  landings with fewer than 5 different k-mers agree with the platform's gene names 0 times in 2227; those with 5 or
+  more agree 277 times in 721. The older arrays agree 77.1 % (GPL570) and 84.7 % (GPL13667) of the time, and
+  old and new gene names count as disagreement (`results/fig4/annotation_control.tsv`).
 - The sequence fetched for a GenBank accession is the whole record, which need not be exactly what was
   spotted on the slide. On GSE2183, 3344 spots use the EST record of the clone, the closest sequence
   published. A record under the length limit that is not the clone would not be caught.
@@ -349,7 +380,8 @@ python -m pytest tests
 ```
 
 `tests/README.md` describes the test series and the known-answer checks. `tests/test_helpers.py` runs each
-script on small files whose answers are worked out by hand, and `tests/test_workflow.py` reads `main.nf`.
+script on small files whose answers are worked out by hand, apart from `figure_frames.py` and `fig4/plot.py`,
+which it only runs or skips. `tests/test_workflow.py` reads `main.nf`. `fig4.nf` has no test of its own.
 
 The tests that run `main.nf` are skipped unless asked for, because they need Nextflow and the network, and
 take a few minutes. They check the sketch count, that a proteome is read once for each alphabet and k, that a

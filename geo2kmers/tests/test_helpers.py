@@ -10,10 +10,11 @@ import urllib.error
 import urllib.request
 from pathlib import Path
 
+import numpy as np
 import pytest
 from test_units import RANDOM_PROTEIN, STOPS, to_dna
 
-from geo2kmers import landing, sequences, sketch
+from geo2kmers import landing, scoring, sequences, sketch
 from geo2kmers.cli import main
 from geo2kmers.geo import Geo2KmersError
 
@@ -232,8 +233,9 @@ def test_a_probe_set_lands_when_3_probes_land_on_one_protein(tmp_path):
     probes |= {"set2/0": probes["set1/0"], "set2/1": probes["set1/1"], "set2/2": "ATTAGCTTAACGTAGATAGCCATAA"}
     rule, k, rows, touched = landing.land_probes(probes, [proteome])
     assert (rule, k, touched) == ("probe_set", 7, 5)
-    passed = landing.passing_landings(rule, rows, lambda p: p.split("/")[0])
-    assert passed == {"set1": {"GENE"}}  # set2 has only 2 probes on the protein
+    passed = landing.passing_landings(rule, rows, lambda p: [p.split("/")[0]])
+    assert set(passed) == {"set1"} and set(passed["set1"]) == {"GENE"}  # set2 has only 2 probes on the protein
+    assert passed["set1"]["GENE"] == 6  # three places, two k-mers each
 
 
 def test_landing_reads_both_strands_and_agrees_with_translate_frames(tmp_path):
@@ -255,7 +257,7 @@ def test_a_short_oligo_landing_needs_half_its_kmers(tmp_path):
     a_little = to_dna(protein[:8] + "W" * 12)
     rule, _, rows, touched = landing.land_probes({"a": whole, "b": a_little}, [proteome])
     assert rule == "short_oligo" and touched == 2
-    assert landing.passing_landings(rule, rows) == {"a": {"GENE"}}
+    assert set(landing.passing_landings(rule, rows)) == {"a"}
 
 
 def fig4_files(tmp_path, values):
@@ -276,7 +278,7 @@ def fig4_files(tmp_path, values):
         "GSE1\t4D\tmain\tPre\tPost\t2\t2\t0.90\t0.1\tfull\nGSE2\t4C\tmain\tPre\tPost\t2\t2\t0.10\t0.1\tfull\n",
     )
     write(tmp_path / "plat.tsv", "gse\ttype\tlanding_share\nGSE1\tarray\t0.5\nGSE2\tRNA-seq\t\n")
-    write(tmp_path / "land/GSE1.landing.tsv", "feature\tprotein\na\tA\nb\tB\n")
+    write(tmp_path / "land/GSE1.landing.tsv", "feature\tprotein\tdistinct_kmers\na\tA\t5\nb\tB\t5\n")
     (tmp_path / "series/GSE1").mkdir(parents=True)
     rows = "".join(f'"{name}"\t' + "\t".join(map(str, row)) + "\n" for name, row in values.items())
     header = '"ID_REF"\t' + "\t".join(f'"{s}"' for s in samples) + "\n"
@@ -313,15 +315,104 @@ def test_fig4_land_keeps_the_reading_with_more_probes_on_the_proteome(tmp_path, 
     run(monkeypatch, "fig4/land.py", "GSE1", "GPL1", tmp_path / "t.probes.tsv.gz", proteins, tmp_path)
     share = rows(tmp_path / "GSE1.landing_share.tsv")[0]
     assert share["orientation"] == "complement" and share["probes_with_a_kmer_complemented"] == "3"
-    assert rows(tmp_path / "GSE1.landing.tsv") == [{"feature": "set1", "protein": "GENE"}]
+    assert [(r["feature"], r["protein"]) for r in rows(tmp_path / "GSE1.landing.tsv")] == [("set1", "GENE")]
 
 
 def test_fig4_annotation_control_counts_agreement_only_among_annotated_landings(tmp_path, monkeypatch):
     write(
         tmp_path / "series/GSE1/GPL570.txt",
-        "!platform_table_begin\nID\tGene Symbol\na\tGENE\nb\tOTHER /// MORE\nc\t\n!platform_table_end\n",
+        "!platform_table_begin\nID\tGene Symbol\na\tGENE\nb\tOTHER /// MORE\nc\t\nd\t---\n!platform_table_end\n",
     )
-    write(tmp_path / "land/GSE1.landing.tsv", "feature\tprotein\na\tGene\nb\tGENE\nc\tGENE\n")
+    landing_table = "feature\tprotein\tdistinct_kmers\na\tGene\t5\nb\tGENE\t2\nc\tGENE\t9\nd\tGENE\t9\n"
+    write(tmp_path / "land/GSE1.landing.tsv", landing_table)
     run(monkeypatch, "fig4/annotation_control.py", tmp_path / "series", tmp_path / "land", tmp_path / "o.tsv")
     row = rows(tmp_path / "o.tsv")[0]
-    assert (row["landings"], row["landings_with_annotation"], row["agree"]) == ("3", "2", "1")
+    assert (row["landings"], row["landings_with_annotation"], row["agree"]) == ("4", "2", "1")  # c and d have no gene
+    assert (row["annotated_5_or_more_kmers"], row["agree_5_or_more_kmers"]) == ("1", "1")
+    assert (row["annotated_under_5_kmers"], row["agree_under_5_kmers"]) == ("1", "0")
+
+
+def test_a_short_oligo_lands_only_through_its_longest_stop_free_frame(tmp_path):
+    protein = RANDOM_PROTEIN[:40]
+    proteome = write(tmp_path / "p.fasta", f">GENE\n{protein}\n")
+    # frame 0 is the protein but holds a stop, and frame 1 is stop-free, so frame 0 cannot give a landing
+    probe = to_dna(protein[:9]) + "TAA" + to_dna(protein[9:18])
+    _, _, rows, touched = landing.land_probes({"a": probe + "A" * 3}, [proteome], k=7)
+    assert touched == 1
+    assert all(r[2] != 0 for r in rows)
+
+
+def test_no_kmer_crosses_a_stop_in_landing(tmp_path):
+    proteome = write(tmp_path / "p.fasta", f">GENE\n{'M' * 4}{'A' * 3}\n")
+    _, _, rows, touched = landing.land_probes(
+        {"a": to_dna("MMMM") + "TAA" + to_dna("AAA") + "AAAAAAAA"}, [proteome], k=7
+    )
+    assert touched == 0 and not rows
+
+
+def test_a_kmer_owned_by_two_proteins_lands_on_both(tmp_path):
+    shared = RANDOM_PROTEIN[:20]
+    proteome = write(tmp_path / "p.fasta", f">ONE\n{shared}\n>TWO\n{shared}W\n")
+    rule, _, rows, _ = landing.land_probes({"a": to_dna(shared)}, [proteome])
+    assert set(landing.passing_landings(rule, rows)["a"]) == {"ONE", "TWO"}
+
+
+def test_exactly_half_the_kmers_is_enough_for_a_short_oligo():
+    rows = [("a", "GENE", 0, 7, 14, frozenset(range(7)))]
+    assert set(landing.passing_landings("short_oligo", rows)) == {"a"}
+    assert not landing.passing_landings("short_oligo", [("a", "GENE", 0, 6, 14, frozenset(range(6)))])
+
+
+def test_a_probe_in_two_probe_sets_counts_in_both():
+    rows = [(str(i), "GENE", 0, 1, 2, frozenset({i})) for i in range(3)]
+    passed = landing.passing_landings("probe_set", rows, lambda p: ["x", "y"])
+    assert set(passed) == {"x", "y"} and passed["x"]["GENE"] == 3
+
+
+def test_stepminer_threshold_agrees_with_a_search_of_every_split():
+    rng = np.random.default_rng(1)
+    for _ in range(50):
+        values = rng.normal(size=int(rng.integers(3, 30)))
+        a = np.sort(values)
+        errors = [((a[:i] - a[:i].mean()) ** 2).sum() + ((a[i:] - a[i:].mean()) ** 2).sum() for i in range(1, len(a))]
+        best = int(np.argmin(errors)) + 1
+        assert scoring.stepminer_threshold(values) == pytest.approx((a[:best].mean() + a[best:].mean()) / 2)
+
+
+def test_standardise_by_hand():
+    values = np.array([0.0, 0.0, 4.0, 4.0])
+    # threshold 2, sample sd 2.3094...
+    assert scoring.standardise(values)[2] == pytest.approx((4 - 2.5) / (3 * 2.3094010767585))
+    assert scoring.standardise(np.ones(4)) is None
+
+
+def test_scores_weigh_clusters_and_keep_m1_alone_when_asked():
+    z = {"A": np.array([1.0]), "B": np.array([2.0]), "C": np.array([4.0]), "D": np.array([8.0])}
+    clusters = {"A": {13}, "B": {14}, "C": {3}, "D": {14, 3}}
+    planned, weighted = scoring.scores(z, clusters, False)
+    assert planned[0] == pytest.approx(-1 + (2 + 4 + 8) / 3)
+    assert weighted[0] == pytest.approx(-1 + (2 + 8) + 2 * (4 + 8))
+    planned, weighted = scoring.scores(z, clusters, True)
+    assert (planned[0], weighted[0]) == (-1.0, -1.0)
+
+
+@pytest.mark.parametrize(
+    "auc, published, expected",
+    [
+        (0.3, 0.17, True),
+        (0.33, 0.17, False),
+        (0.6, 0.54, True),
+        (0.45, 0.54, False),
+        (0.65, 0.8, True),
+        (0.64, 0.8, False),
+    ],
+)
+def test_the_rule_needs_the_same_side_and_a_distance_of_at_most_0_15(auc, published, expected):
+    assert scoring.passes(auc, published) is expected
+
+
+def test_platforms_labels_rna_seq_as_not_covered(tmp_path, monkeypatch):
+    share = write(tmp_path / "s.tsv", "gse\tgpl\trule\nGSE1\tGPL1\tprobe_set\n")
+    run(monkeypatch, "fig4/platforms.py", share, tmp_path / "o.tsv")
+    found = {r["gse"]: r["type"] for r in rows(tmp_path / "o.tsv")}
+    assert found["GSE1"] == "array" and found["GSE99963"] == "RNA-seq, not covered by geo2kmers"

@@ -13,50 +13,63 @@ holding a k-mer is kept. This uses no annotation, and the landing share file rec
 import csv
 import gzip
 import sys
+from collections import defaultdict
+from pathlib import Path
 
 import numpy as np
 
 from geo2kmers.geo import read_table
 from geo2kmers.landing import land_probes, passing_landings
 from geo2kmers.sequences import find_column
+from geo2kmers.sketch import read_fasta
 
 gse, gpl, table, proteins, out = sys.argv[1:]
 
 
 def read_probes(path):
-    """Return {probe name: sequence} and {probe name: feature}."""
-    probes, feature = {}, {}
+    """Return {probe name: sequence} and {probe name: its features}. One probe can serve several features."""
+    probes, feature = {}, defaultdict(list)
     if str(path).endswith(".tsv.gz"):
         with gzip.open(path, "rt") as f:
             reader = csv.DictReader(f, delimiter="\t")
             set_column = "man_fsetid" if "man_fsetid" in reader.fieldnames else "probe_set"
             for i, row in enumerate(reader):
                 if row["sequence"] and row["sequence"] != "NA":
-                    probes[str(i)] = row["sequence"]
-                    feature[str(i)] = row[set_column]
+                    name = row.get("fid") or str(i)
+                    probes[name] = row["sequence"]
+                    feature[name].append(row[set_column])
         return probes, feature
     _, columns, rows = read_table(path, "platform")
     sequence = find_column(columns, ["SEQUENCE"])
     for row in rows:
         if row.get(sequence, "").strip():
             probes[row[columns[0]]] = row[sequence].strip().upper()
-            feature[row[columns[0]]] = row[columns[0]]
+            feature[row[columns[0]]].append(row[columns[0]])
     return probes, feature
 
 
 probes, feature = read_probes(table)
 COMPLEMENT = str.maketrans("ACGT", "TGCA")
+flipped_probes = {name: s.translate(COMPLEMENT) for name, s in probes.items()}
 given = land_probes(probes, [proteins])
-flipped = land_probes({name: s.translate(COMPLEMENT) for name, s in probes.items()}, [proteins])
+flipped = land_probes(flipped_probes, [proteins])
 orientation = "complement" if flipped[3] > given[3] else "as_given"
 rule, k, rows, touched = flipped if orientation == "complement" else given
+# The same landing on backward proteins, which code for nothing, shows how much of it chance and repeats allow.
+backward = f"{out}/{gse}.backward.fasta"
+with open(backward, "w") as f:
+    f.writelines(f">{name}\n{sequence[::-1]}\n" for name, sequence in read_fasta(proteins).items())
+chance_rows = land_probes(flipped_probes if orientation == "complement" else probes, [backward])[2]
+Path(backward).unlink()
+reversed_landings = sum(len(found) for found in passing_landings(rule, chance_rows, feature.__getitem__).values())
 landed = passing_landings(rule, rows, feature.__getitem__)
+landings = sum(len(found) for found in landed.values())
 with open(f"{out}/{gse}.landing.tsv", "w") as f:
-    f.write("feature\tprotein\n")
-    f.writelines(f"{name}\t{protein}\n" for name in sorted(landed) for protein in sorted(landed[name]))
+    f.write("feature\tprotein\tdistinct_kmers\n")
+    f.writelines(f"{name}\t{p}\t{landed[name][p]}\n" for name in sorted(landed) for p in sorted(landed[name]))
 all_proteins = {protein for names in landed.values() for protein in names}
 median = float(np.median([len(s) for s in probes.values()]))
-columns = "gse gpl rule k median_probe_length probes probes_with_a_kmer_in_proteome landing_share features_landed proteins_landed orientation probes_with_a_kmer_as_given probes_with_a_kmer_complemented"
+columns = "gse gpl rule k median_probe_length probes probes_with_a_kmer_in_proteome landing_share features_landed proteins_landed orientation probes_with_a_kmer_as_given probes_with_a_kmer_complemented landings reversed_landings"
 values = [
     gse,
     gpl,
@@ -69,7 +82,7 @@ values = [
     len(landed),
     len(all_proteins),
 ]
-values += [orientation, given[3], flipped[3]]
+values += [orientation, given[3], flipped[3], landings, reversed_landings]
 with open(f"{out}/{gse}.landing_share.tsv", "w") as f:
     f.write(columns.replace(" ", "\t") + "\n" + "\t".join(map(str, values)) + "\n")
 print(*values)

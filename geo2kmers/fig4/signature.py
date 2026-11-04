@@ -26,9 +26,15 @@ genes = [(clusters[i], str(r[i]).strip()) for r in rows[weight_row + 1 :] for i 
 
 
 def protein_of(symbol):
-    """The reviewed human protein whose gene name is this symbol, longest first: (accession, sequence, how many)."""
+    """The reviewed human protein for this symbol: (accession, sequence, how many, how the name matched).
+
+    A search also finds entries that list the symbol as a synonym of another gene, so an entry whose main
+    gene name is the symbol comes first, then the longest.
+    """
     query = f"(gene_exact:{symbol}) AND (organism_id:9606) AND (reviewed:true)"
-    form = urllib.parse.urlencode({"query": query, "fields": "accession,sequence", "format": "tsv", "size": 25})
+    form = urllib.parse.urlencode(
+        {"query": query, "fields": "accession,gene_primary,sequence", "format": "tsv", "size": 25}
+    )
     request = urllib.request.Request(f"{URL}?{form}", headers={"User-Agent": f"geo2kmers {os.environ['NCBI_EMAIL']}"})
     for attempt in range(5):
         try:
@@ -39,20 +45,33 @@ def protein_of(symbol):
             time.sleep(2**attempt)
     else:
         raise OSError(f"UniProt did not answer for {symbol}")
-    found = sorted((line.split("\t") for line in lines), key=lambda x: (-len(x[1]), x[0]))
-    return (*found[0], len(found)) if found else ("", "", 0)
+    found = sorted((line.split("\t") for line in lines), key=lambda x: (x[1] != symbol, -len(x[2]), x[0]))
+    if not found:
+        return "", "", 0, ""
+    accession, primary, sequence = found[0]
+    return accession, sequence, len(found), "main name" if primary == symbol else f"synonym of {primary}"
 
 
 with open(f"{out}/signature_proteins.tsv", "w", newline="") as t, open(f"{out}/signature_proteins.fasta", "w") as fasta:
     table = csv.writer(t, delimiter="\t", lineterminator="\n")
     table.writerow(
-        ["gene", "cluster", "group", "weight_in_ghosh", "accession", "length_aa", "reviewed_entries", "resolved"]
+        [
+            "gene",
+            "cluster",
+            "group",
+            "weight_in_ghosh",
+            "accession",
+            "length_aa",
+            "reviewed_entries",
+            "resolved",
+            "name_match",
+        ]
     )
     written = set()  # a gene can sit in clusters 14 and 3: one table row each, one FASTA record
     for cluster, gene in genes:
-        accession, sequence, hits = protein_of(gene)
+        accession, sequence, hits, match = protein_of(gene)
         group = "M1" if cluster == 13 else "M2"
-        table.writerow([gene, cluster, group, weights[cluster], accession, len(sequence), hits, bool(sequence)])
+        table.writerow([gene, cluster, group, weights[cluster], accession, len(sequence), hits, bool(sequence), match])
         if sequence and gene not in written:
             fasta.write(f">{gene}\n{sequence}\n")
             written.add(gene)

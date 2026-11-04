@@ -41,10 +41,11 @@ PLATFORM_RULES = {
     # MIN_SHARE_IN_PROTEOME above apply.
     "long_probe": {"min_nt": 100},
     # 50 to 60 nt gives 16 to 20 residues, too few for k = 12 to leave more than 9 k-mers. At k = 7 a 60 nt probe
-    # has 14, and half of them must match: 7 windows in a row cannot match by chance in a small proteome.
+    # has 14, and half of them must match. Repeats can still pass: reversed_landings in fig4/land.py measures this.
     "short_oligo": {"min_nt": 40, "k": 7, "min_share": 0.5},
-    # 25 nt gives 8 residues, so k = 7 leaves 2 k-mers a frame and one probe is weak evidence. Affymetrix tiles
-    # about 11 probes per probe set, and 3 landing on one protein is hard to reach by chance.
+    # 25 nt gives 8 residues, so k = 7 leaves 2 k-mers a frame and one probe is weak evidence. Older Affymetrix
+    # arrays have about 11 separate probes per probe set, so 3 asks for more than one chance match. Overlapping
+    # probes, as on GPL17586, can pass on one k-mer: fig4/land.py measures this with reversed proteins.
     "probe_set": {"min_nt": 0, "k": 7, "min_probes": 3},
 }
 

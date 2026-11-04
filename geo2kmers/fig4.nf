@@ -106,9 +106,9 @@ process SCORE {
     path folders, stageAs: 'series/*'
 
     output:
-    path "platforms.tsv"
     path "auc.tsv", emit: auc
     path "sample_scores.tsv"
+    path "platforms.tsv", emit: platforms
 
     script:
     """
@@ -116,6 +116,31 @@ process SCORE {
     ${params.python} ${projectDir}/fig4/platforms.py shares/* platforms.tsv
     ${params.python} ${projectDir}/fig4/score.py ${params.signature} ${projectDir}/fig4/groups.tsv \
         ${projectDir}/fig4/published_fig4.tsv platforms.tsv series landing .
+    """
+}
+
+// How often would chance pass the rule? 1000 draws over all series together.
+process CHANCE {
+    errorStrategy { killedFromOutside(task.exitStatus) && task.attempt <= 3 ? 'retry' : 'terminate' }
+    maxRetries 3
+    memory { 8.GB * task.attempt }
+    time { 2.hour * task.attempt }
+    publishDir "${params.outdir}", mode: 'copy'
+
+    input:
+    path platforms
+    path auc
+    path landings, stageAs: 'landing/*'
+    path folders, stageAs: 'series/*'
+
+    output:
+    path "chance_test.tsv"
+    path "chance_by_comparison.tsv"
+
+    script:
+    """
+    PYTHONPATH=${projectDir} ${params.python} ${projectDir}/fig4/chance.py ${params.signature} ${projectDir}/fig4/groups.tsv \
+        ${projectDir}/fig4/published_fig4.tsv auc.tsv series landing .
     """
 }
 
@@ -150,5 +175,6 @@ workflow {
     tables = Channel.fromList(SERIES).join(series.map { tuple(it.name, it) })
     LAND(tables, probes)
     SCORE(LAND.out.share.collect(), LAND.out.landing.collect(), series.collect())
+    CHANCE(SCORE.out.platforms, SCORE.out.auc, LAND.out.landing.collect(), series.collect())
     ANNOTATION_CONTROL(SCORE.out.auc, LAND.out.landing.collect(), series.collect())
 }

@@ -35,7 +35,7 @@ def run_proteome_index(args):
 def run_land(args):
     probes = sketch.read_fasta(args.fasta)
     rule, k, rows, touched = landing.land_probes(probes, args.proteome, args.k)
-    landed = landing.passing_landings(rule, rows, lambda probe: probe.rsplit("/", 1)[0])
+    landed = landing.passing_landings(rule, rows, lambda probe: [probe.rsplit("/", 1)[0]])
     with open(args.out, "w") as f:
         f.write("feature\tprotein\tsetting\n")
         for name in sorted(landed):

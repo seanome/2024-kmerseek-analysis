@@ -647,11 +647,49 @@ def test_the_schema_refuses_two_settings_in_one_table(tmp_path):
         schema.validate_table(write(tmp_path / "x.tsv", GOOD_TABLE + extra))
 
 
+@pytest.mark.parametrize(
+    "text",
+    [
+        "kmer\talphabet\tk\tsetting\nACD\tprotein\t3\tprotein20_k3\n",
+        "kmer\talphabet\tk\tsetting\tn_probes\nACD\tprotein\t3\tprotein20_k3\t2\n",
+        "kmer\talphabet\tk\tsetting\tintensity_weight\nACD\tprotein\t3\tprotein20_k3\t1.5\n",
+    ],
+)
+def test_the_schema_allows_each_shape_it_describes(tmp_path, text):
+    assert schema.validate_table(write(tmp_path / "x.tsv", text))[1] == 1
+
+
+@pytest.mark.parametrize(
+    "old, new, message",
+    [
+        ("\t1.5\t", "\tnan\t", "not allowed"),
+        ("\t1.5\t", "\tinf\t", "not allowed"),
+        ("\t2\n", "\t-2\n", "not allowed"),
+        ("\t2\n", "\tmany\n", "not allowed"),
+        ("\t2\n", "\t0\n", "not allowed"),
+        ("\t2\n", "\t2\textra\n", "cells"),
+    ],
+)
+def test_the_schema_refuses_bad_cells(tmp_path, old, new, message):
+    with pytest.raises(Geo2KmersError, match=message):
+        schema.validate_table(write(tmp_path / "x.tsv", GOOD_TABLE.replace(old, new)))
+
+
+def test_the_schema_refuses_non_canonical_dna_a_repeated_kmer_and_count_with_n_probes(tmp_path):
+    with pytest.raises(Geo2KmersError, match="canonical"):
+        schema.validate_table(write(tmp_path / "a.tsv", "kmer\talphabet\tk\tsetting\nTTT\tdna\t3\tdna_k3\n"))
+    with pytest.raises(Geo2KmersError, match="twice"):
+        schema.validate_table(write(tmp_path / "b.tsv", GOOD_TABLE + GOOD_TABLE.splitlines()[1] + "\n"))
+    bad = "kmer\talphabet\tk\tsetting\tcount\tn_probes\nACD\tprotein\t3\tprotein20_k3\t4\t1\n"
+    with pytest.raises(Geo2KmersError, match="does not allow"):
+        schema.validate_table(write(tmp_path / "c.tsv", bad))
+
+
 def test_a_read_sketch_uses_count_and_needs_whole_numbers(tmp_path):
-    good = "kmer\talphabet\tk\tsetting\tcount\tn_probes\nACD\tprotein\t3\tprotein20_k3\t4\t1\n"
+    good = "kmer\talphabet\tk\tsetting\tcount\nACD\tprotein\t3\tprotein20_k3\t4\n"
     assert schema.validate_table(write(tmp_path / "a.tsv", good)) == ("protein20_k3", 1)
     with pytest.raises(Geo2KmersError, match="not allowed"):
-        schema.validate_table(write(tmp_path / "b.tsv", good.replace("\t4\t", "\t4.5\t")))
+        schema.validate_table(write(tmp_path / "b.tsv", good.replace("\t4\n", "\t4.5\n")))
 
 
 def test_a_saved_proteome_gives_the_same_picks_and_checks_its_setting(tmp_path):

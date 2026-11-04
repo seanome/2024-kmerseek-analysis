@@ -1,9 +1,9 @@
-gse	gpl	type	median_probe_length	rule	k	probes	landing_share	features_landed	proteins_landed	orientation	probes_with_a_kmer_as_given	probes_with_a_kmer_complemented
-GSE104079	GPL13912	array	60.0	short_oligo	7	59305	0.0355	158	74	as_given	2108	1697
-GSE111555	GPL17586	array	25.0	probe_set	7	6058440	0.0149	2382	262	complement	32888	90385
-GSE27536	GPL570	array	25.0	probe_set	7	604258	0.0079	315	186	as_given	4762	2076
-GSE28998	GPL570	array	25.0	probe_set	7	604258	0.0079	315	186	as_given	4762	2076
-GSE83578	GPL13667	array	25.0	probe_set	7	548517	0.0108	425	221	as_given	5902	1929
-GSE120862	GPL16791,GPL18573	RNA-seq, not covered by geo2kmers										
-GSE99963	GPL16791	RNA-seq, not covered by geo2kmers										
-GSE144304	GPL18573	RNA-seq, not covered by geo2kmers										
+gse	gpl	type	median_probe_length	rule	k	probes	landing_share	features_landed	proteins_landed	orientation	probes_with_a_kmer_as_given	probes_with_a_kmer_complemented	landings	reversed_landings
+GSE104079	GPL13912	array	60.0	short_oligo	7	59305	0.0354	76	44	as_given	2102	1693	81	22
+GSE111555	GPL17586	array	25.0	probe_set	7	5336008	0.0137	2356	262	complement	28414	73359	3484	2353
+GSE27536	GPL570	array	25.0	probe_set	7	604258	0.0079	314	186	as_given	4752	2065	316	7
+GSE28998	GPL570	array	25.0	probe_set	7	604258	0.0079	314	186	as_given	4752	2065	316	7
+GSE83578	GPL13667	array	25.0	probe_set	7	548517	0.0108	426	221	as_given	5908	1928	433	16
+GSE120862	GPL16791,GPL18573	RNA-seq, not covered by geo2kmers												
+GSE99963	GPL16791	RNA-seq, not covered by geo2kmers												
+GSE144304	GPL18573	RNA-seq, not covered by geo2kmers												
