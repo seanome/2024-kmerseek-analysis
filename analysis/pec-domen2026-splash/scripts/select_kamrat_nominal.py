@@ -55,7 +55,7 @@ def main() -> None:
     min_lfc = float(sys.argv[4]) if len(sys.argv) > 4 else 1.0
     out.mkdir(parents=True, exist_ok=True)
     dsg = pl.read_csv(design, separator="\t")
-    d = pl.read_csv(contigs_all, separator="\t")
+    d = pl.read_csv(contigs_all, separator="\t", infer_schema_length=None)  # decimals can first appear past row 100
     samples = [s for s in dsg["sample"] if s in d.columns]
     assert len(samples) == dsg.height, f"design samples missing from contigs: {set(dsg['sample']) - set(samples)}"
     cond = dict(zip(dsg["sample"], dsg["condition"]))

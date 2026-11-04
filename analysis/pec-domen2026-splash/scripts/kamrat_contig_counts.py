@@ -35,7 +35,7 @@ def main() -> None:
     contigs_all, raw_counts, design, out = sys.argv[1], sys.argv[2], sys.argv[3], Path(sys.argv[4])
     out.mkdir(parents=True, exist_ok=True)
     samples = pl.read_csv(design, separator="\t")["sample"].to_list()
-    d = pl.read_csv(contigs_all, separator="\t")
+    d = pl.read_csv(contigs_all, separator="\t", infer_schema_length=None)  # decimals can first appear past row 100
     missing = set(samples) - set(d.columns)
     assert not missing, f"samples missing from contigs: {missing}"
 
