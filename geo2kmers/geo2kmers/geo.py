@@ -13,6 +13,7 @@ ACC_URL = "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi"
 FTP_URL = "https://ftp.ncbi.nlm.nih.gov/geo/series"
 # GEO asks for no more than a few requests a second
 PAUSE_SECONDS = 0.4
+DOWNLOAD_TRIES = 5
 
 
 class Geo2KmersError(Exception):
@@ -41,8 +42,17 @@ def download(url, path, opener=urllib.request.urlopen):
     if path.exists() and path.stat().st_size > 0:
         return False
     part = path.with_name(path.name + ".part")
-    with opener(url, timeout=120) as response, open(part, "wb") as out:
-        out.writelines(iter(lambda: response.read(1 << 20), b""))
+    for attempt in range(DOWNLOAD_TRIES):
+        try:
+            with opener(url, timeout=120) as response, open(part, "wb") as out:
+                out.writelines(iter(lambda: response.read(1 << 20), b""))
+            break
+        except OSError as e:
+            code = getattr(e, "code", None)
+            busy = code is None or code == 429 or code >= 500  # a timeout has no code
+            if not busy or attempt == DOWNLOAD_TRIES - 1:
+                raise
+            time.sleep(2**attempt)
     part.replace(path)
     time.sleep(PAUSE_SECONDS)
     return True

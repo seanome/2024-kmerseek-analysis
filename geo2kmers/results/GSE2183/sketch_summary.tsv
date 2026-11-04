@@ -1,65 +1,65 @@
-sample	channel	alphabet	k	mode	rule	background	threshold	probes_in_intensity_table	probes_with_a_sequence	probes_with_intensity_zero	probes_used	probes_with_no_kmer	probes_with_no_stretch	distinct_kmers	sum_of_weight	signature_written	proteome
-GSM39421	ch1	dayhoff	19	present	intensity above the median of this array		1579.5	3840	3344	148	1799	1	0	94581	160956.0	True	
-GSM39421	ch1	dayhoff	19	weighted	max(0, intensity - background), background = 5th percentile of this array	308.6500000000001		3840	3344	148	3344	4	0	148448	1195886058.7	True	
-GSM39421	ch1	dna	31	present	intensity above the median of this array		1579.5	3840	3344	148	1799	0		443823	758774.0	True	
-GSM39421	ch1	dna	31	weighted	max(0, intensity - background), background = 5th percentile of this array	308.6500000000001		3840	3344	148	3344	0		693847	5353915967.15	True	
-GSM39421	ch1	hp	30	present	intensity above the median of this array		1579.5	3840	3344	148	1799	11	0	83027	140729.0	True	
-GSM39421	ch1	hp	30	weighted	max(0, intensity - background), background = 5th percentile of this array	308.6500000000001		3840	3344	148	3344	22	0	130312	1045156921.55	True	
-GSM39421	ch1	protein	10	present	intensity above the median of this array		1579.5	3840	3344	148	1799	0	0	104241	177987.0	True	
-GSM39421	ch1	protein	10	weighted	max(0, intensity - background), background = 5th percentile of this array	308.6500000000001		3840	3344	148	3344	0	0	163538	1324050815.95	True	
-GSM39421	ch2	dayhoff	19	present	intensity above the median of this array		669.0	3840	3344	595	1807	1	0	88406	160741.0	True	
-GSM39421	ch2	dayhoff	19	weighted	max(0, intensity - background), background = 5th percentile of this array	0.0		3840	3344	595	3344	4	0	148448	896903433.0	True	
-GSM39421	ch2	dna	31	present	intensity above the median of this array		669.0	3840	3344	595	1807	0		412972	754941.0	True	
-GSM39421	ch2	dna	31	weighted	max(0, intensity - background), background = 5th percentile of this array	0.0		3840	3344	595	3344	0		693847	4041119059.0	True	
-GSM39421	ch2	hp	30	present	intensity above the median of this array		669.0	3840	3344	595	1807	15	0	77488	140450.0	True	
-GSM39421	ch2	hp	30	weighted	max(0, intensity - background), background = 5th percentile of this array	0.0		3840	3344	595	3344	22	0	130312	781955691.0	True	
-GSM39421	ch2	protein	10	present	intensity above the median of this array		669.0	3840	3344	595	1807	0	0	97471	177928.0	True	
-GSM39421	ch2	protein	10	weighted	max(0, intensity - background), background = 5th percentile of this array	0.0		3840	3344	595	3344	0	0	163538	994545645.0	True	
-GSM39422	ch1	dayhoff	19	present	intensity above the median of this array		369.0	3840	3344	1371	1753	0	0	79955	153485.0	True	
-GSM39422	ch1	dayhoff	19	weighted	max(0, intensity - background), background = 5th percentile of this array	0.0		3840	3344	1371	3344	4	0	148448	794843817.0	True	
-GSM39422	ch1	dna	31	present	intensity above the median of this array		369.0	3840	3344	1371	1753	0		382592	733714.0	True	
-GSM39422	ch1	dna	31	weighted	max(0, intensity - background), background = 5th percentile of this array	0.0		3840	3344	1371	3344	0		693847	3525983964.0	True	
-GSM39422	ch1	hp	30	present	intensity above the median of this array		369.0	3840	3344	1371	1753	12	0	69829	133826.0	True	
-GSM39422	ch1	hp	30	weighted	max(0, intensity - background), background = 5th percentile of this array	0.0		3840	3344	1371	3344	22	0	130312	694070325.0	True	
-GSM39422	ch1	protein	10	present	intensity above the median of this array		369.0	3840	3344	1371	1753	0	0	88288	170140.0	True	
-GSM39422	ch1	protein	10	weighted	max(0, intensity - background), background = 5th percentile of this array	0.0		3840	3344	1371	3344	0	0	163538	880704434.0	True	
-GSM39422	ch2	dayhoff	19	present	intensity above the median of this array		403.5	3840	3344	1568	1767	1	0	82920	155619.0	True	
-GSM39422	ch2	dayhoff	19	weighted	max(0, intensity - background), background = 5th percentile of this array	0.0		3840	3344	1568	3344	4	0	148448	894293104.0	True	
-GSM39422	ch2	dna	31	present	intensity above the median of this array		403.5	3840	3344	1568	1767	0		392383	739337.0	True	
-GSM39422	ch2	dna	31	weighted	max(0, intensity - background), background = 5th percentile of this array	0.0		3840	3344	1568	3344	0		693847	3994129019.0	True	
-GSM39422	ch2	hp	30	present	intensity above the median of this array		403.5	3840	3344	1568	1767	13	0	72555	135807.0	True	
-GSM39422	ch2	hp	30	weighted	max(0, intensity - background), background = 5th percentile of this array	0.0		3840	3344	1568	3344	22	0	130312	781177185.0	True	
-GSM39422	ch2	protein	10	present	intensity above the median of this array		403.5	3840	3344	1568	1767	0	0	91472	172424.0	True	
-GSM39422	ch2	protein	10	weighted	max(0, intensity - background), background = 5th percentile of this array	0.0		3840	3344	1568	3344	0	0	163538	990844760.0	True	
-GSM39423	ch1	dayhoff	19	present	intensity above the median of this array		740.0	3840	3344	659	1770	0	0	85675	161080.0	True	
-GSM39423	ch1	dayhoff	19	weighted	max(0, intensity - background), background = 5th percentile of this array	0.0		3840	3344	659	3344	4	0	148448	1761901777.0	True	
-GSM39423	ch1	dna	31	present	intensity above the median of this array		740.0	3840	3344	659	1770	0		395939	744576.0	True	
-GSM39423	ch1	dna	31	weighted	max(0, intensity - background), background = 5th percentile of this array	0.0		3840	3344	659	3344	0		693847	7650899916.0	True	
-GSM39423	ch1	hp	30	present	intensity above the median of this array		740.0	3840	3344	659	1770	10	0	75266	141093.0	True	
-GSM39423	ch1	hp	30	weighted	max(0, intensity - background), background = 5th percentile of this array	0.0		3840	3344	659	3344	22	0	130312	1550210806.0	True	
-GSM39423	ch1	protein	10	present	intensity above the median of this array		740.0	3840	3344	659	1770	0	0	94445	178028.0	True	
-GSM39423	ch1	protein	10	weighted	max(0, intensity - background), background = 5th percentile of this array	0.0		3840	3344	659	3344	0	0	163538	1944059743.0	True	
-GSM39423	ch2	dayhoff	19	present	intensity above the median of this array		709.0	3840	3344	1124	1778	0	0	88822	160864.0	True	
-GSM39423	ch2	dayhoff	19	weighted	max(0, intensity - background), background = 5th percentile of this array	0.0		3840	3344	1124	3344	4	0	148448	1347058978.0	True	
-GSM39423	ch2	dna	31	present	intensity above the median of this array		709.0	3840	3344	1124	1778	0		411822	746088.0	True	
-GSM39423	ch2	dna	31	weighted	max(0, intensity - background), background = 5th percentile of this array	0.0		3840	3344	1124	3344	0		693847	5912129297.0	True	
-GSM39423	ch2	hp	30	present	intensity above the median of this array		709.0	3840	3344	1124	1778	12	0	77995	140767.0	True	
-GSM39423	ch2	hp	30	weighted	max(0, intensity - background), background = 5th percentile of this array	0.0		3840	3344	1124	3344	22	0	130312	1180596411.0	True	
-GSM39423	ch2	protein	10	present	intensity above the median of this array		709.0	3840	3344	1124	1778	0	0	97861	177917.0	True	
-GSM39423	ch2	protein	10	weighted	max(0, intensity - background), background = 5th percentile of this array	0.0		3840	3344	1124	3344	0	0	163538	1490410411.0	True	
-GSM39424	ch1	dayhoff	19	present	intensity above the median of this array		0.0	3840	3344	2008	1717	0	0	84095	153673.0	True	
-GSM39424	ch1	dayhoff	19	weighted	max(0, intensity - background), background = 5th percentile of this array	0.0		3840	3344	2008	3344	4	0	148448	1066700937.0	True	
-GSM39424	ch1	dna	31	present	intensity above the median of this array		0.0	3840	3344	2008	1717	0		391415	720966.0	True	
-GSM39424	ch1	dna	31	weighted	max(0, intensity - background), background = 5th percentile of this array	0.0		3840	3344	2008	3344	0		693847	4739701546.0	True	
-GSM39424	ch1	hp	30	present	intensity above the median of this array		0.0	3840	3344	2008	1717	12	0	73759	134357.0	True	
-GSM39424	ch1	hp	30	weighted	max(0, intensity - background), background = 5th percentile of this array	0.0		3840	3344	2008	3344	22	0	130312	934704400.0	True	
-GSM39424	ch1	protein	10	present	intensity above the median of this array		0.0	3840	3344	2008	1717	0	0	92729	170014.0	True	
-GSM39424	ch1	protein	10	weighted	max(0, intensity - background), background = 5th percentile of this array	0.0		3840	3344	2008	3344	0	0	163538	1178218015.0	True	
-GSM39424	ch2	dayhoff	19	present	intensity above the median of this array		15.0	3840	3344	1848	1801	0	0	90914	161856.0	True	
-GSM39424	ch2	dayhoff	19	weighted	max(0, intensity - background), background = 5th percentile of this array	0.0		3840	3344	1848	3344	4	0	148448	796480671.0	True	
-GSM39424	ch2	dna	31	present	intensity above the median of this array		15.0	3840	3344	1848	1801	0		420961	759134.0	True	
-GSM39424	ch2	dna	31	weighted	max(0, intensity - background), background = 5th percentile of this array	0.0		3840	3344	1848	3344	0		693847	3613669342.0	True	
-GSM39424	ch2	hp	30	present	intensity above the median of this array		15.0	3840	3344	1848	1801	12	0	79873	141595.0	True	
-GSM39424	ch2	hp	30	weighted	max(0, intensity - background), background = 5th percentile of this array	0.0		3840	3344	1848	3344	22	0	130312	694389610.0	True	
-GSM39424	ch2	protein	10	present	intensity above the median of this array		15.0	3840	3344	1848	1801	0	0	100131	178961.0	True	
-GSM39424	ch2	protein	10	weighted	max(0, intensity - background), background = 5th percentile of this array	0.0		3840	3344	1848	3344	0	0	163538	882407435.0	True	
+sample	channel	alphabet	k	mode	rule	background	threshold	probes_in_intensity_table	probes_with_a_sequence	probes_with_intensity_zero	probes_used	probes_with_no_kmer	probes_with_no_stretch	distinct_kmers	sum_of_weight	signature_written	proteome	platform_rule	landing_share
+GSM39421	ch1	dayhoff	19	present	intensity above the median of this array		1579.5	3840	3344	148	1799	1	0	94581	160956.0	True			
+GSM39421	ch1	dayhoff	19	weighted	max(0, intensity - background), background = 5th percentile of this array	308.6500000000001		3840	3344	148	3344	4	0	148448	1195886058.7	True			
+GSM39421	ch1	dna	31	present	intensity above the median of this array		1579.5	3840	3344	148	1799	0		443823	758774.0	True			
+GSM39421	ch1	dna	31	weighted	max(0, intensity - background), background = 5th percentile of this array	308.6500000000001		3840	3344	148	3344	0		693847	5353915967.15	True			
+GSM39421	ch1	hp	30	present	intensity above the median of this array		1579.5	3840	3344	148	1799	11	0	83027	140729.0	True			
+GSM39421	ch1	hp	30	weighted	max(0, intensity - background), background = 5th percentile of this array	308.6500000000001		3840	3344	148	3344	22	0	130312	1045156921.55	True			
+GSM39421	ch1	protein	10	present	intensity above the median of this array		1579.5	3840	3344	148	1799	0	0	104241	177987.0	True			
+GSM39421	ch1	protein	10	weighted	max(0, intensity - background), background = 5th percentile of this array	308.6500000000001		3840	3344	148	3344	0	0	163538	1324050815.95	True			
+GSM39421	ch2	dayhoff	19	present	intensity above the median of this array		669.0	3840	3344	595	1807	1	0	88406	160741.0	True			
+GSM39421	ch2	dayhoff	19	weighted	max(0, intensity - background), background = 5th percentile of this array	0.0		3840	3344	595	3344	4	0	148448	896903433.0	True			
+GSM39421	ch2	dna	31	present	intensity above the median of this array		669.0	3840	3344	595	1807	0		412972	754941.0	True			
+GSM39421	ch2	dna	31	weighted	max(0, intensity - background), background = 5th percentile of this array	0.0		3840	3344	595	3344	0		693847	4041119059.0	True			
+GSM39421	ch2	hp	30	present	intensity above the median of this array		669.0	3840	3344	595	1807	15	0	77488	140450.0	True			
+GSM39421	ch2	hp	30	weighted	max(0, intensity - background), background = 5th percentile of this array	0.0		3840	3344	595	3344	22	0	130312	781955691.0	True			
+GSM39421	ch2	protein	10	present	intensity above the median of this array		669.0	3840	3344	595	1807	0	0	97471	177928.0	True			
+GSM39421	ch2	protein	10	weighted	max(0, intensity - background), background = 5th percentile of this array	0.0		3840	3344	595	3344	0	0	163538	994545645.0	True			
+GSM39422	ch1	dayhoff	19	present	intensity above the median of this array		369.0	3840	3344	1371	1753	0	0	79955	153485.0	True			
+GSM39422	ch1	dayhoff	19	weighted	max(0, intensity - background), background = 5th percentile of this array	0.0		3840	3344	1371	3344	4	0	148448	794843817.0	True			
+GSM39422	ch1	dna	31	present	intensity above the median of this array		369.0	3840	3344	1371	1753	0		382592	733714.0	True			
+GSM39422	ch1	dna	31	weighted	max(0, intensity - background), background = 5th percentile of this array	0.0		3840	3344	1371	3344	0		693847	3525983964.0	True			
+GSM39422	ch1	hp	30	present	intensity above the median of this array		369.0	3840	3344	1371	1753	12	0	69829	133826.0	True			
+GSM39422	ch1	hp	30	weighted	max(0, intensity - background), background = 5th percentile of this array	0.0		3840	3344	1371	3344	22	0	130312	694070325.0	True			
+GSM39422	ch1	protein	10	present	intensity above the median of this array		369.0	3840	3344	1371	1753	0	0	88288	170140.0	True			
+GSM39422	ch1	protein	10	weighted	max(0, intensity - background), background = 5th percentile of this array	0.0		3840	3344	1371	3344	0	0	163538	880704434.0	True			
+GSM39422	ch2	dayhoff	19	present	intensity above the median of this array		403.5	3840	3344	1568	1767	1	0	82920	155619.0	True			
+GSM39422	ch2	dayhoff	19	weighted	max(0, intensity - background), background = 5th percentile of this array	0.0		3840	3344	1568	3344	4	0	148448	894293104.0	True			
+GSM39422	ch2	dna	31	present	intensity above the median of this array		403.5	3840	3344	1568	1767	0		392383	739337.0	True			
+GSM39422	ch2	dna	31	weighted	max(0, intensity - background), background = 5th percentile of this array	0.0		3840	3344	1568	3344	0		693847	3994129019.0	True			
+GSM39422	ch2	hp	30	present	intensity above the median of this array		403.5	3840	3344	1568	1767	13	0	72555	135807.0	True			
+GSM39422	ch2	hp	30	weighted	max(0, intensity - background), background = 5th percentile of this array	0.0		3840	3344	1568	3344	22	0	130312	781177185.0	True			
+GSM39422	ch2	protein	10	present	intensity above the median of this array		403.5	3840	3344	1568	1767	0	0	91472	172424.0	True			
+GSM39422	ch2	protein	10	weighted	max(0, intensity - background), background = 5th percentile of this array	0.0		3840	3344	1568	3344	0	0	163538	990844760.0	True			
+GSM39423	ch1	dayhoff	19	present	intensity above the median of this array		740.0	3840	3344	659	1770	0	0	85675	161080.0	True			
+GSM39423	ch1	dayhoff	19	weighted	max(0, intensity - background), background = 5th percentile of this array	0.0		3840	3344	659	3344	4	0	148448	1761901777.0	True			
+GSM39423	ch1	dna	31	present	intensity above the median of this array		740.0	3840	3344	659	1770	0		395939	744576.0	True			
+GSM39423	ch1	dna	31	weighted	max(0, intensity - background), background = 5th percentile of this array	0.0		3840	3344	659	3344	0		693847	7650899916.0	True			
+GSM39423	ch1	hp	30	present	intensity above the median of this array		740.0	3840	3344	659	1770	10	0	75266	141093.0	True			
+GSM39423	ch1	hp	30	weighted	max(0, intensity - background), background = 5th percentile of this array	0.0		3840	3344	659	3344	22	0	130312	1550210806.0	True			
+GSM39423	ch1	protein	10	present	intensity above the median of this array		740.0	3840	3344	659	1770	0	0	94445	178028.0	True			
+GSM39423	ch1	protein	10	weighted	max(0, intensity - background), background = 5th percentile of this array	0.0		3840	3344	659	3344	0	0	163538	1944059743.0	True			
+GSM39423	ch2	dayhoff	19	present	intensity above the median of this array		709.0	3840	3344	1124	1778	0	0	88822	160864.0	True			
+GSM39423	ch2	dayhoff	19	weighted	max(0, intensity - background), background = 5th percentile of this array	0.0		3840	3344	1124	3344	4	0	148448	1347058978.0	True			
+GSM39423	ch2	dna	31	present	intensity above the median of this array		709.0	3840	3344	1124	1778	0		411822	746088.0	True			
+GSM39423	ch2	dna	31	weighted	max(0, intensity - background), background = 5th percentile of this array	0.0		3840	3344	1124	3344	0		693847	5912129297.0	True			
+GSM39423	ch2	hp	30	present	intensity above the median of this array		709.0	3840	3344	1124	1778	12	0	77995	140767.0	True			
+GSM39423	ch2	hp	30	weighted	max(0, intensity - background), background = 5th percentile of this array	0.0		3840	3344	1124	3344	22	0	130312	1180596411.0	True			
+GSM39423	ch2	protein	10	present	intensity above the median of this array		709.0	3840	3344	1124	1778	0	0	97861	177917.0	True			
+GSM39423	ch2	protein	10	weighted	max(0, intensity - background), background = 5th percentile of this array	0.0		3840	3344	1124	3344	0	0	163538	1490410411.0	True			
+GSM39424	ch1	dayhoff	19	present	intensity above the median of this array		0.0	3840	3344	2008	1717	0	0	84095	153673.0	True			
+GSM39424	ch1	dayhoff	19	weighted	max(0, intensity - background), background = 5th percentile of this array	0.0		3840	3344	2008	3344	4	0	148448	1066700937.0	True			
+GSM39424	ch1	dna	31	present	intensity above the median of this array		0.0	3840	3344	2008	1717	0		391415	720966.0	True			
+GSM39424	ch1	dna	31	weighted	max(0, intensity - background), background = 5th percentile of this array	0.0		3840	3344	2008	3344	0		693847	4739701546.0	True			
+GSM39424	ch1	hp	30	present	intensity above the median of this array		0.0	3840	3344	2008	1717	12	0	73759	134357.0	True			
+GSM39424	ch1	hp	30	weighted	max(0, intensity - background), background = 5th percentile of this array	0.0		3840	3344	2008	3344	22	0	130312	934704400.0	True			
+GSM39424	ch1	protein	10	present	intensity above the median of this array		0.0	3840	3344	2008	1717	0	0	92729	170014.0	True			
+GSM39424	ch1	protein	10	weighted	max(0, intensity - background), background = 5th percentile of this array	0.0		3840	3344	2008	3344	0	0	163538	1178218015.0	True			
+GSM39424	ch2	dayhoff	19	present	intensity above the median of this array		15.0	3840	3344	1848	1801	0	0	90914	161856.0	True			
+GSM39424	ch2	dayhoff	19	weighted	max(0, intensity - background), background = 5th percentile of this array	0.0		3840	3344	1848	3344	4	0	148448	796480671.0	True			
+GSM39424	ch2	dna	31	present	intensity above the median of this array		15.0	3840	3344	1848	1801	0		420961	759134.0	True			
+GSM39424	ch2	dna	31	weighted	max(0, intensity - background), background = 5th percentile of this array	0.0		3840	3344	1848	3344	0		693847	3613669342.0	True			
+GSM39424	ch2	hp	30	present	intensity above the median of this array		15.0	3840	3344	1848	1801	12	0	79873	141595.0	True			
+GSM39424	ch2	hp	30	weighted	max(0, intensity - background), background = 5th percentile of this array	0.0		3840	3344	1848	3344	22	0	130312	694389610.0	True			
+GSM39424	ch2	protein	10	present	intensity above the median of this array		15.0	3840	3344	1848	1801	0	0	100131	178961.0	True			
+GSM39424	ch2	protein	10	weighted	max(0, intensity - background), background = 5th percentile of this array	0.0		3840	3344	1848	3344	0	0	163538	882407435.0	True			

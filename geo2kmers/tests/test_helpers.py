@@ -256,3 +256,72 @@ def test_a_short_oligo_landing_needs_half_its_kmers(tmp_path):
     rule, _, rows, touched = landing.land_probes({"a": whole, "b": a_little}, [proteome])
     assert rule == "short_oligo" and touched == 2
     assert landing.passing_landings(rule, rows) == {"a": {"GENE"}}
+
+
+def fig4_files(tmp_path, values):
+    """A one-series test: gene A is M1, gene B is M2, and post samples score higher."""
+    samples = ["GSM1", "GSM2", "GSM3", "GSM4"]
+    write(
+        tmp_path / "sig.tsv",
+        "gene\tcluster\tgroup\nA\t13\tM1\nB\t14\tM2\n",
+    )
+    write(
+        tmp_path / "groups.tsv",
+        "dataset\tcomparison\tgroup\tsample\n"
+        + "".join(f"GSE1\tmain\t{g}\t{s}\n" for g, s in zip([0, 0, 1, 1], samples, strict=True)),
+    )
+    write(
+        tmp_path / "pub.tsv",
+        "dataset\tpanel\tcomparison\tgroup0\tgroup1\tn0\tn1\tauc\tp\tmodel\n"
+        "GSE1\t4D\tmain\tPre\tPost\t2\t2\t0.90\t0.1\tfull\nGSE2\t4C\tmain\tPre\tPost\t2\t2\t0.10\t0.1\tfull\n",
+    )
+    write(tmp_path / "plat.tsv", "gse\ttype\tlanding_share\nGSE1\tarray\t0.5\nGSE2\tRNA-seq\t\n")
+    write(tmp_path / "land/GSE1.landing.tsv", "feature\tprotein\na\tA\nb\tB\n")
+    (tmp_path / "series/GSE1").mkdir(parents=True)
+    rows = "".join(f'"{name}"\t' + "\t".join(map(str, row)) + "\n" for name, row in values.items())
+    header = '"ID_REF"\t' + "\t".join(f'"{s}"' for s in samples) + "\n"
+    with gzip.open(tmp_path / "series/GSE1/GSE1_series_matrix.txt.gz", "wt") as f:
+        f.write("!Series_x\n!series_matrix_table_begin\n" + header + rows + "!series_matrix_table_end\n")
+
+
+def test_fig4_score_marks_a_dataset_reproduced_and_an_rna_seq_one_not_covered(tmp_path, monkeypatch):
+    values = {"a": [9, 8, 2, 1], "b": [1, 2, 8, 9], "c": [0, 0, 0, 0]}  # M1 falls and M2 rises after exercise
+    fig4_files(tmp_path, values)
+    args = ["sig.tsv", "groups.tsv", "pub.tsv", "plat.tsv", "series", "land", "."]
+    monkeypatch.chdir(tmp_path)
+    run(monkeypatch, "fig4/score.py", *args)
+    first, second = rows(tmp_path / "auc.tsv")
+    assert first["reproduced_auc"] == "1.000" and first["verdict"] == "reproduced"
+    assert second["verdict"] == "not covered by geo2kmers" and second["reproduced_auc"] == ""
+
+
+def test_fig4_score_says_not_reproduced_on_the_wrong_side_of_a_half(tmp_path, monkeypatch):
+    values = {"a": [1, 2, 8, 9], "b": [9, 8, 2, 1], "c": [0, 0, 0, 0]}  # the opposite of the published direction
+    fig4_files(tmp_path, values)
+    monkeypatch.chdir(tmp_path)
+    run(monkeypatch, "fig4/score.py", "sig.tsv", "groups.tsv", "pub.tsv", "plat.tsv", "series", "land", ".")
+    assert rows(tmp_path / "auc.tsv")[0]["verdict"] == "not reproduced"
+
+
+def test_fig4_land_keeps_the_reading_with_more_probes_on_the_proteome(tmp_path, monkeypatch):
+    protein = RANDOM_PROTEIN[:60]
+    proteins = write(tmp_path / "p.fasta", f">GENE\n{protein}\n")
+    complement = str.maketrans("ACGT", "TGCA")
+    probes = [to_dna(protein[i * 10 : i * 10 + 8]).translate(complement) + "A" for i in range(3)]
+    with gzip.open(tmp_path / "t.probes.tsv.gz", "wt") as f:
+        f.write("probe_set\tsequence\n" + "".join(f"set1\t{p}\n" for p in probes))
+    run(monkeypatch, "fig4/land.py", "GSE1", "GPL1", tmp_path / "t.probes.tsv.gz", proteins, tmp_path)
+    share = rows(tmp_path / "GSE1.landing_share.tsv")[0]
+    assert share["orientation"] == "complement" and share["probes_with_a_kmer_complemented"] == "3"
+    assert rows(tmp_path / "GSE1.landing.tsv") == [{"feature": "set1", "protein": "GENE"}]
+
+
+def test_fig4_annotation_control_counts_agreement_only_among_annotated_landings(tmp_path, monkeypatch):
+    write(
+        tmp_path / "series/GSE1/GPL570.txt",
+        "!platform_table_begin\nID\tGene Symbol\na\tGENE\nb\tOTHER /// MORE\nc\t\n!platform_table_end\n",
+    )
+    write(tmp_path / "land/GSE1.landing.tsv", "feature\tprotein\na\tGene\nb\tGENE\nc\tGENE\n")
+    run(monkeypatch, "fig4/annotation_control.py", tmp_path / "series", tmp_path / "land", tmp_path / "o.tsv")
+    row = rows(tmp_path / "o.tsv")[0]
+    assert (row["landings"], row["landings_with_annotation"], row["agree"]) == ("3", "2", "1")

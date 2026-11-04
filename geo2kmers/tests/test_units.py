@@ -503,7 +503,8 @@ def test_the_largest_k_keeps_every_letter_of_a_kmer():
     assert sketch.kmer_numbers(one, 63, "hp", table)[0] != sketch.kmer_numbers(other, 63, "hp", table)[0]
 
 
-def test_fetch_stops_if_the_matrix_fails_for_any_reason_but_404(tmp_path):
+def test_fetch_stops_if_the_matrix_fails_for_any_reason_but_404(tmp_path, monkeypatch):
+    monkeypatch.setattr(geo.time, "sleep", lambda s: None)
     pages = {
         "acc=GSE1&": b"!Series_platform_id = GPL1\n!Series_sample_id = GSM1\n",
         "acc=GPL1&": b"!platform_table_begin\nID\tSEQUENCE\n1\tACGT\n!platform_table_end\n",
@@ -666,3 +667,30 @@ def test_a_saved_proteome_gives_the_same_picks_and_checks_its_setting(tmp_path):
         sketch.ProteomeFrames([tmp_path / "p.npz"], 6, "protein")
     with pytest.raises(Geo2KmersError, match="holds protein k = 5"):
         sketch.ProteomeFrames([tmp_path / "p.npz"], 5, "hp")
+
+
+def test_a_download_tries_again_when_the_server_is_busy(tmp_path, monkeypatch):
+    monkeypatch.setattr(geo.time, "sleep", lambda s: None)
+    tries = []
+
+    def opener(url, timeout):
+        tries.append(url)
+        if len(tries) < 3:
+            raise urllib.error.HTTPError(url, 504, "Gateway Timeout", None, None)
+        return _Closing(b"text")
+
+    assert geo.download("u", tmp_path / "a", opener) is True
+    assert (tmp_path / "a").read_bytes() == b"text" and len(tries) == 3
+
+
+def test_a_download_does_not_try_again_after_a_404(tmp_path, monkeypatch):
+    monkeypatch.setattr(geo.time, "sleep", lambda s: None)
+    tries = []
+
+    def opener(url, timeout):
+        tries.append(url)
+        raise urllib.error.HTTPError(url, 404, "Not Found", None, None)
+
+    with pytest.raises(urllib.error.HTTPError):
+        geo.download("u", tmp_path / "a", opener)
+    assert len(tries) == 1

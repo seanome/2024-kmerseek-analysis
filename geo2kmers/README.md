@@ -221,7 +221,7 @@ environment built from `environment.yml`. All numbers below come from the file n
 that folder. The sketches themselves are too large to keep here.
 
 - 67 tasks ran, each on the first try, with exit status 0 (`geo2kmers.trace.txt`).
-- The run took 101 seconds (`wall_time.txt`), under the 10 minutes set for this test.
+- The run took 99 seconds (`wall_time.txt`), under the 10 minutes set for this test.
 - The platform has 3840 probes. 3344 got a sequence from GenBank, 30 point to a whole genome record and
   so have no sequence, and 466 have no accession. The 3344 are 1672 distinct sequences,
   each spotted twice. Lengths run from 101 to 650 nt, median 512
@@ -239,8 +239,9 @@ that folder. The sketches themselves are too large to keep here.
   is the least conserved part of a gene and so cross-hybridises least with related genes. So many of these
   k-mers are probably not from a protein (`sketch_summary.tsv`).
 - The same with the species' own proteome: 652 of the 3344 probes give k-mers, 45727 distinct. That run
-  took 117 seconds, in 70 tasks. Three of them read the proteome, for 48 to 50 seconds and at most 1.5 GB each, and
-  every sketch reads the saved result in about 2 seconds (`results/GSE2183_proteome/`).
+  took 124 seconds, in 70 tasks. Three of them read the proteome, for 39 to 40 seconds and at most 1.5 GB each,
+  and every sketch reads the saved result in about 2 seconds (`results/GSE2183_proteome/geo2kmers.trace.txt`).
+  With this proteome, `landing_share` is 0.6167 at protein k = 10 (`results/GSE2183_proteome/sketch_summary.tsv`).
   (`results/GSE2183_proteome/`).
 - 30 spots (15 clones) list accession AY484747, which NCBI titles "Mytilus edulis mitochondrion, complete
   genome". The platform table names one gene for each clone, such as Mitochondrial-ND6, and one clone
@@ -301,8 +302,37 @@ the longest passing stretch is in the true frame for 6147, or 93.7 %. If the lon
 least 100 amino acids, that rises to 98.7 %, on 6111 sequences (`frame_truth_by_length.tsv`). GPL738 has no
 such check. Frames are only as right as NCBI's annotation of each record.
 
+## A test against a published figure
+
+Domen et al. 2026 (PNAS) Fig. 4C-D scores exercise datasets on a list of 338 macrophage genes and reports an
+AUC for each: the chance that a post-exercise sample scores above a pre-exercise one, where 0.5 means no
+difference. `fig4.nf` tries to get the same answer with no gene annotation: probes land on the proteins of those
+genes through protein k-mers alone. Results are in `results/fig4/`, described in `fig4/README.md`.
+
+| Series | comparison | published AUC | this test | Ghosh weights |
+|---|---|---:|---:|---:|
+| GSE104079 | 45 min | 0.18 | 0.452 | 0.356 |
+| GSE27536 | all | 0.17 | **0.277** | **0.277** |
+| GSE83578 | 30 min | 0.07 | 0.352 | **0.094** |
+| GSE83578 | 3 h | 0.07 | 0.262 | **0.102** |
+| GSE83578 | 24 h | 0.54 | **0.637** | **0.582** |
+| GSE111555 | 18 weeks | 0.93 | **0.791** | **0.900** |
+| GSE28998 | 12 weeks | 0.80 | 0.531 | 0.551 |
+
+Bold means on the same side of 0.5 as the published AUC and within 0.15 of it, the rule fixed before running
+(`auc.tsv`). The rule also asked for a landing share of at least 0.2, and no series has one: they run from
+0.0079 to 0.0355, because the denominator is every probe on the array and the proteome is 262 proteins
+(`platforms.tsv`). So no dataset qualified, and the task passes under that rule without testing anything.
+That part of the rule was the wrong one. The table is the real result: 3 of 7 comparisons with the planned
+score, and 5 of 7 with the second score, which was added after the plan and read after the first run. It uses
+Ghosh et al. 2023's own weights, -1, 1 and 2 on sums of clusters 13, 14 and 3. GSE120862, GSE99963 and GSE144304
+are RNA-seq, which geo2kmers does not cover.
+
 ## Limits
 
+- On tiled arrays such as GPL17586, a probe set can pass the 3 probe rule on one k-mer, because neighbouring
+  probes overlap. Only 8.0 % of its landings with an annotation agree with it, against 76.2 % and 83.8 % on the
+  two older Affymetrix platforms (`results/fig4/annotation_control.tsv`).
 - The sequence fetched for a GenBank accession is the whole record, which need not be exactly what was
   spotted on the slide. On GSE2183, 3344 spots use the EST record of the clone, the closest sequence
   published. A record under the length limit that is not the clone would not be caught.
