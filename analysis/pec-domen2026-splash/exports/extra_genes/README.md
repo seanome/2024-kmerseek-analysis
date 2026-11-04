@@ -97,6 +97,14 @@ both a new-proteome and a Swiss-Prot name, the two share the first three charact
 in the new proteome are as its IDs give them, some cut short (TRANSLATIONALLYCONTROLLED,
 ALPHATRY/BETATRY).
 
+## How much of the paper's DESeq2 sheet has no name
+
+Counted 2026-11-03 from `paper_deseq_all.parquet`, at the paper's cutoff (p <= 0.05 and 2-fold in
+any contrast): 1,837 genes, of which 1,179 (64 %) have no usable name: 1,087 only the gene ID, 90 a
+bare number, 2 a date. `gene_names_proposed.tsv` covers 95 of the 1,179, because it names only
+genes that a changed sequence reached. 55 of the 1,179 pass the cutoff in 2 or more contrasts, and
+493 have baseMean above 10 in at least one contrast where they pass.
+
 ## Sequences in no old gene model
 
 Changed sequences whose peptides match no old gene-model protein but do match the new proteome:
