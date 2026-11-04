@@ -36,8 +36,9 @@ def test_probe_with_no_usable_frame_is_reported():
     # every frame on both strands holds a stop codon
     seq = "TAATTAATAATTAGCTAACTAGTTAGTCTAGACTAAGTGA" * 2
     assert sketch.protein_kmers(seq, 3, "protein") == ([], 0)
-    table, report = sketch.build_sketch({"p": seq}, {"p": 10.0, "q": 1.0}, 3, "protein", "weighted")
-    assert report["probes_with_zero_usable_frames"] == 1 and not table
+    probes = {"p": seq, "open": "GCTGCTGCTGCTGCTGCT"}
+    table, report = sketch.build_sketch(probes, {"p": 10.0, "open": 10.0, "q": 1.0}, 3, "protein", "weighted")
+    assert report["probes_with_zero_usable_frames"] == 1 and table
 
 
 @pytest.mark.parametrize("alphabet,k", [("dna", 15), ("protein", 5), ("hp", 9)])
@@ -109,6 +110,70 @@ def test_two_colour_needs_a_channel(tmp_path):
     assert values == {"a": 200.0} and "ch2 Intensity" in source
 
 
+def test_negative_channel_values_are_refused_too(tmp_path):
+    t = sample_table(tmp_path / "GSM1.txt", [("a", -1.2, 3.0)], ["ID_REF", "ch1 Intensity", "VALUE"], channels=2)
+    with pytest.raises(Geo2KmersError, match="log ratio"):
+        sketch.load_intensities(t, "GSM1", "ch1")
+    t = sample_table(tmp_path / "GSM2.txt", [("a", 3.0, -0.4)], ["ID_REF", "ch1 Intensity", "VALUE"], channels=2)
+    with pytest.raises(Geo2KmersError, match="log ratio"):
+        sketch.load_intensities(t, "GSM2", column="VALUE")
+
+
+def test_channel_on_a_one_colour_matrix_is_refused(tmp_path):
+    text = (
+        '!Sample_channel_count\t"1"\n!series_matrix_table_begin\n"ID_REF"\t"GSM1"\n"a"\t300\n!series_matrix_table_end\n'
+    )
+    m = write(tmp_path / "GSE1_series_matrix.txt", text)
+    with pytest.raises(Geo2KmersError, match="one-colour"):
+        sketch.load_intensities(m, "GSM1", "ch1")
+    assert sketch.load_intensities(m, "GSM1")[0] == {"a": 300.0}
+
+
+def test_values_that_look_like_logarithms_print_a_warning(tmp_path, capsys):
+    t = sample_table(tmp_path / "GSM1.txt", [("a", 7.1), ("b", 12.0)], ["ID_REF", "VALUE"])
+    sketch.load_intensities(t, "GSM1")
+    assert "logarithms" in capsys.readouterr().out
+
+
+def test_numeric_detection_column_is_not_read_as_a_call(tmp_path):
+    t = sample_table(tmp_path / "GSM1.txt", [("a", 900, 0.01), ("b", 5, 0.9)], ["ID_REF", "VALUE", "Detection"])
+    assert sketch.load_intensities(t, "GSM1")[1] is None
+
+
+def test_detection_p_value_limit_is_0_05(tmp_path):
+    rows = [("a", 1, 0.05), ("b", 1, 0.051)]
+    t = sample_table(tmp_path / "GSM1.txt", rows, ["ID_REF", "VALUE", "Detection Pval"])
+    assert sketch.load_intensities(t, "GSM1")[1] == {"a": True, "b": False}
+
+
+def test_k_too_long_for_every_probe_stops(tmp_path):
+    with pytest.raises(Geo2KmersError, match="no probe gave a k-mer"):
+        sketch.build_sketch({"p": "ACGTACGTACGTACGTACGTACGTA"}, {"p": 10.0, "q": 0.0}, 10, "protein", "weighted")
+
+
+def test_zero_weight_kmers_stay_in_the_table_and_leave_the_signature(tmp_path):
+    probes = {"low": "ACGTTGCAAC", "high": "GGGATTCCTA"}
+    table, report = sketch.build_sketch(probes, {"low": 0.0, "high": 100.0}, 5, "dna", "weighted")
+    sketch.write_sketch(table, report, tmp_path / "x.tsv", "GSM1", None)
+    rows = [r.split("\t") for r in (tmp_path / "x.tsv").read_text().splitlines()[1:]]
+    zero = {r[0] for r in rows if float(r[1]) == 0}
+    assert zero and len(zero) < len(rows)
+    minhash = next(iter(sourmash.load_file_as_signatures(str(tmp_path / "x.tsv.sig")))).minhash
+    assert len(minhash) == len(rows) - len(zero)
+
+
+def test_default_batch_is_200_and_the_key_shortens_the_pause():
+    sleeps, sizes = [], []
+
+    def post(ids, email, api_key):
+        sizes.append(len(ids))
+        return ""
+
+    sequences.fetch_accessions([f"A{i}" for i in range(450)], "e", api_key="k", post=post, sleep=sleeps.append)
+    assert sizes == [200, 200, 50]
+    assert sleeps == [0.11, 0.11, 0.11]
+
+
 def test_two_colour_series_matrix_is_refused(tmp_path):
     text = (
         '!Sample_channel_count\t"2"\n!series_matrix_table_begin\n"ID_REF"\t"GSM1"\n"a"\t0.3\n!series_matrix_table_end\n'
@@ -129,6 +194,16 @@ def test_affymetrix_with_no_sequences_names_the_package(tmp_path):
         tmp_path / "GPL570.txt",
         "!Platform_title = [HG-U133_Plus_2] Affymetrix Human Genome U133 Plus 2.0 Array\n"
         "!platform_table_begin\nID\tGene Symbol\n1007_s_at\tDDR1\n!platform_table_end\n",
+    )
+    with pytest.raises(Geo2KmersError, match="hgu133plus2probe"):
+        sequences.make_probe_fasta(t, tmp_path / "o.fasta", tmp_path / "o.tsv")
+
+
+def test_affymetrix_with_a_genbank_column_still_stops(tmp_path):
+    t = write(
+        tmp_path / "GPL570.txt",
+        "!Platform_title = [HG-U133_Plus_2] Affymetrix Human Genome U133 Plus 2.0 Array\n"
+        "!platform_table_begin\nID\tGB_ACC\n1007_s_at\tU48705\n!platform_table_end\n",
     )
     with pytest.raises(Geo2KmersError, match="hgu133plus2probe"):
         sequences.make_probe_fasta(t, tmp_path / "o.fasta", tmp_path / "o.tsv")

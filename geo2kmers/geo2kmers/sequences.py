@@ -103,14 +103,15 @@ def make_probe_fasta(gpl_table, out_fasta, source_table, cache_fasta=None, post=
     meta, columns, rows = read_table(gpl_table, "platform")
     seq_col = find_column(columns, ["SEQUENCE"])
     acc_col = find_column(columns, ACCESSION_COLUMNS)
+    package = affymetrix_package(meta) if seq_col is None else None
+    if package:
+        # a GenBank record on an Affymetrix table is the gene the probes target, not the 25-letter probes
+        raise Geo2KmersError(
+            f"{gpl_table} is an Affymetrix platform with no SEQUENCE column. "
+            f"The 25-letter probe sequences are in the Bioconductor package {package}. "
+            "This tool will not guess them."
+        )
     if seq_col is None and acc_col is None:
-        package = affymetrix_package(meta)
-        if package:
-            raise Geo2KmersError(
-                f"{gpl_table} is an Affymetrix platform with no sequence or accession column. "
-                f"The 25-letter probe sequences are in the Bioconductor package {package}. "
-                "This tool will not guess them."
-            )
         raise Geo2KmersError(
             f"{gpl_table} has no SEQUENCE column and no GenBank column. Its columns are: {', '.join(columns)}"
         )

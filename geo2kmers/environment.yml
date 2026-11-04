@@ -7,3 +7,4 @@ dependencies:
   - numpy
   - sourmash-minimal
   - pytest
+  - biopython

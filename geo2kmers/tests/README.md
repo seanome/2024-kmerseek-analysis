@@ -14,7 +14,9 @@ Test series, chosen by searching GEO's platform records with NCBI E-utilities an
 | channels | 2 per sample. ch1 is control digestive gland, ch2 treated digestive gland |
 
 `data/GSE2183/` holds the platform table, the series record, GSM39421's table, the probe sequences the
-tool fetched, `probe_sequence_source.tsv` and `provenance.json`, with checksums of the downloads.
+tool fetched, `probe_sequence_source.tsv` and `provenance.json`. The last lists a checksum for each of
+the 7 downloaded files. The other 4 files (the matrix and three GSM tables) are not kept here, and
+`provenance.json` gives their URLs.
 
 `data/known_answer_probes.fasta` holds 50 of those fetched sequences. Each is 300 nt or longer, has only
 A, C, G and T, and differs from the others.

@@ -12,6 +12,8 @@ nextflow.enable.dsl = 2
 
 params.gse      = null
 params.outdir   = null
+params.gpl      = ''      // needed when a series uses several platforms
+params.sample_tables = false // also download every GSM table, which hold detection calls
 // alphabet:k pairs, and the modes to run for each
 params.sketches = 'dna:31,protein:10,hp:30'
 params.modes    = 'weighted,present'
@@ -46,7 +48,7 @@ process FETCH {
     import sys
     sys.path.insert(0, "${projectDir}")
     from geo2kmers.cli import main
-    raise SystemExit(main(["fetch", "${gse}", "--outdir", "${gse}"]))
+    raise SystemExit(main(["fetch", "${gse}", "--outdir", "${gse}"${params.gpl ? ', "--gpl", "' + params.gpl + '"' : ''}${params.sample_tables ? ', "--sample-tables"' : ''}]))
     """.stripIndent()
 }
 
@@ -62,6 +64,7 @@ process SEQUENCES {
     output:
     path "probes.fasta", emit: fasta
     path "probe_sequence_source.tsv"
+    path "genbank_cache.fasta", optional: true
 
     script:
     """

@@ -25,6 +25,7 @@ DETECTION_P_COLUMNS = [
     "DETECTION P VALUE",
 ]
 BACKGROUND_PERCENTILE = 5
+LOG_SCALE_LIMIT = 32
 
 
 def read_fasta(path):
@@ -119,7 +120,7 @@ def load_intensities(path, sample, channel=None, column=None):
         counts = dict(zip(samples, meta.get("Sample_channel_count", [[]])[0]))
         if counts.get(sample, "1") != "1":
             sibling = path.parent / "gsm" / f"{sample}.txt"
-            if channel and sibling.exists():
+            if (channel or column) and sibling.exists():
                 table = sibling
             else:
                 raise Geo2KmersError(
@@ -127,6 +128,8 @@ def load_intensities(path, sample, channel=None, column=None):
                     "Give --channel ch1 or ch2 and keep the GSM tables from `fetch` in gsm/ beside the matrix."
                 )
         else:
+            if channel or column:
+                raise Geo2KmersError(f"{sample} is a one-colour array, so --channel and --column do not apply here")
             index = samples.index(sample)
             values = {p: to_float(r[index]) for p, r in rows.items()}
             check_not_ratio(values, sample)
@@ -139,8 +142,7 @@ def load_intensities(path, sample, channel=None, column=None):
         raise Geo2KmersError(f"{sample} is a two-colour array. Give --channel ch1 or ch2.")
     name = channel_column(columns, channel, column) if (channel or column) else "VALUE"
     values = {r[columns[0]]: to_float(r.get(name)) for r in rows}
-    if not two_colour:
-        check_not_ratio(values, sample)
+    check_not_ratio(values, sample)
     return values, read_detection(columns, rows), f"column '{name}' of {table.name}"
 
 
@@ -149,7 +151,8 @@ def read_detection(columns, rows):
     upper = {c.upper(): c for c in columns}
     call = next((upper[c] for c in DETECTION_COLUMNS if c in upper), None)
     p_col = next((upper[c] for c in DETECTION_P_COLUMNS if c in upper), None)
-    if call:
+    cells = {r.get(call, "").strip().upper() for r in rows} if call else set()
+    if call and cells <= {"", "P", "M", "A", "PRESENT", "MARGINAL", "ABSENT"}:
         return {r[columns[0]]: r.get(call, "").strip().upper() in ("P", "PRESENT") for r in rows}
     if p_col:
         return {r[columns[0]]: to_float(r.get(p_col)) is not None and to_float(r.get(p_col)) <= 0.05 for r in rows}
@@ -163,6 +166,8 @@ def check_not_ratio(values, sample):
             f"{sample} has negative values, so this column is a log ratio, not an intensity. "
             "Use a sample table and name the intensity column with --column."
         )
+    if numbers and max(numbers) < LOG_SCALE_LIMIT:
+        print(f"warning: every value of {sample} is below {LOG_SCALE_LIMIT}, so they may be logarithms of intensity")
 
 
 def add_probe(table, kmers, weight, probe_index):
@@ -234,6 +239,11 @@ def build_sketch(probes, intensities, k, alphabet, mode, detection=None):
     if alphabet != "dna":
         report["probes_with_zero_usable_frames"] = no_frames
     report["distinct_kmers"] = len(table)
+    if not table:
+        raise Geo2KmersError(
+            f"no probe gave a k-mer at k = {k} with alphabet {alphabet}: {no_frames} of "
+            f"{report['probes_used']} probes had zero usable frames, and the longest probe used is {longest} nt"
+        )
     report["sum_of_probe_weight_times_kmers"] = expected_sum
     report["sum_of_weight"] = float(sum(row[0] for row in table.values()))
     return table, report
