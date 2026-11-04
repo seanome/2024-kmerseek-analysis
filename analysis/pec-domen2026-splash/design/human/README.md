@@ -115,6 +115,11 @@ Built by `scripts/human_label_swaps.py design/human design/human/label_swap`; li
   contrast), take the swap with the most uneven read depth between groups, the most even, and the
   middle one, as for Botryllus. Depth is mean reads per sample.
 
+Changed the same day at Olga's request, before any swapped result: the routes followed are
+SPLASH and KaMRaT + DESeq2 at uncorrected p < 0.05, in the real contrasts and the swaps. SPLASH
+finds changes the other routes do not, and KaMRaT + DESeq2 had the best F1 for its cost on the
+simulated control. SPLASH's uncorrected p is `Cjs_0_pval`.
+
 Each swap runs the same routes as the real contrast. Scoring is fixed now too: the same list, the
 same 1,000 random gene sets per decile and the same direction rule as `human_compare.py`, and the
 share of the list reached is compared with the real labels' share. Three swaps per contrast can

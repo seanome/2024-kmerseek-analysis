@@ -25,11 +25,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[3] / "notebooks"))
 import pubfig as pf  # noqa: E402
 
 real_p, swap_p, rs_p, ss_p, swaps_p, out_stem = sys.argv[1:]
-ROUTES = {"splash_compactors": "SPLASH anchors\ncorrected p ≤ 0.05",
-          "kamrat_ttest_corrected": "KaMRaT, t-test\ncorrected p ≤ 0.05",
-          "kamrat_ttest_p05": "KaMRaT, t-test\np < 0.05",
-          "kamrat_deseq2_corrected": "KaMRaT, DESeq2\ncorrected p ≤ 0.05",
-          "kamrat_deseq2_p05": "KaMRaT, DESeq2\np < 0.05"}
+ROUTES = {"splash_compactors_p05": "SPLASH anchors\np < 0.05", "kamrat_deseq2_p05": "KaMRaT, DESeq2\np < 0.05"}
 COL = {r: (pf.OKABE_ITO["blue"] if r.startswith("splash") else pf.OKABE_ITO["reddish_purple"]) for r in ROUTES}
 SHORT = {"gse99963_sed_post_vs_pre": "high-fat diet: after vs before",
          "gse99963_ex_post_vs_pre": "diet + exercise: after vs before",

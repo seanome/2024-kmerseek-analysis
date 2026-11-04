@@ -18,6 +18,7 @@ OUT_ROOT     ?= $(PEC_ROOT)/human
 # the 108 GSE99963 + GSE144304 runs downloaded and MD5-checked on 2026-11-02 for the read search
 REUSE_DIR    ?= $(PEC_ROOT)/sra_search/reads
 SERIES       ?= GSE99963,GSE144304,GSE120862
+RUN_DIR      ?= run
 
 SLURM_ACCOUNT   ?= ayeletv
 # the head needs up to 4 days; the normal partition refuses that (QOSMaxWallDurationPerJobLimit)
@@ -61,7 +62,7 @@ pilot:
 
 run:
 	$(call require_cluster)
-	mkdir -p run && cd run && ml load biology nextflow && $(HEAD_SUBMIT) $(NF_COMMON) --series $(SERIES) $(NF_ARGS)
+	mkdir -p $(RUN_DIR) && cd $(RUN_DIR) && ml load biology nextflow && $(HEAD_SUBMIT) $(NF_COMMON) --series $(SERIES) $(NF_ARGS)
 
 swaps: HEAD_JOBNAME := nf-pec361-human-swaps
 swaps: HEAD_SESSION := pec361hs

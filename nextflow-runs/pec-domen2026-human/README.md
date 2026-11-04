@@ -86,3 +86,11 @@ the asks, because these are the samples already measured.
 | KaMRaT | 7.7 GB | 16 GB | 36 min | 3 h |
 | KaMRaT + DESeq2 | 15.5 GB | 32 GB | 11 min | 2 h |
 | search | 31.1 GB | 48 GB | 10 min | 2 h |
+
+## Routes
+
+`--routes` chooses what goes on to the protein search. The default (Olga, 2026-11-03) is
+`compactors_p05` (SPLASH anchors at uncorrected p < 0.05, about 4 times the corrected anchors, first
+ask 96 GB and 4 h by scaling the corrected run's 33.3 GB and 6 min) and `kamrat_deseq2_p05`.
+To run a second folder beside `run/`:
+`make run SERIES=GSE99963,GSE144304 RUN_DIR=run-two HEAD_JOBNAME=nf-pec361-human-two HEAD_SESSION=pec361h2`.

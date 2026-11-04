@@ -14,6 +14,8 @@
  *                 -> KaMRaT contig counts + PyDESeq2, p < 0.05           -> protein search
  * Protein search: six-frame peptides >= 20 aa -> sourmash manysearch against GENCODE v50
  *                 translations -> parasail check (E <= 1e-5, query coverage >= 50 %)
+ * By default only SPLASH anchors at uncorrected p < 0.05 and KaMRaT + DESeq2 go on to the search
+ * (--routes).
  * Then one table of gene names per contrast, route and direction.
  *
  * Settings are those of the Botryllus pipeline, except single-end reads (no interleaving)
@@ -33,6 +35,9 @@ params.series    = 'GSE99963,GSE144304,GSE120862'
 params.contrasts = ''     // comma list to run only these contrasts; empty = every contrast of params.series
 params.reuse_dir = ''     // folder of earlier MD5-checked downloads (<run>.fastq.gz + .done), hard-linked
 params.label_swap = false // run the swapped-label contrasts instead of the real ones
+// sequences to search (Olga, 2026-11-03: SPLASH and KaMRaT + DESeq2, uncorrected p). Also possible:
+// compactors, kamrat_ttest, kamrat_p05
+params.routes    = 'compactors_p05,kamrat_deseq2_p05'
 // compactors: k-mers per extension segment. Botryllus used the default 2 (anchor 31 + 2 x 27 = 85 nt
 // inside one read); the human reads are 51-81 nt, so with 2 no read qualifies and no compactor is
 // made (pilot, 2026-11-03: "0 reads found for 0 anchors", 1,881 anchors). 1 needs 58 nt.
@@ -202,6 +207,38 @@ process compactors {
     """
 }
 
+// The same compactors for every anchor with uncorrected p < 0.05 (Cjs_0_pval, the p value that
+// SPLASH corrects to choose scores.tsv; all_anchors.tsv has the same columns as scores.tsv).
+process compactors_p05 {
+    tag "${contrast}"
+    label 'compactors_p05'
+    storeDir "${RESULTS}/${contrast}"
+
+    input:
+    tuple val(contrast), path(splash_out), path(fq)
+
+    output:
+    tuple val(contrast), path("compactors_p05")
+
+    script:
+    """
+    mkdir compactors_p05 && cd compactors_p05
+    for f in ../SRR*.fastq.gz; do readlink -f \$f; done > input_list.txt
+    awk -F'\\t' 'NR == 1 { for (i = 1; i <= NF; i++) if (\$i == "Cjs_0_pval") c = i; if (!c) exit 3; print; next } \$c < 0.05' \
+      ../${splash_out}/result.after_correction.all_anchors.tsv > anchors_p05.tsv
+    echo "anchors with p < 0.05: \$(( \$(wc -l < anchors_p05.tsv) - 1 ))" > n_input_anchors.txt
+    if [ \$(wc -l < anchors_p05.tsv) -le 1 ]; then
+      printf 'anchor\\tcompactor\\n' > compactors.tsv   # no anchor: nothing to extend
+    else
+      ${TIME} compactors.time ${SPLASH}/compactors --max_length 186 --num_threads ${task.cpus} --epsilon 0.001 --beta 0.5 \\
+        --num_kmers ${params.compactors_num_kmers} --input_format fastq input_list.txt anchors_p05.tsv \\
+        compactors.tsv > compactors.log 2>&1
+    fi
+    test -s compactors.tsv
+    echo "compactors: \$(( \$(wc -l < compactors.tsv) - 1 ))" >> n_input_anchors.txt
+    """
+}
+
 // ---------------------------------------------------------------- DE-kupl counting + KaMRaT
 
 process dekupl {
@@ -311,7 +348,7 @@ process search {
     tuple val(contrast), val(src), path("search_${src}")
 
     script:
-    def prep = src == 'compactors'
+    def prep = src.startsWith('compactors')
         ? "ln -s ../${seqdir}/compactors.tsv seqs.tsv; COL=compactor"
         : "ln -s ../${seqdir}/contigs.tsv seqs.tsv; COL=contig"
     """
@@ -398,7 +435,10 @@ workflow {
         }
 
     sp   = splash(per_contrast.map { c, cjs, dsg, dd, fq -> tuple(c, cjs, fq) })
-    comp = compactors(sp.join(per_contrast.map { c, cjs, dsg, dd, fq -> tuple(c, fq) }))
+    def per_contrast_fq = per_contrast.map { c, cjs, dsg, dd, fq -> tuple(c, fq) }
+    def routes = params.routes.tokenize(',')
+    comp = 'compactors' in routes ? compactors(sp.join(per_contrast_fq)) : Channel.empty()
+    comp_p = compactors_p05(sp.join(per_contrast_fq))
     dk   = dekupl(per_contrast.map { c, cjs, dsg, dd, fq -> tuple(c, dsg, fq) })
     km   = kamrat(dk.join(per_contrast.map { c, cjs, dsg, dd, fq -> tuple(c, dsg) })
                     .map { c, d, dsg -> tuple(c, dsg, d) })
@@ -407,9 +447,11 @@ workflow {
                            .map { c, dsg, dd, k, d -> tuple(c, dsg, dd, k, d) })
 
     sr = search(comp.map { c, d -> tuple(c, 'compactors', d) }
+                  .mix(comp_p.map { c, d -> tuple(c, 'compactors_p05', d) })
                   .mix(km.map { c, d -> tuple(c, 'kamrat_ttest', d) })
                   .mix(kr.map { c, a, b -> tuple(c, 'kamrat_p05', a) })
                   .mix(kr.map { c, a, b -> tuple(c, 'kamrat_deseq2_p05', b) })
+                  .filter { c, src, d -> src in routes }
                   .combine(db))
 
     human_genes(sr.map { c, src, d -> "${c}/${src}" }.collect(), db)

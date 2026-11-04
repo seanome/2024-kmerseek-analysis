@@ -1,7 +1,9 @@
 #!/usr/bin/env python3
 """How many of each study's own genes each reference-free route reaches (notebook 361, human).
 
-Usage: human_compare.py <human_genes.tsv> <published_genes.tsv> <gene_basemean.tsv> <out.tsv>
+Usage: human_compare.py <human_genes.tsv> <published_genes.tsv> <gene_basemean.tsv> <out.tsv> <human_genes_summary.tsv>
+
+A route is scored for a contrast only if its search finished there (a row in the summary table).
 
 Same null as the Botryllus comparison (design/ANALYSIS_PLAN.md, 2026-10-30): for each contrast,
 route and direction, the share of the study's list reached by the route is compared with the
@@ -19,12 +21,13 @@ import sys
 import numpy as np
 import polars as pl
 
-hg, pub, base, out = sys.argv[1:5]
+hg, pub, base, out, summ_p = sys.argv[1:6]
 reached = pl.read_csv(hg, separator="\t")
 lists = pl.read_csv(pub, separator="\t")
 pool_all = pl.read_csv(base, separator="\t")
 N_DRAW = 1000
-ROUTES = ["splash_compactors", "kamrat_ttest_corrected", "kamrat_ttest_p05", "kamrat_deseq2_corrected",
+finished = set(pl.read_csv(summ_p, separator="\t").select("contrast", "route").unique().iter_rows())
+ROUTES = ["splash_compactors", "splash_compactors_p05", "kamrat_ttest_corrected", "kamrat_ttest_p05", "kamrat_deseq2_corrected",
           "kamrat_deseq2_p05"]
 rows = []
 for (series, contrast), L in lists.group_by(["series", "contrast"], maintain_order=True):
@@ -39,6 +42,8 @@ for (series, contrast), L in lists.group_by(["series", "contrast"], maintain_ord
     R = reached.filter(pl.col("contrast") == contrast)
     # every route is scored, also one that reached no gene (share 0)
     for route in ROUTES:
+        if (contrast, route) not in finished:
+            continue
         for direction in ("up", "down"):
             lst = sorted(set(L.filter(pl.col("direction") == direction)["gene"]) & set(dec))
             rr = R.filter((pl.col("route") == route) & pl.col("direction").is_in([direction, "none"]))

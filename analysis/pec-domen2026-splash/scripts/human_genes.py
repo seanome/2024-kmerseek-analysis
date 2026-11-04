@@ -12,6 +12,7 @@ of the GENCODE header (ENSP|ENST|ENSG|OTTHUMG|OTTHUMT|transcript|gene|length).
 
 Routes and thresholds:
   splash_compactors       SPLASH anchors, corrected p <= 0.05, extended to compactors (no direction)
+  splash_compactors_p05   SPLASH anchors, uncorrected p < 0.05, extended to compactors (no direction)
   kamrat_ttest_corrected  KaMRaT contigs, KaMRaT's corrected t-test p <= 0.05
   kamrat_ttest_p05        KaMRaT contigs, Welch t-test on log2(count + 1), uncorrected p < 0.05
   kamrat_deseq2_p05       KaMRaT contig counts + PyDESeq2, uncorrected p < 0.05
@@ -44,7 +45,7 @@ rows, summ = [], []
 def add(series, c, route, seqs, peps, align):
     """seqs: seq_id, direction; peps: peptide_id, seq_id; align: query, target (supported only)."""
     # every direction gets a row, also when the route kept nothing
-    for d in (["none"] if route == "splash_compactors" else ["down", "up"]):
+    for d in (["none"] if route.startswith("splash") else ["down", "up"]):
         s = seqs.filter(pl.col("direction") == d)
         p = peps.join(s.select("seq_id"), on="seq_id")
         a = (align.join(p, left_on="query", right_on="peptide_id")
@@ -63,7 +64,7 @@ for r in contrasts.iter_rows(named=True):
     c, series = r["contrast"], r["series"]
     dsg = pl.read_csv(design_dir / f"contrast_{c}.design.tsv", separator="\t")
     is_pec = {s: cond == "PEC" for s, cond in zip(dsg["sample"], dsg["condition"])}
-    for src in ("compactors", "kamrat_ttest", "kamrat_p05", "kamrat_deseq2_p05"):
+    for src in ("compactors", "compactors_p05", "kamrat_ttest", "kamrat_p05", "kamrat_deseq2_p05"):
         sd = cdir / c / f"search_{src}"
         if not (sd / "search.done").exists():
             print(c, src, "no finished search")
@@ -77,8 +78,8 @@ for r in contrasts.iter_rows(named=True):
             align = (pl.read_parquet(al, columns=["query", "target", "supported"]).filter(pl.col("supported"))
                      .select("query", "target"))
         # every kept sequence, with its id as translate numbered it (c1, c2, ... in file order)
-        if src == "compactors":
-            seqs = pl.read_csv(cdir / c / "compactors" / "compactors.tsv", separator="\t", infer_schema_length=0)
+        if src.startswith("compactors"):
+            seqs = pl.read_csv(cdir / c / src / "compactors.tsv", separator="\t", infer_schema_length=0)
             seqs = seqs.with_row_index("i", 1).select((pl.lit("c") + pl.col("i").cast(pl.String)).alias("seq_id"),
                                                      pl.lit("none").alias("direction"))
         else:
@@ -93,8 +94,8 @@ for r in contrasts.iter_rows(named=True):
                 pec = np.array([is_pec[s] for s in samples])
                 diff = x[:, pec].mean(1) - x[:, ~pec].mean(1)
                 t = t.with_columns(pl.Series("direction", np.where(diff > 0, "up", "down")))
-        if src == "compactors":
-            add(series, c, "splash_compactors", seqs, pep.select("peptide_id", "seq_id") if pep.height else
+        if src.startswith("compactors"):
+            add(series, c, {"compactors": "splash_compactors", "compactors_p05": "splash_compactors_p05"}[src], seqs, pep.select("peptide_id", "seq_id") if pep.height else
                 pl.DataFrame(schema={"peptide_id": pl.String, "seq_id": pl.String}), align)
             continue
         pp = pep.select("peptide_id", "seq_id") if pep.height else pl.DataFrame(schema={"peptide_id": pl.String, "seq_id": pl.String})
