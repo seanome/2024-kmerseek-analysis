@@ -75,7 +75,7 @@ def test_weight_sum_equals_probe_weight_times_kmers_on_a_real_array(tmp_path):
     args += ["--sample", "GSM39421", "--channel", "ch2", "--k", str(K), "--alphabet", "dna", "--mode", "weighted"]
     assert main(args + ["--out", str(out)]) == 0
     header, rows = read_tsv(out)
-    assert header == ["kmer", "intensity_weight", "n_probes"]
+    assert header == ["kmer", "alphabet", "k", "setting", "intensity_weight", "n_probes"]
     observed = sum(float(r[4]) for r in rows)
 
     intensity = {}
