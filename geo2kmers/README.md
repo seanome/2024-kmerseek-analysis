@@ -121,9 +121,10 @@ python -m geo2kmers sketch --fasta data/GSE2183/probes.fasta \
 `--proteome` takes one or more FASTA files, gzipped or not, and works up to k = 14 for protein, 24 for
 dayhoff and 63 for hp. It does not apply to `dna`. `<out>.frames.tsv` lists each probe's stretch: frame (0 to
 2 read the given strand, 3 to 5 the other), start and length in amino acids, and the share in the proteome,
-empty with no proteome. In the workflow, set `--proteome` to absolute paths joined by commas. Each sketch
-reads the proteome itself, which took 40 to 48 seconds and at most 1.5 GB per sketch on the mussel proteome
-(`results/GSE2183_proteome/geo2kmers.trace.txt`).
+empty with no proteome. `proteome-index` saves a proteome's k-mers for one alphabet and k in a `.npz` file,
+and `--proteome` also takes that file, which is what makes many sketches fast. In the workflow, set `--proteome`
+to absolute paths joined by commas: one PROTEOME_INDEX task reads the proteome for each alphabet and k, and every
+sketch reads its file.
 
 A 25 nt probe gives at most 8 amino acids in a frame, so protein k must be 8 or less on short-probe
 arrays. If no probe gives a k-mer, the command stops with an error rather than write an empty table.
@@ -188,11 +189,11 @@ nextflow run main.nf -profile small --gse GSE2183 --outdir results/GSE2183
 Every process retries up to 3 times when the exit status is empty, `Integer.MAX_VALUE` or in 128 to 143,
 which mean something outside the task killed it. Any other failure stops the run with an error. The
 test run below did not need a retry. A separate test killed FETCH on purpose: killed every time, it ran 4
-times and the run stopped. A task that exited 1 stopped the run after one try (`failure_test.log`, from
-`failure_test.sbatch`, both in `results/GSE2183/`).
+times and the run stopped. A task that exited 1 stopped the run after one try (`results/GSE2183/failure_test.log`).
+`tests/test_workflow.py` now holds these checks.
 
-These scripts are not part of the workflow. `run_sherlock.sbatch` runs the test below and writes
-`wall_time.txt`. `summarise.py` writes `sketch_summary.tsv` and `probe_summary.tsv`. `frame_test.py` writes
+The workflow's SUMMARISE task runs `summarise.py`, which writes `sketch_summary.tsv` and `probe_summary.tsv`,
+and the workflow writes `wall_time.txt` when it ends. These scripts are not part of it: `frame_test.py` writes
 the frame tests, and `array_tables.py` writes `array_summary.tsv`, `longest_stretch_GPL1211.tsv` and
 `longest_vs_proteome.tsv`. `whole_genome_record_share_before_fix.tsv` came from `summarise.py` as of
 commit caef3fcc, when those records were still kept.
@@ -204,8 +205,8 @@ GSE2183 is a mussel series, described in `tests/README.md`. The run in `results/
 environment built from `environment.yml`. All numbers below come from the file named beside them, in
 that folder. The sketches themselves are too large to keep here.
 
-- 66 tasks ran, each on the first try, with exit status 0 (`geo2kmers.trace.txt`).
-- The run took 154 seconds (`wall_time.txt`), under the 10 minutes set for this test.
+- 67 tasks ran, each on the first try, with exit status 0 (`geo2kmers.trace.txt`).
+- The run took 101 seconds (`wall_time.txt`), under the 10 minutes set for this test.
 - The platform has 3840 probes. 3344 got a sequence from GenBank, 30 point to a whole genome record and
   so have no sequence, and 466 have no accession. The 3344 are 1672 distinct sequences,
   each spotted twice. Lengths run from 101 to 650 nt, median 512
@@ -223,7 +224,8 @@ that folder. The sketches themselves are too large to keep here.
   is the least conserved part of a gene and so cross-hybridises least with related genes. So many of these
   k-mers are probably not from a protein (`sketch_summary.tsv`).
 - The same with the species' own proteome: 652 of the 3344 probes give k-mers, 45727 distinct. That run
-  took 646 seconds, over the 10 minute limit, because each sketch reads the proteome again
+  took 117 seconds, in 70 tasks. Three of them read the proteome, for 48 to 50 seconds and at most 1.5 GB each, and
+  every sketch reads the saved result in about 2 seconds
   (`results/GSE2183_proteome/`).
 - 30 spots (15 clones) list accession AY484747, which NCBI titles "Mytilus edulis mitochondrion, complete
   genome". The platform table names one gene for each clone, such as Mitochondrial-ND6, and one clone
@@ -305,8 +307,8 @@ python -m pytest tests
 script on small files whose answers are worked out by hand, and `tests/test_workflow.py` reads `main.nf`.
 
 The tests that run `main.nf` are skipped unless asked for, because they need Nextflow and the network, and
-take a few minutes. They check the sketch count, that a killed task is retried, and that a failed task stops
-the run. Run them on a machine meant for it, as `run_sherlock.sbatch` does:
+take a few minutes. They check the sketch count, that a proteome is read once for each alphabet and k, that a
+killed task is retried, and that a failed task stops the run. Run them on a machine meant for it:
 
 ```bash
 GEO2KMERS_TEST_NEXTFLOW=1 python -m pytest tests/test_workflow.py

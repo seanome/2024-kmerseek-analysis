@@ -4,6 +4,8 @@
  *
  *   nextflow run main.nf -profile small --gse GSE2183 --outdir results/GSE2183
  *
+ * Writes the sketches, sketch_summary.tsv, probe_summary.tsv and wall_time.txt to --outdir.
+ *
  * Each process runs an inline Python script with an absolute interpreter path in its shebang
  * line, as the nextflow-conda skill says. The `conda` directive is not used: it does not
  * reliably reach an inline script. Set NCBI_EMAIL in the environment before launching.
@@ -65,7 +67,7 @@ process SEQUENCES {
 
     output:
     path "probes.fasta", emit: fasta
-    path "probe_sequence_source.tsv"
+    path "probe_sequence_source.tsv", emit: source
     path "genbank_cache.fasta", optional: true
 
     script:
@@ -81,28 +83,53 @@ process SEQUENCES {
     """.stripIndent()
 }
 
+// Reading a proteome takes far longer than a sketch, so it happens once for each alphabet and k.
+process PROTEOME_INDEX {
+    tag "${alphabet} k${k}"
+    errorStrategy { killedFromOutside(task.exitStatus) && task.attempt <= 3 ? 'retry' : 'terminate' }
+    maxRetries 3
+    // holding a proteome's k-mers peaked at 3.0 GB on GENCODE human, 1.5 GB on the mussel proteome
+    memory { 4.GB * task.attempt }
+
+    input:
+    tuple val(alphabet), val(k)
+
+    output:
+    tuple val(alphabet), val(k), path("proteome.${alphabet}.k${k}.npz")
+
+    script:
+    def files = params.proteome.tokenize(',').collect { "'${it}'" }.join(', ')
+    """
+    #!${params.python_sketch}
+    import sys
+    sys.path.insert(0, "${projectDir}")
+    from geo2kmers.cli import main
+    raise SystemExit(main(["proteome-index", "--proteome", ${files}, "--k", "${k}", "--alphabet", "${alphabet}",
+                           "--out", "proteome.${alphabet}.k${k}.npz"]))
+    """.stripIndent()
+}
+
 process SKETCH {
     tag "${gsm} ${dye} ${alphabet} k${k} ${mode}"
     // 'finish': a failed sketch stops new work and the run exits with an error, so it cannot pass unseen
     errorStrategy { killedFromOutside(task.exitStatus) && task.attempt <= 3 ? 'retry' : 'finish' }
     maxRetries 3
-    // holding a proteome's k-mers peaked at 3.0 GB on GENCODE human, 1.5 GB on the mussel proteome
-    memory { (alphabet != 'dna' && params.proteome ? 4.GB : 2.GB) * task.attempt }
     publishDir "${params.outdir}/sketches", mode: 'copy'
 
     input:
-    tuple val(gsm), val(dye), val(alphabet), val(k), val(mode)
+    tuple val(alphabet), val(k), val(gsm), val(dye), val(mode), path(index)
     path series
     path fasta
 
     output:
     path "${gsm}*.tsv*"
+    path "${gsm}*.report.json", emit: reports
 
     script:
     def stem = "${gsm}${dye ? '.' + dye : ''}.${alphabet}.k${k}.${mode}"
     def extra = dye ? "'--channel', '${dye}'," : ""
     if (alphabet != 'dna' && params.proteome) {
-        extra += " '--proteome', " + params.proteome.tokenize(',').collect { "'${it}'" }.join(', ') + ","
+        extra += " '--proteome', '${index}',"
     }
     """
     #!${params.python_sketch}
@@ -118,6 +145,33 @@ process SKETCH {
     """.stripIndent()
 }
 
+// Join every sketch's report into the two summary tables.
+process SUMMARISE {
+    tag "${params.gse}"
+    errorStrategy { killedFromOutside(task.exitStatus) && task.attempt <= 3 ? 'retry' : 'terminate' }
+    maxRetries 3
+    publishDir "${params.outdir}", mode: 'copy'
+
+    input:
+    path reports, stageAs: 'sketches/*'
+    path fasta
+    path source
+
+    output:
+    path "sketch_summary.tsv"
+    path "probe_summary.tsv"
+
+    script:
+    """
+    ${params.python_sketch} ${projectDir}/summarise.py sketches ${fasta} ${source} .
+    """
+}
+
+workflow.onComplete {
+    file(params.outdir).mkdirs()
+    file("${params.outdir}/wall_time.txt").text = "wall_seconds ${workflow.duration.toSeconds()} exit ${workflow.exitStatus}\n"
+}
+
 workflow {
     series = FETCH(Channel.of(params.gse))
     probes = SEQUENCES(series)
@@ -131,11 +185,20 @@ workflow {
             def dyes = row.channel_count == '1' ? [''] : ['ch1', 'ch2']
             dyes.each { ch ->
                 sketches.each { a, k ->
-                    modes.each { m -> out << tuple(row.gsm, ch, a, k, m) }
+                    modes.each { m -> out << tuple(a, k, row.gsm, ch, m) }
                 }
             }
         }
         out
     }
-    SKETCH(jobs, series.first(), probes.fasta.first())
+    // a job with no proteome to read carries an empty list in place of the index
+    plain = jobs.filter { !params.proteome || it[0] == 'dna' }
+        .map { a, k, gsm, dye, m -> tuple(a, k, gsm, dye, m, []) }
+    if (params.proteome) {
+        protein_settings = sketches.findAll { a, k -> a != 'dna' }.collect { a, k -> tuple(a, k) }
+        indexes = PROTEOME_INDEX(Channel.fromList(protein_settings))
+        plain = plain.mix(jobs.filter { it[0] != 'dna' }.combine(indexes, by: [0, 1]))
+    }
+    SKETCH(plain, series.first(), probes.fasta.first())
+    SUMMARISE(SKETCH.out.reports.collect(), probes.fasta, probes.source)
 }

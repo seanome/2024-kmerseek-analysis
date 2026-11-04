@@ -23,14 +23,15 @@ def default(name):
 
 
 def test_there_are_three_processes():
-    assert [name for name, _ in PROCESSES] == ["FETCH", "SEQUENCES", "SKETCH"]
+    assert [name for name, _ in PROCESSES] == ["FETCH", "SEQUENCES", "PROTEOME_INDEX", "SKETCH", "SUMMARISE"]
 
 
 @pytest.mark.parametrize("name, body", PROCESSES)
 def test_each_process_retries_only_when_killed_and_uses_its_own_python(name, body):
     assert "killedFromOutside(task.exitStatus) && task.attempt <= 3 ? 'retry'" in body
     assert "maxRetries 3" in body
-    assert f"#!${{params.python_{name.lower()}}}" in body
+    python = "sketch" if name in ("PROTEOME_INDEX", "SUMMARISE") else name.lower()
+    assert f"${{params.python_{python}}}" in body
     assert "conda" not in body
 
 
@@ -57,10 +58,10 @@ def nextflow(tmp_path):
     if not shutil.which("nextflow") or not os.environ.get("NCBI_EMAIL"):
         pytest.fail("the workflow tests need nextflow on PATH and NCBI_EMAIL set")
 
-    def run(*args):
+    def run(*args, sketches="dna:21"):
         out = tmp_path / "out"
         command = ["nextflow", "run", str(HERE / "main.nf"), "-profile", "small", "--gse", "GSE2183"]
-        command += ["--outdir", str(out), "--sketches", "dna:21", "--modes", "present"]
+        command += ["--outdir", str(out), "--sketches", sketches, "--modes", "present"]
         command += ["--python_sequences", sys.executable, "--python_sketch", sys.executable, *args]
         done = subprocess.run(command, cwd=tmp_path, capture_output=True, text=True, check=False)
         with open(tmp_path / "geo2kmers.trace.txt") as f:
@@ -81,6 +82,8 @@ def test_the_workflow_makes_one_sketch_per_channel(nextflow):
     assert done.returncode == 0, done.stdout
     assert sum("SKETCH" in t["name"] for t in trace) == 8  # 4 samples of 2 channels
     assert len(list((out / "sketches").glob("*.dna.k21.present.tsv"))) == 8
+    assert (out / "sketch_summary.tsv").exists() and (out / "probe_summary.tsv").exists()
+    assert (out / "wall_time.txt").read_text().endswith("exit 0\n")
 
 
 def test_a_task_killed_twice_is_retried(nextflow, tmp_path):
@@ -102,3 +105,17 @@ def test_a_task_that_exits_1_stops_the_run_at_once(nextflow, tmp_path):
     done, trace, _ = nextflow("--python_fetch", wrapper(tmp_path, "exit 1"))
     assert done.returncode != 0
     assert [(t["exit"], t["attempt"]) for t in trace if "FETCH" in t["name"]] == [("1", "1")]
+
+
+def test_a_proteome_is_read_once_per_setting(nextflow, tmp_path):
+    probes = sketch.read_fasta(HERE / "tests/data/GSE2183/probes.fasta.gz")
+    proteins = sorted({sketch.longest_stretch(sequence)[2] for sequence in probes.values()})
+    proteome = tmp_path / "proteins.fasta"
+    proteome.write_text("".join(f">{i}\n{protein}\n" for i, protein in enumerate(proteins)))
+    done, trace, out = nextflow(
+        "--python_fetch", sys.executable, "--proteome", str(proteome), sketches="dna:21,protein:5"
+    )
+    assert done.returncode == 0, done.stdout
+    assert sum("PROTEOME_INDEX" in t["name"] for t in trace) == 1
+    assert len(list((out / "sketches").glob("*.protein.k5.present.tsv"))) == 8
+    assert len(list((out / "sketches").glob("*.dna.k21.present.tsv"))) == 8

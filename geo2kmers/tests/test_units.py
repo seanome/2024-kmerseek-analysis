@@ -618,3 +618,18 @@ def test_a_read_sketch_uses_count_and_needs_whole_numbers(tmp_path):
     assert schema.validate_table(write(tmp_path / "a.tsv", good)) == ("protein20_k3", 1)
     with pytest.raises(Geo2KmersError, match="not allowed"):
         schema.validate_table(write(tmp_path / "b.tsv", good.replace("\t4\t", "\t4.5\t")))
+
+
+def test_a_saved_proteome_gives_the_same_picks_and_checks_its_setting(tmp_path):
+    protein = RANDOM_PROTEIN[:120]
+    paths = write_proteome(tmp_path, protein)
+    picker = sketch.ProteomeFrames(paths, 5, "protein")
+    picker.save(tmp_path / "p.npz")
+    loaded = sketch.ProteomeFrames([tmp_path / "p.npz"], 5, "protein")
+    assert loaded.sources == ["proteome.fasta"]
+    dna = STOPS + to_dna(protein) + STOPS
+    assert loaded.pick(dna) == picker.pick(dna)
+    with pytest.raises(Geo2KmersError, match="holds protein k = 5"):
+        sketch.ProteomeFrames([tmp_path / "p.npz"], 6, "protein")
+    with pytest.raises(Geo2KmersError, match="holds protein k = 5"):
+        sketch.ProteomeFrames([tmp_path / "p.npz"], 5, "hp")

@@ -126,14 +126,27 @@ class ProteomeFrames:
             )
         self.k, self.alphabet = k, alphabet
         self.table = letter_codes(alphabet)
+        self.picks = {}
+        if len(paths) == 1 and str(paths[0]).endswith(".npz"):
+            with np.load(paths[0]) as saved:
+                if (str(saved["alphabet"]), int(saved["k"])) != (alphabet, k):
+                    raise Geo2KmersError(
+                        f"{paths[0]} holds {saved['alphabet']} k = {saved['k']}, but this sketch is {alphabet} k = {k}"
+                    )
+                self.known, self.sources = saved["known"], [str(name) for name in saved["sources"]]
+            return
         parts = []
         for path in paths:
             proteins = sorted(set(read_fasta(path).values()))
             parts.append(np.unique(kmer_numbers("#".join(proteins), k, alphabet, self.table)))
         self.known = np.unique(np.concatenate(parts))
+        self.sources = [Path(p).name for p in paths]
         if not len(self.known):
             raise Geo2KmersError(f"no k-mer of k = {k} in {', '.join(map(str, paths))}")
-        self.picks = {}
+
+    def save(self, out):
+        """Write the proteome's k-mers once, for every sketch of this alphabet and k to read."""
+        np.savez(out, known=self.known, alphabet=self.alphabet, k=self.k, sources=self.sources)
 
     def share_in_proteome(self, stretch):
         """The share of a stretch's k-mers in the proteome. 0 if it has none."""
@@ -382,7 +395,7 @@ def build_sketch(probes, intensities, k, alphabet, mode, detection=None, proteom
             f"longest stretch between stops with at least {MIN_STRETCH_AA} amino acids and at least "
             f"{MIN_SHARE_IN_PROTEOME:.0%} of its k-mers in the proteome"
         )
-        report["proteome"] = ",".join(Path(p).name for p in proteome)
+        report["proteome"] = ",".join(picker.sources)
         report["proteome_distinct_kmers"] = len(picker.known)
     report["distinct_kmers"] = len(table)
     if not table:

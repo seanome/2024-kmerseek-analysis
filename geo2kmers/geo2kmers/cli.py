@@ -21,6 +21,12 @@ def run_sequences(args):
     print(f"probes by source: {counts}")
 
 
+def run_proteome_index(args):
+    picker = sketch.ProteomeFrames(args.proteome, args.k, args.alphabet)
+    picker.save(args.out)
+    print(f"{len(picker.known)} distinct k-mers in {', '.join(picker.sources)}")
+
+
 def run_sketch(args):
     values, detection, source = sketch.load_intensities(args.intensities, args.sample, args.channel, args.column)
     probes = sketch.match_names(sketch.read_fasta(args.fasta, whole_name=True), values)
@@ -75,9 +81,16 @@ def parser():
     k.add_argument(
         "--proteome",
         nargs="+",
-        help="protein FASTA files, gzipped or not: pick each probe's frame by matching them (not dna)",
+        help="protein FASTA files, gzipped or not, or one .npz from proteome-index: pick each probe's frame (not dna)",
     )
     k.set_defaults(run=run_sketch)
+
+    x = sub.add_parser("proteome-index", help="save a proteome's k-mers once, for many sketches to read")
+    x.add_argument("--proteome", nargs="+", required=True, help="protein FASTA files, gzipped or not")
+    x.add_argument("--k", type=int, required=True)
+    x.add_argument("--alphabet", choices=["protein", "dayhoff", "hp"], required=True)
+    x.add_argument("--out", required=True, help="a .npz file")
+    x.set_defaults(run=run_proteome_index)
     return p
 
 
