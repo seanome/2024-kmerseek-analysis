@@ -22,7 +22,7 @@ run:
 	mkdir -p $(OUT)/design
 	$(PEC_ROOT)/env/bin/python $(HERE)/make_design.py $(HERE)/../../analysis/pec-domen2026-splash/design $(PEC_ROOT)/trimmed $(OUT)/design
 	cd $(OUT) && ml load biology nextflow && NF_HEAD_DETACH=1 HEAD_ACCOUNT=ayeletv HEAD_PARTITION=normal,hns HEAD_QOS=normal \
-	  HEAD_TIME=3-00:00:00 HEAD_CPUS=2 HEAD_MEM=8G HEAD_SESSION=$(HEAD_SESSION) HEAD_JOBNAME=$(HEAD_JOBNAME) \
+	  HEAD_TIME=2-00:00:00 HEAD_CPUS=2 HEAD_MEM=8G HEAD_SESSION=$(HEAD_SESSION) HEAD_JOBNAME=$(HEAD_JOBNAME) \
 	  $(HERE)/../../scripts/nf-head $(HERE)/run_pipelines.sh $(HERE) $(OUT) $(NEXTFLOW) $(PEC_ROOT)/env/bin/python
 
 watch:
