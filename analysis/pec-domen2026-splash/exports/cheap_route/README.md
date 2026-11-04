@@ -10,15 +10,24 @@ rules are written before any test.
 **a.** Share of genes found by three routes. Control: 400 planted genes. Human: the 12 study lists of
 GSE99963 and GSE144304. Botryllus: the paper's 12 lists. Control counts a gene with no direction;
 KaMRaT in human and Botryllus must go the list's way; SPLASH has no direction anywhere. **b.** Reads
-per sample. **c.** Reads per sample for a list gene: box, middle 50 %; tick, median. The control is
-worked out as about 1 M read pairs over 3,000 genes.
+per sample. **c.** Reads per sample for a gene: box, middle 50 %; tick, median. Human and Botryllus
+show list genes; the control shows all its genes, counted by `pec-tools gene-counts`.
 
 The routes work: 94 % in the control and 55 % in human for the KaMRaT t-test at p < 0.05. Botryllus
 gets 6 % from the same route. Its list genes have about 11 times fewer reads than human list genes
 (median 14.5 against 162.8), and its samples span 1,476-fold. Other differences may add to this:
 Botryllus has far fewer samples per group, and the human route was matched to a complete proteome.
-The figure does not separate these. The 50 % target is already met in human by one route, at more
+The control has fewer reads per gene than human (median 91 against 162.8), so depth alone does not
+set the order: its planted 4-fold changes, even samples and lack of colony differences also make it
+easier. The figure does not separate these. The 50 % target is already met in human by one route, at more
 than SPLASH's cost; the target below is for Botryllus.
+
+## Control test of the counter
+
+`pec-tools gene-counts` on the 12 simulated samples, 2026-11-04 (job 51080985): 280 of the 300 genes
+raised or lowered 4-fold got the right direction, 0 the wrong one. 24 of 2,600 unchanged genes got a
+direction. 3 of 100 isoform-switch genes did, which is expected, since a gene total hides a switch.
+It used 240 CPU s, 42 s on 8 threads and 55 MB. On the same samples SPLASH used 853 CPU s and 2.26 GB.
 
 ## Target
 

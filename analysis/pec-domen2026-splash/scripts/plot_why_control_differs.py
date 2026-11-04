@@ -8,8 +8,8 @@ a. Share of genes found by three routes in the simulated control (400 planted ge
    Found: a kept sequence lies in the gene (control), or reaches its protein going the list's way
    (human and Botryllus; SPLASH has no direction, so any way).
 b. Reads per sample, one dot per sample.
-c. Normalised reads per sample of each list gene (baseMean): box 25-75 %, tick the median. The
-   control has 3,000 genes and about 1 M read pairs per sample, so about 333 pairs per gene.
+c. Reads per sample of each gene: box 25-75 %, tick the median. Human and Botryllus: baseMean of the
+   list genes. Control: all its genes, read pairs per sample from pec-tools gene-counts.
 Writes <out_stem>.tsv with the numbers in a, and prints them.
 """
 import json
@@ -92,16 +92,17 @@ ax1.set_xlabel("reads per sample (one dot per sample)")
 ax1.set_yticks(list(yd.values()), DATA)
 ax1.set_ylim(2.6, -0.6)
 pf.panel_label(ax1, "b")
-for k, v in {"human": bm_h, "Botryllus": bm_b}.items():
+cc = pl.read_csv(ex / "cheap_route/control/control.counts.tsv", separator="\t")
+bm_c = cc.select(pl.mean_horizontal(cc.columns[1:]).alias("m"))["m"].to_numpy()
+print("control reads per gene, median", np.median(bm_c))
+for k, v in {"simulated control": bm_c, "human": bm_h, "Botryllus": bm_b}.items():
     q1, m, q3 = np.quantile(v, [0.25, 0.5, 0.75])
     ax2.plot([q1, q3], [yd[k]] * 2, color=pf.GREY, linewidth=5, solid_capstyle="butt")
     ax2.plot([m], [yd[k]], marker="|", color="black", markersize=8, markeredgewidth=1)
     ax2.text(m, yd[k] - 0.32, f"median {m:,.1f}", ha="center", fontsize=5.5)
-ax2.plot([333], [yd["simulated control"]], marker="|", color="black", markersize=8, markeredgewidth=1)
-ax2.text(333, yd["simulated control"] - 0.32, "about 333", ha="center", fontsize=5.5)
 ax2.set_xscale("log")
 ax2.set_xlim(1, 3000)
-ax2.set_xlabel("reads per sample for a list gene (box: middle 50 %, tick: median)")
+ax2.set_xlabel("reads per sample for a gene (box: middle 50 %, tick: median)")
 pf.panel_label(ax2, "c")
 pf.save(fig, out_stem)
 print("wrote", out_stem)
