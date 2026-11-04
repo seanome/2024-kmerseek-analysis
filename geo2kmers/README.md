@@ -209,6 +209,24 @@ are either non-coding or missing from that proteome; this test cannot tell which
 or 20 are no use: almost every shuffled sequence passes as well. The frame rule in `sketch` has not been
 changed.
 
+The same test on two arrays whose species is in GENCODE (`results/frame_test/`). GPL1211 is a human array
+of full-length clones, median 1668 nt; GPL738 is a mouse EST array, median 562 nt. Each was tested against
+its own species only (`array_summary.tsv`, `frame_test_GPL1211.tsv`, `frame_test_GPL738.tsv`).
+
+| Array | distinct sequences | with a stop-free frame today | passing frame | passing stretch | shuffled, stretch (mean) |
+|---|---:|---:|---:|---:|---:|
+| Human GPL1211, protein k = 10 | 8845 | 38 | 1072 | 7025 | 0.0 |
+| Human GPL1211, hp k = 30 | 8845 | 38 | 2844 | 6573 | 3.0 |
+| Mouse GPL738, protein k = 10 | 8432 | 1556 | 1374 | 2704 | 0.0 |
+| Mouse GPL738, hp k = 30 | 8432 | 1556 | 1876 | 2475 | 2.3 |
+
+A whole frame rarely passes, because the parts of it outside the coding region do not match. The stretch
+holding the protein does. The chosen stretch was checked on GPL1211 against the coding region NCBI
+annotates on 7958 of its sequences (`frame_truth.tsv`). At protein k = 10, 6563 have a passing stretch, and
+the longest passing stretch is in the true frame for 6147, or 93.7 %. If the longest stretch must be at
+least 100 amino acids, that rises to 98.7 %, on 6111 sequences (`frame_truth_by_length.tsv`). GPL738 has no
+such check. Frames are only as right as NCBI's annotation of each record.
+
 ## Limits
 
 - The sequence fetched for a GenBank accession is the whole record, which need not be exactly what was

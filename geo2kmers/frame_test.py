@@ -1,7 +1,8 @@
 """Ask whether a probe's reading frame can be picked by matching k-mers to a reference proteome.
 
-Usage: frame_test.py <probes.fasta[.gz]> <proteome folder> <out.tsv>
-The proteome folder holds gencode.v50 and gencode.vM39 pc_translations.fa.gz from GENCODE, and
+Usage: frame_test.py <probes.fasta[.gz]> <proteome folder> <out.tsv> [name=file,file calls.tsv]
+With a name and files, only that proteome is tested, at protein k = 7 and 10 and hp k = 30, and calls.tsv
+gets every passing stretch. Otherwise the proteome folder holds gencode.v50 and gencode.vM39 pc_translations.fa.gz from GENCODE, and
 UP000596742.fa.gz (Mytilus galloprovincialis) and UP000005408.fa.gz (Pacific oyster) from UniProt.
 
 A frame is the six-frame translation. A stretch is the part of a frame between two stop codons.
@@ -17,6 +18,7 @@ import sys
 import numpy as np
 
 PROBES, DATA, OUT = sys.argv[1:4]
+ONE_REFERENCE, CALLS = sys.argv[4:6] if len(sys.argv) > 4 else (None, None)
 AA = "ACDEFGHIKLMNPQRSTVWY"
 HP = {a: (0 if a in "AFGILMPVWY" else 1) for a in AA}
 BASES = "TCAG"
@@ -71,10 +73,11 @@ def ref_set(paths, alpha, k):
 
 
 def frames(dna):
+    """Yield (frame number, translation). Frames 0 to 2 read the given strand, 3 to 5 the other."""
     rc = dna[::-1].translate(str.maketrans("ACGT", "TGCA"))
-    for s in (dna, rc):
+    for strand, s in enumerate((dna, rc)):
         for f in range(3):
-            yield "".join(CODON.get(s[i : i + 3], "X") for i in range(f, len(s) - 2, 3))
+            yield strand * 3 + f, "".join(CODON.get(s[i : i + 3], "X") for i in range(f, len(s) - 2, 3))
 
 
 def stretch_hits(p, alpha, k, ref):
@@ -87,15 +90,18 @@ def stretch_hits(p, alpha, k, ref):
     return len(v), int((ref[i] == v).sum())
 
 
-def score(tags, alpha, k, ref, min_k=10, cut=0.9):
+def score(tags, alpha, k, ref, min_k=10, cut=0.9, calls=None):
     res = collections.Counter()
     covered = []
-    for t in tags:
+    for tag_number, t in enumerate(tags):
         whole, stretch, anyhit, best_len = 0, 0, False, 0
-        for fr in frames(t):
-            parts = [p for p in fr.split("*") if len(p) >= k]
+        for number, fr in frames(t):
             tot = hit = 0
-            for p in parts:
+            start = 0
+            for p in fr.split("*"):
+                start += len(p) + 1
+                if len(p) < k:
+                    continue
                 n, h = stretch_hits(p, alpha, k, ref)
                 tot += n
                 hit += h
@@ -104,6 +110,8 @@ def score(tags, alpha, k, ref, min_k=10, cut=0.9):
                 if n >= min_k and h / n >= cut:
                     stretch += 1
                     best_len = max(best_len, len(p))
+                    if calls is not None:
+                        calls.append((tag_number, alpha, k, number, start - len(p) - 1, len(p)))
             if tot >= min_k and hit / tot >= cut:
                 whole += 1
         res["whole_frame"] += whole > 0
@@ -121,7 +129,10 @@ def mean_over(results, key):
     return round(sum(x[key] for x in results) / len(results), 1)
 
 
-tags = sorted({s.upper() for _, s in fasta(PROBES)})
+first_probe = {}
+for probe, sequence in fasta(PROBES):
+    first_probe.setdefault(sequence.upper(), probe)
+tags = sorted(first_probe)
 print("tags", len(tags), flush=True)
 rng = random.Random(20261103)
 shuf = [["".join(rng.sample(t, len(t))) for t in tags] for _ in range(3)]
@@ -130,15 +141,21 @@ REFS = {
     "oyster": ["UP000005408.fa.gz"],
     "human_mouse_gencode": ["gencode.v50.pc_translations.fa.gz", "gencode.vM39.pc_translations.fa.gz"],
 }
+SETTINGS = [("protein", 5), ("protein", 7), ("protein", 10), ("hp", 15), ("hp", 20), ("hp", 30)]
+if ONE_REFERENCE:
+    name, files = ONE_REFERENCE.split("=")
+    REFS = {name: files.split(",")}
+    SETTINGS = [("protein", 7), ("protein", 10), ("hp", 30)]
+calls = []
 with open(OUT, "w") as o:
     print(
         "reference\talphabet\tk\tref_distinct_kmers\ttags\ttags_frame_ge90pct\ttags_one_frame_ge90pct\ttags_stretch_ge90pct\ttags_one_stretch_ge90pct\ttags_any_kmer\tmedian_share_of_tag_in_passing_stretch\tshuffled_frame_ge90pct_mean\tshuffled_stretch_ge90pct_mean\tshuffled_any_kmer_mean",
         file=o,
     )
     for name, paths in REFS.items():
-        for alpha, k in [("protein", 5), ("protein", 7), ("protein", 10), ("hp", 15), ("hp", 20), ("hp", 30)]:
+        for alpha, k in SETTINGS:
             ref = ref_set(paths, alpha, k)
-            r = score(tags, alpha, k, ref)
+            r = score(tags, alpha, k, ref, calls=calls)
             sh = [score(s, alpha, k, ref) for s in shuf]
             row = [
                 name,
@@ -158,3 +175,7 @@ with open(OUT, "w") as o:
             ]
             print(*row, sep="\t", file=o, flush=True)
             print(*row, flush=True)
+if CALLS:
+    with open(CALLS, "w") as f:
+        f.write("probe_id\talphabet\tk\tframe\tstretch_start_aa\tstretch_length_aa\n")
+        f.writelines("\t".join(map(str, [first_probe[tags[tag_number]], *rest])) + "\n" for tag_number, *rest in calls)
