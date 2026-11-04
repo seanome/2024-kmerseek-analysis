@@ -19,6 +19,10 @@
  * Settings are those of the Botryllus pipeline, except single-end reads (no interleaving)
  * and the protein database (GENCODE v50 instead of the Botryllus proteomes and Swiss-Prot).
  * Every result is kept with storeDir under params.out_root, so a relaunch reuses it.
+ *
+ * --label_swap runs the same steps on the swapped-label contrasts of design/human/label_swap
+ * (scripts/human_label_swaps.py); results go to <out_root>/label_swap, gene names to
+ * <out_root>/genes_label_swap, so they never mix with the real contrasts.
  */
 nextflow.enable.dsl = 2
 
@@ -28,6 +32,7 @@ params.code_dir  = null   // .../analysis/pec-domen2026-splash
 params.series    = 'GSE99963,GSE144304,GSE120862'
 params.contrasts = ''     // comma list to run only these contrasts; empty = every contrast of params.series
 params.reuse_dir = ''     // folder of earlier MD5-checked downloads (<run>.fastq.gz + .done), hard-linked
+params.label_swap = false // run the swapped-label contrasts instead of the real ones
 // compactors: k-mers per extension segment. Botryllus used the default 2 (anchor 31 + 2 x 27 = 85 nt
 // inside one read); the human reads are 51-81 nt, so with 2 no read qualifies and no compactor is
 // made (pilot, 2026-11-03: "0 reads found for 0 anchors", 1,881 anchors). 1 needs 58 nt.
@@ -43,6 +48,8 @@ PECTOOLS = "${params.pec_root}/pec-tools/target/release/pec-tools"
 SCRIPTS  = "${params.code_dir}/scripts"
 DESIGN   = "${params.code_dir}/design/human"
 O        = params.out_root
+CONTRAST_DESIGNS = params.label_swap ? "${DESIGN}/label_swap" : DESIGN
+RESULTS  = params.label_swap ? "${O}/label_swap" : "${O}/contrasts"
 TIME     = "/usr/bin/time -v -o"
 
 // ---------------------------------------------------------------- protein database
@@ -140,7 +147,7 @@ process fastp {
 process splash {
     tag "${contrast}"
     label 'splash'
-    storeDir "${O}/contrasts/${contrast}"
+    storeDir "${RESULTS}/${contrast}"
 
     input:
     tuple val(contrast), path(cjs), path(fq)
@@ -169,7 +176,7 @@ process splash {
 process compactors {
     tag "${contrast}"
     label 'compactors'
-    storeDir "${O}/contrasts/${contrast}"
+    storeDir "${RESULTS}/${contrast}"
 
     input:
     tuple val(contrast), path(splash_out), path(fq)
@@ -200,7 +207,7 @@ process compactors {
 process dekupl {
     tag "${contrast}"
     label 'dekupl'
-    storeDir "${O}/contrasts/${contrast}"
+    storeDir "${RESULTS}/${contrast}"
 
     input:
     tuple val(contrast), path(design), path(fq)
@@ -226,7 +233,7 @@ process dekupl {
 process kamrat {
     tag "${contrast}"
     label 'kamrat'
-    storeDir "${O}/contrasts/${contrast}"
+    storeDir "${RESULTS}/${contrast}"
 
     input:
     tuple val(contrast), path(design), path(dekupl_dir)
@@ -262,7 +269,7 @@ process kamrat {
 process kamrat_routes {
     tag "${contrast}"
     label 'kamrat_deseq'
-    storeDir "${O}/contrasts/${contrast}"
+    storeDir "${RESULTS}/${contrast}"
 
     input:
     tuple val(contrast), path(design), val(deseq_design), path(kamrat_dir), path(dekupl_dir)
@@ -295,7 +302,7 @@ process kamrat_routes {
 process search {
     tag "${contrast} ${src}"
     label 'search'
-    storeDir "${O}/contrasts/${contrast}"
+    storeDir "${RESULTS}/${contrast}"
 
     input:
     tuple val(contrast), val(src), path(seqdir), path(db)
@@ -339,7 +346,7 @@ process search {
 
 process human_genes {
     label 'small_mem'
-    publishDir "${O}/genes", mode: 'copy'
+    publishDir(params.label_swap ? "${O}/genes_label_swap" : "${O}/genes", mode: 'copy')
 
     input:
     val(searches)
@@ -350,7 +357,7 @@ process human_genes {
 
     script:
     """
-    ${ENV}/python ${SCRIPTS}/human_genes.py ${O}/contrasts ${DESIGN}/contrasts.tsv ${db}/gencode.id_map.tsv human_genes > human_genes.log 2>&1
+    ${ENV}/python ${SCRIPTS}/human_genes.py ${RESULTS} ${CONTRAST_DESIGNS}/contrasts.tsv ${db}/gencode.id_map.tsv human_genes > human_genes.log 2>&1
     """
 }
 
@@ -359,13 +366,13 @@ process human_genes {
 workflow {
     def series = params.series.tokenize(',')
     def want = params.contrasts ? params.contrasts.tokenize(',') : null
-    def contrasts = file("${DESIGN}/contrasts.tsv").splitCsv(header: true, sep: '\t')
+    def contrasts = file("${CONTRAST_DESIGNS}/contrasts.tsv").splitCsv(header: true, sep: '\t')
         .findAll { it.series in series && (want == null || it.contrast in want) }
     if (!contrasts) error "no contrast selected"
     // run -> contrasts it belongs to
     def run2c = [:].withDefault { [] }
     contrasts.each { c ->
-        file("${DESIGN}/contrast_${c.contrast}.design.tsv").splitCsv(header: true, sep: '\t')
+        file("${CONTRAST_DESIGNS}/contrast_${c.contrast}.design.tsv").splitCsv(header: true, sep: '\t')
             .each { run2c[it.sample] << c.contrast }
     }
     def runs = file("${DESIGN}/samples.tsv").splitCsv(header: true, sep: '\t').findAll { it.run in run2c }
@@ -386,7 +393,7 @@ workflow {
         .groupTuple()
         .map { k, fqs ->
             def c = k.toString()
-            tuple(c, file("${DESIGN}/contrast_${c}.cjs"), file("${DESIGN}/contrast_${c}.design.tsv"),
+            tuple(c, file("${CONTRAST_DESIGNS}/contrast_${c}.cjs"), file("${CONTRAST_DESIGNS}/contrast_${c}.design.tsv"),
                   cinfo[c].deseq_design, fqs)
         }
 

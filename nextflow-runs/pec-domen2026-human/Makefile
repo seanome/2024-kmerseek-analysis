@@ -2,7 +2,9 @@
 #
 #   make pilot      gse99963_sed_post_vs_pre only (14 runs): the sizing check
 #   make run        every contrast of every series (SERIES=... to limit)
+#   make swaps      18 swapped-label runs of GSE99963 and GSE144304, in run-swaps/
 #   make watch      attach to the live Nextflow table (read-only); Ctrl-b d to leave
+#   make watch-swaps  the same for the swapped-label run
 #   make stop       ask the run to cancel its jobs and exit
 #   make running    every Nextflow run in the queue, then this folder's jobs
 #
@@ -34,6 +36,7 @@ HEAD_SUBMIT = HEAD_ACCOUNT=$(SLURM_ACCOUNT) HEAD_PARTITION=$(SLURM_PARTITION) \
               HEAD_SESSION=$(HEAD_SESSION) HEAD_JOBNAME=$(HEAD_JOBNAME) \
               $(REPO_DIR)/scripts/nf-head
 
+comma := ,
 NF_COMMON = nextflow run $(PIPELINE_DIR)/main.nf -profile sherlock -resume -with-trace -with-report -with-timeline \
             --pec_root $(PEC_ROOT) --out_root $(OUT_ROOT) --code_dir $(CODE_DIR) --reuse_dir $(REUSE_DIR)
 
@@ -48,7 +51,7 @@ define require_cluster
 	fi
 endef
 
-.PHONY: pilot run watch attach stop status running
+.PHONY: pilot run swaps watch watch-swaps attach stop status running
 
 pilot: HEAD_TIME := 1-00:00:00
 pilot:
@@ -59,6 +62,18 @@ pilot:
 run:
 	$(call require_cluster)
 	mkdir -p run && cd run && ml load biology nextflow && $(HEAD_SUBMIT) $(NF_COMMON) --series $(SERIES) $(NF_ARGS)
+
+swaps: HEAD_JOBNAME := nf-pec361-human-swaps
+swaps: HEAD_SESSION := pec361hs
+swaps:
+	$(call require_cluster)
+	mkdir -p run-swaps && cd run-swaps && ml load biology nextflow && \
+	  $(HEAD_SUBMIT) $(subst -profile sherlock,-profile sherlock$(comma)label_swap,$(NF_COMMON)) \
+	  --series GSE99963,GSE144304 --label_swap $(NF_ARGS)
+
+watch-swaps: HEAD_JOBNAME := nf-pec361-human-swaps
+watch-swaps: HEAD_SESSION := pec361hs
+watch-swaps: watch
 
 watch: HEAD_ATTACH := -r
 attach: HEAD_ATTACH :=

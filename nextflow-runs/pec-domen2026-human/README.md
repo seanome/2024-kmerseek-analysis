@@ -70,3 +70,19 @@ the largest Botryllus one 83 Gbp in 12 samples (young 24 h).
 
 The measured human values are in `analysis/pec-domen2026-splash/exports/human/resources.tsv`
 once the runs finish.
+
+## Label swaps
+
+`make swaps` runs the 18 swapped-label contrasts in `run-swaps/` (`make watch-swaps` to follow).
+Designs and the rule: `analysis/pec-domen2026-splash/design/human/README.md`. Results go to
+`$OUT_ROOT/label_swap`, gene names to `$OUT_ROOT/genes_label_swap`. The `label_swap` profile lowers
+the asks, because these are the samples already measured.
+
+| step | real peak | ask | real longest | time ask |
+|---|---|---|---|---|
+| SPLASH | 10.7 GB | 24 GB | 5 min | 1 h |
+| compactors | 33.3 GB | 48 GB | 6 min | 1 h |
+| DE-kupl | 57.1 GB | 64 GB | 67 min | 4 h |
+| KaMRaT | 7.7 GB | 16 GB | 36 min | 3 h |
+| KaMRaT + DESeq2 | 15.5 GB | 32 GB | 11 min | 2 h |
+| search | 31.1 GB | 48 GB | 10 min | 2 h |

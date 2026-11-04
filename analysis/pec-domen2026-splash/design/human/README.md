@@ -92,3 +92,30 @@ de Jong et al. 2023, Biol Sex Differ 14:45, https://doi.org/10.1186/s13293-023-0
 Popov et al. 2019, Am J Physiol Endocrinol Metab 316:E605, https://doi.org/10.1152/ajpendo.00449.2018
 (abstracts and methods read through PubMed and PMC on 2026-11-03; the Popov journal page refused
 access, so its supplementary tables were not read).
+
+## Label swap (rule written 2026-11-03, before any swapped run, after the real GSE99963 and GSE144304 results)
+
+Question: does a route reach the study's genes as well when the two groups are mixed? Mixed
+groups cannot show the study's effect, so anything a swap finds comes from other differences
+between samples.
+
+Built by `scripts/human_label_swaps.py design/human design/human/label_swap`; list in
+`label_swap/contrasts.tsv`. Three swaps per contrast, 18 in all. GSE120862 is left out for now.
+
+- GSE99963 (paired, 7 subjects): swap the before and after labels inside 3 subjects. Every
+  subject still has one sample of each. With 7 subjects the swap cannot balance exactly: 4 subjects
+  keep their real direction and 3 are reversed, so one subject's worth of the real effect stays.
+  That makes the swap easier to pass, so a swap that does as well as the real labels is still a
+  fair warning, but a swap that does a little worse proves little.
+- GSE144304 (unpaired): move samples both ways, keeping the group sizes, so that both new groups
+  hold about the same share of each real group: 6 of 15 and 5 of 11 frail women, 7 of 15 and 6 of
+  13 frail men, 9 of 13 and 17 of 26 young-group women, 9 of 13 and 19 of 28 young-group men. The
+  Botryllus rule, move half, would leave uneven shares when group sizes differ.
+- From the choices (35 per GSE99963 contrast, 2,000 random draws with seed 361 per GSE144304
+  contrast), take the swap with the most uneven read depth between groups, the most even, and the
+  middle one, as for Botryllus. Depth is mean reads per sample.
+
+Each swap runs the same routes as the real contrast. Scoring is fixed now too: the same list, the
+same 1,000 random gene sets per decile and the same direction rule as `human_compare.py`, and the
+share of the list reached is compared with the real labels' share. Three swaps per contrast can
+show that the real result is not special. They cannot give a small p value.
