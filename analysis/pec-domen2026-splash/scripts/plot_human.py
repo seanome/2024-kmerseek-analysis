@@ -6,7 +6,7 @@ Usage: plot_human.py <human_genes_summary.tsv> <human_compare.tsv> <contrasts.ts
 human_routes: one row per contrast (grouped by series), one column per route.
   a: sequences each route kept; b: genes reached (a peptide of 20 or more residues matching a
   GENCODE v50 protein, E <= 1e-5 over >= 50 % of the peptide).
-  Up triangle: higher after, in frail or in old; down triangle: lower; circle: SPLASH, which
+  Up triangle: higher after, in frail, in old or in the exercised leg; down triangle: lower; circle: SPLASH, which
   has no direction. Colour is the tool: SPLASH blue, KaMRaT reddish purple (as in the Botryllus
   figures). Counts are drawn on a log axis as count + 1, so 0 sits at 1.
 human_recovery: share of each study's up list (up triangles) and down list (down triangles)
@@ -28,8 +28,7 @@ summ = pl.read_csv(summ_p, separator="\t")
 comp = pl.read_csv(comp_p, separator="\t") if Path(comp_p).exists() else None
 con = pl.read_csv(con_p, separator="\t")
 ROUTES = {"splash_compactors": "SPLASH anchors\ncorrected p ≤ 0.05",
-          "kamrat_ttest_corrected": "KaMRaT, t-test\ncorrected p ≤ 0.05",
-          "kamrat_ttest_p05": "KaMRaT, t-test\np < 0.05",
+          "splash_compactors_p05": "SPLASH anchors\np < 0.05",
           "kamrat_deseq2_corrected": "KaMRaT, DESeq2\ncorrected p ≤ 0.05",
           "kamrat_deseq2_p05": "KaMRaT, DESeq2\np < 0.05"}
 COL = {r: (pf.OKABE_ITO["blue"] if r.startswith("splash") else pf.OKABE_ITO["reddish_purple"]) for r in ROUTES}
@@ -52,8 +51,8 @@ y = {c: i for i, c in enumerate(contrasts)}
 routes = list(ROUTES)
 pf.use_style()
 
-KEY = [Line2D([], [], linestyle="none", marker="^", color="black", markersize=4, label="higher after, frail or old"),
-       Line2D([], [], linestyle="none", marker="v", color="black", markersize=4, label="lower after, frail or old"),
+KEY = [Line2D([], [], linestyle="none", marker="^", color="black", markersize=4, label="higher after, frail, old or exercised"),
+       Line2D([], [], linestyle="none", marker="v", color="black", markersize=4, label="lower after, frail, old or exercised"),
        Line2D([], [], linestyle="none", marker="o", color="black", markersize=4, label="no direction"),
        Line2D([], [], linestyle="none", marker="s", color=pf.OKABE_ITO["blue"], markersize=4, label="SPLASH"),
        Line2D([], [], linestyle="none", marker="s", color=pf.OKABE_ITO["reddish_purple"], markersize=4, label="KaMRaT")]

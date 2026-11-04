@@ -1,5 +1,6 @@
 series	contrast	route	direction	sequences_kept	sequences_with_peptide	sequences_with_supported_match	genes
 GSE99963	gse99963_sed_post_vs_pre	splash_compactors	none	14959	8353	4231	204
+GSE99963	gse99963_sed_post_vs_pre	splash_compactors_p05	none	41116	17736	8894	1095
 GSE99963	gse99963_sed_post_vs_pre	kamrat_ttest_corrected	down	0	0	0	0
 GSE99963	gse99963_sed_post_vs_pre	kamrat_ttest_corrected	up	0	0	0	0
 GSE99963	gse99963_sed_post_vs_pre	kamrat_ttest_p05	down	20667	1413	301	166
@@ -9,6 +10,7 @@ GSE99963	gse99963_sed_post_vs_pre	kamrat_deseq2_p05	up	11790	4220	2674	1471
 GSE99963	gse99963_sed_post_vs_pre	kamrat_deseq2_corrected	down	527	40	15	6
 GSE99963	gse99963_sed_post_vs_pre	kamrat_deseq2_corrected	up	226	90	57	56
 GSE99963	gse99963_ex_post_vs_pre	splash_compactors	none	24874	10582	6467	608
+GSE99963	gse99963_ex_post_vs_pre	splash_compactors_p05	none	68903	23491	13136	1620
 GSE99963	gse99963_ex_post_vs_pre	kamrat_ttest_corrected	down	1136	610	124	128
 GSE99963	gse99963_ex_post_vs_pre	kamrat_ttest_corrected	up	182	170	144	132
 GSE99963	gse99963_ex_post_vs_pre	kamrat_ttest_p05	down	84654	16042	3007	1711
@@ -18,6 +20,7 @@ GSE99963	gse99963_ex_post_vs_pre	kamrat_deseq2_p05	up	25296	7720	4471	2082
 GSE99963	gse99963_ex_post_vs_pre	kamrat_deseq2_corrected	down	3116	126	65	24
 GSE99963	gse99963_ex_post_vs_pre	kamrat_deseq2_corrected	up	4158	1209	794	348
 GSE144304	gse144304_female_frail_vs_fit	splash_compactors	none	69942	42448	24450	813
+GSE144304	gse144304_female_frail_vs_fit	splash_compactors_p05	none	163858	84747	46615	2492
 GSE144304	gse144304_female_frail_vs_fit	kamrat_ttest_corrected	down	0	0	0	0
 GSE144304	gse144304_female_frail_vs_fit	kamrat_ttest_corrected	up	2	1	0	0
 GSE144304	gse144304_female_frail_vs_fit	kamrat_ttest_p05	down	23634	6181	1656	1192
@@ -27,6 +30,7 @@ GSE144304	gse144304_female_frail_vs_fit	kamrat_deseq2_p05	up	19579	5036	871	756
 GSE144304	gse144304_female_frail_vs_fit	kamrat_deseq2_corrected	down	7	1	0	0
 GSE144304	gse144304_female_frail_vs_fit	kamrat_deseq2_corrected	up	9	0	0	0
 GSE144304	gse144304_male_frail_vs_fit	splash_compactors	none	64594	38433	21856	989
+GSE144304	gse144304_male_frail_vs_fit	splash_compactors_p05	none	163897	83688	46552	2529
 GSE144304	gse144304_male_frail_vs_fit	kamrat_ttest_corrected	down	0	0	0	0
 GSE144304	gse144304_male_frail_vs_fit	kamrat_ttest_corrected	up	2	1	0	0
 GSE144304	gse144304_male_frail_vs_fit	kamrat_ttest_p05	down	32419	7441	1614	1036
@@ -36,6 +40,7 @@ GSE144304	gse144304_male_frail_vs_fit	kamrat_deseq2_p05	up	22175	4685	1378	1128
 GSE144304	gse144304_male_frail_vs_fit	kamrat_deseq2_corrected	down	776	12	6	3
 GSE144304	gse144304_male_frail_vs_fit	kamrat_deseq2_corrected	up	710	52	19	24
 GSE144304	gse144304_female_old_vs_young	splash_compactors	none	118480	65222	34398	1594
+GSE144304	gse144304_female_old_vs_young	splash_compactors_p05	none	265908	134004	70344	3388
 GSE144304	gse144304_female_old_vs_young	kamrat_ttest_corrected	down	36131	14922	3629	2115
 GSE144304	gse144304_female_old_vs_young	kamrat_ttest_corrected	up	82180	33756	11171	5713
 GSE144304	gse144304_female_old_vs_young	kamrat_ttest_p05	down	87128	21270	3698	1906
@@ -45,6 +50,7 @@ GSE144304	gse144304_female_old_vs_young	kamrat_deseq2_p05	up	106751	25038	6120	3
 GSE144304	gse144304_female_old_vs_young	kamrat_deseq2_corrected	down	50242	9922	1688	757
 GSE144304	gse144304_female_old_vs_young	kamrat_deseq2_corrected	up	52384	9875	2650	1365
 GSE144304	gse144304_male_old_vs_young	splash_compactors	none	109868	60503	32949	1566
+GSE144304	gse144304_male_old_vs_young	splash_compactors_p05	none	243256	120607	63652	3139
 GSE144304	gse144304_male_old_vs_young	kamrat_ttest_corrected	down	17446	6372	1616	1271
 GSE144304	gse144304_male_old_vs_young	kamrat_ttest_corrected	up	30592	14027	3970	2570
 GSE144304	gse144304_male_old_vs_young	kamrat_ttest_p05	down	74868	16505	2893	1740
@@ -53,3 +59,28 @@ GSE144304	gse144304_male_old_vs_young	kamrat_deseq2_p05	down	77551	17143	3094	16
 GSE144304	gse144304_male_old_vs_young	kamrat_deseq2_p05	up	82790	18527	3425	1783
 GSE144304	gse144304_male_old_vs_young	kamrat_deseq2_corrected	down	29429	4682	1002	519
 GSE144304	gse144304_male_old_vs_young	kamrat_deseq2_corrected	up	29172	4940	978	525
+GSE120862	gse120862_untrained_1h_ex_vs_ne	splash_compactors_p05	none	16039	9471	7486	746
+GSE120862	gse120862_untrained_1h_ex_vs_ne	kamrat_deseq2_p05	down	10295	1246	212	155
+GSE120862	gse120862_untrained_1h_ex_vs_ne	kamrat_deseq2_p05	up	16075	4169	1151	565
+GSE120862	gse120862_untrained_1h_ex_vs_ne	kamrat_deseq2_corrected	down	524	120	14	8
+GSE120862	gse120862_untrained_1h_ex_vs_ne	kamrat_deseq2_corrected	up	5183	986	263	127
+GSE120862	gse120862_untrained_4h_ex_vs_ne	splash_compactors_p05	none	14179	7593	4840	917
+GSE120862	gse120862_untrained_4h_ex_vs_ne	kamrat_deseq2_p05	down	25236	2184	491	249
+GSE120862	gse120862_untrained_4h_ex_vs_ne	kamrat_deseq2_p05	up	27763	7618	2430	932
+GSE120862	gse120862_untrained_4h_ex_vs_ne	kamrat_deseq2_corrected	down	2187	180	26	11
+GSE120862	gse120862_untrained_4h_ex_vs_ne	kamrat_deseq2_corrected	up	7468	2219	693	221
+GSE120862	gse120862_trained_1h_ex_vs_ne	splash_compactors_p05	none	48641	26493	17284	1528
+GSE120862	gse120862_trained_1h_ex_vs_ne	kamrat_deseq2_p05	down	22533	1301	149	89
+GSE120862	gse120862_trained_1h_ex_vs_ne	kamrat_deseq2_p05	up	26774	8768	3609	1661
+GSE120862	gse120862_trained_1h_ex_vs_ne	kamrat_deseq2_corrected	down	223	40	4	2
+GSE120862	gse120862_trained_1h_ex_vs_ne	kamrat_deseq2_corrected	up	1324	357	144	70
+GSE120862	gse120862_trained_4h_ex_vs_ne	splash_compactors_p05	none	24809	13621	8985	911
+GSE120862	gse120862_trained_4h_ex_vs_ne	kamrat_deseq2_p05	down	9684	876	226	131
+GSE120862	gse120862_trained_4h_ex_vs_ne	kamrat_deseq2_p05	up	12877	1980	555	275
+GSE120862	gse120862_trained_4h_ex_vs_ne	kamrat_deseq2_corrected	down	0	0	0	0
+GSE120862	gse120862_trained_4h_ex_vs_ne	kamrat_deseq2_corrected	up	118	70	17	10
+GSE120862	gse120862_baseline_trained_vs_untrained	splash_compactors_p05	none	32325	18094	11036	1165
+GSE120862	gse120862_baseline_trained_vs_untrained	kamrat_deseq2_p05	down	64623	3925	1227	367
+GSE120862	gse120862_baseline_trained_vs_untrained	kamrat_deseq2_p05	up	46968	11590	4436	1847
+GSE120862	gse120862_baseline_trained_vs_untrained	kamrat_deseq2_corrected	down	9292	463	152	35
+GSE120862	gse120862_baseline_trained_vs_untrained	kamrat_deseq2_corrected	up	12492	2381	1069	328

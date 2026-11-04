@@ -8,12 +8,15 @@ triangle: real labels. Open triangles: the three swaps. Grey bar: the middle 95 
 gene sets matched to the list's baseMean deciles, for the real labels' reached genes; the tick is
 their median.
 
-Writes <out_stem>.tsv, one row per list and route with the real and swapped shares, and
-<out_stem>_summary.tsv, one row per route, and prints both.
+Writes <out_stem>.tsv, one row per list and route with the real and swapped shares,
+<out_stem>_summary.tsv, one row per route, and <out_stem>_kept.tsv, the sequences kept and genes
+reached by each contrast, route and label set, and prints all three.
   lists_beat_random        lists where 5 % or fewer of the random sets did as well
   real_above_all_swaps     lists where the real share is above all three swaps'
   swap_lists_beat_random   the same test for the swaps, of 36 (3 swaps x 12 lists)
   median_swap_over_real    median of mean swap share / real share, over lists
+  median_swap_over_real_either_way   the same, also counting list genes reached only by
+                           sequences going the other way, since a swap can turn a change around
 """
 import sys
 from pathlib import Path
@@ -40,35 +43,43 @@ sw = pl.read_csv(swap_p, separator="\t").join(swaps, on="contrast")
 BEAT = 0.05
 
 keys = ["base_contrast", "route", "direction"]
+either = (pl.col("reached") + pl.col("reached_opposite_only")) / pl.col("list_genes")
 wide = (sw.group_by(keys).agg(pl.len().alias("swaps"), pl.col("share").mean().alias("swap_share_mean"),
+                              either.mean().alias("swap_share_either_way_mean"),
                               pl.col("share").max().alias("swap_share_max"),
                               pl.col("reached").min().alias("swap_reached_min"),
                               pl.col("reached").max().alias("swap_reached_max"),
                               (pl.col("share_random_at_or_above") <= BEAT).sum().alias("swaps_beat_random"))
         .rename({"base_contrast": "contrast"}))
-t = (real.select("series", "contrast", "route", "direction", "list_genes", "reached", "share", "null_median",
-                 "share_random_at_or_above")
+t = (real.with_columns(either.alias("share_either_way"))
+     .select("series", "contrast", "route", "direction", "list_genes", "reached", "share", "share_either_way",
+             "null_median", "share_random_at_or_above")
      .join(wide, on=["contrast", "route", "direction"], how="left", validate="1:1")
+     .filter(pl.col("swaps").is_not_null())  # routes with no swap run
      .with_columns((pl.col("share") > pl.col("swap_share_max")).alias("real_above_all_swaps"),
-                   (pl.col("swap_share_mean") / pl.col("share")).alias("swap_over_real")))
+                   (pl.col("swap_share_mean") / pl.col("share")).alias("swap_over_real"),
+                   (pl.col("swap_share_either_way_mean") / pl.col("share_either_way")).alias("swap_over_real_either_way")))
 assert (t["swaps"] == 3).all(), t.filter(pl.col("swaps") != 3)
 t.write_csv(f"{out_stem}.tsv", separator="\t")
 summary = (t.group_by("route", maintain_order=True)
            .agg(pl.len().alias("lists"), (pl.col("share_random_at_or_above") <= BEAT).sum().alias("lists_beat_random"),
                 pl.col("real_above_all_swaps").sum(), pl.col("swaps_beat_random").sum().alias("swap_lists_beat_random"),
                 pl.col("swaps").sum().alias("swap_lists"), pl.col("reached").sum().alias("real_reached"),
-                pl.col("swap_over_real").median().round(3).alias("median_swap_over_real")))
-kept = pl.concat([pl.read_csv(p, separator="\t").select("contrast", "route", "sequences_kept", "genes") for p in (rs_p, ss_p)])
+                pl.col("swap_over_real").median().round(3).alias("median_swap_over_real"),
+                pl.col("swap_over_real_either_way").median().round(3).alias("median_swap_over_real_either_way")))
+kept = (pl.concat([pl.read_csv(p, separator="\t").select("contrast", "route", "sequences_kept", "genes") for p in (rs_p, ss_p)])
+        .join(swaps.rename({"contrast": "c"}), left_on="contrast", right_on="c", how="left")
+        .with_columns(pl.coalesce("base_contrast", "contrast").alias("real_contrast"), pl.col("swap_name").fill_null("real"))
+        .filter(pl.col("real_contrast").is_in(list(SHORT)) & pl.col("route").is_in(summary["route"].to_list()))
+        .group_by("real_contrast", "route", "swap_name").agg(pl.col("sequences_kept").sum(), pl.col("genes").sum())
+        .sort("real_contrast", "route", "swap_name"))
+kept.write_csv(f"{out_stem}_kept.tsv", separator="\t")
 summary.write_csv(f"{out_stem}_summary.tsv", separator="\t")
 with pl.Config(tbl_rows=100, tbl_cols=20, tbl_width_chars=220):
     print(summary)
     print(t.select("contrast", "route", "direction", "reached", "swap_reached_min", "swap_reached_max", "share",
                    "swap_share_mean", "swap_share_max", "real_above_all_swaps", "swaps_beat_random"))
-    print(kept.join(swaps.rename({"contrast": "c"}), left_on="contrast", right_on="c", how="left")
-          .with_columns(pl.coalesce("base_contrast", "contrast").alias("real_contrast"),
-                        pl.col("swap_name").fill_null("real"))
-          .group_by("real_contrast", "route", "swap_name").agg(pl.col("sequences_kept").sum(), pl.col("genes").sum())
-          .sort("real_contrast", "route", "swap_name"))
+    print(kept)
 
 pf.use_style()
 rows = [(c, d) for c in SHORT for d in ("up", "down")]

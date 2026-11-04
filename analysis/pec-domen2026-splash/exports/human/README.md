@@ -4,14 +4,17 @@ The same reference-free routes as the Botryllus contrasts, on the human RNA-seq 
 Domen et al. 2026 name in their data statement. No genome is used until the last step, which
 names the changed sequences by matching their peptides to GENCODE v50 proteins.
 
-Status, 2026-11-03: GSE99963 (2 contrasts) and GSE144304 (4 contrasts) are done and below.
-GSE120862 (5 contrasts) is still downloading; its results are not here yet.
+Status, 2026-11-03: all three series are done: GSE99963 (2 contrasts), GSE144304 (4) and
+GSE120862 (5). 0 tasks failed in the final runs. The label-swap control covers the first two.
+Olga chose the routes for all three on 2026-11-03: SPLASH, and KaMRaT with DESeq2, both at
+uncorrected p < 0.05. The KaMRaT t-test routes and corrected SPLASH were not run on GSE120862,
+so its rows are empty in the "SPLASH anchors, corrected" panels.
 
 ![Sequences kept and genes reached](human_routes.png)
 
 **a**, sequences each route kept per contrast. **b**, genes those sequences reached. Up triangle:
-higher after the diet, in frail or in old people; down triangle: lower; circle: SPLASH
-compactors, which have no direction. Blue is SPLASH, reddish purple KaMRaT, as in the Botryllus
+higher after the diet, in frail or old people, or in the exercised leg; down triangle: lower;
+circle: SPLASH compactors, which have no direction. Blue is SPLASH, reddish purple KaMRaT, as in the Botryllus
 figures. Counts are on a log axis as count + 1, so 0 sits at the left edge.
 
 ![Share of each study's gene list reached](human_recovery.png)
@@ -39,23 +42,81 @@ GSE144304 is cross-sectional, so its contrasts are not paired (`~ condition`).
 
 ## Result
 
-KaMRaT reaches every one of the 12 study lists more often than random genes at uncorrected
-p < 0.05, with both tests. SPLASH reaches them about as often as random genes.
+KaMRaT with DESeq2 at uncorrected p < 0.05 reaches all 22 study lists more often than random genes,
+and it depends on the labels: swapping them cuts its share of a list to a median of 9 % of the
+real share. SPLASH at uncorrected p < 0.05 beats random genes on 2 of 22 lists, and swapped labels
+give it nearly the same sequences and genes.
 
-"Beat random" means a share of random sets at or above the real list of 0.05 or less; the last
-column uses 0.05 / 12 = 0.004. "Wrong way" counts list genes reached only by sequences going the
-other way, summed over the 12 lists, as a check of direction.
+"Beat random" means a share of random sets at or above the real list of 0.05 or less. "At 0.002"
+uses 0.05 / 22. "Wrong way" counts list genes reached only by sequences going the other way, as a
+check of direction. The t-test routes and corrected SPLASH cover only the 12 lists of the first two
+series.
 
-| route | lists scored | beat random | at 0.004 | list genes reached | wrong way |
+| route | lists scored | beat random | at 0.002 | list genes reached | wrong way |
 |---|---|---|---|---|---|
-| SPLASH compactors, corrected p <= 0.05 | 12 | 2 | 1 | 1,084 | no direction |
-| KaMRaT, t-test, corrected p <= 0.05 | 12 | 6 | 6 | 4,521 | 217 |
-| KaMRaT, t-test, p < 0.05 | 12 | 12 | 12 | 7,321 | 285 |
-| KaMRaT, DESeq2, corrected p <= 0.05 | 12 | 10 | 10 | 2,159 | 76 |
-| KaMRaT, DESeq2, p < 0.05 | 12 | 12 | 12 | 5,660 | 161 |
+| SPLASH compactors, corrected p <= 0.05 | 12 | 2 | 1 | 1,084 of 13,417 | no direction |
+| SPLASH compactors, p < 0.05 | 22 | 2 | 0 | 3,113 of 21,793 | no direction |
+| KaMRaT, t-test, corrected p <= 0.05 | 12 | 6 | 6 | 4,521 of 13,417 | 217 |
+| KaMRaT, t-test, p < 0.05 | 12 | 12 | 12 | 7,321 of 13,417 | 285 |
+| KaMRaT, DESeq2, corrected p <= 0.05 | 22 | 19 | 19 | 2,737 of 21,793 | 90 |
+| KaMRaT, DESeq2, p < 0.05 | 22 | 22 | 22 | 8,339 of 21,793 | 196 |
 
-The two SPLASH lists are gse99963_sed down (share 0.04, random median 0.02) and
-gse144304_female_old_vs_young down (0.14 against 0.13).
+The 2 lists SPLASH beats at p < 0.05 are the two GSE99963 down lists, narrowly: shares of 0.13 and
+0.16 against random medians of 0.10 and 0.14. In GSE120862 it beats 0 of 10, where it rests on
+subjects P5-P7 only (see Limits).
+
+## Label-swap control
+
+![Real against swapped labels](label_swap/human_label_swap.png)
+
+One row per study list. Filled triangle: share reached with real labels. Open triangles: the three
+swaps. Grey bar: the middle 95 % of 1,000 random gene sets for the real labels' reached genes;
+black tick: their median. Swaps are scored against the real contrast's list.
+
+Why: `human_compare.py` says how often a route reaches a list compared with random genes, but not
+whether it reaches it because of the groups being compared. Swapping the labels and running every
+step again tests that. The rule is in `../../design/human/README.md`: GSE99963 flips 3 of 7 subjects'
+pairs, GSE144304 mixes the two groups, and each contrast has the most uneven, middle and most even
+swap by reads per sample, 18 in all. GSE120862 has no swaps yet.
+
+| route | lists | real above all 3 swaps | median swap share / real share | same, counting either direction | swap lists beating random |
+|---|---|---|---|---|---|
+| SPLASH compactors, p < 0.05 | 12 | 7 | 0.93 | 0.93 | 7 of 36 |
+| KaMRaT, DESeq2, corrected p <= 0.05 | 12 | 10 | 0.00 | 0.00 | 0 of 36 |
+| KaMRaT, DESeq2, p < 0.05 | 12 | 12 | 0.09 | 0.14 | 11 of 36 |
+
+The "either direction" column also counts list genes reached by sequences going the other way,
+because a swap can turn a change around. It does not change the result.
+
+Sequences kept and genes reached, real labels and the range over three swaps:
+
+| contrast | SPLASH sequences | SPLASH genes | KaMRaT, DESeq2 sequences | KaMRaT, DESeq2 genes |
+|---|---|---|---|---|
+| gse99963_sed_post_vs_pre | 41,116; 37,614-48,903 | 1,095; 946-1,079 | 44,995; 12,372-56,079 | 1,954; 444-1,014 |
+| gse99963_ex_post_vs_pre | 68,903; 63,793-73,206 | 1,620; 1,487-1,507 | 44,650; 13,142-20,991 | 2,352; 316-384 |
+| gse144304_female_frail_vs_fit | 163,858; 160,404-161,888 | 2,492; 2,462-2,483 | 41,885; 19,190-22,754 | 1,526; 954-1,019 |
+| gse144304_male_frail_vs_fit | 163,897; 156,955-159,846 | 2,529; 2,448-2,490 | 45,112; 18,860-29,306 | 1,705; 880-1,278 |
+| gse144304_female_old_vs_young | 265,908; 219,467-237,469 | 3,388; 2,908-3,085 | 205,857; 19,677-26,018 | 4,734; 821-1,035 |
+| gse144304_male_old_vs_young | 243,256; 208,337-223,495 | 3,139; 2,916-3,006 | 160,341; 20,914-23,387 | 3,412; 890-972 |
+
+What this says:
+- SPLASH at p < 0.05 keeps a median of 97 % of its sequences and 93 % of its genes when the labels
+  are swapped. So those sequences mostly do not come from the difference between the groups.
+  Why was not tested. Differences between people, which the swaps keep, would be one reason.
+- KaMRaT with DESeq2 keeps a median of 44 % of its sequences, 31 % of its genes and 9 % of its
+  list genes. So swapped labels still give about a third as many genes at p < 0.05, but few of them
+  are on the study's list.
+- Swapped KaMRaT lists still beat random on 11 of 36, against about 2 expected by chance. Each
+  swap's random sets use that swap's own reached genes. Swaps cannot remove all of a real effect:
+  flipping 3 of 7 pairs leaves one subject's worth of it. Whether that explains the 11 was not tested.
+- One swap kept more KaMRaT sequences than the real labels: gse99963_sed swap_middle, 56,079
+  against 44,995, with 587 genes against 1,954. Why was not checked.
+- With 3 swaps per contrast, real above all three would happen by chance 1 time in 4, so
+  the swaps show size, not a small p-value.
+- The study lists come from these same reads and labels, so this control tests that a route follows
+  the labels, not that the lists are true.
+- The Botryllus swaps (`../label_swap/`) tested SPLASH and anchor counts, not KaMRaT, so KaMRaT with
+  DESeq2 has not had this control on the PEC samples.
 
 Laker's top genes come back in the expected direction: in the exercise arm TNC and MYBPH are in
 the up genes at corrected p <= 0.05 with DESeq2. CDKN1A is up in old women by the same route. This
@@ -63,18 +124,25 @@ was a spot check of a few genes, not a test.
 
 ### Sequences kept (up / down)
 
-SPLASH has one number because it has no direction.
+SPLASH has one number because it has no direction. — means the route was not run on that series.
 
-| contrast | SPLASH compactors | t-test corrected | t-test p < 0.05 | DESeq2 corrected | DESeq2 p < 0.05 |
-|---|---|---|---|---|---|
-| gse99963_sed_post_vs_pre | 14,959 | 0 / 0 | 10,291 / 20,667 | 226 / 527 | 11,790 / 33,205 |
-| gse99963_ex_post_vs_pre | 24,874 | 182 / 1,136 | 10,840 / 84,654 | 4,158 / 3,116 | 25,296 / 19,354 |
-| gse144304_female_frail_vs_fit | 69,942 | 2 / 0 | 42,471 / 23,634 | 9 / 7 | 19,579 / 22,306 |
-| gse144304_male_frail_vs_fit | 64,594 | 2 / 0 | 33,387 / 32,419 | 710 / 776 | 22,175 / 22,937 |
-| gse144304_female_old_vs_young | 118,480 | 82,180 / 36,131 | 190,055 / 87,128 | 52,384 / 50,242 | 106,751 / 99,106 |
-| gse144304_male_old_vs_young | 109,868 | 30,592 / 17,446 | 140,156 / 74,868 | 29,172 / 29,429 | 82,790 / 77,551 |
+| contrast | SPLASH corrected | SPLASH p < 0.05 | t-test corrected | t-test p < 0.05 | DESeq2 corrected | DESeq2 p < 0.05 |
+|---|---|---|---|---|---|---|
+| gse99963_sed_post_vs_pre | 14,959 | 41,116 | 0 / 0 | 10,291 / 20,667 | 226 / 527 | 11,790 / 33,205 |
+| gse99963_ex_post_vs_pre | 24,874 | 68,903 | 182 / 1,136 | 10,840 / 84,654 | 4,158 / 3,116 | 25,296 / 19,354 |
+| gse144304_female_frail_vs_fit | 69,942 | 163,858 | 2 / 0 | 42,471 / 23,634 | 9 / 7 | 19,579 / 22,306 |
+| gse144304_male_frail_vs_fit | 64,594 | 163,897 | 2 / 0 | 33,387 / 32,419 | 710 / 776 | 22,175 / 22,937 |
+| gse144304_female_old_vs_young | 118,480 | 265,908 | 82,180 / 36,131 | 190,055 / 87,128 | 52,384 / 50,242 | 106,751 / 99,106 |
+| gse144304_male_old_vs_young | 109,868 | 243,256 | 30,592 / 17,446 | 140,156 / 74,868 | 29,172 / 29,429 | 82,790 / 77,551 |
+| gse120862_untrained_1h_ex_vs_ne | — | 16,039 | — | — | 5,183 / 524 | 16,075 / 10,295 |
+| gse120862_untrained_4h_ex_vs_ne | — | 14,179 | — | — | 7,468 / 2,187 | 27,763 / 25,236 |
+| gse120862_trained_1h_ex_vs_ne | — | 48,641 | — | — | 1,324 / 223 | 26,774 / 22,533 |
+| gse120862_trained_4h_ex_vs_ne | — | 24,809 | — | — | 118 / 0 | 12,877 / 9,684 |
+| gse120862_baseline_trained_vs_untrained | — | 32,325 | — | — | 12,492 / 9,292 | 46,968 / 64,623 |
 
-SPLASH anchors at corrected p <= 0.05, of those tested, before extension into compactors:
+SPLASH anchors at corrected p <= 0.05, of those tested, before extension into compactors. At
+uncorrected p <= 0.05 the first two series pass 8,466 to 67,524 anchors, 0.4 to 1.0 % of those tested,
+well under the 5 % that would pass by chance alone, so SPLASH's p-values look cautious:
 
 | contrast | anchors tested | significant | k-mers tested | contigs |
 |---|---|---|---|---|
@@ -90,14 +158,19 @@ SPLASH anchors at corrected p <= 0.05, of those tested, before extension into co
 Every gene, per contrast, route and direction: `human_genes.tsv`. Counts with the steps between
 sequence and gene: `human_genes_summary.tsv`.
 
-| contrast | SPLASH compactors | t-test corrected | t-test p < 0.05 | DESeq2 corrected | DESeq2 p < 0.05 |
-|---|---|---|---|---|---|
-| gse99963_sed_post_vs_pre | 204 | 0 / 0 | 1,925 / 166 | 56 / 6 | 1,471 / 483 |
-| gse99963_ex_post_vs_pre | 608 | 132 / 128 | 1,738 / 1,711 | 348 / 24 | 2,082 / 270 |
-| gse144304_female_frail_vs_fit | 813 | 0 / 0 | 1,857 / 1,192 | 0 / 0 | 756 / 770 |
-| gse144304_male_frail_vs_fit | 989 | 0 / 0 | 2,521 / 1,036 | 24 / 3 | 1,128 / 577 |
-| gse144304_female_old_vs_young | 1,594 | 5,713 / 2,115 | 6,028 / 1,906 | 1,365 / 757 | 3,037 / 1,697 |
-| gse144304_male_old_vs_young | 1,566 | 2,570 / 1,271 | 4,045 / 1,740 | 525 / 519 | 1,783 / 1,629 |
+| contrast | SPLASH corrected | SPLASH p < 0.05 | t-test corrected | t-test p < 0.05 | DESeq2 corrected | DESeq2 p < 0.05 |
+|---|---|---|---|---|---|---|
+| gse99963_sed_post_vs_pre | 204 | 1,095 | 0 / 0 | 1,925 / 166 | 56 / 6 | 1,471 / 483 |
+| gse99963_ex_post_vs_pre | 608 | 1,620 | 132 / 128 | 1,738 / 1,711 | 348 / 24 | 2,082 / 270 |
+| gse144304_female_frail_vs_fit | 813 | 2,492 | 0 / 0 | 1,857 / 1,192 | 0 / 0 | 756 / 770 |
+| gse144304_male_frail_vs_fit | 989 | 2,529 | 0 / 0 | 2,521 / 1,036 | 24 / 3 | 1,128 / 577 |
+| gse144304_female_old_vs_young | 1,594 | 3,388 | 5,713 / 2,115 | 6,028 / 1,906 | 1,365 / 757 | 3,037 / 1,697 |
+| gse144304_male_old_vs_young | 1,566 | 3,139 | 2,570 / 1,271 | 4,045 / 1,740 | 525 / 519 | 1,783 / 1,629 |
+| gse120862_untrained_1h_ex_vs_ne | — | 746 | — | — | 127 / 8 | 565 / 155 |
+| gse120862_untrained_4h_ex_vs_ne | — | 917 | — | — | 221 / 11 | 932 / 249 |
+| gse120862_trained_1h_ex_vs_ne | — | 1,528 | — | — | 70 / 2 | 1,661 / 89 |
+| gse120862_trained_4h_ex_vs_ne | — | 911 | — | — | 10 / 0 | 275 / 131 |
+| gse120862_baseline_trained_vs_untrained | — | 1,165 | — | — | 328 / 35 | 1,847 / 367 |
 
 Genes with the most sequences, KaMRaT with DESeq2 at corrected p <= 0.05:
 - gse99963_ex up: XIRP2, COL6A3, FN1, TUBA3D, ACTA1, COL1A2, COL3A1, DYSF, ITGA7, MYH3.
@@ -118,6 +191,7 @@ DNA between people would be one reason, since GSE144304 compares different peopl
 |---|---|---|
 | GSE99963 | published: Laker 2017 Table S1 (edgeR) | FDR < 0.1, as in the table |
 | GSE144304 | rebuilt here: no table of genes was found, so PyDESeq2 on the authors' GEO counts, `~ condition` | p < 0.01, de Jong 2023's cutoff |
+| GSE120862 | rebuilt here: PyDESeq2 on the authors' GEO normalised counts, `~ subject + condition` | corrected p < 0.05 |
 
 The de Jong 2023 supplement holds figures only. Table S1 of Laker 2017 lists 1,602 genes
 (sedentary arm) and 3,999 (exercise arm) at FDR < 0.1, while the paper's text says 412 and 2,617;
@@ -125,7 +199,10 @@ the table was used as published. Our rebuilt old vs young lists hold 4,754 genes
 3,250 in men, against 5,500 and 3,721 in de Jong 2023. Lists are limited to genes with a GENCODE
 protein. All numbers: `human_compare.tsv`, `published_genes.tsv`, `published_genes_counts.txt`.
 
-Each cell: reached/listed (share; random median; share of random sets at or above the real list).
+Each cell below: reached/listed (share; random median; share of random sets at or above the real
+list), for the first two series and the routes run before the uncorrected SPLASH route was added.
+All routes and all 22 lists are in `human_compare.tsv`. In GSE120862, KaMRaT with DESeq2 at p < 0.05
+reaches 14-67 % of a list against a random median of 0-11 %, and SPLASH 3-11 % against 4-11 %.
 
 | contrast, list | SPLASH | t-test p < 0.05 | DESeq2 corrected | DESeq2 p < 0.05 |
 |---|---|---|---|---|
@@ -144,8 +221,9 @@ Each cell: reached/listed (share; random median; share of random sets at or abov
 
 ## Time and memory
 
-From the Nextflow traces (`resources.tsv` per task, `resources_by_process.tsv`). No task failed
-on memory or time. On 14 samples and 15 Gbp the pilot's SPLASH took 2 min.
+From the Nextflow traces of the first two series (`resources.tsv` per task,
+`resources_by_process.tsv`); GSE120862 and the swaps are not added yet. No task failed on memory
+or time. On 14 samples and 15 Gbp the pilot's SPLASH took 2 min.
 
 | step | tasks | CPU hours, all tasks | longest wall time | largest peak memory |
 |---|---|---|---|---|
@@ -180,7 +258,7 @@ uses the memory it is given.
 - A random set matched on baseMean controls for expression level only. Long genes and families
   with close relatives offer more peptides, so they are easier to reach.
 - A gene can be reached through a close relative: paralogs such as the myosins are not told apart.
-- At p < 0.05 about 1 tested sequence in 20 passes by chance. No label-swap control has been run
-  on the human contrasts.
-- GSE99963 and GSE144304 only. In GSE120862, subjects P1-P4 have 51 or 60 nt reads, too short for
-  SPLASH, so its SPLASH results will rest on subjects P5-P7.
+- At p < 0.05 about 1 tested sequence in 20 passes by chance. The label-swap control above measures
+  what that means here, for GSE99963 and GSE144304 only.
+- In GSE120862, subjects P1-P4 have 51 or 60 nt reads, too short for SPLASH, so its SPLASH results
+  rest on subjects P5-P7. KaMRaT uses all seven.
