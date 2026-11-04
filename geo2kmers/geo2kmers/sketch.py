@@ -9,6 +9,7 @@ from pathlib import Path
 
 import numpy as np
 
+from geo2kmers import schema
 from geo2kmers.geo import Geo2KmersError, read_series_matrix, read_table
 
 COMPLEMENT = str.maketrans("ACGT", "TGCA")
@@ -435,13 +436,15 @@ def write_signature(table, path, k, alphabet, mode, name):
 def write_sketch(table, report, out, sample, channel):
     """Write the TSV, the report next to it, and the signature if sourmash is installed."""
     mode, alphabet, k = report["mode"], report["alphabet"], report["k"]
-    value_name = "intensity_weight" if mode == "weighted" else "presence"
+    columns = schema.header("intensity_weight" if mode == "weighted" else None)
+    identity = f"{alphabet}\t{k}\t{schema.setting_name(alphabet, k)}"
     with open(out, "w") as f:
-        f.write(f"kmer\t{value_name}\tn_probes\n")
+        f.write("\t".join(columns) + "\n")
         for kmer in sorted(table):
             weight, _, n_probes = table[kmer]
-            value = f"{weight:.6f}" if mode == "weighted" else "1"
-            f.write(f"{kmer}\t{value}\t{n_probes}\n")
+            value = f"\t{weight:.6f}" if mode == "weighted" else ""
+            f.write(f"{kmer}\t{identity}{value}\t{n_probes}\n")
+    schema.validate_table(out)
     name = f"{sample}{'_' + channel if channel else ''}"
     wrote = write_signature(table, f"{out}.sig", k, alphabet, mode, name)
     report["sample"] = sample

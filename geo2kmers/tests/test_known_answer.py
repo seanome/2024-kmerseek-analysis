@@ -57,7 +57,7 @@ def test_sketch_holds_exactly_the_kmers_of_the_20_bright_probes(known, tmp_path,
     assert main(args + ["--k", str(K), "--alphabet", "dna", "--mode", "present", "--out", str(out)]) == 0
     assert "intensity above the median" in capsys.readouterr().out
     header, rows = read_tsv(out)
-    assert header == ["kmer", "presence", "n_probes"]
+    assert header == ["kmer", "alphabet", "k", "setting", "n_probes"]
     expected = set().union(*(hand_canonical_kmers(probes[p], K) for p in bright))
     assert {r[0] for r in rows} == expected
     # the test only means something if the dim probes hold k-mers the bright ones lack
@@ -76,7 +76,7 @@ def test_weight_sum_equals_probe_weight_times_kmers_on_a_real_array(tmp_path):
     assert main(args + ["--out", str(out)]) == 0
     header, rows = read_tsv(out)
     assert header == ["kmer", "intensity_weight", "n_probes"]
-    observed = sum(float(r[1]) for r in rows)
+    observed = sum(float(r[4]) for r in rows)
 
     intensity = {}
     with open(tmp_path / "GSM39421.txt") as f:

@@ -145,9 +145,12 @@ Modes:
   twice, so the sum of `intensity_weight` over all k-mers equals the sum over probes of probe weight
   times number of k-mers in the probe. K-mers of probes with weight 0 stay in the TSV with weight 0.
 
-Outputs: a TSV with columns kmer, intensity_weight (or presence) and n_probes, where n_probes counts
-the probes holding the k-mer; `<out>.report.json` with every count and the rule used; and, if sourmash
-is installed, `<out>.sig`.
+Outputs: a TSV with columns kmer, alphabet, k, setting, intensity_weight (left out in `present` mode, where
+the table is a plain set) and n_probes, where setting is kmerseek's name for the alphabet and k, such as protein20_k10, and
+n_probes counts the probes holding the k-mer. `geo2kmers/sketch_schema.md` defines this format, and `sketch`
+checks each table against it. kmerseek's read sketches are expected to follow the same file, with `count` as
+the value column. A table never has both value columns. The other outputs are `<out>.report.json`, with
+every count and the rule used, and, if sourmash is installed, `<out>.sig`.
 
 The signature keeps every k-mer (scaled = 1). In `weighted` mode a sourmash abundance must be a whole
 number, so each weight is rounded: abundance = max(1, floor(weight + 0.5)). A k-mer with weight 0 is

@@ -10,7 +10,7 @@ from pathlib import Path
 import numpy as np
 import pytest
 
-from geo2kmers import geo, sequences, sketch
+from geo2kmers import geo, schema, sequences, sketch
 from geo2kmers.cli import main
 from geo2kmers.geo import Geo2KmersError
 
@@ -104,7 +104,7 @@ def test_weight_column_is_never_called_count(tmp_path):
     table, report = sketch.build_sketch({"p": "ACGTACGT"}, {"p": 10.0, "q": 0.0}, 3, "dna", "weighted")
     sketch.write_sketch(table, report, tmp_path / "x.tsv", "GSM1", None)
     header = (tmp_path / "x.tsv").read_text().splitlines()[0]
-    assert header == "kmer\tintensity_weight\tn_probes"
+    assert header == "kmer\talphabet\tk\tsetting\tintensity_weight\tn_probes"
 
 
 def sample_table(path, rows, columns, channels=1):
@@ -180,7 +180,7 @@ def test_zero_weight_kmers_stay_in_the_table_and_leave_the_signature(tmp_path):
     table, report = sketch.build_sketch(probes, {"low": 0.0, "high": 100.0}, 5, "dna", "weighted")
     sketch.write_sketch(table, report, tmp_path / "x.tsv", "GSM1", None)
     rows = [r.split("\t") for r in (tmp_path / "x.tsv").read_text().splitlines()[1:]]
-    zero = {r[0] for r in rows if float(r[1]) == 0}
+    zero = {r[0] for r in rows if float(r[4]) == 0}
     assert zero and len(zero) < len(rows)
     minhash = next(iter(sourmash.load_file_as_signatures(str(tmp_path / "x.tsv.sig")))).minhash
     assert len(minhash) == len(rows) - len(zero)
@@ -574,3 +574,47 @@ def test_a_name_twice_in_a_fasta_stops_and_a_blank_line_is_skipped(tmp_path):
 def test_an_all_blank_detection_column_is_no_detection_column():
     rows = [{"ID_REF": "a", "ABS_CALL": ""}, {"ID_REF": "b", "ABS_CALL": " "}]
     assert sketch.read_detection(["ID_REF", "ABS_CALL"], rows) is None
+
+
+GOOD_TABLE = "kmer\talphabet\tk\tsetting\tintensity_weight\tn_probes\nACD\tprotein\t3\tprotein20_k3\t1.5\t2\n"
+
+
+def test_a_written_table_follows_the_schema(tmp_path):
+    table, report = sketch.build_sketch({"p": "ACGTACGT"}, {"p": 10.0, "q": 0.0}, 3, "dna", "weighted")
+    sketch.write_sketch(table, report, tmp_path / "x.tsv", "GSM1", None)
+    assert schema.validate_table(tmp_path / "x.tsv") == ("dna_k3", len(table))
+    table, report = sketch.build_sketch({"p": "ACGTACGT"}, {"p": 10.0, "q": 0.0}, 3, "dna", "present")
+    sketch.write_sketch(table, report, tmp_path / "y.tsv", "GSM1", None)
+    assert schema.validate_table(tmp_path / "y.tsv")[0] == "dna_k3"
+
+
+@pytest.mark.parametrize(
+    "old, new, message",
+    [
+        ("intensity_weight", "weight", "does not allow"),
+        ("kmer\t", "sequence\t", "does not allow"),
+        ("setting", "name", "does not allow"),
+        ("\tintensity_weight\t", "\tintensity_weight\tcount\t", "mixes the value columns"),
+        ("protein20_k3", "protein20_k4", "does not match"),
+        ("ACD", "ACB", "not a protein k-mer"),
+        ("ACD", "ACDE", "not a protein k-mer"),
+        ("\t1.5\t", "\t-1.5\t", "not allowed"),
+    ],
+)
+def test_the_schema_refuses_a_changed_table(tmp_path, old, new, message):
+    path = write(tmp_path / "x.tsv", GOOD_TABLE.replace(old, new))
+    with pytest.raises(Geo2KmersError, match=message):
+        schema.validate_table(path)
+
+
+def test_the_schema_refuses_two_settings_in_one_table(tmp_path):
+    extra = "ACDE\tprotein\t4\tprotein20_k4\t1.5\t2\n"
+    with pytest.raises(Geo2KmersError, match="mixes the settings"):
+        schema.validate_table(write(tmp_path / "x.tsv", GOOD_TABLE + extra))
+
+
+def test_a_read_sketch_uses_count_and_needs_whole_numbers(tmp_path):
+    good = "kmer\talphabet\tk\tsetting\tcount\tn_probes\nACD\tprotein\t3\tprotein20_k3\t4\t1\n"
+    assert schema.validate_table(write(tmp_path / "a.tsv", good)) == ("protein20_k3", 1)
+    with pytest.raises(Geo2KmersError, match="not allowed"):
+        schema.validate_table(write(tmp_path / "b.tsv", good.replace("\t4\t", "\t4.5\t")))
