@@ -12,8 +12,11 @@ and prints both.
   lists_beat_random       lists where 5 % or fewer of the random sets did as well
   real_above_all_swaps    lists where the real share is above every swap's
   swap_lists_beat_random  the same test for the swaps
-  median_swap_over_real   median of mean swap share / real share, over lists with a nonzero share
+  genes_real, genes_swap  list genes reached, summed over lists; for swaps, the mean over swaps
+  swap_over_real          genes_swap / genes_real
   ..._either_way          the same, also counting list genes reached by contigs going the other way
+Lists that the real labels do not reach add 0 to genes_real, so these are ratios of sums, not
+medians of ratios, which a list with 0 genes would make infinite.
 """
 import sys
 from pathlib import Path
@@ -36,15 +39,15 @@ d = pl.read_csv(rec_p, separator="\t").with_columns(
 real, sw = d.filter(pl.col("run") == "real"), d.filter(pl.col("run") != "real")
 wide = sw.group_by(keys).agg(pl.len().alias("swaps"), pl.col("fraction_reached").mean().alias("swap_mean"),
                              pl.col("fraction_reached").max().alias("swap_max"),
+                             pl.col("reached").mean().alias("swap_reached_mean"),
+                             pl.col("reached_either_way").mean().alias("swap_reached_either_way_mean"),
                              pl.col("fraction_either_way").mean().alias("swap_either_way_mean"),
                              pl.col("reached").min().alias("swap_reached_min"), pl.col("reached").max().alias("swap_reached_max"),
                              (pl.col("share_null_at_or_above") <= BEAT).sum().alias("swaps_beat_random"))
-t = (real.select(*keys, "list_genes_with_protein", "reached", "fraction_reached", "fraction_either_way", "null_median",
+t = (real.select(*keys, "list_genes_with_protein", "reached", "reached_either_way", "fraction_reached", "fraction_either_way", "null_median",
                  "null_2_5", "null_97_5", "share_null_at_or_above")
      .join(wide, on=keys, how="left", validate="1:1")
-     .with_columns((pl.col("fraction_reached") > pl.col("swap_max")).alias("real_above_all_swaps"),
-                   (pl.col("swap_mean") / pl.col("fraction_reached")).alias("swap_over_real"),
-                   (pl.col("swap_either_way_mean") / pl.col("fraction_either_way")).alias("swap_over_real_either_way")))
+     .with_columns((pl.col("fraction_reached") > pl.col("swap_max")).alias("real_above_all_swaps")))
 assert t["swaps"].null_count() == 0
 t.write_csv(f"{out_stem}.tsv", separator="\t")
 
@@ -52,9 +55,13 @@ t.write_csv(f"{out_stem}.tsv", separator="\t")
 def summarise(g):
     return g.agg(pl.len().alias("lists"), (pl.col("share_null_at_or_above") <= BEAT).sum().alias("lists_beat_random"),
                  pl.col("real_above_all_swaps").sum(), pl.col("swaps_beat_random").sum().alias("swap_lists_beat_random"),
-                 pl.col("swaps").sum().alias("swap_lists"), pl.col("reached").sum().alias("real_reached"),
-                 pl.col("swap_over_real").median().round(3).alias("median_swap_over_real"),
-                 pl.col("swap_over_real_either_way").median().round(3).alias("median_swap_over_real_either_way"))
+                 pl.col("swaps").sum().alias("swap_lists"), pl.col("reached").sum().alias("genes_real"),
+                 pl.col("swap_reached_mean").sum().round(1).alias("genes_swap"),
+                 (pl.col("swap_reached_mean").sum() / pl.col("reached").sum()).round(3).alias("swap_over_real"),
+                 pl.col("reached_either_way").sum().alias("genes_real_either_way"),
+                 pl.col("swap_reached_either_way_mean").sum().round(1).alias("genes_swap_either_way"),
+                 (pl.col("swap_reached_either_way_mean").sum() / pl.col("reached_either_way").sum()).round(3)
+                 .alias("swap_over_real_either_way"))
 
 
 summary = pl.concat([summarise(t.group_by("contrast", maintain_order=True)),
@@ -63,7 +70,7 @@ summary.write_csv(f"{out_stem}_summary.tsv", separator="\t")
 kept = pl.read_csv(kept_p, separator="\t")
 with pl.Config(tbl_rows=100, tbl_cols=20, tbl_width_chars=220):
     print(summary)
-    print(t.select(*keys, "reached", "swap_reached_min", "swap_reached_max", "fraction_reached", "swap_mean", "swap_max",
+    print(t.select(*keys, "reached", "reached_either_way", "swap_reached_mean", "swap_reached_either_way_mean", "fraction_reached", "swap_mean", "swap_max",
                    "real_above_all_swaps", "swaps_beat_random"))
     print(kept)
 

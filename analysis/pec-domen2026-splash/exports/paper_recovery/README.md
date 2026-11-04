@@ -371,6 +371,10 @@ Limits:
   beyond that colony (ANALYSIS_PLAN.md).
 - With PEC and control labels swapped, SPLASH reaches about as many genes as with the real
   labels (`../label_swap/`), so a list reached by SPLASH is weak evidence of a PEC effect.
+- KaMRaT contigs tested with DESeq2 lose the paper's direction with swapped labels (28 list genes
+  against 69), but reach as many list genes when direction is ignored (79 against 78), and swaps keep
+  more contigs in the two contrasts with 6 pairs (`../label_swap/`). So its 9 of 12 lists show
+  agreement with the paper's direction, not that its sequences reflect PEC.
 - SPLASH treats every sample as independent, so its anchors in young 2 h and young 24 h, where
   samples come in pairs, are likely too many.
 - The paper's lists and our routes come from the same reads. Agreement is corroboration, not

@@ -105,6 +105,74 @@ its reach does not measure PEC. The anchor-count route reaches at most
 a little more than its swaps in the two young contrasts with 6 pairs; it reaches more with the real labels only
 in old 24 h and young 13-49 d, each from one or two swaps.
 
+## KaMRaT + DESeq2 (added 2026-11-04)
+
+KaMRaT + DESeq2 at p < 0.05 is the route that beats random genes on 9 of the paper's 12 lists
+(`../paper_recovery/`), so it had to pass this control too. It does in the sequences' direction,
+and does not when direction is ignored.
+
+![KaMRaT + DESeq2 with real and swapped labels](kamrat/kamrat_label_swap.png)
+
+One row per paper list. Filled triangle: share reached with real labels. Open triangles: swaps.
+Grey bar: the middle 95 % of 1,000 random gene sets for the real labels' reached genes; black tick:
+their median. Swaps are scored against the real contrast's list. Rows with a real share of 0 are
+lists the route does not reach.
+
+| measure, 12 lists | real labels | swaps |
+|---|---|---|
+| lists beating random genes (<= 0.05) | 9 of 12 | 2 of 28 swap lists (about 1.4 expected at this cutoff) |
+| list genes reached, contig going the paper's way | 69 | 28 (mean per swap, summed over lists) |
+| list genes reached, contig going either way | 78 | 79 |
+
+Real labels beat every swap on 8 of the 9 lists that beat random; the exception is young 24 h up
+(12 genes, swaps 7 to 32).
+
+| contrast | contigs kept, real | swaps | genes reached, real | swaps | corrected p <= 0.05, real | swaps |
+|---|---|---|---|---|---|---|
+| young 2 h | 27,781 | 28,108-56,325 | 722 | 660-1,717 | 24 | 0-5 |
+| young 24 h | 40,462 | 51,125-76,740 | 680 | 1,123-2,196 | 12 | 1-1,624 |
+| old 24 h | 9,246 | 8,903 | 954 | 393 | 0 | 7 |
+| young 13-49 d | 5,415 | 1,424-11,724 | 581 | 83-233 | 0 | 0 |
+| young 132 d | 12,741 | 3,293-3,764 | 401 | 153-319 | 452 | 0-315 |
+| old 41-93 d | 2,191 | 2,277 | 166 | 135 | 5 | 1 |
+
+- In the two contrasts with 6 colony pairs, swaps keep more contigs than the real labels, and in
+  young 24 h they reach more genes. So in these contrasts the number of contigs does not measure PEC.
+- Ignoring direction, swaps reach as many list genes as the real labels (79 against 78). The labels
+  decide which way a contig points, and the paper's up and down lists were made with those same
+  labels from the same reads. So matching the paper's direction is what falls with swapped labels;
+  which genes are found does not. The total depends on young 24 h and old 24 h: the other four
+  contrasts give 48 real and 23 swapped genes.
+- The human series behave differently: there KaMRaT + DESeq2 swaps keep a median 44 % of the
+  sequences, and their share of a list is a median 14 % of the real share, counting either way
+  (`../human/README.md`). The Botryllus result is weaker.
+
+Verdict: the 9 of 12 lists show that this route agrees with the paper's direction under the real
+labels, which swapped labels break. They do not show that the sequences it keeps reflect PEC.
+
+How it ran: `make run-kamrat-swap` (`main.nf --kamrat_swap`, head job 51070561, 2026-11-04, 42 tasks,
+0 failed) and `slurm/22_kamrat_swap_score.sbatch` (job 51070567). The real scores come out the same
+as `../paper_recovery/paper_recovery.tsv`. Numbers: `kamrat/kamrat_swap_recovery.tsv`,
+`kamrat/kamrat_swap_kept.tsv`, `kamrat/kamrat_label_swap.tsv`, `kamrat/kamrat_label_swap_summary.tsv`.
+
+The swaps follow a stricter rule than those above (`scripts/make_kamrat_label_swaps.py`, written
+before any swapped KaMRaT run, designs in `design/label_swap_kamrat/`). Each flips some counted
+pairs and keeps others; a counted pair holds one PEC and one control sample in the DESeq2 design.
+There are 14: the 7 existing swaps of young 2 h, young 24 h and old 24 h, and 7 new ones, every
+choice for young 13-49 d (3), young 132 d (3) and old 41-93 d (1).
+
+Only KaMRaT and later steps ran again. The DE-kupl k-mer table is the real contrast's: for one human
+swap the k-mers and one sample's counts were identical to the real run. KaMRaT's contigs are not
+reused because they depend on the labels: 20 % of that swap's contigs differed from the real run.
+
+Limits of this section:
+
+- Flipping 1 of 3 pairs leaves part of any real effect in place (2 pairs one way, 1 the other), so
+  young 13-49 d and young 132 d swaps are not fully neutral. With 2 or 6 pairs it cancels.
+- old 24 h and old 41-93 d have one swap each. No swap count here gives a small p value.
+- Four of the 12 lists have fewer than 20 genes with a protein (old 24 h down has 3), so one gene
+  moves their share a lot.
+
 ## Limits
 
 - **Some anchor-count swaps are not a null.** The anchor-count DESeq2 design is `~ pair +
