@@ -15,6 +15,9 @@ ACCESSION_COLUMNS = ["GB_ACC", "GB_LIST", "GENBANK", "GENBANK_ACC", "GENBANK_ACC
 ACCESSION_RE = re.compile(r"[A-Z]{1,6}_?\d{3,}(\.\d+)?")
 
 
+MAX_GENBANK_NT = 5000
+
+
 def find_column(columns, names):
     """Return the first column whose upper-case name is in names, in the order of names."""
     upper = {c.upper(): c for c in columns}
@@ -98,7 +101,9 @@ def fetch_accessions(accessions, email, api_key=None, post=post_efetch, sleep=ti
     return found
 
 
-def make_probe_fasta(gpl_table, out_fasta, source_table, cache_fasta=None, post=post_efetch):
+def make_probe_fasta(
+    gpl_table, out_fasta, source_table, cache_fasta=None, post=post_efetch, max_genbank_nt=MAX_GENBANK_NT
+):
     """Write out_fasta and source_table. Returns counts per source."""
     meta, columns, rows = read_table(gpl_table, "platform")
     seq_col = find_column(columns, ["SEQUENCE"])
@@ -139,7 +144,7 @@ def make_probe_fasta(gpl_table, out_fasta, source_table, cache_fasta=None, post=
             with open(cache_fasta, "a") as f:
                 f.writelines(f">{name}\n{sequence}\n" for name, sequence in new.items())
 
-    counts = {"gpl_sequence": 0, "genbank_fetch": 0, "missing": 0}
+    counts = {"gpl_sequence": 0, "genbank_fetch": 0, "record_too_long": 0, "missing": 0}
     with open(out_fasta, "w") as fasta, open(source_table, "w") as table:
         table.write("probe_id\tsource\tlength_nt\n")
         for row in rows:
@@ -152,6 +157,9 @@ def make_probe_fasta(gpl_table, out_fasta, source_table, cache_fasta=None, post=
                 source = "genbank_fetch"
             if not sequence:
                 source = "missing"
+            elif source == "genbank_fetch" and len(sequence) > max_genbank_nt:
+                # a record this long is a genome or chromosome, not the clone on the slide
+                source = "record_too_long"
             else:
                 fasta.write(f">{probe}\n{sequence}\n")
             counts[source] += 1

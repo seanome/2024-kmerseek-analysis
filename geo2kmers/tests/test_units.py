@@ -230,7 +230,7 @@ def test_sources_are_recorded_and_email_comes_from_the_environment(tmp_path, mon
         return ">AJ000001.1 a mussel EST\nACGTTGCA\n"
 
     counts = sequences.make_probe_fasta(t, tmp_path / "o.fasta", tmp_path / "o.tsv", post=post)
-    assert counts == {"gpl_sequence": 1, "genbank_fetch": 1, "missing": 2}
+    assert counts == {"gpl_sequence": 1, "genbank_fetch": 1, "record_too_long": 0, "missing": 2}
     assert seen == ["someone@example.org"]
     assert (tmp_path / "o.tsv").read_text().splitlines()[1:] == [
         "1\tgpl_sequence\t8",
@@ -290,3 +290,18 @@ class _Closing(io.BytesIO):
 
     def __exit__(self, *args):
         self.close()
+
+
+def test_a_genbank_record_over_the_limit_is_not_a_probe(tmp_path, monkeypatch):
+    t = tmp_path / "GPL.txt"
+    t.write_text("!platform_table_begin\nID\tGB_ACC\n1\tAJ000001\n2\tAJ000002\n!platform_table_end\n")
+    monkeypatch.setenv("NCBI_EMAIL", "someone@example.org")
+
+    def post(ids, email, api_key):
+        return ">AJ000001\nACGTACGT\n>AJ000002\nACGTACGTACGT\n"
+
+    out, table = tmp_path / "o.fasta", tmp_path / "o.tsv"
+    counts = sequences.make_probe_fasta(t, out, table, post=post, max_genbank_nt=8)
+    assert counts == {"gpl_sequence": 0, "genbank_fetch": 1, "record_too_long": 1, "missing": 0}
+    assert out.read_text() == ">1\nACGTACGT\n"
+    assert "2\trecord_too_long\t12" in table.read_text()

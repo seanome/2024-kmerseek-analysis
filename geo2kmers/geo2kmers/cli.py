@@ -16,7 +16,7 @@ def run_sequences(args):
     out = Path(args.out)
     table = args.table or out.with_name("probe_sequence_source.tsv")
     cache = args.cache or out.with_name("genbank_cache.fasta")
-    counts = sequences.make_probe_fasta(args.gpl_table, out, table, cache)
+    counts = sequences.make_probe_fasta(args.gpl_table, out, table, cache, max_genbank_nt=args.max_genbank_nt)
     print(f"probes by source: {counts}")
 
 
@@ -51,6 +51,12 @@ def parser():
     s.add_argument("--out", required=True)
     s.add_argument("--table", help="default: probe_sequence_source.tsv beside --out")
     s.add_argument("--cache", help="default: genbank_cache.fasta beside --out")
+    s.add_argument(
+        "--max-genbank-nt",
+        type=int,
+        default=sequences.MAX_GENBANK_NT,
+        help="a GenBank record longer than this is not used as a probe (default: %(default)s)",
+    )
     s.set_defaults(run=run_sequences)
 
     k = sub.add_parser("sketch", help="make one sample's k-mer table")

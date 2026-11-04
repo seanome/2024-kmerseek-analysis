@@ -66,9 +66,12 @@ python -m geo2kmers sequences data/GSE2183/GPL1799.txt --out data/GSE2183/probes
   that holds the 25-letter probes, such as `hgu133plus2probe`. It stops even if the table has a GenBank
   column, because that record is the gene the probes target, not the probes. It does not guess sequences.
 - Only the first accession in a cell is used, and NCBI returns the latest version of the record.
+- A GenBank record longer than `--max-genbank-nt` (default 5000) is not used. A record that long is a
+  genome or chromosome, not the clone on the slide. The probe is listed as record_too_long and has no
+  sequence, so it adds no k-mers.
 
-`probe_sequence_source.tsv` has one row per probe: probe_id, source (gpl_sequence, genbank_fetch or
-missing) and length_nt.
+`probe_sequence_source.tsv` has one row per probe: probe_id, source (gpl_sequence, genbank_fetch,
+record_too_long or missing) and length_nt. For record_too_long, length_nt is the record's length.
 
 ### sketch
 
@@ -160,33 +163,57 @@ environment built from `environment.yml`. All numbers below come from the file n
 that folder. The sketches themselves are too large to keep here.
 
 - 50 tasks ran, each on the first try, with exit status 0 (`geo2kmers.trace.txt`).
-- The run took 272 seconds (`wall_time.txt`), under the 10 minutes set for this test.
-- The platform has 3840 probes. 3374 got a sequence from GenBank and 466 have none. The 3374 are 1673
-  distinct sequences, so most sequences are spotted more than once. Lengths run from 101 to 16740 nt, median
-  513 (`probe_summary.tsv`).
+- The run took 70 seconds (`wall_time.txt`), under the 10 minutes set for this test.
+- The platform has 3840 probes. 3344 got a sequence from GenBank, 30 point to a whole genome record and
+  so have no sequence, and 466 have no accession. The 3344 are 1672 distinct sequences,
+  so most sequences are spotted more than once. Lengths run from 101 to 650 nt, median 512
+  (`probe_summary.tsv`). These lengths are computed from GenBank records, not measured on the slide.
 - Each of the 4 samples has 2 channels, so 8 channels at 3 alphabets and 2 modes make 48 sketches
   (`sketch_summary.tsv`).
-- DNA k = 31, `weighted`: 709173 distinct k-mers in every sketch. The set is the same because an array
+- DNA k = 31, `weighted`: 693847 distinct k-mers in every sketch. The set is the same because an array
   has a fixed set of probes; only the weights differ (`sketch_summary.tsv`).
-- DNA k = 31, `present`: 1744 to 1835 probes pass the median rule, giving 397918 to 459149 distinct
+- DNA k = 31, `present`: 1717 to 1807 probes pass the median rule, giving 382592 to 443823 distinct
   k-mers (`sketch_summary.tsv`).
 - The median is 0 in GSM39424 ch1, and background is 0 in 7 of the 8 channels. Between 148 and 2008 of
   the 3840 probes have intensity exactly 0 (`sketch_summary.tsv`). GEO's table does not say why.
-- Protein k = 10 and hp k = 30, `weighted`: 2608 of the 3374 probes have zero usable frames. So 766
+- Protein k = 10 and hp k = 30, `weighted`: 2578 of the 3344 probes have zero usable frames. So 766
   probes supply all the protein k-mers, and 762 all the hp k-mers, since 4 more are too short for k = 30
-  (`probes_with_no_kmer` in `sketch_summary.tsv`). A sequence of this length usually has a stop codon in
-  all six frames, so the rule of dropping such frames removes most probes. Long probes therefore do not
-  make this method work well here: the protein and hp sketches see only a small part of the array.
-- One GenBank record dominates the weights. 30 spots carry accession AY484747, which NCBI titles
-  "Mytilus edulis mitochondrion, complete genome", another species' whole 16740 nt genome. They are the
-  only probes over 800 nt. They hold 25.9 % of the DNA k = 31 windows and 68.2 % to 79.8 % of the weight
-  sum, depending on the channel (`longest_probes_share.tsv`). Read any weighted result on this array
-  with that in mind, or remove those probes from `probes.fasta` first.
+  (`probes_with_no_kmer` in `sketch_summary.tsv`). The platform record for GPL1799 explains why: each
+  probe is a short tag from the 3' end of an mRNA, chosen because that end is mostly non-coding. So
+  the protein and hp sketches see only a small part of this array.
+- 30 spots (15 clones) list accession AY484747, which NCBI titles "Mytilus edulis mitochondrion, complete
+  genome". The platform table names one gene for each clone, such as Mitochondrial-ND6, and one clone
+  says Nuclear-RNA 18S. So the record is not what was spotted, and no sequence for these clones
+  is known. They are left out. When they were kept, they held 25.9 % of the DNA k = 31 windows and 68.2 %
+  to 79.8 % of the weight sum (`whole_genome_record_share_before_fix.tsv`).
+
+## Picking a reading frame with a proteome
+
+`frame_test.py` asks whether a frame can be picked instead of dropping every frame with a stop codon. A
+frame is one of the six translations. A stretch is the part of a frame between two stop codons. A frame
+or stretch passes if it has at least 10 k-mers and at least 90 % of them are in the proteome. It tests
+the 1672 distinct sequences, and three shuffles of each as a chance control (`frame_test.tsv`).
+
+| Proteome | alphabet, k | sequences with a passing frame | with a passing stretch | shuffled, stretch (mean) |
+|---|---|---|---:|---:|---:|
+| Human and mouse (GENCODE v50, vM39) | protein, 10 | 7 | 22 | 0.0 |
+| Human and mouse | hp, 30 | 19 | 26 | 1.3 |
+| Pacific oyster (UP000005408) | protein, 10 | 8 | 24 | 0.0 |
+| Pacific oyster | hp, 30 | 27 | 34 | 0.0 |
+| Same species (UP000596742) | protein, 10 | 272 | 456 | 0.0 |
+| Same species | hp, 30 | 434 | 484 | 0.3 |
+
+So human and mouse pick a frame for at most 26 of 1672 sequences on this array, even though 420 share at
+least one protein 10-mer with them. The same-species proteome reaches 456 to 484. The other sequences
+are either non-coding or missing from that proteome; this test cannot tell which. Protein k = 5 and hp k = 15
+or 20 are no use: almost every shuffled sequence passes as well. The frame rule in `sketch` has not been
+changed.
 
 ## Limits
 
-- The sequence fetched for a GenBank accession is the whole record, which need not be what was spotted
-  on the slide. See AY484747 above.
+- The sequence fetched for a GenBank accession is the whole record, which need not be exactly what was
+  spotted on the slide. On GSE2183, 3344 spots use the EST record of the clone, the closest sequence
+  published. A record under the length limit that is not the clone would not be caught.
 - Probes sharing an accession add their weights, so a sequence spotted twice weighs twice as much.
 - Weights from different arrays are on different scales, and no normalisation between arrays is done.
 - The sketches have not yet been compared with an RNA-seq sketch.
