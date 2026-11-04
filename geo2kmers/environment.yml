@@ -1,0 +1,9 @@
+name: geo2kmers
+channels:
+  - conda-forge
+  - bioconda
+dependencies:
+  - python=3.12
+  - numpy
+  - sourmash-minimal
+  - pytest
