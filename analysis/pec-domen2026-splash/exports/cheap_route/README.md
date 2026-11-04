@@ -29,6 +29,29 @@ raised or lowered 4-fold got the right direction, 0 the wrong one. 24 of 2,600 u
 direction. 3 of 100 isoform-switch genes did, which is expected, since a gene total hides a switch.
 It used 240 CPU s, 42 s on 8 threads and 55 MB. On the same samples SPLASH used 853 CPU s and 2.26 GB.
 
+## All-reads result: stop, by the plan's rule
+
+`pec-tools gene-counts` on all 47 samples and all reads, 2026-11-04 (job 51081669). Scored against
+the paper's lists, right direction only (`all_reads/recovery.tsv`).
+
+| rule | needed | result |
+|---|---|---|
+| paper's genes, right direction | 439 of 878 | 207 of 878 (24 %): fail |
+| lists beating random genes | 9 of 12 | 11 of 12: pass |
+
+| cost, all six contrasts | gene-counts | SPLASH route | ratio |
+|---|---|---|---|
+| CPU | 2.9 h | 12.1 h | 1/4 |
+| wall time | 32 min | 3.0 h | 1/5.6 |
+| peak memory | 0.44 GB | 83.6 GB | 1/190 |
+
+This is the most genes this method finds with these settings, so under the stop rule the 1/10 and
+1/100 runs were not started. It still reaches more than any other route in the right direction: 207
+genes against 97 for DE-kupl with DESeq2, the next best, which covers only 10 of the lists. 131 M of
+449 M read pairs (29 %) went to a gene; 317 M (71 %) had no 3 matching k-mers, and 1.2 M tied. Swapped
+labels were not run. The paper's lists are uncorrected, so 439 may not be a fair target; the
+reference is being rebuilt with nf-core (`nextflow-runs/pec-domen2026-nfcore/`).
+
 ## Target
 
 Gene counted: on one of the paper's 12 lists, and reached by a sequence going the paper's way.
