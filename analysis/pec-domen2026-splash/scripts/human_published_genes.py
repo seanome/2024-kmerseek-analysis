@@ -99,6 +99,22 @@ for c, sheet in (("gse99963_sed_post_vs_pre", "HFD_Sed_RNAseq"), ("gse99963_ex_p
     base.index = [ens2sym.get(i.split(".")[0], "") for i in base.index]
     add_pool("GSE99963", c, base[base.index != ""])
 
+# ---- GSE99963, Fig. 4 groups: no published list pools the arms, so rebuilt from the authors' counts,
+# ~ subject + condition, BH p < 0.05 (the GSE120862 rule), added 2026-11-04
+c = "gse99963_fig4_post_vs_pre"
+dsg = design_of(c).merge(s99.reset_index()[["run", "title"]], left_on="sample", right_on="run")
+x = cov[dsg["title"].tolist()].round().astype(int)
+x.columns = dsg["sample"].tolist()
+x = x[x.index.map(lambda i: ens2sym.get(i.split(".")[0], "") != "")]
+x.index = [ens2sym[i.split(".")[0]] for i in x.index]
+x = x.groupby(level=0).sum()
+r = deseq(x, dsg.set_index("sample")[["subject", "condition"]], "~ subject + condition")
+sig = r[r.padj < 0.05]
+print(c, "rebuilt padj < 0.05:", len(sig), "up", int((sig.log2FoldChange > 0).sum()), "down", int((sig.log2FoldChange < 0).sum()))
+add_list("GSE99963", c, "rebuilt (PyDESeq2 on GEO counts, ~ subject + condition, padj < 0.05)",
+         sig.index[sig.log2FoldChange > 0], sig.index[sig.log2FoldChange < 0])
+add_pool("GSE99963", c, r["baseMean"])
+
 # ---- GSE144304: rebuilt from the authors' counts, ~ condition, p < 0.01
 jc = pd.read_csv(pub / "GSE144304_JoinedCounts.txt.gz", sep="\t", index_col=0)
 jc = jc[~jc.index.str.startswith("__")]

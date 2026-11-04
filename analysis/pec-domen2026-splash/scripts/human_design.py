@@ -120,6 +120,19 @@ def main():
     C.append(("GSE120862", "gse120862_baseline_trained_vs_untrained", "untrained", "trained",
               "rest (baseline), rested (NE) leg: after vs before 2 months of aerobic training, paired by subject",
               lambda s: None if s["time"] != "baseline" or s["leg"] != "NE" else ("control" if s["training"] == "untrained" else "PEC"), True))
+    # Domen et al. 2026 Fig. 4 groups, added 2026-11-04. These are the groups that reproduce the
+    # paper's printed AUC and p (exports/exercise_score/README.md on PR 212), not the panel labels:
+    # GSE99963 pools both arms, GSE144304 is young vs fit old adults (frail left out), and
+    # GSE120862 is all untrained vs all trained samples, every time point and both legs.
+    C.append(("GSE99963", "gse99963_fig4_post_vs_pre", "Pre", "Post",
+              "Fig. 4D: after vs before, sedentary and exercise arms pooled, paired by subject",
+              lambda s: "control" if s["time"] == "Pre" else "PEC", True))
+    C.append(("GSE144304", "gse144304_fig4_fit_vs_young", "Young", "Fit",
+              "Fig. 4D: fit old adults (panel: Ex) vs young adults (panel: Sed), frail left out, not paired",
+              lambda s: {"Young": "control", "Fit": "PEC"}.get(s["group"]), False))
+    C.append(("GSE120862", "gse120862_fig4_trained_vs_untrained", "untrained", "trained",
+              "Fig. 4C: all trained vs all untrained samples, every time point and both legs, paired by subject",
+              lambda s: "control" if s["training"] == "untrained" else "PEC", True))
 
     contrasts = []
     for series, name, ref, other, meaning, sel, paired in C:
@@ -133,10 +146,10 @@ def main():
         rows.sort(key=lambda x: (x[0]["subject"], x[1]))
         n = Counter(c for _, c in rows)
         if paired:
-            per = Counter(s["subject"] for s, _ in rows)
-            bad = {k: v for k, v in per.items() if v != 2}
+            per = Counter((s["subject"], c) for s, c in rows)
+            bad = {k: v for k, v in per.items() if per[(k[0], "control")] != per[(k[0], "PEC")]}
             if bad:
-                raise SystemExit(f"{name}: subjects without exactly 2 samples {bad}")
+                raise SystemExit(f"{name}: subjects with unequal samples per group {bad}")
             if n["control"] != n["PEC"]:
                 raise SystemExit(f"{name}: unbalanced pairs {n}")
         with open(out_dir / f"contrast_{name}.design.tsv", "w") as f:

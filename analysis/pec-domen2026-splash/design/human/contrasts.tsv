@@ -10,3 +10,6 @@ GSE120862	gse120862_untrained_4h_ex_vs_ne	NE	Ex	untrained, 4 h after one-legged 
 GSE120862	gse120862_trained_1h_ex_vs_ne	NE	Ex	trained, 1 h after one-legged exercise: exercised vs rested leg, paired by subject	7	7	True	pair_condition	677.3	51.0-76.7
 GSE120862	gse120862_trained_4h_ex_vs_ne	NE	Ex	trained, 4 h after one-legged exercise: exercised vs rested leg, paired by subject	7	7	True	pair_condition	680.8	51.0-76.7
 GSE120862	gse120862_baseline_trained_vs_untrained	untrained	trained	rest (baseline), rested (NE) leg: after vs before 2 months of aerobic training, paired by subject	7	7	True	pair_condition	672.2	51.0-76.8
+GSE99963	gse99963_fig4_post_vs_pre	Pre	Post	Fig. 4D: after vs before, sedentary and exercise arms pooled, paired by subject	14	14	True	pair_condition	409.1	81.0-81.0
+GSE144304	gse144304_fig4_fit_vs_young	Young	Fit	Fig. 4D: fit old adults (panel: Ex) vs young adults (panel: Sed), frail left out, not paired	26	30	False	condition	1011.3	76.0-76.0
+GSE120862	gse120862_fig4_trained_vs_untrained	untrained	trained	Fig. 4C: all trained vs all untrained samples, every time point and both legs, paired by subject	42	42	True	pair_condition	3971.4	51.0-76.8

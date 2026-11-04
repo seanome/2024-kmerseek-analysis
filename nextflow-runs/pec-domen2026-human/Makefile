@@ -52,7 +52,7 @@ define require_cluster
 	fi
 endef
 
-.PHONY: pilot run swaps watch watch-swaps attach stop status running
+.PHONY: pilot run fig4 swaps watch watch-swaps attach stop status running
 
 pilot: HEAD_TIME := 1-00:00:00
 pilot:
@@ -63,6 +63,17 @@ pilot:
 run:
 	$(call require_cluster)
 	mkdir -p $(RUN_DIR) && cd $(RUN_DIR) && ml load biology nextflow && $(HEAD_SUBMIT) $(NF_COMMON) --series $(SERIES) $(NF_ARGS)
+
+## Domen et al. 2026 Fig. 4 groups; every route, so they compare with every human panel
+fig4: HEAD_JOBNAME := nf-pec361-human-fig4
+fig4: HEAD_SESSION := pec361hf
+fig4:
+	$(call require_cluster)
+	mkdir -p run-fig4 && cd run-fig4 && ml load biology nextflow && \
+	  $(HEAD_SUBMIT) $(subst -profile sherlock,-profile sherlock$(comma)fig4,$(NF_COMMON)) \
+	  --series GSE99963,GSE144304,GSE120862 \
+	  --contrasts gse99963_fig4_post_vs_pre,gse144304_fig4_fit_vs_young,gse120862_fig4_trained_vs_untrained \
+	  --routes compactors,compactors_p05,kamrat_ttest,kamrat_p05,kamrat_deseq2_p05 $(NF_ARGS)
 
 swaps: HEAD_JOBNAME := nf-pec361-human-swaps
 swaps: HEAD_SESSION := pec361hs
