@@ -239,6 +239,19 @@ down; after correction young 24 h down. The same contigs at the earlier 2-fold c
 Beat random: 9 lists, all but the down lists of old 24 h, young 13-49 d and old 41-93 d; after
 correction 7 (young 24 h down at 0.008 and old 41-93 d up at 0.007 drop out).
 
+Added up over the 12 lists, this route reaches 69 of 878 listed genes (7.9 %). The 878 is the sum
+of the list sizes, so a gene on two lists counts twice. Single lists run from 0 to 44 %:
+
+| lists | reached | share | lowest list | highest list |
+|---|---|---|---|---|
+| all 12 | 69/878 | 7.9 % | 0 % (3 lists) | 44 % (young 13-49 d up, 8/18) |
+| 6 up lists | 39/429 | 9.1 % | 5 % (young 24 h up, 12/252) | 44 % (young 13-49 d up, 8/18) |
+| 6 down lists | 30/449 | 6.7 % | 0 % (3 lists) | 17 % (young 132 d down, 8/46) |
+
+The same route at the same cutoff finds 361 of 400 planted genes (90 %) on the simulated control
+below. The 0 % lists are the down lists of old 24 h (0/3), young 13-49 d (0/48) and old 41-93 d
+(0/17). The 44 % comes from a short list of 18 genes.
+
 ### DE-kupl k-mers, limma (p < 0.05)
 
 | list | reached | real share | null median (95 % range) | random sets at or above |
