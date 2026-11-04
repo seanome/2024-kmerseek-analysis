@@ -5,7 +5,7 @@ import http.client
 import sys
 from pathlib import Path
 
-from geo2kmers import geo, sequences, sketch
+from geo2kmers import geo, landing, schema, sequences, sketch
 
 
 def run_fetch(args):
@@ -19,12 +19,28 @@ def run_sequences(args):
     cache = args.cache or out.with_name("genbank_cache.fasta")
     counts = sequences.make_probe_fasta(args.gpl_table, out, table, cache, max_genbank_nt=args.max_genbank_nt)
     print(f"probes by source: {counts}")
+    lengths = sorted(len(s) for s in sketch.read_fasta(out).values())
+    if lengths:
+        median = lengths[len(lengths) // 2]
+        rule = sketch.platform_rule(median)
+        print(f"median probe length {median} nt, {sketch.residues_per_frame(median)} residues per frame: rule {rule}")
 
 
 def run_proteome_index(args):
     picker = sketch.ProteomeFrames(args.proteome, args.k, args.alphabet)
     picker.save(args.out)
     print(f"{len(picker.known)} distinct k-mers in {', '.join(picker.sources)}")
+
+
+def run_land(args):
+    probes = sketch.read_fasta(args.fasta)
+    rule, k, rows, touched = landing.land_probes(probes, args.proteome, args.k)
+    landed = landing.passing_landings(rule, rows, lambda probe: probe.rsplit("/", 1)[0])
+    with open(args.out, "w") as f:
+        f.write("feature\tprotein\tsetting\n")
+        for name in sorted(landed):
+            f.writelines(f"{name}\t{p}\t{schema.setting_name('protein', k)}\n" for p in sorted(landed[name]))
+    print(f"rule {rule}, k {k}: {touched} of {len(probes)} probes have a k-mer in the proteome")
 
 
 def run_sketch(args):
@@ -84,6 +100,13 @@ def parser():
         help="protein FASTA files, gzipped or not, or one .npz from proteome-index: pick each probe's frame (not dna)",
     )
     k.set_defaults(run=run_sketch)
+
+    n = sub.add_parser("land", help="find the protein each probe, or on 25-letter arrays each probe set, lands on")
+    n.add_argument("--fasta", required=True, help="on 25-letter arrays, name each probe <probe set>/<number>")
+    n.add_argument("--proteome", nargs="+", required=True, help="protein FASTA files, gzipped or not")
+    n.add_argument("--k", type=int, help="default: the k of the platform's rule")
+    n.add_argument("--out", required=True)
+    n.set_defaults(run=run_land)
 
     x = sub.add_parser("proteome-index", help="save a proteome's k-mers once, for many sketches to read")
     x.add_argument("--proteome", nargs="+", required=True, help="protein FASTA files, gzipped or not")

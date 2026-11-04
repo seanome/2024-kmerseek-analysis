@@ -579,6 +579,39 @@ def test_an_all_blank_detection_column_is_no_detection_column():
 GOOD_TABLE = "kmer\talphabet\tk\tsetting\tintensity_weight\tn_probes\nACD\tprotein\t3\tprotein20_k3\t1.5\t2\n"
 
 
+@pytest.mark.parametrize("n_nt, residues, kmers", [(25, 8, 0), (50, 16, 5), (60, 20, 9)])
+def test_kmers_per_frame_at_k_12(n_nt, residues, kmers):
+    assert sketch.residues_per_frame(n_nt) == residues and sketch.kmers_per_frame(n_nt, 12) == kmers
+
+
+@pytest.mark.parametrize(
+    "median, rule",
+    [(25, "probe_set"), (39.5, "probe_set"), (40, "short_oligo"), (60, "short_oligo"), (99, "short_oligo")]
+    + [(100, "long_probe"), (500, "long_probe")],
+)
+def test_the_rule_follows_the_median_probe_length(median, rule):
+    assert sketch.platform_rule(median) == rule
+
+
+def test_a_short_oligo_keeps_a_stop_free_frame_with_half_its_kmers_in_the_proteome(tmp_path):
+    protein = RANDOM_PROTEIN[:20]
+    paths = write_proteome(tmp_path, protein)
+    picker = sketch.ProteomeFrames(paths, 7, "protein")
+    dna = to_dna(protein)
+    assert picker.pick_stop_free(dna, 0.5)[2] == protein
+    half_wrong = to_dna(protein[:12] + RANDOM_PROTEIN[100:108])
+    assert picker.pick_stop_free(half_wrong, 0.5) is None
+    table, report = sketch.build_sketch({"p": dna}, {"p": 10.0, "q": 0.0}, 7, "protein", "weighted", proteome=paths)
+    assert report["platform_rule"] == "short_oligo" and protein[:7] in table
+    assert report["landing_share"] == 0.5  # one of the two probes in the intensity table
+
+
+def test_a_25_letter_array_stops_and_names_land(tmp_path):
+    paths = write_proteome(tmp_path, RANDOM_PROTEIN[:40])
+    with pytest.raises(Geo2KmersError, match="geo2kmers land"):
+        sketch.build_sketch({"p": "ACGT" * 6 + "A"}, {"p": 10.0}, 7, "protein", "weighted", proteome=paths)
+
+
 def test_a_written_table_follows_the_schema(tmp_path):
     table, report = sketch.build_sketch({"p": "ACGTACGT"}, {"p": 10.0, "q": 0.0}, 3, "dna", "weighted")
     sketch.write_sketch(table, report, tmp_path / "x.tsv", "GSM1", None)

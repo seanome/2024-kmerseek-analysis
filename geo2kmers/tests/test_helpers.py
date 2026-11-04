@@ -13,7 +13,7 @@ from pathlib import Path
 import pytest
 from test_units import RANDOM_PROTEIN, STOPS, to_dna
 
-from geo2kmers import sequences, sketch
+from geo2kmers import landing, sequences, sketch
 from geo2kmers.cli import main
 from geo2kmers.geo import Geo2KmersError
 
@@ -222,3 +222,37 @@ def test_a_connection_error_is_a_clean_stop_at_the_command_line(tmp_path, monkey
     monkeypatch.setattr("geo2kmers.geo.fetch", no_network)
     assert main(["fetch", "GSE1", "--outdir", str(tmp_path)]) == 1
     assert "no route to host" in capsys.readouterr().err
+
+
+def test_a_probe_set_lands_when_3_probes_land_on_one_protein(tmp_path):
+    protein = RANDOM_PROTEIN[:60]
+    proteome = write(tmp_path / "p.fasta", f">GENE\n{protein}\n")
+    # 8 residues in frame 0 of each 25-letter probe, from three places in the protein
+    probes = {f"set1/{i}": to_dna(protein[i * 10 : i * 10 + 8]) + "A" for i in range(3)}
+    probes |= {"set2/0": probes["set1/0"], "set2/1": probes["set1/1"], "set2/2": "ATTAGCTTAACGTAGATAGCCATAA"}
+    rule, k, rows, touched = landing.land_probes(probes, [proteome])
+    assert (rule, k, touched) == ("probe_set", 7, 5)
+    passed = landing.passing_landings(rule, rows, lambda p: p.split("/")[0])
+    assert passed == {"set1": {"GENE"}}  # set2 has only 2 probes on the protein
+
+
+def test_landing_reads_both_strands_and_agrees_with_translate_frames(tmp_path):
+    protein = RANDOM_PROTEIN[:60]
+    proteome = write(tmp_path / "p.fasta", f">GENE\n{protein}\n")
+    forward = to_dna(protein[:8]) + "A"
+    backward = sketch.reverse_complement("A" + to_dna(protein[10:18]))
+    _, _, rows, _ = landing.land_probes({"f": forward, "b": backward}, [proteome])
+    found = {(r[0], r[2]) for r in rows}
+    assert ("f", 0) in found
+    frames = sketch.translate_frames(backward)
+    assert ("b", next(i for i, f in enumerate(frames) if protein[10:18] in f)) in found
+
+
+def test_a_short_oligo_landing_needs_half_its_kmers(tmp_path):
+    protein = RANDOM_PROTEIN[:40]
+    proteome = write(tmp_path / "p.fasta", f">GENE\n{protein}\n")
+    whole = to_dna(protein[:20])
+    a_little = to_dna(protein[:8] + "W" * 12)
+    rule, _, rows, touched = landing.land_probes({"a": whole, "b": a_little}, [proteome])
+    assert rule == "short_oligo" and touched == 2
+    assert landing.passing_landings(rule, rows) == {"a": {"GENE"}}

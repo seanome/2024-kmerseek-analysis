@@ -126,8 +126,23 @@ and `--proteome` also takes that file, which is what makes many sketches fast. I
 to absolute paths joined by commas: one PROTEOME_INDEX task reads the proteome for each alphabet and k, and every
 sketch reads its file.
 
-A 25 nt probe gives at most 8 amino acids in a frame, so protein k must be 8 or less on short-probe
-arrays. If no probe gives a k-mer, the command stops with an error rather than write an empty table.
+If no probe gives a k-mer, the command stops with an error rather than write an empty table.
+
+The proteome rule above needs long probes. A frame of a probe of n nt holds floor(n / 3) residues, so it
+has floor(n / 3) - k + 1 k-mers:
+
+| probe length | residues per frame | k-mers at k = 12 | rule chosen from the platform's median length |
+|---|---:|---:|---|
+| 25 nt (Affymetrix) | 8 | 0 | `probe_set`: a probe lands with one k-mer at k = 7, and a probe set lands on a protein when 3 of its probes land on it. `geo2kmers land` does this, and `sketch` stops and says so |
+| 50 nt (Illumina) | 16 | 5 | `short_oligo`: the longest frame with no stop, with at least half its k-mers in the proteome at k = 7 |
+| 60 nt (Agilent) | 20 | 9 | `short_oligo` |
+| 100 nt or more | 33 or more | 22 or more | `long_probe`: the rule above |
+
+`PLATFORM_RULES` in `geo2kmers/sketch.py` holds these numbers and the reason for each. `--k` sets k, and the
+setting column of each table keeps tables of different k apart. `probe_summary.tsv` gives the median probe
+length as `probe_length`, with `residues_per_frame`. `sketch_summary.tsv` gives `landing_share`: the probes
+with at least one k-mer in the proteome, in any frame, divided by all probes. Most expression probes sit at
+the 3' end of a transcript and many are in untranslated sequence, so this share can be well below 1.
 
 These protein, dayhoff and hp sketches differ from what sourmash makes when it translates DNA itself. Sourmash
 keeps all six frames, while this tool keeps one stretch. So do not compare them with RNA-seq sketches made by sourmash's own translation without
@@ -225,7 +240,7 @@ that folder. The sketches themselves are too large to keep here.
   k-mers are probably not from a protein (`sketch_summary.tsv`).
 - The same with the species' own proteome: 652 of the 3344 probes give k-mers, 45727 distinct. That run
   took 117 seconds, in 70 tasks. Three of them read the proteome, for 48 to 50 seconds and at most 1.5 GB each, and
-  every sketch reads the saved result in about 2 seconds
+  every sketch reads the saved result in about 2 seconds (`results/GSE2183_proteome/`).
   (`results/GSE2183_proteome/`).
 - 30 spots (15 clones) list accession AY484747, which NCBI titles "Mytilus edulis mitochondrion, complete
   genome". The platform table names one gene for each clone, such as Mitochondrial-ND6, and one clone

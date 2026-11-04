@@ -35,6 +35,32 @@ LOG_SCALE_LIMIT = 32
 MIN_STRETCH_AA = 100
 MIN_SHARE_IN_PROTEOME = 0.9
 AMINO_ACIDS = "ACDEFGHIKLMNPQRSTVWY"
+# How a proteome picks what a probe codes for depends on probe length (min_nt, the median of the platform).
+PLATFORM_RULES = {
+    # Probes of 100 nt or more can hold a 33 amino acid stretch, and clones many more: MIN_STRETCH_AA and
+    # MIN_SHARE_IN_PROTEOME above apply.
+    "long_probe": {"min_nt": 100},
+    # 50 to 60 nt gives 16 to 20 residues, too few for k = 12 to leave more than 9 k-mers. At k = 7 a 60 nt probe
+    # has 14, and half of them must match: 7 windows in a row cannot match by chance in a small proteome.
+    "short_oligo": {"min_nt": 40, "k": 7, "min_share": 0.5},
+    # 25 nt gives 8 residues, so k = 7 leaves 2 k-mers a frame and one probe is weak evidence. Affymetrix tiles
+    # about 11 probes per probe set, and 3 landing on one protein is hard to reach by chance.
+    "probe_set": {"min_nt": 0, "k": 7, "min_probes": 3},
+}
+
+
+def platform_rule(median_nt):
+    """The rule for a platform with this median probe length."""
+    return next(name for name, rule in PLATFORM_RULES.items() if median_nt >= rule["min_nt"])
+
+
+def residues_per_frame(n_nt):
+    return n_nt // 3
+
+
+def kmers_per_frame(n_nt, k):
+    """floor(n_nt / 3) - k + 1, or 0 when a frame is shorter than k."""
+    return max(0, residues_per_frame(n_nt) - k + 1)
 
 
 def read_fasta(path, whole_name=False):
@@ -155,6 +181,24 @@ class ProteomeFrames:
             return 0.0
         where = np.searchsorted(self.known, values).clip(max=len(self.known) - 1)
         return float((self.known[where] == values).mean())
+
+    def has_kmer(self, sequence):
+        """Whether any k-mer of any stretch of any frame is in the proteome."""
+        return any(
+            self.share_in_proteome(stretch) > 0
+            for frame in translate_frames(sequence)
+            for stretch in frame.split("*")
+            if len(stretch) >= self.k
+        )
+
+    def pick_stop_free(self, sequence, min_share):
+        """Return the longest frame with no stop, as pick does, if enough of its k-mers are in the proteome."""
+        frames = [(len(f), -i, f) for i, f in enumerate(translate_frames(sequence)) if "*" not in f]
+        if not frames:
+            return None
+        _, number, frame = max(frames)
+        share = self.share_in_proteome(frame)
+        return (-number, 0, frame, share) if share >= min_share else None
 
     def pick(self, sequence):
         """Return the longest passing stretch as (frame, start, stretch, share), or None.
@@ -307,6 +351,12 @@ def match_names(probes, values):
     return matched
 
 
+def probe_weights(measured):
+    """Each probe's max(0, intensity - background), with background the array's 5th percentile."""
+    background = float(np.percentile(list(measured.values()), BACKGROUND_PERCENTILE))
+    return {p: max(0.0, v - background) for p, v in measured.items()}
+
+
 def add_probe(table, kmers, weight, probe_index):
     """Add one probe's k-mers. A k-mer seen twice in a probe adds its weight twice."""
     for kmer in kmers:
@@ -332,6 +382,13 @@ def build_sketch(probes, intensities, k, alphabet, mode, detection=None, proteom
     if proteome and alphabet == "dna":
         raise Geo2KmersError("--proteome picks a reading frame, so it does not apply to alphabet dna")
     picker = ProteomeFrames(proteome, k, alphabet) if proteome else None
+    median_nt = float(np.median([len(s) for s in probes.values()])) if probes else 0.0
+    rule = platform_rule(median_nt) if picker else None
+    if rule == "probe_set":
+        raise Geo2KmersError(
+            f"median probe length is {median_nt:.0f} nt, so one probe is too little to land on a protein. "
+            "Use `geo2kmers land`, which scores per probe set."
+        )
     measured = {p: v for p, v in intensities.items() if v is not None}
     if not measured:
         raise Geo2KmersError("no probe has a measured intensity")
@@ -348,12 +405,11 @@ def build_sketch(probes, intensities, k, alphabet, mode, detection=None, proteom
     }
     weights = {}
     if mode == "weighted":
-        background = float(np.percentile(numbers, BACKGROUND_PERCENTILE))
         report["rule"] = (
             f"max(0, intensity - background), background = {BACKGROUND_PERCENTILE}th percentile of this array"
         )
-        report["background"] = background
-        weights = {p: max(0.0, v - background) for p, v in measured.items()}
+        report["background"] = float(np.percentile(numbers, BACKGROUND_PERCENTILE))
+        weights = probe_weights(measured)
     elif detection is not None:
         report["rule"] = "GEO detection call"
         weights = {p: 1.0 for p in measured if detection.get(p)}
@@ -377,7 +433,10 @@ def build_sketch(probes, intensities, k, alphabet, mode, detection=None, proteom
         if alphabet == "dna":
             kmers = dna_kmers(sequence, k)
         else:
-            pick = picker.pick(sequence) if picker else longest_stretch(sequence)
+            if rule == "short_oligo":
+                pick = picker.pick_stop_free(sequence, PLATFORM_RULES[rule]["min_share"])
+            else:
+                pick = picker.pick(sequence) if picker else longest_stretch(sequence)
             kmers = stretch_kmers(pick[2], k, alphabet) if pick else []
             no_stretch += pick is None
             if pick:
@@ -395,6 +454,12 @@ def build_sketch(probes, intensities, k, alphabet, mode, detection=None, proteom
             f"longest stretch between stops with at least {MIN_STRETCH_AA} amino acids and at least "
             f"{MIN_SHARE_IN_PROTEOME:.0%} of its k-mers in the proteome"
         )
+        if rule == "short_oligo":
+            share = PLATFORM_RULES[rule]["min_share"]
+            report["frame_rule"] = f"longest stop-free frame with at least {share:.0%} of its k-mers in the proteome"
+        report["platform_rule"] = rule
+        landed = sum(picker.has_kmer(sequence) for sequence in probes.values())
+        report["landing_share"] = round(landed / len(intensities), 4)
         report["proteome"] = ",".join(picker.sources)
         report["proteome_distinct_kmers"] = len(picker.known)
     report["distinct_kmers"] = len(table)

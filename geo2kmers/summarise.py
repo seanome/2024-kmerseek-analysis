@@ -16,7 +16,7 @@ COLUMNS = [
     "sample", "channel", "alphabet", "k", "mode", "rule", "background", "threshold",
     "probes_in_intensity_table", "probes_with_a_sequence", "probes_with_intensity_zero", "probes_used",
     "probes_with_no_kmer", "probes_with_no_stretch", "distinct_kmers", "sum_of_weight",
-    "signature_written", "proteome",
+    "signature_written", "proteome", "platform_rule", "landing_share",
 ]  # fmt: skip
 
 sketches, fasta, source_table, out = sys.argv[1:]
@@ -42,6 +42,8 @@ summary = {
     "length_nt_min": min(lengths),
     "length_nt_median": statistics.median(lengths),
     "length_nt_max": max(lengths),
+    "probe_length": statistics.median(lengths),
+    "residues_per_frame": statistics.median(lengths) // 3,
 }
 with open(f"{out}/probe_summary.tsv", "w") as f:
     f.write("measure\tvalue\n")
