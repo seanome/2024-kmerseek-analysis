@@ -1,0 +1,15 @@
+# nf-core/differentialabundance 2.0.0, rnaseq profile: DESeq2, PEC vs control in each contrast.
+# input, contrasts, matrix and outdir are given by run_pipelines.sh.
+study_name: pec_domen2026
+observations_id_col: sample
+gtf: /home/groups/ayeletv/Index_Genome_New_April2024/ReferenceFiles/Annotated_Merge_Botryllus.sofMask_CorrectedNames_FullNames.gtf
+features_metadata_cols: gene_id,gene_name
+
+# Each contrast is fitted on its own samples, as the paper and the k-mer routes do.
+differential_subset_to_contrast_samples: true
+
+# Median-of-ratios size factors need genes counted in every library; samples here have as few
+# as 108,860 reads (PR 207).
+deseq2_sf_type: poscounts
+exploratory_n_features: -1
+exploratory_main_variable: contrasts
