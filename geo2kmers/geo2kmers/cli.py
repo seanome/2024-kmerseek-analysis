@@ -24,13 +24,15 @@ def run_sketch(args):
     probes = sketch.read_fasta(args.fasta)
     values, detection, source = sketch.load_intensities(args.intensities, args.sample, args.channel, args.column)
     print(f"intensities come from {source}")
-    table, report = sketch.build_sketch(probes, values, args.k, args.alphabet, args.mode, detection)
+    table, report = sketch.build_sketch(probes, values, args.k, args.alphabet, args.mode, detection, args.proteome)
     report["intensity_source"] = source
     sketch.write_sketch(table, report, args.out, args.sample, args.channel)
     print(f"rule: {report['rule']}")
     print(f"probes used: {report['probes_used']}, distinct k-mers: {report['distinct_kmers']}")
-    if "probes_with_zero_usable_frames" in report:
-        print(f"probes with zero usable frames: {report['probes_with_zero_usable_frames']}")
+    if "frame_rule" in report:
+        print(f"frame rule: {report['frame_rule']}")
+    if "probes_with_no_stretch" in report:
+        print(f"probes with no stretch: {report['probes_with_no_stretch']}")
     if not report["signature_written"]:
         print("sourmash is not installed, so no signature was written")
 
@@ -64,11 +66,16 @@ def parser():
     k.add_argument("--intensities", required=True, help="series matrix, GSM table, or folder of GSM tables")
     k.add_argument("--sample", required=True)
     k.add_argument("--k", type=int, required=True)
-    k.add_argument("--alphabet", choices=["dna", "protein", "hp"], required=True)
+    k.add_argument("--alphabet", choices=["dna", "protein", "dayhoff", "hp"], required=True)
     k.add_argument("--mode", choices=["present", "weighted"], required=True)
     k.add_argument("--out", required=True)
     k.add_argument("--channel", choices=["ch1", "ch2"], help="needed for two-colour arrays")
     k.add_argument("--column", help="name the intensity column of a GSM table yourself")
+    k.add_argument(
+        "--proteome",
+        nargs="+",
+        help="protein FASTA files, gzipped or not: pick each probe's frame by matching them (not dna)",
+    )
     k.set_defaults(run=run_sketch)
     return p
 

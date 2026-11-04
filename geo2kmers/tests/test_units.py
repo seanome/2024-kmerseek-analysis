@@ -1,10 +1,13 @@
 """Checks on each rule the README states."""
 
+import gzip
 import io
 import json
+import random
 import urllib.error
 from pathlib import Path
 
+import numpy as np
 import pytest
 
 from geo2kmers import geo, sequences, sketch
@@ -27,21 +30,44 @@ def test_translate_matches_biopython():
     assert sketch.translate_frames(seq) == expected
 
 
-def test_frames_with_a_stop_are_dropped():
-    assert sketch.protein_kmers("TAATAATAA", 2, "protein")[1] == 5  # only + frame 1 has a stop
-    assert "*" not in "".join(sketch.protein_kmers("ATGTAAATG", 2, "protein")[0])
+def test_longest_stretch_is_taken_from_any_frame_even_one_with_stops():
+    protein = RANDOM_PROTEIN[:150]
+    both = STOPS + sketch.reverse_complement(STOPS)  # a stop in all six frames
+    dna = to_dna("MA") + both + to_dna(protein) + both
+    pick = sketch.longest_stretch(dna)
+    assert pick[2] == "L" + protein and pick[:2] == (0, 11)  # the last codon of the flank reads L
+    assert "*" in sketch.translate_frames(dna)[pick[0]]
 
 
-def test_probe_with_no_usable_frame_is_reported():
-    # every frame on both strands holds a stop codon
-    seq = "TAATTAATAATTAGCTAACTAGTTAGTCTAGACTAAGTGA" * 2
-    assert sketch.protein_kmers(seq, 3, "protein") == ([], 0)
-    probes = {"p": seq, "open": "GCTGCTGCTGCTGCTGCT"}
+def test_longest_stretch_ties_go_to_the_lower_frame_then_the_earlier_stretch(monkeypatch):
+    monkeypatch.setattr(sketch, "translate_frames", lambda seq: ["TT*VV", "WWW", "YYY"])
+    assert sketch.longest_stretch("x")[:3] == (1, 0, "WWW")
+    monkeypatch.setattr(sketch, "translate_frames", lambda seq: ["A*CC*GG", "TT"])
+    assert sketch.longest_stretch("x")[:3] == (0, 2, "CC")
+
+
+def test_only_the_longest_stretch_adds_kmers():
+    protein = RANDOM_PROTEIN[:150]
+    both = STOPS + sketch.reverse_complement(STOPS)  # a stop in all six frames
+    dna = to_dna("MA") + both + to_dna(protein) + both
+    table, report = sketch.build_sketch({"p": dna}, {"p": 10.0, "q": 1.0}, 3, "protein", "weighted")
+    stretch = "L" + protein
+    assert set(table) == {stretch[i : i + 3] for i in range(149)}
+    assert report["frame_rule"] == "longest stretch between stops"
+
+
+def test_probe_with_no_stretch_is_reported():
+    probes = {"p": "AC", "open": "GCTGCTGCTGCTGCTGCT"}
     table, report = sketch.build_sketch(probes, {"p": 10.0, "open": 10.0, "q": 1.0}, 3, "protein", "weighted")
-    assert report["probes_with_zero_usable_frames"] == 1 and table
+    assert report["probes_with_no_stretch"] == 1 and table
 
 
-@pytest.mark.parametrize("alphabet,k", [("dna", 15), ("protein", 5), ("hp", 9)])
+def test_a_k_longer_than_every_stretch_stops():
+    with pytest.raises(Geo2KmersError, match="no probe gave a k-mer"):
+        sketch.build_sketch({"p": "ACG"}, {"p": 10.0, "q": 1.0}, 3, "protein", "weighted")
+
+
+@pytest.mark.parametrize("alphabet,k", [("dna", 15), ("protein", 5), ("hp", 9), ("dayhoff", 7)])
 def test_signature_hashes_equal_sourmash_own_hashes(tmp_path, alphabet, k):
     seq = "ATGGCCATTGTAATGGGCCGCTGCAAAGGGTGCCCGACAGCATGGAGTTTCGCTCCGGAACTGTACAAA"
     table, _ = sketch.build_sketch({"p": seq}, {"p": 100.0, "q": 0.0}, k, alphabet, "weighted")
@@ -49,14 +75,12 @@ def test_signature_hashes_equal_sourmash_own_hashes(tmp_path, alphabet, k):
     got = next(iter(sourmash.load_file_as_signatures(str(tmp_path / "x.sig")))).minhash
     args = {"n": 0, "ksize": k, "scaled": 1}
     if alphabet != "dna":
-        args[{"protein": "is_protein", "hp": "hp"}[alphabet]] = True
+        args[{"protein": "is_protein", "hp": "hp", "dayhoff": "dayhoff"}[alphabet]] = True
     own = sourmash.MinHash(**args)
     if alphabet == "dna":
         own.add_sequence(seq)
     else:
-        for frame in sketch.translate_frames(seq):
-            if "*" not in frame:
-                own.add_protein(frame)
+        own.add_protein(sketch.longest_stretch(seq)[2])
     assert set(got.hashes) == set(own.hashes)
 
 
@@ -305,3 +329,174 @@ def test_a_genbank_record_over_the_limit_is_not_a_probe(tmp_path, monkeypatch):
     assert counts == {"gpl_sequence": 0, "genbank_fetch": 1, "record_too_long": 1, "missing": 0}
     assert out.read_text() == ">1\nACGTACGT\n"
     assert "2\trecord_too_long\t12" in table.read_text()
+
+
+# a fixed sequence of amino acids with no repeated 5-mer, and one codon per amino acid
+RANDOM_PROTEIN = "".join(random.Random(7).choices(sketch.AMINO_ACIDS, k=400))
+CODON_OF = {"A": "GCT", "C": "TGT", "D": "GAT", "E": "GAA", "F": "TTT", "G": "GGT", "H": "CAT", "I": "ATT", "K": "AAA",
+            "L": "CTT", "M": "ATG", "N": "AAT", "P": "CCT", "Q": "CAA", "R": "CGT", "S": "TCT", "T": "ACT", "V": "GTT",
+            "W": "TGG", "Y": "TAT"}  # fmt: skip
+STOPS = "TAACTAGTTAACTAG"  # a stop in each of the three forward frames
+
+
+def to_dna(protein):
+    return "".join(CODON_OF[a] for a in protein)
+
+
+def write_proteome(tmp_path, *proteins):
+    path = tmp_path / "proteome.fasta"
+    path.write_text("".join(f">p{i}\n{p}\n" for i, p in enumerate(proteins)))
+    return [path]
+
+
+def test_random_protein_has_no_repeated_5mer():
+    kmers = [RANDOM_PROTEIN[i : i + 5] for i in range(len(RANDOM_PROTEIN) - 4)]
+    assert len(set(kmers)) == len(kmers)
+
+
+@pytest.mark.parametrize(("length", "passes"), [(99, False), (100, True)])
+def test_a_stretch_needs_100_amino_acids(tmp_path, length, passes):
+    protein = RANDOM_PROTEIN[:length]
+    picker = sketch.ProteomeFrames(write_proteome(tmp_path, protein), 5, "protein")
+    pick = picker.pick(STOPS + to_dna(protein) + STOPS)
+    assert (pick is not None and pick[2] == protein) == passes
+
+
+@pytest.mark.parametrize(("matching", "passes"), [(89, False), (90, True)])
+def test_a_stretch_needs_90_percent_of_its_kmers(tmp_path, matching, passes):
+    protein = RANDOM_PROTEIN[:104]  # 100 k-mers at k = 5
+    assert len({protein[i : i + 5] for i in range(100)}) == 100
+    known = protein[: matching + 4]
+    picker = sketch.ProteomeFrames(write_proteome(tmp_path, known), 5, "protein")
+    assert (picker.pick(STOPS + to_dna(protein) + STOPS) is not None) == passes
+
+
+def test_the_longest_passing_stretch_wins_and_shorter_ones_add_nothing(tmp_path):
+    short, long = RANDOM_PROTEIN[:110], RANDOM_PROTEIN[120:300]
+    dna = STOPS + to_dna(short) + STOPS + "A" + to_dna(long) + STOPS  # the long stretch is one frame over
+    picker = sketch.ProteomeFrames(write_proteome(tmp_path, short, long), 5, "protein")
+    pick = picker.pick(dna)
+    assert pick[2].endswith(long)  # the frame shift leaves a few amino acids before the long part
+    frames = sketch.translate_frames(dna)
+    assert frames[pick[0]][pick[1] : pick[1] + len(pick[2])] == pick[2]
+
+
+def test_a_frame_with_a_stop_can_be_picked_and_the_reverse_strand_is_read(tmp_path):
+    protein = RANDOM_PROTEIN[:150]
+    dna = sketch.reverse_complement(STOPS + to_dna(protein) + STOPS)
+    picker = sketch.ProteomeFrames(write_proteome(tmp_path, protein), 5, "protein")
+    pick = picker.pick(dna)
+    assert pick[2] == protein and pick[0] >= 3
+    assert "*" in sketch.translate_frames(dna)[pick[0]]
+
+
+def test_a_stretch_is_never_longer_than_the_part_between_stops(tmp_path):
+    protein = RANDOM_PROTEIN[:150]
+    dna = to_dna(protein[:75]) + "TAA" + to_dna(protein[75:])
+    picker = sketch.ProteomeFrames(write_proteome(tmp_path, protein), 5, "protein")
+    assert picker.pick(dna) is None
+
+
+@pytest.mark.parametrize("alphabet", ["protein", "hp", "dayhoff"])
+def test_sketch_holds_exactly_the_picked_stretch_and_the_sum_holds(tmp_path, alphabet):
+    k = {"protein": 5, "hp": 20, "dayhoff": 8}[alphabet]
+    coding, other = RANDOM_PROTEIN[:150], RANDOM_PROTEIN[200:350]
+    probes = {"a": STOPS + to_dna(coding) + STOPS, "b": STOPS + to_dna(other) + STOPS, "c": "ACGT" * 3}
+    table, report = sketch.build_sketch(
+        probes, {"a": 900.0, "b": 50.0, "c": 70.0, "d": 90.0}, k, alphabet, "weighted",
+        proteome=write_proteome(tmp_path, coding),
+    )  # fmt: skip
+    text = coding if alphabet == "protein" else "".join(sketch.REDUCED[alphabet][a] for a in coding)
+    assert set(table) == {text[i : i + k] for i in range(len(text) - k + 1)}
+    assert report["probes_with_no_stretch"] == 2
+    assert report["sum_of_weight"] == pytest.approx(report["sum_of_probe_weight_times_kmers"])
+    assert report["sum_of_weight"] == pytest.approx((900.0 - report["background"]) * (len(text) - k + 1))
+
+
+def test_hp_mode_decides_with_hp_kmers(tmp_path):
+    protein = RANDOM_PROTEIN[:150]
+    swapped = "".join({"A": "V", "D": "E"}.get(a, a) for a in protein)
+    proteome = write_proteome(tmp_path, swapped)
+    assert sketch.ProteomeFrames(proteome, 20, "hp").pick(STOPS + to_dna(protein) + STOPS)[2] == protein
+    assert sketch.ProteomeFrames(proteome, 5, "protein").pick(STOPS + to_dna(protein) + STOPS) is None
+
+
+def test_proteome_reads_gzip_and_several_files(tmp_path):
+    protein = RANDOM_PROTEIN[:120]
+    first = tmp_path / "a.fasta.gz"
+    with gzip.open(first, "wt") as f:
+        f.write(f">a\n{protein[:60]}\n{protein[60:]}\n")
+    second = tmp_path / "b.fasta"
+    second.write_text(">b\nMKV\n")
+    assert sketch.ProteomeFrames([first, second], 5, "protein").pick(STOPS + to_dna(protein) + STOPS)[2] == protein
+
+
+def test_no_kmer_crosses_a_joint_between_proteins_or_an_unusual_letter(tmp_path):
+    picker = sketch.ProteomeFrames(write_proteome(tmp_path, "AAAAC", "DDDDD", "AAXAAUCC"), 5, "protein")
+    numbers = sketch.kmer_numbers("AAAACDDDDD", 5, "protein", picker.table)
+    assert picker.share_in_proteome("AAAAC") == 1.0
+    assert (picker.known == np.unique(sketch.kmer_numbers("AAAAC#DDDDD", 5, "protein", picker.table))).all()
+    assert len(numbers) == 6 and len(picker.known) == 2
+
+
+@pytest.mark.parametrize(
+    ("k", "alphabet", "phrase"),
+    [
+        (31, "dna", "does not apply"),
+        (15, "protein", "up to k = 14"),
+        (64, "hp", "up to k = 63"),
+        (25, "dayhoff", "up to k = 24"),
+    ],
+)
+def test_proteome_refuses_what_it_cannot_do(tmp_path, k, alphabet, phrase):
+    with pytest.raises(Geo2KmersError, match=phrase):
+        sketch.build_sketch(
+            {"a": "ACGT"}, {"a": 1.0}, k, alphabet, "weighted", proteome=write_proteome(tmp_path, "MKV")
+        )
+
+
+def test_a_proteome_with_no_kmer_stops(tmp_path):
+    with pytest.raises(Geo2KmersError, match="no k-mer"):
+        sketch.ProteomeFrames(write_proteome(tmp_path, "MKV"), 5, "protein")
+
+
+def test_frames_file_names_the_pick(tmp_path):
+    protein = RANDOM_PROTEIN[:150]
+    table, report = sketch.build_sketch(
+        {"a": STOPS + to_dna(protein) + STOPS}, {"a": 30.0, "b": 10.0}, 5, "protein", "weighted",
+        proteome=write_proteome(tmp_path, protein),
+    )  # fmt: skip
+    out = tmp_path / "s.tsv"
+    sketch.write_sketch(table, report, out, "GSM1", None)
+    lines = (tmp_path / "s.tsv.frames.tsv").read_text().splitlines()
+    assert lines[1] == "a\t0\t5\t150\t1.000"
+    assert "picked_stretches" not in json.loads((tmp_path / "s.tsv.report.json").read_text())
+    assert "proteome.fasta" in json.loads((tmp_path / "s.tsv.report.json").read_text())["proteome"]
+
+
+def test_dayhoff_mode_decides_with_dayhoff_kmers(tmp_path):
+    protein = RANDOM_PROTEIN[:150]
+    swapped = "".join({"A": "G", "D": "E"}.get(a, a) for a in protein)  # same group each time
+    proteome = write_proteome(tmp_path, swapped)
+    assert sketch.ProteomeFrames(proteome, 15, "dayhoff").pick(STOPS + to_dna(protein) + STOPS)[2] == protein
+    assert sketch.ProteomeFrames(proteome, 5, "protein").pick(STOPS + to_dna(protein) + STOPS) is None
+
+
+def test_frames_file_leaves_the_share_empty_with_no_proteome(tmp_path):
+    protein = RANDOM_PROTEIN[:150]
+    table, report = sketch.build_sketch({"a": to_dna(protein)}, {"a": 30.0, "b": 10.0}, 5, "dayhoff", "weighted")
+    out = tmp_path / "s.tsv"
+    sketch.write_sketch(table, report, out, "GSM1", None)
+    assert (tmp_path / "s.tsv.frames.tsv").read_text().splitlines()[1] == "a\t0\t0\t150\t"
+    assert next(iter(sourmash.load_file_as_signatures(f"{out}.sig"))).minhash.dayhoff
+
+
+def test_dayhoff_groups_are_complete():
+    assert sorted(sketch.DAYHOFF) == sorted(sketch.AMINO_ACIDS)
+    assert sketch.letters("dayhoff") == 6
+
+
+def test_the_largest_k_keeps_every_letter_of_a_kmer():
+    table = sketch.letter_codes("hp")
+    one, other = "A" * 63, "C" + "A" * 62  # they differ only in the first letter
+    assert sketch.kmer_numbers(one, 63, "hp", table)[0] != sketch.kmer_numbers(other, 63, "hp", table)[0]

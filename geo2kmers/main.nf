@@ -15,14 +15,16 @@ params.outdir   = null
 params.gpl      = ''      // needed when a series uses several platforms
 params.sample_tables = false // also download every GSM table, which hold detection calls
 // alphabet:k pairs, and the modes to run for each
-params.sketches = 'dna:31,protein:10,hp:30'
+params.sketches = 'dna:31,protein:10,dayhoff:19,hp:30'
 params.modes    = 'weighted,present'
+params.proteome = ''      // comma-separated absolute paths: pick protein and hp frames with these proteins
 // absolute paths to the python of each process's conda environment
 params.python_fetch     = "/scratch/users/olgabot/nb361-pec/env/bin/python"
 params.python_sequences = params.python_fetch
 params.python_sketch    = params.python_fetch
 
 if (!params.gse || !params.outdir) error "set --gse and --outdir"
+params.proteome.tokenize(',').each { if (!file(it).exists()) error "no proteome file ${it}" }
 
 // A task killed from outside: no status, or Integer.MAX_VALUE when the scheduler killed it, or
 // 128 + signal. These are worth another try. Anything else is a real error.
@@ -84,6 +86,8 @@ process SKETCH {
     // 'finish': a failed sketch stops new work and the run exits with an error, so it cannot pass unseen
     errorStrategy { killedFromOutside(task.exitStatus) && task.attempt <= 3 ? 'retry' : 'finish' }
     maxRetries 3
+    // holding a proteome's k-mers peaked at 3.3 GB on GENCODE human, 2.2 GB on the mussel proteome
+    memory { (alphabet != 'dna' && params.proteome ? 4.GB : 2.GB) * task.attempt }
     publishDir "${params.outdir}/sketches", mode: 'copy'
 
     input:
@@ -97,6 +101,9 @@ process SKETCH {
     script:
     def stem = "${gsm}${dye ? '.' + dye : ''}.${alphabet}.k${k}.${mode}"
     def extra = dye ? "'--channel', '${dye}'," : ""
+    if (alphabet != 'dna' && params.proteome) {
+        extra += " '--proteome', " + params.proteome.tokenize(',').collect { "'${it}'" }.join(', ') + ","
+    }
     """
     #!${params.python_sketch}
     import glob

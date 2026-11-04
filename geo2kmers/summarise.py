@@ -14,8 +14,8 @@ from pathlib import Path
 COLUMNS = [
     "sample", "channel", "alphabet", "k", "mode", "rule", "background", "threshold",
     "probes_in_intensity_table", "probes_with_a_sequence", "probes_with_intensity_zero", "probes_used",
-    "probes_with_no_kmer", "probes_with_zero_usable_frames", "distinct_kmers", "sum_of_weight",
-    "signature_written",
+    "probes_with_no_kmer", "probes_with_no_stretch", "distinct_kmers", "sum_of_weight",
+    "signature_written", "proteome",
 ]  # fmt: skip
 
 sketches, fasta, source_table, out = sys.argv[1:]

@@ -1,5 +1,6 @@
 """Join probe sequences to probe intensities and cut them into k-mers."""
 
+import gzip
 import json
 import math
 import re
@@ -16,6 +17,10 @@ AMINO = "FFLLSSSSYY**CC*WLLLLPPPPHHQQRRRRIIIMTTTTNNKKSSRRVVVVAAAADDEEGGGG"
 CODONS = {a + b + c: AMINO[i] for i, (a, b, c) in enumerate((a, b, c) for a in BASES for b in BASES for c in BASES)}
 # sourmash's two letters: h hydrophobic, p polar (read from sourmash 4.9.4's output, see README)
 HP = {a: "h" for a in "AFGILMPVWY"} | {a: "p" for a in "CDEHKNQRST"}
+# sourmash's six Dayhoff groups, also read from its output
+DAYHOFF = {a: letter for letter, group in zip("abcdef", ["C", "AGPST", "DENQ", "HKR", "ILMV", "FWY"]) for a in group}
+REDUCED = {"hp": HP, "dayhoff": DAYHOFF}
+LARGEST_K = {"protein": 14, "dayhoff": 24, "hp": 63}  # a k-mer must fit in 64 bits
 DETECTION_COLUMNS = ["ABS_CALL", "DETECTION", "DETECTION CALL", "DETECTION_CALL"]
 DETECTION_P_COLUMNS = [
     "DETECTION P-VALUE",
@@ -26,12 +31,15 @@ DETECTION_P_COLUMNS = [
 ]
 BACKGROUND_PERCENTILE = 5
 LOG_SCALE_LIMIT = 32
+MIN_STRETCH_AA = 100
+MIN_SHARE_IN_PROTEOME = 0.9
+AMINO_ACIDS = "ACDEFGHIKLMNPQRSTVWY"
 
 
 def read_fasta(path):
     """Return {name: sequence}, upper case."""
     records, name = {}, None
-    with open(path) as f:
+    with gzip.open(path, "rt") if str(path).endswith(".gz") else open(path) as f:
         for line in f:
             if line.startswith(">"):
                 name = line[1:].split()[0]
@@ -69,15 +77,110 @@ def translate_frames(seq):
     return frames
 
 
-def protein_kmers(seq, k, alphabet):
-    """K-mers of the frames with no stop codon. Returns (k-mers, number of usable frames)."""
-    frames = [f for f in translate_frames(seq) if "*" not in f]
+def letters(alphabet):
+    return len(AMINO_ACIDS) if alphabet == "protein" else len(set(REDUCED[alphabet].values()))
+
+
+def letter_codes(alphabet):
+    """Table from byte to the letter's number. A letter outside the 20 amino acids gets 255."""
+    table = np.full(256, 255, dtype=np.uint8)
+    for i, letter in enumerate(AMINO_ACIDS):
+        table[ord(letter)] = (
+            i if alphabet == "protein" else sorted(set(REDUCED[alphabet].values())).index(REDUCED[alphabet][letter])
+        )
+    return table
+
+
+def kmer_numbers(text, k, alphabet, table):
+    """Each k-mer of text as one number, leaving out windows that hold another letter or a # joint."""
+    codes = table[np.frombuffer(text.encode(), dtype=np.uint8)]
+    n = len(codes) - k + 1
+    if n <= 0:
+        return np.empty(0, dtype=np.uint64)
+    bad = np.convolve((codes == 255).astype(np.int64), np.ones(k, dtype=np.int64), "valid") > 0
+    base = np.uint64(letters(alphabet))
+    values = np.zeros(n, dtype=np.uint64)
+    digits = np.where(codes == 255, 0, codes).astype(np.uint64)
+    for j in range(k):
+        values = values * base + digits[j : j + n]
+    return values[~bad]
+
+
+class ProteomeFrames:
+    """Pick each probe's reading frame by matching its k-mers to a proteome.
+
+    A stretch is the part of a frame between two stop codons, or between a stop and an end of the frame.
+    A stretch passes if it has at least MIN_STRETCH_AA amino acids and at least MIN_SHARE_IN_PROTEOME of
+    its k-mers are in the proteome. The longest passing stretch is used, and the rest of the probe is not.
+    """
+
+    def __init__(self, paths, k, alphabet):
+        if k > LARGEST_K[alphabet]:
+            raise Geo2KmersError(
+                f"--proteome works up to k = {LARGEST_K[alphabet]} for alphabet {alphabet}, not k = {k}"
+            )
+        self.k, self.alphabet = k, alphabet
+        self.table = letter_codes(alphabet)
+        parts = []
+        for path in paths:
+            proteins = sorted(set(read_fasta(path).values()))
+            parts.append(np.unique(kmer_numbers("#".join(proteins), k, alphabet, self.table)))
+        self.known = np.unique(np.concatenate(parts))
+        if not len(self.known):
+            raise Geo2KmersError(f"no k-mer of k = {k} in {', '.join(map(str, paths))}")
+        self.picks = {}
+
+    def share_in_proteome(self, stretch):
+        """The share of a stretch's k-mers in the proteome. 0 if it has none."""
+        values = kmer_numbers(stretch, self.k, self.alphabet, self.table)
+        if not len(values):
+            return 0.0
+        where = np.searchsorted(self.known, values).clip(max=len(self.known) - 1)
+        return float((self.known[where] == values).mean())
+
+    def pick(self, sequence):
+        """Return the longest passing stretch as (frame, start, stretch, share), or None.
+
+        Frames number as in translate_frames and start counts amino acids. A tie goes to the higher
+        share, then the lower frame, then the earlier stretch, so the answer does not depend on order.
+        """
+        if sequence not in self.picks:
+            best = None
+            for number, frame in enumerate(translate_frames(sequence)):
+                start = 0
+                for stretch in frame.split("*"):
+                    if len(stretch) >= MIN_STRETCH_AA:
+                        share = self.share_in_proteome(stretch)
+                        rank = (len(stretch), share, -number, -start)
+                        if share >= MIN_SHARE_IN_PROTEOME and (best is None or rank > best[0]):
+                            best = (rank, (number, start, stretch, share))
+                    start += len(stretch) + 1
+            self.picks[sequence] = best[1] if best else None
+        return self.picks[sequence]
+
+
+def longest_stretch(sequence):
+    """Return the longest stretch of any frame as (frame, start, stretch, None), or None if there is none.
+
+    A tie goes to the lower frame, then the earlier stretch, as in ProteomeFrames.pick.
+    """
+    best = None
+    for number, frame in enumerate(translate_frames(sequence)):
+        start = 0
+        for stretch in frame.split("*"):
+            if stretch and (best is None or len(stretch) > len(best[2])):
+                best = (number, start, stretch, None)
+            start += len(stretch) + 1
+    return best
+
+
+def stretch_kmers(stretch, k, alphabet):
+    """K-mers of one stretch. No k-mer crosses an X."""
     out = []
-    for frame in frames:
-        for piece in frame.split("X"):
-            text = "".join(HP[a] for a in piece) if alphabet == "hp" else piece
-            out.extend(text[i : i + k] for i in range(len(text) - k + 1))
-    return out, len(frames)
+    for piece in stretch.split("X"):
+        text = "".join(REDUCED[alphabet][a] for a in piece) if alphabet in REDUCED else piece
+        out.extend(text[i : i + k] for i in range(len(text) - k + 1))
+    return out
 
 
 def channel_column(columns, channel, override=None):
@@ -180,12 +283,19 @@ def add_probe(table, kmers, weight, probe_index):
             row[2] += 1
 
 
-def build_sketch(probes, intensities, k, alphabet, mode, detection=None):
-    """Return (table, report). table maps k-mer to [weight, last probe index, n_probes]."""
-    if alphabet not in ("dna", "protein", "hp"):
+def build_sketch(probes, intensities, k, alphabet, mode, detection=None, proteome=None):
+    """Return (table, report). table maps k-mer to [weight, last probe index, n_probes].
+
+    Protein, dayhoff and hp k-mers come from one stretch of each probe: the one ProteomeFrames picks if
+    proteome, a list of FASTA paths, is given, and otherwise the longest.
+    """
+    if alphabet not in ("dna", "protein", "dayhoff", "hp"):
         raise Geo2KmersError(f"unknown alphabet {alphabet}")
     if mode not in ("present", "weighted"):
         raise Geo2KmersError(f"unknown mode {mode}")
+    if proteome and alphabet == "dna":
+        raise Geo2KmersError("--proteome picks a reading frame, so it does not apply to alphabet dna")
+    picker = ProteomeFrames(proteome, k, alphabet) if proteome else None
     measured = {p: v for p, v in intensities.items() if v is not None}
     if not measured:
         raise Geo2KmersError("no probe has a measured intensity")
@@ -219,7 +329,8 @@ def build_sketch(probes, intensities, k, alphabet, mode, detection=None):
     report["probes_used"] = sum(p in probes for p in weights)
 
     table = defaultdict(lambda: [0.0, -1, 0])
-    no_frames = no_kmers = 0
+    no_stretch = no_kmers = 0
+    picked = []
     expected_sum = 0.0
     longest = 0
     for index, (probe, weight) in enumerate(sorted(weights.items())):
@@ -230,19 +341,31 @@ def build_sketch(probes, intensities, k, alphabet, mode, detection=None):
         if alphabet == "dna":
             kmers = dna_kmers(sequence, k)
         else:
-            kmers, frames = protein_kmers(sequence, k, alphabet)
-            no_frames += frames == 0
+            pick = picker.pick(sequence) if picker else longest_stretch(sequence)
+            kmers = stretch_kmers(pick[2], k, alphabet) if pick else []
+            no_stretch += pick is None
+            if pick:
+                picked.append((probe, pick[0], pick[1], len(pick[2]), pick[3]))
         no_kmers += not kmers
         expected_sum += weight * len(kmers)
         add_probe(table, kmers, weight, index)
     report["probes_with_no_kmer"] = no_kmers
     if alphabet != "dna":
-        report["probes_with_zero_usable_frames"] = no_frames
+        report["probes_with_no_stretch"] = no_stretch
+        report["frame_rule"] = "longest stretch between stops"
+        report["picked_stretches"] = picked
+    if picker:
+        report["frame_rule"] = (
+            f"longest stretch between stops with at least {MIN_STRETCH_AA} amino acids and at least "
+            f"{MIN_SHARE_IN_PROTEOME:.0%} of its k-mers in the proteome"
+        )
+        report["proteome"] = ",".join(Path(p).name for p in proteome)
+        report["proteome_distinct_kmers"] = len(picker.known)
     report["distinct_kmers"] = len(table)
     if not table:
         raise Geo2KmersError(
-            f"no probe gave a k-mer at k = {k} with alphabet {alphabet}: {no_frames} of "
-            f"{report['probes_used']} probes had zero usable frames, and the longest probe used is {longest} nt"
+            f"no probe gave a k-mer at k = {k} with alphabet {alphabet}: {no_stretch} of "
+            f"{report['probes_used']} probes had no stretch, and the longest probe used is {longest} nt"
         )
     report["sum_of_probe_weight_times_kmers"] = expected_sum
     report["sum_of_weight"] = float(sum(row[0] for row in table.values()))
@@ -264,8 +387,8 @@ def write_signature(table, path, k, alphabet, mode, name):
     args = {"n": 0, "ksize": k, "scaled": 1, "track_abundance": mode == "weighted"}
     if alphabet == "protein":
         args["is_protein"] = True
-    elif alphabet == "hp":
-        args["hp"] = True
+    elif alphabet in REDUCED:
+        args[alphabet] = True
     minhash = sourmash.MinHash(**args)
     hash_of = minhash.seq_to_hashes if alphabet == "dna" else None
     abundances = {}
@@ -302,5 +425,13 @@ def write_sketch(table, report, out, sample, channel):
     report["sample"] = sample
     report["channel"] = channel
     report["signature_written"] = wrote
+    picked = report.pop("picked_stretches", None)
+    if picked is not None:
+        with open(f"{out}.frames.tsv", "w") as f:
+            f.write("probe_id\tframe\tstart_aa\tlength_aa\tshare_in_proteome\n")
+            f.writelines(
+                f"{probe}\t{frame}\t{start}\t{length}\t{'' if share is None else format(share, '.3f')}\n"
+                for probe, frame, start, length, share in picked
+            )
     with open(f"{out}.report.json", "w") as f:
         json.dump(report, f, indent=2)

@@ -1,7 +1,7 @@
 """Ask whether a probe's reading frame can be picked by matching k-mers to a reference proteome.
 
 Usage: frame_test.py <probes.fasta[.gz]> <proteome folder> <out.tsv> [name=file,file calls.tsv]
-With a name and files, only that proteome is tested, at protein k = 7 and 10 and hp k = 30, and calls.tsv
+With a name and files, only that proteome is tested, at protein k = 7 and 10, hp k = 30 and dayhoff k = 12, 15 and 19, and calls.tsv
 gets every passing stretch. Otherwise the proteome folder holds gencode.v50 and gencode.vM39 pc_translations.fa.gz from GENCODE, and
 UP000596742.fa.gz (Mytilus galloprovincialis) and UP000005408.fa.gz (Pacific oyster) from UniProt.
 
@@ -21,6 +21,7 @@ PROBES, DATA, OUT = sys.argv[1:4]
 ONE_REFERENCE, CALLS = sys.argv[4:6] if len(sys.argv) > 4 else (None, None)
 AA = "ACDEFGHIKLMNPQRSTVWY"
 HP = {a: (0 if a in "AFGILMPVWY" else 1) for a in AA}
+DAYHOFF = {a: i for i, group in enumerate(["C", "AGPST", "DENQ", "HKR", "ILMV", "FWY"]) for a in group}
 BASES = "TCAG"
 CODON = {
     a + b + c: "FFLLSSSSYY**CC*WLLLLPPPPHHQQRRRRIIIMTTTTNNKKSSRRVVVVAAAADDEEGGGG"[i * 16 + j * 4 + k]
@@ -46,7 +47,7 @@ def fasta(p):
 def encode(seq_list, alpha):
     lut = np.full(256, 255, dtype=np.uint8)
     for i, a in enumerate(AA):
-        lut[ord(a)] = i if alpha == "protein" else HP[a]
+        lut[ord(a)] = {"protein": i, "hp": HP[a], "dayhoff": DAYHOFF[a]}[alpha]
     return lut[np.frombuffer("#".join(seq_list).encode(), dtype=np.uint8)]
 
 
@@ -63,7 +64,7 @@ def kmers(codes, k, base):
 
 
 def ref_set(paths, alpha, k):
-    base = 20 if alpha == "protein" else 2
+    base = {"protein": 20, "hp": 2, "dayhoff": 6}[alpha]
     parts = []
     for p in paths:
         seqs = sorted({s for _, s in fasta(f"{DATA}/{p}")})
@@ -81,7 +82,7 @@ def frames(dna):
 
 
 def stretch_hits(p, alpha, k, ref):
-    base = 20 if alpha == "protein" else 2
+    base = {"protein": 20, "hp": 2, "dayhoff": 6}[alpha]
     v, ok = kmers(encode([p], alpha), k, base)
     if not ok.any():
         return 0, 0
@@ -145,7 +146,7 @@ SETTINGS = [("protein", 5), ("protein", 7), ("protein", 10), ("hp", 15), ("hp", 
 if ONE_REFERENCE:
     name, files = ONE_REFERENCE.split("=")
     REFS = {name: files.split(",")}
-    SETTINGS = [("protein", 7), ("protein", 10), ("hp", 30)]
+    SETTINGS = [("protein", 7), ("protein", 10), ("hp", 30), ("dayhoff", 12), ("dayhoff", 15), ("dayhoff", 19)]
 calls = []
 with open(OUT, "w") as o:
     print(

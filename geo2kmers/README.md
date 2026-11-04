@@ -86,20 +86,44 @@ python -m geo2kmers sketch --fasta data/GSE2183/probes.fasta \
 Alphabets:
 - `dna`: every k-mer of each probe in canonical form, meaning the smaller of the k-mer and its reverse
   complement. Windows holding a letter other than A, C, G or T are skipped.
-- `protein`: the probe is translated in all six frames with the standard genetic code. A frame with a
-  stop codon anywhere is dropped, and each remaining frame is cut into k-mers. A codon with an unknown
-  letter becomes X and no k-mer crosses it.
-- `hp`: the same, with each amino acid then written as h (hydrophobic: A F G I L M P V W Y) or p (polar:
-  C D E H K N Q R S T). Those groups are the ones sourmash 4.9.4 uses; `tests/test_units.py` checks our
-  hashes against sourmash's own.
+- `protein`: the probe is translated in all six frames with the standard genetic code. A stretch is the
+  part of a frame between two stop codons, or between a stop and an end of the frame. The longest stretch
+  of the six frames is cut into k-mers, and the rest of the probe is not used. If two are equally long,
+  the lower frame wins, then the earlier stretch. A codon with an unknown letter becomes X and no k-mer
+  crosses it.
+- `dayhoff`: the same, with each amino acid written as its group of six: a (C), b (A G P S T), c (D E N Q),
+  d (H K R), e (I L M V), f (F W Y). Amino acids in one group often replace each other in evolution.
+- `hp`: the same, with each amino acid written as h (hydrophobic: A F G I L M P V W Y) or p (polar:
+  C D E H K N Q R S T). The dayhoff and hp groups are the ones sourmash 4.9.4 uses; `tests/test_units.py`
+  checks our hashes against sourmash's own.
+
+The longest stretch needs no reference, so it works for any species, but it is not always the protein.
+It is in the annotated frame for 7157 of 7958 human sequences, or 89.9 %, and in non-coding probes it is
+just the longest gap between stops (`results/frame_test/longest_stretch_GPL1211.tsv`).
+
+With `--proteome`, a proteome picks the stretch instead. It must have at least 100 amino acids, and at
+least 90 % of its k-mers must be in the proteome, at the same alphabet and k as the sketch. If several
+pass, the longest is used. A probe with no passing stretch adds no k-mers. Give the array's own species:
+a proteome from another species picks almost nothing on the mussel array, in any alphabet (below).
+
+```bash
+python -m geo2kmers sketch --fasta data/GSE2183/probes.fasta \
+  --intensities data/GSE2183/gsm --sample GSM39421 --channel ch2 --k 10 --alphabet protein \
+  --mode weighted --out GSM39421.tsv --proteome proteins.fasta.gz
+```
+
+`--proteome` takes one or more FASTA files, gzipped or not, and works up to k = 14 for protein, 24 for
+dayhoff and 63 for hp. It does not apply to `dna`. `<out>.frames.tsv` lists each probe's stretch: frame (0 to
+2 read the given strand, 3 to 5 the other), start and length in amino acids, and the share in the proteome,
+empty with no proteome. In the workflow, set `--proteome` to absolute paths joined by commas. Each sketch
+reads the proteome itself, which took 19 to 40 seconds and at most 3.3 GB of memory in single runs.
 
 A 25 nt probe gives at most 8 amino acids in a frame, so protein k must be 8 or less on short-probe
 arrays. If no probe gives a k-mer, the command stops with an error rather than write an empty table.
-Long probes do not solve the problem by themselves; see the result below.
 
-These protein and hp sketches differ from what sourmash makes when it translates DNA itself. Sourmash
-keeps all six frames, while this tool drops any frame with a stop codon. So do not compare them with
-RNA-seq sketches made by sourmash's own translation without allowing for that difference.
+These protein, dayhoff and hp sketches differ from what sourmash makes when it translates DNA itself. Sourmash
+keeps all six frames, while this tool keeps one stretch. So do not compare them with RNA-seq sketches made by sourmash's own translation without
+allowing for that difference.
 
 Modes:
 - `present`: the output is the set of k-mers from expressed probes. A probe is expressed if the sample
@@ -162,13 +186,13 @@ GSE2183 is a mussel series, described in `tests/README.md`. The run in `results/
 environment built from `environment.yml`. All numbers below come from the file named beside them, in
 that folder. The sketches themselves are too large to keep here.
 
-- 50 tasks ran, each on the first try, with exit status 0 (`geo2kmers.trace.txt`).
-- The run took 70 seconds (`wall_time.txt`), under the 10 minutes set for this test.
+- 66 tasks ran, each on the first try, with exit status 0 (`geo2kmers.trace.txt`).
+- The run took 111 seconds (`wall_time.txt`), under the 10 minutes set for this test.
 - The platform has 3840 probes. 3344 got a sequence from GenBank, 30 point to a whole genome record and
   so have no sequence, and 466 have no accession. The 3344 are 1672 distinct sequences,
   so most sequences are spotted more than once. Lengths run from 101 to 650 nt, median 512
   (`probe_summary.tsv`). These lengths are computed from GenBank records, not measured on the slide.
-- Each of the 4 samples has 2 channels, so 8 channels at 3 alphabets and 2 modes make 48 sketches
+- Each of the 4 samples has 2 channels, so 8 channels at 4 alphabets and 2 modes make 64 sketches
   (`sketch_summary.tsv`).
 - DNA k = 31, `weighted`: 693847 distinct k-mers in every sketch. The set is the same because an array
   has a fixed set of probes; only the weights differ (`sketch_summary.tsv`).
@@ -176,11 +200,12 @@ that folder. The sketches themselves are too large to keep here.
   k-mers (`sketch_summary.tsv`).
 - The median is 0 in GSM39424 ch1, and background is 0 in 7 of the 8 channels. Between 148 and 2008 of
   the 3840 probes have intensity exactly 0 (`sketch_summary.tsv`). GEO's table does not say why.
-- Protein k = 10 and hp k = 30, `weighted`: 2578 of the 3344 probes have zero usable frames. So 766
-  probes supply all the protein k-mers, and 762 all the hp k-mers, since 4 more are too short for k = 30
-  (`probes_with_no_kmer` in `sketch_summary.tsv`). The platform record for GPL1799 explains why: each
-  probe is a short tag from the 3' end of an mRNA, chosen because that end is mostly non-coding. So
-  the protein and hp sketches see only a small part of this array.
+- Protein k = 10, `weighted`, longest stretch: all 3344 probes give k-mers, 163538 distinct. The platform
+  record for GPL1799 says each probe is a short tag from the 3' end of an mRNA, chosen because that end is
+  mostly non-coding, so many of these k-mers are not from a protein (`sketch_summary.tsv`).
+- The same with the species' own proteome: 652 of the 3344 probes give k-mers, 45727 distinct. That run
+  took 598 seconds, close to the 10 minute limit, because each sketch reads the proteome again
+  (`results/GSE2183_proteome/`).
 - 30 spots (15 clones) list accession AY484747, which NCBI titles "Mytilus edulis mitochondrion, complete
   genome". The platform table names one gene for each clone, such as Mitochondrial-ND6, and one clone
   says Nuclear-RNA 18S. So the record is not what was spotted, and no sequence for these clones
@@ -206,14 +231,22 @@ the 1672 distinct sequences, and three shuffles of each as a chance control (`fr
 So human and mouse pick a frame for at most 26 of 1672 sequences on this array, even though 420 share at
 least one protein 10-mer with them. The same-species proteome reaches 456 to 484. The other sequences
 are either non-coding or missing from that proteome; this test cannot tell which. Protein k = 5 and hp k = 15
-or 20 are no use: almost every shuffled sequence passes as well. The frame rule in `sketch` has not been
-changed.
+or 20 are no use: almost every shuffled sequence passes as well. This led to `--proteome`, described under sketch.
+
+Dayhoff does not rescue a proteome from another species. On the mussel array, oyster proteins pass 32
+sequences at dayhoff k = 15 and 23 at k = 19, against 24 at protein k = 10. Dayhoff k = 12 passes 67, but 6
+shuffled sequences pass too (`mussel_vs_oyster.tsv`, with `mussel_vs_human_mouse.tsv` and
+`mussel_vs_same_species.tsv`). So dayhoff k = 19 is in the workflow's default for comparing sketches, not
+for picking frames. No comparison between sketches has been run yet.
+
+Where the proteome picks a stretch of 100 amino acids or more, the plain longest stretch is in the same
+frame for 316 of 326 mussel sequences, 1668 of 1822 mouse and 6002 of 6484 human (`longest_vs_proteome.tsv`).
 
 The same test on two arrays whose species is in GENCODE (`results/frame_test/`). GPL1211 is a human array
 of full-length clones, median 1668 nt; GPL738 is a mouse EST array, median 562 nt. Each was tested against
 its own species only (`array_summary.tsv`, `frame_test_GPL1211.tsv`, `frame_test_GPL738.tsv`).
 
-| Array | distinct sequences | with a stop-free frame today | passing frame | passing stretch | shuffled, stretch (mean) |
+| Array | distinct sequences | with a stop-free frame | passing frame | passing stretch | shuffled, stretch (mean) |
 |---|---:|---:|---:|---:|---:|
 | Human GPL1211, protein k = 10 | 8845 | 38 | 1072 | 7025 | 0.0 |
 | Human GPL1211, hp k = 30 | 8845 | 38 | 2844 | 6573 | 3.0 |
