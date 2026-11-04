@@ -4,9 +4,11 @@
 //!              peptides of at least `min_aa` residues, with DNA coordinates.
 //! best-frame — per read, keep the one translated frame with the most Swiss-Prot k-mers
 //!              (orpheum's frame rule), for sketching reads.
+//! gene-counts — reads per gene per sample from protein k-mers.
 //! simulate   — paired-end read simulator from a transcript FASTA with a planted
 //!              design (used only for the known-answer control).
 mod best_frame;
+mod gene_counts;
 
 use std::collections::HashMap;
 use std::fs::File;
@@ -573,7 +575,8 @@ fn main() -> Res<()> {
         Some("anchor-counts") => cmd_anchor_counts(&args[2..]),
         Some("best-frame") => best_frame::cmd_best_frame(&args[2..]),
         Some("frame-scores") => best_frame::cmd_frame_scores(&args[2..]),
-        _ => Err("usage: pec-tools <translate|simulate|anchor-counts|best-frame> ...".into()),
+        Some("gene-counts") => gene_counts::cmd_gene_counts(&args[2..]),
+        _ => Err("usage: pec-tools <translate|simulate|anchor-counts|best-frame|gene-counts> ...".into()),
     }
 }
 

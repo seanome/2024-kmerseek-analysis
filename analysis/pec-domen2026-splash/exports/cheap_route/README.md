@@ -3,6 +3,23 @@
 Asked 2026-11-04. Nothing below has run except the read-fraction table. Both the target and the
 rules are written before any test.
 
+## Why the control and human data look better than Botryllus
+
+![Genes found in three data sets](why_control_differs.png)
+
+**a.** Share of genes found by three routes. Control: 400 planted genes. Human: the 12 study lists of
+GSE99963 and GSE144304. Botryllus: the paper's 12 lists. Control counts a gene with no direction;
+KaMRaT in human and Botryllus must go the list's way; SPLASH has no direction anywhere. **b.** Reads
+per sample. **c.** Reads per sample for a list gene: box, middle 50 %; tick, median. The control is
+worked out as about 1 M read pairs over 3,000 genes.
+
+The routes work: 94 % in the control and 55 % in human for the KaMRaT t-test at p < 0.05. Botryllus
+gets 6 % from the same route. Its list genes have about 11 times fewer reads than human list genes
+(median 14.5 against 162.8), and its samples span 1,476-fold. Other differences may add to this:
+Botryllus has far fewer samples per group, and the human route was matched to a complete proteome.
+The figure does not separate these. The 50 % target is already met in human by one route, at more
+than SPLASH's cost; the target below is for Botryllus.
+
 ## Target
 
 Gene counted: on one of the paper's 12 lists, and reached by a sequence going the paper's way.
