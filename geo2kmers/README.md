@@ -181,8 +181,10 @@ nextflow run main.nf -profile small --gse GSE2183 --outdir results/GSE2183
 ```
 
 Every process retries up to 3 times when the exit status is empty, `Integer.MAX_VALUE` or in 128 to 143,
-which mean something outside the task killed it. Any other failure stops the run with an error. This
-retry rule was not triggered in the test run.
+which mean something outside the task killed it. Any other failure stops the run with an error. The
+test run below did not need a retry. A separate test killed FETCH on purpose: killed every time, it ran 4
+times and the run stopped. A task that exited 1 stopped the run after one try (`failure_test.log`, from
+`failure_test.sbatch`, both in `results/GSE2183/`).
 
 These scripts are not part of the workflow. `run_sherlock.sbatch` runs the test below and writes
 `wall_time.txt`. `summarise.py` writes `sketch_summary.tsv` and `probe_summary.tsv`. `frame_test.py` writes
