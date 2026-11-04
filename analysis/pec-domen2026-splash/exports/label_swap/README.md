@@ -148,7 +148,8 @@ Real labels beat every swap on 8 of the 9 lists that beat random; the exception 
   (`../human/README.md`). The Botryllus result is weaker.
 
 Verdict: the 9 of 12 lists show that this route agrees with the paper's direction under the real
-labels, which swapped labels break. They do not show that the sequences it keeps reflect PEC.
+labels, which swapped labels break. They do not show that the sequences it keeps reflect PEC, and
+they do not show that PEC has no effect (see the depth limit below).
 
 How it ran: `make run-kamrat-swap` (`main.nf --kamrat_swap`, head job 51070561, 2026-11-04, 42 tasks,
 0 failed) and `slurm/22_kamrat_swap_score.sbatch` (job 51070567). The real scores come out the same
@@ -167,6 +168,10 @@ reused because they depend on the labels: 20 % of that swap's contigs differed f
 
 Limits of this section:
 
+- Depth limits what these swaps can say. Samples run from 108,860 to 160,736,718 reads, median
+  4.4 M, and the paper's listed genes have a median baseMean of 14.5. So swaps matching the real
+  labels may be too few reads as much as no PEC effect; this control cannot separate the two. It
+  shows what noise looks like at this depth, not that PEC does nothing.
 - Flipping 1 of 3 pairs leaves part of any real effect in place (2 pairs one way, 1 the other), so
   young 13-49 d and young 132 d swaps are not fully neutral. With 2 or 6 pairs it cancels.
 - old 24 h and old 41-93 d have one swap each. No swap count here gives a small p value.
