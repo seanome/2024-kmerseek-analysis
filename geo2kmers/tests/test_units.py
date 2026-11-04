@@ -668,6 +668,11 @@ def test_the_schema_allows_each_shape_it_describes(tmp_path, text):
         ("\t2\n", "\tmany\n", "not allowed"),
         ("\t2\n", "\t0\n", "not allowed"),
         ("\t2\n", "\t2\textra\n", "cells"),
+        ("\t1.5\t", "\t1_0\t", "not allowed"),
+        ("\t1.5\t", "\t 5 \t", "not allowed"),
+        ("\t1.5\t", "\tmany\t", "not allowed"),
+        ("\tprotein\t3\t", "\tprotein\t03\t", "bad alphabet"),
+        ("\t2\n", "\t\u0663\n", "not allowed"),
     ],
 )
 def test_the_schema_refuses_bad_cells(tmp_path, old, new, message):

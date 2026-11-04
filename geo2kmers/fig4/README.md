@@ -63,4 +63,5 @@ GPL17586 is the Affymetrix Human Transcriptome Array, GSE111555's platform.
   `earlier_runs/second_run_auc.tsv`) to reproduced. Other platforms keep the reading as given.
 - A fresh check found that a synonym search gave APPL2 and MR1 the wrong proteins, that one probe counted twice
   when it served two probe sets, and that short oligos used any stop-free frame. `earlier_runs/third_run_auc.tsv`
-  has the run before these fixes.
+  has the run before these fixes. The short oligo fix took GPL13912 from 286 landings to 81 and moved GSE104079's
+  second score from 0.356 to 0.322, so that score's count of 6 of 7 rests on a fix made after seeing 5 of 7.

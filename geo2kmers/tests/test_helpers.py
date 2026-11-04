@@ -12,7 +12,7 @@ from pathlib import Path
 
 import numpy as np
 import pytest
-from test_units import RANDOM_PROTEIN, STOPS, to_dna
+from test_units import RANDOM_PROTEIN, STOPS, _Closing, to_dna
 
 from geo2kmers import landing, scoring, sequences, sketch
 from geo2kmers.cli import main
@@ -416,3 +416,46 @@ def test_platforms_labels_rna_seq_as_not_covered(tmp_path, monkeypatch):
     run(monkeypatch, "fig4/platforms.py", share, tmp_path / "o.tsv")
     found = {r["gse"]: r["type"] for r in rows(tmp_path / "o.tsv")}
     assert found["GSE1"] == "array" and found["GSE99963"] == "RNA-seq, not covered by geo2kmers"
+
+
+def test_fig4_chance_writes_one_row_per_model_and_score(tmp_path, monkeypatch):
+    fig4_files(tmp_path, {"a": [9, 8, 2, 1], "b": [1, 2, 8, 9], "c": [5, 1, 7, 3], "d": [2, 6, 4, 8]})
+    monkeypatch.chdir(tmp_path)
+    run(monkeypatch, "fig4/score.py", "sig.tsv", "groups.tsv", "pub.tsv", "plat.tsv", "series", "land", ".")
+    run(monkeypatch, "fig4/chance.py", "sig.tsv", "groups.tsv", "pub.tsv", "auc.tsv", "series", "land", ".")
+    table = rows(tmp_path / "chance_test.tsv")
+    assert {(r["model"], r["score"]) for r in table} == {
+        (m, s) for m in ("random features", "shuffled labels") for s in ("planned", "ghosh_weights")
+    }
+    assert all(0 <= float(r["share_of_draws_at_least_observed"]) <= 1 for r in table)
+    assert {r["observed_passing"] for r in table if r["score"] == "planned"} == {"1"}
+
+
+def test_signature_picks_the_entry_whose_main_name_is_the_gene(tmp_path, monkeypatch):
+    openpyxl = pytest.importorskip("openpyxl")
+    book = openpyxl.Workbook()
+    sheet = book.active
+    sheet.title = "C13-14-3"
+    sheet.append(["Gene Signature"])
+    sheet.append(["Weight:-1", "Weight:1", "Weight:2"])
+    sheet.append(["AAA", "BBB", "BBB"])
+    sheet.append(["LOC1", None, None])
+    book.save(tmp_path / "s.xlsx")
+    answers = {
+        "AAA": "Entry\tGene Names (Primary)\tSequence\nP2\tOTHER\tMMMMMMMM\nP1\tAAA\tMK\n",
+        "BBB": "Entry\tGene Names (Primary)\tSequence\nP3\tBBB\tMKV\n",
+        "LOC1": "Entry\tGene Names (Primary)\tSequence\n",
+    }
+
+    def urlopen(request, timeout):
+        symbol = request.full_url.split("gene_exact%3A")[1].split("%29")[0]
+        return io.BytesIO(answers[symbol].encode())
+
+    monkeypatch.setattr(urllib.request, "urlopen", lambda r, timeout: _Closing(urlopen(r, timeout).read()))
+    monkeypatch.setattr("time.sleep", lambda s: None)
+    monkeypatch.setenv("NCBI_EMAIL", "test@example.org")
+    run(monkeypatch, "fig4/signature.py", tmp_path / "s.xlsx", tmp_path)
+    found = rows(tmp_path / "signature_proteins.tsv")
+    assert [(r["gene"], r["cluster"], r["accession"]) for r in found[:2]] == [("AAA", "13", "P1"), ("BBB", "14", "P3")]
+    assert found[-1]["resolved"] == "False"
+    assert (tmp_path / "signature_proteins.fasta").read_text().count(">BBB") == 1  # listed twice, written once

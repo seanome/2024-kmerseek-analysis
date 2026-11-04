@@ -1,7 +1,6 @@
 """Check a k-mer table against sketch_schema.md, the format array and read sketches share."""
 
 import csv
-import math
 import re
 
 from geo2kmers.geo import Geo2KmersError
@@ -9,6 +8,9 @@ from geo2kmers.geo import Geo2KmersError
 ID_COLUMNS = ["kmer", "alphabet", "k", "setting"]
 VALUE_COLUMNS = ["count", "intensity_weight"]
 COMPLEMENT = str.maketrans("ACGT", "TGCA")
+WHOLE = re.compile(r"[0-9]+")
+WHOLE_ABOVE_0 = re.compile(r"[1-9][0-9]*")
+DECIMAL = re.compile(r"[0-9]+(\.[0-9]+)?")
 KMER_LETTERS = {
     "dna": "ACGT",
     "protein": "ACDEFGHIKLMNPQRSTVWY",
@@ -51,7 +53,7 @@ def validate_table(path):
             if len(row) != len(columns):
                 raise Geo2KmersError(f"{path} row {rows}: {len(row)} cells, not {len(columns)}")
             kmer, alphabet, k, setting = row[:4]
-            if alphabet not in KMER_LETTERS or not k.isdigit() or int(k) < 1:
+            if alphabet not in KMER_LETTERS or not WHOLE_ABOVE_0.fullmatch(k):
                 raise Geo2KmersError(f"{path} row {rows}: bad alphabet {alphabet!r} or k {k!r}")
             if setting != setting_name(alphabet, k):
                 raise Geo2KmersError(f"{path} row {rows}: setting {setting} does not match {alphabet} and k {k}")
@@ -66,10 +68,10 @@ def validate_table(path):
                 raise Geo2KmersError(f"{path} row {rows}: {kmer} appears twice")
             seen.add(kmer)
             for value in values:
-                number = float(row[where[value]])
-                whole = math.isfinite(number) and number == int(number)
-                if not math.isfinite(number) or number < 0 or (value == "count" and not whole):
-                    raise Geo2KmersError(f"{path} row {rows}: {value} {row[where[value]]} is not allowed")
-            if "n_probes" in where and not (row[where["n_probes"]].isdigit() and int(row[where["n_probes"]]) > 0):
+                cell = row[where[value]]
+                allowed = WHOLE.fullmatch(cell) if value == "count" else DECIMAL.fullmatch(cell)
+                if not allowed:
+                    raise Geo2KmersError(f"{path} row {rows}: {value} {cell} is not allowed")
+            if "n_probes" in where and not WHOLE_ABOVE_0.fullmatch(row[where["n_probes"]]):
                 raise Geo2KmersError(f"{path} row {rows}: n_probes {row[where['n_probes']]} is not allowed")
     return next(iter(settings), None), rows

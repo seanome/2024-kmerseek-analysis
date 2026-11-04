@@ -2,7 +2,7 @@
 
 Usage: chance.py <signature_proteins.tsv> <groups.tsv> <published_fig4.tsv> <auc.tsv> <series folder>
                  <landing folder> <out folder>
-Two chance models, 1000 draws each, both scores, every series in the same draw:
+Two chance models, 1000 draws each, both scores. A draw covers every series, with its own shuffle in each:
   random features: each protein keeps its number of features, drawn at random from the array, so the
     landings say nothing. This does not match the features on expression level.
   shuffled labels: real landings, but the proteins' cluster labels are shuffled, so the signature says nothing.

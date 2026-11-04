@@ -143,7 +143,7 @@ has floor(n / 3) - k + 1 k-mers:
 | probe length | residues per frame | k-mers at k = 12 | rule chosen from the platform's median length |
 |---|---:|---:|---|
 | 25 nt (Affymetrix) | 8 | 0 | `probe_set`: a probe set is the group of probes reported as one value. A probe lands with one k-mer at k = 7, and a probe set lands on a protein when 3 different probes land on it. `geo2kmers land` does this, and `sketch` stops and says so |
-| 50 nt (Illumina) | 16 | 5 | `short_oligo`: the longest frame with no stop, with at least half its k-mers in the proteome at k = 7 |
+| 50 nt (Illumina) | 16 | 5 | `short_oligo`: the longest frame with no stop at k = 7. `sketch` needs at least half its k-mers in the proteome, and `land` needs at least half on one protein |
 | 60 nt (Agilent) | 20 | 9 | `short_oligo` |
 | 100 nt or more | 33 or more | 22 or more | `long_probe`: the rule above |
 
@@ -343,8 +343,8 @@ Chance explains these counts as well as the method does (`chance_test.tsv`, 1000
 | second | 6 of 7 | 1.56 on average, 6 or more in 0.0 % of draws | 4.87 on average, 6 or more in 19.3 % |
 
 So the planned score is not separated from chance. The second score beats random features but not shuffled
-labels: the proteins that landed move together after exercise, whichever gene group they are given. Most of that
-score's passes come from its weights, not from which genes are M1 or M2. Single passes need care too. GSE83578 at 24 h
+labels: the proteins that landed move together after exercise, whichever gene group they are given, so most of
+that score's passes do not depend on which genes are M1 or M2. Single passes need care too. GSE83578 at 24 h
 passes in 43.5 % of random draws on the planned score, because its published 0.54 is close to no difference
 (`chance_by_comparison.tsv`).
 
@@ -379,9 +379,10 @@ panels say. GSE104079 is mouse, landing on human proteins.
 python -m pytest tests
 ```
 
-`tests/README.md` describes the test series and the known-answer checks. `tests/test_helpers.py` runs each
-script on small files whose answers are worked out by hand, apart from `figure_frames.py` and `fig4/plot.py`,
-which it only runs or skips. `tests/test_workflow.py` reads `main.nf`. `fig4.nf` has no test of its own.
+`tests/README.md` describes the test series and the known-answer checks. `tests/test_helpers.py` runs the
+helper scripts on small files whose answers are worked out by hand. It only checks that `figure_frames.py` runs
+and that `fig4/chance.py` gives a table of the right shape, and it does not run `fig4/plot.py`.
+`tests/test_workflow.py` reads `main.nf`. `fig4.nf` has no test of its own.
 
 The tests that run `main.nf` are skipped unless asked for, because they need Nextflow and the network, and
 take a few minutes. They check the sketch count, that a proteome is read once for each alphabet and k, that a
