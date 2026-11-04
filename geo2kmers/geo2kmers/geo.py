@@ -150,6 +150,8 @@ def fetch(gse, outdir, gpl=None, sample_tables=False, opener=urllib.request.urlo
     try:
         download(url_of[matrix_path], matrix_path, opener)
     except OSError as e:
+        if getattr(e, "code", None) != 404:  # a busy server is not a missing file
+            raise Geo2KmersError(f"could not download {url_of[matrix_path]}: {e}") from e
         print(f"no series matrix for {gse} ({e}); using the sample tables")
         del url_of[matrix_path]
         have_matrix = False

@@ -113,8 +113,9 @@ def make_probe_fasta(
         # a GenBank record on an Affymetrix table is the gene the probes target, not the 25-letter probes
         raise Geo2KmersError(
             f"{gpl_table} is an Affymetrix platform with no SEQUENCE column. "
-            f"The 25-letter probe sequences are in the Bioconductor package {package}. "
-            "This tool will not guess them."
+            f"The 25-letter probe sequences are in a Bioconductor probe package, probably {package}. "
+            "That name is worked out from the platform title and not checked, so look it up at "
+            "https://bioconductor.org/packages/release/data/annotation/. This tool will not guess the sequences."
         )
     if seq_col is None and acc_col is None:
         raise Geo2KmersError(

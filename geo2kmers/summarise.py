@@ -4,6 +4,7 @@ Usage: summarise.py <sketches folder> <probes.fasta> <probe_sequence_source.tsv>
 Writes sketch_summary.tsv and probe_summary.tsv to the out folder.
 """
 
+import collections
 import csv
 import glob
 import json
@@ -36,6 +37,8 @@ summary = {
     "probes_record_too_long": sum(r["source"] == "record_too_long" for r in rows),
     "probes_missing": sum(r["source"] == "missing" for r in rows),
     "distinct_sequences": len(set(sequences)),
+    "spots_per_sequence_min": min(collections.Counter(sequences).values()),
+    "spots_per_sequence_max": max(collections.Counter(sequences).values()),
     "length_nt_min": min(lengths),
     "length_nt_median": statistics.median(lengths),
     "length_nt_max": max(lengths),

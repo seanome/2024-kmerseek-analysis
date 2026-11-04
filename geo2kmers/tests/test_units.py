@@ -97,7 +97,7 @@ def test_probe_with_n_skips_those_windows():
 
 
 def test_rounding():
-    assert [sketch.rounded_abundance(w) for w in (0.2, 0.5, 1.5, 2.49)] == [1, 1, 2, 2]
+    assert [sketch.rounded_abundance(w) for w in (0.2, 0.5, 1.5, 2.49, 2.5, 4.5)] == [1, 1, 2, 2, 3, 5]
 
 
 def test_weight_column_is_never_called_count(tmp_path):
@@ -294,7 +294,7 @@ def test_fetch_records_provenance_and_uses_the_disk_cache(tmp_path):
         for key, body in pages.items():
             if key in url:
                 if body is None:
-                    raise OSError("no such file")
+                    raise urllib.error.HTTPError(url, 404, "Not Found", None, None)
                 return _Closing(body)
         raise AssertionError(url)
 
@@ -425,10 +425,11 @@ def test_proteome_reads_gzip_and_several_files(tmp_path):
     protein = RANDOM_PROTEIN[:120]
     first = tmp_path / "a.fasta.gz"
     with gzip.open(first, "wt") as f:
-        f.write(f">a\n{protein[:60]}\n{protein[60:]}\n")
+        f.write(f">a\n{protein[:30]}\n{protein[30:60]}\n")
     second = tmp_path / "b.fasta"
-    second.write_text(">b\nMKV\n")
+    second.write_text(f">b\n{protein[60:]}\n")
     assert sketch.ProteomeFrames([first, second], 5, "protein").pick(STOPS + to_dna(protein) + STOPS)[2] == protein
+    assert sketch.ProteomeFrames([first], 5, "protein").pick(STOPS + to_dna(protein) + STOPS) is None
 
 
 def test_no_kmer_crosses_a_joint_between_proteins_or_an_unusual_letter(tmp_path):
@@ -500,3 +501,76 @@ def test_the_largest_k_keeps_every_letter_of_a_kmer():
     table = sketch.letter_codes("hp")
     one, other = "A" * 63, "C" + "A" * 62  # they differ only in the first letter
     assert sketch.kmer_numbers(one, 63, "hp", table)[0] != sketch.kmer_numbers(other, 63, "hp", table)[0]
+
+
+def test_fetch_stops_if_the_matrix_fails_for_any_reason_but_404(tmp_path):
+    pages = {
+        "acc=GSE1&": b"!Series_platform_id = GPL1\n!Series_sample_id = GSM1\n",
+        "acc=GPL1&": b"!platform_table_begin\nID\tSEQUENCE\n1\tACGT\n!platform_table_end\n",
+    }
+
+    def opener(url, timeout):
+        for key, body in pages.items():
+            if key in url:
+                return _Closing(body)
+        raise urllib.error.HTTPError(url, 503, "Busy", None, None)
+
+    with pytest.raises(Geo2KmersError, match="could not download"):
+        geo.fetch("GSE1", tmp_path, opener=opener)
+
+
+def test_the_default_genbank_limit_is_5000():
+    assert sequences.MAX_GENBANK_NT == 5000
+
+
+def test_a_value_just_under_the_log_limit_warns_and_one_at_it_does_not(capsys):
+    sketch.check_not_ratio({"a": 31.9}, "GSM1")
+    assert "logarithms" in capsys.readouterr().out
+    sketch.check_not_ratio({"a": 32.0}, "GSM1")
+    assert capsys.readouterr().out == ""
+
+
+def test_the_negative_value_message_names_both_causes():
+    with pytest.raises(Geo2KmersError, match="log ratio.*Average Difference"):
+        sketch.check_not_ratio({"a": -1.0}, "GSM1")
+
+
+def test_affymetrix_message_says_the_package_name_is_not_checked(tmp_path):
+    t = write(
+        tmp_path / "GPL6244.txt",
+        "!Platform_title = [HuGene-1_0-st] Affymetrix Human Gene 1.0 ST Array\n"
+        "!platform_table_begin\nID\tGene Symbol\n1\tDDR1\n!platform_table_end\n",
+    )
+    with pytest.raises(Geo2KmersError, match="not checked"):
+        sequences.make_probe_fasta(t, tmp_path / "o.fasta", tmp_path / "o.tsv")
+
+
+def test_x_does_not_count_towards_the_100_amino_acids(tmp_path):
+    protein = RANDOM_PROTEIN[:20]
+    picker = sketch.ProteomeFrames(write_proteome(tmp_path, protein), 10, "protein")
+    assert picker.pick(STOPS + to_dna(protein) + "NNN" * 80 + STOPS) is None
+
+
+def test_no_kmer_of_the_longest_stretch_crosses_an_x():
+    protein = RANDOM_PROTEIN[:40]
+    dna = STOPS + to_dna(protein[:20]) + "NNN" + to_dna(protein[20:]) + STOPS
+    table, _ = sketch.build_sketch({"p": dna}, {"p": 10.0, "q": 0.0}, 5, "protein", "weighted")
+    assert not any("X" in kmer for kmer in table)
+    assert protein[18:23] not in table
+
+
+@pytest.mark.parametrize("k", [0, -1])
+def test_k_below_1_stops(k):
+    with pytest.raises(Geo2KmersError, match="at least 1"):
+        sketch.build_sketch({"p": "ACGTACGT"}, {"p": 10.0}, k, "dna", "weighted")
+
+
+def test_a_name_twice_in_a_fasta_stops_and_a_blank_line_is_skipped(tmp_path):
+    assert sketch.read_fasta(write(tmp_path / "a.fasta", "\n>a\nAC\n\nGT\n")) == {"a": "ACGT"}
+    with pytest.raises(Geo2KmersError, match="twice"):
+        sketch.read_fasta(write(tmp_path / "b.fasta", ">a\nAC\n>a\nGT\n"))
+
+
+def test_an_all_blank_detection_column_is_no_detection_column():
+    rows = [{"ID_REF": "a", "ABS_CALL": ""}, {"ID_REF": "b", "ABS_CALL": " "}]
+    assert sketch.read_detection(["ID_REF", "ABS_CALL"], rows) is None

@@ -5,6 +5,8 @@ probes_genbank_fetch	3344
 probes_record_too_long	30
 probes_missing	466
 distinct_sequences	1672
+spots_per_sequence_min	2
+spots_per_sequence_max	2
 length_nt_min	101
 length_nt_median	512.0
 length_nt_max	650

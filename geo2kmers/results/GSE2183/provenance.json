@@ -16,6 +16,12 @@
       "bytes": 378297
     },
     {
+      "file": "GSE2183_series_matrix.txt.gz",
+      "url": "https://ftp.ncbi.nlm.nih.gov/geo/series/GSE2nnn/GSE2183/matrix/GSE2183_series_matrix.txt.gz",
+      "sha256": "a678a5a1401318107e756b25db4b1ce697b6cd2bf8e7912c2cc897e77a29c42a",
+      "bytes": 70035
+    },
+    {
       "file": "gsm/GSM39421.txt",
       "url": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSM39421&targ=self&form=text&view=full",
       "sha256": "42774b42a4348a1bc620d2c026df457d3e9b9129d8827d96aadbd6ba6bdc2bb2",

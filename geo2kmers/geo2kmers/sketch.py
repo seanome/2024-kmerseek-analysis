@@ -41,8 +41,12 @@ def read_fasta(path):
     records, name = {}, None
     with gzip.open(path, "rt") if str(path).endswith(".gz") else open(path) as f:
         for line in f:
+            if not line.strip():
+                continue
             if line.startswith(">"):
                 name = line[1:].split()[0]
+                if name in records:
+                    raise Geo2KmersError(f"{path} has the name {name} twice")
                 records[name] = []
             else:
                 records[name].append(line.strip())
@@ -110,8 +114,8 @@ class ProteomeFrames:
     """Pick each probe's reading frame by matching its k-mers to a proteome.
 
     A stretch is the part of a frame between two stop codons, or between a stop and an end of the frame.
-    A stretch passes if it has at least MIN_STRETCH_AA amino acids and at least MIN_SHARE_IN_PROTEOME of
-    its k-mers are in the proteome. The longest passing stretch is used, and the rest of the probe is not.
+    A stretch passes if it has at least MIN_STRETCH_AA amino acids, not counting X, and at least
+    MIN_SHARE_IN_PROTEOME of its k-mers are in the proteome. The longest passing stretch is used, and the rest of the probe is not.
     """
 
     def __init__(self, paths, k, alphabet):
@@ -149,7 +153,7 @@ class ProteomeFrames:
             for number, frame in enumerate(translate_frames(sequence)):
                 start = 0
                 for stretch in frame.split("*"):
-                    if len(stretch) >= MIN_STRETCH_AA:
+                    if len(stretch) - stretch.count("X") >= MIN_STRETCH_AA:
                         share = self.share_in_proteome(stretch)
                         rank = (len(stretch), share, -number, -start)
                         if share >= MIN_SHARE_IN_PROTEOME and (best is None or rank > best[0]):
@@ -255,7 +259,7 @@ def read_detection(columns, rows):
     call = next((upper[c] for c in DETECTION_COLUMNS if c in upper), None)
     p_col = next((upper[c] for c in DETECTION_P_COLUMNS if c in upper), None)
     cells = {r.get(call, "").strip().upper() for r in rows} if call else set()
-    if call and cells <= {"", "P", "M", "A", "PRESENT", "MARGINAL", "ABSENT"}:
+    if call and cells - {""} and cells <= {"", "P", "M", "A", "PRESENT", "MARGINAL", "ABSENT"}:
         return {r[columns[0]]: r.get(call, "").strip().upper() in ("P", "PRESENT") for r in rows}
     if p_col:
         return {r[columns[0]]: to_float(r.get(p_col)) is not None and to_float(r.get(p_col)) <= 0.05 for r in rows}
@@ -266,8 +270,9 @@ def check_not_ratio(values, sample):
     numbers = [v for v in values.values() if v is not None]
     if numbers and min(numbers) < 0:
         raise Geo2KmersError(
-            f"{sample} has negative values, so this column is a log ratio, not an intensity. "
-            "Use a sample table and name the intensity column with --column."
+            f"{sample} has negative values, so this column is not a plain intensity. It may be a log ratio, or a "
+            "difference such as Affymetrix Average Difference. This tool does not sketch either. "
+            "If the sample table has an intensity column, name it with --column."
         )
     if numbers and max(numbers) < LOG_SCALE_LIMIT:
         print(f"warning: every value of {sample} is below {LOG_SCALE_LIMIT}, so they may be logarithms of intensity")
@@ -293,6 +298,8 @@ def build_sketch(probes, intensities, k, alphabet, mode, detection=None, proteom
         raise Geo2KmersError(f"unknown alphabet {alphabet}")
     if mode not in ("present", "weighted"):
         raise Geo2KmersError(f"unknown mode {mode}")
+    if k < 1:
+        raise Geo2KmersError(f"k must be at least 1, not {k}")
     if proteome and alphabet == "dna":
         raise Geo2KmersError("--proteome picks a reading frame, so it does not apply to alphabet dna")
     picker = ProteomeFrames(proteome, k, alphabet) if proteome else None
