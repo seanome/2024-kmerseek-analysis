@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """How many nf-core DESeq2 genes each route reaches, going the same way (notebook 361).
 
-Usage: nfcore_recovery.py <contrasts_dir> <deseq_dir> <proteome.id_map.tsv> <out_dir> [<gene_counts_dir>]
+Usage: nfcore_recovery.py <contrasts_dir> <deseq_dir> <proteome.id_map.tsv> <out_dir> [<gene_counts_dir> [<gene_counts_mean_dir>]]
 
 The reference is nf-core/rnaseq 3.27.0 (STAR + RSEM, April 2024 genome) then
 nf-core/differentialabundance 2.0.0 (DESeq2), one results table per contrast in <deseq_dir>, named
@@ -17,8 +17,9 @@ name FUN012345_XYZ belongs to gene FUN_012345 in the GTF. Peptide direction and 
 the contrast's results table that have a protein. SPLASH has no direction, so it is compared with up
 and down alike.
 
-<gene_counts_dir>, when given, adds the route gene_counts: <gene_counts_dir>/<contrast>.tsv from
-gene_directions.py, already named by GTF gene, so a gene is reached when it has that direction.
+<gene_counts_dir>, when given, adds the route gene_counts: <contrast>.tsv from gene_directions.py,
+already named by GTF gene, so a gene is reached when it has that direction. <gene_counts_mean_dir>
+adds gene_counts_mean, the same from its sample_mean rule.
 
 Writes <out_dir>/recovery.tsv, one row per contrast, route, cutoff and list.
 """
@@ -30,14 +31,14 @@ import numpy as np
 import polars as pl
 
 contrasts_dir, deseq_dir, id_map, out_dir = Path(sys.argv[1]), Path(sys.argv[2]), sys.argv[3], Path(sys.argv[4])
-gene_counts_dir = Path(sys.argv[5]) if len(sys.argv) > 5 else None
+gene_counts_dirs = dict(zip(["gene_counts", "gene_counts_mean"], map(Path, sys.argv[5:])))
 out_dir.mkdir(parents=True, exist_ok=True)
 N_NULL, SEED = 1000, 361
 CONTRASTS = ["young_2h", "young_24h", "old_24h", "young_13_49d", "young_132d", "old_41_93d"]
 SEARCH = {"splash": "search_compactors", "anchor_nominal": "search_compactors_anchor_nominal",
           "kamrat_ttest_p05": "search_kamrat_p05", "kamrat_deseq2_p05": "search_kamrat_deseq2_p05",
           "dekupl_limma_p05": "search_dekupl_limma_p05", "dekupl_deseq2_p05": "search_dekupl_deseq2_p05"}
-ROUTES = list(SEARCH) + (["gene_counts"] if gene_counts_dir else [])  # new routes go last: each route's random draws depend on its place
+ROUTES = list(SEARCH) + list(gene_counts_dirs)  # new routes go last: each route's random draws depend on its place
 NOT_USABLE = {("young_132d", "dekupl_limma_p05"), ("young_132d", "dekupl_deseq2_p05")}  # see paper_recovery.py
 CUTOFFS = {"corrected": pl.col("padj") < 0.05, "paper_cutoff": pl.col("pvalue") <= 0.05}
 
@@ -52,8 +53,9 @@ def reached(contrast, channel):
     """{direction or 'any': set of genes} for one route, or None when its files are missing."""
     if (contrast, channel) in NOT_USABLE:
         return None
-    if channel == "gene_counts":
-        d = pl.read_csv(gene_counts_dir / f"{contrast}.tsv", separator="\t", columns=["gene", "direction"]).drop_nulls("direction")
+    if channel in gene_counts_dirs:
+        d = (pl.read_csv(gene_counts_dirs[channel] / f"{contrast}.tsv", separator="\t", columns=["gene", "direction"])
+             .filter(pl.col("direction").is_in(["up", "down"])))
         return {"any": set(d["gene"]), **{w: set(d.filter(pl.col("direction") == w)["gene"]) for w in ("up", "down")}}
     src = contrasts_dir / contrast / SEARCH[channel]
     aln = src / "align.proteome.parquet"

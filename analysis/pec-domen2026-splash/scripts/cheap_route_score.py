@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Score gene-counts directions against the paper's lists, with paper_recovery.py's test (notebook 361).
 
-Usage: cheap_route_score.py <pec_root> <counts.tsv> <design_dir> <id_map.tsv> <out_dir>
+Usage: cheap_route_score.py <pec_root> <counts.tsv> <design_dir> <id_map.tsv> <out_dir> [sample_mean]
 
 For each contrast: gene_directions.py on the contrast's samples, then each gene with a direction
 is written as one fake search hit, so that paper_recovery.py applies its own list, random gene sets
@@ -17,6 +17,7 @@ from pathlib import Path
 import polars as pl
 
 root, counts, design_dir, id_map, out = Path(sys.argv[1]), sys.argv[2], Path(sys.argv[3]), sys.argv[4], Path(sys.argv[5])
+rule = sys.argv[6:]  # passed on to gene_directions.py
 SCRIPTS = Path(__file__).resolve().parent
 CONTRASTS = ["young_2h", "young_24h", "old_24h", "young_13_49d", "young_132d", "old_41_93d"]
 CHANNEL = "kamrat_deseq2_p05"
@@ -31,7 +32,7 @@ for c in CONTRASTS:
     samples = pl.read_csv(design, separator="\t")["sample"].to_list()
     sub = out / "directions" / f"{c}.counts.tsv"
     pl.read_csv(counts, separator="\t").select("gene", *samples).write_csv(sub, separator="\t")
-    subprocess.run([sys.executable, str(SCRIPTS / "gene_directions.py"), str(sub), str(design), str(tsv)], check=True)
+    subprocess.run([sys.executable, str(SCRIPTS / "gene_directions.py"), str(sub), str(design), str(tsv), *rule], check=True)
     sub.unlink()
     d = pl.read_csv(tsv, separator="\t").filter(pl.col("direction").is_in(["up", "down"])).join(protein, on="gene")
     s = view / c / f"search_{CHANNEL}"
