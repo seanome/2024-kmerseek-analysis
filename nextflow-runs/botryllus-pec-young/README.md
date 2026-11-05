@@ -137,6 +137,8 @@ on session"), so the first run was not touched.
   the failed report step, rerun with both settings on Sherlock, finished in 3.5 minutes
   and wrote all sections for raw, normalised and variance-stabilised counts, including
   the details for all 6 windows.
+- The report built on 2026-11-01 (head job 50740329, 19 minutes, 4 steps rerun, 28 reused):
+  `differentialabundance/report/rnaseq/botryllus_pec_young_differentialabundance_report.html`.
 - A first try left raw counts out of the report instead. The `make run` of 2026-11-01
   19:07 (head job 50725494) failed on it after 7 minutes: the exploratory plots and the
   Shiny app are always given all three count tables and stop when fewer names are set.
