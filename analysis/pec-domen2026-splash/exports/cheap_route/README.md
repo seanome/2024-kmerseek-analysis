@@ -129,6 +129,43 @@ expected to be well above budget in step 2; that run measures the most genes, no
 If steps 2 and 3 pass, cost is likely to land near 1/100 to 1/300 of SPLASH's, not 1/1000. That is an
 estimate from the reading limit above, not a measurement.
 
+## Thinned reads and swapped labels: rules written 2026-11-05, before any run
+
+Asked 2026-11-05 after the `sample_mean` lead. Read limits and swap readings are fixed here first.
+This is the second look at the same samples, so a pass still is not an independent repeat.
+
+Thinned reads. `pec-tools gene-counts` reads the first 1/10, 1/100 and 1/1000 of each sample's read
+pairs, at least one pair, with the `sample_mean` direction rule. All three run, because they are cheap
+and were asked for, so step 3's stop does not apply. Reads in a file may not be in random order; that
+is what a cheap run would do, so it stays. Each fraction runs twice: old gene-model proteins for the
+paper's lists, new proteome for nf-core's. A run limited to one pair per sample measures index building
+alone.
+
+| fraction passes when | paper's lists (the test) | nf-core lists (reported too) |
+|---|---|---|
+| genes, right direction | 439 or more of 878 | 568 or more of 1,135 |
+| lists beating random | 9 or more of 12 | 9 or more of 12 |
+| cost | measured, with and without index building | same |
+
+The cost target stays 44 CPU s, 11 s and 84 MB. A pass on genes that misses these is reported as a miss.
+
+Swapped labels. The 14 designs in `design/label_swap_kamrat/manifest.tsv` flip some, not all, counted
+pairs. Two questions, and neither is a pass rule (see "Sequencing depth"):
+
+A. Does the rule still match the real lists under swapped labels? Reported as a share, by contrast.
+Lists were built with the real labels, so a fall here is expected even in pure noise and proves
+nothing alone.
+
+B. Does the rule agree with DESeq2 when both get the same swapped labels? This asks whether the 54 %
+only means two methods read the same counts. PyDESeq2 runs on the nf-core gene counts with each design
+(same `pair` or `genotype` term), real labels included, at p <= 0.05 and 2-fold. Agreement is the share
+of its genes that `sample_mean` gives the same direction, on new-proteome counts. Reading, by comparing
+swapped agreement with real agreement over all genes:
+
+- 80 % of the real agreement or more: the agreement comes from shared counts, not from PEC.
+- 50 % or less: the real labels add something.
+- in between: no conclusion.
+
 ## Not covered
 
 - The index is built from the old gene-model proteins, so this does not find genes outside them.
