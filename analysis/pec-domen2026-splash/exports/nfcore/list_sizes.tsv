@@ -1,7 +1,13 @@
-contrast	genes_in_table	genes_tested	p05	p05_2fold	padj05	padj05_2fold	median_abs_log2fc	share_p_below_5pct
-old_24h	24148	24148	103	103	0	0	1.222	0.0043
-old_41_93d	18951	18951	43	43	0	0	1.335	0.0023
-young_132d	14674	14674	114	114	0	0	0.848	0.0078
-young_13_49d	18051	18051	37	37	0	0	0.94	0.002
-young_2h	32148	32148	391	323	2	2	0.504	0.0122
-young_24h	32877	32877	518	515	0	0	0.806	0.0158
+contrast	source	genes_tested	p05	padj05	pct_p05_all	genes_expressed	pct_p05_expressed	padj05_expressed	p05_2fold
+young_2h	nf-core	32148	391	2	1.22	9646	3.44	2	323.0
+young_2h	paper	50236	646	0	1.29	8203	5.24	0	
+young_24h	nf-core	32877	518	0	1.58	9581	4.69	0	515.0
+young_24h	paper	50592	816	1	1.61	8041	3.66	1	
+old_24h	nf-core	24148	103	0	0.43	3319	2.86	0	103.0
+old_24h	paper	36366	136	0	0.37	2731	3.48	0	
+young_13_49d	nf-core	18051	37	0	0.2	1054	2.56	0	37.0
+young_13_49d	paper	25407	94	0	0.37	1185	2.7	0	
+young_132d	nf-core	14674	114	0	0.78	1262	5.94	5	114.0
+young_132d	paper	21031	179	11	0.85	2035	4.28	15	
+old_41_93d	nf-core	18951	43	0	0.23	1530	2.55	0	43.0
+old_41_93d	paper	28015	64	0	0.23	1743	1.55	0	

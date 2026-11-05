@@ -6,8 +6,8 @@ Usage: plot_nfcore_recovery.py <paper_recovery.tsv> <gene_counts_paper.tsv> <gen
 a, b. Share of list genes reached in the list's direction (SPLASH has no direction). One small mark per
       list; filled if the list beat 1,000 random gene sets, open if not. One vertical bar per route:
       all lists together. a: the paper's 12 lists. b: the 12 nf-core lists at the paper's cutoff.
-c.    Genes tested and genes with p <= 0.05 and 2-fold in each contrast, with the count chance alone
-      would give at p <= 0.05 (5 % of genes tested).
+c.    Share of genes at p <= 0.05 in each contrast. At or left of the 5 % line means no more genes
+      than chance alone would give.
 Writes <out_stem>.tsv with the totals drawn, and prints it.
 """
 import sys
@@ -54,7 +54,7 @@ t.to_csv(f"{out_stem}.tsv", sep="\t", index=False)
 print(t.to_string(index=False))
 
 pf.use_style()
-fig, axs = pf.figure(pf.TWO_COLUMN_MM, 86, ncols=3, layout="constrained", gridspec_kw=dict(width_ratios=[1, 1, 0.9]))
+fig, axs = pf.figure(pf.TWO_COLUMN_MM, 86, ncols=3, layout="constrained", gridspec_kw=dict(width_ratios=[1, 1, 0.8]))
 ys = list(range(len(ROUTES)))[::-1]
 rng = np.random.default_rng(361)
 for ax, d, tot, title in ((axs[0], paper, tp, "the paper's 12 lists"), (axs[1], nf, tn, "12 nf-core DESeq2 lists, p ≤ 0.05, 2-fold")):
@@ -81,23 +81,23 @@ s = pd.read_csv(sizes_tsv, sep="\t")
 NAMES = {"young_2h": "young 2 h", "young_24h": "young 24 h", "old_24h": "old 24 h", "young_13_49d": "young 13-49 d",
          "young_132d": "young 132 d", "old_41_93d": "old 41-93 d"}
 ax = axs[2]
-for _, r in s.iterrows():
-    ax.plot(r.genes_tested, r.genes_tested * 0.05, marker="_", markersize=7, color="0.45", linestyle="none", zorder=2)
-    ax.plot(r.genes_tested, r.p05_2fold, marker="o", markersize=3.5, color="0.15", linestyle="none", zorder=3)
-    ax.annotate(NAMES[r.contrast], (r.genes_tested, r.p05_2fold), xytext=(0, 5 if r.contrast == "old_41_93d" else -7), textcoords="offset points",
-                ha="center", fontsize=5)
-ax.plot([], [], marker="_", markersize=7, color="0.45", linestyle="none", label="expected by chance at p ≤ 0.05 (5 % of genes)")
-ax.plot([], [], marker="o", markersize=3.5, color="0.15", linestyle="none", label="genes with p ≤ 0.05 and 2-fold")
-ax.set_yscale("log")
-ax.set_yticks([10, 100, 1000, 2000], ["10", "100", "1,000", "2,000"])
-ax.minorticks_off()
-ax.set_ylim(10, 3000)
-ax.set_xlim(12000, 36000)
-ax.set_xticks([15000, 25000, 35000], ["15,000", "25,000", "35,000"])
-ax.set_xlabel("genes DESeq2 tested")
-ax.set_ylabel("genes")
-ax.set_title("nf-core list sizes")
-ax.legend(loc="upper left", frameon=False, fontsize=5, handletextpad=0.2, borderaxespad=0.1)
+SERIES = (("nf-core", "pct_p05_expressed", "o", "0.15", "0.15", "nf-core, genes with baseMean ≥ 10"),
+          ("nf-core", "pct_p05_all", "o", "white", "0.15", "nf-core, all genes tested"),
+          ("paper", "pct_p05_expressed", "s", "0.55", "0.55", "paper's DESeq2, genes with baseMean ≥ 10"))
+yc = list(range(len(NAMES)))[::-1]
+for y, c in zip(yc, NAMES):
+    ax.axhline(y, color="0.9", linewidth=0.5, zorder=0)
+ax.axvline(5, color="0.45", linewidth=0.6, linestyle=":", zorder=1)
+for src, col, mk, fc, ec, lab in SERIES:
+    t = s[s.source == src].set_index("contrast").loc[list(NAMES)]
+    ax.plot(t[col], yc, marker=mk, markersize=3.5, markerfacecolor=fc, markeredgecolor=ec, markeredgewidth=0.6, linestyle="none", label=lab)
+ax.annotate("5 %: chance alone", (5, len(NAMES) - 0.55), xytext=(3, 0), textcoords="offset points", fontsize=5, va="center")
+ax.set_yticks(yc, list(NAMES.values()))
+ax.set_ylim(-0.6, len(NAMES) - 0.2)
+ax.set_xlim(0, 8)
+ax.set_xlabel("genes with p ≤ 0.05 (%)")
+ax.set_title("is any contrast above chance?")
+ax.legend(loc="lower center", bbox_to_anchor=(0.5, 1.09), frameon=False, fontsize=5, handletextpad=0.2)
 for a, l in zip(axs, "abc"):
     pf.panel_label(a, l)
 fig.suptitle("each mark: one list. filled: beat random genes. open: did not. thick bar: all lists together. dotted line: 50 % target. "

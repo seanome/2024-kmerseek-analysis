@@ -166,6 +166,22 @@ swapped agreement with real agreement over all genes:
 - 50 % or less: the real labels add something.
 - in between: no conclusion.
 
+### Thinned reads: result, 2026-11-05
+
+No fraction passes (jobs 51223398, 51223401; `thin/`, `../nfcore/gain_vs_cost.png`). All reads are shown
+for comparison and use the `sample_mean` rule, which was written after the summed rule failed.
+
+| reads | paper's lists, right way | beat random | nf-core lists, right way | beat random | CPU | wall | memory |
+|---|---|---|---|---|---|---|---|
+| all | 522 of 878 (59 %) | 11 of 12 | 609 of 1,135 (54 %) | 11 of 12 | 2.9 h | 32 min | 0.44 GB |
+| 1/10 | 316 (36 %) | 10 | 538 (47 %) | 10 | 970 s | 3.1 min | 0.44 GB |
+| 1/100 | 131 (15 %) | 6 | 272 (24 %) | 8 | 102 s | 19 s | 0.44 GB |
+| 1/1000 | 19 (2 %) | 2 | 34 (3 %) | 2 | 23 s | 4.6 s | 0.44 GB |
+
+Costs are for the old gene-model proteins; the new proteome is within 15 %. Building the index alone
+takes 3.6 CPU s, 2.8 s and all of the 0.44 GB, so memory does not fall with reads. Only the 1/1000 run
+meets the CPU and wall targets, and it reaches 2 %. All runs miss the 84 MB target.
+
 ## Not covered
 
 - The index is built from the old gene-model proteins, so this does not find genes outside them.
