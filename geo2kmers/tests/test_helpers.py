@@ -225,6 +225,25 @@ def test_a_connection_error_is_a_clean_stop_at_the_command_line(tmp_path, monkey
     assert "no route to host" in capsys.readouterr().err
 
 
+def test_land_stops_on_long_probes_with_or_without_k(tmp_path):
+    proteome = write(tmp_path / "p.fasta", f">GENE\n{RANDOM_PROTEIN[:60]}\n")
+    for k in (None, 7):
+        with pytest.raises(Geo2KmersError, match="sketch --proteome"):
+            landing.land_probes({"a": "ACGT" * 30}, [proteome], k)
+
+
+def test_land_stops_on_an_empty_probe_file(tmp_path):
+    proteome = write(tmp_path / "p.fasta", f">GENE\n{RANDOM_PROTEIN[:60]}\n")
+    with pytest.raises(Geo2KmersError, match="no probes"):
+        landing.land_probes({}, [proteome])
+
+
+def test_land_stops_above_the_largest_k(tmp_path):
+    proteome = write(tmp_path / "p.fasta", f">GENE\n{RANDOM_PROTEIN[:60]}\n")
+    with pytest.raises(Geo2KmersError, match="up to k = 14"):
+        landing.land_probes({"a": to_dna(RANDOM_PROTEIN[:20])}, [proteome], 15)
+
+
 def test_a_probe_set_lands_when_3_probes_land_on_one_protein(tmp_path):
     protein = RANDOM_PROTEIN[:60]
     proteome = write(tmp_path / "p.fasta", f">GENE\n{protein}\n")
@@ -277,7 +296,7 @@ def fig4_files(tmp_path, values):
         "dataset\tpanel\tcomparison\tgroup0\tgroup1\tn0\tn1\tauc\tp\tmodel\n"
         "GSE1\t4D\tmain\tPre\tPost\t2\t2\t0.90\t0.1\tfull\nGSE2\t4C\tmain\tPre\tPost\t2\t2\t0.10\t0.1\tfull\n",
     )
-    write(tmp_path / "plat.tsv", "gse\ttype\tlanding_share\nGSE1\tarray\t0.5\nGSE2\tRNA-seq\t\n")
+    write(tmp_path / "plat.tsv", "gse\ttype\tlanding_share_of_sequenced_probes\nGSE1\tarray\t0.5\nGSE2\tRNA-seq\t\n")
     write(tmp_path / "land/GSE1.landing.tsv", "feature\tprotein\tdistinct_kmers\na\tA\t5\nb\tB\t5\n")
     (tmp_path / "series/GSE1").mkdir(parents=True)
     rows = "".join(f'"{name}"\t' + "\t".join(map(str, row)) + "\n" for name, row in values.items())

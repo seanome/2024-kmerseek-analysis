@@ -2,6 +2,7 @@
 
 import argparse
 import http.client
+import statistics
 import sys
 from pathlib import Path
 
@@ -19,11 +20,12 @@ def run_sequences(args):
     cache = args.cache or out.with_name("genbank_cache.fasta")
     counts = sequences.make_probe_fasta(args.gpl_table, out, table, cache, max_genbank_nt=args.max_genbank_nt)
     print(f"probes by source: {counts}")
-    lengths = sorted(len(s) for s in sketch.read_fasta(out).values())
+    lengths = [len(s) for s in sketch.read_fasta(out).values()]
     if lengths:
-        median = lengths[len(lengths) // 2]
+        median = statistics.median(lengths)
         rule = sketch.platform_rule(median)
-        print(f"median probe length {median} nt, {sketch.residues_per_frame(median)} residues per frame: rule {rule}")
+        residues = sketch.residues_per_frame(int(median))
+        print(f"median probe length {median:g} nt, {residues} residues per frame: rule {rule}")
 
 
 def run_proteome_index(args):

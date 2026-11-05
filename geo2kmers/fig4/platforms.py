@@ -13,7 +13,17 @@ rows = []
 for path in shares:
     with open(path) as f:
         rows += list(csv.DictReader(f, delimiter="\t"))
-columns = ["gse", "gpl", "type", "median_probe_length", "rule", "k", "probes", "landing_share", "features_landed"]
+columns = [
+    "gse",
+    "gpl",
+    "type",
+    "median_probe_length",
+    "rule",
+    "k",
+    "probes",
+    "landing_share_of_sequenced_probes",
+    "features_landed",
+]
 columns += ["proteins_landed", "orientation", "probes_with_a_kmer_as_given", "probes_with_a_kmer_complemented"]
 columns += ["landings", "reversed_landings"]
 with open(out, "w", newline="") as f:

@@ -22,6 +22,21 @@ def write(path, text):
     return path
 
 
+def test_fasta_headers_with_no_accession_are_skipped_with_their_sequence():
+    text = ">AJ516347.1 a\nACGT\n>pdb|1ABC|A\nGGGG\n>\nCCCC\n>gi|1|emb|X12345.2|\nTTTT\n"
+    assert sequences.parse_fasta(text) == {"AJ516347": "ACGT", "X12345": "TTTT"}
+
+
+def test_sequences_prints_the_same_median_and_rule_the_other_steps_use(tmp_path, capsys, monkeypatch):
+    def make_fasta(gpl_table, out, *args, **kwargs):
+        Path(out).write_text(">a\n" + "A" * 98 + "\n>b\n" + "A" * 100 + "\n")
+        return {}
+
+    monkeypatch.setattr(sequences, "make_probe_fasta", make_fasta)
+    assert main(["sequences", "t", "--out", str(tmp_path / "p.fasta")]) in (0, None)
+    assert "median probe length 99 nt, 33 residues per frame: rule short_oligo" in capsys.readouterr().out
+
+
 def test_translate_matches_biopython():
     seq_mod = pytest.importorskip("Bio.Seq")
     seq = "ATGGCCATTGTAATGGGCCGCTGAAAGGGTGCCCGATAGCAT"

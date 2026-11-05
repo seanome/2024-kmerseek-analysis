@@ -335,21 +335,29 @@ paper's two groups of genes. The second score was added after the plan: it puts 
 2023 on sums, which PR 212 found the published code does. For GSE27536 both scores use M1 alone and are the
 same number.
 
-Chance explains these counts as well as the method does (`chance_test.tsv`, 1000 draws):
+Chance explains the planned score's count as well as the method does. For the second score, shuffled labels
+explain it and random features do not (`chance_test.tsv`, 1000 draws):
 
 | score | comparisons passing | if the landings mean nothing (random features) | if the gene groups mean nothing (shuffled labels) |
 |---|---:|---|---|
 | planned | 3 of 7 | 1.31 on average, 3 or more in 12.8 % of draws | 1.34 on average, 3 or more in 14.0 % |
-| second | 6 of 7 | 1.56 on average, 6 or more in 0.0 % of draws | 4.87 on average, 6 or more in 19.3 % |
+| second | 6 of 7 | 1.56 on average, 6 or more in none of the 1000 draws | 4.87 on average, 6 or more in 19.3 % |
 
 So the planned score is not separated from chance. The second score beats random features but not shuffled
-labels: the proteins that landed move together after exercise, whichever gene group they are given, so most of
+labels. Random features are the easier test to beat: they are drawn from the whole array with no match on
+expression level, so beating them is not evidence for the method. Shuffled labels are the fair test. The proteins that landed move together after exercise, whichever gene group they are given, so most of
 that score's passes do not depend on which genes are M1 or M2. Single passes need care too. GSE83578 at 24 h
 passes in 43.5 % of random draws on the planned score, because its published 0.54 is close to no difference
 (`chance_by_comparison.tsv`).
 
+The 7 comparisons are not 7 separate tests. GSE27536 and GSE28998 use one platform and have the same landing
+table, and the three GSE83578 comparisons share one pre group. The chance test keeps the GSE83578 comparisons
+tied together, with one shuffle for the series, but shuffles GSE27536 and GSE28998 separately.
+
 The rule also asked that a series have a landing share of at least 0.2, and none does: they run from 0.0079 to
-0.0354, because the denominator is every probe with a sequence and the proteome is 262 proteins (`platforms.tsv`).
+0.0354, because the denominator is every probe with a sequence and the proteome is 262 proteins. This is
+`landing_share_of_sequenced_probes` in `platforms.tsv`, which is not the `landing_share` that `sketch` reports:
+that one divides by all probes in the intensity table.
 So no series qualified, and the task passes under that rule without testing anything. That part of the rule
 was the wrong one, and the tables above are the real result. GSE120862, GSE99963 and GSE144304 are RNA-seq, which
 geo2kmers does not cover. The groups are those in the authors' code, which PR 212 found differ from what some
@@ -357,6 +365,7 @@ panels say. GSE104079 is mouse, landing on human proteins.
 
 ## Limits
 
+- `land` is for probes under 100 nt: it stops on longer ones and points to `sketch --proteome`.
 - Chance and repeats land too. Landing on backward proteins, which code for nothing, gives 22 landings on GPL13912
   against 81 real ones, 7 against 316 on GPL570, 16 against 433 on GPL13667, and 2353 against 3484 on GPL17586
   (`results/fig4/platforms.tsv`).

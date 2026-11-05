@@ -64,11 +64,13 @@ def parse_fasta(text):
     records, name = {}, None
     for line in text.splitlines():
         if line.startswith(">"):
-            word = line[1:].split()[0]
+            words = line[1:].split()
+            word = words[0] if words else ""
             if "|" in word:  # old style: gi|123|emb|AJ516347.1|
-                word = [p for p in word.split("|") if ACCESSION_RE.fullmatch(p)][-1]
-            name = word.split(".")[0]
-            records[name] = []
+                word = next((p for p in reversed(word.split("|")) if ACCESSION_RE.fullmatch(p)), "")
+            name = word.split(".")[0] or None  # a header with no accession: its record is skipped
+            if name:
+                records[name] = []
         elif name:
             records[name].append(line.strip())
     return {k: "".join(v).upper() for k, v in records.items()}

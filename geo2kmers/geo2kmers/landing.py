@@ -13,6 +13,7 @@ from geo2kmers.geo import Geo2KmersError
 from geo2kmers.sketch import (
     AMINO,
     AMINO_ACIDS,
+    LARGEST_K,
     PLATFORM_RULES,
     kmer_numbers,
     letter_codes,
@@ -65,9 +66,17 @@ def land_probes(probes, proteome, k=None):
     A landing row is (probe, protein, frame, k-mers on that protein, usable k-mers in that frame, their numbers).
     On a short oligo only the longest stop-free frame gives rows, with ties going to the lower frame.
     """
+    if not probes:
+        raise Geo2KmersError("no probes to land")
     median = float(np.median([len(s) for s in probes.values()]))
     rule = platform_rule(median)
+    if rule == "long_probe":
+        raise Geo2KmersError(
+            f"median probe length is {median:.0f} nt, and land is for shorter probes. Use sketch --proteome instead"
+        )
     k = k or PLATFORM_RULES[rule]["k"]
+    if k > LARGEST_K["protein"]:
+        raise Geo2KmersError(f"land works up to k = {LARGEST_K['protein']}, not k = {k}")
     known, owners = proteome_owners(proteome, k)
     rows, touched = [], set()
     by_length = defaultdict(list)
