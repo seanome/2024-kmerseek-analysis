@@ -52,6 +52,14 @@ genes against 97 for DE-kupl with DESeq2, the next best, which covers only 10 of
 labels were not run. The paper's lists are uncorrected, so 439 may not be a fair target; the
 reference is being rebuilt with nf-core (`nextflow-runs/pec-domen2026-nfcore/`).
 
+## After the stop: a second rule (2026-11-05)
+
+The summed rule above stays the pre-set test, and it failed. After reading it, `sample_mean` was added
+to `scripts/gene_directions.py`, because one sample can hold half a contrast's reads. On the same
+counts it gets 522 of 878 (59 %) in the paper's direction, and 11 of 12 lists beat random
+(`all_reads_sample_mean/recovery.tsv`). The rule came after the score, so this is a lead, not a pass.
+Limits and the nf-core comparison: `../nfcore/README.md`.
+
 ## Target
 
 Gene counted: on one of the paper's 12 lists, and reached by a sequence going the paper's way.
