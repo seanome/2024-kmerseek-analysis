@@ -10,3 +10,7 @@ features_metadata_cols: gene_id,gene_name
 deseq2_sf_type: poscounts
 exploratory_n_features: -1
 exploratory_main_variable: contrasts
+
+# The default shrinks fold changes towards 0 (largest 0.01 to 0.03 in five of six contrasts), so a
+# 2-fold cutoff keeps no gene. The paper's and the routes' cutoffs are on unshrunk fold changes.
+deseq2_shrink_lfc: false
