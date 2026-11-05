@@ -182,6 +182,30 @@ Costs are for the old gene-model proteins; the new proteome is within 15 %. Buil
 takes 3.6 CPU s, 2.8 s and all of the 0.44 GB, so memory does not fall with reads. Only the 1/1000 run
 meets the CPU and wall targets, and it reaches 2 %. All runs miss the 84 MB target.
 
+### Swapped labels: result, 2026-11-05
+
+![Real and swapped labels](swaps/swaps_real_vs_swapped.png)
+
+**a.** Genes PyDESeq2 keeps at p <= 0.05 and 2-fold, by contrast. **b.** The share of those genes
+`sample_mean` gives the same direction, on the same labels. Numbers: `swaps/swaps.tsv` (job 51223401).
+Real rows match the earlier scores, 522 of 878 and 609 of 1,135.
+
+Question B: real labels 308 of 601 genes agree (51 %); swapped labels 1,129 of 1,951 (58 %). That is
+113 % of the real agreement, above the 80 % written beforehand, so **the agreement comes from shared
+counts, not from PEC.** gene-counts and DESeq2 agree about as well on made-up groups.
+
+Question A: right-way genes fall from 522 to about 200 of 878 on the paper's lists and from 609 to about
+109 of 1,135 on nf-core's, each contrast's swaps averaged. This is expected even in noise, because the
+lists were built with the real labels.
+
+PyDESeq2 also keeps as many genes with swapped labels as real ones: 601 real, about 656 for one set of
+swaps (each contrast's swaps averaged, then added). So these p <= 0.05 lists are no bigger than made-up
+groups give.
+
+Limits: 14 designs, with one each for old 24 h and old 41-93 d. PyDESeq2 keeps fewer genes than nf-core
+(601 against 1,135, of which 576 are on nf-core's lists), so this is close to the nf-core test but not
+the same one.
+
 ## Not covered
 
 - The index is built from the old gene-model proteins, so this does not find genes outside them.
