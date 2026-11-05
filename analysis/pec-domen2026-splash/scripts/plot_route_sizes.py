@@ -62,7 +62,7 @@ for route, (lab, colour, mk) in SERIES.items():
     axs[0].plot(r.mb, r.step.map(ys), linestyle="none", marker=mk, color=colour, markersize=4, label=lab)
     for x in r.itertuples():
         size = f"{x.mb / 1000:,.1f} GB" if x.mb >= 1000 else f"{x.mb:,.1f} MB"
-        axs[0].annotate(f"{size}, {x.pct_of_fastq:,.2g} %", (x.mb, ys[x.step]), xytext=(0, -9 if route == "kamrat" else 4), textcoords="offset points", ha="center", fontsize=5, color=colour)
+        axs[0].annotate(f"{size}, {x.pct_of_fastq:.0f} %" if x.pct_of_fastq >= 10 else f"{size}, {x.pct_of_fastq:.2g} %", (x.mb, ys[x.step]), xytext=(0, -9 if route == "kamrat" else 4), textcoords="offset points", ha="center", fontsize=5, color=colour)
     if route != "reads":
         axs[1].plot(r.wall_h, r.step.map(ys), linestyle="none", marker=mk, color=colour, markersize=4)
         for x in r.itertuples():
