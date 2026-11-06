@@ -1,0 +1,23 @@
+dataset	comparison	grouping	groups	model	n0	n1	mean0	mean1	our_auc	our_p	published_n0	published_n1	published_auc	published_p	same_n	auc_recovered	p_recovered	recovered	our_auc_without_SDCCAG3	our_p_without_SDCCAG3
+GSE104079	main	authors	alternate-day fasting vs exercised + fasting, liver and soleus pooled	full	16	13	-400.48583697209534	-435.59390643331665	0.1778846153846154	0.006547898431243739	16.0	13.0	0.18	0.00655	True	True	True	True		
+GSE104079	main	as_labelled	soleus muscle, control vs exercised; GEO has no pre and post of one animal	full	7	7	-432.2119191672719	-422.58922420386915	0.5714285714285714	0.4354904302940916										
+GSE27536	main	authors	sedentary vs trained, healthy and COPD pooled, cluster 13 alone	m1_only	27	27	450.4849926157957	439.4575059929505	0.1700960219478738	0.00014366200387565953	27.0	27.0	0.17	0.000144	True	True	True	True		
+GSE27536	main	as_labelled	COPD only, sedentary vs trained, cluster 13 alone	m1_only	15	15	450.0138377648051	443.0335650882686	0.2488888888888889	0.036479141089103446										
+GSE27536	full_model	authors	sedentary vs trained, all three clusters (their Table S1)	full	27	27	-4880.002601227502	-4890.092055269511	0.38408779149519895	0.4032421650030832	27.0	27.0	0.38	0.403	True	True	True	True		
+GSE120862	main	authors	all 42 untrained vs all 42 trained samples, by training status	full	42	42	-520.0242423325685	-547.438439352193	0.07993197278911565	1.5142221671011795e-13	42.0	42.0	0.08	1.51e-13	True	True	True	True		
+GSE120862	main	as_labelled	untrained, exercised leg, before vs 1 h and 4 h after	full	7	14	-520.0152760878545	-521.8107239596596	0.4897959183673469	0.7793683929900994										
+GSE120862	leg_after_bout	as_labelled	untrained, 1 h and 4 h after, rested vs exercised leg	full	14	14	-518.0643103795136	-521.8107239596596	0.4336734693877552	0.42764534885628147										
+GSE120862	rest_after_training	as_labelled	rested leg at rest, before vs after 2 months of training	full	7	7	-520.3801092292099	-543.7587010967545	0.040816326530612256	0.0019377750581917226										
+GSE83578	pre_vs_30min	authors	time 0 vs time 1, control and LPS blood pooled	full	16	16	-684.958806393661	-840.1240337288368	0.0703125	2.89827874725201e-06	16.0	16.0	0.07	2.9e-06	True	True	True	True		
+GSE83578	pre_vs_30min	as_labelled	time 0 vs time 1, control blood only, no LPS	full	8	8	-652.828992156424	-832.337839333512	0.03125	0.00021712608861454706										
+GSE83578	pre_vs_3h	authors	time 0 vs time 2, control and LPS blood pooled	full	16	16	-684.958806393661	-837.9949164418143	0.0703125	4.176057214006992e-06	16.0	16.0	0.07	4.18e-06	True	True	True	True		
+GSE83578	pre_vs_3h	as_labelled	time 0 vs time 2, control blood only, no LPS	full	8	8	-652.828992156424	-806.6694910326457	0.046875	0.0008682480161217504										
+GSE83578	pre_vs_24h	authors	time 0 vs time 3, control and LPS blood pooled	full	16	16	-684.958806393661	-667.4461384539659	0.53515625	0.5580395709929764	16.0	16.0	0.54		True	True	True	True		
+GSE83578	pre_vs_24h	as_labelled	time 0 vs time 3, control blood only, no LPS	full	8	8	-652.828992156424	-644.0455358840436	0.515625	0.8213676845496761										
+GSE83578	early_vs_rest	authors	times 0 and 3 vs times 1 and 2, control and LPS blood pooled (their Table S1)	full	32	32	-676.2024724238133	-839.0594750853256	0.05078125	1.2703985651003144e-12	32.0	32.0	0.05	1.27e-12	True	True	True	True		
+GSE111555	main	authors	PBMC, before vs after training	full	22	10	-85.96791122546128	-58.98920703746069	0.9318181818181819	2.9644999149227373e-05	22.0	10.0	0.93	2.96e-05	True	True	True	True		
+GSE99963	main	authors	before vs after, sedentary and exercise arms pooled	full	14	14	-154.0113890128359	-104.74138307404702	0.9132653061224489	0.00010814258867102325	14.0	14.0	0.91	0.000105	True	True	True	True	0.9132653061224489	0.00010499752895014333
+GSE99963	main	as_labelled	exercise arm only, before vs after	full	7	7	-152.43729902558266	-112.48216233611979	0.8979591836734693	0.010131465123223734										
+GSE144304	main	authors	young adults (panel: Sed) vs fit old adults (panel: Ex)	full	26	30	-235.14625783363178	-184.13743304937105	0.8564102564102565	1.0927055706442015e-05	26.0	30.0	0.86	1.19e-05	True	True	True	True	0.8564102564102564	1.189847990746913e-05
+GSE144304	main	as_labelled	frail old adults vs fit old adults	full	24	30	-169.3024193801849	-184.13743304937105	0.41250000000000003	0.21566108908218984										
+GSE28998	main	authors	untrained arm vs trained arm, both 4 h after one bout	full	7	7	-3794.4427501361765	-3735.2255340734037	0.7959183673469388	0.039590644664686786	7.0	7.0	0.8	0.0396	True	True	True	True		
