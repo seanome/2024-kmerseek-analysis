@@ -77,3 +77,24 @@ counts for both. Mates are not added. 0 to 5 % of contigs had no read; why was n
 
 Limits: these are the three smallest contrasts, with 188 list genes and 1 to 3 swaps each. The t-test
 route has no swaps. How much the 100-read limit changes the result was not tested.
+
+### Why reads do not reach most list genes
+
+Asked 2026-11-06: are the k-mers not in the genes? Some are, but the reads only bring back k-mers that
+passed the test. Job 51354940, `scripts/kamrat_kmers_in_genes.py`, `reads/kmers_in_genes.tsv`.
+
+![From list genes to genes reached](reads/gene_funnel.png)
+
+Numbers are KaMRaT + DESeq2 on the three small contrasts. Of 188 list genes, 117 hold a k-mer in KaMRaT's
+table, 39 hold one that passed the test, and 32 hold one going the same way as the list. So the test
+removes most genes, before contig length matters. Reads cannot reach a gene through k-mers that failed
+the test.
+
+The count uses exact matches of 10 residues against the old gene-model proteins, the only form of those
+genes here. It misses k-mers outside the protein-coding part and k-mers with a sequence difference from
+the gene model, so 117 and 39 are lower limits.
+
+Reads reach 50 genes, at least 18 more than hold a same-way k-mer. With swapped labels the gap is wider,
+28.7 against 9.3. Two likely causes, neither tested: a read's peptide can align to a similar gene that
+does not hold the k-mer, and a k-mer outside the protein-coding part can sit on a read that reaches into
+it. Either way, most of what reads add is not a gene with a tested change.
