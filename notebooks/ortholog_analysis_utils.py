@@ -104,6 +104,40 @@ ALPHABET_AA_GROUPS: dict[str, dict[str, str]] = {
     "hp_thomas_dill_no_c": {"h": "AFILMVWY", "p": "CDEGHKNPQRST"},
 }
 
+# Every alphabet kmerseek can index with, under the name its --moltype option takes, as lists of
+# residues in the same class. Copied from src/rust/alphabets.rs at seanome/kmerseek main 0643254
+# (0.5.0, 2026-11-03); dayhoff6 is sourmash's Dayhoff table.
+KMERSEEK_ALPHABET_CLUSTERS: dict[str, list[str]] = {
+    "cys2": ["C", "ADEFGHIKLMNPQRSTVWY"],
+    "hp_kyte_doolittle2": ["ACFILMV", "DEGHKNPQRSTWY"],
+    "hp_lehninger2": ["AFGILMPVWY", "CDEHKNQRST"],
+    "hp_lehninger_c_nonpolar2": ["ACFGILMPVWY", "DEHKNQRST"],
+    "hp_pbotc_1st_ed2": ["ACFILMPVWY", "DEGHKNQRST"],
+    "hp_thomas_dill2": ["ACFILMVWY", "DEGHKNPQRST"],
+    "hp_thomas_dill_no_c2": ["AFILMVWY", "CDEGHKNPQRST"],
+    "hp_lehninger_hpc3": ["AFGILMPVWY", "DEHKNQRST", "C"],
+    "hp_pbotc_1st_ed_hpc3": ["AFILMPVWY", "DEGHKNQRST", "C"],
+    "aro_hyd_chg_pol4": ["FWY", "AILMV", "DEKR", "SCGHNPQT"],
+    "gbmr4": ["ADKERNTSQ", "YFLIVMCWH", "G", "P"],
+    "polarity4": ["GAVLIFWMP", "STCYNQ", "DE", "HKR"],
+    "aro_hyd_arg_chg_pol5": ["FWY", "AILMV", "R", "DEK", "SCGHNPQT"],
+    "wwmj5": ["CMFILVWY", "ATH", "GP", "DE", "SNQRK"],
+    "dayhoff6": ["C", "AGPST", "DENQ", "HKR", "ILMV", "FWY"],
+    "gbmr7": ["DN", "AEFIKLMQRVWY", "CH", "T", "S", "G", "P"],
+    "funcgroups8": ["GVALI", "ST", "CM", "FY", "WHP", "NQ", "DE", "KR"],
+    "mmseqs12": ["AST", "LM", "IV", "KR", "EQ", "ND", "FY", "C", "G", "H", "P", "W"],
+    "sdm12": ["A", "D", "KER", "N", "TSQ", "YF", "LIVM", "C", "W", "H", "G", "P"],
+    "wass14": list("PCKTGLYF") + ["WM", "DI", "AV", "RE", "SH", "NQ"],
+    "hsdm17": list("ADRNTSQYFMCWHGP") + ["KE", "LIV"],
+    "massspec18": list("ACDEFGHMNPRSTVWY") + ["IL", "QK"],
+    "uniprot18": list("ARNDCQGIKMFSTWYV") + ["EP", "HL"],
+    "protein20": list("ACDEFGHIKLMNPQRSTVWY"),
+}
+ALPHABET_AA_GROUPS |= {
+    alphabet: {cluster: cluster for cluster in clusters}
+    for alphabet, clusters in KMERSEEK_ALPHABET_CLUSTERS.items()
+}
+
 
 def entropy_per_symbol(encoding: str) -> float:
     """Shannon entropy (bits) of one encoded symbol under *encoding*, from the REAL amino-acid
@@ -114,9 +148,12 @@ def entropy_per_symbol(encoding: str) -> float:
     balanced that specific H/P split happens to fall against real amino-acid usage).
     """
     groups = ALPHABET_AA_GROUPS[encoding]
+    total = sum(
+        AA_FREQUENCIES.values()
+    )  # the rounded frequencies sum to 0.99986, not 1
     ent = 0.0
     for aas in groups.values():
-        p = sum(AA_FREQUENCIES[aa] for aa in aas)
+        p = sum(AA_FREQUENCIES[aa] for aa in aas) / total
         if p > 0:
             ent -= p * math.log2(p)
     return ent
@@ -130,6 +167,11 @@ def bits_per_kmer(encoding: str, ksize: int) -> float:
     raw k, which is invisible if you only plot against k-size.
     """
     return ksize * entropy_per_symbol(encoding)
+
+
+def ksize_for_bits(encoding: str, bits: float) -> int:
+    """The k whose k-mer under *encoding* carries closest to *bits* bits, at least 1."""
+    return max(1, round(bits / entropy_per_symbol(encoding)))
 
 
 KSIZE = 24
