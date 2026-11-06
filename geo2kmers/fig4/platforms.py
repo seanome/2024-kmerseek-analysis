@@ -21,7 +21,7 @@ columns = [
     "rule",
     "k",
     "probes",
-    "landing_share_of_sequenced_probes",
+    "share_of_probes_with_a_kmer_in_proteome",
     "features_landed",
 ]
 columns += ["proteins_landed", "orientation", "probes_with_a_kmer_as_given", "probes_with_a_kmer_complemented"]

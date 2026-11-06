@@ -296,7 +296,9 @@ def fig4_files(tmp_path, values):
         "dataset\tpanel\tcomparison\tgroup0\tgroup1\tn0\tn1\tauc\tp\tmodel\n"
         "GSE1\t4D\tmain\tPre\tPost\t2\t2\t0.90\t0.1\tfull\nGSE2\t4C\tmain\tPre\tPost\t2\t2\t0.10\t0.1\tfull\n",
     )
-    write(tmp_path / "plat.tsv", "gse\ttype\tlanding_share_of_sequenced_probes\nGSE1\tarray\t0.5\nGSE2\tRNA-seq\t\n")
+    write(
+        tmp_path / "plat.tsv", "gse\ttype\tshare_of_probes_with_a_kmer_in_proteome\nGSE1\tarray\t0.5\nGSE2\tRNA-seq\t\n"
+    )
     write(tmp_path / "land/GSE1.landing.tsv", "feature\tprotein\tdistinct_kmers\na\tA\t5\nb\tB\t5\n")
     (tmp_path / "series/GSE1").mkdir(parents=True)
     rows = "".join(f'"{name}"\t' + "\t".join(map(str, row)) + "\n" for name, row in values.items())
@@ -478,3 +480,62 @@ def test_signature_picks_the_entry_whose_main_name_is_the_gene(tmp_path, monkeyp
     assert [(r["gene"], r["cluster"], r["accession"]) for r in found[:2]] == [("AAA", "13", "P1"), ("BBB", "14", "P3")]
     assert found[-1]["resolved"] == "False"
     assert (tmp_path / "signature_proteins.fasta").read_text().count(">BBB") == 1  # listed twice, written once
+
+
+def test_pairing_reads_people_from_fields_and_titles(monkeypatch, tmp_path):
+    monkeypatch.chdir(tmp_path)
+    write(
+        tmp_path / "groups.tsv",
+        "dataset\tcomparison\tgroup\tsample\n"
+        + "".join(f"GSE111555\tmain\t{g}\tGSM{s}\n" for g, s in [(0, 1), (0, 2), (0, 3), (1, 4)])
+        + "".join(f"GSE83578\tmain\t{g}\tGSM{s}\n" for g, s in [(0, 5), (0, 6), (1, 7), (1, 8)])
+        + "".join(f"GSE104079\tmain\t{g}\tGSM{s}\n" for g, s in [(0, 9), (1, 10)])
+        + "".join(f"GSE28998\tmain\t{g}\tGSM{s}\n" for g, s in [(0, 11), (1, 12)])
+        + "GSE9\tmain\t0\tPre_S1\n",
+    )
+    write(
+        tmp_path / "pub.tsv",
+        "dataset\tpanel\tcomparison\tgroup0\tgroup1\n"
+        "GSE111555\t4D\tmain\tPre\tPost\nGSE83578\t4C\tmain\tPre\tPost\n"
+        "GSE104079\t4C\tmain\tPre\tPost\nGSE28998\t4D\tmain\tPre\tPost\nGSE9\t4D\tmain\tPre\tPost\nGSE83578\tTable S1\tmain\tPre\tPost\n",
+    )
+    write(
+        tmp_path / "plat.tsv",
+        "gse\ttype\nGSE111555\tarray\nGSE83578\tarray\nGSE104079\tarray\nGSE28998\tarray\nGSE9\tRNA-seq\n",
+    )
+    write(
+        tmp_path / "scores.tsv",
+        "gse\tcomparison\tgroup\tsample\tscore\n"
+        + "".join(f"GSE111555\tmain\tx\tGSM{s}\t{v}\n" for s, v in [(1, 0), (2, 3), (3, 1), (4, 2)]),
+    )
+    matrices = {
+        "GSE111555": [
+            '!Sample_geo_accession\t"GSM1"\t"GSM2"\t"GSM3"\t"GSM4"',
+            '!Sample_title\t"1Pa: RNA_baseline_1"\t"2Pa: RNA_baseline_2"\t"1Pb: RNA_posttraining_1"\t"2Pb: RNA_posttraining_2"',
+        ],
+        "GSE83578": [
+            '!Sample_geo_accession\t"GSM5"\t"GSM6"\t"GSM7"\t"GSM8"',
+            '!Sample_title\t"a"\t"b"\t"c"\t"d"',
+            '!Sample_characteristics_ch1\t"donor: x"\t"donor: y"\t"donor: x"\t"donor: z"',
+        ],
+        "GSE28998": [
+            '!Sample_geo_accession\t"GSM11"\t"GSM12"',
+            '!Sample_title\t"a"\t"b"',
+            '!Sample_characteristics_ch1\t"subject identifier: 1324"\t"subject identifier: 1324"',
+        ],
+        "GSE104079": ['!Sample_geo_accession\t"GSM9"\t"GSM10"', '!Sample_title\t"CTRL_replicate1"\t"EX_replicate1"'],
+    }
+    for gse, lines in matrices.items():
+        (tmp_path / "series" / gse).mkdir(parents=True)
+        with gzip.open(tmp_path / "series" / gse / f"{gse}_series_matrix.txt.gz", "wt") as f:
+            f.write("\n".join(lines) + "\n")
+    run(monkeypatch, "fig4/pairing.py", "groups.tsv", "pub.tsv", "plat.tsv", "scores.tsv", "series", "out.tsv")
+    found = {r["gse"]: r for r in rows(tmp_path / "out.tsv")}
+    assert set(found) == {"GSE111555", "GSE83578", "GSE104079", "GSE28998"}
+    assert found["GSE28998"]["design"] == "paired"
+    assert found["GSE104079"]["design"] == "unpaired"
+    assert (found["GSE83578"]["design"], found["GSE83578"]["people_in_both"]) == ("partly paired", "1")
+    title_case = found["GSE111555"]
+    assert (title_case["people_pre"], title_case["people_post"], title_case["people_in_both"]) == ("2", "1", "1")
+    assert title_case["most_samples_per_person_in_a_group"] == "2"
+    assert (title_case["pre_samples_titled_post"], title_case["auc_with_groups_from_titles"]) == ("1", "0.500")

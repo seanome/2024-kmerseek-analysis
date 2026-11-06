@@ -26,8 +26,9 @@ Build the R environment from `environment-r.yml`. `--rscript` is its `Rscript`. 
 
 | file | what it holds |
 |---|---|
-| `platforms.tsv` | each series' platform, type, median probe length, rule, k and `landing_share_of_sequenced_probes` |
-| `landing/` | each series' feature-to-protein table and `landing_share_of_sequenced_probes` |
+| `platforms.tsv` | each series' platform, type, median probe length, rule, k and `share_of_probes_with_a_kmer_in_proteome` |
+| `pairing.tsv` | who gave the samples in each comparison, made by `fig4/pairing.py` outside the pipeline |
+| `landing/` | each series' feature-to-protein table and `share_of_probes_with_a_kmer_in_proteome` |
 | `auc.tsv` | group sizes, published AUC, this test's AUC, Mann-Whitney p, verdicts |
 | `sample_scores.tsv` | each sample's score, as drawn in `fig4_panels.png` |
 | `annotation_control.tsv` | how many landings agree with the platform's gene names |
@@ -41,9 +42,9 @@ feature is what the series reports a value for. Each protein is standardised acr
 threshold, which splits the values at the best single step (Sahoo et al. 2007), as (value - (threshold + 0.5)) /
 (3 x sd), the formula in the brief and in PR 212's code. The score is -1 x the M1 mean + 1 x the M2 mean, and -1 x
 the M1 mean for GSE27536. `score_method` in `auc.tsv` is `stepminer_modified_z`. Mann-Whitney p tests whether post
-samples score differently from pre samples. It treats the samples as unrelated. Where one person gives both a pre
-and a post sample, it is not a paired test and the AUC compares groups, not each person with themselves. This
-work did not check which series are paired. All five series are already on a log or z scale, so
+samples score differently from pre samples. It treats the samples as unrelated, although most comparisons follow
+the same people: `pairing.tsv` gives the people in each group, and the AUC compares groups, not each person with
+themselves. All five series are already on a log or z scale, so
 `intensity_weight` here is that value minus the array's 5th percentile, floored at 0. GSE104079 holds z-scores with
 negative values, which `sketch` would refuse; `fig4/score.py` reads the series matrix directly.
 

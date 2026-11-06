@@ -1,4 +1,4 @@
-GSE	group_pair	n_pre	n_post	published_auc	reproduced_auc	mann_whitney_p	landing_share_of_sequenced_probes	m1_proteins_used	m2_proteins_used	auc_ghosh_weights	score_method	verdict	verdict_ghosh_weights
+GSE	group_pair	n_pre	n_post	published_auc	reproduced_auc	mann_whitney_p	share_of_probes_with_a_kmer_in_proteome	m1_proteins_used	m2_proteins_used	auc_ghosh_weights	score_method	verdict	verdict_ghosh_weights
 GSE104079	Pre vs 45 Min Post	16	13	0.18	0.495	0.983	0.0354	4	40	0.322	stepminer_modified_z	not reproduced	reproduced
 GSE27536	Pre vs Post	27	27	0.17	0.277	0.00507	0.0079	32	153	0.277	stepminer_modified_z	reproduced	reproduced
 GSE120862	Pre vs 1Hr and 4Hr Post			0.08							stepminer_modified_z	not covered by geo2kmers	not covered by geo2kmers

@@ -336,7 +336,7 @@ paper's two groups of genes. The second score was added after the plan: it puts 
 same number.
 
 Chance explains the planned score's count as well as the method does. For the second score, shuffled labels
-explain it and random features do not (`chance_test.tsv`, 1000 draws):
+do not rule out chance, and random features do (`chance_test.tsv`, 1000 draws):
 
 | score | comparisons passing | if the landings mean nothing (random features) | if the gene groups mean nothing (shuffled labels) |
 |---|---:|---|---|
@@ -352,12 +352,29 @@ passes in 43.5 % of random draws on the planned score, because its published 0.5
 
 The 7 comparisons are not 7 separate tests. GSE27536 and GSE28998 use one platform and have the same landing
 table, and the three GSE83578 comparisons share one pre group. The chance test keeps the GSE83578 comparisons
-tied together, with one shuffle for the series, but shuffles GSE27536 and GSE28998 separately.
+tied together, with one shuffle for the series, but shuffles GSE27536 and GSE28998 separately. Tying those two
+as well would make passes come together more often, so the share of draws with 6 or more would more likely rise
+above 19.3 % than fall below it. That would not help the second score. The change was not measured.
 
-The rule also asked that a series have a landing share of at least 0.2, and none does: they run from 0.0079 to
-0.0354, because the denominator is every probe with a sequence and the proteome is 262 proteins. This is
-`landing_share_of_sequenced_probes` in `platforms.tsv`, which is not the `landing_share` that `sketch` reports:
-that one divides by all probes in the intensity table.
+Five of the 7 comparisons follow the same people, which `auc.tsv` does not use (`results/fig4/pairing.tsv`, from
+`fig4/pairing.py`). GSE27536 has 27 people before and after, GSE28998 has the trained and untrained arm of 7
+people, and GSE83578 has 8 people, each giving a control and an LPS-treated sample at every time, so its 16
+samples per group are 8 people. In GSE111555, 10 of 16 people are in both groups. GSE104079 is unpaired, because
+each mouse had one treatment, but its groups pool liver and soleus. The AUC compares groups, so these rows say
+nothing about change within one person, and the Mann-Whitney p values treat samples from one person as unrelated.
+No verdict uses those p values.
+
+In GSE111555 the six samples 1Pb to 8Pb are called pretraining in GEO's source field and posttraining in their
+titles. The authors' groups follow the source field, and so do ours. Which is right was not settled. Grouping by
+title gives 16 samples in each group and an AUC of 0.762 in place of 0.786 on the planned score. That is 0.168
+from the published 0.93 and would fail the rule, so the planned count would be 2 of 7. `sample_scores.tsv` holds
+only the planned score, so the second score was not regrouped.
+
+The rule also asked that a series have a landing share of at least 0.2, and none does. The nearest number is
+`share_of_probes_with_a_kmer_in_proteome` in `platforms.tsv`: of the probes with a sequence, the share with at
+least one k-mer in the proteome, before the landing rule is applied. It runs from 0.0079 to 0.0354, because the
+proteome is 262 proteins. The share that truly land is lower still, so none reaches 0.2 either way. This is not
+the `landing_share` that `sketch` reports, which divides by all probes in the intensity table.
 So no series qualified, and the task passes under that rule without testing anything. That part of the rule
 was the wrong one, and the tables above are the real result. GSE120862, GSE99963 and GSE144304 are RNA-seq, which
 geo2kmers does not cover. The groups are those in the authors' code, which PR 212 found differ from what some

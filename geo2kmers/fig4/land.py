@@ -69,7 +69,7 @@ with open(f"{out}/{gse}.landing.tsv", "w") as f:
     f.writelines(f"{name}\t{p}\t{landed[name][p]}\n" for name in sorted(landed) for p in sorted(landed[name]))
 all_proteins = {protein for names in landed.values() for protein in names}
 median = float(np.median([len(s) for s in probes.values()]))
-columns = "gse gpl rule k median_probe_length probes probes_with_a_kmer_in_proteome landing_share_of_sequenced_probes features_landed proteins_landed orientation probes_with_a_kmer_as_given probes_with_a_kmer_complemented landings reversed_landings"
+columns = "gse gpl rule k median_probe_length probes probes_with_a_kmer_in_proteome share_of_probes_with_a_kmer_in_proteome features_landed proteins_landed orientation probes_with_a_kmer_as_given probes_with_a_kmer_complemented landings reversed_landings"
 values = [
     gse,
     gpl,
