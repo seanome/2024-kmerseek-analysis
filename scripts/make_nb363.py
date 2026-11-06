@@ -67,6 +67,7 @@ from pathlib import Path
 import matplotlib as mpl
 import numpy as np
 import polars as pl
+import seaborn as sns
 from matplotlib.lines import Line2D
 from matplotlib.patches import Rectangle
 
@@ -326,6 +327,64 @@ pf.save(fig, FIGURES / "bits_per_letter_human_mouse_vs_uhgp90")
 print(FIGURES / "bits_per_letter_human_mouse_vs_uhgp90.png")
 """)
 
+md(r"""
+## 4. Bits against k, one line per alphabet
+
+Each line is one alphabet, and its slope is that alphabet's bits per letter. A steep line reaches
+a given number of bits at a small k. To compare alphabets, go across at one height and read k off
+the bottom axis at each line. The legend lists alphabets from steepest to shallowest.
+
+Colours alone cannot separate 24 lines, so each line also has its own marker, drawn every 5 k.
+The 2-letter hydrophobic/polar lines nearly overlap because their bits per letter run only from
+0.94 to 1.00.
+""")
+
+code(r"""
+MAX_K = 70
+MARKER_EVERY_K = 5
+MARKERS = ("o", "s", "^", "D", "v", "P", "X", "<")
+HUE_STEP = 7  # 7 shares no factor with 24, so every alphabet gets its own hue
+steepest_first = sorted(ALPHABETS, key=BITS_PER_LETTER.get, reverse=True)
+hues = sns.color_palette("husl", len(steepest_first))
+alphabet_colours = {
+    a: hues[i * HUE_STEP % len(hues)] for i, a in enumerate(steepest_first)
+}
+
+with pl.Config(tbl_rows=-1, tbl_width_chars=120, float_precision=3):
+    print(letters.select("alphabet", "bits_per_letter").sort("bits_per_letter", descending=True))
+
+fig, ax = pf.figure(pf.TWO_COLUMN_MM, 140)
+ks = np.arange(0, MAX_K + 1)
+for i, alphabet in enumerate(steepest_first):
+    ax.plot(
+        ks,
+        ks * BITS_PER_LETTER[alphabet],
+        color=alphabet_colours[alphabet],
+        marker=MARKERS[i % len(MARKERS)],
+        markevery=(MARKER_EVERY_K, MARKER_EVERY_K),
+        label=f"{alphabet} ({BITS_PER_LETTER[alphabet]:.2f})",
+    )
+ax.axhline(REFERENCE_BITS, color="black", linestyle="--", linewidth=0.8, zorder=1)
+ax.set_xlim(0, MAX_K)
+ax.set_ylim(0, MAX_BITS)
+ax.set_xticks(range(0, MAX_K + 1, 5))
+ax.set_yticks(range(0, MAX_BITS + 1, 5))
+ax.grid(True, color="#d9d9d9", linewidth=0.3, zorder=0)
+ax.set_xlabel("k-mer size (k)")
+ax.set_ylabel("Bits per k-mer")
+handles, labels = ax.get_legend_handles_labels()
+handles.append(Line2D([], [], color="black", linestyle="--"))
+labels.append(f"{REFERENCE_BITS:.1f} bits: protein20, k = 7")
+fig.set_layout_engine(None)
+fig.subplots_adjust(left=0.06, right=0.985, top=0.835, bottom=0.07)
+fig.legend(
+    handles, labels, title="Alphabet (bits per letter)", loc="upper left",
+    bbox_to_anchor=(0.05, 1.0), ncol=4, frameon=False,
+)
+pf.save(fig, FIGURES / "bits_vs_ksize_by_alphabet_human_mouse")
+print(FIGURES / "bits_vs_ksize_by_alphabet_human_mouse.png")
+""")
+
 SUMMARY = r"""
 # Summary and Conclusions
 
@@ -366,7 +425,8 @@ notebook 300.
   `363_data/bits_per_letter_human_mouse_vs_uhgp90.tsv`.
 - Figures: `figures/363/alphabet_ksize_ruler_by_bits_human_mouse.png`,
   `figures/363/alphabet_ksize_lookup_table_by_bits_human_mouse.png`,
-  `figures/363/bits_per_letter_human_mouse_vs_uhgp90.png`.
+  `figures/363/bits_per_letter_human_mouse_vs_uhgp90.png`,
+  `figures/363/bits_vs_ksize_by_alphabet_human_mouse.png`.
 - Limits: positions are treated as independent, so real k-mers carry fewer bits than shown. The
   figures do not say whether a k can seed in a given protein. `cys2` is the clearest case: k = 195
   is longer than many proteins.
