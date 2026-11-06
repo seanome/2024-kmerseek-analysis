@@ -25,6 +25,9 @@ carried into pep.peptides.tsv by the search step's translate (column `direction`
 - dekupl_limma_p05: DE-kupl k-mers with limma p < 0.05 (raw_pvals.txt.gz), no fold-change
   cutoff, merged into contigs per direction (select_dekupl_nominal.py).
 - dekupl_deseq2_p05: the same with DE-kupl's DESeq2 test (19_dekupl_deseq2_p05.sbatch).
+- kamrat_ttest_p05_reads, kamrat_deseq2_p05_reads: the reads holding those KaMRaT contigs' k-mers in
+  place of the contigs (kamrat_reads.sbatch); a read carries its contig's direction. Listed last so
+  that the channels above keep their random streams.
 A channel whose search folder is missing is skipped. Each channel and contrast has its own random
 stream (seed [361, channel number, contrast number]), and the deciles and their genes are drawn
 in sorted order, so a rerun gives the same numbers. Before 2026-11-02 one stream was shared and
@@ -59,7 +62,8 @@ lists = pl.read_csv(named_lists, separator="\t")
 SEARCH = {"splash": "search_compactors", "anchor_nominal": "search_compactors_anchor_nominal",
           "kamrat_nominal": "search_kamrat_nominal", "kamrat_ttest_p05": "search_kamrat_p05",
           "kamrat_deseq2_p05": "search_kamrat_deseq2_p05", "dekupl_limma_p05": "search_dekupl_limma_p05",
-          "dekupl_deseq2_p05": "search_dekupl_deseq2_p05"}
+          "dekupl_deseq2_p05": "search_dekupl_deseq2_p05", "kamrat_ttest_p05_reads": "search_kamrat_p05_reads",
+          "kamrat_deseq2_p05_reads": "search_kamrat_deseq2_p05_reads"}
 
 
 # DE-kupl's own normalization factors for young_132d are broken (2 samples 0, 4 samples 1e219 to

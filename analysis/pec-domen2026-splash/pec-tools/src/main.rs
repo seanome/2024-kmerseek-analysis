@@ -5,10 +5,12 @@
 //! best-frame — per read, keep the one translated frame with the most Swiss-Prot k-mers
 //!              (orpheum's frame rule), for sketching reads.
 //! gene-counts — reads per gene per sample from protein k-mers.
+//! reads-holding — the reads that hold the k-mers of a set of contigs.
 //! simulate   — paired-end read simulator from a transcript FASTA with a planted
 //!              design (used only for the known-answer control).
 mod best_frame;
 mod gene_counts;
+mod reads_holding;
 
 use std::collections::HashMap;
 use std::fs::File;
@@ -576,7 +578,8 @@ fn main() -> Res<()> {
         Some("best-frame") => best_frame::cmd_best_frame(&args[2..]),
         Some("frame-scores") => best_frame::cmd_frame_scores(&args[2..]),
         Some("gene-counts") => gene_counts::cmd_gene_counts(&args[2..]),
-        _ => Err("usage: pec-tools <translate|simulate|anchor-counts|best-frame|gene-counts> ...".into()),
+        Some("reads-holding") => reads_holding::cmd_reads_holding(&args[2..]),
+        _ => Err("usage: pec-tools <translate|simulate|anchor-counts|best-frame|gene-counts|reads-holding> ...".into()),
     }
 }
 
