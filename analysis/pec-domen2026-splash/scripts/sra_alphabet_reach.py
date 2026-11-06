@@ -1,7 +1,10 @@
 #!/usr/bin/env python3
 """How far the paper's Botryllus list proteins reach into human reads, by alphabet (notebook 361).
 
-Usage: sra_alphabet_reach.py <search_all> <search_shuffled> <query_map.tsv> <runs.tsv> <out_dir>
+Usage: sra_alphabet_reach.py <search_all> <search_shuffled> <query_map.tsv> <runs.tsv> <out_dir> [settings] [tag]
+
+settings: comma list of alphabet:k; tag: the cutoff in the file names. Defaults: the six settings of job
+50793573 and ge0.1.
 
 For each protein and species, the score is its highest containment in any run with hashes at that
 setting. Containment = share of the protein's sketched k-mers found in the run. A protein passes when
@@ -19,8 +22,10 @@ from pathlib import Path
 import polars as pl
 
 real, shuffled, qmap, runs, out = Path(sys.argv[1]), Path(sys.argv[2]), sys.argv[3], sys.argv[4], Path(sys.argv[5])
+SETTINGS_ARG = sys.argv[6] if len(sys.argv) > 6 else "protein:6,protein:7,dayhoff:12,dayhoff:13,hp:27,hp:30"
+TAG = sys.argv[7] if len(sys.argv) > 7 else "ge0.1"
 out.mkdir(parents=True, exist_ok=True)
-SETTINGS = [("protein", 6), ("protein", 7), ("dayhoff", 12), ("dayhoff", 13), ("hp", 27), ("hp", 30)]
+SETTINGS = [(x.split(":")[0], int(x.split(":")[1])) for x in SETTINGS_ARG.split(",")]
 q = pl.read_csv(qmap, separator="\t", infer_schema_length=0).select("query", "gene", "set").unique()
 species = (pl.read_csv(runs, separator="\t", infer_schema_length=0)
            .select(pl.col("run").alias("match_name"), pl.when(pl.col("organism").str.contains("Homo")).then(pl.lit("human"))
@@ -35,8 +40,8 @@ def hashes(path, m, k):
 rows, genes, cuts = [], [], []
 for m, k in SETTINGS:
     query_ok = pl.concat([hashes(real / "queries.describe.csv", m, k), hashes(shuffled / "queries.describe.csv", m, k)])
-    run_ok = hashes(real / "runs.ge0.1.describe.csv", m, k)["name"]
-    d = pl.concat([pl.read_csv(p / f"ms.ge0.1.{m}.k{k}.csv", columns=["query_name", "match_name", "containment", "intersect_hashes"],
+    run_ok = hashes(real / f"runs.{TAG}.describe.csv", m, k)["name"]
+    d = pl.concat([pl.read_csv(p / f"ms.{TAG}.{m}.k{k}.csv", columns=["query_name", "match_name", "containment", "intersect_hashes"],
                                schema_overrides={"query_name": pl.String, "match_name": pl.String}) for p in (real, shuffled)])
     d = d.join(query_ok.rename({"name": "query_name"}), on="query_name").filter(pl.col("match_name").is_in(run_ok)).join(species, on="match_name")
     best = d.group_by("query_name", "species").agg(pl.col("containment").max().alias("score"), pl.col("intersect_hashes").max().alias("hashes"))
