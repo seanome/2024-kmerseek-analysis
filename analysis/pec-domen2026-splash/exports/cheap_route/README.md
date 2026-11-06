@@ -1,7 +1,8 @@
 # Plan: half the paper's genes, going the paper's way, at 1/1000th of SPLASH's cost (notebook 361)
 
-Asked 2026-11-04. Nothing below has run except the read-fraction table. Both the target and the
-rules are written before any test.
+Asked 2026-11-04. The target and rules were written before any test, and results were added below as
+they came, each with its date. The sections "Target", "Fewer reads alone cannot do it" and "Test,
+cheapest first" are kept as written on 2026-11-04, so they show what was planned.
 
 ## Why the control and human data look better than Botryllus
 
@@ -46,10 +47,12 @@ the paper's lists, right direction only (`all_reads/recovery.tsv`).
 | peak memory | 0.44 GB | 83.6 GB | 1/190 |
 
 This is the most genes this method finds with these settings, so under the stop rule the 1/10 and
-1/100 runs were not started. It still reaches more than any other route in the right direction: 207
+1/100 runs were not started then. They ran later, under new rules (2026-11-05, below). It still reaches more than any other route in the right direction: 207
 genes against 97 for DE-kupl with DESeq2, the next best, which covers only 10 of the lists. 131 M of
-449 M read pairs (29 %) went to a gene; 317 M (71 %) had no 3 matching k-mers, and 1.2 M tied. Swapped
-labels were not run. The paper's lists are uncorrected, so 439 may not be a fair target; the
+449 M read pairs (29 %) went to a gene; 317 M (71 %) had no 3 matching k-mers, and 1.2 M tied. These are
+trimmed pairs: fastp kept about 70 % of the 643.5 M pairs in the FASTQ. Thinned fractions below are
+fractions of these trimmed pairs, and the percentages in `../sizes/README.md` are of the FASTQ. Swapped
+labels were not run at this point. The paper's lists are uncorrected, so 439 may not be a fair target; the
 reference is being rebuilt with nf-core (`nextflow-runs/pec-domen2026-nfcore/`).
 
 ## After the stop: a second rule (2026-11-05)
@@ -62,9 +65,12 @@ Limits and the nf-core comparison: `../nfcore/README.md`.
 
 ## Target
 
+Written 2026-11-04. Since then gene-counts reached 207 of 878 with the summed rule and 522 of 878 with
+the mean rule, so the "best when written" column is out of date.
+
 Gene counted: on one of the paper's 12 lists, and reached by a sequence going the paper's way.
 
-| measure | needed | best today |
+| measure | needed | best when written |
 |---|---|---|
 | paper's genes, right direction | 439 of 878 | 97 of 792 (DE-kupl DESeq2, p < 0.05); no route has more than 12 % |
 | CPU, all six contrasts | 44 s | 12.1 h (SPLASH route: SPLASH, compactors, protein search) |
@@ -108,7 +114,7 @@ tell "PEC does nothing" from "too few reads to see it".
 
 ## Test, cheapest first
 
-The method: one small `pec-tools` command, not yet written. It translates each read in six frames,
+The method, as planned on 2026-11-04 and since written as `pec-tools gene-counts`: it translates each read in six frames,
 looks up protein k-mers in a small index of the old gene-model proteins, and counts reads per gene
 per sample. Counts are summed per group, so shallow samples weigh little. A gene gets a direction
 when it has 10 or more reads in each group or 10 or more in one and none in the other, and a 2-fold
@@ -168,7 +174,9 @@ swapped agreement with real agreement over all genes:
 
 ### Thinned reads: result, 2026-11-05
 
-No fraction passes (jobs 51223398, 51223401; `thin/`, `../nfcore/gain_vs_cost.png`). All reads are shown
+No fraction passes (jobs 51223398, 51223401; `thin/`, `../nfcore/gain_vs_cost.png`). `scripts/thin_reached.py`
+turns each `recovery.tsv` into its `reached.tsv`, and `scripts/plot_gain_vs_cost.py` reads those, so the
+table can be rebuilt from the files committed here. All reads are shown
 for comparison and use the `sample_mean` rule, which was written after the summed rule failed.
 
 | reads | paper's lists, right way | beat random | nf-core lists, right way | beat random | CPU | wall | memory |
@@ -193,6 +201,25 @@ Real rows match the earlier scores, 522 of 878 and 609 of 1,135.
 Question B: real labels 308 of 601 genes agree (51 %); swapped labels 1,129 of 1,951 (58 %). That is
 113 % of the real agreement, above the 80 % written beforehand, so **the agreement comes from shared
 counts, not from PEC.** gene-counts and DESeq2 agree about as well on made-up groups.
+
+The pooled share hides differences between contrasts (`swaps/swaps_real_vs_swapped.by_contrast.tsv`).
+The balanced column holds only swaps that flip half the counted pairs. The other 6 swaps flip 1 of 3,
+so more real pairs remain than flipped ones and they are weaker controls.
+
+| contrast | real labels | all swaps | balanced swaps |
+|---|---|---|---|
+| young 2 h | 92 of 231 (40 %) | 250 of 398 (63 %) | same 3 swaps |
+| young 24 h | 184 of 310 (59 %) | 680 of 1,278 (53 %) | same 3 swaps |
+| old 24 h | 3 of 8 | 6 of 7 | same 1 swap |
+| young 13-49 d | 3 of 6 | 9 of 20 (45 %) | none |
+| young 132 d | 25 of 43 (58 %) | 183 of 246 (74 %) | none |
+| old 41-93 d | 1 of 3 | 1 of 2 | same 1 swap |
+| all | 308 of 601 (51 %) | 1,129 of 1,951 (58 %) | 937 of 1,685 (56 %) |
+
+Balanced swaps alone give 109 % of the real agreement, so the reading does not change. Young 24 h and
+young 13-49 d agree more on real labels than swapped ones, by 6 and 5 points, and the rest agree less.
+One design, young 24 h swap_uneven, holds 751 of the 1,951 swapped genes; without it swapped agreement
+is 784 of 1,200 (65 %).
 
 Question A: right-way genes fall from 522 to about 200 of 878 on the paper's lists and from 609 to about
 109 of 1,135 on nf-core's, each contrast's swaps averaged. This is expected even in noise, because the

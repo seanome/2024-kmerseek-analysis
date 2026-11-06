@@ -9,7 +9,7 @@ direction), summed over the 12 lists. Dotted lines: 50 % of genes, and the 1/100
 Routes other than gene-counts add up their steps in all six contrasts, from resources.tsv; peak memory is
 the largest step. gene-counts: one `/usr/bin/time -v` run over all 47 samples, mean-of-samples rule; the
 line joins the same rule at more reads. <thin_dir> holds {old,new}.{10,100,1000}/gene_counts.time and
-{old,new}.{10,100,1000}.reached.tsv.
+{old,new}.{10,100,1000}.reached.tsv, written by thin_reached.py.
 Writes <out_stem>.tsv with every number drawn, and prints it.
 """
 import re

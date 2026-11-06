@@ -1,12 +1,14 @@
 #!/usr/bin/env python3
 """gene-counts and DESeq2 under real and swapped labels (notebook 361).
 
-Usage: plot_gene_counts_swaps.py <swaps.tsv> <out_stem>
+Usage: plot_gene_counts_swaps.py <swaps.tsv> <manifest.tsv> <out_stem>
 
 One row per contrast. a. Genes PyDESeq2 keeps at p <= 0.05 and 2-fold. b. Of those genes, the share
 gene-counts (mean of samples) gives the same direction, on the same labels. Black diamond: real labels.
 Open circle: one swapped design, which flips some but not all counted pairs.
-Writes <out_stem>.tsv with the totals, and prints it.
+Writes <out_stem>.tsv with the totals, and <out_stem>.by_contrast.tsv with agreement by contrast, for all
+swaps and for balanced ones (half the counted pairs flipped). A swap flipping 1 of 3 pairs leaves more
+real pairs than flipped ones, so some real signal stays in it. Prints both.
 """
 import sys
 from pathlib import Path
@@ -16,7 +18,7 @@ import pandas as pd
 sys.path.insert(0, str(Path(__file__).resolve().parents[3] / "notebooks"))
 import pubfig as pf  # noqa: E402
 
-swaps_tsv, out_stem = sys.argv[1:]
+swaps_tsv, manifest_tsv, out_stem = sys.argv[1:]
 NAMES = {"young_2h": "young 2 h", "young_24h": "young 24 h", "old_24h": "old 24 h", "young_13_49d": "young 13-49 d",
          "young_132d": "young 132 d", "old_41_93d": "old 41-93 d"}
 t = pd.read_csv(swaps_tsv, sep="\t")
@@ -26,6 +28,21 @@ g["pct_agree"] = 100 * g.agree / g.deseq2_genes
 g["designs"] = t.groupby("swapped").size()
 g.round(1).to_csv(f"{out_stem}.tsv", sep="\t")
 print(g.round(1))
+m = pd.read_csv(manifest_tsv, sep="\t")
+m["balanced"] = m.flipped.str.split().str.len() * 2 == m.counted_pairs
+t = t.merge(m[["key", "balanced"]], on="key", how="left")
+
+
+def agreement(d, name):
+    return {f"{name}_designs": len(d), f"{name}_genes": d.deseq2_genes.sum(), f"{name}_agree": d.agree.sum(),
+            f"{name}_pct": round(100 * d.agree.sum() / d.deseq2_genes.sum(), 1) if d.deseq2_genes.sum() else None}
+
+
+by = [dict(contrast=c, **agreement(d[~d.swapped], "real"), **agreement(d[d.swapped], "swapped"),
+           **agreement(d[d.balanced.eq(True)], "balanced")) for c, d in [*t.groupby("contrast", sort=False), ("all", t)]]
+by = pd.DataFrame(by)
+by.to_csv(f"{out_stem}.by_contrast.tsv", sep="\t", index=False)
+print(by.to_string(index=False))
 
 pf.use_style()
 fig, axs = pf.figure(pf.ONE_COLUMN_MM * 1.6, 62, ncols=2, sharey=True, layout="constrained")

@@ -62,7 +62,8 @@ On the simulated control the mean rule gets 292 of 300 planted genes right and 0
 - **It gives many genes a direction.** 34,138 of 140,726 gene-and-contrast pairs (24 %), so 1.8 % of
   those are on an nf-core list. The random gene test allows for this, but the rule is no gene finder.
   It has no test of spread between samples.
-- **Swapped labels were not run for it.**
+- **Swapped labels do not support it.** gene-counts agrees with PyDESeq2 as well on swapped labels as
+  on real ones (`../cheap_route/README.md`, "Swapped labels: result").
 - **Cost is not 1/1000.** gene-counts took 3.3 CPU h, 36 min and 0.43 GB against the SPLASH route's
-  12.1 h, 3.0 h and 83.6 GB: about 1/4 the CPU, 1/5 the time, 1/190 the memory. No thinned reads have
-  been tried.
+  12.1 h, 3.0 h and 83.6 GB: about 1/4 the CPU, 1/5 the time, 1/190 the memory. Thinned reads were then
+  tried, and no fraction passes (`../cheap_route/README.md`, "Thinned reads: result").
