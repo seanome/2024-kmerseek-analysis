@@ -454,71 +454,107 @@ print(FIGURES / "bits_vs_ksize_by_alphabet_human_mouse.png")
 """)
 
 md(r"""
-## 5. k against bits, for when you set the bits
+## 5. Lines and rulers on one bits axis
 
-This is section 4 with the axes swapped, for choosing the bits first. Pick the bits on the bottom
-axis, go straight up, and read k off the left axis at each line. A steep line needs a large k. The
-dashed line is protein20 at k = 7. Colour shows how many letters the alphabet has, as in section
-1, and each line is named at the right edge, or at the top for `cys2`, which leaves the plot at
-about 10 bits.
+Both panels share the bits axis, so one vertical line runs through both. Use panel a to see the
+relationship: each line is one alphabet, and a steeper line means fewer bits per letter, so that
+alphabet needs a larger k for the same bits. Use panel b to read the exact k: pick the bits, go
+straight down, and read the number on each ruler.
+
+Rows run from the fewest bits per letter at the top to the most at the bottom, the same order as
+the lines in panel a. The dashed line is protein20 at k = 7.
 """)
 
 code(r"""
-LABEL_GAP_K_SIDE = 1.35  # smallest space between two line labels, on the k axis
-LABEL_X = MAX_BITS + 3
+COMBINED_LABEL_STEPS = (1, 2, 5, 10, 20)
+MIN_COMBINED_LABEL_BITS = 1.5  # bits between labelled ticks, so labels do not touch at 5 pt
+GROUP_GAP_ROWS = 0.7  # extra blank rows between letter-count groups
+LINE_PANEL_MM = 38
+RULER_PANEL_MM = 122
+FIGURE_MM = 170
 
 
-def draw_ksize_vs_bits(bits_per_letter, frequency_source, stem):
-    # Draw k against bits, one line per alphabet, each named where it leaves the plot.
-    reference_bits = PROTEIN_K * bits_per_letter["protein20"]
-    reach_right = sorted(
-        (a for a in ALPHABETS if MAX_BITS / bits_per_letter[a] <= MAX_K),
-        key=lambda a: MAX_BITS / bits_per_letter[a],
+def ruler_rows(bits_per_letter):
+    # Rows from most bits per letter (row 0, bottom) to fewest, with a gap between groups.
+    rows = {}
+    y = 0.0
+    previous_group = None
+    for alphabet in sorted(ALPHABETS, key=lambda a: -bits_per_letter[a]):
+        group = fu.alphabet_size_group(alphabet)
+        if previous_group is not None and group != previous_group:
+            y += GROUP_GAP_ROWS
+        rows[alphabet] = y
+        previous_group = group
+        y += 1
+    return rows
+
+
+def draw_rulers(ax, bits_per_letter, rows):
+    # One ruler per alphabet, with a tick at each whole k and a number on the larger ticks.
+    for alphabet, y in rows.items():
+        per_letter = bits_per_letter[alphabet]
+        colour = GROUP_COLOURS[fu.alphabet_size_group(alphabet)]
+        ax.hlines(y, 0, MAX_BITS, color=colour, linewidth=0.5, zorder=2)
+        label_step = first_step(COMBINED_LABEL_STEPS, per_letter, MIN_COMBINED_LABEL_BITS)
+        tick_step = first_step(COMBINED_LABEL_STEPS, per_letter, MIN_TICK_BITS)
+        for k in range(tick_step, int(MAX_BITS / per_letter) + 1, tick_step):
+            labelled = k % label_step == 0
+            half_height = 0.2 if labelled else 0.1
+            x = k * per_letter
+            ax.vlines(x, y - half_height, y + half_height, color=colour, linewidth=0.5, zorder=2)
+            if labelled:
+                ax.text(
+                    x, y + 0.2, str(k), ha="center", va="bottom", fontsize=K_LABEL_PT, zorder=4,
+                    bbox=dict(facecolor="white", edgecolor="none", pad=0.2),
+                )
+    ax.set_yticks(
+        list(rows.values()), [f"{a} ({bits_per_letter[a]:.2f})" for a in rows]
     )
-    reach_top = [a for a in ALPHABETS if a not in reach_right]
-    right_edge_k = [MAX_BITS / bits_per_letter[a] for a in reach_right]
-    label_k_side = spread_labels(right_edge_k, LABEL_GAP_K_SIDE, MAX_K + 2)
+    ax.set_ylim(-0.5, max(rows.values()) + 0.8)
+    ax.tick_params(axis="x", top=True, labeltop=True)
+    ax.set_xlabel("Bits per k-mer")
+    ax.set_ylabel("Alphabet (bits per letter)")
 
-    fig, ax = pf.figure(pf.TWO_COLUMN_MM, 150)
+
+def draw_lines_and_rulers(bits_per_letter, frequency_source, stem):
+    # Stack lines over rulers on one bits axis: relationship above, exact k below.
+    reference_bits = PROTEIN_K * bits_per_letter["protein20"]
+    rows = ruler_rows(bits_per_letter)
+    fig, (line_ax, ruler_ax) = pf.figure(
+        pf.TWO_COLUMN_MM,
+        FIGURE_MM,
+        nrows=2,
+        sharex=True,
+        gridspec_kw={"height_ratios": [LINE_PANEL_MM, RULER_PANEL_MM]},
+    )
     bits = np.array([0, MAX_BITS])
-    for alphabet in ALPHABETS:
-        ax.plot(
+    for alphabet in rows:
+        line_ax.plot(
             bits,
             bits / bits_per_letter[alphabet],
             color=GROUP_COLOURS[fu.alphabet_size_group(alphabet)],
+            linewidth=0.7,
         )
-    for alphabet, end_k, text_k in zip(reach_right, right_edge_k, label_k_side):
-        ax.annotate(
-            alphabet,
-            xy=(MAX_BITS, end_k),
-            xytext=(LABEL_X, text_k),
-            ha="left",
-            va="center",
-            fontsize=K_LABEL_PT,
-            annotation_clip=False,
-            arrowprops=dict(
-                arrowstyle="-", color=pf.GREY, linewidth=0.3, shrinkA=1, shrinkB=0, relpos=(0, 0.5)
-            ),
-        )
-    for alphabet in reach_top:
-        ax.text(
-            MAX_K * bits_per_letter[alphabet],
-            MAX_K + 0.8,
-            alphabet,
-            ha="center",
-            va="bottom",
-            fontsize=K_LABEL_PT,
-        )
-    ax.axvline(reference_bits, color="black", linestyle="--", linewidth=0.8, zorder=1)
-    ax.set_xlim(0, MAX_BITS)
-    ax.set_ylim(0, MAX_K)
-    ax.set_xticks(range(0, MAX_BITS + 1, 5))
-    ax.set_yticks(range(0, MAX_K + 1, 5))
-    ax.grid(True, color="#d9d9d9", linewidth=0.3, zorder=0)
-    ax.set_xlabel("Bits per k-mer")
-    ax.set_ylabel("k-mer size (k)")
+    leaves_at = MAX_K * bits_per_letter["cys2"]
+    line_ax.text(
+        leaves_at + 1,
+        MAX_K - 5,
+        f"cys2 leaves at {leaves_at:.1f} bits: see top row of b",
+        va="center",
+        fontsize=K_LABEL_PT,
+    )
+    line_ax.set_ylim(0, MAX_K)
+    line_ax.set_yticks(range(0, MAX_K + 1, 10))
+    line_ax.set_ylabel("k-mer size (k)")
+    line_ax.yaxis.grid(True, color="#d9d9d9", linewidth=0.3, zorder=0)
+    draw_rulers(ruler_ax, bits_per_letter, rows)
+    for ax in (line_ax, ruler_ax):
+        ax.axvline(reference_bits, color="black", linestyle="--", linewidth=0.8, zorder=3)
+        ax.xaxis.grid(True, color="#d9d9d9", linewidth=0.3, zorder=0)
+    ruler_ax.set_xlim(0, MAX_BITS)
+    ruler_ax.set_xticks(range(0, MAX_BITS + 1, 5))
     fig.set_layout_engine(None)
-    fig.subplots_adjust(left=0.06, right=0.86, top=0.935, bottom=0.07)
+    fig.subplots_adjust(left=0.2, right=0.985, top=0.955, bottom=0.05, hspace=0.1)
     reference_handle = Line2D(
         [], [], color="black", linestyle="--",
         label=f"{reference_bits:.1f} bits: protein20, k = {PROTEIN_K}",
@@ -526,18 +562,20 @@ def draw_ksize_vs_bits(bits_per_letter, frequency_source, stem):
     fig.legend(
         handles=handles[:-1] + [reference_handle],
         loc="upper left",
-        bbox_to_anchor=(0.05, 1.005),
+        bbox_to_anchor=(0.19, 1.003),
         ncol=5,
         frameon=False,
     )
     fig.text(
         0.985,
-        0.998,
+        0.967,
         f"Letter frequencies: {frequency_source}",
         ha="right",
-        va="top",
-        fontsize=mpl.rcParams["legend.fontsize"],
+        va="bottom",
+        fontsize=K_LABEL_PT,
     )
+    for ax, letter in zip((line_ax, ruler_ax), "ab"):
+        pf.panel_label(ax, letter)
     pf.save(fig, FIGURES / stem)
     print(FIGURES / f"{stem}.png")
 
@@ -553,9 +591,11 @@ with pl.Config(tbl_rows=-1, tbl_width_chars=120, float_precision=3):
             .map_elements(lambda a: ou.ksize_for_bits(a, MAX_BITS), return_dtype=pl.Int64)
             .alias(f"k_at_{MAX_BITS}_bits"),
         )
-        .sort("bits_per_letter", descending=True)
+        .sort("bits_per_letter")
     )
-draw_ksize_vs_bits(BITS_PER_LETTER, "human + mouse", "ksize_vs_bits_by_alphabet_human_mouse")
+draw_lines_and_rulers(
+    BITS_PER_LETTER, "human + mouse", "ksize_by_bits_lines_and_rulers_human_mouse"
+)
 """)
 
 md(r"""
@@ -637,10 +677,10 @@ draw_bits_comparison(
 draw_lookup_table(
     swissprot_lookup, SWISSPROT_LABEL, "alphabet_ksize_lookup_table_by_bits_swissprot"
 )
-draw_ksize_vs_bits(
+draw_lines_and_rulers(
     {a: ou.entropy_per_symbol(a, SWISSPROT) for a in ALPHABETS},
     SWISSPROT_LABEL,
-    "ksize_vs_bits_by_alphabet_swissprot",
+    "ksize_by_bits_lines_and_rulers_swissprot",
 )
 """)
 
@@ -695,10 +735,10 @@ notebook 300.
   `figures/363/alphabet_ksize_lookup_table_by_bits_human_mouse.png`,
   `figures/363/bits_per_letter_human_mouse_vs_uhgp90.png`,
   `figures/363/bits_vs_ksize_by_alphabet_human_mouse.png`,
-  `figures/363/ksize_vs_bits_by_alphabet_human_mouse.png`,
+  `figures/363/ksize_by_bits_lines_and_rulers_human_mouse.png`,
   `figures/363/bits_per_letter_human_mouse_vs_swissprot.png`,
   `figures/363/alphabet_ksize_lookup_table_by_bits_swissprot.png`,
-  `figures/363/ksize_vs_bits_by_alphabet_swissprot.png`.
+  `figures/363/ksize_by_bits_lines_and_rulers_swissprot.png`.
 - Limits: positions are treated as independent, so real k-mers carry fewer bits than shown. The
   figures do not say whether a k can seed in a given protein. `cys2` is the clearest case: k = 195
   is longer than many proteins.
