@@ -14,6 +14,7 @@ One row per label set, route, gene group and direction:
   kept_same_way         hold a k-mer of a kept contig going the same way as the list
 Gene group `list` is the paper's list; `all` is every gene with a protein in that contrast's DESeq2
 sheet, direction `any`.
+Also writes <out>.genes.tsv: one row per list gene (contrast, direction, gene, baseMean, in_table).
 """
 import gzip
 import sys
@@ -82,7 +83,7 @@ def holders(contigs):
 deseq = pl.read_parquet(root / "paper/paper_deseq_all.parquet", columns=["Gene_ID", "baseMean", "contrast"])
 lists = pl.read_csv(root / "paper/paper_named_lists.tsv", separator="\t")
 have = set(gene_of.values())
-rows = []
+rows, per_gene = [], []
 man = pl.read_csv(manifest, separator="\t").filter(pl.col("contrast").is_in(CONTRASTS))
 for c in CONTRASTS:
     with gzip.open(root / "contrasts" / c / "kamrat_ttest/contigs_all.tsv.gz", "rt") as f:
@@ -90,6 +91,10 @@ for c in CONTRASTS:
         table = holders(line.split("\t")[col] for line in f)
     print(c, "genes holding a table k-mer", len(table), flush=True)
     pool = set(deseq.filter((pl.col("contrast") == c) & pl.col("baseMean").is_not_null())["Gene_ID"]) & have
+    mean = dict(deseq.filter(pl.col("contrast") == c).select("Gene_ID", "baseMean").iter_rows())
+    for w in ("up", "down"):
+        for g in sorted(set(lists.filter((pl.col("contrast") == c) & (pl.col("direction") == w))["gene_id"]) & pool):
+            per_gene.append(dict(contrast=c, direction=w, gene=g, baseMean=mean[g], in_table=g in table))
     sets = [("real", "kamrat_ttest_p05", root / "contrasts" / c / "kamrat_p05"), ("real", "kamrat_deseq2_p05", root / "contrasts" / c / "kamrat_deseq2_p05")]
     sets += [(f, "kamrat_deseq2_p05", root / "label_swap" / c / f / "kamrat_deseq2_p05") for f in man.filter(pl.col("contrast") == c)["flip"]]
     for run, route, d in sets:
@@ -104,4 +109,5 @@ for c in CONTRASTS:
                          kept_either_way=len(pool & either), kept_same_way=len(pool & either)))
         print(rows[-1], flush=True)
 pl.DataFrame(rows).write_csv(out, separator="\t")
+pl.DataFrame(per_gene).write_csv(f"{out}.genes.tsv", separator="\t")
 print("wrote", out)
