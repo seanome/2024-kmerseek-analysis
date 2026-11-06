@@ -79,22 +79,23 @@ traces in `/scratch/users/olgabot/nb361-pec/nfcore/` (jobs 51082907, 51207126). 
 
 The times above are neither a real waiting time nor one job's time. Each step uses its own threads, and
 the steps' wall times are added as if they ran one after the other. All routes here start at the FASTQ
-and include trimming. The KaMRaT and SPLASH rows include the protein search, which the figure above
+and include trimming: nf-core used the routes' fastp-trimmed reads, so fastp's 3.5 CPU h and 0.61 h are
+added to its rows. The KaMRaT and SPLASH rows include the protein search, which the figure above
 leaves out, so they are larger than its 5.76 h and 2.11 h. SPLASH has no search record for young 132 d.
 
 | route | CPU h | wall h, added up | peak GB |
 |---|---|---|---|
-| nf-core, all steps and QC reports | 83.2 | 21.5 | 25.4 |
-| trim, STAR, RSEM, DESeq2 | 67.1 | 8.3 | 18.1 |
+| nf-core, all steps and QC reports | 86.7 | 22.1 | 25.4 |
+| trim, STAR, RSEM, DESeq2 | 70.6 | 8.9 | 18.1 |
 | KaMRaT, DESeq2, protein search | 31.7 | 6.9 | 25.2 |
 | KaMRaT, t-test, protein search | 23.4 | 5.9 | 25.2 |
 | SPLASH, protein search | 15.6 | 3.7 | 83.6 |
 | gene-counts | 6.8 | 1.2 | 1.4 |
 
 - nf-core ran 47 samples side by side, so a user waited less than its added-up time: 3.6 h with at least
-  one task running for all of it, 2.5 h for trimming, indexes, STAR and RSEM. The k-mer routes were not
+  one task running for all of it, 2.5 h for indexes, STAR and RSEM, both without fastp. The k-mer routes were not
   timed this way, so there is no matching waiting time for them.
-- STAR is 62.1 of the 83.2 CPU h. The 18.1 GB is building the STAR index; alignment itself peaks at 12.8 GB.
+- STAR is 62.1 of the 86.7 CPU h. The 18.1 GB is building the STAR index; alignment itself peaks at 12.8 GB.
 - DE-kupl's k-mer counting and limma test are 17.6 of KaMRaT's 23.4 CPU h, and the limma test is not
   needed by KaMRaT. KaMRaT's index, t-test and merge take 2.1 h on one CPU.
 - gene-counts is a lead, not a replacement: see `../nfcore/README.md`. It also needs a proteome.

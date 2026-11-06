@@ -2,6 +2,7 @@
 # 47 PEC samples of notebook 361, as the reference for its k-mer routes. Runs on Sherlock.
 #
 #   make run       the Nextflow head job, rnaseq then differentialabundance
+#   make run-salmon  the same with Salmon in place of STAR + RSEM, in its own folder, for its cost
 #   make watch     attach to the live table (detach: Ctrl-b d)
 #   make stop      ask the run to shut down cleanly
 #   make running   every Nextflow run in the queue
@@ -15,15 +16,24 @@ OUT ?= $(PEC_ROOT)/nfcore
 HERE := $(abspath $(dir $(firstword $(MAKEFILE_LIST))))
 HEAD_JOBNAME ?= nf-pec361-nfcore
 HEAD_SESSION ?= pec361nfcore
+RNASEQ_PARAMS ?= params-rnaseq.yaml
+COUNTS ?= star_rsem/rsem.merged.gene_counts.tsv
 
-.PHONY: run watch stop running
+.PHONY: run run-salmon watch watch-salmon stop running
 
 run:
 	mkdir -p $(OUT)/design
 	$(PEC_ROOT)/env/bin/python $(HERE)/make_design.py $(HERE)/../../analysis/pec-domen2026-splash/design $(PEC_ROOT)/trimmed $(OUT)/design
 	cd $(OUT) && ml load biology nextflow && NF_HEAD_DETACH=1 HEAD_ACCOUNT=ayeletv HEAD_PARTITION=normal,hns HEAD_QOS=normal \
 	  HEAD_TIME=2-00:00:00 HEAD_CPUS=2 HEAD_MEM=8G HEAD_SESSION=$(HEAD_SESSION) HEAD_JOBNAME=$(HEAD_JOBNAME) \
-	  $(HERE)/../../scripts/nf-head $(HERE)/run_pipelines.sh $(HERE) $(OUT) $(NEXTFLOW) $(PEC_ROOT)/env/bin/python
+	  $(HERE)/../../scripts/nf-head $(HERE)/run_pipelines.sh $(HERE) $(OUT) $(NEXTFLOW) $(PEC_ROOT)/env/bin/python $(RNASEQ_PARAMS) $(COUNTS)
+
+run-salmon:
+	$(MAKE) run OUT=$(PEC_ROOT)/nfcore_salmon HEAD_JOBNAME=nf-pec361-salmon HEAD_SESSION=pec361salmon \
+	  RNASEQ_PARAMS=params-rnaseq-salmon.yaml COUNTS=salmon/salmon.merged.gene_counts.tsv
+
+watch-salmon:
+	$(MAKE) watch HEAD_JOBNAME=nf-pec361-salmon HEAD_SESSION=pec361salmon
 
 watch:
 	@jid=$$(squeue -u $$USER -h -n $(HEAD_JOBNAME) -o "%i %T" | awk '$$2=="RUNNING"{print $$1; exit}'); \
