@@ -80,6 +80,32 @@ AA_FREQUENCIES: dict[str, float] = {
     "W": 0.011940,
 }
 
+# Swiss-Prot release 2026_03: 575,748 sequences, 209,008,777 standard-amino-acid residues after
+# excluding X/U/B/Z/O (9,066 residues). Written by scripts/count_swissprot_amino_acids.py into
+# notebooks/363_data/swissprot_2026_03_amino_acid_counts.tsv. Computed 2026-11-06.
+SWISSPROT_AA_FREQUENCIES: dict[str, float] = {
+    "L": 0.096469,
+    "A": 0.082565,
+    "G": 0.070727,
+    "V": 0.068543,
+    "E": 0.067137,
+    "S": 0.066663,
+    "I": 0.059035,
+    "K": 0.057951,
+    "R": 0.055280,
+    "D": 0.054631,
+    "T": 0.053679,
+    "P": 0.047523,
+    "N": 0.040650,
+    "Q": 0.039335,
+    "F": 0.038691,
+    "Y": 0.029250,
+    "M": 0.024115,
+    "H": 0.022796,
+    "C": 0.013896,
+    "W": 0.011063,
+}
+
 # Amino-acid -> symbol groupings for every alphabet kmerseek's pipeline supports, transcribed
 # directly from kmerseek's own encoding tables (kmerseek/src/rust/hp_alphabets.rs for the 6
 # named hp_* variants; REFERENCE_sourmash/src/core/src/encodings.rs for protein/dayhoff/hp) --
@@ -104,32 +130,79 @@ ALPHABET_AA_GROUPS: dict[str, dict[str, str]] = {
     "hp_thomas_dill_no_c": {"h": "AFILMVWY", "p": "CDEGHKNPQRST"},
 }
 
+# Every alphabet kmerseek can index with, under the name its --moltype option takes, as lists of
+# residues in the same class. Copied from src/rust/alphabets.rs at seanome/kmerseek main 0643254
+# (0.5.0, 2026-11-03); dayhoff6 is sourmash's Dayhoff table.
+KMERSEEK_ALPHABET_CLUSTERS: dict[str, list[str]] = {
+    "cys2": ["C", "ADEFGHIKLMNPQRSTVWY"],
+    "hp_kyte_doolittle2": ["ACFILMV", "DEGHKNPQRSTWY"],
+    "hp_lehninger2": ["AFGILMPVWY", "CDEHKNQRST"],
+    "hp_lehninger_c_nonpolar2": ["ACFGILMPVWY", "DEHKNQRST"],
+    "hp_pbotc_1st_ed2": ["ACFILMPVWY", "DEGHKNQRST"],
+    "hp_thomas_dill2": ["ACFILMVWY", "DEGHKNPQRST"],
+    "hp_thomas_dill_no_c2": ["AFILMVWY", "CDEGHKNPQRST"],
+    "hp_lehninger_hpc3": ["AFGILMPVWY", "DEHKNQRST", "C"],
+    "hp_pbotc_1st_ed_hpc3": ["AFILMPVWY", "DEGHKNQRST", "C"],
+    "aro_hyd_chg_pol4": ["FWY", "AILMV", "DEKR", "SCGHNPQT"],
+    "gbmr4": ["ADKERNTSQ", "YFLIVMCWH", "G", "P"],
+    "polarity4": ["GAVLIFWMP", "STCYNQ", "DE", "HKR"],
+    "aro_hyd_arg_chg_pol5": ["FWY", "AILMV", "R", "DEK", "SCGHNPQT"],
+    "wwmj5": ["CMFILVWY", "ATH", "GP", "DE", "SNQRK"],
+    "dayhoff6": ["C", "AGPST", "DENQ", "HKR", "ILMV", "FWY"],
+    "gbmr7": ["DN", "AEFIKLMQRVWY", "CH", "T", "S", "G", "P"],
+    "funcgroups8": ["GVALI", "ST", "CM", "FY", "WHP", "NQ", "DE", "KR"],
+    "mmseqs12": ["AST", "LM", "IV", "KR", "EQ", "ND", "FY", "C", "G", "H", "P", "W"],
+    "sdm12": ["A", "D", "KER", "N", "TSQ", "YF", "LIVM", "C", "W", "H", "G", "P"],
+    "wass14": list("PCKTGLYF") + ["WM", "DI", "AV", "RE", "SH", "NQ"],
+    "hsdm17": list("ADRNTSQYFMCWHGP") + ["KE", "LIV"],
+    "massspec18": list("ACDEFGHMNPRSTVWY") + ["IL", "QK"],
+    "uniprot18": list("ARNDCQGIKMFSTWYV") + ["EP", "HL"],
+    "protein20": list("ACDEFGHIKLMNPQRSTVWY"),
+}
+ALPHABET_AA_GROUPS |= {
+    alphabet: {cluster: cluster for cluster in clusters}
+    for alphabet, clusters in KMERSEEK_ALPHABET_CLUSTERS.items()
+}
 
-def entropy_per_symbol(encoding: str) -> float:
+
+def entropy_per_symbol(
+    encoding: str, frequencies: dict[str, float] = AA_FREQUENCIES
+) -> float:
     """Shannon entropy (bits) of one encoded symbol under *encoding*, from the REAL amino-acid
-    background frequency (:data:`AA_FREQUENCIES`) grouped the way kmerseek actually groups it
+    background *frequencies* (human + mouse :data:`AA_FREQUENCIES` unless given, such as
+    :data:`SWISSPROT_AA_FREQUENCIES`) grouped the way kmerseek actually groups it
     (:data:`ALPHABET_AA_GROUPS`) -- not `log2(n_symbols)`, which assumes every symbol is equally
     likely and overstates every alphabet coarser than `protein` (e.g. every 2-letter HP alphabet
     has naive entropy exactly 1.0 bit, but real entropy ranges 0.94-1.00 bits depending on how
     balanced that specific H/P split happens to fall against real amino-acid usage).
     """
     groups = ALPHABET_AA_GROUPS[encoding]
+    total = sum(frequencies.values())  # rounded frequencies do not sum to exactly 1
     ent = 0.0
     for aas in groups.values():
-        p = sum(AA_FREQUENCIES[aa] for aa in aas)
+        p = sum(frequencies[aa] for aa in aas) / total
         if p > 0:
             ent -= p * math.log2(p)
     return ent
 
 
-def bits_per_kmer(encoding: str, ksize: int) -> float:
+def bits_per_kmer(
+    encoding: str, ksize: int, frequencies: dict[str, float] = AA_FREQUENCIES
+) -> float:
     """Bits of sequence information in one k-mer under *encoding* (`ksize * entropy_per_symbol`,
     the standard iid-positions approximation). The fair x-axis for comparing alphabets of
     different symbol-cardinality: e.g. HP k=30 (30 x ~0.97 bit =~29 bits) and protein k=7
     (7 x ~4.18 bit =~29 bits) carry roughly the same raw information despite a 4x difference in
     raw k, which is invisible if you only plot against k-size.
     """
-    return ksize * entropy_per_symbol(encoding)
+    return ksize * entropy_per_symbol(encoding, frequencies)
+
+
+def ksize_for_bits(
+    encoding: str, bits: float, frequencies: dict[str, float] = AA_FREQUENCIES
+) -> int:
+    """The k whose k-mer under *encoding* carries closest to *bits* bits, at least 1."""
+    return max(1, round(bits / entropy_per_symbol(encoding, frequencies)))
 
 
 KSIZE = 24
