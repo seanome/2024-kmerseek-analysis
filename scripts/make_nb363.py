@@ -39,6 +39,7 @@ number of bits, which k does each of kmerseek's 24 alphabets need?
 
 **Decision this informs.** Which k to run for each alphabet when a comparison should give every
 alphabet the same information per k-mer, and whether one lookup can be reused for any proteome.
+Section 6 gives the same lookup with Swiss-Prot frequencies.
 
 **Decision rule, written before the results.** Notebook 300 measured bits per letter on a gut
 protein database (UHGP-90). If the k for 29.2 bits differs by at most 1 between that database and
@@ -195,62 +196,91 @@ one letter's bits, so alphabets with more bits per letter miss by more.
 
 code(r"""
 TARGET_BITS = list(range(10, 65, 5))
-lookup = pl.DataFrame(
-    [
-        {
-            "alphabet": a,
-            "n_letters": len(ou.KMERSEEK_ALPHABET_CLUSTERS[a]),
-            "target_bits": t,
-            "ksize": ou.ksize_for_bits(a, t),
-            "bits_at_ksize": ou.bits_per_kmer(a, ou.ksize_for_bits(a, t)),
-        }
-        for a in ROW_POSITIONS
-        for t in TARGET_BITS
-    ]
-).with_columns((pl.col("bits_at_ksize") - pl.col("target_bits")).alias("bits_over_target"))
-lookup.write_csv(DATA / "alphabet_ksize_lookup_by_bits_human_mouse.tsv", separator="\t")
-wide = lookup.pivot(on="target_bits", index="alphabet", values="ksize")
-wide = wide.rename({str(t): f"{t} bits" for t in TARGET_BITS})
-with pl.Config(tbl_rows=-1, tbl_cols=-1, tbl_width_chars=130):
-    print(wide)
 
-largest_miss = lookup["bits_over_target"].abs().max()
-print(lookup.sort(pl.col("bits_over_target").abs(), descending=True).head(3))
-norm = mpl.colors.Normalize(-largest_miss, largest_miss)
-cmap = mpl.colormaps["RdBu_r"]
-fig, ax = pf.figure(pf.TWO_COLUMN_MM, 120)
-for row in lookup.iter_rows(named=True):
-    x = TARGET_BITS.index(row["target_bits"])
-    y = ROW_POSITIONS[row["alphabet"]]
-    ax.add_patch(
-        Rectangle(
-            (x - 0.5, y - 0.5), 1, 1, facecolor=cmap(norm(row["bits_over_target"])),
-            edgecolor="white", linewidth=0.5,
+
+def lookup_by_bits(frequencies):
+    # One row per alphabet and target bits: the closest k and how far it lands from the target.
+    rows = []
+    for a in ROW_POSITIONS:
+        for t in TARGET_BITS:
+            ksize = ou.ksize_for_bits(a, t, frequencies)
+            rows.append(
+                {
+                    "alphabet": a,
+                    "n_letters": len(ou.KMERSEEK_ALPHABET_CLUSTERS[a]),
+                    "target_bits": t,
+                    "ksize": ksize,
+                    "bits_at_ksize": ou.bits_per_kmer(a, ksize, frequencies),
+                }
+            )
+    return pl.DataFrame(rows).with_columns(
+        (pl.col("bits_at_ksize") - pl.col("target_bits")).alias("bits_over_target")
+    )
+
+
+def print_lookup(lookup):
+    # Print the k for each alphabet and target, then the three largest misses.
+    wide = lookup.pivot(on="target_bits", index="alphabet", values="ksize")
+    wide = wide.rename({str(t): f"{t} bits" for t in TARGET_BITS})
+    with pl.Config(tbl_rows=-1, tbl_cols=-1, tbl_width_chars=130):
+        print(wide)
+    print(lookup.sort(pl.col("bits_over_target").abs(), descending=True).head(3))
+
+
+def draw_lookup_table(lookup, frequency_source, stem):
+    # Draw the table of closest k, coloured by how far each k lands from its column's target.
+    largest_miss = lookup["bits_over_target"].abs().max()
+    norm = mpl.colors.Normalize(-largest_miss, largest_miss)
+    cmap = mpl.colormaps["RdBu_r"]
+    fig, ax = pf.figure(pf.TWO_COLUMN_MM, 120)
+    for row in lookup.iter_rows(named=True):
+        x = TARGET_BITS.index(row["target_bits"])
+        y = ROW_POSITIONS[row["alphabet"]]
+        ax.add_patch(
+            Rectangle(
+                (x - 0.5, y - 0.5), 1, 1, facecolor=cmap(norm(row["bits_over_target"])),
+                edgecolor="white", linewidth=0.5,
+            )
         )
+        dark_cell = abs(row["bits_over_target"]) > 0.7 * largest_miss
+        ax.text(
+            x, y, str(row["ksize"]), ha="center", va="center",
+            color="white" if dark_cell else "black",
+        )
+    ax.set_xlim(-0.5, len(TARGET_BITS) - 0.5)
+    ax.set_ylim(-0.5, max(ROW_POSITIONS.values()) + 0.5)
+    ax.set_xticks(range(len(TARGET_BITS)), TARGET_BITS)
+    ax.set_yticks(list(ROW_POSITIONS.values()), list(ROW_POSITIONS))
+    ax.set_xlabel("Target bits per k-mer (each cell is the closest k)")
+    ax.set_ylabel("Alphabet")
+    ax.spines[["left", "bottom"]].set_visible(False)
+    ax.tick_params(length=0)
+    fig.set_layout_engine(None)
+    fig.subplots_adjust(left=0.17, right=0.985, top=0.89, bottom=0.08)
+    colour_key_ax = fig.add_axes([0.17, 0.925, 0.3, 0.015])
+    fig.colorbar(
+        mpl.cm.ScalarMappable(norm=norm, cmap=cmap), cax=colour_key_ax, orientation="horizontal",
+        label="Bits at that k, minus the target",
     )
-    dark_cell = abs(row["bits_over_target"]) > 0.7 * largest_miss
-    ax.text(
-        x, y, str(row["ksize"]), ha="center", va="center",
-        color="white" if dark_cell else "black",
+    colour_key_ax.xaxis.set_label_position("top")
+    fig.text(
+        0.985,
+        0.998,
+        f"Letter frequencies: {frequency_source}",
+        ha="right",
+        va="top",
+        fontsize=mpl.rcParams["legend.fontsize"],
     )
-ax.set_xlim(-0.5, len(TARGET_BITS) - 0.5)
-ax.set_ylim(-0.5, max(ROW_POSITIONS.values()) + 0.5)
-ax.set_xticks(range(len(TARGET_BITS)), TARGET_BITS)
-ax.set_yticks(list(ROW_POSITIONS.values()), list(ROW_POSITIONS))
-ax.set_xlabel("Target bits per k-mer (each cell is the closest k)")
-ax.set_ylabel("Alphabet")
-ax.spines[["left", "bottom"]].set_visible(False)
-ax.tick_params(length=0)
-fig.set_layout_engine(None)
-fig.subplots_adjust(left=0.17, right=0.985, top=0.89, bottom=0.08)
-colour_key_ax = fig.add_axes([0.17, 0.925, 0.3, 0.015])
-fig.colorbar(
-    mpl.cm.ScalarMappable(norm=norm, cmap=cmap), cax=colour_key_ax, orientation="horizontal",
-    label="Bits at that k, minus the target",
+    pf.save(fig, FIGURES / stem)
+    print(FIGURES / f"{stem}.png")
+
+
+lookup = lookup_by_bits(ou.AA_FREQUENCIES)
+lookup.write_csv(DATA / "alphabet_ksize_lookup_by_bits_human_mouse.tsv", separator="\t")
+print_lookup(lookup)
+draw_lookup_table(
+    lookup, "human + mouse", "alphabet_ksize_lookup_table_by_bits_human_mouse"
 )
-colour_key_ax.xaxis.set_label_position("top")
-pf.save(fig, FIGURES / "alphabet_ksize_lookup_table_by_bits_human_mouse")
-print(FIGURES / "alphabet_ksize_lookup_table_by_bits_human_mouse.png")
 """)
 
 md(r"""
@@ -289,41 +319,59 @@ n_within_one = both.filter(pl.col("k_difference").abs() <= 1).height
 print(f"{n_within_one} of {both.height} alphabets: k differs by at most 1")
 print(f"{both.filter(pl.col('k_difference') == 0).height} of {both.height}: same k")
 
-fig, ax = pf.figure(pf.ONE_COLUMN_MM, 80)
-axis_limit = both["bits_per_letter_human_mouse"].max() * 1.05
-ax.plot([0, axis_limit], [0, axis_limit], color=pf.GREY, linewidth=0.5, label="same in both")
-for k_difference, marker, colour in (
-    (False, "o", pf.OKABE_ITO["blue"]),
-    (True, "X", pf.OKABE_ITO["vermillion"]),
+
+def draw_bits_comparison(
+    table, other_bits, other_k, other_label, label_x, label_top, label_step, stem
 ):
-    subset = both.filter((pl.col("k_difference") != 0) == k_difference)
-    ax.scatter(
-        subset["bits_per_letter_human_mouse"],
-        subset["bits_per_letter_uhgp90"],
-        s=10,
-        marker=marker,
-        color=colour,
-        zorder=3,
-        label="k differs" if k_difference else "same k",
-    )
-    if k_difference:
-        for i, row in enumerate(subset.sort("bits_per_letter_human_mouse", descending=True).iter_rows(named=True)):
-            ax.annotate(
-                f"{row['alphabet']}: k {row['k_human_mouse']} vs {row['k_uhgp90']}",
-                (row["bits_per_letter_human_mouse"], row["bits_per_letter_uhgp90"]),
-                xytext=(2.1, 1.65 - 0.27 * i),
-                textcoords="data",
-                fontsize=K_LABEL_PT,
-                va="center",
-                arrowprops=dict(
-                    arrowstyle="-", color=pf.GREY, linewidth=0.3, shrinkB=2, relpos=(0, 0.5)
-                ),
-            )
-ax.set_xlabel("Bits per letter, human + mouse proteins")
-ax.set_ylabel("Bits per letter, UHGP-90 (notebook 300)")
-ax.legend(loc="lower left", bbox_to_anchor=(0, 1.0), ncol=3, frameon=False)
-pf.save(fig, FIGURES / "bits_per_letter_human_mouse_vs_uhgp90")
-print(FIGURES / "bits_per_letter_human_mouse_vs_uhgp90.png")
+    # Plot bits per letter in two protein sets, naming each alphabet whose k differs.
+    fig, ax = pf.figure(pf.ONE_COLUMN_MM, 80)
+    axis_limit = table["bits_per_letter_human_mouse"].max() * 1.05
+    ax.plot([0, axis_limit], [0, axis_limit], color=pf.GREY, linewidth=0.5, label="same in both")
+    for k_differs, marker, colour in (
+        (False, "o", pf.OKABE_ITO["blue"]),
+        (True, "X", pf.OKABE_ITO["vermillion"]),
+    ):
+        subset = table.filter((pl.col("k_difference") != 0) == k_differs)
+        ax.scatter(
+            subset["bits_per_letter_human_mouse"],
+            subset[other_bits],
+            s=10,
+            marker=marker,
+            color=colour,
+            zorder=3,
+            label="k differs" if k_differs else "same k",
+        )
+        if k_differs:
+            by_bits = subset.sort("bits_per_letter_human_mouse", descending=True)
+            for i, row in enumerate(by_bits.iter_rows(named=True)):
+                ax.annotate(
+                    f"{row['alphabet']}: k {row['k_human_mouse']} vs {row[other_k]}",
+                    (row["bits_per_letter_human_mouse"], row[other_bits]),
+                    xytext=(label_x, label_top - label_step * i),
+                    textcoords="data",
+                    fontsize=K_LABEL_PT,
+                    va="center",
+                    arrowprops=dict(
+                        arrowstyle="-", color=pf.GREY, linewidth=0.3, shrinkB=2, relpos=(0, 0.5)
+                    ),
+                )
+    ax.set_xlabel("Bits per letter, human + mouse proteins")
+    ax.set_ylabel(f"Bits per letter, {other_label}")
+    ax.legend(loc="lower left", bbox_to_anchor=(0, 1.0), ncol=3, frameon=False)
+    pf.save(fig, FIGURES / stem)
+    print(FIGURES / f"{stem}.png")
+
+
+draw_bits_comparison(
+    both,
+    "bits_per_letter_uhgp90",
+    "k_uhgp90",
+    "UHGP-90 (notebook 300)",
+    2.1,
+    1.65,
+    0.27,
+    "bits_per_letter_human_mouse_vs_uhgp90",
+)
 """)
 
 md(r"""
@@ -405,6 +453,197 @@ pf.save(fig, FIGURES / "bits_vs_ksize_by_alphabet_human_mouse")
 print(FIGURES / "bits_vs_ksize_by_alphabet_human_mouse.png")
 """)
 
+md(r"""
+## 5. k against bits, for when you set the bits
+
+This is section 4 with the axes swapped, for choosing the bits first. Pick the bits on the bottom
+axis, go straight up, and read k off the left axis at each line. A steep line needs a large k. The
+dashed line is protein20 at k = 7. Colour shows how many letters the alphabet has, as in section
+1, and each line is named at the right edge, or at the top for `cys2`, which leaves the plot at
+about 10 bits.
+""")
+
+code(r"""
+LABEL_GAP_K_SIDE = 1.35  # smallest space between two line labels, on the k axis
+LABEL_X = MAX_BITS + 3
+
+
+def draw_ksize_vs_bits(bits_per_letter, frequency_source, stem):
+    # Draw k against bits, one line per alphabet, each named where it leaves the plot.
+    reference_bits = PROTEIN_K * bits_per_letter["protein20"]
+    reach_right = sorted(
+        (a for a in ALPHABETS if MAX_BITS / bits_per_letter[a] <= MAX_K),
+        key=lambda a: MAX_BITS / bits_per_letter[a],
+    )
+    reach_top = [a for a in ALPHABETS if a not in reach_right]
+    right_edge_k = [MAX_BITS / bits_per_letter[a] for a in reach_right]
+    label_k_side = spread_labels(right_edge_k, LABEL_GAP_K_SIDE, MAX_K + 2)
+
+    fig, ax = pf.figure(pf.TWO_COLUMN_MM, 150)
+    bits = np.array([0, MAX_BITS])
+    for alphabet in ALPHABETS:
+        ax.plot(
+            bits,
+            bits / bits_per_letter[alphabet],
+            color=GROUP_COLOURS[fu.alphabet_size_group(alphabet)],
+        )
+    for alphabet, end_k, text_k in zip(reach_right, right_edge_k, label_k_side):
+        ax.annotate(
+            alphabet,
+            xy=(MAX_BITS, end_k),
+            xytext=(LABEL_X, text_k),
+            ha="left",
+            va="center",
+            fontsize=K_LABEL_PT,
+            annotation_clip=False,
+            arrowprops=dict(
+                arrowstyle="-", color=pf.GREY, linewidth=0.3, shrinkA=1, shrinkB=0, relpos=(0, 0.5)
+            ),
+        )
+    for alphabet in reach_top:
+        ax.text(
+            MAX_K * bits_per_letter[alphabet],
+            MAX_K + 0.8,
+            alphabet,
+            ha="center",
+            va="bottom",
+            fontsize=K_LABEL_PT,
+        )
+    ax.axvline(reference_bits, color="black", linestyle="--", linewidth=0.8, zorder=1)
+    ax.set_xlim(0, MAX_BITS)
+    ax.set_ylim(0, MAX_K)
+    ax.set_xticks(range(0, MAX_BITS + 1, 5))
+    ax.set_yticks(range(0, MAX_K + 1, 5))
+    ax.grid(True, color="#d9d9d9", linewidth=0.3, zorder=0)
+    ax.set_xlabel("Bits per k-mer")
+    ax.set_ylabel("k-mer size (k)")
+    fig.set_layout_engine(None)
+    fig.subplots_adjust(left=0.06, right=0.86, top=0.935, bottom=0.07)
+    reference_handle = Line2D(
+        [], [], color="black", linestyle="--",
+        label=f"{reference_bits:.1f} bits: protein20, k = {PROTEIN_K}",
+    )
+    fig.legend(
+        handles=handles[:-1] + [reference_handle],
+        loc="upper left",
+        bbox_to_anchor=(0.05, 1.005),
+        ncol=5,
+        frameon=False,
+    )
+    fig.text(
+        0.985,
+        0.998,
+        f"Letter frequencies: {frequency_source}",
+        ha="right",
+        va="top",
+        fontsize=mpl.rcParams["legend.fontsize"],
+    )
+    pf.save(fig, FIGURES / stem)
+    print(FIGURES / f"{stem}.png")
+
+
+with pl.Config(tbl_rows=-1, tbl_width_chars=120, float_precision=3):
+    print(
+        letters.select("alphabet", "n_letters", "bits_per_letter")
+        .with_columns(
+            pl.col("alphabet")
+            .map_elements(lambda a: ou.ksize_for_bits(a, REFERENCE_BITS), return_dtype=pl.Int64)
+            .alias("k_at_reference_bits"),
+            pl.col("alphabet")
+            .map_elements(lambda a: ou.ksize_for_bits(a, MAX_BITS), return_dtype=pl.Int64)
+            .alias(f"k_at_{MAX_BITS}_bits"),
+        )
+        .sort("bits_per_letter", descending=True)
+    )
+draw_ksize_vs_bits(BITS_PER_LETTER, "human + mouse", "ksize_vs_bits_by_alphabet_human_mouse")
+""")
+
+md(r"""
+## 6. The same lookup with Swiss-Prot letter frequencies
+
+The sections above use human and mouse proteins. Swiss-Prot covers reviewed proteins from all
+kingdoms of life, so here its amino acid counts replace them. Counts come from release 2026_03:
+575,748 sequences and 209,008,777 standard residues, counted by
+`scripts/count_swissprot_amino_acids.py`. The 9,066 X, U, B, Z and O residues are left out, as they
+were for human and mouse.
+
+This comparison was added after the results above, so it is a second check, not the planned test.
+The rule is unchanged: the k for 29.2 bits may differ by at most 1.
+""")
+
+code(r"""
+SWISSPROT = ou.SWISSPROT_AA_FREQUENCIES
+SWISSPROT_LABEL = "Swiss-Prot 2026_03"
+amino_acids = (
+    pl.read_csv(DATA / "swissprot_2026_03_amino_acid_counts.tsv", separator="\t")
+    .rename({"frequency": "swissprot"})
+    .with_columns(
+        pl.col("amino_acid")
+        .map_elements(lambda aa: ou.AA_FREQUENCIES[aa], return_dtype=pl.Float64)
+        .alias("human_mouse")
+    )
+    .with_columns((pl.col("swissprot") / pl.col("human_mouse")).alias("swissprot_over_human_mouse"))
+    .sort("swissprot_over_human_mouse")
+)
+with pl.Config(tbl_rows=-1, tbl_width_chars=120, float_precision=4):
+    print(amino_acids)
+
+swissprot_letters = (
+    pl.DataFrame(
+        {
+            "alphabet": ALPHABETS,
+            "bits_per_letter_human_mouse": [BITS_PER_LETTER[a] for a in ALPHABETS],
+            "bits_per_letter_swissprot": [ou.entropy_per_symbol(a, SWISSPROT) for a in ALPHABETS],
+            "k_human_mouse": [ou.ksize_for_bits(a, REFERENCE_BITS) for a in ALPHABETS],
+            "k_swissprot": [ou.ksize_for_bits(a, REFERENCE_BITS, SWISSPROT) for a in ALPHABETS],
+        }
+    )
+    .with_columns(
+        (pl.col("k_swissprot") - pl.col("k_human_mouse")).alias("k_difference"),
+        pl.col("alphabet").is_in(both["alphabet"].to_list()).alias("in_uhgp90_comparison"),
+    )
+    .sort("k_human_mouse", descending=True)
+)
+swissprot_letters.write_csv(DATA / "bits_per_letter_human_mouse_vs_swissprot.tsv", separator="\t")
+with pl.Config(tbl_rows=-1, tbl_width_chars=130, float_precision=3):
+    print(swissprot_letters)
+
+shared = swissprot_letters.filter(pl.col("in_uhgp90_comparison"))
+for name, table in (("all alphabets", swissprot_letters), ("UHGP-90's alphabets", shared)):
+    n_same = table.filter(pl.col("k_difference") == 0).height
+    n_within_one = table.filter(pl.col("k_difference").abs() <= 1).height
+    print(f"{name}: same k {n_same} of {table.height}; within 1 {n_within_one} of {table.height}")
+
+swissprot_lookup = lookup_by_bits(SWISSPROT)
+swissprot_lookup.write_csv(DATA / "alphabet_ksize_lookup_by_bits_swissprot.tsv", separator="\t")
+print_lookup(swissprot_lookup)
+changed = swissprot_lookup.join(lookup, on=["alphabet", "target_bits"], suffix="_human_mouse")
+changed = changed.with_columns((pl.col("ksize") - pl.col("ksize_human_mouse")).alias("k_change"))
+without_cys2 = changed.filter(pl.col("alphabet") != "cys2")
+print(f"{changed.filter(pl.col('k_change') != 0).height} of {changed.height} table cells change")
+print(f"largest change without cys2: {without_cys2['k_change'].abs().max()}")
+print(f"largest change for cys2: {changed['k_change'].abs().max()}")
+
+draw_bits_comparison(
+    swissprot_letters,
+    "bits_per_letter_swissprot",
+    "k_swissprot",
+    SWISSPROT_LABEL,
+    2.4,
+    1.85,
+    0.21,
+    "bits_per_letter_human_mouse_vs_swissprot",
+)
+draw_lookup_table(
+    swissprot_lookup, SWISSPROT_LABEL, "alphabet_ksize_lookup_table_by_bits_swissprot"
+)
+draw_ksize_vs_bits(
+    {a: ou.entropy_per_symbol(a, SWISSPROT) for a in ALPHABETS},
+    SWISSPROT_LABEL,
+    "ksize_vs_bits_by_alphabet_swissprot",
+)
+""")
+
 SUMMARY = r"""
 # Summary and Conclusions
 
@@ -425,11 +664,17 @@ different things in each. This notebook gives the k for any number of bits per k
 * Rounding to a whole k misses the table's targets by at most 1.85 bits (`uniprot18` at 10 bits)
   and by at most 0.46 bits for 2-letter alphabets.
 * The k for 29.2 bits matches between human + mouse and UHGP-90 for 14 of 20 alphabets and is
-  off by 1 for the other 6, so one lookup can be reused.
+  off by 1 for the other 6.
+* The k for 29.2 bits stays within 1 between human + mouse and Swiss-Prot for 23 of 24 alphabets.
+* `cys2` needs k = 277 for 29.2 bits on Swiss-Prot against k = 195 on human + mouse, because
+  cysteine is 1.39% of Swiss-Prot residues against 2.15%.
 
-**Decision.** The rule at the top passes: 20 of 20 alphabets are within 1 of each other. Use this
-lookup for any proteome, and expect up to 1 k of difference on a database with an unusual
-composition.
+**Decision.** The rule at the top passes: 20 of 20 alphabets are within 1 of each other, and that
+holds again for those 20 on Swiss-Prot. Reuse one lookup for those alphabets, and expect k to move
+by up to 1 at 29.2 bits and up to 2 anywhere from 10 to 60 bits. Do not reuse it for `cys2`:
+UHGP-90 has no `cys2` value, and Swiss-Prot shows its k depends on the cysteine content of the
+database searched, so calculate it for each database. The other three alphabets missing from
+UHGP-90 stay within 1 on Swiss-Prot.
 
 ## Analysis Details
 
@@ -442,14 +687,23 @@ notebook 300.
 
 - Tables: `363_data/alphabet_bits_per_letter_human_mouse.tsv`,
   `363_data/alphabet_ksize_lookup_by_bits_human_mouse.tsv`,
-  `363_data/bits_per_letter_human_mouse_vs_uhgp90.tsv`.
+  `363_data/bits_per_letter_human_mouse_vs_uhgp90.tsv`,
+  `363_data/swissprot_2026_03_amino_acid_counts.tsv`,
+  `363_data/bits_per_letter_human_mouse_vs_swissprot.tsv`,
+  `363_data/alphabet_ksize_lookup_by_bits_swissprot.tsv`.
 - Figures: `figures/363/alphabet_ksize_ruler_by_bits_human_mouse.png`,
   `figures/363/alphabet_ksize_lookup_table_by_bits_human_mouse.png`,
   `figures/363/bits_per_letter_human_mouse_vs_uhgp90.png`,
-  `figures/363/bits_vs_ksize_by_alphabet_human_mouse.png`.
+  `figures/363/bits_vs_ksize_by_alphabet_human_mouse.png`,
+  `figures/363/ksize_vs_bits_by_alphabet_human_mouse.png`,
+  `figures/363/bits_per_letter_human_mouse_vs_swissprot.png`,
+  `figures/363/alphabet_ksize_lookup_table_by_bits_swissprot.png`,
+  `figures/363/ksize_vs_bits_by_alphabet_swissprot.png`.
 - Limits: positions are treated as independent, so real k-mers carry fewer bits than shown. The
   figures do not say whether a k can seed in a given protein. `cys2` is the clearest case: k = 195
   is longer than many proteins.
+- The human + mouse frequencies count all 312,203 GENCODE translations, so a gene with many
+  transcripts counts many times. The Swiss-Prot frequencies count each reviewed entry once.
 - Four alphabets are new since notebook 300's table and have no UHGP-90 value here: `cys2`,
   `hp_pbotc_1st_ed_hpc3`, `aro_hyd_chg_pol4` and `aro_hyd_arg_chg_pol5`.
 
@@ -457,6 +711,7 @@ notebook 300.
 
 - kmerseek 0.5.0, seanome/kmerseek main 0643254, `src/rust/alphabets.rs`.
 - [Notebook 300](300_mass_spec_peptide_source_lookup_uhgp90.ipynb), section 9.
+- UniProtKB/Swiss-Prot release 2026_03, `uniprot_sprot.fasta.gz`.
 """
 md(SUMMARY)
 code(f'summary_md = r"""{SUMMARY}"""\nprint(summary_md)')
