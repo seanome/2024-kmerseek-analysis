@@ -14,3 +14,10 @@ cost with the usual fast route as well as with alignment. It uses `salmon quant`
 alignment and no QC steps, so its trace holds only the steps being timed. The cost row comes from
 `analysis/pec-domen2026-splash/scripts/alignment_route_cost.py`, given `nfcore_salmon/` as its last
 argument.
+
+Pilot, 2026-11-06 (job 51349345, the two smallest samples, 8 min 44 s): building the Salmon index took
+5 min 18 s, about 16 CPU minutes and 7.9 GB, and `salmon quant` peaked at 2.3 GB, nearly all of it the
+index. Salmon detected library type IU, as expected for unstranded reads. The pipeline's 6 CPUs, 36 GB
+and 8 h for each task are enough, so `sherlock.config` is unchanged. Its gene table has 43,255 genes
+and the `gene_id` and `gene_name` columns `run_pipelines.sh` expects. The pilot did not run
+nf-core/differentialabundance.
