@@ -1,0 +1,23 @@
+panel	alphabet	k	cutoff	species	set	pairs	median_containment	mean_containment	share_pairs_any_hash	contrast	direction	proteins	mean_containment_PEC	mean_containment_control	PEC_minus_control
+b	hp	24	0	Botryllus	paper_list	54208	0.0833	0.2618	0.6446						
+b	hp	24	0	Botryllus	random_length_matched	54336	0.0588	0.2049	0.6071						
+b	hp	24	0	human	paper_list	91476	0.1667	0.1891	0.9325						
+b	hp	24	0	human	random_length_matched	91692	0.1515	0.1676	0.9201						
+b	hp	27	0	Botryllus	paper_list	54272	0.0	0.1783	0.4769						
+b	hp	27	0	Botryllus	random_length_matched	54336	0.0	0.0942	0.391						
+b	hp	27	0	human	paper_list	23744	0.0	0.013	0.2487						
+b	hp	27	0	human	random_length_matched	23772	0.0	0.0082	0.2005						
+b	hp	30	0	Botryllus	paper_list	54336	0.0	0.1475	0.3682						
+b	hp	30	0	Botryllus	random_length_matched	54336	0.0	0.0607	0.2508						
+c										young_2h	up	43	0.3328	0.3231	0.0098
+c										young_2h	down	247	0.2665	0.3731	-0.1066
+c										young_24h	up	258	0.2577	0.3197	-0.062
+c										young_24h	down	104	0.15	0.3144	-0.1644
+c										old_24h	up	57	0.2286	0.2742	-0.0456
+c										old_24h	down	3	0.0051	0.2042	-0.1992
+c										young_13_49d	up	20	0.1352	0.0414	0.0938
+c										young_13_49d	down	48	0.11	0.1414	-0.0314
+c										young_132d	up	40	0.1699	0.1008	0.069
+c										young_132d	down	49	0.0836	0.1519	-0.0683
+c										old_41_93d	up	19	0.2058	0.092	0.1139
+c										old_41_93d	down	18	0.0915	0.185	-0.0936
