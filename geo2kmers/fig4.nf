@@ -7,6 +7,7 @@
  *
  * --rscript is the Rscript of an environment built from fig4/environment-r.yml. When --probes holds
  * GPL570.probes.tsv.gz, GPL13667.probes.tsv.gz and GPL17586.raw.tsv.gz, PROBE_TABLES is skipped.
+ * --groups and --published replace the default groups and printed AUCs, as fig4/regroup_gse111555.py writes them.
  * Set NCBI_EMAIL first. Each process runs Python by the absolute path in --python.
  */
 nextflow.enable.dsl = 2
@@ -17,6 +18,8 @@ params.rscript = ''
 params.python  = "/scratch/users/olgabot/nb361-pec/env/bin/python"
 params.proteins  = "${projectDir}/results/fig4/signature_proteins.fasta"
 params.signature = "${projectDir}/results/fig4/signature_proteins.tsv"
+params.groups    = "${projectDir}/fig4/groups.tsv"
+params.published = "${projectDir}/fig4/published_fig4.tsv"
 
 if (!params.outdir || !params.probes) error "set --outdir and --probes"
 
@@ -114,8 +117,8 @@ process SCORE {
     """
     export PYTHONPATH=${projectDir}
     ${params.python} ${projectDir}/fig4/platforms.py shares/* platforms.tsv
-    ${params.python} ${projectDir}/fig4/score.py ${params.signature} ${projectDir}/fig4/groups.tsv \
-        ${projectDir}/fig4/published_fig4.tsv platforms.tsv series landing .
+    ${params.python} ${projectDir}/fig4/score.py ${params.signature} ${params.groups} \
+        ${params.published} platforms.tsv series landing .
     """
 }
 
@@ -139,8 +142,8 @@ process CHANCE {
 
     script:
     """
-    PYTHONPATH=${projectDir} ${params.python} ${projectDir}/fig4/chance.py ${params.signature} ${projectDir}/fig4/groups.tsv \
-        ${projectDir}/fig4/published_fig4.tsv auc.tsv series landing .
+    PYTHONPATH=${projectDir} ${params.python} ${projectDir}/fig4/chance.py ${params.signature} ${params.groups} \
+        ${params.published} auc.tsv series landing .
     """
 }
 

@@ -539,3 +539,63 @@ def test_pairing_reads_people_from_fields_and_titles(monkeypatch, tmp_path):
     assert (title_case["people_pre"], title_case["people_post"], title_case["people_in_both"]) == ("2", "1", "1")
     assert title_case["most_samples_per_person_in_a_group"] == "2"
     assert (title_case["pre_samples_titled_post"], title_case["auc_with_groups_from_titles"]) == ("1", "0.500")
+
+
+def regroup_inputs(tmp_path, wrong_vo2=False):
+    """Two men: GSM3 is 1Pb, titled post with source pre, and its VO2peak matches 1Tb unless wrong_vo2."""
+    write(
+        tmp_path / "groups.tsv",
+        "dataset\tcomparison\tgroup\tsample\n"
+        + "".join(f"GSE111555\tmain\t{g}\tGSM{s}\n" for g, s in [(0, 1), (0, 2), (0, 3), (1, 4)])
+        + "GSE9\tmain\t0\tGSM9\n",
+    )
+    write(
+        tmp_path / "pub.tsv",
+        "dataset\tpanel\tcomparison\tn0\tn1\tauc\tp\nGSE111555\t4D\tmain\t3\t1\t0.93\t0.01\nGSE9\t4C\tmain\t1\t1\t0.5\t\n",
+    )
+    write(
+        tmp_path / "scores.tsv",
+        "dataset\tcomparison\tgrouping\tgroup\tsample\tscore\n"
+        + "".join(f"GSE111555\tmain\tauthors\t0\tGSM{s}\t{v}\n" for s, v in [(1, 0), (2, 1), (3, 3), (4, 2)]),
+    )
+    vo2 = "9.9" if wrong_vo2 else "4.5"
+    lines = [
+        '!Sample_geo_accession\t"GSM1"\t"GSM2"\t"GSM3"\t"GSM4"\t"GSM5"\t"GSM6"\t"GSM7"',
+        '!Sample_title\t"1Pa: PBMC RNA_baseline_1"\t"2Pa: PBMC RNA_baseline_2"\t"1Pb: PBMC RNA_posttraining_1"'
+        '\t"2Pb: PBMC RNA_posttraining_2"\t"1Ta: total blood RNA_baseline_1"\t"1Tb: total blood RNA_posttraining_1"'
+        '\t"2Tb: total blood RNA_posttraining_2"',
+        '!Sample_source_name_ch1\t"PBMCs, pretraining"\t"PBMCs, pretraining"\t"PBMCs, pretraining"\t"PBMCs, posttraining"'
+        '\t"PAX gene blood, pretraining"\t"PAX gene blood, posttraining"\t"PAX gene blood, posttraining"',
+        '!Sample_characteristics_ch1\t"tissue: PBMC"\t"tissue: PBMC"\t"tissue: PBMC"\t"tissue: PBMC"'
+        '\t"vo2peak (l/min): 4.0"\t"vo2peak (l/min): 4.5"\t"vo2peak (l/min): 3.3"',
+        f'!Sample_characteristics_ch1\t"vo2peak (l/min): 4.0"\t"vo2peak (l/min): 3.0"\t"vo2peak (l/min): {vo2}"'
+        '\t"vo2peak (l/min): 3.3"\t"tissue: blood"\t"tissue: blood"\t"tissue: blood"',
+    ]
+    with gzip.open(tmp_path / "matrix.txt.gz", "wt") as f:
+        f.write("\n".join(lines) + "\n")
+    return "matrix.txt.gz", "groups.tsv", "pub.tsv", "scores.tsv", "out"
+
+
+def test_regroup_moves_only_the_sample_its_vo2peak_supports(monkeypatch, tmp_path):
+    monkeypatch.chdir(tmp_path)
+    run(monkeypatch, "fig4/regroup_gse111555.py", *regroup_inputs(tmp_path))
+    groups = {r["sample"]: r["group"] for r in rows(tmp_path / "out" / "groups.tsv")}
+    assert groups == {"GSM1": "0", "GSM2": "0", "GSM3": "1", "GSM4": "1", "GSM9": "0"}
+    labels = {r["title"]: r for r in rows(tmp_path / "out" / "gse111555_labels.tsv")}
+    moved = labels["1Pb"]
+    assert (moved["by_source"], moved["by_title"], moved["vo2peak_says"]) == ("pre", "post", "post")
+    assert (moved["group_authors"], moved["group_corrected"]) == ("0", "1")
+    published = {r["dataset"]: r for r in rows(tmp_path / "out" / "published_fig4.tsv")}
+    # the published score recomputed: post 3 and 2 against pre 0 and 1 is complete separation
+    assert (published["GSE111555"]["n0"], published["GSE111555"]["n1"], published["GSE111555"]["auc"]) == (
+        "2",
+        "2",
+        "1.000",
+    )
+    assert published["GSE9"]["auc"] == "0.5"
+
+
+def test_regroup_stops_when_vo2peak_does_not_support_the_title(monkeypatch, tmp_path):
+    monkeypatch.chdir(tmp_path)
+    with pytest.raises(SystemExit, match="does not support its title"):
+        run(monkeypatch, "fig4/regroup_gse111555.py", *regroup_inputs(tmp_path, wrong_vo2=True))

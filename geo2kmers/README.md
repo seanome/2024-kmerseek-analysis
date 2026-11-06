@@ -326,11 +326,12 @@ those genes through protein k-mers alone. `fig4/README.md` describes the method 
 | GSE83578 | 30 min | 0.07 | 0.340 | **0.094** |
 | GSE83578 | 3 h | 0.07 | 0.266 | **0.105** |
 | GSE83578 | 24 h | 0.54 | **0.648** | **0.598** |
-| GSE111555 | 18 weeks | 0.93 | **0.786** | **0.900** |
+| GSE111555 | 18 weeks, authors' groups | 0.93 | **0.786** | **0.900** |
+| GSE111555 | 18 weeks, corrected groups | 0.809 | **0.762** | **0.875** |
 | GSE28998 | 12 weeks | 0.80 | 0.531 | 0.592 |
 
 Bold means on the same side of 0.5 as the published AUC and within 0.15 of it, the rule fixed before running
-(`auc.tsv`). The planned score is the M2 proteins' mean minus the M1 proteins' mean, where M1 and M2 are the
+(`auc.tsv`). GSE111555 has two rows for one comparison, explained below, so the counts are out of 7 either way. The planned score is the M2 proteins' mean minus the M1 proteins' mean, where M1 and M2 are the
 paper's two groups of genes. The second score was added after the plan: it puts the weights of Ghosh et al.
 2023 on sums, which PR 212 found the published code does. For GSE27536 both scores use M1 alone and are the
 same number.
@@ -359,16 +360,33 @@ above 19.3 % than fall below it. That would not help the second score. The chang
 Five of the 7 comparisons follow the same people, which `auc.tsv` does not use (`results/fig4/pairing.tsv`, from
 `fig4/pairing.py`). GSE27536 has 27 people before and after, GSE28998 has the trained and untrained arm of 7
 people, and GSE83578 has 8 people, each giving a control and an LPS-treated sample at every time, so its 16
-samples per group are 8 people. In GSE111555, 10 of 16 people are in both groups. GSE104079 is unpaired, because
+samples per group are 8 people. In GSE111555, all 16 people are in both groups once six samples are corrected (below); `pairing.tsv` shows the authors' groups, 10 of 16. GSE104079 is unpaired, because
 each mouse had one treatment, but its groups pool liver and soleus. The AUC compares groups, so these rows say
 nothing about change within one person, and the Mann-Whitney p values treat samples from one person as unrelated.
 No verdict uses those p values.
 
-In GSE111555 the six samples 1Pb to 8Pb are called pretraining in GEO's source field and posttraining in their
-titles. The authors' groups follow the source field, and so do ours. Which is right was not settled. Grouping by
-title gives 16 samples in each group and an AUC of 0.762 in place of 0.786 on the planned score. That is 0.168
-from the published 0.93 and would fail the rule, so the planned count would be 2 of 7. `sample_scores.tsv` holds
-only the planned score, so the second score was not regrouped.
+Six GSE111555 samples are in the wrong group in the authors' code, and in ours until now. The samples 1Pb,
+2Pb, 3Pb, 6Pb, 7Pb and 8Pb are blood cells from after training, but GEO's source field says pretraining. Four
+things show this, and the other 136 samples in the series all agree between title and source. Their titles say
+posttraining and their files are named `b`, the after-training letter. Each one's VO2peak, the fitness
+measure, equals the after-training value from that man's muscle or blood sample, not his baseline value
+(`gse111555_labels.tsv`). Each man also has a baseline PBMC sample, so the source field would give him two
+baselines in a before-and-after study. We found no paper that describes this array set. GEO links none, and
+Dias et al. 2015, from the same lab, reports 13 policemen recruits and 18 weeks of running on a different
+array. We read only that paper's abstract. Sun et al. 2025 used GSE111552, these same samples, as 16 against
+16. GEO's record still has the wrong field, and the authors have not been asked.
+
+Correcting the groups changes the published number too. The authors' 22 vs 10 gives 0.93, and PR 212 reproduces
+it at 0.932. PR 212's own sample scores on the corrected 16 vs 16 give 0.809, p 0.0031 in place of 2.96e-05, so the
+printed 0.93 is partly a result of the six samples. `results/fig4/corrected_labels/` reruns `fig4.nf` with that
+0.809 as the reference. Both of our scores stay within 0.15 of it, so the counts stay 3 of 7 and 6 of 7. Holding
+the reference at 0.93 on the corrected groups would compare different samples on the two sides. If done anyway,
+the planned score's 0.762 fails and the second score's 0.875 passes. Using 0.809 was decided after seeing that,
+so it is a judgement, not part of the rule fixed before running. It is not a number the paper printed.
+
+With the corrected groups the chance test (1000 draws) gives 3 or more passes in 18.1 % of random-feature draws
+and 18.2 % of shuffled-label draws for the planned score, up from 12.8 % and 14.0 %. For the second score, 6 or
+more stays at none of the draws and 19.3 %. Neither score separates from chance any better than before.
 
 The rule also asked that a series have a landing share of at least 0.2, and none does. The nearest number is
 `share_of_probes_with_a_kmer_in_proteome` in `platforms.tsv`: of the probes with a sequence, the share with at
