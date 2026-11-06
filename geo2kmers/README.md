@@ -332,7 +332,7 @@ those genes through protein k-mers alone. `fig4/README.md` describes the method 
 
 Bold means on the same side of 0.5 as the published AUC and within 0.15 of it, the rule fixed before running
 (`auc.tsv`). GSE111555 has two rows for one comparison, explained below, so the counts are out of 7 either way. The planned score is the M2 proteins' mean minus the M1 proteins' mean, where M1 and M2 are the
-paper's two groups of genes. The second score was added after the plan: it puts the weights of Ghosh et al.
+paper's two groups of genes: each group counts equally, however many genes it has. `accuracy.png` calls this the group-average score. The second score, called the weighted-sum score there, was added after the plan: it puts the weights of Ghosh et al.
 2023 on sums, which PR 212 found the published code does. For GSE27536 both scores use M1 alone and are the
 same number.
 

@@ -2,7 +2,9 @@
 
 Usage: plot_accuracy.py <results/fig4 folder> <path to the repository's notebooks folder>
 One row per comparison, from most down to most up after exercise. The grey band is the rule's range of
-0.15 around the published AUC, and the columns give each score's distance from it. GSE111555's published
+0.15 around the published AUC, and the columns give each score's distance from it. The group-average score
+(README: planned score) is the mean of the M2 genes minus the mean of the M1 genes. The weighted-sum score
+(README: second score) sums each gene, with weight -1 for M1, 1 for cluster 14 and 2 for cluster 3. GSE111555's published
 AUC is PR 212's 0.809 on the corrected groups, not a printed number. Writes accuracy.tsv, .png and .svg to
 corrected_labels.
 """
@@ -18,8 +20,8 @@ import pubfig as pf  # noqa: E402
 
 RULE_DISTANCE = 0.15
 SCORES = [
-    ("Planned score", "reproduced_auc", "planned", "o", pf.OKABE_ITO["blue"]),
-    ("Second score", "auc_ghosh_weights", "ghosh_weights", "s", pf.OKABE_ITO["vermillion"]),
+    ("Group-average score", "reproduced_auc", "planned", "o", pf.OKABE_ITO["blue"]),
+    ("Weighted-sum score", "auc_ghosh_weights", "ghosh_weights", "s", pf.OKABE_ITO["vermillion"]),
 ]
 NAMES = {
     ("GSE83578", "Pre vs Post 30M"): "GSE83578, 30 min after",
@@ -73,7 +75,7 @@ for label, _, score, marker, colour in SCORES:
     line = y + (0.13 if score == "planned" else -0.13)
     ax.plot([r[f"{score}_auc"] for r in table], line, marker, color=colour, label=f"{label}, geo2kmers", zorder=4)
     x = 0.25 if score == "planned" else 0.75
-    numbers.text(x, len(table) - 0.45, label + "\ndistance", ha="center", va="bottom")
+    numbers.text(x, len(table) - 0.45, label.replace(" score", "") + "\ndistance", ha="center", va="bottom")
     for row_y, row in zip(y, table, strict=True):
         distance = row[f"{score}_distance"]
         mark = "yes" if distance <= RULE_DISTANCE else "no"
