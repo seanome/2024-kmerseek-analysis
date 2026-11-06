@@ -98,3 +98,18 @@ Reads reach 50 genes, at least 18 more than hold a same-way k-mer. With swapped 
 28.7 against 9.3. Two likely causes, neither tested: a read's peptide can align to a similar gene that
 does not hold the k-mer, and a k-mer outside the protein-coding part can sit on a read that reaches into
 it. Either way, most of what reads add is not a gene with a tested change.
+
+### Do the missing genes need orthologs or other cross-species handling?
+
+Asked 2026-11-06. No: reads and lists come from one species here, so a 1:1 ortholog filter does not apply.
+It matters only when genes are compared across species.
+
+The 71 list genes with no k-mer in the table are mostly low-count genes (`reads/kmers_in_genes.genes.tsv`).
+Their median baseMean is 3.7 and the highest is 26.7, against a median of 11.3 for the 117 that have one.
+Every one of the 8 list genes above baseMean 100 is in the table, against 48 % of the 114 between 1 and
+10. So too few reads explain most of them. Sequence differences from the gene model could still explain
+some of the 12 missing genes between 10 and 100, which was not tested. No gene has a baseMean below 1.
+
+The same-species version of the ortholog question is similar genes. A peptide now counts for every gene
+it aligns to, so a read from one gene can reach a similar one. Scoring only each peptide's best match
+would test this, and was not done.
