@@ -184,8 +184,48 @@ The 2 h comparison goes the same way in both (mostly lower in treated). At 24 h 
 lists mostly higher in treated and this run finds mostly lower. The two analyses differ in
 gene models (the paper's 72,115 `g` genes, this run's 35,541 `FUN_` genes), in the model
 (the paper fits each comparison alone; this run fits all 52 libraries with colony as a
-blocking factor), and in how 13-49 days are grouped, so genes cannot yet be matched one to
-one. Table: `paper_comparison.tsv`.
+blocking factor), and in how 13-49 days are grouped. Table: `paper_comparison.tsv`.
+
+### The paper's genes, one by one
+
+![Share of the paper's listed genes found here, and correlation with the paper over all genes](figures/paper_gene_overlap_domen2026_dataset_s1.png)
+
+This run found 30 of the 782 gene entries the paper lists (3.8%) with unadjusted p < 0.05
+in the same direction, and 2 of the 782 (0.3%) with adjusted p < 0.05. The two adjusted
+hits are g61570 (FUN_035465) and g1353 (FUN_019793), both in the 13-17 d window. g1353
+goes the opposite way at 49-52 d (log2 fold change 16.3, 2 against 3 libraries). A listed
+gene in the 13-49 d comparison counts as found if either window finds it.
+
+The paper's genes and this run's genes are different gene models, so each paper protein
+was aligned to this run's proteins with MMseqs2 and matched to its best hit with at least
+90% identity over at least 50% of the paper's protein. These cutoffs were set before any
+overlap was counted. 664 of the 782 entries have a match that was tested here. DIAMOND,
+the first choice, stalled on the laptop while building its database, on 4 threads and on 1.
+
+The paper's lists are not adjusted-p lists, so a low overlap at adjusted p < 0.05 does not
+by itself mean the two disagree. Across all genes tested in both, the two share a signal
+that follows the time point (panel b). The Spearman correlation of the signed -log10 p
+is 0.16 to 0.44 at the same time point, and between -0.10 and 0.07 at any other pairing.
+
+- Direction: 616 of 723 tested gene-window pairs point the paper's way, where 382 would by
+  chance. Chance is the share of genes going that way in that window, leaving out genes
+  with a fold change of exactly 0 (20,643 to 34,028 of 35,541 in the four windows from
+  13 to 132 d). Every list beats chance except 13-49 d up, which matches it (9 and 13 of
+  16, where 9.2 and 12.1 would by chance).
+- Overlap at unadjusted p < 0.05, same direction, among genes tested in both: 9 of 433 at
+  2 h, 11 of 495 at 24 h, 4 and 10 of 72 at 13-17 d and 49-52 d, 17 of 131 at 132 d. That
+  is 5 to 15 times what chance would give, and still a small share of the paper's genes.
+- The paper's 12 genes with adjusted p < 0.05: 7 are tested in both. None has adjusted
+  p < 0.05 here, and 3 (all at 132 d) have unadjusted p < 0.05 in the same direction.
+- A stricter match (95% identity over 80%, or 99% over 90%) keeps the same picture: 517 of
+  602 and 344 of 404 pairs point the same way.
+
+This compares the two results. It does not say why they differ, and which of them is
+right is not tested here.
+
+Tables: `paper_gene_summary.tsv`, `paper_gene_overlap.tsv`, `paper_gene_overlap_genes.tsv`,
+`paper_gene_agreement.tsv`, `paper_gene_agreement_all_windows.tsv`. Code:
+`compare_paper_genes.py`, `plot_paper_gene_overlap.py`.
 
 ## Outputs
 
