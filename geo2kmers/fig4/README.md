@@ -21,7 +21,7 @@ Build the R environment from `environment-r.yml`. `--rscript` is its `Rscript`. 
   these differ from what some panels say. `published_fig4.tsv`: the printed AUCs, also from PR 212.
 - `pr212_gse111555_scores.tsv`: PR 212's sample scores for GSE111555, at commit f00ee836. `regroup_gse111555.py`
   uses them to recompute the published AUC on the corrected groups. It writes the `--groups` and `--published` files
-  for `fig4.nf`. `plot_gse111555_labels.py` draws the figure, outside the pipeline.
+  for `fig4.nf`. `plot_gse111555_labels.py` and `plot_accuracy.py` draw the figures, outside the pipeline.
 - Affymetrix probes: GEO has no sequences for these arrays, so `export_probe_tables.R` takes them from
   Bioconductor packages. GPL13912 (Agilent) has a SEQUENCE column.
 
@@ -36,7 +36,7 @@ Build the R environment from `environment-r.yml`. `--rscript` is its `Rscript`. 
 | `sample_scores.tsv` | each sample's score, as drawn in `fig4_panels.png` |
 | `annotation_control.tsv` | how many landings agree with the platform's gene names |
 | `chance_test.tsv`, `chance_by_comparison.tsv` | how often chance passes the rule |
-| `corrected_labels/` | `fig4.nf` rerun with six GSE111555 samples moved to the post group: `auc.tsv`, the chance tables, `sample_scores.tsv`, the `groups.tsv` and `published_fig4.tsv` it ran on, `gse111555_labels.tsv` with each sample's evidence, and `gse111555_labels.png` |
+| `corrected_labels/` | `fig4.nf` rerun with six GSE111555 samples moved to the post group: `auc.tsv`, the chance tables, `sample_scores.tsv`, the `groups.tsv` and `published_fig4.tsv` it ran on, `gse111555_labels.tsv` with each sample's evidence, `gse111555_labels.png`, and `accuracy.png` with `accuracy.tsv`, which show each score's distance from the published AUC |
 | `earlier_runs/` | the tables from three earlier runs, before the faults below were fixed |
 
 ## Score
