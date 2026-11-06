@@ -239,3 +239,26 @@ the same one.
 - The index-building cost is left out of the budget, as a one-time cost, like the databases in the
   baseline.
 - The paper's lists come from these reads, so agreement is not an independent repeat.
+
+## Can 50 % of the genes come at 1/1000th of the time? Answered 2026-11-06
+
+Not on these Botryllus samples, with anything measured so far. The budget is 11 s against SPLASH's 3.0 h.
+
+| reads | paper's lists, right way | nf-core lists, right way | wall time | share of SPLASH's time |
+|---|---|---|---|---|
+| all | 59 % | 54 % | 32 min | 1/5.7 |
+| 1/10 | 36 % | 47 % | 3.1 min | 1/60 |
+| 1/100 | 15 % | 24 % | 19 s | 1/580 |
+| 1/1000 | 2 % | 3 % | 4.6 s | 1/2,400 |
+
+Reading off the line between the measured points, 50 % needs about 1/4 to 2/5 of the reads, or 1/15 to
+1/20 of the time. That is an estimate, not a run. Fewer reads cannot close the gap: at 1/1000th, only 296
+of the 878 list genes get any read at all (`thin_read_bound.tsv`). To reach 1/1000th the time, the method
+would have to read about 1/3 of the reads about 50 times faster, and CPU spent on decompression was not
+measured.
+
+Two more limits on what 50 % would mean here. The 59 % uses a rule written after the first score, and
+gene-counts agrees with DESeq2 as well on swapped labels as on real ones. nf-core's lists are also smaller
+than chance alone would give, so these lists are a weak test of finding changed genes. The fair place to
+test the goal is data with a real signal, such as the simulated control and the human series, where
+gene-counts has been run only on the control, on all reads.
