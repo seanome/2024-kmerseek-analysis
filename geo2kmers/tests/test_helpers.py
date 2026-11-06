@@ -5,6 +5,7 @@ import gzip
 import io
 import json
 import runpy
+import subprocess
 import sys
 import urllib.error
 import urllib.request
@@ -599,3 +600,46 @@ def test_regroup_stops_when_vo2peak_does_not_support_the_title(monkeypatch, tmp_
     monkeypatch.chdir(tmp_path)
     with pytest.raises(SystemExit, match="does not support its title"):
         run(monkeypatch, "fig4/regroup_gse111555.py", *regroup_inputs(tmp_path, wrong_vo2=True))
+
+
+def write_probes(path, rows, samples):
+    with gzip.open(path, "wt") as f:
+        f.write("sequence\t" + "\t".join(samples) + "\n")
+        f.writelines("\t".join(map(str, row)) + "\n" for row in rows)
+
+
+def write_groups(path, samples):
+    with open(path, "w") as f:
+        f.write("dataset\tcomparison\tgroup\tsample\n")
+        f.writelines(f"GSE1\tmain\t{i % 2}\t{s}\n" for i, s in enumerate(samples))
+
+
+def test_kamrat_table_averages_a_kmer_on_two_probes_and_windows_long_probes(tmp_path):
+    samples = ["S1", "S2"]
+    short, long = "A" * 25, "A" * 25 + "C"
+    write_probes(tmp_path / "p.tsv.gz", [(short, 2, 4), (short, 4, 8), (long, 10, 20)], samples)
+    write_groups(tmp_path / "g.tsv", samples)
+    script = HERE / "fig4" / "kamrat_table.py"
+    arguments = [tmp_path / "p.tsv.gz", tmp_path / "g.tsv", "GSE1", "main", "0", tmp_path / "t.tsv", tmp_path / "d.tsv"]
+    subprocess.run([sys.executable, script, *arguments], check=True)
+    rows = dict(line.split("\t", 1) for line in (tmp_path / "t.tsv").read_text().splitlines()[1:])
+    # the all-A k-mer is on three probes, and the long probe's second window is its own
+    assert rows[short] == f"{16 / 3:.2f}\t{32 / 3:.2f}"
+    assert rows[short[1:] + "C"] == "10.00\t20.00"
+    assert (tmp_path / "d.tsv").read_text() == "S1\tpre\nS2\tpost\n"
+
+
+def test_splash_reads_keeps_only_probes_sharing_an_anchor_and_scales_by_intensity(tmp_path):
+    samples = ["S1", "S2"]
+    anchor = "ACGTACGTACGTACG"
+    rows = [(anchor + "AAAAAAAAAA", 100, 100), (anchor + "CCCCCCCCCC", 200, 100), ("T" * 25, 100, 100)]
+    write_probes(tmp_path / "p.tsv.gz", rows, samples)
+    write_groups(tmp_path / "g.tsv", samples)
+    script = HERE / "fig4" / "splash_reads.py"
+    subprocess.run(
+        [sys.executable, script, tmp_path / "p.tsv.gz", tmp_path / "g.tsv", "GSE1", tmp_path / "r"], check=True
+    )
+    lines = (tmp_path / "r" / "S1.fasta").read_text().splitlines()
+    assert lines.count(anchor + "AAAAAAAAAA") == 10
+    assert lines.count(anchor + "CCCCCCCCCC") == 20
+    assert "T" * 25 not in lines

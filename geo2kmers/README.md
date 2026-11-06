@@ -398,6 +398,31 @@ was the wrong one, and the tables above are the real result. GSE120862, GSE99963
 geo2kmers does not cover. The groups are those in the authors' code, which PR 212 found differ from what some
 panels say. GSE104079 is mouse, landing on human proteins.
 
+
+### KaMRaT and SPLASH on the raw probes
+
+KaMRaT tests 25-letter k-mers between pre and post, which is the k-mer form of differential expression. SPLASH finds
+15-letter anchors whose next 10 letters change between samples, which is how alternative splicing looks. Both ran on each
+sample's raw probe intensities with no gene annotation (`fig4/README.md`).
+
+| comparison | pre and post share scan days | k-mers changed, of tested | most in 5 shuffles | SPLASH anchors changed | most in 100 shuffles |
+|---|---|---:|---:|---:|---:|
+| GSE83578, 30 min | yes | 68554 of 504943 | 0 | 43 | 0 |
+| GSE111555, 18 weeks | yes | 765052 of 5335617 | 1 | 6709 | 0 |
+| GSE28998, 12 weeks | yes | 102 of 594532 | 1 | 5 | 4 |
+| GSE83578, 24 h | mostly not | 0 of 504943 | 0 | 0 | 1 |
+| GSE83578, 3 h | mostly not | 75733 of 504943 | 0 | 51 | 2 |
+| GSE27536 | mostly not | 25726 of 594532 | 0 | 17 | 2 |
+| GSE104079, 45 min | no, separate slides | 978716 of 1969729 | 767371 | 2138 | 2494 |
+
+A false discovery rate of 5 % sets each count. Large counts in the three lower rows cannot be told from a batch
+difference, because their pre and post samples were mostly run on different days or slides. In GSE104079 the one shuffle
+that nearly repeated the slide split found 767371 k-mers, and the other four found none. The GSE111555 groups are the
+corrected ones. Thirty of its 6709 anchors sit inside one gene cluster, the case closest to alternative splicing. Most
+anchors cross gene clusters, so they may reflect expression, not splicing. Counts of hits on signature proteins are in
+`summary.tsv`, but a 7-letter landing can happen by chance, and no control was run for them. These counts say that the
+groups differ. They do not test the published score, and no held-out AUC was computed.
+
 ## Limits
 
 - `land` is for probes under 100 nt: it stops on longer ones and points to `sketch --proteome`.

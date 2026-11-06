@@ -72,3 +72,17 @@ GPL17586 is the Affymetrix Human Transcriptome Array, GSE111555's platform.
   when it served two probe sets, and that short oligos used any stop-free frame. `earlier_runs/third_run_auc.tsv`
   has the run before these fixes. The short oligo fix took GPL13912 from 286 landings to 81 and moved GSE104079's
   second score from 0.356 to 0.322, so that score's count of 6 of 7 rests on a fix made after seeing 5 of 7.
+
+## KaMRaT and SPLASH on the raw probe intensities
+
+`fig4_splash_kamrat.nf` reads each sample's raw array file, so probes of one gene keep their own values, and uses no gene
+annotation. KaMRaT tests each 25-letter k-mer between pre and post, the k-mer form of differential expression, and also
+runs on five shuffled groupings. SPLASH finds 15-letter anchors whose next 10 letters change between samples, as
+alternative splicing does. It does not see the groups, so `splash_groups.py` then tests each significant anchor between
+pre and post and repeats that on 100 shuffled groupings. Reads for SPLASH are probes written in proportion to intensity.
+`scan_dates.py` reports whether pre and post were scanned on the same days, and `plot_splash_kamrat.py` writes the summary.
+
+Scripts: `fetch_raw.py`, `affymetrix_probe_intensities.R`, `agilent_probe_intensities.py`, `feature_table.py`,
+`kamrat_table.py`, `kamrat_summary.py`, `splash_reads.py` and `splash_groups.py`. Results are in
+`results/fig4/splash_kamrat/`. The full run took 1 h 50 min on 4 CPU and 16 GB. GSE111555's SPLASH and probe table steps
+peaked at 13.9 GB.
