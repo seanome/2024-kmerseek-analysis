@@ -5,6 +5,8 @@
 #   make run     submit everything (splash_prep -> 6 SPLASH jobs; Nextflow head job)
 #   make watch   attach to the running head's live task table (detach: Ctrl-b d)
 #   make stop    ask the running head to shut down cleanly
+#   make run-alone    refit with each comparison on its own libraries, on the counts above
+#   make watch-alone, make stop-alone    the same two commands for that head
 
 SHELL := /bin/bash
 
@@ -26,9 +28,13 @@ HEAD_TIME    ?= 2-00:00:00
 HEAD_SESSION ?= botryllus-pec-young
 HEAD_JOBNAME ?= nf-botryllus-pec-young
 
+ALONE_SESSION := botryllus-pec-alone
+ALONE_JOBNAME := nf-botryllus-pec-alone
+ALONE_TIME    ?= 12:00:00
+
 MAKEFILE_DIR := $(abspath $(dir $(firstword $(MAKEFILE_LIST))))
 
-.PHONY: run watch stop
+.PHONY: run watch stop run-alone watch-alone stop-alone
 
 $(NEXTFLOW):
 	mkdir -p $(dir $@)
@@ -52,3 +58,21 @@ stop:
 	@jid=$$(squeue -u $$USER -h -n $(HEAD_JOBNAME) -o "%i %T" | awk '$$2=="RUNNING"{print $$1; exit}'); \
 	 [ -n "$$jid" ] || { echo "no $(HEAD_JOBNAME) job is running"; exit 1; }; \
 	 scancel --signal=TERM --batch $$jid && echo "asked job $$jid to shut down"
+
+# Refuses to submit a second copy while one is queued or running, as submit_all.sh does.
+run-alone: $(NEXTFLOW)
+	@queued=$$(squeue -u $$USER -h -n $(ALONE_JOBNAME) -o "%i %T"); \
+	 [ -z "$$queued" ] || { echo "already queued or running: $$queued"; exit 1; }
+	mkdir -p $(OUT)/each-alone-head
+	ml load biology nextflow && cd $(OUT)/each-alone-head && \
+	  NF_HEAD_DETACH=1 HEAD_HINT_WATCH="make watch-alone" HEAD_HINT_STOP="make stop-alone" \
+	  HEAD_ACCOUNT=$(SLURM_ACCOUNT) HEAD_PARTITION=$(SLURM_PARTITION) HEAD_QOS=$(HEAD_QOS) \
+	  HEAD_TIME=$(ALONE_TIME) HEAD_CPUS=$(HEAD_CPUS) HEAD_MEM=$(HEAD_MEM) \
+	  HEAD_SESSION=$(ALONE_SESSION) HEAD_JOBNAME=$(ALONE_JOBNAME) \
+	  $(MAKEFILE_DIR)/../../scripts/nf-head $(MAKEFILE_DIR)/run_each_alone.sh $(MAKEFILE_DIR) $(OUT) $(NEXTFLOW)
+
+watch-alone:
+	@$(MAKE) --no-print-directory watch HEAD_JOBNAME=$(ALONE_JOBNAME) HEAD_SESSION=$(ALONE_SESSION)
+
+stop-alone:
+	@$(MAKE) --no-print-directory stop HEAD_JOBNAME=$(ALONE_JOBNAME)

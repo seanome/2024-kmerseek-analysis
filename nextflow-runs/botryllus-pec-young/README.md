@@ -65,7 +65,7 @@ trimming check (`inputs/trimmed-inputs.validated.json`). `make_design.py` turns 
 | rnaseq `skip_deseq2_qc` | true | its DESeq2 step fails when no gene has a count in every library |
 | rnaseq `skip_biotype_qc` | true | the FullNames GTF has no `gene_biotype` |
 | differentialabundance `deseq2_sf_type` | poscounts | the default size factors need genes counted in every library |
-| differentialabundance design | `~ colony + group`, all 52 libraries in one model | group = window and treatment; colony (4 genotypes) as blocking factor |
+| differentialabundance design | `~ colony + group`, all 52 libraries in one model | group = window and treatment; colony (4 genotypes) as blocking factor. `make run-alone` fits each comparison alone instead, see below |
 | SPLASH `--Cjs_samplesheet` | control -1, treated +1 | tests treated vs control rather than any difference between libraries |
 | SPLASH `--pvals_correction_col_name` | `Cjs_0_pval` | corrects the p-value for those weights |
 
@@ -170,7 +170,9 @@ The paper's Dataset S1 has its own DESeq2 results for four young-colony comparis
 reports (its sheet "annotated DE all groups young": 43 up and 237 down at 2 h, 252 and 98
 at 24 h, 18 and 48 at 13-49 d, 40 and 46 at 132 d) are therefore not adjusted-p lists.
 Their size is near the number of named genes with unadjusted p < 0.05 (37 and 259 at 2 h,
-221 and 79 at 24 h), but not equal, so the paper's exact rule is not known.
+221 and 79 at 24 h), but not equal, so the paper's exact rule is not known. The Methods'
+cutoff (p <= 0.05 and absolute log2 fold change > 1) gives 94 and 552 at 2 h in Dataset
+S1, more than the 43 and 237 listed, so the lists are cut further in a way not stated.
 
 | Comparison | Paper, adjusted p < 0.05 | Paper, listed up / down | This run, adjusted p < 0.05 up / down | This run, unadjusted p < 0.05 up / down |
 |---|---:|---:|---:|---:|
@@ -227,6 +229,64 @@ Tables: `paper_gene_summary.tsv`, `paper_gene_overlap.tsv`, `paper_gene_overlap_
 `paper_gene_agreement.tsv`, `paper_gene_agreement_all_windows.tsv`. Code:
 `compare_paper_genes.py`, `plot_paper_gene_overlap.py`.
 
+### Each comparison fitted on its own, as the paper did
+
+`make run-alone` refits on the counts of the run above, with each comparison fitted only on
+its own libraries and no colony term. It runs nf-core/differentialabundance twice
+(`run_each_alone.sh`):
+
+| Output folder | Comparisons | Libraries | Size factors | Variance step (`nsub`) |
+|---|---|---|---|---|
+| `differentialabundance-paper/` | the paper's four: 2 h, 24 h, 13-49 d pooled, 132 d | the paper's 38 (`samples_paper.csv`) | DESeq2's default (ratio) | 1000 (default) |
+| `differentialabundance-each-window/` | this run's six windows | all 52 (`samples.csv`) | poscounts | 10 |
+
+![Rank correlation of refitted p-values with the paper's, by design](figures/paper_design_check_domen2026_dataset_s1.png)
+
+Why these settings:
+
+- **No colony term.** The paper's Methods do not give its design. Refitting the paper's
+  own counts (Dataset S1, sheet "Pacemaker_Counts_Table") with `~ treatment` gives back
+  its p-values: rank correlation 0.9995 to 0.9999 in all four groups, and 179 of 179
+  genes at p < 0.05 at 132 d. With colony added the correlation is 0.58 to 0.80
+  (`each-alone-checks/paper_design.out`).
+- **The paper's 38 libraries.** Dataset S1's sheet "DEseq group annotation" lists them.
+  They are the 52 here less 9 of 12 libraries at 13-17 d and all 5 at 21-28 d. The paper's
+  Methods say libraries with fewer than 10,000 counts were removed. Here the 14 left out
+  have at most 17,760 read pairs and 2,823 gene counts. The 13-49 d group keeps 3
+  libraries at 13-17 d and all 5 at 49-52 d.
+- **Size factors.** These are the per-library scaling factors that correct for sequencing
+  depth. DESeq2's default uses only genes counted in every library, and that is what the
+  paper used. 392 genes are counted in all 38 libraries, so the default works for the
+  paper's set. It cannot work for all 52, so the six-window run keeps poscounts (see
+  Settings). The choice matters at 2 h: fitted alone, the default gives 686 genes at
+  p < 0.05, and poscounts gives 171 (`each-alone-checks/ratio.out`).
+- **`nsub` 10 for the six windows.** The variance step stops unless at least `nsub` genes
+  have a mean normalised count above 5. Fitted alone, 21-28 d has 14 such genes, 13-17 d
+  has 490 and 49-52 d has 992 (`each-alone-checks/fits.out`), so the default of 1000 would
+  stop the run. `nsub` changes only the transformed tables and the report's plots, not the
+  fold changes or p-values.
+
+Before launch, each comparison was fitted on the laptop in the pipeline's own DESeq2 image
+(`each-alone-checks/`). The pipeline's own DESeq2 script was also run, with this run's
+settings, on 21-28 d and on the paper's 13-49 d group. Both finished with the design
+`~ 0 + group`, on 5 and 8 libraries. Fitted alone, 21-28 d tests 1,513 genes and finds
+none at p < 0.05, so expect nothing from it. The pipeline's own checking step
+(shinyngs `validate_fom_components.R`) accepts both new sample and comparison files.
+
+On Sherlock:
+
+```bash
+D=/scratch/users/olgabot/2024-kmerseek-analysis-botryllus-pec-young; cd $D && git pull && cd nextflow-runs/botryllus-pec-young && make run-alone
+```
+
+Watch with `make watch-alone`, stop with `make stop-alone`.
+
+| Task | Resources (pipeline defaults) | Measured in the 2026-11-01 run | Expected |
+|---|---|---|---|
+| Nextflow head (`nf-botryllus-pec-alone`) | 2 CPUs, 8 GB, 12 h | | about 1-1.5 h for both runs |
+| DESeq2, one per comparison (4, then 6) | 1 CPU, 6 GB, 4 h | 1.3 GB, 2 min 15 s each | same or less: fewer libraries per fit |
+| Report (Quarto) | 2 CPUs, 24 GB (`sherlock.config`; default 12 GB), 4 h | 10.9 GB, 4 min 34 s | same or less |
+
 ## Outputs
 
 In `$SCRATCH/botryllus-pec-young/`:
@@ -237,6 +297,7 @@ In `$SCRATCH/botryllus-pec-young/`:
 | `rnaseq/star_salmon/salmon.merged.gene_counts.tsv` | reads per gene, per library |
 | `differentialabundance/tables/differential/` | one table per window: gene, log2 fold change, p-value, adjusted p-value |
 | `differentialabundance/report/` | HTML report with PCA, volcano plots per window |
+| `differentialabundance-paper/`, `differentialabundance-each-window/` | the same, with each comparison fitted on its own libraries (`make run-alone`) |
 | `splash/<window>/splash_out/result.after_correction.scores.tsv` | anchors with corrected p-value and effect size |
 | `splash/<window>/splash_out/result_compactors.tsv` | anchors extended into longer sequences |
 

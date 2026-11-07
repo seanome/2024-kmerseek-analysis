@@ -3,7 +3,8 @@
 # 52 young libraries (design ~ colony + group, group = window and treatment), so windows
 # with 2 or 3 libraries a side share the variance estimate of the larger ones.
 # input (samples.csv), contrasts (contrasts.csv), matrix, feature_length_matrix and outdir
-# are given on the command line by run_pipelines.sh, as absolute paths.
+# are given on the command line by run_pipelines.sh, as absolute paths. run_each_alone.sh
+# uses this file too, and overrides the settings it needs to fit each comparison alone.
 
 study_name: botryllus_pec_young
 observations_id_col: sample

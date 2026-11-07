@@ -1,0 +1,8 @@
+# The pipeline's own DESeq2 template (modules/nf-core/deseq2/differential/templates/
+# deseq2_differential.R at nf-core/differentialabundance 2.0.0), with its Nextflow
+# placeholders filled in as modules.config fills them, run on the validator's output
+# (shinyngs validate_fom_components.R, image r-shinyngs:2.4.0--709fc6932be670a5).
+# Same settings as run_each_alone.sh. 2026-11-06.
+young_21_28d alone, poscounts, vst_nsub 10:  design ~ 0 + group; 5 libraries; 1513 genes tested; p<.05 0; padj<.05 0; vst written
+young_13_49d alone (paper), ratio, vst_nsub 1000: design ~ 0 + group; 8 libraries; 17278 genes tested; p<.05 111; padj<.05 0; vst written
+Validator on samples_paper.csv: keeps the 38 libraries of the sheet out of 52 in the count matrix; contrasts get an empty blocking column.

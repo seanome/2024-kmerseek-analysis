@@ -10,6 +10,8 @@ Inputs (all in inputs/):
   ena_sample_metadata.tsv        ENA run table with the BioSample attributes, 64 runs
   published_vial_hours.tsv       hours after treatment for each vial, from the paper's
                                  Dataset S1 sample table
+  published_deseq_groups.tsv     the 38 young-colony vials in the paper's four DESeq2
+                                 groups, from Dataset S1 sheet "DEseq group annotation"
   trimmed-inputs.validated.json  Trim Galore output for the 64 runs on Sherlock, with read
                                  pair counts (from PR 203)
 
@@ -17,6 +19,11 @@ Outputs:
   samplesheet.csv   nf-core/rnaseq input: trimmed read pairs, one row per library
   samples.csv       nf-core/differentialabundance sample table
   contrasts.csv     one treated-vs-control comparison per window, colony as blocking factor
+  contrasts_each_window.csv
+                    the same six comparisons with no blocking factor, for fitting each
+                    window on its own libraries
+  samples_paper.csv, contrasts_paper.csv
+                    the paper's four comparisons on its 38 libraries, no blocking factor
   splash/<window>/input.txt, cjs.csv
                     SPLASH input (one read file per library) and sample weights
                     (control -1, treated +1)
@@ -151,6 +158,48 @@ def main():
                     f"{name}_control",
                     f"{name}_treated",
                     "colony",
+                ]
+            )
+
+    with open(HERE / "contrasts_each_window.csv", "w", newline="") as f:
+        w = csv.writer(f, lineterminator="\n")
+        w.writerow(["id", "variable", "reference", "target"])
+        for name, _, _ in WINDOWS:
+            w.writerow(
+                [
+                    f"{name}_treated_vs_control",
+                    "group",
+                    f"{name}_control",
+                    f"{name}_treated",
+                ]
+            )
+
+    paper_group = {
+        r["vial"]: r["paper_group"]
+        for r in csv.DictReader(
+            open(HERE / "inputs/published_deseq_groups.tsv"), delimiter="\t"
+        )
+    }
+    paper_rows = [
+        {**r, "group": f"{paper_group[r['vial']]}_{r['treatment']}"}
+        for r in rows
+        if r["vial"] in paper_group
+    ]
+    assert len(paper_rows) == len(paper_group) == 38, len(paper_rows)
+    with open(HERE / "samples_paper.csv", "w", newline="") as f:
+        w = csv.DictWriter(f, cols, extrasaction="ignore", lineterminator="\n")
+        w.writeheader()
+        w.writerows(paper_rows)
+    with open(HERE / "contrasts_paper.csv", "w", newline="") as f:
+        w = csv.writer(f, lineterminator="\n")
+        w.writerow(["id", "variable", "reference", "target"])
+        for name in dict.fromkeys(paper_group.values()):
+            w.writerow(
+                [
+                    f"{name}_treated_vs_control",
+                    "group",
+                    f"{name}_control",
+                    f"{name}_treated",
                 ]
             )
 
