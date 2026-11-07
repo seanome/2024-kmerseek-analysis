@@ -109,7 +109,9 @@ OM-RGC step needs a new PR.
 
 **Waiting for a Sherlock launch (5).** 182 (resume 16 tasks that ran out of memory),
 185 (344 gate rerun on kmerseek PR 157), 124 and 132 (BHF chained rescore), 130 (needs
-283's indexes). Each needs a decision: launch or park.
+283's indexes). Each needs a decision: launch or park. 130 is also one of the 8 that pass
+every check against main (see "Bases changed" above): its checks are green, and what
+blocks it is the Sherlock launch, so it is counted in both groups.
 
 **Built on another PR's branch (49).** 30, 47, 52, 53, 57, 58, 69, 71, 72, 77, 78, 80, 82,
 83, 85, 87, 88, 92, 96, 98, 102, 103, 104, 106, 119, 128, 129, 131, 133, 134, 139, 145,
