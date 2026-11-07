@@ -83,7 +83,8 @@ so they still point at their old bases.
 ## Closed on 2026-11-01
 
 Olga approved these in chat. Each got a comment saying why; every branch was kept, so
-any of them can be reopened. 33 closed, which leaves 59 analysis PRs open.
+any of them can be reopened. 33 closed, which leaves 59 analysis PRs open. The 11 PNG merges above came
+after this step, which takes the count to 48.
 
 - ELM motif and combiner chain (12): 51, 58, 92, 69, 71, 72, 87, 88, 98, 102, 103, 104.
 - Notebook 244 example-case chain (5): 49, 77, 78, 80, 82.
