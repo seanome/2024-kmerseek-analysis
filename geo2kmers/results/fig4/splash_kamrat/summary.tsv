@@ -1,0 +1,8 @@
+comparison	pre_and_post_share_batches	published_auc	kmers_tested	kmers_below_fdr	highest_kmers_below_fdr_shuffled	best_kmers_on_signature_proteins	splash_significant_anchors	splash_anchors_inside_one_feature	splash_anchors_differing_between_groups	highest_splash_anchors_shuffled	splash_hits_inside_one_feature	splash_hits_on_signature_proteins
+GSE83578, 30 min after	True	0.07	504943	68554	0	19	250	4	43	0	0	2
+GSE83578, 24 h after	False	0.54	504943	0	0	0	250	4	0	1	0	0
+GSE28998, 12 weeks training	True	0.80	594532	102	1	2	25	0	5	4	0	0
+GSE111555, 18 weeks training	True	0.809	5335617	765052	1	8	37881	501	6709	0	30	411
+GSE83578, 3 h after	False	0.07	504943	75733	0	24	250	4	51	2	0	2
+GSE27536, after exercise	False	0.17	594532	25726	0	9	46	0	17	2	0	0
+GSE104079, 45 min after	False	0.18	1969729	978716	767371	22	7672	0	2138	2494	0	156

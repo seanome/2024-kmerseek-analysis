@@ -1,0 +1,4 @@
+reference	alphabet	k	ref_distinct_kmers	tags	tags_frame_ge90pct	tags_one_frame_ge90pct	tags_stretch_ge90pct	tags_one_stretch_ge90pct	tags_any_kmer	median_share_of_tag_in_passing_stretch	shuffled_frame_ge90pct_mean	shuffled_stretch_ge90pct_mean	shuffled_any_kmer_mean
+human	protein	7	12623566	8845	1062	1062	7535	4480	8845	0.663	0.0	0.3	8845.0
+human	protein	10	13569110	8845	1072	1072	7025	4858	8710	0.669	0.0	0.0	248.7
+human	hp	30	14221700	8845	2844	2835	6573	5360	8838	0.68	0.0	3.0	8534.3
