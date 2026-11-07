@@ -8,6 +8,7 @@ test_invalid_values_do_not_become_passes (test_protocol.ProtocolTests.test_inval
 test_missing_calibration_blocks_before_mouse_manifest_is_opened (test_protocol.ProtocolTests.test_missing_calibration_blocks_before_mouse_manifest_is_opened) ... ok
 test_no_measurements_cannot_pass (test_protocol.ProtocolTests.test_no_measurements_cannot_pass) ... ok
 test_overlap_counts_genes_once_and_excludes_19_bases (test_protocol.ProtocolTests.test_overlap_counts_genes_once_and_excludes_19_bases) ... ok
+test_replicate_numbers_may_repeat_across_conditions (test_protocol.ProtocolTests.test_replicate_numbers_may_repeat_across_conditions) ... ok
 test_sample_eligibility_boundaries (test_protocol.ProtocolTests.test_sample_eligibility_boundaries) ... ok
 test_sequencing_run_tokens_are_nonempty_and_unique (test_protocol.ProtocolTests.test_sequencing_run_tokens_are_nonempty_and_unique) ... ok
 test_status_writer_rejects_modified_report (test_protocol.ProtocolTests.test_status_writer_rejects_modified_report) ... ok
@@ -21,6 +22,6 @@ test_zero_overlap_row_is_allowed_but_malformed_is_not (test_protocol.ProtocolTes
 test_zero_true_count_is_not_divided_or_passed (test_protocol.ProtocolTests.test_zero_true_count_is_not_divided_or_passed) ... ok
 
 ----------------------------------------------------------------------
-Ran 21 tests in 0.878s
+Ran 22 tests in 0.102s
 
 OK
