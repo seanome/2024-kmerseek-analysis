@@ -249,7 +249,7 @@ def push(workdir, dry_run):
     url = (workdir / "url.txt").read_text().strip()
     old, new = branch_tips(workdir / "before.git"), branch_tips(workdir / "after.git")
     now = remote_tips(url)
-    moved = sorted(r for r in now if now[r] != old.get(r))
+    moved = sorted(r for r in now.keys() | old.keys() if now.get(r) != old.get(r))
     if moved:
         raise SystemExit("These branches changed on GitHub after `prepare` (new, deleted "
                          "or moved), so the rewrite would lose their commits. Run "
@@ -257,7 +257,7 @@ def push(workdir, dry_run):
     # --force-with-lease refuses each branch that moved between this check and the push.
     leases = [f"--force-with-lease={ref}:{old[ref]}" for ref in sorted(new)]
     refspecs = [f"{new[ref]}:{ref}" for ref in sorted(new)]
-    args = ["push", "--porcelain", *(["--dry-run"] if dry_run else []), *leases, url,
+    args = ["push", "--porcelain", "--atomic", *(["--dry-run"] if dry_run else []), *leases, url,
             *refspecs]
     out = subprocess.run(["git", *args], cwd=workdir / "after.git",
                          stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
