@@ -103,8 +103,9 @@ PRs built on a closed PR's branch stay open: 149 (on 123) and 146, 148, 154, 164
 No OM-RGC PR is open: PR 170 (pilot, stopped at step 3) merged on 10-23, so the next
 OM-RGC step needs a new PR.
 
-**One failing check (11 left).** 141, 172, 173, 176, 190, 192, 194, 54, 63, 140, 169 fail
-the 256-colour PNG check. 196 failed black at triage time.
+**One failing check (11 at triage time).** 141, 172, 173, 176, 190, 192, 194, 54, 63, 140,
+169 failed the 256-colour PNG check; all 11 were fixed and merged later the same day (see
+"PNG fixes merged" above). 196 failed black at triage time and is still open.
 
 **Waiting for a Sherlock launch (5).** 182 (resume 16 tasks that ran out of memory),
 185 (344 gate rerun on kmerseek PR 157), 124 and 132 (BHF chained rescore), 130 (needs
