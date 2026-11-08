@@ -1,5 +1,6 @@
 """Choose k-mers without one person, and score that person's samples with them."""
 
+import gzip
 import itertools
 import math
 
@@ -52,20 +53,42 @@ def choose(values, squares, pre, post, size):
     return rows, np.sign(difference[rows])
 
 
-def score_samples(values, rows, signs, reference, targets, sizes):
-    """Mean signed standardised value of targets, one array per size, standardised on the reference columns."""
+def first_kmers(weights, size):
+    """How many of each row to use so that the rows, in order, give size k-mers: each row is weights[i] k-mers with
+    the same values, and the row that reaches size is cut short."""
+    used = np.asarray(weights, dtype=float).copy()
+    total = np.cumsum(used)
+    if total[-1] > size:
+        last = int(np.searchsorted(total, size))
+        used[last] -= total[last] - size
+        used[last + 1 :] = 0
+    return used
+
+
+def score_samples(values, rows, signs, reference, targets, sizes, weights=None):
+    """Mean signed standardised value of targets, one array per size, standardised on the reference columns.
+
+    weights, if given, is how many k-mers each row stands for, and a size counts k-mers rather than rows.
+    """
     reference_values = values[rows][:, reference]
     standardised = (values[rows][:, targets] - reference_values.mean(axis=1, keepdims=True)) / reference_values.std(
         axis=1, ddof=1, keepdims=True
     )
     signed = signs[:, None] * standardised
-    return {size: signed[:size].mean(axis=0) for size in sizes}
+    if weights is None:
+        return {size: signed[:size].mean(axis=0) for size in sizes}
+    out = {}
+    for size in sizes:
+        used = first_kmers(weights[rows], size)
+        out[size] = used @ signed / used.sum()
+    return out
 
 
-def held_out_scores(values, squares, post, people, sizes):
+def held_out_scores(values, squares, post, people, sizes, weights=None):
     """Each sample's score from k-mers chosen and standardised without that sample's person.
 
-    Returns a score array per size, and each person's chosen rows at the largest size.
+    Returns a score array per size, and each person's chosen rows at the largest size. weights is as in
+    score_samples.
     """
     scores = {size: np.full(len(post), np.nan) for size in sizes}
     chosen = {}
@@ -73,7 +96,7 @@ def held_out_scores(values, squares, post, people, sizes):
         held = people == person
         kept = ~held
         rows, signs = choose(values, squares, kept & ~post, kept & post, max(sizes))
-        for size, value in score_samples(values, rows, signs, kept, held, sizes).items():
+        for size, value in score_samples(values, rows, signs, kept, held, sizes, weights).items():
             scores[size][held] = value
         chosen[person] = (rows, signs)
     return scores, chosen
@@ -122,3 +145,37 @@ def p_from_shuffles(observed, shuffled):
     """One-sided p: the share of shuffles at or above the true value, counting the true value itself."""
     shuffled = np.asarray(shuffled)
     return (1 + int((shuffled >= observed).sum())) / (1 + len(shuffled))
+
+
+def read_table(table, design):
+    """A k-mer table and its design: names, samples, values, post labels, and for an HP table the k-mers and probe
+    sets each row stands for.
+
+    A KaMRaT table (kamrat_table.py) holds intensities, which are logged as log2(intensity + 1); weights and probe
+    sets are then None. An HP table (hp_value_table.py) has `kmers` and `probe_sets` as its second and third columns
+    and holds RMA values, already log2, used as they are."""
+    with open(design) as f:
+        labels = dict(line.split() for line in f)
+    names, lines, weights, probe_sets = [], [], [], []
+    opener = gzip.open if str(table).endswith(".gz") else open
+    with opener(table, "rt") as f:
+        header = f.readline().rstrip("\n").split("\t")
+        hp = header[1:3] == ["kmers", "probe_sets"]
+        samples = header[3:] if hp else header[1:]
+        for line in f:
+            if hp:
+                name, kmers, sets, rest = line.split("\t", 3)
+                weights.append(int(kmers))
+                probe_sets.append(sets)
+            else:
+                name, rest = line.split("\t", 1)
+            names.append(name)
+            lines.append(np.fromstring(rest, sep="\t", dtype=np.float32))
+    values = np.array(lines, dtype=np.float64).reshape(len(lines), len(samples))
+    # A series matrix can hold samples outside the comparison; keep the design's
+    keep = [i for i, s in enumerate(samples) if s in labels]
+    samples, values = [samples[i] for i in keep], values[:, keep]
+    post = np.array([labels[s] == "post" for s in samples])
+    if not hp:
+        return names, samples, np.log2(values + 1), post, None, None
+    return names, samples, values, post, np.array(weights), probe_sets

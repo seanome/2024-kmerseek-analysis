@@ -2,7 +2,8 @@
 
 Usage: cross_series_auc.py <train table> <train design> <scored table> <scored design> <series folder>
        <train dataset> <scored dataset> <scored comparison> <shuffles> <out prefix>
-Tables and designs are kamrat_table.py's. The rules are in cross_series_plan.md. Writes <prefix>.cross.tsv, one row
+Tables and designs are kamrat_table.py's, or the tables are hp_value_table.py's for one array. The rules are in
+cross_series_plan.md, and for HP k-mers also in hp_tests_plan.md. Writes <prefix>.cross.tsv, one row
 per k-mer count, and .cross_samples.tsv and .cross_chance.tsv.
 """
 
@@ -31,22 +32,8 @@ HEADLINE = 1000
 shuffles = int(shuffles)
 
 
-def read(table, design):
-    with open(design) as f:
-        labels = dict(line.split() for line in f)
-    kmers, lines = [], []
-    with open(table) as f:
-        samples = f.readline().rstrip("\n").split("\t")[1:]
-        for line in f:
-            kmer, rest = line.split("\t", 1)
-            kmers.append(kmer)
-            lines.append(np.fromstring(rest, sep="\t", dtype=np.float32))
-    values = np.log2(np.array(lines, dtype=np.float64) + 1)
-    return kmers, samples, values, np.array([labels[s] == "post" for s in samples])
-
-
-train_kmers, _, train_values, train_post = read(train_table, train_design)
-scored_kmers, samples, scored_values, post = read(scored_table, scored_design)
+train_kmers, _, train_values, train_post, train_weights, probe_sets = ho.read_table(train_table, train_design)
+scored_kmers, samples, scored_values, post, _, _ = ho.read_table(scored_table, scored_design)
 where = {k: i for i, k in enumerate(scored_kmers)}
 shared = [(i, where[k]) for i, k in enumerate(train_kmers) if k in where]
 train_values = train_values[[i for i, _ in shared]]
@@ -55,6 +42,11 @@ scored_values = scored_values[[j for _, j in shared]]
 varies = (train_values.std(axis=1) > 0) & (scored_values.std(axis=1) > 0)
 constant = int((~varies).sum())
 train_values, scored_values = train_values[varies], scored_values[varies]
+if train_weights is None:
+    weights = probe_sets = None
+else:
+    keep = np.array([i for i, _ in shared])[varies]
+    weights, probe_sets = train_weights[keep], [probe_sets[i] for i in keep]
 fields = sample_fields(series, scored_gse)
 people = np.array([person_of(scored_gse, fields[s]) for s in samples])
 
@@ -62,11 +54,19 @@ p, difference = ho.welch_p(train_values, train_values * train_values, ~train_pos
 rows = np.lexsort((np.arange(len(p)), p))[: max(SIZES)]
 signs = np.sign(difference)
 everyone = np.ones(len(post), dtype=bool)
-scores = ho.score_samples(scored_values, rows, signs[rows], everyone, everyone, SIZES)
+scores = ho.score_samples(scored_values, rows, signs[rows], everyone, everyone, SIZES, weights)
+# An HP row stands for weights[row] k-mers; with plain k-mers each row is one
+per_row = np.ones(len(p), dtype=np.int64) if weights is None else weights
 
 rng = np.random.default_rng(1)
 swaps = ho.arrangements(post, people, shuffles, rng)
 up, down = np.flatnonzero(signs > 0), np.flatnonzero(signs <= 0)
+
+
+def chosen_up(size):
+    """How many of the first size chosen k-mers went up after exercise in training."""
+    used = ho.first_kmers(per_row[rows], size)
+    return int(used[signs[rows] > 0].sum())
 
 
 def random_set(size):
@@ -77,14 +77,36 @@ def random_set(size):
     return rng.permutation(picked)
 
 
-random_sets = [{size: random_set(min(size, len(p))) for size in SIZES} for _ in range(shuffles)]
-random_scores = [
-    {
-        size: ho.score_samples(scored_values, r[size], signs[r[size]], everyone, everyone, (size,))[size]
-        for size in SIZES
-    }
-    for r in random_sets
-]
+def draw(pool, n):
+    """n k-mers drawn without replacement from the HP rows in pool, each k-mer equally likely, as one weight per
+    row of the table."""
+    ends = np.cumsum(per_row[pool])
+    picked = np.searchsorted(ends, rng.choice(int(ends[-1]), n, replace=False), side="right")
+    counts = np.zeros(len(p), dtype=np.int64)
+    np.add.at(counts, pool[picked], 1)
+    return counts
+
+
+def random_hp_score(size):
+    """As random_set, for HP rows that each stand for several k-mers."""
+    size = min(size, int(per_row.sum()))
+    n_up = chosen_up(size)
+    counts = draw(up, n_up) + draw(down, size - n_up)
+    picked = np.flatnonzero(counts)
+    return ho.score_samples(scored_values, picked, signs[picked], everyone, everyone, (size,), counts)[size]
+
+
+if weights is None:
+    random_sets = [{size: random_set(min(size, len(p))) for size in SIZES} for _ in range(shuffles)]
+    random_scores = [
+        {
+            size: ho.score_samples(scored_values, r[size], signs[r[size]], everyone, everyone, (size,))[size]
+            for size in SIZES
+        }
+        for r in random_sets
+    ]
+else:
+    random_scores = [{size: random_hp_score(size) for size in SIZES} for _ in range(shuffles)]
 
 summary, chance = [], []
 for size in SIZES:
@@ -117,9 +139,18 @@ for size in SIZES:
             "people_p_random_kmers": f"{ho.p_from_shuffles(above, [u for _, u in by_kmers]):.4f}",
             "kmers_shared": len(shared),
             "kmers_dropped_for_no_variance": constant,
-            "kmers_up_after_in_training": int((signs[rows[:size]] > 0).sum()),
+            "kmers_up_after_in_training": chosen_up(size),
         }
     )
+    if weights is not None:
+        used = ho.first_kmers(weights[rows], size)
+        summary[-1].update(
+            kmers_shared=int(train_weights[[i for i, _ in shared]].sum()),
+            kmers_dropped_for_no_variance=int(train_weights[[i for i, _ in shared]].sum() - weights.sum()),
+            probe_sets_behind=len(
+                {n for r, u in zip(rows, used, strict=True) if u > 0 for n in probe_sets[r].split(",")}
+            ),
+        )
 
 
 def write(name, rows_out):
