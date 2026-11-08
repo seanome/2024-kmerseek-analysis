@@ -159,8 +159,10 @@ KMERSEEK_ALPHABET_CLUSTERS: dict[str, list[str]] = {
     "uniprot18": list("ARNDCQGIKMFSTWYV") + ["EP", "HL"],
     "protein20": list("ACDEFGHIKLMNPQRSTVWY"),
 }
+# One output character per class (its first residue), as the rest of the registry uses
+# (`construct_check_utils.encode` writes one symbol per residue).
 ALPHABET_AA_GROUPS |= {
-    alphabet: {cluster: cluster for cluster in clusters}
+    alphabet: {cluster[0]: cluster for cluster in clusters}
     for alphabet, clusters in KMERSEEK_ALPHABET_CLUSTERS.items()
 }
 
