@@ -10,6 +10,7 @@
 //!              design (used only for the known-answer control).
 mod best_frame;
 mod gene_counts;
+mod kmer_counts;
 mod reads_holding;
 
 use std::collections::HashMap;
@@ -579,7 +580,9 @@ fn main() -> Res<()> {
         Some("frame-scores") => best_frame::cmd_frame_scores(&args[2..]),
         Some("gene-counts") => gene_counts::cmd_gene_counts(&args[2..]),
         Some("reads-holding") => reads_holding::cmd_reads_holding(&args[2..]),
-        _ => Err("usage: pec-tools <translate|simulate|anchor-counts|best-frame|gene-counts|reads-holding> ...".into()),
+        Some("kmer-codes") => kmer_counts::cmd_kmer_codes(&args[2..]),
+        Some("count-kmers") => kmer_counts::cmd_count_kmers(&args[2..]),
+        _ => Err("usage: pec-tools <translate|simulate|anchor-counts|best-frame|gene-counts|reads-holding|kmer-codes|count-kmers> ...".into()),
     }
 }
 
