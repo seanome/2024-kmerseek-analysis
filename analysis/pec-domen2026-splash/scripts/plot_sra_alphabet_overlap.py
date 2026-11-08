@@ -1,18 +1,18 @@
 #!/usr/bin/env python3
 """Which Botryllus genes pass in human and Botryllus reads, by alphabet and k (notebook 361).
 
-Usage: plot_sra_alphabet_overlap.py <alphabet_reach dir> <hp24_27_reach dir> <out_stem>
+Usage: plot_sra_alphabet_overlap.py <alphabet_reach dir> <hp24_27_reach dir> <pd_k10_reach dir> <out_stem>
 
-Inputs are gene_passes.tsv and threshold.tsv from scripts/sra_alphabet_reach.py. The two folders come
-from two sketching methods: alphabet_reach used Swiss-Prot 7-mer frames at scaled 10, hp24_27_reach used
-each species' own protein 10-mer frames at scaled 1. HP k27 was run both ways, which shows how much the
-method alone changes the count.
+Inputs are gene_passes.tsv and threshold.tsv from scripts/sra_alphabet_reach.py. The folders come
+from two sketching methods: alphabet_reach used Swiss-Prot 7-mer frames at scaled 10; hp24_27_reach (HP)
+and pd_k10_reach (protein, Dayhoff) used each species' own protein 10-mer frames at scaled 1. Protein k7,
+Dayhoff k12, k13 and HP k27 were run both ways, which shows how much the method alone changes the count.
 
 a. Per setting and species: paper-list genes passing (of 823) and random genes passing (of 848).
    Settings where even the shuffled proteins' 99th percentile is 1.0 cannot pass anything; they get
    a grey x instead of a count.
-b. Human: how the passing list genes split across protein k7, Dayhoff k13 and HP k25 (all 108 runs),
-   and the same split for random genes.
+b. Human: how the passing list genes split across protein k7, Dayhoff k13 and HP k25 (all 108 runs,
+   all made with each species' own frames at scaled 1), and the same split for random genes.
 Writes <out_stem>.tsv (panel a) and <out_stem>.overlap.tsv (panel b), and prints both.
 """
 import sys
@@ -24,7 +24,7 @@ import polars as pl
 sys.path.insert(0, str(Path(__file__).resolve().parents[3] / "notebooks"))
 import pubfig as pf  # noqa: E402
 
-old_dir, new_dir, out_stem = Path(sys.argv[1]), Path(sys.argv[2]), sys.argv[3]
+old_dir, new_dir, pd_dir, out_stem = Path(sys.argv[1]), Path(sys.argv[2]), Path(sys.argv[3]), sys.argv[4]
 C = pf.OKABE_ITO
 
 
@@ -36,6 +36,8 @@ def load(d, method):
 
 g0, t0 = load(old_dir, "Swiss-Prot 7-mer frames, scaled 10")
 g1, t1 = load(new_dir, "own 10-mer frames, scaled 1")
+g2, t2 = load(pd_dir, "own 10-mer frames, scaled 1")
+g1, t1 = pl.concat([g1, g2]), pl.concat([t1, t2])
 g, t = pl.concat([g0, g1]), pl.concat([t0, t1])
 summ = (g.filter(pl.col("set") != "shuffled").group_by("method", "alphabet", "k", "species", "set")
         .agg(genes=pl.len(), passed=pl.col("passed").sum())
@@ -46,7 +48,7 @@ summ.write_csv(f"{out_stem}.tsv", separator="\t")
 with pl.Config(tbl_rows=-1, tbl_cols=-1, tbl_width_chars=200):
     print(summ)
 
-TRIO = [("protein", 7, g0), ("dayhoff", 13, g0), ("hp", 25, g1)]
+TRIO = [("protein", 7, g1), ("dayhoff", 13, g1), ("hp", 25, g1)]
 over = []
 for s in ("paper_list", "random_length_matched"):
     sets = [set(x.filter((pl.col("alphabet") == a) & (pl.col("k") == k) & (pl.col("species") == "human")
@@ -62,9 +64,9 @@ over.write_csv(f"{out_stem}.overlap.tsv", separator="\t")
 print(over)
 
 pf.use_style()
-fig, axs = pf.figure(pf.TWO_COLUMN_MM, 80, ncols=3, layout="constrained", gridspec_kw=dict(width_ratios=[1, 1, 1.1]))
-ORDER = [("protein", 6, 0), ("protein", 7, 0), ("dayhoff", 12, 0), ("dayhoff", 13, 0), ("hp", 24, 1), ("hp", 25, 1),
-         ("hp", 26, 1), ("hp", 27, 1), ("hp", 27, 0), ("hp", 30, 0)]
+fig, axs = pf.figure(pf.TWO_COLUMN_MM, 95, ncols=3, layout="constrained", gridspec_kw=dict(width_ratios=[1, 1, 1.1]))
+ORDER = [("protein", 6, 0), ("protein", 7, 1), ("protein", 7, 0), ("dayhoff", 12, 1), ("dayhoff", 12, 0), ("dayhoff", 13, 1),
+         ("dayhoff", 13, 0), ("hp", 24, 1), ("hp", 25, 1), ("hp", 26, 1), ("hp", 27, 1), ("hp", 27, 0), ("hp", 30, 0)]
 methods = [g0["method"][0], g1["method"][0]]
 ys, labels, y = [], [], 0
 for i, (a, k, m) in enumerate(ORDER):
@@ -108,7 +110,7 @@ axs[0].legend(keep.values(), keep.keys(), loc="lower left", bbox_to_anchor=(0, 1
 ax = axs[2]
 T, F = True, False
 combos = [(T, T, T), (T, T, F), (T, F, T), (F, T, T), (T, F, F), (F, T, F), (F, F, T)]
-names = ["protein k7 *", "Dayhoff k13 *", "HP k25"]
+names = ["protein k7", "Dayhoff k13", "HP k25"]
 w = 0.38
 for j, c in enumerate(combos):
     for s, off, fc in (("paper_list", -w / 2, C["black"]), ("random_length_matched", w / 2, "white")):
@@ -128,7 +130,7 @@ ax.set_ylim(0, None)
 ax.set_ylabel("human: genes passing")
 ax.set_title("human: which settings a gene passes in")
 ax.legend([pf.plt.Rectangle((0, 0), 1, 1, fc=C["black"]), pf.plt.Rectangle((0, 0), 1, 1, fc="white", ec=C["black"])],
-          ["paper's list genes", "random genes"], loc="upper left", frameon=False, fontsize=5)
+          ["paper's list genes", "random genes"], loc="upper right", frameon=False, fontsize=5)
 for a_, l_ in zip(axs, "abc"):
     pf.panel_label(a_, l_)
 fig.suptitle("A gene passes if a run holds more of its k-mers than 99 % of shuffled proteins do.  * = Swiss-Prot 7-mer "
