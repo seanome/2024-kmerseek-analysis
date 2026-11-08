@@ -166,7 +166,7 @@ cb.set_label(
 a.axvline(0.5, color="white", ls=":", lw=0.8)
 a.axvline(chosen, color="white", ls="-", lw=0.8)
 a.set_xlabel(
-    "Share of chosen frame's k-mers in Swiss-Prot\n(white: cutoff 0.1 solid, 0.5 dotted)"
+    f"Share of chosen frame's k-mers in Swiss-Prot\n(white: cutoff {chosen:g} solid, 0.5 dotted)"
 )
 b.set_xlabel("Matching k-mers in chosen frame")
 # group labels and separators

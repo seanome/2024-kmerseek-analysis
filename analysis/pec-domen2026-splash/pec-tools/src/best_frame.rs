@@ -77,6 +77,22 @@ pub fn alphabet_size(alphabet: &str) -> u64 {
     }
 }
 
+/// Errors when a window of `k` letters does not fit a `u64` code (`alphabet_size^k`).
+pub fn check_k_fits(alphabet: &str, k: usize) -> Res<()> {
+    let ok = u32::try_from(k)
+        .ok()
+        .and_then(|e| alphabet_size(alphabet).checked_pow(e))
+        .is_some();
+    if k == 0 || !ok {
+        return Err(format!(
+            "k={k} does not fit a 64-bit code for the {alphabet} alphabet ({}^k overflows); use a smaller k",
+            alphabet_size(alphabet)
+        )
+        .into());
+    }
+    Ok(())
+}
+
 /// Calls `f(code)` for every window of `k` valid letters; returns the number of windows
 /// (valid or not). Codes are base-`size` numbers of the window's letters.
 pub fn for_each_kmer(seq: &[u8], alphabet: &str, k: usize, mut f: impl FnMut(u64)) -> usize {
@@ -109,6 +125,7 @@ pub fn for_each_kmer(seq: &[u8], alphabet: &str, k: usize, mut f: impl FnMut(u64
 }
 
 pub fn load_reference(path: &str, alphabet: &str, k: usize) -> Res<KmerSet> {
+    check_k_fits(alphabet, k)?;
     let mut set = KmerSet::default();
     let mut seq = Vec::new();
     let add = |s: &mut Vec<u8>, set: &mut KmerSet| {
