@@ -1,0 +1,25 @@
+alphabet	k	bits_uniform	anchor	input_type	reach_rank	reach_relative	containment_at_reach	containment_next_rank	floor	ranks_below_floor_inside_reach
+protein	7	30.25	Mus musculus	proteome	kingdom	Drosophila melanogaster	0.0622441	0.042643	0.0514972	
+protein	7	30.25	Mytilus edulis	proteome	phylum	Octopus sinensis	0.0949984	0.0785103	0.0941413	
+protein	7	30.25	Escherichia coli K-12	proteome	phylum	Caulobacter vibrioides	0.0194699	0.0126658	0.0187126	
+protein	10	43.22	Mus musculus	proteome	kingdom	Drosophila melanogaster	0.0145539	0.00479359	0.0116679	
+protein	10	43.22	Mytilus edulis	proteome	kingdom	Capitella teleta	0.0196334	0.00400147	0.00957388	
+protein	10	43.22	Escherichia coli K-12	proteome	phylum	Caulobacter vibrioides	0.00450497	0.0024352	0.00443303	
+dayhoff	12	31.02	Mus musculus	proteome	subphylum	Danio rerio	0.306791	0.166784	0.208809	
+dayhoff	12	31.02	Mytilus edulis	proteome	genus	Mytilus coruscus	0.457668	0.223539	0.273419	
+dayhoff	12	31.02	Escherichia coli K-12	proteome	phylum	Caulobacter vibrioides	0.0659888	0.0476909	0.0655746	
+dayhoff	16	41.36	Mus musculus	proteome	kingdom	Drosophila melanogaster	0.0295472	0.0121198	0.0255322	
+dayhoff	16	41.36	Mytilus edulis	proteome	kingdom	Capitella teleta	0.0340443	0.0103178	0.0222011	
+dayhoff	16	41.36	Escherichia coli K-12	proteome	class	Pseudomonas aeruginosa	0.0317862	0.00834384	0.0133454	
+hp	30	30.00	Mus musculus	proteome	subphylum	Danio rerio	0.11965	0.0294251	0.0317225	
+hp	30	30.00	Mytilus edulis	proteome	phylum	Octopus sinensis	0.0609738	0.0463729	0.058056	
+hp	30	30.00	Escherichia coli K-12	proteome	class	Pseudomonas aeruginosa	0.0262707	0.00993064	0.0118982	
+hp	42	42.00	Mus musculus	proteome	kingdom	Drosophila melanogaster	0.00709287	0.00184838	0.0043637	
+hp	42	42.00	Mytilus edulis	proteome	kingdom	Capitella teleta	0.00994996	0.00178888	0.0040684	
+hp	42	42.00	Escherichia coli K-12	proteome	class	Pseudomonas aeruginosa	0.00794903	0.00109115	0.00136255	
+DNA	15	30.00	Mus musculus	cds	subphylum	Danio rerio	0.194742	0.14291	0.151185	
+DNA	15	30.00	Mytilus edulis	cds	genus	Mytilus coruscus	0.403693	0.203217	0.389196	
+DNA	15	30.00	Escherichia coli K-12	cds	class	Pseudomonas aeruginosa	0.0325596	0.0218914	0.0239877	
+DNA	21	42.00	Mus musculus	cds	kingdom	Drosophila melanogaster	0.000775694	0.000368681	0.000407246	
+DNA	21	42.00	Mytilus edulis	cds	phylum	Octopus sinensis	0.00085746	0.000322863	0.0006908	
+DNA	21	42.00	Escherichia coli K-12	cds	phylum	Caulobacter vibrioides	7.94297e-05	4.35849e-05	6.87402e-05	

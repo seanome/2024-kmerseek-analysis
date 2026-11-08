@@ -7,11 +7,19 @@ Mus musculus	dayhoff	12	30	proteome	11810835	2.2865	31.02	27.44
 Mus musculus	dayhoff	16	42	proteome	11810835	2.2865	41.36	36.58
 Mus musculus	hp	30	30	proteome	11810835	1.0000	30.00	30.00
 Mus musculus	hp	42	42	proteome	11810835	1.0000	42.00	42.00
-Botryllus schlosseri	DNA	15	30	cds	56499952	1.9931	30.00	29.90
-Botryllus schlosseri	DNA	21	42	cds	56499952	1.9931	42.00	41.86
-Botryllus schlosseri	protein	7	30	proteome	18804277	4.1995	30.25	29.40
-Botryllus schlosseri	protein	10	42	proteome	18804277	4.1995	43.22	42.00
-Botryllus schlosseri	dayhoff	12	30	proteome	18804277	2.3054	31.02	27.66
-Botryllus schlosseri	dayhoff	16	42	proteome	18804277	2.3054	41.36	36.89
-Botryllus schlosseri	hp	30	30	proteome	18804277	0.9969	30.00	29.91
-Botryllus schlosseri	hp	42	42	proteome	18804277	0.9969	42.00	41.87
+Mytilus edulis	DNA	15	30	cds	92922767	1.9458	30.00	29.19
+Mytilus edulis	DNA	21	42	cds	92922767	1.9458	42.00	40.86
+Mytilus edulis	protein	7	30	proteome	30905020	4.1988	30.25	29.39
+Mytilus edulis	protein	10	42	proteome	30905020	4.1988	43.22	41.99
+Mytilus edulis	dayhoff	12	30	proteome	30905020	2.3282	31.02	27.94
+Mytilus edulis	dayhoff	16	42	proteome	30905020	2.3282	41.36	37.25
+Mytilus edulis	hp	30	30	proteome	30905020	0.9942	30.00	29.83
+Mytilus edulis	hp	42	42	proteome	30905020	0.9942	42.00	41.76
+Escherichia coli K-12	DNA	15	30	cds	4042859	1.9979	30.00	29.97
+Escherichia coli K-12	DNA	21	42	cds	4042859	1.9979	42.00	41.96
+Escherichia coli K-12	protein	7	30	proteome	1354431	4.1582	30.25	29.11
+Escherichia coli K-12	protein	10	42	proteome	1354431	4.1582	43.22	41.58
+Escherichia coli K-12	dayhoff	12	30	proteome	1354431	2.2355	31.02	26.83
+Escherichia coli K-12	dayhoff	16	42	proteome	1354431	2.2355	41.36	35.77
+Escherichia coli K-12	hp	30	30	proteome	1354431	0.9891	30.00	29.67
+Escherichia coli K-12	hp	42	42	proteome	1354431	0.9891	42.00	41.54
