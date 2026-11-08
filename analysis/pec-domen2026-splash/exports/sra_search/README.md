@@ -303,6 +303,68 @@ So the six settings are HP 27 / Dayhoff 12 / protein 6 and HP 30 / Dayhoff 13 / 
 (The project's usual pairing HP 30 / Dayhoff 12 / protein 7 puts Dayhoff 12 nearer HP 27.)
 Every run and query is sketched at scaled 10.
 
+## Botryllus list genes in human reads, by alphabet (2026-11-08)
+
+![alphabet_overlap.png](alphabet_overlap.png)
+
+The paper's Botryllus list genes (823) and baseMean-matched random Botryllus genes (848) were searched
+against every human and Botryllus run. A gene passes in a species if, in some run, its share of k-mers
+found is above what 99 % of shuffled copies of the same proteins reach, with at least 2 shared hashes.
+Scripts: `scripts/sra_alphabet_reach.py`, `scripts/plot_sra_alphabet_overlap.py`. Tables:
+`alphabet_overlap.tsv`, `alphabet_overlap.overlap.tsv`, `alphabet_reach/`, `hp24_27_reach/`.
+
+Two sketching methods are mixed here, marked * in the figure:
+
+- * protein k6, k7, Dayhoff k12, k13, HP k27, k30: reading frames chosen with Swiss-Prot 7-mers,
+  scaled 10 (job 51357984).
+- HP k24 to 27: frames chosen with each species' own protein 10-mers, scaled 1 (jobs 51358172,
+  51553711, 51553712).
+
+HP k27 was run both ways: 18 list genes against 4 random the old way, 71 against 30 the new way. So
+the method changes the count by about 4 times, and only settings made the same way can be ranked.
+
+Human reads:
+
+| setting | runs | list genes passing (of 823) | random genes passing (of 848) | list minus random |
+|---|---:|---:|---:|---:|
+| protein k7 * | 108 | 67 | 21 | 46 |
+| Dayhoff k12 * | 108 | 33 | 13 | 20 |
+| Dayhoff k13 * | 108 | 59 | 24 | 35 |
+| HP k24 | 108 | 90 | 56 | 34 |
+| HP k25 | 108 | 89 | 48 | 41 |
+| HP k26 | 28 | 98 | 43 | 55 |
+| HP k27 | 28 | 71 | 30 | 41 |
+| HP k27 * | 28 | 18 | 4 | 14 |
+
+- **HP k25 against k24 to 27:** k25 is the largest HP k that can still search all 108 human runs.
+  At k26 and above, only the 28 GSE99963 runs have reads long enough. k26 passes the most list genes
+  (98 against 43 random), on those 28 runs alone. k25 passes 89 against 48 on all 108.
+- **Protein k6 and Botryllus Dayhoff k12 and HP k27 *:** shuffled proteins reach 100 % containment,
+  so the cutoff is 1.0 and nothing can pass. That is a limit of this cutoff, not a sign that no gene
+  reaches.
+- **HP k30 in human:** not run, because no human read holds 30 residues in a frame.
+
+Do the alphabets find the same genes? In human, 131 list genes pass in at least one of protein k7 *,
+Dayhoff k13 * or HP k25, and 76 random genes do.
+
+| passes in | list genes | random genes |
+|---|---:|---:|
+| all three | 26 | 4 |
+| two of three | 32 | 9 |
+| one only | 73 | 63 |
+| of these, HP k25 only | 42 | 37 |
+
+Genes that pass in two or more alphabets are mostly list genes: 58 against 13 random. Genes that pass
+in one alphabet alone are close to chance, 73 against 63. HP k25 alone adds 42 list genes against 37
+random, so almost all of HP's extra reach is not specific to the list.
+
+In Botryllus reads, most random genes pass too (for example protein k7: 708 list, 590 random). That
+only says the genes are expressed in Botryllus. It says nothing about PEC.
+
+Not tested: whether a human pass is a real human homolog of the Botryllus gene. That needs the
+matching human reads aligned back to a human protein. Protein k7 and Dayhoff k13 have not been redone
+at scaled 1 with the species' own frames, so panel c compares two methods.
+
 ## Cost
 
 Predicted before the full run, from the 2-run pilot (JA113 and JA123, 0.99 Gbp of trimmed reads):

@@ -1,0 +1,15 @@
+set	protein_k7	dayhoff_k13	hp_k25	genes
+paper_list	true	true	true	26
+paper_list	true	true	false	11
+paper_list	true	false	true	10
+paper_list	true	false	false	20
+paper_list	false	true	true	11
+paper_list	false	true	false	11
+paper_list	false	false	true	42
+random_length_matched	true	true	true	4
+random_length_matched	true	true	false	2
+random_length_matched	true	false	true	3
+random_length_matched	true	false	false	12
+random_length_matched	false	true	true	4
+random_length_matched	false	true	false	14
+random_length_matched	false	false	true	37
