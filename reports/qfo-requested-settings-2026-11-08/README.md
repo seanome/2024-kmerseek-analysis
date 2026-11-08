@@ -58,6 +58,42 @@ tools are in [other_tools.csv](other_tools.csv).
   ladder run rescored them on 15 species and overwrote the 9-species files for those settings.
   This table uses only the 9 species shared by every setting.
 
+## Other metrics, and where kmerseek wins
+
+![kmerseek / MMseqs2 on each metric (a) and Fmax by protein subset (b)](kmerseek_vs_mmseqs2_all_metrics.png)
+
+Each dot is kmerseek's value divided by MMseqs2's on the same species and protein subset,
+median over the 9 species, turned so that above 1 means kmerseek is better. Blue is the
+median over all 101 kmerseek settings; orange is the single best setting, picked after
+looking, so it is an upper bound. Built by `other_metrics.py`; all numbers are in
+`kmerseek_vs_mmseqs2_all_metrics.csv`.
+
+kmerseek is better than MMseqs2 in three places:
+
+- **C2H2 zinc fingers** (about 32 proteins and 200 domain copies per species, each
+  domain about 22 residues): the typical setting's Fmax is 2.6 times MMseqs2's, the best
+  (dayhoff6 k9) 4.8 times, 0.26 against 0.054. phmmer also scores only 0.045 here.
+- **Short domains, 16-30 residues**: typical 1.2 times MMseqs2's Fmax, best 3.0 times
+  (0.18 against 0.057). At 31-60 residues it is about even; from 61 residues up
+  MMseqs2 wins by 3 to more than 25 times.
+- **Precision**: kmerseek makes far fewer calls, and more of them are right: 3.2 times
+  MMseqs2's precision over all calls for the typical setting. At the Fmax cutoff the
+  typical setting is lower (0.34 times); only the most precise settings, which find almost
+  nothing, are higher.
+
+When kmerseek does find a domain, it places it about as well as MMseqs2: overlap with the
+true domain 0.83 times MMseqs2's, domain count right 0.87 times, and the median distance
+from the true edge smaller (MMseqs2's error is 1.7 times kmerseek's). This is measured only
+on the domains each tool found, and kmerseek finds fewer, likely easier ones.
+
+kmerseek loses on recall (0.10 times), Fmax (0.12) and family-level Fmax (0.10). By
+query-target identity it is near zero below 40% and reaches 0.37 times MMseqs2 only at
+60-100%. So it finds close relatives and short repeated domains, not remote ones.
+
+Not checked: why MMseqs2 and phmmer do so badly on C2H2 zinc fingers. One possible reason
+is that one alignment spans many repeats and so matches no single 22-residue domain well
+enough; this has not been tested.
+
 ## Can it go to the QfO benchmark service?
 
 No, not as it is. The service (https://orthology.benchmarkservice.org) scores **ortholog
@@ -82,6 +118,7 @@ orthology submission would very likely land well below the published methods.
 
 ```
 python summarize.py <metrics dir> <all_domain_metrics.parquet>
+python other_metrics.py <metrics dir> <all_domain_metrics.parquet>
 ```
 
 `<metrics dir>` is
