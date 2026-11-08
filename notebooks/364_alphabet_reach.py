@@ -1,22 +1,25 @@
 """Notebook 364: how far up the tree of life each sequence alphabet still finds shared k-mers.
 
 For two anchor species (Mus musculus, Botryllus schlosseri) and a relative at each
-taxonomic rank, sketch every proteome and genome with sourmash and measure containment
-(the fraction of one species' sampled k-mers that also occur in the other).
+taxonomic rank, sketch every proteome and coding-sequence (CDS) set with the sourmash
+branchwater plugin and measure containment (the fraction of one species' sampled k-mers
+that also occur in the other).
 
 k-sizes are matched on bits per k-mer, k * log2(alphabet size), at 30 and 42 bits:
     30 bits: DNA k=15, protein k=7,  dayhoff k=12, hp k=30
     42 bits: DNA k=21, protein k=10, dayhoff k=16, hp k=42
-Protein-space alphabets are sketched from the proteome and from the six-frame
-translated genome; DNA from the genome.
+Protein-space alphabets are sketched from the proteome; DNA from the CDS of the same
+genes (UniProt's *_DNA.fasta.gz next to each reference proteome; for Botryllus, the
+RefSeq cds_from_genomic file of the assembly its proteins come from).
 
 Subcommands, in run order:
 
     resolve   (laptop, small API calls)  -> taxonomic_path.tsv
     fetch     (Sherlock job)             -> downloads, fills download_date
     entropy   (Sherlock job)             -> bits_per_kmer.tsv (measured letter entropy)
-    sketch    (Sherlock array job)       -> one .sig.zip per species and input type
-    compare   (Sherlock job)             -> containment.tsv
+    sketch    (Sherlock job)             -> sigs/proteome.sig.zip, sigs/cds.sig.zip
+                                            (`sourmash scripts manysketch`)
+    compare   (Sherlock job)             -> containment.tsv (`sourmash scripts multisearch`)
     reach     (laptop)                   -> reach.tsv
     figure    (laptop)                   -> reach_by_alphabet_<input>.png / .svg / .pdf
 
@@ -60,7 +63,7 @@ SETTINGS = [
     ("hp", 42, 42),
 ]
 SCALED = {"DNA": 1000, "protein": 200, "dayhoff": 200, "hp": 200}
-INPUT_TYPES = ("proteome", "translated_genome", "genome")
+INPUT_TYPES = ("proteome", "cds")
 
 
 def bits_uniform(alphabet, k):
@@ -68,7 +71,11 @@ def bits_uniform(alphabet, k):
 
 
 def settings_for(input_type):
-    return [s for s in SETTINGS if (s[0] == "DNA") == (input_type == "genome")]
+    return [s for s in SETTINGS if (s[0] == "DNA") == (input_type == "cds")]
+
+
+def input_type_of(alphabet):
+    return "cds" if alphabet == "DNA" else "proteome"
 
 
 # sourmash 4.9.4 src/core/src/encodings.rs, DAYHOFFTABLE and HPTABLE.
@@ -86,8 +93,9 @@ FLOOR_SPECIES = ("Saccharomyces cerevisiae", "Arabidopsis thaliana")
 
 # requested_species, used_species, taxid, requested_rank, UniProt proteome (None: NCBI
 # protein set), NCBI assembly, substitution note.
-# The assembly is the one UniProt built the proteome from (UniProt genomeAssembly field),
-# so genome and proteome describe the same genome build.
+# The assembly is the one UniProt built the proteome from (UniProt genomeAssembly field).
+# CDS come from the same place as the proteins: UniProt's *_DNA.fasta.gz for a reference
+# proteome, NCBI's cds_from_genomic for an NCBI protein set.
 PATHS = {
     "Mus musculus": [
         (
@@ -282,7 +290,7 @@ COLUMNS = [
     "uniprot_release",
     "proteome_url",
     "ncbi_assembly",
-    "genome_url",
+    "cds_url",
     "substitution",
     "download_date",
 ]
@@ -377,10 +385,13 @@ def resolve(args):
                     "https://ftp.uniprot.org/pub/databases/uniprot/current_release/knowledgebase/"
                     f"reference_proteomes/Eukaryota/{up}/{up}_{taxid}.fasta.gz"
                 )
+                curl = purl.replace(".fasta.gz", "_DNA.fasta.gz")
             else:
                 release = ""
                 purl = genome_url(acc).replace("_genomic.fna.gz", "_protein.faa.gz")
-            gurl = genome_url(acc)
+                curl = genome_url(acc).replace(
+                    "_genomic.fna.gz", "_cds_from_genomic.fna.gz"
+                )
             rows.append(
                 dict(
                     anchor=anchor,
@@ -396,7 +407,7 @@ def resolve(args):
                     uniprot_release=release,
                     proteome_url=purl,
                     ncbi_assembly=acc,
-                    genome_url=gurl,
+                    cds_url=curl,
                     substitution=note,
                     download_date="",
                 )
@@ -436,9 +447,9 @@ def slug(species):
 
 
 def species_files():
-    """{species: (proteome_url, genome_url)} with each species once."""
+    """{species: (proteome_url, cds_url)} with each species once."""
     return {
-        r["relative"]: (r["proteome_url"], r["genome_url"])
+        r["relative"]: (r["proteome_url"], r["cds_url"])
         for r in read_tsv(OUT / "taxonomic_path.tsv")
     }
 
@@ -464,11 +475,11 @@ def download(url, dest):
 
 
 def fetch(args):
-    """Download every proteome and genome once; record the UTC date of each download."""
+    """Download every proteome and CDS set once; record the UTC date of each download."""
     (Path(args.work) / "raw").mkdir(parents=True, exist_ok=True)
     dates = {}
     for sp, urls in species_files().items():
-        for seq, url in zip(("proteome", "genome"), urls):
+        for seq, url in zip(INPUT_TYPES, urls):
             dest = raw_path(args.work, sp, seq)
             if not dest.exists():
                 download(url, dest)
@@ -486,9 +497,9 @@ def fetch(args):
     write_tsv(path, rows, COLUMNS)
 
 
-def letter_counts(path, genome):
-    """Letter counts of a gzipped FASTA: A/C/G/T for a genome, the 20 amino acids otherwise."""
-    keep = b"ACGT" if genome else b"ACDEFGHIKLMNPQRSTVWY"
+def letter_counts(path, dna):
+    """Letter counts of a gzipped FASTA: A/C/G/T for DNA, the 20 amino acids otherwise."""
+    keep = b"ACGT" if dna else b"ACDEFGHIKLMNPQRSTVWY"
     counts = collections.Counter()
     with gzip.open(path) as f:
         for line in f:
@@ -506,11 +517,11 @@ def shannon(counts):
 
 
 def entropy(args):
-    """Measured Shannon entropy per letter of each anchor's proteome (per alphabet) and genome."""
+    """Measured Shannon entropy per letter of each anchor's proteome (per alphabet) and CDS."""
     rows = []
     for anchor in PATHS:
-        aa = letter_counts(raw_path(args.work, anchor, "proteome"), genome=False)
-        nt = letter_counts(raw_path(args.work, anchor, "genome"), genome=True)
+        aa = letter_counts(raw_path(args.work, anchor, "proteome"), dna=False)
+        nt = letter_counts(raw_path(args.work, anchor, "cds"), dna=True)
         by_alphabet = {"DNA": nt, "protein": aa}
         for name, table in (("dayhoff", DAYHOFF), ("hp", HP)):
             mapped = collections.Counter()
@@ -525,7 +536,7 @@ def entropy(args):
                     alphabet=alphabet,
                     k=k,
                     bits_level=level,
-                    source="genome" if alphabet == "DNA" else "proteome",
+                    source=input_type_of(alphabet),
                     letters_counted=n,
                     entropy_per_letter=f"{h:.4f}",
                     bits_uniform=f"{bits_uniform(alphabet, k):.2f}",
@@ -536,55 +547,63 @@ def entropy(args):
     write_tsv(OUT / "bits_per_kmer.tsv", rows, list(rows[0]))
 
 
-def sig_path(work, sp, input_type):
-    return Path(work) / "sigs" / f"{slug(sp)}.{input_type}.sig.zip"
+def sig_path(work, input_type):
+    """One zip per input type holding every species' sketches, named by species."""
+    return Path(work) / "sigs" / f"{input_type}.sig.zip"
 
 
-def sketch_tasks():
-    return [(sp, it) for sp in sorted(species_files()) for it in INPUT_TYPES]
+def param_string(alphabet, k):
+    moltype = "dna" if alphabet == "DNA" else alphabet
+    return f"k={k},scaled={SCALED[alphabet]},{moltype}"
 
 
 def sketch(args):
-    """One (species, input type) per array task; run `sketch-tasks` to see the numbering."""
-    sp, input_type = sketch_tasks()[args.index]
-    out = sig_path(args.work, sp, input_type)
-    out.parent.mkdir(parents=True, exist_ok=True)
-    if out.exists():
-        print(out, "exists", flush=True)
-        return
-    sub = {"proteome": "protein", "translated_genome": "translate", "genome": "dna"}[
-        input_type
-    ]
-    seq = "proteome" if input_type == "proteome" else "genome"
-    cmd = ["sourmash", "sketch", sub]
-    for alphabet, k, _ in settings_for(input_type):
-        cmd += [
-            "-p",
-            (
-                f"k={k},scaled={SCALED[alphabet]}"
-                if alphabet == "DNA"
-                else f"{alphabet},k={k},scaled={SCALED[alphabet]}"
-            ),
-        ]
-    part = out.with_name(out.name.replace(".sig.zip", ".part.sig.zip"))
-    cmd += [str(raw_path(args.work, sp, seq)), "--name", sp, "-o", str(part)]
-    print(" ".join(cmd), flush=True)
-    subprocess.run(cmd, check=True)
-    os.rename(part, out)
+    """`sourmash scripts manysketch` (branchwater): proteomes in protein space, CDS as DNA.
+
+    manysketch reads the FASTA column that matches each moltype: protein_filename for
+    protein, dayhoff and hp; genome_filename for DNA. A file in the other column is
+    skipped, so each input type gets its own CSV.
+    """
+    work = Path(args.work)
+    (work / "sigs").mkdir(parents=True, exist_ok=True)
+    for input_type in INPUT_TYPES:
+        out = sig_path(work, input_type)
+        if out.exists():
+            print(out, "exists", flush=True)
+            continue
+        listing = work / "sigs" / f"{input_type}.manysketch.csv"
+        with open(listing, "w", newline="") as f:
+            w = csv.writer(f, lineterminator="\n")
+            w.writerow(["name", "genome_filename", "protein_filename"])
+            for sp in sorted(species_files()):
+                fasta = str(raw_path(work, sp, input_type))
+                w.writerow([sp, fasta, ""] if input_type == "cds" else [sp, "", fasta])
+        part = out.with_name(out.name.replace(".sig.zip", ".part.sig.zip"))
+        cmd = ["sourmash", "scripts", "manysketch", str(listing), "-o", str(part)]
+        for alphabet, k, _ in settings_for(input_type):
+            cmd += ["-p", param_string(alphabet, k)]
+        cmd += ["-c", str(args.cores)]
+        print(" ".join(cmd), flush=True)
+        subprocess.run(cmd, check=True)
+        os.rename(part, out)
 
 
-def load_mh(work, sp, input_type, alphabet, k):
+def load_mhs(work, input_type, alphabet, k):
+    """{species: MinHash} for one alphabet and k, each species exactly once."""
     import sourmash
 
     moltype = "DNA" if alphabet == "DNA" else alphabet
-    sigs = list(
-        sourmash.load_file_as_signatures(
-            str(sig_path(work, sp, input_type)), ksize=k, select_moltype=moltype
-        )
-    )
-    if len(sigs) != 1:
-        sys.exit(f"{sp} {input_type} {alphabet} k={k}: {len(sigs)} sketches")
-    return sigs[0].minhash
+    out = {}
+    for sig in sourmash.load_file_as_signatures(
+        str(sig_path(work, input_type)), ksize=k, select_moltype=moltype
+    ):
+        if sig.name in out:
+            sys.exit(f"{sig.name} {alphabet} k={k}: more than one sketch")
+        out[sig.name] = sig.minhash
+    want = set(species_files())
+    if set(out) != want:
+        sys.exit(f"{input_type} {alphabet} k={k}: missing {sorted(want - set(out))}")
+    return out
 
 
 CONTAINMENT_COLUMNS = [
@@ -604,68 +623,73 @@ CONTAINMENT_COLUMNS = [
 
 
 def compare(args):
-    """Containment both ways from the sourmash API, cross-checked against `sourmash compare`.
+    """Containment both ways from `sourmash scripts multisearch` (branchwater).
 
-    In the `sourmash compare --containment` CSV, row i column j is the fraction of j's
-    hashes found in i (checked on a toy pair with sourmash 4.9.4, 2026-11-08). The API's
-    a.contained_by(b) is |a & b| / |a|.
+    One all-against-all multisearch per alphabet and k, every threshold off (-t 0 -A), so
+    each ordered pair (query, match) has a row whose `containment` is the fraction of the
+    query's hashes found in the match (checked on a toy set with branchwater 0.9.14,
+    2026-11-08). Each value is cross-checked against the sourmash API, where
+    a.contained_by(b) is |a & b| / |a|; any difference stops the run.
     """
     work = Path(args.work)
     path = read_tsv(OUT / "taxonomic_path.tsv")
     rows = []
     for input_type in INPUT_TYPES:
         for alphabet, k, _ in settings_for(input_type):
+            csv_out = work / "compare" / f"{input_type}.{alphabet}.k{k}.csv"
+            csv_out.parent.mkdir(parents=True, exist_ok=True)
+            sigs = str(sig_path(work, input_type))
+            subprocess.run(
+                [
+                    "sourmash",
+                    "scripts",
+                    "multisearch",
+                    sigs,
+                    sigs,
+                    "-k",
+                    str(k),
+                    "-s",
+                    str(SCALED[alphabet]),
+                    "-m",
+                    alphabet,
+                    "-t",
+                    "0",
+                    "-A",
+                    "-c",
+                    str(args.cores),
+                    "-o",
+                    str(csv_out),
+                ],
+                check=True,
+            )
+            ms = {
+                (r["query_name"], r["match_name"]): float(r["containment"])
+                for r in read_csv(csv_out)
+            }
+            mhs = load_mhs(work, input_type, alphabet, k)
             for anchor in PATHS:
-                members = [r for r in path if r["anchor"] == anchor]
-                names = [r["relative"] for r in members]
-                csv_out = (
-                    work
-                    / "compare"
-                    / f"{slug(anchor)}.{input_type}.{alphabet}.k{k}.csv"
-                )
-                csv_out.parent.mkdir(parents=True, exist_ok=True)
-                flag = "--dna" if alphabet == "DNA" else f"--{alphabet}"
-                subprocess.run(
-                    [
-                        "sourmash",
-                        "-q",
-                        "compare",
-                        *[str(sig_path(work, n, input_type)) for n in names],
-                        "--containment",
-                        flag,
-                        "-k",
-                        str(k),
-                        "--csv",
-                        str(csv_out),
-                    ],
-                    check=True,
-                )
-                with open(csv_out) as f:
-                    rd = csv.reader(f)
-                    header = next(rd)
-                    matrix = {
-                        h: dict(zip(header, map(float, row)))
-                        for h, row in zip(header, rd)
-                    }
-                a_mh = load_mh(work, anchor, input_type, alphabet, k)
+                a_mh = mhs[anchor]
                 if a_mh.scaled != SCALED[alphabet]:
                     sys.exit(f"{anchor} scaled {a_mh.scaled} != {SCALED[alphabet]}")
-                for r in members[1:]:
-                    r_mh = load_mh(work, r["relative"], input_type, alphabet, k)
-                    a_in_r, r_in_a = a_mh.contained_by(r_mh), r_mh.contained_by(a_mh)
+                for r in path:
+                    if r["anchor"] != anchor or r["relative"] == anchor:
+                        continue
+                    rel = r["relative"]
+                    r_mh = mhs[rel]
+                    a_in_r, r_in_a = ms[(anchor, rel)], ms[(rel, anchor)]
                     for got, want in (
-                        (matrix[r["relative"]][anchor], a_in_r),
-                        (matrix[anchor][r["relative"]], r_in_a),
+                        (a_in_r, a_mh.contained_by(r_mh)),
+                        (r_in_a, r_mh.contained_by(a_mh)),
                     ):
                         if abs(got - want) > 1e-9:
                             sys.exit(
-                                f"compare CSV {got} != API {want}: {anchor} / {r['relative']} "
-                                f"{input_type} {alphabet} k={k}"
+                                f"multisearch {got} != API {want}: {anchor} / {rel} "
+                                f"{alphabet} k={k}"
                             )
                     rows.append(
                         dict(
                             anchor=anchor,
-                            relative=r["relative"],
+                            relative=rel,
                             rank=r["rank"],
                             alphabet=alphabet,
                             k=k,
@@ -678,8 +702,13 @@ def compare(args):
                             n_hashes_relative=len(r_mh),
                         )
                     )
-                print(input_type, alphabet, k, anchor, "done", flush=True)
+            print(input_type, alphabet, k, "done", flush=True)
     write_tsv(OUT / "containment.tsv", rows, CONTAINMENT_COLUMNS)
+
+
+def read_csv(path):
+    with open(path) as f:
+        return list(csv.DictReader(f))
 
 
 def max_c(r):
@@ -789,7 +818,7 @@ def figure(args):
     path = read_tsv(OUT / "taxonomic_path.tsv")
     _, floors = reach_table()
     y_min = 1e-4
-    for input_type in ("proteome", "translated_genome"):
+    for input_type in ("proteome",):
         fig, axs = pf.figure(pf.TWO_COLUMN_MM, 85, ncols=2)
         for ax, anchor in zip(axs, PATHS):
             rels = sorted(
@@ -797,11 +826,10 @@ def figure(args):
                 key=lambda r: (rank_key(r), r["relative"]),
             )
             xs = {r["relative"]: i for i, r in enumerate(rels)}
-            # DNA from the genome is drawn on both figures, so protein-space lines have a DNA reference.
             # Filled point: above that line's own noise floor; hollow: at or below it.
             panel_floors = []
             for alphabet, k, level in SETTINGS:
-                it = "genome" if alphabet == "DNA" else input_type
+                it = input_type_of(alphabet)
                 sub = sorted(
                     (
                         r
@@ -893,9 +921,9 @@ def figure(args):
         fig.legend(
             handles=handles, loc="lower center", ncol=5, bbox_to_anchor=(0.5, 1.0)
         )
-        label = input_type.replace("_", " ")
         fig.suptitle(
-            f"Protein, dayhoff and hp from {label} (scaled 200); DNA from genome (scaled 1000)\n"
+            "Protein, dayhoff and hp from the proteome (scaled 200); "
+            "DNA from the CDS of the same genes (scaled 1000)\n"
             "Points on the bottom axis: containment below 0.0001, most of them 0",
             y=1.16,
         )
@@ -904,13 +932,19 @@ def figure(args):
         pf.save(fig, str(OUT / f"reach_by_alphabet_{input_type}"))
 
 
-IMAGE = "docker://quay.io/biocontainers/sourmash:4.9.4--hdfd78af_0"
+CORES = 4
 
 
 def submit(args):
-    """Submit fetch+entropy, then the sketch array, then compare, chained with afterok."""
+    """Submit fetch+entropy, then sketch, then compare, chained with afterok.
+
+    Sizes (2026-11-08): the inputs are 13 proteomes (2-12 M residues each) and 13 CDS sets
+    (9-60 M bases, UniProt _DNA files). At scaled 200 a 12 M-residue proteome keeps about
+    60 000 hashes per setting, so every sketch together is well under 1 GB in memory.
+    The time limits are about 10x what that size needs; fetch also builds the pinned
+    branchwater environment the first time.
+    """
     sb = str(HERE / "364_alphabet_reach.sbatch")
-    n = len(sketch_tasks())
 
     def sbatch(*extra):
         out = subprocess.run(
@@ -922,24 +956,22 @@ def submit(args):
         return out.stdout.strip().split(";")[0]
 
     j1 = sbatch(
-        "--job-name=364-fetch", "--export=ALL,STEP=fetch", "--mem=8G", "--time=4:00:00"
+        "--job-name=364-fetch", "--export=ALL,STEP=fetch", "--mem=8G", "--time=3:00:00"
     )
+    common = [f"--cpus-per-task={CORES}", "--mem=16G", "--time=2:00:00"]
     j2 = sbatch(
         "--job-name=364-sketch",
         f"--dependency=afterok:{j1}",
-        f"--array=0-{n - 1}",
         "--export=ALL,STEP=sketch",
-        "--mem=32G",
-        "--time=6:00:00",
+        *common,
     )
     j3 = sbatch(
         "--job-name=364-compare",
         f"--dependency=afterok:{j2}",
         "--export=ALL,STEP=compare",
-        "--mem=64G",
-        "--time=4:00:00",
+        *common,
     )
-    print(f"fetch {j1}, sketch array {j2} ({n} tasks), compare {j3}")
+    print(f"fetch {j1}, sketch {j2}, compare {j3}")
 
 
 def main():
@@ -947,20 +979,17 @@ def main():
         description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter
     )
     sub = p.add_subparsers(dest="cmd")  # no required=: Sherlock python3 is 3.6
-    for name in ("resolve", "reach", "figure", "sketch-tasks", "submit"):
+    for name in ("resolve", "reach", "figure", "submit"):
         sub.add_parser(name)
-    for name in ("fetch", "entropy", "compare"):
+    for name in ("fetch", "entropy"):
         sub.add_parser(name).add_argument("--work", required=True)
-    s = sub.add_parser("sketch")
-    s.add_argument("--work", required=True)
-    s.add_argument("--index", type=int, required=True)
+    for name in ("sketch", "compare"):
+        s = sub.add_parser(name)
+        s.add_argument("--work", required=True)
+        s.add_argument("--cores", type=int, default=CORES)
     args = p.parse_args()
     if args.cmd is None:
         p.error("a subcommand is required")
-    if args.cmd == "sketch-tasks":
-        for i, t in enumerate(sketch_tasks()):
-            print(i, *t)
-        return
     globals()[args.cmd](args)
 
 

@@ -1,36 +1,48 @@
 #!/bin/bash
 #SBATCH --partition=hns,normal
 #SBATCH --cpus-per-task=1
-#SBATCH --output=364-%x-%A_%a.out
+#SBATCH --output=364-%x-%j.out
 #
 # Notebook 364, one step per job; submitted and chained by
 #   python3 notebooks/364_alphabet_reach.py submit
-# from the repo root (STEP, --mem and --time are set there).
+# from the repo root (STEP, --mem, --time and --cpus-per-task are set there).
 #
-# Sizing (2026-11-08): notebook 299 measured `sourmash sketch translate` on Sherlock at
-# about 4.2 min per GB per setting with 2-3 GB resident (singleton sketches,
-# $SCRATCH/299-omrgc-pilot/step1/*.time). The largest genome here is 2.7 GB, six settings,
-# so about 1-1.5 h per translate task; 6 h covers a 4x miss. One whole-genome sketch at
-# scaled 200 holds up to ~80 M hashes per setting (2.7e9 x 6 frames / 200), ~4 GB for six,
-# so 32 GB. compare loads seven such sketches at once: 64 GB.
+# Every step runs in one pinned conda environment holding sourmash and the branchwater
+# plugin (no container has branchwater 0.9.15; it is on conda-forge only). The fetch step
+# builds it with micromamba the first time, on a compute node, not the login node.
 set -euo pipefail
 REPO=${SLURM_SUBMIT_DIR:?submit from the repo root}
 WORK=${NB364_WORK:-$SCRATCH/364-alphabet-reach}
-IMG=$GROUP_HOME/olgabot/containers/sourmash_4.9.4.sif
+ENVS=$GROUP_HOME/olgabot/envs
+ENV=$ENVS/branchwater-0.9.15
+MAMBA=$ENVS/bin/micromamba-2.3.3-0
 mkdir -p "$WORK"
-echo "host $(hostname); step $STEP; task ${SLURM_ARRAY_TASK_ID:-}"
+echo "host $(hostname); step $STEP"
 
-if [ "$STEP" = fetch ] && [ ! -s "$IMG" ]; then
-    export APPTAINER_CACHEDIR=$SCRATCH/.apptainer-cache
-    apptainer pull "$IMG.part" docker://quay.io/biocontainers/sourmash:4.9.4--hdfd78af_0
-    mv "$IMG.part" "$IMG"
+# A conda env cannot be moved (its scripts hold the prefix), so a marker file, written
+# last, says the build finished.
+if [ "$STEP" = fetch ] && [ ! -e "$ENV/.complete" ]; then
+    mkdir -p "$ENVS/bin"
+    if [ ! -x "$MAMBA" ]; then
+        curl -fsSL -o "$MAMBA.part" \
+            https://github.com/mamba-org/micromamba-releases/releases/download/2.3.3-0/micromamba-linux-64
+        chmod +x "$MAMBA.part"
+        mv "$MAMBA.part" "$MAMBA"
+    fi
+    export MAMBA_ROOT_PREFIX=$SCRATCH/.micromamba
+    rm -rf "$ENV"
+    "$MAMBA" create -y -p "$ENV" --override-channels -c conda-forge -c bioconda \
+        python=3.12 sourmash=4.9.4 sourmash_plugin_branchwater=0.9.15
+    touch "$ENV/.complete"
 fi
 
-# /usr/bin/time cannot time a shell function, so the command is an array.
-RUN=(apptainer exec --bind /scratch,/home/groups "$IMG" python "$REPO/notebooks/364_alphabet_reach.py")
+export PATH=$ENV/bin:$PATH
+sourmash --version
+sourmash scripts manysketch --help > /dev/null
+PY=(python "$REPO/notebooks/364_alphabet_reach.py")
 case "$STEP" in
-    fetch) "${RUN[@]}" fetch --work "$WORK"; "${RUN[@]}" entropy --work "$WORK" ;;
-    sketch) /usr/bin/time -v "${RUN[@]}" sketch --work "$WORK" --index "$SLURM_ARRAY_TASK_ID" ;;
-    compare) /usr/bin/time -v "${RUN[@]}" compare --work "$WORK" ;;
+    fetch) "${PY[@]}" fetch --work "$WORK"; "${PY[@]}" entropy --work "$WORK" ;;
+    sketch) /usr/bin/time -v "${PY[@]}" sketch --work "$WORK" --cores "$SLURM_CPUS_PER_TASK" ;;
+    compare) /usr/bin/time -v "${PY[@]}" compare --work "$WORK" --cores "$SLURM_CPUS_PER_TASK" ;;
     *) echo "unknown STEP $STEP"; exit 1 ;;
 esac
