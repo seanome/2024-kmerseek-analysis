@@ -255,6 +255,7 @@ PATHS = {
 # Ranks from nearest to most distant, for ordering the shared ranks NCBI reports.
 RANK_ORDER = [
     "species",
+    "subgenus",
     "genus",
     "subfamily",
     "family",

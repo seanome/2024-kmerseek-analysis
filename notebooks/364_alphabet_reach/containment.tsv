@@ -1,5 +1,5 @@
 anchor	relative	rank	alphabet	k	bits_uniform	input_type	scaled	containment_anchor_in_relative	containment_relative_in_anchor	n_hashes_anchor	n_hashes_relative
-Mus musculus	Mus caroli	genus	protein	7	30.25	proteome	200	0.860197	0.856616	50464	50675
+Mus musculus	Mus caroli	subgenus	protein	7	30.25	proteome	200	0.860197	0.856616	50464	50675
 Mus musculus	Rattus norvegicus	subfamily	protein	7	30.25	proteome	200	0.683913	0.67931	50464	50806
 Mus musculus	Cavia porcellus	order	protein	7	30.25	proteome	200	0.434567	0.495873	50464	44225
 Mus musculus	Rhinolophus ferrumequinum	class	protein	7	30.25	proteome	200	0.447032	0.480643	50464	46935
@@ -13,7 +13,7 @@ Botryllus schlosseri	Strongylocentrotus purpuratus	kingdom	protein	7	30.25	prote
 Botryllus schlosseri	Drosophila melanogaster	kingdom	protein	7	30.25	proteome	200	0.0348141	0.0460668	45585	34450
 Botryllus schlosseri	Saccharomyces cerevisiae	other kingdom	protein	7	30.25	proteome	200	0.0105298	0.0361364	45585	13283
 Botryllus schlosseri	Arabidopsis thaliana	other kingdom	protein	7	30.25	proteome	200	0.0337172	0.0329016	45585	46715
-Mus musculus	Mus caroli	genus	protein	10	43.22	proteome	200	0.820624	0.819382	53452	53533
+Mus musculus	Mus caroli	subgenus	protein	10	43.22	proteome	200	0.820624	0.819382	53452	53533
 Mus musculus	Rattus norvegicus	subfamily	protein	10	43.22	proteome	200	0.607236	0.609631	53452	53242
 Mus musculus	Cavia porcellus	order	protein	10	43.22	proteome	200	0.350408	0.406344	53452	46094
 Mus musculus	Rhinolophus ferrumequinum	class	protein	10	43.22	proteome	200	0.359257	0.389474	53452	49305
@@ -27,7 +27,7 @@ Botryllus schlosseri	Strongylocentrotus purpuratus	kingdom	protein	10	43.22	prot
 Botryllus schlosseri	Drosophila melanogaster	kingdom	protein	10	43.22	proteome	200	0.00723491	0.00970874	47409	35329
 Botryllus schlosseri	Saccharomyces cerevisiae	other kingdom	protein	10	43.22	proteome	200	0.00109684	0.00392779	47409	13239
 Botryllus schlosseri	Arabidopsis thaliana	other kingdom	protein	10	43.22	proteome	200	0.00170854	0.00161172	47409	50257
-Mus musculus	Mus caroli	genus	dayhoff	12	31.02	proteome	200	0.881619	0.875654	44779	45084
+Mus musculus	Mus caroli	subgenus	dayhoff	12	31.02	proteome	200	0.881619	0.875654	44779	45084
 Mus musculus	Rattus norvegicus	subfamily	dayhoff	12	31.02	proteome	200	0.743474	0.741982	44779	44869
 Mus musculus	Cavia porcellus	order	dayhoff	12	31.02	proteome	200	0.524398	0.597354	44779	39310
 Mus musculus	Rhinolophus ferrumequinum	class	dayhoff	12	31.02	proteome	200	0.542643	0.576954	44779	42116
@@ -41,7 +41,7 @@ Botryllus schlosseri	Strongylocentrotus purpuratus	kingdom	dayhoff	12	31.02	prot
 Botryllus schlosseri	Drosophila melanogaster	kingdom	dayhoff	12	31.02	proteome	200	0.106377	0.142972	41616	30964
 Botryllus schlosseri	Saccharomyces cerevisiae	other kingdom	dayhoff	12	31.02	proteome	200	0.0397443	0.129919	41616	12731
 Botryllus schlosseri	Arabidopsis thaliana	other kingdom	dayhoff	12	31.02	proteome	200	0.117599	0.116374	41616	42054
-Mus musculus	Mus caroli	genus	dayhoff	16	41.36	proteome	200	0.842319	0.836925	51357	51688
+Mus musculus	Mus caroli	subgenus	dayhoff	16	41.36	proteome	200	0.842319	0.836925	51357	51688
 Mus musculus	Rattus norvegicus	subfamily	dayhoff	16	41.36	proteome	200	0.661137	0.660828	51357	51381
 Mus musculus	Cavia porcellus	order	dayhoff	16	41.36	proteome	200	0.414724	0.479329	51357	44435
 Mus musculus	Rhinolophus ferrumequinum	class	dayhoff	16	41.36	proteome	200	0.425804	0.458564	51357	47688
@@ -55,7 +55,7 @@ Botryllus schlosseri	Strongylocentrotus purpuratus	kingdom	dayhoff	16	41.36	prot
 Botryllus schlosseri	Drosophila melanogaster	kingdom	dayhoff	16	41.36	proteome	200	0.0136393	0.0181342	46190	34741
 Botryllus schlosseri	Saccharomyces cerevisiae	other kingdom	dayhoff	16	41.36	proteome	200	0.00303096	0.0107775	46190	12990
 Botryllus schlosseri	Arabidopsis thaliana	other kingdom	dayhoff	16	41.36	proteome	200	0.00569387	0.00552672	46190	47587
-Mus musculus	Mus caroli	genus	hp	30	30.00	proteome	200	0.801423	0.796567	51008	51319
+Mus musculus	Mus caroli	subgenus	hp	30	30.00	proteome	200	0.801423	0.796567	51008	51319
 Mus musculus	Rattus norvegicus	subfamily	hp	30	30.00	proteome	200	0.597769	0.601306	51008	50708
 Mus musculus	Cavia porcellus	order	hp	30	30.00	proteome	200	0.351396	0.406754	51008	44066
 Mus musculus	Rhinolophus ferrumequinum	class	hp	30	30.00	proteome	200	0.363159	0.391868	51008	47271
@@ -69,7 +69,7 @@ Botryllus schlosseri	Strongylocentrotus purpuratus	kingdom	hp	30	30.00	proteome	
 Botryllus schlosseri	Drosophila melanogaster	kingdom	hp	30	30.00	proteome	200	0.017502	0.0234938	45652	34009
 Botryllus schlosseri	Saccharomyces cerevisiae	other kingdom	hp	30	30.00	proteome	200	0.00562955	0.0199907	45652	12856
 Botryllus schlosseri	Arabidopsis thaliana	other kingdom	hp	30	30.00	proteome	200	0.013581	0.0133408	45652	46474
-Mus musculus	Mus caroli	genus	hp	42	42.00	proteome	200	0.74942	0.744949	51313	51621
+Mus musculus	Mus caroli	subgenus	hp	42	42.00	proteome	200	0.74942	0.744949	51313	51621
 Mus musculus	Rattus norvegicus	subfamily	hp	42	42.00	proteome	200	0.520531	0.520835	51313	51283
 Mus musculus	Cavia porcellus	order	hp	42	42.00	proteome	200	0.279754	0.324575	51313	44227
 Mus musculus	Rhinolophus ferrumequinum	class	hp	42	42.00	proteome	200	0.284372	0.30971	51313	47115
@@ -83,7 +83,7 @@ Botryllus schlosseri	Strongylocentrotus purpuratus	kingdom	hp	42	42.00	proteome	
 Botryllus schlosseri	Drosophila melanogaster	kingdom	hp	42	42.00	proteome	200	0.00309745	0.0042876	46167	33352
 Botryllus schlosseri	Saccharomyces cerevisiae	other kingdom	hp	42	42.00	proteome	200	0.000324907	0.00117749	46167	12739
 Botryllus schlosseri	Arabidopsis thaliana	other kingdom	hp	42	42.00	proteome	200	0.00088808	0.00086294	46167	47512
-Mus musculus	Mus caroli	genus	DNA	15	30.00	cds	1000	0.485235	0.757685	46732	29928
+Mus musculus	Mus caroli	subgenus	DNA	15	30.00	cds	1000	0.485235	0.757685	46732	29928
 Mus musculus	Rattus norvegicus	subfamily	DNA	15	30.00	cds	1000	0.35618	0.425149	46732	39151
 Mus musculus	Cavia porcellus	order	DNA	15	30.00	cds	1000	0.162908	0.299371	46732	25430
 Mus musculus	Rhinolophus ferrumequinum	class	DNA	15	30.00	cds	1000	0.216319	0.273017	46732	37027
@@ -97,7 +97,7 @@ Botryllus schlosseri	Strongylocentrotus purpuratus	kingdom	DNA	15	30.00	cds	1000
 Botryllus schlosseri	Drosophila melanogaster	kingdom	DNA	15	30.00	cds	1000	0.0562551	0.0755837	27162	20216
 Botryllus schlosseri	Saccharomyces cerevisiae	other kingdom	DNA	15	30.00	cds	1000	0.0273912	0.0915467	27162	8127
 Botryllus schlosseri	Arabidopsis thaliana	other kingdom	DNA	15	30.00	cds	1000	0.0918195	0.0869111	27162	28696
-Mus musculus	Mus caroli	genus	DNA	21	42.00	cds	1000	0.392743	0.642178	54374	33254
+Mus musculus	Mus caroli	subgenus	DNA	21	42.00	cds	1000	0.392743	0.642178	54374	33254
 Mus musculus	Rattus norvegicus	subfamily	DNA	21	42.00	cds	1000	0.178008	0.21867	54374	44263
 Mus musculus	Cavia porcellus	order	DNA	21	42.00	cds	1000	0.0285431	0.0544351	54374	28511
 Mus musculus	Rhinolophus ferrumequinum	class	DNA	21	42.00	cds	1000	0.0350167	0.0452407	54374	42086
