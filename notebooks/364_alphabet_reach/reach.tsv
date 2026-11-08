@@ -1,0 +1,17 @@
+alphabet	k	bits_uniform	anchor	input_type	reach_rank	reach_relative	containment_at_reach	containment_next_rank	floor	ranks_below_floor_inside_reach
+protein	7	30.25	Mus musculus	proteome	kingdom	Drosophila melanogaster	0.0622061	0.0426861	0.0541866	
+protein	7	30.25	Botryllus schlosseri	proteome	kingdom	Drosophila melanogaster	0.0460668	0.0361364	0.043394	
+protein	10	43.22	Mus musculus	proteome	subphylum	Danio rerio	0.0964043	0.0139828	0.0148928	
+protein	10	43.22	Botryllus schlosseri	proteome	kingdom	Strongylocentrotus purpuratus	0.0109895	0.00970874	0.0105855	
+dayhoff	12	31.02	Mus musculus	proteome	subphylum	Danio rerio	0.305143	0.165192	0.212093	
+dayhoff	12	31.02	Botryllus schlosseri	proteome	phylum	Branchiostoma floridae	0.170391	0.153114	0.166879	
+dayhoff	16	41.36	Mus musculus	proteome	subphylum	Danio rerio	0.143895	0.029245	0.030135	
+dayhoff	16	41.36	Botryllus schlosseri	proteome	class	Ciona intestinalis	0.0608842	0.0252869	0.0260284	
+hp	30	30.00	Mus musculus	proteome	subphylum	Danio rerio	0.120961	0.0297274	0.0312553	
+hp	30	30.00	Botryllus schlosseri	proteome	class	Ciona intestinalis	0.0527919	0.0308639	0.0392198	
+hp	42	42.00	Mus musculus	proteome	kingdom	Drosophila melanogaster	0.00704605	0.00156998	0.00356481	
+hp	42	42.00	Botryllus schlosseri	proteome	kingdom	Drosophila melanogaster	0.0042876	0.00117749	0.00204572	
+DNA	15	30.00	Mus musculus	cds	subphylum	Danio rerio	0.197206	0.143995	0.154123	
+DNA	15	30.00	Botryllus schlosseri	cds	phylum	Branchiostoma floridae	0.0942493	0.0879169	0.0926379	class
+DNA	21	42.00	Mus musculus	cds	kingdom	Drosophila melanogaster	0.000993284	0.000190749	0.000762996	
+DNA	21	42.00	Botryllus schlosseri	cds	none			0.000193411	0.00102528	

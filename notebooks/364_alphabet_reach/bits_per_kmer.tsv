@@ -1,0 +1,17 @@
+anchor	alphabet	k	bits_level	source	letters_counted	entropy_per_letter	bits_uniform	bits_measured
+Mus musculus	DNA	15	30	cds	57616697	1.9997	30.00	30.00
+Mus musculus	DNA	21	42	cds	57616697	1.9997	42.00	41.99
+Mus musculus	protein	7	30	proteome	11810835	4.1811	30.25	29.27
+Mus musculus	protein	10	42	proteome	11810835	4.1811	43.22	41.81
+Mus musculus	dayhoff	12	30	proteome	11810835	2.2865	31.02	27.44
+Mus musculus	dayhoff	16	42	proteome	11810835	2.2865	41.36	36.58
+Mus musculus	hp	30	30	proteome	11810835	1.0000	30.00	30.00
+Mus musculus	hp	42	42	proteome	11810835	1.0000	42.00	42.00
+Botryllus schlosseri	DNA	15	30	cds	56499952	1.9931	30.00	29.90
+Botryllus schlosseri	DNA	21	42	cds	56499952	1.9931	42.00	41.86
+Botryllus schlosseri	protein	7	30	proteome	18804277	4.1995	30.25	29.40
+Botryllus schlosseri	protein	10	42	proteome	18804277	4.1995	43.22	42.00
+Botryllus schlosseri	dayhoff	12	30	proteome	18804277	2.3054	31.02	27.66
+Botryllus schlosseri	dayhoff	16	42	proteome	18804277	2.3054	41.36	36.89
+Botryllus schlosseri	hp	30	30	proteome	18804277	0.9969	30.00	29.91
+Botryllus schlosseri	hp	42	42	proteome	18804277	0.9969	42.00	41.87
