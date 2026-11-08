@@ -506,6 +506,31 @@ isoforms that share its probes. Probe set to sequence pairs are in `results/fig4
 the 40,990 + 776 proteins and 12,884 EST sequences are on Sherlock in
 `/scratch/users/olgabot/geo2kmers-fig4/ho/sources/fetched{,_est}/`.
 
+### 30-letter HP k-mers from the probe-set proteins
+
+Each protein above was cut into every 30-residue window and written in two hydrophobic-polar (HP) alphabets, as
+kmerseek defines them: `hp_lehninger2` (kmerseek's default `hp`; hydrophobic `AFGILMPVWY`) and `hp_thomas_dill2`
+(hydrophobic `ACFILMVWY`). Each k-mer takes the series matrix value (the authors' RMA, log2) of the probe sets whose
+proteins hold it, averaged when there are several. The rules are in `fig4/hp_table_plan.md`, written before the run.
+
+![HP k-mer sharing](results/fig4/hp_tables/hp_sharing.png)
+
+| Array | Alphabet | Probe sets with a k-mer | Distinct 30-letter HP k-mers | In one probe set | In 2 or more | Most probe sets for one k-mer |
+|---|---|---:|---:|---:|---:|---:|
+| U133 Plus 2 | hp_lehninger2 | 41,323 | 10,107,953 | 3,209,983 (32 %) | 6,897,970 | 342 |
+| U133 Plus 2 | hp_thomas_dill2 | 41,323 | 9,656,563 | 3,000,225 (31 %) | 6,656,338 | 1356 |
+| HTA 2.0 | hp_lehninger2 | 19,971 | 10,000,664 | 9,485,991 (95 %) | 514,673 | 129 |
+| HTA 2.0 | hp_thomas_dill2 | 19,971 | 9,559,808 | 8,833,022 (92 %) | 726,786 | 500 |
+
+Most U133 k-mers sit in two or more probe sets because U133 has several probe sets per gene, and each names the same
+gene's RefSeq mRNAs, so they hold the same proteins. HTA 2.0 has one transcript cluster per gene, so 92 % to 95 % of its
+k-mers sit in one. The most shared k-mers on both arrays are runs of 29 or 30 polar residues, as in charged or
+disordered stretches; `hp_thomas_dill2` counts G and P as polar, so it has more of them. The table has three parts per
+series, on Sherlock in `/scratch/users/olgabot/geo2kmers-fig4/ho/sources/hp/` because the shared-k-mer matrices are
+0.2 to 1 GB each: `<array>.<alphabet>.kmers.npz` (each k-mer and the probe sets holding it),
+`<series>.probe_set_values.tsv.gz`, and `<series>.<alphabet>.shared_kmers.tsv.gz` (the sample matrix for k-mers in two
+or more probe sets). The counts are in `results/fig4/hp_tables/`.
+
 ## Limits
 
 - `land` is for probes under 100 nt: it stops on longer ones and points to `sketch --proteome`.
