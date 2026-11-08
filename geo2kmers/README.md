@@ -556,6 +556,20 @@ also score GSE28998 at a median AUC of 0.96 (random probe k-mers: 0.71), so the 
 than any. All 1000 chosen HP k-mers went up after training, and with `hp_lehninger2` they come from only 10 probe
 sets. Results are in `results/fig4/hp_held_out/` and `results/fig4/hp_cross_series/`; `fig4_held_out.nf --hp` reruns them.
 
+**What GSE28998 is.** It is not before and after in time. Seven people trained one arm with weights for 12 weeks; a
+week later both arms did the same bout, and both biceps were biopsied 4 h after it (GEO's overall design). Its "pre"
+is the untrained arm and its "post" the trained arm of the same person, on the same day. Pre and post were scanned on
+the same days. GSE27536 (thigh, 8 weeks of cycling, 12 healthy people and 15 with COPD) is from another lab and paper,
+so the two series are not related. But their changes agree gene by gene: over the 41,325 U133 probe sets with a
+protein, the Pearson r between GSE27536's after-minus-before and GSE28998's trained-minus-untrained is 0.27.
+Probe sets that went up in GSE27536 average +0.041 log2 in GSE28998, and those that went down average -0.019. There
+is no shift of the whole GSE28998 array: in each person 47 % to 52 % of probe sets are higher in the trained arm.
+This shared training response is why random k-mers that went up in GSE27536 also score GSE28998 well. The random-k-mer
+chance test assumes random k-mers carry no training signal, which is not true here, so it is strict in that
+direction. `fig4/series_agreement.py` writes these numbers and the figure to `results/fig4/series_agreement/`.
+
+![Change per probe set in GSE27536 against GSE28998](results/fig4/series_agreement/series_agreement.png)
+
 ## Limits
 
 - `land` is for probes under 100 nt: it stops on longer ones and points to `sketch --proteome`.
