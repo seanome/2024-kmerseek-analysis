@@ -916,8 +916,8 @@ def submit(args):
         out = subprocess.run(
             ["sbatch", "--parsable", *extra, sb],
             check=True,
-            capture_output=True,
-            text=True,
+            stdout=subprocess.PIPE,
+            universal_newlines=True,
         )
         return out.stdout.strip().split(";")[0]
 
