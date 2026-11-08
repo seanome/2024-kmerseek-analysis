@@ -157,6 +157,9 @@ Counts per window are in `significant_per_window.tsv`:
 | 49-52 d | 88 | 77 | 11 | 704 |
 | 104-132 d | 51 | 5 | 46 | 9,049 |
 
+These counts assume unstranded counting for every library. Seven libraries failed the
+rnaseq strand check and have not been looked at, so the counts may change.
+
 35,541 genes were tested in each window. Gene counts are from `padj` in
 `*.deseq2.results.tsv`; anchor counts from `Cjs_0_pval_corrected` in
 `splash_out/result.after_correction.scores.tsv`. Treated and control libraries come from
