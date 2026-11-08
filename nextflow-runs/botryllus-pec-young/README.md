@@ -160,7 +160,9 @@ Counts per window are in `significant_per_window.tsv`:
 35,541 genes were tested in each window. Gene counts are from `padj` in
 `*.deseq2.results.tsv`; anchor counts from `Cjs_0_pval_corrected` in
 `splash_out/result.after_correction.scores.tsv`. Treated and control libraries come from
-the same colonies in every window. In 21-28 d all 5 libraries have under 20,000 read pairs.
+the same colonies in every window except 49-52 d, where colony 6941c has a treated
+library (SRR32233984) and no control, so colony blocking cannot absorb it and part of
+the 88 genes may be a 6941c effect. In 21-28 d all 5 libraries have under 20,000 read pairs.
 
 ### Compared with the paper
 
