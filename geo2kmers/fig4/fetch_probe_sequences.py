@@ -2,7 +2,7 @@
 
 Usage: fetch_probe_sequences.py <out folder> <sources.tsv> ...
 sources.tsv is probe_set_sources.py's. NCBI_EMAIL must be set. refseq_mrna, refseq_model and genbank_mrna accessions
-give the translated coding regions NCBI annotates on them (rettype fasta_cds_aa); est accessions give the EST itself
+give the translated coding regions NCBI annotates on them (rettype fasta_cds_aa); est accessions give any protein annotated on them and the sequence itself
 (rettype fasta), untranslated. ensembl_coding accessions are not in NCBI and are left for another step. Writes
 proteins.fasta (one record per protein_id, the header naming its transcript), est.fasta, and fetched.tsv with one row per
 accession asked for: what came back and how long it is.
@@ -29,9 +29,13 @@ for table in tables:
         next(f)
         for line in f:
             _, source, accessions, _ = line.rstrip("\n").split("\t")
-            kind = "protein" if source in PROTEIN_SOURCES else "est" if source == "est" else None
-            if kind:
-                wanted[kind].update(a for a in accessions.split(",") if a)
+            ids = [a for a in accessions.split(",") if a]
+            # Many U133 consensus probe sets were designed on a full-length cDNA, so an est accession is asked for
+            # its annotated protein as well as its own sequence
+            if source in PROTEIN_SOURCES or source == "est":
+                wanted["protein"].update(ids)
+            if source == "est":
+                wanted["est"].update(ids)
 
 
 def fetch(ids, rettype):
@@ -63,7 +67,7 @@ def records(text):
             yield ">" + header, "".join(lines)
 
 
-got = {}
+got = {"protein": {}, "est": {}}
 with open(f"{out}/proteins.fasta", "w") as proteins, open(f"{out}/est.fasta", "w") as ests:
     for kind, rettype, handle in (("protein", "fasta_cds_aa", proteins), ("est", "fasta", ests)):
         ids = sorted(wanted[kind])
@@ -75,16 +79,16 @@ with open(f"{out}/proteins.fasta", "w") as proteins, open(f"{out}/est.fasta", "w
                         continue
                     accession, protein = match.groups()
                     handle.write(f">{protein} {accession}\n{sequence}\n")
-                    got.setdefault(accession, []).append((protein, len(sequence)))
+                    got["protein"].setdefault(accession, []).append((protein, len(sequence)))
                 else:
                     accession = header[1:].split()[0].split(".")[0]
                     handle.write(f">{accession}\n{sequence}\n")
-                    got.setdefault(accession, []).append(("est", len(sequence)))
+                    got["est"].setdefault(accession, []).append(("est", len(sequence)))
             time.sleep(0.34)
             print(f"{kind}: {min(i + BATCH, len(ids))} of {len(ids)}", file=sys.stderr, flush=True)
 with open(f"{out}/fetched.tsv", "w") as f:
     f.write("accession\tasked_for\tsequence\tlength\n")
     for kind in ("protein", "est"):
         for accession in sorted(wanted[kind]):
-            for name, length in got.get(accession, [("none", 0)]):
+            for name, length in got[kind].get(accession, [("none", 0)]):
                 f.write(f"{accession}\t{kind}\t{name}\t{length}\n")

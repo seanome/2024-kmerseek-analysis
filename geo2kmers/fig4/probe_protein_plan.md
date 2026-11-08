@@ -22,5 +22,10 @@ which uses none; it does not change any landing.
 each with the probe set's value. ESTs are fetched as nucleotide sequence and not translated here; whether to use
 them, and how, is decided after counting how many reach 90 nt.
 
+**Changed after the first fetch, before any k-mer was made.** 2,161 BC, 1,328 AK and 690 AF accessions, among others,
+sat in the `est` group because U133 calls their probe sets consensus sequences, but they are full-length cDNAs. So each
+`est` accession is also asked for its annotated protein, and one with a protein of 30 amino acids or more counts as
+`cdna_with_protein`. Accessions over 5000 nucleotides are genomic clones (`genomic_clone`).
+
 **What this cannot show.** The value is the RNA's, not the protein's, and a probe set pools the isoforms that share its
 probes, so a protein's k-mers carry a gene-level value.

@@ -484,6 +484,28 @@ the Affymetrix arrays, and the longest is 84 letters (`results/fig4/contig_lengt
 Affymetrix probe is 25 letters (`results/fig4/probe_lengths/probe_lengths.png`). SPLASH ran without its compactor
 step, so it gives anchors and targets of 15 and 10 letters, not contigs.
 
+### Full-length proteins behind each probe set
+
+Array probes are too short for a 30-amino-acid hydrophobic-polar (HP) k-mer, and few sit in coding sequence. A probe
+set measures its transcript wherever its probes sit, so the protein of the transcript it names can carry its value.
+The rules are in `fig4/probe_protein_plan.md`, written before the first fetch.
+
+![protein coverage](results/fig4/probe_proteins/protein_coverage.png)
+
+| Array | Probe sets | Protein of 30 aa or more | Nucleotide only (EST or genomic clone) | No protein-coding source |
+|---|---:|---:|---:|---:|
+| U133 Plus 2 | 54,675 | 41,325 (76 %) | 13,229 (24 %) | 121 |
+| HTA 2.0 | 70,753 | 19,973 (28 %) | 0 | 49,960 (71 %), and 820 with an Ensembl protein not yet fetched |
+
+On U133 Plus 2, 40,001 probe sets get proteins through the RefSeq mRNAs their annotation lists, 692 through a
+full-length cDNA they were designed on, 443 through another GenBank mRNA and 189 through RefSeq model mRNAs. 12,975
+were designed on ESTs with no protein annotated, and 254 on genomic clones of up to 340 kb; these keep their nucleotide
+sequence, untranslated. On HTA 2.0, 46,555 transcript clusters name only non-coding RNAs (lincRNA, antisense, snoRNA,
+pseudogene), so no protein exists for them. The value is the RNA's, not the protein's, and a probe set pools the
+isoforms that share its probes. Probe set to sequence pairs are in `results/fig4/probe_proteins/probe_set_proteins.tsv.gz`;
+the 40,990 + 776 proteins and 12,884 EST sequences are on Sherlock in
+`/scratch/users/olgabot/geo2kmers-fig4/ho/sources/fetched{,_est}/`.
+
 ## Limits
 
 - `land` is for probes under 100 nt: it stops on longer ones and points to `sketch --proteome`.
