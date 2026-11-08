@@ -88,3 +88,24 @@ python summarize.py <metrics dir> <all_domain_metrics.parquet>
 `sherlock:/scratch/users/olgabot/2024-kmerseek-analysis/nextflow-runs/qfo-pfam-region-benchmark/data/midi-plus/results/metrics/`
 (the `pfam.kmerseek.*_lcFalse.*.metrics.parquet` files). `all_domain_metrics.parquet` is in
 the same `results/` directory (md5 3080c0bf94816472dfe277ff7ee31b8c).
+
+## Follow-up run: H/P k35 and k40, dayhoff6 k19 and k21
+
+`make run-midi-plus-hp-k35-k40` in `nextflow-runs/qfo-pfam-region-benchmark` runs the 14
+missing settings on the same 9 species, image and queries: six two-letter H/P alphabets at
+k35 and k40, and dayhoff6 at k19 and k21. That is 126 index builds and 126 searches. All
+other tools are skipped. Output goes to `data/midi-plus/results-hp-k35-k40`, so
+run-midi-plus's `all_domain_metrics.parquet` is not replaced. hp_lehninger_hpc3 is left out:
+it has 3 letters, so k35 would be 55 bits.
+
+Resources, measured on run-midi-plus at the nearest settings (H/P k27-33, dayhoff6 k15-17):
+
+| step | tasks | peak memory measured | longest measured | first ask |
+|---|---|---|---|---|
+| kmerseekIndex | 126 | 0.9-6.7 GB | 30 s | 32 GB |
+| kmerseekSearch | 126 | 0.6-11.1 GB | 3 min | 25-43 GB |
+| scoreDomainCalls | 378 (3 truth sets) | 4.3 GB | 6 min | 8 GB or more |
+| head job | 1 | | | 16 GB, 12 h |
+
+The search asks are a floor in the pipeline and run 3-4 times what was measured. Higher k
+shares fewer k-mers, so k35-40 should use less than these, not more.
