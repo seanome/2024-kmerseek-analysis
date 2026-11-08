@@ -50,3 +50,11 @@ proteins of one probe set apart, and it cannot find a change the probe sets did 
 moving from probe sequences to protein HP k-mers keeps the signal, not whether HP k-mers find new signal. The probe
 k-mer tests read raw intensities and these read the authors' RMA values, so a difference between them may come from
 that, not from the k-mers.
+
+**Added after the run (2026-11-08).** Chosen on GSE27536 and scored on GSE28998, the chosen HP k-mers gave AUC 0.98
+(p 0.008 against swapped labels) and random k-mers that went up in GSE27536 gave a median of 0.96 (p 0.38). Under the
+verdict rule above that is a fail. Olga judged this a bad test rather than a failure of HP k-mers, and it is reported
+as not informative, with the rule's verdict shown beside it. The reasons: GSE28998 compares trained and untrained arms
+of 7 people, so AUCs near 1.0 leave no room between chosen and random k-mers; and the two series' training changes
+agree gene by gene (Pearson r 0.27, `results/fig4/series_agreement/`), so random k-mers that went up in one series
+are not a no-signal control for the other. No other verdict changed.

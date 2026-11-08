@@ -544,14 +544,15 @@ k-mer. Values are the authors' RMA values, already log2, used as they are.
 | GSE28998, each person held out | 1.00 | 1.00 (0.016) | 1.00 (0.016) | 34-285 and 111-777 | works in new people |
 | GSE111555, each person held out | 0.98 | 0.97 (0.005) | 0.97 (0.005) | 19-155 and 223-1706 | works in new people |
 | Chosen on GSE28998, scored on GSE27536 | 0.87 | 0.83 (0.005, 0.005) | 0.82 (0.005, 0.005) | 148 and 303 | carries over |
-| Chosen on GSE27536, scored on GSE28998 | 1.00 | 0.98 (0.008, 0.383) | 0.98 (0.008, 0.343) | 10 and 54 | does not carry over |
+| Chosen on GSE27536, scored on GSE28998 | 1.00 | 0.98 (0.008, 0.383) | 0.98 (0.008, 0.343) | 10 and 54 | not informative: random k-mers reach 0.96, near the ceiling (the rule written first says fails) |
 
 For held-out tests, p is against labels swapped within each person; GSE28998 has 7 people, so 0.016 (2 of 128) is
 the lowest p it can give. For cross-series tests the two p values are against swapped labels and against random k-mers.
 The held-out ranges are the fewest and most probe sets over the people left out.
 
 The HP k-mers' AUCs are at most 0.05 below the probe k-mers' in every test, for both alphabets. Three of four tests
-pass. The fourth fails where the probe k-mers passed: chosen on GSE27536, random HP k-mers that went up in GSE27536
+pass. The fourth cannot tell either way, though under the rule written first it fails, where the probe k-mers
+passed: chosen on GSE27536, random HP k-mers that went up in GSE27536
 also score GSE28998 at a median AUC of 0.96 (random probe k-mers: 0.71), so the 1000 chosen ones (0.98) do no better
 than any. All 1000 chosen HP k-mers went up after training, and with `hp_lehninger2` they come from only 10 probe
 sets. Results are in `results/fig4/hp_held_out/` and `results/fig4/hp_cross_series/`; `fig4_held_out.nf --hp` reruns them.
