@@ -1,7 +1,7 @@
 """Notebook 364: how far up the tree of life each sequence alphabet still finds shared k-mers.
 
-For two anchor species (Mus musculus, Botryllus schlosseri) and a relative at each
-taxonomic rank, sketch every proteome and coding-sequence (CDS) set with the sourmash
+For three anchors (Mus musculus, the mussel Mytilus edulis, the bacterium Escherichia
+coli K-12) and a relative at each taxonomic rank, sketch every proteome and coding-sequence (CDS) set with the sourmash
 branchwater plugin and measure containment (the fraction of one species' sampled k-mers
 that also occur in the other).
 
@@ -9,8 +9,7 @@ k-sizes are matched on bits per k-mer, k * log2(alphabet size), at 30 and 42 bit
     30 bits: DNA k=15, protein k=7,  dayhoff k=12, hp k=30
     42 bits: DNA k=21, protein k=10, dayhoff k=16, hp k=42
 Protein-space alphabets are sketched from the proteome; DNA from the CDS of the same
-genes (UniProt's *_DNA.fasta.gz next to each reference proteome; for Botryllus, the
-RefSeq cds_from_genomic file of the assembly its proteins come from).
+genes (UniProt's *_DNA.fasta.gz next to each reference proteome).
 
 Subcommands, in run order:
 
@@ -26,8 +25,10 @@ Subcommands, in run order:
 Reach rule, fixed before the run (2026-11-08, from the task text):
     floor(alphabet, k, input type, anchor) = max(c_yeast, c_arabidopsis)
                                              + 3 * |c_yeast - c_arabidopsis|
-    where c is the max of the two containment directions.
-    reach = the most distant rank (excluding the two different-kingdom species) whose
+    where c is the max of the two containment directions. For the E. coli anchor the
+    two other-kingdom species are Bacillus subtilis and Thermotoga maritima (set
+    2026-11-08, before its run).
+    reach =the most distant rank (excluding the two different-kingdom species) whose
     max containment is strictly above the floor. Closer ranks may still be below the
     floor; such a gap is reported in reach.tsv, not hidden.
 """
@@ -40,6 +41,7 @@ import gzip
 import json
 import math
 import os
+import re
 import shutil
 import subprocess
 import sys
@@ -101,7 +103,11 @@ DAYHOFF = {
 }
 HP = {**dict.fromkeys("AFGILMPVWY", "h"), **dict.fromkeys("NCSTDERHKQ", "p")}
 
-FLOOR_SPECIES = ("Saccharomyces cerevisiae", "Arabidopsis thaliana")
+
+def floor_species(anchor):
+    """The anchor's two other-kingdom species, whose containment sets its noise floor."""
+    return [e[1] for e in PATHS[anchor] if e[3] == "other kingdom"]
+
 
 # requested_species, used_species, taxid, requested_rank, UniProt proteome (None: NCBI
 # protein set), NCBI assembly, substitution note.
@@ -195,52 +201,62 @@ PATHS = {
             "",
         ),
     ],
-    "Botryllus schlosseri": [
+    # Bivalve anchor (added 2026-11-08 in place of Botryllus, at olgabot's request). One
+    # relative per rank that has a UniProt reference proteome; no other Mytilidae or
+    # Mytilida species has one, so family and order are missing.
+    "Mytilus edulis": [
         (
-            "Botryllus schlosseri",
-            "Botryllus schlosseri",
-            30301,
+            "Mytilus edulis",
+            "Mytilus edulis",
+            6550,
             "anchor",
-            None,
-            "GCF_051294905.1",
-            "no UniProt proteome for taxid 30301 (2026-11-08); proteins are the NCBI RefSeq "
-            "annotation GCF_051294905.1-RS_2026_02 of the same assembly, all isoforms",
+            "UP000683360",
+            "GCA_905397895.1",
+            "",
         ),
         (
-            "Ciona intestinalis",
-            "Ciona intestinalis",
-            7719,
-            "subphylum",
-            "UP000008144",
-            "GCA_000224145.2",
-            "UniProt built UP000008144 from GCA_000224145.1, which has no FASTA on the NCBI FTP site "
-            "(2026-11-08); GCA_000224145.2 is the same KH assembly with chromosome MT changed",
+            "Mytilus coruscus",
+            "Mytilus coruscus",
+            42192,
+            "genus",
+            "UP000507470",
+            "GCA_011752425.2",
+            "",
         ),
         (
-            "Branchiostoma floridae",
-            "Branchiostoma floridae",
-            7739,
+            "Magallana gigas",
+            "Magallana gigas",
+            29159,
+            "subclass",
+            "UP000005408",
+            "GCA_902806645.1",
+            "",
+        ),
+        (
+            "Solemya velum",
+            "Solemya velum",
+            13268,
+            "class",
+            "UP001724931",
+            "GCA_048127485.1",
+            "",
+        ),
+        (
+            "Octopus sinensis",
+            "Octopus sinensis",
+            2607531,
             "phylum",
-            "UP000001554",
-            "GCF_000003815.2",
+            "UP000515154",
+            "GCF_006345805.1",
             "",
         ),
         (
-            "Strongylocentrotus purpuratus",
-            "Strongylocentrotus purpuratus",
-            7668,
-            "superphylum",
-            "UP000007110",
-            "GCA_000002235.4",
-            "",
-        ),
-        (
-            "Drosophila melanogaster",
-            "Drosophila melanogaster",
-            7227,
+            "Capitella teleta",
+            "Capitella teleta",
+            283909,
             "kingdom",
-            "UP000000803",
-            "GCA_000001215.4",
+            "UP000014760",
+            "GCA_000328365.1",
             "",
         ),
         (
@@ -260,6 +276,101 @@ PATHS = {
             "UP000006548",
             "GCA_000001735.1",
             "",
+        ),
+    ],
+    # Bacterial anchor (added 2026-11-08). Two strains of one species give a species rank,
+    # which no animal ladder here has. The floor is two bacteria from other NCBI kingdoms
+    # (Bacillati, Thermotogati), as yeast and Arabidopsis are for the animals.
+    "Escherichia coli K-12": [
+        (
+            "Escherichia coli K-12",
+            "Escherichia coli K-12",
+            83333,
+            "anchor",
+            "UP000000625",
+            "GCA_000005845.2",
+            "",
+        ),
+        (
+            "Escherichia coli O157:H7",
+            "Escherichia coli O157:H7",
+            83334,
+            "species",
+            "UP000000558",
+            "GCA_000008865.2",
+            "",
+        ),
+        (
+            "Escherichia fergusonii",
+            "Escherichia fergusonii",
+            585054,
+            "genus",
+            "UP000000745",
+            "GCA_000026225.1",
+            "",
+        ),
+        (
+            "Salmonella enterica",
+            "Salmonella enterica",
+            99287,
+            "family",
+            "UP000001014",
+            "GCA_000006945.2",
+            "serovar Typhimurium strain LT2 (taxid 99287), the UniProt reference proteome",
+        ),
+        (
+            "Yersinia pestis",
+            "Yersinia pestis",
+            632,
+            "order",
+            "UP000000815",
+            "GCA_000009065.1",
+            "",
+        ),
+        (
+            "Pseudomonas aeruginosa",
+            "Pseudomonas aeruginosa",
+            208964,
+            "class",
+            "UP000002438",
+            "GCA_000006765.1",
+            "strain PAO1 (taxid 208964)",
+        ),
+        (
+            "Caulobacter vibrioides",
+            "Caulobacter vibrioides",
+            190650,
+            "phylum",
+            "UP000001816",
+            "GCA_000006905.1",
+            "strain CB15 (taxid 190650)",
+        ),
+        (
+            "Bacteroides thetaiotaomicron",
+            "Bacteroides thetaiotaomicron",
+            226186,
+            "kingdom",
+            "UP000001414",
+            "GCA_000011065.1",
+            "strain VPI-5482 (taxid 226186)",
+        ),
+        (
+            "Bacillus subtilis",
+            "Bacillus subtilis",
+            224308,
+            "other kingdom",
+            "UP000001570",
+            "GCA_000009045.1",
+            "strain 168 (taxid 224308)",
+        ),
+        (
+            "Thermotoga maritima",
+            "Thermotoga maritima",
+            243274,
+            "other kingdom",
+            "UP000008183",
+            "GCA_000008545.1",
+            "strain MSB8 (taxid 243274)",
         ),
     ],
 }
@@ -336,20 +447,19 @@ def shared_rank(anchor_lin, rel_lin):
     """Lowest shared ranked taxon, lowest shared taxon of any kind, and that taxon's depth.
 
     Ranked: unranked clades ("clade", "no rank") skipped; two kingdoms share only the
-    domain Eukaryota, called "other kingdom". Depth is the position of the lowest shared
+    domain (Eukaryota, Bacteria), called "other kingdom". Depth is the position of the lowest shared
     taxon in the anchor's full lineage, so a larger depth means a closer relative even when
-    two relatives share the same rank (sea urchin and fly both share only kingdom Metazoa
-    with Botryllus, but sea urchin also shares the unranked clade Deuterostomia).
+    two relatives share the same rank. Species counts as a shared rank, for two strains of
+    one species.
     """
     rel = set(rel_lin)
     depth = max(i for i, t in enumerate(anchor_lin) if t in rel)
     clade = anchor_lin[depth][1]
     for rank, name in reversed(anchor_lin):
-        if rank in RANK_ORDER and rank not in ("species",) and (rank, name) in rel:
-            if rank in ("superkingdom", "domain"):
-                break
+        if rank in RANK_ORDER and (rank, name) in rel:
             return rank, name, clade, depth
-    return "other kingdom", "Eukaryota", clade, depth
+    domain = next(n for r, n in anchor_lin if r in ("superkingdom", "domain"))
+    return "other kingdom", domain, clade, depth
 
 
 def genome_url(acc):
@@ -394,9 +504,10 @@ def resolve(args):
                         f"{up} was built from {built}, table says {acc}, and no note says why"
                     )
                 release = hdr.get("X-UniProt-Release", "")
+                domain = p["superkingdom"].capitalize()
                 purl = (
                     "https://ftp.uniprot.org/pub/databases/uniprot/current_release/knowledgebase/"
-                    f"reference_proteomes/Eukaryota/{up}/{up}_{taxid}.fasta.gz"
+                    f"reference_proteomes/{domain}/{up}/{up}_{taxid}.fasta.gz"
                 )
                 curl = purl.replace(".fasta.gz", "_DNA.fasta.gz")
             else:
@@ -456,7 +567,7 @@ def read_tsv(path):
 
 
 def slug(species):
-    return species.replace(" ", "_")
+    return re.sub(r"[^A-Za-z0-9]+", "_", species)
 
 
 def species_files():
@@ -582,8 +693,14 @@ def sketch(args):
     for input_type in INPUT_TYPES:
         out = sig_path(work, input_type)
         if out.exists():
-            print(out, "exists", flush=True)
-            continue
+            import sourmash
+
+            names = {sig.name for sig in sourmash.load_file_as_signatures(str(out))}
+            if names == set(species_files()):
+                print(out, "exists", flush=True)
+                continue
+            print(out, "holds other species; rebuilding", flush=True)
+            out.unlink()
         listing = run_dir(work, "sigs") / f"{input_type}.manysketch.csv"
         with open(listing, "w", newline="") as f:
             w = csv.writer(f, lineterminator="\n")
@@ -758,13 +875,17 @@ def reach_table():
                     and int(r["k"]) == k
                 ]
                 fl = [
-                    max_c(r) for sp in FLOOR_SPECIES for r in sub if r["relative"] == sp
+                    max_c(r)
+                    for sp in floor_species(anchor)
+                    for r in sub
+                    if r["relative"] == sp
                 ]
                 assert len(fl) == 2, (anchor, input_type, alphabet, k, fl)
                 floor = max(fl) + 3 * abs(fl[0] - fl[1])
                 floors[(anchor, input_type, alphabet, k)] = (floor, fl)
                 ranked = sorted(
-                    (r for r in sub if r["relative"] not in FLOOR_SPECIES), key=rank_key
+                    (r for r in sub if r["relative"] not in floor_species(anchor)),
+                    key=rank_key,
                 )
                 above = [i for i, r in enumerate(ranked) if max_c(r) > floor]
                 base = dict(
@@ -832,7 +953,7 @@ def figure(args):
     _, floors = reach_table()
     y_min = 1e-4
     for input_type in ("proteome",):
-        fig, axs = pf.figure(pf.TWO_COLUMN_MM, 85, ncols=2)
+        fig, axs = pf.figure(pf.TWO_COLUMN_MM, 85, ncols=len(PATHS))
         for ax, anchor in zip(axs, PATHS):
             rels = sorted(
                 (r for r in path if r["anchor"] == anchor and r["rank"] != "anchor"),
@@ -891,7 +1012,7 @@ def figure(args):
             ax.set_xticks(range(len(rels)))
             ax.set_xticklabels(
                 [
-                    f"{r['rank']}: {r['relative'][0]}. {r['relative'].split()[1]}"
+                    f"{r['rank']}: {r['relative'][0]}. {r['relative'].split(' ', 1)[1]}"
                     for r in rels
                 ],
                 rotation=30,
@@ -901,10 +1022,8 @@ def figure(args):
             ax.yaxis.set_major_formatter(FuncFormatter(lambda v, _: f"{v:g}"))
             ax.yaxis.set_minor_formatter(NullFormatter())
             ax.tick_params(axis="x", labelsize=5)
-            ax.set_xlabel(
-                "Lowest rank shared with the anchor (NCBI Taxonomy), relative species"
-            )
-            ax.set_ylabel("Max containment, both directions")
+            if ax is axs[0]:
+                ax.set_ylabel("Max containment, both directions")
             ax.set_title(f"Anchor: {anchor}", loc="left")
         handles = [Patch(color=c, label=a) for a, c in COLOURS.items()]
         handles += [
@@ -940,7 +1059,10 @@ def figure(args):
             "Points on the bottom axis: containment below 0.0001, most of them 0",
             y=1.16,
         )
-        for ax, letter in zip(axs, "ab"):
+        fig.supxlabel(
+            "Lowest rank shared with the anchor (NCBI Taxonomy): relative species"
+        )
+        for ax, letter in zip(axs, "abc"):
             pf.panel_label(ax, letter)
         pf.save(fig, str(RES / f"reach_by_alphabet_{input_type}"))
 
@@ -971,8 +1093,13 @@ def submit(args):
         )
         return out.stdout.strip().split(";")[0]
 
+    after = [f"--dependency=afterok:{args.after}"] if args.after else []
     j1 = sbatch(
-        "--job-name=364-fetch", "--export=ALL,STEP=fetch", "--mem=8G", "--time=3:00:00"
+        "--job-name=364-fetch",
+        *after,
+        "--export=ALL,STEP=fetch",
+        "--mem=8G",
+        "--time=3:00:00",
     )
     mem = "32G" if min(SCALED.values()) < 100 else "16G"
     common = [f"--cpus-per-task={CORES}", f"--mem={mem}", "--time=2:00:00"]
@@ -996,8 +1123,11 @@ def main():
         description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter
     )
     sub = p.add_subparsers(dest="cmd")  # no required=: Sherlock python3 is 3.6
-    for name in ("resolve", "reach", "figure", "submit"):
+    for name in ("resolve", "reach", "figure"):
         sub.add_parser(name)
+    sub.add_parser("submit").add_argument(
+        "--after", help="job id the fetch job waits for (afterok)"
+    )
     for name in ("fetch", "entropy"):
         sub.add_parser(name).add_argument("--work", required=True)
     for name in ("sketch", "compare"):
