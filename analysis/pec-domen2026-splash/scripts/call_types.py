@@ -173,7 +173,7 @@ for c in CONTRASTS:
         uniq.append(dict(contrast=c, route=route, peptides=ng.height,
                          gene_unique_peptides=int((ng["n_genes"] == 1).sum()),
                          genes_all_peptides=all_genes, genes_gene_unique_peptides=uq.select("gene").unique().height))
-        best = (a.sort("bit_score", descending=True).unique("query", keep="first")
+        best = (a.sort(["bit_score", "target"], descending=[True, False]).unique("query", keep="first", maintain_order=True)
                 .with_columns(((pl.col("target_start") - 1 + pl.col("target_end")) / 2 / pl.col("target_len")).alias("rel")))
         best = best.with_columns((1.0 / pl.len().over("gene")).alias("gene_weight"))
         rel, w = best["rel"].to_numpy(), best["gene_weight"].to_numpy()
