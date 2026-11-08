@@ -1,6 +1,7 @@
 """Bits per letter and per k-mer for every kmerseek alphabet."""
 
 import math
+import re
 import sys
 from pathlib import Path
 
@@ -19,7 +20,14 @@ def test_every_residue_is_in_exactly_one_class(alphabet):
 
 def test_class_counts_match_the_number_in_each_name():
     for alphabet, clusters in ou.KMERSEEK_ALPHABET_CLUSTERS.items():
-        assert len(clusters) == int(alphabet[-2:].lstrip("abcdefghijklmnopqrstuvwxyz_"))
+        assert len(clusters) == int(re.search(r"(\d+)$", alphabet).group(1))
+
+
+@pytest.mark.parametrize("alphabet", ou.KMERSEEK_ALPHABET_CLUSTERS)
+def test_registry_symbols_are_single_characters(alphabet):
+    groups = ou.ALPHABET_AA_GROUPS[alphabet]
+    assert all(len(symbol) == 1 for symbol in groups)
+    assert len(groups) == len(ou.KMERSEEK_ALPHABET_CLUSTERS[alphabet])
 
 
 def test_merging_residues_can_only_lose_bits():
