@@ -65,6 +65,10 @@ process NAME_ANCHORS {
     maxForks 1
     publishDir "${params.outdir}/held_out", mode: 'copy', pattern: '*.tsv'
 
+    input:
+    // The scripts are inputs so that editing one reruns this step on -resume
+    path code
+
     output:
     path "GSE111555.anchor_*.tsv"
 
@@ -80,5 +84,5 @@ process NAME_ANCHORS {
 
 workflow {
     HELD_OUT(Channel.fromList(COMPARISONS.findAll { !params.only || it[0] == params.only }))
-    if (params.splash_hits && !params.only) NAME_ANCHORS()
+    if (params.splash_hits && !params.only) NAME_ANCHORS(Channel.fromPath(["${projectDir}/fig4/hta_probe_design.R", "${projectDir}/fig4/name_anchors.py", "${projectDir}/geo2kmers/hta.py"]).collect())
 }

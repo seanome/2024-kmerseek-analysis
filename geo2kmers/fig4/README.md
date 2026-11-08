@@ -86,3 +86,16 @@ Scripts: `fetch_raw.py`, `affymetrix_probe_intensities.R`, `agilent_probe_intens
 `kamrat_table.py`, `kamrat_summary.py`, `splash_reads.py` and `splash_groups.py`. Results are in
 `results/fig4/splash_kamrat/`. The full run took 1 h 50 min on 4 CPU and 16 GB. GSE111555's SPLASH and probe table steps
 peaked at 13.9 GB.
+
+## Held-out AUC and the genes behind the anchors
+
+`fig4_held_out.nf` runs `kamrat_table.py` and then `held_out_auc.py` on GSE83578 (pre vs 30 min), GSE28998 and
+GSE111555, following `held_out_plan.md`. For each left-out person it picks the 100, 1000 and 10000 k-mers with the lowest
+Welch p-value on the other people, standardises each k-mer on those people, and scores each left-out sample as the mean
+of its signed standardised k-mers. It repeats this after swapping pre and post within each person, 200 times or over
+every arrangement when there are fewer. People come from `geo2kmers/people.py`. `NAME_ANCHORS` reads the HTA 2.0 probe
+design (`hta_probe_design.R`) and names the genes of the 30 SPLASH anchors that sit inside one gene cluster
+(`name_anchors.py`, using `geo2kmers/hta.py`). A cluster with no gene symbol is named by its lincRNA name or Ensembl id.
+The names change nothing upstream. `plot_held_out.py` draws `held_out.png`. Results are in `results/fig4/held_out/`.
+The run took 1 h 10 min on 4 CPU and 15 GB.
+

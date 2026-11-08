@@ -421,7 +421,40 @@ that nearly repeated the slide split found 767371 k-mers, and the other four fou
 corrected ones. Thirty of its 6709 anchors sit inside one gene cluster, the case closest to alternative splicing. Most
 anchors cross gene clusters, so they may reflect expression, not splicing. Counts of hits on signature proteins are in
 `summary.tsv`, but a 7-letter landing can happen by chance, and no control was run for them. These counts say that the
-groups differ. They do not test the published score, and no held-out AUC was computed.
+groups differ. They do not test the published score.
+
+### Held-out AUC from probe k-mers
+
+Can probe k-mers tell post from pre in a person they were not chosen on? For each person in turn, the 1000 k-mers with
+the lowest KaMRaT p-value were chosen on the other people, and the left-out person's samples were scored with them
+(`fig4/held_out_plan.md`, written before any AUC was run). Chance is the same steps after swapping pre and post within
+each person.
+
+![Held-out AUC of probe k-mers against the published gene signature](results/fig4/held_out/held_out.png)
+
+| comparison | people | held-out AUC | p | people higher after | published AUC |
+|---|---:|---:|---:|---:|---:|
+| GSE83578, 30 min | 8 | 0.996 | 0.005 | 8 | 0.93 |
+| GSE28998, 12 weeks | 7 | 1.000 | 0.016 | 7 | 0.80 |
+| GSE111555, 18 weeks | 16 | 0.980 | 0.005 | 16 | 0.809 |
+
+Each p is the lowest the test allows: 1 in 201 for 200 swaps, and 2 in 128 for GSE28998, whose 7 people allow only 128
+arrangements. With 100 or 10000 k-mers the AUCs are 0.965 to 1.000. The published AUCs are turned so that 1 means
+post above pre (0.07 for GSE83578 30 min becomes 0.93). This beats the published score, but it is a weaker test: the
+published genes were fixed before these series, while these k-mers were chosen on other people of the same series and
+the same array. A difference shared by most people of a series, such as a batch, would carry over to the left-out
+person. No k-mers were tested on a second series.
+
+KaMRaT's false discovery correction divides by rank + 1 and never adjusts the top k-mer, so its adjusted values are
+about half the standard Benjamini-Hochberg ones at the top. That is why it reports 102 k-mers for GSE28998 where the
+standard method gives 100. Its ranking by p-value is unaffected and matches ours.
+
+The 30 GSE111555 SPLASH anchors that sit inside one gene cluster fall in 18 clusters
+(`results/fig4/held_out/GSE111555.anchor_genes.tsv`). Twelve anchors are in 10 protein-coding genes: TTN (3 anchors),
+CLPTM1L, HRC, HSPG2, GIGYF2, MRPL23, STX3, DUSP5, MAGEC1 and VCX. The other 18 are in non-coding clusters, five of
+them in linc-BRD9-1. None is a signature gene. Only 2 anchors include a probe across an exon-exon junction; the other
+28 compare probes within exons, which a change in which part of a transcript is kept or a probe's own response could
+also explain. Each probe's pre and post share of its anchor is in `GSE111555.anchor_probes.tsv`.
 
 ## Limits
 

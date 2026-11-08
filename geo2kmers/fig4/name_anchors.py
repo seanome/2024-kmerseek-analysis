@@ -17,6 +17,7 @@ from collections import defaultdict
 import numpy as np
 
 from geo2kmers.geo import read_table
+from geo2kmers.hta import genes_in, non_coding_names
 
 ANCHOR = 15
 hits_file, probes, design, platform, groups_file, signature, dataset, comparison, prefix = sys.argv[1:]
@@ -25,12 +26,6 @@ hits_file, probes, design, platform, groups_file, signature, dataset, comparison
 def rows_of(path):
     with open(path) as f:
         return list(csv.DictReader(f, delimiter="\t"))
-
-
-def genes_in(assignment):
-    """The gene symbols in one gene_assignment cell, whose parts are split by /// and fields by //."""
-    names = [part.split(" // ")[1].strip() for part in assignment.split(" /// ") if part.count(" // ") >= 1]
-    return sorted({n for n in names if n and n != "---"})
 
 
 hits = [r for r in rows_of(hits_file) if r["comparison"] == comparison and int(r["features"]) == 1]
@@ -72,6 +67,8 @@ for anchor, hit in anchors.items():
         rows = what[sequence]
         cluster = sorted({r["transcript_cluster"] for r in rows if r["transcript_cluster"]})
         named = sorted({g for c in cluster for g in genes_in(annotation[c]["gene_assignment"])} if annotation else [])
+        if not named and annotation:
+            named = sorted({g for c in cluster for g in non_coding_names(annotation[c]["gene_assignment"])})
         kinds = sorted({r["probe_set"][:3] for r in rows})
         probe_rows.append(
             {
