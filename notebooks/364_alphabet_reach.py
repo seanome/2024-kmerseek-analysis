@@ -63,6 +63,18 @@ SETTINGS = [
     ("hp", 42, 42),
 ]
 SCALED = {"DNA": 1000, "protein": 200, "dayhoff": 200, "hp": 200}
+# NB364_SCALED=<n> sets one scaled value for every alphabet. Its sketches, comparisons
+# and results go in folders named scaled<n>, so the default run's files are kept.
+ONE_SCALED = os.environ.get("NB364_SCALED")
+if ONE_SCALED:
+    SCALED = dict.fromkeys(SCALED, int(ONE_SCALED))
+RES = OUT / f"scaled{ONE_SCALED}" if ONE_SCALED else OUT
+
+
+def run_dir(work, name):
+    return Path(work) / (f"{name}_scaled{ONE_SCALED}" if ONE_SCALED else name)
+
+
 INPUT_TYPES = ("proteome", "cds")
 
 
@@ -550,7 +562,7 @@ def entropy(args):
 
 def sig_path(work, input_type):
     """One zip per input type holding every species' sketches, named by species."""
-    return Path(work) / "sigs" / f"{input_type}.sig.zip"
+    return run_dir(work, "sigs") / f"{input_type}.sig.zip"
 
 
 def param_string(alphabet, k):
@@ -566,13 +578,13 @@ def sketch(args):
     skipped, so each input type gets its own CSV.
     """
     work = Path(args.work)
-    (work / "sigs").mkdir(parents=True, exist_ok=True)
+    run_dir(work, "sigs").mkdir(parents=True, exist_ok=True)
     for input_type in INPUT_TYPES:
         out = sig_path(work, input_type)
         if out.exists():
             print(out, "exists", flush=True)
             continue
-        listing = work / "sigs" / f"{input_type}.manysketch.csv"
+        listing = run_dir(work, "sigs") / f"{input_type}.manysketch.csv"
         with open(listing, "w", newline="") as f:
             w = csv.writer(f, lineterminator="\n")
             w.writerow(["name", "genome_filename", "protein_filename"])
@@ -637,7 +649,7 @@ def compare(args):
     rows = []
     for input_type in INPUT_TYPES:
         for alphabet, k, _ in settings_for(input_type):
-            csv_out = work / "compare" / f"{input_type}.{alphabet}.k{k}.csv"
+            csv_out = run_dir(work, "compare") / f"{input_type}.{alphabet}.k{k}.csv"
             csv_out.parent.mkdir(parents=True, exist_ok=True)
             sigs = str(sig_path(work, input_type))
             subprocess.run(
@@ -704,7 +716,7 @@ def compare(args):
                         )
                     )
             print(input_type, alphabet, k, "done", flush=True)
-    write_tsv(OUT / "containment.tsv", rows, CONTAINMENT_COLUMNS)
+    write_tsv(RES / "containment.tsv", rows, CONTAINMENT_COLUMNS)
 
 
 def read_csv(path):
@@ -733,7 +745,7 @@ def rank_key(r):
 def reach_table():
     """The reach rule. Returns reach.tsv rows and {(anchor, input, alphabet, k): (floor, [c_yeast, c_ath])}."""
     rows, floors = [], {}
-    cont = read_tsv(OUT / "containment.tsv")
+    cont = read_tsv(RES / "containment.tsv")
     for input_type in INPUT_TYPES:
         for alphabet, k, _ in settings_for(input_type):
             for anchor in PATHS:
@@ -794,7 +806,7 @@ def reach_table():
 
 def reach(args):
     rows, _ = reach_table()
-    write_tsv(OUT / "reach.tsv", rows, list(rows[0]))
+    write_tsv(RES / "reach.tsv", rows, list(rows[0]))
     for r in rows:
         print("\t".join(str(v) for v in r.values()))
 
@@ -815,7 +827,7 @@ def figure(args):
     import pubfig as pf
 
     pf.use_style()
-    cont = read_tsv(OUT / "containment.tsv")
+    cont = read_tsv(RES / "containment.tsv")
     path = read_tsv(OUT / "taxonomic_path.tsv")
     _, floors = reach_table()
     y_min = 1e-4
@@ -923,14 +935,14 @@ def figure(args):
             handles=handles, loc="lower center", ncol=5, bbox_to_anchor=(0.5, 1.0)
         )
         fig.suptitle(
-            "Protein, dayhoff and hp from the proteome (scaled 200); "
-            "DNA from the CDS of the same genes (scaled 1000)\n"
+            f"Protein, dayhoff and hp from the proteome (scaled {SCALED['protein']}); "
+            f"DNA from the CDS of the same genes (scaled {SCALED['DNA']})\n"
             "Points on the bottom axis: containment below 0.0001, most of them 0",
             y=1.16,
         )
         for ax, letter in zip(axs, "ab"):
             pf.panel_label(ax, letter)
-        pf.save(fig, str(OUT / f"reach_by_alphabet_{input_type}"))
+        pf.save(fig, str(RES / f"reach_by_alphabet_{input_type}"))
 
 
 CORES = 4
@@ -943,7 +955,10 @@ def submit(args):
     (9-60 M bases, UniProt _DNA files). At scaled 200 a 12 M-residue proteome keeps about
     60 000 hashes per setting, so every sketch together is well under 1 GB in memory.
     The time limits are about 10x what that size needs; fetch also builds the pinned
-    branchwater environment the first time.
+    branchwater environment the first time. NB364_SCALED reaches the jobs through
+    --export=ALL. At scaled 10 the largest sketch (57 M CDS bases) holds about 5.7 M
+    hashes per setting, 20x the default run's; the scaled-200/1000 run peaked at 0.6 GB,
+    so 32 GB leaves room for a 20x increase and more.
     """
     sb = str(HERE / "364_alphabet_reach.sbatch")
 
@@ -959,7 +974,8 @@ def submit(args):
     j1 = sbatch(
         "--job-name=364-fetch", "--export=ALL,STEP=fetch", "--mem=8G", "--time=3:00:00"
     )
-    common = [f"--cpus-per-task={CORES}", "--mem=16G", "--time=2:00:00"]
+    mem = "32G" if min(SCALED.values()) < 100 else "16G"
+    common = [f"--cpus-per-task={CORES}", f"--mem={mem}", "--time=2:00:00"]
     j2 = sbatch(
         "--job-name=364-sketch",
         f"--dependency=afterok:{j1}",
