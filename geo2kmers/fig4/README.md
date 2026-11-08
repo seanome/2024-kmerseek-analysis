@@ -87,6 +87,14 @@ Scripts: `fetch_raw.py`, `affymetrix_probe_intensities.R`, `agilent_probe_intens
 `results/fig4/splash_kamrat/`. The full run took 1 h 50 min on 4 CPU and 16 GB. GSE111555's SPLASH and probe table steps
 peaked at 13.9 GB.
 
+## Cross-series test
+
+`fig4_held_out.nf`'s `CROSS_SERIES` builds both U133 Plus 2 tables with `kamrat_table.py`, then `cross_series_auc.py`
+chooses 1000 k-mers on GSE28998 and scores GSE27536, and the reverse, under `cross_series_plan.md`. Chance is 200
+within-person label swaps (all 127 for GSE28998) and 200 random k-mer sets with the chosen set's up and down split.
+`plot_cross_series.py` draws `results/fig4/cross_series/cross_series.png`. `contig_lengths.py` and
+`probe_lengths.py` count KaMRaT contig and probe lengths; `plot_contig_lengths.py` and `plot_probe_lengths.py` draw them.
+
 ## Held-out AUC and the genes behind the anchors
 
 `fig4_held_out.nf` runs `kamrat_table.py` and then `held_out_auc.py` on GSE83578 (pre vs 30 min), GSE28998 and

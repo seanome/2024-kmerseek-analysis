@@ -443,7 +443,7 @@ arrangements. With 100 or 10000 k-mers the AUCs are 0.965 to 1.000. The publishe
 post above pre (0.07 for GSE83578 30 min becomes 0.93). This beats the published score, but it is a weaker test: the
 published genes were fixed before these series, while these k-mers were chosen on other people of the same series and
 the same array. A difference shared by most people of a series, such as a batch, would carry over to the left-out
-person. No k-mers were tested on a second series.
+person. The next section tests k-mers on a second series.
 
 KaMRaT's false discovery correction divides by rank + 1 and never adjusts the top k-mer, so its adjusted values are
 about half the standard Benjamini-Hochberg ones at the top. That is why it reports 102 k-mers for GSE28998 where the
@@ -455,6 +455,34 @@ CLPTM1L, HRC, HSPG2, GIGYF2, MRPL23, STX3, DUSP5, MAGEC1 and VCX. The other 18 a
 them in linc-BRD9-1. None is a signature gene. Only 2 anchors include a probe across an exon-exon junction; the other
 28 compare probes within exons, which a change in which part of a transcript is kept or a probe's own response could
 also explain. Each probe's pre and post share of its anchor is in `GSE111555.anchor_probes.tsv`.
+
+### Probe k-mers chosen on one series and scored on another
+
+The 1000 probe k-mers that best separate pre from post in one U133 Plus 2 series also separate pre from post in the
+other, in both directions, better than random k-mers do. The rules are in `fig4/cross_series_plan.md`, written before
+the run. GSE28998 is biceps of 7 people before and after 12 weeks of resistance training; GSE27536 is thigh muscle of 27
+people, 12 healthy and 15 with COPD, before and after 8 weeks of endurance training. No HTA 2.0 series has a partner here.
+
+![cross-series AUC](results/fig4/cross_series/cross_series.png)
+
+| Chosen on | Scored on | AUC | p, labels swapped | p, random k-mers | Random k-mers, median AUC | People higher after |
+|---|---|---:|---:|---:|---:|---:|
+| GSE28998 | GSE27536 | 0.868 | 0.005 | 0.005 | 0.698 | 22 of 27 |
+| GSE27536 | GSE28998 | 1.000 | 0.008 | 0.005 | 0.714 | 7 of 7 |
+
+Each k-mer keeps the direction it moved in the series it was chosen on, and is standardised over all samples of the
+scored series, without labels. The random sets have as many k-mers going up as the chosen set. Random k-mers already
+reach a median AUC of 0.70 and 0.71, so much of the change after training is shared by most probes on this array, in both
+series; the chosen k-mers beat all 200 random sets. The count of people higher after is not better than random k-mers
+(p 0.19 and 0.09), only the AUC is. With 100 k-mers, GSE28998 to GSE27536 gives 0.706, which random k-mers match
+(p 0.14). 27 k-mers constant in every sample of a series were dropped; that rule was added after the first run, where
+they left random sets in GSE28998 without an AUC, and is recorded in the plan. This is one pair of series on one array,
+which differ in muscle, training and health, so it shows the change carries over but not which part of it does.
+
+KaMRaT's contigs are short: 81 % to 98 % of contigs from each comparison's 10000 top k-mers are one 25-letter k-mer on
+the Affymetrix arrays, and the longest is 84 letters (`results/fig4/contig_lengths/contig_lengths.png`), because each
+Affymetrix probe is 25 letters (`results/fig4/probe_lengths/probe_lengths.png`). SPLASH ran without its compactor
+step, so it gives anchors and targets of 15 and 10 letters, not contigs.
 
 ## Limits
 
