@@ -73,7 +73,8 @@ def main():
                 math.ceil(2 * max(killed, default=0)),
             )
             if memory > 500:
-                raise SystemExit(f"{tag} needs {memory} GB, above ceiling")
+                print(f"warning: {tag} needs {memory} GB, capped at 500 GB")
+                memory = 500
             result.append(
                 dict(
                     tag=tag,
