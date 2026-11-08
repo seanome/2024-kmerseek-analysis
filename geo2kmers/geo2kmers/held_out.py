@@ -6,6 +6,7 @@ import math
 import numpy as np
 from scipy.special import stdtr
 
+from geo2kmers.geo import Geo2KmersError
 from geo2kmers.scoring import auc_and_p
 
 
@@ -22,6 +23,8 @@ def welch_p(values, squares, pre, post):
     variance in either group gets p = 1, as in KaMRaT.
     """
     n1, n2 = pre.sum(), post.sum()
+    if n1 < 2 or n2 < 2:
+        raise Geo2KmersError(f"a Welch test needs at least 2 samples in each group, got {n1} pre and {n2} post")
     sum1, square1 = group_sums(values, squares, pre)
     sum2, square2 = group_sums(values, squares, post)
     mean1, mean2 = sum1 / n1, sum2 / n2
