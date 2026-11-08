@@ -20,6 +20,7 @@ def write_series(folder, name, people, rng, rise=0.0, shift=0.0):
     values = rng.normal(8, 1, (2000, len(samples)))
     values[:40][:, post] += rise
     values[:, post] += shift
+    values[-5:] = 3.0  # constant in every sample, as some probes are
     with open(folder / f"{name}.table.tsv", "w") as f:
         f.write("kmer\t" + "\t".join(samples) + "\n")
         for k, row in enumerate(values):
@@ -71,6 +72,8 @@ def test_kmers_that_rise_in_both_series_carry_over(tmp_path):
     assert float(row["p_labels_swapped"]) < 0.05
     assert float(row["p_random_kmers"]) < 0.05
     assert row["people_post_above_pre"] == "5"
+    assert row["median_auc_random_kmers"] != "nan"
+    assert row["kmers_dropped_for_no_variance"] == "5"
 
 
 def test_a_shift_of_the_whole_scored_series_is_matched_by_random_kmers(tmp_path):

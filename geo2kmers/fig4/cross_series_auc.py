@@ -51,6 +51,10 @@ where = {k: i for i, k in enumerate(scored_kmers)}
 shared = [(i, where[k]) for i, k in enumerate(train_kmers) if k in where]
 train_values = train_values[[i for i, _ in shared]]
 scored_values = scored_values[[j for _, j in shared]]
+# A k-mer with the same value in every sample of either series cannot be tested or standardised
+varies = (train_values.std(axis=1) > 0) & (scored_values.std(axis=1) > 0)
+constant = int((~varies).sum())
+train_values, scored_values = train_values[varies], scored_values[varies]
 fields = sample_fields(series, scored_gse)
 people = np.array([person_of(scored_gse, fields[s]) for s in samples])
 
@@ -112,6 +116,7 @@ for size in SIZES:
             "people_p_labels_swapped": f"{ho.p_from_shuffles(above, [u for _, u in by_swap]):.4f}",
             "people_p_random_kmers": f"{ho.p_from_shuffles(above, [u for _, u in by_kmers]):.4f}",
             "kmers_shared": len(shared),
+            "kmers_dropped_for_no_variance": constant,
             "kmers_up_after_in_training": int((signs[rows[:size]] > 0).sum()),
         }
     )

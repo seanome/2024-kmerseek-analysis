@@ -16,7 +16,9 @@ GSE27536's pre and post arrays were mostly scanned on different days, so k-mers 
 
 **Steps.**
 
-1. Keep the k-mers present in both series' tables.
+1. Keep the k-mers present in both series' tables and not constant across the samples of either series. (The
+   constant-k-mer rule was added after the first run, whose random sets in GSE28998 gave no AUC because a constant
+   k-mer cannot be standardised; no other rule changed.)
 2. On the training series, run KaMRaT's t-test (Welch, log2(intensity + 1)) on all its people, and keep the 1000 k-mers
    with the lowest p and the direction each moved.
 3. Standardise each kept k-mer with the mean and standard deviation of all samples of the scored series. This uses no
