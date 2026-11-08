@@ -45,8 +45,7 @@ def count_below_fdr(p, fdr=0.05):
 def choose(values, squares, pre, post, size):
     """The rows with the lowest p, best first, and +1 or -1 for up or down after exercise."""
     p, difference = welch_p(values, squares, pre, post)
-    candidates = np.argpartition(p, size - 1)[:size]
-    rows = candidates[np.lexsort((candidates, p[candidates]))]
+    rows = np.lexsort((np.arange(len(p)), p))[:size]  # ties in p go to the lower row, on any numpy version
     return rows, np.sign(difference[rows])
 
 
