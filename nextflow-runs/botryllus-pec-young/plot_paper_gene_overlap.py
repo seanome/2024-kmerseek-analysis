@@ -4,8 +4,10 @@
 A listed gene in the 13-49 d comparison counts as found if either matching window here
 (13-17 d, 49-52 d) finds it. Each listed entry falls in exactly one group below.
 
-Usage: plot_paper_gene_overlap.py   (run in this folder, after compare_paper_genes.py)
-Writes paper_gene_summary.tsv and figures/paper_gene_overlap_domen2026_dataset_s1.{pdf,svg,png}.
+Usage: plot_paper_gene_overlap.py [<dir> <run>]   (run in this folder, after compare_paper_genes.py)
+<dir> holds compare_paper_genes.py's output (default: this folder) and <run> is the run name
+given to it (default: joint). Writes <dir>/paper_gene_summary.tsv and
+figures/paper_gene_overlap[_<run>]_domen2026_dataset_s1.{pdf,svg,png}.
 """
 
 import sys
@@ -16,6 +18,7 @@ import polars as pl
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "notebooks"))
 import pubfig as pf  # noqa: E402
+from compare_paper_genes import RUN_WINDOWS  # noqa: E402
 
 COMPARISONS = ["2 h", "24 h", "13-49 d", "132 d"]
 WINDOW_LABELS = {
@@ -25,13 +28,8 @@ WINDOW_LABELS = {
     "young_21_28d": "21-28 d",
     "young_49_52d": "49-52 d",
     "young_104_132d": "104-132 d",
-}
-TIME_MATCHED = {
-    ("2 h", "young_2h"),
-    ("24 h", "young_24h"),
-    ("13-49 d", "young_13_17d"),
-    ("13-49 d", "young_49_52d"),
-    ("132 d", "young_104_132d"),
+    "young_13_49d": "13-49 d",
+    "young_132d": "132 d",
 }
 GROUPS = {
     "no_match_or_not_tested": ("No matching gene here, or not tested", pf.GREY),
@@ -47,9 +45,9 @@ GROUPS = {
 }
 
 
-def summary():
+def summary(folder):
     genes = pl.read_csv(
-        "paper_gene_overlap_genes.tsv",
+        folder / "paper_gene_overlap_genes.tsv",
         separator="\t",
         null_values=["NA", ""],
         infer_schema_length=None,
@@ -92,11 +90,15 @@ def summary():
     return pl.concat([table, total])
 
 
-def main():
-    table = summary()
-    table.write_csv("paper_gene_summary.tsv", separator="\t")
+def main(folder=".", run="joint"):
+    folder = Path(folder)
+    time_matched = {(c, w) for c, ws in RUN_WINDOWS[run].items() for w in ws}
+    table = summary(folder)
+    table.write_csv(folder / "paper_gene_summary.tsv", separator="\t")
     print(table)
-    crossed = pl.read_csv("paper_gene_agreement_all_windows.tsv", separator="\t")
+    crossed = pl.read_csv(
+        folder / "paper_gene_agreement_all_windows.tsv", separator="\t"
+    )
 
     pf.use_style()
     fig, (left, right) = pf.figure(pf.TWO_COLUMN_MM, 72, ncols=2, width_ratios=[1, 1])
@@ -118,7 +120,7 @@ def main():
     left.set_ylabel("Paper comparison")
     left.legend(loc="lower left", bbox_to_anchor=(0, 1.0), ncol=2, frameon=False)
 
-    windows = list(WINDOW_LABELS)
+    windows = [w for w in WINDOW_LABELS if w in set(crossed["window"])]
     grid = np.array(
         [
             [
@@ -143,7 +145,7 @@ def main():
                 va="center",
                 color=colour,
             )
-            if (c, w) in TIME_MATCHED:
+            if (c, w) in time_matched:
                 right.add_patch(
                     pf.plt.Rectangle(
                         (j - 0.5, i - 0.5),
@@ -179,8 +181,9 @@ def main():
 
     pf.panel_label(left, "a")
     pf.panel_label(right, "b")
-    pf.save(fig, "figures/paper_gene_overlap_domen2026_dataset_s1")
+    suffix = "" if run == "joint" else f"_{run.replace('-', '_')}"
+    pf.save(fig, f"figures/paper_gene_overlap{suffix}_domen2026_dataset_s1")
 
 
 if __name__ == "__main__":
-    main()
+    main(*sys.argv[1:3])

@@ -12,7 +12,11 @@ A paper gene is matched to the best-scoring FUN protein if the alignment has at 
 MIN_IDENTITY percent identity over at least MIN_COVERAGE percent of the paper's protein.
 These cutoffs were set before any overlap was counted.
 
-Usage: compare_paper_genes.py <g_vs_fun.m8> <Dataset_S1.xlsx> <deseq2_tables_dir> <out_dir>
+Usage: compare_paper_genes.py <g_vs_fun.m8> <Dataset_S1.xlsx> <deseq2_tables_dir> <out_dir> [run]
+<run> names which run's tables are given, and so which window matches which paper comparison:
+"joint" (default; one model over all 52 libraries, output in this folder), "each-window"
+(make run-alone, differentialabundance-each-window/) or "paper" (make run-alone,
+differentialabundance-paper/, the paper's own four comparisons).
 Writes paper_gene_overlap.tsv (counts for the paper's listed genes),
 paper_gene_overlap_genes.tsv (one row per listed gene and window) and
 paper_gene_agreement.tsv (every gene with a test in both, from the paper's full DESeq2 tables)
@@ -42,11 +46,22 @@ LISTS = [
     (12, "132 d", "up"),
     (14, "132 d", "down"),
 ]
-WINDOWS = {
+SIX_WINDOWS = {
     "2 h": ["young_2h"],
     "24 h": ["young_24h"],
     "13-49 d": ["young_13_17d", "young_49_52d"],
     "132 d": ["young_104_132d"],
+}
+# Which window of each run matches each paper comparison.
+RUN_WINDOWS = {
+    "joint": SIX_WINDOWS,
+    "each-window": SIX_WINDOWS,
+    "paper": {
+        "2 h": ["young_2h"],
+        "24 h": ["young_24h"],
+        "13-49 d": ["young_13_49d"],
+        "132 d": ["young_132d"],
+    },
 }
 # The paper's full DESeq2 result for each young comparison.
 FULL_SHEETS = {
@@ -105,7 +120,7 @@ def signed_evidence(lfc, p):
     return p.clip(1e-300, 1).log(10).neg() * lfc.sign()
 
 
-def agreement(full, matched, results, windows=WINDOWS):
+def agreement(full, matched, results, windows):
     """Agreement over every gene tested in both, not only the genes the paper listed."""
     both = (
         full.join(matched.filter(strong_match()), on="paper_gene")
@@ -220,7 +235,8 @@ def this_run(tables):
     return pl.concat(frames)
 
 
-def main(m8, xlsx, tables, out_dir):
+def main(m8, xlsx, tables, out_dir, run="joint"):
+    windows = RUN_WINDOWS[run]
     listed = paper_lists(xlsx)
     matched = gene_map(m8)
     results = this_run(tables)
@@ -234,7 +250,7 @@ def main(m8, xlsx, tables, out_dir):
         .with_columns(matched=pl.col("matched").fill_null(False))
         .with_columns(
             window=pl.col("comparison").replace_strict(
-                WINDOWS, return_dtype=pl.List(pl.String)
+                windows, return_dtype=pl.List(pl.String)
             )
         )
         .explode("window")
@@ -307,11 +323,11 @@ def main(m8, xlsx, tables, out_dir):
         .drop("all_p_up", "all_p_down", "all_up", "all_down")
     )
     full = paper_full(xlsx)
-    full_agreement = agreement(full, matched, results)
+    full_agreement = agreement(full, matched, results, windows)
     # Every paper comparison against every window: a time-matched pair should agree better
     # than a mismatched one. If it does not, the agreement is not about the treatment.
     all_windows = sorted(results["window"].unique())
-    crossed = agreement(full, matched, results, {c: all_windows for c in WINDOWS})
+    crossed = agreement(full, matched, results, {c: all_windows for c in windows})
     print(tested_per_window)
     with pl.Config(tbl_rows=-1, tbl_cols=-1, tbl_width_chars=200):
         print(counts)
@@ -336,4 +352,4 @@ def main(m8, xlsx, tables, out_dir):
 
 
 if __name__ == "__main__":
-    main(*sys.argv[1:5])
+    main(*sys.argv[1:6])

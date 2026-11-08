@@ -292,6 +292,49 @@ Watch with `make watch-alone`, stop with `make stop-alone`.
 | DESeq2, one per comparison (4, then 6) | 1 CPU, 6 GB, 4 h | 1.3 GB, 2 min 15 s each | same or less: fewer libraries per fit |
 | Report (Quarto) | 2 CPUs, 24 GB (`sherlock.config`; default 12 GB), 4 h | 10.9 GB, 4 min 34 s | same or less |
 
+### Result of the 2026-11-08 refit, gene by gene against the paper
+
+`make run-alone` ran as job 51553782 on 2026-11-08 (07:18 to 08:02 UTC, exit 0). Its
+tables were compared with the paper's in the same way as above, with the same MMseqs2 gene
+match (`compare_paper_genes.py ... paper` and `... each-window`).
+
+![Paper's listed genes found, and correlation with the paper, for the three fits](figures/three_fits_vs_paper_domen2026_dataset_s1.png)
+
+Fitting the paper's four comparisons on its own 38 libraries finds 183 of the 782 gene
+entries the paper lists (23.4%) with unadjusted p < 0.05 in the same direction. A random
+gene would give 6.6. The joint fit above finds 30 (3.8%), and the six windows fitted alone
+find 49 (6.3%).
+
+| Paper comparison | Listed | One model, 52 libraries | Each window alone | Paper's comparisons alone |
+|---|---|---|---|---|
+| 2 h | 280 | 4 | 20 | 90 |
+| 24 h | 350 | 6 | 21 | 76 |
+| 13-49 d | 66 | 10 | 0 | 12 |
+| 132 d | 86 | 10 | 8 | 5 |
+| all | 782 | 30 | 49 | 183 |
+
+- Over all genes tested in both, the Spearman correlation of the signed -log10 p with the
+  paper is 0.35, 0.48, 0.39 and 0.35 at 2 h, 24 h, 13-49 d and 132 d. At any other pairing
+  it is between -0.03 and 0.07 (panel b of
+  `figures/paper_gene_overlap_paper_domen2026_dataset_s1.png`).
+- Among genes the paper has at p < 0.05, the paper-style fit also has p < 0.05 in the same
+  direction for 159 of 391 at 2 h, 119 of 446 at 24 h, 19 of 67 at 13-49 d and 7 of 124 at
+  132 d. The joint fit had 9, 11, 4 and 10 (13-17 and 49-52 d), and 17.
+- 132 d is the one comparison where refitting alone does not help: 5 listed genes, against
+  10 in the joint fit.
+- One listed gene reaches adjusted p < 0.05: g1465 (FUN_022126), up at 132 d, as the paper
+  lists it (adjusted p 0.006). Its fold change after the pipeline's shrinkage is small
+  (log2 0.013), so the direction rests on a small number.
+- 552 of the 613 tested listed genes point the paper's way, where 327 would by chance.
+- Refitting the paper's own counts this way gave a rank correlation of 0.9995 or more with
+  its p-values (figure above). Here it is 0.35 to 0.48. The design and libraries are the
+  same, so the gap comes from the inputs: different gene models, matched by protein, and
+  counts from a different pipeline. Which of these matters most is not tested here.
+
+Tables: `three_fits_vs_paper.tsv`, and in `each-alone-comparison/paper/` and
+`each-alone-comparison/each-window/` the same five tables as above. Code:
+`compare_paper_genes.py`, `plot_paper_gene_overlap.py`, `plot_three_fits.py`.
+
 ## Outputs
 
 In `$SCRATCH/botryllus-pec-young/`:
