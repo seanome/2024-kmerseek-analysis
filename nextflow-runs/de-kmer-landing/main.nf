@@ -317,7 +317,7 @@ process kmerseekSearch {
         --chain-max-gap ${params.chain_max_gap} --chain-max-shift ${params.chain_max_shift} \\
         2> ${sl}.log \\
       | awk -F, -v max=${params.keep_region_evalue} 'NR==1 { for (i=1;i<=NF;i++) if (\$i=="region_evalue") e=i;
-            if (!e) { print "no region_evalue column" > "/dev/stderr"; exit 3 } print; next } (\$e+0) <= max' \\
+            if (!e) { print "no region_evalue column" > "/dev/stderr"; exit 3 } print; next } tolower(\$e) ~ /^[-+]?(inf|infinity|nan)\$/ { next } (\$e+0) <= max' \\
       | zstd -T2 -q -o ${sl}.regions.csv.zst
     status=(\${PIPESTATUS[@]})
     set -e
