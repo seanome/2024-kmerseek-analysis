@@ -946,7 +946,7 @@ def main():
     p = argparse.ArgumentParser(
         description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter
     )
-    sub = p.add_subparsers(dest="cmd", required=True)
+    sub = p.add_subparsers(dest="cmd")  # no required=: Sherlock python3 is 3.6
     for name in ("resolve", "reach", "figure", "sketch-tasks", "submit"):
         sub.add_parser(name)
     for name in ("fetch", "entropy", "compare"):
@@ -955,6 +955,8 @@ def main():
     s.add_argument("--work", required=True)
     s.add_argument("--index", type=int, required=True)
     args = p.parse_args()
+    if args.cmd is None:
+        p.error("a subcommand is required")
     if args.cmd == "sketch-tasks":
         for i, t in enumerate(sketch_tasks()):
             print(i, *t)
