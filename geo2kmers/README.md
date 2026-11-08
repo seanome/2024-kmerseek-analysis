@@ -524,8 +524,7 @@ proteins hold it, averaged when there are several. The rules are in `fig4/hp_tab
 
 Most U133 k-mers sit in two or more probe sets because U133 has several probe sets per gene, and each names the same
 gene's RefSeq mRNAs, so they hold the same proteins. HTA 2.0 has one transcript cluster per gene, so 92 % to 95 % of its
-k-mers sit in one. The most shared k-mers on both arrays are runs of 29 or 30 polar residues, as in charged or
-disordered stretches; `hp_thomas_dill2` counts G and P as polar, so it has more of them. The table has three parts per
+k-mers sit in one. The most shared k-mers on both arrays are runs of 29 or 30 polar residues; `hp_thomas_dill2` counts G and P as polar, so it has more of them. The table has three parts per
 series, on Sherlock in `/scratch/users/olgabot/geo2kmers-fig4/ho/sources/hp/` because the shared-k-mer matrices are
 0.2 to 1 GB each: `<array>.<alphabet>.kmers.npz` (each k-mer and the probe sets holding it),
 `<series>.probe_set_values.tsv.gz`, and `<series>.<alphabet>.shared_kmers.tsv.gz` (the sample matrix for k-mers in two
