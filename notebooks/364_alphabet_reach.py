@@ -1252,24 +1252,44 @@ def figure_reach_bars(cont, path):
             )
         ]
         * any(r["passes"] and not r["reached"] for r in rows)
-        + [Patch(fc="white", ec="#999999", lw=0.5, label="does not pass")],
+        + [
+            Patch(fc="white", ec="#999999", lw=0.5, label="does not pass"),
+            Patch(
+                fc="#e6e6e6",
+                ec="#999999",
+                lw=0.5,
+                label="another kingdom: the background, 1\u00d7 by definition",
+            ),
+        ],
         loc="lower center",
-        ncol=3,
+        ncol=2,
         bbox_to_anchor=(0.5, 1.0),
         frameon=False,
     )
+    # The conclusion line is checked against the data, so it cannot go stale.
+    far = {(r["anchor"], r["alphabet"]): r["rank"] for r in rows if r["reached"]}
+    mouse, mussel, ecoli = PATHS
+    for a in (mouse, ecoli):
+        assert len({far[(a, al)] for al in ("protein", "dayhoff", "hp")}) == 1, a
+    assert far[(mussel, "protein")] == far[(mussel, "dayhoff")] == "genus"
+    assert far[(mussel, "hp")] == "class"
+    sampled = (
+        f"1 in {SCALED['hp']}"
+        if SCALED["hp"] == SCALED["DNA"]
+        else f"1 in {SCALED['hp']} (DNA: 1 in {SCALED['DNA']})"
+    )
     fig.suptitle(
         f"A relative is reached when it shares at least {FOLD}\u00d7 more k-mers with the anchor than an organism "
-        f"from another kingdom does,\nand at least {MIN_SHARED} sampled k-mers. "
-        "Number in each cell: how many times more. 42 bits per k-mer; scaled "
-        + (
-            str(SCALED["hp"])
-            if SCALED["hp"] == SCALED["DNA"]
-            else f"{SCALED['hp']} (DNA: {SCALED['DNA']})"
-        ),
-        y=1.09,
+        f"from another kingdom does, and at least {MIN_SHARED} sampled k-mers.\n"
+        "Number in each cell: how many times more. Every k gives 42 bits per k-mer; "
+        f"{sampled} k-mers sampled.\n"
+        "Protein, dayhoff and hp from UniProt reference proteomes; DNA from the coding sequences of the same genes.\n"
+        "dayhoff letters: AGPST C DENQ FWY HKR ILMV; hp letters: AFGILMPVWY (hydrophobic), CDEHKNQRST (polar).\n"
+        "Conclusion: protein, dayhoff and hp reach the same rank for mouse and E. coli; only hp, and only for the mussel, "
+        "goes further.\nFewer letters do not reach further at equal bits.",
+        y=1.2,
     )
-    pf.save(fig, str(RES / "reach_by_rank"))
+    pf.save(fig, str(RES / "reach_by_rank_uniprot"))
 
 
 def figure_pyramid(cont, path, floors):
