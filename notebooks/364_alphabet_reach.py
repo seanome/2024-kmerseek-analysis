@@ -1239,6 +1239,7 @@ def draw_ladder_summary(rows):
         ("hp", "hp, k matched to protein in bits", pf.OKABE_ITO["vermillion"], "D"),
     ]
     fig, axs = pf.figure(pf.TWO_COLUMN_MM, 62, ncols=len(PATHS), sharey=True)
+    level = {}  # (anchor, alphabet, codons) -> farthest main rank reached, 0 = none
     for ax, anchor in zip(axs, PATHS):
         for i, (alphabet, label, colour, marker) in enumerate(series):
             xs, ys = [], []
@@ -1254,6 +1255,9 @@ def draw_ladder_summary(rows):
                     and r["reached"]
                 ]
                 xs.append(pk)
+                level[(anchor, alphabet, pk)] = (
+                    MAIN_RANKS.index(reached[-1]) + 1 if reached else 0
+                )
                 # Small vertical offsets keep four series on the same rank all visible.
                 ys.append(
                     (MAIN_RANKS.index(reached[-1]) + 1 if reached else 0)
@@ -1280,14 +1284,36 @@ def draw_ladder_summary(rows):
     )
     fig.suptitle(
         f"Reached: at least {FOLD}\u00d7 more k-mers shared than with another kingdom, at least "
-        f"{MIN_SHARED} sampled k-mers, and every nearer rank reached too. "
+        f"{MIN_SHARED} sampled k-mers, and every nearer rank reached too.\n"
         f"1 in {SCALED['hp']} k-mers sampled"
         + ("" if SCALED["hp"] == SCALED["DNA"] else f" (DNA: 1 in {SCALED['DNA']})")
         + ".\nRanks are main ranks; a relative sharing a sub-rank counts under the rank above it. "
-        "Points on one rank are nudged apart so all four show.",
-        y=1.22,
+        "Points on one rank are nudged apart so all four show.\n"
+        + ladder_conclusion(level),
+        y=1.3,
     )
     pf.save(fig, str(RES / "reach_by_codons_uniprot"))
+
+
+def ladder_conclusion(level):
+    """Count, over every anchor and k-mer length, where each method reaches compared with protein."""
+    n = len(PATHS) * len(LADDER_PROTEIN_K)
+    parts = []
+    for alphabet in ("hp", "dayhoff", "DNA"):
+        d = [
+            level[(a, alphabet, pk)] - level[(a, "protein", pk)]
+            for a in PATHS
+            for pk in LADDER_PROTEIN_K
+        ]
+        parts.append(
+            f"{alphabet} farther in {sum(x > 0 for x in d)}, same in {sum(x == 0 for x in d)}, "
+            f"nearer in {sum(x < 0 for x in d)}"
+        )
+    return (
+        f"Conclusion, against protein over {n} anchor-length pairs:\n"
+        + "; ".join(parts)
+        + "."
+    )
 
 
 def reach_conclusion(rows, settings):
@@ -1322,6 +1348,17 @@ def reach_conclusion(rows, settings):
     if nearer:
         line += f"\nIt stops at a nearer rank as {listing(nearer)}."
     return line + " Every other row stops at the same rank as protein."
+
+
+def cell_label(fold, shared):
+    """Fold over background; the shared count when the background is zero."""
+    if math.isinf(fold):
+        return f"{shared} shared"
+    if fold < 1:
+        return "<1\u00d7"
+    if 9 <= fold < 11:  # near the 10x line, so a rounded "10x" never hides a miss
+        return f"{fold:.1f}\u00d7"
+    return f"{fold:.0f}\u00d7" if fold < 1e4 else "\u226510000\u00d7"
 
 
 def draw_reach_bars(rows, settings, matched, name):
@@ -1376,7 +1413,7 @@ def draw_reach_bars(rows, settings, matched, name):
                 ax.text(
                     j + 0.5,
                     y + 0.5,
-                    f"{fold:.0f}\u00d7" if fold < 1e4 else "\u226510000\u00d7",
+                    cell_label(fold, r["shared_hashes"]),
                     ha="center",
                     va="center",
                     fontsize=5.5,
@@ -1498,7 +1535,13 @@ def draw_reach_bars(rows, settings, matched, name):
         f"A relative is reached when it shares at least {FOLD}\u00d7 more k-mers with the anchor than an organism "
         f"from another kingdom does, and at least {MIN_SHARED} sampled k-mers.\n"
         f"Number in each cell: how many times more; {sampled} k-mers sampled.\n"
-        f"{matched}.\n"
+        + (
+            "Where the other-kingdom species share no sampled k-mer, the cell gives "
+            "how many the relative shares instead.\n"
+            if any(math.isinf(float(r["fold_over_background"])) for r in rows)
+            else ""
+        )
+        + f"{matched}.\n"
         "Protein, dayhoff and hp from UniProt reference proteomes; DNA from the coding sequences of the same genes.\n"
         "dayhoff letters: AGPST C DENQ FWY HKR ILMV; hp letters: AFGILMPVWY (hydrophobic), CDEHKNQRST (polar).\n"
         "Each column is one main rank, the same in every panel. Each relative sits under the lowest main rank it "
@@ -1510,7 +1553,7 @@ def draw_reach_bars(rows, settings, matched, name):
         + ".\n"
         # Built from the data, so it cannot go stale.
         + reach_conclusion(rows, settings),
-        y=1.255,
+        y=1.29,
     )
     pf.save(fig, str(RES / name))
 

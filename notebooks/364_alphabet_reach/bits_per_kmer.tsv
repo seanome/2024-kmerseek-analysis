@@ -16,6 +16,22 @@ Mus musculus	hp	27	sweep	proteome	11810835	1.0000	27.00	27.00
 Mus musculus	hp	33	sweep	proteome	11810835	1.0000	33.00	33.00
 Mus musculus	hp	36	sweep	proteome	11810835	1.0000	36.00	36.00
 Mus musculus	hp	39	sweep	proteome	11810835	1.0000	39.00	39.00
+Mus musculus	DNA	24	ladder	cds	57616697	1.9997	48.00	47.99
+Mus musculus	protein	8	ladder	proteome	11810835	4.1811	34.58	33.45
+Mus musculus	dayhoff	13	ladder	proteome	11810835	2.2865	33.60	29.72
+Mus musculus	hp	35	ladder	proteome	11810835	1.0000	35.00	35.00
+Mus musculus	DNA	27	ladder	cds	57616697	1.9997	54.00	53.99
+Mus musculus	protein	9	ladder	proteome	11810835	4.1811	38.90	37.63
+Mus musculus	DNA	30	ladder	cds	57616697	1.9997	60.00	59.99
+Mus musculus	hp	43	ladder	proteome	11810835	1.0000	43.00	43.00
+Mus musculus	DNA	33	ladder	cds	57616697	1.9997	66.00	65.99
+Mus musculus	protein	11	ladder	proteome	11810835	4.1811	47.54	45.99
+Mus musculus	dayhoff	18	ladder	proteome	11810835	2.2865	46.53	41.16
+Mus musculus	hp	48	ladder	proteome	11810835	1.0000	48.00	48.00
+Mus musculus	DNA	36	ladder	cds	57616697	1.9997	72.00	71.99
+Mus musculus	protein	12	ladder	proteome	11810835	4.1811	51.86	50.17
+Mus musculus	dayhoff	20	ladder	proteome	11810835	2.2865	51.70	45.73
+Mus musculus	hp	52	ladder	proteome	11810835	1.0000	52.00	52.00
 Mytilus edulis	DNA	15	30	cds	92922767	1.9458	30.00	29.19
 Mytilus edulis	DNA	21	42	cds	92922767	1.9458	42.00	40.86
 Mytilus edulis	protein	7	30	proteome	30905020	4.1988	30.25	29.39
@@ -33,6 +49,22 @@ Mytilus edulis	hp	27	sweep	proteome	30905020	0.9942	27.00	26.84
 Mytilus edulis	hp	33	sweep	proteome	30905020	0.9942	33.00	32.81
 Mytilus edulis	hp	36	sweep	proteome	30905020	0.9942	36.00	35.79
 Mytilus edulis	hp	39	sweep	proteome	30905020	0.9942	39.00	38.78
+Mytilus edulis	DNA	24	ladder	cds	92922767	1.9458	48.00	46.70
+Mytilus edulis	protein	8	ladder	proteome	30905020	4.1988	34.58	33.59
+Mytilus edulis	dayhoff	13	ladder	proteome	30905020	2.3282	33.60	30.27
+Mytilus edulis	hp	35	ladder	proteome	30905020	0.9942	35.00	34.80
+Mytilus edulis	DNA	27	ladder	cds	92922767	1.9458	54.00	52.54
+Mytilus edulis	protein	9	ladder	proteome	30905020	4.1988	38.90	37.79
+Mytilus edulis	DNA	30	ladder	cds	92922767	1.9458	60.00	58.37
+Mytilus edulis	hp	43	ladder	proteome	30905020	0.9942	43.00	42.75
+Mytilus edulis	DNA	33	ladder	cds	92922767	1.9458	66.00	64.21
+Mytilus edulis	protein	11	ladder	proteome	30905020	4.1988	47.54	46.19
+Mytilus edulis	dayhoff	18	ladder	proteome	30905020	2.3282	46.53	41.91
+Mytilus edulis	hp	48	ladder	proteome	30905020	0.9942	48.00	47.72
+Mytilus edulis	DNA	36	ladder	cds	92922767	1.9458	72.00	70.05
+Mytilus edulis	protein	12	ladder	proteome	30905020	4.1988	51.86	50.39
+Mytilus edulis	dayhoff	20	ladder	proteome	30905020	2.3282	51.70	46.56
+Mytilus edulis	hp	52	ladder	proteome	30905020	0.9942	52.00	51.70
 Escherichia coli K-12	DNA	15	30	cds	4042859	1.9979	30.00	29.97
 Escherichia coli K-12	DNA	21	42	cds	4042859	1.9979	42.00	41.96
 Escherichia coli K-12	protein	7	30	proteome	1354431	4.1582	30.25	29.11
@@ -50,3 +82,19 @@ Escherichia coli K-12	hp	27	sweep	proteome	1354431	0.9891	27.00	26.70
 Escherichia coli K-12	hp	33	sweep	proteome	1354431	0.9891	33.00	32.64
 Escherichia coli K-12	hp	36	sweep	proteome	1354431	0.9891	36.00	35.61
 Escherichia coli K-12	hp	39	sweep	proteome	1354431	0.9891	39.00	38.57
+Escherichia coli K-12	DNA	24	ladder	cds	4042859	1.9979	48.00	47.95
+Escherichia coli K-12	protein	8	ladder	proteome	1354431	4.1582	34.58	33.27
+Escherichia coli K-12	dayhoff	13	ladder	proteome	1354431	2.2355	33.60	29.06
+Escherichia coli K-12	hp	35	ladder	proteome	1354431	0.9891	35.00	34.62
+Escherichia coli K-12	DNA	27	ladder	cds	4042859	1.9979	54.00	53.94
+Escherichia coli K-12	protein	9	ladder	proteome	1354431	4.1582	38.90	37.42
+Escherichia coli K-12	DNA	30	ladder	cds	4042859	1.9979	60.00	59.94
+Escherichia coli K-12	hp	43	ladder	proteome	1354431	0.9891	43.00	42.53
+Escherichia coli K-12	DNA	33	ladder	cds	4042859	1.9979	66.00	65.93
+Escherichia coli K-12	protein	11	ladder	proteome	1354431	4.1582	47.54	45.74
+Escherichia coli K-12	dayhoff	18	ladder	proteome	1354431	2.2355	46.53	40.24
+Escherichia coli K-12	hp	48	ladder	proteome	1354431	0.9891	48.00	47.47
+Escherichia coli K-12	DNA	36	ladder	cds	4042859	1.9979	72.00	71.92
+Escherichia coli K-12	protein	12	ladder	proteome	1354431	4.1582	51.86	49.90
+Escherichia coli K-12	dayhoff	20	ladder	proteome	1354431	2.2355	51.70	44.71
+Escherichia coli K-12	hp	52	ladder	proteome	1354431	0.9891	52.00	51.43
