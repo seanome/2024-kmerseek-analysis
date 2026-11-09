@@ -1081,6 +1081,176 @@ def figure(args):
             pf.panel_label(ax, letter)
         pf.save(fig, str(RES / f"reach_by_alphabet_{input_type}"))
     figure_sweep(cont, path, floors)
+    figure_pyramid(cont, path, floors)
+
+
+PYRAMID = [("DNA", 21), ("protein", 10), ("dayhoff", 16), ("hp", 42)]
+
+
+def percent(c):
+    """Containment as a percentage, without the % sign (the colour bar says it)."""
+    if c == 0:
+        return "0"
+    if c < 1e-4:
+        return "<0.01"
+    p = 100 * c
+    return f"{p:.0f}" if p >= 10 else f"{p:.2g}" if p >= 1 else f"{p:.1g}"
+
+
+def figure_pyramid(cont, path, floors):
+    """The taxonomic-rank pyramid of each anchor, with the containment of every relative.
+
+    One row per relative, farthest at the top, the anchor at the tip. Cells: the larger of
+    the two containments at 42 bits per k-mer. Black outline: above that setting's floor.
+    """
+    import matplotlib as mpl
+    from matplotlib.patches import Patch, Polygon, Rectangle
+    import pubfig as pf
+
+    cmap = mpl.colormaps["mako_r"]
+    norm = mpl.colors.LogNorm(1e-4, 1)
+    fig, axs = pf.figure(pf.TWO_COLUMN_MM, 105, ncols=len(PATHS))
+    n_max = max(sum(r["anchor"] == a for r in path) for a in PATHS)
+    for ax, anchor in zip(axs, PATHS):
+        rels = sorted(
+            (r for r in path if r["anchor"] == anchor and r["rank"] != "anchor"),
+            key=lambda r: (rank_key(r), r["relative"]),
+        )[
+            ::-1
+        ]  # farthest first, drawn at the top
+        groups = (
+            []
+        )  # (rank, shared taxon, [relatives]); the two different-kingdom species share a band
+        for r in rels:
+            if groups and groups[-1][0] == r["rank"]:
+                groups[-1][2].append(r)
+            else:
+                groups.append((r["rank"], r["shared_taxon"], [r]))
+        n_rows = len(rels) + 1
+        top = n_max  # rows stacked down from the same top line in every panel
+        width = (
+            lambda y: 0.9 * (y - (top - n_rows)) / n_rows
+        )  # pyramid half-width at height y
+        y = top
+        for rank, taxon, members in groups:
+            y0 = y - len(members)
+            band = [
+                (0.9 - width(y), y - 0.06),
+                (0.9 + width(y), y - 0.06),
+                (0.9 + width(y0 + 0.06), y0 + 0.06),
+                (0.9 - width(y0 + 0.06), y0 + 0.06),
+            ]
+            ax.add_patch(Polygon(band, closed=True, fc="#e6e6e6", ec="k", lw=0.5))
+            label = "domain only" if rank == "other kingdom" else rank
+            ax.text(
+                2.0,
+                y - 0.3,
+                f"{label}: {taxon}",
+                fontsize=5.5,
+                weight="bold",
+                va="center",
+            )
+            for i, r in enumerate(members):
+                yy = y - i - 0.5
+                ax.text(
+                    2.0,
+                    yy - (0.22 if i == 0 else 0),
+                    r["relative"],
+                    fontsize=5.5,
+                    style="italic",
+                    va="center",
+                )
+                for j, (alphabet, k) in enumerate(PYRAMID):
+                    row = next(
+                        c
+                        for c in cont
+                        if c["anchor"] == anchor
+                        and c["relative"] == r["relative"]
+                        and c["alphabet"] == alphabet
+                        and int(c["k"]) == k
+                    )
+                    c = max_c(row)
+                    floor, _ = floors[(anchor, input_type_of(alphabet), alphabet, k)]
+                    above = rank != "other kingdom" and c > floor
+                    x = 9.2 + 1.5 * j
+                    fc = cmap(norm(max(c, 1e-4))) if c > 0 else "white"
+                    ax.add_patch(
+                        Rectangle(
+                            (x, yy - 0.42),
+                            1.3,
+                            0.84,
+                            fc=fc,
+                            ec="k" if above else "none",
+                            lw=1.2 if above else 0,
+                        )
+                    )
+                    dark = c > 0 and norm(max(c, 1e-4)) > 0.45
+                    ax.text(
+                        x + 0.65,
+                        yy,
+                        percent(c),
+                        fontsize=5,
+                        ha="center",
+                        va="center",
+                        color="white" if dark else "k",
+                    )
+            y = y0
+        # The anchor at the tip.
+        tip = [
+            (0.9 - width(y), y - 0.06),
+            (0.9 + width(y), y - 0.06),
+            (0.9, y - 1 + 0.06),
+        ]
+        ax.add_patch(Polygon(tip, closed=True, fc="#b3b3b3", ec="k", lw=0.5))
+        ax.text(
+            2.0, y - 0.5, f"anchor: {anchor}", fontsize=5.5, weight="bold", va="center"
+        )
+        for j, (alphabet, k) in enumerate(PYRAMID):
+            ax.text(
+                9.2 + 1.5 * j + 0.65,
+                top + 0.25,
+                f"{alphabet}\nk={k}",
+                fontsize=5,
+                ha="center",
+                va="bottom",
+            )
+        ax.set_xlim(0, 15.2)
+        ax.set_ylim(top - n_max - 0.1, top + 1.2)
+        ax.axis("off")
+    cax = fig.add_axes([0.30, 1.03, 0.25, 0.018])
+    cb = fig.colorbar(
+        mpl.cm.ScalarMappable(norm, cmap), cax=cax, orientation="horizontal"
+    )
+    cb.set_ticks([1e-4, 1e-3, 1e-2, 0.1, 1])
+    cb.set_ticklabels(["0.01%", "0.1%", "1%", "10%", "100%"])
+    cb.ax.tick_params(labelsize=5.5, length=2)
+    cb.set_label(
+        "Share of k-mers in common, % (larger of the two directions)", fontsize=6
+    )
+    fig.legend(
+        handles=[
+            Patch(
+                fc="white",
+                ec="k",
+                lw=1.2,
+                label="above the noise floor set by the two\nspecies that share only the domain\n(the rule fixed before the run)",
+            ),
+        ],
+        loc="center left",
+        bbox_to_anchor=(0.6, 1.04),
+        frameon=False,
+    )
+    fig.suptitle(
+        "Each anchor's relatives by the lowest taxonomic rank they share with it (NCBI Taxonomy). "
+        "42 bits per k-mer; scaled "
+        + (
+            str(SCALED["hp"])
+            if SCALED["hp"] == SCALED["DNA"]
+            else f"{SCALED['hp']} (DNA: {SCALED['DNA']})"
+        ),
+        y=1.12,
+    )
+    pf.save(fig, str(RES / "reach_pyramid"))
 
 
 def figure_sweep(cont, path, floors):
