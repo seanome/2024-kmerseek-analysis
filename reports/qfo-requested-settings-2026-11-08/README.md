@@ -80,7 +80,9 @@ kmerseek is better than MMseqs2 in two places:
   (dayhoff6 k9) 4.8 times, 0.26 against 0.054. phmmer also scores only 0.045 here.
 - **Short domains, 16-30 residues**: typical 1.2 times MMseqs2's Fmax, best 3.0 times
   (0.18 against 0.057). At 31-60 residues it is about even; from 61 residues up
-  MMseqs2 wins by 3 to more than 25 times.
+  MMseqs2 wins. At 61-120 residues its Fmax is 5.1 times kmerseek's for the typical setting and
+  2.6 times for the best; at 121-250 it is 22.6 and 12 times; at 251+ the typical
+  setting finds nothing and the best is 41 times lower.
 Precision is not a win. kmerseek makes far fewer calls, so a larger share of them are right:
 4.4 times MMseqs2's precision over all calls for the typical setting. Any method that makes
 fewer calls scores higher on this. At the Fmax cutoff the typical setting is lower (0.46
