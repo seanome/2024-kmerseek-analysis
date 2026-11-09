@@ -340,9 +340,10 @@ PATHS = {
             "Crassostrea virginica",
             6565,
             "family",
-            "UP000694844",
+            None,
             "GCF_002022765.2",
-            "",
+            "UniProt UP000694844 ships a CDS file of 7 sequences (3 kb, 2026-11-09), so proteins "
+            "and CDS come from the same NCBI RefSeq annotation it was built from (BUSCO 98.1%)",
         ),
         (
             "Mizuhopecten yessoensis",
@@ -827,6 +828,15 @@ def fetch(args):
             .date()
             .isoformat()
         )
+    # A CDS set should hold about 3 bases per residue of its proteome; UniProt's
+    # Crassostrea virginica file held 7 sequences (2026-11-09), so check every one.
+    for sp in species_files():
+        aa = sum(letter_counts(raw_path(args.work, sp, "proteome"), dna=False).values())
+        nt = sum(letter_counts(raw_path(args.work, sp, "cds"), dna=True).values())
+        if nt < 1.5 * aa:
+            sys.exit(
+                f"{sp}: CDS has {nt} bases for {aa} residues; expected about {3 * aa}"
+            )
     path = OUT / "taxonomic_path.tsv"
     rows = read_tsv(path)
     for r in rows:
