@@ -147,10 +147,11 @@ process CROSS_SERIES {
     path "${train}_to_${scored}.cross*.tsv"
 
     script:
+    decimals = params.already_log2 ? 4 : 2
     """
     export PYTHONPATH=${projectDir} OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1
-    ${params.python} kamrat_table.py ${params.intensities}/${train}.probes.tsv.gz ${params.groups} ${train} ${train_comparison} 0 train.tsv train_design.tsv
-    ${params.python} kamrat_table.py ${params.intensities}/${scored}.probes.tsv.gz ${params.groups} ${scored} ${scored_comparison} 0 scored.tsv scored_design.tsv
+    ${params.python} kamrat_table.py ${params.intensities}/${train}.probes.tsv.gz ${params.groups} ${train} ${train_comparison} 0 train.tsv train_design.tsv ${decimals}
+    ${params.python} kamrat_table.py ${params.intensities}/${scored}.probes.tsv.gz ${params.groups} ${scored} ${scored_comparison} 0 scored.tsv scored_design.tsv ${decimals}
     ${params.python} cross_series_auc.py train.tsv train_design.tsv scored.tsv scored_design.tsv ${params.series} ${train} ${scored} ${scored_comparison} ${params.shuffles} ${train}_to_${scored} ${params.already_log2 ? 'already_log2' : ''}
     rm train.tsv scored.tsv
     """

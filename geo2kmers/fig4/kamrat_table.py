@@ -1,9 +1,11 @@
 """Write one comparison's k-mer table and design file for KaMRaT.
 
 Usage: kamrat_table.py <probes.tsv.gz> <groups.tsv> <dataset> <comparison> <seed> <table out> <design out>
+       [<decimals>]
 Rows are 25-letter k-mers and columns are samples, holding the probe's intensity. A k-mer on two probes
 gets their mean. Longer probes give every 25-letter window. Seed 0 keeps the true groups, and any other
-seed shuffles them.
+seed shuffles them. Values are written with 2 decimals, or <decimals>: SCAN values (scan_plan.md) are mostly
+between -1.5 and 10, where 2 decimals would round many probes to the same value.
 """
 
 import csv
@@ -13,8 +15,9 @@ import sys
 import numpy as np
 
 K = 25
-probes, groups_file, dataset, comparison, seed, table_out, design_out = sys.argv[1:]
+probes, groups_file, dataset, comparison, seed, table_out, design_out = sys.argv[1:8]
 seed = int(seed)
+decimals = int(sys.argv[8]) if len(sys.argv) > 8 else 2
 with open(groups_file) as f:
     rows = [r for r in csv.DictReader(f, delimiter="\t") if r["dataset"] == dataset and r["comparison"] == comparison]
 samples = [r["sample"] for r in rows]
@@ -40,4 +43,4 @@ with gzip.open(probes, "rt") as f:
 with open(table_out, "w") as f:
     f.write("feature\t" + "\t".join(samples) + "\n")
     for kmer, (values, n) in totals.items():
-        f.write(kmer + "\t" + "\t".join(f"{v:.2f}" for v in values / n) + "\n")
+        f.write(kmer + "\t" + "\t".join(f"{v:.{decimals}f}" for v in values / n) + "\n")

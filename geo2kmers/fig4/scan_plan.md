@@ -59,6 +59,10 @@ bins of 5000 probes of similar predicted brightness; a probe set's value is the 
 difference between its probe-set values and SCANfast's; the run goes ahead only if they agree to 1e-6. The probe k-mer
 arm is therefore run, not skipped.
 
+**Added before the run, after a test on GSE28998's 14 arrays.** That test agreed with SCANfast to 6e-17. Its probe
+values have median 0.05 and range -1.5 to 10, so `kamrat_table.py` writes them with 4 decimals instead of its usual
+2, which would round many probes to the same value.
+
 **What this cannot show.** SCAN changes how each array is corrected, but the series still differ in muscle, training
 and health. Agreement between the two processings shows a result does not depend on the processing; it does not show
 which genes carry the signal.
