@@ -1098,6 +1098,14 @@ def percent(c):
     return f"{p:.0f}" if p >= 10 else f"{p:.2g}" if p >= 1 else f"{p:.1g}"
 
 
+MAIN_RANKS = ["species", "genus", "family", "order", "class", "phylum", "kingdom"]
+SUB_TO_MAIN = {
+    "subgenus": "genus",
+    "subfamily": "family",
+    "subclass": "class",
+    "subphylum": "phylum",
+}
+PATHS_BACTERIUM = "Escherichia coli K-12"
 FOLD = (
     10  # a relative must share at least 10 times more than the other-kingdom background
 )
@@ -1164,20 +1172,41 @@ def figure_reach_bars(cont, path):
     """Which ranks each alphabet reaches: one panel per anchor, one row per alphabet,
     relatives from nearest (left) to farthest (right). Filled cell: passes the fold rule.
     """
+    from matplotlib.lines import Line2D
     from matplotlib.patches import Patch, Rectangle
     import pubfig as pf
 
     rows = reach_fold_table(cont, path)
     reached_colour, passed_colour = pf.OKABE_ITO["blue"], pf.OKABE_ITO["sky_blue"]
     fig, axs = pf.figure(pf.TWO_COLUMN_MM, 125, nrows=len(PATHS))
-    n_cols = max(sum(r["anchor"] == a for r in rows) // len(PYRAMID) for a in PATHS) + 1
-    for ax, anchor in zip(axs, PATHS):
+    # One column per main rank, the same in every panel. A relative that shares a sub-rank
+    # (subgenus, subfamily, ...) goes under the main rank above it; where two relatives land
+    # in one column, the farther one is drawn, since reaching it means reaching the rank.
+    columns = MAIN_RANKS + ["other kingdom"]
+    dropped, shared_sub = [], []
+    for ax_i, (ax, anchor) in enumerate(zip(axs, PATHS)):
         sub = [r for r in rows if r["anchor"] == anchor]
-        rels = list(dict.fromkeys(r["relative"] for r in sub))
+        rels = list(dict.fromkeys(r["relative"] for r in sub))  # nearest first
+        rank_of = {r["relative"]: r["rank"] for r in sub}
+        in_col = {}
+        for rel in rels:
+            main = SUB_TO_MAIN.get(rank_of[rel], rank_of[rel])
+            if main in in_col:
+                gone = f"{in_col[main]} ({rank_of[in_col[main]]})"
+                dropped.append(gone)
+                if gone in shared_sub:
+                    shared_sub.remove(gone)
+            elif main != rank_of[rel]:
+                shared_sub.append(f"{rel} ({rank_of[rel]})")
+            in_col[main] = rel  # later = farther
         for i, (alphabet, k) in enumerate(PYRAMID):
             y = len(PYRAMID) - 1 - i
-            line = [r for r in sub if r["alphabet"] == alphabet]
-            for j, r in enumerate(line):
+            line = {r["relative"]: r for r in sub if r["alphabet"] == alphabet}
+            for j, col in enumerate(MAIN_RANKS):
+                if col not in in_col:
+                    ax.plot(j + 0.5, y + 0.5, ".", color=pf.GREY, ms=3)
+                    continue
+                r = line[in_col[col]]
                 fc = (
                     reached_colour
                     if r["reached"]
@@ -1199,18 +1228,22 @@ def figure_reach_bars(cont, path):
                     color="white" if r["reached"] else "k",
                 )
             # The other-kingdom background, 1x by definition.
-            j = len(line)
+            j = len(MAIN_RANKS)
             ax.add_patch(
                 Rectangle(
                     (j + 0.04, y + 0.1), 0.92, 0.8, fc="#e6e6e6", ec="#999999", lw=0.5
                 )
             )
             ax.text(j + 0.5, y + 0.5, "1\u00d7", ha="center", va="center", fontsize=5.5)
-            last = [r for r in line if r["reached"]]
+            last = [
+                col
+                for col in MAIN_RANKS
+                if col in in_col and line[in_col[col]]["reached"]
+            ]
             ax.text(
-                n_cols + 0.15,
+                len(columns) + 0.15,
                 y + 0.5,
-                f"reaches {last[-1]['rank']}" if last else "reaches nothing",
+                f"reaches {last[-1]}" if last else "reaches nothing",
                 va="center",
                 fontsize=6,
                 weight="bold",
@@ -1218,21 +1251,45 @@ def figure_reach_bars(cont, path):
         ax.set_yticks([len(PYRAMID) - 1 - i + 0.5 for i in range(len(PYRAMID))])
         ax.set_yticklabels([f"{a} k={k}" for a, k in PYRAMID])
         ax.tick_params(axis="y", length=0)
-        labels = [
-            f"{next(r['rank'] for r in sub if r['relative'] == rel)}\n"
-            + rel.replace(" ", "\n", 1)
-            for rel in rels
-        ] + ["another\nkingdom\n(background)"]
-        ax.set_xticks([j + 0.5 for j in range(len(labels))])
-        ax.set_xticklabels(labels, fontsize=5.5)
-        for t in ax.get_xticklabels()[:-1]:
-            t.set_linespacing(1.1)
+        ax.set_xticks([j + 0.5 for j in range(len(columns))])
+        ax.set_xticklabels(
+            [
+                in_col[col].replace(" ", "\n", 1) if col in in_col else ""
+                for col in MAIN_RANKS
+            ]
+            + [
+                (
+                    "yeast or\nArabidopsis"
+                    if anchor != PATHS_BACTERIUM
+                    else "Bacillus or\nThermotoga"
+                )
+            ],
+            fontsize=5.5,
+            style="italic",
+        )
         ax.tick_params(axis="x", length=0)
-        ax.set_xlim(0, n_cols + 2.2)
+        if ax_i == 0:  # rank names once, above the first panel, shared by all three
+            for j, col in enumerate(columns):
+                ax.text(
+                    j + 0.5,
+                    len(PYRAMID) + 0.15,
+                    "another kingdom\n(background)" if col == "other kingdom" else col,
+                    ha="center",
+                    va="bottom",
+                    fontsize=6.5,
+                    weight="bold",
+                )
+        ax.set_xlim(0, len(columns) + 2.2)
         ax.set_ylim(0, len(PYRAMID))
         for side in ("left", "bottom"):
             ax.spines[side].set_visible(False)
-        ax.set_title(f"anchor: {anchor}", loc="left", fontsize=7, weight="bold")
+        ax.set_title(
+            f"anchor: {anchor}",
+            loc="left",
+            fontsize=7,
+            weight="bold",
+            pad=22 if ax_i == 0 else 6,  # clear the rank names over the first panel
+        )
     fig.legend(
         handles=[
             Patch(
@@ -1260,6 +1317,15 @@ def figure_reach_bars(cont, path):
                 lw=0.5,
                 label="another kingdom: the background, 1\u00d7 by definition",
             ),
+            Line2D(
+                [],
+                [],
+                marker=".",
+                ls="",
+                color=pf.GREY,
+                ms=3,
+                label="no relative at this rank in the species set",
+            ),
         ],
         loc="lower center",
         ncol=2,
@@ -1285,9 +1351,16 @@ def figure_reach_bars(cont, path):
         f"{sampled} k-mers sampled.\n"
         "Protein, dayhoff and hp from UniProt reference proteomes; DNA from the coding sequences of the same genes.\n"
         "dayhoff letters: AGPST C DENQ FWY HKR ILMV; hp letters: AFGILMPVWY (hydrophobic), CDEHKNQRST (polar).\n"
+        "Each column is one main rank, the same in every panel. Each relative sits under the lowest main rank it "
+        "shares with the anchor.\n"
+        + "These also share a sub-rank, so they are closer than that rank alone: "
+        + ", ".join(shared_sub)
+        + ".\nNot drawn, because a farther relative stands for the same rank: "
+        + ", ".join(dropped)
+        + ".\n"
         "Conclusion: protein, dayhoff and hp reach the same rank for mouse and E. coli; only hp, and only for the mussel, "
         "goes further.\nFewer letters do not reach further at equal bits.",
-        y=1.2,
+        y=1.255,
     )
     pf.save(fig, str(RES / "reach_by_rank_uniprot"))
 
