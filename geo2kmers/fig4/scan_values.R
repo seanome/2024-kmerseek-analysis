@@ -4,7 +4,8 @@
 # commented out in the package), so this runs SCANfast's steps from processCelFile with the package's own functions:
 # fit the sequence model on every n-th probe (10000 probes, convThreshold 0.5), standardise each probe within bins
 # of 5000 probes with similar predicted brightness, and take the 10 % trimmed mean over each probe set's probes.
-# With "check", the first array's probe-set values are also computed by SCANfast and the largest difference printed.
+# With "check", the first array's probe-set values are also computed by SCANfast, the largest difference printed, and
+# the script stops if it is above 1e-6.
 suppressMessages({
   library(SCAN.UPC)
   library(oligo)
@@ -67,4 +68,5 @@ if (length(arguments) == 5 && arguments[5] == "check") {
   ours <- sets[names(reference), 1]
   cat("check against SCANfast on", basename(files[1]), ": largest difference", max(abs(ours - reference)), "over",
       length(reference), "probe sets\n")
+  if (max(abs(ours - reference)) > 1e-6) stop("these values differ from SCANfast's")
 }
