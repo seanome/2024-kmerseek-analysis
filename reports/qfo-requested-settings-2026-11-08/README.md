@@ -73,8 +73,9 @@ median over all 115 kmerseek settings; orange is the single best setting, picked
 looking, so it is an upper bound. Built by `other_metrics.py`; all numbers are in
 `kmerseek_vs_mmseqs2_all_metrics.csv`.
 
-kmerseek is better than MMseqs2 in two places. Both were picked after looking. The
-metrics table splits the proteins into 59 subsets with an Fmax for both tools (by gene set,
+kmerseek is better than MMseqs2 on one set of proteins, the C2H2 zinc fingers. The second
+lead, domains of 16-30 residues, comes from those same proteins (see "Random protein sets"
+below). Both were picked after looking. The metrics table splits the proteins into 59 subsets with an Fmax for both tools (by gene set,
 domain length, identity, disorder, pLDDT, MHC class and dN/dS). Ranked by kmerseek /
 MMseqs2 Fmax, C2H2 zinc fingers come first and domains of 16-30 residues second. In every other
 subset the typical setting is below 0.6 times MMseqs2. The full ranking is in
@@ -85,8 +86,8 @@ pipeline tags on every query (`bin/build_query_covariates.py`). The other
 zinc fingers do not follow C2H2: typical 0.28 times MMseqs2, best 0.69. Both tools move:
 MMseqs2's Fmax drops from 0.31 on all proteins to 0.054 on C2H2, and kmerseek's typical
 Fmax rises from about 0.037 to about 0.13 (typical ratio times MMseqs2's Fmax).
-This is one gene set out of 59 subsets, picked after looking, with no random-protein null.
-Treat it as a lead to test, not a result.
+It is one gene set out of 59 subsets, picked after looking, so it was tested against
+random protein sets below. It held: none of 400 random sets came close.
 
 ### Per species
 
@@ -101,7 +102,7 @@ For domains of 16-30 residues, 4 of 8 species are above 1 for the typical settin
 k9 is above 1 in 7 of 8, but it was chosen as the best setting after looking. Built by
 `per_species.py`; numbers in [per_species_ratios.csv](per_species_ratios.csv).
 
-### Random protein sets (set up, not yet run)
+### Random protein sets
 
 `subset_null.py` rescores random sets of 32 query proteins with the pipeline's own Fmax
 code. It summarises each set the same way as the C2H2 number: ratio per setting and
@@ -135,6 +136,37 @@ Decision rule, written before the run:
 
 Limit, known before the run: the 32 C2H2 proteins carry 200 domains, more than a random 32
 proteins do. A random set with fewer domains is not matched on that.
+
+![C2H2 against 400 random protein sets](subset_null.png)
+
+Result (Sherlock job 51699477, 2026-11-09, 2 minutes on 16 CPUs). The script reproduced all
+2160 published Fmax values it checked, and the observed ratios match the figure above.
+
+| protein set | typical kmerseek / MMseqs2 Fmax |
+|---|---|
+| C2H2 zinc fingers (32 proteins) | 2.47 |
+| any 32 query proteins, 200 random sets | median 0.12, highest 0.44 |
+| 32 proteins with a 16-30 aa domain, not C2H2, 200 random sets | median 0.17, highest 0.34 |
+| domains of 16-30 aa, all proteins | 1.16 |
+| domains of 16-30 aa, C2H2 proteins taken out | 0.29 |
+
+By the rule written before the run:
+
+- C2H2 zinc fingers pass. No random set of either kind reached the C2H2 ratio, so
+  p = 1/201 = 0.005, the smallest this test can give. No random set was above 1 either.
+- The lead belongs to zinc fingers, not to short domains in general: proteins with a
+  16-30 aa domain that are not C2H2 score like any other proteins.
+- The 16-30 aa lead does not stand on its own. It comes from the C2H2 proteins: without
+  them the ratio drops from 1.16 to 0.29.
+
+Not tested: why kmerseek does better here. MMseqs2's C2H2 Fmax is low (0.054), so part of
+the ratio is MMseqs2 doing badly, not only kmerseek doing well. A random set matched on
+number of domains per protein, or on repeated domains, was not drawn.
+
+Outputs: [subset_null_summary.csv](subset_null_summary.csv) (one row per protein set),
+[subset_null_verdict.txt](subset_null_verdict.txt),
+[subset_null_published_check.csv](subset_null_published_check.csv) and
+[subset_null_params.json](subset_null_params.json); figure from `subset_null_figure.py`.
 
 - **C2H2 zinc fingers** (32 of the 998 human query proteins, carrying 200 Pfam domain
   copies; the same 32 are scored against every species): the typical setting's Fmax is 2.5 times MMseqs2's, the best
