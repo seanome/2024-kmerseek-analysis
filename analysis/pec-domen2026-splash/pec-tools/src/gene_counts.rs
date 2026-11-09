@@ -15,7 +15,8 @@
 //!
 //! gene_map.tsv: no header; protein ID (the FASTA header's first word), gene. Proteins not listed
 //! are skipped. manifest.tsv: no header; sample, R1 path, R2 path, largest number of pairs to read
-//! (0 = all), in file order, so a limit reads only the start of each file. Files are read through
+//! (0 = all), in file order, so a limit reads only the start of each file. For single-end reads
+//! the R2 path is `-`, and each read is counted as a pair with one mate. Files are read through
 //! `pigz -dc`. Writes <out_prefix>.counts.tsv (gene, one column per sample; genes with any count)
 //! and <out_prefix>.summary.tsv (sample, pairs, no_hit, tied, assigned).
 use std::collections::HashMap;
@@ -229,18 +230,22 @@ struct Tally {
 }
 
 fn count_sample(idx: &Index, r1: &str, r2: &str, max_pairs: u64, min_hits: u32) -> Res<Tally> {
-    let (mut a, mut b) = (Fastq::open(r1)?, Fastq::open(r2)?);
+    // single-end reads: the manifest gives `-` as the R2 path, and there is no second mate
+    let mut a = Fastq::open(r1)?;
+    let mut b = if r2 == "-" { None } else { Some(Fastq::open(r2)?) };
     let (mut s1, mut s2) = (String::new(), String::new());
     let mut hits = Vec::new();
     let mut t = Tally { counts: vec![0; idx.genes.len()], ..Default::default() };
     while max_pairs == 0 || t.pairs < max_pairs {
-        let (more1, more2) = (a.next(&mut s1)?, b.next(&mut s2)?);
-        if more1 != more2 {
-            return Err(format!("{r1} and {r2} have different numbers of reads").into());
+        let more1 = a.next(&mut s1)?;
+        if let Some(b) = b.as_mut() {
+            if more1 != b.next(&mut s2)? {
+                return Err(format!("{r1} and {r2} have different numbers of reads").into());
+            }
         }
         if !more1 {
             if max_pairs == 0 {
-                for f in [&mut a, &mut b] {
+                for f in std::iter::once(&mut a).chain(b.as_mut()) {
                     if !f.child.wait()?.success() {
                         return Err(format!("pigz failed on {r1} or {r2}").into());
                     }
@@ -251,7 +256,9 @@ fn count_sample(idx: &Index, r1: &str, r2: &str, max_pairs: u64, min_hits: u32) 
         t.pairs += 1;
         hits.clear();
         idx.lookup(s1.trim_end().as_bytes(), &mut hits);
-        idx.lookup(s2.trim_end().as_bytes(), &mut hits);
+        if b.is_some() {
+            idx.lookup(s2.trim_end().as_bytes(), &mut hits);
+        }
         match call(&hits, min_hits) {
             Call::NoHit => t.no_hit += 1,
             Call::Tied => t.tied += 1,
@@ -386,6 +393,34 @@ mod tests {
         assert_eq!(call(&[(0, 3)], 3), Call::Gene(0));
         assert_eq!(call(&[(0, 4), (1, 4)], 3), Call::Tied);
         assert_eq!(call(&[(0, 5), (1, 4)], 3), Call::Gene(0));
+    }
+
+    /// Two copies of one read, gzipped, in a file of its own under the system temp folder.
+    fn fastq_gz(name: &str) -> String {
+        let path = std::env::temp_dir().join(format!("pec_tools_{}_{name}.fastq", std::process::id()));
+        let read = String::from_utf8(DNA.to_vec()).unwrap();
+        let qual = "I".repeat(read.len());
+        std::fs::write(&path, format!("@r1\n{read}\n+\n{qual}\n@r2\n{read}\n+\n{qual}\n")).unwrap();
+        assert!(Command::new("pigz").arg("-f").arg(&path).status().unwrap().success());
+        format!("{}.gz", path.display())
+    }
+
+    #[test]
+    fn single_end_reads_are_counted_without_a_second_mate() {
+        if Command::new("pigz").arg("--version").output().is_err() {
+            eprintln!("skipped: pigz is not installed here (it is on Sherlock, in the pipeline's environment)");
+            return;
+        }
+        let idx = index(10, 1);
+        let f = fastq_gz("single");
+        let single = count_sample(&idx, &f, "-", 0, 3).unwrap();
+        assert_eq!((single.pairs, single.assigned, single.counts[0]), (2, 2, 2));
+        // the same file as both mates still gives two pairs, so `-` is not read as a file name
+        let paired = count_sample(&idx, &f, &f, 0, 3).unwrap();
+        assert_eq!((paired.pairs, paired.assigned), (2, 2));
+        // a limit of one read stops after the first
+        assert_eq!(count_sample(&idx, &f, "-", 1, 3).unwrap().pairs, 1);
+        std::fs::remove_file(&f).unwrap();
     }
 
     #[test]
