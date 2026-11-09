@@ -172,7 +172,8 @@ Outputs: [subset_null_summary.csv](subset_null_summary.csv) (one row per protein
   copies; the same 32 are scored against every species): the typical setting's Fmax is 2.5 times MMseqs2's, the best
   (dayhoff6 k9) 4.8 times, 0.26 against 0.054. phmmer also scores only 0.045 here.
 - **Short domains, 16-30 residues**: typical 1.2 times MMseqs2's Fmax, best 3.0 times
-  (0.18 against 0.057). At 31-60 residues it is about even; from 61 residues up
+  (0.18 against 0.057). This comes from the C2H2 proteins: without them the typical
+  ratio is 0.29 (see "Random protein sets"). At 31-60 residues it is about even; from 61 residues up
   MMseqs2 wins. At 61-120 residues its Fmax is 5.1 times kmerseek's for the typical setting and
   2.6 times for the best; at 121-250 it is 22.6 and 12 times; at 251+ the typical
   setting finds nothing and the best is 41 times lower.
