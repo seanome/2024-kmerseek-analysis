@@ -88,8 +88,47 @@ Fmax rises from about 0.037 to about 0.13 (typical ratio times MMseqs2's Fmax).
 This is one gene set out of 59 subsets, picked after looking, with no random-protein null.
 Treat it as a lead to test, not a result.
 
-- **C2H2 zinc fingers** (about 32 proteins and 200 domain copies per species, each
-  domain about 22 residues): the typical setting's Fmax is 2.5 times MMseqs2's, the best
+### Per species
+
+![kmerseek / MMseqs2 Fmax, one dot per species](per_species_ratios.png)
+
+C2H2 zinc fingers: the typical setting beats MMseqs2 in 7 of the 8 species that have a
+ratio. Of those 7, worm is lowest at 1.35. Mouse (10.4) and zebrafish (6.8) are highest,
+and that is where MMseqs2's C2H2 Fmax is lowest (0.032 and 0.030). In yeast (3.8) both are
+near zero: 0.041 against 0.011. Arabidopsis is 0: the typical setting finds none of these
+domains there. In E. coli MMseqs2 also scores 0, so there is no ratio.
+For domains of 16-30 residues, 4 of 8 species are above 1 for the typical setting. dayhoff6
+k9 is above 1 in 7 of 8, but it was chosen as the best setting after looking. Built by
+`per_species.py`; numbers in [per_species_ratios.csv](per_species_ratios.csv).
+
+### Random protein sets (set up, not yet run)
+
+`subset_null.py` rescores random sets of 32 query proteins with the pipeline's own Fmax
+code. It summarises each set the same way as the C2H2 number: ratio per setting and
+species, median over species, median over settings. Two kinds of random set:
+
+- any 32 of the 998 query proteins;
+- 32 of the 52 proteins that have a 16-30 residue domain and are not C2H2 zinc fingers.
+
+It also scores domains of 16-30 residues with the C2H2 proteins taken out. Before any
+random set is scored, it checks that it reproduces the published Fmax for C2H2 and 16-30 aa.
+On a test with 5 species and 2 settings, all 30 values matched.
+
+Decision rule, written before the run:
+
+- C2H2 counts as a kmerseek strength only if its typical ratio is at or above the random
+  sets' values in at most 1 of 100 draws (p of 0.01 or less, p = (1 + draws at or above)
+  / (1 + draws)).
+- If C2H2 also beats the short-domain random sets at p of 0.01 or less, the lead belongs to
+  zinc fingers. If not, it is a short-domain effect that C2H2 proteins carry.
+- The 16-30 aa lead stands on its own only if its ratio stays above 1 with the C2H2
+  proteins taken out.
+
+Limit, known before the run: the 32 C2H2 proteins carry 200 domains, more than a random 32
+proteins do. A random set with fewer domains is not matched on that.
+
+- **C2H2 zinc fingers** (32 of the 998 human query proteins, carrying 200 Pfam domain
+  copies; the same 32 are scored against every species): the typical setting's Fmax is 2.5 times MMseqs2's, the best
   (dayhoff6 k9) 4.8 times, 0.26 against 0.054. phmmer also scores only 0.045 here.
 - **Short domains, 16-30 residues**: typical 1.2 times MMseqs2's Fmax, best 3.0 times
   (0.18 against 0.057). At 31-60 residues it is about even; from 61 residues up
@@ -142,6 +181,7 @@ Fmax of 1/5 of MMseqs2 does not by itself say how an orthology submission would 
 ```
 python summarize.py <metrics dir> <all_domain_metrics.parquet>
 python other_metrics.py <metrics dir> <all_domain_metrics.parquet>
+python per_species.py <metrics dir> <all_domain_metrics.parquet>
 ```
 
 Both scripts read one `<metrics dir>`, so copy the `pfam.kmerseek.*_lcFalse.*.metrics.parquet`
