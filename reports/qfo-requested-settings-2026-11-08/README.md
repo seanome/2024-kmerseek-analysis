@@ -73,7 +73,20 @@ median over all 115 kmerseek settings; orange is the single best setting, picked
 looking, so it is an upper bound. Built by `other_metrics.py`; all numbers are in
 `kmerseek_vs_mmseqs2_all_metrics.csv`.
 
-kmerseek is better than MMseqs2 in two places:
+kmerseek is better than MMseqs2 in two places. Both were picked after looking. The
+metrics table splits the proteins into 59 subsets with an Fmax for both tools (by gene set,
+domain length, identity, disorder, pLDDT, MHC class and dN/dS). Ranked by kmerseek /
+MMseqs2 Fmax, C2H2 zinc fingers come first and domains of 16-30 residues second. In every other
+subset the typical setting is below 0.6 times MMseqs2. The full ranking is in
+[fmax_ratio_every_subset.csv](fmax_ratio_every_subset.csv).
+
+The C2H2 gene set was not made for this comparison. It is one of four gene sets the
+pipeline tags on every query (`bin/build_query_covariates.py`). The other
+zinc fingers do not follow C2H2: typical 0.28 times MMseqs2, best 0.69. Both tools move:
+MMseqs2's Fmax drops from 0.31 on all proteins to 0.054 on C2H2, and kmerseek's typical
+Fmax rises from about 0.037 to about 0.13 (typical ratio times MMseqs2's Fmax).
+This is one gene set out of 59 subsets, picked after looking, with no random-protein null.
+Treat it as a lead to test, not a result.
 
 - **C2H2 zinc fingers** (about 32 proteins and 200 domain copies per species, each
   domain about 22 residues): the typical setting's Fmax is 2.5 times MMseqs2's, the best

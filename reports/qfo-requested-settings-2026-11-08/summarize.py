@@ -16,6 +16,9 @@ HERE = Path(__file__).parent
 sys.path.insert(0, str(HERE.parents[1] / "notebooks"))
 import pubfig  # noqa: E402
 
+sys.path.insert(0, str(HERE.parents[1] / "scripts"))
+import shrink_png  # noqa: E402
+
 NINE = ["arabidopsis", "chicken", "ciona", "ecoli", "fly", "mouse", "worm", "yeast", "zebrafish"]
 ASKED = {"protein20": range(5, 11), "dayhoff6": [9, 11, 13, 15, 17, 19, 21]}
 # First ask: odd k 19-33. Follow-up the same day: k 25, 30, 35, 40, so H/P k-mers carry the
@@ -98,6 +101,7 @@ ax.set_ylim(0, 0.36)
 ax.legend(loc="upper left", bbox_to_anchor=(0, 0.8), frameon=False, fontsize=5)
 ax.set_title("kmerseek reaches 1/5 to 1/16 of MMseqs2's Pfam domain Fmax", fontsize=6)
 fig.savefig(HERE / "fmax_by_k.png", dpi=300)
+shrink_png.process(HERE / "fmax_by_k.png", check=False)  # 256 colours, as CI checks
 fig.savefig(HERE / "fmax_by_k.pdf")
 print(summary)
 print(tools)
