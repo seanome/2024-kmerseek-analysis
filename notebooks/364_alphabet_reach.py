@@ -327,6 +327,15 @@ PATHS = {
             "",
         ),
         (
+            "Magallana angulata",
+            "Magallana angulata",
+            2784310,
+            "genus",
+            None,
+            "GCF_025612915.1",
+            "no UniProt proteome in genus Magallana besides M. gigas (2026-11-09); NCBI RefSeq annotation, BUSCO 98.8%",
+        ),
+        (
             "Crassostrea virginica",
             "Crassostrea virginica",
             6565,
@@ -334,6 +343,16 @@ PATHS = {
             "UP000694844",
             "GCF_002022765.2",
             "",
+        ),
+        (
+            "Mizuhopecten yessoensis",
+            "Mizuhopecten yessoensis",
+            6573,
+            "order",
+            "UP000242188",
+            "GCA_002113885.2",
+            "NCBI order Ostreida holds only oysters, so no genome shares the order but not the family; "
+            "the scallop shares the clade Pteriomorphia, the nearest group above order (BUSCO 88.9%)",
         ),
         (
             "Mactra antiquata",
@@ -352,6 +371,15 @@ PATHS = {
             "UP001634394",
             "GCA_046254885.1",
             "",
+        ),
+        (
+            "Solemya velum",
+            "Solemya velum",
+            13268,
+            "class",
+            "UP001724931",
+            "GCA_048127485.1",
+            "the only class-level bivalve (outside subclass Autobranchia) with a reference proteome (BUSCO 82.5%)",
         ),
         (
             "Aplysia californica",
@@ -549,6 +577,40 @@ def quality(args):
     rows, seen = [], set()
     for t in read_tsv(OUT / "taxonomic_path.tsv"):
         up = t["uniprot_proteome_id"]
+        if not up and t["ncbi_assembly"] not in seen:
+            seen.add(t["ncbi_assembly"])
+            body, _ = get(
+                f"https://api.ncbi.nlm.nih.gov/datasets/v2/genome/accession/{t['ncbi_assembly']}/dataset_report"
+            )
+            ann = json.loads(body)["reports"][0].get("annotation_info", {})
+            busco = ann.get("busco", {})
+            rows.append(
+                {
+                    "species": t["relative"],
+                    "uniprot_proteome_id": "",
+                    "busco_lineage": busco.get("busco_lineage", "")
+                    + " (NCBI annotation)",
+                    "busco_complete_pct": (
+                        f"{100 * busco['complete']:.1f}" if busco else ""
+                    ),
+                    "busco_fragmented_pct": (
+                        f"{100 * busco['fragmented']:.1f}" if busco else ""
+                    ),
+                    "busco_missing_pct": (
+                        f"{100 * busco['missing']:.1f}" if busco else ""
+                    ),
+                    "cpd_status": "",
+                    "assembly_level": t["ncbi_assembly"],
+                    "retrieved": datetime.date.today().isoformat(),
+                }
+            )
+            print(
+                t["ncbi_assembly"],
+                t["relative"],
+                rows[-1]["busco_complete_pct"],
+                flush=True,
+            )
+            continue
         if not up or up in seen:
             continue
         seen.add(up)
@@ -1085,42 +1147,47 @@ def reach_table():
 
 
 MIN_BUSCO = 90  # olgabot, 2026-11-09: only proteomes with UniProt BUSCO >= 90% complete
-DROPPED = []  # species left out by busco_filter, for the figure headers
+DROPPED = []  # anchors left out by busco_filter, for the figure headers
+LOW = set()  # relatives kept although under MIN_BUSCO, marked with a dagger
 
 
 def busco_filter():
-    """Drop every species whose proteome is under MIN_BUSCO % complete (proteome_quality.tsv).
-
-    An anchor that fails takes its whole panel with it; a relative that fails leaves its
-    rank empty. Changes PATHS in place, so every table and figure after it sees the cut.
+    """Use proteome_quality.tsv: drop an anchor whose proteome is under MIN_BUSCO % complete
+    (with its whole panel), and flag, not drop, a relative under it (olgabot, 2026-11-09:
+    "don't leave gaps ... just make a note of it"). Changes PATHS in place.
     """
     low = {
         q["species"]
         for q in read_tsv(OUT / "proteome_quality.tsv")
         if q["busco_complete_pct"] and float(q["busco_complete_pct"]) < MIN_BUSCO
     }
-    DROPPED[:] = sorted(low)
-    for anchor in list(PATHS):
-        if anchor in low:
-            del PATHS[anchor]
-        else:
-            PATHS[anchor] = [e for e in PATHS[anchor] if e[1] not in low]
+    DROPPED[:] = sorted(a for a in PATHS if a in low)
+    for anchor in DROPPED:
+        del PATHS[anchor]
+    LOW.clear()
+    LOW.update(e[1] for entries in PATHS.values() for e in entries if e[1] in low)
 
 
 def kept(rows):
-    """Rows whose anchor and relative both pass busco_filter."""
-    gone = set(DROPPED)
-    return [r for r in rows if r["anchor"] in PATHS and r.get("relative") not in gone]
+    """Rows whose anchor passes busco_filter."""
+    return [r for r in rows if r["anchor"] in PATHS]
 
 
 def dropped_line():
-    return (
-        f"Only proteomes at least {MIN_BUSCO}% complete by UniProt BUSCO; left out: "
-        + ", ".join(DROPPED)
-        + ".\n"
-        if DROPPED
-        else ""
-    )
+    out = ""
+    if DROPPED:
+        out += (
+            f"Anchors left out, under {MIN_BUSCO}% complete by BUSCO: "
+            + ", ".join(DROPPED)
+            + ".\n"
+        )
+    if LOW:
+        out += (
+            f"\u2020 Proteome under {MIN_BUSCO}% complete by BUSCO, kept so no rank is empty: "
+            + ", ".join(sorted(LOW))
+            + ".\n"
+        )
+    return out
 
 
 def reach(args):
@@ -1308,6 +1375,27 @@ REACH_SETS = {
         for pk in LADDER_PROTEIN_K
     },
 }
+
+
+def column_of(t):
+    """The main-rank column a relative is drawn in: the rank it was chosen to stand for
+    (taxonomic_path.tsv requested_rank), else the main rank above the rank it shares."""
+    if t["requested_rank"] in MAIN_RANKS:
+        return t["requested_rank"]
+    return SUB_TO_MAIN.get(t["rank"], t["rank"])
+
+
+def shares_of(t):
+    """What a relative shares with its anchor, in words: 'subgenus Mus', or 'clade
+    Pteriomorphia, inside subclass Autobranchia' when the lowest shared group has no rank.
+    """
+    if t["lowest_shared_clade"] != t["shared_taxon"]:
+        return (
+            f"clade {t['lowest_shared_clade']}, inside {t['rank']} {t['shared_taxon']}"
+        )
+    return f"{t['rank']} {t['shared_taxon']}"
+
+
 FOLD = (
     10  # a relative must share at least 10 times more than the other-kingdom background
 )
@@ -1361,6 +1449,8 @@ def reach_fold_table(cont, path):
                         "k": k,
                         "relative": r["relative"],
                         "rank": r["rank"],
+                        "column": column_of(r),
+                        "shares": shares_of(r),
                         "containment": f"{max_c(c):.6g}",
                         "background": f"{background:.6g}",
                         "fold_over_background": f"{fold:.4g}",
@@ -1410,7 +1500,7 @@ def draw_ladder_summary(rows):
             for pk in LADDER_PROTEIN_K:
                 k = dict(ladder(pk))[alphabet]
                 reached = [
-                    SUB_TO_MAIN.get(r["rank"], r["rank"])
+                    r["column"]
                     for r in rows
                     if r["setting_set"] == f"dna{3 * pk}_protein{pk}"
                     and r["anchor"] == anchor
@@ -1488,7 +1578,7 @@ def reach_conclusion(rows, settings):
 
     def far(anchor, alphabet):
         ranks = [
-            SUB_TO_MAIN.get(r["rank"], r["rank"])
+            r["column"]
             for r in rows
             if r["anchor"] == anchor and r["alphabet"] == alphabet and r["reached"]
         ]
@@ -1547,16 +1637,17 @@ def draw_reach_bars(rows, settings, matched, name):
         sub = [r for r in rows if r["anchor"] == anchor]
         rels = list(dict.fromkeys(r["relative"] for r in sub))  # nearest first
         rank_of = {r["relative"]: r["rank"] for r in sub}
+        col_of = {r["relative"]: r["column"] for r in sub}
+        shares = {r["relative"]: r["shares"] for r in sub}
         in_col = {}
         for rel in rels:
-            main = SUB_TO_MAIN.get(rank_of[rel], rank_of[rel])
+            main = col_of[rel]
             if main in in_col:
-                gone = f"{in_col[main]} ({rank_of[in_col[main]]})"
-                dropped.append(gone)
-                if gone in shared_sub:
-                    shared_sub.remove(gone)
-            elif main != rank_of[rel]:
-                shared_sub.append(f"{rel} ({rank_of[rel]})")
+                gone = in_col[main]
+                dropped.append(f"{gone} ({shares[gone]})")
+                shared_sub[:] = [x for x in shared_sub if not x.startswith(gone + " (")]
+            if not shares[rel].startswith(main + " "):
+                shared_sub.append(f"{rel} ({shares[rel]})")
             in_col[main] = rel  # later = farther
         for i, (alphabet, k) in enumerate(settings):
             y = len(settings) - 1 - i
@@ -1615,7 +1706,13 @@ def draw_reach_bars(rows, settings, matched, name):
         ax.set_xticks([j + 0.5 for j in range(len(columns))])
         ax.set_xticklabels(
             [
-                in_col[col].replace(" ", "\n", 1) if col in in_col else ""
+                (
+                    (in_col[col] + (" \u2020" if in_col[col] in LOW else "")).replace(
+                        " ", "\n", 1
+                    )
+                    if col in in_col
+                    else ""
+                )
                 for col in MAIN_RANKS
             ]
             + [
@@ -1712,10 +1809,9 @@ def draw_reach_bars(rows, settings, matched, name):
         + dropped_line()
         + "Protein, dayhoff and hp from UniProt reference proteomes; DNA from the coding sequences of the same genes.\n"
         "dayhoff letters: AGPST C DENQ FWY HKR ILMV; hp letters: AFGILMPVWY (hydrophobic), CDEHKNQRST (polar).\n"
-        "Each column is one main rank, the same in every panel. Each relative sits under the lowest main rank it "
-        "shares with the anchor.\n"
+        "Each column is one main rank, the same in every panel; each relative sits under the rank it was chosen for.\n"
         + (
-            "These also share a sub-rank, so they are closer than that rank alone: "
+            "Where what a relative shares with its anchor is not its column's rank: "
             + ", ".join(shared_sub)
             + ".\n"
             if shared_sub
