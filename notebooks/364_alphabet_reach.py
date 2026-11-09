@@ -1082,6 +1082,7 @@ def figure(args):
         pf.save(fig, str(RES / f"reach_by_alphabet_{input_type}"))
     figure_sweep(cont, path, floors)
     figure_pyramid(cont, path, floors)
+    figure_reach_bars(cont, path)
 
 
 PYRAMID = [("DNA", 21), ("protein", 10), ("dayhoff", 16), ("hp", 42)]
@@ -1095,6 +1096,180 @@ def percent(c):
         return "<0.01"
     p = 100 * c
     return f"{p:.0f}" if p >= 10 else f"{p:.2g}" if p >= 1 else f"{p:.1g}"
+
+
+FOLD = (
+    10  # a relative must share at least 10 times more than the other-kingdom background
+)
+MIN_SHARED = 100  # and at least this many shared sampled k-mers (hashes), so a ratio of tiny counts cannot pass
+
+
+def reach_fold_table(cont, path):
+    """Reach by fold over background: per anchor and alphabet at 42 bits, each relative's
+    containment divided by the higher of the two other-kingdom species' containments.
+
+    Writes RES/reach_fold.tsv. Reach is the farthest rank reached without a failing rank
+    nearer the anchor.
+    """
+    rows = []
+    for anchor in PATHS:
+        rels = sorted(
+            (
+                r
+                for r in path
+                if r["anchor"] == anchor
+                and r["rank"] not in ("anchor", "other kingdom")
+            ),
+            key=lambda r: (rank_key(r), r["relative"]),
+        )
+        for alphabet, k in PYRAMID:
+            sel = {
+                c["relative"]: c
+                for c in cont
+                if c["anchor"] == anchor
+                and c["alphabet"] == alphabet
+                and int(c["k"]) == k
+            }
+            background = max(max_c(sel[sp]) for sp in floor_species(anchor))
+            still_reaching = True
+            for r in rels:
+                c = sel[r["relative"]]
+                shared = round(
+                    float(c["containment_anchor_in_relative"])
+                    * int(c["n_hashes_anchor"])
+                )
+                fold = max_c(c) / background if background else math.inf
+                passed = fold >= FOLD and shared >= MIN_SHARED
+                still_reaching = still_reaching and passed
+                rows.append(
+                    {
+                        "anchor": anchor,
+                        "alphabet": alphabet,
+                        "k": k,
+                        "relative": r["relative"],
+                        "rank": r["rank"],
+                        "containment": f"{max_c(c):.6g}",
+                        "background": f"{background:.6g}",
+                        "fold_over_background": f"{fold:.4g}",
+                        "shared_hashes": shared,
+                        "passes": passed,
+                        "reached": still_reaching,
+                    }
+                )
+    write_tsv(RES / "reach_fold.tsv", rows, list(rows[0]))
+    return rows
+
+
+def figure_reach_bars(cont, path):
+    """Which ranks each alphabet reaches: one panel per anchor, one row per alphabet,
+    relatives from nearest (left) to farthest (right). Filled cell: passes the fold rule.
+    """
+    from matplotlib.patches import Patch, Rectangle
+    import pubfig as pf
+
+    rows = reach_fold_table(cont, path)
+    reached_colour, passed_colour = pf.OKABE_ITO["blue"], pf.OKABE_ITO["sky_blue"]
+    fig, axs = pf.figure(pf.TWO_COLUMN_MM, 125, nrows=len(PATHS))
+    n_cols = max(sum(r["anchor"] == a for r in rows) // len(PYRAMID) for a in PATHS) + 1
+    for ax, anchor in zip(axs, PATHS):
+        sub = [r for r in rows if r["anchor"] == anchor]
+        rels = list(dict.fromkeys(r["relative"] for r in sub))
+        for i, (alphabet, k) in enumerate(PYRAMID):
+            y = len(PYRAMID) - 1 - i
+            line = [r for r in sub if r["alphabet"] == alphabet]
+            for j, r in enumerate(line):
+                fc = (
+                    reached_colour
+                    if r["reached"]
+                    else passed_colour if r["passes"] else "white"
+                )
+                ax.add_patch(
+                    Rectangle(
+                        (j + 0.04, y + 0.1), 0.92, 0.8, fc=fc, ec="#999999", lw=0.5
+                    )
+                )
+                fold = float(r["fold_over_background"])
+                ax.text(
+                    j + 0.5,
+                    y + 0.5,
+                    f"{fold:.0f}\u00d7" if fold < 1e4 else "\u226510000\u00d7",
+                    ha="center",
+                    va="center",
+                    fontsize=5.5,
+                    color="white" if r["reached"] else "k",
+                )
+            # The other-kingdom background, 1x by definition.
+            j = len(line)
+            ax.add_patch(
+                Rectangle(
+                    (j + 0.04, y + 0.1), 0.92, 0.8, fc="#e6e6e6", ec="#999999", lw=0.5
+                )
+            )
+            ax.text(j + 0.5, y + 0.5, "1\u00d7", ha="center", va="center", fontsize=5.5)
+            last = [r for r in line if r["reached"]]
+            ax.text(
+                n_cols + 0.15,
+                y + 0.5,
+                f"reaches {last[-1]['rank']}" if last else "reaches nothing",
+                va="center",
+                fontsize=6,
+                weight="bold",
+            )
+        ax.set_yticks([len(PYRAMID) - 1 - i + 0.5 for i in range(len(PYRAMID))])
+        ax.set_yticklabels([f"{a} k={k}" for a, k in PYRAMID])
+        ax.tick_params(axis="y", length=0)
+        labels = [
+            f"{next(r['rank'] for r in sub if r['relative'] == rel)}\n"
+            + rel.replace(" ", "\n", 1)
+            for rel in rels
+        ] + ["another\nkingdom\n(background)"]
+        ax.set_xticks([j + 0.5 for j in range(len(labels))])
+        ax.set_xticklabels(labels, fontsize=5.5)
+        for t in ax.get_xticklabels()[:-1]:
+            t.set_linespacing(1.1)
+        ax.tick_params(axis="x", length=0)
+        ax.set_xlim(0, n_cols + 2.2)
+        ax.set_ylim(0, len(PYRAMID))
+        for side in ("left", "bottom"):
+            ax.spines[side].set_visible(False)
+        ax.set_title(f"anchor: {anchor}", loc="left", fontsize=7, weight="bold")
+    fig.legend(
+        handles=[
+            Patch(
+                fc=reached_colour,
+                ec="#999999",
+                lw=0.5,
+                label="reached: passes, and so does every rank nearer the anchor",
+            ),
+        ]
+        # Listed only when some cell has it: a key entry with no mark is noise.
+        + [
+            Patch(
+                fc=passed_colour,
+                ec="#999999",
+                lw=0.5,
+                label="passes, but a nearer rank does not",
+            )
+        ]
+        * any(r["passes"] and not r["reached"] for r in rows)
+        + [Patch(fc="white", ec="#999999", lw=0.5, label="does not pass")],
+        loc="lower center",
+        ncol=3,
+        bbox_to_anchor=(0.5, 1.0),
+        frameon=False,
+    )
+    fig.suptitle(
+        f"A relative is reached when it shares at least {FOLD}\u00d7 more k-mers with the anchor than an organism "
+        f"from another kingdom does,\nand at least {MIN_SHARED} sampled k-mers. "
+        "Number in each cell: how many times more. 42 bits per k-mer; scaled "
+        + (
+            str(SCALED["hp"])
+            if SCALED["hp"] == SCALED["DNA"]
+            else f"{SCALED['hp']} (DNA: {SCALED['DNA']})"
+        ),
+        y=1.09,
+    )
+    pf.save(fig, str(RES / "reach_by_rank"))
 
 
 def figure_pyramid(cont, path, floors):

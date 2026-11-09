@@ -1,0 +1,73 @@
+anchor	alphabet	k	relative	rank	containment	background	fold_over_background	shared_hashes	passes	reached
+Mus musculus	DNA	21	Mus caroli	subgenus	0.642178	0.000190749	3367	21355	True	True
+Mus musculus	DNA	21	Rattus norvegicus	subfamily	0.21867	0.000190749	1146	9679	True	True
+Mus musculus	DNA	21	Cavia porcellus	order	0.0544351	0.000190749	285.4	1552	True	True
+Mus musculus	DNA	21	Rhinolophus ferrumequinum	class	0.0452407	0.000190749	237.2	1904	True	True
+Mus musculus	DNA	21	Danio rerio	subphylum	0.00207334	0.000190749	10.87	86	False	False
+Mus musculus	DNA	21	Drosophila melanogaster	kingdom	0.000993284	0.000190749	5.207	21	False	False
+Mus musculus	protein	10	Mus caroli	subgenus	0.820624	0.00551401	148.8	43864	True	True
+Mus musculus	protein	10	Rattus norvegicus	subfamily	0.609631	0.00551401	110.6	32458	True	True
+Mus musculus	protein	10	Cavia porcellus	order	0.406344	0.00551401	73.69	18730	True	True
+Mus musculus	protein	10	Rhinolophus ferrumequinum	class	0.389474	0.00551401	70.63	19203	True	True
+Mus musculus	protein	10	Danio rerio	subphylum	0.0964043	0.00551401	17.48	5153	True	True
+Mus musculus	protein	10	Drosophila melanogaster	kingdom	0.0139828	0.00551401	2.536	494	False	False
+Mus musculus	dayhoff	16	Mus caroli	subgenus	0.842319	0.0133179	63.25	43259	True	True
+Mus musculus	dayhoff	16	Rattus norvegicus	subfamily	0.661137	0.0133179	49.64	33954	True	True
+Mus musculus	dayhoff	16	Cavia porcellus	order	0.479329	0.0133179	35.99	21299	True	True
+Mus musculus	dayhoff	16	Rhinolophus ferrumequinum	class	0.458564	0.0133179	34.43	21868	True	True
+Mus musculus	dayhoff	16	Danio rerio	subphylum	0.143895	0.0133179	10.8	7390	True	True
+Mus musculus	dayhoff	16	Drosophila melanogaster	kingdom	0.029245	0.0133179	2.196	1016	False	False
+Mus musculus	hp	42	Mus caroli	subgenus	0.74942	0.00156998	477.3	38455	True	True
+Mus musculus	hp	42	Rattus norvegicus	subfamily	0.520835	0.00156998	331.7	26710	True	True
+Mus musculus	hp	42	Cavia porcellus	order	0.324575	0.00156998	206.7	14355	True	True
+Mus musculus	hp	42	Rhinolophus ferrumequinum	class	0.30971	0.00156998	197.3	14592	True	True
+Mus musculus	hp	42	Danio rerio	subphylum	0.0677996	0.00156998	43.19	3479	True	True
+Mus musculus	hp	42	Drosophila melanogaster	kingdom	0.00704605	0.00156998	4.488	235	False	False
+Mytilus edulis	DNA	21	Mytilus coruscus	genus	0.153978	0.00022254	691.9	9243	True	True
+Mytilus edulis	DNA	21	Magallana gigas	subclass	0.000933354	0.00022254	4.194	37	False	False
+Mytilus edulis	DNA	21	Solemya velum	class	0.0012132	0.00022254	5.452	34	False	False
+Mytilus edulis	DNA	21	Octopus sinensis	phylum	0.00110312	0.00022254	4.957	29	False	False
+Mytilus edulis	DNA	21	Capitella teleta	kingdom	0.000339397	0.00022254	1.525	10	False	False
+Mytilus edulis	protein	10	Mytilus coruscus	genus	0.299721	0.00415439	72.15	29313	True	True
+Mytilus edulis	protein	10	Magallana gigas	subclass	0.0361235	0.00415439	8.695	2336	False	False
+Mytilus edulis	protein	10	Solemya velum	class	0.0395497	0.00415439	9.52	1813	False	False
+Mytilus edulis	protein	10	Octopus sinensis	phylum	0.0268189	0.00415439	6.456	1153	False	False
+Mytilus edulis	protein	10	Capitella teleta	kingdom	0.0205621	0.00415439	4.949	1006	False	False
+Mytilus edulis	dayhoff	16	Mytilus coruscus	genus	0.331538	0.0117783	28.15	32007	True	True
+Mytilus edulis	dayhoff	16	Magallana gigas	subclass	0.0544637	0.0117783	4.624	3442	False	False
+Mytilus edulis	dayhoff	16	Solemya velum	class	0.0603897	0.0117783	5.127	2706	False	False
+Mytilus edulis	dayhoff	16	Octopus sinensis	phylum	0.0431234	0.0117783	3.661	1823	False	False
+Mytilus edulis	dayhoff	16	Capitella teleta	kingdom	0.0336498	0.0117783	2.857	1609	False	False
+Mytilus edulis	hp	42	Mytilus coruscus	genus	0.226365	0.00149148	151.8	22162	True	True
+Mytilus edulis	hp	42	Magallana gigas	subclass	0.0187709	0.00149148	12.59	1175	True	True
+Mytilus edulis	hp	42	Solemya velum	class	0.0200255	0.00149148	13.43	894	True	True
+Mytilus edulis	hp	42	Octopus sinensis	phylum	0.0126612	0.00149148	8.489	534	False	False
+Mytilus edulis	hp	42	Capitella teleta	kingdom	0.0100057	0.00149148	6.709	459	False	False
+Escherichia coli K-12	DNA	21	Escherichia coli O157:H7	species	0.65144	0	inf	2624	True	True
+Escherichia coli K-12	DNA	21	Escherichia fergusonii	genus	0.228898	0	inf	922	True	True
+Escherichia coli K-12	DNA	21	Salmonella enterica	family	0.0322741	0	inf	130	True	True
+Escherichia coli K-12	DNA	21	Yersinia pestis	order	0.00443582	0	inf	16	False	False
+Escherichia coli K-12	DNA	21	Pseudomonas aeruginosa	class	0.000496524	0	inf	2	False	False
+Escherichia coli K-12	DNA	21	Caulobacter vibrioides	phylum	0	0	inf	0	False	False
+Escherichia coli K-12	DNA	21	Bacteroides thetaiotaomicron	kingdom	0	0	inf	0	False	False
+Escherichia coli K-12	protein	10	Escherichia coli O157:H7	species	0.830307	0.00361757	229.5	5304	True	True
+Escherichia coli K-12	protein	10	Escherichia fergusonii	genus	0.559173	0.00361757	154.6	3572	True	True
+Escherichia coli K-12	protein	10	Salmonella enterica	family	0.35958	0.00361757	99.4	2297	True	True
+Escherichia coli K-12	protein	10	Yersinia pestis	order	0.118532	0.00361757	32.77	701	True	True
+Escherichia coli K-12	protein	10	Pseudomonas aeruginosa	class	0.0195679	0.00361757	5.409	125	False	False
+Escherichia coli K-12	protein	10	Caulobacter vibrioides	phylum	0.00475268	0.00361757	1.314	27	False	False
+Escherichia coli K-12	protein	10	Bacteroides thetaiotaomicron	kingdom	0.00297433	0.00361757	0.8222	19	False	False
+Escherichia coli K-12	dayhoff	16	Escherichia coli O157:H7	species	0.842072	0.00612423	137.5	5300	True	True
+Escherichia coli K-12	dayhoff	16	Escherichia fergusonii	genus	0.626787	0.00612423	102.3	3945	True	True
+Escherichia coli K-12	dayhoff	16	Salmonella enterica	family	0.430887	0.00612423	70.36	2712	True	True
+Escherichia coli K-12	dayhoff	16	Yersinia pestis	order	0.172052	0.00612423	28.09	1001	True	True
+Escherichia coli K-12	dayhoff	16	Pseudomonas aeruginosa	class	0.0301875	0.00612423	4.929	190	False	False
+Escherichia coli K-12	dayhoff	16	Caulobacter vibrioides	phylum	0.00816114	0.00612423	1.333	47	False	False
+Escherichia coli K-12	dayhoff	16	Bacteroides thetaiotaomicron	kingdom	0.00667302	0.00612423	1.09	42	False	False
+Escherichia coli K-12	hp	42	Escherichia coli O157:H7	species	0.797718	0.000745712	1070	4685	True	True
+Escherichia coli K-12	hp	42	Escherichia fergusonii	genus	0.541801	0.000745712	726.6	3182	True	True
+Escherichia coli K-12	hp	42	Salmonella enterica	family	0.32096	0.000745712	430.4	1885	True	True
+Escherichia coli K-12	hp	42	Yersinia pestis	order	0.0849613	0.000745712	113.9	461	True	True
+Escherichia coli K-12	hp	42	Pseudomonas aeruginosa	class	0.00800272	0.000745712	10.73	47	False	False
+Escherichia coli K-12	hp	42	Caulobacter vibrioides	phylum	0	0.000745712	0	0	False	False
+Escherichia coli K-12	hp	42	Bacteroides thetaiotaomicron	kingdom	0.000340541	0.000745712	0.4567	2	False	False
