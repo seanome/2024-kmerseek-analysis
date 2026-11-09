@@ -96,7 +96,9 @@ on the domains each tool found, and kmerseek finds fewer, likely easier ones.
 
 kmerseek loses on recall (0.09 times), Fmax (0.12) and family-level Fmax (0.10). By
 query-target identity it is near zero below 40% and reaches 0.38 times MMseqs2 only at
-60-100%. So it finds close relatives and short repeated domains, not remote ones.
+60-100%. So it finds fewer of the Pfam domains transferred from close relatives, and short
+repeats, and almost none from remote ones. This is a Pfam-transfer recall gap, not a
+direct test of sensitivity.
 
 Not checked: why MMseqs2 and phmmer do so badly on C2H2 zinc fingers. One possible reason
 is that one alignment spans many repeats and so matches no single 22-residue domain well
@@ -119,8 +121,8 @@ still accepts. A submission would need:
 3. Output as OrthoXML or tab-separated UniProt accession pairs, submitted through OpenEBench.
 
 The docs do not say whether a subset of species or proteins is accepted, or how partial
-coverage would change the scores. Given an Fmax of 1/5 of MMseqs2 at finding domains, an
-orthology submission would very likely land well below the published methods.
+coverage would change the scores. kmerseek has not been tested on orthology; its Pfam domain
+Fmax of 1/5 of MMseqs2 does not by itself say how an orthology submission would score.
 
 ## Rebuild
 
