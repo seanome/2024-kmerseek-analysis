@@ -2,6 +2,7 @@
 # Human side of the DE-to-DE test (design/de2de/README.md). One task per run of
 # design/de2de/human_runs.tsv: frame the run's reads with GENCODE protein 10-mers, then count every
 # Botryllus up or down k-mer in them. Writes $S/de2de/human/<run>.counts.tsv.gz.
+# W=$S/de2de_swap (sbatch --export=ALL,W=...) counts the label-swap k-mers instead.
 # First task merges the Botryllus k-mer lists into $S/de2de/query_codes.tsv; the others wait for it.
 # Resources: framing a human run plus sketching took at most 1 h 28 min and 9.0 GB
 # (sra_hp24_27_sketch.sbatch, GSE99963 and GSE144304). GSE120862 runs are about 2 GB gzipped,
@@ -18,7 +19,7 @@
 set -euo pipefail
 S=/scratch/users/olgabot/nb361-pec
 R=/scratch/users/olgabot/2024-kmerseek-analysis-nb361/analysis/pec-domen2026-splash
-W=$S/de2de
+W=${W:-$S/de2de}
 PT=$R/pec-tools/target/release/pec-tools
 Q=$W/query_codes.tsv
 if [ ! -s $Q ]; then

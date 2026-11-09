@@ -1,7 +1,10 @@
 #!/usr/bin/env python3
 """Do Botryllus PEC k-mers move the same way in human muscle? (notebook 361, design/de2de/README.md)
 
-Usage: de2de_test.py <de2de dir> <design/human dir> <human_runs.tsv> <out dir>
+Usage: de2de_test.py <de2de dir> <design/human dir> <human_runs.tsv> <out dir> [<botryllus set,...>]
+
+The optional last argument names the Botryllus sets under <de2de dir>/botryllus; the default is the
+three real contrasts. The label-swap control passes the 7 swap sets (young_13_49d__pairflip1, ...).
 
 <de2de dir> holds botryllus/<contrast>/{up,down}.codes.tsv and human/<run>.counts.tsv.gz.
 Writes <out dir>/de2de_results.tsv (one row per Botryllus contrast, setting and human contrast),
@@ -21,7 +24,7 @@ import polars as pl
 
 root, design_dir, runs_tsv, out = Path(sys.argv[1]), Path(sys.argv[2]), sys.argv[3], Path(sys.argv[4])
 out.mkdir(parents=True, exist_ok=True)
-BOT = ["young_13_49d", "young_132d", "old_41_93d"]
+BOT = sys.argv[5].split(",") if len(sys.argv) > 5 else ["young_13_49d", "young_132d", "old_41_93d"]
 SETTINGS = [("protein", 7), ("dayhoff", 13), ("hp", 25)]
 HUMAN = {"GSE99963": ("gse99963_fig4_post_vs_pre", True), "GSE144304": ("gse144304_fig4_fit_vs_young", False),
          "GSE120862": ("gse120862_fig4_trained_vs_untrained", True)}

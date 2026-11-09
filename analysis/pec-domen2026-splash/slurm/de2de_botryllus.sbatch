@@ -3,6 +3,8 @@
 # holding KaMRaT + DESeq2 p < 0.05 k-mers, split by direction, framed with Botryllus protein
 # 10-mers, then the distinct protein k7, Dayhoff k13 and HP k25 k-mers of each direction.
 # Writes $S/de2de/botryllus/<contrast>/{up,down}.codes.tsv.
+# With SWAP=1 (sbatch --export=ALL,SWAP=1 --array=0-6), the same for the 7 label-swap read sets
+# ($S/label_swap/<contrast>/pairflipN), into $S/de2de_swap/botryllus/<contrast>__pairflipN/.
 # Resources: held reads are at most 1,015,040 (young 132 d); best-frame on 64 Botryllus runs of
 # ~11 M read pairs took minutes, so 1 M reads is small. 16 GB, 2 h.
 #SBATCH --job-name=nb361-de2de-bot
@@ -20,10 +22,18 @@ R=/scratch/users/olgabot/2024-kmerseek-analysis-nb361/analysis/pec-domen2026-spl
 export PATH=$S/env/bin:$PATH
 (cd $R/pec-tools && cargo build --release 2>&1 | tail -1)
 PT=$R/pec-tools/target/release/pec-tools
-contrasts=(young_13_49d young_132d old_41_93d)
-c=${contrasts[$SLURM_ARRAY_TASK_ID]}
-held=$S/contrasts/$c/search_kamrat_deseq2_p05_reads/held.reads.tsv
-O=$S/de2de/botryllus/$c
+if [ -n "${SWAP:-}" ]; then
+  sets=(young_13_49d/pairflip1 young_13_49d/pairflip2 young_13_49d/pairflip3 young_132d/pairflip1
+        young_132d/pairflip2 young_132d/pairflip3 old_41_93d/pairflip1)
+  c=${sets[$SLURM_ARRAY_TASK_ID]}
+  held=$S/label_swap/$c/search_kamrat_deseq2_p05_reads/held.reads.tsv
+  O=$S/de2de_swap/botryllus/${c/\//__}
+else
+  contrasts=(young_13_49d young_132d old_41_93d)
+  c=${contrasts[$SLURM_ARRAY_TASK_ID]}
+  held=$S/contrasts/$c/search_kamrat_deseq2_p05_reads/held.reads.tsv
+  O=$S/de2de/botryllus/$c
+fi
 mkdir -p $O
 for d in up down; do
   # FASTQ with the read as its own quality line: best-frame reads only the sequence line
