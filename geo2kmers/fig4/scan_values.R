@@ -72,13 +72,13 @@ if (length(arguments) == 7) {
   path <- gzfile(arguments[6], "w")
   write.table(probes[fitted, ], path, sep = "\t", quote = FALSE, row.names = FALSE)
   close(path)
-  sets <- apply(values, 2, function(v) tapply(ifelse(v == 0, NA, v), first$probe_set, mean, trim = 0.1, na.rm = TRUE))
+  without <- apply(values, 2, function(v) tapply(ifelse(v == 0, NA, v), first$probe_set, mean, trim = 0.1, na.rm = TRUE))
   path <- gzfile(arguments[7], "w")
   # A probe set whose probes are all 0 in an array has no value there; hp_value_table.py drops its k-mers
-  write.table(data.frame(probe_set = rownames(sets), round(sets, 4), check.names = FALSE), path, sep = "\t",
+  write.table(data.frame(probe_set = rownames(without), round(without, 4), check.names = FALSE), path, sep = "\t",
               quote = FALSE, row.names = FALSE, na = "nan")
   close(path)
-  cat(sum(!fitted), "probes are 0 in some array and left out;", sum(!is.finite(sets)), "probe set values missing\n")
+  cat(sum(!fitted), "probes are 0 in some array and left out;", sum(!is.finite(without)), "probe set values missing\n")
 }
 
 if (length(arguments) >= 5 && arguments[5] == "check") {
