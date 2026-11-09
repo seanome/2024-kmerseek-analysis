@@ -112,7 +112,16 @@ species, median over species, median over settings. Two kinds of random set:
 
 It also scores domains of 16-30 residues with the C2H2 proteins taken out. Before any
 random set is scored, it checks that it reproduces the published Fmax for C2H2 and 16-30 aa.
-On a test with 5 species and 2 settings, all 30 values matched.
+On a test with 5 species and 2 settings, all 30 values matched. It scores 200 random sets
+of each kind, enough to show a p of 0.005, over the 119 settings in the figure
+([settings_in_figure.txt](settings_in_figure.txt); 115 of them have calls in 5 or more
+species).
+
+The first Sherlock run (job 51664847, 2026-11-09) sat for its full 2 hours and wrote
+nothing. It scored all 222 settings in the call folder rather than the figure's 119.
+Its worker processes were started by Linux's default `fork` after polars had started,
+which can deadlock. The script now starts them with `spawn`, saves each block of results
+as it finishes, and continues from the saved blocks when run again.
 
 Decision rule, written before the run:
 

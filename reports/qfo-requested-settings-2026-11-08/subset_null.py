@@ -25,23 +25,43 @@ Decision rule, written before the first run (2026-11-09):
 Run on Sherlock (compute node), from the repo root:
   python reports/qfo-requested-settings-2026-11-08/subset_null.py \
       --results <run>/results --calls-dir <run>/results/calls <run>/results-hp-k35-k40/calls \
-      --draws 1000 --cpus 16 --out <dir>
+      --settings-file reports/qfo-requested-settings-2026-11-08/settings_in_figure.txt \
+      --draws 200 --cpus 32 --out <dir>
+
+Each (species, block of cuts) is written to <out>/parts as it finishes, and a rerun with the
+same arguments skips the blocks already there, so a job that hits its time limit loses
+nothing: submit it again.
 """
+
 import argparse
+import json
+import multiprocessing
 import sys
+import time
 from functools import partial
-from multiprocessing import Pool
 from pathlib import Path
 
 import numpy as np
 import polars as pl
 
 HERE = Path(__file__).parent
-sys.path.insert(0, str(HERE.parents[1] / "nextflow-runs" / "qfo-pfam-region-benchmark" / "bin"))
+sys.path.insert(
+    0, str(HERE.parents[1] / "nextflow-runs" / "qfo-pfam-region-benchmark" / "bin")
+)
 import cafa_metrics as cm  # noqa: E402
 import evaluate_domain_calls as edc  # noqa: E402
 
-NINE = ["arabidopsis", "chicken", "ciona", "ecoli", "fly", "mouse", "worm", "yeast", "zebrafish"]
+NINE = [
+    "arabidopsis",
+    "chicken",
+    "ciona",
+    "ecoli",
+    "fly",
+    "mouse",
+    "worm",
+    "yeast",
+    "zebrafish",
+]
 MMSEQS2 = "pfam.mmseqs2_seqseq.s7.{species}.calls.parquet"
 MIN_SPECIES = 5
 
@@ -54,7 +74,9 @@ def load_truth(results: Path) -> pl.DataFrame:
     return edc.attach_feature_length(truth)
 
 
-def cuts(truth: pl.DataFrame, n_draws: int, seed: int) -> dict[str, tuple[pl.Series, bool]]:
+def cuts(
+    truth: pl.DataFrame, n_draws: int, seed: int
+) -> dict[str, tuple[pl.Series, bool]]:
     """Each cut is (in-cut mask over truth rows, instance-level?)."""
     c2h2 = pl.col("stratum_geneset") == "zinc_finger_c2h2"
     short = pl.col("stratum_feature_length_bin") == "16-30"
@@ -67,19 +89,29 @@ def cuts(truth: pl.DataFrame, n_draws: int, seed: int) -> dict[str, tuple[pl.Ser
         "observed_c2h2": (truth.select(c2h2.fill_null(False)).to_series(), False),
         "observed_16_30": (truth.select(short.fill_null(False)).to_series(), True),
         "observed_16_30_no_c2h2": (
-            truth.select((short & ~pl.col("accession").is_in(c2h2_acc)).fill_null(False)).to_series(), True),
+            truth.select(
+                (short & ~pl.col("accession").is_in(c2h2_acc)).fill_null(False)
+            ).to_series(),
+            True,
+        ),
     }
     for name, pool in (("any", any_pool), ("short", short_pool)):
         for i in range(n_draws):
             pick = rng.choice(pool, size=min(n, len(pool)), replace=False).tolist()
-            out[f"random_{name}_{i}"] = (truth.select(pl.col("accession").is_in(pick)).to_series(), False)
-    print(f"C2H2 proteins {n}; random_any pool {len(any_pool)}; random_short pool {len(short_pool)}",
-          file=sys.stderr)
+            out[f"random_{name}_{i}"] = (
+                truth.select(pl.col("accession").is_in(pick)).to_series(),
+                False,
+            )
+    print(
+        f"C2H2 proteins {n}; random_any pool {len(any_pool)}; random_short pool {len(short_pool)}",
+        file=sys.stderr,
+    )
     return out
 
 
-def score_species(species: str, truth: pl.DataFrame, cut_items: list, call_files: dict,
-                  results: Path) -> list[dict]:
+def score_species(
+    species: str, truth: pl.DataFrame, cut_items: list, call_files: dict, results: Path
+) -> list[dict]:
     """Fmax and call count for every (cut, search) in one species."""
     ic = cm.information_content(truth)
     rows = []
@@ -90,14 +122,23 @@ def score_species(species: str, truth: pl.DataFrame, cut_items: list, call_files
         for search, c in calls.items():
             t_sub, c_sub = edc.subset(t, c, "all", "cut", True, axes)
             pc = cm.protein_centric_curve(c_sub, t_sub, ic)
-            rows.append({"cut": cut, "species": species, "search": search,
-                         "fmax": cm.cafa_scalars(pc)["fmax"], "n_calls": c_sub.height})
+            rows.append(
+                {
+                    "cut": cut,
+                    "species": species,
+                    "search": search,
+                    "fmax": cm.cafa_scalars(pc)["fmax"],
+                    "n_calls": c_sub.height,
+                }
+            )
     return rows
 
 
 def summarise(scores: pl.DataFrame) -> pl.DataFrame:
     """other_metrics.py's typical ratio, per cut."""
-    mm = scores.filter(pl.col("search") == "mmseqs2").select("cut", "species", pl.col("fmax").alias("mm"))
+    mm = scores.filter(pl.col("search") == "mmseqs2").select(
+        "cut", "species", pl.col("fmax").alias("mm")
+    )
     return (
         scores.filter(pl.col("search") != "mmseqs2", pl.col("n_calls") > 0)
         .join(mm, on=["cut", "species"])
@@ -107,25 +148,72 @@ def summarise(scores: pl.DataFrame) -> pl.DataFrame:
         .agg(pl.col("ratio").median(), pl.len().alias("n_species"))
         .filter(pl.col("n_species") >= MIN_SPECIES)
         .group_by("cut")
-        .agg(pl.col("ratio").median().alias("typical_ratio"), pl.len().alias("n_settings"))
+        .agg(
+            pl.col("ratio").median().alias("typical_ratio"),
+            pl.len().alias("n_settings"),
+        )
         .sort("cut")
     )
 
 
 def main():
-    p = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
+    p = argparse.ArgumentParser(
+        description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter
+    )
     p.add_argument("--results", type=Path, required=True)
     p.add_argument("--calls-dir", type=Path, nargs="+", required=True)
-    p.add_argument("--published-metrics", type=Path, nargs="+", default=None,
-                   help="metrics dirs to check the observed cuts against (default: <calls-dir>/../metrics)")
+    p.add_argument(
+        "--published-metrics",
+        type=Path,
+        nargs="+",
+        default=None,
+        help="metrics dirs to check the observed cuts against (default: <calls-dir>/../metrics)",
+    )
     p.add_argument("--species", nargs="+", default=NINE)
-    p.add_argument("--settings", nargs="*", default=None, help="limit kmerseek settings (for a quick test)")
-    p.add_argument("--draws", type=int, default=1000)
+    p.add_argument(
+        "--settings",
+        nargs="*",
+        default=None,
+        help="limit kmerseek settings (for a quick test)",
+    )
+    p.add_argument(
+        "--settings-file",
+        type=Path,
+        default=None,
+        help="one setting per line, e.g. the 119 in the figure (settings_in_figure.txt)",
+    )
+    p.add_argument(
+        "--draws",
+        type=int,
+        default=200,
+        help="random sets per pool; 200 resolves p down to 0.005",
+    )
+    p.add_argument("--block", type=int, default=25, help="cuts per saved block")
     p.add_argument("--seed", type=int, default=20261109)
     p.add_argument("--cpus", type=int, default=1)
     p.add_argument("--out", type=Path, required=True)
     a = p.parse_args()
     a.out.mkdir(parents=True, exist_ok=True)
+
+    if a.settings_file:
+        a.settings = [
+            x.strip() for x in a.settings_file.read_text().split() if x.strip()
+        ]
+    params = {
+        "draws": a.draws,
+        "seed": a.seed,
+        "block": a.block,
+        "species": a.species,
+        "settings": sorted(a.settings) if a.settings else None,
+    }
+    pfile = a.out / "params.json"
+    if pfile.exists() and json.loads(pfile.read_text()) != params:
+        raise SystemExit(
+            f"{a.out} holds parts from different arguments; use a new --out"
+        )
+    pfile.write_text(json.dumps(params, indent=1))
+    parts = a.out / "parts"
+    parts.mkdir(exist_ok=True)
 
     truth = load_truth(a.results)
     call_files = {}
@@ -136,17 +224,44 @@ def main():
                 setting = f.name.split(".")[2].removesuffix("_lcFalse")
                 if a.settings is None or setting in a.settings:
                     files[setting] = f
-        mm = next(d / MMSEQS2.format(species=sp) for d in a.calls_dir if (d / MMSEQS2.format(species=sp)).exists())
+        mm = next(
+            d / MMSEQS2.format(species=sp)
+            for d in a.calls_dir
+            if (d / MMSEQS2.format(species=sp)).exists()
+        )
         files["mmseqs2"] = mm
         call_files[sp] = files
         print(f"{sp}: {len(files) - 1} kmerseek settings", file=sys.stderr)
 
     items = list(cuts(truth, a.draws, a.seed).items())
-    chunks = [(sp, items[i::a.cpus]) for sp in a.species for i in range(a.cpus)]
-    work = partial(_run_chunk, truth=truth, call_files=call_files, results=a.results)
-    with Pool(a.cpus) as pool:
-        rows = [r for part in pool.imap_unordered(work, chunks) for r in part]
-    scores = pl.DataFrame(rows)
+    blocks = [
+        (sp, b, items[i : i + a.block])
+        for sp in a.species
+        for b, i in enumerate(range(0, len(items), a.block))
+    ]
+    todo = [
+        blk for blk in blocks if not (parts / f"{blk[0]}_{blk[1]:04d}.parquet").exists()
+    ]
+    print(
+        f"{len(blocks)} blocks, {len(blocks) - len(todo)} already done, {len(todo)} to run",
+        file=sys.stderr,
+    )
+    work = partial(
+        _run_block, truth=truth, call_files=call_files, results=a.results, parts=parts
+    )
+    start = time.time()
+    # spawn, not Linux's default fork: forking after polars has started its thread pool can
+    # deadlock, and the first Sherlock run (job 51664847) sat for its full 2 h with no output.
+    with multiprocessing.get_context("spawn").Pool(a.cpus) as pool:
+        for n, name in enumerate(pool.imap_unordered(work, todo), 1):
+            if n % 10 == 0 or n == len(todo):
+                el = time.time() - start
+                print(
+                    f"{n}/{len(todo)} blocks in {el / 60:.1f} min, about {el / n * (len(todo) - n) / 60:.0f} min left",
+                    file=sys.stderr,
+                    flush=True,
+                )
+    scores = pl.concat([pl.read_parquet(f) for f in sorted(parts.glob("*.parquet"))])
     scores.write_parquet(a.out / "subset_null_scores.parquet")
 
     check_published(scores, a)
@@ -155,17 +270,22 @@ def main():
     report(summary, a.out)
 
 
-def _run_chunk(chunk, truth, call_files, results):
-    species, cut_items = chunk
-    return score_species(species, truth, cut_items, call_files, results)
+def _run_block(block, truth, call_files, results, parts):
+    species, b, cut_items = block
+    pl.DataFrame(
+        score_species(species, truth, cut_items, call_files, results)
+    ).write_parquet(parts / f"{species}_{b:04d}.parquet")
+    return f"{species}_{b:04d}"
 
 
 def check_published(scores: pl.DataFrame, a) -> None:
     """The observed cuts must give the Fmax the pipeline published, or the null means nothing."""
     dirs = a.published_metrics or [d.parent / "metrics" for d in a.calls_dir]
     want = []
-    for cut, axis, stratum in (("observed_c2h2", "geneset", "zinc_finger_c2h2"),
-                               ("observed_16_30", "feature_length_bin", "16-30")):
+    for cut, axis, stratum in (
+        ("observed_c2h2", "geneset", "zinc_finger_c2h2"),
+        ("observed_16_30", "feature_length_bin", "16-30"),
+    ):
         for d in dirs:
             for f in d.glob("pfam.*.metrics.parquet"):
                 parts = f.name.split(".")
@@ -179,29 +299,51 @@ def check_published(scores: pl.DataFrame, a) -> None:
                     search = "mmseqs2"
                 else:
                     continue
-                m = pl.read_parquet(f).filter(pl.col("split") == "all", pl.col("stratum_axis") == axis,
-                                              pl.col("stratum") == stratum)
+                m = pl.read_parquet(f).filter(
+                    pl.col("split") == "all",
+                    pl.col("stratum_axis") == axis,
+                    pl.col("stratum") == stratum,
+                )
                 if m.height:
-                    want.append({"cut": cut, "species": parts[3], "search": search,
-                                 "published": m["fmax"][0]})
+                    want.append(
+                        {
+                            "cut": cut,
+                            "species": parts[3],
+                            "search": search,
+                            "published": m["fmax"][0],
+                        }
+                    )
     j = scores.join(pl.DataFrame(want), on=["cut", "species", "search"])
     bad = j.filter((pl.col("fmax") - pl.col("published")).abs() > 1e-6)
-    print(f"published check: {j.height} (cut, species, search) compared, {bad.height} differ", file=sys.stderr)
+    print(
+        f"published check: {j.height} (cut, species, search) compared, {bad.height} differ",
+        file=sys.stderr,
+    )
     j.write_csv(a.out / "published_check.csv")
     if j.height == 0 or bad.height:
         print(bad.head(20), file=sys.stderr)
-        raise SystemExit("observed cuts do not reproduce the published Fmax; the null is not comparable")
+        raise SystemExit(
+            "observed cuts do not reproduce the published Fmax; the null is not comparable"
+        )
 
 
 def report(summary: pl.DataFrame, out: Path) -> None:
-    obs = dict(summary.filter(pl.col("cut").str.starts_with("observed")).select("cut", "typical_ratio").iter_rows())
+    obs = dict(
+        summary.filter(pl.col("cut").str.starts_with("observed"))
+        .select("cut", "typical_ratio")
+        .iter_rows()
+    )
     lines = [f"{k}: typical ratio {v:.3f}" for k, v in sorted(obs.items())]
     for name in ("any", "short"):
-        null = summary.filter(pl.col("cut").str.starts_with(f"random_{name}_"))["typical_ratio"].to_numpy()
+        null = summary.filter(pl.col("cut").str.starts_with(f"random_{name}_"))[
+            "typical_ratio"
+        ].to_numpy()
         x = obs["observed_c2h2"]
         p = (1 + (null >= x).sum()) / (1 + len(null))
-        lines.append(f"random_{name}: {len(null)} draws, median {np.median(null):.3f}, "
-                     f"95th {np.quantile(null, 0.95):.3f}, max {null.max():.3f}; C2H2 p = {p:.4f}")
+        lines.append(
+            f"random_{name}: {len(null)} draws, median {np.median(null):.3f}, "
+            f"95th {np.quantile(null, 0.95):.3f}, max {null.max():.3f}; C2H2 p = {p:.4f}"
+        )
     (out / "subset_null_verdict.txt").write_text("\n".join(lines) + "\n")
     print("\n".join(lines))
 
