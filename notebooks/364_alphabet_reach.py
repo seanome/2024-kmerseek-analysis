@@ -1106,10 +1106,14 @@ SUB_TO_MAIN = {
     "subphylum": "phylum",
 }
 PATHS_BACTERIUM = "Escherichia coli K-12"
-# The settings drawn in the reach-by-rank figures, one figure per bit level.
-BIT_SETS = {
-    42: PYRAMID,
-    30: [("DNA", 15), ("protein", 7), ("dayhoff", 12), ("hp", 30)],
+# The settings drawn in the reach-by-rank figures, one figure each: (settings, how k was matched).
+REACH_SETS = {
+    "42bits": (PYRAMID, "Every k gives 42 bits per k-mer"),
+    "dna21_protein7": (
+        [("DNA", 21), ("protein", 7), ("dayhoff", 12), ("hp", 30)],
+        "DNA k=21 spans the same 7 codons as protein k=7; dayhoff k=12 and hp k=30 "
+        "match protein k=7 in bits (about 30 per k-mer)",
+    ),
 }
 FOLD = (
     10  # a relative must share at least 10 times more than the other-kingdom background
@@ -1135,8 +1139,8 @@ def reach_fold_table(cont, path):
             ),
             key=lambda r: (rank_key(r), r["relative"]),
         )
-        for bits, alphabet, k in (
-            (b, a, k) for b, settings in BIT_SETS.items() for a, k in settings
+        for set_name, alphabet, k in (
+            (n, a, k) for n, (settings, _) in REACH_SETS.items() for a, k in settings
         ):
             sel = {
                 c["relative"]: c
@@ -1159,7 +1163,7 @@ def reach_fold_table(cont, path):
                 rows.append(
                     {
                         "anchor": anchor,
-                        "bits": bits,
+                        "setting_set": set_name,
                         "alphabet": alphabet,
                         "k": k,
                         "relative": r["relative"],
@@ -1177,14 +1181,14 @@ def reach_fold_table(cont, path):
 
 
 def figure_reach_bars(cont, path):
-    """One reach-by-rank figure per bit level in BIT_SETS."""
+    """One reach-by-rank figure per set of settings in REACH_SETS."""
     rows = reach_fold_table(cont, path)
-    for bits, settings in BIT_SETS.items():
+    for set_name, (settings, matched) in REACH_SETS.items():
         draw_reach_bars(
-            [r for r in rows if r["bits"] == bits],
+            [r for r in rows if r["setting_set"] == set_name],
             settings,
-            bits,
-            "reach_by_rank_uniprot" + ("" if bits == 42 else f"_{bits}bits"),
+            matched,
+            "reach_by_rank_uniprot" + ("" if set_name == "42bits" else f"_{set_name}"),
         )
 
 
@@ -1222,7 +1226,7 @@ def reach_conclusion(rows, settings):
     return line + " Every other row stops at the same rank as protein."
 
 
-def draw_reach_bars(rows, settings, bits, name):
+def draw_reach_bars(rows, settings, matched, name):
     """Which ranks each alphabet reaches: one panel per anchor, one row per alphabet,
     one column per main rank. Filled cell: passes the fold rule.
     """
@@ -1395,8 +1399,8 @@ def draw_reach_bars(rows, settings, bits, name):
     fig.suptitle(
         f"A relative is reached when it shares at least {FOLD}\u00d7 more k-mers with the anchor than an organism "
         f"from another kingdom does, and at least {MIN_SHARED} sampled k-mers.\n"
-        f"Number in each cell: how many times more. Every k gives about {bits} bits per k-mer; "
-        f"{sampled} k-mers sampled.\n"
+        f"Number in each cell: how many times more; {sampled} k-mers sampled.\n"
+        f"{matched}.\n"
         "Protein, dayhoff and hp from UniProt reference proteomes; DNA from the coding sequences of the same genes.\n"
         "dayhoff letters: AGPST C DENQ FWY HKR ILMV; hp letters: AFGILMPVWY (hydrophobic), CDEHKNQRST (polar).\n"
         "Each column is one main rank, the same in every panel. Each relative sits under the lowest main rank it "
