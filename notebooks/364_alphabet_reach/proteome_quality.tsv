@@ -1,0 +1,26 @@
+species	uniprot_proteome_id	busco_lineage	busco_complete_pct	busco_fragmented_pct	busco_missing_pct	cpd_status	assembly_level	retrieved
+Mus musculus	UP000000589	glires_odb10	99.8	0.0	0.2	Close to standard (high value)	full	2026-11-09
+Mus caroli	UP000515126	glires_odb10 (2021-02-19)	98.9	0.6	0.5	Standard	full	2026-11-09
+Rattus norvegicus	UP000002494	glires_odb10	95.9	0.3	3.8	Close to standard (high value)	full	2026-11-09
+Cavia porcellus	UP000005447	glires_odb10	92.6	1.6	5.8	Close to standard (low value)	full	2026-11-09
+Rhinolophus ferrumequinum	UP000472240	laurasiatheria_odb10	97.3	0.7	2.1	Standard	full	2026-11-09
+Danio rerio	UP000000437	actinopterygii_odb10 (2021-02-19)	99.1	0.2	0.7	Outlier (high value)	full	2026-11-09
+Drosophila melanogaster	UP000000803	diptera_odb10 (2020-08-05)	100.0	0.0	0.0	Outlier (high value)	full	2026-11-09
+Saccharomyces cerevisiae	UP000002311	saccharomycetes_odb10 (2020-08-05)	99.6	0.1	0.3	Close to standard (high value)	full	2026-11-09
+Arabidopsis thaliana	UP000006548	brassicales_odb10 (2020-08-05)	100.0	0.0	0.0	Standard	full	2026-11-09
+Mytilus edulis	UP000683360	mollusca_odb10 (2020-08-05)	80.1	3.0	16.9	Unknown	full	2026-11-09
+Mytilus coruscus	UP000507470	mollusca_odb10 (2020-08-05)	78.7	2.2	19.1	Unknown	full	2026-11-09
+Magallana gigas	UP000005408	mollusca_odb10 (2020-08-05)	96.1	0.9	3.0	Unknown	full	2026-11-09
+Solemya velum	UP001724931	mollusca_odb10 (2020-08-05)	82.5	2.5	14.9	Unknown	full	2026-11-09
+Octopus sinensis	UP000515154	mollusca_odb10 (2020-08-05)	90.8	1.5	7.7	Unknown	full	2026-11-09
+Capitella teleta	UP000014760	metazoa_odb10 (2021-02-17)	95.0	2.8	2.2	Unknown	full	2026-11-09
+Escherichia coli K-12	UP000000625	enterobacterales_odb10	100.0	0.0	0.0	Close to standard (low value)	full	2026-11-09
+Escherichia coli O157:H7	UP000000558	enterobacterales_odb10	100.0	0.0	0.0	Close to standard (high value)	full	2026-11-09
+Escherichia fergusonii	UP000000745	enterobacterales_odb10	99.5	0.0	0.5	Close to standard (low value)	full	2026-11-09
+Salmonella enterica	UP000001014	enterobacterales_odb10	100.0	0.0	0.0	Standard	full	2026-11-09
+Yersinia pestis	UP000000815	enterobacterales_odb10 (2021-02-23)	99.8	0.0	0.2	Standard	full	2026-11-09
+Pseudomonas aeruginosa	UP000002438	pseudomonadales_odb10	99.5	0.3	0.3	Close to standard (low value)	full	2026-11-09
+Caulobacter vibrioides	UP000001816	alphaproteobacteria_odb10 (2021-02-23)	98.6	0.9	0.5	Close to standard (high value)	full	2026-11-09
+Bacteroides thetaiotaomicron	UP000001414	bacteroidales_odb10 (2021-02-23)	99.3	0.7	0.0	Standard	full	2026-11-09
+Bacillus subtilis	UP000001570	bacillales_odb10 (2021-02-23)	99.6	0.0	0.4	Standard	full	2026-11-09
+Thermotoga maritima	UP000008183	thermotogae_odb10 (2020-03-06)	96.9	0.3	2.8	Unknown	full	2026-11-09

@@ -462,6 +462,48 @@ def get(url, retries=3):
                 raise
 
 
+def quality(args):
+    """UniProt's completeness report for every proteome used: BUSCO (share of a lineage's
+    expected single-copy genes found) and CPD (protein count against close relatives).
+
+    Writes proteome_quality.tsv. A gappy proteome shares fewer k-mers with everything,
+    so it can pull a relative's containment down; this table is the check for that.
+    """
+    rows, seen = [], set()
+    for t in read_tsv(OUT / "taxonomic_path.tsv"):
+        up = t["uniprot_proteome_id"]
+        if not up or up in seen:
+            continue
+        seen.add(up)
+        body, _ = get(f"https://rest.uniprot.org/proteomes/{up}.json")
+        d = json.loads(body)
+        rep = d.get("proteomeCompletenessReport") or {}
+        busco = rep.get("buscoReport") or {}
+        cpd = rep.get("cpdReport") or {}
+        total = busco.get("total")
+        rows.append(
+            {
+                "species": t["relative"],
+                "uniprot_proteome_id": up,
+                "busco_lineage": busco.get("lineageDb", ""),
+                "busco_complete_pct": (
+                    f"{100 * busco['complete'] / total:.1f}" if total else ""
+                ),
+                "busco_fragmented_pct": (
+                    f"{100 * busco['fragmented'] / total:.1f}" if total else ""
+                ),
+                "busco_missing_pct": (
+                    f"{100 * busco['missing'] / total:.1f}" if total else ""
+                ),
+                "cpd_status": cpd.get("status", ""),
+                "assembly_level": (d.get("genomeAssembly") or {}).get("level", ""),
+                "retrieved": datetime.date.today().isoformat(),
+            }
+        )
+        print(up, t["relative"], rows[-1]["busco_complete_pct"], flush=True)
+    write_tsv(OUT / "proteome_quality.tsv", rows, list(rows[0]))
+
+
 def lineage(taxid):
     """Ranked lineage [(rank, name)] from NCBI Taxonomy, root first, the taxon itself last."""
     body, _ = get(
@@ -1910,7 +1952,7 @@ def main():
         description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter
     )
     sub = p.add_subparsers(dest="cmd")  # no required=: Sherlock python3 is 3.6
-    for name in ("resolve", "reach", "figure"):
+    for name in ("resolve", "reach", "figure", "quality"):
         sub.add_parser(name)
     sub.add_parser("submit").add_argument(
         "--after", help="job id the fetch job waits for (afterok)"
