@@ -14,3 +14,5 @@ from the folder above, and the files `export_paper_counts.py` writes from Datase
 | `vst_nsub.R` | Does a smaller `nsub` let the variance step run on 21-28 d? | `vst_nsub.out` |
 | `ratio.R` | Do the paper's size factors (DESeq2's default) work on the paper's 38 libraries here? | `ratio.out` |
 | `vst_ratio.R` | Does the variance step run with those size factors? | all 5 printed "vst ok" |
+| `size_factor_genes.py` | On how many genes do the default size factors rest, per comparison, in the paper's counts and here? | `size_factor_genes.out` |
+| `up_skew_49_52d.R` | Which library makes 86% of genes go up at 49-52 d, fitted alone? | `up_skew_49_52d.out` |

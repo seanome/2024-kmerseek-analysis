@@ -313,6 +313,14 @@ find 49 (6.3%).
 | 132 d | 86 | 10 | 8 | 5 |
 | all | 782 | 30 | 49 | 183 |
 
+The three columns differ in more than one way at once: libraries, size factors, colony term,
+and at 13-49 d the window itself. The paper pools 13-49 d into one comparison of 8
+libraries (3 at 13-17 d, 5 at 49-52 d). The six-window fit tests 13-17 d on 12 libraries,
+including the 9 the paper left out, and 49-52 d on 5. So the table shows that the
+paper-style fit finds more of the paper's genes, not which change causes it. At 13-17 d the
+0 depends on leaving out colony: with `~ colony + treatment` the same libraries give 238
+genes at p < 0.05, with `~ treatment` none (`each-alone-checks/fits.out`).
+
 - Over all genes tested in both, the Spearman correlation of the signed -log10 p with the
   paper is 0.35, 0.48, 0.39 and 0.35 at 2 h, 24 h, 13-49 d and 132 d. At any other pairing
   it is between -0.03 and 0.07 (panel b of
@@ -320,16 +328,26 @@ find 49 (6.3%).
 - Among genes the paper has at p < 0.05, the paper-style fit also has p < 0.05 in the same
   direction for 159 of 391 at 2 h, 119 of 446 at 24 h, 19 of 67 at 13-49 d and 7 of 124 at
   132 d. The joint fit had 9, 11, 4 and 10 (13-17 and 49-52 d), and 17.
-- 132 d is the one comparison where refitting alone does not help: 5 listed genes, against
-  10 in the joint fit.
+- At 132 d all three fits find between 5 and 10 of the 86 listed genes. These counts are
+  too small to tell the fits apart.
 - One listed gene reaches adjusted p < 0.05: g1465 (FUN_022126), up at 132 d, as the paper
   lists it (adjusted p 0.006). Its fold change after the pipeline's shrinkage is small
   (log2 0.013), so the direction rests on a small number.
 - 552 of the 613 tested listed genes point the paper's way, where 327 would by chance.
 - Refitting the paper's own counts this way gave a rank correlation of 0.9995 or more with
   its p-values (figure above). Here it is 0.35 to 0.48. The design and libraries are the
-  same, so the gap comes from the inputs: different gene models, matched by protein, and
-  counts from a different pipeline. Which of these matters most is not tested here.
+  same. The counts differ (different gene models, matched by protein, from a different
+  pipeline), and so does the set of genes the size factors rest on: DESeq2's default uses
+  only genes counted in every library of the fit. Per comparison that is 1,540, 2,390, 820
+  and 3,083 genes in the paper's counts and 2,028, 2,545, 493 and 1,464 here, at 2 h, 24 h,
+  13-49 d and 132 d (`each-alone-checks/size_factor_genes.out`). Which of these causes the
+  gap is not tested.
+- In the six-window fit, 86% of genes tested at 49-52 d go up with treatment, against 29%
+  to 42% at 2 h, 13-17 d and 104-132 d. It is not the 6941c library, the one treated
+  library whose colony has no control in this window: leaving it out still gives 87% up.
+  Leaving out JA152 (colony 6996m, treated, 1,049,260 read pairs, the deepest of the five
+  and the largest size factor, 2.27) gives 63% (`each-alone-checks/up_skew_49_52d.out`).
+  The 49-52 d result rests on 5 libraries and leans on that one.
 
 Tables: `three_fits_vs_paper.tsv`, and in `each-alone-comparison/paper/` and
 `each-alone-comparison/each-window/` the same five tables as above. Code:

@@ -60,9 +60,13 @@ stop:
 	 scancel --signal=TERM --batch $$jid && echo "asked job $$jid to shut down"
 
 # Refuses to submit a second copy while one is queued or running, as submit_all.sh does.
+# Refuses while the rnaseq run is queued or running too: its gene counts are published before
+# it finishes, so the refit would read partial or stale counts.
 run-alone: $(NEXTFLOW)
 	@queued=$$(squeue -u $$USER -h -n $(ALONE_JOBNAME) -o "%i %T"); \
 	 [ -z "$$queued" ] || { echo "already queued or running: $$queued"; exit 1; }
+	@running=$$(squeue -u $$USER -h -n $(HEAD_JOBNAME) -o "%i %T"); \
+	 [ -z "$$running" ] || { echo "the rnaseq run ($(HEAD_JOBNAME)) is still queued or running: $$running"; exit 1; }
 	mkdir -p $(OUT)/each-alone-head
 	ml load biology nextflow && cd $(OUT)/each-alone-head && \
 	  NF_HEAD_DETACH=1 HEAD_HINT_WATCH="make watch-alone" HEAD_HINT_STOP="make stop-alone" \
