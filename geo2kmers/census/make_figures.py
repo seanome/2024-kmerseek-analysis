@@ -60,14 +60,18 @@ def summary():
 
 
 def per_year_figure():
-    arrays = load("geo_array_series.json")["expression profiling by array"]["by_year"]
-    rnaseq = load("geo_rnaseq_series.json")["expression profiling by high throughput sequencing"]["by_year"]
+    arrays_all = load("geo_array_series.json")["expression profiling by array"]
+    rnaseq_all = load("geo_rnaseq_series.json")["expression profiling by high throughput sequencing"]
+    arrays, rnaseq = arrays_all["by_year"], rnaseq_all["by_year"]
     years = list(range(2001, 2027))
+    for name, series in (("array", arrays_all), ("RNA-seq", rnaseq_all)):
+        plotted = sum(series["by_year"].get(str(y), 0) for y in years)
+        assert plotted == series["unique_gsm"], f"{name}: years {years[0]}-{years[-1]} hold {plotted:,} of {series['unique_gsm']:,} GSMs"
     fig, ax = pf.figure(pf.ONE_COLUMN_MM, 55)
     ax.plot(years, [arrays.get(str(y), 0) / 1e3 for y in years], color=ARRAY_COLOUR, marker="o",
-            markersize=3, label="Expression microarray (1.86 M samples)")
+            markersize=3, label=f"Expression microarray ({arrays_all['unique_gsm'] / 1e6:.2f} M samples)")
     ax.plot(years, [rnaseq.get(str(y), 0) / 1e3 for y in years], color=RNASEQ_COLOUR, marker="^",
-            markersize=3, linestyle="--", label="RNA-seq (4.40 M samples)")
+            markersize=3, linestyle="--", label=f"RNA-seq ({rnaseq_all['unique_gsm'] / 1e6:.2f} M samples)")
     ax.set_xlabel("Year the series was released (2026 to 8 Nov)")
     ax.set_ylabel("New GEO samples (thousands)")
     ax.set_xticks([2002, 2006, 2010, 2014, 2018, 2022, 2026])
