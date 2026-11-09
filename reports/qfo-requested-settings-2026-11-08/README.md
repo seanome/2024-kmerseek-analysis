@@ -73,7 +73,7 @@ median over all 115 kmerseek settings; orange is the single best setting, picked
 looking, so it is an upper bound. Built by `other_metrics.py`; all numbers are in
 `kmerseek_vs_mmseqs2_all_metrics.csv`.
 
-kmerseek is better than MMseqs2 in three places:
+kmerseek is better than MMseqs2 in two places:
 
 - **C2H2 zinc fingers** (about 32 proteins and 200 domain copies per species, each
   domain about 22 residues): the typical setting's Fmax is 2.5 times MMseqs2's, the best
@@ -81,10 +81,11 @@ kmerseek is better than MMseqs2 in three places:
 - **Short domains, 16-30 residues**: typical 1.2 times MMseqs2's Fmax, best 3.0 times
   (0.18 against 0.057). At 31-60 residues it is about even; from 61 residues up
   MMseqs2 wins by 3 to more than 25 times.
-- **Precision**: kmerseek makes far fewer calls, and more of them are right: 4.4 times
-  MMseqs2's precision over all calls for the typical setting. At the Fmax cutoff the
-  typical setting is lower (0.46 times); only the most precise settings, which find almost
-  nothing, are higher.
+Precision is not a win. kmerseek makes far fewer calls, so a larger share of them are right:
+4.4 times MMseqs2's precision over all calls for the typical setting. Any method that makes
+fewer calls scores higher on this. At the Fmax cutoff the typical setting is lower (0.46
+times MMseqs2's); only the most precise settings, which find almost nothing, are higher. It
+goes with the loss in recall below.
 
 When kmerseek does find a domain, it places it about as well as MMseqs2: overlap with the
 true domain 0.83 times MMseqs2's, domain count right 0.86 times, and the median distance
