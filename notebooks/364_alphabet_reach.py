@@ -1106,6 +1106,11 @@ SUB_TO_MAIN = {
     "subphylum": "phylum",
 }
 PATHS_BACTERIUM = "Escherichia coli K-12"
+# The settings drawn in the reach-by-rank figures, one figure per bit level.
+BIT_SETS = {
+    42: PYRAMID,
+    30: [("DNA", 15), ("protein", 7), ("dayhoff", 12), ("hp", 30)],
+}
 FOLD = (
     10  # a relative must share at least 10 times more than the other-kingdom background
 )
@@ -1113,7 +1118,7 @@ MIN_SHARED = 100  # and at least this many shared sampled k-mers (hashes), so a 
 
 
 def reach_fold_table(cont, path):
-    """Reach by fold over background: per anchor and alphabet at 42 bits, each relative's
+    """Reach by fold over background: per anchor and alphabet at 42 and 30 bits, each relative's
     containment divided by the higher of the two other-kingdom species' containments.
 
     Writes RES/reach_fold.tsv. Reach is the farthest rank reached without a failing rank
@@ -1130,7 +1135,9 @@ def reach_fold_table(cont, path):
             ),
             key=lambda r: (rank_key(r), r["relative"]),
         )
-        for alphabet, k in PYRAMID:
+        for bits, alphabet, k in (
+            (b, a, k) for b, settings in BIT_SETS.items() for a, k in settings
+        ):
             sel = {
                 c["relative"]: c
                 for c in cont
@@ -1152,6 +1159,7 @@ def reach_fold_table(cont, path):
                 rows.append(
                     {
                         "anchor": anchor,
+                        "bits": bits,
                         "alphabet": alphabet,
                         "k": k,
                         "relative": r["relative"],
@@ -1169,14 +1177,59 @@ def reach_fold_table(cont, path):
 
 
 def figure_reach_bars(cont, path):
+    """One reach-by-rank figure per bit level in BIT_SETS."""
+    rows = reach_fold_table(cont, path)
+    for bits, settings in BIT_SETS.items():
+        draw_reach_bars(
+            [r for r in rows if r["bits"] == bits],
+            settings,
+            bits,
+            "reach_by_rank_uniprot" + ("" if bits == 42 else f"_{bits}bits"),
+        )
+
+
+def reach_conclusion(rows, settings):
+    """One line saying where dayhoff or hp reach a different main rank than protein."""
+
+    def far(anchor, alphabet):
+        ranks = [
+            SUB_TO_MAIN.get(r["rank"], r["rank"])
+            for r in rows
+            if r["anchor"] == anchor and r["alphabet"] == alphabet and r["reached"]
+        ]
+        return MAIN_RANKS.index(ranks[-1]) if ranks else -1
+
+    names = {a: a.split()[0][0] + ". " + a.split()[1] for a in PATHS}
+    further, nearer = {}, {}
+    for anchor in PATHS:
+        for alphabet in ("dayhoff", "hp"):
+            d = far(anchor, alphabet) - far(anchor, "protein")
+            if d:
+                (further if d > 0 else nearer).setdefault(alphabet, []).append(
+                    names[anchor]
+                )
+
+    def listing(found):
+        return "; ".join(f"{al} for {', '.join(an)}" for al, an in found.items())
+
+    line = "Conclusion: compared with protein, " + (
+        f"a reduced alphabet reaches a farther rank only as {listing(further)}."
+        if further
+        else "no reduced alphabet reaches a farther rank for any anchor."
+    )
+    if nearer:
+        line += f"\nIt stops at a nearer rank as {listing(nearer)}."
+    return line + " Every other row stops at the same rank as protein."
+
+
+def draw_reach_bars(rows, settings, bits, name):
     """Which ranks each alphabet reaches: one panel per anchor, one row per alphabet,
-    relatives from nearest (left) to farthest (right). Filled cell: passes the fold rule.
+    one column per main rank. Filled cell: passes the fold rule.
     """
     from matplotlib.lines import Line2D
     from matplotlib.patches import Patch, Rectangle
     import pubfig as pf
 
-    rows = reach_fold_table(cont, path)
     reached_colour, passed_colour = pf.OKABE_ITO["blue"], pf.OKABE_ITO["sky_blue"]
     fig, axs = pf.figure(pf.TWO_COLUMN_MM, 125, nrows=len(PATHS))
     # One column per main rank, the same in every panel. A relative that shares a sub-rank
@@ -1199,8 +1252,8 @@ def figure_reach_bars(cont, path):
             elif main != rank_of[rel]:
                 shared_sub.append(f"{rel} ({rank_of[rel]})")
             in_col[main] = rel  # later = farther
-        for i, (alphabet, k) in enumerate(PYRAMID):
-            y = len(PYRAMID) - 1 - i
+        for i, (alphabet, k) in enumerate(settings):
+            y = len(settings) - 1 - i
             line = {r["relative"]: r for r in sub if r["alphabet"] == alphabet}
             for j, col in enumerate(MAIN_RANKS):
                 if col not in in_col:
@@ -1243,13 +1296,15 @@ def figure_reach_bars(cont, path):
             ax.text(
                 len(columns) + 0.15,
                 y + 0.5,
-                f"reaches {last[-1]}" if last else "reaches nothing",
+                f"reaches {last[-1]}" if last else "reaches no rank here",
                 va="center",
                 fontsize=6,
                 weight="bold",
             )
-        ax.set_yticks([len(PYRAMID) - 1 - i + 0.5 for i in range(len(PYRAMID))])
-        ax.set_yticklabels([f"{a} k={k}" for a, k in PYRAMID])
+        ax.set_yticks([len(settings) - 1 - i + 0.5 for i in range(len(settings))])
+        ax.set_yticklabels(
+            [f"{a} k={k} ({bits_uniform(a, k):.0f} bits)" for a, k in settings]
+        )
         ax.tick_params(axis="y", length=0)
         ax.set_xticks([j + 0.5 for j in range(len(columns))])
         ax.set_xticklabels(
@@ -1272,7 +1327,7 @@ def figure_reach_bars(cont, path):
             for j, col in enumerate(columns):
                 ax.text(
                     j + 0.5,
-                    len(PYRAMID) + 0.15,
+                    len(settings) + 0.15,
                     "another kingdom\n(background)" if col == "other kingdom" else col,
                     ha="center",
                     va="bottom",
@@ -1280,7 +1335,7 @@ def figure_reach_bars(cont, path):
                     weight="bold",
                 )
         ax.set_xlim(0, len(columns) + 2.2)
-        ax.set_ylim(0, len(PYRAMID))
+        ax.set_ylim(0, len(settings))
         for side in ("left", "bottom"):
             ax.spines[side].set_visible(False)
         ax.set_title(
@@ -1332,13 +1387,6 @@ def figure_reach_bars(cont, path):
         bbox_to_anchor=(0.5, 1.0),
         frameon=False,
     )
-    # The conclusion line is checked against the data, so it cannot go stale.
-    far = {(r["anchor"], r["alphabet"]): r["rank"] for r in rows if r["reached"]}
-    mouse, mussel, ecoli = PATHS
-    for a in (mouse, ecoli):
-        assert len({far[(a, al)] for al in ("protein", "dayhoff", "hp")}) == 1, a
-    assert far[(mussel, "protein")] == far[(mussel, "dayhoff")] == "genus"
-    assert far[(mussel, "hp")] == "class"
     sampled = (
         f"1 in {SCALED['hp']}"
         if SCALED["hp"] == SCALED["DNA"]
@@ -1347,7 +1395,7 @@ def figure_reach_bars(cont, path):
     fig.suptitle(
         f"A relative is reached when it shares at least {FOLD}\u00d7 more k-mers with the anchor than an organism "
         f"from another kingdom does, and at least {MIN_SHARED} sampled k-mers.\n"
-        "Number in each cell: how many times more. Every k gives 42 bits per k-mer; "
+        f"Number in each cell: how many times more. Every k gives about {bits} bits per k-mer; "
         f"{sampled} k-mers sampled.\n"
         "Protein, dayhoff and hp from UniProt reference proteomes; DNA from the coding sequences of the same genes.\n"
         "dayhoff letters: AGPST C DENQ FWY HKR ILMV; hp letters: AFGILMPVWY (hydrophobic), CDEHKNQRST (polar).\n"
@@ -1358,11 +1406,11 @@ def figure_reach_bars(cont, path):
         + ".\nNot drawn, because a farther relative stands for the same rank: "
         + ", ".join(dropped)
         + ".\n"
-        "Conclusion: protein, dayhoff and hp reach the same rank for mouse and E. coli; only hp, and only for the mussel, "
-        "goes further.\nFewer letters do not reach further at equal bits.",
+        # Built from the data, so it cannot go stale.
+        + reach_conclusion(rows, settings),
         y=1.255,
     )
-    pf.save(fig, str(RES / "reach_by_rank_uniprot"))
+    pf.save(fig, str(RES / name))
 
 
 def figure_pyramid(cont, path, floors):
