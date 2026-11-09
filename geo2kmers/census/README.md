@@ -18,10 +18,15 @@ arrays to RNA-seq gives 34% more samples.
 
 In GEO alone, expression arrays peaked at 163,151 new samples in 2014. RNA-seq passed
 them in 2016 and has added 425,000 to 514,000 a year since 2020. GEO's RNA-seq series hold
-4,400,422 unique samples; the rest of SRA's 6.29 M did not come through GEO.
+4,400,422 unique samples.
 
 ## What these numbers are not
 
+- **Not the same unit on both sides.** The array total adds GEO GSMs, ArrayExpress
+  per-study sample counts and DDBJ GEA assays. The RNA-seq number counts distinct SRA
+  sample accessions, so many runs and single-cell libraries collapse into one. GEO's
+  4.40 M RNA-seq GSMs are GEO records, not a subset of the 6.29 M SRA samples, so the
+  ratio is a rough size comparison only.
 - **Records, not people or specimens.** A sample can be a pool, a replicate, or a
   single-cell library of thousands of cells.
 - **The array total includes microRNA arrays.** About 192,000 GEO samples are microRNA
