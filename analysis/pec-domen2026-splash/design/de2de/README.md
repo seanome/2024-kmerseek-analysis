@@ -88,3 +88,22 @@ Two-sided p = share of shuffles with |D| at least the real |D| (the real labels 
   k-mers. It does not say which genes, and it does not say the human change is caused by anything
   like PEC.
 - Young 13-49 d has 512,253 up reads and 26,022 down reads, so its down set is small.
+
+## Label-swap control (added 2026-11-09, before any swap job finished)
+
+Jobs 51658367 (Botryllus k-mers), 51658368 (human counts), 51658369 (test). The Botryllus reads
+come from 7 KaMRaT + DESeq2 runs with PEC and control labels swapped between pairs of colonies
+(`$S/label_swap/<contrast>/pairflipN`): 3 for young 13-49 d, 3 for young 132 d, 1 for old
+41-93 d. Each swap set goes through the same steps and the same test as the real contrast.
+
+If the real passes come from the PEC direction, swap sets should give a smaller |D|. If they come
+from which genes the held reads fall in (genes that change in GSE99963 whatever the Botryllus
+labels), swap sets give a |D| as large.
+
+Rule, per real pass (contrast, setting, human series): it **holds** if its |D| is larger than the
+|D| of every swap set of the same contrast, setting and series, and no such swap set passes with the
+same sign. Otherwise it **does not hold**.
+
+Limit known before running: 3 swaps (1 for old 41-93 d) is a small sample. With 3 swaps, a real
+|D| would be the largest of 4 by chance 1 time in 4; with 1 swap, 1 time in 2. So "holds" is weak
+evidence; "does not hold" is the informative outcome.
