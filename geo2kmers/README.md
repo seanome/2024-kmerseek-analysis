@@ -550,24 +550,33 @@ For held-out tests, p is against labels swapped within each person; GSE28998 has
 the lowest p it can give. For cross-series tests the two p values are against swapped labels and against random k-mers.
 The held-out ranges are the fewest and most probe sets over the people left out.
 
-The HP k-mers' AUCs are at most 0.05 below the probe k-mers' in every test, for both alphabets. Three of four tests
-pass. The fourth cannot tell either way, though under the rule written first it fails, where the probe k-mers
+With 1000 k-mers, the HP k-mers' AUCs are at most 0.05 below the probe k-mers' in every test, for both alphabets.
+With 100 k-mers they are not: chosen on GSE28998 and scored on GSE27536, the 100 HP k-mers come from 3 probe sets and
+give AUC 0.49 with both alphabets (p 0.60 against swapped labels), where the 100 probe k-mers give 0.71. Three of four
+tests pass at 1000 k-mers. The fourth cannot tell either way, though under the rule written first it fails, where the probe k-mers
 passed: chosen on GSE27536, random HP k-mers that went up in GSE27536
 also score GSE28998 at a median AUC of 0.96 (random probe k-mers: 0.71), so the 1000 chosen ones (0.98) do no better
-than any. All 1000 chosen HP k-mers went up after training, and with `hp_lehninger2` they come from only 10 probe
-sets. Results are in `results/fig4/hp_held_out/` and `results/fig4/hp_cross_series/`; `fig4_held_out.nf --hp` reruns them.
+than random sets: 38 % and 34 % of random sets score as high. With 10000 k-mers the chosen ones (1.00) do beat random
+sets (p 0.005 for both alphabets), but the rule uses 1000. Of the 1000 chosen HP k-mers, 1000 (`hp_lehninger2`) and
+997 (`hp_thomas_dill2`) went up after training, and they come from only 10 and 54 probe sets. Results are in `results/fig4/hp_held_out/` and `results/fig4/hp_cross_series/`; `fig4_held_out.nf --hp` reruns them.
 
 **What GSE28998 is.** It is not before and after in time. Seven people trained one arm with weights for 12 weeks; a
 week later both arms did the same bout, and both biceps were biopsied 4 h after it (GEO's overall design). Its "pre"
 is the untrained arm and its "post" the trained arm of the same person, on the same day. Pre and post were scanned on
 the same days. GSE27536 (thigh, 8 weeks of cycling, 12 healthy people and 15 with COPD) is from another lab and paper,
 so the two series are not related. But their changes agree gene by gene: over the 41,325 U133 probe sets with a
-protein, the Pearson r between GSE27536's after-minus-before and GSE28998's trained-minus-untrained is 0.27.
+protein, the Pearson r between GSE27536's after-minus-before and GSE28998's trained-minus-untrained is 0.27. Several probe
+sets measure one gene, so r was also computed over the 19,584 groups of probe sets with the same proteins: 0.29, with a
+95 % bootstrap interval over groups of 0.26 to 0.33. Spearman's r, on ranks, is 0.15, so part of the agreement comes
+from the probe sets that changed most.
 Probe sets that went up in GSE27536 average +0.041 log2 in GSE28998, and those that went down average -0.019. There
 is no shift of the whole GSE28998 array: in each person 47 % to 52 % of probe sets are higher in the trained arm.
-This shared training response is why random k-mers that went up in GSE27536 also score GSE28998 well. The random-k-mer
-chance test assumes random k-mers carry no training signal, which is not true here, so it is strict in that
-direction. `fig4/series_agreement.py` writes these numbers and the figure to `results/fig4/series_agreement/`.
+This shared training response is one likely reason random k-mers that went up in GSE27536 also score GSE28998 well.
+It does not explain on its own why random HP k-mers reach 0.96 where random probe k-mers reach 0.71, since both carry
+it. Three other differences were not tested: the random HP sets are all k-mers that went up (as the chosen ones did),
+while the random probe sets were 879 up and 121 down; the HP test reads the authors' RMA values and the probe test raw
+intensities; and how many probe sets the random HP sets come from was not recorded. The random-k-mer chance test
+assumes random k-mers carry no training signal, which is not true here, so it is strict in that direction. `fig4/series_agreement.py` writes these numbers and the figure to `results/fig4/series_agreement/`.
 
 ![Change per probe set in GSE27536 against GSE28998](results/fig4/series_agreement/series_agreement.png)
 

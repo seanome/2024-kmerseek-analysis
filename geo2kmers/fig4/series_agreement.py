@@ -1,20 +1,23 @@
 """Compare each probe set's change after training in GSE27536 and GSE28998, both on U133 Plus 2.
 
 Usage: series_agreement.py <GSE28998.probe_set_values.tsv.gz> <GSE27536.probe_set_values.tsv.gz> <groups.tsv>
-       <series folder> <notebooks folder> <out folder>
-Values are hp_kmer_table.py's (the authors' RMA, log2). GSE28998's change is each person's trained arm minus their
-untrained arm, averaged over people; GSE27536's is the mean after training minus the mean before. Writes
-series_agreement.tsv (one row per probe set), series_agreement_summary.tsv, and series_agreement.png and .svg.
+       <series folder> <probe_set_proteins.tsv.gz> <notebooks folder> <out folder>
+Values are hp_kmer_table.py's (the authors' RMA, log2). Each series' change is each person's post minus pre
+(GSE28998: trained arm minus untrained arm; GSE27536: after training minus before), averaged over people.
+Several probe sets measure one gene, so r is also given over groups of probe sets with the same proteins
+(probe_set_proteins.tsv.gz), with a 95 % bootstrap interval over groups. Writes series_agreement.tsv (one row per
+probe set), series_agreement_summary.tsv, and series_agreement.png and .svg.
 """
 
 import csv
+import gzip
 import sys
 
 import numpy as np
 
 from geo2kmers.people import person_of, sample_fields
 
-first, second, groups_file, series, notebooks, out = sys.argv[1:]
+first, second, groups_file, series, proteins_file, notebooks, out = sys.argv[1:]
 sys.path.insert(0, notebooks)
 import pubfig as pf  # noqa: E402
 
@@ -23,8 +26,6 @@ with open(groups_file) as f:
 
 
 def read(path):
-    import gzip
-
     with gzip.open(path, "rt") as f:
         samples = f.readline().rstrip("\n").split("\t")[1:]
         rows = {line.split("\t", 1)[0]: line.rstrip("\n").split("\t")[1:] for line in f}
@@ -54,11 +55,35 @@ names_b, change_b, _, people_b = change("GSE27536", second)
 assert names_a == names_b
 up_b = change_b > 0
 r = np.corrcoef(change_a, change_b)[0, 1]
+
+
+def ranks(x):
+    return np.argsort(np.argsort(x))
+
+
+spearman = np.corrcoef(ranks(change_a), ranks(change_b))[0, 1]
+proteins = {}
+with gzip.open(proteins_file, "rt") as f:
+    for row in csv.DictReader(f, delimiter="\t"):
+        if row["array"] == "U133 Plus 2":
+            proteins.setdefault(row["probe_set"], set()).add(row["sequence"])
+group_of = {}
+group = np.array([group_of.setdefault(",".join(sorted(proteins[n])), len(group_of)) for n in names_a])
+sizes = np.bincount(group)
+group_a, group_b = np.bincount(group, change_a) / sizes, np.bincount(group, change_b) / sizes
+r_groups = np.corrcoef(group_a, group_b)[0, 1]
+rng = np.random.default_rng(0)
+draws = [rng.integers(0, len(sizes), len(sizes)) for _ in range(1000)]
+low, high = np.percentile([np.corrcoef(group_a[d], group_b[d])[0, 1] for d in draws], [2.5, 97.5])
 summary = {
     "probe_sets": len(names_a),
     "people_GSE28998": people_a,
     "people_GSE27536": people_b,
     "pearson_r_of_changes": f"{r:.3f}",
+    "spearman_r_of_changes": f"{spearman:.3f}",
+    "groups_of_probe_sets_with_the_same_proteins": len(sizes),
+    "pearson_r_over_groups": f"{r_groups:.3f}",
+    "pearson_r_over_groups_95pct_bootstrap": f"{low:.3f}-{high:.3f}",
     "share_up_in_GSE27536": f"{up_b.mean():.3f}",
     "GSE28998_mean_change_where_GSE27536_up": f"{change_a[up_b].mean():.4f}",
     "GSE28998_mean_change_where_GSE27536_down": f"{change_a[~up_b].mean():.4f}",
