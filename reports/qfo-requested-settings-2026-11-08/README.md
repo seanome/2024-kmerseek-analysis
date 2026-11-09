@@ -131,10 +131,13 @@ python summarize.py <metrics dir> <all_domain_metrics.parquet>
 python other_metrics.py <metrics dir> <all_domain_metrics.parquet>
 ```
 
-`<metrics dir>` is
+Both scripts read one `<metrics dir>`, so copy the `pfam.kmerseek.*_lcFalse.*.metrics.parquet`
+files from both runs into one directory first (the file names differ by setting, so none
+overwrite). The two sources are
 `sherlock:/scratch/users/olgabot/2024-kmerseek-analysis/nextflow-runs/qfo-pfam-region-benchmark/data/midi-plus/results/metrics/`
-(the `pfam.kmerseek.*_lcFalse.*.metrics.parquet` files). `all_domain_metrics.parquet` is in
-the same `results/` directory (md5 3080c0bf94816472dfe277ff7ee31b8c).
+(September run) and `.../data/midi-plus/results-hp-k35-k40/metrics/` (follow-up run: dayhoff6
+k19, k21 and H/P k35, k40). Reading only the first drops those rows. `all_domain_metrics.parquet`
+is in the first `results/` directory (md5 3080c0bf94816472dfe277ff7ee31b8c).
 
 ## Follow-up run: H/P k35 and k40, dayhoff6 k19 and k21
 
