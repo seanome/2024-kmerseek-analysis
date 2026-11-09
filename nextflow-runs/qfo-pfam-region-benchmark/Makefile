@@ -2310,7 +2310,8 @@ run-rannon-burstein: prefetch-images midi-testset-sherlock
 # ---- midi-plus: H/P k35 and k40, dayhoff6 k19 and k21 ----------------------
 #
 # The settings run-midi-plus's matrix stops short of. Asked 2026-11-08 so H/P k-mers carry
-# the same 25-40 bits as protein20 k6-9 and dayhoff6 k10-15 (one H/P letter is 1 bit), and
+# the same 25-40 bits as protein20 k6-9 and dayhoff6 k9-15 (odd k only; one H/P letter is
+# 1 bit), and
 # so dayhoff6 reaches k21. Results: reports/qfo-requested-settings-2026-11-08/.
 #
 # 6 two-letter H/P alphabets x k35, k40 + dayhoff6 k19, k21 = 14 settings, masking off,
