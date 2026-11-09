@@ -1,0 +1,19 @@
+test	kmers	values	auc	p_labels_swapped	p_random_kmers	median_auc_random_kmers	people_post_above_pre	kmers_up_after_in_training	probe_sets_behind	carries_over
+GSE27536_to_GSE28998	probe	earlier	1.000	0.0078	0.0050	0.714	7 of 7	879		True
+GSE27536_to_GSE28998	hp_lehninger2	earlier	0.980	0.0078	0.3831	0.959	7 of 7	1000	10	False
+GSE27536_to_GSE28998	hp_thomas_dill2	earlier	0.980	0.0078	0.3433	0.959	7 of 7	997	54	False
+GSE28998_to_GSE27536	probe	earlier	0.868	0.0050	0.0050	0.698	22 of 27	459		True
+GSE28998_to_GSE27536	hp_lehninger2	earlier	0.826	0.0050	0.0050	0.694	22 of 27	998	148	True
+GSE28998_to_GSE27536	hp_thomas_dill2	earlier	0.818	0.0050	0.0050	0.702	22 of 27	992	303	True
+GSE27536_to_GSE28998	probe	SCAN	1.000	0.0078	0.0050	0.735	7 of 7	893		True
+GSE27536_to_GSE28998	hp_lehninger2	SCAN	0.980	0.0078	0.0050	0.796	7 of 7	999	19	True
+GSE27536_to_GSE28998	hp_thomas_dill2	SCAN	0.980	0.0078	0.0050	0.796	7 of 7	998	30	True
+GSE28998_to_GSE27536	probe	SCAN	0.859	0.0050	0.0050	0.705	23 of 27	533		True
+GSE28998_to_GSE27536	hp_lehninger2	SCAN	0.855	0.0050	0.0050	0.601	22 of 27	994	260	True
+GSE28998_to_GSE27536	hp_thomas_dill2	SCAN	0.866	0.0050	0.0050	0.604	22 of 27	975	730	True
+GSE27536_to_GSE28998	probe	SCAN without unstandardised	1.000	0.0078	0.0050	0.735	7 of 7	893		True
+GSE27536_to_GSE28998	hp_lehninger2	SCAN without unstandardised	0.980	0.0078	0.0050	0.776	7 of 7	999	16	True
+GSE27536_to_GSE28998	hp_thomas_dill2	SCAN without unstandardised	0.980	0.0078	0.0050	0.796	7 of 7	998	27	True
+GSE28998_to_GSE27536	probe	SCAN without unstandardised	0.861	0.0050	0.0050	0.691	24 of 27	533		True
+GSE28998_to_GSE27536	hp_lehninger2	SCAN without unstandardised	0.856	0.0050	0.0050	0.601	22 of 27	996	257	True
+GSE28998_to_GSE27536	hp_thomas_dill2	SCAN without unstandardised	0.871	0.0050	0.0050	0.602	22 of 27	977	658	True

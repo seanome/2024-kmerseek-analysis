@@ -107,3 +107,15 @@ design (`hta_probe_design.R`) and names the genes of the 30 SPLASH anchors that 
 The names change nothing upstream. `plot_held_out.py` draws `held_out.png`. Results are in `results/fig4/held_out/`.
 The run took 1 h 10 min on 4 CPU and 15 GB.
 
+
+## Cross-series tests on SCAN values
+
+`scan_values.R` processes each CEL file of GSE28998 and GSE27536 on its own with SCAN (SCAN.UPC's `SCANfast` steps),
+and writes each PM probe's value (`<series>.probes.tsv.gz`) and each probe set's (`<series>.probe_set_values.tsv.gz`),
+in the layouts the other scripts read. With `check` it compares one array's probe-set values with `SCANfast` itself and
+stops if they differ by more than 1e-6. Two more file names write the same values without the 4999 probes per array
+SCAN.UPC never standardises. `fig4_held_out.nf --cross_only --already_log2 --intensities <values>` runs the probe
+k-mer test, and `--cross_only --hp <folder>` the HP k-mer test, where the folder holds the two U133 `kmers.npz` files
+and the SCAN probe-set values. `plot_scan_cross.py` draws `results/fig4/scan/scan_cross.png`. The rules are in
+`scan_plan.md`. Build the R environment with `micromamba create -c conda-forge -c bioconda r-base bioconductor-scan.upc
+bioconductor-pd.hg.u133.plus.2 bioconductor-oligo`.

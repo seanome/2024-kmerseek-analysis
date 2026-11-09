@@ -575,10 +575,53 @@ This shared training response is one likely reason random k-mers that went up in
 It does not explain on its own why random HP k-mers reach 0.96 where random probe k-mers reach 0.71, since both carry
 it. Three other differences were not tested: the random HP sets are all k-mers that went up (as the chosen ones did),
 while the random probe sets were 879 up and 121 down; the HP test reads the authors' RMA values and the probe test raw
-intensities; and how many probe sets the random HP sets come from was not recorded. The random-k-mer chance test
+intensities; and how many probe sets the random HP sets come from was not recorded. The second is tested in the next section, with SCAN values. The random-k-mer chance test
 assumes random k-mers carry no training signal, which is not true here, so it is strict in that direction. `fig4/series_agreement.py` writes these numbers and the figure to `results/fig4/series_agreement/`.
 
 ![Change per probe set in GSE27536 against GSE28998](results/fig4/series_agreement/series_agreement.png)
+
+### The cross-series tests on SCAN values
+
+The probe k-mer tests above read raw probe intensities, and the HP k-mer tests read the authors' RMA values. Here both
+read values made the same way from the CEL files: SCAN (`SCANfast` in SCAN.UPC 2.52.0), which corrects each array on
+its own for how brightly each probe shines because of its sequence, as refine.bio does. Probe sets are Affymetrix's,
+so the probe set to protein table is unchanged. The rules were written before the run (`fig4/scan_plan.md`); every
+test step is that of the tests above.
+
+![Cross-series AUCs with the earlier values and with SCAN values](results/fig4/scan/scan_cross.png)
+
+| Chosen on, scored on | k-mers | AUC, earlier values (p swapped, p random) | AUC, SCAN values (p swapped, p random) | Random k-mers' median AUC, earlier, SCAN |
+|---|---|---|---|---|
+| GSE28998, GSE27536 | probe | 0.87 (0.005, 0.005) | 0.86 (0.005, 0.005) | 0.70, 0.71 |
+| GSE28998, GSE27536 | hp_lehninger2 | 0.83 (0.005, 0.005) | 0.86 (0.005, 0.005) | 0.69, 0.60 |
+| GSE28998, GSE27536 | hp_thomas_dill2 | 0.82 (0.005, 0.005) | 0.87 (0.005, 0.005) | 0.70, 0.60 |
+| GSE27536, GSE28998 | probe | 1.00 (0.008, 0.005) | 1.00 (0.008, 0.005) | 0.71, 0.73 |
+| GSE27536, GSE28998 | hp_lehninger2 | 0.98 (0.008, 0.383) | 0.98 (0.008, 0.005) | 0.96, 0.80 |
+| GSE27536, GSE28998 | hp_thomas_dill2 | 0.98 (0.008, 0.343) | 0.98 (0.008, 0.005) | 0.96, 0.80 |
+
+All AUCs are for the 1000 chosen k-mers. The chosen AUCs barely move: none changes by more than 0.05. What changes is
+the random HP k-mers. Chosen on GSE27536 and scored on GSE28998, their median AUC falls from 0.96 to 0.80, while random
+probe k-mers go from 0.71 to 0.73. The gap between random HP and random probe k-mers shrinks from 0.25 to 0.06 for both
+alphabets. The rule written first calls a gap of 0.06 unclear (between 0.05 and 0.1), so the different values explain
+most of the gap, not all of it. GSE28998 has 7 pre and 7 post samples, so its AUCs move in steps of 0.02, and 0.06 is
+three steps. With SCAN values, the chosen HP k-mers beat all 200 random sets in this test too, so the rule written
+first would call it carried over (p 0.008 and 0.005). The table above judged this test not informative on RMA values;
+that judgement is left as it is, and the SCAN result is reported beside it. The chosen HP k-mers now come from 19
+(`hp_lehninger2`) and 30 (`hp_thomas_dill2`) probe sets, against 10 and 54 with RMA values.
+
+SCAN.UPC leaves 4999 probes in each array at exactly 0. Its loop that standardises probes bin by bin starts at the
+5000th probe in order of predicted brightness, so the probes predicted dimmest are never standardised. SCANfast's own
+output has the same zeros; this script's probe-set values match SCANfast's to within 5e-16 on one array of each series.
+These zeros left 1649 probe k-mers constant across a series, against 27 with raw intensities. As a check chosen after
+seeing the results, the four tests were run again without them (panel c, `results/fig4/scan/without_unfitted/`). No
+AUC moved by more than 0.01 for the chosen k-mers, and the random HP median moved by one step at most (0.80 to 0.78 for
+`hp_lehninger2`). That puts the `hp_lehninger2` gap at 0.04, which the rule would call explained by the values, and
+the `hp_thomas_dill2` gap at 0.06, unclear. The two readings are one AUC step apart.
+
+`fig4/scan_values.R` writes the SCAN values, `fig4_held_out.nf --cross_only` runs the tests (`--already_log2` for probe
+k-mers, so SCAN values are not logged a second time), and `fig4/plot_scan_cross.py` draws the figure and writes
+`scan_cross_summary.tsv` and `scan_gap.tsv`. On Sherlock, SCAN took 3 min for GSE28998's 14 arrays and 8 to 10 min for
+GSE27536's 54, with 4 CPUs and about 4 GB for each array processed at once; the tests took 4 min.
 
 ## Limits
 
