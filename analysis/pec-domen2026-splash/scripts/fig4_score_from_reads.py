@@ -3,7 +3,7 @@
 
 Usage: fig4_score_from_reads.py <counts_root> <analysis_dir> <out_dir>
 
-counts_root holds <series>/share_<N>/gene.counts.tsv, gene.summary.tsv and gene_counts.time, as
+counts_root holds <series>/share_<N>/gene.counts.tsv (or .tsv.gz), gene.summary.tsv and gene_counts.time, as
 nextflow-runs/pec-domen2026-fig4-score writes them; share_<N> is the first 1/N of each run's reads.
 analysis_dir is analysis/pec-domen2026-splash. Plan and rules, written before any count:
 design/fig4_score_from_reads/README.md.
@@ -133,7 +133,10 @@ def main(counts_root, analysis, out):
         shares = sorted(int(p.name.split("_")[1]) for p in (counts_root / series).glob("share_*"))
         for share in shares:
             folder = counts_root / series / f"share_{share}"
-            counts = pd.read_csv(folder / "gene.counts.tsv", sep="\t", index_col=0)
+            table_file = folder / "gene.counts.tsv"  # the copy kept in the repo is gzipped
+            if not table_file.exists():
+                table_file = folder / "gene.counts.tsv.gz"
+            counts = pd.read_csv(table_file, sep="\t", index_col=0)
             assert set(counts.columns) == set(d.index), f"{series} share {share}: runs differ from the design"
             summary = pd.read_csv(folder / "gene.summary.tsv", sep="\t").set_index("sample")
             assert (counts.sum() == summary.assigned[counts.columns]).all(), "counts do not add up to the summary"

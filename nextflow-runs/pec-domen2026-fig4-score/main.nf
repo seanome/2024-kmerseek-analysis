@@ -69,7 +69,7 @@ process gene_counts {
     label 'count'
     storeDir "${O}/${series}/share_${share}"
     // sizing evidence: this folder's README
-    time   { (share.toInteger() == 1 ? 8.h : share.toInteger() == 10 ? 2.h : 1.h) * task.attempt }
+    time   { (share.toInteger() == 1 ? 6.h : share.toInteger() == 10 ? 1.h : 30.min) * task.attempt }
 
     input:
     tuple val(series), val(share), path(tool), path(map)

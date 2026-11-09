@@ -1,14 +1,14 @@
 #!/usr/bin/env python3
 """Inputs for counting reads per gene in the human Fig. 4 series (notebook 361).
 
-  fig4_reads_inputs.py gene-map <gencode.id_map.tsv> <out.tsv>
-      Protein ID and gene symbol (upper case) for every GENCODE protein, no header: the gene map
-      that `pec-tools gene-counts` reads. The symbol is the 7th field of the GENCODE FASTA header.
+fig4_reads_inputs.py gene-map <gencode.id_map.tsv> <out.tsv>
+    Protein ID and gene symbol (upper case) for every GENCODE protein, no header: the gene map
+    that `pec-tools gene-counts` reads. The symbol is the 7th field of the GENCODE FASTA header.
 
-  fig4_reads_inputs.py manifest <trimmed_series_dir> <share> <out.tsv>
-      One line per run: run, trimmed FASTQ, "-" (single-end), and how many reads to count.
-      share 1 counts every read (written as 0, which gene-counts reads as "all"); share N counts
-      the first 1/N of the reads fastp kept, at least one.
+fig4_reads_inputs.py manifest <trimmed_series_dir> <share> <out.tsv>
+    One line per run: run, trimmed FASTQ, "-" (single-end), and how many reads to count.
+    share 1 counts every read (written as 0, which gene-counts reads as "all"); share N counts
+    the first 1/N of the reads fastp kept, at least one.
 """
 
 import csv
@@ -41,7 +41,9 @@ def manifest(trimmed, share, out):
     with open(out, "w") as o:
         for fq in runs:
             run = fq.name.removesuffix(".fastq.gz")
-            kept = json.loads((fq.parent / f"{run}.fastp.json").read_text())["summary"]["after_filtering"]["total_reads"]
+            kept = json.loads((fq.parent / f"{run}.fastp.json").read_text())["summary"]["after_filtering"][
+                "total_reads"
+            ]
             if kept < 1:
                 raise SystemExit(f"{run}: fastp kept no reads")
             n = 0 if share == 1 else max(1, kept // share)
