@@ -944,7 +944,7 @@ def rank_key(r):
 def reach_table():
     """The reach rule. Returns reach.tsv rows and {(anchor, input, alphabet, k): (floor, [c_yeast, c_ath])}."""
     rows, floors = [], {}
-    cont = read_tsv(RES / "containment.tsv")
+    cont = kept(read_tsv(RES / "containment.tsv"))
     for input_type in INPUT_TYPES:
         for alphabet, k, _ in settings_for(input_type):
             for anchor in PATHS:
@@ -1007,7 +1007,47 @@ def reach_table():
     return rows, floors
 
 
+MIN_BUSCO = 90  # olgabot, 2026-11-09: only proteomes with UniProt BUSCO >= 90% complete
+DROPPED = []  # species left out by busco_filter, for the figure headers
+
+
+def busco_filter():
+    """Drop every species whose proteome is under MIN_BUSCO % complete (proteome_quality.tsv).
+
+    An anchor that fails takes its whole panel with it; a relative that fails leaves its
+    rank empty. Changes PATHS in place, so every table and figure after it sees the cut.
+    """
+    low = {
+        q["species"]
+        for q in read_tsv(OUT / "proteome_quality.tsv")
+        if q["busco_complete_pct"] and float(q["busco_complete_pct"]) < MIN_BUSCO
+    }
+    DROPPED[:] = sorted(low)
+    for anchor in list(PATHS):
+        if anchor in low:
+            del PATHS[anchor]
+        else:
+            PATHS[anchor] = [e for e in PATHS[anchor] if e[1] not in low]
+
+
+def kept(rows):
+    """Rows whose anchor and relative both pass busco_filter."""
+    gone = set(DROPPED)
+    return [r for r in rows if r["anchor"] in PATHS and r.get("relative") not in gone]
+
+
+def dropped_line():
+    return (
+        f"Only proteomes at least {MIN_BUSCO}% complete by UniProt BUSCO; left out: "
+        + ", ".join(DROPPED)
+        + ".\n"
+        if DROPPED
+        else ""
+    )
+
+
 def reach(args):
+    busco_filter()
     rows, _ = reach_table()
     write_tsv(RES / "reach.tsv", rows, list(rows[0]))
     for r in rows:
@@ -1030,8 +1070,9 @@ def figure(args):
     import pubfig as pf
 
     pf.use_style()
-    cont = read_tsv(RES / "containment.tsv")
-    path = read_tsv(OUT / "taxonomic_path.tsv")
+    busco_filter()
+    cont = kept(read_tsv(RES / "containment.tsv"))
+    path = kept(read_tsv(OUT / "taxonomic_path.tsv"))
     _, floors = reach_table()
     y_min = 1e-4
     for input_type in ("proteome",):
@@ -1333,10 +1374,13 @@ def draw_ladder_summary(rows):
         f"{MIN_SHARED} sampled k-mers, and every nearer rank reached too.\n"
         f"1 in {SCALED['hp']} k-mers sampled"
         + ("" if SCALED["hp"] == SCALED["DNA"] else f" (DNA: 1 in {SCALED['DNA']})")
-        + ".\nRanks are main ranks; a relative sharing a sub-rank counts under the rank above it. "
+        + ".\n"
+        + dropped_line()
+        + "Ranks are main ranks; a relative sharing a sub-rank counts under the rank above it. "
         "Points on one rank are nudged apart so all four show.\n"
         + ladder_conclusion(level),
-        y=1.3,
+        y=1.13,
+        va="bottom",
     )
     pf.save(fig, str(RES / "reach_by_codons_uniprot"))
 
@@ -1416,7 +1460,7 @@ def draw_reach_bars(rows, settings, matched, name):
     import pubfig as pf
 
     reached_colour, passed_colour = pf.OKABE_ITO["blue"], pf.OKABE_ITO["sky_blue"]
-    fig, axs = pf.figure(pf.TWO_COLUMN_MM, 125, nrows=len(PATHS))
+    fig, axs = pf.figure(pf.TWO_COLUMN_MM, 42 * len(PATHS), nrows=len(PATHS))
     # One column per main rank, the same in every panel. A relative that shares a sub-rank
     # (subgenus, subfamily, ...) goes under the main rank above it; where two relatives land
     # in one column, the farther one is drawn, since reaching it means reaching the rank.
@@ -1588,20 +1632,32 @@ def draw_reach_bars(rows, settings, matched, name):
             else ""
         )
         + f"{matched}.\n"
-        "Protein, dayhoff and hp from UniProt reference proteomes; DNA from the coding sequences of the same genes.\n"
+        + dropped_line()
+        + "Protein, dayhoff and hp from UniProt reference proteomes; DNA from the coding sequences of the same genes.\n"
         "dayhoff letters: AGPST C DENQ FWY HKR ILMV; hp letters: AFGILMPVWY (hydrophobic), CDEHKNQRST (polar).\n"
         "Each column is one main rank, the same in every panel. Each relative sits under the lowest main rank it "
         "shares with the anchor.\n"
-        + "These also share a sub-rank, so they are closer than that rank alone: "
-        + ", ".join(shared_sub)
-        + ".\nNot drawn, because a farther relative stands for the same rank: "
-        + ", ".join(dropped)
-        + ".\n"
+        + (
+            "These also share a sub-rank, so they are closer than that rank alone: "
+            + ", ".join(shared_sub)
+            + ".\n"
+            if shared_sub
+            else ""
+        )
+        + (
+            "Not drawn, because a farther relative stands for the same rank: "
+            + ", ".join(dropped)
+            + ".\n"
+            if dropped
+            else ""
+        )
         # Built from the data, so it cannot go stale.
         + reach_conclusion(rows, settings)
     )
     # Anchor the header's bottom just above the legend, however many lines it has.
-    fig.suptitle(header, y=1.07, va="bottom")
+    fig.suptitle(
+        header, y=1 + 10 / (42 * len(PATHS)), va="bottom"
+    )  # 10 mm above the panels
     pf.save(fig, str(RES / name))
 
 
