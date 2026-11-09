@@ -2314,6 +2314,13 @@ run-rannon-burstein: prefetch-images midi-testset-sherlock
 # 1 bit), and
 # so dayhoff6 reaches k21. Results: reports/qfo-requested-settings-2026-11-08/.
 #
+# Known failure: the last step, aggregateMetrics, refuses to build the combined table
+# because ciona has only 23 Swiss-Prot annotated proteins, so no all_domain_metrics.parquet
+# is written for these 14 settings and a -resume rerun fails the same way. Every search
+# and scoring task still finishes. Workaround: read the per-search files in
+# $(HPLONG_OUTDIR)/metrics/ (pfam.kmerseek.*_lcFalse.*.metrics.parquet), which is what the
+# report's summarize.py does.
+#
 # 6 two-letter H/P alphabets x k35, k40 + dayhoff6 k19, k21 = 14 settings, masking off,
 # x 9 targets = 126 index builds and 126 searches. hp_lehninger_hpc3 is left out: it has
 # three letters, so k35 would be 55 bits, past the range asked for.
