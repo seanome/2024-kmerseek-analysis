@@ -26,6 +26,7 @@ if [ "$STEP" = fetch ] && [ ! -e "$ENV/.complete" ]; then
     if [ ! -x "$MAMBA" ]; then
         curl -fsSL -o "$MAMBA.part" \
             https://github.com/mamba-org/micromamba-releases/releases/download/2.3.3-0/micromamba-linux-64
+        echo "9496f94a8b78c536573c93d946ec9bba74bd9ff79ee55aaa4b546e30db8f511b  $MAMBA.part" | sha256sum -c -
         chmod +x "$MAMBA.part"
         mv "$MAMBA.part" "$MAMBA"
     fi
