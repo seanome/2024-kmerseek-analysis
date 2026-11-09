@@ -64,6 +64,13 @@ SETTINGS = [
     ("hp", 30, 30),
     ("hp", 42, 42),
 ]
+# k sweeps for dayhoff and hp (olgabot, 2026-11-08), reported next to the 30/42-bit
+# settings above; bits level "sweep". With the 30/42-bit k they give dayhoff k = 12, 15,
+# 16, 17, 19, 21 and hp k = 24, 27, 30, 33, 36, 39, 42.
+SWEEP = [("dayhoff", k, "sweep") for k in (15, 17, 19, 21)] + [
+    ("hp", k, "sweep") for k in (24, 27, 33, 36, 39)
+]
+ALL_SETTINGS = SETTINGS + SWEEP
 SCALED = {"DNA": 1000, "protein": 200, "dayhoff": 200, "hp": 200}
 # NB364_SCALED=<n> sets one scaled value for every alphabet. Its sketches, comparisons
 # and results go in folders named scaled<n>, so the default run's files are kept.
@@ -85,7 +92,7 @@ def bits_uniform(alphabet, k):
 
 
 def settings_for(input_type):
-    return [s for s in SETTINGS if (s[0] == "DNA") == (input_type == "cds")]
+    return [s for s in ALL_SETTINGS if (s[0] == "DNA") == (input_type == "cds")]
 
 
 def input_type_of(alphabet):
@@ -652,7 +659,7 @@ def entropy(args):
             for letter, c in aa.items():
                 mapped[table[letter]] += c
             by_alphabet[name] = mapped
-        for alphabet, k, level in SETTINGS:
+        for alphabet, k, level in ALL_SETTINGS:
             h, n = shannon(by_alphabet[alphabet])
             rows.append(
                 dict(
@@ -695,11 +702,19 @@ def sketch(args):
         if out.exists():
             import sourmash
 
-            names = {sig.name for sig in sourmash.load_file_as_signatures(str(out))}
-            if names == set(species_files()):
+            have = {
+                (sig.name, sig.minhash.moltype, sig.minhash.ksize)
+                for sig in sourmash.load_file_as_signatures(str(out))
+            }
+            want = {
+                (sp, alphabet, k)
+                for sp in species_files()
+                for alphabet, k, _ in settings_for(input_type)
+            }
+            if have == want:
                 print(out, "exists", flush=True)
                 continue
-            print(out, "holds other species; rebuilding", flush=True)
+            print(out, "holds other species or settings; rebuilding", flush=True)
             out.unlink()
         listing = run_dir(work, "sigs") / f"{input_type}.manysketch.csv"
         with open(listing, "w", newline="") as f:
@@ -1065,6 +1080,142 @@ def figure(args):
         for ax, letter in zip(axs, "abc"):
             pf.panel_label(ax, letter)
         pf.save(fig, str(RES / f"reach_by_alphabet_{input_type}"))
+    figure_sweep(cont, path, floors)
+
+
+def figure_sweep(cont, path, floors):
+    """Dayhoff and hp at every k swept: one row per alphabet, one column per anchor.
+
+    Colour runs light to dark with k (seaborn crest); filled point = above that line's own
+    noise floor, hollow = at or below it, as in the main figure.
+    """
+    import matplotlib as mpl
+    from matplotlib.lines import Line2D
+    from matplotlib.ticker import FuncFormatter, NullFormatter
+    import pubfig as pf
+
+    y_min = 1e-4
+    alphabets = ("dayhoff", "hp")
+    fig, axs = pf.figure(
+        pf.TWO_COLUMN_MM, 150, nrows=len(alphabets), ncols=len(PATHS), sharey=True
+    )
+    for row, alphabet in zip(axs, alphabets):
+        ks = sorted(k for a, k, _ in ALL_SETTINGS if a == alphabet)
+        cmap = mpl.colormaps["crest"]
+        colour = {k: cmap(0.15 + 0.85 * i / (len(ks) - 1)) for i, k in enumerate(ks)}
+        for ax, anchor in zip(row, PATHS):
+            rels = sorted(
+                (r for r in path if r["anchor"] == anchor and r["rank"] != "anchor"),
+                key=lambda r: (rank_key(r), r["relative"]),
+            )
+            xs = {r["relative"]: i for i, r in enumerate(rels)}
+            for k in ks:
+                sub = sorted(
+                    (
+                        r
+                        for r in cont
+                        if r["anchor"] == anchor
+                        and r["alphabet"] == alphabet
+                        and int(r["k"]) == k
+                    ),
+                    key=lambda r: xs[r["relative"]],
+                )
+                floor, _ = floors[(anchor, "proteome", alphabet, k)]
+                x = [xs[r["relative"]] for r in sub]
+                y = [max(max_c(r), y_min) for r in sub]
+                above = [max_c(r) > floor for r in sub]
+                ax.plot(x, y, color=colour[k], zorder=2)
+                ax.scatter(
+                    [xx for xx, a in zip(x, above) if a],
+                    [yy for yy, a in zip(y, above) if a],
+                    s=9,
+                    color=colour[k],
+                    lw=0,
+                    zorder=3,
+                )
+                ax.scatter(
+                    [xx for xx, a in zip(x, above) if not a],
+                    [yy for yy, a in zip(y, above) if not a],
+                    s=9,
+                    facecolor="white",
+                    edgecolor=colour[k],
+                    lw=0.6,
+                    zorder=3,
+                )
+            ax.set_yscale("log")
+            ax.set_ylim(y_min, 1.5)
+            ax.set_xticks(range(len(rels)))
+            if alphabet == alphabets[-1]:
+                ax.set_xticklabels(
+                    [
+                        f"{r['rank']}: {r['relative'][0]}. {r['relative'].split(' ', 1)[1]}"
+                        for r in rels
+                    ],
+                    rotation=30,
+                    ha="right",
+                    rotation_mode="anchor",
+                )
+                ax.tick_params(axis="x", labelsize=5)
+            else:
+                ax.set_xticklabels([])
+                ax.set_title(f"Anchor: {anchor}", loc="left")
+            ax.yaxis.set_major_formatter(FuncFormatter(lambda v, _: f"{v:g}"))
+            ax.yaxis.set_minor_formatter(NullFormatter())
+            if ax is row[0]:
+                ax.set_ylabel(f"{alphabet}: max containment")
+        row[-1].legend(
+            handles=[
+                Line2D(
+                    [],
+                    [],
+                    color=colour[k],
+                    marker="o",
+                    ms=3,
+                    label=f"k={k} ({bits_uniform(alphabet, k):.1f} bits)",
+                )
+                for k in ks
+            ],
+            loc="upper left",
+            bbox_to_anchor=(1.02, 1),
+            title=alphabet,
+        )
+    fig.legend(
+        handles=[
+            Line2D(
+                [],
+                [],
+                color="k",
+                marker="o",
+                ls="",
+                ms=3,
+                label="above its line's noise floor",
+            ),
+            Line2D(
+                [],
+                [],
+                color="k",
+                marker="o",
+                ls="",
+                ms=3,
+                mfc="white",
+                label="at or below it",
+            ),
+        ],
+        loc="lower center",
+        ncol=2,
+        bbox_to_anchor=(0.5, 1.0),
+    )
+    fig.suptitle(
+        f"Dayhoff and hp at each k, from the proteome (scaled {SCALED['hp']})\n"
+        "Points on the bottom axis: containment below 0.0001, most of them 0",
+        y=1.08,
+    )
+    fig.supxlabel(
+        "Lowest rank shared with the anchor (NCBI Taxonomy): relative species"
+    )
+    for ax, letter in zip(axs.flat, "abcdef"):
+        pf.panel_label(ax, letter)
+    pf.save(fig, str(RES / "reach_by_k_dayhoff_hp"))
 
 
 CORES = 4
