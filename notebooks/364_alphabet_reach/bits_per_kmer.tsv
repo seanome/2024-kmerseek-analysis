@@ -7,6 +7,15 @@ Mus musculus	dayhoff	12	30	proteome	11810835	2.2865	31.02	27.44
 Mus musculus	dayhoff	16	42	proteome	11810835	2.2865	41.36	36.58
 Mus musculus	hp	30	30	proteome	11810835	1.0000	30.00	30.00
 Mus musculus	hp	42	42	proteome	11810835	1.0000	42.00	42.00
+Mus musculus	dayhoff	15	sweep	proteome	11810835	2.2865	38.77	34.30
+Mus musculus	dayhoff	17	sweep	proteome	11810835	2.2865	43.94	38.87
+Mus musculus	dayhoff	19	sweep	proteome	11810835	2.2865	49.11	43.44
+Mus musculus	dayhoff	21	sweep	proteome	11810835	2.2865	54.28	48.02
+Mus musculus	hp	24	sweep	proteome	11810835	1.0000	24.00	24.00
+Mus musculus	hp	27	sweep	proteome	11810835	1.0000	27.00	27.00
+Mus musculus	hp	33	sweep	proteome	11810835	1.0000	33.00	33.00
+Mus musculus	hp	36	sweep	proteome	11810835	1.0000	36.00	36.00
+Mus musculus	hp	39	sweep	proteome	11810835	1.0000	39.00	39.00
 Mytilus edulis	DNA	15	30	cds	92922767	1.9458	30.00	29.19
 Mytilus edulis	DNA	21	42	cds	92922767	1.9458	42.00	40.86
 Mytilus edulis	protein	7	30	proteome	30905020	4.1988	30.25	29.39
@@ -15,6 +24,15 @@ Mytilus edulis	dayhoff	12	30	proteome	30905020	2.3282	31.02	27.94
 Mytilus edulis	dayhoff	16	42	proteome	30905020	2.3282	41.36	37.25
 Mytilus edulis	hp	30	30	proteome	30905020	0.9942	30.00	29.83
 Mytilus edulis	hp	42	42	proteome	30905020	0.9942	42.00	41.76
+Mytilus edulis	dayhoff	15	sweep	proteome	30905020	2.3282	38.77	34.92
+Mytilus edulis	dayhoff	17	sweep	proteome	30905020	2.3282	43.94	39.58
+Mytilus edulis	dayhoff	19	sweep	proteome	30905020	2.3282	49.11	44.24
+Mytilus edulis	dayhoff	21	sweep	proteome	30905020	2.3282	54.28	48.89
+Mytilus edulis	hp	24	sweep	proteome	30905020	0.9942	24.00	23.86
+Mytilus edulis	hp	27	sweep	proteome	30905020	0.9942	27.00	26.84
+Mytilus edulis	hp	33	sweep	proteome	30905020	0.9942	33.00	32.81
+Mytilus edulis	hp	36	sweep	proteome	30905020	0.9942	36.00	35.79
+Mytilus edulis	hp	39	sweep	proteome	30905020	0.9942	39.00	38.78
 Escherichia coli K-12	DNA	15	30	cds	4042859	1.9979	30.00	29.97
 Escherichia coli K-12	DNA	21	42	cds	4042859	1.9979	42.00	41.96
 Escherichia coli K-12	protein	7	30	proteome	1354431	4.1582	30.25	29.11
@@ -23,3 +41,12 @@ Escherichia coli K-12	dayhoff	12	30	proteome	1354431	2.2355	31.02	26.83
 Escherichia coli K-12	dayhoff	16	42	proteome	1354431	2.2355	41.36	35.77
 Escherichia coli K-12	hp	30	30	proteome	1354431	0.9891	30.00	29.67
 Escherichia coli K-12	hp	42	42	proteome	1354431	0.9891	42.00	41.54
+Escherichia coli K-12	dayhoff	15	sweep	proteome	1354431	2.2355	38.77	33.53
+Escherichia coli K-12	dayhoff	17	sweep	proteome	1354431	2.2355	43.94	38.00
+Escherichia coli K-12	dayhoff	19	sweep	proteome	1354431	2.2355	49.11	42.47
+Escherichia coli K-12	dayhoff	21	sweep	proteome	1354431	2.2355	54.28	46.95
+Escherichia coli K-12	hp	24	sweep	proteome	1354431	0.9891	24.00	23.74
+Escherichia coli K-12	hp	27	sweep	proteome	1354431	0.9891	27.00	26.70
+Escherichia coli K-12	hp	33	sweep	proteome	1354431	0.9891	33.00	32.64
+Escherichia coli K-12	hp	36	sweep	proteome	1354431	0.9891	36.00	35.61
+Escherichia coli K-12	hp	39	sweep	proteome	1354431	0.9891	39.00	38.57

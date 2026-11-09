@@ -143,6 +143,222 @@ Escherichia coli K-12	Caulobacter vibrioides	phylum	hp	42	42.00	proteome	200	0	0
 Escherichia coli K-12	Bacteroides thetaiotaomicron	kingdom	hp	42	42.00	proteome	200	0.000340541	0.000239808	5873	8340
 Escherichia coli K-12	Bacillus subtilis	other kingdom	hp	42	42.00	proteome	200	0.000681083	0.000745712	5873	5364
 Escherichia coli K-12	Thermotoga maritima	other kingdom	hp	42	42.00	proteome	200	0	0	5873	2537
+Mus musculus	Mus caroli	subgenus	dayhoff	15	38.77	proteome	200	0.849683	0.842963	50673	51077
+Mus musculus	Rattus norvegicus	subfamily	dayhoff	15	38.77	proteome	200	0.674738	0.672363	50673	50852
+Mus musculus	Cavia porcellus	order	dayhoff	15	38.77	proteome	200	0.429736	0.495529	50673	43945
+Mus musculus	Rhinolophus ferrumequinum	class	dayhoff	15	38.77	proteome	200	0.442879	0.475355	50673	47211
+Mus musculus	Danio rerio	subphylum	dayhoff	15	38.77	proteome	200	0.161269	0.127598	50673	64045
+Mus musculus	Drosophila melanogaster	kingdom	dayhoff	15	38.77	proteome	200	0.0265427	0.0391774	50673	34331
+Mus musculus	Saccharomyces cerevisiae	other kingdom	dayhoff	15	38.77	proteome	200	0.0044205	0.0171569	50673	13056
+Mus musculus	Arabidopsis thaliana	other kingdom	dayhoff	15	38.77	proteome	200	0.0116433	0.0124939	50673	47223
+Mytilus edulis	Mytilus coruscus	genus	dayhoff	15	38.77	proteome	200	0.342212	0.346327	96113	94971
+Mytilus edulis	Magallana gigas	subclass	dayhoff	15	38.77	proteome	200	0.0429807	0.0654592	96113	63108
+Mytilus edulis	Solemya velum	class	dayhoff	15	38.77	proteome	200	0.0332213	0.0714749	96113	44673
+Mytilus edulis	Octopus sinensis	phylum	dayhoff	15	38.77	proteome	200	0.0231915	0.0526216	96113	42359
+Mytilus edulis	Capitella teleta	kingdom	dayhoff	15	38.77	proteome	200	0.0201846	0.0411209	96113	47178
+Mytilus edulis	Saccharomyces cerevisiae	other kingdom	dayhoff	15	38.77	proteome	200	0.00219533	0.0161612	96113	13056
+Mytilus edulis	Arabidopsis thaliana	other kingdom	dayhoff	15	38.77	proteome	200	0.00580567	0.0118163	96113	47223
+Escherichia coli K-12	Escherichia coli O157:H7	species	dayhoff	15	38.77	proteome	200	0.840064	0.74876	6290	7057
+Escherichia coli K-12	Escherichia fergusonii	genus	dayhoff	15	38.77	proteome	200	0.631479	0.61467	6290	6462
+Escherichia coli K-12	Salmonella enterica	family	dayhoff	15	38.77	proteome	200	0.441494	0.426051	6290	6518
+Escherichia coli K-12	Yersinia pestis	order	dayhoff	15	38.77	proteome	200	0.166773	0.180458	6290	5813
+Escherichia coli K-12	Pseudomonas aeruginosa	class	dayhoff	15	38.77	proteome	200	0.0384738	0.0280775	6290	8619
+Escherichia coli K-12	Caulobacter vibrioides	phylum	dayhoff	15	38.77	proteome	200	0.0106518	0.0117544	6290	5700
+Escherichia coli K-12	Bacteroides thetaiotaomicron	kingdom	dayhoff	15	38.77	proteome	200	0.00540541	0.0038742	6290	8776
+Escherichia coli K-12	Bacillus subtilis	other kingdom	dayhoff	15	38.77	proteome	200	0.00890302	0.00960879	6290	5828
+Escherichia coli K-12	Thermotoga maritima	other kingdom	dayhoff	15	38.77	proteome	200	0.00333863	0.00787992	6290	2665
+Mus musculus	Mus caroli	subgenus	dayhoff	17	43.94	proteome	200	0.834663	0.829782	52015	52321
+Mus musculus	Rattus norvegicus	subfamily	dayhoff	17	43.94	proteome	200	0.648428	0.652796	52015	51667
+Mus musculus	Cavia porcellus	order	dayhoff	17	43.94	proteome	200	0.401788	0.469187	52015	44543
+Mus musculus	Rhinolophus ferrumequinum	class	dayhoff	17	43.94	proteome	200	0.414284	0.450543	52015	47829
+Mus musculus	Danio rerio	subphylum	dayhoff	17	43.94	proteome	200	0.131539	0.104871	52015	65242
+Mus musculus	Drosophila melanogaster	kingdom	dayhoff	17	43.94	proteome	200	0.015707	0.0236908	52015	34486
+Mus musculus	Saccharomyces cerevisiae	other kingdom	dayhoff	17	43.94	proteome	200	0.0022109	0.00864857	52015	13297
+Mus musculus	Arabidopsis thaliana	other kingdom	dayhoff	17	43.94	proteome	200	0.00480631	0.00519988	52015	48078
+Mytilus edulis	Mytilus coruscus	genus	dayhoff	17	43.94	proteome	200	0.317526	0.318997	97384	96935
+Mytilus edulis	Magallana gigas	subclass	dayhoff	17	43.94	proteome	200	0.0322948	0.0495744	97384	63440
+Mytilus edulis	Solemya velum	class	dayhoff	17	43.94	proteome	200	0.0247166	0.0533324	97384	45132
+Mytilus edulis	Octopus sinensis	phylum	dayhoff	17	43.94	proteome	200	0.0168919	0.038725	97384	42479
+Mytilus edulis	Capitella teleta	kingdom	dayhoff	17	43.94	proteome	200	0.0143761	0.0295334	97384	47404
+Mytilus edulis	Saccharomyces cerevisiae	other kingdom	dayhoff	17	43.94	proteome	200	0.00113982	0.00834775	97384	13297
+Mytilus edulis	Arabidopsis thaliana	other kingdom	dayhoff	17	43.94	proteome	200	0.0020948	0.0042431	97384	48078
+Escherichia coli K-12	Escherichia coli O157:H7	species	dayhoff	17	43.94	proteome	200	0.835019	0.750142	6328	7044
+Escherichia coli K-12	Escherichia fergusonii	genus	dayhoff	17	43.94	proteome	200	0.614096	0.603042	6328	6444
+Escherichia coli K-12	Salmonella enterica	family	dayhoff	17	43.94	proteome	200	0.43031	0.400854	6328	6793
+Escherichia coli K-12	Yersinia pestis	order	dayhoff	17	43.94	proteome	200	0.148388	0.158722	6328	5916
+Escherichia coli K-12	Pseudomonas aeruginosa	class	dayhoff	17	43.94	proteome	200	0.0290771	0.0210526	6328	8740
+Escherichia coli K-12	Caulobacter vibrioides	phylum	dayhoff	17	43.94	proteome	200	0.005689	0.00638864	6328	5635
+Escherichia coli K-12	Bacteroides thetaiotaomicron	kingdom	dayhoff	17	43.94	proteome	200	0.00316056	0.0023183	6328	8627
+Escherichia coli K-12	Bacillus subtilis	other kingdom	dayhoff	17	43.94	proteome	200	0.00600506	0.00660525	6328	5753
+Escherichia coli K-12	Thermotoga maritima	other kingdom	dayhoff	17	43.94	proteome	200	0.00189633	0.00429646	6328	2793
+Mus musculus	Mus caroli	subgenus	dayhoff	19	49.11	proteome	200	0.818633	0.819435	52132	52081
+Mus musculus	Rattus norvegicus	subfamily	dayhoff	19	49.11	proteome	200	0.62806	0.628301	52132	52112
+Mus musculus	Cavia porcellus	order	dayhoff	19	49.11	proteome	200	0.381685	0.443815	52132	44834
+Mus musculus	Rhinolophus ferrumequinum	class	dayhoff	19	49.11	proteome	200	0.394556	0.423562	52132	48562
+Mus musculus	Danio rerio	subphylum	dayhoff	19	49.11	proteome	200	0.117893	0.0930634	52132	66041
+Mus musculus	Drosophila melanogaster	kingdom	dayhoff	19	49.11	proteome	200	0.011797	0.0176193	52132	34905
+Mus musculus	Saccharomyces cerevisiae	other kingdom	dayhoff	19	49.11	proteome	200	0.00141947	0.00562609	52132	13153
+Mus musculus	Arabidopsis thaliana	other kingdom	dayhoff	19	49.11	proteome	200	0.00320341	0.00345141	52132	48386
+Mytilus edulis	Mytilus coruscus	genus	dayhoff	19	49.11	proteome	200	0.294644	0.296938	99279	98512
+Mytilus edulis	Magallana gigas	subclass	dayhoff	19	49.11	proteome	200	0.0265514	0.0411894	99279	63997
+Mytilus edulis	Solemya velum	class	dayhoff	19	49.11	proteome	200	0.0203668	0.0445061	99279	45432
+Mytilus edulis	Octopus sinensis	phylum	dayhoff	19	49.11	proteome	200	0.0130541	0.0301269	99279	43018
+Mytilus edulis	Capitella teleta	kingdom	dayhoff	19	49.11	proteome	200	0.0110195	0.0228655	99279	47845
+Mytilus edulis	Saccharomyces cerevisiae	other kingdom	dayhoff	19	49.11	proteome	200	0.000584212	0.00440964	99279	13153
+Mytilus edulis	Arabidopsis thaliana	other kingdom	dayhoff	19	49.11	proteome	200	0.00122886	0.00252139	99279	48386
+Escherichia coli K-12	Escherichia coli O157:H7	species	dayhoff	19	49.11	proteome	200	0.83294	0.748304	6357	7076
+Escherichia coli K-12	Escherichia fergusonii	genus	dayhoff	19	49.11	proteome	200	0.592732	0.589026	6357	6397
+Escherichia coli K-12	Salmonella enterica	family	dayhoff	19	49.11	proteome	200	0.395941	0.385452	6357	6530
+Escherichia coli K-12	Yersinia pestis	order	dayhoff	19	49.11	proteome	200	0.142048	0.153885	6357	5868
+Escherichia coli K-12	Pseudomonas aeruginosa	class	dayhoff	19	49.11	proteome	200	0.0221803	0.0162311	6357	8687
+Escherichia coli K-12	Caulobacter vibrioides	phylum	dayhoff	19	49.11	proteome	200	0.00471921	0.00518224	6357	5789
+Escherichia coli K-12	Bacteroides thetaiotaomicron	kingdom	dayhoff	19	49.11	proteome	200	0.0022023	0.00161197	6357	8685
+Escherichia coli K-12	Bacillus subtilis	other kingdom	dayhoff	19	49.11	proteome	200	0.00314614	0.00342231	6357	5844
+Escherichia coli K-12	Thermotoga maritima	other kingdom	dayhoff	19	49.11	proteome	200	0.00173038	0.00401313	6357	2741
+Mus musculus	Mus caroli	subgenus	dayhoff	21	54.28	proteome	200	0.810333	0.805986	51912	52192
+Mus musculus	Rattus norvegicus	subfamily	dayhoff	21	54.28	proteome	200	0.609474	0.609662	51912	51896
+Mus musculus	Cavia porcellus	order	dayhoff	21	54.28	proteome	200	0.367603	0.423211	51912	45091
+Mus musculus	Rhinolophus ferrumequinum	class	dayhoff	21	54.28	proteome	200	0.373112	0.404735	51912	47856
+Mus musculus	Danio rerio	subphylum	dayhoff	21	54.28	proteome	200	0.106526	0.0829334	51912	66680
+Mus musculus	Drosophila melanogaster	kingdom	dayhoff	21	54.28	proteome	200	0.00976653	0.0147736	51912	34318
+Mus musculus	Saccharomyces cerevisiae	other kingdom	dayhoff	21	54.28	proteome	200	0.00119433	0.00471842	51912	13140
+Mus musculus	Arabidopsis thaliana	other kingdom	dayhoff	21	54.28	proteome	200	0.00208044	0.00223159	51912	48396
+Mytilus edulis	Mytilus coruscus	genus	dayhoff	21	54.28	proteome	200	0.27737	0.277529	99261	99204
+Mytilus edulis	Magallana gigas	subclass	dayhoff	21	54.28	proteome	200	0.0226877	0.0354055	99261	63606
+Mytilus edulis	Solemya velum	class	dayhoff	21	54.28	proteome	200	0.0167538	0.0366421	99261	45385
+Mytilus edulis	Octopus sinensis	phylum	dayhoff	21	54.28	proteome	200	0.0103465	0.024138	99261	42547
+Mytilus edulis	Capitella teleta	kingdom	dayhoff	21	54.28	proteome	200	0.00939946	0.0194809	99261	47893
+Mytilus edulis	Saccharomyces cerevisiae	other kingdom	dayhoff	21	54.28	proteome	200	0.000463425	0.00350076	99261	13140
+Mytilus edulis	Arabidopsis thaliana	other kingdom	dayhoff	21	54.28	proteome	200	0.000876477	0.00179767	99261	48396
+Escherichia coli K-12	Escherichia coli O157:H7	species	dayhoff	21	54.28	proteome	200	0.829464	0.732246	6116	6928
+Escherichia coli K-12	Escherichia fergusonii	genus	dayhoff	21	54.28	proteome	200	0.591563	0.574377	6116	6299
+Escherichia coli K-12	Salmonella enterica	family	dayhoff	21	54.28	proteome	200	0.396337	0.366495	6116	6614
+Escherichia coli K-12	Yersinia pestis	order	dayhoff	21	54.28	proteome	200	0.123774	0.130091	6116	5819
+Escherichia coli K-12	Pseudomonas aeruginosa	class	dayhoff	21	54.28	proteome	200	0.0197842	0.0138682	6116	8725
+Escherichia coli K-12	Caulobacter vibrioides	phylum	dayhoff	21	54.28	proteome	200	0.00343362	0.00377087	6116	5569
+Escherichia coli K-12	Bacteroides thetaiotaomicron	kingdom	dayhoff	21	54.28	proteome	200	0.00261609	0.00182253	6116	8779
+Escherichia coli K-12	Bacillus subtilis	other kingdom	dayhoff	21	54.28	proteome	200	0.00392413	0.00425683	6116	5638
+Escherichia coli K-12	Thermotoga maritima	other kingdom	dayhoff	21	54.28	proteome	200	0.000654022	0.0014373	6116	2783
+Mus musculus	Mus caroli	subgenus	hp	24	24.00	proteome	200	0.88295	0.874118	36916	37289
+Mus musculus	Rattus norvegicus	subfamily	hp	24	24.00	proteome	200	0.764655	0.768946	36916	36710
+Mus musculus	Cavia porcellus	order	hp	24	24.00	proteome	200	0.598683	0.665633	36916	33203
+Mus musculus	Rhinolophus ferrumequinum	class	hp	24	24.00	proteome	200	0.622278	0.654193	36916	35115
+Mus musculus	Danio rerio	subphylum	hp	24	24.00	proteome	200	0.576525	0.498898	36916	42660
+Mus musculus	Drosophila melanogaster	kingdom	hp	24	24.00	proteome	200	0.344404	0.469862	36916	27059
+Mus musculus	Saccharomyces cerevisiae	other kingdom	hp	24	24.00	proteome	200	0.151912	0.478172	36916	11728
+Mus musculus	Arabidopsis thaliana	other kingdom	hp	24	24.00	proteome	200	0.431114	0.459188	36916	34659
+Mytilus edulis	Mytilus coruscus	genus	hp	24	24.00	proteome	200	0.74211	0.745753	52410	52154
+Mytilus edulis	Magallana gigas	subclass	hp	24	24.00	proteome	200	0.532589	0.67581	52410	41303
+Mytilus edulis	Solemya velum	class	hp	24	24.00	proteome	200	0.4249	0.674307	52410	33025
+Mytilus edulis	Octopus sinensis	phylum	hp	24	24.00	proteome	200	0.397577	0.678288	52410	30720
+Mytilus edulis	Capitella teleta	kingdom	hp	24	24.00	proteome	200	0.435585	0.658523	52410	34667
+Mytilus edulis	Saccharomyces cerevisiae	other kingdom	hp	24	24.00	proteome	200	0.150277	0.671555	52410	11728
+Mytilus edulis	Arabidopsis thaliana	other kingdom	hp	24	24.00	proteome	200	0.425987	0.644162	52410	34659
+Escherichia coli K-12	Escherichia coli O157:H7	species	hp	24	24.00	proteome	200	0.837162	0.757273	5877	6497
+Escherichia coli K-12	Escherichia fergusonii	genus	hp	24	24.00	proteome	200	0.625319	0.626705	5877	5864
+Escherichia coli K-12	Salmonella enterica	family	hp	24	24.00	proteome	200	0.454994	0.445518	5877	6002
+Escherichia coli K-12	Yersinia pestis	order	hp	24	24.00	proteome	200	0.218479	0.244898	5877	5243
+Escherichia coli K-12	Pseudomonas aeruginosa	class	hp	24	24.00	proteome	200	0.162838	0.126923	5877	7540
+Escherichia coli K-12	Caulobacter vibrioides	phylum	hp	24	24.00	proteome	200	0.107368	0.125397	5877	5032
+Escherichia coli K-12	Bacteroides thetaiotaomicron	kingdom	hp	24	24.00	proteome	200	0.119108	0.0887536	5877	7887
+Escherichia coli K-12	Bacillus subtilis	other kingdom	hp	24	24.00	proteome	200	0.100391	0.111933	5877	5271
+Escherichia coli K-12	Thermotoga maritima	other kingdom	hp	24	24.00	proteome	200	0.0515569	0.117533	5877	2578
+Mus musculus	Mus caroli	subgenus	hp	27	27.00	proteome	200	0.820238	0.817869	48670	48811
+Mus musculus	Rattus norvegicus	subfamily	hp	27	27.00	proteome	200	0.63382	0.641571	48670	48082
+Mus musculus	Cavia porcellus	order	hp	27	27.00	proteome	200	0.403164	0.46226	48670	42448
+Mus musculus	Rhinolophus ferrumequinum	class	hp	27	27.00	proteome	200	0.41541	0.449419	48670	44987
+Mus musculus	Danio rerio	subphylum	hp	27	27.00	proteome	200	0.207993	0.168288	48670	60153
+Mus musculus	Drosophila melanogaster	kingdom	hp	27	27.00	proteome	200	0.0734744	0.108842	48670	32855
+Mus musculus	Saccharomyces cerevisiae	other kingdom	hp	27	27.00	proteome	200	0.0274091	0.104308	48670	12789
+Mus musculus	Arabidopsis thaliana	other kingdom	hp	27	27.00	proteome	200	0.0799671	0.0873488	48670	44557
+Mytilus edulis	Mytilus coruscus	genus	hp	27	27.00	proteome	200	0.421529	0.42708	85866	84750
+Mytilus edulis	Magallana gigas	subclass	hp	27	27.00	proteome	200	0.139543	0.206633	85866	57987
+Mytilus edulis	Solemya velum	class	hp	27	27.00	proteome	200	0.103627	0.210439	85866	42283
+Mytilus edulis	Octopus sinensis	phylum	hp	27	27.00	proteome	200	0.0925978	0.203746	85866	39024
+Mytilus edulis	Capitella teleta	kingdom	hp	27	27.00	proteome	200	0.0901055	0.174147	85866	44428
+Mytilus edulis	Saccharomyces cerevisiae	other kingdom	hp	27	27.00	proteome	200	0.0257028	0.17257	85866	12789
+Mytilus edulis	Arabidopsis thaliana	other kingdom	hp	27	27.00	proteome	200	0.0811963	0.156474	85866	44557
+Escherichia coli K-12	Escherichia coli O157:H7	species	hp	27	27.00	proteome	200	0.830173	0.738579	5959	6698
+Escherichia coli K-12	Escherichia fergusonii	genus	hp	27	27.00	proteome	200	0.60396	0.58788	5959	6122
+Escherichia coli K-12	Salmonella enterica	family	hp	27	27.00	proteome	200	0.405773	0.386942	5959	6249
+Escherichia coli K-12	Yersinia pestis	order	hp	27	27.00	proteome	200	0.14432	0.153626	5959	5598
+Escherichia coli K-12	Pseudomonas aeruginosa	class	hp	27	27.00	proteome	200	0.0496728	0.0357747	5959	8274
+Escherichia coli K-12	Caulobacter vibrioides	phylum	hp	27	27.00	proteome	200	0.0248364	0.0275298	5959	5376
+Escherichia coli K-12	Bacteroides thetaiotaomicron	kingdom	hp	27	27.00	proteome	200	0.0253398	0.0177668	5959	8499
+Escherichia coli K-12	Bacillus subtilis	other kingdom	hp	27	27.00	proteome	200	0.0245008	0.0255379	5959	5717
+Escherichia coli K-12	Thermotoga maritima	other kingdom	hp	27	27.00	proteome	200	0.0105722	0.0244186	5959	2580
+Mus musculus	Mus caroli	subgenus	hp	33	33.00	proteome	200	0.784506	0.782876	51375	51482
+Mus musculus	Rattus norvegicus	subfamily	hp	33	33.00	proteome	200	0.574637	0.576163	51375	51239
+Mus musculus	Cavia porcellus	order	hp	33	33.00	proteome	200	0.325645	0.380158	51375	44008
+Mus musculus	Rhinolophus ferrumequinum	class	hp	33	33.00	proteome	200	0.33419	0.36589	51375	46924
+Mus musculus	Danio rerio	subphylum	hp	33	33.00	proteome	200	0.0938394	0.0743362	51375	64854
+Mus musculus	Drosophila melanogaster	kingdom	hp	33	33.00	proteome	200	0.00990754	0.01499	51375	33956
+Mus musculus	Saccharomyces cerevisiae	other kingdom	hp	33	33.00	proteome	200	0.00144039	0.0058103	51375	12736
+Mus musculus	Arabidopsis thaliana	other kingdom	hp	33	33.00	proteome	200	0.00447689	0.00489528	51375	46984
+Mytilus edulis	Mytilus coruscus	genus	hp	33	33.00	proteome	200	0.276838	0.278393	97205	96662
+Mytilus edulis	Magallana gigas	subclass	hp	33	33.00	proteome	200	0.0234659	0.0366502	97205	62237
+Mytilus edulis	Solemya velum	class	hp	33	33.00	proteome	200	0.0177769	0.0392006	97205	44081
+Mytilus edulis	Octopus sinensis	phylum	hp	33	33.00	proteome	200	0.0125611	0.0295642	97205	41300
+Mytilus edulis	Capitella teleta	kingdom	hp	33	33.00	proteome	200	0.0103184	0.021622	97205	46388
+Mytilus edulis	Saccharomyces cerevisiae	other kingdom	hp	33	33.00	proteome	200	0.00128594	0.0098147	97205	12736
+Mytilus edulis	Arabidopsis thaliana	other kingdom	hp	33	33.00	proteome	200	0.00337431	0.0069811	97205	46984
+Escherichia coli K-12	Escherichia coli O157:H7	species	hp	33	33.00	proteome	200	0.829661	0.723898	5900	6762
+Escherichia coli K-12	Escherichia fergusonii	genus	hp	33	33.00	proteome	200	0.579153	0.558607	5900	6117
+Escherichia coli K-12	Salmonella enterica	family	hp	33	33.00	proteome	200	0.369322	0.34218	5900	6368
+Escherichia coli K-12	Yersinia pestis	order	hp	33	33.00	proteome	200	0.101695	0.108853	5900	5512
+Escherichia coli K-12	Pseudomonas aeruginosa	class	hp	33	33.00	proteome	200	0.0172881	0.012304	5900	8290
+Escherichia coli K-12	Caulobacter vibrioides	phylum	hp	33	33.00	proteome	200	0.00372881	0.00411446	5900	5347
+Escherichia coli K-12	Bacteroides thetaiotaomicron	kingdom	hp	33	33.00	proteome	200	0.00237288	0.0016488	5900	8491
+Escherichia coli K-12	Bacillus subtilis	other kingdom	hp	33	33.00	proteome	200	0.00305085	0.00327929	5900	5489
+Escherichia coli K-12	Thermotoga maritima	other kingdom	hp	33	33.00	proteome	200	0.000677966	0.00149813	5900	2670
+Mus musculus	Mus caroli	subgenus	hp	36	36.00	proteome	200	0.777356	0.769348	51113	51645
+Mus musculus	Rattus norvegicus	subfamily	hp	36	36.00	proteome	200	0.552247	0.55506	51113	50854
+Mus musculus	Cavia porcellus	order	hp	36	36.00	proteome	200	0.310215	0.356836	51113	44435
+Mus musculus	Rhinolophus ferrumequinum	class	hp	36	36.00	proteome	200	0.316045	0.343454	51113	47034
+Mus musculus	Danio rerio	subphylum	hp	36	36.00	proteome	200	0.08176	0.0641315	51113	65163
+Mus musculus	Drosophila melanogaster	kingdom	hp	36	36.00	proteome	200	0.00692583	0.0104059	51113	34019
+Mus musculus	Saccharomyces cerevisiae	other kingdom	hp	36	36.00	proteome	200	0.000919531	0.00365645	51113	12854
+Mus musculus	Arabidopsis thaliana	other kingdom	hp	36	36.00	proteome	200	0.00183906	0.00199741	51113	47061
+Mytilus edulis	Mytilus coruscus	genus	hp	36	36.00	proteome	200	0.253198	0.258015	98666	96824
+Mytilus edulis	Magallana gigas	subclass	hp	36	36.00	proteome	200	0.0159629	0.0251948	98666	62513
+Mytilus edulis	Solemya velum	class	hp	36	36.00	proteome	200	0.0128109	0.0283529	98666	44581
+Mytilus edulis	Octopus sinensis	phylum	hp	36	36.00	proteome	200	0.00804735	0.0188174	98666	42195
+Mytilus edulis	Capitella teleta	kingdom	hp	36	36.00	proteome	200	0.00672978	0.0143184	98666	46374
+Mytilus edulis	Saccharomyces cerevisiae	other kingdom	hp	36	36.00	proteome	200	0.000334462	0.00256729	98666	12854
+Mytilus edulis	Arabidopsis thaliana	other kingdom	hp	36	36.00	proteome	200	0.000962844	0.00201866	98666	47061
+Escherichia coli K-12	Escherichia coli O157:H7	species	hp	36	36.00	proteome	200	0.809548	0.716083	5907	6678
+Escherichia coli K-12	Escherichia fergusonii	genus	hp	36	36.00	proteome	200	0.557813	0.547979	5907	6013
+Escherichia coli K-12	Salmonella enterica	family	hp	36	36.00	proteome	200	0.338751	0.321549	5907	6223
+Escherichia coli K-12	Yersinia pestis	order	hp	36	36.00	proteome	200	0.091417	0.0970002	5907	5567
+Escherichia coli K-12	Pseudomonas aeruginosa	class	hp	36	36.00	proteome	200	0.0118503	0.0084317	5907	8302
+Escherichia coli K-12	Caulobacter vibrioides	phylum	hp	36	36.00	proteome	200	0.00237007	0.00267227	5907	5239
+Escherichia coli K-12	Bacteroides thetaiotaomicron	kingdom	hp	36	36.00	proteome	200	0.000846453	0.000599305	5907	8343
+Escherichia coli K-12	Bacillus subtilis	other kingdom	hp	36	36.00	proteome	200	0.00203149	0.00222841	5907	5385
+Escherichia coli K-12	Thermotoga maritima	other kingdom	hp	36	36.00	proteome	200	0.00118503	0.00270479	5907	2588
+Mus musculus	Mus caroli	subgenus	hp	39	39.00	proteome	200	0.760951	0.758158	51571	51761
+Mus musculus	Rattus norvegicus	subfamily	hp	39	39.00	proteome	200	0.537492	0.541302	51571	51208
+Mus musculus	Cavia porcellus	order	hp	39	39.00	proteome	200	0.293266	0.342746	51571	44126
+Mus musculus	Rhinolophus ferrumequinum	class	hp	39	39.00	proteome	200	0.298947	0.327533	51571	47070
+Mus musculus	Danio rerio	subphylum	hp	39	39.00	proteome	200	0.0722499	0.0564588	51571	65995
+Mus musculus	Drosophila melanogaster	kingdom	hp	39	39.00	proteome	200	0.00533245	0.00816024	51571	33700
+Mus musculus	Saccharomyces cerevisiae	other kingdom	hp	39	39.00	proteome	200	0.000736848	0.00294871	51571	12887
+Mus musculus	Arabidopsis thaliana	other kingdom	hp	39	39.00	proteome	200	0.00108588	0.00118561	51571	47233
+Mytilus edulis	Mytilus coruscus	genus	hp	39	39.00	proteome	200	0.23585	0.240065	99767	98015
+Mytilus edulis	Magallana gigas	subclass	hp	39	39.00	proteome	200	0.0140427	0.022489	99767	62297
+Mytilus edulis	Solemya velum	class	hp	39	39.00	proteome	200	0.010304	0.0232406	99767	44233
+Mytilus edulis	Octopus sinensis	phylum	hp	39	39.00	proteome	200	0.00631471	0.0150107	99767	41970
+Mytilus edulis	Capitella teleta	kingdom	hp	39	39.00	proteome	200	0.00539256	0.0117239	99767	45889
+Mytilus edulis	Saccharomyces cerevisiae	other kingdom	hp	39	39.00	proteome	200	0.000330771	0.00256072	99767	12887
+Mytilus edulis	Arabidopsis thaliana	other kingdom	hp	39	39.00	proteome	200	0.000601401	0.0012703	99767	47233
+Escherichia coli K-12	Escherichia coli O157:H7	species	hp	39	39.00	proteome	200	0.811443	0.711228	5855	6680
+Escherichia coli K-12	Escherichia fergusonii	genus	hp	39	39.00	proteome	200	0.562084	0.551164	5855	5971
+Escherichia coli K-12	Salmonella enterica	family	hp	39	39.00	proteome	200	0.33339	0.314534	5855	6206
+Escherichia coli K-12	Yersinia pestis	order	hp	39	39.00	proteome	200	0.0884714	0.0934849	5855	5541
+Escherichia coli K-12	Pseudomonas aeruginosa	class	hp	39	39.00	proteome	200	0.0104184	0.00740112	5855	8242
+Escherichia coli K-12	Caulobacter vibrioides	phylum	hp	39	39.00	proteome	200	0.00136635	0.00151429	5855	5283
+Escherichia coli K-12	Bacteroides thetaiotaomicron	kingdom	hp	39	39.00	proteome	200	0.000853971	0.000594106	5855	8416
+Escherichia coli K-12	Bacillus subtilis	other kingdom	hp	39	39.00	proteome	200	0.00136635	0.00153227	5855	5221
+Escherichia coli K-12	Thermotoga maritima	other kingdom	hp	39	39.00	proteome	200	0.000683177	0.00157295	5855	2543
 Mus musculus	Mus caroli	subgenus	DNA	15	30.00	cds	1000	0.485235	0.757685	46732	29928
 Mus musculus	Rattus norvegicus	subfamily	DNA	15	30.00	cds	1000	0.35618	0.425149	46732	39151
 Mus musculus	Cavia porcellus	order	DNA	15	30.00	cds	1000	0.162908	0.299371	46732	25430
