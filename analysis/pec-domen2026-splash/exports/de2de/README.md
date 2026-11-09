@@ -37,10 +37,10 @@ smallest p, 0.016, is reached once (old 41-93 d, protein k7).
 
 ## What this does and does not show
 
-Not tested yet, and needed before reading the GSE99963 passes as a PEC signal: the Botryllus
-label-swap reads. If Botryllus k-mers from swapped PEC and control labels (held reads exist for 7
-swaps, `$S/label_swap/<contrast>/pairflip*/`) give a D as large in GSE99963, the passes come from
-which genes the k-mers fall in, not from the PEC direction.
+Label-swap control, run 2026-11-09 (`../de2de_swap/README.md`): Botryllus k-mers from swapped PEC
+and control labels pass as often as the real ones (12 of 63 against 5 of 27). The two young passes
+do not hold; old 41-93 d holds, but against a single swap. So the GSE99963 passes mostly reflect
+which genes the k-mers fall in, not the PEC direction.
 
 Other limits:
 - Many held Botryllus reads get no frame and add no k-mers: of the up reads, 22,341 of 62,761 are
