@@ -2,7 +2,8 @@
 
 Usage: plot_protein_coverage.py <coverage.tsv> <path to the repository's notebooks folder>
 One bar per array, split by what the probe set's annotation leads to: a protein of 30 amino acids or more, a nucleotide
-sequence only (EST or genomic clone, untranslated), an Ensembl protein not yet fetched, or no protein-coding source.
+sequence only (EST or genomic clone, untranslated), an Ensembl protein not yet fetched, or no protein of 30 amino
+acids or more: no protein-coding source named, or a named source with no sequence or a shorter protein.
 Writes protein_coverage.png and .svg next to the table.
 """
 
@@ -14,6 +15,7 @@ table, notebooks = sys.argv[1:]
 sys.path.insert(0, notebooks)
 import pubfig as pf  # noqa: E402
 
+NONE = "No protein of 30 aa or more (mostly non-coding RNA)"
 GROUPS = [
     (
         "Protein of 30 aa or more",
@@ -22,7 +24,7 @@ GROUPS = [
     ),
     ("Nucleotide only: EST or genomic clone", pf.OKABE_ITO["orange"], {"est", "genomic_clone"}),
     ("Ensembl protein, not yet fetched", pf.OKABE_ITO["sky_blue"], {"ensembl_coding"}),
-    ("No protein-coding source (mostly non-coding RNA)", "#D9D9D9", {"other_only", "none"}),
+    (NONE, "#D9D9D9", {"other_only", "none"}),
 ]
 sums = defaultdict(lambda: defaultdict(int))
 totals = defaultdict(int)
@@ -31,7 +33,7 @@ with open(table) as f:
         group = next(g for g, _, sources in GROUPS if r["source"] in sources)
         n = int(r["long_enough"]) if group.startswith(("Protein", "Nucleotide")) else int(r["probe_sets"])
         sums[r["array"]][group] += n
-        sums[r["array"]]["No protein-coding source (mostly non-coding RNA)"] += int(r["probe_sets"]) - n
+        sums[r["array"]][NONE] += int(r["probe_sets"]) - n
         totals[r["array"]] += int(r["probe_sets"])
 arrays = list(totals)[::-1]
 pf.use_style()

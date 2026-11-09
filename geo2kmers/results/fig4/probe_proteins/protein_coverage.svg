@@ -6,7 +6,7 @@
   <rdf:RDF xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:cc="http://creativecommons.org/ns#" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
    <cc:Work>
     <dc:type rdf:resource="http://purl.org/dc/dcmitype/StillImage"/>
-    <dc:date>2026-11-08T10:43:36.207484</dc:date>
+    <dc:date>2026-11-09T13:27:24.197905</dc:date>
     <dc:format>image/svg+xml</dc:format>
     <dc:creator>
      <cc:Agent>
@@ -41,12 +41,12 @@ z
     <g id="xtick_1">
      <g id="line2d_1">
       <defs>
-       <path id="m5d4d27f356" d="M 0 0 
+       <path id="m32aaba574e" d="M 0 0 
 L 0 2.5 
 " style="stroke: #000000; stroke-width: 0.5"/>
       </defs>
       <g>
-       <use xlink:href="#m5d4d27f356" x="53.970937" y="91.12351" style="stroke: #000000; stroke-width: 0.5"/>
+       <use xlink:href="#m32aaba574e" x="53.970937" y="91.12351" style="stroke: #000000; stroke-width: 0.5"/>
       </g>
      </g>
      <g id="text_1">
@@ -56,7 +56,7 @@ L 0 2.5
     <g id="xtick_2">
      <g id="line2d_2">
       <g>
-       <use xlink:href="#m5d4d27f356" x="167.019958" y="91.12351" style="stroke: #000000; stroke-width: 0.5"/>
+       <use xlink:href="#m32aaba574e" x="167.019958" y="91.12351" style="stroke: #000000; stroke-width: 0.5"/>
       </g>
      </g>
      <g id="text_2">
@@ -66,7 +66,7 @@ L 0 2.5
     <g id="xtick_3">
      <g id="line2d_3">
       <g>
-       <use xlink:href="#m5d4d27f356" x="280.068979" y="91.12351" style="stroke: #000000; stroke-width: 0.5"/>
+       <use xlink:href="#m32aaba574e" x="280.068979" y="91.12351" style="stroke: #000000; stroke-width: 0.5"/>
       </g>
      </g>
      <g id="text_3">
@@ -76,7 +76,7 @@ L 0 2.5
     <g id="xtick_4">
      <g id="line2d_4">
       <g>
-       <use xlink:href="#m5d4d27f356" x="393.117999" y="91.12351" style="stroke: #000000; stroke-width: 0.5"/>
+       <use xlink:href="#m32aaba574e" x="393.117999" y="91.12351" style="stroke: #000000; stroke-width: 0.5"/>
       </g>
      </g>
      <g id="text_4">
@@ -86,7 +86,7 @@ L 0 2.5
     <g id="xtick_5">
      <g id="line2d_5">
       <g>
-       <use xlink:href="#m5d4d27f356" x="506.16702" y="91.12351" style="stroke: #000000; stroke-width: 0.5"/>
+       <use xlink:href="#m32aaba574e" x="506.16702" y="91.12351" style="stroke: #000000; stroke-width: 0.5"/>
       </g>
      </g>
      <g id="text_5">
@@ -101,12 +101,12 @@ L 0 2.5
     <g id="ytick_1">
      <g id="line2d_6">
       <defs>
-       <path id="me4202ded6a" d="M 0 0 
+       <path id="m284dda56b7" d="M 0 0 
 L -2.5 0 
 " style="stroke: #000000; stroke-width: 0.5"/>
       </defs>
       <g>
-       <use xlink:href="#me4202ded6a" x="53.970937" y="74.363378" style="stroke: #000000; stroke-width: 0.5"/>
+       <use xlink:href="#m284dda56b7" x="53.970937" y="74.363378" style="stroke: #000000; stroke-width: 0.5"/>
       </g>
      </g>
      <g id="text_7">
@@ -117,7 +117,7 @@ L -2.5 0
     <g id="ytick_2">
      <g id="line2d_7">
       <g>
-       <use xlink:href="#me4202ded6a" x="53.970937" y="39.806405" style="stroke: #000000; stroke-width: 0.5"/>
+       <use xlink:href="#m284dda56b7" x="53.970937" y="39.806405" style="stroke: #000000; stroke-width: 0.5"/>
       </g>
      </g>
      <g id="text_8">
@@ -132,7 +132,7 @@ L 53.970937 88.186167
 L 53.970937 60.540589 
 L 53.970937 60.540589 
 z
-" clip-path="url(#p9c1fc2a326)" style="fill: #0072b2"/>
+" clip-path="url(#pe2fe9c6e2d)" style="fill: #0072b2"/>
    </g>
    <g id="patch_4">
     <path d="M 53.970937 88.186167 
@@ -140,7 +140,7 @@ L 53.970937 88.186167
 L 53.970937 60.540589 
 L 53.970937 60.540589 
 z
-" clip-path="url(#p9c1fc2a326)" style="fill: #e69f00"/>
+" clip-path="url(#pe2fe9c6e2d)" style="fill: #e69f00"/>
    </g>
    <g id="patch_5">
     <path d="M 53.970937 88.186167 
@@ -148,7 +148,7 @@ L 53.970937 88.186167
 L 53.970937 60.540589 
 L 53.970937 60.540589 
 z
-" clip-path="url(#p9c1fc2a326)" style="fill: #56b4e9"/>
+" clip-path="url(#pe2fe9c6e2d)" style="fill: #56b4e9"/>
    </g>
    <g id="patch_6">
     <path d="M 53.970937 88.186167 
@@ -156,7 +156,7 @@ L 53.970937 88.186167
 L 53.970937 60.540589 
 L 53.970937 60.540589 
 z
-" clip-path="url(#p9c1fc2a326)" style="fill: #d9d9d9"/>
+" clip-path="url(#pe2fe9c6e2d)" style="fill: #d9d9d9"/>
    </g>
    <g id="patch_7">
     <path d="M 53.970937 84.73047 
@@ -164,7 +164,7 @@ L 181.622236 84.73047
 L 181.622236 63.996286 
 L 53.970937 63.996286 
 z
-" clip-path="url(#p9c1fc2a326)" style="fill: #0072b2"/>
+" clip-path="url(#pe2fe9c6e2d)" style="fill: #0072b2"/>
    </g>
    <g id="patch_8">
     <path d="M 181.622236 84.73047 
@@ -172,7 +172,7 @@ L 181.622236 84.73047
 L 181.622236 63.996286 
 L 181.622236 63.996286 
 z
-" clip-path="url(#p9c1fc2a326)" style="fill: #e69f00"/>
+" clip-path="url(#pe2fe9c6e2d)" style="fill: #e69f00"/>
    </g>
    <g id="patch_9">
     <path d="M 181.622236 84.73047 
@@ -180,7 +180,7 @@ L 186.863015 84.73047
 L 186.863015 63.996286 
 L 181.622236 63.996286 
 z
-" clip-path="url(#p9c1fc2a326)" style="fill: #56b4e9"/>
+" clip-path="url(#pe2fe9c6e2d)" style="fill: #56b4e9"/>
    </g>
    <g id="patch_10">
     <path d="M 186.863015 84.73047 
@@ -188,7 +188,7 @@ L 506.16702 84.73047
 L 506.16702 63.996286 
 L 186.863015 63.996286 
 z
-" clip-path="url(#p9c1fc2a326)" style="fill: #d9d9d9"/>
+" clip-path="url(#pe2fe9c6e2d)" style="fill: #d9d9d9"/>
    </g>
    <g id="patch_11">
     <path d="M 53.970937 50.173497 
@@ -196,7 +196,7 @@ L 395.754259 50.173497
 L 395.754259 29.439313 
 L 53.970937 29.439313 
 z
-" clip-path="url(#p9c1fc2a326)" style="fill: #0072b2"/>
+" clip-path="url(#pe2fe9c6e2d)" style="fill: #0072b2"/>
    </g>
    <g id="patch_12">
     <path d="M 395.754259 50.173497 
@@ -204,7 +204,7 @@ L 505.166275 50.173497
 L 505.166275 29.439313 
 L 395.754259 29.439313 
 z
-" clip-path="url(#p9c1fc2a326)" style="fill: #e69f00"/>
+" clip-path="url(#pe2fe9c6e2d)" style="fill: #e69f00"/>
    </g>
    <g id="patch_13">
     <path d="M 505.166275 50.173497 
@@ -212,7 +212,7 @@ L 505.166275 50.173497
 L 505.166275 29.439313 
 L 505.166275 29.439313 
 z
-" clip-path="url(#p9c1fc2a326)" style="fill: #56b4e9"/>
+" clip-path="url(#pe2fe9c6e2d)" style="fill: #56b4e9"/>
    </g>
    <g id="patch_14">
     <path d="M 505.166275 50.173497 
@@ -220,7 +220,7 @@ L 506.16702 50.173497
 L 506.16702 29.439313 
 L 505.166275 29.439313 
 z
-" clip-path="url(#p9c1fc2a326)" style="fill: #d9d9d9"/>
+" clip-path="url(#pe2fe9c6e2d)" style="fill: #d9d9d9"/>
    </g>
    <g id="patch_15">
     <path d="M 53.970937 91.12351 
@@ -251,53 +251,53 @@ L 506.16702 91.12351
   </g>
   <g id="legend_1">
    <g id="patch_17">
-    <path d="M 125.543198 8.567812 
-L 132.743198 8.567812 
-L 132.743198 4.367812 
-L 125.543198 4.367812 
+    <path d="M 122.375385 8.567812 
+L 129.575385 8.567812 
+L 129.575385 4.367812 
+L 122.375385 4.367812 
 z
 " style="fill: #0072b2"/>
    </g>
    <g id="text_13">
-    <text style="font-size: 6px; font-family: 'Arial', 'Helvetica', 'Liberation Sans', 'DejaVu Sans', sans-serif; text-anchor: start" x="135.143198" y="8.567812" transform="rotate(-0 135.143198 8.567812)">Protein of 30 aa or more</text>
+    <text style="font-size: 6px; font-family: 'Arial', 'Helvetica', 'Liberation Sans', 'DejaVu Sans', sans-serif; text-anchor: start" x="131.975385" y="8.567812" transform="rotate(-0 131.975385 8.567812)">Protein of 30 aa or more</text>
    </g>
    <g id="patch_18">
-    <path d="M 125.543198 15.928125 
-L 132.743198 15.928125 
-L 132.743198 11.728125 
-L 125.543198 11.728125 
+    <path d="M 122.375385 15.928125 
+L 129.575385 15.928125 
+L 129.575385 11.728125 
+L 122.375385 11.728125 
 z
 " style="fill: #e69f00"/>
    </g>
    <g id="text_14">
-    <text style="font-size: 6px; font-family: 'Arial', 'Helvetica', 'Liberation Sans', 'DejaVu Sans', sans-serif; text-anchor: start" x="135.143198" y="15.928125" transform="rotate(-0 135.143198 15.928125)">Nucleotide only: EST or genomic clone</text>
+    <text style="font-size: 6px; font-family: 'Arial', 'Helvetica', 'Liberation Sans', 'DejaVu Sans', sans-serif; text-anchor: start" x="131.975385" y="15.928125" transform="rotate(-0 131.975385 15.928125)">Nucleotide only: EST or genomic clone</text>
    </g>
    <g id="patch_19">
-    <path d="M 244.418198 8.567812 
-L 251.618198 8.567812 
-L 251.618198 4.367812 
-L 244.418198 4.367812 
+    <path d="M 241.250385 8.567812 
+L 248.450385 8.567812 
+L 248.450385 4.367812 
+L 241.250385 4.367812 
 z
 " style="fill: #56b4e9"/>
    </g>
    <g id="text_15">
-    <text style="font-size: 6px; font-family: 'Arial', 'Helvetica', 'Liberation Sans', 'DejaVu Sans', sans-serif; text-anchor: start" x="254.018198" y="8.567812" transform="rotate(-0 254.018198 8.567812)">Ensembl protein, not yet fetched</text>
+    <text style="font-size: 6px; font-family: 'Arial', 'Helvetica', 'Liberation Sans', 'DejaVu Sans', sans-serif; text-anchor: start" x="250.850385" y="8.567812" transform="rotate(-0 250.850385 8.567812)">Ensembl protein, not yet fetched</text>
    </g>
    <g id="patch_20">
-    <path d="M 244.418198 15.998437 
-L 251.618198 15.998437 
-L 251.618198 11.798437 
-L 244.418198 11.798437 
+    <path d="M 241.250385 15.998437 
+L 248.450385 15.998437 
+L 248.450385 11.798437 
+L 241.250385 11.798437 
 z
 " style="fill: #d9d9d9"/>
    </g>
    <g id="text_16">
-    <text style="font-size: 6px; font-family: 'Arial', 'Helvetica', 'Liberation Sans', 'DejaVu Sans', sans-serif; text-anchor: start" x="254.018198" y="15.998437" transform="rotate(-0 254.018198 15.998437)">No protein-coding source (mostly non-coding RNA)</text>
+    <text style="font-size: 6px; font-family: 'Arial', 'Helvetica', 'Liberation Sans', 'DejaVu Sans', sans-serif; text-anchor: start" x="250.850385" y="15.998437" transform="rotate(-0 250.850385 15.998437)">No protein of 30 aa or more (mostly non-coding RNA)</text>
    </g>
   </g>
  </g>
  <defs>
-  <clipPath id="p9c1fc2a326">
+  <clipPath id="pe2fe9c6e2d">
    <rect x="53.970937" y="26.50197" width="452.196082" height="64.62154"/>
   </clipPath>
  </defs>

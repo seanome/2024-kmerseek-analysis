@@ -449,8 +449,8 @@ KaMRaT's false discovery correction divides by rank + 1 and never adjusts the to
 about half the standard Benjamini-Hochberg ones at the top. That is why it reports 102 k-mers for GSE28998 where the
 standard method gives 100. Its ranking by p-value is unaffected and matches ours.
 
-The 30 GSE111555 SPLASH anchors that sit inside one gene cluster fall in 18 clusters
-(`results/fig4/held_out/GSE111555.anchor_genes.tsv`). Twelve anchors are in 10 protein-coding genes: TTN (3 anchors),
+The 30 GSE111555 SPLASH anchors that sit inside one gene cluster fall in 22 clusters, 10 protein-coding and 12
+non-coding (`results/fig4/held_out/GSE111555.anchor_genes.tsv`). Twelve anchors are in 10 protein-coding genes: TTN (3 anchors),
 CLPTM1L, HRC, HSPG2, GIGYF2, MRPL23, STX3, DUSP5, MAGEC1 and VCX. The other 18 are in non-coding clusters, five of
 them in linc-BRD9-1. None is a signature gene. Only 2 anchors include a probe across an exon-exon junction; the other
 28 compare probes within exons, which a change in which part of a transcript is kept or a probe's own response could
@@ -479,7 +479,7 @@ series; the chosen k-mers beat all 200 random sets. The count of people higher a
 they left random sets in GSE28998 without an AUC, and is recorded in the plan. This is one pair of series on one array,
 which differ in muscle, training and health, so it shows the change carries over but not which part of it does.
 
-KaMRaT's contigs are short: 81 % to 98 % of contigs from each comparison's 10000 top k-mers are one 25-letter k-mer on
+KaMRaT's contigs are short: 82 % to 98 % of contigs from each comparison's 10000 top k-mers are one 25-letter k-mer on
 the Affymetrix arrays, and the longest is 84 letters (`results/fig4/contig_lengths/contig_lengths.png`), because each
 Affymetrix probe is 25 letters (`results/fig4/probe_lengths/probe_lengths.png`). SPLASH ran without its compactor
 step, so it gives anchors and targets of 15 and 10 letters, not contigs.
@@ -492,10 +492,14 @@ The rules are in `fig4/probe_protein_plan.md`, written before the first fetch.
 
 ![protein coverage](results/fig4/probe_proteins/protein_coverage.png)
 
-| Array | Probe sets | Protein of 30 aa or more | Nucleotide only (EST or genomic clone) | No protein-coding source |
+| Array | Probe sets | Protein of 30 aa or more | Nucleotide only (EST or genomic clone) | No protein of 30 aa or more |
 |---|---:|---:|---:|---:|
 | U133 Plus 2 | 54,675 | 41,325 (76 %) | 13,229 (24 %) | 121 |
 | HTA 2.0 | 70,753 | 19,973 (28 %) | 0 | 49,960 (71 %), and 820 with an Ensembl protein not yet fetched |
+
+The last column holds probe sets with no protein-coding source named (52 on U133 Plus 2, 49,946 on HTA 2.0) and
+probe sets whose named source gave no protein of 30 aa or more: on U133 Plus 2, 55 GenBank accessions that returned no
+sequence and 14 proteins under 30 aa; on HTA 2.0, 14 proteins under 30 aa (`results/fig4/probe_proteins/coverage.tsv`).
 
 On U133 Plus 2, 40,001 probe sets get proteins through the RefSeq mRNAs their annotation lists, 692 through a
 full-length cDNA they were designed on, 443 through another GenBank mRNA and 189 through RefSeq model mRNAs. 12,975
