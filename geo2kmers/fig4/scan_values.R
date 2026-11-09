@@ -1,11 +1,15 @@
 # Write SCAN values for each PM probe and each probe set from Affymetrix CEL files, one array at a time.
-# Usage: Rscript scan_values.R <folder of CEL files> <probes.tsv.gz> <probe_set_values.tsv.gz> <cores> [check]
+# Usage: Rscript scan_values.R <folder of CEL files> <probes.tsv.gz> <probe_set_values.tsv.gz> <cores> [check|-]
+#        [<probes without unfitted.tsv.gz> <probe_set_values without unfitted.tsv.gz>]
 # The rules are in scan_plan.md. SCAN.UPC's SCANfast returns only probe-set values (its writer for single probes is
 # commented out in the package), so this runs SCANfast's steps from processCelFile with the package's own functions:
 # fit the sequence model on every n-th probe (10000 probes, convThreshold 0.5), standardise each probe within bins
 # of 5000 probes with similar predicted brightness, and take the 10 % trimmed mean over each probe set's probes.
 # With "check", the first array's probe-set values are also computed by SCANfast, the largest difference printed, and
 # the script stops if it is above 1e-6.
+# SCAN.UPC's bin loop starts at the 5000th probe, so the 4999 probes predicted dimmest in each array are never
+# standardised and stay exactly 0. The last two files leave them out: probes that are 0 in any array are dropped from
+# the probe table, and a probe's 0 is left out of its probe set's trimmed mean in that array (scan_plan.md).
 suppressMessages({
   library(SCAN.UPC)
   library(oligo)
@@ -63,7 +67,21 @@ close(path)
 cat(length(files), "arrays,", nrow(probes), "PM probes,", nrow(sets), "probe sets\n")
 cat("probe values: median", median(probes[[2]]), "range", range(probes[[2]]), "\n")
 
-if (length(arguments) == 5 && arguments[5] == "check") {
+if (length(arguments) == 7) {
+  fitted <- rowSums(values == 0) == 0
+  path <- gzfile(arguments[6], "w")
+  write.table(probes[fitted, ], path, sep = "\t", quote = FALSE, row.names = FALSE)
+  close(path)
+  sets <- apply(values, 2, function(v) tapply(ifelse(v == 0, NA, v), first$probe_set, mean, trim = 0.1, na.rm = TRUE))
+  path <- gzfile(arguments[7], "w")
+  # A probe set whose probes are all 0 in an array has no value there; hp_value_table.py drops its k-mers
+  write.table(data.frame(probe_set = rownames(sets), round(sets, 4), check.names = FALSE), path, sep = "\t",
+              quote = FALSE, row.names = FALSE, na = "nan")
+  close(path)
+  cat(sum(!fitted), "probes are 0 in some array and left out;", sum(!is.finite(sets)), "probe set values missing\n")
+}
+
+if (length(arguments) >= 5 && arguments[5] == "check") {
   reference <- exprs(SCANfast(files[1], verbose = FALSE))[, 1]
   ours <- sets[names(reference), 1]
   cat("check against SCANfast on", basename(files[1]), ": largest difference", max(abs(ours - reference)), "over",

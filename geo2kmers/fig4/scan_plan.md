@@ -63,6 +63,15 @@ arm is therefore run, not skipped.
 values have median 0.05 and range -1.5 to 10, so `kamrat_table.py` writes them with 4 decimals instead of its usual
 2, which would round many probes to the same value.
 
+**Added after the run (2026-11-09).** The probe k-mer tests dropped 1649 k-mers as constant, against 27 with the
+earlier values. The reason is in SCAN.UPC: its loop that standardises probes bin by bin starts at the 5000th probe in
+order of predicted brightness, so the 4999 probes predicted dimmest in each array are never standardised and keep the
+value 0. That is 4999 of 604258 probes per array; 11276 probes (GSE28998) and 12923 (GSE27536) are 0 in at least one
+array, and 1359 and 1052 in every array. SCANfast's own output has the same zeros, since these values match it. The
+results above are reported as the rule planned. As a check chosen after seeing them, the same four tests are run
+again with those values left out: probes that are 0 in any array of a series are dropped from its probe table, and a
+probe's 0 is left out of its probe set's trimmed mean in that array. Both readings are reported.
+
 **What this cannot show.** SCAN changes how each array is corrected, but the series still differ in muscle, training
 and health. Agreement between the two processings shows a result does not depend on the processing; it does not show
 which genes carry the signal.
