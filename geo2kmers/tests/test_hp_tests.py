@@ -47,6 +47,14 @@ def test_read_table_keeps_only_the_designs_samples_and_does_not_log_hp_values(tm
     assert (weights.tolist(), probe_sets) == ([3], ["A,B"])
 
 
+def test_read_table_logs_intensities_unless_already_log2(tmp_path):
+    (tmp_path / "t.tsv").write_text("feature\tGSM1\tGSM2\nAAA\t3\t-0.5\n")
+    (tmp_path / "d.tsv").write_text("GSM1\tpre\nGSM2\tpost\n")
+    logged = ho.read_table(tmp_path / "t.tsv", tmp_path / "d.tsv")[2]
+    as_is = ho.read_table(tmp_path / "t.tsv", tmp_path / "d.tsv", already_log2=True)[2]
+    assert np.allclose(logged, [[2.0, np.log2(0.5)]]) and as_is.tolist() == [[3.0, -0.5]]
+
+
 def test_value_table_gives_one_row_per_set_of_probe_sets(tmp_path):
     # k-mers 0-2 in probe set 0, k-mer 3 in probe set 1, k-mers 4-5 in probe sets 0 and 1, k-mer 6 in probe set 2
     sharing = np.array([1, 1, 1, 1, 2, 2, 1])

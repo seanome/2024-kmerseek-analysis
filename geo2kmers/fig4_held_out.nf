@@ -11,6 +11,9 @@
  *
  * With --hp <folder of hp_kmer_table.py's tables>, it runs instead the same two tests on 30-letter HP k-mers from the
  * proteins behind each probe set, under fig4/hp_tests_plan.md.
+ *
+ * --cross_only runs only the cross-series tests, on the two U133 Plus 2 series. With --already_log2 the probe k-mer
+ * values are taken as already on a log scale (SCAN values, fig4/scan_plan.md).
  */
 nextflow.enable.dsl = 2
 
@@ -22,6 +25,8 @@ params.rscript     = null
 params.shuffles    = 200
 params.only        = null
 params.hp          = null
+params.cross_only  = false
+params.already_log2 = false
 params.python      = "/scratch/users/olgabot/geo2kmers-test/env/bin/python"
 params.groups      = "${projectDir}/results/fig4/corrected_labels/groups.tsv"
 params.signature   = "${projectDir}/results/fig4/signature_proteins.tsv"
@@ -146,7 +151,7 @@ process CROSS_SERIES {
     export PYTHONPATH=${projectDir} OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1
     ${params.python} kamrat_table.py ${params.intensities}/${train}.probes.tsv.gz ${params.groups} ${train} ${train_comparison} 0 train.tsv train_design.tsv
     ${params.python} kamrat_table.py ${params.intensities}/${scored}.probes.tsv.gz ${params.groups} ${scored} ${scored_comparison} 0 scored.tsv scored_design.tsv
-    ${params.python} cross_series_auc.py train.tsv train_design.tsv scored.tsv scored_design.tsv ${params.series} ${train} ${scored} ${scored_comparison} ${params.shuffles} ${train}_to_${scored}
+    ${params.python} cross_series_auc.py train.tsv train_design.tsv scored.tsv scored_design.tsv ${params.series} ${train} ${scored} ${scored_comparison} ${params.shuffles} ${train}_to_${scored} ${params.already_log2 ? 'already_log2' : ''}
     rm train.tsv scored.tsv
     """
 }
@@ -204,14 +209,15 @@ workflow {
     if (params.hp) {
         // The scripts are inputs so that editing one reruns the steps that use it on -resume
         code = Channel.fromPath(["${projectDir}/fig4/hp_value_table.py", "${projectDir}/fig4/write_design.py", "${projectDir}/fig4/held_out_auc.py", "${projectDir}/fig4/cross_series_auc.py", "${projectDir}/geo2kmers/held_out.py", "${projectDir}/geo2kmers/people.py"]).collect()
-        values = HP_VALUES(Channel.fromList(HP_SERIES).combine(Channel.fromList(HP_ALPHABETS)), code)
-        HP_HELD_OUT(values.filter { it[0] in HP_HELD_OUT_SERIES }, code)
+        series = HP_SERIES.findAll { !params.cross_only || it[0] == 'U133_Plus_2' }
+        values = HP_VALUES(Channel.fromList(series).combine(Channel.fromList(HP_ALPHABETS)), code)
+        if (!params.cross_only) HP_HELD_OUT(values.filter { it[0] in HP_HELD_OUT_SERIES }, code)
         u133 = values.filter { it[0] in ['GSE28998', 'GSE27536'] }
         pairs = u133.combine(u133).filter { it[1] == it[4] && it[0] != it[3] }.map { [it[1], it[0], it[2], it[3], it[5]] }
         HP_CROSS(pairs, code)
     } else {
-        HELD_OUT(Channel.fromList(COMPARISONS.findAll { !params.only || it[0] == params.only }))
+        if (!params.cross_only) HELD_OUT(Channel.fromList(COMPARISONS.findAll { !params.only || it[0] == params.only }))
         if (!params.only) CROSS_SERIES(Channel.fromList(CROSS), Channel.fromPath(["${projectDir}/fig4/kamrat_table.py", "${projectDir}/fig4/cross_series_auc.py", "${projectDir}/geo2kmers/held_out.py", "${projectDir}/geo2kmers/people.py"]).collect())
-        if (params.splash_hits && !params.only) NAME_ANCHORS(Channel.fromPath(["${projectDir}/fig4/hta_probe_design.R", "${projectDir}/fig4/name_anchors.py", "${projectDir}/geo2kmers/hta.py"]).collect())
+        if (params.splash_hits && !params.only && !params.cross_only) NAME_ANCHORS(Channel.fromPath(["${projectDir}/fig4/hta_probe_design.R", "${projectDir}/fig4/name_anchors.py", "${projectDir}/geo2kmers/hta.py"]).collect())
     }
 }

@@ -49,6 +49,16 @@ already in the README, and do not replace them. Each test's verdict is given for
 the GSE27536-to-GSE28998 HP test was judged not informative (`hp_tests_plan.md`, "Added after the run"), and that
 judgement is not revisited here.
 
+**Added before the run (2026-11-09), after reading SCAN.UPC's code.** SCANfast's writer for single probes
+(`probeLevelOutDirPath`) is commented out in the package, so it returns only probe-set values. SCAN does compute a
+value for each probe before it averages them, so `scan_values.R` runs SCANfast's steps from the package's
+`processCelFile` with the package's own functions, and keeps those values. The settings are SCANfast's: the sequence
+model is fitted on every n-th probe, about 10000 probes, with convThreshold 0.5; each probe is standardised within
+bins of 5000 probes of similar predicted brightness; a probe set's value is the 10 % trimmed mean of its probes. Only
+25-letter PM probes are kept, as SCAN does. The script also runs SCANfast itself on one array and prints the largest
+difference between its probe-set values and SCANfast's; the run goes ahead only if they agree to 1e-6. The probe k-mer
+arm is therefore run, not skipped.
+
 **What this cannot show.** SCAN changes how each array is corrected, but the series still differ in muscle, training
 and health. Agreement between the two processings shows a result does not depend on the processing; it does not show
 which genes carry the signal.

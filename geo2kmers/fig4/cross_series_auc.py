@@ -1,9 +1,10 @@
 """Score one series' samples with k-mers chosen on another series on the same array.
 
 Usage: cross_series_auc.py <train table> <train design> <scored table> <scored design> <series folder>
-       <train dataset> <scored dataset> <scored comparison> <shuffles> <out prefix>
+       <train dataset> <scored dataset> <scored comparison> <shuffles> <out prefix> [already_log2]
 Tables and designs are kamrat_table.py's, or the tables are hp_value_table.py's for one array. The rules are in
-cross_series_plan.md, and for HP k-mers also in hp_tests_plan.md. Writes <prefix>.cross.tsv, one row
+cross_series_plan.md, and for HP k-mers also in hp_tests_plan.md. already_log2 says a kamrat_table.py table holds
+values on a log scale (SCAN, scan_plan.md), which are then not logged again. Writes <prefix>.cross.tsv, one row
 per k-mer count, and .cross_samples.tsv and .cross_chance.tsv.
 """
 
@@ -28,12 +29,15 @@ HEADLINE = 1000
     comparison,
     shuffles,
     prefix,
-) = sys.argv[1:]
+) = sys.argv[1:11]
 shuffles = int(shuffles)
+already_log2 = sys.argv[11:] == ["already_log2"]
 
 
-train_kmers, _, train_values, train_post, train_weights, probe_sets = ho.read_table(train_table, train_design)
-scored_kmers, samples, scored_values, post, _, _ = ho.read_table(scored_table, scored_design)
+train_kmers, _, train_values, train_post, train_weights, probe_sets = ho.read_table(
+    train_table, train_design, already_log2
+)
+scored_kmers, samples, scored_values, post, _, _ = ho.read_table(scored_table, scored_design, already_log2)
 where = {k: i for i, k in enumerate(scored_kmers)}
 shared = [(i, where[k]) for i, k in enumerate(train_kmers) if k in where]
 train_values = train_values[[i for i, _ in shared]]

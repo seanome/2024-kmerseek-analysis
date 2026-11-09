@@ -147,12 +147,12 @@ def p_from_shuffles(observed, shuffled):
     return (1 + int((shuffled >= observed).sum())) / (1 + len(shuffled))
 
 
-def read_table(table, design):
+def read_table(table, design, already_log2=False):
     """A k-mer table and its design: names, samples, values, post labels, and for an HP table the k-mers and probe
     sets each row stands for.
 
-    A KaMRaT table (kamrat_table.py) holds intensities, which are logged as log2(intensity + 1); weights and probe
-    sets are then None. An HP table (hp_value_table.py) has `kmers` and `probe_sets` as its second and third columns
+    A KaMRaT table (kamrat_table.py) holds intensities, which are logged as log2(intensity + 1), unless already_log2
+    says they are on a log scale already (SCAN values); weights and probe sets are then None. An HP table (hp_value_table.py) has `kmers` and `probe_sets` as its second and third columns
     and holds RMA values, already log2, used as they are."""
     with open(design) as f:
         labels = dict(line.split() for line in f)
@@ -177,5 +177,5 @@ def read_table(table, design):
     samples, values = [samples[i] for i in keep], values[:, keep]
     post = np.array([labels[s] == "post" for s in samples])
     if not hp:
-        return names, samples, np.log2(values + 1), post, None, None
+        return names, samples, values if already_log2 else np.log2(values + 1), post, None, None
     return names, samples, values, post, np.array(weights), probe_sets
