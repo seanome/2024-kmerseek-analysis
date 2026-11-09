@@ -12,7 +12,7 @@ arrays to RNA-seq gives 34% more samples.
 | ArrayExpress, not from GEO | 313,407 | Each study's own "Sample count", for the 9,455 RNA array studies not named E-GEOD (356,392), minus 8 meta-datasets rebuilt from GEO data (42,985) (`arrayexpress_counts.py`) |
 | DDBJ GEA | 8,428 | Expression-array assays in all 770 public studies, from the ChatGPT census; too small to see in the figure |
 | **Expression arrays, total** | **2,149,645** | |
-| SRA RNA-seq | 6,291,877 | Distinct public sample accessions with strategy RNA-Seq, NCBI's SRA metadata tables of 2026-11-06 (`sra_2026-11-06/`, from the ChatGPT census; not rerun here) |
+| SRA RNA-seq | 6,291,877 | Distinct public sample accessions with assay type RNA-Seq (the `strict_RNA_seq` cohort; the `broad_transcriptomic` cohort has 7,057,286, which would give 3.28 times), NCBI's SRA metadata tables of 2026-11-06 (`sra_2026-11-06/`, from the ChatGPT census; not rerun here) |
 
 ![New GEO samples per year](figures/geo_samples_per_year.png)
 
