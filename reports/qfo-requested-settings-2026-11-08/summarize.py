@@ -5,6 +5,7 @@ Inputs (copied from Sherlock, qfo-pfam-region-benchmark/data/midi-plus/results/)
   all_domain_metrics.parquet                                   (other tools)
 Run: python summarize.py <metrics_dir> <all_domain_metrics.parquet>
 """
+import math
 import sys
 from pathlib import Path
 
@@ -20,7 +21,6 @@ ASKED = {"protein20": range(5, 11), "dayhoff6": [9, 11, 13, 15, 17, 19, 21]}
 # First ask: odd k 19-33. Follow-up the same day: k 25, 30, 35, 40, so H/P k-mers carry the
 # same 25-40 bits as protein20 k6-9 and dayhoff6 k10-15 (one H/P letter is 1 bit).
 HP_K = [19, 21, 23, 25, 27, 29, 30, 31, 33, 35, 40]
-import math  # noqa: E402
 
 
 def bits_per_letter(alphabet):
