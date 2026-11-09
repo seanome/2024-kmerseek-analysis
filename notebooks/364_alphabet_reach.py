@@ -1133,7 +1133,11 @@ SUB_TO_MAIN = {
 PATHS_BACTERIUM = "Escherichia coli K-12"
 # The settings drawn in the reach-by-rank figures, one figure each: (settings, how k was matched).
 REACH_SETS = {
-    "42bits": (PYRAMID, "Every k gives 42 bits per k-mer"),
+    "42bits": (
+        PYRAMID,
+        "DNA k=21 gives 42 bits per k-mer; protein k=10, dayhoff k=16 and hp k=42 are the "
+        "whole k nearest to 42 bits",
+    ),
     **{
         f"dna{3 * pk}_protein{pk}": (
             ladder(pk),
@@ -1531,7 +1535,7 @@ def draw_reach_bars(rows, settings, matched, name):
         if SCALED["hp"] == SCALED["DNA"]
         else f"1 in {SCALED['hp']} (DNA: 1 in {SCALED['DNA']})"
     )
-    fig.suptitle(
+    header = (
         f"A relative is reached when it shares at least {FOLD}\u00d7 more k-mers with the anchor than an organism "
         f"from another kingdom does, and at least {MIN_SHARED} sampled k-mers.\n"
         f"Number in each cell: how many times more; {sampled} k-mers sampled.\n"
@@ -1552,9 +1556,10 @@ def draw_reach_bars(rows, settings, matched, name):
         + ", ".join(dropped)
         + ".\n"
         # Built from the data, so it cannot go stale.
-        + reach_conclusion(rows, settings),
-        y=1.29,
+        + reach_conclusion(rows, settings)
     )
+    # Anchor the header's bottom just above the legend, however many lines it has.
+    fig.suptitle(header, y=1.07, va="bottom")
     pf.save(fig, str(RES / name))
 
 
