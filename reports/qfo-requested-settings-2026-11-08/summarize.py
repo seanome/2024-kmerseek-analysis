@@ -88,7 +88,10 @@ for (alpha,), g in summary.group_by("alphabet", maintain_order=True):
 ax.plot([], [], color="#bdbdbd", lw=0.5, marker="o", ms=2, label="other H/P alphabets")
 for row in tools.filter(pl.col("tool").is_in(["hmmer3_phmmer", "mmseqs2_seqseq"])).iter_rows(named=True):
     ax.axhline(row["median_fmax"], color="black", lw=0.5, ls="--")
-    ax.text(44.5, row["median_fmax"], row["tool"].replace("hmmer3_", ""), fontsize=5, va="bottom", ha="right")
+    # phmmer (0.321) sits just above MMseqs2 (0.310): label one above its line, one below.
+    above = row["tool"] == "hmmer3_phmmer"
+    ax.text(summary["bits"].max(), row["median_fmax"] + (0.003 if above else -0.003),
+            row["tool"].replace("hmmer3_", ""), fontsize=5, va="bottom" if above else "top", ha="right")
 ax.set_xlabel("bits per k-mer (k × log2 of alphabet size)")
 ax.set_ylabel("Pfam domain Fmax\n(median over species with output)")
 ax.set_ylim(0, 0.36)

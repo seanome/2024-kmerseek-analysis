@@ -7,24 +7,25 @@ go to the Quest for Orthologs benchmark service?
 
 The x axis is bits per k-mer, k × log2(alphabet size): 4.3 bits per protein20 letter, 2.6 per
 dayhoff6 letter, 1.6 for the 3-letter hp_lehninger_hpc3 and 1 for the two-letter H/P alphabets.
-On that scale protein20 k5-10 (22-43 bits), dayhoff6 k9-17 (23-44 bits) and H/P k25-40 cover
+On that scale protein20 k5-10 (22-43 bits), dayhoff6 k9-21 (23-54 bits) and H/P k25-40 cover
 the same range, which is why H/P k25, 30, 35 and 40 were asked for as a follow-up.
 
 ## Answer
 
 Every setting asked about scores far below the alignment tools. Median Pfam domain Fmax
 (the best F1 over all score cut-offs) is 0.056-0.063 for protein20 and dayhoff6 and
-0.019-0.053 for the H/P alphabets. MMseqs2 gets 0.31 and phmmer 0.32 on the same 9 species.
+0.019-0.054 for the H/P alphabets. MMseqs2 gets 0.31 and phmmer 0.32 on the same 9 species.
 The best settings reach about 1/5 of MMseqs2 (dayhoff6 k9: 0.063, ratio 0.20). Changing k
-barely moves protein20 (0.056-0.057) or dayhoff6 (0.058-0.063). For H/P, Fmax rises from
-k19 to k25 and then stays flat: higher k buys precision and loses recall.
+barely moves protein20 (0.056-0.057) or dayhoff6 (0.055-0.063, k9-21). For H/P, Fmax rises
+from k19 to k25-30 and then falls at k35 and k40: higher k buys precision and loses more
+recall than it gains. hp_thomas_dill2 goes 0.052 (k25), 0.054 (k30), 0.045 (k35), 0.043 (k40).
 
 At equal bits, H/P is no better than protein20 or dayhoff6: at 25 and 30 bits the best H/P
 alphabet (hp_thomas_dill2) scores 0.052 and 0.054, against 0.057 for protein20 at 26 and 30 bits.
 
-Not run: dayhoff6 k19 and k21 (the sweep stopped at k17), H/P k31, k35 and k40 (no alphabet).
-H/P k30 exists for hp_thomas_dill2, hp_thomas_dill_no_c2 and hp_kyte_doolittle2; k33 only for
-hp_thomas_dill2. Getting H/P k35 and k40 needs new searches.
+dayhoff6 k19-21 and H/P k35-40 come from a second run on 2026-11-08 (see "Follow-up run"
+below). Not run: H/P k31. H/P k30 exists only for hp_thomas_dill2, hp_thomas_dill_no_c2 and
+hp_kyte_doolittle2; k33 only for hp_thomas_dill2. hp_lehninger_hpc3 has no k35 or k40.
 
 | alphabet | k | species with calls | median Fmax | median recall (reachable) | median precision at Fmax | Fmax / MMseqs2 |
 |---|---|---|---|---|---|---|
@@ -32,7 +33,10 @@ hp_thomas_dill2. Getting H/P k35 and k40 needs new searches.
 | dayhoff6 | 9 | 9 | 0.063 | 0.039 | 0.41 | 0.20 |
 | dayhoff6 | 11, 13 | 9 | 0.060, 0.058 | 0.029, 0.026 | 0.56, 0.61 | 0.19 |
 | dayhoff6 | 15, 17 | 8 | 0.059 | 0.026, 0.025 | 0.64, 0.69 | 0.18 |
+| dayhoff6 | 19, 21 | 8 | 0.058, 0.055 | 0.024, 0.023 | 0.69, 0.70 | 0.18, 0.17 |
 | hp_thomas_dill2 | 19 / 25 / 30 / 33 | 9 | 0.029 / 0.052 / 0.054 / 0.051 | 0.097 / 0.058 / 0.036 / 0.030 | 0.02 / 0.09 / 0.34 / 0.46 | 0.09 / 0.17 / 0.17 / 0.15 |
+| hp_thomas_dill2 | 35 / 40 | 9 / 8 | 0.045 / 0.043 | 0.024 / 0.020 | 0.51 / 0.58 | 0.14 / 0.14 |
+| other two-letter H/P | 35 / 40 | 9 / 8-9 | 0.029-0.044 / 0.028-0.041 | 0.016-0.027 / 0.014-0.020 | 0.31-0.63 / 0.53-0.67 | 0.09-0.13 / 0.08-0.13 |
 | hp_pbotc_1st_ed2 | 19 / 25 / 29 | 9 | 0.024 / 0.053 / 0.047 | 0.085 / 0.047 / 0.029 | 0.02 / 0.14 / 0.42 | 0.08 / 0.17 / 0.15 |
 
 Every row is in [kmerseek_requested_settings.csv](kmerseek_requested_settings.csv); the other
@@ -49,8 +53,9 @@ tools are in [other_tools.csv](other_tools.csv).
   human domain instance of that family. Truth set: Pfam; low-complexity masking off; no dedup.
 - Medians are over species, using only species where the search gave at least one call.
   Recall is out of the domains the target proteome could have given (`recall_reachable`).
-- 20 searches gave zero calls, listed in [empty_searches.csv](empty_searches.csv): protein20 at
-  every k for arabidopsis, ecoli and yeast, and dayhoff6 k15 and k17 for ecoli. Their region
+- 27 searches gave zero calls, listed in [empty_searches.csv](empty_searches.csv): protein20 at
+  every k for arabidopsis, ecoli and yeast; dayhoff6 k15-21 for ecoli; and every two-letter
+  H/P alphabet except hp_kyte_doolittle2 at k40 for ecoli. Their region
   files are not empty (yeast protein20 k7: 246 KB), so the zero is lost somewhere between the
   regions and the calls. The cause has not been found. Counting those zeros into the median
   would drop protein20 to 0.014.
@@ -64,30 +69,30 @@ tools are in [other_tools.csv](other_tools.csv).
 
 Each dot is kmerseek's value divided by MMseqs2's on the same species and protein subset,
 median over the 9 species, turned so that above 1 means kmerseek is better. Blue is the
-median over all 101 kmerseek settings; orange is the single best setting, picked after
+median over all 115 kmerseek settings; orange is the single best setting, picked after
 looking, so it is an upper bound. Built by `other_metrics.py`; all numbers are in
 `kmerseek_vs_mmseqs2_all_metrics.csv`.
 
 kmerseek is better than MMseqs2 in three places:
 
 - **C2H2 zinc fingers** (about 32 proteins and 200 domain copies per species, each
-  domain about 22 residues): the typical setting's Fmax is 2.6 times MMseqs2's, the best
+  domain about 22 residues): the typical setting's Fmax is 2.5 times MMseqs2's, the best
   (dayhoff6 k9) 4.8 times, 0.26 against 0.054. phmmer also scores only 0.045 here.
 - **Short domains, 16-30 residues**: typical 1.2 times MMseqs2's Fmax, best 3.0 times
   (0.18 against 0.057). At 31-60 residues it is about even; from 61 residues up
   MMseqs2 wins by 3 to more than 25 times.
-- **Precision**: kmerseek makes far fewer calls, and more of them are right: 3.2 times
+- **Precision**: kmerseek makes far fewer calls, and more of them are right: 4.4 times
   MMseqs2's precision over all calls for the typical setting. At the Fmax cutoff the
-  typical setting is lower (0.34 times); only the most precise settings, which find almost
+  typical setting is lower (0.46 times); only the most precise settings, which find almost
   nothing, are higher.
 
 When kmerseek does find a domain, it places it about as well as MMseqs2: overlap with the
-true domain 0.83 times MMseqs2's, domain count right 0.87 times, and the median distance
-from the true edge smaller (MMseqs2's error is 1.7 times kmerseek's). This is measured only
+true domain 0.83 times MMseqs2's, domain count right 0.86 times, and the median distance
+from the true edge smaller (MMseqs2's error is 1.6 times kmerseek's). This is measured only
 on the domains each tool found, and kmerseek finds fewer, likely easier ones.
 
-kmerseek loses on recall (0.10 times), Fmax (0.12) and family-level Fmax (0.10). By
-query-target identity it is near zero below 40% and reaches 0.37 times MMseqs2 only at
+kmerseek loses on recall (0.09 times), Fmax (0.12) and family-level Fmax (0.10). By
+query-target identity it is near zero below 40% and reaches 0.38 times MMseqs2 only at
 60-100%. So it finds close relatives and short repeated domains, not remote ones.
 
 Not checked: why MMseqs2 and phmmer do so badly on C2H2 zinc fingers. One possible reason
@@ -127,6 +132,17 @@ python other_metrics.py <metrics dir> <all_domain_metrics.parquet>
 the same `results/` directory (md5 3080c0bf94816472dfe277ff7ee31b8c).
 
 ## Follow-up run: H/P k35 and k40, dayhoff6 k19 and k21
+
+Ran 2026-11-08, 14:27-15:38 on Sherlock (head job 51586844). The first submission, 51585998,
+landed on node sh04-18n27, which failed its health check during job setup, so the script
+never started. Every index build, search and scoring task finished. The last step,
+aggregateMetrics, refused to build the combined table because ciona has only 23 Swiss-Prot
+annotated proteins (a check added after the September run). The Pfam numbers above come
+from the 126 per-search files in `results-hp-k35-k40/metrics/`, which that step only reads.
+
+Measured on this run: kmerseekIndex 0.76-6.9 GB, at most 48 s; kmerseekSearch 0.25-4.4 GB,
+at most 84 s; scoreDomainCalls (63 tasks, one per species and alphabet) at most 0.3 GB, 29 s.
+The plan below was written before the run.
 
 `make run-midi-plus-hp-k35-k40` in `nextflow-runs/qfo-pfam-region-benchmark` runs the 14
 missing settings on the same 9 species, image and queries: six two-letter H/P alphabets at

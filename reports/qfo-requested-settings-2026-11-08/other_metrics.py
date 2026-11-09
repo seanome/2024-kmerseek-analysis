@@ -4,7 +4,7 @@ Same inputs as summarize.py. For each kmerseek setting, each metric is divided b
 MMseqs2's on the same species and subset, and the median over species is taken
 (searches with no calls are left out; a subset needs at least 5 species). Ratios are
 turned so that above 1 always means kmerseek is better (boundary error is lower-is-better,
-so it is MMseqs2 / kmerseek). "Typical" is the median over the 101 settings; "best" is the
+so it is MMseqs2 / kmerseek). "Typical" is the median over all settings; "best" is the
 single best setting, which is picked after looking and so is an upper bound.
 Run: python other_metrics.py <metrics_dir> <all_domain_metrics.parquet>
 """
@@ -75,6 +75,7 @@ for m, (label, higher) in METRICS.items():
     )
     rows.append(g.with_columns(pl.lit(m).alias("metric")))
 per_setting = pl.concat(rows)
+N_SETTINGS = per_setting["setting"].n_unique()
 summary = (
     per_setting.group_by("metric", "stratum_axis", "stratum")
     .agg(
@@ -108,7 +109,7 @@ def dots(ax, labels, pairs):
     y = np.arange(len(labels))[::-1]
     for yi, (t, b) in zip(y, pairs):
         ax.plot([t, b], [yi, yi], color=pubfig.GREY, lw=0.5, zorder=1)
-    ax.scatter([p[0] for p in pairs], y, color=TYP, s=12, zorder=2, label="Typical setting (median of 101)")
+    ax.scatter([p[0] for p in pairs], y, color=TYP, s=12, zorder=2, label=f"Typical setting (median of {N_SETTINGS})")
     ax.scatter([p[1] for p in pairs], y, color=BEST, s=12, zorder=2, label="Best single setting (chosen after looking)")
     ax.axvline(1, color="black", lw=0.5)
     ax.set_xscale("log")
