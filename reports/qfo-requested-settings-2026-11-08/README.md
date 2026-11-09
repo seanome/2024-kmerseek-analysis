@@ -165,7 +165,7 @@ Resources, measured on run-midi-plus at the nearest settings (H/P k27-33, dayhof
 |---|---|---|---|---|
 | kmerseekIndex | 126 | 0.9-6.7 GB | 30 s | 32 GB |
 | kmerseekSearch | 126 | 0.6-11.1 GB | 3 min | 25-43 GB |
-| scoreDomainCalls | 378 (3 truth sets) | 4.3 GB | 6 min | 8 GB or more |
+| scoreDomainCalls | 378 planned (3 truth sets); ran as 63 (one per species and alphabet) | 4.3 GB | 6 min | 8 GB or more |
 | head job | 1 | | | 16 GB, 12 h |
 
 The search asks are a floor in the pipeline and run 3-4 times what was measured. Higher k
