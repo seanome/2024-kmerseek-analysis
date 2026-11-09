@@ -70,7 +70,32 @@ SETTINGS = [
 SWEEP = [("dayhoff", k, "sweep") for k in (15, 17, 19, 21)] + [
     ("hp", k, "sweep") for k in (24, 27, 33, 36, 39)
 ]
-ALL_SETTINGS = SETTINGS + SWEEP
+# Codon ladder (olgabot, 2026-11-09): DNA k = 3 x protein k, so both cover the same codons;
+# dayhoff and hp k matched to protein k in bits, rounded to the nearest whole k.
+LADDER_PROTEIN_K = (7, 8, 9, 10, 11, 12)
+
+
+def bit_matched_k(alphabet, protein_k):
+    return round(protein_k * math.log2(20) / math.log2(ALPHABET_SIZE[alphabet]))
+
+
+def ladder(protein_k):
+    return [
+        ("DNA", 3 * protein_k),
+        ("protein", protein_k),
+        ("dayhoff", bit_matched_k("dayhoff", protein_k)),
+        ("hp", bit_matched_k("hp", protein_k)),
+    ]
+
+
+_have = {(a, k) for a, k, _ in SETTINGS + SWEEP}
+LADDER = [
+    (a, k, "ladder")
+    for pk in LADDER_PROTEIN_K
+    for a, k in ladder(pk)
+    if (a, k) not in _have
+]
+ALL_SETTINGS = SETTINGS + SWEEP + LADDER
 SCALED = {"DNA": 1000, "protein": 200, "dayhoff": 200, "hp": 200}
 # NB364_SCALED=<n> sets one scaled value for every alphabet. Its sketches, comparisons
 # and results go in folders named scaled<n>, so the default run's files are kept.
@@ -1109,11 +1134,15 @@ PATHS_BACTERIUM = "Escherichia coli K-12"
 # The settings drawn in the reach-by-rank figures, one figure each: (settings, how k was matched).
 REACH_SETS = {
     "42bits": (PYRAMID, "Every k gives 42 bits per k-mer"),
-    "dna21_protein7": (
-        [("DNA", 21), ("protein", 7), ("dayhoff", 12), ("hp", 30)],
-        "DNA k=21 spans the same 7 codons as protein k=7; dayhoff k=12 and hp k=30 "
-        "match protein k=7 in bits (about 30 per k-mer)",
-    ),
+    **{
+        f"dna{3 * pk}_protein{pk}": (
+            ladder(pk),
+            f"DNA k={3 * pk} spans the same {pk} codons as protein k={pk}; "
+            f"dayhoff k={bit_matched_k('dayhoff', pk)} and hp k={bit_matched_k('hp', pk)} "
+            f"match protein k={pk} in bits (about {bits_uniform('protein', pk):.0f} per k-mer)",
+        )
+        for pk in LADDER_PROTEIN_K
+    },
 }
 FOLD = (
     10  # a relative must share at least 10 times more than the other-kingdom background
@@ -1190,6 +1219,75 @@ def figure_reach_bars(cont, path):
             matched,
             "reach_by_rank_uniprot" + ("" if set_name == "42bits" else f"_{set_name}"),
         )
+    draw_ladder_summary(rows)
+
+
+def draw_ladder_summary(rows):
+    """Farthest main rank reached against codons per k-mer: DNA k = 3 x codons, protein
+    k = codons, dayhoff and hp k matched to protein in bits. One panel per anchor."""
+    import pubfig as pf
+
+    series = [
+        ("DNA", "DNA, k = 3 \u00d7 codons", pf.OKABE_ITO["black"], "s"),
+        ("protein", "protein, k = codons", pf.OKABE_ITO["blue"], "o"),
+        (
+            "dayhoff",
+            "dayhoff, k matched to protein in bits",
+            pf.OKABE_ITO["orange"],
+            "^",
+        ),
+        ("hp", "hp, k matched to protein in bits", pf.OKABE_ITO["vermillion"], "D"),
+    ]
+    fig, axs = pf.figure(pf.TWO_COLUMN_MM, 62, ncols=len(PATHS), sharey=True)
+    for ax, anchor in zip(axs, PATHS):
+        for i, (alphabet, label, colour, marker) in enumerate(series):
+            xs, ys = [], []
+            for pk in LADDER_PROTEIN_K:
+                k = dict(ladder(pk))[alphabet]
+                reached = [
+                    SUB_TO_MAIN.get(r["rank"], r["rank"])
+                    for r in rows
+                    if r["setting_set"] == f"dna{3 * pk}_protein{pk}"
+                    and r["anchor"] == anchor
+                    and r["alphabet"] == alphabet
+                    and r["k"] == k
+                    and r["reached"]
+                ]
+                xs.append(pk)
+                # Small vertical offsets keep four series on the same rank all visible.
+                ys.append(
+                    (MAIN_RANKS.index(reached[-1]) + 1 if reached else 0)
+                    + (i - 1.5) * 0.09
+                )
+            ax.plot(xs, ys, color=colour, marker=marker, ms=3, lw=1, label=label)
+        ax.set_title(f"anchor: {anchor}", fontsize=7, weight="bold")
+        ax.set_xticks(LADDER_PROTEIN_K)
+        ax.set_xlabel("Codons per k-mer")
+        ax.set_yticks(range(len(MAIN_RANKS) + 1))
+        ax.set_yticklabels(["no rank"] + MAIN_RANKS)
+        ax.set_ylim(-0.5, len(MAIN_RANKS) + 0.5)
+        for y in range(len(MAIN_RANKS) + 1):
+            ax.axhline(y, color="#e6e6e6", lw=0.3, zorder=0)
+    axs[0].set_ylabel("Farthest rank reached")
+    handles, labels = axs[0].get_legend_handles_labels()
+    fig.legend(
+        handles,
+        labels,
+        loc="lower center",
+        ncol=2,
+        bbox_to_anchor=(0.5, 1.0),
+        frameon=False,
+    )
+    fig.suptitle(
+        f"Reached: at least {FOLD}\u00d7 more k-mers shared than with another kingdom, at least "
+        f"{MIN_SHARED} sampled k-mers, and every nearer rank reached too. "
+        f"1 in {SCALED['hp']} k-mers sampled"
+        + ("" if SCALED["hp"] == SCALED["DNA"] else f" (DNA: 1 in {SCALED['DNA']})")
+        + ".\nRanks are main ranks; a relative sharing a sub-rank counts under the rank above it. "
+        "Points on one rank are nudged apart so all four show.",
+        y=1.22,
+    )
+    pf.save(fig, str(RES / "reach_by_codons_uniprot"))
 
 
 def reach_conclusion(rows, settings):
@@ -1590,7 +1688,7 @@ def figure_sweep(cont, path, floors):
         pf.TWO_COLUMN_MM, 150, nrows=len(alphabets), ncols=len(PATHS), sharey=True
     )
     for row, alphabet in zip(axs, alphabets):
-        ks = sorted(k for a, k, _ in ALL_SETTINGS if a == alphabet)
+        ks = sorted(k for a, k, _ in SETTINGS + SWEEP if a == alphabet)
         cmap = mpl.colormaps["crest"]
         colour = {k: cmap(0.15 + 0.85 * i / (len(ks) - 1)) for i, k in enumerate(ks)}
         for ax, anchor in zip(row, PATHS):
