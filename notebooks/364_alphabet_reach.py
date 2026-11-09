@@ -313,6 +313,83 @@ PATHS = {
     # Bacterial anchor (added 2026-11-08). Two strains of one species give a species rank,
     # which no animal ladder here has. The floor is two bacteria from other NCBI kingdoms
     # (Bacillati, Thermotogati), as yeast and Arabidopsis are for the animals.
+    # Pacific oyster (olgabot, 2026-11-09): the bivalve anchor once only proteomes at least
+    # 90% complete by UniProt BUSCO are used (Mytilus edulis is 80.1%). No reference
+    # proteome in its genus or order reaches 90%, so those ranks have no relative.
+    "Magallana gigas": [
+        (
+            "Magallana gigas",
+            "Magallana gigas",
+            29159,
+            "anchor",
+            "UP000005408",
+            "GCA_902806645.1",
+            "",
+        ),
+        (
+            "Crassostrea virginica",
+            "Crassostrea virginica",
+            6565,
+            "family",
+            "UP000694844",
+            "GCF_002022765.2",
+            "",
+        ),
+        (
+            "Mactra antiquata",
+            "Mactra antiquata",
+            2302425,
+            "class",
+            "UP001697639",
+            "GCA_047288015.1",
+            "",
+        ),
+        (
+            "Sinanodonta woodiana",
+            "Sinanodonta woodiana",
+            1069815,
+            "class",
+            "UP001634394",
+            "GCA_046254885.1",
+            "",
+        ),
+        (
+            "Aplysia californica",
+            "Aplysia californica",
+            6500,
+            "phylum",
+            "UP000694888",
+            "GCF_000002075.1",
+            "",
+        ),
+        (
+            "Capitella teleta",
+            "Capitella teleta",
+            283909,
+            "kingdom",
+            "UP000014760",
+            "GCA_000328365.1",
+            "",
+        ),
+        (
+            "Saccharomyces cerevisiae",
+            "Saccharomyces cerevisiae",
+            559292,
+            "other kingdom",
+            "UP000002311",
+            "GCA_000146045.2",
+            "strain S288c (taxid 559292), the UniProt reference proteome",
+        ),
+        (
+            "Arabidopsis thaliana",
+            "Arabidopsis thaliana",
+            3702,
+            "other kingdom",
+            "UP000006548",
+            "GCA_000001735.1",
+            "",
+        ),
+    ],
     "Escherichia coli K-12": [
         (
             "Escherichia coli K-12",
