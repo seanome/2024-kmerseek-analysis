@@ -31,7 +31,10 @@ HEADLINE = 1000
     prefix,
 ) = sys.argv[1:11]
 shuffles = int(shuffles)
-already_log2 = sys.argv[11:] == ["already_log2"]
+extra = sys.argv[11:]
+if extra not in ([], ["already_log2"]):
+    sys.exit(f"Unexpected arguments after the out prefix: {extra}. The only one allowed is already_log2.")
+already_log2 = extra == ["already_log2"]
 
 
 train_kmers, _, train_values, train_post, train_weights, probe_sets = ho.read_table(
