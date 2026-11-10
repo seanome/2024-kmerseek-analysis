@@ -72,7 +72,8 @@ def main():
                 math.ceil(1.2 * max(peaks, default=0)),
                 math.ceil(2 * max(killed, default=0)),
             )
-            if memory > 500:
+            capped = memory > 500
+            if capped:
                 print(f"warning: {tag} needs {memory} GB, capped at 500 GB")
                 memory = 500
             result.append(
@@ -91,7 +92,8 @@ def main():
                             if peaks
                             else "16 GB model, no history"
                         )
-                    ),
+                    )
+                    + (", capped at 500 GB" if capped else ""),
                 )
             )
     out = a.run_dir / "measured"
