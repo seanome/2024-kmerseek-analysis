@@ -23,6 +23,11 @@ recall than it gains. hp_thomas_dill2 goes 0.052 (k25), 0.054 (k30), 0.045 (k35)
 At equal bits, H/P is no better than protein20 or dayhoff6: at 25 and 30 bits the best H/P
 alphabet (hp_thomas_dill2) scores 0.052 and 0.054, against 0.057 for protein20 at 26 and 30 bits.
 
+All of these numbers use the pipeline's domain transfer, which gives every call the whole
+aligned stretch of the query. That step under-scores long alignments: placing each domain at
+its own position raises MMseqs2's median Fmax from 0.31 to 0.50, and kmerseek's typical
+setting only from 0.040 to 0.051 (see "Why C2H2" below). kmerseek stays far behind either way.
+
 dayhoff6 k19-21 and H/P k35-40 come from a second run on 2026-11-08 (see "Follow-up run"
 below). Not run: H/P k31. H/P k30 exists only for hp_thomas_dill2, hp_thomas_dill_no_c2 and
 hp_kyte_doolittle2; k33 only for hp_thomas_dill2. hp_lehninger_hpc3 has no k35 or k40.
@@ -87,7 +92,8 @@ zinc fingers do not follow C2H2: typical 0.28 times MMseqs2, best 0.69. Both too
 MMseqs2's Fmax drops from 0.31 on all proteins to 0.054 on C2H2, and kmerseek's typical
 Fmax rises from about 0.037 to about 0.13 (typical ratio times MMseqs2's Fmax).
 It is one gene set out of 59 subsets, picked after looking, so it was tested against
-random protein sets below. It held: none of 400 random sets came close.
+random protein sets below. It held: none of 400 random sets came close. But the lead comes from how the pipeline moves
+domains onto the query, not from kmerseek finding zinc fingers better (see "Why C2H2").
 
 ### Per species
 
@@ -159,14 +165,73 @@ By the rule written before the run:
 - The 16-30 aa lead does not stand on its own. It comes from the C2H2 proteins: without
   them the ratio drops from 1.16 to 0.29.
 
-Not tested: why kmerseek does better here. MMseqs2's C2H2 Fmax is low (0.054), so part of
-the ratio is MMseqs2 doing badly, not only kmerseek doing well. A random set matched on
-number of domains per protein, or on repeated domains, was not drawn.
+Why kmerseek does better here is tested in the next section: it is MMseqs2 being scored
+badly, not kmerseek doing well. A random set matched on number of domains per protein, or on
+repeated domains, was not drawn; the next section made it unnecessary.
 
 Outputs: [subset_null_summary.csv](subset_null_summary.csv) (one row per protein set),
 [subset_null_verdict.txt](subset_null_verdict.txt),
 [subset_null_published_check.csv](subset_null_published_check.csv) and
 [subset_null_params.json](subset_null_params.json); figure from `subset_null_figure.py`.
+
+### Why C2H2: how domains are moved onto the query
+
+![Fmax per species, as the pipeline scores it and with each domain at its own place](projection.png)
+
+A query protein gets its predicted domains from the target proteins it hits. The pipeline
+(`transfer_domains` in `bin/evaluate_domain_calls.py`) takes each hit, finds every Pfam
+domain on the target that the hit covers by at least half, and gives each of those domains
+the hit's whole stretch on the query. A call then counts as right only if it overlaps the
+true domain by at least half of their combined length (intersection over union, 0.5 or more).
+
+C2H2 zinc-finger proteins carry rows of 23-residue fingers. An MMseqs2 alignment runs along
+many of them, so each finger becomes a call as long as the whole alignment, and fails the
+overlap test. In mouse, MMseqs2's calls on C2H2 proteins are 138 residues long (median);
+64% of them sit on a real finger but fail the overlap test, and 1% count as right.
+kmerseek's dayhoff6 k9 calls are 13 residues long (median) and 52% count as right.
+
+`projection_test.py` rescores both tools from the same search output in two ways:
+
+- **As the pipeline scores it**: `transfer_domains`, unchanged. This reproduced all 2160
+  published Fmax values it was checked against (9 species, 119 kmerseek settings plus
+  MMseqs2, all proteins and C2H2).
+- **Each domain at its own place on the query**: each target domain is shifted by the hit's
+  offset (query start minus target start) and cut to the aligned stretch. Gaps inside the
+  alignment are ignored, so a domain can land a few residues off; the same overlap test
+  then decides whether it counts.
+
+Everything after this step is the pipeline's own scoring code. The rule, written before the
+run: if MMseqs2 overtakes the typical kmerseek setting on C2H2 (ratio below 1) once domains
+are placed, the lead comes from the transfer step.
+
+| Fmax, median over species | as the pipeline scores it | each domain at its own place |
+|---|---|---|
+| MMseqs2, C2H2 proteins | 0.052 | 0.367 |
+| kmerseek typical setting, C2H2 proteins | 0.126 | 0.197 |
+| kmerseek / MMseqs2, typical setting, C2H2 | 2.47 | 0.51 |
+| best kmerseek setting, C2H2 (dayhoff6 k9, then H/P k16) | 0.244 | 0.357 |
+| MMseqs2, all proteins | 0.310 | 0.499 |
+| kmerseek typical setting, all proteins | 0.040 | 0.051 |
+| kmerseek / MMseqs2, typical setting, all proteins | 0.12 | 0.10 |
+
+(115 settings with calls in at least 5 species; typical = median over settings of the median
+over species. The best setting after placing is hp_lehninger_hpc3 k16.)
+
+By the rule, the C2H2 lead comes from the transfer step. Once domains are placed, MMseqs2's
+C2H2 Fmax rises 7-fold and is ahead of the typical kmerseek setting in all 8 species that
+have a ratio (typical ratio 0 in arabidopsis to 0.93 in mouse; E. coli has no ratio, since
+MMseqs2 scores 0 there). Before placing, the typical setting was ahead in 7 of those 8. The
+best kmerseek setting about ties MMseqs2 (0.357 against 0.367). dayhoff6 k9 stays above
+MMseqs2 only in fly (1.24) and zebrafish (1.27).
+
+The same step under-scores MMseqs2 on all proteins (0.31 to 0.50), so every MMseqs2 Fmax in
+this benchmark is too low, and the kmerseek / MMseqs2 ratios here are too kind to kmerseek.
+Not checked: phmmer and the other tools, which go through the same step.
+
+Outputs: [projection_summary.csv](projection_summary.csv),
+[projection_scores.csv](projection_scores.csv) (one row per species, search, scoring and
+protein set) and [projection_published_check.csv](projection_published_check.csv); figure
+from `projection_figure.py`. Ran on Sherlock 2026-11-09 (job 51706647, 6.5 min, 76 GB peak).
 
 - **C2H2 zinc fingers** (32 of the 998 human query proteins, carrying 200 Pfam domain
   copies; the same 32 are scored against every species): the typical setting's Fmax is 2.5 times MMseqs2's, the best
@@ -194,9 +259,9 @@ query-target identity it is near zero below 40% and reaches 0.38 times MMseqs2 o
 repeats, and almost none from remote ones. This is a Pfam-transfer recall gap, not a
 direct test of sensitivity.
 
-Not checked: why MMseqs2 and phmmer do so badly on C2H2 zinc fingers. One possible reason
-is that one alignment spans many repeats and so matches no single 22-residue domain well
-enough; this has not been tested.
+Why MMseqs2 does so badly on C2H2 zinc fingers: the pipeline gives each domain call the
+whole length of the alignment, which runs over many fingers (see "Why C2H2"). With each
+domain placed at its own position, MMseqs2 is ahead on C2H2 too. phmmer was not rescored.
 
 ## Can it go to the QfO benchmark service?
 
@@ -224,6 +289,8 @@ Fmax of 1/5 of MMseqs2 does not by itself say how an orthology submission would 
 python summarize.py <metrics dir> <all_domain_metrics.parquet>
 python other_metrics.py <metrics dir> <all_domain_metrics.parquet>
 python per_species.py <metrics dir> <all_domain_metrics.parquet>
+python projection_test.py --help   # on Sherlock; reads the region files, about 1000 of them
+python projection_figure.py
 ```
 
 Both scripts read one `<metrics dir>`, so copy the `pfam.kmerseek.*_lcFalse.*.metrics.parquet`
