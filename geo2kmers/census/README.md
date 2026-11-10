@@ -17,7 +17,8 @@ arrays to RNA-seq gives 34% more samples.
 ![New GEO samples per year](figures/geo_samples_per_year.png)
 
 In GEO alone, expression arrays peaked at 163,151 new samples in 2014. RNA-seq passed
-them in 2016 and has added 425,000 to 514,000 a year since 2020. GEO's RNA-seq series hold
+them in 2016 and added 431,000 to 514,000 a year from 2020 to 2025 (2026 is partial:
+425,845 up to 8 November). GEO's RNA-seq series hold
 4,400,422 unique samples.
 
 ## What these numbers are not
