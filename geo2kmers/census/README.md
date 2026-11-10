@@ -2,7 +2,9 @@
 
 Counted 2026-11-08, to size what geo2kmers could reach. Public expression-array samples
 total 2,149,645. SRA has 6,291,877 public RNA-seq samples, 2.93 times as many, so adding
-arrays to RNA-seq gives 34% more samples.
+arrays to RNA-seq gives roughly 34% more samples. This is a rough size comparison: the array
+side adds GEO samples, ArrayExpress per-study counts and DDBJ assays, and the RNA-seq side
+counts distinct SRA sample accessions.
 
 ![Expression arrays against RNA-seq](figures/expression_inventory.png)
 
