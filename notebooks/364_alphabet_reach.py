@@ -917,11 +917,16 @@ def sketch(args):
     for input_type in INPUT_TYPES:
         out = sig_path(work, input_type)
         if out.exists():
-            import sourmash
+            import zipfile
 
+            # sourmash cannot open a zip over 4 GiB (see load_sigs): read the manifest.
+            with zipfile.ZipFile(out) as z:
+                lines = z.read("SOURMASH-MANIFEST.csv").decode().splitlines()
             have = {
-                (sig.name, sig.minhash.moltype, sig.minhash.ksize)
-                for sig in sourmash.load_file_as_signatures(str(out))
+                (row["name"], row["moltype"], int(row["ksize"]))
+                for row in csv.DictReader(
+                    line for line in lines if not line.startswith("#")
+                )
             }
             want = {
                 (sp, alphabet, k)
