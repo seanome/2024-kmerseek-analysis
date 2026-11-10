@@ -1,365 +1,589 @@
-anchor	setting_set	alphabet	k	relative	rank	containment	background	fold_over_background	shared_hashes	passes	reached
-Mus musculus	42bits	DNA	21	Mus caroli	subgenus	0.642178	0.000190749	3367	21355	True	True
-Mus musculus	42bits	DNA	21	Rattus norvegicus	subfamily	0.21867	0.000190749	1146	9679	True	True
-Mus musculus	42bits	DNA	21	Cavia porcellus	order	0.0544351	0.000190749	285.4	1552	True	True
-Mus musculus	42bits	DNA	21	Rhinolophus ferrumequinum	class	0.0452407	0.000190749	237.2	1904	True	True
-Mus musculus	42bits	DNA	21	Danio rerio	subphylum	0.00207334	0.000190749	10.87	86	False	False
-Mus musculus	42bits	DNA	21	Drosophila melanogaster	kingdom	0.000993284	0.000190749	5.207	21	False	False
-Mus musculus	42bits	protein	10	Mus caroli	subgenus	0.820624	0.00551401	148.8	43864	True	True
-Mus musculus	42bits	protein	10	Rattus norvegicus	subfamily	0.609631	0.00551401	110.6	32458	True	True
-Mus musculus	42bits	protein	10	Cavia porcellus	order	0.406344	0.00551401	73.69	18730	True	True
-Mus musculus	42bits	protein	10	Rhinolophus ferrumequinum	class	0.389474	0.00551401	70.63	19203	True	True
-Mus musculus	42bits	protein	10	Danio rerio	subphylum	0.0964043	0.00551401	17.48	5153	True	True
-Mus musculus	42bits	protein	10	Drosophila melanogaster	kingdom	0.0139828	0.00551401	2.536	494	False	False
-Mus musculus	42bits	dayhoff	16	Mus caroli	subgenus	0.842319	0.0133179	63.25	43259	True	True
-Mus musculus	42bits	dayhoff	16	Rattus norvegicus	subfamily	0.661137	0.0133179	49.64	33954	True	True
-Mus musculus	42bits	dayhoff	16	Cavia porcellus	order	0.479329	0.0133179	35.99	21299	True	True
-Mus musculus	42bits	dayhoff	16	Rhinolophus ferrumequinum	class	0.458564	0.0133179	34.43	21868	True	True
-Mus musculus	42bits	dayhoff	16	Danio rerio	subphylum	0.143895	0.0133179	10.8	7390	True	True
-Mus musculus	42bits	dayhoff	16	Drosophila melanogaster	kingdom	0.029245	0.0133179	2.196	1016	False	False
-Mus musculus	42bits	hp	42	Mus caroli	subgenus	0.74942	0.00156998	477.3	38455	True	True
-Mus musculus	42bits	hp	42	Rattus norvegicus	subfamily	0.520835	0.00156998	331.7	26710	True	True
-Mus musculus	42bits	hp	42	Cavia porcellus	order	0.324575	0.00156998	206.7	14355	True	True
-Mus musculus	42bits	hp	42	Rhinolophus ferrumequinum	class	0.30971	0.00156998	197.3	14592	True	True
-Mus musculus	42bits	hp	42	Danio rerio	subphylum	0.0677996	0.00156998	43.19	3479	True	True
-Mus musculus	42bits	hp	42	Drosophila melanogaster	kingdom	0.00704605	0.00156998	4.488	235	False	False
-Mus musculus	dna21_protein7	DNA	21	Mus caroli	subgenus	0.642178	0.000190749	3367	21355	True	True
-Mus musculus	dna21_protein7	DNA	21	Rattus norvegicus	subfamily	0.21867	0.000190749	1146	9679	True	True
-Mus musculus	dna21_protein7	DNA	21	Cavia porcellus	order	0.0544351	0.000190749	285.4	1552	True	True
-Mus musculus	dna21_protein7	DNA	21	Rhinolophus ferrumequinum	class	0.0452407	0.000190749	237.2	1904	True	True
-Mus musculus	dna21_protein7	DNA	21	Danio rerio	subphylum	0.00207334	0.000190749	10.87	86	False	False
-Mus musculus	dna21_protein7	DNA	21	Drosophila melanogaster	kingdom	0.000993284	0.000190749	5.207	21	False	False
-Mus musculus	dna21_protein7	protein	7	Mus caroli	subgenus	0.860197	0.0426861	20.15	43409	True	True
-Mus musculus	dna21_protein7	protein	7	Rattus norvegicus	subfamily	0.683913	0.0426861	16.02	34513	True	True
-Mus musculus	dna21_protein7	protein	7	Cavia porcellus	order	0.495873	0.0426861	11.62	21930	True	True
-Mus musculus	dna21_protein7	protein	7	Rhinolophus ferrumequinum	class	0.480643	0.0426861	11.26	22559	True	True
-Mus musculus	dna21_protein7	protein	7	Danio rerio	subphylum	0.180723	0.0426861	4.234	9120	False	False
-Mus musculus	dna21_protein7	protein	7	Drosophila melanogaster	kingdom	0.0622061	0.0426861	1.457	2143	False	False
-Mus musculus	dna21_protein7	dayhoff	12	Mus caroli	subgenus	0.881619	0.149792	5.886	39478	False	False
-Mus musculus	dna21_protein7	dayhoff	12	Rattus norvegicus	subfamily	0.743474	0.149792	4.963	33292	False	False
-Mus musculus	dna21_protein7	dayhoff	12	Cavia porcellus	order	0.597354	0.149792	3.988	23482	False	False
-Mus musculus	dna21_protein7	dayhoff	12	Rhinolophus ferrumequinum	class	0.576954	0.149792	3.852	24299	False	False
-Mus musculus	dna21_protein7	dayhoff	12	Danio rerio	subphylum	0.305143	0.149792	2.037	13664	False	False
-Mus musculus	dna21_protein7	dayhoff	12	Drosophila melanogaster	kingdom	0.165192	0.149792	1.103	5115	False	False
-Mus musculus	dna21_protein7	hp	30	Mus caroli	subgenus	0.801423	0.020224	39.63	40879	True	True
-Mus musculus	dna21_protein7	hp	30	Rattus norvegicus	subfamily	0.601306	0.020224	29.73	30491	True	True
-Mus musculus	dna21_protein7	hp	30	Cavia porcellus	order	0.406754	0.020224	20.11	17924	True	True
-Mus musculus	dna21_protein7	hp	30	Rhinolophus ferrumequinum	class	0.391868	0.020224	19.38	18524	True	True
-Mus musculus	dna21_protein7	hp	30	Danio rerio	subphylum	0.120961	0.020224	5.981	6170	False	False
-Mus musculus	dna21_protein7	hp	30	Drosophila melanogaster	kingdom	0.0297274	0.020224	1.47	1011	False	False
-Mus musculus	dna24_protein8	DNA	24	Mus caroli	subgenus	0.612652	0.000122369	5007	20503	True	True
-Mus musculus	dna24_protein8	DNA	24	Rattus norvegicus	subfamily	0.188061	0.000122369	1537	8314	True	True
-Mus musculus	dna24_protein8	DNA	24	Cavia porcellus	order	0.0405234	0.000122369	331.2	1149	True	True
-Mus musculus	dna24_protein8	DNA	24	Rhinolophus ferrumequinum	class	0.0339848	0.000122369	277.7	1452	True	True
-Mus musculus	dna24_protein8	DNA	24	Danio rerio	subphylum	0.000834008	0.000122369	6.816	35	False	False
-Mus musculus	dna24_protein8	DNA	24	Drosophila melanogaster	kingdom	0.000279955	0.000122369	2.288	6	False	False
-Mus musculus	dna24_protein8	protein	8	Mus caroli	subgenus	0.847979	0.0123182	68.84	44719	True	True
-Mus musculus	dna24_protein8	protein	8	Rattus norvegicus	subfamily	0.654373	0.0123182	53.12	34509	True	True
-Mus musculus	dna24_protein8	protein	8	Cavia porcellus	order	0.454239	0.0123182	36.88	20771	True	True
-Mus musculus	dna24_protein8	protein	8	Rhinolophus ferrumequinum	class	0.43785	0.0123182	35.54	21417	True	True
-Mus musculus	dna24_protein8	protein	8	Danio rerio	subphylum	0.125398	0.0123182	10.18	6613	True	True
-Mus musculus	dna24_protein8	protein	8	Drosophila melanogaster	kingdom	0.024778	0.0123182	2.011	876	False	False
-Mus musculus	dna24_protein8	dayhoff	13	Mus caroli	subgenus	0.86442	0.0685301	12.61	41627	True	True
-Mus musculus	dna24_protein8	dayhoff	13	Rattus norvegicus	subfamily	0.71047	0.0685301	10.37	34023	True	True
-Mus musculus	dna24_protein8	dayhoff	13	Cavia porcellus	order	0.546517	0.0685301	7.975	22869	False	False
-Mus musculus	dna24_protein8	dayhoff	13	Rhinolophus ferrumequinum	class	0.527671	0.0685301	7.7	23560	False	False
-Mus musculus	dna24_protein8	dayhoff	13	Danio rerio	subphylum	0.225206	0.0685301	3.286	10845	False	False
-Mus musculus	dna24_protein8	dayhoff	13	Drosophila melanogaster	kingdom	0.0932765	0.0685301	1.361	3066	False	False
-Mus musculus	dna24_protein8	hp	35	Mus caroli	subgenus	0.776186	0.00442581	175.4	39920	True	True
-Mus musculus	dna24_protein8	hp	35	Rattus norvegicus	subfamily	0.563765	0.00442581	127.4	28995	True	True
-Mus musculus	dna24_protein8	hp	35	Cavia porcellus	order	0.365239	0.00442581	82.52	16179	True	True
-Mus musculus	dna24_protein8	hp	35	Rhinolophus ferrumequinum	class	0.3516	0.00442581	79.44	16592	True	True
-Mus musculus	dna24_protein8	hp	35	Danio rerio	subphylum	0.086407	0.00442581	19.52	4444	True	True
-Mus musculus	dna24_protein8	hp	35	Drosophila melanogaster	kingdom	0.0120073	0.00442581	2.713	407	False	False
-Mus musculus	dna27_protein9	DNA	27	Mus caroli	subgenus	0.584259	0.000248787	2348	19523	True	True
-Mus musculus	dna27_protein9	DNA	27	Rattus norvegicus	subfamily	0.163146	0.000248787	655.8	7237	True	True
-Mus musculus	dna27_protein9	DNA	27	Cavia porcellus	order	0.0324952	0.000248787	130.6	924	True	True
-Mus musculus	dna27_protein9	DNA	27	Rhinolophus ferrumequinum	class	0.0267056	0.000248787	107.3	1143	True	True
-Mus musculus	dna27_protein9	DNA	27	Danio rerio	subphylum	0.000406378	0.000248787	1.633	17	False	False
-Mus musculus	dna27_protein9	DNA	27	Drosophila melanogaster	kingdom	9.43752e-05	0.000248787	0.3793	2	False	False
-Mus musculus	dna27_protein9	protein	9	Mus caroli	subgenus	0.83386	0.00621164	134.2	44343	True	True
-Mus musculus	dna27_protein9	protein	9	Rattus norvegicus	subfamily	0.628042	0.00621164	101.1	33398	True	True
-Mus musculus	dna27_protein9	protein	9	Cavia porcellus	order	0.432339	0.00621164	69.6	19674	True	True
-Mus musculus	dna27_protein9	protein	9	Rhinolophus ferrumequinum	class	0.41093	0.00621164	66.15	20205	True	True
-Mus musculus	dna27_protein9	protein	9	Danio rerio	subphylum	0.107676	0.00621164	17.33	5726	True	True
-Mus musculus	dna27_protein9	protein	9	Drosophila melanogaster	kingdom	0.0178612	0.00621164	2.875	630	False	False
-Mus musculus	dna27_protein9	dayhoff	15	Mus caroli	subgenus	0.849683	0.0171569	49.52	43056	True	True
-Mus musculus	dna27_protein9	dayhoff	15	Rattus norvegicus	subfamily	0.674738	0.0171569	39.33	34191	True	True
-Mus musculus	dna27_protein9	dayhoff	15	Cavia porcellus	order	0.495529	0.0171569	28.88	21776	True	True
-Mus musculus	dna27_protein9	dayhoff	15	Rhinolophus ferrumequinum	class	0.475355	0.0171569	27.71	22442	True	True
-Mus musculus	dna27_protein9	dayhoff	15	Danio rerio	subphylum	0.161269	0.0171569	9.4	8172	False	False
-Mus musculus	dna27_protein9	dayhoff	15	Drosophila melanogaster	kingdom	0.0391774	0.0171569	2.283	1345	False	False
-Mus musculus	dna27_protein9	hp	39	Mus caroli	subgenus	0.760951	0.00294871	258.1	39243	True	True
-Mus musculus	dna27_protein9	hp	39	Rattus norvegicus	subfamily	0.541302	0.00294871	183.6	27719	True	True
-Mus musculus	dna27_protein9	hp	39	Cavia porcellus	order	0.342746	0.00294871	116.2	15124	True	True
-Mus musculus	dna27_protein9	hp	39	Rhinolophus ferrumequinum	class	0.327533	0.00294871	111.1	15417	True	True
-Mus musculus	dna27_protein9	hp	39	Danio rerio	subphylum	0.0722499	0.00294871	24.5	3726	True	True
-Mus musculus	dna27_protein9	hp	39	Drosophila melanogaster	kingdom	0.00816024	0.00294871	2.767	275	False	False
-Mus musculus	dna30_protein10	DNA	30	Mus caroli	subgenus	0.55317	6.28931e-05	8795	18472	True	True
-Mus musculus	dna30_protein10	DNA	30	Rattus norvegicus	subfamily	0.137816	6.28931e-05	2191	6073	True	True
-Mus musculus	dna30_protein10	DNA	30	Cavia porcellus	order	0.0235533	6.28931e-05	374.5	674	True	True
-Mus musculus	dna30_protein10	DNA	30	Rhinolophus ferrumequinum	class	0.018943	6.28931e-05	301.2	800	True	True
-Mus musculus	dna30_protein10	DNA	30	Danio rerio	subphylum	0.000238931	6.28931e-05	3.799	10	False	False
-Mus musculus	dna30_protein10	DNA	30	Drosophila melanogaster	kingdom	4.6856e-05	6.28931e-05	0.745	1	False	False
-Mus musculus	dna30_protein10	protein	10	Mus caroli	subgenus	0.820624	0.00551401	148.8	43864	True	True
-Mus musculus	dna30_protein10	protein	10	Rattus norvegicus	subfamily	0.609631	0.00551401	110.6	32458	True	True
-Mus musculus	dna30_protein10	protein	10	Cavia porcellus	order	0.406344	0.00551401	73.69	18730	True	True
-Mus musculus	dna30_protein10	protein	10	Rhinolophus ferrumequinum	class	0.389474	0.00551401	70.63	19203	True	True
-Mus musculus	dna30_protein10	protein	10	Danio rerio	subphylum	0.0964043	0.00551401	17.48	5153	True	True
-Mus musculus	dna30_protein10	protein	10	Drosophila melanogaster	kingdom	0.0139828	0.00551401	2.536	494	False	False
-Mus musculus	dna30_protein10	dayhoff	17	Mus caroli	subgenus	0.834663	0.00864857	96.51	43415	True	True
-Mus musculus	dna30_protein10	dayhoff	17	Rattus norvegicus	subfamily	0.652796	0.00864857	75.48	33728	True	True
-Mus musculus	dna30_protein10	dayhoff	17	Cavia porcellus	order	0.469187	0.00864857	54.25	20899	True	True
-Mus musculus	dna30_protein10	dayhoff	17	Rhinolophus ferrumequinum	class	0.450543	0.00864857	52.09	21549	True	True
-Mus musculus	dna30_protein10	dayhoff	17	Danio rerio	subphylum	0.131539	0.00864857	15.21	6842	True	True
-Mus musculus	dna30_protein10	dayhoff	17	Drosophila melanogaster	kingdom	0.0236908	0.00864857	2.739	817	False	False
-Mus musculus	dna30_protein10	hp	43	Mus caroli	subgenus	0.745547	0.00175243	425.4	38717	True	True
-Mus musculus	dna30_protein10	hp	43	Rattus norvegicus	subfamily	0.521287	0.00175243	297.5	26839	True	True
-Mus musculus	dna30_protein10	hp	43	Cavia porcellus	order	0.325879	0.00175243	186	14369	True	True
-Mus musculus	dna30_protein10	hp	43	Rhinolophus ferrumequinum	class	0.313006	0.00175243	178.6	14700	True	True
-Mus musculus	dna30_protein10	hp	43	Danio rerio	subphylum	0.0634005	0.00175243	36.18	3296	True	True
-Mus musculus	dna30_protein10	hp	43	Drosophila melanogaster	kingdom	0.00650792	0.00175243	3.714	217	False	False
-Mus musculus	dna33_protein11	DNA	33	Mus caroli	subgenus	0.526497	0	inf	17545	True	True
-Mus musculus	dna33_protein11	DNA	33	Rattus norvegicus	subfamily	0.120267	0	inf	5324	True	True
-Mus musculus	dna33_protein11	DNA	33	Cavia porcellus	order	0.0172715	0	inf	494	True	True
-Mus musculus	dna33_protein11	DNA	33	Rhinolophus ferrumequinum	class	0.0149135	0	inf	638	True	True
-Mus musculus	dna33_protein11	DNA	33	Danio rerio	subphylum	0.000141871	0	inf	6	False	False
-Mus musculus	dna33_protein11	DNA	33	Drosophila melanogaster	kingdom	0	0	inf	0	False	False
-Mus musculus	dna33_protein11	protein	11	Mus caroli	subgenus	0.809383	0.00413712	195.6	43374	True	True
-Mus musculus	dna33_protein11	protein	11	Rattus norvegicus	subfamily	0.589864	0.00413712	142.6	31530	True	True
-Mus musculus	dna33_protein11	protein	11	Cavia porcellus	order	0.38562	0.00413712	93.21	17774	True	True
-Mus musculus	dna33_protein11	protein	11	Rhinolophus ferrumequinum	class	0.367977	0.00413712	88.95	18110	True	True
-Mus musculus	dna33_protein11	protein	11	Danio rerio	subphylum	0.0871074	0.00413712	21.06	4668	True	True
-Mus musculus	dna33_protein11	protein	11	Drosophila melanogaster	kingdom	0.0121777	0.00413712	2.944	434	False	False
-Mus musculus	dna33_protein11	dayhoff	18	Mus caroli	subgenus	0.827441	0.00760256	108.8	43041	True	True
-Mus musculus	dna33_protein11	dayhoff	18	Rattus norvegicus	subfamily	0.640032	0.00760256	84.19	33162	True	True
-Mus musculus	dna33_protein11	dayhoff	18	Cavia porcellus	order	0.452573	0.00760256	59.53	20483	True	True
-Mus musculus	dna33_protein11	dayhoff	18	Rhinolophus ferrumequinum	class	0.436005	0.00760256	57.35	20831	True	True
-Mus musculus	dna33_protein11	dayhoff	18	Danio rerio	subphylum	0.126016	0.00760256	16.58	6555	True	True
-Mus musculus	dna33_protein11	dayhoff	18	Drosophila melanogaster	kingdom	0.0219793	0.00760256	2.891	754	False	False
-Mus musculus	dna33_protein11	hp	48	Mus caroli	subgenus	0.726889	0.000881764	824.4	37192	True	True
-Mus musculus	dna33_protein11	hp	48	Rattus norvegicus	subfamily	0.496387	0.000881764	562.9	25281	True	True
-Mus musculus	dna33_protein11	hp	48	Cavia porcellus	order	0.301397	0.000881764	341.8	13137	True	True
-Mus musculus	dna33_protein11	hp	48	Rhinolophus ferrumequinum	class	0.287354	0.000881764	325.9	13468	True	True
-Mus musculus	dna33_protein11	hp	48	Danio rerio	subphylum	0.0546296	0.000881764	61.95	2796	True	True
-Mus musculus	dna33_protein11	hp	48	Drosophila melanogaster	kingdom	0.00463468	0.000881764	5.256	153	False	False
-Mus musculus	dna36_protein12	DNA	36	Mus caroli	subgenus	0.504259	0.000124564	4048	16873	True	True
-Mus musculus	dna36_protein12	DNA	36	Rattus norvegicus	subfamily	0.104781	0.000124564	841.2	4640	True	True
-Mus musculus	dna36_protein12	DNA	36	Cavia porcellus	order	0.0139894	0.000124564	112.3	400	True	True
-Mus musculus	dna36_protein12	DNA	36	Rhinolophus ferrumequinum	class	0.0121862	0.000124564	97.83	517	True	True
-Mus musculus	dna36_protein12	DNA	36	Danio rerio	subphylum	7.09404e-05	0.000124564	0.5695	3	False	False
-Mus musculus	dna36_protein12	DNA	36	Drosophila melanogaster	kingdom	4.73328e-05	0.000124564	0.38	1	False	False
-Mus musculus	dna36_protein12	protein	12	Mus caroli	subgenus	0.798536	0.00277632	287.6	42776	True	True
-Mus musculus	dna36_protein12	protein	12	Rattus norvegicus	subfamily	0.574198	0.00277632	206.8	30742	True	True
-Mus musculus	dna36_protein12	protein	12	Cavia porcellus	order	0.368497	0.00277632	132.7	17141	True	True
-Mus musculus	dna36_protein12	protein	12	Rhinolophus ferrumequinum	class	0.354629	0.00277632	127.7	17480	True	True
-Mus musculus	dna36_protein12	protein	12	Danio rerio	subphylum	0.0783303	0.00277632	28.21	4196	True	True
-Mus musculus	dna36_protein12	protein	12	Drosophila melanogaster	kingdom	0.00949635	0.00277632	3.42	336	False	False
-Mus musculus	dna36_protein12	dayhoff	20	Mus caroli	subgenus	0.817629	0.00477621	171.2	42744	True	True
-Mus musculus	dna36_protein12	dayhoff	20	Rattus norvegicus	subfamily	0.619385	0.00477621	129.7	32304	True	True
-Mus musculus	dna36_protein12	dayhoff	20	Cavia porcellus	order	0.433759	0.00477621	90.82	19612	True	True
-Mus musculus	dna36_protein12	dayhoff	20	Rhinolophus ferrumequinum	class	0.414377	0.00477621	86.76	20031	True	True
-Mus musculus	dna36_protein12	dayhoff	20	Danio rerio	subphylum	0.112437	0.00477621	23.54	5878	True	True
-Mus musculus	dna36_protein12	dayhoff	20	Drosophila melanogaster	kingdom	0.0171363	0.00477621	3.588	593	False	False
-Mus musculus	dna36_protein12	hp	52	Mus caroli	subgenus	0.713681	0.000870391	820	36407	True	True
-Mus musculus	dna36_protein12	hp	52	Rattus norvegicus	subfamily	0.481755	0.000870391	553.5	24306	True	True
-Mus musculus	dna36_protein12	hp	52	Cavia porcellus	order	0.285728	0.000870391	328.3	12314	True	True
-Mus musculus	dna36_protein12	hp	52	Rhinolophus ferrumequinum	class	0.272533	0.000870391	313.1	12648	True	True
-Mus musculus	dna36_protein12	hp	52	Danio rerio	subphylum	0.0489575	0.000870391	56.25	2510	True	True
-Mus musculus	dna36_protein12	hp	52	Drosophila melanogaster	kingdom	0.00433754	0.000870391	4.983	143	False	False
-Escherichia coli K-12	42bits	DNA	21	Escherichia coli O157:H7	species	0.65144	0	inf	2624	True	True
-Escherichia coli K-12	42bits	DNA	21	Escherichia fergusonii	genus	0.228898	0	inf	922	True	True
-Escherichia coli K-12	42bits	DNA	21	Salmonella enterica	family	0.0322741	0	inf	130	True	True
-Escherichia coli K-12	42bits	DNA	21	Yersinia pestis	order	0.00443582	0	inf	16	False	False
-Escherichia coli K-12	42bits	DNA	21	Pseudomonas aeruginosa	class	0.000496524	0	inf	2	False	False
-Escherichia coli K-12	42bits	DNA	21	Caulobacter vibrioides	phylum	0	0	inf	0	False	False
-Escherichia coli K-12	42bits	DNA	21	Bacteroides thetaiotaomicron	kingdom	0	0	inf	0	False	False
-Escherichia coli K-12	42bits	protein	10	Escherichia coli O157:H7	species	0.830307	0.00361757	229.5	5304	True	True
-Escherichia coli K-12	42bits	protein	10	Escherichia fergusonii	genus	0.559173	0.00361757	154.6	3572	True	True
-Escherichia coli K-12	42bits	protein	10	Salmonella enterica	family	0.35958	0.00361757	99.4	2297	True	True
-Escherichia coli K-12	42bits	protein	10	Yersinia pestis	order	0.118532	0.00361757	32.77	701	True	True
-Escherichia coli K-12	42bits	protein	10	Pseudomonas aeruginosa	class	0.0195679	0.00361757	5.409	125	False	False
-Escherichia coli K-12	42bits	protein	10	Caulobacter vibrioides	phylum	0.00475268	0.00361757	1.314	27	False	False
-Escherichia coli K-12	42bits	protein	10	Bacteroides thetaiotaomicron	kingdom	0.00297433	0.00361757	0.8222	19	False	False
-Escherichia coli K-12	42bits	dayhoff	16	Escherichia coli O157:H7	species	0.842072	0.00612423	137.5	5300	True	True
-Escherichia coli K-12	42bits	dayhoff	16	Escherichia fergusonii	genus	0.626787	0.00612423	102.3	3945	True	True
-Escherichia coli K-12	42bits	dayhoff	16	Salmonella enterica	family	0.430887	0.00612423	70.36	2712	True	True
-Escherichia coli K-12	42bits	dayhoff	16	Yersinia pestis	order	0.172052	0.00612423	28.09	1001	True	True
-Escherichia coli K-12	42bits	dayhoff	16	Pseudomonas aeruginosa	class	0.0301875	0.00612423	4.929	190	False	False
-Escherichia coli K-12	42bits	dayhoff	16	Caulobacter vibrioides	phylum	0.00816114	0.00612423	1.333	47	False	False
-Escherichia coli K-12	42bits	dayhoff	16	Bacteroides thetaiotaomicron	kingdom	0.00667302	0.00612423	1.09	42	False	False
-Escherichia coli K-12	42bits	hp	42	Escherichia coli O157:H7	species	0.797718	0.000745712	1070	4685	True	True
-Escherichia coli K-12	42bits	hp	42	Escherichia fergusonii	genus	0.541801	0.000745712	726.6	3182	True	True
-Escherichia coli K-12	42bits	hp	42	Salmonella enterica	family	0.32096	0.000745712	430.4	1885	True	True
-Escherichia coli K-12	42bits	hp	42	Yersinia pestis	order	0.0849613	0.000745712	113.9	461	True	True
-Escherichia coli K-12	42bits	hp	42	Pseudomonas aeruginosa	class	0.00800272	0.000745712	10.73	47	False	False
-Escherichia coli K-12	42bits	hp	42	Caulobacter vibrioides	phylum	0	0.000745712	0	0	False	False
-Escherichia coli K-12	42bits	hp	42	Bacteroides thetaiotaomicron	kingdom	0.000340541	0.000745712	0.4567	2	False	False
-Escherichia coli K-12	dna21_protein7	DNA	21	Escherichia coli O157:H7	species	0.65144	0	inf	2624	True	True
-Escherichia coli K-12	dna21_protein7	DNA	21	Escherichia fergusonii	genus	0.228898	0	inf	922	True	True
-Escherichia coli K-12	dna21_protein7	DNA	21	Salmonella enterica	family	0.0322741	0	inf	130	True	True
-Escherichia coli K-12	dna21_protein7	DNA	21	Yersinia pestis	order	0.00443582	0	inf	16	False	False
-Escherichia coli K-12	dna21_protein7	DNA	21	Pseudomonas aeruginosa	class	0.000496524	0	inf	2	False	False
-Escherichia coli K-12	dna21_protein7	DNA	21	Caulobacter vibrioides	phylum	0	0	inf	0	False	False
-Escherichia coli K-12	dna21_protein7	DNA	21	Bacteroides thetaiotaomicron	kingdom	0	0	inf	0	False	False
-Escherichia coli K-12	dna21_protein7	protein	7	Escherichia coli O157:H7	species	0.839566	0.0152123	55.19	5411	True	True
-Escherichia coli K-12	dna21_protein7	protein	7	Escherichia fergusonii	genus	0.611947	0.0152123	40.23	3944	True	True
-Escherichia coli K-12	dna21_protein7	protein	7	Salmonella enterica	family	0.417223	0.0152123	27.43	2689	True	True
-Escherichia coli K-12	dna21_protein7	protein	7	Yersinia pestis	order	0.172676	0.0152123	11.35	1020	True	True
-Escherichia coli K-12	dna21_protein7	protein	7	Pseudomonas aeruginosa	class	0.0470132	0.0152123	3.09	303	False	False
-Escherichia coli K-12	dna21_protein7	protein	7	Caulobacter vibrioides	phylum	0.016129	0.0152123	1.06	94	False	False
-Escherichia coli K-12	dna21_protein7	protein	7	Bacteroides thetaiotaomicron	kingdom	0.00993018	0.0152123	0.6528	64	False	False
-Escherichia coli K-12	dna21_protein7	dayhoff	12	Escherichia coli O157:H7	species	0.853957	0.0543231	15.72	5438	True	True
-Escherichia coli K-12	dna21_protein7	dayhoff	12	Escherichia fergusonii	genus	0.66049	0.0543231	12.16	4206	True	True
-Escherichia coli K-12	dna21_protein7	dayhoff	12	Salmonella enterica	family	0.503612	0.0543231	9.271	3207	False	False
-Escherichia coli K-12	dna21_protein7	dayhoff	12	Yersinia pestis	order	0.245453	0.0543231	4.518	1444	False	False
-Escherichia coli K-12	dna21_protein7	dayhoff	12	Pseudomonas aeruginosa	class	0.11071	0.0543231	2.038	705	False	False
-Escherichia coli K-12	dna21_protein7	dayhoff	12	Caulobacter vibrioides	phylum	0.066	0.0543231	1.215	363	False	False
-Escherichia coli K-12	dna21_protein7	dayhoff	12	Bacteroides thetaiotaomicron	kingdom	0.049152	0.0543231	0.9048	313	False	False
-Escherichia coli K-12	dna21_protein7	hp	30	Escherichia coli O157:H7	species	0.816496	0.0092291	88.47	5019	True	True
-Escherichia coli K-12	dna21_protein7	hp	30	Escherichia fergusonii	genus	0.584675	0.0092291	63.35	3594	True	True
-Escherichia coli K-12	dna21_protein7	hp	30	Salmonella enterica	family	0.386367	0.0092291	41.86	2375	True	True
-Escherichia coli K-12	dna21_protein7	hp	30	Yersinia pestis	order	0.133845	0.0092291	14.5	768	True	True
-Escherichia coli K-12	dna21_protein7	hp	30	Pseudomonas aeruginosa	class	0.0245648	0.0092291	2.662	151	False	False
-Escherichia coli K-12	dna21_protein7	hp	30	Caulobacter vibrioides	phylum	0.00912987	0.0092291	0.9892	49	False	False
-Escherichia coli K-12	dna21_protein7	hp	30	Bacteroides thetaiotaomicron	kingdom	0.00813405	0.0092291	0.8813	50	False	False
-Escherichia coli K-12	dna24_protein8	DNA	24	Escherichia coli O157:H7	species	0.643315	0	inf	2507	True	True
-Escherichia coli K-12	dna24_protein8	DNA	24	Escherichia fergusonii	genus	0.212471	0	inf	828	True	True
-Escherichia coli K-12	dna24_protein8	DNA	24	Salmonella enterica	family	0.0236079	0	inf	92	False	False
-Escherichia coli K-12	dna24_protein8	DNA	24	Yersinia pestis	order	0.00139276	0	inf	5	False	False
-Escherichia coli K-12	dna24_protein8	DNA	24	Pseudomonas aeruginosa	class	0.000513215	0	inf	2	False	False
-Escherichia coli K-12	dna24_protein8	DNA	24	Caulobacter vibrioides	phylum	0	0	inf	0	False	False
-Escherichia coli K-12	dna24_protein8	DNA	24	Bacteroides thetaiotaomicron	kingdom	0	0	inf	0	False	False
-Escherichia coli K-12	dna24_protein8	protein	8	Escherichia coli O157:H7	species	0.834905	0.00709579	117.7	5401	True	True
-Escherichia coli K-12	dna24_protein8	protein	8	Escherichia fergusonii	genus	0.601948	0.00709579	84.83	3894	True	True
-Escherichia coli K-12	dna24_protein8	protein	8	Salmonella enterica	family	0.406709	0.00709579	57.32	2631	True	True
-Escherichia coli K-12	dna24_protein8	protein	8	Yersinia pestis	order	0.146187	0.00709579	20.6	878	True	True
-Escherichia coli K-12	dna24_protein8	protein	8	Pseudomonas aeruginosa	class	0.0276704	0.00709579	3.9	179	False	False
-Escherichia coli K-12	dna24_protein8	protein	8	Caulobacter vibrioides	phylum	0.0101724	0.00709579	1.434	59	False	False
-Escherichia coli K-12	dna24_protein8	protein	8	Bacteroides thetaiotaomicron	kingdom	0.0046375	0.00709579	0.6536	30	False	False
-Escherichia coli K-12	dna24_protein8	dayhoff	13	Escherichia coli O157:H7	species	0.854435	0.0256149	33.36	5365	True	True
-Escherichia coli K-12	dna24_protein8	dayhoff	13	Escherichia fergusonii	genus	0.655518	0.0256149	25.59	4116	True	True
-Escherichia coli K-12	dna24_protein8	dayhoff	13	Salmonella enterica	family	0.482879	0.0256149	18.85	3032	True	True
-Escherichia coli K-12	dna24_protein8	dayhoff	13	Yersinia pestis	order	0.206908	0.0256149	8.078	1210	False	False
-Escherichia coli K-12	dna24_protein8	dayhoff	13	Pseudomonas aeruginosa	class	0.0692785	0.0256149	2.705	435	False	False
-Escherichia coli K-12	dna24_protein8	dayhoff	13	Caulobacter vibrioides	phylum	0.0282019	0.0256149	1.101	157	False	False
-Escherichia coli K-12	dna24_protein8	dayhoff	13	Bacteroides thetaiotaomicron	kingdom	0.0238892	0.0256149	0.9326	150	False	False
-Escherichia coli K-12	dna24_protein8	hp	35	Escherichia coli O157:H7	species	0.807414	0.00196696	410.5	4683	True	True
-Escherichia coli K-12	dna24_protein8	hp	35	Escherichia fergusonii	genus	0.572414	0.00196696	291	3320	True	True
-Escherichia coli K-12	dna24_protein8	hp	35	Salmonella enterica	family	0.353621	0.00196696	179.8	2051	True	True
-Escherichia coli K-12	dna24_protein8	hp	35	Yersinia pestis	order	0.102588	0.00196696	52.16	555	True	True
-Escherichia coli K-12	dna24_protein8	hp	35	Pseudomonas aeruginosa	class	0.012931	0.00196696	6.574	75	False	False
-Escherichia coli K-12	dna24_protein8	hp	35	Caulobacter vibrioides	phylum	0.00246072	0.00196696	1.251	13	False	False
-Escherichia coli K-12	dna24_protein8	hp	35	Bacteroides thetaiotaomicron	kingdom	0.00155172	0.00196696	0.7889	9	False	False
-Escherichia coli K-12	dna27_protein9	DNA	27	Escherichia coli O157:H7	species	0.61389	0	inf	2369	True	True
-Escherichia coli K-12	dna27_protein9	DNA	27	Escherichia fergusonii	genus	0.178803	0	inf	690	True	True
-Escherichia coli K-12	dna27_protein9	DNA	27	Salmonella enterica	family	0.0168437	0	inf	65	False	False
-Escherichia coli K-12	dna27_protein9	DNA	27	Yersinia pestis	order	0.000551116	0	inf	2	False	False
-Escherichia coli K-12	dna27_protein9	DNA	27	Pseudomonas aeruginosa	class	0	0	inf	0	False	False
-Escherichia coli K-12	dna27_protein9	DNA	27	Caulobacter vibrioides	phylum	0	0	inf	0	False	False
-Escherichia coli K-12	dna27_protein9	DNA	27	Bacteroides thetaiotaomicron	kingdom	0	0	inf	0	False	False
-Escherichia coli K-12	dna27_protein9	protein	9	Escherichia coli O157:H7	species	0.82777	0.0055325	149.6	5431	True	True
-Escherichia coli K-12	dna27_protein9	protein	9	Escherichia fergusonii	genus	0.586191	0.0055325	106	3846	True	True
-Escherichia coli K-12	dna27_protein9	protein	9	Salmonella enterica	family	0.381954	0.0055325	69.04	2506	True	True
-Escherichia coli K-12	dna27_protein9	protein	9	Yersinia pestis	order	0.132701	0.0055325	23.99	797	True	True
-Escherichia coli K-12	dna27_protein9	protein	9	Pseudomonas aeruginosa	class	0.0192044	0.0055325	3.471	126	False	False
-Escherichia coli K-12	dna27_protein9	protein	9	Caulobacter vibrioides	phylum	0.00675208	0.0055325	1.22	39	False	False
-Escherichia coli K-12	dna27_protein9	protein	9	Bacteroides thetaiotaomicron	kingdom	0.00304832	0.0055325	0.551	20	False	False
-Escherichia coli K-12	dna27_protein9	dayhoff	15	Escherichia coli O157:H7	species	0.840064	0.00960879	87.43	5284	True	True
-Escherichia coli K-12	dna27_protein9	dayhoff	15	Escherichia fergusonii	genus	0.631479	0.00960879	65.72	3972	True	True
-Escherichia coli K-12	dna27_protein9	dayhoff	15	Salmonella enterica	family	0.441494	0.00960879	45.95	2777	True	True
-Escherichia coli K-12	dna27_protein9	dayhoff	15	Yersinia pestis	order	0.180458	0.00960879	18.78	1049	True	True
-Escherichia coli K-12	dna27_protein9	dayhoff	15	Pseudomonas aeruginosa	class	0.0384738	0.00960879	4.004	242	False	False
-Escherichia coli K-12	dna27_protein9	dayhoff	15	Caulobacter vibrioides	phylum	0.0117544	0.00960879	1.223	67	False	False
-Escherichia coli K-12	dna27_protein9	dayhoff	15	Bacteroides thetaiotaomicron	kingdom	0.00540541	0.00960879	0.5625	34	False	False
-Escherichia coli K-12	dna27_protein9	hp	39	Escherichia coli O157:H7	species	0.811443	0.00157295	515.9	4751	True	True
-Escherichia coli K-12	dna27_protein9	hp	39	Escherichia fergusonii	genus	0.562084	0.00157295	357.3	3291	True	True
-Escherichia coli K-12	dna27_protein9	hp	39	Salmonella enterica	family	0.33339	0.00157295	212	1952	True	True
-Escherichia coli K-12	dna27_protein9	hp	39	Yersinia pestis	order	0.0934849	0.00157295	59.43	518	True	True
-Escherichia coli K-12	dna27_protein9	hp	39	Pseudomonas aeruginosa	class	0.0104184	0.00157295	6.623	61	False	False
-Escherichia coli K-12	dna27_protein9	hp	39	Caulobacter vibrioides	phylum	0.00151429	0.00157295	0.9627	8	False	False
-Escherichia coli K-12	dna27_protein9	hp	39	Bacteroides thetaiotaomicron	kingdom	0.000853971	0.00157295	0.5429	5	False	False
-Escherichia coli K-12	dna30_protein10	DNA	30	Escherichia coli O157:H7	species	0.586695	0	inf	2240	True	True
-Escherichia coli K-12	dna30_protein10	DNA	30	Escherichia fergusonii	genus	0.169722	0	inf	648	True	True
-Escherichia coli K-12	dna30_protein10	DNA	30	Salmonella enterica	family	0.0112624	0	inf	43	False	False
-Escherichia coli K-12	dna30_protein10	DNA	30	Yersinia pestis	order	0.00028393	0	inf	1	False	False
-Escherichia coli K-12	dna30_protein10	DNA	30	Pseudomonas aeruginosa	class	0.000261917	0	inf	1	False	False
-Escherichia coli K-12	dna30_protein10	DNA	30	Caulobacter vibrioides	phylum	0	0	inf	0	False	False
-Escherichia coli K-12	dna30_protein10	DNA	30	Bacteroides thetaiotaomicron	kingdom	0	0	inf	0	False	False
-Escherichia coli K-12	dna30_protein10	protein	10	Escherichia coli O157:H7	species	0.830307	0.00361757	229.5	5304	True	True
-Escherichia coli K-12	dna30_protein10	protein	10	Escherichia fergusonii	genus	0.559173	0.00361757	154.6	3572	True	True
-Escherichia coli K-12	dna30_protein10	protein	10	Salmonella enterica	family	0.35958	0.00361757	99.4	2297	True	True
-Escherichia coli K-12	dna30_protein10	protein	10	Yersinia pestis	order	0.118532	0.00361757	32.77	701	True	True
-Escherichia coli K-12	dna30_protein10	protein	10	Pseudomonas aeruginosa	class	0.0195679	0.00361757	5.409	125	False	False
-Escherichia coli K-12	dna30_protein10	protein	10	Caulobacter vibrioides	phylum	0.00475268	0.00361757	1.314	27	False	False
-Escherichia coli K-12	dna30_protein10	protein	10	Bacteroides thetaiotaomicron	kingdom	0.00297433	0.00361757	0.8222	19	False	False
-Escherichia coli K-12	dna30_protein10	dayhoff	17	Escherichia coli O157:H7	species	0.835019	0.00660525	126.4	5284	True	True
-Escherichia coli K-12	dna30_protein10	dayhoff	17	Escherichia fergusonii	genus	0.614096	0.00660525	92.97	3886	True	True
-Escherichia coli K-12	dna30_protein10	dayhoff	17	Salmonella enterica	family	0.43031	0.00660525	65.15	2723	True	True
-Escherichia coli K-12	dna30_protein10	dayhoff	17	Yersinia pestis	order	0.158722	0.00660525	24.03	939	True	True
-Escherichia coli K-12	dna30_protein10	dayhoff	17	Pseudomonas aeruginosa	class	0.0290771	0.00660525	4.402	184	False	False
-Escherichia coli K-12	dna30_protein10	dayhoff	17	Caulobacter vibrioides	phylum	0.00638864	0.00660525	0.9672	36	False	False
-Escherichia coli K-12	dna30_protein10	dayhoff	17	Bacteroides thetaiotaomicron	kingdom	0.00316056	0.00660525	0.4785	20	False	False
-Escherichia coli K-12	dna30_protein10	hp	43	Escherichia coli O157:H7	species	0.80107	0.00151803	527.7	4643	True	True
-Escherichia coli K-12	dna30_protein10	hp	43	Escherichia fergusonii	genus	0.541063	0.00151803	356.4	3136	True	True
-Escherichia coli K-12	dna30_protein10	hp	43	Salmonella enterica	family	0.301587	0.00151803	198.7	1748	True	True
-Escherichia coli K-12	dna30_protein10	hp	43	Yersinia pestis	order	0.0761298	0.00151803	50.15	406	True	True
-Escherichia coli K-12	dna30_protein10	hp	43	Pseudomonas aeruginosa	class	0.00569358	0.00151803	3.751	33	False	False
-Escherichia coli K-12	dna30_protein10	hp	43	Caulobacter vibrioides	phylum	0.000772052	0.00151803	0.5086	4	False	False
-Escherichia coli K-12	dna30_protein10	hp	43	Bacteroides thetaiotaomicron	kingdom	0.000172533	0.00151803	0.1137	1	False	False
-Escherichia coli K-12	dna33_protein11	DNA	33	Escherichia coli O157:H7	species	0.55974	0	inf	2155	True	True
-Escherichia coli K-12	dna33_protein11	DNA	33	Escherichia fergusonii	genus	0.156623	0	inf	603	True	True
-Escherichia coli K-12	dna33_protein11	DNA	33	Salmonella enterica	family	0.0101299	0	inf	39	False	False
-Escherichia coli K-12	dna33_protein11	DNA	33	Yersinia pestis	order	0.00110558	0	inf	4	False	False
-Escherichia coli K-12	dna33_protein11	DNA	33	Pseudomonas aeruginosa	class	0	0	inf	0	False	False
-Escherichia coli K-12	dna33_protein11	DNA	33	Caulobacter vibrioides	phylum	0	0	inf	0	False	False
-Escherichia coli K-12	dna33_protein11	DNA	33	Bacteroides thetaiotaomicron	kingdom	0	0	inf	0	False	False
-Escherichia coli K-12	dna33_protein11	protein	11	Escherichia coli O157:H7	species	0.820293	0.0025198	325.5	5158	True	True
-Escherichia coli K-12	dna33_protein11	protein	11	Escherichia fergusonii	genus	0.571724	0.0025198	226.9	3595	True	True
-Escherichia coli K-12	dna33_protein11	protein	11	Salmonella enterica	family	0.347646	0.0025198	138	2186	True	True
-Escherichia coli K-12	dna33_protein11	protein	11	Yersinia pestis	order	0.110545	0.0025198	43.87	673	True	True
-Escherichia coli K-12	dna33_protein11	protein	11	Pseudomonas aeruginosa	class	0.0149491	0.0025198	5.933	94	False	False
-Escherichia coli K-12	dna33_protein11	protein	11	Caulobacter vibrioides	phylum	0.00476353	0.0025198	1.89	28	False	False
-Escherichia coli K-12	dna33_protein11	protein	11	Bacteroides thetaiotaomicron	kingdom	0.00159033	0.0025198	0.6311	10	False	False
-Escherichia coli K-12	dna33_protein11	dayhoff	18	Escherichia coli O157:H7	species	0.838975	0.00461223	181.9	5205	True	True
-Escherichia coli K-12	dna33_protein11	dayhoff	18	Escherichia fergusonii	genus	0.608962	0.00461223	132	3778	True	True
-Escherichia coli K-12	dna33_protein11	dayhoff	18	Salmonella enterica	family	0.418279	0.00461223	90.69	2595	True	True
-Escherichia coli K-12	dna33_protein11	dayhoff	18	Yersinia pestis	order	0.15065	0.00461223	32.66	881	True	True
-Escherichia coli K-12	dna33_protein11	dayhoff	18	Pseudomonas aeruginosa	class	0.0248227	0.00461223	5.382	154	False	False
-Escherichia coli K-12	dna33_protein11	dayhoff	18	Caulobacter vibrioides	phylum	0.00464452	0.00461223	1.007	26	False	False
-Escherichia coli K-12	dna33_protein11	dayhoff	18	Bacteroides thetaiotaomicron	kingdom	0.00419084	0.00461223	0.9086	26	False	False
-Escherichia coli K-12	dna33_protein11	hp	48	Escherichia coli O157:H7	species	0.783122	0.000581395	1347	4445	True	True
-Escherichia coli K-12	dna33_protein11	hp	48	Escherichia fergusonii	genus	0.518851	0.000581395	892.4	2945	True	True
-Escherichia coli K-12	dna33_protein11	hp	48	Salmonella enterica	family	0.286117	0.000581395	492.1	1624	True	True
-Escherichia coli K-12	dna33_protein11	hp	48	Yersinia pestis	order	0.07163	0.000581395	123.2	381	True	True
-Escherichia coli K-12	dna33_protein11	hp	48	Pseudomonas aeruginosa	class	0.00440451	0.000581395	7.576	25	False	False
-Escherichia coli K-12	dna33_protein11	hp	48	Caulobacter vibrioides	phylum	0.00039801	0.000581395	0.6846	2	False	False
-Escherichia coli K-12	dna33_protein11	hp	48	Bacteroides thetaiotaomicron	kingdom	0.000528541	0.000581395	0.9091	3	False	False
-Escherichia coli K-12	dna36_protein12	DNA	36	Escherichia coli O157:H7	species	0.570466	0	inf	2202	True	True
-Escherichia coli K-12	dna36_protein12	DNA	36	Escherichia fergusonii	genus	0.144819	0	inf	559	True	True
-Escherichia coli K-12	dna36_protein12	DNA	36	Salmonella enterica	family	0.0111399	0	inf	43	False	False
-Escherichia coli K-12	dna36_protein12	DNA	36	Yersinia pestis	order	0	0	inf	0	False	False
-Escherichia coli K-12	dna36_protein12	DNA	36	Pseudomonas aeruginosa	class	0	0	inf	0	False	False
-Escherichia coli K-12	dna36_protein12	DNA	36	Caulobacter vibrioides	phylum	0	0	inf	0	False	False
-Escherichia coli K-12	dna36_protein12	DNA	36	Bacteroides thetaiotaomicron	kingdom	0	0	inf	0	False	False
-Escherichia coli K-12	dna36_protein12	protein	12	Escherichia coli O157:H7	species	0.81887	0.00235176	348.2	5190	True	True
-Escherichia coli K-12	dna36_protein12	protein	12	Escherichia fergusonii	genus	0.560745	0.00235176	238.4	3554	True	True
-Escherichia coli K-12	dna36_protein12	protein	12	Salmonella enterica	family	0.337488	0.00235176	143.5	2139	True	True
-Escherichia coli K-12	dna36_protein12	protein	12	Yersinia pestis	order	0.0962055	0.00235176	40.91	573	True	True
-Escherichia coli K-12	dna36_protein12	protein	12	Pseudomonas aeruginosa	class	0.0146734	0.00235176	6.239	93	False	False
-Escherichia coli K-12	dna36_protein12	protein	12	Caulobacter vibrioides	phylum	0.00289954	0.00235176	1.233	17	False	False
-Escherichia coli K-12	dna36_protein12	protein	12	Bacteroides thetaiotaomicron	kingdom	0.000946671	0.00235176	0.4025	6	False	False
-Escherichia coli K-12	dna36_protein12	dayhoff	20	Escherichia coli O157:H7	species	0.818036	0.00310613	263.4	5098	True	True
-Escherichia coli K-12	dna36_protein12	dayhoff	20	Escherichia fergusonii	genus	0.592105	0.00310613	190.6	3690	True	True
-Escherichia coli K-12	dna36_protein12	dayhoff	20	Salmonella enterica	family	0.396502	0.00310613	127.7	2471	True	True
-Escherichia coli K-12	dna36_protein12	dayhoff	20	Yersinia pestis	order	0.135424	0.00310613	43.6	786	True	True
-Escherichia coli K-12	dna36_protein12	dayhoff	20	Pseudomonas aeruginosa	class	0.0202182	0.00310613	6.509	126	False	False
-Escherichia coli K-12	dna36_protein12	dayhoff	20	Caulobacter vibrioides	phylum	0.00283336	0.00310613	0.9122	16	False	False
-Escherichia coli K-12	dna36_protein12	dayhoff	20	Bacteroides thetaiotaomicron	kingdom	0.00160462	0.00310613	0.5166	10	False	False
-Escherichia coli K-12	dna36_protein12	hp	52	Escherichia coli O157:H7	species	0.780483	0.000200361	3895	4327	True	True
-Escherichia coli K-12	dna36_protein12	hp	52	Escherichia fergusonii	genus	0.511724	0.000200361	2554	2837	True	True
-Escherichia coli K-12	dna36_protein12	hp	52	Salmonella enterica	family	0.261905	0.000200361	1307	1452	True	True
-Escherichia coli K-12	dna36_protein12	hp	52	Yersinia pestis	order	0.065444	0.000200361	326.6	339	True	True
-Escherichia coli K-12	dna36_protein12	hp	52	Pseudomonas aeruginosa	class	0.00468975	0.000200361	23.41	26	False	False
-Escherichia coli K-12	dna36_protein12	hp	52	Caulobacter vibrioides	phylum	0.000394711	0.000200361	1.97	2	False	False
-Escherichia coli K-12	dna36_protein12	hp	52	Bacteroides thetaiotaomicron	kingdom	0.000180375	0.000200361	0.9003	1	False	False
+anchor	setting_set	alphabet	k	relative	rank	column	shares	containment	background	fold_over_background	shared_hashes	passes	reached
+Mus musculus	42bits	DNA	21	Mus caroli	subgenus	genus	subgenus Mus	0.642178	0.000190749	3367	21355	True	True
+Mus musculus	42bits	DNA	21	Rattus norvegicus	subfamily	family	subfamily Murinae	0.21867	0.000190749	1146	9679	True	True
+Mus musculus	42bits	DNA	21	Cavia porcellus	order	order	order Rodentia	0.0544351	0.000190749	285.4	1552	True	True
+Mus musculus	42bits	DNA	21	Rhinolophus ferrumequinum	class	class	clade Boreoeutheria, inside class Mammalia	0.0452407	0.000190749	237.2	1904	True	True
+Mus musculus	42bits	DNA	21	Danio rerio	subphylum	phylum	clade Euteleostomi, inside subphylum Craniata	0.00207334	0.000190749	10.87	86	False	False
+Mus musculus	42bits	DNA	21	Drosophila melanogaster	kingdom	kingdom	clade Bilateria, inside kingdom Metazoa	0.000993284	0.000190749	5.207	21	False	False
+Mus musculus	42bits	protein	10	Mus caroli	subgenus	genus	subgenus Mus	0.820624	0.00551401	148.8	43864	True	True
+Mus musculus	42bits	protein	10	Rattus norvegicus	subfamily	family	subfamily Murinae	0.609631	0.00551401	110.6	32458	True	True
+Mus musculus	42bits	protein	10	Cavia porcellus	order	order	order Rodentia	0.406344	0.00551401	73.69	18730	True	True
+Mus musculus	42bits	protein	10	Rhinolophus ferrumequinum	class	class	clade Boreoeutheria, inside class Mammalia	0.389474	0.00551401	70.63	19203	True	True
+Mus musculus	42bits	protein	10	Danio rerio	subphylum	phylum	clade Euteleostomi, inside subphylum Craniata	0.0964043	0.00551401	17.48	5153	True	True
+Mus musculus	42bits	protein	10	Drosophila melanogaster	kingdom	kingdom	clade Bilateria, inside kingdom Metazoa	0.0139828	0.00551401	2.536	494	False	False
+Mus musculus	42bits	dayhoff	16	Mus caroli	subgenus	genus	subgenus Mus	0.842319	0.0133179	63.25	43259	True	True
+Mus musculus	42bits	dayhoff	16	Rattus norvegicus	subfamily	family	subfamily Murinae	0.661137	0.0133179	49.64	33954	True	True
+Mus musculus	42bits	dayhoff	16	Cavia porcellus	order	order	order Rodentia	0.479329	0.0133179	35.99	21299	True	True
+Mus musculus	42bits	dayhoff	16	Rhinolophus ferrumequinum	class	class	clade Boreoeutheria, inside class Mammalia	0.458564	0.0133179	34.43	21868	True	True
+Mus musculus	42bits	dayhoff	16	Danio rerio	subphylum	phylum	clade Euteleostomi, inside subphylum Craniata	0.143895	0.0133179	10.8	7390	True	True
+Mus musculus	42bits	dayhoff	16	Drosophila melanogaster	kingdom	kingdom	clade Bilateria, inside kingdom Metazoa	0.029245	0.0133179	2.196	1016	False	False
+Mus musculus	42bits	hp	42	Mus caroli	subgenus	genus	subgenus Mus	0.74942	0.00156998	477.3	38455	True	True
+Mus musculus	42bits	hp	42	Rattus norvegicus	subfamily	family	subfamily Murinae	0.520835	0.00156998	331.7	26710	True	True
+Mus musculus	42bits	hp	42	Cavia porcellus	order	order	order Rodentia	0.324575	0.00156998	206.7	14355	True	True
+Mus musculus	42bits	hp	42	Rhinolophus ferrumequinum	class	class	clade Boreoeutheria, inside class Mammalia	0.30971	0.00156998	197.3	14592	True	True
+Mus musculus	42bits	hp	42	Danio rerio	subphylum	phylum	clade Euteleostomi, inside subphylum Craniata	0.0677996	0.00156998	43.19	3479	True	True
+Mus musculus	42bits	hp	42	Drosophila melanogaster	kingdom	kingdom	clade Bilateria, inside kingdom Metazoa	0.00704605	0.00156998	4.488	235	False	False
+Mus musculus	dna21_protein7	DNA	21	Mus caroli	subgenus	genus	subgenus Mus	0.642178	0.000190749	3367	21355	True	True
+Mus musculus	dna21_protein7	DNA	21	Rattus norvegicus	subfamily	family	subfamily Murinae	0.21867	0.000190749	1146	9679	True	True
+Mus musculus	dna21_protein7	DNA	21	Cavia porcellus	order	order	order Rodentia	0.0544351	0.000190749	285.4	1552	True	True
+Mus musculus	dna21_protein7	DNA	21	Rhinolophus ferrumequinum	class	class	clade Boreoeutheria, inside class Mammalia	0.0452407	0.000190749	237.2	1904	True	True
+Mus musculus	dna21_protein7	DNA	21	Danio rerio	subphylum	phylum	clade Euteleostomi, inside subphylum Craniata	0.00207334	0.000190749	10.87	86	False	False
+Mus musculus	dna21_protein7	DNA	21	Drosophila melanogaster	kingdom	kingdom	clade Bilateria, inside kingdom Metazoa	0.000993284	0.000190749	5.207	21	False	False
+Mus musculus	dna21_protein7	protein	7	Mus caroli	subgenus	genus	subgenus Mus	0.860197	0.0426861	20.15	43409	True	True
+Mus musculus	dna21_protein7	protein	7	Rattus norvegicus	subfamily	family	subfamily Murinae	0.683913	0.0426861	16.02	34513	True	True
+Mus musculus	dna21_protein7	protein	7	Cavia porcellus	order	order	order Rodentia	0.495873	0.0426861	11.62	21930	True	True
+Mus musculus	dna21_protein7	protein	7	Rhinolophus ferrumequinum	class	class	clade Boreoeutheria, inside class Mammalia	0.480643	0.0426861	11.26	22559	True	True
+Mus musculus	dna21_protein7	protein	7	Danio rerio	subphylum	phylum	clade Euteleostomi, inside subphylum Craniata	0.180723	0.0426861	4.234	9120	False	False
+Mus musculus	dna21_protein7	protein	7	Drosophila melanogaster	kingdom	kingdom	clade Bilateria, inside kingdom Metazoa	0.0622061	0.0426861	1.457	2143	False	False
+Mus musculus	dna21_protein7	dayhoff	12	Mus caroli	subgenus	genus	subgenus Mus	0.881619	0.149792	5.886	39478	False	False
+Mus musculus	dna21_protein7	dayhoff	12	Rattus norvegicus	subfamily	family	subfamily Murinae	0.743474	0.149792	4.963	33292	False	False
+Mus musculus	dna21_protein7	dayhoff	12	Cavia porcellus	order	order	order Rodentia	0.597354	0.149792	3.988	23482	False	False
+Mus musculus	dna21_protein7	dayhoff	12	Rhinolophus ferrumequinum	class	class	clade Boreoeutheria, inside class Mammalia	0.576954	0.149792	3.852	24299	False	False
+Mus musculus	dna21_protein7	dayhoff	12	Danio rerio	subphylum	phylum	clade Euteleostomi, inside subphylum Craniata	0.305143	0.149792	2.037	13664	False	False
+Mus musculus	dna21_protein7	dayhoff	12	Drosophila melanogaster	kingdom	kingdom	clade Bilateria, inside kingdom Metazoa	0.165192	0.149792	1.103	5115	False	False
+Mus musculus	dna21_protein7	hp	30	Mus caroli	subgenus	genus	subgenus Mus	0.801423	0.020224	39.63	40879	True	True
+Mus musculus	dna21_protein7	hp	30	Rattus norvegicus	subfamily	family	subfamily Murinae	0.601306	0.020224	29.73	30491	True	True
+Mus musculus	dna21_protein7	hp	30	Cavia porcellus	order	order	order Rodentia	0.406754	0.020224	20.11	17924	True	True
+Mus musculus	dna21_protein7	hp	30	Rhinolophus ferrumequinum	class	class	clade Boreoeutheria, inside class Mammalia	0.391868	0.020224	19.38	18524	True	True
+Mus musculus	dna21_protein7	hp	30	Danio rerio	subphylum	phylum	clade Euteleostomi, inside subphylum Craniata	0.120961	0.020224	5.981	6170	False	False
+Mus musculus	dna21_protein7	hp	30	Drosophila melanogaster	kingdom	kingdom	clade Bilateria, inside kingdom Metazoa	0.0297274	0.020224	1.47	1011	False	False
+Mus musculus	dna24_protein8	DNA	24	Mus caroli	subgenus	genus	subgenus Mus	0.612652	0.000122369	5007	20503	True	True
+Mus musculus	dna24_protein8	DNA	24	Rattus norvegicus	subfamily	family	subfamily Murinae	0.188061	0.000122369	1537	8314	True	True
+Mus musculus	dna24_protein8	DNA	24	Cavia porcellus	order	order	order Rodentia	0.0405234	0.000122369	331.2	1149	True	True
+Mus musculus	dna24_protein8	DNA	24	Rhinolophus ferrumequinum	class	class	clade Boreoeutheria, inside class Mammalia	0.0339848	0.000122369	277.7	1452	True	True
+Mus musculus	dna24_protein8	DNA	24	Danio rerio	subphylum	phylum	clade Euteleostomi, inside subphylum Craniata	0.000834008	0.000122369	6.816	35	False	False
+Mus musculus	dna24_protein8	DNA	24	Drosophila melanogaster	kingdom	kingdom	clade Bilateria, inside kingdom Metazoa	0.000279955	0.000122369	2.288	6	False	False
+Mus musculus	dna24_protein8	protein	8	Mus caroli	subgenus	genus	subgenus Mus	0.847979	0.0123182	68.84	44719	True	True
+Mus musculus	dna24_protein8	protein	8	Rattus norvegicus	subfamily	family	subfamily Murinae	0.654373	0.0123182	53.12	34509	True	True
+Mus musculus	dna24_protein8	protein	8	Cavia porcellus	order	order	order Rodentia	0.454239	0.0123182	36.88	20771	True	True
+Mus musculus	dna24_protein8	protein	8	Rhinolophus ferrumequinum	class	class	clade Boreoeutheria, inside class Mammalia	0.43785	0.0123182	35.54	21417	True	True
+Mus musculus	dna24_protein8	protein	8	Danio rerio	subphylum	phylum	clade Euteleostomi, inside subphylum Craniata	0.125398	0.0123182	10.18	6613	True	True
+Mus musculus	dna24_protein8	protein	8	Drosophila melanogaster	kingdom	kingdom	clade Bilateria, inside kingdom Metazoa	0.024778	0.0123182	2.011	876	False	False
+Mus musculus	dna24_protein8	dayhoff	13	Mus caroli	subgenus	genus	subgenus Mus	0.86442	0.0685301	12.61	41627	True	True
+Mus musculus	dna24_protein8	dayhoff	13	Rattus norvegicus	subfamily	family	subfamily Murinae	0.71047	0.0685301	10.37	34023	True	True
+Mus musculus	dna24_protein8	dayhoff	13	Cavia porcellus	order	order	order Rodentia	0.546517	0.0685301	7.975	22869	False	False
+Mus musculus	dna24_protein8	dayhoff	13	Rhinolophus ferrumequinum	class	class	clade Boreoeutheria, inside class Mammalia	0.527671	0.0685301	7.7	23560	False	False
+Mus musculus	dna24_protein8	dayhoff	13	Danio rerio	subphylum	phylum	clade Euteleostomi, inside subphylum Craniata	0.225206	0.0685301	3.286	10845	False	False
+Mus musculus	dna24_protein8	dayhoff	13	Drosophila melanogaster	kingdom	kingdom	clade Bilateria, inside kingdom Metazoa	0.0932765	0.0685301	1.361	3066	False	False
+Mus musculus	dna24_protein8	hp	35	Mus caroli	subgenus	genus	subgenus Mus	0.776186	0.00442581	175.4	39920	True	True
+Mus musculus	dna24_protein8	hp	35	Rattus norvegicus	subfamily	family	subfamily Murinae	0.563765	0.00442581	127.4	28995	True	True
+Mus musculus	dna24_protein8	hp	35	Cavia porcellus	order	order	order Rodentia	0.365239	0.00442581	82.52	16179	True	True
+Mus musculus	dna24_protein8	hp	35	Rhinolophus ferrumequinum	class	class	clade Boreoeutheria, inside class Mammalia	0.3516	0.00442581	79.44	16592	True	True
+Mus musculus	dna24_protein8	hp	35	Danio rerio	subphylum	phylum	clade Euteleostomi, inside subphylum Craniata	0.086407	0.00442581	19.52	4444	True	True
+Mus musculus	dna24_protein8	hp	35	Drosophila melanogaster	kingdom	kingdom	clade Bilateria, inside kingdom Metazoa	0.0120073	0.00442581	2.713	407	False	False
+Mus musculus	dna27_protein9	DNA	27	Mus caroli	subgenus	genus	subgenus Mus	0.584259	0.000248787	2348	19523	True	True
+Mus musculus	dna27_protein9	DNA	27	Rattus norvegicus	subfamily	family	subfamily Murinae	0.163146	0.000248787	655.8	7237	True	True
+Mus musculus	dna27_protein9	DNA	27	Cavia porcellus	order	order	order Rodentia	0.0324952	0.000248787	130.6	924	True	True
+Mus musculus	dna27_protein9	DNA	27	Rhinolophus ferrumequinum	class	class	clade Boreoeutheria, inside class Mammalia	0.0267056	0.000248787	107.3	1143	True	True
+Mus musculus	dna27_protein9	DNA	27	Danio rerio	subphylum	phylum	clade Euteleostomi, inside subphylum Craniata	0.000406378	0.000248787	1.633	17	False	False
+Mus musculus	dna27_protein9	DNA	27	Drosophila melanogaster	kingdom	kingdom	clade Bilateria, inside kingdom Metazoa	9.43752e-05	0.000248787	0.3793	2	False	False
+Mus musculus	dna27_protein9	protein	9	Mus caroli	subgenus	genus	subgenus Mus	0.83386	0.00621164	134.2	44343	True	True
+Mus musculus	dna27_protein9	protein	9	Rattus norvegicus	subfamily	family	subfamily Murinae	0.628042	0.00621164	101.1	33398	True	True
+Mus musculus	dna27_protein9	protein	9	Cavia porcellus	order	order	order Rodentia	0.432339	0.00621164	69.6	19674	True	True
+Mus musculus	dna27_protein9	protein	9	Rhinolophus ferrumequinum	class	class	clade Boreoeutheria, inside class Mammalia	0.41093	0.00621164	66.15	20205	True	True
+Mus musculus	dna27_protein9	protein	9	Danio rerio	subphylum	phylum	clade Euteleostomi, inside subphylum Craniata	0.107676	0.00621164	17.33	5726	True	True
+Mus musculus	dna27_protein9	protein	9	Drosophila melanogaster	kingdom	kingdom	clade Bilateria, inside kingdom Metazoa	0.0178612	0.00621164	2.875	630	False	False
+Mus musculus	dna27_protein9	dayhoff	15	Mus caroli	subgenus	genus	subgenus Mus	0.849683	0.0171569	49.52	43056	True	True
+Mus musculus	dna27_protein9	dayhoff	15	Rattus norvegicus	subfamily	family	subfamily Murinae	0.674738	0.0171569	39.33	34191	True	True
+Mus musculus	dna27_protein9	dayhoff	15	Cavia porcellus	order	order	order Rodentia	0.495529	0.0171569	28.88	21776	True	True
+Mus musculus	dna27_protein9	dayhoff	15	Rhinolophus ferrumequinum	class	class	clade Boreoeutheria, inside class Mammalia	0.475355	0.0171569	27.71	22442	True	True
+Mus musculus	dna27_protein9	dayhoff	15	Danio rerio	subphylum	phylum	clade Euteleostomi, inside subphylum Craniata	0.161269	0.0171569	9.4	8172	False	False
+Mus musculus	dna27_protein9	dayhoff	15	Drosophila melanogaster	kingdom	kingdom	clade Bilateria, inside kingdom Metazoa	0.0391774	0.0171569	2.283	1345	False	False
+Mus musculus	dna27_protein9	hp	39	Mus caroli	subgenus	genus	subgenus Mus	0.760951	0.00294871	258.1	39243	True	True
+Mus musculus	dna27_protein9	hp	39	Rattus norvegicus	subfamily	family	subfamily Murinae	0.541302	0.00294871	183.6	27719	True	True
+Mus musculus	dna27_protein9	hp	39	Cavia porcellus	order	order	order Rodentia	0.342746	0.00294871	116.2	15124	True	True
+Mus musculus	dna27_protein9	hp	39	Rhinolophus ferrumequinum	class	class	clade Boreoeutheria, inside class Mammalia	0.327533	0.00294871	111.1	15417	True	True
+Mus musculus	dna27_protein9	hp	39	Danio rerio	subphylum	phylum	clade Euteleostomi, inside subphylum Craniata	0.0722499	0.00294871	24.5	3726	True	True
+Mus musculus	dna27_protein9	hp	39	Drosophila melanogaster	kingdom	kingdom	clade Bilateria, inside kingdom Metazoa	0.00816024	0.00294871	2.767	275	False	False
+Mus musculus	dna30_protein10	DNA	30	Mus caroli	subgenus	genus	subgenus Mus	0.55317	6.28931e-05	8795	18472	True	True
+Mus musculus	dna30_protein10	DNA	30	Rattus norvegicus	subfamily	family	subfamily Murinae	0.137816	6.28931e-05	2191	6073	True	True
+Mus musculus	dna30_protein10	DNA	30	Cavia porcellus	order	order	order Rodentia	0.0235533	6.28931e-05	374.5	674	True	True
+Mus musculus	dna30_protein10	DNA	30	Rhinolophus ferrumequinum	class	class	clade Boreoeutheria, inside class Mammalia	0.018943	6.28931e-05	301.2	800	True	True
+Mus musculus	dna30_protein10	DNA	30	Danio rerio	subphylum	phylum	clade Euteleostomi, inside subphylum Craniata	0.000238931	6.28931e-05	3.799	10	False	False
+Mus musculus	dna30_protein10	DNA	30	Drosophila melanogaster	kingdom	kingdom	clade Bilateria, inside kingdom Metazoa	4.6856e-05	6.28931e-05	0.745	1	False	False
+Mus musculus	dna30_protein10	protein	10	Mus caroli	subgenus	genus	subgenus Mus	0.820624	0.00551401	148.8	43864	True	True
+Mus musculus	dna30_protein10	protein	10	Rattus norvegicus	subfamily	family	subfamily Murinae	0.609631	0.00551401	110.6	32458	True	True
+Mus musculus	dna30_protein10	protein	10	Cavia porcellus	order	order	order Rodentia	0.406344	0.00551401	73.69	18730	True	True
+Mus musculus	dna30_protein10	protein	10	Rhinolophus ferrumequinum	class	class	clade Boreoeutheria, inside class Mammalia	0.389474	0.00551401	70.63	19203	True	True
+Mus musculus	dna30_protein10	protein	10	Danio rerio	subphylum	phylum	clade Euteleostomi, inside subphylum Craniata	0.0964043	0.00551401	17.48	5153	True	True
+Mus musculus	dna30_protein10	protein	10	Drosophila melanogaster	kingdom	kingdom	clade Bilateria, inside kingdom Metazoa	0.0139828	0.00551401	2.536	494	False	False
+Mus musculus	dna30_protein10	dayhoff	17	Mus caroli	subgenus	genus	subgenus Mus	0.834663	0.00864857	96.51	43415	True	True
+Mus musculus	dna30_protein10	dayhoff	17	Rattus norvegicus	subfamily	family	subfamily Murinae	0.652796	0.00864857	75.48	33728	True	True
+Mus musculus	dna30_protein10	dayhoff	17	Cavia porcellus	order	order	order Rodentia	0.469187	0.00864857	54.25	20899	True	True
+Mus musculus	dna30_protein10	dayhoff	17	Rhinolophus ferrumequinum	class	class	clade Boreoeutheria, inside class Mammalia	0.450543	0.00864857	52.09	21549	True	True
+Mus musculus	dna30_protein10	dayhoff	17	Danio rerio	subphylum	phylum	clade Euteleostomi, inside subphylum Craniata	0.131539	0.00864857	15.21	6842	True	True
+Mus musculus	dna30_protein10	dayhoff	17	Drosophila melanogaster	kingdom	kingdom	clade Bilateria, inside kingdom Metazoa	0.0236908	0.00864857	2.739	817	False	False
+Mus musculus	dna30_protein10	hp	43	Mus caroli	subgenus	genus	subgenus Mus	0.745547	0.00175243	425.4	38717	True	True
+Mus musculus	dna30_protein10	hp	43	Rattus norvegicus	subfamily	family	subfamily Murinae	0.521287	0.00175243	297.5	26839	True	True
+Mus musculus	dna30_protein10	hp	43	Cavia porcellus	order	order	order Rodentia	0.325879	0.00175243	186	14369	True	True
+Mus musculus	dna30_protein10	hp	43	Rhinolophus ferrumequinum	class	class	clade Boreoeutheria, inside class Mammalia	0.313006	0.00175243	178.6	14700	True	True
+Mus musculus	dna30_protein10	hp	43	Danio rerio	subphylum	phylum	clade Euteleostomi, inside subphylum Craniata	0.0634005	0.00175243	36.18	3296	True	True
+Mus musculus	dna30_protein10	hp	43	Drosophila melanogaster	kingdom	kingdom	clade Bilateria, inside kingdom Metazoa	0.00650792	0.00175243	3.714	217	False	False
+Mus musculus	dna33_protein11	DNA	33	Mus caroli	subgenus	genus	subgenus Mus	0.526497	0	inf	17545	True	True
+Mus musculus	dna33_protein11	DNA	33	Rattus norvegicus	subfamily	family	subfamily Murinae	0.120267	0	inf	5324	True	True
+Mus musculus	dna33_protein11	DNA	33	Cavia porcellus	order	order	order Rodentia	0.0172715	0	inf	494	True	True
+Mus musculus	dna33_protein11	DNA	33	Rhinolophus ferrumequinum	class	class	clade Boreoeutheria, inside class Mammalia	0.0149135	0	inf	638	True	True
+Mus musculus	dna33_protein11	DNA	33	Danio rerio	subphylum	phylum	clade Euteleostomi, inside subphylum Craniata	0.000141871	0	inf	6	False	False
+Mus musculus	dna33_protein11	DNA	33	Drosophila melanogaster	kingdom	kingdom	clade Bilateria, inside kingdom Metazoa	0	0	inf	0	False	False
+Mus musculus	dna33_protein11	protein	11	Mus caroli	subgenus	genus	subgenus Mus	0.809383	0.00413712	195.6	43374	True	True
+Mus musculus	dna33_protein11	protein	11	Rattus norvegicus	subfamily	family	subfamily Murinae	0.589864	0.00413712	142.6	31530	True	True
+Mus musculus	dna33_protein11	protein	11	Cavia porcellus	order	order	order Rodentia	0.38562	0.00413712	93.21	17774	True	True
+Mus musculus	dna33_protein11	protein	11	Rhinolophus ferrumequinum	class	class	clade Boreoeutheria, inside class Mammalia	0.367977	0.00413712	88.95	18110	True	True
+Mus musculus	dna33_protein11	protein	11	Danio rerio	subphylum	phylum	clade Euteleostomi, inside subphylum Craniata	0.0871074	0.00413712	21.06	4668	True	True
+Mus musculus	dna33_protein11	protein	11	Drosophila melanogaster	kingdom	kingdom	clade Bilateria, inside kingdom Metazoa	0.0121777	0.00413712	2.944	434	False	False
+Mus musculus	dna33_protein11	dayhoff	18	Mus caroli	subgenus	genus	subgenus Mus	0.827441	0.00760256	108.8	43041	True	True
+Mus musculus	dna33_protein11	dayhoff	18	Rattus norvegicus	subfamily	family	subfamily Murinae	0.640032	0.00760256	84.19	33162	True	True
+Mus musculus	dna33_protein11	dayhoff	18	Cavia porcellus	order	order	order Rodentia	0.452573	0.00760256	59.53	20483	True	True
+Mus musculus	dna33_protein11	dayhoff	18	Rhinolophus ferrumequinum	class	class	clade Boreoeutheria, inside class Mammalia	0.436005	0.00760256	57.35	20831	True	True
+Mus musculus	dna33_protein11	dayhoff	18	Danio rerio	subphylum	phylum	clade Euteleostomi, inside subphylum Craniata	0.126016	0.00760256	16.58	6555	True	True
+Mus musculus	dna33_protein11	dayhoff	18	Drosophila melanogaster	kingdom	kingdom	clade Bilateria, inside kingdom Metazoa	0.0219793	0.00760256	2.891	754	False	False
+Mus musculus	dna33_protein11	hp	48	Mus caroli	subgenus	genus	subgenus Mus	0.726889	0.000881764	824.4	37192	True	True
+Mus musculus	dna33_protein11	hp	48	Rattus norvegicus	subfamily	family	subfamily Murinae	0.496387	0.000881764	562.9	25281	True	True
+Mus musculus	dna33_protein11	hp	48	Cavia porcellus	order	order	order Rodentia	0.301397	0.000881764	341.8	13137	True	True
+Mus musculus	dna33_protein11	hp	48	Rhinolophus ferrumequinum	class	class	clade Boreoeutheria, inside class Mammalia	0.287354	0.000881764	325.9	13468	True	True
+Mus musculus	dna33_protein11	hp	48	Danio rerio	subphylum	phylum	clade Euteleostomi, inside subphylum Craniata	0.0546296	0.000881764	61.95	2796	True	True
+Mus musculus	dna33_protein11	hp	48	Drosophila melanogaster	kingdom	kingdom	clade Bilateria, inside kingdom Metazoa	0.00463468	0.000881764	5.256	153	False	False
+Mus musculus	dna36_protein12	DNA	36	Mus caroli	subgenus	genus	subgenus Mus	0.504259	0.000124564	4048	16873	True	True
+Mus musculus	dna36_protein12	DNA	36	Rattus norvegicus	subfamily	family	subfamily Murinae	0.104781	0.000124564	841.2	4640	True	True
+Mus musculus	dna36_protein12	DNA	36	Cavia porcellus	order	order	order Rodentia	0.0139894	0.000124564	112.3	400	True	True
+Mus musculus	dna36_protein12	DNA	36	Rhinolophus ferrumequinum	class	class	clade Boreoeutheria, inside class Mammalia	0.0121862	0.000124564	97.83	517	True	True
+Mus musculus	dna36_protein12	DNA	36	Danio rerio	subphylum	phylum	clade Euteleostomi, inside subphylum Craniata	7.09404e-05	0.000124564	0.5695	3	False	False
+Mus musculus	dna36_protein12	DNA	36	Drosophila melanogaster	kingdom	kingdom	clade Bilateria, inside kingdom Metazoa	4.73328e-05	0.000124564	0.38	1	False	False
+Mus musculus	dna36_protein12	protein	12	Mus caroli	subgenus	genus	subgenus Mus	0.798536	0.00277632	287.6	42776	True	True
+Mus musculus	dna36_protein12	protein	12	Rattus norvegicus	subfamily	family	subfamily Murinae	0.574198	0.00277632	206.8	30742	True	True
+Mus musculus	dna36_protein12	protein	12	Cavia porcellus	order	order	order Rodentia	0.368497	0.00277632	132.7	17141	True	True
+Mus musculus	dna36_protein12	protein	12	Rhinolophus ferrumequinum	class	class	clade Boreoeutheria, inside class Mammalia	0.354629	0.00277632	127.7	17480	True	True
+Mus musculus	dna36_protein12	protein	12	Danio rerio	subphylum	phylum	clade Euteleostomi, inside subphylum Craniata	0.0783303	0.00277632	28.21	4196	True	True
+Mus musculus	dna36_protein12	protein	12	Drosophila melanogaster	kingdom	kingdom	clade Bilateria, inside kingdom Metazoa	0.00949635	0.00277632	3.42	336	False	False
+Mus musculus	dna36_protein12	dayhoff	20	Mus caroli	subgenus	genus	subgenus Mus	0.817629	0.00477621	171.2	42744	True	True
+Mus musculus	dna36_protein12	dayhoff	20	Rattus norvegicus	subfamily	family	subfamily Murinae	0.619385	0.00477621	129.7	32304	True	True
+Mus musculus	dna36_protein12	dayhoff	20	Cavia porcellus	order	order	order Rodentia	0.433759	0.00477621	90.82	19612	True	True
+Mus musculus	dna36_protein12	dayhoff	20	Rhinolophus ferrumequinum	class	class	clade Boreoeutheria, inside class Mammalia	0.414377	0.00477621	86.76	20031	True	True
+Mus musculus	dna36_protein12	dayhoff	20	Danio rerio	subphylum	phylum	clade Euteleostomi, inside subphylum Craniata	0.112437	0.00477621	23.54	5878	True	True
+Mus musculus	dna36_protein12	dayhoff	20	Drosophila melanogaster	kingdom	kingdom	clade Bilateria, inside kingdom Metazoa	0.0171363	0.00477621	3.588	593	False	False
+Mus musculus	dna36_protein12	hp	52	Mus caroli	subgenus	genus	subgenus Mus	0.713681	0.000870391	820	36407	True	True
+Mus musculus	dna36_protein12	hp	52	Rattus norvegicus	subfamily	family	subfamily Murinae	0.481755	0.000870391	553.5	24306	True	True
+Mus musculus	dna36_protein12	hp	52	Cavia porcellus	order	order	order Rodentia	0.285728	0.000870391	328.3	12314	True	True
+Mus musculus	dna36_protein12	hp	52	Rhinolophus ferrumequinum	class	class	clade Boreoeutheria, inside class Mammalia	0.272533	0.000870391	313.1	12648	True	True
+Mus musculus	dna36_protein12	hp	52	Danio rerio	subphylum	phylum	clade Euteleostomi, inside subphylum Craniata	0.0489575	0.000870391	56.25	2510	True	True
+Mus musculus	dna36_protein12	hp	52	Drosophila melanogaster	kingdom	kingdom	clade Bilateria, inside kingdom Metazoa	0.00433754	0.000870391	4.983	143	False	False
+Magallana gigas	42bits	DNA	21	Magallana angulata	genus	genus	genus Magallana	0.652969	0.00044508	1467	25885	True	True
+Magallana gigas	42bits	DNA	21	Crassostrea virginica	family	family	family Ostreidae	0.013521	0.00044508	30.38	536	True	True
+Magallana gigas	42bits	DNA	21	Mizuhopecten yessoensis	subclass	order	clade Pteriomorphia, inside subclass Autobranchia	0.000733278	0.00044508	1.648	23	False	False
+Magallana gigas	42bits	DNA	21	Mactra antiquata	subclass	class	subclass Autobranchia	0.000376386	0.00044508	0.8457	13	False	False
+Magallana gigas	42bits	DNA	21	Sinanodonta woodiana	subclass	class	subclass Autobranchia	0.000756773	0.00044508	1.7	30	False	False
+Magallana gigas	42bits	DNA	21	Solemya velum	class	class	class Bivalvia	0.000749331	0.00044508	1.684	21	False	False
+Magallana gigas	42bits	DNA	21	Aplysia californica	phylum	phylum	phylum Mollusca	0.000407539	0.00044508	0.9157	12	False	False
+Magallana gigas	42bits	DNA	21	Capitella teleta	kingdom	kingdom	clade Lophotrochozoa, inside kingdom Metazoa	0.000543036	0.00044508	1.22	16	False	False
+Magallana gigas	42bits	protein	10	Magallana angulata	genus	genus	genus Magallana	0.745883	0.004381	170.3	48234	True	True
+Magallana gigas	42bits	protein	10	Crassostrea virginica	family	family	family Ostreidae	0.222138	0.004381	50.7	14365	True	True
+Magallana gigas	42bits	protein	10	Mizuhopecten yessoensis	subclass	order	clade Pteriomorphia, inside subclass Autobranchia	0.0457608	0.004381	10.45	2357	True	True
+Magallana gigas	42bits	protein	10	Mactra antiquata	subclass	class	subclass Autobranchia	0.0323096	0.004381	7.375	1820	False	False
+Magallana gigas	42bits	protein	10	Sinanodonta woodiana	subclass	class	subclass Autobranchia	0.0319947	0.004381	7.303	2069	False	False
+Magallana gigas	42bits	protein	10	Solemya velum	class	class	class Bivalvia	0.0418621	0.004381	9.555	1919	False	False
+Magallana gigas	42bits	protein	10	Aplysia californica	phylum	phylum	phylum Mollusca	0.0274836	0.004381	6.273	1417	False	False
+Magallana gigas	42bits	protein	10	Capitella teleta	kingdom	kingdom	clade Lophotrochozoa, inside kingdom Metazoa	0.0218702	0.004381	4.992	1070	False	False
+Magallana gigas	42bits	dayhoff	16	Magallana angulata	genus	genus	genus Magallana	0.753378	0.0118553	63.55	47612	True	True
+Magallana gigas	42bits	dayhoff	16	Crassostrea virginica	family	family	family Ostreidae	0.285136	0.0118553	24.05	18020	True	True
+Magallana gigas	42bits	dayhoff	16	Mizuhopecten yessoensis	subclass	order	clade Pteriomorphia, inside subclass Autobranchia	0.0704466	0.0118553	5.942	3592	False	False
+Magallana gigas	42bits	dayhoff	16	Mactra antiquata	subclass	class	subclass Autobranchia	0.0530516	0.0118553	4.475	2965	False	False
+Magallana gigas	42bits	dayhoff	16	Sinanodonta woodiana	subclass	class	subclass Autobranchia	0.0491313	0.0118553	4.144	3105	False	False
+Magallana gigas	42bits	dayhoff	16	Solemya velum	class	class	class Bivalvia	0.0644067	0.0118553	5.433	2886	False	False
+Magallana gigas	42bits	dayhoff	16	Aplysia californica	phylum	phylum	phylum Mollusca	0.0469901	0.0118553	3.964	2366	False	False
+Magallana gigas	42bits	dayhoff	16	Capitella teleta	kingdom	kingdom	clade Lophotrochozoa, inside kingdom Metazoa	0.036745	0.0118553	3.099	1757	False	False
+Magallana gigas	42bits	hp	42	Magallana angulata	genus	genus	genus Magallana	0.685512	0.00172698	396.9	42911	True	True
+Magallana gigas	42bits	hp	42	Crassostrea virginica	family	family	family Ostreidae	0.175552	0.00172698	101.7	10989	True	True
+Magallana gigas	42bits	hp	42	Mizuhopecten yessoensis	subclass	order	clade Pteriomorphia, inside subclass Autobranchia	0.0256769	0.00172698	14.87	1268	True	True
+Magallana gigas	42bits	hp	42	Mactra antiquata	subclass	class	subclass Autobranchia	0.0177086	0.00172698	10.25	958	True	True
+Magallana gigas	42bits	hp	42	Sinanodonta woodiana	subclass	class	subclass Autobranchia	0.0174609	0.00172698	10.11	1093	True	True
+Magallana gigas	42bits	hp	42	Solemya velum	class	class	class Bivalvia	0.0219743	0.00172698	12.72	981	True	True
+Magallana gigas	42bits	hp	42	Aplysia californica	phylum	phylum	phylum Mollusca	0.0133605	0.00172698	7.736	663	False	False
+Magallana gigas	42bits	hp	42	Capitella teleta	kingdom	kingdom	clade Lophotrochozoa, inside kingdom Metazoa	0.0105506	0.00172698	6.109	484	False	False
+Magallana gigas	dna21_protein7	DNA	21	Magallana angulata	genus	genus	genus Magallana	0.652969	0.00044508	1467	25885	True	True
+Magallana gigas	dna21_protein7	DNA	21	Crassostrea virginica	family	family	family Ostreidae	0.013521	0.00044508	30.38	536	True	True
+Magallana gigas	dna21_protein7	DNA	21	Mizuhopecten yessoensis	subclass	order	clade Pteriomorphia, inside subclass Autobranchia	0.000733278	0.00044508	1.648	23	False	False
+Magallana gigas	dna21_protein7	DNA	21	Mactra antiquata	subclass	class	subclass Autobranchia	0.000376386	0.00044508	0.8457	13	False	False
+Magallana gigas	dna21_protein7	DNA	21	Sinanodonta woodiana	subclass	class	subclass Autobranchia	0.000756773	0.00044508	1.7	30	False	False
+Magallana gigas	dna21_protein7	DNA	21	Solemya velum	class	class	class Bivalvia	0.000749331	0.00044508	1.684	21	False	False
+Magallana gigas	dna21_protein7	DNA	21	Aplysia californica	phylum	phylum	phylum Mollusca	0.000407539	0.00044508	0.9157	12	False	False
+Magallana gigas	dna21_protein7	DNA	21	Capitella teleta	kingdom	kingdom	clade Lophotrochozoa, inside kingdom Metazoa	0.000543036	0.00044508	1.22	16	False	False
+Magallana gigas	dna21_protein7	protein	7	Magallana angulata	genus	genus	genus Magallana	0.784571	0.0499887	15.69	48685	True	True
+Magallana gigas	dna21_protein7	protein	7	Crassostrea virginica	family	family	family Ostreidae	0.314554	0.0499887	6.293	19519	False	False
+Magallana gigas	dna21_protein7	protein	7	Mizuhopecten yessoensis	subclass	order	clade Pteriomorphia, inside subclass Autobranchia	0.106223	0.0499887	2.125	5273	False	False
+Magallana gigas	dna21_protein7	protein	7	Mactra antiquata	subclass	class	subclass Autobranchia	0.0871634	0.0499887	1.744	4762	False	False
+Magallana gigas	dna21_protein7	protein	7	Sinanodonta woodiana	subclass	class	subclass Autobranchia	0.0842989	0.0499887	1.686	5231	False	False
+Magallana gigas	dna21_protein7	protein	7	Solemya velum	class	class	class Bivalvia	0.101173	0.0499887	2.024	4486	False	False
+Magallana gigas	dna21_protein7	protein	7	Aplysia californica	phylum	phylum	phylum Mollusca	0.0833667	0.0499887	1.668	4159	False	False
+Magallana gigas	dna21_protein7	protein	7	Capitella teleta	kingdom	kingdom	clade Lophotrochozoa, inside kingdom Metazoa	0.0729156	0.0499887	1.459	3415	False	False
+Magallana gigas	dna21_protein7	dayhoff	12	Magallana angulata	genus	genus	genus Magallana	0.796715	0.16126	4.941	45063	False	False
+Magallana gigas	dna21_protein7	dayhoff	12	Crassostrea virginica	family	family	family Ostreidae	0.412723	0.16126	2.559	23344	False	False
+Magallana gigas	dna21_protein7	dayhoff	12	Mizuhopecten yessoensis	subclass	order	clade Pteriomorphia, inside subclass Autobranchia	0.21924	0.16126	1.36	10007	False	False
+Magallana gigas	dna21_protein7	dayhoff	12	Mactra antiquata	subclass	class	subclass Autobranchia	0.187348	0.16126	1.162	9370	False	False
+Magallana gigas	dna21_protein7	dayhoff	12	Sinanodonta woodiana	subclass	class	subclass Autobranchia	0.184208	0.16126	1.142	10419	False	False
+Magallana gigas	dna21_protein7	dayhoff	12	Solemya velum	class	class	class Bivalvia	0.213923	0.16126	1.327	8773	False	False
+Magallana gigas	dna21_protein7	dayhoff	12	Aplysia californica	phylum	phylum	phylum Mollusca	0.196763	0.16126	1.22	8669	False	False
+Magallana gigas	dna21_protein7	dayhoff	12	Capitella teleta	kingdom	kingdom	clade Lophotrochozoa, inside kingdom Metazoa	0.170833	0.16126	1.059	7380	False	False
+Magallana gigas	dna21_protein7	hp	30	Magallana angulata	genus	genus	genus Magallana	0.734328	0.0234132	31.36	45391	True	True
+Magallana gigas	dna21_protein7	hp	30	Crassostrea virginica	family	family	family Ostreidae	0.254008	0.0234132	10.85	15701	True	True
+Magallana gigas	dna21_protein7	hp	30	Mizuhopecten yessoensis	subclass	order	clade Pteriomorphia, inside subclass Autobranchia	0.0669648	0.0234132	2.86	3279	False	False
+Magallana gigas	dna21_protein7	hp	30	Mactra antiquata	subclass	class	subclass Autobranchia	0.0568102	0.0234132	2.426	3074	False	False
+Magallana gigas	dna21_protein7	hp	30	Sinanodonta woodiana	subclass	class	subclass Autobranchia	0.051672	0.0234132	2.207	3194	False	False
+Magallana gigas	dna21_protein7	hp	30	Solemya velum	class	class	class Bivalvia	0.059327	0.0234132	2.534	2620	False	False
+Magallana gigas	dna21_protein7	hp	30	Aplysia californica	phylum	phylum	phylum Mollusca	0.0462647	0.0234132	1.976	2292	False	False
+Magallana gigas	dna21_protein7	hp	30	Capitella teleta	kingdom	kingdom	clade Lophotrochozoa, inside kingdom Metazoa	0.0392964	0.0234132	1.678	1814	False	False
+Magallana gigas	dna24_protein8	DNA	24	Magallana angulata	genus	genus	genus Magallana	0.625248	0.000489476	1277	24903	True	True
+Magallana gigas	dna24_protein8	DNA	24	Crassostrea virginica	family	family	family Ostreidae	0.00949057	0.000489476	19.39	378	True	True
+Magallana gigas	dna24_protein8	DNA	24	Mizuhopecten yessoensis	subclass	order	clade Pteriomorphia, inside subclass Autobranchia	0.000445973	0.000489476	0.9111	14	False	False
+Magallana gigas	dna24_protein8	DNA	24	Mactra antiquata	subclass	class	subclass Autobranchia	5.78955e-05	0.000489476	0.1183	2	False	False
+Magallana gigas	dna24_protein8	DNA	24	Sinanodonta woodiana	subclass	class	subclass Autobranchia	0.000175751	0.000489476	0.3591	7	False	False
+Magallana gigas	dna24_protein8	DNA	24	Solemya velum	class	class	class Bivalvia	0.000180083	0.000489476	0.3679	5	False	False
+Magallana gigas	dna24_protein8	DNA	24	Aplysia californica	phylum	phylum	phylum Mollusca	6.77231e-05	0.000489476	0.1384	2	False	False
+Magallana gigas	dna24_protein8	DNA	24	Capitella teleta	kingdom	kingdom	clade Lophotrochozoa, inside kingdom Metazoa	0.000202102	0.000489476	0.4129	6	False	False
+Magallana gigas	dna24_protein8	protein	8	Magallana angulata	genus	genus	genus Magallana	0.766531	0.0115761	66.22	48434	True	True
+Magallana gigas	dna24_protein8	protein	8	Crassostrea virginica	family	family	family Ostreidae	0.265755	0.0115761	22.96	16792	True	True
+Magallana gigas	dna24_protein8	protein	8	Mizuhopecten yessoensis	subclass	order	clade Pteriomorphia, inside subclass Autobranchia	0.0657401	0.0115761	5.679	3344	False	False
+Magallana gigas	dna24_protein8	protein	8	Mactra antiquata	subclass	class	subclass Autobranchia	0.0486702	0.0115761	4.204	2767	False	False
+Magallana gigas	dna24_protein8	protein	8	Sinanodonta woodiana	subclass	class	subclass Autobranchia	0.0466559	0.0115761	4.03	2948	False	False
+Magallana gigas	dna24_protein8	protein	8	Solemya velum	class	class	class Bivalvia	0.0578762	0.0115761	5	2645	False	False
+Magallana gigas	dna24_protein8	protein	8	Aplysia californica	phylum	phylum	phylum Mollusca	0.0410132	0.0115761	3.543	2092	False	False
+Magallana gigas	dna24_protein8	protein	8	Capitella teleta	kingdom	kingdom	clade Lophotrochozoa, inside kingdom Metazoa	0.0332277	0.0115761	2.87	1593	False	False
+Magallana gigas	dna24_protein8	dayhoff	13	Magallana angulata	genus	genus	genus Magallana	0.778318	0.0661431	11.77	47247	True	True
+Magallana gigas	dna24_protein8	dayhoff	13	Crassostrea virginica	family	family	family Ostreidae	0.353321	0.0661431	5.342	21448	False	False
+Magallana gigas	dna24_protein8	dayhoff	13	Mizuhopecten yessoensis	subclass	order	clade Pteriomorphia, inside subclass Autobranchia	0.13726	0.0661431	2.075	6632	False	False
+Magallana gigas	dna24_protein8	dayhoff	13	Mactra antiquata	subclass	class	subclass Autobranchia	0.110246	0.0661431	1.667	5918	False	False
+Magallana gigas	dna24_protein8	dayhoff	13	Sinanodonta woodiana	subclass	class	subclass Autobranchia	0.104985	0.0661431	1.587	6373	False	False
+Magallana gigas	dna24_protein8	dayhoff	13	Solemya velum	class	class	class Bivalvia	0.125973	0.0661431	1.905	5504	False	False
+Magallana gigas	dna24_protein8	dayhoff	13	Aplysia californica	phylum	phylum	phylum Mollusca	0.113583	0.0661431	1.717	5423	False	False
+Magallana gigas	dna24_protein8	dayhoff	13	Capitella teleta	kingdom	kingdom	clade Lophotrochozoa, inside kingdom Metazoa	0.0927866	0.0661431	1.403	4268	False	False
+Magallana gigas	dna24_protein8	hp	35	Magallana angulata	genus	genus	genus Magallana	0.71104	0.0045811	155.2	44435	True	True
+Magallana gigas	dna24_protein8	hp	35	Crassostrea virginica	family	family	family Ostreidae	0.209079	0.0045811	45.64	13066	True	True
+Magallana gigas	dna24_protein8	hp	35	Mizuhopecten yessoensis	subclass	order	clade Pteriomorphia, inside subclass Autobranchia	0.0370355	0.0045811	8.084	1834	False	False
+Magallana gigas	dna24_protein8	hp	35	Mactra antiquata	subclass	class	subclass Autobranchia	0.0283459	0.0045811	6.188	1548	False	False
+Magallana gigas	dna24_protein8	hp	35	Sinanodonta woodiana	subclass	class	subclass Autobranchia	0.026435	0.0045811	5.77	1652	False	False
+Magallana gigas	dna24_protein8	hp	35	Solemya velum	class	class	class Bivalvia	0.0336524	0.0045811	7.346	1501	False	False
+Magallana gigas	dna24_protein8	hp	35	Aplysia californica	phylum	phylum	phylum Mollusca	0.022056	0.0045811	4.815	1097	False	False
+Magallana gigas	dna24_protein8	hp	35	Capitella teleta	kingdom	kingdom	clade Lophotrochozoa, inside kingdom Metazoa	0.0179747	0.0045811	3.924	833	False	False
+Magallana gigas	dna27_protein9	DNA	27	Magallana angulata	genus	genus	genus Magallana	0.603992	3.14832e-05	1.918e+04	24388	True	True
+Magallana gigas	dna27_protein9	DNA	27	Crassostrea virginica	family	family	family Ostreidae	0.00609243	3.14832e-05	193.5	246	True	True
+Magallana gigas	dna27_protein9	DNA	27	Mizuhopecten yessoensis	subclass	order	clade Pteriomorphia, inside subclass Autobranchia	9.54047e-05	3.14832e-05	3.03	3	False	False
+Magallana gigas	dna27_protein9	DNA	27	Mactra antiquata	subclass	class	subclass Autobranchia	0.000113898	3.14832e-05	3.618	4	False	False
+Magallana gigas	dna27_protein9	DNA	27	Sinanodonta woodiana	subclass	class	subclass Autobranchia	0.00012383	3.14832e-05	3.933	5	False	False
+Magallana gigas	dna27_protein9	DNA	27	Solemya velum	class	class	class Bivalvia	0.00017925	3.14832e-05	5.694	5	False	False
+Magallana gigas	dna27_protein9	DNA	27	Aplysia californica	phylum	phylum	phylum Mollusca	6.80619e-05	3.14832e-05	2.162	2	False	False
+Magallana gigas	dna27_protein9	DNA	27	Capitella teleta	kingdom	kingdom	clade Lophotrochozoa, inside kingdom Metazoa	0.000201742	3.14832e-05	6.408	6	False	False
+Magallana gigas	dna27_protein9	protein	9	Magallana angulata	genus	genus	genus Magallana	0.752809	0.005694	132.2	48374	True	True
+Magallana gigas	dna27_protein9	protein	9	Crassostrea virginica	family	family	family Ostreidae	0.240235	0.005694	42.19	15437	True	True
+Magallana gigas	dna27_protein9	protein	9	Mizuhopecten yessoensis	subclass	order	clade Pteriomorphia, inside subclass Autobranchia	0.0525655	0.005694	9.232	2679	False	False
+Magallana gigas	dna27_protein9	protein	9	Mactra antiquata	subclass	class	subclass Autobranchia	0.038433	0.005694	6.75	2172	False	False
+Magallana gigas	dna27_protein9	protein	9	Sinanodonta woodiana	subclass	class	subclass Autobranchia	0.0358555	0.005694	6.297	2304	False	False
+Magallana gigas	dna27_protein9	protein	9	Solemya velum	class	class	class Bivalvia	0.047033	0.005694	8.26	2125	False	False
+Magallana gigas	dna27_protein9	protein	9	Aplysia californica	phylum	phylum	phylum Mollusca	0.0322474	0.005694	5.663	1658	False	False
+Magallana gigas	dna27_protein9	protein	9	Capitella teleta	kingdom	kingdom	clade Lophotrochozoa, inside kingdom Metazoa	0.0251161	0.005694	4.411	1211	False	False
+Magallana gigas	dna27_protein9	dayhoff	15	Magallana angulata	genus	genus	genus Magallana	0.761124	0.0153952	49.44	48033	True	True
+Magallana gigas	dna27_protein9	dayhoff	15	Crassostrea virginica	family	family	family Ostreidae	0.300897	0.0153952	19.54	18989	True	True
+Magallana gigas	dna27_protein9	dayhoff	15	Mizuhopecten yessoensis	subclass	order	clade Pteriomorphia, inside subclass Autobranchia	0.0830873	0.0153952	5.397	4193	False	False
+Magallana gigas	dna27_protein9	dayhoff	15	Mactra antiquata	subclass	class	subclass Autobranchia	0.0613765	0.0153952	3.987	3404	False	False
+Magallana gigas	dna27_protein9	dayhoff	15	Sinanodonta woodiana	subclass	class	subclass Autobranchia	0.0578849	0.0153952	3.76	3653	False	False
+Magallana gigas	dna27_protein9	dayhoff	15	Solemya velum	class	class	class Bivalvia	0.0748998	0.0153952	4.865	3346	False	False
+Magallana gigas	dna27_protein9	dayhoff	15	Aplysia californica	phylum	phylum	phylum Mollusca	0.0570707	0.0153952	3.707	2846	False	False
+Magallana gigas	dna27_protein9	dayhoff	15	Capitella teleta	kingdom	kingdom	clade Lophotrochozoa, inside kingdom Metazoa	0.0443215	0.0153952	2.879	2091	False	False
+Magallana gigas	dna27_protein9	hp	39	Magallana angulata	genus	genus	genus Magallana	0.695074	0.00256072	271.4	43301	True	True
+Magallana gigas	dna27_protein9	hp	39	Crassostrea virginica	family	family	family Ostreidae	0.188372	0.00256072	73.56	11735	True	True
+Magallana gigas	dna27_protein9	hp	39	Mizuhopecten yessoensis	subclass	order	clade Pteriomorphia, inside subclass Autobranchia	0.0307365	0.00256072	12	1532	True	True
+Magallana gigas	dna27_protein9	hp	39	Mactra antiquata	subclass	class	subclass Autobranchia	0.0208886	0.00256072	8.157	1134	False	False
+Magallana gigas	dna27_protein9	hp	39	Sinanodonta woodiana	subclass	class	subclass Autobranchia	0.0204504	0.00256072	7.986	1274	False	False
+Magallana gigas	dna27_protein9	hp	39	Solemya velum	class	class	class Bivalvia	0.0261795	0.00256072	10.22	1158	True	False
+Magallana gigas	dna27_protein9	hp	39	Aplysia californica	phylum	phylum	phylum Mollusca	0.016923	0.00256072	6.609	844	False	False
+Magallana gigas	dna27_protein9	hp	39	Capitella teleta	kingdom	kingdom	clade Lophotrochozoa, inside kingdom Metazoa	0.0127046	0.00256072	4.961	583	False	False
+Magallana gigas	dna30_protein10	DNA	30	Magallana angulata	genus	genus	genus Magallana	0.581412	0	inf	23528	True	True
+Magallana gigas	dna30_protein10	DNA	30	Crassostrea virginica	family	family	family Ostreidae	0.00395384	0	inf	160	True	True
+Magallana gigas	dna30_protein10	DNA	30	Mizuhopecten yessoensis	subclass	order	clade Pteriomorphia, inside subclass Autobranchia	6.33172e-05	0	inf	2	False	False
+Magallana gigas	dna30_protein10	DNA	30	Mactra antiquata	subclass	class	subclass Autobranchia	0	0	inf	0	False	False
+Magallana gigas	dna30_protein10	DNA	30	Sinanodonta woodiana	subclass	class	subclass Autobranchia	0	0	inf	0	False	False
+Magallana gigas	dna30_protein10	DNA	30	Solemya velum	class	class	class Bivalvia	3.57756e-05	0	inf	1	False	False
+Magallana gigas	dna30_protein10	DNA	30	Aplysia californica	phylum	phylum	phylum Mollusca	3.40657e-05	0	inf	1	False	False
+Magallana gigas	dna30_protein10	DNA	30	Capitella teleta	kingdom	kingdom	clade Lophotrochozoa, inside kingdom Metazoa	0	0	inf	0	False	False
+Magallana gigas	dna30_protein10	protein	10	Magallana angulata	genus	genus	genus Magallana	0.745883	0.004381	170.3	48234	True	True
+Magallana gigas	dna30_protein10	protein	10	Crassostrea virginica	family	family	family Ostreidae	0.222138	0.004381	50.7	14365	True	True
+Magallana gigas	dna30_protein10	protein	10	Mizuhopecten yessoensis	subclass	order	clade Pteriomorphia, inside subclass Autobranchia	0.0457608	0.004381	10.45	2357	True	True
+Magallana gigas	dna30_protein10	protein	10	Mactra antiquata	subclass	class	subclass Autobranchia	0.0323096	0.004381	7.375	1820	False	False
+Magallana gigas	dna30_protein10	protein	10	Sinanodonta woodiana	subclass	class	subclass Autobranchia	0.0319947	0.004381	7.303	2069	False	False
+Magallana gigas	dna30_protein10	protein	10	Solemya velum	class	class	class Bivalvia	0.0418621	0.004381	9.555	1919	False	False
+Magallana gigas	dna30_protein10	protein	10	Aplysia californica	phylum	phylum	phylum Mollusca	0.0274836	0.004381	6.273	1417	False	False
+Magallana gigas	dna30_protein10	protein	10	Capitella teleta	kingdom	kingdom	clade Lophotrochozoa, inside kingdom Metazoa	0.0218702	0.004381	4.992	1070	False	False
+Magallana gigas	dna30_protein10	dayhoff	17	Magallana angulata	genus	genus	genus Magallana	0.742308	0.00819734	90.55	47092	True	True
+Magallana gigas	dna30_protein10	dayhoff	17	Crassostrea virginica	family	family	family Ostreidae	0.274637	0.00819734	33.5	17423	True	True
+Magallana gigas	dna30_protein10	dayhoff	17	Mizuhopecten yessoensis	subclass	order	clade Pteriomorphia, inside subclass Autobranchia	0.0654957	0.00819734	7.99	3315	False	False
+Magallana gigas	dna30_protein10	dayhoff	17	Mactra antiquata	subclass	class	subclass Autobranchia	0.0453926	0.00819734	5.537	2530	False	False
+Magallana gigas	dna30_protein10	dayhoff	17	Sinanodonta woodiana	subclass	class	subclass Autobranchia	0.0435057	0.00819734	5.307	2760	False	False
+Magallana gigas	dna30_protein10	dayhoff	17	Solemya velum	class	class	class Bivalvia	0.0565009	0.00819734	6.893	2550	False	False
+Magallana gigas	dna30_protein10	dayhoff	17	Aplysia californica	phylum	phylum	phylum Mollusca	0.0399691	0.00819734	4.876	2019	False	False
+Magallana gigas	dna30_protein10	dayhoff	17	Capitella teleta	kingdom	kingdom	clade Lophotrochozoa, inside kingdom Metazoa	0.0324445	0.00819734	3.958	1538	False	False
+Magallana gigas	dna30_protein10	hp	43	Magallana angulata	genus	genus	genus Magallana	0.680745	0.00191174	356.1	42326	True	True
+Magallana gigas	dna30_protein10	hp	43	Crassostrea virginica	family	family	family Ostreidae	0.171642	0.00191174	89.78	10672	True	True
+Magallana gigas	dna30_protein10	hp	43	Mizuhopecten yessoensis	subclass	order	clade Pteriomorphia, inside subclass Autobranchia	0.0244416	0.00191174	12.79	1207	True	True
+Magallana gigas	dna30_protein10	hp	43	Mactra antiquata	subclass	class	subclass Autobranchia	0.017509	0.00191174	9.159	943	False	False
+Magallana gigas	dna30_protein10	hp	43	Sinanodonta woodiana	subclass	class	subclass Autobranchia	0.0158582	0.00191174	8.295	986	False	False
+Magallana gigas	dna30_protein10	hp	43	Solemya velum	class	class	class Bivalvia	0.0214403	0.00191174	11.22	953	True	False
+Magallana gigas	dna30_protein10	hp	43	Aplysia californica	phylum	phylum	phylum Mollusca	0.0136346	0.00191174	7.132	671	False	False
+Magallana gigas	dna30_protein10	hp	43	Capitella teleta	kingdom	kingdom	clade Lophotrochozoa, inside kingdom Metazoa	0.0104729	0.00191174	5.478	483	False	False
+Magallana gigas	dna33_protein11	DNA	33	Magallana angulata	genus	genus	genus Magallana	0.560146	0	inf	22766	True	True
+Magallana gigas	dna33_protein11	DNA	33	Crassostrea virginica	family	family	family Ostreidae	0.00280491	0	inf	114	True	True
+Magallana gigas	dna33_protein11	DNA	33	Mizuhopecten yessoensis	subclass	order	clade Pteriomorphia, inside subclass Autobranchia	3.17642e-05	0	inf	1	False	False
+Magallana gigas	dna33_protein11	DNA	33	Mactra antiquata	subclass	class	subclass Autobranchia	0	0	inf	0	False	False
+Magallana gigas	dna33_protein11	DNA	33	Sinanodonta woodiana	subclass	class	subclass Autobranchia	0	0	inf	0	False	False
+Magallana gigas	dna33_protein11	DNA	33	Solemya velum	class	class	class Bivalvia	0	0	inf	0	False	False
+Magallana gigas	dna33_protein11	DNA	33	Aplysia californica	phylum	phylum	phylum Mollusca	0	0	inf	0	False	False
+Magallana gigas	dna33_protein11	DNA	33	Capitella teleta	kingdom	kingdom	clade Lophotrochozoa, inside kingdom Metazoa	0	0	inf	0	False	False
+Magallana gigas	dna33_protein11	protein	11	Magallana angulata	genus	genus	genus Magallana	0.733125	0.00391548	187.2	47431	True	True
+Magallana gigas	dna33_protein11	protein	11	Crassostrea virginica	family	family	family Ostreidae	0.204785	0.00391548	52.3	13249	True	True
+Magallana gigas	dna33_protein11	protein	11	Mizuhopecten yessoensis	subclass	order	clade Pteriomorphia, inside subclass Autobranchia	0.0376826	0.00391548	9.624	1961	False	False
+Magallana gigas	dna33_protein11	protein	11	Mactra antiquata	subclass	class	subclass Autobranchia	0.027672	0.00391548	7.067	1569	False	False
+Magallana gigas	dna33_protein11	protein	11	Sinanodonta woodiana	subclass	class	subclass Autobranchia	0.0259517	0.00391548	6.628	1679	False	False
+Magallana gigas	dna33_protein11	protein	11	Solemya velum	class	class	class Bivalvia	0.0341104	0.00391548	8.712	1548	False	False
+Magallana gigas	dna33_protein11	protein	11	Aplysia californica	phylum	phylum	phylum Mollusca	0.0223999	0.00391548	5.721	1160	False	False
+Magallana gigas	dna33_protein11	protein	11	Capitella teleta	kingdom	kingdom	clade Lophotrochozoa, inside kingdom Metazoa	0.0167907	0.00391548	4.288	821	False	False
+Magallana gigas	dna33_protein11	dayhoff	18	Magallana angulata	genus	genus	genus Magallana	0.737455	0.0069251	106.5	46897	True	True
+Magallana gigas	dna33_protein11	dayhoff	18	Crassostrea virginica	family	family	family Ostreidae	0.259651	0.0069251	37.49	16512	True	True
+Magallana gigas	dna33_protein11	dayhoff	18	Mizuhopecten yessoensis	subclass	order	clade Pteriomorphia, inside subclass Autobranchia	0.0595149	0.0069251	8.594	3038	False	False
+Magallana gigas	dna33_protein11	dayhoff	18	Mactra antiquata	subclass	class	subclass Autobranchia	0.0435518	0.0069251	6.289	2421	False	False
+Magallana gigas	dna33_protein11	dayhoff	18	Sinanodonta woodiana	subclass	class	subclass Autobranchia	0.0412624	0.0069251	5.958	2624	False	False
+Magallana gigas	dna33_protein11	dayhoff	18	Solemya velum	class	class	class Bivalvia	0.053448	0.0069251	7.718	2405	False	False
+Magallana gigas	dna33_protein11	dayhoff	18	Aplysia californica	phylum	phylum	phylum Mollusca	0.0366594	0.0069251	5.294	1855	False	False
+Magallana gigas	dna33_protein11	dayhoff	18	Capitella teleta	kingdom	kingdom	clade Lophotrochozoa, inside kingdom Metazoa	0.0282451	0.0069251	4.079	1343	False	False
+Magallana gigas	dna33_protein11	hp	48	Magallana angulata	genus	genus	genus Magallana	0.664614	0.00112224	592.2	41329	True	True
+Magallana gigas	dna33_protein11	hp	48	Crassostrea virginica	family	family	family Ostreidae	0.15597	0.00112224	139	9699	True	True
+Magallana gigas	dna33_protein11	hp	48	Mizuhopecten yessoensis	subclass	order	clade Pteriomorphia, inside subclass Autobranchia	0.0195309	0.00112224	17.4	951	True	True
+Magallana gigas	dna33_protein11	hp	48	Mactra antiquata	subclass	class	subclass Autobranchia	0.0126446	0.00112224	11.27	679	True	True
+Magallana gigas	dna33_protein11	hp	48	Sinanodonta woodiana	subclass	class	subclass Autobranchia	0.0114658	0.00112224	10.22	713	True	True
+Magallana gigas	dna33_protein11	hp	48	Solemya velum	class	class	class Bivalvia	0.0163299	0.00112224	14.55	716	True	True
+Magallana gigas	dna33_protein11	hp	48	Aplysia californica	phylum	phylum	phylum Mollusca	0.0098163	0.00112224	8.747	482	False	False
+Magallana gigas	dna33_protein11	hp	48	Capitella teleta	kingdom	kingdom	clade Lophotrochozoa, inside kingdom Metazoa	0.00772736	0.00112224	6.886	351	False	False
+Magallana gigas	dna36_protein12	DNA	36	Magallana angulata	genus	genus	genus Magallana	0.537144	0	inf	21699	True	True
+Magallana gigas	dna36_protein12	DNA	36	Crassostrea virginica	family	family	family Ostreidae	0.00168329	0	inf	68	False	False
+Magallana gigas	dna36_protein12	DNA	36	Mizuhopecten yessoensis	subclass	order	clade Pteriomorphia, inside subclass Autobranchia	0	0	inf	0	False	False
+Magallana gigas	dna36_protein12	DNA	36	Mactra antiquata	subclass	class	subclass Autobranchia	0	0	inf	0	False	False
+Magallana gigas	dna36_protein12	DNA	36	Sinanodonta woodiana	subclass	class	subclass Autobranchia	2.47543e-05	0	inf	1	False	False
+Magallana gigas	dna36_protein12	DNA	36	Solemya velum	class	class	class Bivalvia	0	0	inf	0	False	False
+Magallana gigas	dna36_protein12	DNA	36	Aplysia californica	phylum	phylum	phylum Mollusca	0	0	inf	0	False	False
+Magallana gigas	dna36_protein12	DNA	36	Capitella teleta	kingdom	kingdom	clade Lophotrochozoa, inside kingdom Metazoa	3.33767e-05	0	inf	1	False	False
+Magallana gigas	dna36_protein12	protein	12	Magallana angulata	genus	genus	genus Magallana	0.71962	0.00225107	319.7	46848	True	True
+Magallana gigas	dna36_protein12	protein	12	Crassostrea virginica	family	family	family Ostreidae	0.190873	0.00225107	84.79	12426	True	True
+Magallana gigas	dna36_protein12	protein	12	Mizuhopecten yessoensis	subclass	order	clade Pteriomorphia, inside subclass Autobranchia	0.0346941	0.00225107	15.41	1789	True	True
+Magallana gigas	dna36_protein12	protein	12	Mactra antiquata	subclass	class	subclass Autobranchia	0.0239004	0.00225107	10.62	1353	True	True
+Magallana gigas	dna36_protein12	protein	12	Sinanodonta woodiana	subclass	class	subclass Autobranchia	0.0223499	0.00225107	9.929	1455	False	False
+Magallana gigas	dna36_protein12	protein	12	Solemya velum	class	class	class Bivalvia	0.0309841	0.00225107	13.76	1424	True	False
+Magallana gigas	dna36_protein12	protein	12	Aplysia californica	phylum	phylum	phylum Mollusca	0.0193265	0.00225107	8.585	1002	False	False
+Magallana gigas	dna36_protein12	protein	12	Capitella teleta	kingdom	kingdom	clade Lophotrochozoa, inside kingdom Metazoa	0.0149978	0.00225107	6.663	729	False	False
+Magallana gigas	dna36_protein12	dayhoff	20	Magallana angulata	genus	genus	genus Magallana	0.727354	0.00493028	147.5	46635	True	True
+Magallana gigas	dna36_protein12	dayhoff	20	Crassostrea virginica	family	family	family Ostreidae	0.24111	0.00493028	48.9	15459	True	True
+Magallana gigas	dna36_protein12	dayhoff	20	Mizuhopecten yessoensis	subclass	order	clade Pteriomorphia, inside subclass Autobranchia	0.0503397	0.00493028	10.21	2556	True	True
+Magallana gigas	dna36_protein12	dayhoff	20	Mactra antiquata	subclass	class	subclass Autobranchia	0.0358713	0.00493028	7.276	2015	False	False
+Magallana gigas	dna36_protein12	dayhoff	20	Sinanodonta woodiana	subclass	class	subclass Autobranchia	0.0343284	0.00493028	6.963	2201	False	False
+Magallana gigas	dna36_protein12	dayhoff	20	Solemya velum	class	class	class Bivalvia	0.0449063	0.00493028	9.108	2044	False	False
+Magallana gigas	dna36_protein12	dayhoff	20	Aplysia californica	phylum	phylum	phylum Mollusca	0.0308784	0.00493028	6.263	1558	False	False
+Magallana gigas	dna36_protein12	dayhoff	20	Capitella teleta	kingdom	kingdom	clade Lophotrochozoa, inside kingdom Metazoa	0.024308	0.00493028	4.93	1154	False	False
+Magallana gigas	dna36_protein12	hp	52	Magallana angulata	genus	genus	genus Magallana	0.652696	0.000712138	916.5	40349	True	True
+Magallana gigas	dna36_protein12	hp	52	Crassostrea virginica	family	family	family Ostreidae	0.144972	0.000712138	203.6	8962	True	True
+Magallana gigas	dna36_protein12	hp	52	Mizuhopecten yessoensis	subclass	order	clade Pteriomorphia, inside subclass Autobranchia	0.0165877	0.000712138	23.29	802	True	True
+Magallana gigas	dna36_protein12	hp	52	Mactra antiquata	subclass	class	subclass Autobranchia	0.0113968	0.000712138	16	610	True	True
+Magallana gigas	dna36_protein12	hp	52	Sinanodonta woodiana	subclass	class	subclass Autobranchia	0.0113072	0.000712138	15.88	699	True	True
+Magallana gigas	dna36_protein12	hp	52	Solemya velum	class	class	class Bivalvia	0.014938	0.000712138	20.98	654	True	True
+Magallana gigas	dna36_protein12	hp	52	Aplysia californica	phylum	phylum	phylum Mollusca	0.00963608	0.000712138	13.53	470	True	True
+Magallana gigas	dna36_protein12	hp	52	Capitella teleta	kingdom	kingdom	clade Lophotrochozoa, inside kingdom Metazoa	0.00677694	0.000712138	9.516	304	False	False
+Escherichia coli K-12	42bits	DNA	21	Escherichia coli O157:H7	species	species	species Escherichia coli	0.65144	0	inf	2624	True	True
+Escherichia coli K-12	42bits	DNA	21	Escherichia fergusonii	genus	genus	genus Escherichia	0.228898	0	inf	922	True	True
+Escherichia coli K-12	42bits	DNA	21	Salmonella enterica	family	family	family Enterobacteriaceae	0.0322741	0	inf	130	True	True
+Escherichia coli K-12	42bits	DNA	21	Yersinia pestis	order	order	order Enterobacterales	0.00443582	0	inf	16	False	False
+Escherichia coli K-12	42bits	DNA	21	Pseudomonas aeruginosa	class	class	class Gammaproteobacteria	0.000496524	0	inf	2	False	False
+Escherichia coli K-12	42bits	DNA	21	Caulobacter vibrioides	phylum	phylum	phylum Pseudomonadota	0	0	inf	0	False	False
+Escherichia coli K-12	42bits	DNA	21	Bacteroides thetaiotaomicron	kingdom	kingdom	kingdom Pseudomonadati	0	0	inf	0	False	False
+Escherichia coli K-12	42bits	protein	10	Escherichia coli O157:H7	species	species	species Escherichia coli	0.830307	0.00361757	229.5	5304	True	True
+Escherichia coli K-12	42bits	protein	10	Escherichia fergusonii	genus	genus	genus Escherichia	0.559173	0.00361757	154.6	3572	True	True
+Escherichia coli K-12	42bits	protein	10	Salmonella enterica	family	family	family Enterobacteriaceae	0.35958	0.00361757	99.4	2297	True	True
+Escherichia coli K-12	42bits	protein	10	Yersinia pestis	order	order	order Enterobacterales	0.118532	0.00361757	32.77	701	True	True
+Escherichia coli K-12	42bits	protein	10	Pseudomonas aeruginosa	class	class	class Gammaproteobacteria	0.0195679	0.00361757	5.409	125	False	False
+Escherichia coli K-12	42bits	protein	10	Caulobacter vibrioides	phylum	phylum	phylum Pseudomonadota	0.00475268	0.00361757	1.314	27	False	False
+Escherichia coli K-12	42bits	protein	10	Bacteroides thetaiotaomicron	kingdom	kingdom	kingdom Pseudomonadati	0.00297433	0.00361757	0.8222	19	False	False
+Escherichia coli K-12	42bits	dayhoff	16	Escherichia coli O157:H7	species	species	species Escherichia coli	0.842072	0.00612423	137.5	5300	True	True
+Escherichia coli K-12	42bits	dayhoff	16	Escherichia fergusonii	genus	genus	genus Escherichia	0.626787	0.00612423	102.3	3945	True	True
+Escherichia coli K-12	42bits	dayhoff	16	Salmonella enterica	family	family	family Enterobacteriaceae	0.430887	0.00612423	70.36	2712	True	True
+Escherichia coli K-12	42bits	dayhoff	16	Yersinia pestis	order	order	order Enterobacterales	0.172052	0.00612423	28.09	1001	True	True
+Escherichia coli K-12	42bits	dayhoff	16	Pseudomonas aeruginosa	class	class	class Gammaproteobacteria	0.0301875	0.00612423	4.929	190	False	False
+Escherichia coli K-12	42bits	dayhoff	16	Caulobacter vibrioides	phylum	phylum	phylum Pseudomonadota	0.00816114	0.00612423	1.333	47	False	False
+Escherichia coli K-12	42bits	dayhoff	16	Bacteroides thetaiotaomicron	kingdom	kingdom	kingdom Pseudomonadati	0.00667302	0.00612423	1.09	42	False	False
+Escherichia coli K-12	42bits	hp	42	Escherichia coli O157:H7	species	species	species Escherichia coli	0.797718	0.000745712	1070	4685	True	True
+Escherichia coli K-12	42bits	hp	42	Escherichia fergusonii	genus	genus	genus Escherichia	0.541801	0.000745712	726.6	3182	True	True
+Escherichia coli K-12	42bits	hp	42	Salmonella enterica	family	family	family Enterobacteriaceae	0.32096	0.000745712	430.4	1885	True	True
+Escherichia coli K-12	42bits	hp	42	Yersinia pestis	order	order	order Enterobacterales	0.0849613	0.000745712	113.9	461	True	True
+Escherichia coli K-12	42bits	hp	42	Pseudomonas aeruginosa	class	class	class Gammaproteobacteria	0.00800272	0.000745712	10.73	47	False	False
+Escherichia coli K-12	42bits	hp	42	Caulobacter vibrioides	phylum	phylum	phylum Pseudomonadota	0	0.000745712	0	0	False	False
+Escherichia coli K-12	42bits	hp	42	Bacteroides thetaiotaomicron	kingdom	kingdom	kingdom Pseudomonadati	0.000340541	0.000745712	0.4567	2	False	False
+Escherichia coli K-12	dna21_protein7	DNA	21	Escherichia coli O157:H7	species	species	species Escherichia coli	0.65144	0	inf	2624	True	True
+Escherichia coli K-12	dna21_protein7	DNA	21	Escherichia fergusonii	genus	genus	genus Escherichia	0.228898	0	inf	922	True	True
+Escherichia coli K-12	dna21_protein7	DNA	21	Salmonella enterica	family	family	family Enterobacteriaceae	0.0322741	0	inf	130	True	True
+Escherichia coli K-12	dna21_protein7	DNA	21	Yersinia pestis	order	order	order Enterobacterales	0.00443582	0	inf	16	False	False
+Escherichia coli K-12	dna21_protein7	DNA	21	Pseudomonas aeruginosa	class	class	class Gammaproteobacteria	0.000496524	0	inf	2	False	False
+Escherichia coli K-12	dna21_protein7	DNA	21	Caulobacter vibrioides	phylum	phylum	phylum Pseudomonadota	0	0	inf	0	False	False
+Escherichia coli K-12	dna21_protein7	DNA	21	Bacteroides thetaiotaomicron	kingdom	kingdom	kingdom Pseudomonadati	0	0	inf	0	False	False
+Escherichia coli K-12	dna21_protein7	protein	7	Escherichia coli O157:H7	species	species	species Escherichia coli	0.839566	0.0152123	55.19	5411	True	True
+Escherichia coli K-12	dna21_protein7	protein	7	Escherichia fergusonii	genus	genus	genus Escherichia	0.611947	0.0152123	40.23	3944	True	True
+Escherichia coli K-12	dna21_protein7	protein	7	Salmonella enterica	family	family	family Enterobacteriaceae	0.417223	0.0152123	27.43	2689	True	True
+Escherichia coli K-12	dna21_protein7	protein	7	Yersinia pestis	order	order	order Enterobacterales	0.172676	0.0152123	11.35	1020	True	True
+Escherichia coli K-12	dna21_protein7	protein	7	Pseudomonas aeruginosa	class	class	class Gammaproteobacteria	0.0470132	0.0152123	3.09	303	False	False
+Escherichia coli K-12	dna21_protein7	protein	7	Caulobacter vibrioides	phylum	phylum	phylum Pseudomonadota	0.016129	0.0152123	1.06	94	False	False
+Escherichia coli K-12	dna21_protein7	protein	7	Bacteroides thetaiotaomicron	kingdom	kingdom	kingdom Pseudomonadati	0.00993018	0.0152123	0.6528	64	False	False
+Escherichia coli K-12	dna21_protein7	dayhoff	12	Escherichia coli O157:H7	species	species	species Escherichia coli	0.853957	0.0543231	15.72	5438	True	True
+Escherichia coli K-12	dna21_protein7	dayhoff	12	Escherichia fergusonii	genus	genus	genus Escherichia	0.66049	0.0543231	12.16	4206	True	True
+Escherichia coli K-12	dna21_protein7	dayhoff	12	Salmonella enterica	family	family	family Enterobacteriaceae	0.503612	0.0543231	9.271	3207	False	False
+Escherichia coli K-12	dna21_protein7	dayhoff	12	Yersinia pestis	order	order	order Enterobacterales	0.245453	0.0543231	4.518	1444	False	False
+Escherichia coli K-12	dna21_protein7	dayhoff	12	Pseudomonas aeruginosa	class	class	class Gammaproteobacteria	0.11071	0.0543231	2.038	705	False	False
+Escherichia coli K-12	dna21_protein7	dayhoff	12	Caulobacter vibrioides	phylum	phylum	phylum Pseudomonadota	0.066	0.0543231	1.215	363	False	False
+Escherichia coli K-12	dna21_protein7	dayhoff	12	Bacteroides thetaiotaomicron	kingdom	kingdom	kingdom Pseudomonadati	0.049152	0.0543231	0.9048	313	False	False
+Escherichia coli K-12	dna21_protein7	hp	30	Escherichia coli O157:H7	species	species	species Escherichia coli	0.816496	0.0092291	88.47	5019	True	True
+Escherichia coli K-12	dna21_protein7	hp	30	Escherichia fergusonii	genus	genus	genus Escherichia	0.584675	0.0092291	63.35	3594	True	True
+Escherichia coli K-12	dna21_protein7	hp	30	Salmonella enterica	family	family	family Enterobacteriaceae	0.386367	0.0092291	41.86	2375	True	True
+Escherichia coli K-12	dna21_protein7	hp	30	Yersinia pestis	order	order	order Enterobacterales	0.133845	0.0092291	14.5	768	True	True
+Escherichia coli K-12	dna21_protein7	hp	30	Pseudomonas aeruginosa	class	class	class Gammaproteobacteria	0.0245648	0.0092291	2.662	151	False	False
+Escherichia coli K-12	dna21_protein7	hp	30	Caulobacter vibrioides	phylum	phylum	phylum Pseudomonadota	0.00912987	0.0092291	0.9892	49	False	False
+Escherichia coli K-12	dna21_protein7	hp	30	Bacteroides thetaiotaomicron	kingdom	kingdom	kingdom Pseudomonadati	0.00813405	0.0092291	0.8813	50	False	False
+Escherichia coli K-12	dna24_protein8	DNA	24	Escherichia coli O157:H7	species	species	species Escherichia coli	0.643315	0	inf	2507	True	True
+Escherichia coli K-12	dna24_protein8	DNA	24	Escherichia fergusonii	genus	genus	genus Escherichia	0.212471	0	inf	828	True	True
+Escherichia coli K-12	dna24_protein8	DNA	24	Salmonella enterica	family	family	family Enterobacteriaceae	0.0236079	0	inf	92	False	False
+Escherichia coli K-12	dna24_protein8	DNA	24	Yersinia pestis	order	order	order Enterobacterales	0.00139276	0	inf	5	False	False
+Escherichia coli K-12	dna24_protein8	DNA	24	Pseudomonas aeruginosa	class	class	class Gammaproteobacteria	0.000513215	0	inf	2	False	False
+Escherichia coli K-12	dna24_protein8	DNA	24	Caulobacter vibrioides	phylum	phylum	phylum Pseudomonadota	0	0	inf	0	False	False
+Escherichia coli K-12	dna24_protein8	DNA	24	Bacteroides thetaiotaomicron	kingdom	kingdom	kingdom Pseudomonadati	0	0	inf	0	False	False
+Escherichia coli K-12	dna24_protein8	protein	8	Escherichia coli O157:H7	species	species	species Escherichia coli	0.834905	0.00709579	117.7	5401	True	True
+Escherichia coli K-12	dna24_protein8	protein	8	Escherichia fergusonii	genus	genus	genus Escherichia	0.601948	0.00709579	84.83	3894	True	True
+Escherichia coli K-12	dna24_protein8	protein	8	Salmonella enterica	family	family	family Enterobacteriaceae	0.406709	0.00709579	57.32	2631	True	True
+Escherichia coli K-12	dna24_protein8	protein	8	Yersinia pestis	order	order	order Enterobacterales	0.146187	0.00709579	20.6	878	True	True
+Escherichia coli K-12	dna24_protein8	protein	8	Pseudomonas aeruginosa	class	class	class Gammaproteobacteria	0.0276704	0.00709579	3.9	179	False	False
+Escherichia coli K-12	dna24_protein8	protein	8	Caulobacter vibrioides	phylum	phylum	phylum Pseudomonadota	0.0101724	0.00709579	1.434	59	False	False
+Escherichia coli K-12	dna24_protein8	protein	8	Bacteroides thetaiotaomicron	kingdom	kingdom	kingdom Pseudomonadati	0.0046375	0.00709579	0.6536	30	False	False
+Escherichia coli K-12	dna24_protein8	dayhoff	13	Escherichia coli O157:H7	species	species	species Escherichia coli	0.854435	0.0256149	33.36	5365	True	True
+Escherichia coli K-12	dna24_protein8	dayhoff	13	Escherichia fergusonii	genus	genus	genus Escherichia	0.655518	0.0256149	25.59	4116	True	True
+Escherichia coli K-12	dna24_protein8	dayhoff	13	Salmonella enterica	family	family	family Enterobacteriaceae	0.482879	0.0256149	18.85	3032	True	True
+Escherichia coli K-12	dna24_protein8	dayhoff	13	Yersinia pestis	order	order	order Enterobacterales	0.206908	0.0256149	8.078	1210	False	False
+Escherichia coli K-12	dna24_protein8	dayhoff	13	Pseudomonas aeruginosa	class	class	class Gammaproteobacteria	0.0692785	0.0256149	2.705	435	False	False
+Escherichia coli K-12	dna24_protein8	dayhoff	13	Caulobacter vibrioides	phylum	phylum	phylum Pseudomonadota	0.0282019	0.0256149	1.101	157	False	False
+Escherichia coli K-12	dna24_protein8	dayhoff	13	Bacteroides thetaiotaomicron	kingdom	kingdom	kingdom Pseudomonadati	0.0238892	0.0256149	0.9326	150	False	False
+Escherichia coli K-12	dna24_protein8	hp	35	Escherichia coli O157:H7	species	species	species Escherichia coli	0.807414	0.00196696	410.5	4683	True	True
+Escherichia coli K-12	dna24_protein8	hp	35	Escherichia fergusonii	genus	genus	genus Escherichia	0.572414	0.00196696	291	3320	True	True
+Escherichia coli K-12	dna24_protein8	hp	35	Salmonella enterica	family	family	family Enterobacteriaceae	0.353621	0.00196696	179.8	2051	True	True
+Escherichia coli K-12	dna24_protein8	hp	35	Yersinia pestis	order	order	order Enterobacterales	0.102588	0.00196696	52.16	555	True	True
+Escherichia coli K-12	dna24_protein8	hp	35	Pseudomonas aeruginosa	class	class	class Gammaproteobacteria	0.012931	0.00196696	6.574	75	False	False
+Escherichia coli K-12	dna24_protein8	hp	35	Caulobacter vibrioides	phylum	phylum	phylum Pseudomonadota	0.00246072	0.00196696	1.251	13	False	False
+Escherichia coli K-12	dna24_protein8	hp	35	Bacteroides thetaiotaomicron	kingdom	kingdom	kingdom Pseudomonadati	0.00155172	0.00196696	0.7889	9	False	False
+Escherichia coli K-12	dna27_protein9	DNA	27	Escherichia coli O157:H7	species	species	species Escherichia coli	0.61389	0	inf	2369	True	True
+Escherichia coli K-12	dna27_protein9	DNA	27	Escherichia fergusonii	genus	genus	genus Escherichia	0.178803	0	inf	690	True	True
+Escherichia coli K-12	dna27_protein9	DNA	27	Salmonella enterica	family	family	family Enterobacteriaceae	0.0168437	0	inf	65	False	False
+Escherichia coli K-12	dna27_protein9	DNA	27	Yersinia pestis	order	order	order Enterobacterales	0.000551116	0	inf	2	False	False
+Escherichia coli K-12	dna27_protein9	DNA	27	Pseudomonas aeruginosa	class	class	class Gammaproteobacteria	0	0	inf	0	False	False
+Escherichia coli K-12	dna27_protein9	DNA	27	Caulobacter vibrioides	phylum	phylum	phylum Pseudomonadota	0	0	inf	0	False	False
+Escherichia coli K-12	dna27_protein9	DNA	27	Bacteroides thetaiotaomicron	kingdom	kingdom	kingdom Pseudomonadati	0	0	inf	0	False	False
+Escherichia coli K-12	dna27_protein9	protein	9	Escherichia coli O157:H7	species	species	species Escherichia coli	0.82777	0.0055325	149.6	5431	True	True
+Escherichia coli K-12	dna27_protein9	protein	9	Escherichia fergusonii	genus	genus	genus Escherichia	0.586191	0.0055325	106	3846	True	True
+Escherichia coli K-12	dna27_protein9	protein	9	Salmonella enterica	family	family	family Enterobacteriaceae	0.381954	0.0055325	69.04	2506	True	True
+Escherichia coli K-12	dna27_protein9	protein	9	Yersinia pestis	order	order	order Enterobacterales	0.132701	0.0055325	23.99	797	True	True
+Escherichia coli K-12	dna27_protein9	protein	9	Pseudomonas aeruginosa	class	class	class Gammaproteobacteria	0.0192044	0.0055325	3.471	126	False	False
+Escherichia coli K-12	dna27_protein9	protein	9	Caulobacter vibrioides	phylum	phylum	phylum Pseudomonadota	0.00675208	0.0055325	1.22	39	False	False
+Escherichia coli K-12	dna27_protein9	protein	9	Bacteroides thetaiotaomicron	kingdom	kingdom	kingdom Pseudomonadati	0.00304832	0.0055325	0.551	20	False	False
+Escherichia coli K-12	dna27_protein9	dayhoff	15	Escherichia coli O157:H7	species	species	species Escherichia coli	0.840064	0.00960879	87.43	5284	True	True
+Escherichia coli K-12	dna27_protein9	dayhoff	15	Escherichia fergusonii	genus	genus	genus Escherichia	0.631479	0.00960879	65.72	3972	True	True
+Escherichia coli K-12	dna27_protein9	dayhoff	15	Salmonella enterica	family	family	family Enterobacteriaceae	0.441494	0.00960879	45.95	2777	True	True
+Escherichia coli K-12	dna27_protein9	dayhoff	15	Yersinia pestis	order	order	order Enterobacterales	0.180458	0.00960879	18.78	1049	True	True
+Escherichia coli K-12	dna27_protein9	dayhoff	15	Pseudomonas aeruginosa	class	class	class Gammaproteobacteria	0.0384738	0.00960879	4.004	242	False	False
+Escherichia coli K-12	dna27_protein9	dayhoff	15	Caulobacter vibrioides	phylum	phylum	phylum Pseudomonadota	0.0117544	0.00960879	1.223	67	False	False
+Escherichia coli K-12	dna27_protein9	dayhoff	15	Bacteroides thetaiotaomicron	kingdom	kingdom	kingdom Pseudomonadati	0.00540541	0.00960879	0.5625	34	False	False
+Escherichia coli K-12	dna27_protein9	hp	39	Escherichia coli O157:H7	species	species	species Escherichia coli	0.811443	0.00157295	515.9	4751	True	True
+Escherichia coli K-12	dna27_protein9	hp	39	Escherichia fergusonii	genus	genus	genus Escherichia	0.562084	0.00157295	357.3	3291	True	True
+Escherichia coli K-12	dna27_protein9	hp	39	Salmonella enterica	family	family	family Enterobacteriaceae	0.33339	0.00157295	212	1952	True	True
+Escherichia coli K-12	dna27_protein9	hp	39	Yersinia pestis	order	order	order Enterobacterales	0.0934849	0.00157295	59.43	518	True	True
+Escherichia coli K-12	dna27_protein9	hp	39	Pseudomonas aeruginosa	class	class	class Gammaproteobacteria	0.0104184	0.00157295	6.623	61	False	False
+Escherichia coli K-12	dna27_protein9	hp	39	Caulobacter vibrioides	phylum	phylum	phylum Pseudomonadota	0.00151429	0.00157295	0.9627	8	False	False
+Escherichia coli K-12	dna27_protein9	hp	39	Bacteroides thetaiotaomicron	kingdom	kingdom	kingdom Pseudomonadati	0.000853971	0.00157295	0.5429	5	False	False
+Escherichia coli K-12	dna30_protein10	DNA	30	Escherichia coli O157:H7	species	species	species Escherichia coli	0.586695	0	inf	2240	True	True
+Escherichia coli K-12	dna30_protein10	DNA	30	Escherichia fergusonii	genus	genus	genus Escherichia	0.169722	0	inf	648	True	True
+Escherichia coli K-12	dna30_protein10	DNA	30	Salmonella enterica	family	family	family Enterobacteriaceae	0.0112624	0	inf	43	False	False
+Escherichia coli K-12	dna30_protein10	DNA	30	Yersinia pestis	order	order	order Enterobacterales	0.00028393	0	inf	1	False	False
+Escherichia coli K-12	dna30_protein10	DNA	30	Pseudomonas aeruginosa	class	class	class Gammaproteobacteria	0.000261917	0	inf	1	False	False
+Escherichia coli K-12	dna30_protein10	DNA	30	Caulobacter vibrioides	phylum	phylum	phylum Pseudomonadota	0	0	inf	0	False	False
+Escherichia coli K-12	dna30_protein10	DNA	30	Bacteroides thetaiotaomicron	kingdom	kingdom	kingdom Pseudomonadati	0	0	inf	0	False	False
+Escherichia coli K-12	dna30_protein10	protein	10	Escherichia coli O157:H7	species	species	species Escherichia coli	0.830307	0.00361757	229.5	5304	True	True
+Escherichia coli K-12	dna30_protein10	protein	10	Escherichia fergusonii	genus	genus	genus Escherichia	0.559173	0.00361757	154.6	3572	True	True
+Escherichia coli K-12	dna30_protein10	protein	10	Salmonella enterica	family	family	family Enterobacteriaceae	0.35958	0.00361757	99.4	2297	True	True
+Escherichia coli K-12	dna30_protein10	protein	10	Yersinia pestis	order	order	order Enterobacterales	0.118532	0.00361757	32.77	701	True	True
+Escherichia coli K-12	dna30_protein10	protein	10	Pseudomonas aeruginosa	class	class	class Gammaproteobacteria	0.0195679	0.00361757	5.409	125	False	False
+Escherichia coli K-12	dna30_protein10	protein	10	Caulobacter vibrioides	phylum	phylum	phylum Pseudomonadota	0.00475268	0.00361757	1.314	27	False	False
+Escherichia coli K-12	dna30_protein10	protein	10	Bacteroides thetaiotaomicron	kingdom	kingdom	kingdom Pseudomonadati	0.00297433	0.00361757	0.8222	19	False	False
+Escherichia coli K-12	dna30_protein10	dayhoff	17	Escherichia coli O157:H7	species	species	species Escherichia coli	0.835019	0.00660525	126.4	5284	True	True
+Escherichia coli K-12	dna30_protein10	dayhoff	17	Escherichia fergusonii	genus	genus	genus Escherichia	0.614096	0.00660525	92.97	3886	True	True
+Escherichia coli K-12	dna30_protein10	dayhoff	17	Salmonella enterica	family	family	family Enterobacteriaceae	0.43031	0.00660525	65.15	2723	True	True
+Escherichia coli K-12	dna30_protein10	dayhoff	17	Yersinia pestis	order	order	order Enterobacterales	0.158722	0.00660525	24.03	939	True	True
+Escherichia coli K-12	dna30_protein10	dayhoff	17	Pseudomonas aeruginosa	class	class	class Gammaproteobacteria	0.0290771	0.00660525	4.402	184	False	False
+Escherichia coli K-12	dna30_protein10	dayhoff	17	Caulobacter vibrioides	phylum	phylum	phylum Pseudomonadota	0.00638864	0.00660525	0.9672	36	False	False
+Escherichia coli K-12	dna30_protein10	dayhoff	17	Bacteroides thetaiotaomicron	kingdom	kingdom	kingdom Pseudomonadati	0.00316056	0.00660525	0.4785	20	False	False
+Escherichia coli K-12	dna30_protein10	hp	43	Escherichia coli O157:H7	species	species	species Escherichia coli	0.80107	0.00151803	527.7	4643	True	True
+Escherichia coli K-12	dna30_protein10	hp	43	Escherichia fergusonii	genus	genus	genus Escherichia	0.541063	0.00151803	356.4	3136	True	True
+Escherichia coli K-12	dna30_protein10	hp	43	Salmonella enterica	family	family	family Enterobacteriaceae	0.301587	0.00151803	198.7	1748	True	True
+Escherichia coli K-12	dna30_protein10	hp	43	Yersinia pestis	order	order	order Enterobacterales	0.0761298	0.00151803	50.15	406	True	True
+Escherichia coli K-12	dna30_protein10	hp	43	Pseudomonas aeruginosa	class	class	class Gammaproteobacteria	0.00569358	0.00151803	3.751	33	False	False
+Escherichia coli K-12	dna30_protein10	hp	43	Caulobacter vibrioides	phylum	phylum	phylum Pseudomonadota	0.000772052	0.00151803	0.5086	4	False	False
+Escherichia coli K-12	dna30_protein10	hp	43	Bacteroides thetaiotaomicron	kingdom	kingdom	kingdom Pseudomonadati	0.000172533	0.00151803	0.1137	1	False	False
+Escherichia coli K-12	dna33_protein11	DNA	33	Escherichia coli O157:H7	species	species	species Escherichia coli	0.55974	0	inf	2155	True	True
+Escherichia coli K-12	dna33_protein11	DNA	33	Escherichia fergusonii	genus	genus	genus Escherichia	0.156623	0	inf	603	True	True
+Escherichia coli K-12	dna33_protein11	DNA	33	Salmonella enterica	family	family	family Enterobacteriaceae	0.0101299	0	inf	39	False	False
+Escherichia coli K-12	dna33_protein11	DNA	33	Yersinia pestis	order	order	order Enterobacterales	0.00110558	0	inf	4	False	False
+Escherichia coli K-12	dna33_protein11	DNA	33	Pseudomonas aeruginosa	class	class	class Gammaproteobacteria	0	0	inf	0	False	False
+Escherichia coli K-12	dna33_protein11	DNA	33	Caulobacter vibrioides	phylum	phylum	phylum Pseudomonadota	0	0	inf	0	False	False
+Escherichia coli K-12	dna33_protein11	DNA	33	Bacteroides thetaiotaomicron	kingdom	kingdom	kingdom Pseudomonadati	0	0	inf	0	False	False
+Escherichia coli K-12	dna33_protein11	protein	11	Escherichia coli O157:H7	species	species	species Escherichia coli	0.820293	0.0025198	325.5	5158	True	True
+Escherichia coli K-12	dna33_protein11	protein	11	Escherichia fergusonii	genus	genus	genus Escherichia	0.571724	0.0025198	226.9	3595	True	True
+Escherichia coli K-12	dna33_protein11	protein	11	Salmonella enterica	family	family	family Enterobacteriaceae	0.347646	0.0025198	138	2186	True	True
+Escherichia coli K-12	dna33_protein11	protein	11	Yersinia pestis	order	order	order Enterobacterales	0.110545	0.0025198	43.87	673	True	True
+Escherichia coli K-12	dna33_protein11	protein	11	Pseudomonas aeruginosa	class	class	class Gammaproteobacteria	0.0149491	0.0025198	5.933	94	False	False
+Escherichia coli K-12	dna33_protein11	protein	11	Caulobacter vibrioides	phylum	phylum	phylum Pseudomonadota	0.00476353	0.0025198	1.89	28	False	False
+Escherichia coli K-12	dna33_protein11	protein	11	Bacteroides thetaiotaomicron	kingdom	kingdom	kingdom Pseudomonadati	0.00159033	0.0025198	0.6311	10	False	False
+Escherichia coli K-12	dna33_protein11	dayhoff	18	Escherichia coli O157:H7	species	species	species Escherichia coli	0.838975	0.00461223	181.9	5205	True	True
+Escherichia coli K-12	dna33_protein11	dayhoff	18	Escherichia fergusonii	genus	genus	genus Escherichia	0.608962	0.00461223	132	3778	True	True
+Escherichia coli K-12	dna33_protein11	dayhoff	18	Salmonella enterica	family	family	family Enterobacteriaceae	0.418279	0.00461223	90.69	2595	True	True
+Escherichia coli K-12	dna33_protein11	dayhoff	18	Yersinia pestis	order	order	order Enterobacterales	0.15065	0.00461223	32.66	881	True	True
+Escherichia coli K-12	dna33_protein11	dayhoff	18	Pseudomonas aeruginosa	class	class	class Gammaproteobacteria	0.0248227	0.00461223	5.382	154	False	False
+Escherichia coli K-12	dna33_protein11	dayhoff	18	Caulobacter vibrioides	phylum	phylum	phylum Pseudomonadota	0.00464452	0.00461223	1.007	26	False	False
+Escherichia coli K-12	dna33_protein11	dayhoff	18	Bacteroides thetaiotaomicron	kingdom	kingdom	kingdom Pseudomonadati	0.00419084	0.00461223	0.9086	26	False	False
+Escherichia coli K-12	dna33_protein11	hp	48	Escherichia coli O157:H7	species	species	species Escherichia coli	0.783122	0.000581395	1347	4445	True	True
+Escherichia coli K-12	dna33_protein11	hp	48	Escherichia fergusonii	genus	genus	genus Escherichia	0.518851	0.000581395	892.4	2945	True	True
+Escherichia coli K-12	dna33_protein11	hp	48	Salmonella enterica	family	family	family Enterobacteriaceae	0.286117	0.000581395	492.1	1624	True	True
+Escherichia coli K-12	dna33_protein11	hp	48	Yersinia pestis	order	order	order Enterobacterales	0.07163	0.000581395	123.2	381	True	True
+Escherichia coli K-12	dna33_protein11	hp	48	Pseudomonas aeruginosa	class	class	class Gammaproteobacteria	0.00440451	0.000581395	7.576	25	False	False
+Escherichia coli K-12	dna33_protein11	hp	48	Caulobacter vibrioides	phylum	phylum	phylum Pseudomonadota	0.00039801	0.000581395	0.6846	2	False	False
+Escherichia coli K-12	dna33_protein11	hp	48	Bacteroides thetaiotaomicron	kingdom	kingdom	kingdom Pseudomonadati	0.000528541	0.000581395	0.9091	3	False	False
+Escherichia coli K-12	dna36_protein12	DNA	36	Escherichia coli O157:H7	species	species	species Escherichia coli	0.570466	0	inf	2202	True	True
+Escherichia coli K-12	dna36_protein12	DNA	36	Escherichia fergusonii	genus	genus	genus Escherichia	0.144819	0	inf	559	True	True
+Escherichia coli K-12	dna36_protein12	DNA	36	Salmonella enterica	family	family	family Enterobacteriaceae	0.0111399	0	inf	43	False	False
+Escherichia coli K-12	dna36_protein12	DNA	36	Yersinia pestis	order	order	order Enterobacterales	0	0	inf	0	False	False
+Escherichia coli K-12	dna36_protein12	DNA	36	Pseudomonas aeruginosa	class	class	class Gammaproteobacteria	0	0	inf	0	False	False
+Escherichia coli K-12	dna36_protein12	DNA	36	Caulobacter vibrioides	phylum	phylum	phylum Pseudomonadota	0	0	inf	0	False	False
+Escherichia coli K-12	dna36_protein12	DNA	36	Bacteroides thetaiotaomicron	kingdom	kingdom	kingdom Pseudomonadati	0	0	inf	0	False	False
+Escherichia coli K-12	dna36_protein12	protein	12	Escherichia coli O157:H7	species	species	species Escherichia coli	0.81887	0.00235176	348.2	5190	True	True
+Escherichia coli K-12	dna36_protein12	protein	12	Escherichia fergusonii	genus	genus	genus Escherichia	0.560745	0.00235176	238.4	3554	True	True
+Escherichia coli K-12	dna36_protein12	protein	12	Salmonella enterica	family	family	family Enterobacteriaceae	0.337488	0.00235176	143.5	2139	True	True
+Escherichia coli K-12	dna36_protein12	protein	12	Yersinia pestis	order	order	order Enterobacterales	0.0962055	0.00235176	40.91	573	True	True
+Escherichia coli K-12	dna36_protein12	protein	12	Pseudomonas aeruginosa	class	class	class Gammaproteobacteria	0.0146734	0.00235176	6.239	93	False	False
+Escherichia coli K-12	dna36_protein12	protein	12	Caulobacter vibrioides	phylum	phylum	phylum Pseudomonadota	0.00289954	0.00235176	1.233	17	False	False
+Escherichia coli K-12	dna36_protein12	protein	12	Bacteroides thetaiotaomicron	kingdom	kingdom	kingdom Pseudomonadati	0.000946671	0.00235176	0.4025	6	False	False
+Escherichia coli K-12	dna36_protein12	dayhoff	20	Escherichia coli O157:H7	species	species	species Escherichia coli	0.818036	0.00310613	263.4	5098	True	True
+Escherichia coli K-12	dna36_protein12	dayhoff	20	Escherichia fergusonii	genus	genus	genus Escherichia	0.592105	0.00310613	190.6	3690	True	True
+Escherichia coli K-12	dna36_protein12	dayhoff	20	Salmonella enterica	family	family	family Enterobacteriaceae	0.396502	0.00310613	127.7	2471	True	True
+Escherichia coli K-12	dna36_protein12	dayhoff	20	Yersinia pestis	order	order	order Enterobacterales	0.135424	0.00310613	43.6	786	True	True
+Escherichia coli K-12	dna36_protein12	dayhoff	20	Pseudomonas aeruginosa	class	class	class Gammaproteobacteria	0.0202182	0.00310613	6.509	126	False	False
+Escherichia coli K-12	dna36_protein12	dayhoff	20	Caulobacter vibrioides	phylum	phylum	phylum Pseudomonadota	0.00283336	0.00310613	0.9122	16	False	False
+Escherichia coli K-12	dna36_protein12	dayhoff	20	Bacteroides thetaiotaomicron	kingdom	kingdom	kingdom Pseudomonadati	0.00160462	0.00310613	0.5166	10	False	False
+Escherichia coli K-12	dna36_protein12	hp	52	Escherichia coli O157:H7	species	species	species Escherichia coli	0.780483	0.000200361	3895	4327	True	True
+Escherichia coli K-12	dna36_protein12	hp	52	Escherichia fergusonii	genus	genus	genus Escherichia	0.511724	0.000200361	2554	2837	True	True
+Escherichia coli K-12	dna36_protein12	hp	52	Salmonella enterica	family	family	family Enterobacteriaceae	0.261905	0.000200361	1307	1452	True	True
+Escherichia coli K-12	dna36_protein12	hp	52	Yersinia pestis	order	order	order Enterobacterales	0.065444	0.000200361	326.6	339	True	True
+Escherichia coli K-12	dna36_protein12	hp	52	Pseudomonas aeruginosa	class	class	class Gammaproteobacteria	0.00468975	0.000200361	23.41	26	False	False
+Escherichia coli K-12	dna36_protein12	hp	52	Caulobacter vibrioides	phylum	phylum	phylum Pseudomonadota	0.000394711	0.000200361	1.97	2	False	False
+Escherichia coli K-12	dna36_protein12	hp	52	Bacteroides thetaiotaomicron	kingdom	kingdom	kingdom Pseudomonadati	0.000180375	0.000200361	0.9003	1	False	False

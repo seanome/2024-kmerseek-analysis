@@ -1850,6 +1850,10 @@ def draw_reach_bars(rows, settings, matched, name):
         # Built from the data, so it cannot go stale.
         + reach_conclusion(rows, settings)
     )
+    # A line naming many relatives is wider than the page; wrap every line to fit 183 mm.
+    import textwrap
+
+    header = "\n".join(textwrap.fill(line, 150) for line in header.split("\n"))
     # Anchor the header's bottom just above the legend, however many lines it has.
     fig.suptitle(
         header, y=1 + 10 / (42 * len(PATHS)), va="bottom"

@@ -65,6 +65,39 @@ Mytilus edulis	DNA	36	ladder	cds	92922767	1.9458	72.00	70.05
 Mytilus edulis	protein	12	ladder	proteome	30905020	4.1988	51.86	50.39
 Mytilus edulis	dayhoff	20	ladder	proteome	30905020	2.3282	51.70	46.56
 Mytilus edulis	hp	52	ladder	proteome	30905020	0.9942	52.00	51.70
+Magallana gigas	DNA	15	30	cds	44944875	1.9848	30.00	29.77
+Magallana gigas	DNA	21	42	cds	44944875	1.9848	42.00	41.68
+Magallana gigas	protein	7	30	proteome	14953410	4.2063	30.25	29.44
+Magallana gigas	protein	10	42	proteome	14953410	4.2063	43.22	42.06
+Magallana gigas	dayhoff	12	30	proteome	14953410	2.3224	31.02	27.87
+Magallana gigas	dayhoff	16	42	proteome	14953410	2.3224	41.36	37.16
+Magallana gigas	hp	30	30	proteome	14953410	0.9972	30.00	29.92
+Magallana gigas	hp	42	42	proteome	14953410	0.9972	42.00	41.88
+Magallana gigas	dayhoff	15	sweep	proteome	14953410	2.3224	38.77	34.84
+Magallana gigas	dayhoff	17	sweep	proteome	14953410	2.3224	43.94	39.48
+Magallana gigas	dayhoff	19	sweep	proteome	14953410	2.3224	49.11	44.13
+Magallana gigas	dayhoff	21	sweep	proteome	14953410	2.3224	54.28	48.77
+Magallana gigas	hp	24	sweep	proteome	14953410	0.9972	24.00	23.93
+Magallana gigas	hp	27	sweep	proteome	14953410	0.9972	27.00	26.93
+Magallana gigas	hp	33	sweep	proteome	14953410	0.9972	33.00	32.91
+Magallana gigas	hp	36	sweep	proteome	14953410	0.9972	36.00	35.90
+Magallana gigas	hp	39	sweep	proteome	14953410	0.9972	39.00	38.89
+Magallana gigas	DNA	24	ladder	cds	44944875	1.9848	48.00	47.64
+Magallana gigas	protein	8	ladder	proteome	14953410	4.2063	34.58	33.65
+Magallana gigas	dayhoff	13	ladder	proteome	14953410	2.3224	33.60	30.19
+Magallana gigas	hp	35	ladder	proteome	14953410	0.9972	35.00	34.90
+Magallana gigas	DNA	27	ladder	cds	44944875	1.9848	54.00	53.59
+Magallana gigas	protein	9	ladder	proteome	14953410	4.2063	38.90	37.86
+Magallana gigas	DNA	30	ladder	cds	44944875	1.9848	60.00	59.54
+Magallana gigas	hp	43	ladder	proteome	14953410	0.9972	43.00	42.88
+Magallana gigas	DNA	33	ladder	cds	44944875	1.9848	66.00	65.50
+Magallana gigas	protein	11	ladder	proteome	14953410	4.2063	47.54	46.27
+Magallana gigas	dayhoff	18	ladder	proteome	14953410	2.3224	46.53	41.80
+Magallana gigas	hp	48	ladder	proteome	14953410	0.9972	48.00	47.87
+Magallana gigas	DNA	36	ladder	cds	44944875	1.9848	72.00	71.45
+Magallana gigas	protein	12	ladder	proteome	14953410	4.2063	51.86	50.48
+Magallana gigas	dayhoff	20	ladder	proteome	14953410	2.3224	51.70	46.45
+Magallana gigas	hp	52	ladder	proteome	14953410	0.9972	52.00	51.86
 Escherichia coli K-12	DNA	15	30	cds	4042859	1.9979	30.00	29.97
 Escherichia coli K-12	DNA	21	42	cds	4042859	1.9979	42.00	41.96
 Escherichia coli K-12	protein	7	30	proteome	1354431	4.1582	30.25	29.11

@@ -14,6 +14,16 @@ Mytilus edulis	Octopus sinensis	phylum	protein	7	30.25	proteome	200	0.0425579	0.
 Mytilus edulis	Capitella teleta	kingdom	protein	7	30.25	proteome	200	0.0411078	0.0798975	91029	46835
 Mytilus edulis	Saccharomyces cerevisiae	other kingdom	protein	7	30.25	proteome	200	0.00910699	0.0624106	91029	13283
 Mytilus edulis	Arabidopsis thaliana	other kingdom	protein	7	30.25	proteome	200	0.0276395	0.0538585	91029	46715
+Magallana gigas	Magallana angulata	genus	protein	7	30.25	proteome	200	0.784571	0.72775	62053	66898
+Magallana gigas	Crassostrea virginica	family	protein	7	30.25	proteome	200	0.314554	0.30285	62053	64451
+Magallana gigas	Mizuhopecten yessoensis	subclass	protein	7	30.25	proteome	200	0.0849757	0.106223	62053	49641
+Magallana gigas	Mactra antiquata	subclass	protein	7	30.25	proteome	200	0.0767409	0.0871634	62053	54633
+Magallana gigas	Sinanodonta woodiana	subclass	protein	7	30.25	proteome	200	0.0842989	0.0824078	62053	63477
+Magallana gigas	Solemya velum	class	protein	7	30.25	proteome	200	0.072293	0.101173	62053	44340
+Magallana gigas	Aplysia californica	phylum	protein	7	30.25	proteome	200	0.0670234	0.0833667	62053	49888
+Magallana gigas	Capitella teleta	kingdom	protein	7	30.25	proteome	200	0.0550336	0.0729156	62053	46835
+Magallana gigas	Saccharomyces cerevisiae	other kingdom	protein	7	30.25	proteome	200	0.0107005	0.0499887	62053	13283
+Magallana gigas	Arabidopsis thaliana	other kingdom	protein	7	30.25	proteome	200	0.032295	0.0428984	62053	46715
 Escherichia coli K-12	Escherichia coli O157:H7	species	protein	7	30.25	proteome	200	0.839566	0.752678	6445	7189
 Escherichia coli K-12	Escherichia fergusonii	genus	protein	7	30.25	proteome	200	0.611947	0.607236	6445	6495
 Escherichia coli K-12	Salmonella enterica	family	protein	7	30.25	proteome	200	0.417223	0.397605	6445	6763
@@ -38,6 +48,16 @@ Mytilus edulis	Octopus sinensis	phylum	protein	10	43.22	proteome	200	0.0117892	0
 Mytilus edulis	Capitella teleta	kingdom	protein	10	43.22	proteome	200	0.0102862	0.0205621	97801	48925
 Mytilus edulis	Saccharomyces cerevisiae	other kingdom	protein	10	43.22	proteome	200	0.000562366	0.00415439	97801	13239
 Mytilus edulis	Arabidopsis thaliana	other kingdom	protein	10	43.22	proteome	200	0.000950911	0.00185049	97801	50257
+Magallana gigas	Magallana angulata	genus	protein	10	43.22	proteome	200	0.745883	0.681647	64667	70761
+Magallana gigas	Crassostrea virginica	family	protein	10	43.22	proteome	200	0.222138	0.209021	64667	68725
+Magallana gigas	Mizuhopecten yessoensis	subclass	protein	10	43.22	proteome	200	0.0364483	0.0457608	64667	51507
+Magallana gigas	Mactra antiquata	subclass	protein	10	43.22	proteome	200	0.0281442	0.0323096	64667	56330
+Magallana gigas	Sinanodonta woodiana	subclass	protein	10	43.22	proteome	200	0.0319947	0.0303604	64667	68148
+Magallana gigas	Solemya velum	class	protein	10	43.22	proteome	200	0.0296751	0.0418621	64667	45841
+Magallana gigas	Aplysia californica	phylum	protein	10	43.22	proteome	200	0.0219123	0.0274836	64667	51558
+Magallana gigas	Capitella teleta	kingdom	protein	10	43.22	proteome	200	0.0165463	0.0218702	64667	48925
+Magallana gigas	Saccharomyces cerevisiae	other kingdom	protein	10	43.22	proteome	200	0.000896903	0.004381	64667	13239
+Magallana gigas	Arabidopsis thaliana	other kingdom	protein	10	43.22	proteome	200	0.00153092	0.00196987	64667	50257
 Escherichia coli K-12	Escherichia coli O157:H7	species	protein	10	43.22	proteome	200	0.830307	0.729172	6388	7274
 Escherichia coli K-12	Escherichia fergusonii	genus	protein	10	43.22	proteome	200	0.559173	0.545011	6388	6554
 Escherichia coli K-12	Salmonella enterica	family	protein	10	43.22	proteome	200	0.35958	0.33314	6388	6895
@@ -62,6 +82,16 @@ Mytilus edulis	Octopus sinensis	phylum	dayhoff	12	31.02	proteome	200	0.100727	0.
 Mytilus edulis	Capitella teleta	kingdom	dayhoff	12	31.02	proteome	200	0.106234	0.203611	82798	43200
 Mytilus edulis	Saccharomyces cerevisiae	other kingdom	dayhoff	12	31.02	proteome	200	0.0303147	0.197157	82798	12731
 Mytilus edulis	Arabidopsis thaliana	other kingdom	dayhoff	12	31.02	proteome	200	0.0891688	0.17556	82798	42054
+Magallana gigas	Magallana angulata	genus	dayhoff	12	31.02	proteome	200	0.796715	0.742633	56561	60680
+Magallana gigas	Crassostrea virginica	family	dayhoff	12	31.02	proteome	200	0.412723	0.396017	56561	58947
+Magallana gigas	Mizuhopecten yessoensis	subclass	dayhoff	12	31.02	proteome	200	0.176924	0.21924	56561	45644
+Magallana gigas	Mactra antiquata	subclass	dayhoff	12	31.02	proteome	200	0.165662	0.187348	56561	50014
+Magallana gigas	Sinanodonta woodiana	subclass	dayhoff	12	31.02	proteome	200	0.184208	0.179616	56561	58007
+Magallana gigas	Solemya velum	class	dayhoff	12	31.02	proteome	200	0.155107	0.213923	56561	41010
+Magallana gigas	Aplysia californica	phylum	dayhoff	12	31.02	proteome	200	0.153268	0.196763	56561	44058
+Magallana gigas	Capitella teleta	kingdom	dayhoff	12	31.02	proteome	200	0.130479	0.170833	56561	43200
+Magallana gigas	Saccharomyces cerevisiae	other kingdom	dayhoff	12	31.02	proteome	200	0.0362971	0.16126	56561	12731
+Magallana gigas	Arabidopsis thaliana	other kingdom	dayhoff	12	31.02	proteome	200	0.102544	0.137918	56561	42054
 Escherichia coli K-12	Escherichia coli O157:H7	species	dayhoff	12	31.02	proteome	200	0.853957	0.775638	6368	7011
 Escherichia coli K-12	Escherichia fergusonii	genus	dayhoff	12	31.02	proteome	200	0.66049	0.656674	6368	6405
 Escherichia coli K-12	Salmonella enterica	family	dayhoff	12	31.02	proteome	200	0.503612	0.481604	6368	6659
@@ -86,6 +116,16 @@ Mytilus edulis	Octopus sinensis	phylum	dayhoff	16	41.36	proteome	200	0.0187921	0
 Mytilus edulis	Capitella teleta	kingdom	dayhoff	16	41.36	proteome	200	0.0165861	0.0336498	97009	47816
 Mytilus edulis	Saccharomyces cerevisiae	other kingdom	dayhoff	16	41.36	proteome	200	0.00157717	0.0117783	97009	12990
 Mytilus edulis	Arabidopsis thaliana	other kingdom	dayhoff	16	41.36	proteome	200	0.00307188	0.00626221	97009	47587
+Magallana gigas	Magallana angulata	genus	dayhoff	16	41.36	proteome	200	0.753378	0.68931	63198	69072
+Magallana gigas	Crassostrea virginica	family	dayhoff	16	41.36	proteome	200	0.285136	0.269164	63198	66948
+Magallana gigas	Mizuhopecten yessoensis	subclass	dayhoff	16	41.36	proteome	200	0.0568372	0.0704466	63198	50989
+Magallana gigas	Mactra antiquata	subclass	dayhoff	16	41.36	proteome	200	0.046916	0.0530516	63198	55889
+Magallana gigas	Sinanodonta woodiana	subclass	dayhoff	16	41.36	proteome	200	0.0491313	0.0463904	63198	66932
+Magallana gigas	Solemya velum	class	dayhoff	16	41.36	proteome	200	0.045666	0.0644067	63198	44809
+Magallana gigas	Aplysia californica	phylum	dayhoff	16	41.36	proteome	200	0.0374379	0.0469901	63198	50351
+Magallana gigas	Capitella teleta	kingdom	dayhoff	16	41.36	proteome	200	0.0278015	0.036745	63198	47816
+Magallana gigas	Saccharomyces cerevisiae	other kingdom	dayhoff	16	41.36	proteome	200	0.00243679	0.0118553	63198	12990
+Magallana gigas	Arabidopsis thaliana	other kingdom	dayhoff	16	41.36	proteome	200	0.00449381	0.00596802	63198	47587
 Escherichia coli K-12	Escherichia coli O157:H7	species	dayhoff	16	41.36	proteome	200	0.842072	0.751986	6294	7048
 Escherichia coli K-12	Escherichia fergusonii	genus	dayhoff	16	41.36	proteome	200	0.626787	0.60889	6294	6479
 Escherichia coli K-12	Salmonella enterica	family	dayhoff	16	41.36	proteome	200	0.430887	0.40611	6294	6678
@@ -110,6 +150,16 @@ Mytilus edulis	Octopus sinensis	phylum	hp	30	30.00	proteome	200	0.0256605	0.0595
 Mytilus edulis	Capitella teleta	kingdom	hp	30	30.00	proteome	200	0.0221738	0.0456003	94932	46162
 Mytilus edulis	Saccharomyces cerevisiae	other kingdom	hp	30	30.00	proteome	200	0.00487718	0.0360143	94932	12856
 Mytilus edulis	Arabidopsis thaliana	other kingdom	hp	30	30.00	proteome	200	0.0132516	0.0270689	94932	46474
+Magallana gigas	Magallana angulata	genus	hp	30	30.00	proteome	200	0.734328	0.667024	61813	68050
+Magallana gigas	Crassostrea virginica	family	hp	30	30.00	proteome	200	0.254008	0.236575	61813	66368
+Magallana gigas	Mizuhopecten yessoensis	subclass	hp	30	30.00	proteome	200	0.0530471	0.0669648	61813	48966
+Magallana gigas	Mactra antiquata	subclass	hp	30	30.00	proteome	200	0.0497306	0.0568102	61813	54110
+Magallana gigas	Sinanodonta woodiana	subclass	hp	30	30.00	proteome	200	0.051672	0.0493862	61813	64674
+Magallana gigas	Solemya velum	class	hp	30	30.00	proteome	200	0.0423859	0.059327	61813	44162
+Magallana gigas	Aplysia californica	phylum	hp	30	30.00	proteome	200	0.0370796	0.0462647	61813	49541
+Magallana gigas	Capitella teleta	kingdom	hp	30	30.00	proteome	200	0.0293466	0.0392964	61813	46162
+Magallana gigas	Saccharomyces cerevisiae	other kingdom	hp	30	30.00	proteome	200	0.00486953	0.0234132	61813	12856
+Magallana gigas	Arabidopsis thaliana	other kingdom	hp	30	30.00	proteome	200	0.014188	0.0188708	61813	46474
 Escherichia coli K-12	Escherichia coli O157:H7	species	hp	30	30.00	proteome	200	0.816496	0.735062	6147	6828
 Escherichia coli K-12	Escherichia fergusonii	genus	hp	30	30.00	proteome	200	0.584675	0.581365	6147	6182
 Escherichia coli K-12	Salmonella enterica	family	hp	30	30.00	proteome	200	0.386367	0.367249	6147	6467
@@ -134,6 +184,16 @@ Mytilus edulis	Octopus sinensis	phylum	hp	42	42.00	proteome	200	0.0053536	0.0126
 Mytilus edulis	Capitella teleta	kingdom	hp	42	42.00	proteome	200	0.00460169	0.0100057	99746	45874
 Mytilus edulis	Saccharomyces cerevisiae	other kingdom	hp	42	42.00	proteome	200	0.000190484	0.00149148	99746	12739
 Mytilus edulis	Arabidopsis thaliana	other kingdom	hp	42	42.00	proteome	200	0.000461171	0.000968176	99746	47512
+Magallana gigas	Magallana angulata	genus	hp	42	42.00	proteome	200	0.685512	0.613531	62597	69941
+Magallana gigas	Crassostrea virginica	family	hp	42	42.00	proteome	200	0.175552	0.159766	62597	68782
+Magallana gigas	Mizuhopecten yessoensis	subclass	hp	42	42.00	proteome	200	0.0202566	0.0256769	62597	49383
+Magallana gigas	Mactra antiquata	subclass	hp	42	42.00	proteome	200	0.0153042	0.0177086	62597	54098
+Magallana gigas	Sinanodonta woodiana	subclass	hp	42	42.00	proteome	200	0.0174609	0.0163108	62597	67011
+Magallana gigas	Solemya velum	class	hp	42	42.00	proteome	200	0.0156717	0.0219743	62597	44643
+Magallana gigas	Aplysia californica	phylum	hp	42	42.00	proteome	200	0.0105916	0.0133605	62597	49624
+Magallana gigas	Capitella teleta	kingdom	hp	42	42.00	proteome	200	0.007732	0.0105506	62597	45874
+Magallana gigas	Saccharomyces cerevisiae	other kingdom	hp	42	42.00	proteome	200	0.000351455	0.00172698	62597	12739
+Magallana gigas	Arabidopsis thaliana	other kingdom	hp	42	42.00	proteome	200	0.000686934	0.000905035	62597	47512
 Escherichia coli K-12	Escherichia coli O157:H7	species	hp	42	42.00	proteome	200	0.797718	0.711034	5873	6589
 Escherichia coli K-12	Escherichia fergusonii	genus	hp	42	42.00	proteome	200	0.541801	0.528484	5873	6021
 Escherichia coli K-12	Salmonella enterica	family	hp	42	42.00	proteome	200	0.32096	0.302326	5873	6235
@@ -158,6 +218,16 @@ Mytilus edulis	Octopus sinensis	phylum	dayhoff	15	38.77	proteome	200	0.0231915	0
 Mytilus edulis	Capitella teleta	kingdom	dayhoff	15	38.77	proteome	200	0.0201846	0.0411209	96113	47178
 Mytilus edulis	Saccharomyces cerevisiae	other kingdom	dayhoff	15	38.77	proteome	200	0.00219533	0.0161612	96113	13056
 Mytilus edulis	Arabidopsis thaliana	other kingdom	dayhoff	15	38.77	proteome	200	0.00580567	0.0118163	96113	47223
+Magallana gigas	Magallana angulata	genus	dayhoff	15	38.77	proteome	200	0.761124	0.698652	63108	68751
+Magallana gigas	Crassostrea virginica	family	dayhoff	15	38.77	proteome	200	0.300897	0.286402	63108	66302
+Magallana gigas	Mizuhopecten yessoensis	subclass	dayhoff	15	38.77	proteome	200	0.0664417	0.0830873	63108	50465
+Magallana gigas	Mactra antiquata	subclass	dayhoff	15	38.77	proteome	200	0.0539393	0.0613765	63108	55461
+Magallana gigas	Sinanodonta woodiana	subclass	dayhoff	15	38.77	proteome	200	0.0578849	0.055794	63108	65473
+Magallana gigas	Solemya velum	class	dayhoff	15	38.77	proteome	200	0.0530202	0.0748998	63108	44673
+Magallana gigas	Aplysia californica	phylum	dayhoff	15	38.77	proteome	200	0.0450973	0.0570707	63108	49868
+Magallana gigas	Capitella teleta	kingdom	dayhoff	15	38.77	proteome	200	0.0331337	0.0443215	63108	47178
+Magallana gigas	Saccharomyces cerevisiae	other kingdom	dayhoff	15	38.77	proteome	200	0.00318502	0.0153952	63108	13056
+Magallana gigas	Arabidopsis thaliana	other kingdom	dayhoff	15	38.77	proteome	200	0.00820815	0.0109692	63108	47223
 Escherichia coli K-12	Escherichia coli O157:H7	species	dayhoff	15	38.77	proteome	200	0.840064	0.74876	6290	7057
 Escherichia coli K-12	Escherichia fergusonii	genus	dayhoff	15	38.77	proteome	200	0.631479	0.61467	6290	6462
 Escherichia coli K-12	Salmonella enterica	family	dayhoff	15	38.77	proteome	200	0.441494	0.426051	6290	6518
@@ -182,6 +252,16 @@ Mytilus edulis	Octopus sinensis	phylum	dayhoff	17	43.94	proteome	200	0.0168919	0
 Mytilus edulis	Capitella teleta	kingdom	dayhoff	17	43.94	proteome	200	0.0143761	0.0295334	97384	47404
 Mytilus edulis	Saccharomyces cerevisiae	other kingdom	dayhoff	17	43.94	proteome	200	0.00113982	0.00834775	97384	13297
 Mytilus edulis	Arabidopsis thaliana	other kingdom	dayhoff	17	43.94	proteome	200	0.0020948	0.0042431	97384	48078
+Magallana gigas	Magallana angulata	genus	dayhoff	17	43.94	proteome	200	0.742308	0.681535	63440	69097
+Magallana gigas	Crassostrea virginica	family	dayhoff	17	43.94	proteome	200	0.274637	0.255215	63440	68268
+Magallana gigas	Mizuhopecten yessoensis	subclass	dayhoff	17	43.94	proteome	200	0.0522541	0.0654957	63440	50614
+Magallana gigas	Mactra antiquata	subclass	dayhoff	17	43.94	proteome	200	0.0398802	0.0453926	63440	55736
+Magallana gigas	Sinanodonta woodiana	subclass	dayhoff	17	43.94	proteome	200	0.0435057	0.0410098	63440	67301
+Magallana gigas	Solemya velum	class	dayhoff	17	43.94	proteome	200	0.0401955	0.0565009	63440	45132
+Magallana gigas	Aplysia californica	phylum	dayhoff	17	43.94	proteome	200	0.0318253	0.0399691	63440	50514
+Magallana gigas	Capitella teleta	kingdom	dayhoff	17	43.94	proteome	200	0.0242434	0.0324445	63440	47404
+Magallana gigas	Saccharomyces cerevisiae	other kingdom	dayhoff	17	43.94	proteome	200	0.00171816	0.00819734	63440	13297
+Magallana gigas	Arabidopsis thaliana	other kingdom	dayhoff	17	43.94	proteome	200	0.00327869	0.0043263	63440	48078
 Escherichia coli K-12	Escherichia coli O157:H7	species	dayhoff	17	43.94	proteome	200	0.835019	0.750142	6328	7044
 Escherichia coli K-12	Escherichia fergusonii	genus	dayhoff	17	43.94	proteome	200	0.614096	0.603042	6328	6444
 Escherichia coli K-12	Salmonella enterica	family	dayhoff	17	43.94	proteome	200	0.43031	0.400854	6328	6793
@@ -206,6 +286,16 @@ Mytilus edulis	Octopus sinensis	phylum	dayhoff	19	49.11	proteome	200	0.0130541	0
 Mytilus edulis	Capitella teleta	kingdom	dayhoff	19	49.11	proteome	200	0.0110195	0.0228655	99279	47845
 Mytilus edulis	Saccharomyces cerevisiae	other kingdom	dayhoff	19	49.11	proteome	200	0.000584212	0.00440964	99279	13153
 Mytilus edulis	Arabidopsis thaliana	other kingdom	dayhoff	19	49.11	proteome	200	0.00122886	0.00252139	99279	48386
+Magallana gigas	Magallana angulata	genus	dayhoff	19	49.11	proteome	200	0.731816	0.671686	63997	69726
+Magallana gigas	Crassostrea virginica	family	dayhoff	19	49.11	proteome	200	0.253059	0.23557	63997	68748
+Magallana gigas	Mizuhopecten yessoensis	subclass	dayhoff	19	49.11	proteome	200	0.043627	0.0549541	63997	50806
+Magallana gigas	Mactra antiquata	subclass	dayhoff	19	49.11	proteome	200	0.0333453	0.0384553	63997	55493
+Magallana gigas	Sinanodonta woodiana	subclass	dayhoff	19	49.11	proteome	200	0.0362986	0.0342464	63997	67832
+Magallana gigas	Solemya velum	class	dayhoff	19	49.11	proteome	200	0.0342204	0.0482039	63997	45432
+Magallana gigas	Aplysia californica	phylum	dayhoff	19	49.11	proteome	200	0.0261106	0.0329768	63997	50672
+Magallana gigas	Capitella teleta	kingdom	dayhoff	19	49.11	proteome	200	0.0196728	0.0263141	63997	47845
+Magallana gigas	Saccharomyces cerevisiae	other kingdom	dayhoff	19	49.11	proteome	200	0.00101567	0.00494184	63997	13153
+Magallana gigas	Arabidopsis thaliana	other kingdom	dayhoff	19	49.11	proteome	200	0.00201572	0.00266606	63997	48386
 Escherichia coli K-12	Escherichia coli O157:H7	species	dayhoff	19	49.11	proteome	200	0.83294	0.748304	6357	7076
 Escherichia coli K-12	Escherichia fergusonii	genus	dayhoff	19	49.11	proteome	200	0.592732	0.589026	6357	6397
 Escherichia coli K-12	Salmonella enterica	family	dayhoff	19	49.11	proteome	200	0.395941	0.385452	6357	6530
@@ -230,6 +320,16 @@ Mytilus edulis	Octopus sinensis	phylum	dayhoff	21	54.28	proteome	200	0.0103465	0
 Mytilus edulis	Capitella teleta	kingdom	dayhoff	21	54.28	proteome	200	0.00939946	0.0194809	99261	47893
 Mytilus edulis	Saccharomyces cerevisiae	other kingdom	dayhoff	21	54.28	proteome	200	0.000463425	0.00350076	99261	13140
 Mytilus edulis	Arabidopsis thaliana	other kingdom	dayhoff	21	54.28	proteome	200	0.000876477	0.00179767	99261	48396
+Magallana gigas	Magallana angulata	genus	dayhoff	21	54.28	proteome	200	0.723344	0.654197	63606	70329
+Magallana gigas	Crassostrea virginica	family	dayhoff	21	54.28	proteome	200	0.234569	0.216313	63606	68974
+Magallana gigas	Mizuhopecten yessoensis	subclass	dayhoff	21	54.28	proteome	200	0.0376851	0.0469558	63606	51048
+Magallana gigas	Mactra antiquata	subclass	dayhoff	21	54.28	proteome	200	0.0289281	0.0328806	63606	55960
+Magallana gigas	Sinanodonta woodiana	subclass	dayhoff	21	54.28	proteome	200	0.0307675	0.0286216	63606	68375
+Magallana gigas	Solemya velum	class	dayhoff	21	54.28	proteome	200	0.0295884	0.0414674	63606	45385
+Magallana gigas	Aplysia californica	phylum	dayhoff	21	54.28	proteome	200	0.0221992	0.0280443	63606	50349
+Magallana gigas	Capitella teleta	kingdom	dayhoff	21	54.28	proteome	200	0.0163192	0.0216733	63606	47893
+Magallana gigas	Saccharomyces cerevisiae	other kingdom	dayhoff	21	54.28	proteome	200	0.000817533	0.00395738	63606	13140
+Magallana gigas	Arabidopsis thaliana	other kingdom	dayhoff	21	54.28	proteome	200	0.00149357	0.00196297	63606	48396
 Escherichia coli K-12	Escherichia coli O157:H7	species	dayhoff	21	54.28	proteome	200	0.829464	0.732246	6116	6928
 Escherichia coli K-12	Escherichia fergusonii	genus	dayhoff	21	54.28	proteome	200	0.591563	0.574377	6116	6299
 Escherichia coli K-12	Salmonella enterica	family	dayhoff	21	54.28	proteome	200	0.396337	0.366495	6116	6614
@@ -254,6 +354,16 @@ Mytilus edulis	Octopus sinensis	phylum	hp	24	24.00	proteome	200	0.397577	0.67828
 Mytilus edulis	Capitella teleta	kingdom	hp	24	24.00	proteome	200	0.435585	0.658523	52410	34667
 Mytilus edulis	Saccharomyces cerevisiae	other kingdom	hp	24	24.00	proteome	200	0.150277	0.671555	52410	11728
 Mytilus edulis	Arabidopsis thaliana	other kingdom	hp	24	24.00	proteome	200	0.425987	0.644162	52410	34659
+Magallana gigas	Magallana angulata	genus	hp	24	24.00	proteome	200	0.863932	0.819621	41303	43536
+Magallana gigas	Crassostrea virginica	family	hp	24	24.00	proteome	200	0.650728	0.6197	41303	43371
+Magallana gigas	Mizuhopecten yessoensis	subclass	hp	24	24.00	proteome	200	0.47413	0.549498	41303	35638
+Magallana gigas	Mactra antiquata	subclass	hp	24	24.00	proteome	200	0.492555	0.545694	41303	37281
+Magallana gigas	Sinanodonta woodiana	subclass	hp	24	24.00	proteome	200	0.552357	0.536144	41303	42552
+Magallana gigas	Solemya velum	class	hp	24	24.00	proteome	200	0.442994	0.554035	41303	33025
+Magallana gigas	Aplysia californica	phylum	hp	24	24.00	proteome	200	0.471685	0.5391	41303	36138
+Magallana gigas	Capitella teleta	kingdom	hp	24	24.00	proteome	200	0.443672	0.528601	41303	34667
+Magallana gigas	Saccharomyces cerevisiae	other kingdom	hp	24	24.00	proteome	200	0.155073	0.546129	41303	11728
+Magallana gigas	Arabidopsis thaliana	other kingdom	hp	24	24.00	proteome	200	0.432341	0.51522	41303	34659
 Escherichia coli K-12	Escherichia coli O157:H7	species	hp	24	24.00	proteome	200	0.837162	0.757273	5877	6497
 Escherichia coli K-12	Escherichia fergusonii	genus	hp	24	24.00	proteome	200	0.625319	0.626705	5877	5864
 Escherichia coli K-12	Salmonella enterica	family	hp	24	24.00	proteome	200	0.454994	0.445518	5877	6002
@@ -278,6 +388,16 @@ Mytilus edulis	Octopus sinensis	phylum	hp	27	27.00	proteome	200	0.0925978	0.2037
 Mytilus edulis	Capitella teleta	kingdom	hp	27	27.00	proteome	200	0.0901055	0.174147	85866	44428
 Mytilus edulis	Saccharomyces cerevisiae	other kingdom	hp	27	27.00	proteome	200	0.0257028	0.17257	85866	12789
 Mytilus edulis	Arabidopsis thaliana	other kingdom	hp	27	27.00	proteome	200	0.0811963	0.156474	85866	44557
+Magallana gigas	Magallana angulata	genus	hp	27	27.00	proteome	200	0.767586	0.705154	57987	63121
+Magallana gigas	Crassostrea virginica	family	hp	27	27.00	proteome	200	0.346836	0.325711	57987	61748
+Magallana gigas	Mizuhopecten yessoensis	subclass	hp	27	27.00	proteome	200	0.133306	0.165976	57987	46573
+Magallana gigas	Mactra antiquata	subclass	hp	27	27.00	proteome	200	0.135686	0.154368	57987	50969
+Magallana gigas	Sinanodonta woodiana	subclass	hp	27	27.00	proteome	200	0.151603	0.145004	57987	60626
+Magallana gigas	Solemya velum	class	hp	27	27.00	proteome	200	0.114802	0.157439	57987	42283
+Magallana gigas	Aplysia californica	phylum	hp	27	27.00	proteome	200	0.11425	0.139268	57987	47570
+Magallana gigas	Capitella teleta	kingdom	hp	27	27.00	proteome	200	0.0977978	0.127645	57987	44428
+Magallana gigas	Saccharomyces cerevisiae	other kingdom	hp	27	27.00	proteome	200	0.0261265	0.118461	57987	12789
+Magallana gigas	Arabidopsis thaliana	other kingdom	hp	27	27.00	proteome	200	0.0821391	0.106897	57987	44557
 Escherichia coli K-12	Escherichia coli O157:H7	species	hp	27	27.00	proteome	200	0.830173	0.738579	5959	6698
 Escherichia coli K-12	Escherichia fergusonii	genus	hp	27	27.00	proteome	200	0.60396	0.58788	5959	6122
 Escherichia coli K-12	Salmonella enterica	family	hp	27	27.00	proteome	200	0.405773	0.386942	5959	6249
@@ -302,6 +422,16 @@ Mytilus edulis	Octopus sinensis	phylum	hp	33	33.00	proteome	200	0.0125611	0.0295
 Mytilus edulis	Capitella teleta	kingdom	hp	33	33.00	proteome	200	0.0103184	0.021622	97205	46388
 Mytilus edulis	Saccharomyces cerevisiae	other kingdom	hp	33	33.00	proteome	200	0.00128594	0.0098147	97205	12736
 Mytilus edulis	Arabidopsis thaliana	other kingdom	hp	33	33.00	proteome	200	0.00337431	0.0069811	97205	46984
+Magallana gigas	Magallana angulata	genus	hp	33	33.00	proteome	200	0.715716	0.649964	62237	68533
+Magallana gigas	Crassostrea virginica	family	hp	33	33.00	proteome	200	0.221524	0.204173	62237	67526
+Magallana gigas	Mizuhopecten yessoensis	subclass	hp	33	33.00	proteome	200	0.0352684	0.0441774	62237	49686
+Magallana gigas	Mactra antiquata	subclass	hp	33	33.00	proteome	200	0.0281665	0.0319698	62237	54833
+Magallana gigas	Sinanodonta woodiana	subclass	hp	33	33.00	proteome	200	0.0308177	0.028944	62237	66266
+Magallana gigas	Solemya velum	class	hp	33	33.00	proteome	200	0.0275399	0.038883	62237	44081
+Magallana gigas	Aplysia californica	phylum	hp	33	33.00	proteome	200	0.0218198	0.0270874	62237	50134
+Magallana gigas	Capitella teleta	kingdom	hp	33	33.00	proteome	200	0.0156338	0.0209753	62237	46388
+Magallana gigas	Saccharomyces cerevisiae	other kingdom	hp	33	33.00	proteome	200	0.00139788	0.00683103	62237	12736
+Magallana gigas	Arabidopsis thaliana	other kingdom	hp	33	33.00	proteome	200	0.00384016	0.00508684	62237	46984
 Escherichia coli K-12	Escherichia coli O157:H7	species	hp	33	33.00	proteome	200	0.829661	0.723898	5900	6762
 Escherichia coli K-12	Escherichia fergusonii	genus	hp	33	33.00	proteome	200	0.579153	0.558607	5900	6117
 Escherichia coli K-12	Salmonella enterica	family	hp	33	33.00	proteome	200	0.369322	0.34218	5900	6368
@@ -326,6 +456,16 @@ Mytilus edulis	Octopus sinensis	phylum	hp	36	36.00	proteome	200	0.00804735	0.018
 Mytilus edulis	Capitella teleta	kingdom	hp	36	36.00	proteome	200	0.00672978	0.0143184	98666	46374
 Mytilus edulis	Saccharomyces cerevisiae	other kingdom	hp	36	36.00	proteome	200	0.000334462	0.00256729	98666	12854
 Mytilus edulis	Arabidopsis thaliana	other kingdom	hp	36	36.00	proteome	200	0.000962844	0.00201866	98666	47061
+Magallana gigas	Magallana angulata	genus	hp	36	36.00	proteome	200	0.705517	0.641093	62513	68795
+Magallana gigas	Crassostrea virginica	family	hp	36	36.00	proteome	200	0.203958	0.187674	62513	67937
+Magallana gigas	Mizuhopecten yessoensis	subclass	hp	36	36.00	proteome	200	0.0271943	0.0343532	62513	49486
+Magallana gigas	Mactra antiquata	subclass	hp	36	36.00	proteome	200	0.0205237	0.0235664	62513	54442
+Magallana gigas	Sinanodonta woodiana	subclass	hp	36	36.00	proteome	200	0.0229872	0.021586	62513	66571
+Magallana gigas	Solemya velum	class	hp	36	36.00	proteome	200	0.0207797	0.029138	62513	44581
+Magallana gigas	Aplysia californica	phylum	hp	36	36.00	proteome	200	0.0160607	0.0202497	62513	49581
+Magallana gigas	Capitella teleta	kingdom	hp	36	36.00	proteome	200	0.0112777	0.0152025	62513	46374
+Magallana gigas	Saccharomyces cerevisiae	other kingdom	hp	36	36.00	proteome	200	0.000735847	0.00357865	62513	12854
+Magallana gigas	Arabidopsis thaliana	other kingdom	hp	36	36.00	proteome	200	0.00155168	0.00206115	62513	47061
 Escherichia coli K-12	Escherichia coli O157:H7	species	hp	36	36.00	proteome	200	0.809548	0.716083	5907	6678
 Escherichia coli K-12	Escherichia fergusonii	genus	hp	36	36.00	proteome	200	0.557813	0.547979	5907	6013
 Escherichia coli K-12	Salmonella enterica	family	hp	36	36.00	proteome	200	0.338751	0.321549	5907	6223
@@ -350,6 +490,16 @@ Mytilus edulis	Octopus sinensis	phylum	hp	39	39.00	proteome	200	0.00631471	0.015
 Mytilus edulis	Capitella teleta	kingdom	hp	39	39.00	proteome	200	0.00539256	0.0117239	99767	45889
 Mytilus edulis	Saccharomyces cerevisiae	other kingdom	hp	39	39.00	proteome	200	0.000330771	0.00256072	99767	12887
 Mytilus edulis	Arabidopsis thaliana	other kingdom	hp	39	39.00	proteome	200	0.000601401	0.0012703	99767	47233
+Magallana gigas	Magallana angulata	genus	hp	39	39.00	proteome	200	0.695074	0.627897	62297	68962
+Magallana gigas	Crassostrea virginica	family	hp	39	39.00	proteome	200	0.188372	0.172361	62297	68084
+Magallana gigas	Mizuhopecten yessoensis	subclass	hp	39	39.00	proteome	200	0.0245919	0.0307365	62297	49843
+Magallana gigas	Mactra antiquata	subclass	hp	39	39.00	proteome	200	0.0182031	0.0208886	62297	54288
+Magallana gigas	Sinanodonta woodiana	subclass	hp	39	39.00	proteome	200	0.0204504	0.0189855	62297	67104
+Magallana gigas	Solemya velum	class	hp	39	39.00	proteome	200	0.0185884	0.0261795	62297	44233
+Magallana gigas	Aplysia californica	phylum	hp	39	39.00	proteome	200	0.013548	0.016923	62297	49873
+Magallana gigas	Capitella teleta	kingdom	hp	39	39.00	proteome	200	0.0093584	0.0127046	62297	45889
+Magallana gigas	Saccharomyces cerevisiae	other kingdom	hp	39	39.00	proteome	200	0.000529721	0.00256072	62297	12887
+Magallana gigas	Arabidopsis thaliana	other kingdom	hp	39	39.00	proteome	200	0.000882868	0.00116444	62297	47233
 Escherichia coli K-12	Escherichia coli O157:H7	species	hp	39	39.00	proteome	200	0.811443	0.711228	5855	6680
 Escherichia coli K-12	Escherichia fergusonii	genus	hp	39	39.00	proteome	200	0.562084	0.551164	5855	5971
 Escherichia coli K-12	Salmonella enterica	family	hp	39	39.00	proteome	200	0.33339	0.314534	5855	6206
@@ -374,6 +524,16 @@ Mytilus edulis	Octopus sinensis	phylum	protein	8	34.58	proteome	200	0.0186515	0.
 Mytilus edulis	Capitella teleta	kingdom	protein	8	34.58	proteome	200	0.0162411	0.0321847	95006	47942
 Mytilus edulis	Saccharomyces cerevisiae	other kingdom	protein	8	34.58	proteome	200	0.00182094	0.0128376	95006	13476
 Mytilus edulis	Arabidopsis thaliana	other kingdom	protein	8	34.58	proteome	200	0.00426289	0.00828001	95006	48913
+Magallana gigas	Magallana angulata	genus	protein	8	34.58	proteome	200	0.766531	0.706107	63186	68593
+Magallana gigas	Crassostrea virginica	family	protein	8	34.58	proteome	200	0.265755	0.250964	63186	66910
+Magallana gigas	Mizuhopecten yessoensis	subclass	protein	8	34.58	proteome	200	0.0529231	0.0657401	63186	50867
+Magallana gigas	Mactra antiquata	subclass	protein	8	34.58	proteome	200	0.0437913	0.0486702	63186	56852
+Magallana gigas	Sinanodonta woodiana	subclass	protein	8	34.58	proteome	200	0.0466559	0.0445042	63186	66241
+Magallana gigas	Solemya velum	class	protein	8	34.58	proteome	200	0.0418605	0.0578762	63186	45701
+Magallana gigas	Aplysia californica	phylum	protein	8	34.58	proteome	200	0.0331086	0.0410132	63186	51008
+Magallana gigas	Capitella teleta	kingdom	protein	8	34.58	proteome	200	0.0252113	0.0332277	63186	47942
+Magallana gigas	Saccharomyces cerevisiae	other kingdom	protein	8	34.58	proteome	200	0.0024689	0.0115761	63186	13476
+Magallana gigas	Arabidopsis thaliana	other kingdom	protein	8	34.58	proteome	200	0.00550755	0.00711467	63186	48913
 Escherichia coli K-12	Escherichia coli O157:H7	species	protein	8	34.58	proteome	200	0.834905	0.739458	6469	7304
 Escherichia coli K-12	Escherichia fergusonii	genus	protein	8	34.58	proteome	200	0.601948	0.585828	6469	6647
 Escherichia coli K-12	Salmonella enterica	family	protein	8	34.58	proteome	200	0.406709	0.380312	6469	6918
@@ -398,6 +558,16 @@ Mytilus edulis	Octopus sinensis	phylum	dayhoff	13	33.60	proteome	200	0.0501359	0
 Mytilus edulis	Capitella teleta	kingdom	dayhoff	13	33.60	proteome	200	0.0511483	0.101048	90873	45998
 Mytilus edulis	Saccharomyces cerevisiae	other kingdom	dayhoff	13	33.60	proteome	200	0.0114005	0.0797721	90873	12987
 Mytilus edulis	Arabidopsis thaliana	other kingdom	dayhoff	13	33.60	proteome	200	0.0339705	0.0679357	90873	45440
+Magallana gigas	Magallana angulata	genus	dayhoff	13	33.60	proteome	200	0.778318	0.7191	60704	65703
+Magallana gigas	Crassostrea virginica	family	dayhoff	13	33.60	proteome	200	0.353321	0.338046	60704	63447
+Magallana gigas	Mizuhopecten yessoensis	subclass	dayhoff	13	33.60	proteome	200	0.109251	0.13726	60704	48317
+Magallana gigas	Mactra antiquata	subclass	dayhoff	13	33.60	proteome	200	0.0974895	0.110246	60704	53680
+Magallana gigas	Sinanodonta woodiana	subclass	dayhoff	13	33.60	proteome	200	0.104985	0.102058	60704	62445
+Magallana gigas	Solemya velum	class	dayhoff	13	33.60	proteome	200	0.0906695	0.125973	60704	43692
+Magallana gigas	Aplysia californica	phylum	dayhoff	13	33.60	proteome	200	0.0893351	0.113583	60704	47745
+Magallana gigas	Capitella teleta	kingdom	dayhoff	13	33.60	proteome	200	0.0703084	0.0927866	60704	45998
+Magallana gigas	Saccharomyces cerevisiae	other kingdom	dayhoff	13	33.60	proteome	200	0.0141506	0.0661431	60704	12987
+Magallana gigas	Arabidopsis thaliana	other kingdom	dayhoff	13	33.60	proteome	200	0.0407057	0.0543794	60704	45440
 Escherichia coli K-12	Escherichia coli O157:H7	species	dayhoff	13	33.60	proteome	200	0.854435	0.75927	6279	7066
 Escherichia coli K-12	Escherichia fergusonii	genus	dayhoff	13	33.60	proteome	200	0.655518	0.632841	6279	6504
 Escherichia coli K-12	Salmonella enterica	family	dayhoff	13	33.60	proteome	200	0.482879	0.454982	6279	6664
@@ -422,6 +592,16 @@ Mytilus edulis	Octopus sinensis	phylum	hp	35	35.00	proteome	200	0.00961392	0.022
 Mytilus edulis	Capitella teleta	kingdom	hp	35	35.00	proteome	200	0.00810287	0.017241	98607	46343
 Mytilus edulis	Saccharomyces cerevisiae	other kingdom	hp	35	35.00	proteome	200	0.000689606	0.00527991	98607	12879
 Mytilus edulis	Arabidopsis thaliana	other kingdom	hp	35	35.00	proteome	200	0.00160232	0.00333721	98607	47345
+Magallana gigas	Magallana angulata	genus	hp	35	35.00	proteome	200	0.71104	0.641818	62493	69233
+Magallana gigas	Crassostrea virginica	family	hp	35	35.00	proteome	200	0.209079	0.191716	62493	68153
+Magallana gigas	Mizuhopecten yessoensis	subclass	hp	35	35.00	proteome	200	0.0293473	0.0370355	62493	49520
+Magallana gigas	Mactra antiquata	subclass	hp	35	35.00	proteome	200	0.0247708	0.0283459	62493	54611
+Magallana gigas	Sinanodonta woodiana	subclass	hp	35	35.00	proteome	200	0.026435	0.0248885	62493	66376
+Magallana gigas	Solemya velum	class	hp	35	35.00	proteome	200	0.0240187	0.0336524	62493	44603
+Magallana gigas	Aplysia californica	phylum	hp	35	35.00	proteome	200	0.017554	0.022056	62493	49737
+Magallana gigas	Capitella teleta	kingdom	hp	35	35.00	proteome	200	0.0133295	0.0179747	62493	46343
+Magallana gigas	Saccharomyces cerevisiae	other kingdom	hp	35	35.00	proteome	200	0.000944106	0.0045811	62493	12879
+Magallana gigas	Arabidopsis thaliana	other kingdom	hp	35	35.00	proteome	200	0.00193622	0.00255571	62493	47345
 Escherichia coli K-12	Escherichia coli O157:H7	species	hp	35	35.00	proteome	200	0.807414	0.714853	5800	6551
 Escherichia coli K-12	Escherichia fergusonii	genus	hp	35	35.00	proteome	200	0.572414	0.545873	5800	6082
 Escherichia coli K-12	Salmonella enterica	family	hp	35	35.00	proteome	200	0.353621	0.326748	5800	6277
@@ -446,6 +626,16 @@ Mytilus edulis	Octopus sinensis	phylum	protein	9	38.90	proteome	200	0.0137247	0.
 Mytilus edulis	Capitella teleta	kingdom	protein	9	38.90	proteome	200	0.0118082	0.023768	97051	48216
 Mytilus edulis	Saccharomyces cerevisiae	other kingdom	protein	9	38.90	proteome	200	0.000793397	0.005694	97051	13523
 Mytilus edulis	Arabidopsis thaliana	other kingdom	protein	9	38.90	proteome	200	0.00176196	0.00346547	97051	49344
+Magallana gigas	Magallana angulata	genus	protein	9	38.90	proteome	200	0.752809	0.693415	64258	69762
+Magallana gigas	Crassostrea virginica	family	protein	9	38.90	proteome	200	0.240235	0.226319	64258	68209
+Magallana gigas	Mizuhopecten yessoensis	subclass	protein	9	38.90	proteome	200	0.0416913	0.0525655	64258	50965
+Magallana gigas	Mactra antiquata	subclass	protein	9	38.90	proteome	200	0.0338012	0.038433	64258	56514
+Magallana gigas	Sinanodonta woodiana	subclass	protein	9	38.90	proteome	200	0.0358555	0.0342903	64258	67191
+Magallana gigas	Solemya velum	class	protein	9	38.90	proteome	200	0.0330698	0.047033	64258	45181
+Magallana gigas	Aplysia californica	phylum	protein	9	38.90	proteome	200	0.0258022	0.0322474	64258	51415
+Magallana gigas	Capitella teleta	kingdom	protein	9	38.90	proteome	200	0.0188459	0.0251161	64258	48216
+Magallana gigas	Saccharomyces cerevisiae	other kingdom	protein	9	38.90	proteome	200	0.00119829	0.005694	64258	13523
+Magallana gigas	Arabidopsis thaliana	other kingdom	protein	9	38.90	proteome	200	0.00294127	0.00383025	64258	49344
 Escherichia coli K-12	Escherichia coli O157:H7	species	protein	9	38.90	proteome	200	0.82777	0.743769	6561	7302
 Escherichia coli K-12	Escherichia fergusonii	genus	protein	9	38.90	proteome	200	0.586191	0.576439	6561	6672
 Escherichia coli K-12	Salmonella enterica	family	protein	9	38.90	proteome	200	0.381954	0.366481	6561	6838
@@ -470,6 +660,16 @@ Mytilus edulis	Octopus sinensis	phylum	hp	43	43.00	proteome	200	0.00554993	0.013
 Mytilus edulis	Capitella teleta	kingdom	hp	43	43.00	proteome	200	0.00426764	0.00923697	99821	46119
 Mytilus edulis	Saccharomyces cerevisiae	other kingdom	hp	43	43.00	proteome	200	0.000180323	0.00143381	99821	12554
 Mytilus edulis	Arabidopsis thaliana	other kingdom	hp	43	43.00	proteome	200	0.000460825	0.000983137	99821	46789
+Magallana gigas	Magallana angulata	genus	hp	43	43.00	proteome	200	0.680745	0.60949	62176	69445
+Magallana gigas	Crassostrea virginica	family	hp	43	43.00	proteome	200	0.171642	0.155891	62176	68458
+Magallana gigas	Mizuhopecten yessoensis	subclass	hp	43	43.00	proteome	200	0.0194126	0.0244416	62176	49383
+Magallana gigas	Mactra antiquata	subclass	hp	43	43.00	proteome	200	0.0151666	0.017509	62176	53858
+Magallana gigas	Sinanodonta woodiana	subclass	hp	43	43.00	proteome	200	0.0158582	0.014716	62176	67002
+Magallana gigas	Solemya velum	class	hp	43	43.00	proteome	200	0.0153275	0.0214403	62176	44449
+Magallana gigas	Aplysia californica	phylum	hp	43	43.00	proteome	200	0.0107919	0.0136346	62176	49213
+Magallana gigas	Capitella teleta	kingdom	hp	43	43.00	proteome	200	0.00776827	0.0104729	62176	46119
+Magallana gigas	Saccharomyces cerevisiae	other kingdom	hp	43	43.00	proteome	200	0.000386001	0.00191174	62176	12554
+Magallana gigas	Arabidopsis thaliana	other kingdom	hp	43	43.00	proteome	200	0.000723752	0.000961765	62176	46789
 Escherichia coli K-12	Escherichia coli O157:H7	species	hp	43	43.00	proteome	200	0.80107	0.707128	5796	6566
 Escherichia coli K-12	Escherichia fergusonii	genus	hp	43	43.00	proteome	200	0.541063	0.531796	5796	5897
 Escherichia coli K-12	Salmonella enterica	family	hp	43	43.00	proteome	200	0.301587	0.286745	5796	6096
@@ -494,6 +694,16 @@ Mytilus edulis	Octopus sinensis	phylum	protein	11	47.54	proteome	200	0.00942559	
 Mytilus edulis	Capitella teleta	kingdom	protein	11	47.54	proteome	200	0.00785298	0.0159318	99198	48896
 Mytilus edulis	Saccharomyces cerevisiae	other kingdom	protein	11	47.54	proteome	200	0.000483881	0.0035461	99198	13536
 Mytilus edulis	Arabidopsis thaliana	other kingdom	protein	11	47.54	proteome	200	0.000796387	0.00157064	99198	50298
+Magallana gigas	Magallana angulata	genus	protein	11	47.54	proteome	200	0.733125	0.670488	64697	70741
+Magallana gigas	Crassostrea virginica	family	protein	11	47.54	proteome	200	0.204785	0.190321	64697	69614
+Magallana gigas	Mizuhopecten yessoensis	subclass	protein	11	47.54	proteome	200	0.0303105	0.0376826	64697	52040
+Magallana gigas	Mactra antiquata	subclass	protein	11	47.54	proteome	200	0.0242515	0.027672	64697	56700
+Magallana gigas	Sinanodonta woodiana	subclass	protein	11	47.54	proteome	200	0.0259517	0.0244624	64697	68636
+Magallana gigas	Solemya velum	class	protein	11	47.54	proteome	200	0.0239269	0.0341104	64697	45382
+Magallana gigas	Aplysia californica	phylum	protein	11	47.54	proteome	200	0.0179297	0.0223999	64697	51786
+Magallana gigas	Capitella teleta	kingdom	protein	11	47.54	proteome	200	0.0126899	0.0167907	64697	48896
+Magallana gigas	Saccharomyces cerevisiae	other kingdom	protein	11	47.54	proteome	200	0.000819203	0.00391548	64697	13536
+Magallana gigas	Arabidopsis thaliana	other kingdom	protein	11	47.54	proteome	200	0.00146838	0.00188874	64697	50298
 Escherichia coli K-12	Escherichia coli O157:H7	species	protein	11	47.54	proteome	200	0.820293	0.737068	6288	6998
 Escherichia coli K-12	Escherichia fergusonii	genus	protein	11	47.54	proteome	200	0.571724	0.544697	6288	6600
 Escherichia coli K-12	Salmonella enterica	family	protein	11	47.54	proteome	200	0.347646	0.320059	6288	6830
@@ -518,6 +728,16 @@ Mytilus edulis	Octopus sinensis	phylum	dayhoff	18	46.53	proteome	200	0.01495	0.0
 Mytilus edulis	Capitella teleta	kingdom	dayhoff	18	46.53	proteome	200	0.0130265	0.0269202	98261	47548
 Mytilus edulis	Saccharomyces cerevisiae	other kingdom	dayhoff	18	46.53	proteome	200	0.000783627	0.00579601	98261	13285
 Mytilus edulis	Arabidopsis thaliana	other kingdom	dayhoff	18	46.53	proteome	200	0.00163849	0.00333402	98261	48290
+Magallana gigas	Magallana angulata	genus	dayhoff	18	46.53	proteome	200	0.737455	0.674282	63593	69551
+Magallana gigas	Crassostrea virginica	family	dayhoff	18	46.53	proteome	200	0.259651	0.243648	63593	67770
+Magallana gigas	Mizuhopecten yessoensis	subclass	dayhoff	18	46.53	proteome	200	0.0477726	0.0595149	63593	51046
+Magallana gigas	Mactra antiquata	subclass	dayhoff	18	46.53	proteome	200	0.0380702	0.0435518	63593	55589
+Magallana gigas	Sinanodonta woodiana	subclass	dayhoff	18	46.53	proteome	200	0.0412624	0.0388355	63593	67567
+Magallana gigas	Solemya velum	class	dayhoff	18	46.53	proteome	200	0.0378186	0.053448	63593	44997
+Magallana gigas	Aplysia californica	phylum	dayhoff	18	46.53	proteome	200	0.0291699	0.0366594	63593	50601
+Magallana gigas	Capitella teleta	kingdom	dayhoff	18	46.53	proteome	200	0.0211187	0.0282451	63593	47548
+Magallana gigas	Saccharomyces cerevisiae	other kingdom	dayhoff	18	46.53	proteome	200	0.0014467	0.0069251	63593	13285
+Magallana gigas	Arabidopsis thaliana	other kingdom	dayhoff	18	46.53	proteome	200	0.00268898	0.00354111	63593	48290
 Escherichia coli K-12	Escherichia coli O157:H7	species	dayhoff	18	46.53	proteome	200	0.838975	0.738088	6204	7052
 Escherichia coli K-12	Escherichia fergusonii	genus	dayhoff	18	46.53	proteome	200	0.608962	0.593093	6204	6370
 Escherichia coli K-12	Salmonella enterica	family	dayhoff	18	46.53	proteome	200	0.418279	0.384786	6204	6744
@@ -542,6 +762,16 @@ Mytilus edulis	Octopus sinensis	phylum	hp	48	48.00	proteome	200	0.00363941	0.008
 Mytilus edulis	Capitella teleta	kingdom	hp	48	48.00	proteome	200	0.00301124	0.00664861	100291	45423
 Mytilus edulis	Saccharomyces cerevisiae	other kingdom	hp	48	48.00	proteome	200	0.000129623	0.00104208	100291	12475
 Mytilus edulis	Arabidopsis thaliana	other kingdom	hp	48	48.00	proteome	200	0.000259246	0.00055615	100291	46750
+Magallana gigas	Magallana angulata	genus	hp	48	48.00	proteome	200	0.664614	0.592751	62185	69724
+Magallana gigas	Crassostrea virginica	family	hp	48	48.00	proteome	200	0.15597	0.140019	62185	69269
+Magallana gigas	Mizuhopecten yessoensis	subclass	hp	48	48.00	proteome	200	0.0152931	0.0195309	62185	48692
+Magallana gigas	Mactra antiquata	subclass	hp	48	48.00	proteome	200	0.010919	0.0126446	62185	53699
+Magallana gigas	Sinanodonta woodiana	subclass	hp	48	48.00	proteome	200	0.0114658	0.0106743	62185	66796
+Magallana gigas	Solemya velum	class	hp	48	48.00	proteome	200	0.011514	0.0163299	62185	43846
+Magallana gigas	Aplysia californica	phylum	hp	48	48.00	proteome	200	0.00775107	0.0098163	62185	49102
+Magallana gigas	Capitella teleta	kingdom	hp	48	48.00	proteome	200	0.00564445	0.00772736	62185	45423
+Magallana gigas	Saccharomyces cerevisiae	other kingdom	hp	48	48.00	proteome	200	0.000225135	0.00112224	62185	12475
+Magallana gigas	Arabidopsis thaliana	other kingdom	hp	48	48.00	proteome	200	0.00046635	0.000620321	62185	46750
 Escherichia coli K-12	Escherichia coli O157:H7	species	hp	48	48.00	proteome	200	0.783122	0.697583	5676	6372
 Escherichia coli K-12	Escherichia fergusonii	genus	hp	48	48.00	proteome	200	0.518851	0.506972	5676	5809
 Escherichia coli K-12	Salmonella enterica	family	hp	48	48.00	proteome	200	0.286117	0.269544	5676	6025
@@ -566,6 +796,16 @@ Mytilus edulis	Octopus sinensis	phylum	protein	12	51.86	proteome	200	0.00799533	
 Mytilus edulis	Capitella teleta	kingdom	protein	12	51.86	proteome	200	0.00659741	0.013496	99433	48607
 Mytilus edulis	Saccharomyces cerevisiae	other kingdom	protein	12	51.86	proteome	200	0.000281597	0.002101	99433	13327
 Mytilus edulis	Arabidopsis thaliana	other kingdom	protein	12	51.86	proteome	200	0.000643649	0.00125952	99433	50813
+Magallana gigas	Magallana angulata	genus	protein	12	51.86	proteome	200	0.71962	0.660631	65101	70914
+Magallana gigas	Crassostrea virginica	family	protein	12	51.86	proteome	200	0.190873	0.17875	65101	69516
+Magallana gigas	Mizuhopecten yessoensis	subclass	protein	12	51.86	proteome	200	0.0274804	0.0346941	65101	51565
+Magallana gigas	Mactra antiquata	subclass	protein	12	51.86	proteome	200	0.0207831	0.0239004	65101	56610
+Magallana gigas	Sinanodonta woodiana	subclass	protein	12	51.86	proteome	200	0.0223499	0.0208722	65101	69710
+Magallana gigas	Solemya velum	class	protein	12	51.86	proteome	200	0.0218737	0.0309841	65101	45959
+Magallana gigas	Aplysia californica	phylum	protein	12	51.86	proteome	200	0.0153915	0.0193265	65101	51846
+Magallana gigas	Capitella teleta	kingdom	protein	12	51.86	proteome	200	0.011198	0.0149978	65101	48607
+Magallana gigas	Saccharomyces cerevisiae	other kingdom	protein	12	51.86	proteome	200	0.000460822	0.00225107	65101	13327
+Magallana gigas	Arabidopsis thaliana	other kingdom	protein	12	51.86	proteome	200	0.000967727	0.00123984	65101	50813
 Escherichia coli K-12	Escherichia coli O157:H7	species	protein	12	51.86	proteome	200	0.81887	0.72486	6338	7160
 Escherichia coli K-12	Escherichia fergusonii	genus	protein	12	51.86	proteome	200	0.560745	0.547527	6338	6491
 Escherichia coli K-12	Salmonella enterica	family	protein	12	51.86	proteome	200	0.337488	0.316561	6338	6757
@@ -590,6 +830,16 @@ Mytilus edulis	Octopus sinensis	phylum	dayhoff	20	51.70	proteome	200	0.0117431	0
 Mytilus edulis	Capitella teleta	kingdom	dayhoff	20	51.70	proteome	200	0.0103681	0.0217593	99633	47474
 Mytilus edulis	Saccharomyces cerevisiae	other kingdom	dayhoff	20	51.70	proteome	200	0.000541989	0.00415993	99633	12981
 Mytilus edulis	Arabidopsis thaliana	other kingdom	dayhoff	20	51.70	proteome	200	0.00105387	0.00217486	99633	48279
+Magallana gigas	Magallana angulata	genus	dayhoff	20	51.70	proteome	200	0.727354	0.661799	64116	70467
+Magallana gigas	Crassostrea virginica	family	dayhoff	20	51.70	proteome	200	0.24111	0.225137	64116	68665
+Magallana gigas	Mizuhopecten yessoensis	subclass	dayhoff	20	51.70	proteome	200	0.0398652	0.0503397	64116	50775
+Magallana gigas	Mactra antiquata	subclass	dayhoff	20	51.70	proteome	200	0.0314274	0.0358713	64116	56173
+Magallana gigas	Sinanodonta woodiana	subclass	dayhoff	20	51.70	proteome	200	0.0343284	0.0321403	64116	68481
+Magallana gigas	Solemya velum	class	dayhoff	20	51.70	proteome	200	0.0318797	0.0449063	64116	45517
+Magallana gigas	Aplysia californica	phylum	dayhoff	20	51.70	proteome	200	0.0242997	0.0308784	64116	50456
+Magallana gigas	Capitella teleta	kingdom	dayhoff	20	51.70	proteome	200	0.0179986	0.024308	64116	47474
+Magallana gigas	Saccharomyces cerevisiae	other kingdom	dayhoff	20	51.70	proteome	200	0.000998191	0.00493028	64116	12981
+Magallana gigas	Arabidopsis thaliana	other kingdom	dayhoff	20	51.70	proteome	200	0.0019184	0.00254769	64116	48279
 Escherichia coli K-12	Escherichia coli O157:H7	species	dayhoff	20	51.70	proteome	200	0.818036	0.726936	6232	7013
 Escherichia coli K-12	Escherichia fergusonii	genus	dayhoff	20	51.70	proteome	200	0.592105	0.581194	6232	6349
 Escherichia coli K-12	Salmonella enterica	family	dayhoff	20	51.70	proteome	200	0.396502	0.372812	6232	6628
@@ -614,6 +864,16 @@ Mytilus edulis	Octopus sinensis	phylum	hp	52	52.00	proteome	200	0.00294859	0.007
 Mytilus edulis	Capitella teleta	kingdom	hp	52	52.00	proteome	200	0.00259994	0.00581836	100387	44858
 Mytilus edulis	Saccharomyces cerevisiae	other kingdom	hp	52	52.00	proteome	200	7.96916e-05	0.000633012	100387	12638
 Mytilus edulis	Arabidopsis thaliana	other kingdom	hp	52	52.00	proteome	200	0.00020919	0.000452498	100387	46409
+Magallana gigas	Magallana angulata	genus	hp	52	52.00	proteome	200	0.652696	0.580402	61819	69519
+Magallana gigas	Crassostrea virginica	family	hp	52	52.00	proteome	200	0.144972	0.128926	61819	69513
+Magallana gigas	Mizuhopecten yessoensis	subclass	hp	52	52.00	proteome	200	0.0129734	0.0165877	61819	48349
+Magallana gigas	Mactra antiquata	subclass	hp	52	52.00	proteome	200	0.00986752	0.0113968	61819	53524
+Magallana gigas	Sinanodonta woodiana	subclass	hp	52	52.00	proteome	200	0.0113072	0.0104397	61819	66956
+Magallana gigas	Solemya velum	class	hp	52	52.00	proteome	200	0.0105793	0.014938	61819	43781
+Magallana gigas	Aplysia californica	phylum	hp	52	52.00	proteome	200	0.00760284	0.00963608	61819	48775
+Magallana gigas	Capitella teleta	kingdom	hp	52	52.00	proteome	200	0.00491758	0.00677694	61819	44858
+Magallana gigas	Saccharomyces cerevisiae	other kingdom	hp	52	52.00	proteome	200	0.000145586	0.000712138	61819	12638
+Magallana gigas	Arabidopsis thaliana	other kingdom	hp	52	52.00	proteome	200	0.000436759	0.000581784	61819	46409
 Escherichia coli K-12	Escherichia coli O157:H7	species	hp	52	52.00	proteome	200	0.780483	0.692209	5544	6251
 Escherichia coli K-12	Escherichia fergusonii	genus	hp	52	52.00	proteome	200	0.511724	0.497545	5544	5702
 Escherichia coli K-12	Salmonella enterica	family	hp	52	52.00	proteome	200	0.261905	0.247697	5544	5862
@@ -638,6 +898,16 @@ Mytilus edulis	Octopus sinensis	phylum	DNA	15	30.00	cds	1000	0.116987	0.239855	4
 Mytilus edulis	Capitella teleta	kingdom	DNA	15	30.00	cds	1000	0.0861163	0.15333	49108	27581
 Mytilus edulis	Saccharomyces cerevisiae	other kingdom	DNA	15	30.00	cds	1000	0.0406044	0.245355	49108	8127
 Mytilus edulis	Arabidopsis thaliana	other kingdom	DNA	15	30.00	cds	1000	0.108373	0.185461	49108	28696
+Magallana gigas	Magallana angulata	genus	DNA	15	30.00	cds	1000	0.73695	0.68116	36054	39007
+Magallana gigas	Crassostrea virginica	family	DNA	15	30.00	cds	1000	0.179259	0.169144	36054	38210
+Magallana gigas	Mizuhopecten yessoensis	subclass	DNA	15	30.00	cds	1000	0.114523	0.142193	36054	29038
+Magallana gigas	Mactra antiquata	subclass	DNA	15	30.00	cds	1000	0.128418	0.155353	36054	29803
+Magallana gigas	Sinanodonta woodiana	subclass	DNA	15	30.00	cds	1000	0.151828	0.149546	36054	36604
+Magallana gigas	Solemya velum	class	DNA	15	30.00	cds	1000	0.103123	0.14358	36054	25895
+Magallana gigas	Aplysia californica	phylum	DNA	15	30.00	cds	1000	0.0986853	0.130483	36054	27268
+Magallana gigas	Capitella teleta	kingdom	DNA	15	30.00	cds	1000	0.0976313	0.127624	36054	27581
+Magallana gigas	Saccharomyces cerevisiae	other kingdom	DNA	15	30.00	cds	1000	0.0315638	0.140027	36054	8127
+Magallana gigas	Arabidopsis thaliana	other kingdom	DNA	15	30.00	cds	1000	0.103844	0.130471	36054	28696
 Escherichia coli K-12	Escherichia coli O157:H7	species	DNA	15	30.00	cds	1000	0.706733	0.621991	3802	4320
 Escherichia coli K-12	Escherichia fergusonii	genus	DNA	15	30.00	cds	1000	0.303261	0.294358	3802	3917
 Escherichia coli K-12	Salmonella enterica	family	DNA	15	30.00	cds	1000	0.0802209	0.0735294	3802	4148
@@ -662,6 +932,16 @@ Mytilus edulis	Octopus sinensis	phylum	DNA	21	42.00	cds	1000	0.000475776	0.00110
 Mytilus edulis	Capitella teleta	kingdom	DNA	21	42.00	cds	1000	0.000164061	0.000339397	60953	29464
 Mytilus edulis	Saccharomyces cerevisiae	other kingdom	DNA	21	42.00	cds	1000	1.64061e-05	0.000119789	60953	8348
 Mytilus edulis	Arabidopsis thaliana	other kingdom	DNA	21	42.00	cds	1000	0.000114843	0.00022254	60953	31455
+Magallana gigas	Magallana angulata	genus	DNA	21	42.00	cds	1000	0.652969	0.597158	39642	43347
+Magallana gigas	Crassostrea virginica	family	DNA	21	42.00	cds	1000	0.013521	0.0124022	39642	43218
+Magallana gigas	Mizuhopecten yessoensis	subclass	DNA	21	42.00	cds	1000	0.000580193	0.000733278	39642	31366
+Magallana gigas	Mactra antiquata	subclass	DNA	21	42.00	cds	1000	0.000327935	0.000376386	39642	34539
+Magallana gigas	Sinanodonta woodiana	subclass	DNA	21	42.00	cds	1000	0.000756773	0.000715666	39642	41919
+Magallana gigas	Solemya velum	class	DNA	21	42.00	cds	1000	0.000529741	0.000749331	39642	28025
+Magallana gigas	Aplysia californica	phylum	DNA	21	42.00	cds	1000	0.000302709	0.000407539	39642	29445
+Magallana gigas	Capitella teleta	kingdom	DNA	21	42.00	cds	1000	0.000403612	0.000543036	39642	29464
+Magallana gigas	Saccharomyces cerevisiae	other kingdom	DNA	21	42.00	cds	1000	2.52258e-05	0.000119789	39642	8348
+Magallana gigas	Arabidopsis thaliana	other kingdom	DNA	21	42.00	cds	1000	0.000353161	0.00044508	39642	31455
 Escherichia coli K-12	Escherichia coli O157:H7	species	DNA	21	42.00	cds	1000	0.65144	0.585453	4028	4482
 Escherichia coli K-12	Escherichia fergusonii	genus	DNA	21	42.00	cds	1000	0.228898	0.228898	4028	4028
 Escherichia coli K-12	Salmonella enterica	family	DNA	21	42.00	cds	1000	0.0322741	0.0314389	4028	4135
@@ -686,6 +966,16 @@ Mytilus edulis	Octopus sinensis	phylum	DNA	24	48.00	cds	1000	0.000130747	0.00029
 Mytilus edulis	Capitella teleta	kingdom	DNA	24	48.00	cds	1000	3.26867e-05	6.73673e-05	61187	29688
 Mytilus edulis	Saccharomyces cerevisiae	other kingdom	DNA	24	48.00	cds	1000	0	0	61187	8172
 Mytilus edulis	Arabidopsis thaliana	other kingdom	DNA	24	48.00	cds	1000	1.63433e-05	3.1736e-05	61187	31510
+Magallana gigas	Magallana angulata	genus	DNA	24	48.00	cds	1000	0.625248	0.569967	39829	43692
+Magallana gigas	Crassostrea virginica	family	DNA	24	48.00	cds	1000	0.00949057	0.00859833	39829	43962
+Magallana gigas	Mizuhopecten yessoensis	subclass	DNA	24	48.00	cds	1000	0.000351503	0.000445973	39829	31392
+Magallana gigas	Mactra antiquata	subclass	DNA	24	48.00	cds	1000	5.02147e-05	5.78955e-05	39829	34545
+Magallana gigas	Sinanodonta woodiana	subclass	DNA	24	48.00	cds	1000	0.000175751	0.0001641	39829	42657
+Magallana gigas	Solemya velum	class	DNA	24	48.00	cds	1000	0.000125537	0.000180083	39829	27765
+Magallana gigas	Aplysia californica	phylum	DNA	24	48.00	cds	1000	5.02147e-05	6.77231e-05	39829	29532
+Magallana gigas	Capitella teleta	kingdom	DNA	24	48.00	cds	1000	0.000150644	0.000202102	39829	29688
+Magallana gigas	Saccharomyces cerevisiae	other kingdom	DNA	24	48.00	cds	1000	0.000100429	0.000489476	39829	8172
+Magallana gigas	Arabidopsis thaliana	other kingdom	DNA	24	48.00	cds	1000	5.02147e-05	6.34719e-05	39829	31510
 Escherichia coli K-12	Escherichia coli O157:H7	species	DNA	24	48.00	cds	1000	0.643315	0.553788	3897	4527
 Escherichia coli K-12	Escherichia fergusonii	genus	DNA	24	48.00	cds	1000	0.212471	0.201362	3897	4112
 Escherichia coli K-12	Salmonella enterica	family	DNA	24	48.00	cds	1000	0.0236079	0.0220518	3897	4172
@@ -710,6 +1000,16 @@ Mytilus edulis	Octopus sinensis	phylum	DNA	27	54.00	cds	1000	6.43791e-05	0.00014
 Mytilus edulis	Capitella teleta	kingdom	DNA	27	54.00	cds	1000	4.82843e-05	0.000100871	62132	29741
 Mytilus edulis	Saccharomyces cerevisiae	other kingdom	DNA	27	54.00	cds	1000	1.60948e-05	0.000124394	62132	8039
 Mytilus edulis	Arabidopsis thaliana	other kingdom	DNA	27	54.00	cds	1000	3.21895e-05	6.29663e-05	62132	31763
+Magallana gigas	Magallana angulata	genus	DNA	27	54.00	cds	1000	0.603992	0.552252	40378	44161
+Magallana gigas	Crassostrea virginica	family	DNA	27	54.00	cds	1000	0.00609243	0.00554804	40378	44340
+Magallana gigas	Mizuhopecten yessoensis	subclass	DNA	27	54.00	cds	1000	7.42979e-05	9.54047e-05	40378	31445
+Magallana gigas	Mactra antiquata	subclass	DNA	27	54.00	cds	1000	9.90638e-05	0.000113898	40378	35119
+Magallana gigas	Sinanodonta woodiana	subclass	DNA	27	54.00	cds	1000	0.00012383	0.000115818	40378	43171
+Magallana gigas	Solemya velum	class	DNA	27	54.00	cds	1000	0.00012383	0.00017925	40378	27894
+Magallana gigas	Aplysia californica	phylum	DNA	27	54.00	cds	1000	4.95319e-05	6.80619e-05	40378	29385
+Magallana gigas	Capitella teleta	kingdom	DNA	27	54.00	cds	1000	0.000148596	0.000201742	40378	29741
+Magallana gigas	Saccharomyces cerevisiae	other kingdom	DNA	27	54.00	cds	1000	0	0	40378	8039
+Magallana gigas	Arabidopsis thaliana	other kingdom	DNA	27	54.00	cds	1000	2.4766e-05	3.14832e-05	40378	31763
 Escherichia coli K-12	Escherichia coli O157:H7	species	DNA	27	54.00	cds	1000	0.61389	0.538899	3859	4396
 Escherichia coli K-12	Escherichia fergusonii	genus	DNA	27	54.00	cds	1000	0.178803	0.175751	3859	3926
 Escherichia coli K-12	Salmonella enterica	family	DNA	27	54.00	cds	1000	0.0168437	0.0160217	3859	4057
@@ -734,6 +1034,16 @@ Mytilus edulis	Octopus sinensis	phylum	DNA	30	60.00	cds	1000	3.17294e-05	7.55002
 Mytilus edulis	Capitella teleta	kingdom	DNA	30	60.00	cds	1000	1.58647e-05	3.31697e-05	63033	30148
 Mytilus edulis	Saccharomyces cerevisiae	other kingdom	DNA	30	60.00	cds	1000	0	0	63033	8428
 Mytilus edulis	Arabidopsis thaliana	other kingdom	DNA	30	60.00	cds	1000	0	0	63033	31800
+Magallana gigas	Magallana angulata	genus	DNA	30	60.00	cds	1000	0.581412	0.534217	40467	44042
+Magallana gigas	Crassostrea virginica	family	DNA	30	60.00	cds	1000	0.00395384	0.00355666	40467	44986
+Magallana gigas	Mizuhopecten yessoensis	subclass	DNA	30	60.00	cds	1000	4.9423e-05	6.33172e-05	40467	31587
+Magallana gigas	Mactra antiquata	subclass	DNA	30	60.00	cds	1000	0	0	40467	34788
+Magallana gigas	Sinanodonta woodiana	subclass	DNA	30	60.00	cds	1000	0	0	40467	43670
+Magallana gigas	Solemya velum	class	DNA	30	60.00	cds	1000	2.47115e-05	3.57756e-05	40467	27952
+Magallana gigas	Aplysia californica	phylum	DNA	30	60.00	cds	1000	2.47115e-05	3.40657e-05	40467	29355
+Magallana gigas	Capitella teleta	kingdom	DNA	30	60.00	cds	1000	0	0	40467	30148
+Magallana gigas	Saccharomyces cerevisiae	other kingdom	DNA	30	60.00	cds	1000	0	0	40467	8428
+Magallana gigas	Arabidopsis thaliana	other kingdom	DNA	30	60.00	cds	1000	0	0	40467	31800
 Escherichia coli K-12	Escherichia coli O157:H7	species	DNA	30	60.00	cds	1000	0.586695	0.516486	3818	4337
 Escherichia coli K-12	Escherichia fergusonii	genus	DNA	30	60.00	cds	1000	0.169722	0.163802	3818	3956
 Escherichia coli K-12	Salmonella enterica	family	DNA	30	60.00	cds	1000	0.0112624	0.0107986	3818	3982
@@ -758,6 +1068,16 @@ Mytilus edulis	Octopus sinensis	phylum	DNA	33	66.00	cds	1000	1.57154e-05	3.70851
 Mytilus edulis	Capitella teleta	kingdom	DNA	33	66.00	cds	1000	0	0	63632	30312
 Mytilus edulis	Saccharomyces cerevisiae	other kingdom	DNA	33	66.00	cds	1000	0	0	63632	8135
 Mytilus edulis	Arabidopsis thaliana	other kingdom	DNA	33	66.00	cds	1000	0	0	63632	31718
+Magallana gigas	Magallana angulata	genus	DNA	33	66.00	cds	1000	0.560146	0.509831	40643	44654
+Magallana gigas	Crassostrea virginica	family	DNA	33	66.00	cds	1000	0.00280491	0.00251489	40643	45330
+Magallana gigas	Mizuhopecten yessoensis	subclass	DNA	33	66.00	cds	1000	2.46045e-05	3.17642e-05	40643	31482
+Magallana gigas	Mactra antiquata	subclass	DNA	33	66.00	cds	1000	0	0	40643	34791
+Magallana gigas	Sinanodonta woodiana	subclass	DNA	33	66.00	cds	1000	0	0	40643	43726
+Magallana gigas	Solemya velum	class	DNA	33	66.00	cds	1000	0	0	40643	28357
+Magallana gigas	Aplysia californica	phylum	DNA	33	66.00	cds	1000	0	0	40643	29585
+Magallana gigas	Capitella teleta	kingdom	DNA	33	66.00	cds	1000	0	0	40643	30312
+Magallana gigas	Saccharomyces cerevisiae	other kingdom	DNA	33	66.00	cds	1000	0	0	40643	8135
+Magallana gigas	Arabidopsis thaliana	other kingdom	DNA	33	66.00	cds	1000	0	0	40643	31718
 Escherichia coli K-12	Escherichia coli O157:H7	species	DNA	33	66.00	cds	1000	0.55974	0.496315	3850	4342
 Escherichia coli K-12	Escherichia fergusonii	genus	DNA	33	66.00	cds	1000	0.156623	0.152311	3850	3959
 Escherichia coli K-12	Salmonella enterica	family	DNA	33	66.00	cds	1000	0.0101299	0.00960828	3850	4059
@@ -782,6 +1102,16 @@ Mytilus edulis	Octopus sinensis	phylum	DNA	36	72.00	cds	1000	0	0	63800	26831
 Mytilus edulis	Capitella teleta	kingdom	DNA	36	72.00	cds	1000	1.5674e-05	3.33767e-05	63800	29961
 Mytilus edulis	Saccharomyces cerevisiae	other kingdom	DNA	36	72.00	cds	1000	1.5674e-05	0.000124564	63800	8028
 Mytilus edulis	Arabidopsis thaliana	other kingdom	DNA	36	72.00	cds	1000	0	0	63800	31729
+Magallana gigas	Magallana angulata	genus	DNA	36	72.00	cds	1000	0.537144	0.488892	40397	44384
+Magallana gigas	Crassostrea virginica	family	DNA	36	72.00	cds	1000	0.00168329	0.00148055	40397	45929
+Magallana gigas	Mizuhopecten yessoensis	subclass	DNA	36	72.00	cds	1000	0	0	40397	32102
+Magallana gigas	Mactra antiquata	subclass	DNA	36	72.00	cds	1000	0	0	40397	34963
+Magallana gigas	Sinanodonta woodiana	subclass	DNA	36	72.00	cds	1000	2.47543e-05	2.27614e-05	40397	43934
+Magallana gigas	Solemya velum	class	DNA	36	72.00	cds	1000	0	0	40397	28145
+Magallana gigas	Aplysia californica	phylum	DNA	36	72.00	cds	1000	0	0	40397	29568
+Magallana gigas	Capitella teleta	kingdom	DNA	36	72.00	cds	1000	2.47543e-05	3.33767e-05	40397	29961
+Magallana gigas	Saccharomyces cerevisiae	other kingdom	DNA	36	72.00	cds	1000	0	0	40397	8028
+Magallana gigas	Arabidopsis thaliana	other kingdom	DNA	36	72.00	cds	1000	0	0	40397	31729
 Escherichia coli K-12	Escherichia coli O157:H7	species	DNA	36	72.00	cds	1000	0.570466	0.485664	3860	4534
 Escherichia coli K-12	Escherichia fergusonii	genus	DNA	36	72.00	cds	1000	0.144819	0.141698	3860	3945
 Escherichia coli K-12	Salmonella enterica	family	DNA	36	72.00	cds	1000	0.0111399	0.010547	3860	4077
