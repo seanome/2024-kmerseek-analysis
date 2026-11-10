@@ -61,6 +61,7 @@ def result(values, direction, kind):
 
 
 summary = []
+random_aucs = {}
 pf.use_style()
 fig, axes = pf.figure(pf.TWO_COLUMN_MM, 95, ncols=3, sharey=True)
 ax0 = axes[0]
@@ -87,6 +88,7 @@ for ax, (values, (_, title)) in zip(axes, VALUES.items(), strict=True):
                     markersize=2,
                     alpha=0.5,
                 )
+            random_aucs[values, direction, kind] = np.array(chance["random k-mers"])
             auc = float(row["auc"])
             ax.plot(auc, y, marker, color=colour, zorder=5)
             p_swapped, p_random = float(row["p_labels_swapped"]), float(row["p_random_kmers"])
@@ -101,6 +103,7 @@ for ax, (values, (_, title)) in zip(axes, VALUES.items(), strict=True):
                     "p_random_kmers": row["p_random_kmers"],
                     "median_auc_random_kmers": row["median_auc_random_kmers"],
                     "people_post_above_pre": f"{row['people_post_above_pre']} of {row['people']}",
+                    "people": row["people"],
                     "kmers_up_after_in_training": row["kmers_up_after_in_training"],
                     "probe_sets_behind": row.get("probe_sets_behind", ""),
                     "carries_over": p_swapped < 0.05 and p_random < 0.05,
@@ -134,18 +137,33 @@ def write(path, rows_out):
 write(f"{results}/scan/scan_cross_summary.tsv", summary)
 
 # scan_plan.md: chosen on GSE27536 and scored on GSE28998, is the random HP median still well above the probe one?
-median = {
-    (r["values"], r["kmers"]): float(r["median_auc_random_kmers"]) for r in summary if r["test"] == DIRECTIONS[1][0]
-}
+# Each median is over 200 random k-mer sets, so the difference has a spread: resample each set of 200 AUCs with
+# replacement (10000 times) and take the middle 95 % of the differences (added after the analysis review of 0eca190d).
+# The scored series has the same people before and after, so its AUC moves in steps of 1 / people^2.
+scored = DIRECTIONS[1][0]
+median = {(r["values"], r["kmers"]): float(r["median_auc_random_kmers"]) for r in summary if r["test"] == scored}
+people = {int(r["people"]) for r in summary if r["test"] == scored}
+assert len(people) == 1, people
+step = 1 / people.pop() ** 2
+boot = np.random.default_rng(1)
+
+
+def resampled_medians(aucs, draws=10_000):
+    return np.median(boot.choice(aucs, (draws, len(aucs))), axis=1)
+
+
+def reading_of(difference):
+    if abs(difference) <= 0.05:
+        return "the values explain the gap"
+    return "the values do not explain the gap" if difference >= 0.1 else "unclear"
+
+
 gap = []
 for values in VALUES:
+    probe = resampled_medians(random_aucs[values, scored, "probe"])
     for kind in ("hp_lehninger2", "hp_thomas_dill2"):
         difference = median[values, kind] - median[values, "probe"]
-        reading = (
-            "the values explain the gap"
-            if abs(difference) <= 0.05
-            else "the values do not explain the gap" if difference >= 0.1 else "unclear"
-        )
+        low, high = np.percentile(resampled_medians(random_aucs[values, scored, kind]) - probe, [2.5, 97.5])
         gap.append(
             {
                 "values": values,
@@ -153,7 +171,15 @@ for values in VALUES:
                 "random_hp_median_auc": f"{median[values, kind]:.3f}",
                 "random_probe_median_auc": f"{median[values, 'probe']:.3f}",
                 "difference": f"{difference:.3f}",
-                "reading": reading if values != "earlier" else "",
+                "difference_95pct_low": f"{low:.3f}",
+                "difference_95pct_high": f"{high:.3f}",
+                "auc_step": f"{step:.3f}",
+                "reading": reading_of(difference) if values != "earlier" else "",
+                "readings_within_95pct": (
+                    " / ".join(dict.fromkeys(reading_of(d) for d in (low, difference, high)))
+                    if values != "earlier"
+                    else ""
+                ),
             }
         )
 write(f"{results}/scan/scan_gap.tsv", gap)

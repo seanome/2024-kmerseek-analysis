@@ -603,7 +603,10 @@ test step is that of the tests above.
 | GSE27536, GSE28998 | hp_lehninger2 | 0.98 (0.008, 0.383) | 0.98 (0.008, 0.005) | 0.96, 0.80 |
 | GSE27536, GSE28998 | hp_thomas_dill2 | 0.98 (0.008, 0.343) | 0.98 (0.008, 0.005) | 0.96, 0.80 |
 
-All AUCs are for the 1000 chosen k-mers. The chosen AUCs barely move: none changes by more than 0.05. What changes is
+All AUCs are for the 1000 chosen k-mers. A p value of 0.005 is the smallest these tests can give: 1 in 201, with
+200 random sets. Chosen on GSE27536 and scored on GSE28998, 0.008 is likewise the smallest for swapped labels: 1 in
+128, with all 127 swaps of GSE28998's 7 people. So "beat all 200 random sets" means p is at the floor of the test, and
+a smaller p would need more random sets. The chosen AUCs barely move: none changes by more than 0.05. What changes is
 the random HP k-mers. Chosen on GSE27536 and scored on GSE28998, their median AUC falls from 0.96 to 0.80, while random
 probe k-mers go from 0.71 to 0.73. The gap between random HP and random probe k-mers shrinks from 0.25 to 0.06 for both
 alphabets. The rule written first calls a gap of 0.06 unclear (between 0.05 and 0.1), so the different values explain
@@ -621,6 +624,24 @@ seeing the results, the four tests were run again without them (panel c, `result
 AUC moved by more than 0.01 for the chosen k-mers, and the random HP median moved by one step at most (0.80 to 0.78 for
 `hp_lehninger2`). That puts the `hp_lehninger2` gap at 0.04, which the rule would call explained by the values, and
 the `hp_thomas_dill2` gap at 0.06, unclear. The two readings are one AUC step apart.
+
+Each gap is a difference of two medians over 200 random sets, so it has a spread. Resampling each set of 200 AUCs
+(10000 times) puts the middle 95 % of each SCAN gap between 0.04 and 0.06 (0.02 and 0.06 for `hp_lehninger2` with
+the zeros left out). Each of these ranges spans both "explained by the values" and "unclear". The SCAN gaps cannot be told apart from each other, and the
+data do not decide between those two readings. They do rule out the third: no SCAN gap reaches 0.1, against 0.20 to
+0.25 with the earlier values.
+
+| Values | Alphabet | Random HP median AUC | Random probe median AUC | Gap | Gap, middle 95 % | Reading |
+|---|---|---|---|---|---|---|
+| Earlier | hp_lehninger2 | 0.959 | 0.714 | 0.245 | 0.224 to 0.245 | |
+| Earlier | hp_thomas_dill2 | 0.959 | 0.714 | 0.245 | 0.204 to 0.245 | |
+| SCAN | hp_lehninger2 | 0.796 | 0.735 | 0.061 | 0.041 to 0.061 | unclear |
+| SCAN | hp_thomas_dill2 | 0.796 | 0.735 | 0.061 | 0.041 to 0.061 | unclear |
+| SCAN, zeros left out | hp_lehninger2 | 0.776 | 0.735 | 0.041 | 0.021 to 0.061 | explained by the values |
+| SCAN, zeros left out | hp_thomas_dill2 | 0.796 | 0.735 | 0.061 | 0.041 to 0.061 | unclear |
+
+Chosen on GSE27536, scored on GSE28998. One AUC step in GSE28998 is 0.02 (1 in 49: 7 people, each before and after),
+so every number in this table moves in steps of 0.02. The rule's cut-offs are 0.05 and 0.1.
 
 `fig4/scan_values.R` writes the SCAN values, `fig4_held_out.nf --cross_only` runs the tests (`--already_log2` for probe
 k-mers, so SCAN values are not logged a second time), and `fig4/plot_scan_cross.py` draws the figure and writes

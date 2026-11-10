@@ -72,6 +72,11 @@ results above are reported as the rule planned. As a check chosen after seeing t
 again with those values left out: probes that are 0 in any array of a series are dropped from its probe table, and a
 probe's 0 is left out of its probe set's trimmed mean in that array. Both readings are reported.
 
+**Added after the analysis review of 0eca190d (2026-11-10).** The review pointed out that the gap reading has no
+spread. `plot_scan_cross.py` now resamples each set of 200 random-set AUCs (10000 times) and writes the middle 95 % of
+each gap, the readings that range covers, and the size of one AUC step, to `scan_gap.tsv`. The planned reading is
+left as it was; the range is reported beside it.
+
 **What this cannot show.** SCAN changes how each array is corrected, but the series still differ in muscle, training
 and health. Agreement between the two processings shows a result does not depend on the processing; it does not show
 which genes carry the signal.
