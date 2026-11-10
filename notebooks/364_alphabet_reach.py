@@ -951,13 +951,30 @@ def sketch(args):
 
 def load_sigs(work, input_type, alphabet, k):
     """{species: SourmashSignature} for one alphabet and k, each species exactly once."""
+    import gzip
+    import zipfile
+
     import sourmash
 
+    # sourmash 4.9.4 and branchwater 0.9.15 both fail on a zip over 4 GiB ("Invalid Zip
+    # archive: Extra data field contains disk number"); the scaled-10 proteome zip is
+    # 5.2 GB (2026-11-09). Python's zipfile reads it, so pick sketches by the manifest.
     moltype = "DNA" if alphabet == "DNA" else alphabet
     out = {}
-    for sig in sourmash.load_file_as_signatures(
-        str(sig_path(work, input_type)), ksize=k, select_moltype=moltype
-    ):
+    with zipfile.ZipFile(sig_path(work, input_type)) as z:
+        lines = z.read("SOURMASH-MANIFEST.csv").decode().splitlines()
+        manifest = csv.DictReader(line for line in lines if not line.startswith("#"))
+        sigs = []
+        for row in manifest:
+            if int(row["ksize"]) == k and row["moltype"] == moltype:
+                data = z.read(row["internal_location"])
+                if row["internal_location"].endswith(".gz"):
+                    data = gzip.decompress(data)
+                for sig in sourmash.load_signatures(
+                    data, ksize=k, select_moltype=moltype
+                ):
+                    sigs.append(sig)
+    for sig in sigs:
         if sig.name in out:
             sys.exit(f"{sig.name} {alphabet} k={k}: more than one sketch")
         out[sig.name] = sig
