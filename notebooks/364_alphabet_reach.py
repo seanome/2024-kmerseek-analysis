@@ -970,10 +970,12 @@ def load_sigs(work, input_type, alphabet, k):
                 data = z.read(row["internal_location"])
                 if row["internal_location"].endswith(".gz"):
                     data = gzip.decompress(data)
-                for sig in sourmash.load_signatures(
-                    data, ksize=k, select_moltype=moltype
-                ):
-                    sigs.append(sig)
+                # The manifest row already picks the sketch; each file holds one.
+                # (load_signatures' ksize= filter would compare 3k for protein.)
+                (sig,) = sourmash.load_signatures(data)
+                if sig.minhash.ksize != k or sig.minhash.moltype != moltype:
+                    sys.exit(f"{row['internal_location']}: not {alphabet} k={k}")
+                sigs.append(sig)
     for sig in sigs:
         if sig.name in out:
             sys.exit(f"{sig.name} {alphabet} k={k}: more than one sketch")
