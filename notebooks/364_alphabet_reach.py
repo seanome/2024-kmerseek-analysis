@@ -1,7 +1,7 @@
 """Notebook 364: how far up the tree of life each sequence alphabet still finds shared k-mers.
 
-For three anchors (Mus musculus, the mussel Mytilus edulis, the bacterium Escherichia
-coli K-12) and a relative at each taxonomic rank, sketch every proteome and coding-sequence (CDS) set with the sourmash
+For each anchor in PATHS (Mus musculus, the mussel Mytilus edulis, the oyster Magallana
+gigas, the bacterium Escherichia coli K-12) and a relative at each taxonomic rank, sketch every proteome and coding-sequence (CDS) set with the sourmash
 branchwater plugin and measure containment (the fraction of one species' sampled k-mers
 that also occur in the other).
 
@@ -43,6 +43,7 @@ import math
 import os
 import re
 import shutil
+import string
 import subprocess
 import sys
 import urllib.request
@@ -1371,7 +1372,7 @@ def figure(args):
         fig.supxlabel(
             "Lowest rank shared with the anchor (NCBI Taxonomy): relative species"
         )
-        for ax, letter in zip(axs, "abc"):
+        for ax, letter in zip(axs, string.ascii_lowercase):
             pf.panel_label(ax, letter)
         pf.save(fig, str(RES / f"reach_by_alphabet_{input_type}"))
     figure_sweep(cont, path, floors)
@@ -1768,7 +1769,7 @@ def draw_reach_bars(rows, settings, matched, name):
             style="italic",
         )
         ax.tick_params(axis="x", length=0)
-        if ax_i == 0:  # rank names once, above the first panel, shared by all three
+        if ax_i == 0:  # rank names once, above the first panel, shared by all panels
             for j, col in enumerate(columns):
                 ax.text(
                     j + 0.5,
