@@ -1805,7 +1805,7 @@ def draw_reach_bars(rows, settings, matched, name):
                 fc=passed_colour,
                 ec="#999999",
                 lw=0.5,
-                label="passes, but a nearer rank does not",
+                label="passes, but a nearer relative (drawn, or listed as not drawn) does not",
             )
         ]
         * any(r["passes"] and not r["reached"] for r in rows)
