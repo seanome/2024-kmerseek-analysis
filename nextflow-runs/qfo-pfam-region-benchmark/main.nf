@@ -369,6 +369,28 @@ params.evalue_report       = 10.0
 // downstream without re-running the sweep.
 params.min_overlap = 0.5
 
+// Where a transferred target domain lands on the query (evaluate_domain_calls.py
+// transfer_domains). Which target domains are kept is the same in both modes.
+//   span       every kept domain gets the alignment's whole query stretch. Every result
+//              before 2026-11-10 was scored this way, so it stays the default and an
+//              older run can be reproduced.
+//   projected  each domain is moved by the alignment's offset (qstart - tstart) and cut
+//              to the aligned stretch. A 140-residue MMseqs2 alignment over six zinc
+//              fingers becomes six finger-sized calls instead of six 140-residue calls,
+//              which each failed IoU >= 0.5 against one 23-residue finger
+//              (reports/qfo-requested-settings-2026-11-08, PR 216).
+// A projected run publishes its scoring outputs under <outdir>/transfer-projected/, so it
+// can be resumed in a span run's outdir without overwriting the span scores. For
+// `-entry report` on such a run, point --outdir at that subdirectory and leave
+// --transfer_mode at its default.
+params.transfer_mode = 'span'
+
+// The directory scoreDomainCalls and everything that summarises its output publish into.
+def scoringOutdir = { ->
+    params.transfer_mode == 'span' ? "${params.outdir}"
+                                   : "${params.outdir}/transfer-${params.transfer_mode}"
+}
+
 // --- MultiQC report --------------------------------------------------------
 // One HTML for the whole run: accuracy, the alphabet x ksize sweep, and the trace's
 // time/CPU/memory, in the sections built by bin/build_multiqc_inputs.py.
@@ -3398,9 +3420,9 @@ process scoreDomainCalls {
     // script parses its manifest and truth table before it scores anything.
     errorStrategy { task.attempt <= 3 ? 'retry' : 'finish' }
     maxRetries 3
-    publishDir "${params.outdir}/calls",   mode: 'copy', pattern: '*.calls.parquet'
-    publishDir "${params.outdir}/metrics", mode: 'copy', pattern: '*.metrics.parquet'
-    publishDir "${params.outdir}/curves",  mode: 'copy', pattern: '*.curve.parquet'
+    publishDir "${scoringOutdir()}/calls",   mode: 'copy', pattern: '*.calls.parquet'
+    publishDir "${scoringOutdir()}/metrics", mode: 'copy', pattern: '*.metrics.parquet'
+    publishDir "${scoringOutdir()}/curves",  mode: 'copy', pattern: '*.curve.parquet'
 
     // truths and domain_maps are parallel lists, index-aligned with truth_labels. They are
     // staged into numbered directories because every truth arm names its per-species map
@@ -3482,6 +3504,7 @@ TRUTH_EOF
             ${rplddt_arg} ${rdis_arg} \\
             ${tdis_arg} \\
             --min-overlap  ${params.min_overlap} \\
+            --transfer-mode ${params.transfer_mode} \\
             --strict-iou   ${params.strict_iou} \\
             --dedup-transfer-modes ${(params.dedup_transfer_modes as List).join(',')} \\
             --truth-set    "\$truth_set" < /dev/null
@@ -3594,7 +3617,7 @@ process hpBpeBoundary {
 
 process aggregateMetrics {
     label 'python'
-    publishDir params.outdir, mode: 'copy'
+    publishDir scoringOutdir(), mode: 'copy'
 
     // Cluster kills only, then `finish` -- see retryOnKill.
     errorStrategy { retryOnKill(task) }
@@ -3635,7 +3658,7 @@ process buildMultiqcInputs {
      */
     tag "multiqc inputs"
     label 'python'
-    publishDir "${params.outdir}/multiqc", mode: 'copy'
+    publishDir "${scoringOutdir()}/multiqc", mode: 'copy'
 
     // The report is the last thing a run does, after every search and every scoring task
     // has already succeeded. Failing the whole run over a plot would throw away a finished
@@ -3716,7 +3739,7 @@ process multiqcReport {
      */
     tag "multiqc"
     container 'quay.io/biocontainers/multiqc@sha256:b65e3fe879df27b92334dda0fd987a6e21bdee09a2848551d4f287099a93b7ac'
-    publishDir params.outdir, mode: 'copy'
+    publishDir scoringOutdir(), mode: 'copy'
 
     // The report is the last thing a run does, after every search and every scoring task
     // has already succeeded. Failing the whole run over a plot would throw away a finished
@@ -3763,6 +3786,13 @@ process multiqcReport {
 // ===========================================================================
 
 workflow {
+
+    if (!(params.transfer_mode in ['span', 'projected'])) {
+        error "--transfer_mode must be span or projected, not '${params.transfer_mode}'"
+    }
+    if (params.transfer_mode != 'span') {
+        log.info "  transfer: ${params.transfer_mode} -- scores go to ${scoringOutdir()}"
+    }
 
     def human_fasta = file("${params.qfo_dir}/Eukaryota/UP000005640_9606.fasta")
     def annotations = file(params.annotations)
