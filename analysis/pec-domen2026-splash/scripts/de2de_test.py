@@ -77,6 +77,16 @@ for a, k in SETTINGS:
         n_codes[a, k, b] = (len(sets[b, "up"]), len(sets[b, "down"]), int((up & down).sum()))
     print(a, k, "query k-mers", len(q[a, k]), flush=True)
 
+# The human counts were made against <de2de dir>/query_codes.tsv, built once by the first human task.
+# A code in q that is missing there was never counted, and would be read as absent (count 0).
+qfile = root / "query_codes.tsv"
+if qfile.exists():
+    qt = pl.read_csv(qfile, separator="\t", schema_overrides={"code": pl.Int64})
+    for a, k in SETTINGS:
+        have = qt.filter((pl.col("alphabet") == a) & (pl.col("k") == k))["code"].to_numpy()
+        missing = len(q[a, k]) - int(np.isin(q[a, k], have).sum())
+        assert missing == 0, f"{a} {k}: {missing} of {len(q[a, k])} query k-mers are not in {qfile}; rebuild it and recount"
+
 
 def read_run(run):
     d = pl.read_csv(root / "human" / f"{run}.counts.tsv.gz", separator="\t",
