@@ -28,5 +28,10 @@ Pilot of 2026-11-09 (head job 51700536): the 1/100 and 1/1000 shares, 16 threads
 | GSE144304 | 1,432 M | 183 s, 33 s | 5.1 CPU h, 54 min | 16 CPUs, 4 GB, 6 h |
 | GSE120862 | 3,971 M | 438 s, 68 s | 12.2 CPU h, 1 h 53 min | 16 CPUs, 4 GB, 6 h |
 
+Measured on all reads, 2026-11-09 (head job 51707972, 6 tasks, 0 failed, no retry): GSE99963
+3.4 CPU h, 18 min; GSE144304 4.2 CPU h, 27 min; GSE120862 23.3 CPU h, 1 h 42 min; peak memory
+0.46 GB. CPU time on all reads was up to twice the prediction (GSE120862), wall time was within it.
+The 1/10 shares took 3 to 4 min each.
+
 The 1/10 share asks 1 h and the two small shares 30 min. A task killed for memory or time is retried
 twice with double the ask; any other failure stops the run with an error.
