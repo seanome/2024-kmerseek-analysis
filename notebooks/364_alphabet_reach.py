@@ -1075,6 +1075,8 @@ def compare(args):
                         continue
                     rel = r["relative"]
                     r_mh = mhs[rel]
+                    if r_mh.scaled != SCALED[alphabet]:
+                        sys.exit(f"{rel} scaled {r_mh.scaled} != {SCALED[alphabet]}")
                     a_in_r, r_in_a = ms[(anchor, rel)], ms[(rel, anchor)]
                     for got, want in (
                         (a_in_r, a_mh.contained_by(r_mh)),
