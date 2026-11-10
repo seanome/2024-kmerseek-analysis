@@ -949,8 +949,8 @@ def sketch(args):
         os.rename(part, out)
 
 
-def load_mhs(work, input_type, alphabet, k):
-    """{species: MinHash} for one alphabet and k, each species exactly once."""
+def load_sigs(work, input_type, alphabet, k):
+    """{species: SourmashSignature} for one alphabet and k, each species exactly once."""
     import sourmash
 
     moltype = "DNA" if alphabet == "DNA" else alphabet
@@ -960,7 +960,7 @@ def load_mhs(work, input_type, alphabet, k):
     ):
         if sig.name in out:
             sys.exit(f"{sig.name} {alphabet} k={k}: more than one sketch")
-        out[sig.name] = sig.minhash
+        out[sig.name] = sig
     want = set(species_files())
     if set(out) != want:
         sys.exit(f"{input_type} {alphabet} k={k}: missing {sorted(want - set(out))}")
@@ -999,7 +999,19 @@ def compare(args):
         for alphabet, k, _ in settings_for(input_type):
             csv_out = run_dir(work, "compare") / f"{input_type}.{alphabet}.k{k}.csv"
             csv_out.parent.mkdir(parents=True, exist_ok=True)
-            sigs = str(sig_path(work, input_type))
+            # branchwater 0.9.15 cannot read a sketch zip over 4 GiB ("could not load
+            # sketches from path" on every entry; Python's zipfile reads the same file),
+            # which the scaled-10 proteome zip passed on 2026-11-09. So multisearch reads
+            # a zip holding only this alphabet and k, written from the full one.
+            import sourmash
+
+            by_species = load_sigs(work, input_type, alphabet, k)
+            subset = csv_out.with_suffix(".sig.zip")
+            subset.unlink(missing_ok=True)
+            with sourmash.save_load.SaveSignatures_ZipFile(str(subset)) as save:
+                for sig in by_species.values():
+                    save.add(sig)
+            sigs = str(subset)
             subprocess.run(
                 [
                     "sourmash",
@@ -1027,7 +1039,8 @@ def compare(args):
                 (r["query_name"], r["match_name"]): float(r["containment"])
                 for r in read_csv(csv_out)
             }
-            mhs = load_mhs(work, input_type, alphabet, k)
+            subset.unlink()
+            mhs = {name: sig.minhash for name, sig in by_species.items()}
             for anchor in PATHS:
                 a_mh = mhs[anchor]
                 if a_mh.scaled != SCALED[alphabet]:
