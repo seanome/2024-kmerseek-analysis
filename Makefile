@@ -17,6 +17,8 @@ help:
 	@echo "                      LEADERBOARD_DATA (a mirror of /scratch/users/olgabot)"
 	@echo "  leaderboard-tables  Write results/leaderboard/ (results.parquet, compute.parquet,"
 	@echo "                      coverage.md, provenance.json) from LEADERBOARD_DATA"
+	@echo "  query-strata-fetch  Copy the query-strata job outputs from Sherlock"
+	@echo "  query-strata        Write results/leaderboard/query_strata/ and recount its bins"
 	@echo ""
 	@echo "Each pipeline's own targets: make -C nextflow-runs/<pipeline> help"
 
@@ -70,3 +72,39 @@ leaderboard-tables:
 	$(LEADERBOARD_PYTHON) scripts/build_leaderboard_long.py \
 	  --data $(LEADERBOARD_DATA) \
 	  --outdir results/leaderboard
+
+## Query-side strata of the 998 midi-plus queries (results/leaderboard/query_strata/).
+## The five jobs in scripts/query_strata/ run on Sherlock and write under
+## $SCRATCH/leaderboard-query-strata/out; query-strata-fetch copies their small outputs
+## (and the run's own covariates and truth tables) into LEADERBOARD_DATA; query-strata
+## builds the tables and the covariates file main.nf --query_covariates reads, then
+## recounts every bin from the raw outputs with its own code.
+QUERY_STRATA_FILES = \
+  leaderboard-query-strata/out/identity/ \
+  leaderboard-query-strata/out/seg/ \
+  leaderboard-query-strata/out/length/ \
+  leaderboard-query-strata/out/deeptmhmm/predicted_topologies.3line \
+  leaderboard-query-strata/out/deeptmhmm/TMRs.gff3 \
+  leaderboard-query-strata/out/deeptmhmm/queries.fasta \
+  leaderboard-query-strata/out/busco/busco_version.txt \
+  leaderboard-query-strata/out/busco/busco_human/run_primates_odb12/full_table.tsv \
+  leaderboard-query-strata/out/busco/busco_human/short_summary.specific.primates_odb12.busco_human.json \
+  leaderboard-query-strata/out/busco/busco_human/short_summary.specific.primates_odb12.busco_human.txt \
+  leaderboard-query-strata/out/pfam_breadth/pfam_family_breadth.tsv \
+  2024-kmerseek-analysis/nextflow-runs/qfo-pfam-region-benchmark/data/midi-plus/results/truth/human_query_covariates.parquet \
+  2024-kmerseek-analysis/nextflow-runs/qfo-pfam-region-benchmark/data/midi-plus/results/truth/human_domain_truth.parquet \
+  2024-kmerseek-analysis/nextflow-runs/qfo-pfam-region-benchmark/data/pfamn/human_pfamn_truth.parquet
+
+.PHONY: query-strata-fetch query-strata
+query-strata-fetch:
+	mkdir -p $(LEADERBOARD_DATA)
+	printf '%s\n' $(QUERY_STRATA_FILES) > $(LEADERBOARD_DATA)/.query-strata-list.txt
+	pixi exec rsync -a -r --files-from=$(LEADERBOARD_DATA)/.query-strata-list.txt \
+	  "$(SHERLOCK_DTN):/scratch/users/olgabot/" $(LEADERBOARD_DATA)/
+
+query-strata:
+	$(LEADERBOARD_PYTHON) scripts/query_strata/build_query_strata.py \
+	  --data $(LEADERBOARD_DATA) --outdir results/leaderboard/query_strata
+	$(LEADERBOARD_PYTHON) scripts/query_strata/check_query_strata.py \
+	  --data $(LEADERBOARD_DATA) --strata results/leaderboard/query_strata \
+	  --results results/leaderboard/results.parquet

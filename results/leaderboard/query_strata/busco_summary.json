@@ -1,0 +1,23 @@
+{
+ "lineage": "primates_odb12",
+ "busco_version": "BUSCO 6.1.0",
+ "proteome": "/scratch/users/olgabot/2024-kmerseek-analysis/nextflow-runs/qfo-pfam-region-benchmark/data/qfo/Eukaryota/UP000005640_9606.fasta",
+ "results": {
+  "one_line_summary": "C:99.6%[S:99.3%,D:0.3%],F:0.3%,M:0.1%,n:11834",
+  "Complete percentage": 99.6,
+  "Complete BUSCOs": 11788,
+  "Single copy percentage": 99.3,
+  "Single copy BUSCOs": 11747,
+  "Multi copy percentage": 0.3,
+  "Multi copy BUSCOs": 41,
+  "Fragmented percentage": 0.3,
+  "Fragmented BUSCOs": 30,
+  "Missing percentage": 0.1,
+  "Missing BUSCOs": 16,
+  "n_markers": 11834
+ },
+ "queries_by_status": {
+  "complete": 592,
+  "not a BUSCO gene": 406
+ }
+}

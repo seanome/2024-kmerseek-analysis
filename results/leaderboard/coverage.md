@@ -4,22 +4,26 @@ Each square is the number of truth instances measured for that tool on that axis
 summed over experiments, query sets, target databases and truth sources. A blank
 square means nothing was run. An instance scored under many settings counts once.
 Axes are only the strata the outputs carry: whole set per target species, sequence
-identity bin, AlphaFold pLDDT bin, Swiss-Prot feature type, feature length bin.
+identity bin, AlphaFold pLDDT bin, Swiss-Prot feature type, feature length bin, and
+the query-side strata of results/leaderboard/query_strata/RULES.md (identity to the
+nearest protein in the target, membrane class, SEG low complexity, protein length,
+region length, Pfam family breadth in superkingdoms and phyla, BUSCO status). A
+query-side axis with no numbers has not been scored yet.
 
-| tool \ axis | target species | identity | plddt | feature_type | feature_length_bin |
-|---|---:|---:|---:|---:|---:|
-| folddisco | 590,559 | 516,687 | 121,049 | 73,872 | 590,559 |
-| foldseek | 1,110,504 | 939,872 | 231,206 | 145,722 | 1,085,594 |
-| hhblits | 1,158,512 | 952,047 | 276,686 | 181,647 | 1,133,694 |
-| hmmer3_jackhmmer | 1,329,803 | 952,047 | 276,686 | 181,647 | 1,133,694 |
-| hmmer3_phmmer | 1,329,895 | 952,047 | 276,686 | 181,647 | 1,133,694 |
-| hmmscan | 8,793 |  | 8,234 |  | 8,793 |
-| kmerseek | 1,584,821 | 1,105,115 | 276,686 | 181,647 | 1,133,694 |
-| mmseqs2 | 171,383 |  |  |  |  |
-| mmseqs2_iterative | 1,158,512 | 952,047 | 276,686 | 181,647 | 1,133,694 |
-| mmseqs2_seqseq | 1,158,512 | 952,047 | 276,686 | 181,647 | 1,133,694 |
-| prostt5 | 1,158,512 | 952,047 | 276,686 | 181,647 | 1,133,694 |
-| reseek | 615,377 | 516,687 | 121,049 | 73,872 | 590,559 |
+| tool \ axis | target species | identity | plddt | feature_type | feature_length_bin | nearest_identity | membrane | low_complexity | protein_length | region_length | family_superkingdoms | family_phyla | busco |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+| folddisco | 590,559 | 516,687 | 121,049 | 73,872 | 590,559 |  |  |  |  |  |  |  |  |
+| foldseek | 1,110,504 | 939,872 | 231,206 | 145,722 | 1,085,594 |  |  |  |  |  |  |  |  |
+| hhblits | 1,158,512 | 952,047 | 276,686 | 181,647 | 1,133,694 |  |  |  |  |  |  |  |  |
+| hmmer3_jackhmmer | 1,329,803 | 952,047 | 276,686 | 181,647 | 1,133,694 |  |  |  |  |  |  |  |  |
+| hmmer3_phmmer | 1,329,895 | 952,047 | 276,686 | 181,647 | 1,133,694 |  |  |  |  |  |  |  |  |
+| hmmscan | 8,793 |  | 8,234 |  | 8,793 |  |  |  |  |  |  |  |  |
+| kmerseek | 1,584,821 | 1,105,115 | 276,686 | 181,647 | 1,133,694 |  |  |  |  |  |  |  |  |
+| mmseqs2 | 171,383 |  |  |  |  |  |  |  |  |  |  |  |  |
+| mmseqs2_iterative | 1,158,512 | 952,047 | 276,686 | 181,647 | 1,133,694 |  |  |  |  |  |  |  |  |
+| mmseqs2_seqseq | 1,158,512 | 952,047 | 276,686 | 181,647 | 1,133,694 |  |  |  |  |  |  |  |  |
+| prostt5 | 1,158,512 | 952,047 | 276,686 | 181,647 | 1,133,694 |  |  |  |  |  |  |  |  |
+| reseek | 615,377 | 516,687 | 121,049 | 73,872 | 590,559 |  |  |  |  |  |  |  |  |
 
 ## By experiment
 
