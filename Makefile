@@ -51,7 +51,9 @@ running:
 ## $(LEADERBOARD_DATA)/x/y. leaderboard-fetch copies exactly the inputs provenance.json
 ## lists, over the data transfer node.
 LEADERBOARD_DATA ?= $(HOME)/data/leaderboard-inputs
-LEADERBOARD_PYTHON ?= /Users/olga/anaconda3/envs/2025-kmerseek-analysis/bin/python3
+# Olga's conda env on her Mac when it is there, else python3 from PATH (it needs polars).
+LEADERBOARD_ENV_PYTHON := /Users/olga/anaconda3/envs/2025-kmerseek-analysis/bin/python3
+LEADERBOARD_PYTHON ?= $(if $(wildcard $(LEADERBOARD_ENV_PYTHON)),$(LEADERBOARD_ENV_PYTHON),python3)
 SHERLOCK_DTN ?= sherlock-dtn
 
 leaderboard-fetch:
