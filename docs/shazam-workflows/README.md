@@ -14,8 +14,11 @@ is not on this branch, so they are unchecked.
 How to read them:
 
 - A coloured line is one route the data takes. The same colour means the same route in both
-  maps: blue for SPLASH anchors, orange for DE-kupl contigs, purple for the protein
-  databases and search, dashed grey for checks that need a reference or a known answer.
+  maps: blue for SPLASH anchors, orange for DE-kupl (its contigs in the oyster map, its
+  k-mers in the PEC map), purple for the protein databases and search, dashed grey for
+  checks that need a reference or a known answer. In the PEC map the only dashed grey
+  line comes from the paper's gene lists. The lines into `control_truth` keep the colour
+  of the method they score.
   Green, for SPLASH anchor counts tested with PyDESeq2, and pink, for KaMRaT contigs,
   appear only in the PEC map.
 - A circle on a line is a step (a tool or script). The PEC map marks steps differently; see its section.
