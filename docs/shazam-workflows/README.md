@@ -41,9 +41,12 @@ reproduces Domen et al. 2026 PNAS: 47 of 64 RNA-seq runs (PRJNA1219309), six PEC
 control contrasts, plus a control set with a known answer.
 
 Since 2026-10-30 these steps run as one Nextflow pipeline, `nextflow-runs/pec-domen2026/`
-(on PR 201). The map has one step for each of its 12 processes: `download`, `fastp`,
+(on PR 201). The map shows the pipeline as of PR 201 commit `5b619eec` (2026-11-01), which
+had 12 processes. The map has one step for each of them: `download`, `fastp`,
 `simulate_control`, `splash`, `compactors`, `anchor_counts`, `compactors_nominal`, `dekupl`,
-`kamrat`, `search`, `control_truth` and `paper_recovery`. Steps marked "(script)" or "(planned)" are not pipeline processes.
+`kamrat`, `search`, `control_truth` and `paper_recovery`. PR 201 has added processes since
+then. At commit `24f29a19` it has 14: the two new ones, `kamrat_nominal` and
+`kamrat_swap_deseq`, are not on the map. Steps marked "(script)" or "(planned)" are not pipeline processes.
 The sample design and the protein indexes are made before the run (`freeze_design`,
 `06_db_sketch`), so they appear as input files.
 
@@ -105,7 +108,8 @@ and no others. The script compares its list of steps with the `process` blocks o
 `main.nf` and exits with an error if they differ. Run it from a checkout that has PR 201,
 because `nextflow-runs/pec-domen2026/main.nf` is not on this branch. On 2026-11-01, against
 `main.nf` at PR 201 commit `5b619eec`, it printed "OK: 12 of 12 processes ... have a step on
-the map".
+the map". Against `main.nf` at the later commit `24f29a19` it exits with an error and names
+`kamrat_nominal` and `kamrat_swap_deseq` as processes with no step on the map.
 
 ```bash
 python docs/shazam-workflows/draw_pec_nb361_metro.py --check-processes nextflow-runs/pec-domen2026/main.nf
