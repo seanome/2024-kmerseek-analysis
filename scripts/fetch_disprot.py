@@ -200,7 +200,7 @@ def main():
             )
         )
         disorder = [
-            (r["start"], r["end"])
+            (int(r["start"]), int(r["end"]))
             for r in e["regions"]
             if r.get("disprot_namespace") == STATE_NAMESPACE
             and r.get("term_id") == DISORDER_TERM
@@ -241,7 +241,9 @@ def main():
 
     prot = pl.DataFrame(proteins)
     reg = (
-        pl.DataFrame(regions).join(
+        # Read every row to set the column types: a column that is empty in the first
+        # 100 rows would otherwise get the wrong type.
+        pl.DataFrame(regions, infer_schema_length=None).join(
             prot.select("accession", "qfo_label", "in_qfo", "qfo_same_sequence"),
             on="accession",
         )
