@@ -6,9 +6,11 @@
     results/leaderboard/compute.parquet  one row per (experiment, tool, setting, step), from
                                          Nextflow traces and run logs
     results/leaderboard/coverage.md      tool x stratum axis: instances measured
-    results/leaderboard/inventory.md     every output found, with date, commit, and whether
-                                         it was used and why not
     results/leaderboard/provenance.json  sha256 of every input and output
+
+results/leaderboard/inventory.md (every output found, with date, commit, and whether it was
+used and why not) is written by hand. This script does not write it or hash it, so update
+it yourself when the inputs change.
 
 --data is a copy of the needed files from Sherlock, laid out exactly as under
 /scratch/users/olgabot (`make leaderboard-fetch` makes it). source_path in both tables is
@@ -897,7 +899,7 @@ def dark_task(step: str, tag: str):
 
 
 # ---------------------------------------------------------------------------------------
-# Coverage and inventory
+# Coverage
 
 
 COVERAGE_AXES = [

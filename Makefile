@@ -44,7 +44,8 @@ running:
 ## One long table of every finished benchmark output: the QfO region benchmark (mini, midi,
 ## midi-plus), ELM cover, the dark set (Pfam Fmax, reach, best-hit accuracy), notebook
 ## 241's three cases, the deep-twilight controls, and the SCOPe40 kmerseek 0.4 sweeps.
-## results/leaderboard/inventory.md lists every output found and why some are left out.
+## results/leaderboard/inventory.md lists every output found and why some are left out; it is
+## written by hand, not by leaderboard-tables.
 ##
 ## LEADERBOARD_DATA mirrors /scratch/users/olgabot: a file at $SCRATCH/x/y is read from
 ## $(LEADERBOARD_DATA)/x/y. leaderboard-fetch copies exactly the inputs provenance.json
