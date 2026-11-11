@@ -35,7 +35,15 @@ done
 curl -fsSL -o "$TAR.md5" "$BASE/$TAR.md5"
 md5sum -c "$TAR.md5"
 
-[ -d "interproscan-$VER" ] || tar -pxzf "$TAR"
+# Unpack under a temporary name and rename at the end. A tar that is killed part way
+# then leaves no interproscan-$VER directory, so a resubmit unpacks again.
+if [ ! -d "interproscan-$VER" ]; then
+    rm -rf "interproscan-$VER.part"
+    mkdir "interproscan-$VER.part"
+    tar -pxzf "$TAR" -C "interproscan-$VER.part"
+    mv "interproscan-$VER.part/interproscan-$VER" "interproscan-$VER"
+    rmdir "interproscan-$VER.part"
+fi
 cd "interproscan-$VER"
 apptainer exec --bind "$SCRATCH:$SCRATCH" "$IMAGE" \
     python3 setup.py -f interproscan.properties
