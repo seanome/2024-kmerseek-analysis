@@ -102,7 +102,11 @@ def main() -> None:
         if p.name.endswith(".call_hits.parquet")
     }
     thrs = [p for p in args.scored if p.name.endswith(".threshold.json")]
-    thr = pl.DataFrame([json.loads(p.read_text()) for p in thrs])
+    # Every row is read to type the columns: a set with no fit has a null threshold, and
+    # 100 such rows first would type the column as all-null.
+    thr = pl.DataFrame(
+        [json.loads(p.read_text()) for p in thrs], infer_schema_length=None
+    )
     thr = thr.with_columns(
         pl.col("label")
         .str.split(".")
