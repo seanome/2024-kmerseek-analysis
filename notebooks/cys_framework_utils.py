@@ -35,9 +35,6 @@ from pathlib import Path
 
 import polars as pl
 
-# A long UniProt sequence column overruns Python's default CSV field limit.
-csv.field_size_limit(10**7)
-
 CANONICAL_AA = set("ACDEFGHIKLMNPQRSTVWY")
 
 #: ConoServer writes the framework in its own field, misspelled as `cysteineFramewrok`.
@@ -324,8 +321,15 @@ def parse_features(value: str) -> list[Region]:
 
 def read_swissprot_table(tsv_path: Path) -> pl.DataFrame:
     """A UniProt TSV download as a DataFrame, with the feature columns left as text."""
-    with open(tsv_path) as handle:
-        rows = list(csv.DictReader(handle, delimiter="\t"))
+    # A long UniProt sequence column overruns Python's default CSV field limit. The limit
+    # is one setting for the whole process, so it is raised for this read and then put
+    # back, and importing this module changes nothing for other csv readers.
+    previous_limit = csv.field_size_limit(10**7)
+    try:
+        with open(tsv_path) as handle:
+            rows = list(csv.DictReader(handle, delimiter="\t"))
+    finally:
+        csv.field_size_limit(previous_limit)
     return pl.DataFrame(rows, infer_schema_length=None)
 
 
