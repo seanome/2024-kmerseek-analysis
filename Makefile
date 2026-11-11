@@ -48,7 +48,7 @@ running:
 ## output (sha256 8ba26616...); the traces are both launch folders' trace files, because the
 ## run was resumed from run-midi-plus and run-midi-plus-all-qfo.
 LEADERBOARD_DATA ?= $(HOME)/data/qfo-pfam-region-benchmark/midi-plus-ladder-2026-09-13
-LEADERBOARD_PYTHON ?= /Users/olga/anaconda3/envs/2025-kmerseek-analysis/bin/python3
+LEADERBOARD_PYTHON ?= python3
 REGION_RUN := /scratch/users/olgabot/2024-kmerseek-analysis/nextflow-runs/qfo-pfam-region-benchmark
 
 leaderboard-fetch:
