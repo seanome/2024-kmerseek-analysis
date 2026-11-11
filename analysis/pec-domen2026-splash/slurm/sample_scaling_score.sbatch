@@ -7,7 +7,7 @@
 #SBATCH --cpus-per-task=2
 #SBATCH --mem=8G
 #SBATCH --time=30:00
-#SBATCH --output=/scratch/users/olgabot/nb361-pec/sample_scaling/score.%j.out
+#SBATCH --output=/scratch/users/olgabot/nb361-pec/logs/%x.%j.out
 set -euo pipefail
 S=/scratch/users/olgabot/nb361-pec
 W=$S/cheap_route
