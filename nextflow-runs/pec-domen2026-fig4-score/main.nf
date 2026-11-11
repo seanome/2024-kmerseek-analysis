@@ -43,9 +43,10 @@ process build_tool {
     unset CC CXX CFLAGS CXXFLAGS LDFLAGS CPPFLAGS
     export CARGO_HOME=${params.pec_root}/cargo
     export CARGO_TARGET_DIR=\$PWD/target
-    cargo test --release --manifest-path ${src}/Cargo.toml gene_counts > cargo_test.log 2>&1
-    grep -q 'single_end_reads_are_counted_without_a_second_mate ... ok' cargo_test.log
+    # --nocapture: without it cargo hides what a passing test prints, and the pigz check below sees nothing
+    cargo test --release --manifest-path ${src}/Cargo.toml gene_counts -- --nocapture > cargo_test.log 2>&1
     if grep -q 'skipped: pigz' cargo_test.log; then echo 'pigz missing: the single-end test did not run'; exit 4; fi
+    grep -q 'single_end_reads_are_counted_without_a_second_mate ... ok' cargo_test.log
     cargo build --release --manifest-path ${src}/Cargo.toml > cargo_build.log 2>&1
     cp target/release/pec-tools pec-tools
     """
