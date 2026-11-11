@@ -150,6 +150,15 @@ def make_queries(n: int, seed: int) -> list[tuple[str, str]]:
     return qs
 
 
+def _read_regions(csv: Path, cols: list[str]) -> pl.DataFrame:
+    """The search CSV with every column as text. A search that found nothing writes an
+    empty file; that gives a table with the same columns and no rows, so the chunk's
+    parquet has the same schema as every other chunk's."""
+    if csv.stat().st_size == 0:
+        return pl.DataFrame(schema={c: pl.String for c in cols})
+    return pl.read_csv(csv, columns=cols, infer_schema_length=0)
+
+
 def reduce_chunk(csv: Path, arm: dict) -> pl.DataFrame:
     """One row per (query, metric) for the queries in this chunk that hit anything."""
     cols = (
@@ -157,10 +166,8 @@ def reduce_chunk(csv: Path, arm: dict) -> pl.DataFrame:
         + [c for c, _ in METRICS.values()]
         + COORDS
     )
-    if csv.stat().st_size == 0:
-        return pl.DataFrame()
     df = (
-        pl.read_csv(csv, columns=cols, infer_schema_length=0)
+        _read_regions(csv, cols)
         .with_columns(
             [
                 pl.col(c).cast(pl.Float64, strict=False)
@@ -194,8 +201,6 @@ def reduce_chunk(csv: Path, arm: dict) -> pl.DataFrame:
                 .alias("rank")
             )
         )
-        if per.height == 0:
-            continue
         # Order within a query is fixed by value then gene name, so the ten best are the
         # same on every run (ties would otherwise fall in polars' arbitrary row order).
         per = per.sort("query_name", "v", "gene", descending=[False, not lower, False])
@@ -216,8 +221,6 @@ def reduce_chunk(csv: Path, arm: dict) -> pl.DataFrame:
                 pl.lit(label).alias("metric")
             )
         )
-    if not rows:
-        return pl.DataFrame()
     return pl.concat(rows).with_columns(
         pl.lit(arm["alphabet"]).alias("alphabet"),
         pl.lit(arm["k"]).alias("k"),
@@ -235,10 +238,8 @@ def top_regions(csv: Path, arm: dict) -> pl.DataFrame:
         + [c for c, _ in METRICS.values()]
         + COORDS
     )
-    if csv.stat().st_size == 0:
-        return pl.DataFrame()
     df = (
-        pl.read_csv(csv, columns=cols, infer_schema_length=0)
+        _read_regions(csv, cols)
         .with_columns(
             [
                 pl.col(c).cast(pl.Float64, strict=False)
@@ -260,8 +261,6 @@ def top_regions(csv: Path, arm: dict) -> pl.DataFrame:
     out = []
     for label, (col, lower) in METRICS.items():
         v = df.filter(pl.col(col).is_not_null() & pl.col(col).is_finite())
-        if v.height == 0:
-            continue
         best = (
             v.sort(
                 "query_name",
@@ -292,8 +291,6 @@ def top_regions(csv: Path, arm: dict) -> pl.DataFrame:
             )
             .with_columns(pl.lit(label).alias("metric"))
         )
-    if not out:
-        return pl.DataFrame()
     return pl.concat(out).with_columns(
         pl.lit(arm["alphabet"]).alias("alphabet"), pl.lit(arm["k"]).alias("k")
     )
