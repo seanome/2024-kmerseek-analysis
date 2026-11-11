@@ -56,8 +56,10 @@ def _pos(loc):
         return None
 
 
-def parse_uniprot() -> pl.DataFrame:
-    """One row per (accession, class, start, end), 0-based end-exclusive, plus sequence."""
+def parse_uniprot() -> tuple[pl.DataFrame, pl.DataFrame]:
+    """Two tables for human UniProt entries. The first has one row per (accession,
+    class, start, end), 0-based end-exclusive. The second has one row per accession
+    with its gene name and sequence."""
     from lxml import etree
 
     rows, seqs = [], []
