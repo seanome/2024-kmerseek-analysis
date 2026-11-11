@@ -1,0 +1,11 @@
+comparison	direction	window	paper_listed	matched_to_fun_gene	tested_here	padj_lt_0_05	padj_lt_0_05_same_direction	p_lt_0_05	p_lt_0_05_same_direction	same_sign_any_p	all_tested	chance_p_same_direction	chance_same_sign
+2 h	up	young_2h	43	38	38	0	0	0	0	37	35541	0.0	11.2
+2 h	down	young_2h	237	200	199	0	0	4	4	188	35541	1.6	140.2
+24 h	up	young_24h	252	208	206	0	0	1	1	164	35541	0.5	95.4
+24 h	down	young_24h	98	86	86	0	0	5	5	82	35541	0.4	46.2
+13-49 d	up	young_13_17d	18	16	16	0	0	0	0	9	35541	0.0	9.2
+13-49 d	up	young_49_52d	18	16	16	0	0	1	1	13	35541	0.2	12.1
+13-49 d	down	young_13_17d	48	43	43	2	2	7	7	37	35541	0.4	18.2
+13-49 d	down	young_49_52d	48	43	43	1	0	3	2	24	35541	0.0	10.5
+132 d	up	young_104_132d	40	35	35	0	0	5	5	24	35541	0.1	11.6
+132 d	down	young_104_132d	46	41	41	0	0	5	5	38	35541	0.3	27.4
