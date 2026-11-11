@@ -194,6 +194,13 @@ def term_halves(terms) -> pl.DataFrame:
 # ---------------------------------------------------------------------------
 def _concat(pattern: str, landing_dir: Path) -> pl.DataFrame:
     files = sorted(landing_dir.glob(pattern))
+    if not files:
+        # A wrong or unset DISPROT_LANDING_DIR must stop the notebook, not report that
+        # no region landed.
+        raise FileNotFoundError(
+            f"no {pattern} files in {landing_dir}; set DISPROT_LANDING_DIR to the "
+            "folder scripts/reduce_disprot_region_landing.py wrote"
+        )
     frames = [pl.read_parquet(f) for f in files if f.stat().st_size]
     frames = [f for f in frames if f.height]
     return pl.concat(frames, how="diagonal_relaxed") if frames else pl.DataFrame()
