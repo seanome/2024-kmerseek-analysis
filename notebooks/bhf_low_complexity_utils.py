@@ -93,7 +93,23 @@ def alphabet_classes(
     return out
 
 
-CLASSES = alphabet_classes()
+_CLASSES: dict[str, dict[str, int]] | None = None
+
+
+def classes() -> dict[str, dict[str, int]]:
+    """The class tables, read from kmerseek's source the first time they are needed, so
+    importing this module does not need the kmerseek source tree."""
+    global _CLASSES
+    if _CLASSES is None:
+        _CLASSES = alphabet_classes()
+    return _CLASSES
+
+
+def __getattr__(name: str):
+    # `module.CLASSES` still works for code outside this module; it loads on first use.
+    if name == "CLASSES":
+        return classes()
+    raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
 
 
 def masked_windows(seq: str, alphabet: str, k: int) -> list[int]:
@@ -106,7 +122,7 @@ def masked_windows(seq: str, alphabet: str, k: int) -> list[int]:
         raise ValueError(
             f"non-canonical residues {sorted(set(seq) - set('ACDEFGHIKLMNPQRSTVWY'))}: not handled"
         )
-    table = None if alphabet in RAW_ONLY else CLASSES[alphabet]
+    table = None if alphabet in RAW_ONLY else classes()[alphabet]
     starts = []
     for i in range(len(seq) - k + 1):
         w = seq[i : i + k]
@@ -428,7 +444,7 @@ def fig_stretches(
 def class_string(s: str, alphabet: str) -> str:
     """`s` written in the alphabet's classes: h/p for the two-letter alphabets, otherwise
     the first residue of each class (as kmerseek's class tables name them)."""
-    t = CLASSES[alphabet]
+    t = classes()[alphabet]
     if alphabet.startswith("hp_") and len(set(t.values())) == 2:
         return "".join("hp"[t[c]] if c in t else "?" for c in s)
     first = {}
