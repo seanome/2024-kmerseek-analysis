@@ -642,9 +642,12 @@ def transfer_domains(regions: pl.LazyFrame, domain_map: pl.LazyFrame, min_overla
 
       span       every kept domain gets the alignment's whole query stretch,
                  [qstart, qend). The scores from before 2026-11-10 used this. Still this
-                 function's default so direct callers (notebooks 223, 227,
-                 scripts/reduce_swissprot_instance_landing.py) keep their numbers; the
-                 command line and the pipeline default to projected.
+                 function's default; the command line and the pipeline default to
+                 projected. No notebook and no script in scripts/ calls this function.
+                 Notebook 223 (rebuild_calls) and
+                 scripts/reduce_swissprot_instance_landing.py (transfer_keep_target)
+                 each hold their own copy of the span rule, so they reproduce
+                 --transfer-mode span, not the pipeline's default.
       projected  each kept domain is moved by the alignment's offset (qstart - tstart)
                  and cut to the aligned stretch [qstart, qend). A 140-residue alignment
                  over six 23-residue zinc fingers gives six 23-residue calls, one per
@@ -2089,8 +2092,8 @@ def main():
                         "protein and is not predictable from the input file size "
                         f"(default: {DEDUP_PAIR_BUDGET})")
     p.add_argument("--min-overlap", type=float, default=0.5)
-    # projected since 2026-11-10. transfer_domains() itself still defaults to span, so
-    # the notebooks and scripts that call it directly reproduce their published numbers.
+    # projected since 2026-11-10. transfer_domains() itself still defaults to span; no
+    # notebook and no script in scripts/ calls it directly (see its docstring).
     p.add_argument("--transfer-mode", choices=TRANSFER_MODES, default="projected",
                    help="where a target domain lands on the query: projected (default) = "
                         "the domain's own position, shifted by the alignment offset and cut "
