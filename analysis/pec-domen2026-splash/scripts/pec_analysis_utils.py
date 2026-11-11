@@ -25,13 +25,17 @@ def bh_over_fitted_anchors(pvalues):
     return q
 
 
-def poscounts_size_factors(counts):
+def poscounts_size_factors(counts, as_pydeseq2=False):
     """DESeq2's `poscounts` size factor of each sample; counts is genes (rows) by samples (columns).
 
     A gene's reference is the sum of log(count) over the samples where it has a read, divided by the
     number of all samples. A sample's factor is the median, over its genes with a read, of
     log(count) minus the reference, taken back from the log. Factors are then divided by their
     geometric mean. Plan: design/sample_scaling/README.md.
+
+    This follows R DESeq2's estimateSizeFactorsForMatrix with poscounts geometric means. PyDESeq2
+    0.5.4 also leaves out every gene whose reference is 0, which is a gene whose only counts are
+    single reads; as_pydeseq2=True does the same, and is there only to check this function against it.
     """
     c = np.asarray(counts, dtype=float)
     if c.ndim != 2 or np.isnan(c).any() or (c < 0).any():
@@ -41,7 +45,8 @@ def poscounts_size_factors(counts):
         raise ValueError("a sample has no reads, so it has no size factor")
     logc = np.where(positive, np.log(np.where(positive, c, 1.0)), 0.0)
     reference = logc.sum(axis=1) / c.shape[1]
-    factors = np.array([np.exp(np.median((logc[:, j] - reference)[positive[:, j]])) for j in range(c.shape[1])])
+    use = positive & (reference > 0)[:, None] if as_pydeseq2 else positive
+    factors = np.array([np.exp(np.median((logc[:, j] - reference)[use[:, j]])) for j in range(c.shape[1])])
     return factors / np.exp(np.log(factors).mean())
 
 

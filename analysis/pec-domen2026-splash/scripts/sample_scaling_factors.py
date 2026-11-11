@@ -5,8 +5,9 @@ Usage: sample_scaling_factors.py <all.counts.tsv> <design_dir> <out.tsv>
 
 For each Botryllus contrast (design_dir/contrast_<name>.design.tsv), over that contrast's samples:
 reads placed in a gene, the poscounts size factor from pec_analysis_utils, and the same factor from
-PyDESeq2 (size_factors_fit_type="poscounts"). Stops if the two differ by more than 1 part in a
-million. total_over_factor is the sample's total divided by its factor, each first divided by its
+PyDESeq2 (size_factors_fit_type="poscounts"). PyDESeq2 leaves out genes whose only counts are single
+reads and R DESeq2 does not; the function here follows R. Stops unless the function, told to leave
+those genes out too, matches PyDESeq2 to 1 part in a million. total_over_factor is the sample's total divided by its factor, each first divided by its
 geometric mean over the contrast: above 1 means CPM scales this sample's genes down more than the
 size factor does. Plan: design/sample_scaling/README.md.
 """
@@ -39,7 +40,8 @@ for c in CONTRASTS:
     )
     dds.fit_size_factors()
     theirs = np.asarray(dds.obs["size_factors"] if "size_factors" in dds.obs else dds.obsm["size_factors"], float)
-    assert np.allclose(mine, theirs, rtol=1e-6), (c, np.abs(mine / theirs - 1).max())
+    as_theirs = poscounts_size_factors(t.to_numpy(), as_pydeseq2=True)
+    assert np.allclose(as_theirs, theirs, rtol=1e-6), (c, np.abs(as_theirs / theirs - 1).max())
     total = t.sum().to_numpy(float)
     rel = total / np.exp(np.log(total).mean()) / mine
     for s, cond, n, f, p, r in zip(d.index, d.condition, total, mine, theirs, rel):
@@ -54,5 +56,12 @@ for c in CONTRASTS:
                 total_over_factor=r,
             )
         )
-    print(c, len(d), "samples, largest difference from PyDESeq2:", f"{np.abs(mine / theirs - 1).max():.2e}")
+    print(
+        c,
+        len(d),
+        "samples; same gene set as PyDESeq2, largest difference",
+        f"{np.abs(as_theirs / theirs - 1).max():.1e};",
+        "with single-read genes kept, as R does:",
+        f"{np.abs(mine / theirs - 1).max():.3f}",
+    )
 pd.DataFrame(rows).to_csv(out, sep="\t", index=False)
