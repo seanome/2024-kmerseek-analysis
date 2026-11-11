@@ -25,7 +25,7 @@ error rate, never at the same E-value.
   `nextflow-runs/invertebrate-dark-set` on olgabot/dark-set-kmerseek-0.4 (7913404) and
   changed only by `black` formatting.
 - **The regions index:** every feature of the nine types above in those same entries, cut
-  out with (k_max − 1) = 20 residues on each side, clipped at the protein ends. Each entry
+  out with (k_max − 1) = 21 residues on each side, clipped at the protein ends. Each entry
   is named `accession|feature type|description|start-end`, with the feature's own
   coordinates. Cut-outs of features of 30 aa or more are clustered with
   `mmseqs easy-cluster --min-seq-id 0.5 -c 0.8 --cov-mode 0`, and the representatives are
@@ -35,11 +35,11 @@ error rate, never at the same E-value.
   non-overlapping 10-residue windows (seed 20261006), named `DECOY_<name>`, searched
   together with the targets.
 
-k_max = 21 is the largest k-size among the kmerseek settings (hp_pbotc_1st_ed2 and
-hp_lehninger2 at k = 21; see `PREDICTIONS.md`).
+k_max = 22 is the largest k-size among the 19 kmerseek settings (hp_thomas_dill2,
+hp_thomas_dill_no_c2 and hp_kyte_doolittle2 at k = 22; see `PREDICTIONS.md`).
 
-The kmerseek and MMseqs2 searches are not in `main.nf` yet. They are added after the
-build is reviewed.
+`main.nf` also holds the kmerseek and MMseqs2 searches, the scoring, the comparison
+tables and the Pfam index. `-entry build` runs the build alone.
 
 ## Run
 

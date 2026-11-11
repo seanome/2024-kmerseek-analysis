@@ -19,7 +19,7 @@
  *
  * Entries:
  *   -entry build   the queries, truth, both indexes and their decoys
- *   (default)      the build, then kmerseek (four settings), MMseqs2 and the
+ *   (default)      the build, then kmerseek (19 settings), MMseqs2 and the
  *                  composition-only classifier against both indexes, the scoring at 5%
  *                  decoy error, and the comparison tables (bin/compare_indexes.py)
  * --query_limit 20 runs the searches on 20 queries spread over the accession list.
