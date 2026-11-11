@@ -13,6 +13,7 @@ Score, the formula of Voskoboynik et al. 2024 as in scripts/exercise_score.py (P
   value of a gene in a sample = (expression - (StepMiner threshold + 0.5)) / 3 / sd,
     threshold and sd over every sample of the series
   score = -1 x sum over cluster 13 + 1 x sum over cluster 14 + 2 x sum over cluster 3
+  (58 genes are in both cluster 14 and cluster 3 and are counted in both sums, as in PR 212)
 
 Writes fig4_reads_comparisons.tsv (one row per series and share of reads, with the three rules),
 fig4_reads_samples.tsv (one row per sample) and fig4_reads_random.tsv.gz (the random gene sets).
@@ -87,10 +88,11 @@ def read_time(path):
 
 def random_aucs(values, expr, listed, first, second, rng):
     """AUC of N_RANDOM scores in which each listed gene is swapped for a gene from the same tenth of
-    mean expression. Clusters and weights are kept; a draw never uses a gene twice or a listed gene."""
+    mean expression. Each gene keeps its weight; a draw never uses a gene twice or a listed gene.
+    listed is gene: weight, where a gene in two clusters has the sum of the two weights."""
     tenth = pd.qcut(expr.mean(axis=1).rank(method="first"), 10, labels=False)
     pool = {t: np.array([g for g in tenth.index[tenth == t] if g not in listed]) for t in range(10)}
-    weights = np.array([WEIGHTS[listed[g]] for g in listed], float)
+    weights = np.array(list(listed.values()), float)
     tenths = np.array([tenth[g] for g in listed])
     v = values.to_numpy(float)
     row = {g: i for i, g in enumerate(values.index)}
@@ -143,8 +145,13 @@ def main(counts_root, analysis, out):
             counts = counts[list(d.index)]
             expr = log_cpm(counts)
             values = gene_values(expr)
-            listed = {g: c for c, genes in clusters.items() for g in genes if g in values.index}
-            score = sum(WEIGHTS[c] * values.loc[[g for g in listed if listed[g] == c]].sum() for c in WEIGHTS)
+            # 58 genes are in both cluster 14 and cluster 3; the formula counts such a gene in both sums
+            found = {c: [g for g in genes if g in values.index] for c, genes in clusters.items()}
+            score = sum(WEIGHTS[c] * values.loc[found[c]].sum() for c in WEIGHTS)
+            listed = {}  # gene: weight summed over its clusters
+            for c, genes in found.items():
+                for g in genes:
+                    listed[g] = listed.get(g, 0) + WEIGHTS[c]
             auc = auc_of(score, first, second)
             both = d.loc[first + second]
             rho = float(spearmanr(score[both.index], from_table[both["sample"]].to_numpy()).statistic)
@@ -175,8 +182,8 @@ def main(counts_root, analysis, out):
                     random_auc_median=float(np.median(draws)),
                     rule3_listed_genes_matter=bool(as_far <= MAX_RANDOM_SHARE),
                     auc_all_genes_weight_1=auc_all,
-                    **{f"listed_genes_found_cluster_{c}": sum(v == c for v in listed.values()) for c in WEIGHTS},
-                    listed_genes_found=len(listed),
+                    **{f"listed_genes_found_cluster_{c}": len(found[c]) for c in WEIGHTS},
+                    listed_genes_found=len(listed),  # each gene once, also when it is in two clusters
                     genes_with_a_read=len(counts),
                     reads_counted=int(summary.pairs.sum()),
                     reads_assigned_to_a_gene=int(summary.assigned.sum()),
