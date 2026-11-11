@@ -158,6 +158,18 @@ def reading_of(difference):
     return "the values do not explain the gap" if difference >= 0.1 else "unclear"
 
 
+def readings_within(low, high):
+    """Every reading that some difference between low and high would get, by reading_of's cut-offs (0.05 and 0.1)."""
+    covered = []
+    if low <= 0.05 and high >= -0.05:
+        covered.append("the values explain the gap")
+    if low < -0.05 or (low < 0.1 and high > 0.05):
+        covered.append("unclear")
+    if high >= 0.1:
+        covered.append("the values do not explain the gap")
+    return covered
+
+
 gap = []
 for values in VALUES:
     probe = resampled_medians(random_aucs[values, scored, "probe"])
@@ -175,11 +187,7 @@ for values in VALUES:
                 "difference_95pct_high": f"{high:.3f}",
                 "auc_step": f"{step:.3f}",
                 "reading": reading_of(difference) if values != "earlier" else "",
-                "readings_within_95pct": (
-                    " / ".join(dict.fromkeys(reading_of(d) for d in (low, difference, high)))
-                    if values != "earlier"
-                    else ""
-                ),
+                "readings_within_95pct": " / ".join(readings_within(low, high)) if values != "earlier" else "",
             }
         )
 write(f"{results}/scan/scan_gap.tsv", gap)
