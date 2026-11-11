@@ -110,12 +110,12 @@ def test_cli_stamps_transfer_mode_on_every_metrics_row(pfam_truth, tmp_path):
                   "pfam", "--transfer-mode", mode)
         assert m["transfer_mode"].unique().to_list() == [mode]
         rows[mode] = m
-    # Default is span, so a run that does not pass the flag reproduces older scores.
+    # The command line defaults to projected since 2026-11-10.
     default = score(pfam_truth["truth"], pfam_truth["map"], regions, tmp_path / "default",
                     "pfam")
-    assert default["transfer_mode"].unique().to_list() == ["span"]
+    assert default["transfer_mode"].unique().to_list() == ["projected"]
     key = ["split", "stratum_axis", "stratum", "dedup_transfers"]
     cols = [c for c in ("fmax", "recall_reachable", "precision") if c in default.columns]
     a = default.sort(key).select(key + cols)
-    b = rows["span"].sort(key).select(key + cols)
+    b = rows["projected"].sort(key).select(key + cols)
     assert a.equals(b)

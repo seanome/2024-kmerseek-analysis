@@ -371,24 +371,26 @@ params.min_overlap = 0.5
 
 // Where a transferred target domain lands on the query (evaluate_domain_calls.py
 // transfer_domains). Which target domains are kept is the same in both modes.
+//   projected  the default since 2026-11-10. Each domain is moved by the alignment's
+//              offset (qstart - tstart) and cut to the aligned stretch. A 140-residue
+//              MMseqs2 alignment over six zinc fingers becomes six finger-sized calls
+//              instead of six 140-residue calls, which each failed IoU >= 0.5 against
+//              one 23-residue finger (reports/qfo-requested-settings-2026-11-08, PR 216).
 //   span       every kept domain gets the alignment's whole query stretch. Every result
-//              before 2026-11-10 was scored this way, so it stays the default and an
-//              older run can be reproduced.
-//   projected  each domain is moved by the alignment's offset (qstart - tstart) and cut
-//              to the aligned stretch. A 140-residue MMseqs2 alignment over six zinc
-//              fingers becomes six finger-sized calls instead of six 140-residue calls,
-//              which each failed IoU >= 0.5 against one 23-residue finger
-//              (reports/qfo-requested-settings-2026-11-08, PR 216).
-// A projected run publishes its scoring outputs under <outdir>/transfer-projected/, so it
-// can be resumed in a span run's outdir without overwriting the span scores. For
-// `-entry report` on such a run, point --outdir at that subdirectory and leave
-// --transfer_mode at its default.
-params.transfer_mode = 'span'
+//              before 2026-11-10 was scored this way; pass --transfer_mode span to
+//              reproduce one.
+params.transfer_mode = 'projected'
 
-// The directory scoreDomainCalls and everything that summarises its output publish into.
+// A subfolder of --outdir for scoreDomainCalls and everything that summarises its output
+// (aggregateMetrics, the MultiQC report). Empty by default: they publish into --outdir
+// itself. Set it to rescore an existing run in its own launch folder and outdir, so the
+// searches come from cache and the scores already there are not overwritten
+// (make rescore-midi-plus-projected sets transfer-projected). For `-entry report` on such
+// a run, point --outdir at the subfolder and leave this empty.
+params.scoring_subdir = ''
+
 def scoringOutdir = { ->
-    params.transfer_mode == 'span' ? "${params.outdir}"
-                                   : "${params.outdir}/transfer-${params.transfer_mode}"
+    params.scoring_subdir ? "${params.outdir}/${params.scoring_subdir}" : "${params.outdir}"
 }
 
 // --- MultiQC report --------------------------------------------------------
@@ -3790,9 +3792,7 @@ workflow {
     if (!(params.transfer_mode in ['span', 'projected'])) {
         error "--transfer_mode must be span or projected, not '${params.transfer_mode}'"
     }
-    if (params.transfer_mode != 'span') {
-        log.info "  transfer: ${params.transfer_mode} -- scores go to ${scoringOutdir()}"
-    }
+    log.info "  transfer: ${params.transfer_mode} -- scores go to ${scoringOutdir()}"
 
     def human_fasta = file("${params.qfo_dir}/Eukaryota/UP000005640_9606.fasta")
     def annotations = file(params.annotations)

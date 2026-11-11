@@ -641,7 +641,10 @@ def transfer_domains(regions: pl.LazyFrame, domain_map: pl.LazyFrame, min_overla
     kept domain is placed on the query:
 
       span       every kept domain gets the alignment's whole query stretch,
-                 [qstart, qend). The scores from before 2026-11-10 used this.
+                 [qstart, qend). The scores from before 2026-11-10 used this. Still this
+                 function's default so direct callers (notebooks 223, 227,
+                 scripts/reduce_swissprot_instance_landing.py) keep their numbers; the
+                 command line and the pipeline default to projected.
       projected  each kept domain is moved by the alignment's offset (qstart - tstart)
                  and cut to the aligned stretch [qstart, qend). A 140-residue alignment
                  over six 23-residue zinc fingers gives six 23-residue calls, one per
@@ -2086,11 +2089,13 @@ def main():
                         "protein and is not predictable from the input file size "
                         f"(default: {DEDUP_PAIR_BUDGET})")
     p.add_argument("--min-overlap", type=float, default=0.5)
-    p.add_argument("--transfer-mode", choices=TRANSFER_MODES, default="span",
-                   help="where a target domain lands on the query: span = the alignment's "
-                        "whole query stretch (scores before 2026-11-10), projected = the "
-                        "domain's own position, shifted by the alignment offset and cut "
-                        "to the aligned stretch (see transfer_domains)")
+    # projected since 2026-11-10. transfer_domains() itself still defaults to span, so
+    # the notebooks and scripts that call it directly reproduce their published numbers.
+    p.add_argument("--transfer-mode", choices=TRANSFER_MODES, default="projected",
+                   help="where a target domain lands on the query: projected (default) = "
+                        "the domain's own position, shifted by the alignment offset and cut "
+                        "to the aligned stretch; span = the alignment's whole query stretch, "
+                        "as all scores before 2026-11-10 (see transfer_domains)")
     p.add_argument("--strict-iou", type=float, default=0.8)
     p.add_argument("--gray-min-annotated-fraction", type=float, default=0.5,
                    help="share of a call that must lie in annotated territory before it "
