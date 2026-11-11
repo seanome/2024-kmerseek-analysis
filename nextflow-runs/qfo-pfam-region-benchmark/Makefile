@@ -1973,6 +1973,7 @@ disprot-testset-local:
 	@# A QfO species' models come from the shared per-species folders; the pooled target's
 	@# were fetched into $(DISPROT_LOCAL_STRUCTS)/disprot by hand (see the PR).
 	@if [ "$(DISPROT_LOCAL_TARGET)" != disprot ]; then \
+	  mkdir -p $(DISPROT_LOCAL_STRUCTS) && \
 	  ln -sfn $(HOME)/data/alphafold_structures/structures/$(DISPROT_LOCAL_TARGET) \
 	    $(DISPROT_LOCAL_STRUCTS)/$(DISPROT_LOCAL_TARGET); \
 	fi
