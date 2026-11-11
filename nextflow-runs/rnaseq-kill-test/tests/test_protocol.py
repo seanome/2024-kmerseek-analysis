@@ -160,7 +160,15 @@ class ProtocolTests(unittest.TestCase):
         self.assertEqual(values["swap_count"], 69)
         self.assertTrue(values["secondary_true_exceeds_every_swap_without_complement"])
         self.assertEqual(values["secondary_swap_count"], 68)
-        self.assertEqual(p.score_claims({"5": values})["5"]["verdict"], "FAIL")
+        scored = p.score_claims({"5": values})["5"]
+        self.assertEqual(scored["verdict"], "FAIL")
+        self.assertEqual(
+            scored["secondary_not_used_for_verdict"],
+            {
+                "secondary_true_exceeds_every_swap_without_complement": True,
+                "secondary_swap_count": 68,
+            },
+        )
         with self.assertRaisesRegex(ValueError, "every balanced"):
             p.score_swaps(rows[:-1], expected)
         with self.assertRaisesRegex(ValueError, "duplicate"):

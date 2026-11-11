@@ -348,6 +348,18 @@ def score_claims(measurements):
                     raise ValueError(f"{name} is outside its possible count")
             components.append(compare[op](value, limit))
         result[claim] = {"verdict": verdict(components), "components": components}
+        # Claim 5: pass the secondary result through so check-limits prints it.
+        # It never changes the verdict.
+        secondary = {
+            name: values[name]
+            for name in (
+                "secondary_true_exceeds_every_swap_without_complement",
+                "secondary_swap_count",
+            )
+            if name in values
+        }
+        if claim == "5" and secondary:
+            result[claim]["secondary_not_used_for_verdict"] = secondary
     result["alphabet_action"] = (
         "re-report claims 1 to 3 in protein20"
         if result["4"]["verdict"] == "FAIL"
