@@ -16,7 +16,7 @@
 set -euo pipefail
 : "${LIST:?}" "${BASE:?}" "${STAGE:?}" "${IMG:?}"
 IFS=$'\t' read -r species clade chunk kind alphabet k pen xdrop index run_regions \
-    < <(sed -n "$((SLURM_ARRAY_TASK_ID + 1))p" "$LIST")
+    < <(sed -n "$((SLURM_ARRAY_TASK_ID + 1))p" "$LIST") || true  # read returns 1 on no row; the next line reports it
 [ -n "$kind" ] || { echo "290: no row $SLURM_ARRAY_TASK_ID in $LIST" >&2; exit 2; }
 slug="$chunk.$kind.$alphabet.k$k.s1.lcfalse.extend-c$pen"
 out="$BASE/out/$species"
