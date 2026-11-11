@@ -6,7 +6,8 @@ Usage: plot_sra_alphabet_overlap.py <alphabet_reach dir> <hp24_27_reach dir> <pd
 Inputs are gene_passes.tsv and threshold.tsv from scripts/sra_alphabet_reach.py. The folders come
 from two sketching methods: alphabet_reach used Swiss-Prot 7-mer frames at scaled 10; hp24_27_reach (HP)
 and pd_k10_reach (protein, Dayhoff) used each species' own protein 10-mer frames at scaled 1. Protein k7,
-Dayhoff k12, k13 and HP k27 were run both ways, which shows how much the method alone changes the count.
+Dayhoff k12, k13 and HP k27 were run both ways, which shows how much the method changes the count. The
+two methods differ in frame rule, scaled and cutoff together, so the change is not from one of them alone.
 
 a. Per setting and species: paper-list genes passing (of 823) and random genes passing (of 848).
    Settings where even the shuffled proteins' 99th percentile is 1.0 cannot pass anything; they get

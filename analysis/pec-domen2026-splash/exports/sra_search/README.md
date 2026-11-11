@@ -323,7 +323,8 @@ Two sketching methods are shown. Rows marked * use the old one:
   (job 51357984). Kept only to show how much the method changes the count.
 
 The method matters a lot. In human reads, protein k7 passes 273 list genes the new way and 67 the old
-way; HP k27 passes 71 and 18. Only the rows without * can be ranked against each other.
+way; HP k27 passes 71 and 18. The two methods differ in frame rule, scaled and cutoff together, so the
+gap cannot be put down to one of them. Only the rows without * can be ranked against each other.
 
 Human reads, new method:
 
