@@ -79,6 +79,14 @@ def test_a_bin_that_does_not_add_up_fails(tmp_path):
     assert bad == 1
 
 
+def test_no_query_side_rows_is_not_run_not_zero(tmp_path):
+    t = rows("Pfam-A domain instances", {}, 10)
+    bad, _ = run(tmp_path, t)
+    assert bad is None
+    bad, _ = cqs.long_table_check(tmp_path / "absent.parquet")
+    assert bad is None
+
+
 def test_pfamn_protein_axes_that_disagree_fail(tmp_path):
     t = rows(
         "Pfam-N domain instances",

@@ -85,16 +85,17 @@ def ident_bin(x):
     return "<30%" if x < 30 else "30-50%" if x < 50 else "50-90%" if x < 90 else ">=90%"
 
 
-def long_table_check(results: Path) -> tuple[int, list[str]]:
+def long_table_check(results: Path) -> tuple[int | None, list[str]]:
     """For every row group and query-side axis, n_instances summed over the bins must equal
-    the whole-set row. Returns (mismatches, lines of the report)."""
+    the whole-set row. Returns (mismatches, lines of the report). The count is None when
+    the check could not run, so that the report does not print it as 0."""
     lines, bad = [], 0
     if not results.exists():
-        return 0, ["results.parquet not found."]
+        return None, ["results.parquet not found."]
     r = pl.read_parquet(results)
     q = r.filter(pl.col("stratum_axis").is_in(QUERY_AXES))
     if q.height == 0:
-        return 0, [
+        return None, [
             "results.parquet has no query-side rows yet: the midi-plus run has "
             "not been rescored with the strata covariates."
         ]
@@ -274,10 +275,16 @@ def main():
 
     lines.append("\n## Long table: bins add up to the whole set\n")
     n_bad, more = long_table_check(args.results)
-    bad += n_bad
     lines += more
 
-    lines.append(f"\nMismatches: {bad}.")
+    if n_bad is None:
+        lines.append(
+            f"\nMismatches: {bad} in the bin recounts above. "
+            "The long-table check did not run."
+        )
+    else:
+        bad += n_bad
+        lines.append(f"\nMismatches: {bad}.")
     (args.strata / "checks.md").write_text(
         "# Query strata checks\n\n" + "\n".join(lines) + "\n"
     )
