@@ -575,6 +575,79 @@ Known when the rule was written, from the fits of the section above: the split o
 paper's listed genes by match (below), and that the two tables count a similar number of
 read pairs per library (the paper's table 7.1 million for JA100, this run's 6.9 million).
 
+#### Result so far: table C (job 51944027, 2026-11-11, 36 min)
+
+![Paper's listed genes found per count table, and the paper's found genes by their status in this run](figures/count_split_domen2026_dataset_s1.png)
+
+Panel a: listed genes found on each count table, all four comparisons added up. Panel b:
+the same per comparison, as a share of that comparison's list; marks as in panel a. Panel
+c: the 631 listed genes found on the paper's own table, by what this run's table D has
+for them.
+
+How reads are counted is not a cause of the gap, on this run's genes. The other half of
+the test, on the paper's genes, has not run.
+
+- The gap is 631 - 183 = 448 genes, so a quarter is 112 and half is 224.
+- **How reads are counted, on this run's genes: 4 genes, 1% of the gap.** Counted as HTSeq
+  does with strand ignored (C), the same alignments find 187 listed genes. Counted by
+  Salmon (D) they find 183. Per comparison C finds 96, 72, 14 and 5, and D finds 90, 76,
+  12 and 5.
+- **Everything else: the paper's table less C is 444 genes.** That is the genome and gene
+  models with the match, and the paper's own pipeline against this rerun of it. Tables A
+  and B are needed to tell these apart.
+- **The match alone: at most 135 genes, 30% of the gap.** Of the 631 listed genes found on
+  the paper's table, 92 have no matched gene in this run and 43 have a matched gene that
+  is not tested here. The other 496 are tested here: 168 are found and 328 are not. So at
+  least 313 of the 448 are genes that have a matched, tested gene in this run and are
+  still not found.
+- Those 328 mostly point the paper's way: of the 496 tested, 452 have a fold change in
+  the listed direction in this run. A closer protein match does not help much: at 99%
+  identity over 90% of the protein, 105 of 282 are found (37%); at 95% over 80%, 40 of
+  139 (29%); at the looser 90% over 50%, 23 of 75 (31%).
+- Strand. With strand ignored, C counts 95% as many read pairs per library as the paper's
+  table (median over 38). Counting only read 1 on the gene's strand, or only on the
+  opposite strand, counts 49% and 47% and finds 139 and 133 listed genes. So the paper's
+  table looks like a count with strand ignored, as the rule assumed. The rule's own
+  choice of strand waits for table A.
+- Both tables that were fitted before give the same result here: the paper's table 631
+  and D 183.
+- featureCounts took 2 min and 7.1 GB per strand setting (8 CPUs), the 20 fits 7 min 20 s
+  and 1.7 GB.
+
+Not yet run: tables A and B, this run's reads on the paper's genome and genes. One command
+on Sherlock aligns the paper's 38 libraries to the paper's genome, counts both ways and
+refits all nine tables, with nothing waiting on a person:
+
+```bash
+cd /scratch/users/olgabot/2024-kmerseek-analysis-pec-count-split && git pull && cd nextflow-runs/botryllus-pec-young && make run-count-split
+```
+
+Watch with `make watch-count-split`, stop with `make stop-count-split`. Then, on the
+laptop, copy `$SCRATCH/botryllus-pec-young/count-split/count_split_*.tsv` here and
+`count_split.out` to `each-alone-checks/`, and run `plot_count_split.py`.
+
+| Task | Resources asked | Measured before | Expected |
+|---|---|---|---|
+| Nextflow head (`nf-botryllus-pec-count-split`) | 2 CPUs, 8 GB, 12 h | 36 min and 0.5 GB for C alone (job 51944027) | about 3 to 4 h in all |
+| STAR index of the paper's genome (580 Mb, 14 sequences) | pipeline default: 12 CPUs, 72 GB, 16 h | the April 2024 genome's index, 2026-10-27 run: 5 min, 18.2 GB | about the same |
+| STAR alignment, 38 libraries | pipeline default: 12 CPUs, 72 GB, 16 h | 2026-10-27 run: the largest library (SRR32233964, 69.9 million pairs) took 2 h 21 min and 15.2 GB, the next two 54 and 49 min | about 2.5 h for the largest; it sets the length of the run |
+| featureCounts, 3 strand settings per genome | 8 CPUs, 16 GB, 30 min | 2 min, 7.1 GB each | the same |
+| The fits (36) | 1 CPU, 8 GB, 1 h | 20 fits: 7 min 20 s, 1.7 GB | about 13 min |
+
+The first usable result is the whole result, about 3 to 4 h after launch. There is no
+faster part to read first: C is already read above, and A and B both need the alignment.
+The one thing not checked ahead of the run is that nf-core/rnaseq accepts the paper's
+gene-model file (`nc_nsi_nf.gtf`). Its transcript and gene IDs are in the form the
+pipeline's own scripts read, and the lab built a STAR index from it, but the pipeline has
+not been run on it.
+
+Tables: `count_split_fits.tsv` (one row per table and comparison),
+`count_split_summary.tsv` (one row per table), `count_split_listed.tsv` (each listed gene
+in each table), `count_split_libraries.tsv` (read pairs counted per library),
+`count_split_match.tsv` (panel c). Code: `count_split.nf`, `run_count_split.sh`,
+`each-alone-checks/count_split.R` with its output `count_split.out`,
+`plot_count_split.py`, `params-rnaseq-paper-genome.yaml`, `samplesheet_paper.csv`.
+
 ## Outputs
 
 In `$SCRATCH/botryllus-pec-young/`:

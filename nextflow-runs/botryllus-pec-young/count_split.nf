@@ -19,11 +19,11 @@ params.deseq2_image  = '/scratch/users/olgabot/apptainer-cache/quay.io-biocontai
 
 process FEATURECOUNTS {
     tag "${genome} strand ${strand}"
-    // No earlier featureCounts run on these files to size from. The 38 alignment files of
-    // the April 2024 genome total 15 GB; the largest is 3.6 GB (69.9 million read pairs).
+    // Sized from the 2026-11-11 run on the April 2024 genome's 38 alignment files (the
+    // largest 3.6 GB, 69.9 million read pairs): each strand setting took 2 min and 7.1 GB.
     cpus 8
     memory { 16.GB * task.attempt }
-    time { 2.h * task.attempt }
+    time { 30.min * task.attempt }
 
     input:
     tuple val(genome), path(gtf), path(bams), val(strand)
@@ -40,7 +40,7 @@ process FEATURECOUNTS {
 }
 
 process FITS {
-    // 36 fits took 12 min 48 s and 2.1 GB in job 51911916; this is at most 36 fits.
+    // 20 fits took 7 min 20 s and 1.7 GB on 2026-11-11; with the paper's genome it is 36.
     cpus 1
     memory { 8.GB * task.attempt }
     time { 1.h * task.attempt }

@@ -1,0 +1,58 @@
+tables: paper_table this_genome__featurecounts_s0 this_genome__featurecounts_s1 this_genome__featurecounts_s2 this_genome__salmon 
+converting counts to integer mode
+paper_table                      2 h     genes 58601 counted   53282328 tested 50236 p<.05  646 2-fold up   94 down  552 | listed 280 with a gene 280 tested 280 found 239
+converting counts to integer mode
+paper_table                      24 h    genes 58601 counted   64212610 tested 50592 p<.05  816 2-fold up  689 down  127 | listed 350 with a gene 350 tested 350 found 277
+converting counts to integer mode
+paper_table                      13-49 d genes 58601 counted    2370559 tested 25407 p<.05   94 2-fold up   37 down   57 | listed  66 with a gene  66 tested  66 found  51
+converting counts to integer mode
+paper_table                      132 d   genes 58601 counted    2393196 tested 21031 p<.05  179 2-fold up   92 down   87 | listed  86 with a gene  86 tested  86 found  64
+converting counts to integer mode
+this_genome__featurecounts_s0    2 h     genes 34775 counted   56460476 tested 30699 p<.05  642 2-fold up   75 down  566 | listed 280 with a gene 238 tested 219 found  96
+converting counts to integer mode
+this_genome__featurecounts_s0    24 h    genes 34775 counted   69002402 tested 30705 p<.05  528 2-fold up  426 down  102 | listed 350 with a gene 294 tested 257 found  72
+converting counts to integer mode
+this_genome__featurecounts_s0    13-49 d genes 34775 counted    1312103 tested 16827 p<.05  111 2-fold up   30 down   81 | listed  66 with a gene  59 tested  54 found  14
+converting counts to integer mode
+this_genome__featurecounts_s0    132 d   genes 34775 counted     745711 tested 12984 p<.05   98 2-fold up   53 down   45 | listed  86 with a gene  76 tested  74 found   5
+converting counts to integer mode
+this_genome__featurecounts_s1    2 h     genes 32568 counted   28672390 tested 28598 p<.05  460 2-fold up   77 down  383 | listed 280 with a gene 238 tested 222 found  83
+converting counts to integer mode
+this_genome__featurecounts_s1    24 h    genes 32568 counted   35043487 tested 28673 p<.05  337 2-fold up  251 down   85 | listed 350 with a gene 294 tested 255 found  43
+converting counts to integer mode
+this_genome__featurecounts_s1    13-49 d genes 32568 counted     673497 tested 13951 p<.05   56 2-fold up   20 down   36 | listed  66 with a gene  59 tested  54 found   7
+converting counts to integer mode
+this_genome__featurecounts_s1    132 d   genes 32568 counted     387779 tested 10554 p<.05   62 2-fold up   37 down   25 | listed  86 with a gene  76 tested  70 found   6
+converting counts to integer mode
+this_genome__featurecounts_s2    2 h     genes 32545 counted   28634761 tested 28749 p<.05  458 2-fold up   76 down  381 | listed 280 with a gene 238 tested 221 found  80
+converting counts to integer mode
+this_genome__featurecounts_s2    24 h    genes 32545 counted   34999736 tested 28541 p<.05  321 2-fold up  230 down   91 | listed 350 with a gene 294 tested 257 found  38
+converting counts to integer mode
+this_genome__featurecounts_s2    13-49 d genes 32545 counted     661024 tested 13854 p<.05   61 2-fold up   15 down   46 | listed  66 with a gene  59 tested  57 found   8
+converting counts to integer mode
+this_genome__featurecounts_s2    132 d   genes 32545 counted     370820 tested 10485 p<.05   48 2-fold up   31 down   17 | listed  86 with a gene  76 tested  71 found   7
+converting counts to integer mode
+this_genome__salmon              2 h     genes 35618 counted   54250591 tested 31577 p<.05  649 2-fold up   94 down  555 | listed 280 with a gene 238 tested 217 found  90
+converting counts to integer mode
+this_genome__salmon              24 h    genes 35618 counted   66249878 tested 31628 p<.05  553 2-fold up  438 down  115 | listed 350 with a gene 294 tested 266 found  76
+converting counts to integer mode
+this_genome__salmon              13-49 d genes 35618 counted    1315950 tested 17278 p<.05  111 2-fold up   41 down   70 | listed  66 with a gene  59 tested  55 found  12
+converting counts to integer mode
+this_genome__salmon              132 d   genes 35618 counted     761395 tested 13240 p<.05   80 2-fold up   46 down   34 | listed  86 with a gene  76 tested  75 found   5
+
+listed genes found, all four comparisons (of 782 entries)
+                          table listed_p_lt_0_05_same_direction
+1                   paper_table                             631
+2 this_genome__featurecounts_s0                             187
+3 this_genome__featurecounts_s1                             139
+4 this_genome__featurecounts_s2                             133
+5           this_genome__salmon                             183
+
+read pairs counted, as a share of the paper's table, and rank correlation with it per library (median over 38)
+                          table     share spearman_with_paper_table
+1                   paper_table 1.0000000                        NA
+2 this_genome__featurecounts_s0 0.9477539                        NA
+3 this_genome__featurecounts_s1 0.4900935                        NA
+4 this_genome__featurecounts_s2 0.4706102                        NA
+5           this_genome__salmon 0.9436610                        NA
+DESeq2 1.42.0 R version 4.3.3 (2024-02-29) 
