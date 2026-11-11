@@ -73,8 +73,19 @@ def load_inputs():
 
 
 def write_background(background):
+    """Write the list of random entries once; afterwards only check it has not changed.
+
+    The list is a tracked file. If the Swiss-Prot FASTA on disk gives a different
+    sample, stop instead of overwriting it."""
     out = D / "298_random_swissprot_5000.txt"
-    out.write_text("".join(f"{a}\n" for a in background))
+    text = "".join(f"{a}\n" for a in background)
+    if not out.exists():
+        out.write_text(text)
+    elif out.read_text() != text:
+        sys.exit(
+            f"{out} differs from the random sample drawn from the Swiss-Prot FASTA on "
+            "disk. Check the FASTA release, or delete the file to write a new list."
+        )
     return out
 
 
@@ -372,6 +383,17 @@ def main():
             f"byte-identical: {same}\n"
         )
         if not same:
+            skipped = [
+                flag
+                for flag, on in [
+                    ("--nullc", args.nullc),
+                    ("--run", args.run),
+                    ("--residues", args.residues),
+                ]
+                if on
+            ]
+            if skipped:
+                print(f"gate 1 failed; not run: {' '.join(skipped)}", file=sys.stderr)
             sys.exit(1)
     if args.nullc:
         c = make_null_c(sprot)
