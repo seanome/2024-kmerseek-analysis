@@ -72,6 +72,8 @@ def check(
 
     with opener(path, "rt") as f:
         for i, line in enumerate(f, start=1):
+            if not line.strip("\r\n"):
+                continue  # an empty line is not a row
             n_rows += 1
             if len(problems) >= MAX_SHOWN:
                 break

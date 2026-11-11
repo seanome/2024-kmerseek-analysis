@@ -78,6 +78,14 @@ def test_empty_file_fails(tmp_path):
     assert r.returncode == 1 and "no rows" in r.stderr
 
 
+def test_empty_lines_are_not_rows(tmp_path):
+    row = f"{Q}\t{T}\t1\t200\t5\t190\t250.5\t1e-60"
+    r = run(tmp_path, [row, ""])
+    assert r.returncode == 0, r.stderr
+    r = run(tmp_path, ["", ""])
+    assert r.returncode == 1 and "no rows" in r.stderr and "columns" not in r.stderr
+
+
 def test_ninth_column_for_motif_tools(tmp_path):
     assert run(tmp_path, [f"{Q}\t{T}\t1\t20\t5\t24\t3.5\tNA\t12"]).returncode == 0
     r = run(tmp_path, [f"{Q}\t{T}\t1\t20\t5\t24\t3.5\tNA\tmany"])
