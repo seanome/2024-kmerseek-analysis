@@ -79,7 +79,7 @@ step again tests that. The rule is in `../../design/human/README.md`: GSE99963 f
 pairs, GSE144304 mixes the two groups, and each contrast has the most uneven, middle and most even
 swap by reads per sample, 18 in all. GSE120862 has no swaps yet.
 
-| route | lists | real above all 3 swaps | median swap share / real share | same, counting either direction | swap lists beating random |
+| route | lists | real above all 3 swaps (1 in 4 by chance) | median swap share / real share | same, counting either direction | swap lists beating random |
 |---|---|---|---|---|---|
 | SPLASH compactors, p < 0.05 | 12 | 7 | 0.93 | 0.93 | 7 of 36 |
 | KaMRaT, DESeq2, corrected p <= 0.05 | 12 | 10 | 0.00 | 0.00 | 0 of 36 |
