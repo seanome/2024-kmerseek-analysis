@@ -352,7 +352,11 @@ def step_run(species: str, workers: int, only: list[str] | None) -> None:
         return rec
 
     with cf.ThreadPoolExecutor(max_workers=workers) as ex:
-        for rec in ex.map(one, todo):
+        # Write each record as its setting finishes, not in the order submitted: a slow
+        # first setting would otherwise hold back the records of settings already done,
+        # and a job killed at its time limit would re-run them on resume.
+        for fut in cf.as_completed([ex.submit(one, a) for a in todo]):
+            rec = fut.result()
             print(json.dumps(rec), file=sys.stderr, flush=True)
             with open(done_file, "a") as fh:
                 fh.write(json.dumps(rec) + "\n")
@@ -401,7 +405,10 @@ def step_summarise(species: str, only: list[str] | None) -> None:
         # own chance is E divided by that number. Added 2026-10-21, after the chained run's
         # search-space check failed (s.d. 5.1): the first version used E * L / N for both.
         .with_columns(
-            n_index=((pl.col("region_evalue").log(2) + pl.col("region_ka_bits")) * math.log(2)).exp()
+            n_index=(
+                (pl.col("region_evalue").log(2) + pl.col("region_ka_bits"))
+                * math.log(2)
+            ).exp()
         )
         .with_columns(
             chained=pl.col("n_index").is_finite()
@@ -425,10 +432,14 @@ def step_summarise(species: str, only: list[str] | None) -> None:
         .collect()
     )
     # The search space must not depend on the target: log2(E) + bits constant per query and setting.
-    print(f"chained calls (E from the sum statistic): {int(calls['chained'].sum()):_} of {calls.height:_}")
+    print(
+        f"chained calls (E from the sum statistic): {int(calls['chained'].sum()):_} of {calls.height:_}"
+    )
     space = (
         calls.filter(
-            pl.col("region_ka_bits").is_not_null() & (pl.col("region_evalue") > 0) & ~pl.col("chained")
+            pl.col("region_ka_bits").is_not_null()
+            & (pl.col("region_evalue") > 0)
+            & ~pl.col("chained")
         )
         .with_columns(c=pl.col("region_evalue").log(2) + pl.col("region_ka_bits"))
         .group_by("query_name", "alphabet", "ksize")
