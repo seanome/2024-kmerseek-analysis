@@ -270,12 +270,16 @@ def best_score_p_all(names: list[str] | None = None) -> "pl.DataFrame":
     import bhf_shuffle_null_utils as su
 
     out, before = [], su.RUN
-    for name, run in NULLS.items():
-        if names is not None and name not in names:
-            continue
-        su.RUN = run
-        out.append(su.best_score_p(su.load()).with_columns(pl.lit(name).alias("null")))
-    su.RUN = before
+    try:
+        for name, run in NULLS.items():
+            if names is not None and name not in names:
+                continue
+            su.RUN = run
+            out.append(
+                su.best_score_p(su.load()).with_columns(pl.lit(name).alias("null"))
+            )
+    finally:
+        su.RUN = before
     return pl.concat(out, how="diagonal").filter(pl.col("metric").is_in(SCORES))
 
 
