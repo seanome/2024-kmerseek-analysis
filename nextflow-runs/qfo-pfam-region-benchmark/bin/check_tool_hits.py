@@ -16,17 +16,18 @@ E-value, or for a tool that reports a probability, 1 - probability; it may be em
 A motif tool may add a 9th column, n_matched_residues (a whole number), which the scorer reads.
 
 The best-hit annotator modules (modules/diamond_best_hit.nf, modules/mmseqs_best_hit.nf)
-write 11 columns, the hits table bin/annotator_best_hit.py reads: the 8 above (that script and
-CONTRIBUTING.md name the score column bits), then pident
-(0-100) and the aligned query and target residues with '-' for gaps. For those, the residues
-in each aligned string (gaps not counted) must equal the length of its interval, and the two
-strings must be the same length.
+write 11 columns, the hits table bin/annotator_best_hit.py reads: the 8 above (that script
+and CONTRIBUTING.md name the score column bits), then pident (0-100) and the aligned query
+and target residues with '-' for gaps. For those, the residues in each aligned string (gaps
+not counted) must equal the length of its interval, and the two strings must be the same
+length.
 
 Exits 1 and names the first bad rows when a row has the wrong number of columns, a
 coordinate that is not a whole number, a start below 1, an end before its start, an end past
 the sequence length (when the FASTA files are given), a score or E-value that is not a finite
-number (inf and nan fail), a negative E-value, or a name not in the FASTA. An empty file also fails: no tool finds nothing
-in 998 queries against a proteome, so an empty file means the command went wrong.
+number (inf and nan fail), a negative E-value, or a name not in the FASTA (when that side's
+FASTA is given). An empty file also fails: no tool finds nothing in 998 queries against a
+proteome, so an empty file means the command went wrong.
 """
 
 import argparse

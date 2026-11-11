@@ -145,8 +145,12 @@ python nextflow-runs/qfo-pfam-region-benchmark/bin/check_tool_hits.py \
 
 It fails on a wrong column count, a coordinate that is not a whole number, a start below 1,
 an end before its start or past the sequence, a score or E-value that is not a finite number
-(`inf` and `nan` fail), a negative E-value, a `pident` outside 0 to 100, aligned strings of unequal length or whose residues do
-not add up to the two intervals, a name not in the FASTA, or an empty file.
+(`inf` and `nan` fail), a negative E-value, a `pident` outside 0 to 100, aligned strings of
+unequal length or whose residues do not add up to the two intervals, a name not in the FASTA,
+or an empty file.
+
+An end past the sequence and a name not in the FASTA are checked only on a side whose FASTA
+you pass: the query with `--query-fasta`, the target with `--target-fasta`.
 
 The QfO pipeline (`main.nf`), which searches each of 15 relatives' proteomes, uses the first
 8 of these columns, plus an optional 9th, `n_matched_residues`, for motif tools such as
