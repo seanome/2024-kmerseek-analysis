@@ -16,7 +16,7 @@ log2fc is then between the means.
 
 size_factor_mean is a third rule, planned 2026-11-10 in design/sample_scaling/README.md before it was
 scored: the sample_mean rule, with each sample divided by its DESeq2 poscounts size factor (taken over
-the samples in the counts file) in place of its total. Cutoffs are the same.
+the control and PEC samples named in the design file) in place of its total. Cutoffs are the same.
 
 Writes gene, control_reads, PEC_reads, log2fc (empty when one group has no reads), direction.
 """
