@@ -345,7 +345,11 @@ def one_chunk(tag: str, chunk: list[tuple[str, str]], arm: dict) -> str:
         return f"{tag} FAILED rc={rc} (log: {OUT / 'logs' / (tag + '.log')})"
     if KEEP_REGIONS:
         top_regions(csv, arm).write_parquet(OUT / "regions" / f"{tag}.parquet")
-    reduce_chunk(csv, arm).write_parquet(done)
+    # Write under a name the resume check and the `top/*.parquet` readers ignore, then
+    # rename: a job killed mid-write must not leave a cut-off file that counts as done.
+    part = done.with_name(done.name + ".tmp")
+    reduce_chunk(csv, arm).write_parquet(part)
+    part.replace(done)
     csv.unlink(missing_ok=True)
     fa.unlink(missing_ok=True)
     return f"{tag} ok"
