@@ -311,6 +311,16 @@ def test_kmer_spectra_reads_header_and_checks_k(tmp_path):
     assert row["source_path"].startswith("/scratch/users/olgabot/")
     sprot = out.filter(pl.col("ksize") == 15).row(0, named=True)
     assert sprot["sequences"] == "Swiss-Prot" and sprot["kmerseek_version"] is None
+    # An empty index log leaves the version null instead of stopping the build.
+    write_spectrum(k2 / "k3.hp.k14.spectrum.csv.gz", 80, 5, 14)
+    (k2 / "k3.hp.k14.index.log").write_text("")
+    out = bll.kmer_spectra(tmp_path)
+    assert out.filter(pl.col("ksize") == 14)["kmerseek_version"].to_list() == [None]
+    # A file prefix that names no known dataset is refused with the file's path.
+    write_spectrum(k2 / "k9.hp.k13.spectrum.csv.gz", 1, 1, 13)
+    with pytest.raises(ValueError, match="k9"):
+        bll.kmer_spectra(tmp_path)
+    (k2 / "k9.hp.k13.spectrum.csv.gz").unlink()
     # A file named k17 whose header says k=18 is refused, not read.
     write_spectrum(k2 / "k2.hp.k17.spectrum.csv.gz", 1, 1, 18)
     with pytest.raises(ValueError):

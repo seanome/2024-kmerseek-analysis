@@ -988,8 +988,13 @@ def kmer_spectra(data: Path) -> pl.DataFrame:
         log = p.with_name(p.name.replace(".spectrum.csv.gz", ".index.log"))
         version = None
         if log.exists():
-            first = log.read_text().splitlines()[0]
+            # An empty log (a task killed right after opening it) has no first line.
+            first = next(iter(log.read_text().splitlines()), "")
             version = first if first.startswith("kmerseek ") else None
+        if prefix not in SPECTRA_DATASETS:
+            raise ValueError(
+                f"{p}: file prefix {prefix!r} is not one of {sorted(SPECTRA_DATASETS)}"
+            )
         sequences, key = SPECTRA_DATASETS[prefix]
         rows.append(
             {
