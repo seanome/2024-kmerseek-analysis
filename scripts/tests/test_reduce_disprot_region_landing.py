@@ -116,6 +116,28 @@ def test_same_term_needs_the_same_function_and_any_term_does_not(tmp_path):
     assert row(out, "any_term")["landed"]
 
 
+def test_a_call_on_a_target_region_with_three_terms_is_counted_once(tmp_path):
+    # One call; the target interval 101-130 has three function terms.
+    job = aligner_file(tmp_path, [("Q1", "T1", 11, 40, 101, 130, 50.0)])
+    out, *_ = rd.reduce_one(
+        job,
+        regions([("Q1", "IDPO:1", 11, 40)]),
+        tmap(
+            [
+                ("T1", "IDPO:1", 101, 130),
+                ("T1", "IDPO:2", 101, 130),
+                ("T1", "IDPO:3", 101, 130),
+            ]
+        ),
+        ev,
+        0.5,
+        1000,
+    )
+    for rule in ("same_term", "any_term"):
+        r = row(out, rule)
+        assert r["n_overlapping_calls"] == 1 and r["n_overlapping_targets"] == 1
+
+
 def test_a_call_covering_under_half_of_the_target_region_carries_no_label(tmp_path):
     # Target region 101-200 (100 aa); the call covers 101-140, 40% of it.
     job = aligner_file(tmp_path, [("Q1", "T1", 11, 40, 101, 140, 50.0)])

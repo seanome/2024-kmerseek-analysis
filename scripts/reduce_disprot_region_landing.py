@@ -324,7 +324,11 @@ def score_regions(labelled: pl.DataFrame, regions: pl.DataFrame, ev) -> pl.DataF
             m.sort(order, descending=desc)
             .group_by(key)
             .agg(
-                n_overlapping_calls=pl.len(),
+                # One call can carry several target terms, so it has one row per term.
+                # Count the call once.
+                n_overlapping_calls=pl.struct(
+                    "qstart", "qend", "target_acc", "tstart", "tend"
+                ).n_unique(),
                 n_overlapping_targets=pl.col("target_acc").n_unique(),
                 any_inside_half=(pl.col("inside") >= 0.5).any(),
                 landed=pl.col("landed").any(),
