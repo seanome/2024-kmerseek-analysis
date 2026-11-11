@@ -121,38 +121,38 @@ def main(download_dir: Path, out_dir: Path) -> None:
         & (pl.col("peptide_length") <= cfu.MAX_PEPTIDE_LENGTH)
         & (pl.col("n_cysteines") >= cfu.MIN_CYSTEINES)
     )
-    too_long = all_queries.filter(
-        pl.col("peptide_length") > cfu.MAX_PEPTIDE_LENGTH
-    ).height
-    too_short = all_queries.filter(
-        pl.col("peptide_length") < cfu.MIN_PEPTIDE_LENGTH
-    ).height
-    too_few = all_queries.filter(
-        (pl.col("peptide_length") >= cfu.MIN_PEPTIDE_LENGTH)
-        & (pl.col("peptide_length") <= cfu.MAX_PEPTIDE_LENGTH)
-        & (pl.col("n_cysteines") < cfu.MIN_CYSTEINES)
-    ).height
-    sprot_dropped = pl.concat(
-        [
-            sprot_dropped,
+    # Count the length and cysteine drops for each source on its own. `all_queries` holds
+    # both sources, so one count over all of it would charge ConoServer's drops to
+    # Swiss-Prot.
+    size_dropped = []
+    for source in ("ConoServer", "Swiss-Prot"):
+        of_source = all_queries.filter(pl.col("source") == source)
+        too_long = of_source.filter(
+            pl.col("peptide_length") > cfu.MAX_PEPTIDE_LENGTH
+        ).height
+        too_short = of_source.filter(
+            pl.col("peptide_length") < cfu.MIN_PEPTIDE_LENGTH
+        ).height
+        too_few = of_source.filter(
+            (pl.col("peptide_length") >= cfu.MIN_PEPTIDE_LENGTH)
+            & (pl.col("peptide_length") <= cfu.MAX_PEPTIDE_LENGTH)
+            & (pl.col("n_cysteines") < cfu.MIN_CYSTEINES)
+        ).height
+        size_dropped.append(
             pl.DataFrame(
-                [
-                    {
-                        "reason": f"longer than {cfu.MAX_PEPTIDE_LENGTH} aa",
-                        "n": too_long,
-                    },
-                    {
-                        "reason": f"shorter than {cfu.MIN_PEPTIDE_LENGTH} aa",
-                        "n": too_short,
-                    },
-                    {
-                        "reason": f"fewer than {cfu.MIN_CYSTEINES} cysteines",
-                        "n": too_few,
-                    },
-                ]
-            ).filter(pl.col("n") > 0),
-        ]
-    )
+                {
+                    "reason": [
+                        f"longer than {cfu.MAX_PEPTIDE_LENGTH} aa",
+                        f"shorter than {cfu.MIN_PEPTIDE_LENGTH} aa",
+                        f"fewer than {cfu.MIN_CYSTEINES} cysteines",
+                    ],
+                    "n": [too_long, too_short, too_few],
+                },
+                schema={"reason": pl.Utf8, "n": pl.Int64},
+            )
+            .filter(pl.col("n") > 0)
+            .with_columns(source=pl.lit(source))
+        )
     print(
         f"\nmature peptides built: {all_queries.height}; short disulfide-rich peptides "
         f"({cfu.MIN_PEPTIDE_LENGTH}-{cfu.MAX_PEPTIDE_LENGTH} aa, >= {cfu.MIN_CYSTEINES} C): "
@@ -166,7 +166,9 @@ def main(download_dir: Path, out_dir: Path) -> None:
     dropped = pl.concat(
         [
             cono_dropped.with_columns(source=pl.lit("ConoServer")),
+            size_dropped[0],
             sprot_dropped.with_columns(source=pl.lit("Swiss-Prot")),
+            size_dropped[1],
         ]
     )
     dropped.write_csv(out_dir / "queries_dropped.csv")
