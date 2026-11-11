@@ -4,8 +4,8 @@ Two metro maps, one per chat working on "Shazam for Biology". Each map shows the
 files, the step that reads each of them, and the files that come out, with their file types.
 The oyster map was drawn on 2026-10-23 from what its chat reported, and shows the plan as
 of that day, including steps not built yet. The PEC map was drawn on 2026-10-23, redrawn
-on 2026-10-31 from the pipeline's process list, given a KaMRaT station on 2026-11-01, and
-drawn by hand the same day (see its section below).
+on 2026-10-31 from the pipeline's process list, and given a KaMRaT station on 2026-11-01.
+Later on 2026-11-01 it was drawn again by hand (see its section below).
 
 The numbers on the maps (protein counts, file sizes, index sizes, gene counts) were copied
 from the chats. None of them is printed by code or a log in this repo, and the analysis code
@@ -64,7 +64,7 @@ difference between PEC and control with a t-test, joins the k-mers into longer c
 keeps the k-mers with a corrected p-value of 0.05 or less and the contigs whose best k-mer
 passes that cut. Its contigs go to `search`, and its k-mers go to `control_truth`.
 
-`compactors_nominal` (added 2026-11-01) takes the anchors whose anchor-count DESeq2 fit
+`compactors_nominal` (added 2026-11-01) takes the anchors whose anchor-count PyDESeq2 fit
 passes the paper's own cutoff (uncorrected p <= 0.05 and more than 2-fold) and extends them
 into longer sequences, as `compactors` does for SPLASH anchors. They go to `search`.
 `paper_recovery` (added 2026-11-01) reads the protein hits from the SPLASH and anchor-count
