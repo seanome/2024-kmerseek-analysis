@@ -99,4 +99,5 @@ leaves out, so they are larger than its 5.76 h and 2.11 h. SPLASH has no search 
 - DE-kupl's k-mer counting and limma test are 17.6 of KaMRaT's 23.4 CPU h, and the limma test is not
   needed by KaMRaT. KaMRaT's index, t-test and merge take 2.1 h on one CPU.
 - gene-counts is a lead, not a replacement: see `../nfcore/README.md`. It also needs a proteome.
-- Salmon and kallisto, the usual fast alignment-free tools, were not run.
+- Salmon, a usual fast alignment-free tool, has run only as a pilot on 2 samples (job 51349345,
+  `nextflow-runs/pec-domen2026-nfcore/README.md`), so it has no row here yet. kallisto was not run.
