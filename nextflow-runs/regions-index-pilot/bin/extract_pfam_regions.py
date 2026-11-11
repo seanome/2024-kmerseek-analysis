@@ -99,6 +99,11 @@ def main() -> None:
         .filter(pl.col("accession").is_in(list(keep)))
         .iter_rows()
     )
+    if len(seqs) != len(keep):
+        sys.exit(
+            f"{len(keep) - len(seqs)} reference accessions have no sequence: the "
+            f"accession list and the sequence table come from different flat files"
+        )
     md5 = {a: hashlib.md5(s.encode()).hexdigest() for a, s in seqs.items()}
     fams = pfam_families(args.pfam_hmm_dat)
 
