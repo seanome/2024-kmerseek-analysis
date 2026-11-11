@@ -87,3 +87,72 @@ the same changes and the test has not found the cause.
 - A rank correlation of counts is mostly set by how highly a gene is expressed, which is why the
   change with treatment is measured too.
 - The change is a ratio of means with no test, so it is not the same thing as "listed genes found".
+
+## Result (2026-11-11)
+
+**By the rule above, the test says nothing: the no-genome counter did not reach the count
+correlation of 0.8 against either pipeline (0.36 against the paper's table, 0.48 against Salmon), so
+it is not a usable yardstick by that bar.** What follows was read after the rule failed, so these are
+leads, not verdicts. Two of them are facts about the tables that do not depend on the yardstick.
+
+![Change with treatment compared between count tables, and reads in genes per library](../figures/counts_compare_domen2026_dataset_s1.png)
+
+**a.** How well two count tables agree on each gene's change with treatment, for each of the
+paper's four comparisons. **b.** For each library, the reads the paper's table places in genes
+divided by the reads this run's Salmon table places in genes.
+
+| pair | what differs | count correlation, median over 38 libraries | change correlation, median of 4 comparisons (lowest to highest) |
+|---|---|---|---|
+| B2. salmon against rsem | two aligner counts, same genes | 0.83 | 0.81 (0.74 to 0.86) |
+| C. no-genome on the paper's genes against no-genome on this run's genes | gene set and match | 0.54 | 0.78 (0.73 to 0.84) |
+| B. salmon against no-genome | counter | 0.48 | 0.71 (0.70 to 0.72) |
+| A. paper against no-genome | counter | 0.36 | 0.69 (0.64 to 0.70) |
+| D. paper against salmon | everything | 0.45 | 0.58 (0.55 to 0.63) |
+
+Tables: `summary.tsv`, `change_per_comparison.tsv`, `counts_per_library.tsv`,
+`reads_in_genes_per_library.tsv`. Code: `compare_counts.py`, `plot_counts.py`.
+
+### Facts about the tables
+
+1. **The paper counted with HTSeq.** Its table has HTSeq's summary rows (`__no_feature`,
+   `__ambiguous`, `__too_low_aQual`, `__not_aligned`, `__alignment_not_unique`) and a row `Sum` that
+   equals the sum over genes. These six rows are not genes. They are left out here. Any fit or
+   library total made from `paper_counts.tsv` as exported should leave them out too: in the median
+   library `__not_aligned` alone is 43 % of the reads in the column.
+2. **At 2 h and 24 h the two pipelines place the same number of reads in genes; at the later times
+   this run places far fewer.** Paper's reads in genes over Salmon's, median per comparison: 0.93 at
+   2 h, 1.06 at 24 h, 1.83 at 13-49 d, 3.25 at 132 d, and up to 9.3 in one library. 3 of the 8
+   libraries at 13-49 d and 5 of the 6 at 132 d have a ratio of 2 or more; none of the 24 at 2 h and
+   24 h do. At 132 d Salmon places a read in a gene for 16 % of trimmed read pairs, against 38 % at
+   2 h; the paper's table has 66 % and 36 %. So for the two later comparisons this run starts with a
+   half to a third of the paper's counts per library, from the same libraries.
+
+### Leads
+
+3. **The gene sets look like the smallest part.** The same counter on the two gene sets (C) agrees
+   on the change with treatment almost as well as two aligner counters on one gene set (B2): 0.78
+   against 0.81. Genes the paper splits and this run joins agree less than one-to-one genes (0.75
+   against 0.81), a small difference.
+4. **The counter matters more.** Changing the counter on one gene set (A, B) gives 0.69 and 0.71.
+5. **At 2 h and 24 h, where the totals match, the gap is still there** (D: 0.63 and 0.59). With the
+   same reads in genes, the two tables still rank genes' changes differently. The paper's lists are
+   cut at unadjusted p <= 0.05, and the paper's own tables have 0 and 1 genes at adjusted p < 0.05
+   at these two times (README above, "Compared with the paper"). Lists cut that way are sensitive to
+   small differences in counts; this was not tested here.
+
+### What this does not show
+
+- Why this run places fewer reads in genes in the later libraries. Not tested: whether the trimmed
+  read files hold fewer reads than the paper aligned, whether these libraries align worse to the
+  April 2024 genome, or whether HTSeq and Salmon treat these reads differently. The no-genome counter
+  also places few reads there, which argues against Salmon alone.
+- Whether more reads in genes would bring back the paper's genes at 13-49 d and 132 d.
+- The change with treatment here is a ratio of means after scaling every library to one million
+  reads. It is not DESeq2's test, and PR 220 showed the scaling matters.
+
+### Next test
+
+For the 14 later libraries, count reads at each step on both sides: reads in the SRA run, reads
+after trimming, reads aligned by STAR, reads Salmon places in a gene, against the paper's `Sum`,
+`__not_aligned`, `__no_feature` and `__alignment_not_unique` rows. That says at which step this
+run loses the reads.
