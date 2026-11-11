@@ -73,7 +73,7 @@ def main():
         print(total)
 
     pf.use_style()
-    fig, axs = pf.figure(pf.TWO_COLUMN_MM, 105, nrows=2, ncols=2, sharey=True)
+    fig, axs = pf.figure(pf.TWO_COLUMN_MM, 105, nrows=2, ncols=2, sharey=True, sharex="row")
     y = np.arange(len(COMPARISONS))
     drawn = 0
     for col, (counts, title) in enumerate(COUNTS.items()):
@@ -94,7 +94,7 @@ def main():
             axs[0, 0].plot([], [], marker=marker, color=colour, linestyle="", label=label)
         top.set_title(title)
         top.set_xlabel("Paper's listed genes found,\np < 0.05 in the listed direction (%)")
-        top.set_xlim(left=0)
+        top.set_xlim(0, 90)
         bottom.axvline(0, color="black", linewidth=0.5)
         bottom.set_xlabel(
             "Genes with p ≤ 0.05 and more than 2-fold change (n)\n"

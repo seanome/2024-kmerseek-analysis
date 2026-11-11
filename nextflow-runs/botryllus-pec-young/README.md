@@ -340,8 +340,8 @@ genes at p < 0.05, with `~ treatment` none (`each-alone-checks/fits.out`).
   pipeline), and so does the set of genes the size factors rest on: DESeq2's default uses
   only genes counted in every library of the fit. Per comparison that is 1,540, 2,390, 820
   and 3,083 genes in the paper's counts and 2,028, 2,545, 493 and 1,464 here, at 2 h, 24 h,
-  13-49 d and 132 d (`each-alone-checks/size_factor_genes.out`). Which of these causes the
-  gap is not tested.
+  13-49 d and 132 d (`each-alone-checks/size_factor_genes.out`). The section below tests
+  which of these causes the gap: it is the counts, not the size factors.
 - In the six-window fit, 86% of genes tested at 49-52 d go up with treatment, against 29%
   to 42% at 2 h, 13-17 d and 104-132 d. It is not the 6941c library, the one treated
   library whose colony has no control in this window: leaving it out still gives 87% up.
@@ -411,6 +411,93 @@ have no length table. So every fit on this run's counts now includes the length
 correction, as the pipeline does, and one more fit is added: this run's counts, the
 default, without the length correction. In the 13-49 d comparison the first script also
 picked libraries by window instead of by the paper's group, which is what stopped it.
+
+#### Result (job 51911916, 2026-11-11, 12 min 48 s, 2.1 GB, R DESeq2 1.42.0)
+
+![Paper's listed genes found, and genes passing the paper's cutoff, for each choice of size factors](figures/size_factor_test_domen2026_dataset_s1.png)
+
+Each row is one of the paper's comparisons and each mark is one fit. Panels a and b: share
+of the paper's listed genes with p < 0.05 in the listed direction. Panels c and d: genes
+with p <= 0.05 and more than 2-fold change, lower in treated to the left of zero and higher
+to the right.
+
+Size factors do not explain the gap. The counts do.
+
+Both checks passed. This run's counts with the default give the pipeline's p-values (rank
+correlation 1.00000 in all four comparisons, largest difference in any p-value 0.005) and
+find 183 listed genes. The paper's counts with the default give the paper's p-values (rank
+correlation 0.9995 to 0.9999) and find 626 of the 782. Counted straight from the paper's
+own p-values in Dataset S1, without refitting, it is 631 (239, 277, 51 and 64 against the
+refit's 239, 272, 51 and 64). The gap is 626 - 183 = 443 genes,
+so half is 222 and a quarter is 111.
+
+| Listed genes found, of 782 | This run's counts | The paper's counts |
+|---|---:|---:|
+| DESeq2 default from the same counts | 183 | 626 |
+| DESeq2 default from the other data set's counts (the swap) | 170 | 517 |
+| `poscounts` | 54 | 182 |
+| Library total | 55 | 196 |
+| DESeq2 default, no gene-length correction | 171 | not applicable |
+
+- The paper's size factors on this run's counts find 170, 13 fewer than this run's own.
+  The swap was meant to close the gap and it moved the other way.
+- This run's size factors on the paper's counts find 517, a loss of 109. That is 25% of
+  the gap, just under the quarter the rule set (111), and far from the half (222).
+- Per comparison, with the gap in brackets: at 2 h (149) the swaps move the count by 0 and
+  31, at 24 h (196) by 9 and 43, at 13-49 d (39) by 4 and 13, at 132 d (59) by 0 and 22.
+  At 2 h and 24 h both are under a quarter. At 13-49 d and 132 d the paper's counts lose a
+  third of the gap (33% and 37%) with this run's size factors, and this run's counts gain
+  nothing with the paper's.
+- The two sets of default size factors are close at 2 h and 24 h: the correlation of their
+  logs across the 12 libraries is 0.998 and 0.992. It is 0.89 at 13-49 d (8 libraries) and
+  0.38 at 132 d (6 libraries).
+- Leaving out the pipeline's gene-length correction changes 183 to 171. It is not the
+  cause either.
+
+So with the libraries, the design and the size factors all set to the paper's, this run's
+counts still find 170 of the 782 listed genes where the paper's counts find 626. What is
+left is the counts: different gene models (35,618 genes here, 72,119 in the paper), a
+different alignment and counting pipeline, and the protein match between the two gene
+sets (667 of the 782 entries have a matched gene here, 598 to 630 of them tested). Which
+of these matters most is not tested here.
+
+The second question has a clear answer: the choice of size factors changes the result,
+in both data sets and by much more than a quarter of the gap.
+
+- On the paper's own counts, `poscounts` finds 182 of the listed genes and library totals
+  196, where the default finds 626. At 2 h that is 11 and 22 of 280 against 239. The
+  paper's lists rest on the default size factors.
+- The direction at 24 h depends on the choice. On the paper's counts the default gives 671
+  genes up and 132 down at p <= 0.05 and 2-fold, `poscounts` gives 39 up and 474 down, and
+  library totals give 195 up and 172 down. On this run's counts the same three give 438
+  and 115, 73 and 232, and 146 and 110. This is why the first run above (`poscounts`)
+  found mostly lower at 24 h where the paper lists mostly higher.
+- At 2 h the default gives mostly down in both data sets (94 up and 555 down here, 94 and
+  545 in the paper's counts). `poscounts` gives 42 and 137 here and 29 and 65 in the
+  paper's counts, and library totals give more up than down (125 and 70, 147 and 27).
+- The libraries differ in depth by a wide margin, which is why the choice has this much
+  room to matter: with the default, the largest size factor is 479 times the smallest at
+  2 h and 307 times at 24 h on this run's counts (487 and 176 on the paper's).
+- The default rests on the genes counted in every library of the comparison (2,028 and
+  2,545 of 35,618 here at 2 h and 24 h). Which of the three choices is closest to the
+  truth is not tested here. It would need genes whose change is known.
+
+A second run of the same script (job 51913692) gave the same counts for all 36 fits. Its
+only R warnings were 72 about row names when building the output table.
+
+Tables: `size_factors_fits.tsv` (one row per fit), `size_factors_summary.tsv` (the four
+comparisons added up), `size_factors_values.tsv` (each library's size factor in each fit).
+Code: `each-alone-checks/size_factors.R` with its output `size_factors.out`,
+`each-alone-checks/size_factors.sbatch`, `plot_size_factors.py`. The per-gene results of all 36 fits are in
+`$SCRATCH/botryllus-pec-young/size-factors/size_factors_genes.tsv.gz` (16 MB, not
+committed).
+
+To rerun on Sherlock (one job, 1 CPU, 8 GB, 1 h asked; it used 13 min and 2.1 GB), from a
+folder holding the inputs listed at the top of `size_factors.R`, with `size_factors.R` and `size_factors.sbatch` copied in:
+
+```bash
+cd $SCRATCH/botryllus-pec-young/size-factors && sbatch size_factors.sbatch
+```
 
 ## Outputs
 
