@@ -93,9 +93,15 @@ def test_ninth_column_for_motif_tools(tmp_path):
 
 
 def test_best_hit_table_with_alignments(tmp_path):
-    good = f"{Q}\t{T}\t3\t7\t10\t15\t30.1\t1e-5\t60.0\tMK-LAV\tMKQL-VV"
-    # qaln has 5 residues (3-7) but taln has 6 (10-15) and 7 characters: unequal lengths
-    assert run(tmp_path, [good]).returncode == 1
+    uneven = f"{Q}\t{T}\t3\t7\t10\t15\t30.1\t1e-5\t60.0\tMK-LAV\tMKQL-VV"
+    # qaln has 5 residues (3-7) and taln has 6 (10-15), so the residue counts are right;
+    # qaln is 6 characters and taln is 7, so only the length check can fail this row
+    r = run(tmp_path, [uneven])
+    assert r.returncode == 1, r.stderr
+    assert "aligned strings differ in length: 6 and 7" in r.stderr, r.stderr
+    assert "do not match the intervals" not in r.stderr, r.stderr
+    r = run(tmp_path, [f"{Q}\t{T}\t3\t7\t10\t15\t30.1\t1e-5\t60.0\tMK-LAV"])
+    assert r.returncode == 1 and "10 columns, expected 8" in r.stderr, r.stderr
     good = f"{Q}\t{T}\t3\t7\t10\t15\t30.1\t1e-5\t60.0\tMK-LAV\tMKQLVV"
     r = run(tmp_path, [good])
     assert r.returncode == 0, r.stderr
