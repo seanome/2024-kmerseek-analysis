@@ -284,8 +284,7 @@ Sherlock. `283_bhf_low_complexity_control.py indexes` rebuilds all 152 with note
 own driver (same kmerseek build, human FASTA, flags, Karlin-Altschul fit and retry). Before
 the new copies are searched, it searches 256's own 301 queries again on 6 settings and stops
 unless every best value, and every column of the 9 scores other than the E-value and bit
-score, matches the tables notebook 256 stored. The cell below prints that comparison once
-the run is copied back.
+score, matches the tables notebook 256 stored. The cell below prints that comparison.
 """),
     code(r"""
 rep = lc.DATA / "283" / "reproduce_null1" / "reproduce.json"
