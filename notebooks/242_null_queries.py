@@ -267,6 +267,10 @@ def main() -> None:
         help="which k per alphabet; chunks already searched for an arm are reused",
     )
     args = ap.parse_args()
+    # chunk_tags names one file per 25 queries, so any other size would pair tags with
+    # the wrong queries or leave some unsearched.
+    if args.chunk != 25:
+        ap.error("--chunk must be 25: chunk_tags splits the queries into groups of 25")
     set_out(args.out)
     for d in ("ranks", "tmp", "logs"):
         (OUT / d).mkdir(parents=True, exist_ok=True)
