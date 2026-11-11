@@ -63,7 +63,7 @@ def test_size_factor_mean_gives_no_direction_where_the_total_alone_changed(tmp_p
 
 
 def test_as_pydeseq2_leaves_out_genes_whose_only_counts_are_single_reads():
-    c = np.array([[4.0, 8.0], [1.0, 0.0], [1.0, 1.0], [6.0, 3.0]])
-    kept = poscounts_size_factors(c[[0, 3]])
+    c = np.array([[4.0, 16.0], [1.0, 0.0], [1.0, 1.0]])
+    kept = poscounts_size_factors(c[[0]])
     assert poscounts_size_factors(c, as_pydeseq2=True) == pytest.approx(kept)
     assert poscounts_size_factors(c) != pytest.approx(kept)
