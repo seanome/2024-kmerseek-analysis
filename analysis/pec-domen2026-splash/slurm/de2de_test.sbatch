@@ -17,4 +17,4 @@ S=/scratch/users/olgabot/nb361-pec
 R=/scratch/users/olgabot/2024-kmerseek-analysis-nb361/analysis/pec-domen2026-splash
 W=${W:-$S/de2de}
 export PATH=$S/env/bin:$PATH
-/usr/bin/time -v -o $W/test.time python $R/scripts/de2de_test.py $W $R/design/human $R/design/de2de/human_runs.tsv $W/results ${SETS//:/,}
+/usr/bin/time -v -o $W/test.time python $R/scripts/de2de_test.py $W $R/design/human $R/design/de2de/human_runs.tsv $W/results ${SETS:+${SETS//:/,}}
