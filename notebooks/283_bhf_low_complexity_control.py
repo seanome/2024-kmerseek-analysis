@@ -171,7 +171,8 @@ def read_fasta(p: Path) -> list[tuple[str, str]]:
             name, buf = line[1:], []
         elif line:
             buf.append(line)
-    out.append((name, "".join(buf)))
+    if name:
+        out.append((name, "".join(buf)))
     return out
 
 
