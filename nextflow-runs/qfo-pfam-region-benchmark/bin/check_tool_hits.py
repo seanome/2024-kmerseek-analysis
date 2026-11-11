@@ -125,14 +125,16 @@ def check(
                         f"intervals {qs}-{qe} and {ts}-{te}",
                     )
             try:
-                s = float(score)
-                if math.isnan(s):
-                    raise ValueError
+                if not math.isfinite(float(score)):
+                    bad(i, f"score {score!r} is not a finite number")
             except ValueError:
                 bad(i, f"score {score!r} is not a number")
             if evalue not in ("", "NA"):
                 try:
-                    if float(evalue) < 0:
+                    e = float(evalue)
+                    if not math.isfinite(e):
+                        bad(i, f"E-value {evalue!r} is not a finite number")
+                    elif e < 0:
                         bad(i, f"E-value {evalue} is negative")
                 except ValueError:
                     bad(i, f"E-value {evalue!r} is not a number")

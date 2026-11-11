@@ -55,6 +55,10 @@ def test_good_rows_pass(tmp_path):
         (f"{Q}\t{T}\t1.5\t200\t5\t190\t250.5\t1e-60", "not a whole number"),
         (f"{Q}\t{T}\t1\t200\t5\t190\tstrong\t1e-60", "is not a number"),
         (f"{Q}\t{T}\t1\t200\t5\t190\t250.5\t-1", "negative"),
+        (f"{Q}\t{T}\t1\t200\t5\t190\tinf\t1e-60", "score 'inf' is not a finite"),
+        (f"{Q}\t{T}\t1\t200\t5\t190\tnan\t1e-60", "score 'nan' is not a finite"),
+        (f"{Q}\t{T}\t1\t200\t5\t190\t250.5\tnan", "E-value 'nan' is not a finite"),
+        (f"{Q}\t{T}\t1\t200\t5\t190\t250.5\tinf", "E-value 'inf' is not a finite"),
     ],
 )
 def test_bad_rows_fail(tmp_path, row, words):
