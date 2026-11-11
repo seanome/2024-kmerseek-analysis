@@ -58,12 +58,15 @@ def read_fasta(path):
     """(name, sequence) in file order; name is the header's first word."""
     records, name, buf = [], None, []
     with open(path) as fh:
-        for line in fh:
+        for number, line in enumerate(fh, 1):
             line = line.rstrip("\n")
             if line.startswith(">"):
                 if name is not None:
                     records.append((name, "".join(buf)))
-                name, buf = line[1:].split()[0], []
+                words = line[1:].split()
+                if not words:
+                    raise ValueError("{} line {}: header {!r} has no name after '>'".format(path, number, line))
+                name, buf = words[0], []
             elif line.strip():
                 buf.append(line.strip())
     if name is not None:
