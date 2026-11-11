@@ -530,7 +530,9 @@ workflow {
     indexes = indexReference(references.combine(settings)).index
     kmerseek_hits = searchQueries(indexes).hits
 
-    regex_hits = regexScan(references.combine(Channel.fromList(params.regex_slack)), utils).hits
+    // `--regex_slack 2` on the command line arrives as one Integer, not a list.
+    regex_slacks = Channel.fromList([params.regex_slack].flatten())
+    regex_hits = regexScan(references.combine(regex_slacks), utils).hits
     phmmer_hits = phmmerSearch(references).hits
 
     kmerseek_hits.collectFile(name: 'kmerseek_hits.index.txt', newLine: true,
