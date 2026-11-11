@@ -8,8 +8,10 @@
 #
 #   cd $SCRATCH/251-disprot && sbatch code/scripts/reduce_disprot_region_landing.sbatch
 #
-# A task skips any (arm, target) whose outputs already exist, so resubmitting the same
-# array after a failure only redoes what is missing.
+# A task skips any (arm, target) whose outputs already exist, so resubmitting after a
+# failure only redoes what is missing. The input files are always split into N_TASKS
+# shares, so `sbatch --array=3,17 ...` redoes shares 3 and 17 and no others. Keep
+# N_TASKS equal to the size of the --array range below.
 #SBATCH --job-name=251-landing
 #SBATCH --account=ayeletv
 #SBATCH --partition=hns
@@ -22,6 +24,7 @@
 set -euo pipefail
 RESULTS=/scratch/users/olgabot/2024-kmerseek-analysis/nextflow-runs/qfo-pfam-region-benchmark/data/disprot/results
 IMAGE=/scratch/users/olgabot/apptainer-cache/docker.io-olgabot-kmerseek-0.4.0-rc5.img
+N_TASKS=100
 export POLARS_MAX_THREADS=${SLURM_CPUS_PER_TASK}
 
 apptainer exec --bind /scratch "$IMAGE" python3 code/scripts/reduce_disprot_region_landing.py \
@@ -30,4 +33,4 @@ apptainer exec --bind /scratch "$IMAGE" python3 code/scripts/reduce_disprot_regi
     --qfo-bin code/nextflow-runs/qfo-pfam-region-benchmark/bin \
     --out-dir landing_disprot \
     --task "${SLURM_ARRAY_TASK_ID}" \
-    --n-tasks "${SLURM_ARRAY_TASK_COUNT}"
+    --n-tasks "$N_TASKS"
