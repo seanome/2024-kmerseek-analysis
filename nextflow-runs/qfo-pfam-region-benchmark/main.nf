@@ -4119,6 +4119,11 @@ workflow {
                         "human_vs_${species}.${label}.k${ksize}.lc${lowcomp}",
                         FitCache.searchSettings(indexName, params.threshold, params.min_shared_kmers,
                             params.max_query_pvalue, params.min_region_score))
+                } else {
+                    // The parquet name does not say whether the search was extended, so a
+                    // stored extended result must not be reused as an unextended one.
+                    FitCache.checkUnextendedSearch(java.nio.file.Paths.get("${params.outdir}/kmerseek"),
+                        "human_vs_${species}.${label}.k${ksize}.lc${lowcomp}")
                 }
                 tuple(species, fasta, cli_flag, label, ksize, lowcomp, imageFor(cli_flag),
                       ka)
@@ -4161,6 +4166,9 @@ workflow {
                         params.min_shared_kmers, params.max_query_pvalue, params.min_region_score)
                     FitCache.checkSearch(java.nio.file.Paths.get("${params.outdir}/kmerseek"),
                         "human_vs_${species}.${label}.k${ksize}.lc${lowcomp}", settings)
+                } else {
+                    FitCache.checkUnextendedSearch(java.nio.file.Paths.get("${params.outdir}/kmerseek"),
+                        "human_vs_${species}.${label}.k${ksize}.lc${lowcomp}")
                 }
                 tuple(species, cli_flag, label, ksize, lowcomp, target_bytes, d, human_fasta,
                       image, ka)

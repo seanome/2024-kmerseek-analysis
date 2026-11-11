@@ -30,6 +30,16 @@ try {
     try { helper.checkSearch(directory, stem, changed) }
     catch (IllegalStateException expected) { refused = true }
     assert refused
+    // A run without extension refuses a result that an extended run stored.
+    refused = false
+    try { helper.checkUnextendedSearch(directory, stem) }
+    catch (IllegalStateException expected) { refused = true }
+    assert refused
+    // With no settings file beside it, the result is an unextended one and is reused.
+    directory.resolve(stem + '.search-settings.json').toFile().delete()
+    helper.checkUnextendedSearch(directory, stem)
+    directory.resolve(stem + '.regions.parquet').toFile().delete()
+    helper.checkUnextendedSearch(directory, stem)
 } finally {
     directory.toFile().deleteDir()
 }

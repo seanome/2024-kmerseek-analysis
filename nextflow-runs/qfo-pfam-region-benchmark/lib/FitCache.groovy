@@ -28,6 +28,17 @@ class FitCache {
         }
     }
 
+    /** A run with no extension must not reuse a result that an extended run stored. */
+    static void checkUnextendedSearch(Path directory, String stem) {
+        if (!directory.resolve(stem + '.regions.parquet').toFile().exists()) return
+        if (directory.resolve(stem + '.search-settings.json').toFile().exists()) {
+            throw new IllegalStateException(
+                "Cached search ${stem} was stored by a run with extension, and this run " +
+                'searches it without extension. Use a new --outdir; preserve the old ' +
+                'results as evidence.')
+        }
+    }
+
     static String json(Map settings) {
         return JsonOutput.toJson(settings)
     }
