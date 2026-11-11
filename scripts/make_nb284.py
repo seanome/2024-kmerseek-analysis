@@ -306,7 +306,7 @@ ex_chance = float(ex_chance[0])
 run_bits_ex = L * -np.log2(ex_chance)
 col_bits = np.array(
     [
-        BITS_PER_SCORE * B62[a][b] if a.isalpha() and b.isalpha() else np.nan
+        BITS_PER_SCORE * B62[a][b] if a in hc.AA20 and b in hc.AA20 else np.nan
         for a, b in zip(qa, ta)
     ]
 )
