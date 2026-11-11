@@ -499,6 +499,67 @@ folder holding the inputs listed at the top of `size_factors.R`, with `size_fact
 cd $SCRATCH/botryllus-pec-young/size-factors && sbatch size_factors.sbatch
 ```
 
+### Which part of the counts causes the gap with the paper?
+
+The section above leaves the counts. The paper's Methods say reads were trimmed with Trim
+Galore, aligned with STAR to the Botryllus genome of Voskoboynik et al. 2013, and counted
+with HTSeq. This run differs from that in three ways:
+
+1. **Genome and gene models.** The paper: the 2013 assembly and its 72,113 AUGUSTUS genes
+   (`g1` to `g72113`). This run: the April 2024 assembly and its 35,541 `FUN_` genes.
+2. **How reads are counted per gene**, after STAR in both. HTSeq counts a read pair for a
+   gene only if it overlaps that gene alone and aligns to one place. Salmon also shares
+   out pairs that fit several transcripts or places.
+3. **The protein match** that links each `g` gene to a `FUN_` gene. It is needed only
+   because the gene models differ, so it is counted with part 1 and bounded on its own.
+
+The lab's copy of the 2013 genome and gene models is on Sherlock
+(`/home/groups/ayeletv/Botryllus_Genome/`), so the same reads can be counted on the
+paper's own genes, where no match is needed. That gives four count tables from this run's
+reads, two genomes by two ways of counting, next to the paper's own table:
+
+| | Counted as HTSeq does (featureCounts) | Counted by Salmon |
+|---|---|---|
+| The paper's genome and genes | A | B |
+| This run's genome and genes | C | D = the refit above, 183 listed genes found |
+
+featureCounts stands in for HTSeq: with its defaults it counts a read pair only if it
+overlaps one gene and aligns to one place, as HTSeq's default does. All four use the STAR
+alignments of nf-core/rnaseq 3.27.0. Every table is fitted the same way: each comparison
+alone, `~ treatment`, DESeq2's default size factors, the paper's 38 libraries
+(`each-alone-checks/count_split.R`). The paper's table is fitted without its six rows that
+are not genes.
+
+Rule for reading the result, written on 2026-11-11 before any of tables A, B or C existed:
+
+- The gap is the listed genes found on the paper's table less the 183 found on D.
+- **The paper's own pipeline against this rerun of it** is the paper's table less A. It
+  covers what cannot be set equal here: the trimming, STAR's version and settings, and
+  HTSeq against featureCounts.
+- **How reads are counted** is A less B on the paper's genes, and C less D on this run's.
+- **Genome, gene models and the match** is A less C counted as HTSeq does, and B less D
+  counted by Salmon.
+- A part is a cause of the gap if it accounts for at least a quarter of it, and the main
+  cause if at least half. Counting and gene models each have two estimates. Both are
+  reported, and the part is called by the smaller one.
+- The match alone can explain at most the listed genes that are found on the paper's
+  table and have no matched gene, or no tested gene, in this run.
+- A is trusted as a rerun of the paper's pipeline only if it is close to the paper's
+  table: per library, counted read pairs within 10% of the paper's (median over the 38)
+  and a rank correlation across genes of at least 0.95 (median over the 38). If not, that
+  is reported and A is read only against B and C.
+- HTSeq can count with or without regard to strand, and the paper does not say which.
+  featureCounts is run all three ways. The one used is the one whose counted pairs per
+  library are closest to the paper's on the paper's genome, chosen from the counts before
+  any fit is read. Until A exists, C is read with strand ignored, because the libraries
+  measure as unstranded (see "Strand of read 1" above).
+- A and B need a new alignment (about 4 h). Until it has run, only C is read: C less D is
+  the counting part on this run's genes, and the paper's table less C is everything else.
+
+Known when the rule was written, from the fits of the section above: the split of the
+paper's listed genes by match (below), and that the two tables count a similar number of
+read pairs per library (the paper's table 7.1 million for JA100, this run's 6.9 million).
+
 ## Outputs
 
 In `$SCRATCH/botryllus-pec-young/`:
