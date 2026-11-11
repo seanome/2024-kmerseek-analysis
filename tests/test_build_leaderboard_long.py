@@ -89,7 +89,7 @@ def test_qfo_task(step, tag, style, expected):
 def test_dark_and_scope_tags():
     assert bll.dark_task(
         "kmerseekSearch", "worm.chunk_0001.protein20.k5.s1.lcfalse.extend-c0.14"
-    ) == ("kmerseek", "protein20.k5.s1.lcfalse.extend-c0.14", "worm")
+    ) == ("kmerseek", "protein20.k5.s1.lcfalse.extend-c0.14", "worm", "chunk_0001")
     assert bll.scope_task("searchAndScore", "wass14.k8.c_min") == (
         "kmerseek",
         "wass14.k8.c_min",
@@ -128,6 +128,29 @@ def test_summarise_keeps_newest_completion_per_target():
     assert out["wall_s"] == 5400.0
     assert out["cpu_h"] == pytest.approx(8 * 5400 / 3600)
     assert out["cores"] == 8
+
+
+def test_summarise_counts_every_chunk_of_a_species():
+    setting = "protein20.k5.s1.lcfalse.extend-c0.14"
+    t = pl.DataFrame(
+        {
+            "step": ["kmerseekSearch"] * 3,
+            "tag": [f"worm.chunk_{n}.{setting}" for n in ("0001", "0002", "0002")],
+            "status": ["COMPLETED"] * 3,
+            "realtime": ["1m", "2m", "3m"],
+            "cpus": ["8"] * 3,
+            "peak_rss": ["1 GB"] * 3,
+            "complete": ["a", "b", "c"],
+            "trace_file": ["t"] * 3,
+            "hash": ["a", "b", "c"],
+            "container": [None] * 3,
+        }
+    )
+    (out,) = bll.summarise_tasks(bll.trace_tasks(t, bll.dark_task), "exp", None)
+    # Two chunks of one species; the newer attempt of chunk 0002 replaces the older.
+    assert out["n_tasks"] == 2
+    assert out["n_target_dbs"] == 1
+    assert out["wall_s"] == 240.0
 
 
 def test_summarise_mixed_cores_is_null_not_a_guess():

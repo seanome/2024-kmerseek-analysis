@@ -280,15 +280,17 @@ def summarise_tasks(
 ) -> list[dict]:
     """Per (tool, setting, step): newest COMPLETED attempt of each task, summed.
 
-    A task is (tool, setting, step, target). CACHED rows are reuse, not a second run, and
-    are skipped. cores is the requested CPU count when every task asked the same number,
-    else null; cpu_h sums cores x wall time per task.
+    A task is (tool, setting, step, task). task is the target, or the target and its chunk
+    when a target is searched in several chunks. CACHED rows are reuse, not a second run,
+    and are skipped. cores is the requested CPU count when every task asked the same
+    number, else null; cpu_h sums cores x wall time per task.
     """
     if not rows:
         return []
     df = pl.DataFrame(rows, infer_schema_length=None)
+    task = "task" if "task" in df.columns else "target"
     df = df.sort("complete", nulls_last=True).unique(
-        ["tool", "setting", "step", "target"], keep="last", maintain_order=True
+        ["tool", "setting", "step", task], keep="last", maintain_order=True
     )
     out = []
     for (tool, setting, step), g in df.group_by(
@@ -342,7 +344,9 @@ def trace_tasks(traces: pl.DataFrame, mapper) -> list[dict]:
         key = mapper(r["step"], r["tag"])
         if key is None:
             continue
-        tool, setting, target = key
+        # A mapper may add a fourth item that names the task within its target (the
+        # dark-set search runs each species in chunks).
+        tool, setting, target, *chunk = key
         wall = duration_seconds(r["realtime"])
         cores = int(r["cpus"]) if r["cpus"] not in (None, "", "-") else None
         is_gpu = r["step"] == "prostt5Db"
@@ -352,6 +356,7 @@ def trace_tasks(traces: pl.DataFrame, mapper) -> list[dict]:
                 "setting": setting,
                 "step": r["step"],
                 "target": target,
+                "task": f"{target}.{chunk[0]}" if chunk else target,
                 "complete": r["complete"],
                 "wall_s": wall,
                 "cores": cores,
@@ -893,8 +898,8 @@ def scope_task(step: str, tag: str):
 
 def dark_task(step: str, tag: str):
     if step == "kmerseekSearch":
-        m = re.fullmatch(r"(\w+)\.chunk_\d+\.(.+)", tag or "")
-        return ("kmerseek", m[2], m[1]) if m else None
+        m = re.fullmatch(r"(\w+)\.(chunk_\d+)\.(.+)", tag or "")
+        return ("kmerseek", m[3], m[1], m[2]) if m else None
     return None
 
 
