@@ -237,7 +237,9 @@ def sherlockQueue(gb) {
  */
 process heldOutReference {
     tag "${level}=${excluded}"
-    publishDir "${params.outdir}/references", mode: 'copy', pattern: '*.tsv'
+    // Only the counts table is published. query_table.tsv has the same name in every
+    // clade's task, so publishing it would leave one clade's table over the others.
+    publishDir "${params.outdir}/references", mode: 'copy', pattern: 'counts.*.tsv'
 
     container params.pipeline_image
 
