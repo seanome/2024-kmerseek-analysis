@@ -145,6 +145,9 @@ def main(run_dir, repo_dir, out_dir):
     for sp in SPECIES:
         for f in glob.glob(os.path.join(RESULTS, "protein-min-evalue", sp, "*.csv.gz")):
             m = re.match(r"chunk_\d+\.(.+)\.k(\d+)\.s(\d+)\.lc(\w+)\.(extend-c\d+(?:\.\d+)?)\.csv\.gz$", os.path.basename(f))
+            if m is None:
+                sys.exit("{}: file name is not chunk_N.<alphabet>.k<k>.s<scaled>.lc<mask>.extend-c<penalty>.csv.gz, "
+                         "so protein-min-evalue does not hold only the six settings".format(f))
             names.add((m.group(1), int(m.group(2)), m.group(3), m.group(4), m.group(5)))
     read = sorted(set((a, k) for a, k, s, lc, ext in names))
     if read != sorted(SIX_SETTINGS) or set((s, lc) for _, _, s, lc, _ in names) != {("1", "false")}:
