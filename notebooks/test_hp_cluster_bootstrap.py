@@ -19,11 +19,23 @@ def test_cluster_mean_retains_pair_weighting():
 
 
 def test_offset_seed_is_absent_from_aligned_runs():
-    assert hc.longest_true_run(np.array([False] * 4)) == 0
-    a, b = "HHPP", "PPHH"
-    assert set(a[i : i + 2] for i in range(3)) & set(
-        b[i : i + 2] for i in range(3)
-    ) == {"HH", "PP"}
+    # L is hydrophobic and K is polar in hp_thomas_dill2, so the class strings are
+    # HHPP and PPHH. They share the 2-mers HH and PP, but only at different offsets:
+    # no aligned column has the same class, so the longest aligned run must be 0.
+    query, target = "LLKK", "KKLL"
+    table = hc.TABLES["hp_thomas_dill2"]
+    classes = ["".join("HP"[table[ord(r)]] for r in seq) for seq in (query, target)]
+    assert classes == ["HHPP", "PPHH"]
+    kmers = [{c[i : i + 2] for i in range(3)} for c in classes]
+    assert kmers[0] & kmers[1] == {"HH", "PP"}
+    (row,) = hc.pair_stats(query, target, ["hp_thomas_dill2"])
+    assert row["n_cols"] == 4
+    assert row["longest_run"] == 0
+    # Shift the alignment by two columns and the two L's line up: a run of 2.
+    (row,) = hc.pair_stats("--LLKK", "KKLL--", ["hp_thomas_dill2"])
+    assert row["longest_run"] == 2
+    (row,) = hc.pair_stats("LLKK", "LLKK", ["hp_thomas_dill2"])
+    assert row["longest_run"] == 4
 
 
 def test_missing_values_do_not_poison_cluster_statistics():
