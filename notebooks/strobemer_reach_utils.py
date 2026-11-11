@@ -148,7 +148,13 @@ def n_gap_values(family: str) -> int:
 
 
 def pair_key(w1, gfield, w2, n_words: int, n_gaps: int):
-    """One integer per key: (word1, gap field, word2) in mixed radix."""
+    """One integer per key: (word1, gap field, word2) in mixed radix.
+
+    The largest key is below n_words * n_gaps * n_words. It must fit in a signed 64-bit
+    integer, or two different pairs could get the same key and be counted as shared."""
+    assert (
+        n_words * n_gaps * n_words < 2**63
+    ), f"pair key does not fit in 64 bits: {n_words} words, {n_gaps} gap values"
     return (w1 * n_gaps + gfield) * n_words + w2
 
 
