@@ -165,14 +165,24 @@ def main(run_dir, repo_dir, out_dir):
     pat = re.compile(r"kmerseekSearch \((\w+)\.(chunk_\d+)\.(.+)\)$")
     rows, checks, chunk_of = [], [], {}
     awk_filters = set()
+    # A task that failed and was retried, or a resumed run, leaves more than one trace row
+    # under one task name. Keep the last successful row of each name; stop only when a
+    # wanted task has no successful row.
+    last_ok, not_ok = {}, {}
     for t in trace:
         m = pat.search(t["name"])
         if not m or m.group(3) not in want:
             continue
-        sp, chunk, slug = m.groups()
+        if t["status"] in ("COMPLETED", "CACHED") and t["exit"] == "0":
+            last_ok[t["name"]] = t
+        else:
+            not_ok[t["name"]] = t
+    for name, t in not_ok.items():
+        if name not in last_ok:
+            sys.exit("{}: status {} exit {}".format(name, t["status"], t["exit"]))
+    for t in last_ok.values():
+        sp, chunk, slug = pat.search(t["name"]).groups()
         a, k = want[slug]
-        if t["status"] not in ("COMPLETED", "CACHED") or t["exit"] != "0":
-            sys.exit("{}: status {} exit {}".format(t["name"], t["status"], t["exit"]))
         wd = glob.glob(os.path.join(run_dir, "work", t["hash"] + "*"))
         if len(wd) != 1:
             sys.exit("{}: {} work dirs for {}".format(t["name"], len(wd), t["hash"]))
