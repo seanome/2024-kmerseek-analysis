@@ -1289,24 +1289,9 @@ def main() -> None:
     for exp, rel_dir in SCOPE_EXPERIMENTS.items():
         img = tool_images(traces[exp], scope_task).get("kmerseek")
         parts.append(scope40(data, exp, rel_dir, img))
-    # Same QfO target proteomes as the region runs, so the same divergence from human.
-    mya = dict(
-        pl.concat(parts)
-        .filter(
-            pl.col("experiment").str.starts_with("qfo_region")
-            & pl.col("target_mya_to_human").is_not_null()
-        )
-        .select("target_db", "target_mya_to_human")
-        .unique()
-        .iter_rows()
-    )
-    parts.append(
-        pfam_pair_roc(data).with_columns(
-            pl.col("target_db")
-            .replace_strict(mya, default=None, return_dtype=pl.Float64)
-            .alias("target_mya_to_human")
-        )
-    )
+    # Every target here is a QfO proteome, so timetree_mya below fills its divergence
+    # from human.
+    parts.append(pfam_pair_roc(data))
     results = pl.concat(parts, how="vertical").sort(
         "experiment",
         "tool",
