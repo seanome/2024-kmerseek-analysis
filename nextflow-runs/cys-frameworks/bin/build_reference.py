@@ -79,28 +79,6 @@ def main() -> None:
             file=sys.stderr,
         )
 
-    kept = 0
-    removed = 0
-    toxins_left = 0
-    with gzip.open(args.swissprot, "rt") as src, gzip.open(args.out_fasta, "wt") as out:
-        writing = False
-        for line in src:
-            if line.startswith(">"):
-                header = line[1:].rstrip("\n")
-                writing = header not in excluded_headers and header not in sampled_out
-                if writing:
-                    kept += 1
-                    if header in toxin_headers:
-                        toxins_left += 1
-                elif header in excluded_headers:
-                    removed += 1
-            if writing:
-                out.write(line)
-
-    with open(args.out_truth, "w") as out:
-        for header in sorted(toxin_headers - excluded_headers):
-            out.write(cfu.swissprot_header_fields(header)[0] + "\n")
-
     # The queries this reference is for: those whose own clade is the excluded one.
     rows = []
     with open(args.queries) as handle:
@@ -123,6 +101,35 @@ def main() -> None:
             f"framework over {len(by_framework)} frameworks",
             file=sys.stderr,
         )
+    if not rows:
+        # Stop before the slow step of writing the reference.
+        sys.exit(
+            f"No query in {args.queries} has {args.level} = {args.excluded!r}, so there "
+            "is nothing to search against this reference."
+        )
+
+    kept = 0
+    removed = 0
+    toxins_left = 0
+    with gzip.open(args.swissprot, "rt") as src, gzip.open(args.out_fasta, "wt") as out:
+        writing = False
+        for line in src:
+            if line.startswith(">"):
+                header = line[1:].rstrip("\n")
+                writing = header not in excluded_headers and header not in sampled_out
+                if writing:
+                    kept += 1
+                    if header in toxin_headers:
+                        toxins_left += 1
+                elif header in excluded_headers:
+                    removed += 1
+            if writing:
+                out.write(line)
+
+    with open(args.out_truth, "w") as out:
+        for header in sorted(toxin_headers - excluded_headers):
+            out.write(cfu.swissprot_header_fields(header)[0] + "\n")
+
     with open(args.out_queries, "w") as out:
         for row in rows:
             out.write(f">{row['query_id']}\n{row['peptide']}\n")
