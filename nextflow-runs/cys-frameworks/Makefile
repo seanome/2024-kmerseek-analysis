@@ -185,7 +185,8 @@ stub:
 # The pilot reference keeps every toxin and 20_000 other entries (27_570 for Cnidaria).
 # Its numbers are not the experiment's; it proves the pipeline end to end on SLURM, and
 # its trace's peak_rss is what sizes CYS2_MEMORY_GB for run-phylum and run-genus.
-# cys2 tasks ask 180 GB on hns first (see kmerseekGb in main.nf), then bigmem.
+# A cys2 index task asks 112 GB first (params.cys2_memory_gb, read by indexGb in main.nf),
+# and each retry doubles it.
 pilot: require-sherlock
 	mkdir -p pilot
 	cd pilot && \
@@ -204,7 +205,7 @@ pilot: require-sherlock
 
 # The full runs index Swiss-Prot with one clade removed, about 575_700 entries, 21 times
 # the pilot's reference. How cys2 memory grows with that is not known until the pilot
-# reports peak_rss, so these targets make you set it rather than inherit the pilot's 180.
+# reports peak_rss, so these targets make you set it rather than inherit the pilot's 112.
 CYS2_MEMORY_GB ?=
 # Both asks have to be set from the pilot, not inherited. The pilot's reference is 27_570
 # entries and 8_358_903 residues; a full one is about 575_700 entries and 209_017_843
