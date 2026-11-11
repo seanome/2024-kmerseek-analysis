@@ -59,6 +59,9 @@ Paths from the environment:
   NB289_DIR       output folder (default $SCRATCH/289-reverse-search)
   NB241_KMERSEEK  kmerseek 982a055 binary
   NB289_WORM, NB289_BORRELIA   the two proteome FASTAs (uncompressed)
+  NB289_UNIPROT_DIR  folder with the two downloaded UniProt .fasta.gz files (`prepare`)
+  NB241_HUMAN     GENCODE v49 human protein FASTA (`prepare`)
+  NB241_DIR       notebook 241's output folder; `prepare` reads its queries.fa
   NB289_CHAIN     "gap,shift" to chain regions; unset for gapless
 """
 
@@ -91,7 +94,9 @@ KMERSEEK = Path(
 )
 # UniProt FASTA with each header cut to its first word (so kmerseek's target_name is exactly
 # that word); `prepare` writes them from the downloaded .fasta.gz.
-UNIPROT_DIR = Path("/Users/olga/data/uniprot/reference_proteomes")
+UNIPROT_DIR = Path(
+    ENV.get("NB289_UNIPROT_DIR", "/Users/olga/data/uniprot/reference_proteomes")
+)
 DOWNLOADED = {
     "worm": UNIPROT_DIR / "UP000001940_6239.fasta.gz",
     "borrelia": UNIPROT_DIR / "UP000001807_224326.fasta.gz",
@@ -241,7 +246,12 @@ def step_prepare() -> None:
     QUERIES.write_text("".join(f">{h}\n{s}\n" for h, s in qs))
     print(f"{QUERIES.name}: {len(qs)} queries, md5 {md5(QUERIES)}")
     ced9 = read_fasta(
-        Path("/Users/olga/data/botryllus/alphabet-ranking-three-cases/queries.fa")
+        Path(
+            ENV.get(
+                "NB241_DIR", "/Users/olga/data/botryllus/alphabet-ranking-three-cases"
+            )
+        )
+        / "queries.fa"
     )
     for sp, f in PROTEOMES.items():
         seqs = read_fasta(f)
