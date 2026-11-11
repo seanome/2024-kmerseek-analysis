@@ -58,6 +58,8 @@ sample-to-run manifest. Mouse selection follows the committed calibration file.
 A sample manifest is tab-separated and has one row per biological sample:
 `sample`, `condition`, `biological_replicate`, `taxid`, `study`, `runs`, `layout`,
 `strandedness`, `read_pairs`, `library_evidence`, `published_de`, `selection_date`.
+`biological_replicate` must be unique within a condition; the same value may appear
+in both conditions.
 Put multiple sequencing-run accessions in `runs`, separated by semicolons.
 Strandedness is `forward` or `reverse`; `auto` is insufficient eligibility evidence.
 Read pairs are counted across all lanes of that sample, not total sequenced reads.
