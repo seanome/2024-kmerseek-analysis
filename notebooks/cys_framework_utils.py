@@ -210,7 +210,9 @@ def read_conoserver(xml_path: Path) -> pl.DataFrame:
                 "n_cysteines": sequence.count("C"),
             }
         )
-    return pl.DataFrame(rows)
+    # Read every row to type the columns: `mature_start`, `mature_end` and `framework`
+    # are None in many rows, and the default looks at the first 100 only.
+    return pl.DataFrame(rows, infer_schema_length=None)
 
 
 def conoserver_queries(entries: pl.DataFrame) -> tuple[pl.DataFrame, pl.DataFrame]:
@@ -324,7 +326,7 @@ def read_swissprot_table(tsv_path: Path) -> pl.DataFrame:
     """A UniProt TSV download as a DataFrame, with the feature columns left as text."""
     with open(tsv_path) as handle:
         rows = list(csv.DictReader(handle, delimiter="\t"))
-    return pl.DataFrame(rows)
+    return pl.DataFrame(rows, infer_schema_length=None)
 
 
 def swissprot_queries(
@@ -532,7 +534,7 @@ def settings_table(queries: pl.DataFrame) -> pl.DataFrame:
                 "n_queries_dropped": len(lengths) - searchable,
             }
         )
-    return pl.DataFrame(rows)
+    return pl.DataFrame(rows, infer_schema_length=None)
 
 
 # ---------------------------------------------------------------------------------------
