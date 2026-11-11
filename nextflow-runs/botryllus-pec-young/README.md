@@ -401,6 +401,17 @@ Rule for reading the result, written on 2026-11-11 before any of these fits ran:
   not bear on the gap with the paper, because the paper used the default and so did the
   refit.
 
+Change to the fits, made after a first job (51909796) stopped part-way with the 2 h and
+24 h fits printed (`each-alone-checks/size_factors.first_try.out`). The rule above is
+unchanged. On this run's counts the default did not give back the pipeline's p-values: it
+found 88 and 66 listed genes where the pipeline found 90 and 76. The pipeline's DESeq2 step
+also corrects each gene for its length in each library, from
+`salmon.merged.gene_lengths.tsv`, and the first script left that out. The paper's counts
+have no length table. So every fit on this run's counts now includes the length
+correction, as the pipeline does, and one more fit is added: this run's counts, the
+default, without the length correction. In the 13-49 d comparison the first script also
+picked libraries by window instead of by the paper's group, which is what stopped it.
+
 ## Outputs
 
 In `$SCRATCH/botryllus-pec-young/`:

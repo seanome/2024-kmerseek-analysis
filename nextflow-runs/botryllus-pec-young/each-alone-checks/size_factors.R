@@ -5,7 +5,11 @@
 #   poscounts  DESeq2's poscounts
 #   total      each library's summed gene counts, divided by their geometric mean
 #   swapped    the default size factors of the OTHER data set, same libraries
-# Inputs in the current folder: salmon.merged.gene_counts.tsv, samples_paper.csv,
+# The pipeline's DESeq2 step also corrects this run's counts for each gene's length in each
+# library (salmon.merged.gene_lengths.tsv, as tximport does), so the fits on this run's
+# counts do the same, and default_no_gene_lengths shows what that correction changes. The
+# paper's counts have no such table.
+# Inputs in the current folder: salmon.merged.gene_counts.tsv, salmon.merged.gene_lengths.tsv, samples_paper.csv,
 # paper_counts.tsv, paper_groups.tsv, paper_group<k>.tsv (export_paper_counts.py),
 # paper_gene_overlap_genes.tsv (from ../each-alone-comparison/paper/), and pipeline/ holding
 # the refit's *.deseq2.results.tsv (differentialabundance-paper/tables/differential/rnaseq/).
@@ -21,6 +25,10 @@ s <- read.csv("samples_paper.csv")
 ours <- ours[, s$sample]; colnames(ours) <- s$vial
 # The pipeline drops genes with no count of 1 or more in any of the 38 libraries.
 ours <- ours[rowSums(ours >= 1) >= 1, ]
+len <- read.delim("salmon.merged.gene_lengths.tsv", check.names=FALSE)
+rownames(len) <- len$gene_id; len <- as.matrix(len[rownames(ours), s$sample]); colnames(len) <- s$vial
+stopifnot(all(is.finite(len)), all(len > 0))
+s$comparison <- sub("_(control|treated)$", "", s$group)
 
 paper <- read.delim("paper_counts.tsv", row.names=1, check.names=FALSE)
 paper <- round(as.matrix(paper)); paper <- paper[complete.cases(paper), ]
@@ -33,33 +41,46 @@ listed$fun_gene[tolower(as.character(listed$matched)) != "true"] <- NA
 cat("listed entries", nrow(listed), "with a matched gene in this run", sum(!is.na(listed$fun_gene)), "\n")
 
 total_factors <- function(m) { t <- colSums(m); t / exp(mean(log(t))) }
-default_factors <- function(m) estimateSizeFactorsForMatrix(m)
+# Per-gene, per-library length correction, centred per gene, as DESeq2 does with avgTxLength.
+centred <- function(x) x / exp(rowMeans(log(x)))
+library_factors <- function(m, L=NULL, type="ratio") estimateSizeFactorsForMatrix(if (is.null(L)) m else m / centred(L), type=type)
 
-fit <- function(m, d, sf_type, sf=NULL) {
+fit <- function(m, d, sf_type, sf=NULL, L=NULL) {
   dds <- DESeqDataSetFromMatrix(m, d, ~ treatment)
-  if (sf_type %in% c("default", "poscounts")) {
-    dds <- estimateSizeFactors(dds, type=if (sf_type == "default") "ratio" else "poscounts")
-  } else sizeFactors(dds) <- sf[colnames(m)]
-  # Same calls as the pipeline's DESeq2 step; DESeq() keeps size factors already set.
+  type <- if (sf_type == "poscounts") "poscounts" else "ratio"
+  if (is.null(sf)) {
+    if (!is.null(L)) assays(dds)[["avgTxLength"]] <- L
+    dds <- estimateSizeFactors(dds, type=type)
+    sf <- library_factors(m, L, type)
+  } else if (is.null(L)) {
+    sizeFactors(dds) <- sf[colnames(m)]
+  } else {
+    # The given library factors times the gene-length correction, centred as DESeq2 does.
+    normalizationFactors(dds) <- centred(t(t(centred(L)) * sf[colnames(m)]))
+  }
+  # Same calls as the pipeline's DESeq2 step; DESeq() keeps factors already set.
   dds <- DESeq(dds, test="Wald", fitType="parametric", minReplicatesForReplace=7, quiet=TRUE)
   r <- as.data.frame(results(dds, contrast=c("treatment", "treated", "control")))
-  list(r=r, sf=sizeFactors(dds))
+  list(r=r, sf=sf[colnames(m)])
 }
 
 fits <- list(); values <- list(); genes <- list()
 for (k in names(GROUPS)) {
-  d <- s[s$window == GROUPS[k], ]; rownames(d) <- d$vial
+  d <- s[s$comparison == GROUPS[k], ]; rownames(d) <- d$vial
   stopifnot(setequal(d$vial, g$vial[g$group == as.integer(k)]))
   d$treatment <- factor(d$treatment, levels=c("control", "treated"))
   data <- list(this_run=ours[, d$vial], paper=paper[, d$vial])
-  base <- lapply(data, default_factors)
+  lens <- list(this_run=len[, d$vial], paper=NULL)
+  base <- list(this_run=library_factors(data$this_run, lens$this_run), paper=library_factors(data$paper))
   lk <- listed[listed$comparison == LABEL[k], ]
   for (counts in names(data)) {
     m <- data[[counts]]
     other <- setdiff(names(data), counts)
-    for (sf_type in c("default", "poscounts", "total", "swapped")) {
+    kinds <- c("default", "poscounts", "total", "swapped", if (counts == "this_run") "default_no_gene_lengths")
+    for (sf_type in kinds) {
       sf <- switch(sf_type, total=total_factors(m), swapped=base[[other]], NULL)
-      f <- suppressMessages(fit(m, d, sf_type, sf)); r <- f$r
+      L <- if (sf_type == "default_no_gene_lengths") NULL else lens[[counts]]
+      f <- suppressMessages(fit(m, d, sf_type, sf, L)); r <- f$r
       id <- if (counts == "paper") lk$paper_gene else lk$fun_gene
       lr <- r[match(id, rownames(r)), ]
       tested <- !is.na(id) & !is.na(lr$pvalue)
@@ -86,15 +107,15 @@ for (k in names(GROUPS)) {
         f1 <- Sys.glob(sprintf("pipeline/%s_treated_vs_control*.deseq2.results.tsv", GROUPS[k]))
         pl <- read.delim(f1[1]); pp <- pl$pvalue[match(rownames(r), pl$gene_id)]
         ok <- !is.na(pp) & !is.na(r$pvalue)
-        row$check <- sprintf("largest p difference from pipeline %.2g over %d genes, tested there %d",
-          max(abs(pp[ok] - r$pvalue[ok])), sum(ok), sum(!is.na(pl$pvalue)))
+        row$check <- sprintf("largest p difference from pipeline %.2g, spearman %.5f over %d genes, tested there %d",
+          max(abs(pp[ok] - r$pvalue[ok])), cor(pp[ok], r$pvalue[ok], method="spearman"), sum(ok), sum(!is.na(pl$pvalue)))
       }
       fits[[length(fits) + 1]] <- row
       values[[length(values) + 1]] <- data.frame(counts=counts, comparison=LABEL[k], size_factors=sf_type,
         vial=names(f$sf), treatment=d[names(f$sf), "treatment"], library_total=colSums(m)[names(f$sf)], size_factor=signif(f$sf, 5))
       genes[[length(genes) + 1]] <- data.frame(counts=counts, comparison=LABEL[k], size_factors=sf_type, gene=rownames(r),
         baseMean=signif(r$baseMean, 5), log2FoldChange=signif(r$log2FoldChange, 5), pvalue=signif(r$pvalue, 5), padj=signif(r$padj, 5))
-      cat(sprintf("%-8s %-7s %-9s tested %5d p<.05 %4d 2-fold up %4d down %4d | listed %3d tested %3d found %3d | %s\n",
+      cat(sprintf("%-8s %-7s %-23s tested %5d p<.05 %4d 2-fold up %4d down %4d | listed %3d tested %3d found %3d | %s\n",
         counts, LABEL[k], sf_type, row$tested, row$p_lt_0_05, row$p_le_0_05_2fold_up, row$p_le_0_05_2fold_down,
         row$paper_listed, row$listed_tested, row$listed_p_lt_0_05_same_direction, ifelse(is.na(row$check), "", row$check)))
     }
