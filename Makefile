@@ -54,6 +54,9 @@ running:
 LEADERBOARD_DATA ?= $(HOME)/data/leaderboard-inputs
 LEADERBOARD_PYTHON ?= /Users/olga/anaconda3/envs/2025-kmerseek-analysis/bin/python3
 SHERLOCK_DTN ?= sherlock-dtn
+## Where the laptop-only inputs are read from. provenance.json records them under
+## /Users/olga; set LAPTOP_HOME on a machine that keeps a copy somewhere else.
+LAPTOP_HOME ?= /Users/olga
 
 leaderboard-fetch:
 	mkdir -p $(LEADERBOARD_DATA)
@@ -65,7 +68,7 @@ leaderboard-fetch:
 	  > $(LEADERBOARD_DATA)/.fetch-list-laptop.txt
 	mkdir -p $(LEADERBOARD_DATA)/laptop
 	pixi exec rsync -a --files-from=$(LEADERBOARD_DATA)/.fetch-list-laptop.txt \
-	  /Users/olga/ $(LEADERBOARD_DATA)/laptop/
+	  $(LAPTOP_HOME)/ $(LEADERBOARD_DATA)/laptop/
 
 ## TimeTree's divergence time from human for each QfO relative; leaderboard-tables reads it.
 leaderboard-timetree:
