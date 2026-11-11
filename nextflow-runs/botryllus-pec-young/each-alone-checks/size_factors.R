@@ -32,6 +32,12 @@ s$comparison <- sub("_(control|treated)$", "", s$group)
 
 paper <- read.delim("paper_counts.tsv", row.names=1, check.names=FALSE)
 paper <- round(as.matrix(paper)); paper <- paper[complete.cases(paper), ]
+# The paper's table ends with six rows that are not genes: HTSeq's tallies of reads it did not
+# count (__no_feature, __ambiguous, __too_low_aQual, __not_aligned, __alignment_not_unique)
+# and a Sum row. They are dropped here. The first two jobs (51909796, 51911916) kept them.
+not_gene <- !grepl("^g[0-9]+$", rownames(paper))
+cat("rows of the paper's table that are not genes, dropped:", rownames(paper)[not_gene], "\n")
+paper <- paper[!not_gene, ]
 g <- read.delim("paper_groups.tsv")
 stopifnot(setequal(g$vial, s$vial), setequal(colnames(paper), s$vial))
 cat("genes: this run", nrow(ours), "paper", nrow(paper), "libraries", nrow(s), "\n")
