@@ -1,4 +1,4 @@
-"""Small statistical checks shared by the PEC anchor-count analysis."""
+"""Small statistical helpers shared by the PEC analysis scripts (notebook 361)."""
 
 import numpy as np
 
@@ -23,3 +23,31 @@ def bh_over_fitted_anchors(pvalues):
     restored[order] = adjusted
     q[valid] = restored
     return q
+
+
+def poscounts_size_factors(counts):
+    """DESeq2's `poscounts` size factor of each sample; counts is genes (rows) by samples (columns).
+
+    A gene's reference is the sum of log(count) over the samples where it has a read, divided by the
+    number of all samples. A sample's factor is the median, over its genes with a read, of
+    log(count) minus the reference, taken back from the log. Factors are then divided by their
+    geometric mean. Plan: design/sample_scaling/README.md.
+    """
+    c = np.asarray(counts, dtype=float)
+    if c.ndim != 2 or np.isnan(c).any() or (c < 0).any():
+        raise ValueError("counts must be a genes x samples table of numbers that are zero or more")
+    positive = c > 0
+    if not positive.any(axis=0).all():
+        raise ValueError("a sample has no reads, so it has no size factor")
+    logc = np.where(positive, np.log(np.where(positive, c, 1.0)), 0.0)
+    reference = logc.sum(axis=1) / c.shape[1]
+    factors = np.array([np.exp(np.median((logc[:, j] - reference)[positive[:, j]])) for j in range(c.shape[1])])
+    return factors / np.exp(np.log(factors).mean())
+
+
+def scaled_per_million(counts):
+    """Counts divided by each sample's poscounts factor, times one constant for the whole table that
+    makes the mean sample sum to one million. Only the scaling between samples differs from CPM."""
+    c = np.asarray(counts, dtype=float)
+    scaled = c / poscounts_size_factors(c)
+    return scaled * (1e6 / scaled.sum(axis=0).mean())

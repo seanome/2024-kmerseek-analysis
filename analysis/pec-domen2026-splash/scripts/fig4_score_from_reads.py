@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """The Fig. 4C-D score of Domen et al. 2026 from reads per gene counted with no genome (notebook 361).
 
-Usage: fig4_score_from_reads.py <counts_root> <analysis_dir> <out_dir>
+Usage: fig4_score_from_reads.py <counts_root> <analysis_dir> <out_dir> [size_factor]
 
 counts_root holds <series>/share_<N>/gene.counts.tsv (or .tsv.gz), gene.summary.tsv and gene_counts.time, as
 nextflow-runs/pec-domen2026-fig4-score writes them; share_<N> is the first 1/N of each run's reads.
@@ -10,6 +10,8 @@ design/fig4_score_from_reads/README.md.
 
 Score, the formula of Voskoboynik et al. 2024 as in scripts/exercise_score.py (PR 212):
   expression = log2(CPM + 1), CPM = a gene's reads per million reads that went to any gene
+  with size_factor (design/sample_scaling/README.md, 2026-11-10): log2(scaled count + 1), where each
+  sample is divided by its DESeq2 poscounts size factor in place of its total
   value of a gene in a sample = (expression - (StepMiner threshold + 0.5)) / 3 / sd,
     threshold and sd over every sample of the series
   score = -1 x sum over cluster 13 + 1 x sum over cluster 14 + 2 x sum over cluster 3
@@ -27,6 +29,9 @@ import numpy as np
 import pandas as pd
 from scipy.stats import spearmanr, ttest_ind
 from sklearn.metrics import roc_auc_score
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from pec_analysis_utils import scaled_per_million  # noqa: E402
 
 WEIGHTS = {13: -1, 14: 1, 3: 2}  # cluster: weight
 # series: (column of design/human/samples.tsv, first group, second group); the authors' groups
@@ -70,6 +75,10 @@ def log_cpm(counts):
     return np.log2(counts / counts.sum() * 1e6 + 1)
 
 
+def log_scaled(counts):
+    return np.log2(pd.DataFrame(scaled_per_million(counts), index=counts.index, columns=counts.columns) + 1)
+
+
 def auc_of(score, first, second):
     labels = np.r_[np.zeros(len(first)), np.ones(len(second))]
     return float(roc_auc_score(labels, np.r_[score[first], score[second]]))
@@ -108,7 +117,8 @@ def random_aucs(values, expr, listed, first, second, rng):
     return out
 
 
-def main(counts_root, analysis, out):
+def main(counts_root, analysis, out, scaling="cpm"):
+    assert scaling in ("cpm", "size_factor"), scaling
     counts_root, analysis, out = Path(counts_root), Path(analysis), Path(out)
     out.mkdir(parents=True, exist_ok=True)
     clusters = {
@@ -143,7 +153,7 @@ def main(counts_root, analysis, out):
             summary = pd.read_csv(folder / "gene.summary.tsv", sep="\t").set_index("sample")
             assert (counts.sum() == summary.assigned[counts.columns]).all(), "counts do not add up to the summary"
             counts = counts[list(d.index)]
-            expr = log_cpm(counts)
+            expr = log_cpm(counts) if scaling == "cpm" else log_scaled(counts)
             values = gene_values(expr)
             # 58 genes are in both cluster 14 and cluster 3; the formula counts such a gene in both sums
             found = {c: [g for g in genes if g in values.index] for c, genes in clusters.items()}
@@ -165,6 +175,7 @@ def main(counts_root, analysis, out):
             rows.append(
                 dict(
                     series=series,
+                    scaling=scaling,
                     share_of_reads=f"1/{share}" if share > 1 else "all",
                     share=share,
                     group0=name0,
@@ -214,6 +225,6 @@ def main(counts_root, analysis, out):
 
 
 if __name__ == "__main__":
-    if len(sys.argv) != 4:
+    if len(sys.argv) not in (4, 5):
         raise SystemExit(__doc__)
     main(*sys.argv[1:])

@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Up or down per gene from pec-tools gene-counts, summed by group (notebook 361).
 
-Usage: gene_directions.py <counts.tsv> <design.tsv> <out.tsv> [sample_mean]
+Usage: gene_directions.py <counts.tsv> <design.tsv> <out.tsv> [sample_mean | size_factor_mean]
 
 Rule, fixed in exports/cheap_route/README.md before any run. Reads are summed per group, so a
 shallow sample weighs little, and each group is scaled by its assigned reads. A gene gets a direction
@@ -14,6 +14,10 @@ per million assigned reads and each group takes the mean of its samples. A gene 
 10 or more reads summed in at least one group and a 2-fold or larger change between the group means.
 log2fc is then between the means.
 
+size_factor_mean is a third rule, planned 2026-11-10 in design/sample_scaling/README.md before it was
+scored: the sample_mean rule, with each sample divided by its DESeq2 poscounts size factor (taken over
+the samples in the counts file) in place of its total. Cutoffs are the same.
+
 Writes gene, control_reads, PEC_reads, log2fc (empty when one group has no reads), direction.
 """
 import math
@@ -21,8 +25,12 @@ import sys
 
 import polars as pl
 
+sys.path.insert(0, __file__.rsplit("/", 1)[0])
+from pec_analysis_utils import scaled_per_million  # noqa: E402
+
 counts_p, design_p, out = sys.argv[1:4]
-SAMPLE_MEAN = sys.argv[4:] == ["sample_mean"]
+SIZE_FACTOR = sys.argv[4:] == ["size_factor_mean"]
+SAMPLE_MEAN = SIZE_FACTOR or sys.argv[4:] == ["sample_mean"]
 assert SAMPLE_MEAN or len(sys.argv) == 4, sys.argv
 MIN_READS, MIN_FOLD = 10, 2.0
 d = pl.read_csv(design_p, separator="\t", columns=["sample", "condition"])
@@ -33,7 +41,11 @@ t = c.select("gene", pl.sum_horizontal(groups["control"]).alias("control_reads")
 total_c, total_p = t["control_reads"].sum(), t["PEC_reads"].sum()
 rows = []
 if SAMPLE_MEAN:
-    means = c.select("gene", *[(pl.col(s) / pl.col(s).sum() * 1e6).alias(s) for g in groups.values() for s in g])
+    cols = [s for g in groups.values() for s in g]
+    if SIZE_FACTOR:
+        means = pl.DataFrame(scaled_per_million(c.select(cols).to_numpy()), schema=cols)
+    else:
+        means = c.select(*[(pl.col(s) / pl.col(s).sum() * 1e6).alias(s) for s in cols])
     t = t.with_columns(means.select(pl.mean_horizontal(groups["control"]).alias("control_mean"),
                                     pl.mean_horizontal(groups["PEC"]).alias("PEC_mean")))
     for gene, a, b, ma, mb in t.iter_rows():
