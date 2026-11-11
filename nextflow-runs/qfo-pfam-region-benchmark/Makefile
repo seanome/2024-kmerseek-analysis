@@ -2534,7 +2534,10 @@ index-disk:
 #   Swiss-Prot  $SCRATCH/regions-index-pilot/uniprot_sprot.2026_03.dat.gz
 #   Pfam-A      $(PFAM_HMM_REMOTE) (Pfam 38, pressed)
 ANNOT_RUN    ?= run-annotator-tools
-# Which tools run. Start with the ones whose data and images are in place, e.g.
+# Which tools run. The default is all six. tmvec and plmsearch run on a GPU and need
+# their two images (make push-embedding-images) and their model files under EMB_MODELS,
+# including the TM-Vec and DeepBLAST checkpoints placed by hand. Until those are in
+# place, start with the tools whose data and images are, e.g.
 #   make run-annotator-tools ANNOT_TOOLS=diamond,mmseqs2
 # and add the others later: -resume keeps what finished.
 ANNOT_TOOLS  ?= diamond,mmseqs2,interproscan,eggnog,tmvec,plmsearch
