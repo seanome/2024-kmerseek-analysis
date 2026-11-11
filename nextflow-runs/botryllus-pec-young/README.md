@@ -353,6 +353,54 @@ Tables: `three_fits_vs_paper.tsv`, and in `each-alone-comparison/paper/` and
 `each-alone-comparison/each-window/` the same five tables as above. Code:
 `compare_paper_genes.py`, `plot_paper_gene_overlap.py`, `plot_three_fits.py`.
 
+### Do size factors cause the gap with the paper? Only the size factors changed
+
+The refit above finds 183 of the paper's 782 listed genes. Two things differ between that
+refit and the paper: the counts, and the size factors computed from them. A size factor is
+the number each library's counts are divided by to correct for sequencing depth. This test
+changes only the size factors. Counts, libraries (the paper's 38) and design (`~ treatment`,
+each comparison alone) stay fixed.
+
+Fits, for each of the four comparisons (`each-alone-checks/size_factors.R`, R DESeq2):
+
+| Counts | Size factors |
+|---|---|
+| This run's | DESeq2's default, from genes counted in every library of the comparison |
+| This run's | `poscounts`, which also uses genes with a zero in some libraries |
+| This run's | each library's total: the sum of its gene counts |
+| This run's | the paper's: DESeq2's default computed on the paper's counts, same libraries |
+| The paper's (Dataset S1) | DESeq2's default |
+| The paper's | `poscounts` |
+| The paper's | each library's total |
+| The paper's | this run's: DESeq2's default computed on this run's counts |
+
+For each fit: genes with p <= 0.05 and more than 2-fold change (the paper's Methods cutoff),
+up and down, and how many of the 782 listed genes have p < 0.05 in the listed direction.
+The fold change is DESeq2's own, before the shrinkage the pipeline applies, because 2-fold
+is a cutoff on it. On this run's counts a listed gene is looked up through the MMseqs2
+match above. On the paper's counts it is looked up by its own ID.
+
+Rule for reading the result, written on 2026-11-11 before any of these fits ran:
+
+- Two fits must first give back known results. This run's counts with the default must
+  give the same p-values as the pipeline's refit (job 51553782) and find 183 listed genes.
+  The paper's counts with the default must give the paper's p-values (rank correlation
+  0.999 or more). If either fails, the test is not read.
+- The gap is the listed genes found on the paper's counts with the default, less the 183.
+- Size factors explain the gap if both swaps move the count by at least half the gap:
+  this run's counts with the paper's size factors find at least 183 plus half the gap, and
+  the paper's counts with this run's size factors lose at least half the gap.
+- Size factors do not explain the gap if each swap moves the count by less than a quarter
+  of the gap. Then the counts are what differs.
+- Anything in between is reported as part of the gap, with the two shares.
+- The rule is read on all 782 entries. A single comparison is read on its own only if its
+  gap is at least 20 genes.
+- The three choices on the same counts (default, `poscounts`, library total) answer a
+  second question: how much the result rests on the choice. The choice changes the result
+  if two of them differ by more than a quarter of the gap in listed genes found. It does
+  not bear on the gap with the paper, because the paper used the default and so did the
+  refit.
+
 ## Outputs
 
 In `$SCRATCH/botryllus-pec-young/`:
