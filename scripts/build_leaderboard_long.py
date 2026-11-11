@@ -916,6 +916,7 @@ def pfam_pair_roc(data: Path) -> pl.DataFrame:
                 pl.lit("pfam_pair_roc").alias("experiment"),
                 pl.col("tool").replace(TOOL_NAME),
                 pl.col("tool")
+                .replace(TOOL_NAME)
                 .replace_strict(PAIR_SETTING, default="default")
                 .alias("setting"),
                 pl.lit(

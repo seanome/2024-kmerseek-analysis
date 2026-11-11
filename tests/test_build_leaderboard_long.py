@@ -266,7 +266,12 @@ def test_pfam_pair_roc_drops_empty_output_and_prefixes_metrics(tmp_path):
     write_pair_metrics(
         d / "diamond.zebrafish.metrics.parquet", "diamond", "zebrafish", float("nan"), 0
     )
+    # A file that says "phmmer" gets the same name and setting as "hmmer3_phmmer".
+    write_pair_metrics(d / "phmmer.yeast.metrics.parquet", "phmmer", "yeast", 0.7, 9000)
     out = bll.pfam_pair_roc(tmp_path)
+    phmmer = out.filter(pl.col("tool") == "hmmer3_phmmer")
+    assert phmmer["setting"].unique().to_list() == ["E<=10"]
+    out = out.filter(pl.col("tool") != "hmmer3_phmmer")
     assert set(out["tool"]) == {"mmseqs2_seqseq"}
     assert all(m.startswith("pair_") for m in out["metric"])
     assert out.filter(pl.col("metric") == "pair_roc_auc")["value"].to_list() == [0.75]
