@@ -132,3 +132,91 @@ def test_kmerseek_search_reraises_a_signal_exit_and_ignores_an_exhausted_kill():
     # And it must come before the no-hit tolerance, or the tolerance swallows it.
     tolerance = script.index("treating as a no-hit result")
     assert reraise.start() < tolerance
+
+
+# --- A kill that Nextflow records as exit 1 -------------------------------------------
+#
+# On 2026-11-11 run-midi-plus stopped on one search (human against arabidopsis, gbmr7 k9,
+# SLURM job 51896627). kmerseek was killed and the script exited 137, but Nextflow's
+# wrapper ran `kill $mem_proc` on a memory watcher that had already stopped, and that
+# command's status, 1, became the task's exit code. Exit 1 is not a kill to
+# killedByCluster, so the run went to `finish`. The script now leaves a marker file in the
+# work directory before it re-raises a kill, and the strategy reads it.
+
+import glob
+import os
+import shutil
+import subprocess
+import textwrap
+
+import pytest
+
+
+def test_kmerseek_search_leaves_the_kill_marker_before_both_reraises():
+    start = SOURCE.index("process kmerseekSearch {")
+    end = SOURCE.index("\nprocess ", start + 1)
+    script = SOURCE[start:end]
+    lines = [line.strip() for line in script.splitlines()]
+    for reraise in ('exit "\\${rc[0]}"', "exit 137"):
+        assert lines.count(reraise) == 1, f"expected one `{reraise}` line in the script"
+        before = lines[lines.index(reraise) - 1]
+        assert before == "touch ${KMERSEEK_KILL_MARKER}", (
+            f"the line before `{reraise}` must leave the kill marker, because Nextflow "
+            "can record this exit as 1 and the marker is then the only sign of the kill"
+        )
+
+
+def _groovy_command():
+    """java + a Nextflow jar, which bundles Groovy. None if either is missing."""
+    jars = sorted(glob.glob(os.path.expanduser("~/.nextflow/framework/*/nextflow-*-one.jar")))
+    java_home = os.environ.get("NXF_JAVA_HOME") or os.environ.get("JAVA_HOME")
+    java = os.path.join(java_home, "bin", "java") if java_home else shutil.which("java")
+    if not jars or not java or not os.path.exists(java):
+        return None
+    return [java, "-cp", jars[-1], "groovy.ui.GroovyMain"]
+
+
+def test_retry_on_kill_else_ignore_decisions(tmp_path):
+    """Run the closures from main.nf on fake tasks and check every decision."""
+    groovy = _groovy_command()
+    if groovy is None:
+        pytest.skip("no java or no Nextflow jar under ~/.nextflow/framework")
+    marker = re.search(r"^def KMERSEEK_KILL_MARKER = .*$", SOURCE, re.M).group(0)
+    with_marker = tmp_path / "with_marker"
+    without_marker = tmp_path / "without_marker"
+    with_marker.mkdir()
+    without_marker.mkdir()
+    (with_marker / ".kmerseek_search_killed").touch()
+    script = tmp_path / "decisions.groovy"
+    script.write_text("\n".join([
+        "def log = [warn: { msg -> }]",
+        marker,
+        _closure("killedByCluster"),
+        _closure("searchScriptSawKill"),
+        _closure("retryOnKillElseIgnore"),
+        textwrap.dedent(f"""
+            def marked = java.nio.file.Paths.get('{with_marker}')
+            def plain  = java.nio.file.Paths.get('{without_marker}')
+            def task = {{ status, dir, attempt ->
+                [exitStatus: status, workDir: dir, attempt: attempt,
+                 process: 'kmerseekSearch', tag: 't', memory: '1 GB'] }}
+            [[1, marked, 1], [1, marked, 2], [1, marked, 3], [1, plain, 1], [1, null, 1],
+             [137, plain, 1], [137, plain, 3], [Integer.MAX_VALUE, null, 1],
+             [2, plain, 1]].each {{ s, d, a ->
+                println "${{s}} ${{d == marked ? 'marker' : d == plain ? 'none' : 'nodir'}} " +
+                        "${{a}} ${{retryOnKillElseIgnore(task(s, d, a))}}"
+            }}
+        """),
+    ]))
+    out = subprocess.run(groovy + [str(script)], capture_output=True, text=True, check=True)
+    assert out.stdout.split("\n")[:-1] == [
+        "1 marker 1 retry",           # the 2026-11-11 case, first attempt
+        "1 marker 2 retry",
+        "1 marker 3 ignore",          # retries used up: skip the search, keep the run
+        "1 none 1 finish",            # exit 1 with no marker is a script error: stop
+        "1 nodir 1 finish",
+        "137 none 1 retry",           # a kill Nextflow reports as a kill still works
+        "137 none 3 ignore",
+        "2147483647 nodir 1 retry",   # no exit code at all
+        "2 none 1 finish",
+    ]
