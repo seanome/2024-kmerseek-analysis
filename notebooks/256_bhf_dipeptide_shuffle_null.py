@@ -296,6 +296,13 @@ def top_regions(csv: Path, arm: dict) -> pl.DataFrame:
     )
 
 
+def _write_parquet(df: pl.DataFrame, path: Path) -> None:
+    """Write to <path>.tmp, then rename onto path (the rename is atomic)."""
+    tmp = path.with_name(path.name + ".tmp")
+    df.write_parquet(tmp)
+    tmp.replace(path)
+
+
 def one_chunk(tag: str, chunk: list[tuple[str, str]], arm: dict) -> str:
     done = OUT / "top" / f"{tag}.parquet"
     if done.exists():
@@ -340,9 +347,12 @@ def one_chunk(tag: str, chunk: list[tuple[str, str]], arm: dict) -> str:
         rc = subprocess.run(cmd, stdout=log, stderr=subprocess.STDOUT).returncode
     if rc != 0 or not csv.exists():
         return f"{tag} FAILED rc={rc} (log: {OUT / 'logs' / (tag + '.log')})"
+    # Write under a temporary name, then rename: a job killed mid-write must not leave
+    # a cut-off file that counts as done on resume. top/ is renamed last because its
+    # file is the done marker.
     if KEEP_REGIONS:
-        top_regions(csv, arm).write_parquet(OUT / "regions" / f"{tag}.parquet")
-    reduce_chunk(csv, arm).write_parquet(done)
+        _write_parquet(top_regions(csv, arm), OUT / "regions" / f"{tag}.parquet")
+    _write_parquet(reduce_chunk(csv, arm), done)
     csv.unlink(missing_ok=True)
     fa.unlink(missing_ok=True)
     return f"{tag} ok"
