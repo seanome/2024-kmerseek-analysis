@@ -20,6 +20,13 @@ import polars as pl
 
 BINS = [(0.3, "<30%"), (0.5, "30-50%"), (0.9, "50-90%"), (1.01, ">=90%")]
 NONE = "no same-type entry found"
+HIT_TYPES = {
+    "query": pl.UInt32,
+    "target": pl.Utf8,
+    "pident": pl.Float64,
+    "alnlen": pl.Int64,
+    "evalue": pl.Float64,
+}
 
 
 def read_fasta(path: Path) -> dict[str, str]:
@@ -59,14 +66,19 @@ def main() -> None:
                 fh.write(f">{tid}\n{seqs[acc][s - 1 : e]}\n")
         return
 
-    hits = pl.read_csv(
-        args.read_hits,
-        separator="\t",
-        has_header=False,
-        new_columns=["query", "target", "pident", "alnlen", "evalue"],
-        schema_overrides={"query": pl.UInt32, "target": pl.Utf8},
-        quote_char=None,
-    )
+    if args.read_hits.stat().st_size == 0:
+        # MMseqs2 writes an empty file when the search finds no hit, and polars cannot
+        # read one. Every feature then gets the "no same-type entry found" bin.
+        hits = pl.DataFrame(schema=HIT_TYPES)
+    else:
+        hits = pl.read_csv(
+            args.read_hits,
+            separator="\t",
+            has_header=False,
+            new_columns=list(HIT_TYPES),
+            schema_overrides=HIT_TYPES,
+            quote_char=None,
+        )
     best = (
         hits.with_columns(pl.col("target").str.split("|").list.get(1).alias("hit_type"))
         .join(
