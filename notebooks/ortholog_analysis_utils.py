@@ -81,7 +81,7 @@ AA_FREQUENCIES: dict[str, float] = {
 }
 
 # Swiss-Prot release 2026_03: 575,748 sequences, 209,008,777 standard-amino-acid residues after
-# excluding X/U/B/Z/O (9,066 residues). Written by scripts/count_swissprot_amino_acids.py into
+# excluding X/U/B/Z/O (9,066 residues). Written by scripts/count_amino_acids.py into
 # notebooks/363_data/swissprot_2026_03_amino_acid_counts.tsv. Computed 2026-11-06.
 SWISSPROT_AA_FREQUENCIES: dict[str, float] = {
     "L": 0.096469,
@@ -204,7 +204,16 @@ def ksize_for_bits(
     encoding: str, bits: float, frequencies: dict[str, float] = AA_FREQUENCIES
 ) -> int:
     """The k whose k-mer under *encoding* carries closest to *bits* bits, at least 1."""
-    return max(1, round(bits / entropy_per_symbol(encoding, frequencies)))
+    return ksize_for_bits_per_letter(bits, entropy_per_symbol(encoding, frequencies))
+
+
+def ksize_for_bits_per_letter(bits: float, bits_per_letter: float) -> int:
+    """The k closest to *bits* bits when each letter carries *bits_per_letter*, at least 1.
+
+    Use this when bits per letter comes from somewhere else (another notebook's table), so every
+    k is rounded the same way. Python's round sends a tie to the even k.
+    """
+    return max(1, round(bits / bits_per_letter))
 
 
 KSIZE = 24

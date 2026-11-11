@@ -46,6 +46,11 @@ protein database (UHGP-90). If the k for 29.2 bits differs by at most 1 between 
 this notebook's human and mouse proteins, for all 20 alphabets the two share, the lookup is reused
 for any proteome. If not, each database gets its own lookup.
 
+**What was tested.** The rule above is kept as it was written. The test covers three protein
+sets: human + mouse, UHGP-90 and, added later, Swiss-Prot. It covers 20 alphabets for UHGP-90 and
+all 24 for Swiss-Prot. So "any proteome" means these three sets, and `cys2`, which UHGP-90 lacks
+and which moves most on Swiss-Prot, is left out of it (section 6).
+
 **What "bits" means here.** Bits per letter is the Shannon entropy of the alphabet's letters: how
 much one letter narrows down which residue is there, from how often each letter occurs. Common
 letters tell you less. Bits per k-mer is k x bits per letter, which assumes that neighbouring
@@ -58,7 +63,8 @@ any search.
 **Data.** No search was run. Inputs are the residue classes of kmerseek 0.5.0 (seanome/kmerseek
 main 0643254, `src/rust/alphabets.rs`) and the amino acid frequencies in
 `ortholog_analysis_utils.AA_FREQUENCIES`, counted on 145,111,545 residues of GENCODE v49 human and
-vM38 mouse protein translations.
+vM38 mouse protein translations. `scripts/count_amino_acids.py` recounts both protein sets; the
+next cell prints those counts and checks them against the frequencies used here.
 """)
 
 code(r"""
@@ -95,6 +101,29 @@ MAX_BITS = 64
 ROW_POSITIONS = fu.alphabet_positions(ALPHABETS)
 GROUP_COLOURS = list(pf.OKABE_ITO.values())[: len(fu.ALPHABET_SIZE_GROUPS)]
 print(f"{len(ALPHABETS)} alphabets; protein20 at k = {PROTEIN_K}: {REFERENCE_BITS:.1f} bits")
+
+# Residue totals behind both sets of frequencies, from scripts/count_amino_acids.py.
+for name, stem in (
+    ("human + mouse", "gencode_v49_vM38_human_mouse"),
+    ("Swiss-Prot 2026_03", "swissprot_2026_03"),
+):
+    totals = pl.read_csv(DATA / f"{stem}_amino_acid_totals.tsv", separator="\t")
+    print(f"{name}:")
+    for quantity, count in totals.iter_rows():
+        print(f"  {quantity}: {count:_}")
+
+# The stored human + mouse frequencies against a fresh count of the same two files.
+recount = pl.read_csv(
+    DATA / "gencode_v49_vM38_human_mouse_amino_acid_counts.tsv", separator="\t"
+)
+recount_frequencies = dict(zip(recount["amino_acid"], recount["count"] / recount["count"].sum()))
+largest_gap = max(abs(recount_frequencies[aa] - f) for aa, f in ou.AA_FREQUENCIES.items())
+largest_bits_gap = max(
+    abs(ou.entropy_per_symbol(a) - ou.entropy_per_symbol(a, recount_frequencies))
+    for a in ALPHABETS
+)
+print(f"largest frequency gap, stored against recount: {largest_gap:.6f}")
+print(f"largest bits per letter gap: {largest_bits_gap:.6f}")
 """)
 
 md(r"""
@@ -188,7 +217,7 @@ print(FIGURES / "alphabet_ksize_ruler_by_bits_human_mouse.png")
 md(r"""
 ## 2. The same lookup as a table
 
-Each cell holds the k closest to the bits in that column. Only whole numbers of letters exist, so
+Each square holds the k closest to the bits in that column. Only whole numbers of letters exist, so
 k rarely lands exactly on the target. The colour shows the miss: white is an exact match, red
 carries more bits than the column says and blue carries fewer. A miss can be as large as half of
 one letter's bits, so alphabets with more bits per letter miss by more.
@@ -251,7 +280,7 @@ def draw_lookup_table(lookup, frequency_source, stem):
     ax.set_ylim(-0.5, max(ROW_POSITIONS.values()) + 0.5)
     ax.set_xticks(range(len(TARGET_BITS)), TARGET_BITS)
     ax.set_yticks(list(ROW_POSITIONS.values()), list(ROW_POSITIONS))
-    ax.set_xlabel("Target bits per k-mer (each cell is the closest k)")
+    ax.set_xlabel("Target bits per k-mer (each square is the closest k)")
     ax.set_ylabel("Alphabet")
     ax.spines[["left", "bottom"]].set_visible(False)
     ax.tick_params(length=0)
@@ -290,6 +319,10 @@ This tests the decision rule from the top of the notebook. The human and mouse f
 compared with the UHGP-90 values in
 [notebook 300](300_mass_spec_peptide_source_lookup_uhgp90.ipynb), section 9, for the 20 alphabets
 in both. Each k is the closest one to 29.2 bits, using that database's own bits per letter.
+
+Allowing k to differ by 1 is a looser test for small k than for large k. One letter is 1/k of the
+k-mer's bits, so a step of 1 is about 14% of the bits at k = 7 and about 3% at k = 30. The
+`one_k_step_percent` column gives that share for each alphabet.
 """)
 
 code(r"""
@@ -300,16 +333,17 @@ both = (
     letters.select("alphabet", pl.col("bits_per_letter").alias("bits_per_letter_human_mouse"))
     .join(uhgp, on="alphabet", how="inner")
     .with_columns(
-        (pl.lit(REFERENCE_BITS) / pl.col("bits_per_letter_human_mouse"))
-        .round()
-        .cast(int)
-        .alias("k_human_mouse"),
-        (pl.lit(REFERENCE_BITS) / pl.col("bits_per_letter_uhgp90"))
-        .round()
-        .cast(int)
-        .alias("k_uhgp90"),
+        pl.col(f"bits_per_letter_{name}")
+        .map_elements(
+            lambda b: ou.ksize_for_bits_per_letter(REFERENCE_BITS, b), return_dtype=pl.Int64
+        )
+        .alias(f"k_{name}")
+        for name in ("human_mouse", "uhgp90")
     )
-    .with_columns((pl.col("k_uhgp90") - pl.col("k_human_mouse")).alias("k_difference"))
+    .with_columns(
+        (pl.col("k_uhgp90") - pl.col("k_human_mouse")).alias("k_difference"),
+        (100 / pl.col("k_human_mouse")).alias("one_k_step_percent"),
+    )
     .sort("k_human_mouse", descending=True)
 )
 both.write_csv(DATA / "bits_per_letter_human_mouse_vs_uhgp90.tsv", separator="\t")
@@ -318,6 +352,10 @@ with pl.Config(tbl_rows=-1, tbl_width_chars=120, float_precision=3):
 n_within_one = both.filter(pl.col("k_difference").abs() <= 1).height
 print(f"{n_within_one} of {both.height} alphabets: k differs by at most 1")
 print(f"{both.filter(pl.col('k_difference') == 0).height} of {both.height}: same k")
+print(
+    f"one step in k is {both['one_k_step_percent'].min():.1f}% to "
+    f"{both['one_k_step_percent'].max():.1f}% of the bits"
+)
 
 
 def draw_bits_comparison(
@@ -604,7 +642,7 @@ md(r"""
 The sections above use human and mouse proteins. Swiss-Prot covers reviewed proteins from all
 kingdoms of life, so here its amino acid counts replace them. Counts come from release 2026_03:
 575,748 sequences and 209,008,777 standard residues, counted by
-`scripts/count_swissprot_amino_acids.py`. The 9,066 X, U, B, Z and O residues are left out, as they
+`scripts/count_amino_acids.py`. The 9,066 X, U, B, Z and O residues are left out, as they
 were for human and mouse.
 
 This comparison was added after the results above, so it is a second check, not the planned test.
@@ -660,7 +698,7 @@ print_lookup(swissprot_lookup)
 changed = swissprot_lookup.join(lookup, on=["alphabet", "target_bits"], suffix="_human_mouse")
 changed = changed.with_columns((pl.col("ksize") - pl.col("ksize_human_mouse")).alias("k_change"))
 without_cys2 = changed.filter(pl.col("alphabet") != "cys2")
-print(f"{changed.filter(pl.col('k_change') != 0).height} of {changed.height} table cells change")
+print(f"{changed.filter(pl.col('k_change') != 0).height} of {changed.height} table squares change")
 print(f"largest change without cys2: {without_cys2['k_change'].abs().max()}")
 print(f"largest change for cys2: {changed['k_change'].abs().max()}")
 
@@ -711,9 +749,10 @@ different things in each. This notebook gives the k for any number of bits per k
 
 **Decision.** The rule at the top passes: 20 of 20 alphabets are within 1 of each other, and that
 holds again for those 20 on Swiss-Prot. Reuse one lookup for those alphabets, and expect k to move
-by up to 1 at 29.2 bits and up to 2 anywhere from 10 to 60 bits. Do not reuse it for `cys2`:
-UHGP-90 has no `cys2` value, and Swiss-Prot shows its k depends on the cysteine content of the
-database searched, so calculate it for each database. The other three alphabets missing from
+by up to 1 at 29.2 bits and up to 2 anywhere from 10 to 60 bits. A step of 1 matters more for
+alphabets that need a small k: it is about 14% of the bits at k = 7 but 3% at k = 30. Do not
+reuse it for `cys2`: UHGP-90 has no `cys2` value, and Swiss-Prot shows its k depends on the
+cysteine content of the database searched, so calculate it for each database. The other three alphabets missing from
 UHGP-90 stay within 1 on Swiss-Prot.
 
 ## Analysis Details

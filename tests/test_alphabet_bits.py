@@ -77,3 +77,10 @@ def test_frequencies_argument_changes_the_answer():
 def test_equal_frequencies_give_log2_of_the_class_count_for_protein():
     equal = {aa: 0.05 for aa in ou.AA_FREQUENCIES}
     assert ou.entropy_per_symbol("protein20", equal) == pytest.approx(math.log2(20))
+
+
+def test_ksize_for_bits_per_letter_matches_ksize_for_bits():
+    for alphabet in ou.KMERSEEK_ALPHABET_CLUSTERS:
+        per_letter = ou.entropy_per_symbol(alphabet)
+        assert ou.ksize_for_bits_per_letter(29.2, per_letter) == ou.ksize_for_bits(alphabet, 29.2)
+    assert ou.ksize_for_bits_per_letter(0.1, 4.0) == 1
