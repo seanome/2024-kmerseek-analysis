@@ -89,6 +89,16 @@ def test_region_length_is_inclusive_residue_count():
     assert t["stratum_region_length"].to_list() == ["<30", "30-100", "30-100", ">100"]
 
 
+def test_region_length_does_not_need_protein_length():
+    # Any strata column brings the axis in: here the family breadths, with no length_aa.
+    cov = one_protein(pfam_family_breadth=[
+        {"pfam_id": "PF1", "n_superkingdoms": 1, "n_phyla": 1}]).select(
+        "accession", "pfam_family_breadth")
+    t = edc.attach_query_strata(truth_rows([("P1", "PF1", 1, 50)]), cov, "yeast")
+    assert t["stratum_region_length"].to_list() == ["30-100"]
+    assert "stratum_protein_length" not in t.columns
+
+
 @pytest.mark.parametrize("dtm,label", [
     ("TM", "alpha-helical TM"), ("SP+TM", "alpha-helical TM"), ("BETA", "beta-barrel"),
     ("SP", "neither"), ("GLOB", "neither")])

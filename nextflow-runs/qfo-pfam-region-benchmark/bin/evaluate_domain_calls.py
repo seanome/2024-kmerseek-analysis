@@ -1416,9 +1416,10 @@ def attach_query_strata(truth: pl.DataFrame, covariates: pl.DataFrame | None,
     if exprs:
         cov_bins = cov.select(pl.col("accession"), *exprs)
         out = out.join(cov_bins, on="accession", how="left")
-    if "length_aa" in have:
-        # The region axis rides only with the strata table, so a run without it keeps
-        # exactly its old set of axes. Truth coordinates are 1-based and inclusive.
+    if exprs or "pfam_family_breadth" in have:
+        # The region axis needs only the truth coordinates, but it is added only when the
+        # covariates carry at least one strata column, so a run without the strata table
+        # keeps its old set of axes. Truth coordinates are 1-based and inclusive.
         rl = pl.col("domain_end") - pl.col("domain_start") + 1
         out = out.with_columns(
             _bin(rl, [(rl < 30, "<30"), (rl <= 100, "30-100"), (rl > 100, ">100")])
