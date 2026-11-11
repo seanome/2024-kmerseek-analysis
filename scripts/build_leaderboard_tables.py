@@ -184,10 +184,16 @@ def build_compute(traces: pl.DataFrame, n_queries: int) -> pl.DataFrame:
     for r in traces.filter(pl.col("status") == "COMPLETED").iter_rows(named=True):
         process = r["process"].split(":")[-1]
         if process == "prostt5Db" and (r["tag"] or "").startswith("human"):
+            gpu_seconds = duration_seconds(r["realtime"])
+            if gpu_seconds is None:
+                raise ValueError(
+                    f"prostt5Db task {r['hash']} in {r['trace_file']} completed "
+                    f"with no realtime ({r['realtime']!r}); its GPU hours are unknown"
+                )
             gpu_steps.append(
                 {
                     "complete": r["complete"],
-                    "gpu_h": duration_seconds(r["realtime"]) / 3600,
+                    "gpu_h": gpu_seconds / 3600,
                     "task_hash": r["hash"],
                 }
             )
