@@ -480,12 +480,16 @@ def main():
         out, hits, ranks, rho = reduce_one(
             j, regions, maps[j["target"]], ev, args.min_overlap, args.list_length
         )
-        # Temporary name then rename, so an interrupted task leaves nothing the skip
-        # check above would take as finished.
-        for df, path in ((out, out_r), (hits, out_h), (ranks, out_k), (rho, out_s)):
-            tmp = path.with_suffix(".tmp")
-            df.write_parquet(tmp)
-            tmp.rename(path)
+        # Write all four under temporary names, then rename them together, so an
+        # interrupted task leaves nothing the skip check above would take as finished.
+        # The regions table is renamed last: the notebook lists the finished
+        # (arm, target) pairs from the regions files, so it never lists a pair whose
+        # other three tables are missing.
+        pairs = ((hits, out_h), (ranks, out_k), (rho, out_s), (out, out_r))
+        for df, path in pairs:
+            df.write_parquet(path.with_suffix(".tmp"))
+        for _, path in pairs:
+            path.with_suffix(".tmp").rename(path)
         n_land = (
             int(out.filter(pl.col("label_rule") == "same_term")["landed"].sum())
             if out.height
