@@ -208,9 +208,11 @@ def main() -> None:
     OUT = args.out
     for d in ("regions", "tmp", "logs", "ka_survival"):
         (OUT / d).mkdir(parents=True, exist_ok=True)
+    with args.kmerseek.open("rb") as binary:
+        binary_sha256 = hashlib.file_digest(binary, "sha256").hexdigest()
     want = {
         "kmerseek": str(args.kmerseek),
-        "binary_sha256": hashlib.file_digest(args.kmerseek.open("rb"), "sha256").hexdigest(),
+        "binary_sha256": binary_sha256,
         "commit": build_commit(args.kmerseek),
     }
     manifest = OUT / "run.json"
