@@ -2,36 +2,36 @@ counts	comparison	size_factors	libraries	genes_counted_in_every_library	largest_
 this_run	2 h	default	12	2028	479.1	31577	649	0	94	555	0.476	280	217	90	196	largest p difference from pipeline 0.0051, spearman 1.00000 over 31541 genes, tested there 31541
 this_run	2 h	poscounts	12	2028	169	31589	179	0	42	137	0.421	280	228	20	210	NA
 this_run	2 h	total	12	2028	266.1	31451	195	0	125	70	0.538	280	222	16	192	NA
-this_run	2 h	swapped	12	2028	487.4	31533	701	0	108	592	0.461	280	216	90	197	NA
+this_run	2 h	swapped	12	2028	489.7	31535	709	0	110	598	0.461	280	216	90	197	NA
 this_run	2 h	default_no_gene_lengths	12	2028	479.2	31574	686	0	95	591	0.484	280	217	88	195	NA
-paper	2 h	default	12	1540	487.4	50240	639	0	94	545	0.502	280	280	239	280	spearman with paper p 0.99995 over 50233 genes
-paper	2 h	poscounts	12	1540	79.4	50041	94	0	29	65	0.425	280	276	11	276	NA
-paper	2 h	total	12	1540	301	50111	174	0	147	27	0.62	280	276	22	276	NA
-paper	2 h	swapped	12	1540	479.1	50262	592	0	83	509	0.523	280	280	208	280	NA
+paper	2 h	default	12	1534	489.7	50236	646	0	94	552	0.502	280	280	239	280	spearman with paper p 1.00000 over 50236 genes
+paper	2 h	poscounts	12	1534	79.3	50035	94	0	29	65	0.425	280	276	11	276	NA
+paper	2 h	total	12	1534	317	50028	234	0	185	49	0.613	280	276	44	276	NA
+paper	2 h	swapped	12	1534	479.1	50256	592	0	83	509	0.523	280	280	208	280	NA
 this_run	24 h	default	12	2545	306.9	31628	553	0	438	115	0.646	350	266	76	246	largest p difference from pipeline 0.003, spearman 1.00000 over 31585 genes, tested there 31585
 this_run	24 h	poscounts	12	2545	168.7	31805	305	0	73	232	0.508	350	273	21	235	NA
 this_run	24 h	total	12	2545	548.8	31583	256	0	146	110	0.617	350	276	24	247	NA
-this_run	24 h	swapped	12	2545	175.8	31499	615	0	528	87	0.661	350	254	67	234	NA
+this_run	24 h	swapped	12	2545	175.9	31492	634	0	548	86	0.663	350	254	70	234	NA
 this_run	24 h	default_no_gene_lengths	12	2545	297.5	31633	514	0	402	112	0.644	350	267	66	247	NA
-paper	24 h	default	12	2390	175.8	50608	803	1	671	132	0.712	350	350	272	350	spearman with paper p 0.99988 over 50588 genes
-paper	24 h	poscounts	12	2390	88.2	51235	513	1	39	474	0.494	350	341	85	332	NA
-paper	24 h	total	12	2390	186.8	50014	367	1	195	172	0.657	350	341	95	341	NA
-paper	24 h	swapped	12	2390	306.9	50929	655	1	474	181	0.701	350	348	229	348	NA
+paper	24 h	default	12	2385	175.9	50592	816	1	689	127	0.714	350	350	277	350	spearman with paper p 1.00000 over 50592 genes
+paper	24 h	poscounts	12	2385	88	51230	513	1	39	474	0.494	350	341	85	332	NA
+paper	24 h	total	12	2385	294.1	50414	358	1	193	165	0.675	350	344	103	344	NA
+paper	24 h	swapped	12	2385	306.9	50923	655	1	474	181	0.701	350	348	229	348	NA
 this_run	13-49 d	default	8	493	35.2	17278	111	0	41	70	0.388	66	55	12	48	largest p difference from pipeline 0.00013, spearman 1.00000 over 17276 genes, tested there 17276
 this_run	13-49 d	poscounts	8	493	7.6	17197	85	0	72	13	0.524	66	54	5	47	NA
 this_run	13-49 d	total	8	493	57.1	17315	106	0	58	48	0.49	66	56	10	49	NA
-this_run	13-49 d	swapped	8	493	33	17106	124	0	92	32	0.494	66	53	8	46	NA
+this_run	13-49 d	swapped	8	493	33.2	17106	123	0	89	34	0.491	66	53	8	46	NA
 this_run	13-49 d	default_no_gene_lengths	8	493	36.9	17278	109	0	40	69	0.387	66	55	12	48	NA
-paper	13-49 d	default	8	820	33	25414	93	0	37	56	0.492	66	66	51	66	spearman with paper p 0.99953 over 25407 genes
-paper	13-49 d	poscounts	8	820	5.1	25339	61	0	24	37	0.529	66	66	25	66	NA
-paper	13-49 d	total	8	820	6.9	25384	118	0	104	14	0.588	66	64	23	64	NA
-paper	13-49 d	swapped	8	820	35.2	25419	127	0	14	113	0.309	66	65	38	65	NA
+paper	13-49 d	default	8	815	33.2	25407	94	0	37	57	0.491	66	66	51	66	spearman with paper p 1.00000 over 25407 genes
+paper	13-49 d	poscounts	8	815	5.1	25333	64	0	25	39	0.528	66	66	25	66	NA
+paper	13-49 d	total	8	815	55	25438	120	0	57	63	0.528	66	65	49	65	NA
+paper	13-49 d	swapped	8	815	35.2	25413	126	0	14	112	0.309	66	65	38	65	NA
 this_run	132 d	default	6	1464	4.9	13240	80	2	46	34	0.499	86	75	5	62	largest p difference from pipeline 1.4e-05, spearman 1.00000 over 13238 genes, tested there 13238
 this_run	132 d	poscounts	6	1464	2.3	13242	115	0	17	98	0.315	86	75	8	60	NA
 this_run	132 d	total	6	1464	4.9	13243	75	2	46	29	0.552	86	75	5	63	NA
 this_run	132 d	swapped	6	1464	4.4	13239	72	0	41	31	0.421	86	75	5	61	NA
 this_run	132 d	default_no_gene_lengths	6	1464	5.2	13240	79	2	45	34	0.55	86	75	5	63	NA
-paper	132 d	default	6	3083	4.4	21037	179	11	92	87	0.435	86	86	64	86	spearman with paper p 0.99992 over 21031 genes
-paper	132 d	poscounts	6	3083	2.2	21033	190	3	50	140	0.375	86	86	61	86	NA
-paper	132 d	total	6	3083	1.9	21035	317	3	31	286	0.327	86	86	56	86	NA
-paper	132 d	swapped	6	3083	4.9	21033	190	0	164	26	0.586	86	86	42	86	NA
+paper	132 d	default	6	3077	4.4	21031	179	11	92	87	0.435	86	86	64	86	spearman with paper p 1.00000 over 21031 genes
+paper	132 d	poscounts	6	3077	2.2	21027	190	3	50	140	0.375	86	86	61	86	NA
+paper	132 d	total	6	3077	4.6	21025	180	5	88	92	0.419	86	85	64	85	NA
+paper	132 d	swapped	6	3077	4.9	21027	190	0	164	26	0.586	86	86	42	86	NA

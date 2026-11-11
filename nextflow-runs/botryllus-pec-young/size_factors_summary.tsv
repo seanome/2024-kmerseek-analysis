@@ -2,9 +2,9 @@ counts	size_factors	paper_listed	listed_tested	listed_found_same_direction	p_le_
 this_run	default	782	613	183	619	774	23.4
 this_run	poscounts	782	630	54	204	480	6.9
 this_run	total	782	629	55	375	257	7.0
-this_run	swapped	782	598	170	769	742	21.7
+this_run	swapped	782	598	173	788	749	22.1
 this_run	default_no_gene_lengths	782	614	171	582	806	21.9
-paper	default	782	782	626	894	820	80.1
-paper	poscounts	782	769	182	142	716	23.3
-paper	total	782	767	196	477	499	25.1
-paper	swapped	782	779	517	735	829	66.1
+paper	default	782	782	631	912	823	80.7
+paper	poscounts	782	769	182	143	718	23.3
+paper	total	782	770	260	523	369	33.2
+paper	swapped	782	779	517	735	828	66.1
