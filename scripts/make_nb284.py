@@ -638,10 +638,9 @@ GAPPED_BITS_PER_SCORE = LAMBDA_GAPPED_11_1 / np.log(2)
 
 
 def domain_seq(gapped):
-    return (
-        "".join(c for c in gapped.upper() if c.isalpha())
-        .replace("U", "X")
-        .replace("O", "X")
+    # a letter BLOSUM62 has no row for (U, O, J, ...) is scored as X
+    return "".join(
+        c if c in B62.alphabet else "X" for c in gapped.upper() if c.isalpha()
     )
 
 
