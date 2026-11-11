@@ -139,7 +139,7 @@ pl.Config.set_tbl_cols(20)
 pl.Config.set_tbl_width_chars(220)
 
 FIG = Path("../figures")
-PFAM_ALN = Path("/Users/olga/data/pfam/230_pfam_seed_pair_alignments.parquet")
+PFAM_ALN = Path.home() / "data/pfam/230_pfam_seed_pair_alignments.parquet"
 MIN_COLS = 20
 MAX_IDENT = 0.30
 BAR = 24.0
