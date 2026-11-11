@@ -394,12 +394,17 @@ def one_arm(
     if fit is not True:
         # Exact regions only: no extension, so no E-value, but IDF, tf-idf, enrichment
         # and the Poisson score are all still written.
-        search_cmd = [
-            a
-            for a in search_cmd
-            if a not in ("--extend-mismatch-penalty", "--extend-xdrop", c, x)
-        ]
-        search_cmd += ["--extend-mismatch-penalty", "0"]
+        # Drop each flag together with the value after it. Dropping by value alone
+        # would also drop any other argument equal to c or x, such as the k-size.
+        kept, skip = [], False
+        for a in search_cmd:
+            if skip:
+                skip = False
+            elif a in ("--extend-mismatch-penalty", "--extend-xdrop"):
+                skip = True
+            else:
+                kept.append(a)
+        search_cmd = kept + ["--extend-mismatch-penalty", "0"]
         (out / "search" / f"{tag}.nofit").write_text(
             "no Karlin-Altschul fit; searched with exact regions\n"
         )
