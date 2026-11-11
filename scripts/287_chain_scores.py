@@ -307,8 +307,18 @@ def main() -> None:
                     single_e=row["single_e"],
                     rank_single=row["rank_single"],
                     n_tied_single=row["n_tied_single"],
-                    chain_e_of_rank_20=v.sort("chain_e")["chain_e"][19],
-                    single_e_of_rank_20=v.sort("single_e")["single_e"][19],
+                    # Sorted on the log E-value, which does not tie when E underflows
+                    # to 0. Empty when fewer than 20 proteins have a score.
+                    chain_e_of_rank_20=(
+                        v.sort("chain_log_e", "target_name")["chain_e"][19]
+                        if v.height >= 20
+                        else None
+                    ),
+                    single_e_of_rank_20=(
+                        v.sort("single_log_e", "target_name")["single_e"][19]
+                        if v.height >= 20
+                        else None
+                    ),
                 )
             )
     pl.DataFrame(partner_rows).write_csv(ROOT / "notebooks/287_partner_rank_human.csv")
