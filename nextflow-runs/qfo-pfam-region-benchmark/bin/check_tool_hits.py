@@ -23,8 +23,8 @@ strings must be the same length.
 
 Exits 1 and names the first bad rows when a row has the wrong number of columns, a
 coordinate that is not a whole number, a start below 1, an end before its start, an end past
-the sequence length (when the FASTA files are given), a score that is not a number, a
-negative E-value, or a name not in the FASTA. An empty file also fails: no tool finds nothing
+the sequence length (when the FASTA files are given), a score or E-value that is not a finite
+number (inf and nan fail), a negative E-value, or a name not in the FASTA. An empty file also fails: no tool finds nothing
 in 998 queries against a proteome, so an empty file means the command went wrong.
 """
 
