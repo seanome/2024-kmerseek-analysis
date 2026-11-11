@@ -1983,7 +1983,7 @@ run-midi-plus: prefetch-images midi-plus-testset-sherlock
 ## $(MIDI_PLUS_OUTDIR)/transfer-projected; the span scores in $(MIDI_PLUS_OUTDIR) stay.
 ## Check after ~10 min that no search was resubmitted:
 ##   grep -cE "Submitted process > .*(Search|Index)" run-midi-plus/.nextflow.log
-rescore-midi-plus-projected: NF_ARGS += --transfer_mode projected --scoring_subdir transfer-projected
+rescore-midi-plus-projected: override NF_ARGS += --transfer_mode projected --scoring_subdir transfer-projected
 rescore-midi-plus-projected: run-midi-plus
 
 # ---- no-search baselines on the midi-plus queries ----------------------------
