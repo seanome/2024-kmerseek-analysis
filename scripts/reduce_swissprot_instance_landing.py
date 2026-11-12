@@ -109,7 +109,12 @@ def list_jobs(results: Path) -> list[dict]:
 def transfer_keep_target(
     regions: pl.LazyFrame, domain_map: pl.LazyFrame, min_overlap: float, ev
 ) -> pl.LazyFrame:
-    """evaluate_domain_calls.transfer_domains with the target protein and coordinates kept."""
+    """evaluate_domain_calls.transfer_domains with the target protein and coordinates kept.
+
+    This is a copy of the span rule (--transfer-mode span): each kept feature gets the
+    alignment's whole query stretch. The pipeline has defaulted to projected since
+    2026-11-10, so these calls differ from a run scored with the default.
+    """
     joined = regions.join(
         domain_map.filter(~pl.col("is_point")).select(
             pl.col("accession").alias("target_acc"),

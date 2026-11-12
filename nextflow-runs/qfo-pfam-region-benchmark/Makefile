@@ -342,6 +342,7 @@ PREFETCH_CONTAINERS ?= $(ALL_CONTAINERS)
         mini-testset mini-testset-sherlock mhc-testset run-mhc-local \
         midi-testset-sherlock run-midi fetch-structures-login \
         midi-plus-testset-sherlock run-midi-plus pull-report-midi-plus \
+        rescore-midi-plus-projected \
         stage-iupred run-no-search-baselines no-search-baselines-usage \
         run-midi-plus-all-qfo run-midi-plus-hp-k35-k40 queue-empty reduce-delimitation reduce-delimitation-list \
         watch attach stop \
@@ -402,6 +403,9 @@ help:
 	@echo "  run-midi             chr6 queries vs FULL proteomes (includes the MHC)"
 	@echo "  run-midi-plus        chr6 PLUS B2M, CD1A-E, MR1, KIR and LILR (998 queries)."
 	@echo "  run-midi-plus-all-qfo  the same 998 queries against ALL 77 QfO targets."
+	@echo "  rescore-midi-plus-projected  rescore run-midi-plus with each Pfam domain at its own"
+	@echo "                       place on the query (the default transfer mode since 2026-11-10)."
+	@echo "                       Searches from cache; scores go to $(MIDI_PLUS_OUTDIR)/transfer-projected"
 	@echo "  run-no-search-baselines  Kyte-Doolittle, IUPred, metapredict, SEG and Pfam family"
 	@echo "                       frequency on the 998 midi-plus queries, scored on that run's"
 	@echo "                       truth tables. One 1 h job. Needs 'make stage-iupred' (Mac) first."
@@ -1967,6 +1971,20 @@ run-midi-plus: prefetch-images midi-plus-testset-sherlock
 	    $(PFAM_HMM_ARG) \
 	    $(QUERY_SET_NF_ARG) \
 	    $(NF_ARGS)
+
+## Rescore run-midi-plus with --transfer_mode projected (the default since 2026-11-10;
+## passed explicitly so this target does not change if the default does): each target
+## Pfam domain is placed
+## at its own position on the query, not on the alignment's whole query stretch
+## (evaluate_domain_calls.transfer_domains; PR 216 found the old placement under-scores
+## long alignments, MMseqs2 C2H2 Fmax 0.052 -> 0.367). Same launch folder and -resume, so
+## the searches come from run-midi-plus's cache and only the scoring steps and the report
+## run. Scores, all_domain_metrics.parquet and the MultiQC report go to
+## $(MIDI_PLUS_OUTDIR)/transfer-projected; the span scores in $(MIDI_PLUS_OUTDIR) stay.
+## Check after ~10 min that no search was resubmitted:
+##   grep -cE "Submitted process > .*(Search|Index)" run-midi-plus/.nextflow.log
+rescore-midi-plus-projected: override NF_ARGS += --transfer_mode projected --scoring_subdir transfer-projected
+rescore-midi-plus-projected: run-midi-plus
 
 # ---- no-search baselines on the midi-plus queries ----------------------------
 #
