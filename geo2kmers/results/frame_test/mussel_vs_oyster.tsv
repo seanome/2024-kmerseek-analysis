@@ -1,0 +1,7 @@
+reference	alphabet	k	ref_distinct_kmers	tags	tags_frame_ge90pct	tags_one_frame_ge90pct	tags_stretch_ge90pct	tags_one_stretch_ge90pct	tags_any_kmer	median_share_of_tag_in_passing_stretch	shuffled_frame_ge90pct_mean	shuffled_stretch_ge90pct_mean	shuffled_any_kmer_mean
+oyster	protein	7	12706489	1672	5	5	33	27	1671	0.369	0.0	0.0	1669.7
+oyster	protein	10	13301239	1672	8	8	24	22	589	0.585	0.0	0.0	3.7
+oyster	hp	30	12774770	1672	27	27	34	33	1182	0.607	0.0	0.0	700.7
+oyster	dayhoff	12	11620918	1672	17	17	67	61	1670	0.35	0.0	6.0	1669.3
+oyster	dayhoff	15	12971754	1672	14	14	32	32	997	0.567	0.0	0.0	393.7
+oyster	dayhoff	19	13194237	1672	13	13	23	23	494	0.616	0.0	0.0	0.7

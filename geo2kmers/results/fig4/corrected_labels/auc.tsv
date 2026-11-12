@@ -1,0 +1,11 @@
+GSE	group_pair	n_pre	n_post	published_auc	reproduced_auc	mann_whitney_p	share_of_probes_with_a_kmer_in_proteome	m1_proteins_used	m2_proteins_used	auc_ghosh_weights	score_method	verdict	verdict_ghosh_weights
+GSE104079	Pre vs 45 Min Post	16	13	0.18	0.495	0.983	0.0354	4	40	0.322	stepminer_modified_z	not reproduced	reproduced
+GSE27536	Pre vs Post	27	27	0.17	0.277	0.00507	0.0079	32	153	0.277	stepminer_modified_z	reproduced	reproduced
+GSE120862	Pre vs 1Hr and 4Hr Post			0.08							stepminer_modified_z	not covered by geo2kmers	not covered by geo2kmers
+GSE83578	Pre vs Post 30M	16	16	0.07	0.340	0.127	0.0108	41	180	0.094	stepminer_modified_z	not reproduced	reproduced
+GSE83578	Pre vs Post 3H	16	16	0.07	0.266	0.0249	0.0108	41	180	0.105	stepminer_modified_z	not reproduced	reproduced
+GSE83578	Pre vs Post 24H	16	16	0.54	0.648	0.158	0.0108	41	180	0.598	stepminer_modified_z	reproduced	reproduced
+GSE111555	Baseline (Sed) vs Post 18 Weeks (Ex)	16	16	0.809	0.762	0.0122	0.0137	48	214	0.875	stepminer_modified_z	reproduced	reproduced
+GSE99963	Baseline (Sed) vs Post 10 Days (Ex)			0.91							stepminer_modified_z	not covered by geo2kmers	not covered by geo2kmers
+GSE144304	Sedentary (Sed) vs Exercised (Ex)			0.86							stepminer_modified_z	not covered by geo2kmers	not covered by geo2kmers
+GSE28998	Baseline (Sed) vs Post 12 Weeks (Ex)	7	7	0.80	0.531	0.902	0.0079	32	154	0.592	stepminer_modified_z	not reproduced	not reproduced
