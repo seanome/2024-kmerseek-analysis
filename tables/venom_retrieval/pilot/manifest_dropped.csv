@@ -1,0 +1,11 @@
+reason,n
+nontoxin: mature peptide outside 10-60 residues,17959
+nontoxin: no mature-peptide boundary could be chosen,17728
+toxin: mature peptide outside 10-60 residues,2330
+ConoServer: synthetic construct,1237
+ConoServer: a residue outside the 20 canonical amino acids (a modified residue written in the sequence),928
+ConoServer: no mature-peptide region and longer than 50 residues,566
+toxin: no mature-peptide boundary could be chosen,478
+nontoxin: a residue outside the 20 canonical amino acids,335
+ConoServer: mature peptide outside 10-60 residues,192
+toxin: a residue outside the 20 canonical amino acids,116

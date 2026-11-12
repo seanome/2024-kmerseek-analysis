@@ -1,0 +1,48 @@
+{
+  "name": "pilot",
+  "comment": [
+    "Every choice in this file was made before any retrieval result was looked at.",
+    "The k-sizes and the alphabets are a fixed list, not a search: the two cysteine-aware",
+    "alphabets are the ones kmerseek already has, hp_pbotc_1st_ed2 is kmerseek's usual",
+    "default, dayhoff6 is the one richer alphabet this pilot tries, and protein20 is no",
+    "reduction at all. The review budget of 10 is what a person reads before giving up.",
+    "No sketch subsampling anywhere: every k-mer of every peptide is kept, which is what",
+    "scaled=1 means in kmerseek, because a 25-residue peptide sketched at any other scale",
+    "keeps one or two k-mers and the comparison becomes chance."
+  ],
+
+  "budget": 10,
+  "seed": 20261019,
+  "n_queries_per_endpoint": 150,
+  "processes": 12,
+
+  "group_threshold": 0.5,
+  "use_gene_family": true,
+
+  "include_termini": true,
+  "framework_slack": 2,
+
+  "endpoints": ["framework", "fold_connectivity", "fold_knottin", "target"],
+  "reference_modes": ["with_family", "held_out_family"],
+
+  "kmer_settings": [
+    ["cys2", 12],
+    ["cys2", 20],
+    ["cys_hp3", 9],
+    ["cys_hp3", 12],
+    ["hp_pbotc_1st_ed2", 9],
+    ["hp_pbotc_1st_ed2", 12],
+    ["dayhoff6", 6],
+    ["dayhoff6", 10],
+    ["protein20", 4],
+    ["protein20", 6]
+  ],
+
+  "collision_report_settings": [
+    ["cys2", 12],
+    ["cys_hp3", 12],
+    ["hp_pbotc_1st_ed2", 12],
+    ["dayhoff6", 10],
+    ["protein20", 6]
+  ]
+}
