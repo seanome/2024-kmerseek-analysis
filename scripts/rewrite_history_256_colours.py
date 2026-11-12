@@ -210,7 +210,7 @@ def check(before, after):
     if problems:
         raise SystemExit("Check failed:\n  " + "\n  ".join(problems[:40]))
     print(f"Checked {len(old)} branches and {n_new} commits: only PNGs and notebook "
-          f"images changed ({len(checked)} changed files compared).")
+          f"images changed ({len(checked)} changed blobs compared).")
 
 
 def pack_mb(repo):
