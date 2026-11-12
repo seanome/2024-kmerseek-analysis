@@ -102,6 +102,22 @@ EXTRA_ROWS = [
         "n_proteins": 45339,
         "scientific_name": "Botryllus schlosseri",
     },
+    # Not a species: every non-human DisProt protein with an experimentally supported
+    # functional region, from all organisms, as one target (notebook 251). DisProt labels
+    # can only be transferred from a protein DisProt annotated, and outside human, mouse,
+    # yeast and arabidopsis the nine QfO targets hold very few, so the pool is the target
+    # where a label can come from anywhere. `make stage-disprot` writes the FASTA.
+    # taxon 0 because it holds many organisms; subdir Pooled because it is no one kingdom.
+    # Target-only and unscored by the Pfam truth, like botryllus.
+    {
+        "label": "disprot",
+        "taxon": "0",
+        "proteome": "DISPROT202606",
+        "subdir": "Pooled",
+        "mya": "",
+        "n_proteins": 730,
+        "scientific_name": "DisProt 2026_06, non-human proteins with a functional region",
+    },
 ]
 
 # Where the generated genus-initial + epithet scheme produces something useless. Only
@@ -244,7 +260,10 @@ def main() -> int:
     if "human" not in by_label:
         raise SystemExit("no human proteome in the release; human is the query")
 
-    rows.sort(key=lambda r: (KINGDOMS.index(r["subdir"]), r["label"]))
+    # A staged row outside the three kingdoms (disprot's "Pooled") sorts after them. It is
+    # not added to KINGDOMS, which is also the list of release directories scanned above.
+    order = KINGDOMS + ("Pooled",)
+    rows.sort(key=lambda r: (order.index(r["subdir"]), r["label"]))
     args.out.parent.mkdir(parents=True, exist_ok=True)
     with open(args.out, "w", newline="") as fh:
         w = csv.DictWriter(fh, delimiter="\t", lineterminator="\n",
