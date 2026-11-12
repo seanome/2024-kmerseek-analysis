@@ -35,8 +35,9 @@ def count_residues(fasta_paths: list[Path]) -> tuple[Counter, int]:
 
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("output_tsv", type=Path)
-    parser.add_argument("totals_tsv", type=Path)
+    # The two outputs are named options, so a FASTA path can never be read as an output path.
+    parser.add_argument("--counts", type=Path, required=True, help="output: count per amino acid")
+    parser.add_argument("--totals", type=Path, required=True, help="output: residue totals")
     parser.add_argument("fasta", type=Path, nargs="+")
     args = parser.parse_args()
 
@@ -46,12 +47,12 @@ def main() -> None:
     print(f"{n_sequences} sequences, {sum(counts.values())} residues")
     print(f"{n_standard} standard; left out: {other}")
 
-    with args.output_tsv.open("w") as out:
+    with args.counts.open("w") as out:
         out.write("amino_acid\tcount\tfrequency\n")
         for aa in sorted(STANDARD_AMINO_ACIDS, key=lambda a: -counts[a]):
             out.write(f"{aa}\t{counts[aa]}\t{counts[aa] / n_standard:.6f}\n")
 
-    with args.totals_tsv.open("w") as out:
+    with args.totals.open("w") as out:
         out.write("quantity\tcount\n")
         out.write(f"sequences\t{n_sequences}\n")
         out.write(f"all_residues\t{sum(counts.values())}\n")
