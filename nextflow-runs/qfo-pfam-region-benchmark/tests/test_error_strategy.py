@@ -166,6 +166,21 @@ def test_kmerseek_search_leaves_the_kill_marker_before_both_reraises():
         )
 
 
+def test_kmerseek_extend_search_leaves_the_kill_marker_before_its_reraise():
+    """kmerseekExtendSearch uses the same rule, so its one re-raise needs the marker too."""
+    block = _processes()["kmerseekExtendSearch"]
+    assert "retryOnKillElseIgnore(task)" in _code_lines(block)
+    start = SOURCE.index("process kmerseekExtendSearch {")
+    end = SOURCE.index("\n// =====", start + 1)
+    lines = [line.strip() for line in SOURCE[start:end].splitlines()]
+    reraise = 'exit "\\${rc[0]}"'
+    assert lines.count(reraise) == 1, f"expected one `{reraise}` line in the script"
+    assert lines[lines.index(reraise) - 1] == "touch ${KMERSEEK_KILL_MARKER}", (
+        f"the line before `{reraise}` must leave the kill marker, because Nextflow "
+        "can record this exit as 1 and the marker is then the only sign of the kill"
+    )
+
+
 def _groovy_command():
     """java + a Nextflow jar, which bundles Groovy. None if either is missing."""
     jars = sorted(glob.glob(os.path.expanduser("~/.nextflow/framework/*/nextflow-*-one.jar")))

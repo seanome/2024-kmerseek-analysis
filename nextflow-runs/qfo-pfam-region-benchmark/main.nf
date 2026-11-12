@@ -2099,7 +2099,11 @@ process kmerseekExtendSearch {
         exit 3
     fi
     # A signal death is a kill, not a result: re-raise it so the retry doubles memory.
-    if [ "\${rc[0]}" -ge 128 ] && [ "\${rc[0]}" -le 143 ]; then exit "\${rc[0]}"; fi
+    # The marker is what errorStrategy reads when Nextflow records this exit as 1.
+    if [ "\${rc[0]}" -ge 128 ] && [ "\${rc[0]}" -le 143 ]; then
+        touch ${KMERSEEK_KILL_MARKER}
+        exit "\${rc[0]}"
+    fi
     [ "\${rc[0]}" -eq 0 ] && [ "\${rc[1]}" -eq 0 ] || { cat ${slug}.log >&2; exit 1; }
 
     if [ -n "\$(zstd -dc ${slug}.regions.csv.zst | head -c 1)" ]; then
