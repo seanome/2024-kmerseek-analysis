@@ -8,15 +8,17 @@
 # so the later count of every human k-mer (table sizes) does not frame the reads again.
 # First task merges the Botryllus k-mer lists into $W/query_codes.tsv; the others wait for it.
 # Run after sets_vs_weighted_botryllus.sbatch (afterok).
-# Resources, measured on de2de_human.sbatch (jobs 51590632 and 51658368, 168 runs each): at most
-# 19 min 16 s and 1.8 GB with 4.8 to 9.8 million query k-mers at 3 settings. Here about 4 times the
-# settings and all 10 sets in one list, so about 40 million query k-mers: 16 GB, 3 h.
+# Resources, measured on this job (51959234, 2026-11-11, 42.4 million query k-mers): median 5 min
+# 36 s, at most 21 min 33 s and 2.3 GB on every node but one. On sh03-16n17 framing ran about 25
+# times slower (9,734 s for 58 million reads): two tasks took 2 h 54 min and one hit the 3 h limit,
+# which stopped the score job. --exclude is not kept by Sherlock (ExcNodeList stays empty), so the
+# limit is 8 h to outlast a slow node. 16 GB.
 #SBATCH --job-name=nb361-svw-hum
 #SBATCH --partition=normal,hns
 #SBATCH --account=ayeletv
 #SBATCH --cpus-per-task=2
 #SBATCH --mem=16G
-#SBATCH --time=3:00:00
+#SBATCH --time=8:00:00
 #SBATCH --exclude=sh03-13n20
 #SBATCH --array=0-191%40
 #SBATCH --output=/scratch/users/olgabot/nb361-pec/logs/%x.%A_%a.out

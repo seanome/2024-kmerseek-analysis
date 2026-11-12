@@ -12,6 +12,7 @@
 # contigs and 39 runs (803 million at 100 %, 700 million reads in all). At 35 % that is 280 million
 # distinct reads, about 200 bytes each in memory: 56 GB. Framing ran at 148,000 reads per second
 # (SRR7967699), so 280 million reads take about 32 min. Asked: 120 GB, 8 h.
+# Measured since (job 51959235, 2026-11-11, all 29 tasks): at most 57 min 58 s and 20.4 GB.
 #SBATCH --job-name=nb361-svw-hsets
 #SBATCH --partition=normal,hns
 #SBATCH --account=ayeletv
