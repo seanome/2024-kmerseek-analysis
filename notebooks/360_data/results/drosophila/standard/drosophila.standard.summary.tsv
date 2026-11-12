@@ -1,0 +1,11 @@
+organism	path	setting	status	labelling	evalue_cutoff	primary	recovered	recovery_fraction	outside	n_changed_domains	n_queries	n_landing_rows
+drosophila	standard	trinity+diamond	ok	real	0.00001	true	85	0.85	12	97	228	113
+drosophila	standard	trinity+diamond	ok	swap1	0.00001	true	0	0.0	0	0	228	0
+drosophila	standard	trinity+diamond	ok	swap2	0.00001	true	0	0.0	0	0	228	0
+drosophila	standard	trinity+diamond	ok	swap3	0.00001	true	0	0.0	0	0	228	0
+drosophila	standard	trinity+diamond	ok	swap4	0.00001	true	0	0.0	0	0	228	0
+drosophila	standard	trinity+diamond	ok	swap5	0.00001	true	0	0.0	0	0	228	0
+drosophila	standard	trinity+diamond	ok	swap6	0.00001	true	0	0.0	0	0	228	0
+drosophila	standard	trinity+diamond	ok	swap7	0.00001	true	0	0.0	0	0	228	0
+drosophila	standard	trinity+diamond	ok	swap8	0.00001	true	0	0.0	0	0	228	0
+drosophila	standard	trinity+diamond	ok	swap9	0.00001	true	0	0.0	0	0	228	0
