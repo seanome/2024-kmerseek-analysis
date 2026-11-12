@@ -42,8 +42,12 @@ TABLES = {
 }
 OLD, NEW = "paper_genome__featurecounts_s0", "this_genome__featurecounts_s0"
 
-x = pl.read_csv(HERE / "inputs/count_split_listed.tsv", separator="\t",
-                infer_schema_length=None, null_values="NA")
+x = pl.read_csv(
+    HERE / "inputs/count_split_listed.tsv",
+    separator="\t",
+    infer_schema_length=None,
+    null_values="NA",
+)
 x = x.filter(pl.col("table").is_in(list(TABLES)))
 key = ["comparison", "paper_gene", "direction"]
 n_entries = x.filter(pl.col("table") == "paper_table").height
@@ -56,15 +60,23 @@ summary = (
     .agg(found=pl.col("found").sum(), tested=pl.col("tested").sum())
     .with_columns(listed=pl.lit(782))
 )
-summary = pl.DataFrame({"table": list(TABLES)}).join(summary, on="table", maintain_order="left")
+summary = pl.DataFrame({"table": list(TABLES)}).join(
+    summary, on="table", maintain_order="left"
+)
 print(summary)
 f = dict(zip(summary["table"], summary["found"]))
 gap = f["paper_table"] - f[OLD]
-print(f"paper table {f['paper_table']}; HTSeq-style: old genome {f[OLD]}, new genome {f[NEW]}")
-print(f"genome version (old - new, HTSeq-style): {f[OLD] - f[NEW]}; "
-      f"(old - new, Salmon): {f['paper_genome__salmon'] - f['this_genome__salmon']}")
-print(f"counter on the old genome (HTSeq-style - Salmon): {f[OLD] - f['paper_genome__salmon']}; "
-      f"on the new genome: {f[NEW] - f['this_genome__salmon']}")
+print(
+    f"paper table {f['paper_table']}; HTSeq-style: old genome {f[OLD]}, new genome {f[NEW]}"
+)
+print(
+    f"genome version (old - new, HTSeq-style): {f[OLD] - f[NEW]}; "
+    f"(old - new, Salmon): {f['paper_genome__salmon'] - f['this_genome__salmon']}"
+)
+print(
+    f"counter on the old genome (HTSeq-style - Salmon): {f[OLD] - f['paper_genome__salmon']}; "
+    f"on the new genome: {f[NEW] - f['this_genome__salmon']}"
+)
 print(f"left between the paper's table and the old genome, HTSeq-style: {gap}")
 
 # 2. The paper's genes found on its own table, split by whether each genome finds them.
@@ -72,23 +84,36 @@ w = x.pivot(on="table", index=key, values="found")
 paper_found = w.filter(pl.col("paper_table"))
 split = (
     paper_found.with_columns(
-        status=pl.when(pl.col(OLD) & pl.col(NEW)).then(pl.lit("both genomes"))
-        .when(pl.col(OLD)).then(pl.lit("paper genome only"))
-        .when(pl.col(NEW)).then(pl.lit("April 2024 genome only"))
+        status=pl.when(pl.col(OLD) & pl.col(NEW))
+        .then(pl.lit("both genomes"))
+        .when(pl.col(OLD))
+        .then(pl.lit("paper genome only"))
+        .when(pl.col(NEW))
+        .then(pl.lit("April 2024 genome only"))
         .otherwise(pl.lit("neither genome"))
     )
-    .group_by("status").len()
+    .group_by("status")
+    .len()
 )
-order = ["both genomes", "paper genome only", "April 2024 genome only", "neither genome"]
-split = pl.DataFrame({"status": order}).join(split, on="status", how="left", maintain_order="left").fill_null(0)
+order = [
+    "both genomes",
+    "paper genome only",
+    "April 2024 genome only",
+    "neither genome",
+]
+split = (
+    pl.DataFrame({"status": order})
+    .join(split, on="status", how="left", maintain_order="left")
+    .fill_null(0)
+)
 assert split["len"].sum() == paper_found.height
 print(split)
 
 # 3. How closely each genome's fit follows the paper's own fit, gene by gene: rank
 #    correlation of signed -log10 p over the listed genes tested on both tables.
-p = x.with_columns(
-    s=pl.col("log2FoldChange").sign() * -pl.col("pvalue").log10()
-).pivot(on="table", index=key, values="s")
+p = x.with_columns(s=pl.col("log2FoldChange").sign() * -pl.col("pvalue").log10()).pivot(
+    on="table", index=key, values="s"
+)
 rho = {}
 for t in TABLES:
     if t == "paper_table":
@@ -100,31 +125,50 @@ for t in TABLES:
 
 summary = summary.with_columns(
     spearman_with_paper_fit=pl.col("table").replace_strict(
-        {t: round(v[0], 3) for t, v in rho.items()}, default=None),
+        {t: round(v[0], 3) for t, v in rho.items()}, default=None
+    ),
     genes_correlated=pl.col("table").replace_strict(
-        {t: v[1] for t, v in rho.items()}, default=None),
+        {t: v[1] for t, v in rho.items()}, default=None
+    ),
 )
 summary.write_csv(HERE / "genome_version_summary.tsv", separator="\t")
 split.rename({"len": "paper_found_entries"}).write_csv(
-    HERE / "genome_version_split.tsv", separator="\t")
+    HERE / "genome_version_split.tsv", separator="\t"
+)
 
 # Figure.
 pf.use_style()
-fig, (a, b) = pf.figure(pf.TWO_COLUMN_MM, 62, ncols=2,
-                        gridspec_kw={"width_ratios": [1.25, 1]})
-COL = {"paper": pf.GREY, "htseq": pf.OKABE_ITO["blue"], "salmon": pf.OKABE_ITO["vermillion"]}
-LAB = {"paper": "The paper's own counts (HTSeq)",
-       "htseq": "This run, counted as HTSeq does",
-       "salmon": "This run, counted by Salmon"}
-xpos = {"paper_table": 0, "paper_genome__featurecounts_s0": 1.6,
-        "paper_genome__salmon": 2.4, "this_genome__featurecounts_s0": 3.9,
-        "this_genome__salmon": 4.7}
+fig, (a, b) = pf.figure(
+    pf.TWO_COLUMN_MM, 62, ncols=2, gridspec_kw={"width_ratios": [1.25, 1]}
+)
+COL = {
+    "paper": pf.GREY,
+    "htseq": pf.OKABE_ITO["blue"],
+    "salmon": pf.OKABE_ITO["vermillion"],
+}
+LAB = {
+    "paper": "The paper's own counts (HTSeq)",
+    "htseq": "This run, counted as HTSeq does",
+    "salmon": "This run, counted by Salmon",
+}
+xpos = {
+    "paper_table": 0,
+    "paper_genome__featurecounts_s0": 1.6,
+    "paper_genome__salmon": 2.4,
+    "this_genome__featurecounts_s0": 3.9,
+    "this_genome__salmon": 4.7,
+}
 for t, (_, counter) in TABLES.items():
     a.bar(xpos[t], f[t], width=0.75, color=COL[counter], label=LAB[counter])
     a.text(xpos[t], f[t] + 8, f"{f[t]}", ha="center", va="bottom")
-a.set_xticks([0, 2.0, 4.3],
-             ["The paper's\nown table", "Paper's genome, botznik\n(g genes)",
-              "April 2024 genome\n(FUN genes)"])
+a.set_xticks(
+    [0, 2.0, 4.3],
+    [
+        "The paper's\nown table",
+        "Paper's genome, botznik\n(g genes)",
+        "April 2024 genome\n(FUN genes)",
+    ],
+)
 a.set_ylabel("Paper's listed genes found (of 782)")
 a.set_ylim(0, 700)
 a.set_xlim(-0.6, 5.3)
@@ -133,10 +177,19 @@ ys = np.arange(len(order))[::-1]
 b.barh(ys, split["len"], color=COL["htseq"], height=0.6)
 for y, n in zip(ys, split["len"]):
     b.text(n + 6, y, f"{n}", va="center")
-b.set_yticks(ys, ["Found on both genomes", "Only on the paper's genome",
-                  "Only on the April 2024 genome", "Found on neither"])
-b.set_xlabel(f"Genes found on the paper's own table (of {paper_found.height}),\n"
-             "status in this run, counted as HTSeq does")
+b.set_yticks(
+    ys,
+    [
+        "Found on both genomes",
+        "Only on the paper's genome",
+        "Only on the April 2024 genome",
+        "Found on neither",
+    ],
+)
+b.set_xlabel(
+    f"Genes found on the paper's own table (of {paper_found.height}),\n"
+    "status in this run, counted as HTSeq does"
+)
 b.set_xlim(0, max(split["len"]) * 1.18)
 
 pf.shared_legend(fig, ncol=3)
