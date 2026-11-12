@@ -508,7 +508,7 @@ Code: `each-alone-checks/size_factors.R` with its output `size_factors.out`,
 `$SCRATCH/botryllus-pec-young/size-factors/size_factors_genes.tsv.gz` (16 MB, not
 committed).
 
-To rerun on Sherlock (one job, 1 CPU, 8 GB, 1 h asked; it used 13 min and 2.1 GB), from a
+To rerun on Sherlock (one job, 1 CPU, 8 GB, 1 h asked; job 51943109 used 13 min and 1.8 GB), from a
 folder holding the inputs listed at the top of `size_factors.R`, with `size_factors.R` and `size_factors.sbatch` copied in:
 
 ```bash
