@@ -15,4 +15,5 @@ from the folder above, and the files `export_paper_counts.py` writes from Datase
 | `ratio.R` | Do the paper's size factors (DESeq2's default) work on the paper's 38 libraries here? | `ratio.out` |
 | `vst_ratio.R` | Does the variance step run with those size factors? | all 5 printed "vst ok" |
 | `size_factor_genes.py` | On how many genes do the default size factors rest, per comparison, in the paper's counts and here? | `size_factor_genes.out` |
+| `size_factors.R` (on Sherlock, `size_factors.sbatch`, 2026-11-11) | Do size factors cause the gap with the paper's gene lists? Only the size factors change. | `size_factors.out`; first job, stopped part-way: `size_factors.first_try.out` |
 | `up_skew_49_52d.R` | Which library makes 86% of genes go up at 49-52 d, fitted alone? | `up_skew_49_52d.out` |
