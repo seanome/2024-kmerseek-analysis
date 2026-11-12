@@ -602,9 +602,11 @@ the test, on the paper's genes, has not run.
   least 313 of the 448 are genes that have a matched, tested gene in this run and are
   still not found.
 - Those 328 mostly point the paper's way: of the 496 tested, 452 have a fold change in
-  the listed direction in this run. A closer protein match does not help much: at 99%
-  identity over 90% of the protein, 105 of 282 are found (37%); at 95% over 80%, 40 of
-  139 (29%); at the looser 90% over 50%, 23 of 75 (31%).
+  the listed direction in this run. A closer protein match does not help much. The 496
+  split into three groups by match, each gene in one group: at 99% identity over 90% of
+  the protein or better, 105 of 282 are found (37%); under that but at 95% over 80% or
+  better, 40 of 139 (29%); under that, down to the 90% over 50% that a match needs, 23 of
+  75 (31%).
 - Strand. With strand ignored, C counts 95% as many read pairs per library as the paper's
   table (median over 38). Counting only read 1 on the gene's strand, or only on the
   opposite strand, counts 49% and 47% and finds 139 and 133 listed genes. So the paper's
