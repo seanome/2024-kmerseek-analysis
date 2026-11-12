@@ -1,4 +1,4 @@
-tables: paper_table this_genome__featurecounts_s0 this_genome__featurecounts_s1 this_genome__featurecounts_s2 this_genome__salmon 
+tables: paper_table paper_genome__featurecounts_reads_s0 paper_genome__featurecounts_s0 paper_genome__featurecounts_s1 paper_genome__featurecounts_s2 paper_genome__salmon this_genome__featurecounts_reads_s0 this_genome__featurecounts_s0 this_genome__featurecounts_s1 this_genome__featurecounts_s2 this_genome__salmon 
 converting counts to integer mode
 paper_table                      2 h     genes 58601 counted   53282328 tested 50236 p<.05  646 2-fold up   94 down  552 | listed 280 with a gene 280 tested 280 found 239
 converting counts to integer mode
@@ -7,6 +7,54 @@ converting counts to integer mode
 paper_table                      13-49 d genes 58601 counted    2370559 tested 25407 p<.05   94 2-fold up   37 down   57 | listed  66 with a gene  66 tested  66 found  51
 converting counts to integer mode
 paper_table                      132 d   genes 58601 counted    2393196 tested 21031 p<.05  179 2-fold up   92 down   87 | listed  86 with a gene  86 tested  86 found  64
+converting counts to integer mode
+paper_genome__featurecounts_reads_s0 2 h     genes 56722 counted   71486203 tested 48329 p<.05  769 2-fold up   65 down  704 | listed 280 with a gene 280 tested 245 found 162
+converting counts to integer mode
+paper_genome__featurecounts_reads_s0 24 h    genes 56722 counted   87190441 tested 47230 p<.05  630 2-fold up  445 down  185 | listed 350 with a gene 350 tested 311 found 118
+converting counts to integer mode
+paper_genome__featurecounts_reads_s0 13-49 d genes 56722 counted    1598902 tested 18093 p<.05  172 2-fold up   40 down  132 | listed  66 with a gene  66 tested  60 found  26
+converting counts to integer mode
+paper_genome__featurecounts_reads_s0 132 d   genes 56722 counted     976587 tested 12289 p<.05  102 2-fold up   51 down   51 | listed  86 with a gene  86 tested  76 found  11
+converting counts to integer mode
+paper_genome__featurecounts_s0   2 h     genes 56628 counted   35876183 tested 48767 p<.05  468 2-fold up   56 down  412 | listed 280 with a gene 280 tested 263 found 146
+converting counts to integer mode
+paper_genome__featurecounts_s0   24 h    genes 56628 counted   43757096 tested 48063 p<.05  401 2-fold up  296 down  105 | listed 350 with a gene 350 tested 319 found 100
+converting counts to integer mode
+paper_genome__featurecounts_s0   13-49 d genes 56628 counted     801514 tested 18206 p<.05   80 2-fold up   21 down   59 | listed  66 with a gene  66 tested  61 found  24
+converting counts to integer mode
+paper_genome__featurecounts_s0   132 d   genes 56628 counted     490308 tested 12287 p<.05   68 2-fold up   38 down   30 | listed  86 with a gene  86 tested  76 found  10
+converting counts to integer mode
+paper_genome__featurecounts_s1   2 h     genes 51483 counted   18014589 tested 43775 p<.05  277 2-fold up   87 down  190 | listed 280 with a gene 280 tested 263 found  70
+converting counts to integer mode
+paper_genome__featurecounts_s1   24 h    genes 51483 counted   21948842 tested 43260 p<.05  263 2-fold up  196 down   67 | listed 350 with a gene 350 tested 306 found  35
+converting counts to integer mode
+paper_genome__featurecounts_s1   13-49 d genes 51483 counted     403779 tested 13421 p<.05   55 2-fold up   14 down   41 | listed  66 with a gene  66 tested  62 found  12
+converting counts to integer mode
+paper_genome__featurecounts_s1   132 d   genes 51483 counted     248594 tested  9147 p<.05   41 2-fold up   20 down   21 | listed  86 with a gene  86 tested  69 found   7
+converting counts to integer mode
+paper_genome__featurecounts_s2   2 h     genes 51461 counted   17997188 tested 43822 p<.05  274 2-fold up  111 down  163 | listed 280 with a gene 280 tested 265 found  71
+converting counts to integer mode
+paper_genome__featurecounts_s2   24 h    genes 51461 counted   21940082 tested 43291 p<.05  249 2-fold up  185 down   64 | listed 350 with a gene 350 tested 311 found  44
+converting counts to integer mode
+paper_genome__featurecounts_s2   13-49 d genes 51461 counted     399118 tested 13290 p<.05   47 2-fold up   15 down   32 | listed  66 with a gene  66 tested  61 found  12
+converting counts to integer mode
+paper_genome__featurecounts_s2   132 d   genes 51461 counted     242783 tested  9113 p<.05   34 2-fold up   22 down   12 | listed  86 with a gene  86 tested  73 found   6
+converting counts to integer mode
+paper_genome__salmon             2 h     genes 57345 counted   28333804 tested 49676 p<.05  481 2-fold up   82 down  399 | listed 280 with a gene 280 tested 264 found  68
+converting counts to integer mode
+paper_genome__salmon             24 h    genes 57345 counted   33269248 tested 49237 p<.05  459 2-fold up  359 down  100 | listed 350 with a gene 350 tested 324 found  63
+converting counts to integer mode
+paper_genome__salmon             13-49 d genes 57345 counted     675153 tested 19352 p<.05   55 2-fold up   14 down   41 | listed  66 with a gene  66 tested  62 found  17
+converting counts to integer mode
+paper_genome__salmon             132 d   genes 57345 counted     420335 tested 12357 p<.05   53 2-fold up   30 down   23 | listed  86 with a gene  86 tested  75 found   7
+converting counts to integer mode
+this_genome__featurecounts_reads_s0 2 h     genes 34862 counted  112709304 tested 30441 p<.05  888 2-fold up   83 down  804 | listed 280 with a gene 238 tested 211 found  92
+converting counts to integer mode
+this_genome__featurecounts_reads_s0 24 h    genes 34862 counted  137745592 tested 30514 p<.05  615 2-fold up  441 down  174 | listed 350 with a gene 294 tested 255 found  72
+converting counts to integer mode
+this_genome__featurecounts_reads_s0 13-49 d genes 34862 counted    2613601 tested 16695 p<.05  195 2-fold up   44 down  151 | listed  66 with a gene  59 tested  54 found  11
+converting counts to integer mode
+this_genome__featurecounts_reads_s0 132 d   genes 34862 counted    1481925 tested 12995 p<.05  177 2-fold up   81 down   96 | listed  86 with a gene  76 tested  73 found   5
 converting counts to integer mode
 this_genome__featurecounts_s0    2 h     genes 34775 counted   56460476 tested 30699 p<.05  642 2-fold up   75 down  566 | listed 280 with a gene 238 tested 219 found  96
 converting counts to integer mode
@@ -41,18 +89,30 @@ converting counts to integer mode
 this_genome__salmon              132 d   genes 35618 counted     761395 tested 13240 p<.05   80 2-fold up   46 down   34 | listed  86 with a gene  76 tested  75 found   5
 
 listed genes found, all four comparisons (of 782 entries)
-                          table listed_p_lt_0_05_same_direction
-1                   paper_table                             631
-2 this_genome__featurecounts_s0                             187
-3 this_genome__featurecounts_s1                             139
-4 this_genome__featurecounts_s2                             133
-5           this_genome__salmon                             183
+                                  table listed_p_lt_0_05_same_direction
+1  paper_genome__featurecounts_reads_s0                             317
+2        paper_genome__featurecounts_s0                             280
+3        paper_genome__featurecounts_s1                             124
+4        paper_genome__featurecounts_s2                             133
+5                  paper_genome__salmon                             155
+6                           paper_table                             631
+7   this_genome__featurecounts_reads_s0                             180
+8         this_genome__featurecounts_s0                             187
+9         this_genome__featurecounts_s1                             139
+10        this_genome__featurecounts_s2                             133
+11                  this_genome__salmon                             183
 
 read pairs counted, as a share of the paper's table, and rank correlation with it per library (median over 38)
-                          table     share spearman_with_paper_table
-1                   paper_table 1.0000000                        NA
-2 this_genome__featurecounts_s0 0.9477539                        NA
-3 this_genome__featurecounts_s1 0.4900935                        NA
-4 this_genome__featurecounts_s2 0.4706102                        NA
-5           this_genome__salmon 0.9436610                        NA
+                                  table     share spearman_with_paper_table
+1  paper_genome__featurecounts_reads_s0 1.2323900                   0.88750
+2        paper_genome__featurecounts_s0 0.6174742                   0.88765
+3        paper_genome__featurecounts_s1 0.3092067                   0.75120
+4        paper_genome__featurecounts_s2 0.3093597                   0.74485
+5                  paper_genome__salmon 0.4830239                   0.68960
+6                           paper_table 1.0000000                        NA
+7   this_genome__featurecounts_reads_s0 1.8774974                        NA
+8         this_genome__featurecounts_s0 0.9477539                        NA
+9         this_genome__featurecounts_s1 0.4900935                        NA
+10        this_genome__featurecounts_s2 0.4706102                        NA
+11                  this_genome__salmon 0.9436610                        NA
 DESeq2 1.42.0 R version 4.3.3 (2024-02-29) 

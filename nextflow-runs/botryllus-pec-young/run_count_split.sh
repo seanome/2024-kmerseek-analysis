@@ -2,6 +2,8 @@
 # Runs inside the Nextflow head job (scripts/nf-head), for `make run-count-split`:
 #   1. nf-core/rnaseq on the paper's 38 libraries against the paper's genome and gene models
 #      (only if <genomes> names paper_genome)
+#   1b. the same from the untrimmed reads, trimmed with a 20-base minimum length
+#      (only if <genomes> names paper_genome_length20)
 #   2. count_split.nf: featureCounts on the alignments of each genome, then the fits
 # Each has its own launch folder, so `-resume` in one never picks up the other's session.
 # Usage: run_count_split.sh <repo run dir> <output root> <nextflow binary> <genomes>
@@ -17,6 +19,15 @@ case ",$GENOMES," in *,paper_genome,*)
   "$NEXTFLOW" run nf-core/rnaseq -r 3.27.0 -resume \
     -c "$REPO/sherlock.config" -params-file "$REPO/params-rnaseq-paper-genome.yaml" \
     --input "$REPO/samplesheet_paper.csv" --outdir "$OUT/rnaseq-paper-genome"
+  ;;
+esac
+
+case ",$GENOMES," in *,paper_genome_length20,*)
+  mkdir -p "$OUT/rnaseq-paper-genome-length20-launch"
+  cd "$OUT/rnaseq-paper-genome-length20-launch"
+  "$NEXTFLOW" run nf-core/rnaseq -r 3.27.0 -resume \
+    -c "$REPO/sherlock.config" -params-file "$REPO/params-rnaseq-paper-genome-length20.yaml" \
+    --input "$REPO/samplesheet_paper_untrimmed.csv" --outdir "$OUT/rnaseq-paper-genome-length20"
   ;;
 esac
 

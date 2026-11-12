@@ -24,14 +24,21 @@ FOUND = "listed_p_lt_0_05_same_direction"
 # Each listed gene with its matched gene in this run and how close the protein match is.
 MATCHES = "each-alone-comparison/paper/paper_gene_overlap_genes.tsv"
 PAPER, THIS = pf.OKABE_ITO["vermillion"], pf.OKABE_ITO["blue"]
-# Rows of panels a and b, top to bottom: (label, genome, counter). Colour is the genome,
-# a filled mark is counting as HTSeq does, an open mark is Salmon.
+# Rows of panels a and b, top to bottom: (label, genome, counter, marker). Colour is the
+# genome, a filled mark is counting as HTSeq does, an open mark is Salmon. The marker is the
+# reads: a circle for this run's reads (trimmed with a 62-base minimum length, each pair
+# counted once), a square for the same with each mate counted as a read of its own, a
+# triangle for the reads trimmed again with a 20-base minimum length.
 ROWS = [
-    ("The paper's own table", "paper_table", None),
-    ("Paper's genome, counted as HTSeq does", "paper_genome", "featurecounts"),
-    ("Paper's genome, counted by Salmon", "paper_genome", "salmon"),
-    ("This run's genome, counted as HTSeq does", "this_genome", "featurecounts"),
-    ("This run's genome, counted by Salmon", "this_genome", "salmon"),
+    ("The paper's own table", "paper_table", None, "D"),
+    ("Paper's genome, as HTSeq does, trimmed at 20 bases", "paper_genome_length20", "featurecounts", "^"),
+    ("Paper's genome, by Salmon, trimmed at 20 bases", "paper_genome_length20", "salmon", "^"),
+    ("Paper's genome, as HTSeq does, each mate counted", "paper_genome", "featurecounts_reads", "s"),
+    ("Paper's genome, counted as HTSeq does", "paper_genome", "featurecounts", "o"),
+    ("Paper's genome, counted by Salmon", "paper_genome", "salmon", "o"),
+    ("This run's genome, as HTSeq does, each mate counted", "this_genome", "featurecounts_reads", "s"),
+    ("This run's genome, counted as HTSeq does", "this_genome", "featurecounts", "o"),
+    ("This run's genome, counted by Salmon", "this_genome", "salmon", "o"),
 ]
 
 
@@ -54,7 +61,7 @@ def strand_used(libraries):
 def table_name(genome, counter, strand):
     if counter is None:
         return genome
-    return f"{genome}__{counter}" + (f"_s{strand}" if counter == "featurecounts" else "")
+    return f"{genome}__{counter}" + (f"_s{strand}" if counter.startswith("featurecounts") else "")
 
 
 def main():
@@ -181,17 +188,17 @@ def main():
 
     pf.use_style()
     # Panel a is on top and names every mark, so it is the key for panel b under it.
-    fig = plt.figure(figsize=(pf.TWO_COLUMN_MM * pf.MM, 95 * pf.MM), layout="constrained")
-    axs = fig.subplot_mosaic([["a", "a"], ["b", "c"]], height_ratios=[1, 1.15])
+    fig = plt.figure(figsize=(pf.TWO_COLUMN_MM * pf.MM, 120 * pf.MM), layout="constrained")
+    axs = fig.subplot_mosaic([["a", "a"], ["b", "c"]], height_ratios=[1.5, 1])
     left, mid, right = axs["a"], axs["b"], axs["c"]
     have = set(fits["table"])
     y = np.arange(len(ROWS))
     offsets = np.linspace(-0.3, 0.3, len(ROWS))
-    for i, (label, genome, counter) in enumerate(ROWS):
+    for i, (label, genome, counter, marker) in enumerate(ROWS):
         name = table_name(genome, counter, strand)
-        colour = "black" if counter is None else (PAPER if genome == "paper_genome" else THIS)
+        colour = "black" if counter is None else (PAPER if genome.startswith("paper_genome") else THIS)
         style = dict(
-            marker="D" if counter is None else "o",
+            marker=marker,
             color=colour,
             markerfacecolor="white" if counter == "salmon" else colour,
             linestyle="",

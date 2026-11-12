@@ -3,6 +3,8 @@
 # comparisons alone, ~ treatment, DESeq2's default size factors, the paper's 38 libraries.
 # Tables (written by count_split.nf, named <genome>__<counter>.tsv):
 #   paper_genome__*  this run's reads aligned to the paper's genome, counted on its g genes
+#   paper_genome_length20__*  the same from the untrimmed reads, trimmed with a 20-base
+#                    minimum length instead of 62
 #   this_genome__*   this run's reads aligned to the April 2024 genome, counted on FUN genes
 #   *__salmon        Salmon's counts from nf-core/rnaseq, with <genome>__salmon_lengths.tsv
 #   *__featurecounts_s0, _s1, _s2   read pairs that overlap one gene only and align to one

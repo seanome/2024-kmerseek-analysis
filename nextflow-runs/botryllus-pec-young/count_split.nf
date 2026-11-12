@@ -6,12 +6,14 @@
 //
 //   this_genome   $out/rnaseq               April 2024 genome, FUN genes (make run)
 //   paper_genome  $out/rnaseq-paper-genome  the paper's genome and g genes (make run-count-split)
+//   paper_genome_length20  $out/rnaseq-paper-genome-length20  the same from the untrimmed
+//                 reads, trimmed with a 20-base minimum length instead of 62
 //
 // Run by run_count_split.sh inside the Nextflow head job.
 
 params.out     = null   // output root, $SCRATCH/botryllus-pec-young
 params.repo    = null   // nextflow-runs/botryllus-pec-young in the clone
-params.genomes = 'this_genome,paper_genome'
+params.genomes = 'this_genome,paper_genome,paper_genome_length20'
 // The lab's own featureCounts build on Sherlock.
 params.featurecounts = '/home/groups/ayeletv/subread-2.0.6-Linux-x86_64/bin/featureCounts'
 // The DESeq2 1.42.0 image nf-core/differentialabundance 2.0.0 pulled for this run.
@@ -44,7 +46,7 @@ process FEATURECOUNTS {
 }
 
 process FITS {
-    // 20 fits took 7 min 20 s and 1.7 GB on 2026-11-11; with the paper's genome it is 36.
+    // 44 fits (11 tables) took about 15 min on 2026-11-12; with a third genome it is 64.
     cpus 1
     memory { 8.GB * task.attempt }
     time { 1.h * task.attempt }
@@ -67,7 +69,11 @@ process FITS {
 }
 
 workflow {
-    def dirs = [this_genome: "${params.out}/rnaseq", paper_genome: "${params.out}/rnaseq-paper-genome"]
+    def dirs = [
+        this_genome: "${params.out}/rnaseq",
+        paper_genome: "${params.out}/rnaseq-paper-genome",
+        paper_genome_length20: "${params.out}/rnaseq-paper-genome-length20",
+    ]
     def genomes = params.genomes.tokenize(',')
     // Only the paper's 38 libraries.
     def wanted = file("${params.repo}/samples_paper.csv").splitCsv(header: true).collect { it.sample } as Set

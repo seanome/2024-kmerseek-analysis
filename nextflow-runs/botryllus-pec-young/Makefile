@@ -84,11 +84,12 @@ stop-alone:
 # Which part of the counts causes the gap with the paper's gene lists: align the paper's 38
 # libraries to the paper's own genome (nf-core/rnaseq), count read pairs per gene as HTSeq
 # does on both genomes' alignments, and fit every count table the same way.
-# GENOMES=this_genome skips the alignment and uses only what `make run` already made.
+# GENOMES=this_genome skips the alignments and uses only what `make run` already made.
+# paper_genome_length20 trims the untrimmed reads again with a 20-base minimum length first.
 SPLIT_SESSION := botryllus-pec-count-split
 SPLIT_JOBNAME := nf-botryllus-pec-count-split
-SPLIT_TIME    ?= 12:00:00
-GENOMES       ?= this_genome,paper_genome
+SPLIT_TIME    ?= 1-00:00:00
+GENOMES       ?= this_genome,paper_genome,paper_genome_length20
 
 .PHONY: run-count-split watch-count-split stop-count-split
 

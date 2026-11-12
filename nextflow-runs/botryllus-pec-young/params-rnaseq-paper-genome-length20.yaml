@@ -1,0 +1,24 @@
+# nf-core/rnaseq 3.27.0 on the paper's 38 libraries, from the untrimmed SRA reads, aligned to
+# the paper's genome and gene models. As params-rnaseq-paper-genome.yaml, with one change:
+# the reads are trimmed here, with a 20-base minimum length, instead of taking the PR 203
+# reads, which were trimmed with a 62-base minimum length.
+# input and outdir are given on the command line by run_count_split.sh.
+
+fasta: /home/groups/ayeletv/Botryllus_Genome/botznik-chr.fa
+gtf: /home/groups/ayeletv/Botryllus_Genome/nc_nsi_nf.gtf
+save_reference: true
+
+# The PR 203 trimming, word for word, except --length: 20 is Trim Galore's own default.
+# With 62, a read pair was dropped if either read was under 62 bases after its adapter was
+# cut off, which dropped 19% to 91% of the pairs of these libraries (median 47%).
+skip_trimming: false
+extra_trimgalore_args: "--quality 20 --length 20 --stringency 3 --adapter AGATCGGAAGAGC --adapter2 AGATCGGAAGAGC"
+# Keep every library, as PR 203 did (the default drops a library under 10,000 trimmed reads).
+min_trimmed_reads: 1
+min_mapped_reads: 0
+
+# Only the alignments and the Salmon counts are used.
+skip_qc: true
+skip_bigwig: true
+skip_stringtie: true
+skip_markduplicates: true

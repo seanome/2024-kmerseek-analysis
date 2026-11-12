@@ -661,8 +661,9 @@ One library, to show where A and the paper's table part ways (JA100, SRR32233970
 | Not aligned | 12,310,373 | 8,752,316 | 1.41 |
 | All | 28,058,163 | 18,061,867 | 1.55 |
 
-The paper's tallies add up to 28.1 million for a library of 18.1 million read pairs, 1.55
-times as many. HTSeq cannot have been counting whole pairs only.
+The paper's tallies add up to 28.1 million, 1.55 times this run's 18.1 million read pairs.
+Read at first as HTSeq counting more than whole pairs. That reading was wrong: 18.1
+million is what PR 203's trimming left of a library of 29.0 million pairs (see below).
 
 A follow-up test, outside the rule above. Written on 2026-11-12 before it ran.
 
@@ -676,9 +677,57 @@ quarter of the 351), counting mates separately is not the reason. This is one gu
 the paper's pipeline, made after seeing its tallies. It is not the only way a table can
 hold 1.55 times as many counts.
 
-How tables A and B were run. One command
-on Sherlock aligns the paper's 38 libraries to the paper's genome, counts both ways and
-refits all nine tables, with nothing waiting on a person:
+Result of the follow-up (job 52056949, 2026-11-12, 29 min): the prediction failed. With
+each mate counted as a read of its own, the paper's genome finds 317 listed genes, under
+the 368 line, and this run's genome finds 180 where counting pairs found 187. The table
+then holds 1.23 times the paper's counts per library (median), but library by library the
+ratio runs from 0.14 to 1.83, and the rank correlation with the paper's table stays at
+0.89. Counting mates separately is not the reason.
+
+#### The reads themselves: half the read pairs were dropped by trimming before this run
+
+What the library-by-library ratio pointed to. The paper's HTSeq tallies give the number of
+reads its pipeline handled for each library. Set against the read pairs deposited in SRA
+(`count_split_paper_tallies.tsv`):
+
+| Per library, 38 libraries | Lowest | Median | Highest |
+|---|---:|---:|---:|
+| The paper's tallied reads, as a share of the deposited read pairs | 48% | 96% | 99% |
+| Read pairs this run used, as a share of the deposited read pairs | 9% | 53% | 81% |
+
+- The paper's pipeline handled nearly every deposited read pair, one count per pair. So
+  HTSeq did count pairs, and the 1.55 above is not double counting: it is 28.1 million of
+  JA100's 29.0 million deposited pairs, against the 18.1 million this run kept.
+- This run's reads are the PR 203 reads. They were trimmed with Trim Galore's
+  `--length 62`, which drops a read pair if either read is shorter than 62 bases after
+  its adapter is cut off. Trim Galore's own default is 20. For JA154 that dropped 802,534
+  of 883,811 pairs (90.8%); 90% of its reads carried adapter sequence.
+- The loss is uneven. The 2 h libraries kept 35% to 79% of their pairs, 24 h 32% to 81%,
+  13-49 d 9% to 62% and 132 d 18% to 64%. Across the 38 libraries, the share of pairs
+  kept and the size of this run's reads relative to the paper's tallies have a rank
+  correlation of 0.94.
+- So every count table made from this run's reads (A, B, C and D, and the first run and
+  the refits above) rests on about half the read pairs the paper counted, and on a
+  different half per library. This was not on the list of parts when the rule was
+  written. It is a fact about the inputs. Whether it causes the gap is the next test.
+
+The test, written on 2026-11-12 before it ran. Trim the deposited reads again with the
+same Trim Galore settings as PR 203 and only `--length` changed from 62 to 20, align to
+the paper's genome with nf-core/rnaseq as for A and B, count both ways and fit as before.
+Call the tables A20 and B20.
+
+- The trimming is the main cause of what is left if A20 finds at least 456 listed genes
+  (A's 280 plus half of the 351 between A and the paper's table). It is not the reason if
+  A20 finds fewer than 368.
+- The rule's check for A applies to A20: per library, counted read pairs within 10% of
+  the paper's table and a rank correlation across genes of at least 0.95, both as medians
+  over the 38. If A20 passes, it is the rerun of the paper's pipeline that A was not.
+- A minimum length of 20 is a guess at what the paper did. The paper names Trim Galore
+  and no settings.
+
+How to run it. One command on Sherlock does every step that has not run yet: it trims and
+aligns the paper's 38 libraries for A20 and B20, counts both ways and refits every table,
+with nothing waiting on a person. Tables A and B were made the same way (job 51959161):
 
 ```bash
 cd /scratch/users/olgabot/2024-kmerseek-analysis-pec-count-split && git pull && cd nextflow-runs/botryllus-pec-young && make run-count-split
@@ -690,25 +739,24 @@ laptop, copy `$SCRATCH/botryllus-pec-young/count-split/count_split_*.tsv` here a
 
 | Task | Resources asked | Measured before | Expected |
 |---|---|---|---|
-| Nextflow head (`nf-botryllus-pec-count-split`) | 2 CPUs, 8 GB, 12 h | 36 min and 0.5 GB for C alone (job 51944027) | about 3 to 4 h in all |
-| STAR index of the paper's genome (580 Mb, 14 sequences) | pipeline default: 12 CPUs, 72 GB, 16 h | the April 2024 genome's index, 2026-10-27 run: 5 min, 18.2 GB | about the same |
-| STAR alignment, 38 libraries | pipeline default: 12 CPUs, 72 GB, 16 h | 2026-10-27 run: the largest library (SRR32233964, 69.9 million pairs) took 2 h 21 min and 15.2 GB, the next two 54 and 49 min | about 2.5 h for the largest; it sets the length of the run |
-| featureCounts, 3 strand settings per genome | 8 CPUs, 16 GB, 30 min | 2 min, 7.1 GB each | the same |
-| The fits (36) | 1 CPU, 8 GB, 1 h | 20 fits: 7 min 20 s, 1.7 GB | about 13 min |
+| Nextflow head (`nf-botryllus-pec-count-split`) | 2 CPUs, 8 GB, 24 h | A and B: 9 h 36 min, most of it tasks waiting in the queue (job 51959161) | 6 to 12 h, set by the queue |
+| Trim Galore, 38 libraries | pipeline default: 12 CPUs, 72 GB, 16 h | no usable record: the PR 203 trace has no row for the largest libraries | under 2 h for the largest (108.9 million pairs, 7.3 GB per file) |
+| STAR index of the paper's genome, built again in the new launch folder | pipeline default: 12 CPUs, 72 GB, 16 h | A and B: 4 min, 14.2 GB | the same |
+| STAR alignment, 38 libraries | pipeline default: 12 CPUs, 72 GB, 16 h | A and B: the largest library (69.9 million trimmed pairs) took 3 h 8 min and 13.9 GB | about 5 h for the largest, which now has up to 108.9 million pairs |
+| featureCounts, 4 settings per genome | 8 CPUs, 16 GB, 30 min | 2 min, 7.1 GB each | up to twice that for the new alignments |
+| The fits (64) | 1 CPU, 8 GB, 1 h | 44 fits in about 15 min | about 25 min |
 
-The first usable result is the whole result, about 3 to 4 h after launch. There is no
-faster part to read first: C is already read above, and A and B both need the alignment.
-The one thing not checked ahead of the run is that nf-core/rnaseq accepts the paper's
-gene-model file (`nc_nsi_nf.gtf`). Its transcript and gene IDs are in the form the
-pipeline's own scripts read, and the lab built a STAR index from it, but the pipeline has
-not been run on it.
+The first usable result is the whole result. There is no faster part to read first: A20
+and B20 both need the trimming and the alignment, and everything else is already read.
 
 Tables: `count_split_fits.tsv` (one row per table and comparison),
 `count_split_summary.tsv` (one row per table), `count_split_listed.tsv` (each listed gene
 in each table), `count_split_libraries.tsv` (read pairs counted per library),
-`count_split_match.tsv` (panel c). Code: `count_split.nf`, `run_count_split.sh`,
+`count_split_match.tsv` (panel c), `count_split_paper_tallies.tsv` (per library: read
+pairs in SRA, pairs this run used, reads the paper's HTSeq tallied). Code: `count_split.nf`, `run_count_split.sh`,
 `each-alone-checks/count_split.R` with its output `count_split.out`,
-`plot_count_split.py`, `params-rnaseq-paper-genome.yaml`, `samplesheet_paper.csv`.
+`plot_count_split.py`, `params-rnaseq-paper-genome.yaml`, `samplesheet_paper.csv`,
+`params-rnaseq-paper-genome-length20.yaml`, `samplesheet_paper_untrimmed.csv`.
 
 ## Outputs
 
