@@ -1,0 +1,15 @@
+{
+  "total_reads": 1200000,
+  "excluded_ambiguous": 625,
+  "plotted_reads": 1199375,
+  "frames_with_stop_counts": {
+    "1": 7035,
+    "2": 36122,
+    "0": 1352,
+    "3": 118004,
+    "4": 301422,
+    "5": 409883,
+    "6": 325557
+  },
+  "exactly_one_stop_free_percent": 34.174715997915584
+}

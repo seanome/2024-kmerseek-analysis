@@ -1,0 +1,32 @@
+flowchart TB
+ subgraph preserve[1. Preserve and classify existing work]
+  old[Existing files, manifests and job logs] --> audit[Verify checksums, IDs, settings and ownership]
+  audit --> reuse[Compatible outputs: reuse]
+  audit --> hist[Historical or incompatible: retain separately]
+  audit --> missing[Missing stages: compute only these]
+ end
+ subgraph refs[2. Public-reference preparation in Nextflow]
+  missing --> download[Download FASTQ + verify MD5]
+  download --> trim[Trim Galore: Q20, minimum20nt]
+  trim --> translate[Six frames: split ONLY at *; preserve X; keep >=30aa]
+  translate --> sketch[Branchwater manysketch]
+  trim --> dna[DNA sketch: no peptide cutoff]
+ end
+ subgraph queries[3. Query preparation in Nextflow]
+  focal[Full-depth SPLASH extensions + all DE-kupl contigs] --> qtranslate[Same >=30aa stop-only translation; preserve origin IDs]
+  qtranslate --> qsketch[Branchwater query sketches + empty-ID manifest]
+ end
+ subgraph search[4. Search and validate]
+  sketch --> index[Branchwater index]
+  dna --> index
+  reuse --> index
+  index --> many[Branchwater manysearch]
+  qsketch --> many
+  many --> validate[Check processed-query count, IDs, hashes and scale losses]
+  validate --> results[Validated match tables + exact coverage denominators]
+ end
+ subgraph gate[5. Gate before production rollout]
+  results --> tests[Prove reuse, resume, interruption recovery, query changes and corruption rejection]
+  tests --> drain[Then drain old workers between complete runs; reconcile ownership]
+  drain --> rollout[Bounded rollout + resource traces + private report]
+ end
