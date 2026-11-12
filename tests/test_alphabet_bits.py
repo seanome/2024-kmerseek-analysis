@@ -84,3 +84,9 @@ def test_ksize_for_bits_per_letter_matches_ksize_for_bits():
         per_letter = ou.entropy_per_symbol(alphabet)
         assert ou.ksize_for_bits_per_letter(29.2, per_letter) == ou.ksize_for_bits(alphabet, 29.2)
     assert ou.ksize_for_bits_per_letter(0.1, 4.0) == 1
+
+
+def test_ksize_for_bits_per_letter_rounds_to_the_nearest_k_and_a_tie_to_the_even_k():
+    assert ou.ksize_for_bits_per_letter(29.2, 1.0) == 29
+    assert ou.ksize_for_bits_per_letter(7, 2.0) == 4
+    assert ou.ksize_for_bits_per_letter(5, 2.0) == 2
