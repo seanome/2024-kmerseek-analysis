@@ -1,0 +1,31 @@
+shape: (5, 4)
+┌────────────────────────────────┬───────┬────────┬────────┐
+│ table                          ┆ found ┆ tested ┆ listed │
+│ ---                            ┆ ---   ┆ ---    ┆ ---    │
+│ str                            ┆ u32   ┆ u32    ┆ i32    │
+╞════════════════════════════════╪═══════╪════════╪════════╡
+│ paper_table                    ┆ 631   ┆ 782    ┆ 782    │
+│ paper_genome__featurecounts_s0 ┆ 280   ┆ 719    ┆ 782    │
+│ paper_genome__salmon           ┆ 155   ┆ 725    ┆ 782    │
+│ this_genome__featurecounts_s0  ┆ 187   ┆ 604    ┆ 782    │
+│ this_genome__salmon            ┆ 183   ┆ 613    ┆ 782    │
+└────────────────────────────────┴───────┴────────┴────────┘
+paper table 631; HTSeq-style: old genome 280, new genome 187
+genome version (old - new, HTSeq-style): 93; (old - new, Salmon): -28
+counter on the old genome (HTSeq-style - Salmon): 125; on the new genome: 4
+left between the paper's table and the old genome, HTSeq-style: 351
+shape: (4, 2)
+┌────────────────────────┬─────┐
+│ status                 ┆ len │
+│ ---                    ┆ --- │
+│ str                    ┆ u32 │
+╞════════════════════════╪═════╡
+│ both genomes           ┆ 111 │
+│ paper genome only      ┆ 153 │
+│ April 2024 genome only ┆ 59  │
+│ neither genome         ┆ 308 │
+└────────────────────────┴─────┘
+paper_genome__featurecounts_s0: Spearman with the paper's fit 0.86 over 719 listed genes
+paper_genome__salmon: Spearman with the paper's fit 0.81 over 725 listed genes
+this_genome__featurecounts_s0: Spearman with the paper's fit 0.77 over 604 listed genes
+this_genome__salmon: Spearman with the paper's fit 0.75 over 613 listed genes
