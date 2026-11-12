@@ -6,7 +6,7 @@ Usage: plot_counts.py <counts-compare dir>
 a. Rank correlation of the change with treatment between two count tables, per comparison.
 b. Reads the paper placed in genes divided by reads this run (Salmon) placed in genes, per library.
 Reads change_per_comparison.tsv and reads_in_genes_per_library.tsv; writes
-figures/counts_compare_domen2026_dataset_s1.{png,pdf,svg} next to the other figures of this run.
+figures/counts_compare_domen2026_dataset_s1.{png,svg} next to the other figures of this run.
 """
 
 import sys
