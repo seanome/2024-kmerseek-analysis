@@ -341,7 +341,8 @@ genes at p < 0.05, with `~ treatment` none (`each-alone-checks/fits.out`).
   only genes counted in every library of the fit. Per comparison that is 1,540, 2,390, 820
   and 3,083 genes in the paper's counts and 2,028, 2,545, 493 and 1,464 here, at 2 h, 24 h,
   13-49 d and 132 d (`each-alone-checks/size_factor_genes.out`). The section below tests
-  which of these causes the gap: it is the counts, not the size factors.
+  which of these causes the gap: it is mostly the counts; size factors explain a quarter
+  of the gap at most.
 - In the six-window fit, 86% of genes tested at 49-52 d go up with treatment, against 29%
   to 42% at 2 h, 13-17 d and 104-132 d. It is not the 6941c library, the one treated
   library whose colony has no control in this window: leaving it out still gives 87% up.
