@@ -59,7 +59,7 @@ all of the SRA directly with choice (a), almost all of it DE-kupl. Their rates c
 | | d | 212,000 | 8.9 | 0.9 | 2.3 TB | 6.8 TB | 60 TB |
 
 The SRA rows use the public SRA of December 2024, 66.9 petabases (Pbp), from
-[arXiv 2505.06395](https://arxiv.org/abs/2505.06395). It grew about 33% between the two sources
+[arXiv 2505.06395](https://arxiv.org/abs/2505.06395). It grew about 33% in one year between the two sources
 (Logan's December 2023 copy was 50.3 Pbp; the two may count bases differently). If it keeps growing at that rate, it will be about 113 Pbp in
 October 2026 (a projection, not a measured size): multiply every SRA row by 1.7. Logan sizes are from the [Logan paper](https://pmc.ncbi.nlm.nih.gov/articles/PMC12424806/).
 Building the RocksDB index adds 145,000 CPU-hours for the SRA under (a) at scaled 100 and
