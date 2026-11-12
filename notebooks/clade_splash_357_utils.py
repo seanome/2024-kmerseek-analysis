@@ -125,7 +125,8 @@ def chance_table(totals: dict, ks=range(8, 45)) -> pl.DataFrame:
     frequencies), and two versions with the measured letter frequencies p_i: an anchor of
     typical probability, L * 2^(k * sum p_i log2 p_i), and the most likely anchor (made only
     of the commonest letter, which the mask would drop, so its runner-up made of the two
-    commonest letters alternating is used instead), L * p_1^ceil(k/2) * p_2^floor(k/2)."""
+    commonest letters alternating is used instead), L * p_1^ceil(k/2) * p_2^floor(k/2).
+    """
     L = totals["n_residues"]
     rows = []
     for setting, counts in totals["letter_counts"].items():
@@ -144,7 +145,9 @@ def chance_table(totals: dict, ks=range(8, 45)) -> pl.DataFrame:
                     "chosen": k == k0,
                     "uniform": L / size**k,
                     "typical": L * 2.0 ** (-k * h),
-                    "commonest_pair": L * float(p1) ** math.ceil(k / 2) * float(p2) ** (k // 2),
+                    "commonest_pair": L
+                    * float(p1) ** math.ceil(k / 2)
+                    * float(p2) ** (k // 2),
                 }
             )
     return pl.DataFrame(rows)
