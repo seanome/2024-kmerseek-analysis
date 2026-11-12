@@ -1,0 +1,11 @@
+peptides_used	class	genes
+all	abundance_down	22
+all	abundance_up	27
+all	isoform_switch	59
+all	not in control	1455
+all	unchanged	204
+gene_unique	abundance_down	5
+gene_unique	abundance_up	8
+gene_unique	isoform_switch	34
+gene_unique	not in control	87
+gene_unique	unchanged	42

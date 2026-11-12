@@ -1,0 +1,23 @@
+	Command being timed: "/scratch/users/olgabot/nb361-pec/splash/compactors --keep_temp --max_length 186 --num_threads 16 --epsilon 0.001 --beta 0.5 --num_kmers 2 --input_format fastq input_list.txt ../splash_out/result.after_correction.scores.tsv compactors.tsv"
+	User time (seconds): 46.51
+	System time (seconds): 3.10
+	Percent of CPU this job got: 596%
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 0:08.32
+	Average shared text size (kbytes): 0
+	Average unshared data size (kbytes): 0
+	Average stack size (kbytes): 0
+	Average total size (kbytes): 0
+	Maximum resident set size (kbytes): 1485108
+	Average resident set size (kbytes): 0
+	Major (requiring I/O) page faults: 0
+	Minor (reclaiming a frame) page faults: 953137
+	Voluntary context switches: 13286
+	Involuntary context switches: 1209
+	Swaps: 0
+	File system inputs: 98304
+	File system outputs: 2393832
+	Socket messages sent: 0
+	Socket messages received: 0
+	Signals delivered: 0
+	Page size (bytes): 4096
+	Exit status: 0

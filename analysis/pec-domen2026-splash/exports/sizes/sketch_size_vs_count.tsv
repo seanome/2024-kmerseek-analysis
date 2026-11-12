@@ -1,0 +1,13 @@
+route	setting	zip_bytes	sketches	hashes	bytes_per_sketch
+kamrat	dayhoff,k=12,scaled=10	21033417	28333	45000	742.4
+kamrat	dayhoff,k=12,scaled=5	21447296	28333	89835	757.0
+kamrat	dna,k=31,scaled=5	118722649	167860	219158	707.3
+kamrat	hp,k=30,scaled=5	20630311	28333	14677	728.1
+kamrat	protein,k=7,scaled=20	20817187	28333	29496	734.7
+kamrat	protein,k=7,scaled=5	21776897	28333	118064	768.6
+splash	dayhoff,k=12,scaled=10	3207743591	4285316	6765375	748.5
+splash	dayhoff,k=12,scaled=5	3266733742	4285316	13365046	762.3
+splash	dna,k=31,scaled=5	917222650	1116488	13054298	821.5
+splash	hp,k=30,scaled=5	3140288493	4285316	646009	732.8
+splash	protein,k=7,scaled=20	3177180083	4285316	4342830	741.4
+splash	protein,k=7,scaled=5	3312179403	4285316	17388143	772.9
