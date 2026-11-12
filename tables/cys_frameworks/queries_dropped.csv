@@ -1,0 +1,11 @@
+reason,n,source
+synthetic construct,1237,ConoServer
+no cysteine framework label,4251,ConoServer
+no mature-peptide region and longer than 50 aa,57,ConoServer
+a residue outside the 20 canonical amino acids,337,ConoServer
+fewer than 2 cysteines in the mature peptide,252,Swiss-Prot
+"no mature feature, and a leader or too long to keep whole",201,Swiss-Prot
+a residue outside the 20 canonical amino acids,46,Swiss-Prot
+longer than 60 aa,791,Swiss-Prot
+shorter than 10 aa,51,Swiss-Prot
+fewer than 4 cysteines,92,Swiss-Prot
