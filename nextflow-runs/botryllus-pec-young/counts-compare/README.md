@@ -102,9 +102,12 @@ leads, not verdicts. Two of them are facts about the tables that do not depend o
 
 ![Change with treatment compared between count tables, and reads in genes per library](../figures/counts_compare_domen2026_dataset_s1.png)
 
-**a.** How well two count tables agree on each gene's change with treatment, for each of the
-paper's four comparisons. **b.** For each library, the reads the paper's table places in genes
-divided by the reads this run's Salmon table places in genes.
+Orange is the gap itself, the paper's table against this run's Salmon table; grey is every other
+pair. **a.** How well two count tables agree on each gene's change with treatment: the dot is the
+median of the paper's four comparisons and the line their range. The dashed line is how well two
+standard counters, Salmon and RSEM, agree on the same genes. **b.** For each library, the reads the
+paper's table places in genes divided by the reads this run's Salmon table places in genes, by
+comparison. The dashed line is equal reads in genes. The rule's cut-off of 0.6 is not drawn.
 
 | pair | what differs | count correlation, median over 38 libraries | change correlation, median of 4 comparisons (lowest to highest) |
 |---|---|---|---|
