@@ -1,0 +1,415 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1040" height="4421" viewBox="0 0 1040 4421" role="img"><title>Botryllus Nextflow migration plan with programs and separate file types</title><desc>Plan only. Eleven panels show dependencies, inputs, programs and outputs. No stage is marked complete.</desc><rect width="1040" height="4421" fill="white"/><style>text{font-family:Arial,sans-serif;fill:#152a33}.rail{fill:none;stroke:#29434d;stroke-width:3}.doc{fill:white;stroke:#75838a;stroke-width:1}.station{fill:white;stroke:#29434d;stroke-width:3}</style>
+<text x="24" y="32" font-size="25" font-weight="700">Botryllus: proposed Nextflow pipeline</text>
+<text x="24" y="58" font-size="16" font-weight="700">PLAN ONLY — the Nextflow rewrite has not been implemented or launched.</text>
+<text x="24" y="83" font-size="14" font-weight="400">Circle = program. Document = one file type. Within each panel: input → processing → results.</text>
+<text x="24" y="106" font-size="14" font-weight="400">Panels state their dependencies; independent branches can run in parallel. No colour-coded status.</text>
+<rect x="14" y="132" width="1012" height="268" rx="10" fill="#f4f6f8" stroke="#d8dfe2"/>
+<text x="28" y="158" font-size="19" font-weight="700">1. Input and trimming</text>
+<text x="28" y="179" font-size="12" font-weight="400">Sources: 64 PRJNA1219309 libraries; preserve existing trimmed outputs.</text>
+<text x="35" y="212" font-size="12" font-weight="700">INPUT</text>
+<text x="390" y="212" font-size="12" font-weight="700">PROCESSING</text>
+<text x="715" y="212" font-size="12" font-weight="700">RESULTS</text>
+<path fill="white" stroke="#75838a" stroke-width="1" d="M35,223 h13 l5,5 v18 h-18 Z M48,223 v5 h5"/>
+<text x="61" y="233" font-size="12" font-weight="400">Raw mate 1 | FASTQ.gz</text>
+<path fill="white" stroke="#75838a" stroke-width="1" d="M35,266 h13 l5,5 v18 h-18 Z M48,266 v5 h5"/>
+<text x="61" y="276" font-size="12" font-weight="400">Raw mate 2 | FASTQ.gz</text>
+<path fill="white" stroke="#75838a" stroke-width="1" d="M35,309 h13 l5,5 v18 h-18 Z M48,309 v5 h5"/>
+<text x="61" y="319" font-size="12" font-weight="400">Sample design | TSV</text>
+<path fill="white" stroke="#75838a" stroke-width="1" d="M35,352 h13 l5,5 v18 h-18 Z M48,352 v5 h5"/>
+<text x="61" y="362" font-size="12" font-weight="400">Frozen contrasts | JSON</text>
+<path fill="none" stroke="#29434d" stroke-width="3" d="M399,234 V320"/>
+<circle fill="white" stroke="#29434d" stroke-width="3" cx="399" cy="234" r="6"/>
+<text x="416" y="233" font-size="12" font-weight="400">MD5 + paired FASTQ validation</text>
+<circle fill="white" stroke="#29434d" stroke-width="3" cx="399" cy="277" r="6"/>
+<text x="416" y="276" font-size="12" font-weight="400">Trim Galore</text>
+<circle fill="white" stroke="#29434d" stroke-width="3" cx="399" cy="320" r="6"/>
+<text x="416" y="319" font-size="12" font-weight="400">Paired FASTQ validation + SHA256</text>
+<path fill="white" stroke="#75838a" stroke-width="1" d="M715,223 h13 l5,5 v18 h-18 Z M728,223 v5 h5"/>
+<text x="741" y="233" font-size="12" font-weight="400">Trimmed mate 1 | FQ.gz</text>
+<path fill="white" stroke="#75838a" stroke-width="1" d="M715,266 h13 l5,5 v18 h-18 Z M728,266 v5 h5"/>
+<text x="741" y="276" font-size="12" font-weight="400">Trimmed mate 2 | FQ.gz</text>
+<path fill="white" stroke="#75838a" stroke-width="1" d="M715,309 h13 l5,5 v18 h-18 Z M728,309 v5 h5"/>
+<text x="741" y="319" font-size="12" font-weight="400">Trimming report | TXT</text>
+<path fill="white" stroke="#75838a" stroke-width="1" d="M715,352 h13 l5,5 v18 h-18 Z M728,352 v5 h5"/>
+<text x="741" y="362" font-size="12" font-weight="400">Validated reads + checksums | JSON</text>
+<path fill="none" stroke="#29434d" stroke-width="3" d="M334,234 h20 l-5,-4 m5,4 l-5,4"/>
+<path fill="none" stroke="#29434d" stroke-width="3" d="M659,234 h20 l-5,-4 m5,4 l-5,4"/>
+<rect x="14" y="412" width="1012" height="397" rx="10" fill="#f4f6f8" stroke="#d8dfe2"/>
+<text x="28" y="438" font-size="19" font-weight="700">2. SPLASH discovery and sequence context</text>
+<text x="28" y="459" font-size="12" font-weight="400">Depends on validated stage 1. Every adjusted P &lt; 0.05 anchor; no top-300 cap.</text>
+<text x="35" y="492" font-size="12" font-weight="700">INPUT</text>
+<text x="390" y="492" font-size="12" font-weight="700">PROCESSING</text>
+<text x="715" y="492" font-size="12" font-weight="700">RESULTS</text>
+<path fill="white" stroke="#75838a" stroke-width="1" d="M35,503 h13 l5,5 v18 h-18 Z M48,503 v5 h5"/>
+<text x="61" y="513" font-size="12" font-weight="400">Trimmed mate 1 | FQ.gz</text>
+<path fill="white" stroke="#75838a" stroke-width="1" d="M35,546 h13 l5,5 v18 h-18 Z M48,546 v5 h5"/>
+<text x="61" y="556" font-size="12" font-weight="400">Trimmed mate 2 | FQ.gz</text>
+<path fill="white" stroke="#75838a" stroke-width="1" d="M35,589 h13 l5,5 v18 h-18 Z M48,589 v5 h5"/>
+<text x="61" y="599" font-size="12" font-weight="400">Validated read manifest | JSON</text>
+<path fill="none" stroke="#29434d" stroke-width="3" d="M399,514 V600"/>
+<circle fill="white" stroke="#29434d" stroke-width="3" cx="399" cy="514" r="6"/>
+<text x="416" y="513" font-size="12" font-weight="400">SPLASH: anchor31 / target31</text>
+<circle fill="white" stroke="#29434d" stroke-width="3" cx="399" cy="557" r="6"/>
+<text x="416" y="556" font-size="12" font-weight="400">Select adjusted P &lt; 0.05</text>
+<circle fill="white" stroke="#29434d" stroke-width="3" cx="399" cy="600" r="6"/>
+<text x="416" y="599" font-size="12" font-weight="400">Compactors: all selected anchors</text>
+<path fill="white" stroke="#75838a" stroke-width="1" d="M715,503 h13 l5,5 v18 h-18 Z M728,503 v5 h5"/>
+<text x="741" y="513" font-size="12" font-weight="400">All anchor statistics | TSV</text>
+<path fill="white" stroke="#75838a" stroke-width="1" d="M715,546 h13 l5,5 v18 h-18 Z M728,546 v5 h5"/>
+<text x="741" y="556" font-size="12" font-weight="400">Selected anchors | TSV</text>
+<path fill="white" stroke="#75838a" stroke-width="1" d="M715,589 h13 l5,5 v18 h-18 Z M728,589 v5 h5"/>
+<text x="741" y="599" font-size="12" font-weight="400">Anchor-target counts | SATC</text>
+<path fill="white" stroke="#75838a" stroke-width="1" d="M715,632 h13 l5,5 v18 h-18 Z M728,632 v5 h5"/>
+<text x="741" y="642" font-size="12" font-weight="400">Compactors assembly table | TSV</text>
+<path fill="white" stroke="#75838a" stroke-width="1" d="M715,675 h13 l5,5 v18 h-18 Z M728,675 v5 h5"/>
+<text x="741" y="685" font-size="12" font-weight="400">DNA extensions | FASTA</text>
+<path fill="white" stroke="#75838a" stroke-width="1" d="M715,718 h13 l5,5 v18 h-18 Z M728,718 v5 h5"/>
+<text x="741" y="728" font-size="12" font-weight="400">Anchor / extension membership | TSV</text>
+<path fill="white" stroke="#75838a" stroke-width="1" d="M715,761 h13 l5,5 v18 h-18 Z M728,761 v5 h5"/>
+<text x="741" y="771" font-size="12" font-weight="400">Discovery checksums | JSON</text>
+<path fill="none" stroke="#29434d" stroke-width="3" d="M334,514 h20 l-5,-4 m5,4 l-5,4"/>
+<path fill="none" stroke="#29434d" stroke-width="3" d="M659,514 h20 l-5,-4 m5,4 l-5,4"/>
+<rect x="14" y="821" width="1012" height="397" rx="10" fill="#f4f6f8" stroke="#d8dfe2"/>
+<text x="28" y="847" font-size="19" font-weight="700">3. K-mer and gene quantification</text>
+<text x="28" y="868" font-size="12" font-weight="400">Depends on stage 1. Same 64 libraries for both assays. No native condition-only DE test.</text>
+<text x="35" y="901" font-size="12" font-weight="700">INPUT</text>
+<text x="390" y="901" font-size="12" font-weight="700">PROCESSING</text>
+<text x="715" y="901" font-size="12" font-weight="700">RESULTS</text>
+<path fill="white" stroke="#75838a" stroke-width="1" d="M35,912 h13 l5,5 v18 h-18 Z M48,912 v5 h5"/>
+<text x="61" y="922" font-size="12" font-weight="400">Trimmed mate 1 | FQ.gz</text>
+<path fill="white" stroke="#75838a" stroke-width="1" d="M35,955 h13 l5,5 v18 h-18 Z M48,955 v5 h5"/>
+<text x="61" y="965" font-size="12" font-weight="400">Trimmed mate 2 | FQ.gz</text>
+<path fill="white" stroke="#75838a" stroke-width="1" d="M35,998 h13 l5,5 v18 h-18 Z M48,998 v5 h5"/>
+<text x="61" y="1008" font-size="12" font-weight="400">Reference transcripts | FASTA</text>
+<path fill="white" stroke="#75838a" stroke-width="1" d="M35,1041 h13 l5,5 v18 h-18 Z M48,1041 v5 h5"/>
+<text x="61" y="1051" font-size="12" font-weight="400">Reference gene annotation | GTF</text>
+<path fill="none" stroke="#29434d" stroke-width="3" d="M399,923 V1009"/>
+<circle fill="white" stroke="#29434d" stroke-width="3" cx="399" cy="923" r="6"/>
+<text x="416" y="922" font-size="12" font-weight="400">DE-kupl counter: canonical k31</text>
+<circle fill="white" stroke="#29434d" stroke-width="3" cx="399" cy="966" r="6"/>
+<text x="416" y="965" font-size="12" font-weight="400">Kallisto index + quantification</text>
+<circle fill="white" stroke="#29434d" stroke-width="3" cx="399" cy="1009" r="6"/>
+<text x="416" y="1008" font-size="12" font-weight="400">Strict transcript-to-gene mapping</text>
+<path fill="white" stroke="#75838a" stroke-width="1" d="M715,912 h13 l5,5 v18 h-18 Z M728,912 v5 h5"/>
+<text x="741" y="922" font-size="12" font-weight="400">Per-sample k-mer counts | TSV.gz</text>
+<path fill="white" stroke="#75838a" stroke-width="1" d="M715,955 h13 l5,5 v18 h-18 Z M728,955 v5 h5"/>
+<text x="741" y="965" font-size="12" font-weight="400">Kallisto index | .idx</text>
+<path fill="white" stroke="#75838a" stroke-width="1" d="M715,998 h13 l5,5 v18 h-18 Z M728,998 v5 h5"/>
+<text x="741" y="1008" font-size="12" font-weight="400">Per-sample abundance | TSV</text>
+<path fill="white" stroke="#75838a" stroke-width="1" d="M715,1041 h13 l5,5 v18 h-18 Z M728,1041 v5 h5"/>
+<text x="741" y="1051" font-size="12" font-weight="400">Per-sample abundance | H5</text>
+<path fill="white" stroke="#75838a" stroke-width="1" d="M715,1084 h13 l5,5 v18 h-18 Z M728,1084 v5 h5"/>
+<text x="741" y="1094" font-size="12" font-weight="400">Per-sample run information | JSON</text>
+<path fill="white" stroke="#75838a" stroke-width="1" d="M715,1127 h13 l5,5 v18 h-18 Z M728,1127 v5 h5"/>
+<text x="741" y="1137" font-size="12" font-weight="400">Transcript-to-gene map | TSV</text>
+<path fill="white" stroke="#75838a" stroke-width="1" d="M715,1170 h13 l5,5 v18 h-18 Z M728,1170 v5 h5"/>
+<text x="741" y="1180" font-size="12" font-weight="400">Gene count matrix | TSV.gz</text>
+<path fill="none" stroke="#29434d" stroke-width="3" d="M334,923 h20 l-5,-4 m5,4 l-5,4"/>
+<path fill="none" stroke="#29434d" stroke-width="3" d="M659,923 h20 l-5,-4 m5,4 l-5,4"/>
+<rect x="14" y="1230" width="1012" height="354" rx="10" fill="#f4f6f8" stroke="#d8dfe2"/>
+<text x="28" y="1256" font-size="19" font-weight="700">4. Adjusted differential expression</text>
+<text x="28" y="1277" font-size="12" font-weight="400">Depends on stage 3 + frozen design. Collection balance within genotype; validate model rank.</text>
+<text x="35" y="1310" font-size="12" font-weight="700">INPUT</text>
+<text x="390" y="1310" font-size="12" font-weight="700">PROCESSING</text>
+<text x="715" y="1310" font-size="12" font-weight="700">RESULTS</text>
+<path fill="white" stroke="#75838a" stroke-width="1" d="M35,1321 h13 l5,5 v18 h-18 Z M48,1321 v5 h5"/>
+<text x="61" y="1331" font-size="12" font-weight="400">K-mer count matrix | TSV.gz</text>
+<path fill="white" stroke="#75838a" stroke-width="1" d="M35,1364 h13 l5,5 v18 h-18 Z M48,1364 v5 h5"/>
+<text x="61" y="1374" font-size="12" font-weight="400">Gene count matrix | TSV.gz</text>
+<path fill="white" stroke="#75838a" stroke-width="1" d="M35,1407 h13 l5,5 v18 h-18 Z M48,1407 v5 h5"/>
+<text x="61" y="1417" font-size="12" font-weight="400">Sample metadata | TSV</text>
+<path fill="white" stroke="#75838a" stroke-width="1" d="M35,1450 h13 l5,5 v18 h-18 Z M48,1450 v5 h5"/>
+<text x="61" y="1460" font-size="12" font-weight="400">Frozen contrast design | JSON</text>
+<path fill="none" stroke="#29434d" stroke-width="3" d="M399,1332 V1461"/>
+<circle fill="white" stroke="#29434d" stroke-width="3" cx="399" cy="1332" r="6"/>
+<text x="416" y="1331" font-size="12" font-weight="400">Pool balanced collection strata</text>
+<circle fill="white" stroke="#29434d" stroke-width="3" cx="399" cy="1375" r="6"/>
+<text x="416" y="1374" font-size="12" font-weight="400">computeNF normalization</text>
+<circle fill="white" stroke="#29434d" stroke-width="3" cx="399" cy="1418" r="6"/>
+<text x="416" y="1417" font-size="12" font-weight="400">DESeq2: genotype + treatment</text>
+<circle fill="white" stroke="#29434d" stroke-width="3" cx="399" cy="1461" r="6"/>
+<text x="416" y="1460" font-size="12" font-weight="400">Select strict adjusted P &lt; 0.05</text>
+<path fill="white" stroke="#75838a" stroke-width="1" d="M715,1321 h13 l5,5 v18 h-18 Z M728,1321 v5 h5"/>
+<text x="741" y="1331" font-size="12" font-weight="400">Pooled counts, each assay | TSV.gz</text>
+<path fill="white" stroke="#75838a" stroke-width="1" d="M715,1364 h13 l5,5 v18 h-18 Z M728,1364 v5 h5"/>
+<text x="741" y="1374" font-size="12" font-weight="400">Normalization factors | TSV</text>
+<path fill="white" stroke="#75838a" stroke-width="1" d="M715,1407 h13 l5,5 v18 h-18 Z M728,1407 v5 h5"/>
+<text x="741" y="1417" font-size="12" font-weight="400">All tested gene results | TSV.gz</text>
+<path fill="white" stroke="#75838a" stroke-width="1" d="M715,1450 h13 l5,5 v18 h-18 Z M728,1450 v5 h5"/>
+<text x="741" y="1460" font-size="12" font-weight="400">All tested k-mer results | TSV.gz</text>
+<path fill="white" stroke="#75838a" stroke-width="1" d="M715,1493 h13 l5,5 v18 h-18 Z M728,1493 v5 h5"/>
+<text x="741" y="1503" font-size="12" font-weight="400">Selected k-mers per contrast | TSV</text>
+<path fill="white" stroke="#75838a" stroke-width="1" d="M715,1536 h13 l5,5 v18 h-18 Z M728,1536 v5 h5"/>
+<text x="741" y="1546" font-size="12" font-weight="400">Design + completion checks | JSON</text>
+<path fill="none" stroke="#29434d" stroke-width="3" d="M334,1332 h20 l-5,-4 m5,4 l-5,4"/>
+<path fill="none" stroke="#29434d" stroke-width="3" d="M659,1332 h20 l-5,-4 m5,4 l-5,4"/>
+<rect x="14" y="1596" width="1012" height="268" rx="10" fill="#f4f6f8" stroke="#d8dfe2"/>
+<text x="28" y="1622" font-size="19" font-weight="700">5. Native DE-kupl contigs</text>
+<text x="28" y="1643" font-size="12" font-weight="400">Depends on stage 4. Assemble separately by contrast and fold-change direction.</text>
+<text x="35" y="1676" font-size="12" font-weight="700">INPUT</text>
+<text x="390" y="1676" font-size="12" font-weight="700">PROCESSING</text>
+<text x="715" y="1676" font-size="12" font-weight="700">RESULTS</text>
+<path fill="white" stroke="#75838a" stroke-width="1" d="M35,1687 h13 l5,5 v18 h-18 Z M48,1687 v5 h5"/>
+<text x="61" y="1697" font-size="12" font-weight="400">Selected 31-mers + adjusted tests | TSV</text>
+<path fill="none" stroke="#29434d" stroke-width="3" d="M399,1698 V1784"/>
+<circle fill="white" stroke="#29434d" stroke-width="3" cx="399" cy="1698" r="6"/>
+<text x="416" y="1697" font-size="12" font-weight="400">mergeTags -k 31 -m 15 -n</text>
+<circle fill="white" stroke="#29434d" stroke-width="3" cx="399" cy="1741" r="6"/>
+<text x="416" y="1740" font-size="12" font-weight="400">Check every seed occurs in output</text>
+<circle fill="white" stroke="#29434d" stroke-width="3" cx="399" cy="1784" r="6"/>
+<text x="416" y="1783" font-size="12" font-weight="400">Preserve representative seed ID</text>
+<path fill="white" stroke="#75838a" stroke-width="1" d="M715,1687 h13 l5,5 v18 h-18 Z M728,1687 v5 h5"/>
+<text x="741" y="1697" font-size="12" font-weight="400">Native assembly table | TSV</text>
+<path fill="white" stroke="#75838a" stroke-width="1" d="M715,1730 h13 l5,5 v18 h-18 Z M728,1730 v5 h5"/>
+<text x="741" y="1740" font-size="12" font-weight="400">Native contig sequences | FASTA</text>
+<path fill="white" stroke="#75838a" stroke-width="1" d="M715,1773 h13 l5,5 v18 h-18 Z M728,1773 v5 h5"/>
+<text x="741" y="1783" font-size="12" font-weight="400">Representative tests + origins | JSON</text>
+<path fill="white" stroke="#75838a" stroke-width="1" d="M715,1816 h13 l5,5 v18 h-18 Z M728,1816 v5 h5"/>
+<text x="741" y="1826" font-size="12" font-weight="400">mergeTags execution log | LOG</text>
+<path fill="none" stroke="#29434d" stroke-width="3" d="M334,1698 h20 l-5,-4 m5,4 l-5,4"/>
+<path fill="none" stroke="#29434d" stroke-width="3" d="M659,1698 h20 l-5,-4 m5,4 l-5,4"/>
+<rect x="14" y="1876" width="1012" height="397" rx="10" fill="#f4f6f8" stroke="#d8dfe2"/>
+<text x="28" y="1902" font-size="19" font-weight="700">6. Read-supported extensions</text>
+<text x="28" y="1923" font-size="12" font-weight="400">Depends on stages 1 + 4. This supplements native contigs; keep all original DNA and IDs.</text>
+<text x="35" y="1956" font-size="12" font-weight="700">INPUT</text>
+<text x="390" y="1956" font-size="12" font-weight="700">PROCESSING</text>
+<text x="715" y="1956" font-size="12" font-weight="700">RESULTS</text>
+<path fill="white" stroke="#75838a" stroke-width="1" d="M35,1967 h13 l5,5 v18 h-18 Z M48,1967 v5 h5"/>
+<text x="61" y="1977" font-size="12" font-weight="400">Selected canonical seeds | TSV</text>
+<path fill="white" stroke="#75838a" stroke-width="1" d="M35,2010 h13 l5,5 v18 h-18 Z M48,2010 v5 h5"/>
+<text x="61" y="2020" font-size="12" font-weight="400">Trimmed mate 1 | FQ.gz</text>
+<path fill="white" stroke="#75838a" stroke-width="1" d="M35,2053 h13 l5,5 v18 h-18 Z M48,2053 v5 h5"/>
+<text x="61" y="2063" font-size="12" font-weight="400">Trimmed mate 2 | FQ.gz</text>
+<path fill="none" stroke="#29434d" stroke-width="3" d="M399,1978 V2064"/>
+<circle fill="white" stroke="#29434d" stroke-width="3" cx="399" cy="1978" r="6"/>
+<text x="416" y="1977" font-size="12" font-weight="400">Exact 31-mer read recruitment</text>
+<circle fill="white" stroke="#29434d" stroke-width="3" cx="399" cy="2021" r="6"/>
+<text x="416" y="2020" font-size="12" font-weight="400">Retain matching pair once</text>
+<circle fill="white" stroke="#29434d" stroke-width="3" cx="399" cy="2064" r="6"/>
+<text x="416" y="2063" font-size="12" font-weight="400">Compactors context extension</text>
+<path fill="white" stroke="#75838a" stroke-width="1" d="M715,1967 h13 l5,5 v18 h-18 Z M728,1967 v5 h5"/>
+<text x="741" y="1977" font-size="12" font-weight="400">Recruited mate 1 | FASTQ.gz</text>
+<path fill="white" stroke="#75838a" stroke-width="1" d="M715,2010 h13 l5,5 v18 h-18 Z M728,2010 v5 h5"/>
+<text x="741" y="2020" font-size="12" font-weight="400">Recruited mate 2 | FASTQ.gz</text>
+<path fill="white" stroke="#75838a" stroke-width="1" d="M715,2053 h13 l5,5 v18 h-18 Z M728,2053 v5 h5"/>
+<text x="741" y="2063" font-size="12" font-weight="400">Read / seed / position / strand |</text>
+<text x="741" y="2078" font-size="12" font-weight="400">TSV.gz</text>
+<path fill="white" stroke="#75838a" stroke-width="1" d="M715,2096 h13 l5,5 v18 h-18 Z M728,2096 v5 h5"/>
+<text x="741" y="2106" font-size="12" font-weight="400">Read recruitment counts | JSON</text>
+<path fill="white" stroke="#75838a" stroke-width="1" d="M715,2139 h13 l5,5 v18 h-18 Z M728,2139 v5 h5"/>
+<text x="741" y="2149" font-size="12" font-weight="400">Compactors assembly table | TSV</text>
+<path fill="white" stroke="#75838a" stroke-width="1" d="M715,2182 h13 l5,5 v18 h-18 Z M728,2182 v5 h5"/>
+<text x="741" y="2192" font-size="12" font-weight="400">Read-supported DNA context | FASTA</text>
+<path fill="white" stroke="#75838a" stroke-width="1" d="M715,2225 h13 l5,5 v18 h-18 Z M728,2225 v5 h5"/>
+<text x="741" y="2235" font-size="12" font-weight="400">Extension / seed membership | JSON</text>
+<path fill="none" stroke="#29434d" stroke-width="3" d="M334,1978 h20 l-5,-4 m5,4 l-5,4"/>
+<path fill="none" stroke="#29434d" stroke-width="3" d="M659,1978 h20 l-5,-4 m5,4 l-5,4"/>
+<rect x="14" y="2285" width="1012" height="440" rx="10" fill="#f4f6f8" stroke="#d8dfe2"/>
+<text x="28" y="2311" font-size="19" font-weight="700">7. Translation and query sketches</text>
+<text x="28" y="2332" font-size="12" font-weight="400">Depends on stages 2, 5 and 6. Direct 31-mers remain DNA queries; they are too short for 30-aa peptides.</text>
+<text x="35" y="2365" font-size="12" font-weight="700">INPUT</text>
+<text x="390" y="2365" font-size="12" font-weight="700">PROCESSING</text>
+<text x="715" y="2365" font-size="12" font-weight="700">RESULTS</text>
+<path fill="white" stroke="#75838a" stroke-width="1" d="M35,2376 h13 l5,5 v18 h-18 Z M48,2376 v5 h5"/>
+<text x="61" y="2386" font-size="12" font-weight="400">SPLASH DNA context | FASTA</text>
+<path fill="white" stroke="#75838a" stroke-width="1" d="M35,2419 h13 l5,5 v18 h-18 Z M48,2419 v5 h5"/>
+<text x="61" y="2429" font-size="12" font-weight="400">DE-kupl native contigs | FASTA</text>
+<path fill="white" stroke="#75838a" stroke-width="1" d="M35,2462 h13 l5,5 v18 h-18 Z M48,2462 v5 h5"/>
+<text x="61" y="2472" font-size="12" font-weight="400">Read-supported DNA context | FASTA</text>
+<path fill="white" stroke="#75838a" stroke-width="1" d="M35,2505 h13 l5,5 v18 h-18 Z M48,2505 v5 h5"/>
+<text x="61" y="2515" font-size="12" font-weight="400">Direct significant DNA seeds | FASTA</text>
+<path fill="none" stroke="#29434d" stroke-width="3" d="M399,2387 V2516"/>
+<circle fill="white" stroke="#29434d" stroke-width="3" cx="399" cy="2387" r="6"/>
+<text x="416" y="2386" font-size="12" font-weight="400">All six translation frames</text>
+<circle fill="white" stroke="#29434d" stroke-width="3" cx="399" cy="2430" r="6"/>
+<text x="416" y="2429" font-size="12" font-weight="400">Split ONLY at stops (*); retain X</text>
+<circle fill="white" stroke="#29434d" stroke-width="3" cx="399" cy="2473" r="6"/>
+<text x="416" y="2472" font-size="12" font-weight="400">Keep stretches &gt;=30 amino acids</text>
+<circle fill="white" stroke="#29434d" stroke-width="3" cx="399" cy="2516" r="6"/>
+<text x="416" y="2515" font-size="12" font-weight="400">Branchwater manysketch</text>
+<path fill="white" stroke="#75838a" stroke-width="1" d="M715,2376 h13 l5,5 v18 h-18 Z M728,2376 v5 h5"/>
+<text x="741" y="2386" font-size="12" font-weight="400">All original DNA queries | FASTA</text>
+<path fill="white" stroke="#75838a" stroke-width="1" d="M715,2419 h13 l5,5 v18 h-18 Z M728,2419 v5 h5"/>
+<text x="741" y="2429" font-size="12" font-weight="400">Retained peptide stretches | FAA</text>
+<path fill="white" stroke="#75838a" stroke-width="1" d="M715,2462 h13 l5,5 v18 h-18 Z M728,2462 v5 h5"/>
+<text x="741" y="2472" font-size="12" font-weight="400">Strand / frame / DNA origins | JSON</text>
+<path fill="white" stroke="#75838a" stroke-width="1" d="M715,2505 h13 l5,5 v18 h-18 Z M728,2505 v5 h5"/>
+<text x="741" y="2515" font-size="12" font-weight="400">DNA31 query sketches | .sig.zip</text>
+<path fill="white" stroke="#75838a" stroke-width="1" d="M715,2548 h13 l5,5 v18 h-18 Z M728,2548 v5 h5"/>
+<text x="741" y="2558" font-size="12" font-weight="400">Protein7 query sketches | .sig.zip</text>
+<path fill="white" stroke="#75838a" stroke-width="1" d="M715,2591 h13 l5,5 v18 h-18 Z M728,2591 v5 h5"/>
+<text x="741" y="2601" font-size="12" font-weight="400">Dayhoff12 query sketches | .sig.zip</text>
+<path fill="white" stroke="#75838a" stroke-width="1" d="M715,2634 h13 l5,5 v18 h-18 Z M728,2634 v5 h5"/>
+<text x="741" y="2644" font-size="12" font-weight="400">HP30 query sketches | .sig.zip</text>
+<path fill="white" stroke="#75838a" stroke-width="1" d="M715,2677 h13 l5,5 v18 h-18 Z M728,2677 v5 h5"/>
+<text x="741" y="2687" font-size="12" font-weight="400">Searchable / empty query counts | JSON</text>
+<path fill="none" stroke="#29434d" stroke-width="3" d="M334,2387 h20 l-5,-4 m5,4 l-5,4"/>
+<path fill="none" stroke="#29434d" stroke-width="3" d="M659,2387 h20 l-5,-4 m5,4 l-5,4"/>
+<rect x="14" y="2737" width="1012" height="397" rx="10" fill="#f4f6f8" stroke="#d8dfe2"/>
+<text x="28" y="2763" font-size="19" font-weight="700">8. Search reference collections</text>
+<text x="28" y="2784" font-size="12" font-weight="400">Separate Swiss-Prot proteins from public SRA runs. 5,776 tunicate runs inventoried; only 4 prepared so far.</text>
+<text x="35" y="2817" font-size="12" font-weight="700">INPUT</text>
+<text x="390" y="2817" font-size="12" font-weight="700">PROCESSING</text>
+<text x="715" y="2817" font-size="12" font-weight="700">RESULTS</text>
+<path fill="white" stroke="#75838a" stroke-width="1" d="M35,2828 h13 l5,5 v18 h-18 Z M48,2828 v5 h5"/>
+<text x="61" y="2838" font-size="12" font-weight="400">Swiss-Prot reviewed proteins | FASTA.gz</text>
+<path fill="white" stroke="#75838a" stroke-width="1" d="M35,2871 h13 l5,5 v18 h-18 Z M48,2871 v5 h5"/>
+<text x="61" y="2881" font-size="12" font-weight="400">Swiss-Prot annotations | TSV</text>
+<path fill="white" stroke="#75838a" stroke-width="1" d="M35,2914 h13 l5,5 v18 h-18 Z M48,2914 v5 h5"/>
+<text x="61" y="2924" font-size="12" font-weight="400">SRA / ENA run + study metadata | TSV.gz</text>
+<path fill="white" stroke="#75838a" stroke-width="1" d="M35,2957 h13 l5,5 v18 h-18 Z M48,2957 v5 h5"/>
+<text x="61" y="2967" font-size="12" font-weight="400">Public tunicate mate 1 | FASTQ.gz</text>
+<path fill="white" stroke="#75838a" stroke-width="1" d="M35,3000 h13 l5,5 v18 h-18 Z M48,3000 v5 h5"/>
+<text x="61" y="3010" font-size="12" font-weight="400">Public tunicate mate 2 | FASTQ.gz</text>
+<path fill="none" stroke="#29434d" stroke-width="3" d="M399,2839 V2968"/>
+<circle fill="white" stroke="#29434d" stroke-width="3" cx="399" cy="2839" r="6"/>
+<text x="416" y="2838" font-size="12" font-weight="400">Public-read validation + trimming</text>
+<circle fill="white" stroke="#29434d" stroke-width="3" cx="399" cy="2882" r="6"/>
+<text x="416" y="2881" font-size="12" font-weight="400">Six-frame protocol from stage 7</text>
+<circle fill="white" stroke="#29434d" stroke-width="3" cx="399" cy="2925" r="6"/>
+<text x="416" y="2924" font-size="12" font-weight="400">Branchwater manysketch</text>
+<circle fill="white" stroke="#29434d" stroke-width="3" cx="399" cy="2968" r="6"/>
+<text x="416" y="2967" font-size="12" font-weight="400">Optional Branchwater index</text>
+<path fill="white" stroke="#75838a" stroke-width="1" d="M715,2828 h13 l5,5 v18 h-18 Z M728,2828 v5 h5"/>
+<text x="741" y="2838" font-size="12" font-weight="400">Protein target sketches | .sig.zip</text>
+<path fill="white" stroke="#75838a" stroke-width="1" d="M715,2871 h13 l5,5 v18 h-18 Z M728,2871 v5 h5"/>
+<text x="741" y="2881" font-size="12" font-weight="400">Dayhoff target sketches | .sig.zip</text>
+<path fill="white" stroke="#75838a" stroke-width="1" d="M715,2914 h13 l5,5 v18 h-18 Z M728,2914 v5 h5"/>
+<text x="741" y="2924" font-size="12" font-weight="400">HP target sketches | .sig.zip</text>
+<path fill="white" stroke="#75838a" stroke-width="1" d="M715,2957 h13 l5,5 v18 h-18 Z M728,2957 v5 h5"/>
+<text x="741" y="2967" font-size="12" font-weight="400">SRA DNA target sketches | .sig.zip</text>
+<path fill="white" stroke="#75838a" stroke-width="1" d="M715,3000 h13 l5,5 v18 h-18 Z M728,3000 v5 h5"/>
+<text x="741" y="3010" font-size="12" font-weight="400">Optional index | RocksDB directory</text>
+<path fill="white" stroke="#75838a" stroke-width="1" d="M715,3043 h13 l5,5 v18 h-18 Z M728,3043 v5 h5"/>
+<text x="741" y="3053" font-size="12" font-weight="400">Run / study / species metadata | JSON</text>
+<path fill="white" stroke="#75838a" stroke-width="1" d="M715,3086 h13 l5,5 v18 h-18 Z M728,3086 v5 h5"/>
+<text x="741" y="3096" font-size="12" font-weight="400">Target checksums + scope | JSON</text>
+<path fill="none" stroke="#29434d" stroke-width="3" d="M334,2839 h20 l-5,-4 m5,4 l-5,4"/>
+<path fill="none" stroke="#29434d" stroke-width="3" d="M659,2839 h20 l-5,-4 m5,4 l-5,4"/>
+<rect x="14" y="3146" width="1012" height="311" rx="10" fill="#f4f6f8" stroke="#d8dfe2"/>
+<text x="28" y="3172" font-size="19" font-weight="700">9. Parallel candidate retrieval</text>
+<text x="28" y="3193" font-size="12" font-weight="400">Depends on stages 7 + 8. Branchwater manysearch for BOTH collections; no SBT indexes.</text>
+<text x="35" y="3226" font-size="12" font-weight="700">INPUT</text>
+<text x="390" y="3226" font-size="12" font-weight="700">PROCESSING</text>
+<text x="715" y="3226" font-size="12" font-weight="700">RESULTS</text>
+<path fill="white" stroke="#75838a" stroke-width="1" d="M35,3237 h13 l5,5 v18 h-18 Z M48,3237 v5 h5"/>
+<text x="61" y="3247" font-size="12" font-weight="400">Query sketches, separate alphabets |</text>
+<text x="61" y="3262" font-size="12" font-weight="400">.sig.zip</text>
+<path fill="white" stroke="#75838a" stroke-width="1" d="M35,3280 h13 l5,5 v18 h-18 Z M48,3280 v5 h5"/>
+<text x="61" y="3290" font-size="12" font-weight="400">Target signatures, streaming | .sig.zip</text>
+<path fill="white" stroke="#75838a" stroke-width="1" d="M35,3323 h13 l5,5 v18 h-18 Z M48,3323 v5 h5"/>
+<text x="61" y="3333" font-size="12" font-weight="400">Optional supported index | RocksDB</text>
+<text x="61" y="3348" font-size="12" font-weight="400">directory</text>
+<path fill="none" stroke="#29434d" stroke-width="3" d="M399,3248 V3334"/>
+<circle fill="white" stroke="#29434d" stroke-width="3" cx="399" cy="3248" r="6"/>
+<text x="416" y="3247" font-size="12" font-weight="400">Branchwater manysearch</text>
+<circle fill="white" stroke="#29434d" stroke-width="3" cx="399" cy="3291" r="6"/>
+<text x="416" y="3290" font-size="12" font-weight="400">Separate source / alphabet / scale</text>
+<circle fill="white" stroke="#29434d" stroke-width="3" cx="399" cy="3334" r="6"/>
+<text x="416" y="3333" font-size="12" font-weight="400">Measure overlap and chance</text>
+<text x="416" y="3348" font-size="12" font-weight="400">controls</text>
+<path fill="white" stroke="#75838a" stroke-width="1" d="M715,3237 h13 l5,5 v18 h-18 Z M728,3237 v5 h5"/>
+<text x="741" y="3247" font-size="12" font-weight="400">Swiss-Prot candidates per alphabet |</text>
+<text x="741" y="3262" font-size="12" font-weight="400">CSV</text>
+<path fill="white" stroke="#75838a" stroke-width="1" d="M715,3280 h13 l5,5 v18 h-18 Z M728,3280 v5 h5"/>
+<text x="741" y="3290" font-size="12" font-weight="400">SRA candidates per alphabet | CSV</text>
+<path fill="white" stroke="#75838a" stroke-width="1" d="M715,3323 h13 l5,5 v18 h-18 Z M728,3323 v5 h5"/>
+<text x="741" y="3333" font-size="12" font-weight="400">Query coverage + empty sketches | JSON</text>
+<path fill="white" stroke="#75838a" stroke-width="1" d="M715,3366 h13 l5,5 v18 h-18 Z M728,3366 v5 h5"/>
+<text x="741" y="3376" font-size="12" font-weight="400">Commands / versions / checksums | JSON</text>
+<path fill="white" stroke="#75838a" stroke-width="1" d="M715,3409 h13 l5,5 v18 h-18 Z M728,3409 v5 h5"/>
+<text x="741" y="3419" font-size="12" font-weight="400">Runtime / memory measurements | TXT</text>
+<path fill="none" stroke="#29434d" stroke-width="3" d="M334,3248 h20 l-5,-4 m5,4 l-5,4"/>
+<path fill="none" stroke="#29434d" stroke-width="3" d="M659,3248 h20 l-5,-4 m5,4 l-5,4"/>
+<rect x="14" y="3469" width="1012" height="483" rx="10" fill="#f4f6f8" stroke="#d8dfe2"/>
+<text x="28" y="3495" font-size="19" font-weight="700">10. Gene, domain and paper connections</text>
+<text x="28" y="3516" font-size="12" font-weight="400">Depends on stages 2, 4, 5, 6 and 9. Sequence candidates alone do not establish gene function or splicing.</text>
+<text x="35" y="3549" font-size="12" font-weight="700">INPUT</text>
+<text x="390" y="3549" font-size="12" font-weight="700">PROCESSING</text>
+<text x="715" y="3549" font-size="12" font-weight="700">RESULTS</text>
+<path fill="white" stroke="#75838a" stroke-width="1" d="M35,3560 h13 l5,5 v18 h-18 Z M48,3560 v5 h5"/>
+<text x="61" y="3570" font-size="12" font-weight="400">Candidate matches | CSV</text>
+<path fill="white" stroke="#75838a" stroke-width="1" d="M35,3603 h13 l5,5 v18 h-18 Z M48,3603 v5 h5"/>
+<text x="61" y="3613" font-size="12" font-weight="400">Sequences and origin membership | FASTA</text>
+<path fill="white" stroke="#75838a" stroke-width="1" d="M35,3646 h13 l5,5 v18 h-18 Z M48,3646 v5 h5"/>
+<text x="61" y="3656" font-size="12" font-weight="400">Adjusted gene / k-mer tests | TSV.gz</text>
+<path fill="white" stroke="#75838a" stroke-width="1" d="M35,3689 h13 l5,5 v18 h-18 Z M48,3689 v5 h5"/>
+<text x="61" y="3699" font-size="12" font-weight="400">Botryllus gene annotation | GTF</text>
+<path fill="white" stroke="#75838a" stroke-width="1" d="M35,3732 h13 l5,5 v18 h-18 Z M48,3732 v5 h5"/>
+<text x="61" y="3742" font-size="12" font-weight="400">Paper genes and hub membership | TSV</text>
+<path fill="white" stroke="#75838a" stroke-width="1" d="M35,3775 h13 l5,5 v18 h-18 Z M48,3775 v5 h5"/>
+<text x="61" y="3785" font-size="12" font-weight="400">Swiss-Prot gene / species map | TSV</text>
+<path fill="white" stroke="#75838a" stroke-width="1" d="M35,3818 h13 l5,5 v18 h-18 Z M48,3818 v5 h5"/>
+<text x="61" y="3828" font-size="12" font-weight="400">Pfam profile database | HMM</text>
+<path fill="white" stroke="#75838a" stroke-width="1" d="M35,3861 h13 l5,5 v18 h-18 Z M48,3861 v5 h5"/>
+<text x="61" y="3871" font-size="12" font-weight="400">Gene Ontology definitions | OBO</text>
+<path fill="white" stroke="#75838a" stroke-width="1" d="M35,3904 h13 l5,5 v18 h-18 Z M48,3904 v5 h5"/>
+<text x="61" y="3914" font-size="12" font-weight="400">Pfam-to-GO mapping | TXT</text>
+<path fill="none" stroke="#29434d" stroke-width="3" d="M399,3571 V3743"/>
+<circle fill="white" stroke="#29434d" stroke-width="3" cx="399" cy="3571" r="6"/>
+<text x="416" y="3570" font-size="12" font-weight="400">Minimap2 genome / splice mapping</text>
+<circle fill="white" stroke="#29434d" stroke-width="3" cx="399" cy="3614" r="6"/>
+<text x="416" y="3613" font-size="12" font-weight="400">Exact seed-to-transcript mapping</text>
+<circle fill="white" stroke="#29434d" stroke-width="3" cx="399" cy="3657" r="6"/>
+<text x="416" y="3656" font-size="12" font-weight="400">hmmscan: query Pfam domains</text>
+<circle fill="white" stroke="#29434d" stroke-width="3" cx="399" cy="3700" r="6"/>
+<text x="416" y="3699" font-size="12" font-weight="400">Join gene / protein / species</text>
+<text x="416" y="3714" font-size="12" font-weight="400">metadata</text>
+<circle fill="white" stroke="#29434d" stroke-width="3" cx="399" cy="3743" r="6"/>
+<text x="416" y="3742" font-size="12" font-weight="400">Compare paper genes and hubs</text>
+<path fill="white" stroke="#75838a" stroke-width="1" d="M715,3560 h13 l5,5 v18 h-18 Z M728,3560 v5 h5"/>
+<text x="741" y="3570" font-size="12" font-weight="400">Alignment evidence | SAM or PAF</text>
+<path fill="white" stroke="#75838a" stroke-width="1" d="M715,3603 h13 l5,5 v18 h-18 Z M728,3603 v5 h5"/>
+<text x="741" y="3613" font-size="12" font-weight="400">Gene connection table | TSV</text>
+<path fill="white" stroke="#75838a" stroke-width="1" d="M715,3646 h13 l5,5 v18 h-18 Z M728,3646 v5 h5"/>
+<text x="741" y="3656" font-size="12" font-weight="400">Sequences + candidate annotations |</text>
+<text x="741" y="3671" font-size="12" font-weight="400">JSON</text>
+<path fill="white" stroke="#75838a" stroke-width="1" d="M715,3689 h13 l5,5 v18 h-18 Z M728,3689 v5 h5"/>
+<text x="741" y="3699" font-size="12" font-weight="400">Paper recovery and overlaps | TSV</text>
+<path fill="white" stroke="#75838a" stroke-width="1" d="M715,3732 h13 l5,5 v18 h-18 Z M728,3732 v5 h5"/>
+<text x="741" y="3742" font-size="12" font-weight="400">Genotype-adjusted gene effects | TSV</text>
+<path fill="white" stroke="#75838a" stroke-width="1" d="M715,3775 h13 l5,5 v18 h-18 Z M728,3775 v5 h5"/>
+<text x="741" y="3785" font-size="12" font-weight="400">Ambiguities / missing evidence | JSON</text>
+<path fill="white" stroke="#75838a" stroke-width="1" d="M715,3818 h13 l5,5 v18 h-18 Z M728,3818 v5 h5"/>
+<text x="741" y="3828" font-size="12" font-weight="400">Query Pfam domain calls | domtblout</text>
+<path fill="none" stroke="#29434d" stroke-width="3" d="M334,3571 h20 l-5,-4 m5,4 l-5,4"/>
+<path fill="none" stroke="#29434d" stroke-width="3" d="M659,3571 h20 l-5,-4 m5,4 l-5,4"/>
+<rect x="14" y="3964" width="1012" height="397" rx="10" fill="#f4f6f8" stroke="#d8dfe2"/>
+<text x="28" y="3990" font-size="19" font-weight="700">11. Results and job-status app</text>
+<text x="28" y="4011" font-size="12" font-weight="400">Depends on validated stage 10 and scheduler/output checks. Publish only measured results with timestamps.</text>
+<text x="35" y="4044" font-size="12" font-weight="700">INPUT</text>
+<text x="390" y="4044" font-size="12" font-weight="700">PROCESSING</text>
+<text x="715" y="4044" font-size="12" font-weight="700">RESULTS</text>
+<path fill="white" stroke="#75838a" stroke-width="1" d="M35,4055 h13 l5,5 v18 h-18 Z M48,4055 v5 h5"/>
+<text x="61" y="4065" font-size="12" font-weight="400">Validated gene evidence | TSV</text>
+<path fill="white" stroke="#75838a" stroke-width="1" d="M35,4098 h13 l5,5 v18 h-18 Z M48,4098 v5 h5"/>
+<text x="61" y="4108" font-size="12" font-weight="400">Sequence and annotation evidence | JSON</text>
+<path fill="white" stroke="#75838a" stroke-width="1" d="M35,4141 h13 l5,5 v18 h-18 Z M48,4141 v5 h5"/>
+<text x="61" y="4151" font-size="12" font-weight="400">Scheduler state + completed outputs |</text>
+<text x="61" y="4166" font-size="12" font-weight="400">JSON</text>
+<path fill="none" stroke="#29434d" stroke-width="3" d="M399,4066 V4152"/>
+<circle fill="white" stroke="#29434d" stroke-width="3" cx="399" cy="4066" r="6"/>
+<text x="416" y="4065" font-size="12" font-weight="400">Build explorer + validate joins</text>
+<circle fill="white" stroke="#29434d" stroke-width="3" cx="399" cy="4109" r="6"/>
+<text x="416" y="4108" font-size="12" font-weight="400">Check links and record</text>
+<text x="416" y="4123" font-size="12" font-weight="400">denominators</text>
+<circle fill="white" stroke="#29434d" stroke-width="3" cx="399" cy="4152" r="6"/>
+<text x="416" y="4151" font-size="12" font-weight="400">Publish reviewed app build</text>
+<path fill="white" stroke="#75838a" stroke-width="1" d="M715,4055 h13 l5,5 v18 h-18 Z M728,4055 v5 h5"/>
+<text x="741" y="4065" font-size="12" font-weight="400">Explorer page | HTML</text>
+<path fill="white" stroke="#75838a" stroke-width="1" d="M715,4098 h13 l5,5 v18 h-18 Z M728,4098 v5 h5"/>
+<text x="741" y="4108" font-size="12" font-weight="400">Explorer code | JS</text>
+<path fill="white" stroke="#75838a" stroke-width="1" d="M715,4141 h13 l5,5 v18 h-18 Z M728,4141 v5 h5"/>
+<text x="741" y="4151" font-size="12" font-weight="400">Timestamped status snapshot | JSON</text>
+<path fill="white" stroke="#75838a" stroke-width="1" d="M715,4184 h13 l5,5 v18 h-18 Z M728,4184 v5 h5"/>
+<text x="741" y="4194" font-size="12" font-weight="400">Downloadable sequence records | FASTA</text>
+<path fill="white" stroke="#75838a" stroke-width="1" d="M715,4227 h13 l5,5 v18 h-18 Z M728,4227 v5 h5"/>
+<text x="741" y="4237" font-size="12" font-weight="400">Downloadable evidence tables | TSV</text>
+<path fill="white" stroke="#75838a" stroke-width="1" d="M715,4270 h13 l5,5 v18 h-18 Z M728,4270 v5 h5"/>
+<text x="741" y="4280" font-size="12" font-weight="400">Workflow metro diagram | SVG</text>
+<path fill="white" stroke="#75838a" stroke-width="1" d="M715,4313 h13 l5,5 v18 h-18 Z M728,4313 v5 h5"/>
+<text x="741" y="4323" font-size="12" font-weight="400">Workflow source diagram | MMD</text>
+<path fill="none" stroke="#29434d" stroke-width="3" d="M334,4066 h20 l-5,-4 m5,4 l-5,4"/>
+<path fill="none" stroke="#29434d" stroke-width="3" d="M659,4066 h20 l-5,-4 m5,4 l-5,4"/>
+<text x="24" y="4388" font-size="14" font-weight="700">Validation before migration: fixtures → real completed sample → cached outputs → full-scale launch.</text>
+</svg>

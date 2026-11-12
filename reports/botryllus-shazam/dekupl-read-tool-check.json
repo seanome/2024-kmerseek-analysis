@@ -1,0 +1,12 @@
+{
+  "status": "passed",
+  "synthetic_fixture": true,
+  "recruitment": {
+    "input_pairs": 25,
+    "recruited_pairs": 24,
+    "occurrences": 24
+  },
+  "compactors_extended_seed": true,
+  "branchwater_manysketch_manysearch_self": true,
+  "job": "49492080"
+}
