@@ -13,14 +13,27 @@ cells = []
 
 
 def md(s):
-    cells.append({"cell_type": "markdown", "id": f"md-{len(cells):02d}", "metadata": {},
-                  "source": s.strip("\n").splitlines(keepends=True)})
+    cells.append(
+        {
+            "cell_type": "markdown",
+            "id": f"md-{len(cells):02d}",
+            "metadata": {},
+            "source": s.strip("\n").splitlines(keepends=True),
+        }
+    )
 
 
 def code(s):
-    cells.append({"cell_type": "code", "id": f"code-{len(cells):02d}", "execution_count": None,
-                  "metadata": {"jupyter": {"source_hidden": True}}, "outputs": [],
-                  "source": s.strip("\n").splitlines(keepends=True)})
+    cells.append(
+        {
+            "cell_type": "code",
+            "id": f"code-{len(cells):02d}",
+            "execution_count": None,
+            "metadata": {"jupyter": {"source_hidden": True}},
+            "outputs": [],
+            "source": s.strip("\n").splitlines(keepends=True),
+        }
+    )
 
 
 md(r"""
@@ -450,7 +463,18 @@ copy of this run (job 48677816) was still running when this notebook was written
   *Molecular Biology and Evolution* 2, no. 6 (1985): 526–38.
 """)
 
-nb = {"cells": cells, "metadata": {"kernelspec": {"display_name": "Python 3", "language": "python", "name": "python3"},
-                                   "language_info": {"name": "python"}}, "nbformat": 4, "nbformat_minor": 5}
+nb = {
+    "cells": cells,
+    "metadata": {
+        "kernelspec": {
+            "display_name": "Python 3",
+            "language": "python",
+            "name": "python3",
+        },
+        "language_info": {"name": "python"},
+    },
+    "nbformat": 4,
+    "nbformat_minor": 5,
+}
 OUT.write_text(json.dumps(nb, indent=1) + "\n")
 print(OUT)
