@@ -924,8 +924,31 @@ def retryOnKill = { task, int retries = 2 ->
 //
 // A non-kill failure still goes to `finish`. A script error is a bug, and a bug must stop
 // the run rather than quietly cost an arm.
+//
+// A kill can also arrive as exit 1. Nextflow's task wrapper (.command.run) runs
+// `kill $mem_proc` in an ERR trap when the script exits nonzero. $mem_proc is the
+// wrapper's memory watcher, which stops on its own once the task is gone. When it has
+// already stopped, that `kill` fails with "No such process" and its status, 1, replaces
+// the script's 137 in .exitcode. On 2026-11-11 this stopped run-midi-plus: the search of
+// human against arabidopsis (gbmr7 k9, 288 GB, SLURM job 51896627) was killed, the script
+// exited 137, Nextflow recorded 1, and the 1 went to `finish`. So the script also leaves
+// an empty file named KMERSEEK_KILL_MARKER in its work directory before it re-raises a
+// kill, and searchScriptSawKill reads it. Each attempt gets a new work directory, so a
+// marker never carries over to a retry.
+def KMERSEEK_KILL_MARKER = '.kmerseek_search_killed'
+
+def searchScriptSawKill = { task ->
+    try {
+        task.workDir != null &&
+            java.nio.file.Files.exists(task.workDir.resolve(KMERSEEK_KILL_MARKER))
+    } catch (Exception e) {
+        log.warn "could not look for ${KMERSEEK_KILL_MARKER} in ${task.workDir}: ${e}"
+        false
+    }
+}
+
 def retryOnKillElseIgnore = { task, int retries = 2 ->
-    if (!killedByCluster(task)) return 'finish'
+    if (!killedByCluster(task) && !searchScriptSawKill(task)) return 'finish'
     if (task.attempt <= retries) return 'retry'
     log.warn "${task.process} (${task.tag}) was killed on attempt ${task.attempt} of " +
              "${retries + 1} at ${task.memory}; ignoring it. Nothing is stored for this " +
@@ -1883,6 +1906,8 @@ process kmerseekSearch {
     # Re-raising the same status lets errorStrategy see the kill and double the memory.
     if [ "\${rc[0]}" -ge 128 ] && [ "\${rc[0]}" -le 143 ]; then
         echo "kmerseek search died by signal (exit \${rc[0]}); not a no-hit result" >&2
+        # The marker is what errorStrategy reads when Nextflow records this exit as 1.
+        touch ${KMERSEEK_KILL_MARKER}
         exit "\${rc[0]}"
     fi
     # zstd's nonzero exit is NOT tolerated either. It used to share the `|| true`, so
@@ -1892,6 +1917,7 @@ process kmerseekSearch {
     # the allocation.
     if [ "\${rc[1]}" -ne 0 ]; then
         echo "zstd exited \${rc[1]}: the region stream is truncated, not a short result" >&2
+        touch ${KMERSEEK_KILL_MARKER}
         exit 137
     fi
     if [ "\${rc[0]}" -ne 0 ]; then
@@ -2097,7 +2123,11 @@ process kmerseekExtendSearch {
         exit 3
     fi
     # A signal death is a kill, not a result: re-raise it so the retry doubles memory.
-    if [ "\${rc[0]}" -ge 128 ] && [ "\${rc[0]}" -le 143 ]; then exit "\${rc[0]}"; fi
+    # The marker is what errorStrategy reads when Nextflow records this exit as 1.
+    if [ "\${rc[0]}" -ge 128 ] && [ "\${rc[0]}" -le 143 ]; then
+        touch ${KMERSEEK_KILL_MARKER}
+        exit "\${rc[0]}"
+    fi
     [ "\${rc[0]}" -eq 0 ] && [ "\${rc[1]}" -eq 0 ] || { cat ${slug}.log >&2; exit 1; }
 
     if [ -n "\$(zstd -dc ${slug}.regions.csv.zst | head -c 1)" ]; then
