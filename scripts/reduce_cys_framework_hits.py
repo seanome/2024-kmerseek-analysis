@@ -11,9 +11,19 @@ the smallest region E-value, the largest region bit score (Karlin-Altschul), the
 whole-protein containment, and how many regions matched. It also writes the reference's
 accessions, so the notebook can score against the same search space the searches saw.
 
+With `--top-n N` it also writes, per hit file, the pairs a notebook needs to count toxins
+in each query's top N: every pair in a score group (same best Poisson score and shared k-mer
+count) that starts before place N, so a tie that crosses place N is kept whole
+(`*.top<N>.parquet`), and per query the number of pairs and of pairs whose target is a
+toxin (`*.per_query_counts.parquet`). A full phylum run's pairs tables are hundreds of MB;
+these are what the laptop gets.
+
 Usage, on Sherlock, inside the pipeline image (it has polars):
 
     reduce_cys_framework_hits.py --results pilot/results --work pilot/work --out pilot/reduced
+
+`--hits-file NAME` reduces only that one hit file and skips the references, so each file can
+be its own Slurm array task; `--references-only` writes only the references and truth lists.
 """
 
 from __future__ import annotations
@@ -82,6 +92,41 @@ def reduce_hits(path: Path) -> pl.DataFrame:
     )
 
 
+def top_groups(pairs: pl.DataFrame, top_n: int) -> pl.DataFrame:
+    """Pairs in the score groups that start before place `top_n` of their query's list."""
+    key = ["best_region_poisson_score", "n_shared_kmers"]
+    groups = (
+        pairs.group_by("query_id", *key)
+        .agg(n_tied=pl.len())
+        .sort(["query_id", *key], descending=[False, True, True])
+        .with_columns(
+            n_before=(pl.col("n_tied").cum_sum() - pl.col("n_tied")).over("query_id")
+        )
+        .filter(pl.col("n_before") < top_n)
+    )
+    return pairs.join(groups, on=["query_id", *key], how="inner").sort(
+        "query_id", "n_before", "target_accession"
+    )
+
+
+def per_query_counts(pairs: pl.DataFrame, truth: set[str]) -> pl.DataFrame:
+    """Per query: pairs returned, and how many of them hit a toxin."""
+    return (
+        pairs.with_columns(toxin=pl.col("target_accession").is_in(list(truth)))
+        .group_by("query_id")
+        .agg(n_pairs=pl.len(), n_toxin_pairs=pl.col("toxin").sum())
+        .sort("query_id")
+    )
+
+
+def find_counts(work: Path) -> dict[str, Path]:
+    """heldOutReference work folders by `<level>.<clade>`, from their counts files."""
+    return {
+        ".".join(c.name.split(".")[1:3]): c.parent
+        for c in sorted(work.glob("*/*/counts.*.tsv"))
+    }
+
+
 def reference_accessions(fasta_gz: Path) -> list[str]:
     """Accessions in a held-out reference, from its `>sp|ACC|NAME` headers."""
     out = []
@@ -97,24 +142,50 @@ def main() -> None:
     parser.add_argument("--results", type=Path, required=True)
     parser.add_argument("--work", type=Path, required=True)
     parser.add_argument("--out", type=Path, required=True)
+    parser.add_argument(
+        "--hits-file", help="reduce only this file in <results>/kmerseek"
+    )
+    parser.add_argument("--references-only", action="store_true")
+    parser.add_argument("--top-n", type=int, help="also write top-N groups and counts")
     args = parser.parse_args()
     args.out.mkdir(parents=True, exist_ok=True)
+    folders = find_counts(args.work)
 
-    for path in sorted((args.results / "kmerseek").glob("*.hits.csv")):
+    paths = sorted((args.results / "kmerseek").glob("*.hits.csv"))
+    if args.hits_file:
+        paths = [args.results / "kmerseek" / args.hits_file]
+    if args.references_only:
+        paths = []
+    for path in paths:
         table = reduce_hits(path)
-        dest = args.out / path.name.replace(".hits.csv", ".pairs.parquet")
-        table.write_parquet(dest)
-        print(f"{path.name}: {table.height} query-target pairs -> {dest.name}")
+        stem = path.name.replace(".hits.csv", "")
+        table.write_parquet(args.out / f"{stem}.pairs.parquet")
+        print(f"{path.name}: {table.height} query-target pairs -> {stem}.pairs.parquet")
+        if args.top_n:
+            meta = HITS_NAME.match(path.name).groupdict()
+            truth = set(
+                (folders[f"{meta['level']}.{meta['clade']}"] / "truth.txt")
+                .read_text()
+                .split()
+            )
+            top = top_groups(table, args.top_n)
+            top.write_parquet(args.out / f"{stem}.top{args.top_n}.parquet")
+            per_query_counts(table, truth).write_parquet(
+                args.out / f"{stem}.per_query_counts.parquet"
+            )
+            print(f"  top {args.top_n} score groups: {top.height} pairs")
+    if args.hits_file:
+        return
 
     # The held-out references and their truth lists sit in heldOutReference's work
     # folders, next to the counts file that names the clade.
-    for counts in sorted(args.work.glob("*/*/counts.*.tsv")):
-        level, clade = counts.name.split(".")[1:3]
-        accessions = reference_accessions(counts.parent / "reference.fasta.gz")
+    for name, folder in folders.items():
+        level, clade = name.split(".")
+        accessions = reference_accessions(folder / "reference.fasta.gz")
         (args.out / f"{level}.{clade}.reference_accessions.txt").write_text(
             "\n".join(accessions) + "\n"
         )
-        truth = (counts.parent / "truth.txt").read_text()
+        truth = (folder / "truth.txt").read_text()
         (args.out / f"{level}.{clade}.truth.txt").write_text(truth)
         print(f"{level}={clade}: {len(accessions)} reference entries")
 
