@@ -44,13 +44,47 @@ the libraries are unstranded.
   0.75 with Salmon). These genes were picked by the paper's p-values, so this is not a
   correlation over all genes.
 
-What is left points at the paper's own counting run, not the genome. In PR 223 the
-paper's HTSeq tallies for one library (SRR32233970) add up to 28.1 million reads for 18.1
-million read pairs. That fits HTSeq counting the two mates of a pair as two reads, which
-would raise every count up to 2-fold. PR 223 is testing that now (Sherlock job 52056949,
-written before it ran): counting each mate as its own read should find at least 456
-listed genes on the paper's genome if this is the main cause, and fewer than 368 if it is
-not.
+## What is left: our trimming threw away about half the reads
+
+**Counting each mate as its own read is not the cause.** PR 223 tested it (Sherlock job
+52056949, finished 2026-11-12 06:17, cutoffs written before it ran). On the paper's
+genome it finds 317 listed genes, below the 368 that would have made it a cause, and it
+then counts 123% as many reads as the paper's table with the same rank correlation
+across genes as before (0.89). So the paper's counts differ from ours gene by gene, not by
+a scale factor.
+
+**The paper counted nearly every read pair. Our trimming kept about half.**
+
+![Share of the SRA read pairs the paper counted, and the share our trimming kept, per library](figures/trimming_check_domen2026_dataset_s1.png)
+
+HTSeq puts every read pair it is given into exactly one row of its table: a gene or one of
+its five tallies (no gene, ambiguous, low quality, not aligned, aligned to more than one
+place). So the column sum is the number of pairs the paper gave HTSeq. Per library that
+is 96% of the read pairs in the SRA run (median of 38, range 48% to 99%). Our reads are
+PR 203's Trim Galore output, which kept 53% of the pairs (median, range 9% to 81%). In
+all 38 libraries the paper counted more pairs than our trimming kept.
+
+The reason is one setting. PR 203's nf-core/rnaseq run (2026-10-24, on Sherlock in
+`/scratch/users/olgabot/botryllus-shazam-PEC-20261023/nfcore/`) passed
+`--length 62` to Trim Galore: a pair is dropped when either read is shorter than 62 bases
+after the adapter is cut off. Trim Galore's own default is 20. These libraries have short
+cDNA fragments: in SRR32233970 (JA100) 80% of reads contain adapter, and the 62-base rule
+drops 38% of pairs. In SRR32233977 (JA154) it drops 91%.
+
+Dropping reads by fragment length is not random over genes, which fits the 0.89 rank
+correlation between our counts and the paper's on the same genome. That is an
+explanation that fits the numbers, not yet a test. The test is to count the untrimmed (or
+`--length 20`) reads on the paper's genome and fit as before.
+
+The earlier "1.55 times as many counts" in PR 223 is this same gap: 28.1 million pairs
+counted by the paper against 18.1 million left after trimming, from 29.0 million in SRA
+for SRR32233970.
+
+`trimming_check.py` reads Dataset S1 and PR 203's trimming record
+(`../inputs/trimmed-inputs.validated.json`) and writes `trimming_check.tsv` (one row per
+library: SRA pairs, pairs kept, the paper's gene counts and five tallies) and
+`trimming_check.out`:
+`python trimming_check.py <pnas.2610968123.sd01.xlsx>`.
 
 ## Files
 
