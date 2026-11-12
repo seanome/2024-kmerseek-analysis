@@ -49,6 +49,22 @@ def test_run_weights():
     assert svw.run_weights(u, False) == {"a": 1.0, "b": -0.5, "c": -0.5}
 
 
+def test_pr201_compare_counts_rows_not_compared():
+    old = pl.DataFrame({"botryllus_set": ["b1", "b2"], "alphabet": ["protein"] * 2, "k": [7, 7],
+                        "human_comparison": ["h", "h"], "pr201_D": [0.5, 0.25]})
+    new = pl.DataFrame({"botryllus_set": ["b1", "b2"], "alphabet": ["protein"] * 2, "k": [7, 7],
+                        "human_comparison": ["h", "h"], "a_D": [0.5, 0.25]})
+    cmp, not_compared = svw.pr201_compare(old, new)
+    assert not_compared == 0 and cmp["D_difference"].to_list() == [0.0, 0.0]
+    # a renamed set matches no row: counted, not passed over
+    cmp, not_compared = svw.pr201_compare(old, new.with_columns(botryllus_set=pl.Series(["b1", "renamed"])))
+    assert not_compared == 1 and cmp["scored_here"].to_list() == [True, False]
+    # no row matches at all
+    assert svw.pr201_compare(old, new.with_columns(k=pl.lit(8, pl.Int64)))[1] == 2
+    # a matched row with no D here cannot be compared either
+    assert svw.pr201_compare(old, new.with_columns(a_D=pl.Series([0.5, None])))[1] == 1
+
+
 def write(path, text):
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(text)
@@ -140,6 +156,16 @@ def test_main_end_to_end(tmp_path):
     assert (r["d_up"], r["d_down"], r["b_denominator"], r["b_score"]) == (0, 0, 4, None)
     assert row("b1__fullswap", "h1")["b_score"] is None
     assert row("b1", "h1__swap_even")["b_score"] == 0.0  # this human set still has k-mers
+
+    # The check against PR 201: a matching row passes, a row with no match here stops the run
+    old = "botryllus\talphabet\tk\thuman_contrast\tup_kept\tdown_kept\tD\n{}\tprotein\t2\tgse99963_fig4_post_vs_pre\t2\t1\t{}\n"
+    write(an / "exports" / "de2de" / "de2de_results.tsv", old.format("b1", expected))
+    svw.main(work, an, out)
+    chk = pl.read_csv(out / "pr201_check.tsv", separator="\t")
+    assert len(chk) == 1 and chk["scored_here"].to_list() == [True] and abs(chk["D_difference"][0]) < 1e-12
+    write(an / "exports" / "de2de" / "de2de_results.tsv", old.format("renamed", expected))
+    with pytest.raises(SystemExit, match="1 PR 201 rows could not be compared"):
+        svw.main(work, an, out)
 
 
 def test_unfinished_human_set_stops(tmp_path):

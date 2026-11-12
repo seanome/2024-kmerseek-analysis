@@ -132,6 +132,15 @@ def read_human_codes(folder, direction, a, k):
     return sorted_unique(pl.read_csv(p, has_header=False, new_columns=["code"], schema_overrides={"code": pl.Int64})["code"].to_numpy())
 
 
+def pr201_compare(old, new):
+    """PR 201's rows beside this run's rows, and how many PR 201 rows have no row here. A row with
+    no match has nothing to compare, so it must be counted and not read as "no difference"."""
+    on = ["botryllus_set", "alphabet", "k", "human_comparison"]
+    cmp = old.join(new.with_columns(scored_here=pl.lit(True)), on=on, how="left")
+    cmp = cmp.with_columns(pl.col("scored_here").fill_null(False), D_difference=pl.col("a_D") - pl.col("pr201_D"))
+    return cmp, len(cmp.filter(~pl.col("scored_here") | pl.col("D_difference").is_null()))
+
+
 def main(work, analysis, out):
     work, analysis, out = Path(work), Path(analysis), Path(out)
     (out / "tables").mkdir(parents=True, exist_ok=True)
@@ -304,9 +313,11 @@ def main(work, analysis, out):
         new = pl.DataFrame([dict(botryllus_set=n, alphabet=s[0], k=s[1], human_comparison=c, **v)
                             for (s, c, n), v in a_rows.items() if c in FIG4],
                            schema_overrides=schema, infer_schema_length=None)
-        cmp = old.join(new, on=["botryllus_set", "alphabet", "k", "human_comparison"], how="left")
-        cmp = cmp.with_columns(D_difference=pl.col("a_D") - pl.col("pr201_D"))
+        cmp, not_compared = pr201_compare(old, new)
         cmp.write_csv(out / "pr201_check.tsv", separator="\t")
+        print("PR 201 check:", len(cmp), "rows,", not_compared, "not compared (no row or no D here)", flush=True)
+        if not_compared:
+            raise SystemExit(f"{not_compared} PR 201 rows could not be compared: see pr201_check.tsv")
         print("PR 201 check:", len(cmp), "rows, largest |D difference|", cmp["D_difference"].abs().max(),
               ", kept counts differ in", len(cmp.filter((pl.col("a_up_kept") != pl.col("pr201_up_kept"))
                                                          | (pl.col("a_down_kept") != pl.col("pr201_down_kept")))), "rows")
