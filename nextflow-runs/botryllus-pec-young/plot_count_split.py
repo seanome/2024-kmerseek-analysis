@@ -3,7 +3,7 @@
 
 Usage: plot_count_split.py   (run in this folder; reads count_split_fits.tsv,
 count_split_listed.tsv and count_split_libraries.tsv, which each-alone-checks/count_split.R
-writes through count_split.nf)
+writes through count_split.nf, and each-alone-comparison/paper/paper_gene_overlap_genes.tsv)
 Writes count_split_summary.tsv (one row per count table), count_split_match.tsv (the paper's
 found genes split by whether they have a matched, tested gene in this run) and
 figures/count_split_domen2026_dataset_s1.{svg,png}.
@@ -21,6 +21,8 @@ import pubfig as pf  # noqa: E402
 
 COMPARISONS = ["2 h", "24 h", "13-49 d", "132 d"]
 FOUND = "listed_p_lt_0_05_same_direction"
+# Each listed gene with its matched gene in this run and how close the protein match is.
+MATCHES = "each-alone-comparison/paper/paper_gene_overlap_genes.tsv"
 PAPER, THIS = pf.OKABE_ITO["vermillion"], pf.OKABE_ITO["blue"]
 # Rows of panels a and b, top to bottom: (label, genome, counter). Colour is the genome,
 # a filled mark is counting as HTSeq does, an open mark is Salmon.
@@ -91,7 +93,7 @@ def main():
         "comparison", "paper_gene", "direction", paper_found="found"
     ).join(
         listed.filter(pl.col("table") == "this_genome__salmon").select(
-            "comparison", "paper_gene", "direction", "gene", "tested", "found"
+            "comparison", "paper_gene", "direction", "gene", "tested", "log2FoldChange", "found"
         ),
         on=["comparison", "paper_gene", "direction"],
     )
@@ -115,10 +117,67 @@ def main():
     )
     assert match["listed_genes"].sum() == on_paper.height
     match.write_csv("count_split_match.tsv", separator="\t")
+    # The paper's found genes that are tested in this run: how many have a fold change in
+    # the listed direction here, and how many are found, by how close the protein match is.
+    tested = on_paper.filter(pl.col("tested")).join(
+        pl.read_csv(MATCHES, separator="\t", null_values=["NA", ""]).select(
+            "comparison", "paper_gene", "direction", "pident", "coverage"
+        ),
+        on=["comparison", "paper_gene", "direction"],
+        how="left",
+    )
+    assert tested.height == on_paper.filter(pl.col("tested")).height
+    assert tested["pident"].null_count() == 0
+    same_direction = tested.filter(
+        pl.when(pl.col("direction") == "up")
+        .then(pl.col("log2FoldChange") > 0)
+        .otherwise(pl.col("log2FoldChange") < 0)
+    ).height
+    closest = (pl.col("pident") >= 99) & (pl.col("coverage") >= 90)
+    close = (pl.col("pident") >= 95) & (pl.col("coverage") >= 80)
+    by_match = pl.DataFrame(
+        [
+            {"protein_match": label, "found": t.filter(pl.col("found")).height, "tested": t.height}
+            for label, t in (
+                ("99% identity over 90% or better", tested.filter(closest)),
+                ("95% over 80% or better, under 99% over 90%", tested.filter(close & ~closest)),
+                ("under 95% over 80%", tested.filter(~close)),
+            )
+        ]
+    )
+    assert by_match["tested"].sum() == tested.height
+    # Counted as HTSeq does against counted by Salmon, on this run's genes: the listed genes
+    # found on both tables and on one only.
+    as_htseq = table_name("this_genome", "featurecounts", strand)
+    both_ways = wide.join(
+        listed.filter(pl.col("table") == as_htseq).select(
+            "comparison", "paper_gene", "direction", found_as_htseq="found"
+        ),
+        on=["comparison", "paper_gene", "direction"],
+    )
+    assert both_ways.height == wide.height
+    on_both = both_ways.filter(pl.col("found_as_htseq") & pl.col("found")).height
+    htseq_only = both_ways.filter(pl.col("found_as_htseq") & ~pl.col("found")).height
+    salmon_only = both_ways.filter(~pl.col("found_as_htseq") & pl.col("found")).height
     with pl.Config(tbl_rows=-1, tbl_cols=-1, tbl_width_chars=250, fmt_str_lengths=60):
         print(summary)
         print(match)
         print("featureCounts strand setting read:", strand)
+        print(
+            f"found on the paper's table and tested in this run: {tested.height}; "
+            f"fold change in the listed direction in this run: {same_direction}"
+        )
+        print(by_match)
+        print(
+            "found on this_genome__salmon and not on the paper's table:",
+            wide.filter(pl.col("found") & ~pl.col("paper_found")).height,
+            "; found on the paper's table and not on this_genome__salmon:",
+            wide.filter(pl.col("paper_found") & ~pl.col("found")).height,
+        )
+        print(
+            f"listed genes found on {as_htseq} and on this_genome__salmon: {on_both}; "
+            f"only as HTSeq does: {htseq_only}; only by Salmon: {salmon_only}"
+        )
 
     pf.use_style()
     # Panel a is on top and names every mark, so it is the key for panel b under it.

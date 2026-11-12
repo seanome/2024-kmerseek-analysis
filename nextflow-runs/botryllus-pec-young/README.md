@@ -587,11 +587,14 @@ for them.
 How reads are counted is not a cause of the gap, on this run's genes. The other half of
 the test, on the paper's genes, has not run.
 
-- The gap is 631 - 183 = 448 genes, so a quarter is 112 and half is 224.
+- The gap is 631 - 183 = 448 genes, so a quarter is 112 and half is 224. The 448 is a
+  net number: 15 of D's 183 are not found on the paper's table, so 463 of the paper's 631
+  are not found on D (328 + 43 + 92 in panel c).
 - **How reads are counted, on this run's genes: 4 genes, 1% of the gap.** Counted as HTSeq
   does with strand ignored (C), the same alignments find 187 listed genes. Counted by
   Salmon (D) they find 183. Per comparison C finds 96, 72, 14 and 5, and D finds 90, 76,
-  12 and 5.
+  12 and 5. The 4 is a net number: 160 listed genes are found on both tables, 27 only on
+  C and 23 only on D. Both 4 and 27 are under the 112 that would make counting a cause.
 - **Everything else: the paper's table less C is 444 genes.** That is the genome and gene
   models with the match, and the paper's own pipeline against this rerun of it. Tables A
   and B are needed to tell these apart.
@@ -601,9 +604,11 @@ the test, on the paper's genes, has not run.
   least 313 of the 448 are genes that have a matched, tested gene in this run and are
   still not found.
 - Those 328 mostly point the paper's way: of the 496 tested, 452 have a fold change in
-  the listed direction in this run. A closer protein match does not help much: at 99%
-  identity over 90% of the protein, 105 of 282 are found (37%); at 95% over 80%, 40 of
-  139 (29%); at the looser 90% over 50%, 23 of 75 (31%).
+  the listed direction in this run. A closer protein match does not help much. The 496
+  split into three groups by match, each gene in one group: at 99% identity over 90% of
+  the protein or better, 105 of 282 are found (37%); under that but at 95% over 80% or
+  better, 40 of 139 (29%); under that, down to the 90% over 50% that a match needs, 23 of
+  75 (31%).
 - Strand. With strand ignored, C counts 95% as many read pairs per library as the paper's
   table (median over 38). Counting only read 1 on the gene's strand, or only on the
   opposite strand, counts 49% and 47% and finds 139 and 133 listed genes. So the paper's
