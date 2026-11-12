@@ -23,6 +23,8 @@ def test_b_score_by_hand():
     # exchanged Botryllus labels flip the sign
     assert svw.b_score(q_down, q_up, np.array([1, 2]), np.array([4])) == (0, 3, 5, -0.6)
     assert svw.b_score(np.array([], int), np.array([], int), np.array([1]), np.array([2]))[3] is None
+    # a human set with no k-mers (reads shorter than k) gives a missing score, not 0.0
+    assert svw.b_score(q_up, q_down, np.array([], int), np.array([], int)) == (0, 0, 5, None)
 
 
 def test_exclusive_drops_codes_in_both():
@@ -128,6 +130,16 @@ def test_main_end_to_end(tmp_path):
     h = sizes.filter(pl.col("side") == "human").row(0, named=True)
     assert h["kmers"] == 4 and h["bytes"] == (out / "tables" / "human.h1.protein.2.tsv.gz").stat().st_size
     assert pl.read_csv(out / "tables" / "human.h1.protein.2.tsv.gz", separator="\t")["direction"].to_list() == ["up"] * 3 + ["down"]
+
+    # A setting longer than the reads leaves no code files for h1: version B is missing, not 0.0
+    for direction in ("up", "down"):
+        (work / "human_sets" / "h1" / f"{direction}.protein.2.codes.gz").unlink()
+    svw.main(work, an, out)
+    res = pl.read_csv(out / "scores.tsv", separator="\t")
+    r = row("b1", "h1")
+    assert (r["d_up"], r["d_down"], r["b_denominator"], r["b_score"]) == (0, 0, 4, None)
+    assert row("b1__fullswap", "h1")["b_score"] is None
+    assert row("b1", "h1__swap_even")["b_score"] == 0.0  # this human set still has k-mers
 
 
 def test_unfinished_human_set_stops(tmp_path):

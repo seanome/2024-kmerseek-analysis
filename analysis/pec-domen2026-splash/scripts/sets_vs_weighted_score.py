@@ -47,11 +47,12 @@ def exclusive(up, down):
 
 
 def b_score(q_up, q_down, d_up, d_down):
-    """same, reversed, denominator and score of version B. Score is None when the denominator is 0."""
+    """same, reversed, denominator and score of version B. Score is None when the denominator is 0,
+    and when the human set has no k-mers (reads shorter than k): a test with no k-mers is missing."""
     same = int(np.isin(q_up, d_up).sum() + np.isin(q_down, d_down).sum())
     rev = int(np.isin(q_up, d_down).sum() + np.isin(q_down, d_up).sum())
     den = len(q_up) + len(q_down)
-    return same, rev, den, ((same - rev) / den if den else None)
+    return same, rev, den, ((same - rev) / den if den and len(d_up) + len(d_down) else None)
 
 
 def member(sorted_codes, x):
@@ -252,7 +253,8 @@ def main(work, analysis, out):
                 same = int((in_up & up_n).sum() + (in_down & down_n).sum())
                 rev = int((in_down & up_n).sum() + (in_up & down_n).sum())
                 den = len(q_up) + len(q_down)
-                score = (same - rev) / den if den else None
+                # no human k-mers at this setting (reads shorter than k): missing, as in version A
+                score = (same - rev) / den if den and len(d_up) + len(d_down) else None
                 row = dict(botryllus_set=n, botryllus_comparison=info[n][0], botryllus_labels=info[n][1], alphabet=a, k=k,
                            human_set=h["name"], human_comparison=h["comparison"], human_labels=h["labels"], kind=h["kind"],
                            q_up=len(q_up), q_down=len(q_down), q_in_both=q_both,
