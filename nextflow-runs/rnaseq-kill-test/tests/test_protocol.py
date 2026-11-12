@@ -169,6 +169,17 @@ class ProtocolTests(unittest.TestCase):
                 "secondary_swap_count": 68,
             },
         )
+        for name, bad in (
+            ("secondary_true_exceeds_every_swap_without_complement", "true"),
+            ("secondary_true_exceeds_every_swap_without_complement", 1),
+            ("secondary_swap_count", "many"),
+            ("secondary_swap_count", True),
+            ("secondary_swap_count", 68.5),
+            ("secondary_swap_count", -1),
+        ):
+            with self.subTest(name=name, bad=bad):
+                with self.assertRaisesRegex(ValueError, name):
+                    p.score_claims({"5": {name: bad}})
         with self.assertRaisesRegex(ValueError, "every balanced"):
             p.score_swaps(rows[:-1], expected)
         with self.assertRaisesRegex(ValueError, "duplicate"):

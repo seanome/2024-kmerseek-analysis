@@ -350,14 +350,21 @@ def score_claims(measurements):
         result[claim] = {"verdict": verdict(components), "components": components}
         # Claim 5: pass the secondary result through so check-limits prints it.
         # It never changes the verdict.
-        secondary = {
-            name: values[name]
-            for name in (
-                "secondary_true_exceeds_every_swap_without_complement",
-                "secondary_swap_count",
-            )
-            if name in values
-        }
+        # A missing or null value is left out, as for the primary measurements.
+        secondary = {}
+        flag_name = "secondary_true_exceeds_every_swap_without_complement"
+        flag = values.get(flag_name)
+        if flag is not None:
+            if type(flag) is not bool:
+                raise ValueError(f"{flag_name} must be a boolean")
+            secondary[flag_name] = flag
+        count = values.get("secondary_swap_count")
+        if count is not None:
+            if type(count) is not int or count < 0:
+                raise ValueError(
+                    "secondary_swap_count must be a whole number of 0 or more"
+                )
+            secondary["secondary_swap_count"] = count
         if claim == "5" and secondary:
             result[claim]["secondary_not_used_for_verdict"] = secondary
     result["alphabet_action"] = (
