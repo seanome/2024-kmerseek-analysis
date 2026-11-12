@@ -190,7 +190,9 @@ process scoreAnnotatorTool {
      * evaluate_domain_calls.py --direct-annotation: the calls are already query-side
      * domains, as hmmscan's are, so the script's own transfer step is skipped. File names
      * follow the main run's calls/<truth>.<tool>.<setting>.<species>.calls.parquet, which
-     * is what the pile-up builder (PR 146) reads.
+     * is what the pile-up builder (PR 146) reads. `species` names what the tool searched:
+     * the clade-excluded Swiss-Prot for the best-hit tools, its own models for the
+     * reference-database tools.
      */
     tag "${tool} ${setting}"
     container "${params.kmerseek_image}"
@@ -204,21 +206,21 @@ process scoreAnnotatorTool {
     publishDir "${params.outdir}/curves",  mode: 'copy', pattern: '*.curve.parquet'
 
     input:
-    tuple val(tool), val(setting), path(regions), path(truth), path(covariates)
+    tuple val(tool), val(setting), val(species), path(regions), path(truth), path(covariates)
 
     output:
-    path "pfam.${tool}.${setting}.${params.species_label}.calls.parquet",   emit: calls
-    path "pfam.${tool}.${setting}.${params.species_label}.metrics.parquet", emit: metrics
-    path "pfam.${tool}.${setting}.${params.species_label}.curve.parquet",   emit: curve
+    path "pfam.${tool}.${setting}.${species}.calls.parquet",   emit: calls
+    path "pfam.${tool}.${setting}.${species}.metrics.parquet", emit: metrics
+    path "pfam.${tool}.${setting}.${species}.curve.parquet",   emit: curve
 
     script:
-    def stem = "pfam.${tool}.${setting}.${params.species_label}"
+    def stem = "pfam.${tool}.${setting}.${species}"
     """
     evaluate_domain_calls.py \\
         --regions      ${regions} \\
         --tool         ${tool} \\
         --variant      ${setting} \\
-        --species      ${params.species_label} \\
+        --species      ${species} \\
         --truth        ${truth} \\
         --direct-annotation \\
         --covariates   ${covariates} \\
@@ -230,11 +232,12 @@ process scoreAnnotatorTool {
     """
 
     stub:
-    def stem = "pfam.${tool}.${setting}.${params.species_label}"
-    def fx = "${projectDir}/tests/fixtures/annotator"
+    def stem = "pfam.${tool}.${setting}.${species}"
+    // Each tool group keeps its fixture in its own folder (annotator/, refdb/, ...).
+    def fx = "${projectDir}/tests/fixtures"
     """
     for kind in calls metrics curve; do
-        cp ${fx}/pfam.${tool}.${setting}.swissprot_minus_mammalia.\$kind.parquet ${stem}.\$kind.parquet
+        cp ${fx}/*/pfam.${tool}.${setting}.${species}.\$kind.parquet ${stem}.\$kind.parquet
     done
     """
 }
