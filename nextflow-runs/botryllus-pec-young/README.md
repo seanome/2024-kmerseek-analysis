@@ -591,7 +591,8 @@ the test, on the paper's genes, has not run.
 - **How reads are counted, on this run's genes: 4 genes, 1% of the gap.** Counted as HTSeq
   does with strand ignored (C), the same alignments find 187 listed genes. Counted by
   Salmon (D) they find 183. Per comparison C finds 96, 72, 14 and 5, and D finds 90, 76,
-  12 and 5.
+  12 and 5. The 4 is a net number: 160 listed genes are found on both tables, 27 only on
+  C and 23 only on D. Both 4 and 27 are under the 112 that would make counting a cause.
 - **Everything else: the paper's table less C is 444 genes.** That is the genome and gene
   models with the match, and the paper's own pipeline against this rerun of it. Tables A
   and B are needed to tell these apart.

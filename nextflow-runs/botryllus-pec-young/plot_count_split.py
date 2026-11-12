@@ -146,6 +146,19 @@ def main():
         ]
     )
     assert by_match["tested"].sum() == tested.height
+    # Counted as HTSeq does against counted by Salmon, on this run's genes: the listed genes
+    # found on both tables and on one only.
+    as_htseq = table_name("this_genome", "featurecounts", strand)
+    both_ways = wide.join(
+        listed.filter(pl.col("table") == as_htseq).select(
+            "comparison", "paper_gene", "direction", found_as_htseq="found"
+        ),
+        on=["comparison", "paper_gene", "direction"],
+    )
+    assert both_ways.height == wide.height
+    on_both = both_ways.filter(pl.col("found_as_htseq") & pl.col("found")).height
+    htseq_only = both_ways.filter(pl.col("found_as_htseq") & ~pl.col("found")).height
+    salmon_only = both_ways.filter(~pl.col("found_as_htseq") & pl.col("found")).height
     with pl.Config(tbl_rows=-1, tbl_cols=-1, tbl_width_chars=250, fmt_str_lengths=60):
         print(summary)
         print(match)
@@ -155,6 +168,10 @@ def main():
             f"fold change in the listed direction in this run: {same_direction}"
         )
         print(by_match)
+        print(
+            f"listed genes found on {as_htseq} and on this_genome__salmon: {on_both}; "
+            f"only as HTSeq does: {htseq_only}; only by Salmon: {salmon_only}"
+        )
 
     pf.use_style()
     # Panel a is on top and names every mark, so it is the key for panel b under it.
