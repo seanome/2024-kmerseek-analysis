@@ -517,6 +517,250 @@ folder holding the inputs listed at the top of `size_factors.R`, with `size_fact
 cd $SCRATCH/botryllus-pec-young/size-factors && sbatch size_factors.sbatch
 ```
 
+### Which part of the counts causes the gap with the paper?
+
+The section above leaves the counts. The paper's Methods say reads were trimmed with Trim
+Galore, aligned with STAR to the Botryllus genome of Voskoboynik et al. 2013, and counted
+with HTSeq. This run differs from that in three ways:
+
+1. **Genome and gene models.** The paper: the 2013 assembly and its 72,113 AUGUSTUS genes
+   (`g1` to `g72113`). This run: the April 2024 assembly and its 35,541 `FUN_` genes.
+2. **How reads are counted per gene**, after STAR in both. HTSeq counts a read pair for a
+   gene only if it overlaps that gene alone and aligns to one place. Salmon also shares
+   out pairs that fit several transcripts or places.
+3. **The protein match** that links each `g` gene to a `FUN_` gene. It is needed only
+   because the gene models differ, so it is counted with part 1 and bounded on its own.
+
+The lab's copy of the 2013 genome and gene models is on Sherlock
+(`/home/groups/ayeletv/Botryllus_Genome/`), so the same reads can be counted on the
+paper's own genes, where no match is needed. That gives four count tables from this run's
+reads, two genomes by two ways of counting, next to the paper's own table:
+
+| | Counted as HTSeq does (featureCounts) | Counted by Salmon |
+|---|---|---|
+| The paper's genome and genes | A | B |
+| This run's genome and genes | C | D = the refit above, 183 listed genes found |
+
+featureCounts stands in for HTSeq: with its defaults it counts a read pair only if it
+overlaps one gene and aligns to one place, as HTSeq's default does. All four use the STAR
+alignments of nf-core/rnaseq 3.27.0. Every table is fitted the same way: each comparison
+alone, `~ treatment`, DESeq2's default size factors, the paper's 38 libraries
+(`each-alone-checks/count_split.R`). The paper's table is fitted without its six rows that
+are not genes.
+
+Rule for reading the result, written on 2026-11-11 before any of tables A, B or C existed:
+
+- The gap is the listed genes found on the paper's table less the 183 found on D.
+- **The paper's own pipeline against this rerun of it** is the paper's table less A. It
+  covers what cannot be set equal here: the trimming, STAR's version and settings, and
+  HTSeq against featureCounts.
+- **How reads are counted** is A less B on the paper's genes, and C less D on this run's.
+- **Genome, gene models and the match** is A less C counted as HTSeq does, and B less D
+  counted by Salmon.
+- A part is a cause of the gap if it accounts for at least a quarter of it, and the main
+  cause if at least half. Counting and gene models each have two estimates. Both are
+  reported, and the part is called by the smaller one.
+- The match alone can explain at most the listed genes that are found on the paper's
+  table and have no matched gene, or no tested gene, in this run.
+- A is trusted as a rerun of the paper's pipeline only if it is close to the paper's
+  table: per library, counted read pairs within 10% of the paper's (median over the 38)
+  and a rank correlation across genes of at least 0.95 (median over the 38). If not, that
+  is reported and A is read only against B and C.
+- HTSeq can count with or without regard to strand, and the paper does not say which.
+  featureCounts is run all three ways. The one used is the one whose counted pairs per
+  library are closest to the paper's on the paper's genome, chosen from the counts before
+  any fit is read. Until A exists, C is read with strand ignored, because the libraries
+  measure as unstranded (see "Strand of read 1" above).
+- A and B need a new alignment (about 4 h). Until it has run, only C is read: C less D is
+  the counting part on this run's genes, and the paper's table less C is everything else.
+
+Known when the rule was written, from the fits of the section above: the split of the
+paper's listed genes by match (below), and that the two tables count a similar number of
+read pairs per library (the paper's table 7.1 million for JA100, this run's 6.9 million).
+
+#### Result so far: table C (job 51944027, 2026-11-11, 36 min)
+
+![Paper's listed genes found per count table, and the paper's found genes by their status in this run](figures/count_split_domen2026_dataset_s1.png)
+
+Panel a: listed genes found on each count table, all four comparisons added up. Panel b:
+the same per comparison, as a share of that comparison's list; marks as in panel a. Panel
+c: the 631 listed genes found on the paper's own table, by what this run's table D has
+for them.
+
+How reads are counted is not a cause of the gap, on this run's genes. The other half of
+the test, on the paper's genes, has not run.
+
+- The gap is 631 - 183 = 448 genes, so a quarter is 112 and half is 224. The 448 is a
+  net number: 15 of D's 183 are not found on the paper's table, so 463 of the paper's 631
+  are not found on D (328 + 43 + 92 in panel c).
+- **How reads are counted, on this run's genes: 4 genes, 1% of the gap.** Counted as HTSeq
+  does with strand ignored (C), the same alignments find 187 listed genes. Counted by
+  Salmon (D) they find 183. Per comparison C finds 96, 72, 14 and 5, and D finds 90, 76,
+  12 and 5. The 4 is a net number: 160 listed genes are found on both tables, 27 only on
+  C and 23 only on D. Both 4 and 27 are under the 112 that would make counting a cause.
+- **Everything else: the paper's table less C is 444 genes.** That is the genome and gene
+  models with the match, and the paper's own pipeline against this rerun of it. Tables A
+  and B are needed to tell these apart.
+- **The match alone: at most 135 genes, 30% of the gap.** Of the 631 listed genes found on
+  the paper's table, 92 have no matched gene in this run and 43 have a matched gene that
+  is not tested here. The other 496 are tested here: 168 are found and 328 are not. So at
+  least 313 of the 448 are genes that have a matched, tested gene in this run and are
+  still not found.
+- Those 328 mostly point the paper's way: of the 496 tested, 452 have a fold change in
+  the listed direction in this run. A closer protein match does not help much. The 496
+  split into three groups by match, each gene in one group: at 99% identity over 90% of
+  the protein or better, 105 of 282 are found (37%); under that but at 95% over 80% or
+  better, 40 of 139 (29%); under that, down to the 90% over 50% that a match needs, 23 of
+  75 (31%).
+- Strand. With strand ignored, C counts 95% as many read pairs per library as the paper's
+  table (median over 38). Counting only read 1 on the gene's strand, or only on the
+  opposite strand, counts 49% and 47% and finds 139 and 133 listed genes. So the paper's
+  table looks like a count with strand ignored, as the rule assumed. The rule's own
+  choice of strand waits for table A.
+- Both tables that were fitted before give the same result here: the paper's table 631
+  and D 183.
+- featureCounts took 2 min and 7.1 GB per strand setting (8 CPUs), the 20 fits 7 min 20 s
+  and 1.7 GB.
+
+#### Result with tables A and B (job 51959161, 2026-11-11, 9 h 36 min with queue time)
+
+| Listed genes found, of 782 | Counted as HTSeq does (featureCounts) | Counted by Salmon |
+|---|---:|---:|
+| The paper's genome and genes | A: 280 | B: 155 |
+| This run's genome and genes | C: 187 | D: 183 |
+
+The paper's own table finds 631, so the gap is 448: a quarter is 112, half is 224.
+
+None of the three parts the test was built around is the main cause. Most of the gap, 351
+of 448 genes, sits between the paper's own table and this rerun of the paper's pipeline on
+the paper's own genome and genes.
+
+- **Is A a rerun of the paper's pipeline? No, by the rule's check.** Per library, A counts
+  62% as many read pairs as the paper's table (median over 38; the rule asked for within
+  10%), and its rank correlation with the paper's table across genes is 0.89 (the rule
+  asked for 0.95). So A is read only against B and C, and the 351 is reported, not
+  assigned to a named part.
+- **Strand.** With strand ignored, A's counted pairs are closest to the paper's (62%,
+  against 31% for either single strand), so strand ignored is the setting read, as before.
+- **How reads are counted:** A less B is 125 genes on the paper's genes (28% of the gap),
+  and C less D is 4 on this run's genes. Called by the smaller: not a cause. On the
+  paper's genes the HTSeq-style count does find more than Salmon (280 against 155).
+- **Genome, gene models and the match:** A less C is 93 genes counted as HTSeq does (21%
+  of the gap), and B less D is -28 counted by Salmon: this run's genome finds more there.
+  Called by the smaller: not a cause.
+- Per comparison A finds 146, 100, 24 and 10, where the paper's table finds 239, 277, 51
+  and 64.
+- The alignment took 3 h 8 min for the largest library and the genome index 4 min.
+
+One library, to show where A and the paper's table part ways (JA100, SRR32233970,
+18,061,867 trimmed read pairs, both on the paper's genome and genes):
+
+| | The paper's table (HTSeq's own tallies) | Table A (STAR and featureCounts here) | Ratio |
+|---|---:|---:|---:|
+| Counted for a gene | 7,107,265 | 4,571,955 | 1.55 |
+| Aligned to one place, no gene there | 4,321,936 | 2,647,762 | 1.63 |
+| Aligned to one place, more than one gene | 17,279 | 19,453 | 0.89 |
+| Aligned to more than one place | 4,301,123 | 2,070,381 | 2.08 |
+| Not aligned | 12,310,373 | 8,752,316 | 1.41 |
+| All | 28,058,163 | 18,061,867 | 1.55 |
+
+The paper's tallies add up to 28.1 million, 1.55 times this run's 18.1 million read pairs.
+Read at first as HTSeq counting more than whole pairs. That reading was wrong: 18.1
+million is what PR 203's trimming left of a library of 29.0 million pairs (see below).
+
+A follow-up test, outside the rule above. Written on 2026-11-12 before it ran.
+
+If HTSeq counted the two mates of many pairs as two separate reads, every count in the
+paper's table is too high by up to 2-fold, and DESeq2 reads the doubled counts as more
+evidence than there is, so more genes pass p < 0.05. The test: count each mate as a read
+of its own with featureCounts (the same alignments, strand ignored) on both genomes, and
+fit as before. The prediction: on the paper's genome this finds at least 456 listed
+genes, which is A's 280 plus half of the 351 left. If it finds fewer than 368 (280 plus a
+quarter of the 351), counting mates separately is not the reason. This is one guess about
+the paper's pipeline, made after seeing its tallies. It is not the only way a table can
+hold 1.55 times as many counts.
+
+Result of the follow-up (job 52056949, 2026-11-12, 29 min): the prediction failed. With
+each mate counted as a read of its own, the paper's genome finds 317 listed genes, under
+the 368 line, and this run's genome finds 180 where counting pairs found 187. The table
+then holds 1.23 times the paper's counts per library (median), but library by library the
+ratio runs from 0.14 to 1.83, and the rank correlation with the paper's table stays at
+0.89. Counting mates separately is not the reason.
+
+#### The reads themselves: half the read pairs were dropped by trimming before this run
+
+What the library-by-library ratio pointed to. The paper's HTSeq tallies give the number of
+reads its pipeline handled for each library. Set against the read pairs deposited in SRA
+(`count_split_paper_tallies.tsv`):
+
+| Per library, 38 libraries | Lowest | Median | Highest |
+|---|---:|---:|---:|
+| The paper's tallied reads, as a share of the deposited read pairs | 48% | 96% | 99% |
+| Read pairs this run used, as a share of the deposited read pairs | 9% | 53% | 81% |
+
+- The paper's pipeline handled nearly every deposited read pair, one count per pair. So
+  HTSeq did count pairs, and the 1.55 above is not double counting: it is 28.1 million of
+  JA100's 29.0 million deposited pairs, against the 18.1 million this run kept.
+- This run's reads are the PR 203 reads. They were trimmed with Trim Galore's
+  `--length 62`, which drops a read pair if either read is shorter than 62 bases after
+  its adapter is cut off. Trim Galore's own default is 20. For JA154 that dropped 802,534
+  of 883,811 pairs (90.8%); 90% of its reads carried adapter sequence.
+- The loss is uneven. The 2 h libraries kept 35% to 79% of their pairs, 24 h 32% to 81%,
+  13-49 d 9% to 62% and 132 d 18% to 64%. Across the 38 libraries, the share of pairs
+  kept and the size of this run's reads relative to the paper's tallies have a rank
+  correlation of 0.94.
+- So every count table made from this run's reads (A, B, C and D, and the first run and
+  the refits above) rests on about half the read pairs the paper counted, and on a
+  different half per library. This was not on the list of parts when the rule was
+  written. It is a fact about the inputs. Whether it causes the gap is the next test.
+
+The test, written on 2026-11-12 before it ran. Trim the deposited reads again with the
+same Trim Galore settings as PR 203 and only `--length` changed from 62 to 20, align to
+the paper's genome with nf-core/rnaseq as for A and B, count both ways and fit as before.
+Call the tables A20 and B20.
+
+- The trimming is the main cause of what is left if A20 finds at least 456 listed genes
+  (A's 280 plus half of the 351 between A and the paper's table). It is not the reason if
+  A20 finds fewer than 368.
+- The rule's check for A applies to A20: per library, counted read pairs within 10% of
+  the paper's table and a rank correlation across genes of at least 0.95, both as medians
+  over the 38. If A20 passes, it is the rerun of the paper's pipeline that A was not.
+- A minimum length of 20 is a guess at what the paper did. The paper names Trim Galore
+  and no settings.
+
+How to run it. One command on Sherlock does every step that has not run yet: it trims and
+aligns the paper's 38 libraries for A20 and B20, counts both ways and refits every table,
+with nothing waiting on a person. Tables A and B were made the same way (job 51959161):
+
+```bash
+cd /scratch/users/olgabot/2024-kmerseek-analysis-pec-count-split && git pull && cd nextflow-runs/botryllus-pec-young && make run-count-split
+```
+
+Watch with `make watch-count-split`, stop with `make stop-count-split`. Then, on the
+laptop, copy `$SCRATCH/botryllus-pec-young/count-split/count_split_*.tsv` here and
+`count_split.out` to `each-alone-checks/`, and run `plot_count_split.py`.
+
+| Task | Resources asked | Measured before | Expected |
+|---|---|---|---|
+| Nextflow head (`nf-botryllus-pec-count-split`) | 2 CPUs, 8 GB, 24 h | A and B: 9 h 36 min, most of it tasks waiting in the queue (job 51959161) | 6 to 12 h, set by the queue |
+| Trim Galore, 38 libraries | pipeline default: 12 CPUs, 72 GB, 16 h | no usable record: the PR 203 trace has no row for the largest libraries | under 2 h for the largest (108.9 million pairs, 7.3 GB per file) |
+| STAR index of the paper's genome, built again in the new launch folder | pipeline default: 12 CPUs, 72 GB, 16 h | A and B: 4 min, 14.2 GB | the same |
+| STAR alignment, 38 libraries | pipeline default: 12 CPUs, 72 GB, 16 h | A and B: the largest library (69.9 million trimmed pairs) took 3 h 8 min and 13.9 GB | about 5 h for the largest, which now has up to 108.9 million pairs |
+| featureCounts, 4 settings per genome | 8 CPUs, 16 GB, 30 min | 2 min, 7.1 GB each | up to twice that for the new alignments |
+| The fits (64) | 1 CPU, 8 GB, 1 h | 44 fits in about 15 min | about 25 min |
+
+The first usable result is the whole result. There is no faster part to read first: A20
+and B20 both need the trimming and the alignment, and everything else is already read.
+
+Tables: `count_split_fits.tsv` (one row per table and comparison),
+`count_split_summary.tsv` (one row per table), `count_split_listed.tsv` (each listed gene
+in each table), `count_split_libraries.tsv` (read pairs counted per library),
+`count_split_match.tsv` (panel c), `count_split_paper_tallies.tsv` (per library: read
+pairs in SRA, pairs this run used, reads the paper's HTSeq tallied). Code: `count_split.nf`, `run_count_split.sh`,
+`each-alone-checks/count_split.R` with its output `count_split.out`,
+`plot_count_split.py`, `params-rnaseq-paper-genome.yaml`, `samplesheet_paper.csv`,
+`params-rnaseq-paper-genome-length20.yaml`, `samplesheet_paper_untrimmed.csv`.
+
 ## Outputs
 
 In `$SCRATCH/botryllus-pec-young/`:

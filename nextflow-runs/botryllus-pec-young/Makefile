@@ -80,3 +80,34 @@ watch-alone:
 
 stop-alone:
 	@$(MAKE) --no-print-directory stop HEAD_JOBNAME=$(ALONE_JOBNAME)
+
+# Which part of the counts causes the gap with the paper's gene lists: align the paper's 38
+# libraries to the paper's own genome (nf-core/rnaseq), count read pairs per gene as HTSeq
+# does on both genomes' alignments, and fit every count table the same way.
+# GENOMES=this_genome skips the alignments and uses only what `make run` already made.
+# paper_genome_length20 trims the untrimmed reads again with a 20-base minimum length first.
+SPLIT_SESSION := botryllus-pec-count-split
+SPLIT_JOBNAME := nf-botryllus-pec-count-split
+SPLIT_TIME    ?= 1-00:00:00
+GENOMES       ?= this_genome,paper_genome,paper_genome_length20
+
+.PHONY: run-count-split watch-count-split stop-count-split
+
+run-count-split: $(NEXTFLOW)
+	@queued=$$(squeue -u $$USER -h -n $(SPLIT_JOBNAME) -o "%i %T"); \
+	 [ -z "$$queued" ] || { echo "already queued or running: $$queued"; exit 1; }
+	@running=$$(squeue -u $$USER -h -n $(HEAD_JOBNAME) -o "%i %T"); \
+	 [ -z "$$running" ] || { echo "the rnaseq run ($(HEAD_JOBNAME)) is still queued or running: $$running"; exit 1; }
+	mkdir -p $(OUT)/count-split-head
+	ml load biology nextflow && cd $(OUT)/count-split-head && \
+	  NF_HEAD_DETACH=1 HEAD_HINT_WATCH="make watch-count-split" HEAD_HINT_STOP="make stop-count-split" \
+	  HEAD_ACCOUNT=$(SLURM_ACCOUNT) HEAD_PARTITION=$(SLURM_PARTITION) HEAD_QOS=$(HEAD_QOS) \
+	  HEAD_TIME=$(SPLIT_TIME) HEAD_CPUS=$(HEAD_CPUS) HEAD_MEM=$(HEAD_MEM) \
+	  HEAD_SESSION=$(SPLIT_SESSION) HEAD_JOBNAME=$(SPLIT_JOBNAME) \
+	  $(MAKEFILE_DIR)/../../scripts/nf-head $(MAKEFILE_DIR)/run_count_split.sh $(MAKEFILE_DIR) $(OUT) $(NEXTFLOW) $(GENOMES)
+
+watch-count-split:
+	@$(MAKE) --no-print-directory watch HEAD_JOBNAME=$(SPLIT_JOBNAME) HEAD_SESSION=$(SPLIT_SESSION)
+
+stop-count-split:
+	@$(MAKE) --no-print-directory stop HEAD_JOBNAME=$(SPLIT_JOBNAME)
