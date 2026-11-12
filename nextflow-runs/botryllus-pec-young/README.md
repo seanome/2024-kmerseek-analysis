@@ -415,12 +415,14 @@ picked libraries by window instead of by the paper's group, which is what stoppe
 
 #### Result (job 51943109, 2026-11-11, 13 min 17 s, 1.8 GB, R DESeq2 1.42.0)
 
-![Paper's listed genes found, and genes passing the paper's cutoff, for each choice of size factors](figures/size_factor_test_domen2026_dataset_s1.png)
+![Paper's listed genes found by each count table, with its own size factors and with the other table's](figures/size_factor_test_domen2026_dataset_s1.png)
 
-Each row is one of the paper's comparisons and each mark is one fit. Panels a and b: share
-of the paper's listed genes with p < 0.05 in the listed direction. Panels c and d: genes
-with p <= 0.05 and more than 2-fold change, lower in treated to the left of zero and higher
-to the right.
+Both panels count the paper's 782 listed genes found at p < 0.05 in the listed direction,
+summed over the four comparisons. Blue is this run's counts, black the paper's. **a.** Filled:
+each count table with its own DESeq2 default size factors. Open: with the other table's. The
+grey band is the 448-gene gap between the two tables. **b.** Each count table with three ways
+of making size factors. Per-comparison numbers, and the genes up and down at p <= 0.05 and
+2-fold that the first version of this figure drew, are in `size_factors_fits.tsv` and below.
 
 Size factors explain a quarter of the gap at most. The counts explain the rest.
 

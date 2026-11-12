@@ -11,7 +11,6 @@ figures/size_factor_test_domen2026_dataset_s1.{svg,png}.
 import sys
 from pathlib import Path
 
-import numpy as np
 import polars as pl
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "notebooks"))
@@ -72,49 +71,74 @@ def main():
     with pl.Config(tbl_rows=-1, tbl_cols=-1, tbl_width_chars=200):
         print(total)
 
+    plot(total)
+
+
+# One colour per count table, as in counts_compare and count_split.
+COLOUR = {"this_run": pf.OKABE_ITO["blue"], "paper": "black"}
+ROW_LABEL = {"this_run": "This run's counts", "paper": "The paper's counts"}
+CHOICES = {"default": "DESeq2 default", "poscounts": "poscounts", "total": "library total"}
+
+
+def plot(total):
+    """a: does giving each count table the other's size factors close the gap? b: how much
+    the choice of size factors moves each count table on its own. Sums over the four
+    comparisons; the per-comparison numbers are in size_factors_fits.tsv and the README."""
+    found = {(r["counts"], r["size_factors"]): r["listed_found_same_direction"]
+             for r in total.iter_rows(named=True)}
+    own_this, own_paper = found["this_run", "default"], found["paper", "default"]
+    gap = own_paper - own_this
     pf.use_style()
-    fig, axs = pf.figure(pf.TWO_COLUMN_MM, 105, nrows=2, ncols=2, sharey=True, sharex="row")
-    y = np.arange(len(COMPARISONS))
-    drawn = 0
-    for col, (counts, title) in enumerate(COUNTS.items()):
-        top, bottom = axs[0, col], axs[1, col]
-        for kind, (label, colour, marker, offset) in KINDS.items():
-            t = fits.filter(
-                (pl.col("counts") == counts) & (pl.col("size_factors") == kind)
-            )
-            if t.is_empty():
-                continue
-            for i, c in enumerate(COMPARISONS):
-                (r,) = t.filter(pl.col("comparison") == c).iter_rows(named=True)
-                style = dict(marker=marker, color=colour, linestyle="")
-                top.plot(100 * r[FOUND] / r["paper_listed"], i + offset, **style)
-                bottom.plot(r["p_le_0_05_2fold_up"], i + offset, **style)
-                bottom.plot(-r["p_le_0_05_2fold_down"], i + offset, **style)
-                drawn += 3
-            axs[0, 0].plot([], [], marker=marker, color=colour, linestyle="", label=label)
-        top.set_title(title)
-        top.set_xlabel("Paper's listed genes found,\np < 0.05 in the listed direction (%)")
-        top.set_xlim(0, 90)
-        bottom.axvline(0, color="black", linewidth=0.5)
-        bottom.set_xlabel(
-            "Genes with p ≤ 0.05 and more than 2-fold change (n)\n"
-            "lower in treated  |  higher in treated"
-        )
-        # Counts to the left of zero are genes going down; show them without a minus sign.
-        bottom.xaxis.set_major_formatter(lambda v, _pos: f"{abs(v):g}")
-        for ax in (top, bottom):
-            for i in y:
-                ax.axhline(i, color="#DDDDDD", linewidth=0.3, zorder=0)
-    assert drawn == 3 * fits.height
-    for ax in axs[:, 0]:
-        ax.set_yticks(y, COMPARISONS)
-        ax.set_ylabel("Paper comparison")
-    axs[0, 0].invert_yaxis()
-    pf.shared_legend(fig, ncol=2, title="Size factors used in the fit")
-    for ax, letter in zip(axs.flat, "abcd"):
+    fig, (a, b) = pf.figure(pf.TWO_COLUMN_MM, 62, ncols=2, layout="constrained",
+                            gridspec_kw=dict(width_ratios=[1.35, 1]))
+    rows = {"this_run": 1, "paper": 0}
+
+    a.axvspan(own_this, own_paper, color="#EEEEEE", zorder=0)
+    a.text((own_this + own_paper) / 2, 1.55, f"gap between the count tables: {gap} genes",
+           ha="center", va="center")
+    for counts, y in rows.items():
+        c = COLOUR[counts]
+        own, swap = found[counts, "default"], found[counts, "swapped"]
+        a.annotate("", xy=(swap, y), xytext=(own, y),
+                   arrowprops=dict(arrowstyle="-|>", color=c, lw=1, shrinkA=4, shrinkB=4))
+        a.plot(own, y, "o", color=c, markersize=5)
+        a.plot(swap, y, "o", mfc="white", mec=c, markersize=5, mew=1)
+        # One label per row, beside the pair: the right of this run's, the left of the paper's.
+        right = counts == "this_run"
+        a.annotate(f"{own} → {swap}: {swap - own:+d} genes,\n{100 * abs(swap - own) / gap:.0f} % of the gap",
+                   (max(own, swap) if right else min(own, swap), y),
+                   xytext=(9 if right else -9, 0), textcoords="offset points",
+                   ha="left" if right else "right", va="center", color=c)
+    a.plot([], [], "o", color="0.3", markersize=5, label="its own DESeq2 default size factors")
+    a.plot([], [], "o", mfc="white", mec="0.3", markersize=5, mew=1,
+           label="the other count table's size factors")
+    a.legend(loc="lower center", bbox_to_anchor=(0.5, 1.08), ncol=2, frameon=False,
+             handletextpad=0.3, columnspacing=1.2)
+    a.set_yticks(list(rows.values()), [ROW_LABEL[k] for k in rows])
+    a.set_ylim(-0.6, 1.85)
+    a.set_xlim(0, 782)
+    a.set_xlabel("Paper's listed genes found, of 782\n(p < 0.05, same direction as listed)")
+
+    ys = {k: i for i, k in enumerate(reversed(CHOICES))}
+    for y in ys.values():
+        b.axhline(y, color="#DDDDDD", linewidth=0.3, zorder=0)
+    for counts in rows:
+        c = COLOUR[counts]
+        for kind, y in ys.items():
+            v = found[counts, kind]
+            b.plot(v, y, "o", color=c, markersize=5,
+                   label=ROW_LABEL[counts] if kind == "default" else None)
+            b.annotate(f"{v}", (v, y), xytext=(0, 6), textcoords="offset points", ha="center")
+    b.legend(loc="lower center", bbox_to_anchor=(0.5, 1.08), ncol=2, frameon=False,
+             handletextpad=0.3, columnspacing=1.2)
+    b.set_yticks(list(ys.values()), [CHOICES[k] for k in ys])
+    b.set_ylim(-0.6, len(ys) - 0.3)
+    b.set_xlim(0, 782)
+    b.set_xlabel("Paper's listed genes found, of 782\n(each count table with its own size factors)")
+    b.set_ylabel("Size factors")
+    for ax, letter in zip((a, b), "ab"):
         pf.panel_label(ax, letter)
     pf.save(fig, "figures/size_factor_test_domen2026_dataset_s1")
-
 
 if __name__ == "__main__":
     main()
