@@ -18,7 +18,7 @@ params.featurecounts = '/home/groups/ayeletv/subread-2.0.6-Linux-x86_64/bin/feat
 params.deseq2_image  = '/scratch/users/olgabot/apptainer-cache/quay.io-biocontainers-bioconductor-deseq2@sha256-2d299c5f045c65879e8da189bba17857963d50703af5410003e7e84883deef13.img'
 
 process FEATURECOUNTS {
-    tag "${genome} strand ${strand}"
+    tag "${genome} ${unit} strand ${strand}"
     // Sized from the 2026-11-11 run on the April 2024 genome's 38 alignment files (the
     // largest 3.6 GB, 69.9 million read pairs): each strand setting took 2 min and 7.1 GB.
     cpus 8
@@ -26,16 +26,20 @@ process FEATURECOUNTS {
     time { 30.min * task.attempt }
 
     input:
-    tuple val(genome), path(gtf), path(bams), val(strand)
+    tuple val(genome), path(gtf), path(bams), val(unit), val(strand)
 
     output:
-    path "${genome}__featurecounts_s${strand}.tsv", emit: counts
-    path "${genome}__featurecounts_s${strand}.tsv.summary", emit: summary
+    path "${name}.tsv", emit: counts
+    path "${name}.tsv.summary", emit: summary
 
     script:
+    // unit 'pairs': a read pair is counted once, as HTSeq does when it can pair the mates.
+    // unit 'reads': each mate is counted as a read of its own, so most pairs count twice.
+    name = unit == 'pairs' ? "${genome}__featurecounts_s${strand}" : "${genome}__featurecounts_reads_s${strand}"
+    def what = unit == 'pairs' ? '-p --countReadPairs' : '-p'
     """
-    ${params.featurecounts} -T ${task.cpus} -p --countReadPairs -s ${strand} \\
-        -t exon -g gene_id -a ${gtf} -o ${genome}__featurecounts_s${strand}.tsv ${bams}
+    ${params.featurecounts} -T ${task.cpus} ${what} -s ${strand} \\
+        -t exon -g gene_id -a ${gtf} -o ${name}.tsv ${bams}
     """
 }
 
@@ -75,7 +79,7 @@ workflow {
         assert bams.size() == wanted.size() : "expected ${wanted.size()} alignment files in ${dirs[genome]}/star_salmon, found ${bams.size()}"
         tuple(genome, gtf[0], bams)
     }
-    FEATURECOUNTS(by_genome.combine(Channel.of(0, 1, 2)))
+    FEATURECOUNTS(by_genome.combine(Channel.of(['pairs', 0], ['pairs', 1], ['pairs', 2], ['reads', 0])))
 
     // Salmon's tables from nf-core/rnaseq, renamed <genome>__salmon.tsv.
     salmon = Channel.fromList(genomes).flatMap { genome ->

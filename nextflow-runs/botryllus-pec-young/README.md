@@ -614,7 +614,64 @@ the test, on the paper's genes, has not run.
 - featureCounts took 2 min and 7.1 GB per strand setting (8 CPUs), the 20 fits 7 min 20 s
   and 1.7 GB.
 
-Not yet run: tables A and B, this run's reads on the paper's genome and genes. One command
+#### Result with tables A and B (job 51959161, 2026-11-11, 9 h 36 min with queue time)
+
+| Listed genes found, of 782 | Counted as HTSeq does (featureCounts) | Counted by Salmon |
+|---|---:|---:|
+| The paper's genome and genes | A: 280 | B: 155 |
+| This run's genome and genes | C: 187 | D: 183 |
+
+The paper's own table finds 631, so the gap is 448: a quarter is 112, half is 224.
+
+None of the three parts the test was built around is the main cause. Most of the gap, 351
+of 448 genes, sits between the paper's own table and this rerun of the paper's pipeline on
+the paper's own genome and genes.
+
+- **Is A a rerun of the paper's pipeline? No, by the rule's check.** Per library, A counts
+  62% as many read pairs as the paper's table (median over 38; the rule asked for within
+  10%), and its rank correlation with the paper's table across genes is 0.89 (the rule
+  asked for 0.95). So A is read only against B and C, and the 351 is reported, not
+  assigned to a named part.
+- **Strand.** With strand ignored, A's counted pairs are closest to the paper's (62%,
+  against 31% for either single strand), so strand ignored is the setting read, as before.
+- **How reads are counted:** A less B is 125 genes on the paper's genes (28% of the gap),
+  and C less D is 4 on this run's genes. Called by the smaller: not a cause. On the
+  paper's genes the HTSeq-style count does find more than Salmon (280 against 155).
+- **Genome, gene models and the match:** A less C is 93 genes counted as HTSeq does (21%
+  of the gap), and B less D is -28 counted by Salmon: this run's genome finds more there.
+  Called by the smaller: not a cause.
+- Per comparison A finds 146, 100, 24 and 10, where the paper's table finds 239, 277, 51
+  and 64.
+- The alignment took 3 h 8 min for the largest library and the genome index 4 min.
+
+One library, to show where A and the paper's table part ways (JA100, SRR32233970,
+18,061,867 trimmed read pairs, both on the paper's genome and genes):
+
+| | The paper's table (HTSeq's own tallies) | Table A (STAR and featureCounts here) | Ratio |
+|---|---:|---:|---:|
+| Counted for a gene | 7,107,265 | 4,571,955 | 1.55 |
+| Aligned to one place, no gene there | 4,321,936 | 2,647,762 | 1.63 |
+| Aligned to one place, more than one gene | 17,279 | 19,453 | 0.89 |
+| Aligned to more than one place | 4,301,123 | 2,070,381 | 2.08 |
+| Not aligned | 12,310,373 | 8,752,316 | 1.41 |
+| All | 28,058,163 | 18,061,867 | 1.55 |
+
+The paper's tallies add up to 28.1 million for a library of 18.1 million read pairs, 1.55
+times as many. HTSeq cannot have been counting whole pairs only.
+
+A follow-up test, outside the rule above. Written on 2026-11-12 before it ran.
+
+If HTSeq counted the two mates of many pairs as two separate reads, every count in the
+paper's table is too high by up to 2-fold, and DESeq2 reads the doubled counts as more
+evidence than there is, so more genes pass p < 0.05. The test: count each mate as a read
+of its own with featureCounts (the same alignments, strand ignored) on both genomes, and
+fit as before. The prediction: on the paper's genome this finds at least 456 listed
+genes, which is A's 280 plus half of the 351 left. If it finds fewer than 368 (280 plus a
+quarter of the 351), counting mates separately is not the reason. This is one guess about
+the paper's pipeline, made after seeing its tallies. It is not the only way a table can
+hold 1.55 times as many counts.
+
+How tables A and B were run. One command
 on Sherlock aligns the paper's 38 libraries to the paper's genome, counts both ways and
 refits all nine tables, with nothing waiting on a person:
 

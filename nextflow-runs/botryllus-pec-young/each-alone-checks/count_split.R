@@ -8,6 +8,7 @@
 #   *__featurecounts_s0, _s1, _s2   read pairs that overlap one gene only and align to one
 #                    place, as HTSeq counts them; strand ignored (s0), read 1 on the gene's
 #                    strand (s1), read 1 on the opposite strand (s2)
+#   *__featurecounts_reads_s0       the same with each mate counted as a read of its own
 # plus the paper's own table (paper_counts.tsv from export_paper_counts.py), fitted first.
 # Other inputs: samples_paper.csv, paper_groups.tsv, paper_gene_overlap_genes.tsv (from
 # ../each-alone-comparison/paper/). A table that is not in the folder is left out.

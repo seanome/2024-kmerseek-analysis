@@ -36,7 +36,7 @@ ROWS = [
 def strand_used(libraries):
     """The featureCounts strand setting whose counted pairs per library are closest to the
     paper's on the paper's genome; strand ignored (0) until that table exists."""
-    on_paper = libraries.filter(pl.col("table").str.starts_with("paper_genome__featurecounts"))
+    on_paper = libraries.filter(pl.col("table").str.contains(r"^paper_genome__featurecounts_s\d$"))
     if on_paper.is_empty():
         return 0
     share = (
