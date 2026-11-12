@@ -169,6 +169,12 @@ def main():
         )
         print(by_match)
         print(
+            "found on this_genome__salmon and not on the paper's table:",
+            wide.filter(pl.col("found") & ~pl.col("paper_found")).height,
+            "; found on the paper's table and not on this_genome__salmon:",
+            wide.filter(pl.col("paper_found") & ~pl.col("found")).height,
+        )
+        print(
             f"listed genes found on {as_htseq} and on this_genome__salmon: {on_both}; "
             f"only as HTSeq does: {htseq_only}; only by Salmon: {salmon_only}"
         )

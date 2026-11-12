@@ -587,7 +587,9 @@ for them.
 How reads are counted is not a cause of the gap, on this run's genes. The other half of
 the test, on the paper's genes, has not run.
 
-- The gap is 631 - 183 = 448 genes, so a quarter is 112 and half is 224.
+- The gap is 631 - 183 = 448 genes, so a quarter is 112 and half is 224. The 448 is a
+  net number: 15 of D's 183 are not found on the paper's table, so 463 of the paper's 631
+  are not found on D (328 + 43 + 92 in panel c).
 - **How reads are counted, on this run's genes: 4 genes, 1% of the gap.** Counted as HTSeq
   does with strand ignored (C), the same alignments find 187 listed genes. Counted by
   Salmon (D) they find 183. Per comparison C finds 96, 72, 14 and 5, and D finds 90, 76,
