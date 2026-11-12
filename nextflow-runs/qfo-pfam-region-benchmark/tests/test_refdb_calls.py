@@ -28,6 +28,29 @@ def regions(path) -> list[list[str]]:
         return [line.rstrip("\n").split("\t") for line in fh]
 
 
+def same_regions(got: list[list[str]], want: list[list[str]]) -> bool:
+    """Rows match field by field; a score field matches to 12 significant digits.
+
+    The score is -log10 of an E-value, and the last digit of that depends on the C
+    maths library: -log10(3.3e-5) is 4.481486060122112 on macOS and 4.481486060122113
+    on the Linux CI runner. Comparing the text made the test fail on Linux only.
+    """
+    if len(got) != len(want):
+        return False
+    for g_row, w_row in zip(got, want):
+        if len(g_row) != len(w_row):
+            return False
+        for g, w in zip(g_row, w_row):
+            if g == w:
+                continue
+            try:
+                if not math.isclose(float(g), float(w), rel_tol=1e-12):
+                    return False
+            except ValueError:
+                return False
+    return True
+
+
 def test_pfam_names_reads_name_and_bare_accession(tmp_path):
     hmm = tmp_path / "Pfam-A.hmm"
     hmm.write_text(
@@ -116,11 +139,13 @@ def test_both_parsers_reproduce_the_committed_fixture(tmp_path):
         "--qc-out",
         tmp_path / "e.json",
     )
-    assert regions(tmp_path / "i.tsv.gz") == regions(
-        REF / "interproscan.all_members.regions.tsv.gz"
+    assert same_regions(
+        regions(tmp_path / "i.tsv.gz"),
+        regions(REF / "interproscan.all_members.regions.tsv.gz"),
     )
-    assert regions(tmp_path / "e.tsv.gz") == regions(
-        REF / "eggnog_mapper.diamond.regions.tsv.gz"
+    assert same_regions(
+        regions(tmp_path / "e.tsv.gz"),
+        regions(REF / "eggnog_mapper.diamond.regions.tsv.gz"),
     )
 
 
