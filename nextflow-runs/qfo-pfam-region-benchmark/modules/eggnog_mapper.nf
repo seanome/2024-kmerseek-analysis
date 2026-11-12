@@ -49,7 +49,9 @@ process eggnogMapperSearch {
         echo "command: ${cmd}"
         echo "version: \$(emapper.py --version 2>&1 | head -1)"
         echo "cpu_model: \$(grep -m1 'model name' /proc/cpuinfo | cut -d: -f2- | sed 's/^ *//')"
-        echo "database_size: \$(du -shL ${data_dir} | cut -f1)"
+        # Only the unpacked files emapper reads. The directory also holds the .gz
+        # downloads (about 12 GB), which emapper never opens.
+        echo "database_size: \$(du -chL ${data_dir}/eggnog.db ${data_dir}/eggnog_proteins.dmnd ${data_dir}/eggnog.taxa.db* | tail -n 1 | cut -f1)"
     } > eggnog_mapper.diamond.run.txt
     """
 
