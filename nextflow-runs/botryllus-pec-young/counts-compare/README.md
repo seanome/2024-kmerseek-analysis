@@ -47,6 +47,11 @@ For a pair of tables that name genes the same way:
   median of the four. Library totals are used on both sides so that scaling is the same; PR 220 and
   PR 201 showed the choice of scaling matters, so it is held fixed here, not tested.
 
+  Note, 2026-11-12: for pairs C and D the code does not do this. `compare_counts.py` scales each
+  library by its total over the genes compared, which are the genes in both tables after the gene
+  match, not by its library total. For A, B and B2 the total is over all genes of the table. The
+  numbers under "Result" were made this way.
+
 Pairs:
 
 | pair | what differs | what is the same |
