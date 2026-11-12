@@ -343,7 +343,7 @@ PREFETCH_CONTAINERS ?= $(ALL_CONTAINERS)
         midi-testset-sherlock run-midi fetch-structures-login \
         midi-plus-testset-sherlock run-midi-plus pull-report-midi-plus \
         stage-iupred run-no-search-baselines no-search-baselines-usage \
-        run-midi-plus-all-qfo queue-empty reduce-delimitation reduce-delimitation-list \
+        run-midi-plus-all-qfo run-midi-plus-hp-k35-k40 queue-empty reduce-delimitation reduce-delimitation-list \
         watch attach stop \
         fetch-structures-mac \
         run-mini run-mini-local pull-mini \
@@ -2305,6 +2305,85 @@ run-rannon-burstein: prefetch-images midi-testset-sherlock
 	    --swissprot_dat       ../data/uniprot_sprot.dat.gz \
 	    --pfamn_dir           ../data/pfamn \
 	    $(PFAM_HMM_ARG) \
+	    $(NF_ARGS)
+
+# ---- midi-plus: H/P k35 and k40, dayhoff6 k19 and k21 ----------------------
+#
+# The settings run-midi-plus's matrix stops short of. Asked 2026-11-08 so H/P k-mers carry
+# the same 25-40 bits as protein20 k6-9 and dayhoff6 k9-15 (odd k only; one H/P letter is
+# 1 bit), and
+# so dayhoff6 reaches k21. Results: reports/qfo-requested-settings-2026-11-08/.
+#
+# Known failure: the last step, aggregateMetrics, refuses to build the combined table
+# because ciona has only 23 Swiss-Prot annotated proteins, so no all_domain_metrics.parquet
+# is written for these 14 settings and a -resume rerun fails the same way. Every search
+# and scoring task still finishes. Workaround: read the per-search files in
+# $(HPLONG_OUTDIR)/metrics/ (pfam.kmerseek.*_lcFalse.*.metrics.parquet), which is what the
+# report's summarize.py does.
+#
+# 6 two-letter H/P alphabets x k35, k40 + dayhoff6 k19, k21 = 14 settings, masking off,
+# x 9 targets = 126 index builds and 126 searches. hp_lehninger_hpc3 is left out: it has
+# three letters, so k35 would be 55 bits, past the range asked for.
+#
+# Same query set, image and targets as run-midi-plus, with the pattern of
+# run-rannon-burstein: its own launch directory (Nextflow truncates the trace of the
+# directory it starts in) and its own outdir, because aggregateMetrics would otherwise
+# replace run-midi-plus's all_domain_metrics.parquet with one that covers these 14 settings
+# only. Every other tool is skipped: run-midi-plus already scored them, and with a new
+# outdir their searches would run again. --db_cache is run-midi-plus's, so the human
+# query staging and proteome disorder are store hits; the new indexes are new store entries.
+#
+# Data paths are absolute, into the main clone, so this runs from a separate clone of the
+# branch while the main clone stays on main.
+#
+# Measured on run-midi-plus (traces 2026-09-01 to -13) at the nearest settings, H/P k27-33
+# and dayhoff6 k15-17, 9 targets: index peak 0.9-6.7 GB and at most 30 s; search peak
+# 0.6-11.1 GB and at most 3 min; scoring peak 4.3 GB and at most 6 min. The pipeline's own
+# asks (index 32 GB, search 25-43 GB, scoring from 8 GB) cover these on the first attempt.
+# A larger k makes fewer shared k-mers, so k35-40 should come in under these, not over.
+HPLONG_MAIN    ?= $(SCRATCH)/2024-kmerseek-analysis/nextflow-runs/qfo-pfam-region-benchmark
+HPLONG_DATA    ?= $(HPLONG_MAIN)/data
+HPLONG_RUN_DIR ?= run-midi-plus-hp-k35-k40
+HPLONG_OUTDIR  ?= $(HPLONG_DATA)/midi-plus/results-hp-k35-k40
+HPLONG_HP      := hp_kyte_doolittle2 hp_lehninger2 hp_lehninger_c_nonpolar2 \
+                  hp_pbotc_1st_ed2 hp_thomas_dill2 hp_thomas_dill_no_c2
+hplong_space  := $(subst ,, )
+HPLONG_COMBOS  ?= $(subst $(hplong_space),$(comma),$(strip \
+                  $(foreach a,$(HPLONG_HP),$(a):35 $(a):40) dayhoff6:19 dayhoff6:21))
+
+run-midi-plus-hp-k35-k40: QUERY_SET_LABEL := $(MIDI_PLUS_QUERY_SET)
+run-midi-plus-hp-k35-k40: PREFETCH_CONTAINERS := $(IMAGE_REMOTE)
+run-midi-plus-hp-k35-k40: HEAD_TIME    := 12:00:00
+run-midi-plus-hp-k35-k40: HEAD_JOBNAME := nf-hp-k35-k40
+run-midi-plus-hp-k35-k40: HEAD_SESSION := hpk35k40
+run-midi-plus-hp-k35-k40: prefetch-images
+	$(call require_cluster)
+	@test -d "$(HPLONG_DATA)/midi-plus/qfo" || \
+	  { echo "  no $(HPLONG_DATA)/midi-plus/qfo; set HPLONG_MAIN to the clone that ran run-midi-plus"; exit 1; }
+	mkdir -p $(HPLONG_RUN_DIR)
+	cd $(HPLONG_RUN_DIR) && \
+	  ml load biology nextflow && \
+	  $(HEAD_SUBMIT) nextflow run ../main.nf -profile $(PROFILE) -resume \
+	    --kmerseek_image  $(IMAGE_REMOTE) \
+	    --kmerseek_combos $(HPLONG_COMBOS) \
+	    --skip_baselines  true \
+	    --skip_foldseek   true \
+	    --skip_folddisco  true \
+	    --skip_reseek     true \
+	    --skip_prostt5    true \
+	    --skip_multiqc    true \
+	    --run_hmmscan     false \
+	    --qfo_dir         $(HPLONG_DATA)/midi-plus/qfo \
+	    --annotations     $(HPLONG_DATA)/midi-plus/annotations \
+	    --structures      $(HPLONG_DATA)/midi-plus/structures \
+	    --outdir          $(HPLONG_OUTDIR) \
+	    --db_cache        $(HPLONG_MAIN)/results \
+	    --target_species  $(MIDI_TARGETS) \
+	    --hgnc_file       $(HPLONG_DATA)/covariates/hgnc_complete_set.txt \
+	    --omega_file      $(HPLONG_DATA)/covariates/omega_results.tsv \
+	    --swissprot_dat   $(HPLONG_DATA)/uniprot_sprot.dat.gz \
+	    --pfamn_dir       $(HPLONG_DATA)/pfamn \
+	    $(QUERY_SET_NF_ARG) \
 	    $(NF_ARGS)
 
 # Same code path as the real run, scoped down. Do this before `make run`.
