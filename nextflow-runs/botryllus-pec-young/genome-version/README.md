@@ -67,14 +67,21 @@ all 38 libraries the paper counted more pairs than our trimming kept.
 The reason is one setting. PR 203's nf-core/rnaseq run (2026-10-24, on Sherlock in
 `/scratch/users/olgabot/botryllus-shazam-PEC-20261023/nfcore/`) passed
 `--length 62` to Trim Galore: a pair is dropped when either read is shorter than 62 bases
-after the adapter is cut off. Trim Galore's own default is 20. These libraries have short
+after the adapter is cut off. Trim Galore's own default is 20. The 62 first appears in the
+SPLASH pilot (`botryllus-shazam-inputs/pilot/code/build_report.py`: "minimum length 62
+nt"), which used 31-base anchors and 31-base targets with no gap. 31 + 31 = 62 is the
+shortest read that holds one anchor and its target, so the cutoff most likely came from
+SPLASH and was carried over to the gene-level run, where it has no such reason. The
+pilot's report does not state that link itself. These libraries have short
 cDNA fragments: in SRR32233970 (JA100) 80% of reads contain adapter, and the 62-base rule
 drops 38% of pairs. In SRR32233977 (JA154) it drops 91%.
 
 Dropping reads by fragment length is not random over genes, which fits the 0.89 rank
 correlation between our counts and the paper's on the same genome. That is an
-explanation that fits the numbers, not yet a test. The test is to count the untrimmed (or
-`--length 20`) reads on the paper's genome and fit as before.
+explanation that fits the numbers, not yet a test. The test is to trim the raw reads with
+`--length 20`, align them to the paper's genome and fit as before. PR 223 has that run
+(`GENOMES=...,paper_genome_length20` in its `make run-count-split`), with its prediction
+in its README; it started on Sherlock as job 52059444 on 2026-11-12 at 06:42.
 
 The earlier "1.55 times as many counts" in PR 223 is this same gap: 28.1 million pairs
 counted by the paper against 18.1 million left after trimming, from 29.0 million in SRA
