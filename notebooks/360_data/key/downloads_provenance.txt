@@ -1,0 +1,12 @@
+date	2026-10-21T05:23:36-0700
+ensembl	release-116 (https://ftp.ensembl.org/pub/release-116/fasta)
+pfam	Pfam 38.2 (https://ftp.ebi.ac.uk/pub/databases/Pfam/releases/Pfam38.2)
+pfam_regions	/scratch/users/olgabot/data/pfam/regions/Pfam-A.regions.tsv.gz	5053457363 bytes
+swissprot	/scratch/users/olgabot/data/swissprot/uniprot_sprot.dat.gz	UniProtKB/Swiss-Prot Release 2026_03 of 02-Sep-2026
+image	/scratch/users/olgabot/apptainer-cache/docker.io-olgabot-kmerseek-0.4.0-pr141-3c353d4.img
+e2cbc7b060ea61cf6427fa5e95325442  downloads/ciona.cdna.fa.gz
+f32015ef77ea70815476b61ab5add638  downloads/ciona.pep.fa.gz
+a70eeffcd8105ff094ea5834456d8bab  downloads/Pfam-A.clans.tsv.gz
+7a37e1237d5d20c35b236c9f5a9ac797  downloads/Pfam-A.seed.gz
+68d40dad6bcd4dfb83e03e10a375c637  downloads/zebrafish.cdna.fa.gz
+bb9339902b58bc0758ae4c959482dc9e  downloads/zebrafish.pep.fa.gz

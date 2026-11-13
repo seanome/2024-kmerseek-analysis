@@ -1,0 +1,14 @@
+measure	value
+probes_in_platform	3840
+probes_gpl_sequence	0
+probes_genbank_fetch	3344
+probes_record_too_long	30
+probes_missing	466
+distinct_sequences	1672
+spots_per_sequence_min	2
+spots_per_sequence_max	2
+length_nt_min	101
+length_nt_median	512.0
+length_nt_max	650
+probe_length	512.0
+residues_per_frame	170.0

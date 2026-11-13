@@ -1,0 +1,31 @@
+{
+  "protocol": "six-frame-standard-stop-only-X-preserved-min30-v1",
+  "code_sha256": {
+    "peptide_protocol.py": "1792cfaa6f0fc93538235946829827a14be80ff3fc0ec31842f01c30b6f89593",
+    "sketch_corrected_peptides.py": "4d3d112db50fca84603b8c1c682d9be5550c4b297b61eafefbc8d55d074acf30",
+    "nextflow/build_provenance.py": "390ddcef2ff600ffc331b8b24a9450d9c5bd8d4aa91cc9dce349ac8443100a40",
+    "nextflow/audit_completed.py": "8308dcbc00b841f9c1fc503ab1a2ad68538c1eeb3b8fa025def0c00b92b42ade",
+    "nextflow/artifacts.py": "7b3e49eb87a5905919b6dc1f992af64bcdbe55bd97838f67c326f8482869f106"
+  },
+  "source_files_sha256": {
+    "/scratch/groups/ayeletv/oyster-first-public-linear-20261025/manifest.json": "d10faa1338e0c63c8ab7099acb1547dfa2fbcda5947b224c3aa595024d77fd01",
+    "/scratch/users/olgabot/oyster-dekupl-queries-20261024/selection.json": "45917dc1fad7b2dc115d918fe1b572c7f7935d85cacdba2df029cabe7fce3ef9",
+    "/scratch/users/olgabot/oyster-dekupl-queries-20261024/all-significant-contigs.tsv.gz": "680db97457ab55ec8efd3865154209edebffd24ffc825ca64d862d1bfdf69410",
+    "/scratch/users/olgabot/oyster-mvp-20261023/dekupl/full/out/wild_vs_breed_kmer_counts/merged-diff-counts.tsv.gz": "6442e0b20c0178a9f94cc3e36a23ff6b847b8064c41c69fd3b42cccbe52b2756",
+    "/scratch/users/olgabot/oyster-full-extensions-20261023/splash-trimmed-all/batch-000/compactors.tsv": "5f97dada71b75fc5810133e97dcf9d8f61a65bf78547b011122d965c255e6884"
+  },
+  "tools": {
+    "sourmash": "4.9.4",
+    "sourmash_plugin_branchwater": "0.9.15",
+    "biopython": "1.88"
+  },
+  "python": "3.12.15 (main, Oct 13 2026, 16:52:04) [GCC 15.3.0]",
+  "argv": [
+    "oyster-shazam/nextflow/build_provenance.py",
+    "/scratch/groups/ayeletv/oyster-dispatch-5712059d/work/51/09fbeb621659c4ef3147bb82d7a122/attempt-49525575",
+    "/home/groups/ayeletv/opt/oyster-shazam-20261023/bin/sourmash",
+    "4"
+  ],
+  "slurm_job_id": "49525575",
+  "source_scope": "First audited SPLASH batch and all selected DE-kupl contigs; upstream historical generation is not re-certified"
+}

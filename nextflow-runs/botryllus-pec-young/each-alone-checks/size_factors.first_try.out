@@ -1,0 +1,21 @@
+genes: this run 35618 paper 72119 libraries 38 
+listed entries 782 with a matched gene in this run 667 
+this_run 2 h     default   tested 31574 p<.05  686 2-fold up   95 down  591 | listed 280 tested 217 found  88 | largest p difference from pipeline 0.74 over 31526 genes, tested there 31541
+this_run 2 h     poscounts tested 31582 p<.05  171 2-fold up   43 down  128 | listed 280 tested 228 found  18 | 
+this_run 2 h     total     tested 31450 p<.05  183 2-fold up  113 down   70 | listed 280 tested 221 found  14 | 
+this_run 2 h     swapped   tested 31533 p<.05  751 2-fold up   93 down  657 | listed 280 tested 216 found  89 | 
+paper    2 h     default   tested 50240 p<.05  639 2-fold up   94 down  545 | listed 280 tested 280 found 239 | spearman with paper p 0.99995 over 50233 genes
+paper    2 h     poscounts tested 50041 p<.05   94 2-fold up   29 down   65 | listed 280 tested 276 found  11 | 
+paper    2 h     total     tested 50111 p<.05  174 2-fold up  147 down   27 | listed 280 tested 276 found  22 | 
+paper    2 h     swapped   tested 50254 p<.05  569 2-fold up   91 down  478 | listed 280 tested 280 found 209 | 
+this_run 24 h    default   tested 31633 p<.05  514 2-fold up  402 down  112 | listed 350 tested 267 found  66 | largest p difference from pipeline 0.74 over 31567 genes, tested there 31585
+this_run 24 h    poscounts tested 31814 p<.05  297 2-fold up   69 down  228 | listed 350 tested 273 found  22 | 
+this_run 24 h    total     tested 31601 p<.05  252 2-fold up  146 down  106 | listed 350 tested 276 found  24 | 
+this_run 24 h    swapped   tested 31487 p<.05  605 2-fold up  519 down   86 | listed 350 tested 256 found  65 | 
+paper    24 h    default   tested 50608 p<.05  803 2-fold up  671 down  132 | listed 350 tested 350 found 272 | spearman with paper p 0.99988 over 50588 genes
+paper    24 h    poscounts tested 51235 p<.05  513 2-fold up   39 down  474 | listed 350 tested 341 found  85 | 
+paper    24 h    total     tested 50014 p<.05  367 2-fold up  195 down  172 | listed 350 tested 341 found  95 | 
+paper    24 h    swapped   tested 50925 p<.05  640 2-fold up  461 down  179 | listed 350 tested 348 found 225 | 
+Error: setequal(d$vial, g$vial[g$group == as.integer(k)]) is not TRUE
+In addition: There were 32 warnings (use warnings() to see them)
+Execution halted

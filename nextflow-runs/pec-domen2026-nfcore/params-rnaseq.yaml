@@ -1,0 +1,21 @@
+# nf-core/rnaseq 3.27.0: STAR + RSEM on the April 2024 Botryllus genome, chosen by Olga 2026-11-04.
+# input and outdir are given by run_pipelines.sh. Same genome and annotation as
+# nextflow-runs/botryllus-pec-young on PR 207, which used STAR + Salmon.
+aligner: star_rsem
+fasta: /home/groups/ayeletv/Index_Genome_New_April2024/ReferenceFiles/final_purged_primary.fasta
+gtf: /home/groups/ayeletv/Index_Genome_New_April2024/ReferenceFiles/Annotated_Merge_Botryllus.sofMask_CorrectedNames_FullNames.gtf
+save_reference: true
+
+# Reads are the fastp-trimmed reads the k-mer routes used.
+skip_trimming: true
+# Unstranded was measured on PR 207's 3 deepest libraries.
+# Keep every library, however few reads align, as the routes do.
+min_mapped_reads: 0
+# Fails when no gene has a count in every library (PR 207); DESeq2 runs in differentialabundance.
+skip_deseq2_qc: true
+# The FullNames GTF has no gene_biotype.
+skip_biotype_qc: true
+# Not used downstream.
+skip_bigwig: true
+skip_stringtie: true
+skip_pseudo_alignment: true

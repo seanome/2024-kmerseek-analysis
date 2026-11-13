@@ -1,0 +1,129 @@
+alphabet,k,keyspace_bits,ka_queries,index_ask_gb,index_basis,search_ask_gb,search_hours,search_basis,darkset_chunk_hours_median
+protein20,5,21.6,500,63,model,88,2,dark-set peak,0.27
+protein20,6,25.9,500,63,model,,4,model at run time,
+protein20,7,30.3,550,63,model,71,2,dark-set peak,0.12
+protein20,8,34.6,1450,63,model,42,2,dark-set peak,0.08
+uniprot18,5,20.8,500,63,model,132,2,dark-set peak,0.51
+uniprot18,6,25.0,500,63,model,,4,model at run time,
+uniprot18,7,29.2,500,63,model,82,2,dark-set peak,0.15
+uniprot18,8,33.4,1100,63,model,,4,model at run time,
+uniprot18,9,37.5,2850,63,model,31,2,dark-set peak,0.08
+hsdm17,5,20.4,500,126,dark-set measured,413,4,dark-set killed ask,
+hsdm17,7,28.6,500,63,model,,4,model at run time,
+hsdm17,9,36.8,2400,63,model,,4,model at run time,
+wass14,5,19.0,500,63,model,,4,model at run time,
+wass14,6,22.8,500,63,model,86,2,dark-set peak,0.25
+wass14,7,26.7,500,63,model,,4,model at run time,
+wass14,8,30.5,550,63,model,76,2,dark-set peak,0.13
+wass14,9,34.3,1350,63,model,46,2,dark-set peak,0.07
+mmseqs12,6,21.5,500,63,model,265,4,dark-set killed ask,
+mmseqs12,7,25.1,500,63,model,,4,model at run time,
+mmseqs12,8,28.7,500,63,model,81,2,dark-set peak,0.14
+mmseqs12,9,32.3,850,63,model,,4,model at run time,
+mmseqs12,10,35.8,1950,63,model,43,2,dark-set peak,0.06
+sdm12,7,25.1,500,63,model,118,2,dark-set peak,0.45
+sdm12,9,32.3,850,63,model,86,2,dark-set peak,0.15
+sdm12,11,39.4,3000,63,model,50,2,dark-set peak,0.09
+funcgroups8,7,21.0,500,126,dark-set measured,477,4,dark-set killed ask,
+funcgroups8,9,27.0,500,63,model,108,2,dark-set peak,0.29
+funcgroups8,11,33.0,1000,63,model,82,2,dark-set peak,0.15
+funcgroups8,13,39.0,3000,63,model,49,2,dark-set peak,0.1
+gbmr7,13,36.5,2250,500,dark-set measured,500,4,dark-set killed ask,
+gbmr7,15,42.1,3000,126,dark-set measured,257,4,dark-set killed ask,
+gbmr7,17,47.7,3000,126,dark-set measured,177,2,dark-set killed ask,0.36
+gbmr7,19,53.3,3000,63,model,102,2,dark-set peak,0.2
+gbmr7,21,59.0,3000,63,model,70,2,dark-set peak,0.08
+gbmr7,23,64.6,3000,63,model,43,2,dark-set peak,0.08
+gbmr7,25,70.2,3000,63,model,35,2,dark-set peak,0.07
+gbmr7,27,75.8,3000,63,model,35,2,dark-set peak,0.07
+gbmr7,29,81.4,3000,63,model,35,2,dark-set peak,0.07
+gbmr7,31,87.0,3000,63,model,35,2,dark-set peak,0.07
+gbmr7,33,92.6,3000,63,model,35,2,dark-set peak,0.07
+gbmr7,35,98.3,3000,63,model,35,2,dark-set peak,0.07
+dayhoff6,8,20.7,500,126,dark-set measured,396,4,dark-set killed ask,
+dayhoff6,10,25.8,500,63,model,,4,model at run time,
+dayhoff6,12,31.0,650,63,model,,4,model at run time,
+dayhoff6,14,36.2,2100,63,model,,4,model at run time,
+dayhoff6,16,41.4,3000,63,model,,4,model at run time,
+dayhoff6,18,46.5,3000,63,model,31,2,dark-set peak,0.06
+wwmj5,9,20.9,500,63,model,173,3,dark-set peak,0.71
+wwmj5,11,25.5,500,63,model,79,2,dark-set peak,0.17
+wwmj5,13,30.2,500,63,model,77,2,dark-set peak,0.12
+wwmj5,15,34.8,1550,63,model,47,2,dark-set peak,0.09
+gbmr4,13,26.0,500,126,dark-set measured,427,4,dark-set killed ask,
+gbmr4,15,30.0,500,63,model,253,4,dark-set killed ask,
+gbmr4,17,34.0,1250,63,model,,4,model at run time,
+gbmr4,19,38.0,3000,63,model,,4,model at run time,
+gbmr4,21,42.0,3000,126,dark-set measured,,4,model at run time,
+gbmr4,23,46.0,3000,63,model,,4,model at run time,
+gbmr4,25,50.0,3000,63,model,,4,model at run time,
+gbmr4,27,54.0,3000,63,model,,4,model at run time,
+polarity4,11,22.0,500,126,dark-set measured,403,4,dark-set killed ask,
+polarity4,13,26.0,500,63,model,229,2,dark-set killed ask,0.6
+polarity4,15,30.0,500,63,model,101,2,dark-set peak,0.26
+polarity4,17,34.0,1250,63,model,77,2,dark-set peak,0.16
+polarity4,19,38.0,3000,63,model,53,2,dark-set peak,0.1
+polarity4,21,42.0,3000,63,model,38,2,dark-set peak,0.08
+polarity4,23,46.0,3000,63,model,30,2,dark-set peak,0.07
+polarity4,25,50.0,3000,63,model,35,2,dark-set peak,0.07
+hp_lehninger_hpc3,17,26.9,500,63,model,224,4,dark-set peak,0.98
+hp_lehninger_hpc3,19,30.1,500,63,model,110,2,dark-set peak,0.36
+hp_lehninger_hpc3,21,33.3,1050,63,model,81,2,dark-set peak,0.19
+hp_lehninger_hpc3,23,36.5,2200,63,model,76,2,dark-set peak,0.14
+hp_lehninger_hpc3,25,39.6,3000,63,model,69,2,dark-set peak,0.13
+hp_lehninger_hpc3,27,42.8,3000,63,model,59,2,dark-set peak,0.1
+hp_lehninger_hpc3,29,46.0,3000,63,model,41,2,dark-set peak,0.09
+hp_kyte_doolittle2,19,19.0,500,63,model,336,4,dark-set killed ask,
+hp_kyte_doolittle2,21,21.0,500,63,model,239,3,dark-set killed ask,0.02
+hp_kyte_doolittle2,23,23.0,500,63,model,187,2,dark-set killed ask,0.02
+hp_kyte_doolittle2,25,25.0,500,63,model,159,2,dark-set killed ask,0.22
+hp_kyte_doolittle2,27,27.0,500,63,model,112,2,dark-set peak,0.17
+hp_kyte_doolittle2,29,29.0,500,63,model,97,2,dark-set peak,0.14
+hp_kyte_doolittle2,31,31.0,650,63,model,75,2,dark-set peak,0.11
+hp_kyte_doolittle2,33,33.0,1000,63,model,59,2,dark-set peak,0.1
+hp_kyte_doolittle2,35,35.0,1600,63,model,49,2,dark-set peak,0.09
+hp_kyte_doolittle2,37,37.0,2500,63,model,42,2,dark-set peak,0.07
+hp_kyte_doolittle2,39,39.0,3000,63,model,38,2,dark-set peak,0.08
+hp_lehninger_c_nonpolar2,17,17.0,500,105,model,363,4,dark-set killed ask,
+hp_lehninger_c_nonpolar2,19,19.0,500,63,model,130,2,dark-set peak,0.53
+hp_lehninger_c_nonpolar2,21,21.0,500,63,model,84,2,dark-set peak,0.23
+hp_lehninger_c_nonpolar2,23,23.0,500,63,model,73,2,dark-set peak,0.14
+hp_lehninger_c_nonpolar2,25,25.0,500,63,model,72,2,dark-set peak,0.11
+hp_lehninger_c_nonpolar2,27,27.0,500,63,model,71,2,dark-set peak,0.12
+hp_lehninger_c_nonpolar2,29,29.0,500,63,model,51,2,dark-set peak,0.09
+hp_lehninger_c_nonpolar2,31,31.0,650,63,model,36,2,dark-set peak,0.07
+hp_lehninger2,17,17.0,500,105,model,277,5,dark-set peak,1.39
+hp_lehninger2,19,19.0,500,63,model,120,2,dark-set peak,0.42
+hp_lehninger2,21,21.0,500,63,model,82,2,dark-set peak,0.23
+hp_lehninger2,23,23.0,500,63,model,71,2,dark-set peak,0.14
+hp_lehninger2,25,25.0,500,63,model,72,2,dark-set peak,0.12
+hp_lehninger2,27,27.0,500,63,model,69,2,dark-set peak,0.12
+hp_lehninger2,29,29.0,500,63,model,48,2,dark-set peak,0.08
+hp_pbotc_1st_ed2,17,17.0,500,105,model,372,4,dark-set killed ask,
+hp_pbotc_1st_ed2,19,19.0,500,63,model,137,3,dark-set peak,0.47
+hp_pbotc_1st_ed2,21,21.0,500,63,model,88,2,dark-set peak,0.22
+hp_pbotc_1st_ed2,23,23.0,500,63,model,77,2,dark-set peak,0.16
+hp_pbotc_1st_ed2,25,25.0,500,63,model,75,2,dark-set peak,0.12
+hp_pbotc_1st_ed2,27,27.0,500,63,model,71,2,dark-set peak,0.11
+hp_pbotc_1st_ed2,29,29.0,500,63,model,52,2,dark-set peak,0.1
+hp_thomas_dill_no_c2,18,18.0,500,80,model,362,4,dark-set killed ask,
+hp_thomas_dill_no_c2,20,20.0,500,63,model,229,2,dark-set peak,0.55
+hp_thomas_dill_no_c2,22,22.0,500,63,model,148,2,dark-set peak,0.32
+hp_thomas_dill_no_c2,24,24.0,500,63,model,93,2,dark-set peak,0.12
+hp_thomas_dill_no_c2,26,26.0,500,63,model,83,2,dark-set peak,0.09
+hp_thomas_dill_no_c2,28,28.0,500,63,model,73,2,dark-set peak,0.05
+hp_thomas_dill_no_c2,30,30.0,500,63,model,56,2,dark-set peak,0.05
+hp_thomas_dill_no_c2,32,32.0,800,63,model,53,2,dark-set peak,0.09
+hp_thomas_dill_no_c2,34,34.0,1250,63,model,43,2,dark-set peak,0.07
+hp_thomas_dill_no_c2,36,36.0,2000,63,model,31,2,dark-set peak,0.06
+hp_thomas_dill_no_c2,38,38.0,3000,63,model,33,2,dark-set peak,0.07
+hp_thomas_dill2,18,18.0,500,80,model,341,4,dark-set killed ask,
+hp_thomas_dill2,20,20.0,500,63,model,236,2,dark-set killed ask,0.48
+hp_thomas_dill2,22,22.0,500,63,model,137,2,dark-set peak,0.29
+hp_thomas_dill2,24,24.0,500,63,model,87,2,dark-set peak,0.12
+hp_thomas_dill2,26,26.0,500,63,model,96,2,dark-set peak,0.13
+hp_thomas_dill2,28,28.0,500,63,model,71,2,dark-set peak,0.06
+hp_thomas_dill2,30,30.0,500,63,model,62,2,dark-set peak,0.09
+hp_thomas_dill2,32,32.0,800,63,model,24,2,dark-set peak,0.06
+hp_thomas_dill2,34,34.0,1250,63,model,31,2,dark-set peak,0.06
+hp_thomas_dill2,36,36.0,2000,63,model,24,2,dark-set peak,0.06

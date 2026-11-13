@@ -1,0 +1,7 @@
+setting	alphabet	ksize	penalty	xdrop	mem_gb	index_hours	sec_per_query
+hp_lehninger2_k17	hp_lehninger2	17	1.51	6.04	96	1.0	2.6
+hp_lehninger2_k25	hp_lehninger2	25	1.51	6.04	64	0.5	0.22
+hp_lehninger_c_nonpolar2_k19	hp_lehninger_c_nonpolar2	19	1.52	6.08	64	0.5	0.9
+hp_pbotc_1st_ed2_k19	hp_pbotc_1st_ed2	19	1.59	6.36	64	0.5	1.4
+hp_pbotc_1st_ed2_k21	hp_pbotc_1st_ed2	21	1.59	6.36	64	0.5	0.5
+hp_pbotc_1st_ed2_k23	hp_pbotc_1st_ed2	23	1.59	6.36	64	0.5	0.31

@@ -1,0 +1,12 @@
+{
+  "method": "exact_then_align",
+  "n_queries": 948,
+  "load_seconds": 0.005217582976911217,
+  "cold_wall_seconds": 15.246145124954637,
+  "cold_cpu_seconds": 15.004349000000003,
+  "cold_verify_seconds": 15.074125399522018,
+  "warm_wall_seconds": 14.414405832998455,
+  "warm_cpu_seconds": 14.323225000000004,
+  "warm_verify_seconds": 14.259929166408256,
+  "peak_rss_bytes": 498860032
+}

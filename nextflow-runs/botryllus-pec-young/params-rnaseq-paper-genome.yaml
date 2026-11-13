@@ -1,0 +1,22 @@
+# nf-core/rnaseq 3.27.0 on the paper's 38 libraries, aligned to the paper's own genome and
+# gene models instead of the April 2024 ones. Everything else is as params-rnaseq.yaml, so
+# the only thing that changes against `make run` is the genome and its genes.
+# input and outdir are given on the command line by run_count_split.sh.
+
+# Domen et al. 2026 aligned to the Botryllus genome of Voskoboynik et al. 2013 with STAR and
+# counted with HTSeq. This is the lab's copy of that genome (14 sequences, 580 Mb) and its
+# AUGUSTUS gene models (72,113 genes, g1 to g72113; the IDs in the paper's Dataset S1).
+fasta: /home/groups/ayeletv/Botryllus_Genome/botznik-chr.fa
+gtf: /home/groups/ayeletv/Botryllus_Genome/nc_nsi_nf.gtf
+save_reference: true
+
+# As params-rnaseq.yaml: reads already trimmed (PR 203), every library kept.
+skip_trimming: true
+min_mapped_reads: 0
+
+# Only the alignments and the Salmon counts are used. skip_qc also skips the DESeq2 and
+# biotype checks that params-rnaseq.yaml turns off one by one.
+skip_qc: true
+skip_bigwig: true
+skip_stringtie: true
+skip_markduplicates: true

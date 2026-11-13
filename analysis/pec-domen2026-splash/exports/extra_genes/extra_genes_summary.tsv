@@ -1,0 +1,13 @@
+contrast	route	peptides	peptides_matching_old_gene	genes_reached	genes_on_paper_list	genes_not_on_paper_list	genes_paper_unnamed	unnamed_genes_given_swissprot_name	unnamed_genes_given_proteome_name	unnamed_genes_both_names_agree	named_genes_with_swissprot_name	named_same_name_swissprot	named_same_family_swissprot	named_genes_with_proteome_name	named_same_name_proteome	named_same_family_proteome	peptides_no_old_gene_but_new_proteome	peptides_no_botryllus_gene_but_swissprot
+young_2h	splash	725805	99075	3440	67	3373	1820	17	365	3	397	184	319	1296	728	978	27075	1045
+young_2h	anchor_nominal	94525	10514	1743	49	1694	1124	0	176	0	150	66	117	469	268	371	4666	28
+young_24h	splash	3186139	424673	9582	151	9431	4990	59	1255	16	1663	872	1256	3794	2271	2917	140157	1758
+young_24h	anchor_nominal	142505	15635	895	11	884	474	1	83	0	162	69	107	348	185	264	6607	80
+old_24h	splash	209145	8823	521	21	500	325	3	46	0	128	61	95	163	74	122	6268	929
+old_24h	anchor_nominal	177501	5679	560	23	537	245	4	39	1	185	69	127	274	126	219	2137	440
+young_13_49d	splash	67559	10207	523	6	517	287	2	45	0	125	60	97	208	102	159	3052	104
+young_13_49d	anchor_nominal	12162	1546	175	4	171	57	0	7	0	85	36	72	107	44	80	469	14
+young_132d	splash	22588	3481	246	4	242	114	2	30	0	81	40	62	117	65	93	860	31
+young_132d	anchor_nominal	8101	1120	272	8	264	117	1	28	0	85	36	66	141	67	108	245	16
+old_41_93d	splash	74080	8613	463	1	462	279	3	40	1	114	51	98	160	77	120	5784	197
+old_41_93d	anchor_nominal	7673	805	101	0	101	50	0	11	0	32	5	28	45	15	41	109	13

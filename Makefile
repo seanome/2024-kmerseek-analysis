@@ -4,7 +4,7 @@
 SHERLOCK_HOST ?= sherlock
 ON_CLUSTER := $(shell [ -n "$$SCRATCH" ] && [ -d "$$SCRATCH" ] && echo yes)
 
-.PHONY: help running leaderboard-tables leaderboard-fetch leaderboard-timetree
+.PHONY: help running leaderboard-tables leaderboard-fetch leaderboard-timetree leaderboard-alphabets
 
 help:
 	@echo "Sherlock:"
@@ -17,6 +17,8 @@ help:
 	@echo "                      LEADERBOARD_DATA (a mirror of /scratch/users/olgabot)"
 	@echo "  leaderboard-tables  Write results/leaderboard/ (results.parquet, compute.parquet,"
 	@echo "                      coverage.md, provenance.json) from LEADERBOARD_DATA"
+	@echo "  leaderboard-alphabets  Write results/leaderboard/alphabets/ (the alphabet page's"
+	@echo "                         tables) from notebooks 230 and 291 and PR 116's CSV"
 	@echo ""
 	@echo "Each pipeline's own targets: make -C nextflow-runs/<pipeline> help"
 
@@ -45,14 +47,17 @@ running:
 ## midi-plus), ELM cover, the dark set (Pfam Fmax, reach, best-hit accuracy), notebook
 ## 241's three cases, the deep-twilight controls, the SCOPe40 kmerseek 0.4 sweeps, and
 ## the Pfam protein-pair benchmark of other tools (pfam_pair_roc).
-## results/leaderboard/inventory.md lists every output found and why some are left out.
+## results/leaderboard/inventory.md lists every output found and why some are left out; it is
+## written by hand, not by leaderboard-tables.
 ##
 ## LEADERBOARD_DATA mirrors /scratch/users/olgabot: a file at $SCRATCH/x/y is read from
 ## $(LEADERBOARD_DATA)/x/y. leaderboard-fetch copies exactly the inputs provenance.json
 ## lists, over the data transfer node. Inputs that exist only on the laptop
 ## (/Users/olga/x/y) are copied to $(LEADERBOARD_DATA)/laptop/x/y.
 LEADERBOARD_DATA ?= $(HOME)/data/leaderboard-inputs
-LEADERBOARD_PYTHON ?= /Users/olga/anaconda3/envs/2025-kmerseek-analysis/bin/python3
+# Olga's conda env on her Mac when it is there, else python3 from PATH (it needs polars).
+LEADERBOARD_ENV_PYTHON := /Users/olga/anaconda3/envs/2025-kmerseek-analysis/bin/python3
+LEADERBOARD_PYTHON ?= $(if $(wildcard $(LEADERBOARD_ENV_PYTHON)),$(LEADERBOARD_ENV_PYTHON),python3)
 SHERLOCK_DTN ?= sherlock-dtn
 ## Where the laptop-only inputs are read from. provenance.json records them under
 ## /Users/olga; set LAPTOP_HOME on a machine that keeps a copy somewhere else.
@@ -80,3 +85,11 @@ leaderboard-tables:
 	$(LEADERBOARD_PYTHON) scripts/build_leaderboard_long.py \
 	  --data $(LEADERBOARD_DATA) \
 	  --outdir results/leaderboard
+
+## The leaderboard site's alphabet page (seanome/protein-function-annotation-leaderboard copies
+## results/leaderboard/alphabets/ from a commit of this repo). Reads notebook 291's stored
+## table and the per-pair tables of notebook 230 from ~/data (about 100 MB), so it runs on the
+## laptop in about 20 s with a peak of 3.75 GB resident (measured 2026-10-16 with
+## /usr/bin/time -l); see scripts/build_leaderboard_alphabets.py.
+leaderboard-alphabets:
+	$(LEADERBOARD_PYTHON) scripts/build_leaderboard_alphabets.py --outdir results/leaderboard/alphabets
