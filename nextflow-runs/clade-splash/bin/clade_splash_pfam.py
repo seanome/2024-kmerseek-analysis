@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Notebook 357: the Pfam controls of the clade-grouped SPLASH run.
+"""Notebook 380: the Pfam controls of the clade-grouped SPLASH run.
 
 Kept apart from clade_splash.py on purpose: Nextflow puts the content of the bin/ scripts a
 task calls into its cache key, so a change here does not make the counting and testing

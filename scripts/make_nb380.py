@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
-"""Generate notebooks/357_clade_splash_reduced_alphabet_anchors_uniprot_reference_proteomes.ipynb.
+"""Generate notebooks/380_clade_splash_reduced_alphabet_anchors_uniprot_reference_proteomes.ipynb.
 
-The rule is notebooks/357_preregistration.md, committed (30315007) before any count table
+The rule is notebooks/380_preregistration.md, committed (30315007) before any count table
 existed, and copied into the notebook verbatim. The notebook reads the tables that
-nextflow-runs/clade-splash writes (`make pull-results` copies them to tables/357/). Set
-NB357_DIR to read another copy. The summary paragraph at the top is filled in from the same
-functions the cells call (notebooks/clade_splash_357_utils.py), so the two cannot disagree.
+nextflow-runs/clade-splash writes (`make pull-results` copies them to tables/380/). Set
+NB380_DIR to read another copy. The summary paragraph at the top is filled in from the same
+functions the cells call (notebooks/clade_splash_380_utils.py), so the two cannot disagree.
 """
 
 import json
@@ -15,12 +15,12 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "notebooks"))
-import clade_splash_357_utils as u  # noqa: E402
+import clade_splash_380_utils as u  # noqa: E402
 
 NOTEBOOK = (
     ROOT
     / "notebooks"
-    / "357_clade_splash_reduced_alphabet_anchors_uniprot_reference_proteomes.ipynb"
+    / "380_clade_splash_reduced_alphabet_anchors_uniprot_reference_proteomes.ipynb"
 )
 cells = []
 
@@ -80,7 +80,7 @@ summary_verdict = (
 )
 
 md(f"""
-# 357. Clade-grouped SPLASH on reduced-alphabet protein k-mers (kill test)
+# 380. Clade-grouped SPLASH on reduced-alphabet protein k-mers (kill test)
 
 {"> **PILOT DATA** (8 species from each of the 6 largest classes). The verdict below is not the pre-registered one; it only shows that the pipeline runs end to end." if pilot else ""}
 
@@ -103,10 +103,10 @@ target depends on the class. {v["n_tested"].get("real", 0):,} anchors were carri
 """)
 
 md(
-    (ROOT / "notebooks" / "357_preregistration.md")
+    (ROOT / "notebooks" / "380_preregistration.md")
     .read_text()
     .replace(
-        "# Notebook 357: clade-grouped SPLASH on reduced-alphabet protein k-mers (pre-registration)",
+        "# Notebook 380: clade-grouped SPLASH on reduced-alphabet protein k-mers (pre-registration)",
         "## The rule, as committed before the run (commit 30315007)",
     )
 )
@@ -128,7 +128,7 @@ md(r"""
 
 The pilot (8 species from each of the 6 largest classes, run before the full run) is not
 part of the verdict. It showed that the within-phylum shuffle leaves nearly as many anchors
-significant as the real labels (12,918 against 13,972 at Dayhoff k = 14, gap 0, from `tables/357_pilot_record/counts.tsv`), because a
+significant as the real labels (12,918 against 13,972 at Dayhoff k = 14, gap 0, from `tables/380_pilot_record/counts.tsv`), because a
 class that is alone in its phylum keeps its labels and every difference between phyla stays.
 The rule was not changed after seeing this.
 """)
@@ -228,14 +228,14 @@ import numpy as np
 import polars as pl
 
 sys.path.insert(0, str(Path.cwd()))
-import clade_splash_357_utils as u
+import clade_splash_380_utils as u
 import pubfig as pf
 
 pf.use_style()
 pl.Config.set_tbl_rows(40)
 pl.Config.set_tbl_width_chars(160)
 pl.Config.set_fmt_str_lengths(60)
-FIG = u.ROOT / "figures" / "357"
+FIG = u.ROOT / "figures" / "380"
 d = u.load()
 v = u.verdict(d)
 sig = u.annotated_significant(d)
@@ -281,7 +281,7 @@ ax.set_xticks([5, 10, 20, 50, 100, 200], ["5", "10", "20", "50", "100", "200"])
 ax.set_xlabel("Species in the class (one per family)")
 ax.set_ylim(-1, n)
 pf.shared_legend(fig, ncol=2)
-pf.save(fig, FIG / "357_species_per_class_uniprot_reference_proteomes")
+pf.save(fig, FIG / "380_species_per_class_uniprot_reference_proteomes")
 """)
 
 md(r"""
@@ -349,7 +349,7 @@ for ax, setting in zip(axs, u.SETTINGS):
 pf.shared_legend(fig, ncol=3)
 for ax, letter in zip(axs, "ab"):
     pf.panel_label(ax, letter)
-pf.save(fig, FIG / "357_chance_occurrences_vs_k_uniprot_reference_proteomes")
+pf.save(fig, FIG / "380_chance_occurrences_vs_k_uniprot_reference_proteomes")
 """)
 
 md(r"""
@@ -383,7 +383,7 @@ ax.set_xticks([15, 30, 60, 120, 240], ["15", "30", "60", "120", "240"])
 ax.set_xlabel("Species in the table (equal numbers per class)")
 ax.set_ylabel("OASIS p-value, one class versus the rest")
 pf.shared_legend(fig, ncol=2)
-pf.save(fig, FIG / "357_oasis_best_p_vs_table_size")
+pf.save(fig, FIG / "380_oasis_best_p_vs_table_size")
 """)
 
 md(r"""
@@ -426,7 +426,7 @@ for ax, setting in zip(axs, u.SETTINGS):
     ax.set_title(u.SETTING_LABEL[setting], fontsize=7)
 for ax, letter in zip(axs, "ab"):
     pf.panel_label(ax, letter)
-pf.save(fig, FIG / "357_anchor_funnel_uniprot_reference_proteomes")
+pf.save(fig, FIG / "380_anchor_funnel_uniprot_reference_proteomes")
 """)
 
 md(r"""
@@ -469,7 +469,7 @@ ax.set_yscale("log")
 u.plain_log_axis(ax)
 ax.set_ylabel("Anchors with q < 0.05 (0 drawn at 0.5)")
 pf.shared_legend(fig, ncol=1)
-pf.save(fig, FIG / "357_significant_real_vs_shuffled_labels")
+pf.save(fig, FIG / "380_significant_real_vs_shuffled_labels")
 """)
 
 md(r"""
@@ -504,7 +504,7 @@ for ax, key in zip(axs, u.RULE):
     ax.spines["left"].set_visible(False)
     ax.set_title(LABEL[key], fontsize=6)
     ax.set_xlabel("Anchors")
-pf.save(fig, FIG / "357_verdict_four_numbers_dayhoff_k13_gap0")
+pf.save(fig, FIG / "380_verdict_four_numbers_dayhoff_k13_gap0")
 """)
 
 md(r"""
@@ -531,7 +531,7 @@ ax.axhline(-np.log10(u.ALPHA), color=pf.GREY, linewidth=0.5, linestyle=":")
 ax.set_xlabel("OASIS class split, -log10 q")
 ax.set_ylabel("Composition split, -log10 q")
 pf.shared_legend(fig, ncol=1)
-pf.save(fig, FIG / "357_composition_scan_dayhoff_k13_gap0")
+pf.save(fig, FIG / "380_composition_scan_dayhoff_k13_gap0")
 """)
 
 md(r"""
@@ -562,7 +562,7 @@ for i, n_ in enumerate(tab["n_anchors"]):
     ax.text(i, n_, f"{n_:,}", ha="center", va="bottom", fontsize=6)
 ax.set_xticks(range(tab.height), [f"gap {g}" for g in tab["gaps"]])
 ax.set_ylabel("Significant anchors (real labels)")
-pf.save(fig, FIG / "357_gap_overlap_dayhoff_k13")
+pf.save(fig, FIG / "380_gap_overlap_dayhoff_k13")
 """)
 
 md(r"""
@@ -596,7 +596,7 @@ for i, (s, g) in enumerate(groups):
 ax.set_xticks(range(len(groups)), [f"{s.split(':')[0]} k{s.split(':')[1]}\ngap {g}" for s, g in groups])
 ax.set_ylabel("Significant anchors inside one Pfam family")
 pf.shared_legend(fig, ncol=1)
-pf.save(fig, FIG / "357_alignment_control")
+pf.save(fig, FIG / "380_alignment_control")
 """)
 
 md(r"""
@@ -623,7 +623,7 @@ ax.barh(y, top["inside"], left=top["outside"], color=pf.GREY, label="inside a Pf
 ax.set_yticks(y, top["class_pair"].to_list())
 ax.set_xlabel("Significant anchors")
 pf.shared_legend(fig, ncol=2)
-pf.save(fig, FIG / "357_survivors_by_class_pair_pfam_dayhoff_k13_gap0")
+pf.save(fig, FIG / "380_survivors_by_class_pair_pfam_dayhoff_k13_gap0")
 """)
 
 md(r"""
@@ -649,7 +649,7 @@ for ax, setting in zip(axs, u.SETTINGS):
     ax.set_title(u.SETTING_LABEL[setting], fontsize=7)
 for ax, letter in zip(axs, "ab"):
     pf.panel_label(ax, letter)
-pf.save(fig, FIG / "357_anchor_entropy_significant")
+pf.save(fig, FIG / "380_anchor_entropy_significant")
 """)
 
 md(r"""
@@ -713,7 +713,7 @@ def anchor_figure(rank, row):
     ax2.text(0, 1, "\n".join(lines), family="monospace", fontsize=5.5, va="top", ha="left", transform=ax2.transAxes)
     pf.panel_label(ax2, "b", dx_pt=0)
     fig.suptitle(header, fontsize=5.5, ha="left", x=0.01)
-    pf.save(fig, FIG / f"357_anchor_{rank:02d}_dayhoff_k13_gap0_uniprot")
+    pf.save(fig, FIG / f"380_anchor_{rank:02d}_dayhoff_k13_gap0_uniprot")
 
 top20 = prim.sort("q_oasis", "p_oasis", "anchor").head(20)
 print(f"{top20.height} anchors to show")
@@ -743,7 +743,7 @@ ax.set_yticks(range(4)[::-1], ["1. significant", "2. within-phylum shuffle", "3.
 ax.set_xscale("log")
 u.plain_log_axis(ax, "x")
 ax.set_xlabel("Anchors (HP k = 29, gap 0; 0 drawn at 0.5)")
-pf.save(fig, FIG / "357_hp_k29_four_numbers")
+pf.save(fig, FIG / "380_hp_k29_four_numbers")
 """)
 
 md(r"""

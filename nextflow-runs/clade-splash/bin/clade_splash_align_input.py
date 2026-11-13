@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Prepare notebook 357 alignment FASTAs with disk-backed domain and sequence lookup.
+"""Prepare notebook 380 alignment FASTAs with disk-backed domain and sequence lookup.
 
 Separate from clade_splash_pfam.py so fixing this step preserves the completed
 Pfam-overlap task's Nextflow cache key.

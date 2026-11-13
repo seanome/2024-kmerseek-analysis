@@ -1,10 +1,10 @@
-// Notebook 357: clade-grouped SPLASH on reduced-alphabet protein k-mers (kill test).
+// Notebook 380: clade-grouped SPLASH on reduced-alphabet protein k-mers (kill test).
 //
 // UniProt reference proteomes, one species per family, NCBI classes with at least 5 species
 // as the samples. For each reduced-alphabet anchor (Dayhoff k=13, HP k=29: each about the 29 bits of a protein k-mer of k=7) the count table
 // is targets (the next 10 residues) x classes, with species counts in the cells. The OASIS
 // test (refresh-bio/SPLASH) asks whether the target distribution depends on the class. The
-// rule, the controls and the pass/fail numbers are notebooks/357_preregistration.md.
+// rule, the controls and the pass/fail numbers are notebooks/380_preregistration.md.
 
 nextflow.enable.dsl = 2
 

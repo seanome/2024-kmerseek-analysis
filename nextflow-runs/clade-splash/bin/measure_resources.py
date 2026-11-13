@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Size resumed nb357 tasks from retained pilot/full traces, before each launch."""
+"""Size resumed nb380 tasks from retained pilot/full traces, before each launch."""
 
 import argparse
 import csv

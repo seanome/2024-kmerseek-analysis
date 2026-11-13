@@ -1,6 +1,6 @@
 ---
-name: nb357-alignment-memory
-description: Repair or resume notebook 357 protein SPLASH alignment preparation after a memory kill, while retaining completed Nextflow stages.
+name: nb380-alignment-memory
+description: Repair or resume notebook 380 protein SPLASH alignment preparation after a memory kill, while retaining completed Nextflow stages.
 ---
 
 Added 2026-10-22 after the full run's alignInput was killed at 16, 32 and 48 GB.

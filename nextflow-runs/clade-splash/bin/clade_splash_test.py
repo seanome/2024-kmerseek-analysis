@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Notebook 357: the count tables, the OASIS test and the occurrences of significant anchors.
+"""Notebook 380: the count tables, the OASIS test and the occurrences of significant anchors.
 
 These two steps replace `test` and `occurrences` in clade_splash.py (still there, unused),
 for the full run's scale: one target bucket of the Dayhoff setting is about 2.3 GB of

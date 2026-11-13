@@ -1,8 +1,10 @@
-# Notebook 357: clade-grouped SPLASH on reduced-alphabet protein k-mers (pre-registration)
+# Notebook 380: clade-grouped SPLASH on reduced-alphabet protein k-mers (pre-registration)
+
+Renumbered from 357 to 380 on 2026-11-13: main already holds a different notebook 357 (the condensate-alphabet lead figure). Only the number changed. The rule below is the one committed on 2026-10-20, and the shuffle seed is still 357.
 
 Written and committed on 2026-10-20, before any count table was built. The pipeline is
 `nextflow-runs/clade-splash/`; the notebook is
-`notebooks/357_clade_splash_reduced_alphabet_anchors_uniprot_reference_proteomes.ipynb`.
+`notebooks/380_clade_splash_reduced_alphabet_anchors_uniprot_reference_proteomes.ipynb`.
 
 ## Question
 

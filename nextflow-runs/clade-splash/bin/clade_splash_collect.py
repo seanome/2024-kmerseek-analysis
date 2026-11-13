@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Notebook 357: Benjamini-Hochberg q-values, the significant anchors and the counts.
+"""Notebook 380: Benjamini-Hochberg q-values, the significant anchors and the counts.
 
 Replaces `collect` in clade_splash.py (still there, unused) at the full run's scale: the
 128 test tables are 5.9 GB of parquet, and reading them all at once was killed at 32 GB.

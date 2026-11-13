@@ -1,4 +1,4 @@
-# clade-splash: notebook 357. Clade-grouped SPLASH (OASIS test) on reduced-alphabet protein
+# clade-splash: notebook 380. Clade-grouped SPLASH (OASIS test) on reduced-alphabet protein
 # anchors, UniProt reference proteomes, one species per family, NCBI classes as samples.
 #
 #   make test          (laptop) unit tests of bin/clade_splash.py
@@ -7,7 +7,7 @@
 #   make run           (Sherlock) the full run
 #   make watch         (Sherlock) attach read-only to the head's live task table
 #   make stop          (Sherlock) ask the head to shut down cleanly
-#   make pull-results  (laptop) copy the small result tables to tables/357/
+#   make pull-results  (laptop) copy the small result tables to tables/380/
 
 SHELL := /bin/bash
 
@@ -94,13 +94,13 @@ RESULT_FILES := counts.tsv significant.parquet pfam_by_anchor.parquet \
                 alignment_control.parquet top_occurrences.parquet residue_totals.json fetch_stats.tsv species/ candidates/ provenance/
 
 pull-results:
-	mkdir -p $(MAKEFILE_DIR)/../../tables/357
-	cd $(MAKEFILE_DIR)/../../tables/357 && for f in $(RESULT_FILES); do \
+	mkdir -p $(MAKEFILE_DIR)/../../tables/380
+	cd $(MAKEFILE_DIR)/../../tables/380 && for f in $(RESULT_FILES); do \
 	  rsync -av sherlock:$(REMOTE_DIR)/run/results/$$f ./$$f || exit 1; done
 
 pull-pilot:
-	mkdir -p $(MAKEFILE_DIR)/../../tables/357_pilot
-	cd $(MAKEFILE_DIR)/../../tables/357_pilot && for f in $(RESULT_FILES); do \
+	mkdir -p $(MAKEFILE_DIR)/../../tables/380_pilot
+	cd $(MAKEFILE_DIR)/../../tables/380_pilot && for f in $(RESULT_FILES); do \
 	  rsync -av sherlock:$(PILOT_DIR)/run-pilot/results/$$f ./$$f || exit 1; done
 
 running:

@@ -1,10 +1,10 @@
-"""Shared code for notebook 357 (clade-grouped SPLASH on reduced-alphabet anchors).
+"""Shared code for notebook 380 (clade-grouped SPLASH on reduced-alphabet anchors).
 
-Both the notebook and scripts/make_nb357.py import this, so the numbers in the notebook's
+Both the notebook and scripts/make_nb380.py import this, so the numbers in the notebook's
 summary paragraph and the numbers its cells print come from the same functions.
 
 The tables are what `make pull-results` in nextflow-runs/clade-splash copies to
-tables/357/. Set NB357_DIR to read another copy (the pilot is tables/357_pilot/).
+tables/380/. Set NB380_DIR to read another copy (the pilot is tables/380_pilot/).
 """
 
 from __future__ import annotations
@@ -21,7 +21,7 @@ import polars as pl
 
 ROOT = Path(__file__).resolve().parents[1]
 PIPELINE_BIN = ROOT / "nextflow-runs" / "clade-splash" / "bin"
-DATA = Path(os.environ.get("NB357_DIR", ROOT / "tables" / "357"))
+DATA = Path(os.environ.get("NB380_DIR", ROOT / "tables" / "380"))
 
 PRIMARY = ("dayhoff:13", 0)
 SETTINGS = {"dayhoff:13": (0, 5, 10), "hp:29": (0,)}
@@ -35,7 +35,7 @@ LABELLING_LABEL = {
     "shuffle_tree": "labels shuffled within each phylum",
 }
 ALPHA = 0.05
-# The pre-registered thresholds (notebooks/357_preregistration.md).
+# The pre-registered thresholds (notebooks/380_preregistration.md).
 RULE = {
     "n_significant": ("at least", 100),
     "n_tree_shuffle": ("fewer than", 5),

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Notebook 357: clade-grouped SPLASH on reduced-alphabet protein k-mers.
+"""Notebook 380: clade-grouped SPLASH on reduced-alphabet protein k-mers.
 
 An anchor is a k-mer in a reduced alphabet (Dayhoff, 6 letters, or HP, 2 letters). Its
 target is the 10 residues that follow it (after a gap of 0, 5 or 10 residues), in the full
@@ -9,7 +9,7 @@ proteome has the anchor followed by that target. The OASIS test of Baharav, Tse 
 Salzman (PNAS 2024), as implemented in refresh-bio/SPLASH, asks whether the target
 distribution differs between classes.
 
-The frozen rule is notebooks/357_preregistration.md. Subcommands, in pipeline order:
+The frozen rule is notebooks/380_preregistration.md. Subcommands, in pipeline order:
 
     select      reference proteomes + NCBI taxonomy -> one species per family, classes
                 with at least 5 species
