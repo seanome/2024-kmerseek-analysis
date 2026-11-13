@@ -1,0 +1,8 @@
+tool,variant,n_species,median_fmax,median_recall_reachable
+hmmer3_phmmer,default,9,0.321,0.535
+mmseqs2_iterative,s7,9,0.317,0.461
+hhblits,single_seq,9,0.313,0.635
+mmseqs2_seqseq,s7,9,0.31,0.413
+hmmer3_jackhmmer,n3,9,0.29,0.52
+foldseek,3di_aa,9,0.236,0.381
+prostt5,3di_from_seq,9,0.205,0.364

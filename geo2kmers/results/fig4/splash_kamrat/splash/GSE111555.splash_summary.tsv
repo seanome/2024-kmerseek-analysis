@@ -1,0 +1,2 @@
+dataset	comparison	significant_anchors	anchors_inside_one_feature	anchors_differing_between_groups	mean_with_shuffled_groups	highest_with_shuffled_groups	hits_inside_one_feature	hits_on_signature_proteins
+GSE111555	main	37881	501	6709	0.00	0	30	411

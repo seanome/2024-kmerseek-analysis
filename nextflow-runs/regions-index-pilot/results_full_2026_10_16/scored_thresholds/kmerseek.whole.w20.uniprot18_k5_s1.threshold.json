@@ -1,0 +1,13 @@
+{
+  "threshold": 2.795269587123695e-08,
+  "n_target": 37911,
+  "n_decoy": 1895,
+  "nofit": false,
+  "label": "kmerseek.whole.w20.uniprot18_k5_s1",
+  "calls_total": 6996664,
+  "decoy_calls_total": 2976171,
+  "max_decoy_rate": 0.05,
+  "features_found": 542,
+  "features_found_aligned": 1685,
+  "features_total": 7174
+}

@@ -1,0 +1,19 @@
+{
+  "kmerseek_settings": [
+    {
+      "alphabet": "massspec18",
+      "k": 8,
+      "tau": 62
+    }
+  ],
+  "comparison_tau": 66,
+  "best_coarser_on_dev": {
+    "alphabet": "hsdm17",
+    "k": 8,
+    "dev_recovery": 0.7
+  },
+  "stopped_settings": {
+    "sdm12_k4": "search still writing after 40 min with 43 GB of output for 2,750 queries (about 5,000 candidate proteins per call); cancelled"
+  },
+  "rule": "massspec18: k with the highest dev recovery, ties to the larger k. Coarser alphabet: best (alphabet, k) of hsdm17 and sdm12, sent to test only if its dev recovery beats massspec18's."
+}

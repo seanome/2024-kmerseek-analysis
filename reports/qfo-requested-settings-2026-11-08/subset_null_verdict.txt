@@ -1,0 +1,5 @@
+observed_16_30: typical ratio 1.164
+observed_16_30_no_c2h2: typical ratio 0.293
+observed_c2h2: typical ratio 2.473
+random_any: 200 draws, median 0.120, 95th 0.262, max 0.444; C2H2 p = 0.0050
+random_short: 200 draws, median 0.169, 95th 0.242, max 0.343; C2H2 p = 0.0050

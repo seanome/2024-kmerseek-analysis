@@ -1,0 +1,19 @@
+# nf-core/rnaseq 3.27.0: Salmon on the reads, no alignment, on the same April 2024 Botryllus genome
+# and annotation as params-rnaseq.yaml. Asked by Olga 2026-11-06, to time the usual fast route.
+# input and outdir are given by run_pipelines.sh.
+fasta: /home/groups/ayeletv/Index_Genome_New_April2024/ReferenceFiles/final_purged_primary.fasta
+gtf: /home/groups/ayeletv/Index_Genome_New_April2024/ReferenceFiles/Annotated_Merge_Botryllus.sofMask_CorrectedNames_FullNames.gtf
+pseudo_aligner: salmon
+skip_alignment: true
+
+# Same reads and library handling as params-rnaseq.yaml.
+skip_trimming: true
+min_mapped_reads: 0
+skip_biotype_qc: true
+
+# Only the steps from reads to gene counts, so the trace holds the cost of those.
+skip_linting: true
+skip_qc: true
+skip_multiqc: true
+skip_stringtie: true
+skip_bigwig: true

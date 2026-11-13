@@ -1,0 +1,28 @@
+{
+ "slice_gb": 1.000000547,
+ "catalog_fna_gb": 32.595788344,
+ "catalog_genes": 46775154,
+ "budget_cpu_hours": 1536.0,
+ "per_scaled": [
+  {
+   "scaled": 10,
+   "all_nine_cpu_hours_arithmetic": 77.33183575620865,
+   "any_lower_bound": false,
+   "fits_two_compute_days": true
+  },
+  {
+   "scaled": 100,
+   "all_nine_cpu_hours_arithmetic": 40.78093066543537,
+   "any_lower_bound": false,
+   "fits_two_compute_days": true
+  },
+  {
+   "scaled": 1000,
+   "all_nine_cpu_hours_arithmetic": 33.591752390933664,
+   "any_lower_bound": false,
+   "fits_two_compute_days": true
+  }
+ ],
+ "fits_at_some_scaled": true,
+ "verdict": "continue to step 2"
+}

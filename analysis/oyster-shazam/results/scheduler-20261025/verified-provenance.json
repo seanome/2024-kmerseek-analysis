@@ -1,0 +1,38 @@
+{
+  "protocol": "six-frame-standard-stop-only-X-preserved-min30-v1",
+  "original_queries": 380867,
+  "query_manifest_sha256": "f200d7916f93ca6a3ade6b024b6f45a9500fa1e744369c4eeb637b4d3c25505a",
+  "query_build_inputs_sha256": "4705ac6c70604fd4ee8056f1d42b87cd7a78e949d99e7f0921ec147dbea8dffb",
+  "source_code_sha256": {
+    "peptide_protocol.py": "1792cfaa6f0fc93538235946829827a14be80ff3fc0ec31842f01c30b6f89593",
+    "sketch_corrected_peptides.py": "4d3d112db50fca84603b8c1c682d9be5550c4b297b61eafefbc8d55d074acf30",
+    "nextflow/corrected_public_pilot.py": "3b7bb697637f4d35ca39696ff16192318ce71c96f302240dbe54cb08aff124cd",
+    "nextflow/verify_replacements.py": "8124c2965457a0eced37c383ca2655c236a62b8eaffd15d7e234fad90bc2346a",
+    "nextflow/artifacts.py": "7b3e49eb87a5905919b6dc1f992af64bcdbe55bd97838f67c326f8482869f106",
+    "nextflow/audit_completed.py": "8308dcbc00b841f9c1fc503ab1a2ad68538c1eeb3b8fa025def0c00b92b42ade"
+  },
+  "tool_versions": {
+    "sourmash": "4.9.4",
+    "sourmash_plugin_branchwater": "0.9.15",
+    "biopython": "1.88"
+  },
+  "python": "3.12.15 (main, Oct 13 2026, 16:52:04) [GCC 15.3.0]",
+  "argv": [
+    "/lscratch/olgabot/49525633/provenance-audit/code/nextflow/verify_replacements.py",
+    "/scratch/groups/ayeletv/oyster-dispatch-5712059d/work/51/09fbeb621659c4ef3147bb82d7a122/attempt-49525575/completed.json",
+    "/scratch/groups/ayeletv/oyster-migration-tests-20261025-8d7efccb/evidence.tar.gz",
+    "/lscratch/olgabot/49525633/provenance-audit/results",
+    "/home/groups/ayeletv/opt/oyster-shazam-20261023/bin/sourmash"
+  ],
+  "slurm_job_id": "49525633",
+  "reference_pilot_sha256": "36f5181b7c961e6224994e7194a9193546c634eae09635924474cf52049b4312",
+  "reference_sketch_manifest_sha256": "c9c4827d31fef82f9cca517b68059f1d52593c949e1363a2e234df0a5c44036c",
+  "reference_translation_manifest_sha256": "935e51cfc00bf10160aec2601b69e3a2a1f3d9b4545000787153af2917271ef5",
+  "reference_tool_versions": {
+    "trim_galore": "0.6.10",
+    "cutadapt": "5.2"
+  },
+  "validation": "Every query hash independently rebuilt one word at a time; corrected reference freshly rebuilt with runtime versions",
+  "scope": "380867 audited queries and SRR5945967; historical outputs remain unchanged and their missing provenance remains unknown",
+  "production_rollout": false
+}

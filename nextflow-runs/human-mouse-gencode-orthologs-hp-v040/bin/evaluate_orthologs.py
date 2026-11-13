@@ -275,6 +275,13 @@ def compute_mht(
         'bh':           mht_stats('bh'),
         'by':           mht_stats('by'),
         'two_stage_bh': mht_stats('two_stage_bh'),
+        # How many of the n tests passed the uncorrected alpha at all, and how many of
+        # those are orthologs: the report reads these to say whether the Poisson filter
+        # is filtering anything at this setting (on one run 93% of every possible pair
+        # passed p <= 0.05), and they are the denominators the recall columns are over.
+        'n_pairs_below_alpha': int(mht_df.height),
+        'n_ortholog_below_alpha': n_orth_alpha,
+        'alpha': alpha,
     }
 
     # Explicitly free the sorted MHT frame before the ROC sort to avoid
@@ -493,6 +500,8 @@ def main() -> None:
 
         f.write('=== MHT Rejections (alpha=0.05) ===\n')
         for method, s in mht_summary.items():
+            if not isinstance(s, dict):
+                continue   # the below-alpha counts beside the per-method blocks
             f.write(f'  {method:15s}: {s["rejected"]:>10,} rejected  '
                     f'TP={s["TP"]:>8,}  prec={s["precision"]:.4f}  rec={s["recall"]:.4f}\n')
 

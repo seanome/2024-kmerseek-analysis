@@ -1,0 +1,25 @@
+# kmerseek settings for notebook 360. One k per alphabet with the bits of protein20 at k = 7:
+# k = round(7 x log2(20) / log2(letters)) = 30.25 bits / log2(letters) (Olga, 2026-10-21, before any kmerseek ran).
+# mismatch_penalty: the dark set's per-alphabet extend penalty. search_memory_gb: 1.2 x the largest dark-set search
+# peak at this alphabet and k (49 searches each, a database ~1.7x this one), at least 32, or the dark set's measured
+# first ask where it lists one; search_basis says which. index_memory_gb: 126, or the dark set's measured ask.
+alphabet	ksize	mismatch_penalty	bits_per_kmer	search_memory_gb	search_time_h	index_memory_gb	search_basis
+protein20	7	0.14	30.3	55	3	126	protein20 k7, measured
+uniprot18	7	0.15	29.2	63	3	126	uniprot18 k7, measured
+hsdm17	7	0.18	28.6	77	3	126	no k7 history; hsdm17 k6 (63.9) > uniprot18 k7
+wass14	8	0.17	30.5	58	3	126	wass14 k8, measured
+sdm12	8	0.24	28.7	90	3	126	no k8 history; sdm12 k7 (75.0) > mmseqs12 k8
+mmseqs12	8	0.22	28.7	62	3	126	mmseqs12 k8, measured
+funcgroups8	10	0.29	30.0	83	3	126	no k10 history; funcgroups8 k9
+gbmr7	11	0.32	30.9	500	3	500	dark set killed at 250 GB, asked 500 (measured table)
+dayhoff6	12	0.41	31.0	182	3	126	no k12 history; dayhoff6 k9
+wwmj5	13	0.47	30.2	59	3	126	wwmj5 k13, measured
+gbmr4	15	0.67	30.0	253	3	126	dark set first ask 253 GB built, above every kill (measured table)
+polarity4	15	0.54	30.0	78	3	126	polarity4 k15, measured
+hp_lehninger_hpc3	19	0.87	30.1	84	3	126	hp_lehninger_hpc3 k19, measured
+hp_pbotc_1st_ed2	30	1.59	30.0	34	3	126	hp_pbotc_1st_ed2 k30, measured
+hp_thomas_dill2	30	1.63	30.0	48	3	126	hp_thomas_dill2 k30, measured
+hp_thomas_dill_no_c2	30	1.62	30.0	44	3	126	hp_thomas_dill_no_c2 k30, measured
+hp_lehninger2	30	1.51	30.0	32	3	126	hp_lehninger2 k30, measured
+hp_lehninger_c_nonpolar2	30	1.52	30.0	48	3	126	no k30 history; largest 2-letter k30 (hp_thomas_dill2)
+hp_kyte_doolittle2	30	1.57	30.0	48	3	126	no k30 history; largest 2-letter k30 (hp_thomas_dill2)

@@ -1,0 +1,13 @@
+{
+  "threshold": 0.024776183557415798,
+  "n_target": 15083,
+  "n_decoy": 754,
+  "nofit": false,
+  "label": "kmerseek.pfamshared.w20.dayhoff6_k9_s1",
+  "calls_total": 12718379,
+  "decoy_calls_total": 5771456,
+  "max_decoy_rate": 0.05,
+  "features_found": 493,
+  "features_found_aligned": 569,
+  "features_total": 7174
+}

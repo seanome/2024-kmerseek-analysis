@@ -1,0 +1,6 @@
+table	found	tested	listed	spearman_with_paper_fit	genes_correlated
+paper_table	631	782	782		
+paper_genome__featurecounts_s0	280	719	782	0.861	719
+paper_genome__salmon	155	725	782	0.813	725
+this_genome__featurecounts_s0	187	604	782	0.771	604
+this_genome__salmon	183	613	782	0.755	613

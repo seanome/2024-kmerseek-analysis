@@ -1,0 +1,10 @@
+{
+  "genome_matches_all": false,
+  "library": "SRR32233964",
+  "pairs": 69938926,
+  "recovered_from": "/scratch/users/olgabot/botryllus-production-preflight-49520541",
+  "recovered_scheduler_peak_kb": 63319680,
+  "prior_allocation_state": "FAILED 1:0",
+  "diagnosed_failure": "Exact gene IDs incorrectly required a single GTF isoform; successful count/index/quantification/alignment/Pfam measurements reused",
+  "gene_mapping": "Completed with exact gene IDs; multiple quantified sequences per gene still rejected"
+}

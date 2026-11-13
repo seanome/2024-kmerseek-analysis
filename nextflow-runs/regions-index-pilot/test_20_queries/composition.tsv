@@ -1,0 +1,17 @@
+landing_rule	setting	window	features	kmerseek_found	composition_found	kmerseek_only	composition_only	mcnemar_p
+aligned piece	polarity4_k11_s1	w10	1	0	0	0	0	1.0
+aligned piece	protein20_k5_s1	w20	1	1	0	1	0	1.0
+aligned piece	protein20_k5_s1	w10	1	0	0	0	0	1.0
+whole call	protein20_k5_s1	w20	1	1	0	1	0	1.0
+aligned piece	hp_lehninger2_k21_s1	w10	1	0	0	0	0	1.0
+whole call	hp_lehninger2_k21_s1	w10	1	0	0	0	0	1.0
+aligned piece	hp_pbotc_1st_ed2_k21_s1	w10	1	0	0	0	0	1.0
+aligned piece	hp_pbotc_1st_ed2_k21_s1	w20	1	0	0	0	0	1.0
+whole call	polarity4_k11_s1	w20	1	0	0	0	0	1.0
+aligned piece	polarity4_k11_s1	w20	1	0	0	0	0	1.0
+whole call	hp_pbotc_1st_ed2_k21_s1	w10	1	0	0	0	0	1.0
+whole call	polarity4_k11_s1	w10	1	0	0	0	0	1.0
+whole call	protein20_k5_s1	w10	1	0	0	0	0	1.0
+whole call	hp_lehninger2_k21_s1	w20	1	0	0	0	0	1.0
+whole call	hp_pbotc_1st_ed2_k21_s1	w20	1	0	0	0	0	1.0
+aligned piece	hp_lehninger2_k21_s1	w20	1	0	0	0	0	1.0

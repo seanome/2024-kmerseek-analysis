@@ -1,0 +1,1679 @@
+{
+  "selected_total": 5538699,
+  "total_batches": 554,
+  "source_sha256": "4312b75c216d9f62767c2457b531e80d0bbb1343a013634c44f850751e8e5f9e",
+  "completed_batches": [
+    {
+      "batch": 0,
+      "selected_anchors": 10000,
+      "anchors_extended": 8528,
+      "output_rows": 17232,
+      "output_sha256": "5f97dada71b75fc5810133e97dcf9d8f61a65bf78547b011122d965c255e6884"
+    },
+    {
+      "batch": 1,
+      "selected_anchors": 10000,
+      "anchors_extended": 9905,
+      "output_rows": 21655,
+      "output_sha256": "b8e2794946bd4d72792c7de99a1f06decbd2ec79544180f2de30854435e95b19"
+    },
+    {
+      "batch": 2,
+      "selected_anchors": 10000,
+      "anchors_extended": 9932,
+      "output_rows": 21933,
+      "output_sha256": "8abb7b6872c253755314bcb3e5b4d3ea67dd001a839f97f61a20df53ae517fd0"
+    },
+    {
+      "batch": 3,
+      "selected_anchors": 10000,
+      "anchors_extended": 9936,
+      "output_rows": 22015,
+      "output_sha256": "21c74449de8946ac3f86305d67201c71a35c18776e20daecd0ece4e91ee91aa8"
+    },
+    {
+      "batch": 4,
+      "selected_anchors": 10000,
+      "anchors_extended": 9859,
+      "output_rows": 21698,
+      "output_sha256": "61e9e271f0c6ee59f099334945ec15b8fd8b2dbf02b78223ad265834dc132c78"
+    },
+    {
+      "batch": 5,
+      "selected_anchors": 10000,
+      "anchors_extended": 9864,
+      "output_rows": 22484,
+      "output_sha256": "670a573fdaf83a0770770d76d5d25c3b528b5d294b01b17b481e631f9e9bb01e"
+    },
+    {
+      "batch": 6,
+      "selected_anchors": 10000,
+      "anchors_extended": 9950,
+      "output_rows": 21570,
+      "output_sha256": "a4bc4eb5adcfd98d93881d21a1e3d04ffa83792d4230f22a3a9e437c018a053d"
+    },
+    {
+      "batch": 7,
+      "selected_anchors": 10000,
+      "anchors_extended": 9947,
+      "output_rows": 21684,
+      "output_sha256": "a293a37124cb777761e556f75d7c0675b21869d187926dcbe85f413b4fcf61e9"
+    },
+    {
+      "batch": 8,
+      "selected_anchors": 10000,
+      "anchors_extended": 9949,
+      "output_rows": 21853,
+      "output_sha256": "8549c8d22f2e2d924a932916a46a39b812bda56a7752eba6537a2409726d7a82"
+    },
+    {
+      "batch": 9,
+      "selected_anchors": 10000,
+      "anchors_extended": 9912,
+      "output_rows": 22006,
+      "output_sha256": "5199f65e14a0cfde2da6a192e47019014ec97904ef59127ad1cb55b91bb2a885"
+    },
+    {
+      "batch": 10,
+      "selected_anchors": 10000,
+      "anchors_extended": 9946,
+      "output_rows": 22542,
+      "output_sha256": "5d26b009c5593e40e7e7518e4e4976bf53b07ea9cdfc07d33eb1b86429f68038"
+    },
+    {
+      "batch": 11,
+      "selected_anchors": 10000,
+      "anchors_extended": 9960,
+      "output_rows": 21627,
+      "output_sha256": "c87cd5ad0fbb07a6a97329aaf26ed55294fad67ec1bde585a67eacdaf2fd87f7"
+    },
+    {
+      "batch": 12,
+      "selected_anchors": 10000,
+      "anchors_extended": 9841,
+      "output_rows": 21897,
+      "output_sha256": "75da9ebaabe2ca4435efc3047b60dd454d9eb402ceeec3cab7e8e68ed0855d5b"
+    },
+    {
+      "batch": 13,
+      "selected_anchors": 10000,
+      "anchors_extended": 9902,
+      "output_rows": 22050,
+      "output_sha256": "2dfe6c941aed297288bca84c130c088b59e471a0b1796e23f8846e758faaccfe"
+    },
+    {
+      "batch": 14,
+      "selected_anchors": 10000,
+      "anchors_extended": 9942,
+      "output_rows": 22113,
+      "output_sha256": "90160ba4fe3cfdd12b18bc27d6b2a7b8aaf394f5431e9653dd39af83cf376de7"
+    },
+    {
+      "batch": 15,
+      "selected_anchors": 10000,
+      "anchors_extended": 9931,
+      "output_rows": 22437,
+      "output_sha256": "5d20877a34c291319b7294291a33d4a3e6b5f765e05f2dab03f8c015e7269acd"
+    },
+    {
+      "batch": 16,
+      "selected_anchors": 10000,
+      "anchors_extended": 9928,
+      "output_rows": 22225,
+      "output_sha256": "a27b43aa7bcaaec5b9a19dda150facd1dd1733e2a868750f9ea946eb12ab1130"
+    },
+    {
+      "batch": 17,
+      "selected_anchors": 10000,
+      "anchors_extended": 9700,
+      "output_rows": 21356,
+      "output_sha256": "cc6c20299b15e344a411fc1858dfdcc3ff77d7b2a9c244a326901328f6db78d9"
+    },
+    {
+      "batch": 18,
+      "selected_anchors": 10000,
+      "anchors_extended": 9949,
+      "output_rows": 21698,
+      "output_sha256": "e9547116eb21a6586989b1fddb9bc7767465c5090ca21365e3ea5270ada17618"
+    },
+    {
+      "batch": 19,
+      "selected_anchors": 10000,
+      "anchors_extended": 9958,
+      "output_rows": 21652,
+      "output_sha256": "bf9811f593615f57d18e0b5fe5554104b6d13a1fa24eba2817f0244499009265"
+    },
+    {
+      "batch": 20,
+      "selected_anchors": 10000,
+      "anchors_extended": 9938,
+      "output_rows": 21875,
+      "output_sha256": "b41ba4ecdd3d34d5b78669c1c4560a761cf8974aa4b32669606ed3855d59a27d"
+    },
+    {
+      "batch": 21,
+      "selected_anchors": 10000,
+      "anchors_extended": 9925,
+      "output_rows": 21927,
+      "output_sha256": "99781c4eecf9d314494adf526e4f1ac5bafd9357272f2af3c9d468308bb8d389"
+    },
+    {
+      "batch": 22,
+      "selected_anchors": 10000,
+      "anchors_extended": 9972,
+      "output_rows": 21514,
+      "output_sha256": "556038d5cc3115960526abe1c2090dacabd1e5055cd87bc8436a8b3209ef6e60"
+    },
+    {
+      "batch": 23,
+      "selected_anchors": 10000,
+      "anchors_extended": 9942,
+      "output_rows": 21539,
+      "output_sha256": "0ac044ce39d662385b4f3a7e32fdcc3b5752796af8ddcd89fc732b88bafd0d90"
+    },
+    {
+      "batch": 24,
+      "selected_anchors": 10000,
+      "anchors_extended": 9937,
+      "output_rows": 21587,
+      "output_sha256": "8e22b9a46949e2f64bb93a7006d7319cf78ab79a7cacc231c3ae1715a3d78ef0"
+    },
+    {
+      "batch": 25,
+      "selected_anchors": 10000,
+      "anchors_extended": 9957,
+      "output_rows": 21537,
+      "output_sha256": "35e6004801644a191905017d1d525ef903d7151557bd4a45724f2db894c5fc58"
+    },
+    {
+      "batch": 26,
+      "selected_anchors": 10000,
+      "anchors_extended": 9951,
+      "output_rows": 21562,
+      "output_sha256": "c310e3f49636647503fa69853a5d9eb1044232dccefe8020820cea373ddf26a2"
+    },
+    {
+      "batch": 27,
+      "selected_anchors": 10000,
+      "anchors_extended": 9751,
+      "output_rows": 21159,
+      "output_sha256": "21bd25b8d2d818b05be0a9f992696a2f008511b69d740b4a7ab38e2817f2d70c"
+    },
+    {
+      "batch": 28,
+      "selected_anchors": 10000,
+      "anchors_extended": 9930,
+      "output_rows": 21664,
+      "output_sha256": "fc075e0bf1dd9d98f881b2a6a86f4a9fb02cbf7e589c9ae94f0050ba5ab2ddfd"
+    },
+    {
+      "batch": 29,
+      "selected_anchors": 10000,
+      "anchors_extended": 9947,
+      "output_rows": 22226,
+      "output_sha256": "3316b23a1777dda59862a429bcbe153590d8220d871ac1614f7450eea87ac924"
+    },
+    {
+      "batch": 30,
+      "selected_anchors": 10000,
+      "anchors_extended": 9935,
+      "output_rows": 22212,
+      "output_sha256": "2c117bdd3742dbfd1a57ed7ef86841716334c4d073de459e71cb1fcfaf97c034"
+    },
+    {
+      "batch": 31,
+      "selected_anchors": 10000,
+      "anchors_extended": 9960,
+      "output_rows": 21438,
+      "output_sha256": "d04365a04eabba9f27846dc0453329d710d43ad5125aa774d225b41497ff9123"
+    },
+    {
+      "batch": 32,
+      "selected_anchors": 10000,
+      "anchors_extended": 9929,
+      "output_rows": 21533,
+      "output_sha256": "cc64bf94d1835d31900aae3dfc9a1bb06877554fd3d5cdd88e8af4878c3d4e72"
+    },
+    {
+      "batch": 33,
+      "selected_anchors": 10000,
+      "anchors_extended": 9959,
+      "output_rows": 21060,
+      "output_sha256": "a201edda26cc83832ea712ef406204b1c6e22f721c9d4e0c286c7d4b6cf59756"
+    },
+    {
+      "batch": 34,
+      "selected_anchors": 10000,
+      "anchors_extended": 9939,
+      "output_rows": 21656,
+      "output_sha256": "24c8ac1cb8914ee8375c3b7483e4263e3930a88a7b72075e275e60eb22c92b4a"
+    },
+    {
+      "batch": 35,
+      "selected_anchors": 10000,
+      "anchors_extended": 9939,
+      "output_rows": 22253,
+      "output_sha256": "7d843dd6b6df7faa07d50105423711485d381896ff8bb9f1886663f76e8bb8fd"
+    },
+    {
+      "batch": 36,
+      "selected_anchors": 10000,
+      "anchors_extended": 9934,
+      "output_rows": 21795,
+      "output_sha256": "346a8dda43e99b521ff20e32fca0a94074662966b243b065db7e433cf702eb3b"
+    },
+    {
+      "batch": 37,
+      "selected_anchors": 10000,
+      "anchors_extended": 9704,
+      "output_rows": 21503,
+      "output_sha256": "d9803f1a1718f87fdc0b565e9b3b47bed30deeea650f25fd46ab4b072422930e"
+    },
+    {
+      "batch": 38,
+      "selected_anchors": 10000,
+      "anchors_extended": 9910,
+      "output_rows": 21827,
+      "output_sha256": "7aba4ba195e6083d1e1d8b6555735bc6b0e060ef2b1d7d6a3c978fd2eca05ab8"
+    },
+    {
+      "batch": 39,
+      "selected_anchors": 10000,
+      "anchors_extended": 9929,
+      "output_rows": 22041,
+      "output_sha256": "41c9107af927fc8e2d9a67a6b6027a9c3c3a3f34e60a92006996c73fedefb9ff"
+    },
+    {
+      "batch": 40,
+      "selected_anchors": 10000,
+      "anchors_extended": 9927,
+      "output_rows": 21749,
+      "output_sha256": "43e4475fb48b0579466eff97a6d070b91f79d61b0a49d0eb08ac5695eeeb1ae4"
+    },
+    {
+      "batch": 41,
+      "selected_anchors": 10000,
+      "anchors_extended": 9963,
+      "output_rows": 21581,
+      "output_sha256": "0f21d5a743e0d2cca15e1d934f921df28ff072c934eeb108e7cf389b236b6a64"
+    },
+    {
+      "batch": 42,
+      "selected_anchors": 10000,
+      "anchors_extended": 9916,
+      "output_rows": 22066,
+      "output_sha256": "a46024d91c3ff86337592c85abbeed80a35f22475775259d23bd0db00ba807c9"
+    },
+    {
+      "batch": 43,
+      "selected_anchors": 10000,
+      "anchors_extended": 9941,
+      "output_rows": 21703,
+      "output_sha256": "a36e5644adcb2c0f5683bb68f83f76c062d7ec4dd68ff7beadc234349339151f"
+    },
+    {
+      "batch": 44,
+      "selected_anchors": 10000,
+      "anchors_extended": 9958,
+      "output_rows": 21923,
+      "output_sha256": "e3c2b4dfca0cd394b36920311a02997e71c9de53f913fc2e6919bed8e38d112f"
+    },
+    {
+      "batch": 45,
+      "selected_anchors": 10000,
+      "anchors_extended": 9898,
+      "output_rows": 21678,
+      "output_sha256": "3b0bb99e9e1e27cd72225e97973e6f8aabcc6b71a73bc1b2cfef35e17da642d2"
+    },
+    {
+      "batch": 46,
+      "selected_anchors": 10000,
+      "anchors_extended": 9929,
+      "output_rows": 22166,
+      "output_sha256": "668f580b8e606c253d1daaca10a6bba7702f2408dea25b105db26b46a70bfec4"
+    },
+    {
+      "batch": 47,
+      "selected_anchors": 10000,
+      "anchors_extended": 9930,
+      "output_rows": 22103,
+      "output_sha256": "00864d454bc5c10107a12c2a6aefd4a1972f7e17342c4b4929ba5197d55766ff"
+    },
+    {
+      "batch": 48,
+      "selected_anchors": 10000,
+      "anchors_extended": 9918,
+      "output_rows": 21512,
+      "output_sha256": "5e75fce8c66cab9d3d6938d6b9426480e63ee11a81ea96253a35f21e74984249"
+    },
+    {
+      "batch": 49,
+      "selected_anchors": 10000,
+      "anchors_extended": 9919,
+      "output_rows": 21908,
+      "output_sha256": "3c712782cff1ac5e51e0fcedc095c77ed794b3e8f5ab8403e5d9b342a6cdd519"
+    },
+    {
+      "batch": 50,
+      "selected_anchors": 10000,
+      "anchors_extended": 9744,
+      "output_rows": 21543,
+      "output_sha256": "ca0c47ca921b051b9646e00a2df9e29b913b4832693a53d1ac88ea5459fab3d2"
+    },
+    {
+      "batch": 51,
+      "selected_anchors": 10000,
+      "anchors_extended": 9944,
+      "output_rows": 21964,
+      "output_sha256": "72bea77cc76c1fb47d60ec84b7fd7f4e111f200b947e75746cf0c77510775736"
+    },
+    {
+      "batch": 52,
+      "selected_anchors": 10000,
+      "anchors_extended": 9927,
+      "output_rows": 21737,
+      "output_sha256": "0d3600eb9ad2adb9e451bff88c6566037b0c32a27af15a97f47c574fa89af234"
+    },
+    {
+      "batch": 53,
+      "selected_anchors": 10000,
+      "anchors_extended": 9503,
+      "output_rows": 20205,
+      "output_sha256": "2a4d7e1c0fa158172ac35ef577e2254286acebd054c37c1ac61277e909d35218"
+    },
+    {
+      "batch": 54,
+      "selected_anchors": 10000,
+      "anchors_extended": 9952,
+      "output_rows": 20730,
+      "output_sha256": "6e882ed572ee7edcd9819bca38a125916d28be57709aeccf31057bb293e14ca3"
+    },
+    {
+      "batch": 55,
+      "selected_anchors": 10000,
+      "anchors_extended": 9916,
+      "output_rows": 21585,
+      "output_sha256": "6e6295ee41e097310cefbd2e315b1ab8868783337d7cd9a7029cc942cb6b58fc"
+    },
+    {
+      "batch": 56,
+      "selected_anchors": 10000,
+      "anchors_extended": 9967,
+      "output_rows": 21284,
+      "output_sha256": "11cd6743a91fb5b64c021c927470442311780718eb23bb268794d08b550048f0"
+    },
+    {
+      "batch": 57,
+      "selected_anchors": 10000,
+      "anchors_extended": 9951,
+      "output_rows": 20972,
+      "output_sha256": "f50a2dbb59722e6a031a4a0aa48949a0f643ad8ef4c002d0b2d2559a0593c076"
+    },
+    {
+      "batch": 58,
+      "selected_anchors": 10000,
+      "anchors_extended": 9923,
+      "output_rows": 21153,
+      "output_sha256": "f0169ed0579c9580b1ac27d5184643b59271d0bc4e08af4c604e59ba07c3109b"
+    },
+    {
+      "batch": 59,
+      "selected_anchors": 10000,
+      "anchors_extended": 9933,
+      "output_rows": 21727,
+      "output_sha256": "544d9a20c1c9c389e4416bfd92857c75f159563f583a09beb70b5d02d3f3f4d6"
+    },
+    {
+      "batch": 60,
+      "selected_anchors": 10000,
+      "anchors_extended": 9945,
+      "output_rows": 21730,
+      "output_sha256": "3028884dc5b776fefe52ad129de34a4baf0de11537ac897286f6b6d6c5d5dbc9"
+    },
+    {
+      "batch": 61,
+      "selected_anchors": 10000,
+      "anchors_extended": 9943,
+      "output_rows": 21709,
+      "output_sha256": "c36a19b691b6bcd4c71b37e130de9350a9866caa692dc40dce97536ffe497220"
+    },
+    {
+      "batch": 62,
+      "selected_anchors": 10000,
+      "anchors_extended": 9798,
+      "output_rows": 21142,
+      "output_sha256": "9f7b89648442167ad10934873c65e45a037ce2f5528e08abfe2675db1461d74d"
+    },
+    {
+      "batch": 63,
+      "selected_anchors": 10000,
+      "anchors_extended": 9959,
+      "output_rows": 21199,
+      "output_sha256": "73424e7fa2188b916e96a339915674fe88d897d94b4dc11d83788a0249e6c089"
+    },
+    {
+      "batch": 64,
+      "selected_anchors": 10000,
+      "anchors_extended": 9937,
+      "output_rows": 21810,
+      "output_sha256": "36f203af78fa00aa36e0c5c982c3e10cc11bb0faa36789ef80c7a352cc8d62dc"
+    },
+    {
+      "batch": 65,
+      "selected_anchors": 10000,
+      "anchors_extended": 9957,
+      "output_rows": 20160,
+      "output_sha256": "2283dd484c27615b6b6d1160c90ae97eedb0bfcc92ce9b55298eb496025478c9"
+    },
+    {
+      "batch": 66,
+      "selected_anchors": 10000,
+      "anchors_extended": 9950,
+      "output_rows": 20486,
+      "output_sha256": "ec45511b5b8758b3a809a5ba1b00503683d5ffcbc9fb4ca5ede0e9ac313b679a"
+    },
+    {
+      "batch": 67,
+      "selected_anchors": 10000,
+      "anchors_extended": 9948,
+      "output_rows": 21394,
+      "output_sha256": "48fdf0772b4fc5c85d4a93c7811e7727b384d94d40a565fbecde1c0e10e460aa"
+    },
+    {
+      "batch": 68,
+      "selected_anchors": 10000,
+      "anchors_extended": 9950,
+      "output_rows": 21245,
+      "output_sha256": "ad274f087f8a02752cf5afda21a68db89775b3c142c3c657787c5c62e2de73ff"
+    },
+    {
+      "batch": 69,
+      "selected_anchors": 10000,
+      "anchors_extended": 9906,
+      "output_rows": 20908,
+      "output_sha256": "86981efd7ea70cdf100db6c76656d96eb70e6de74cc9ee4c3313451a1caa5dc7"
+    },
+    {
+      "batch": 70,
+      "selected_anchors": 10000,
+      "anchors_extended": 9960,
+      "output_rows": 21014,
+      "output_sha256": "8eddc54f0b90997bd637791f2bfb228e29c0c01d046ef41779c0eb670f4e6d9c"
+    },
+    {
+      "batch": 71,
+      "selected_anchors": 10000,
+      "anchors_extended": 9952,
+      "output_rows": 21209,
+      "output_sha256": "b470b0ee4471a799ba10f011fc9eb55bc40ac3a0f5dcbc9dad2807a571d8fe90"
+    },
+    {
+      "batch": 72,
+      "selected_anchors": 10000,
+      "anchors_extended": 9935,
+      "output_rows": 20558,
+      "output_sha256": "61dc29894315a0427a523d59a9f8ab9bd3521f50a043dcb8e5821dabf03efe65"
+    },
+    {
+      "batch": 73,
+      "selected_anchors": 10000,
+      "anchors_extended": 9889,
+      "output_rows": 21218,
+      "output_sha256": "42bf22b9ab8b8087f574ec7b67a738c8ab9bdb9f58e9f5cb91733d5010f0f299"
+    },
+    {
+      "batch": 74,
+      "selected_anchors": 10000,
+      "anchors_extended": 9849,
+      "output_rows": 21509,
+      "output_sha256": "da4fbb58462a93555aafcf93a4bc95f0159c60f8ae329d256bc8a720205d7af7"
+    },
+    {
+      "batch": 75,
+      "selected_anchors": 10000,
+      "anchors_extended": 9960,
+      "output_rows": 20871,
+      "output_sha256": "130b322fb1f68c8daa0462684e564098099bc1cdd507dce04ac65c6c5e5bf7ac"
+    },
+    {
+      "batch": 76,
+      "selected_anchors": 10000,
+      "anchors_extended": 9942,
+      "output_rows": 21149,
+      "output_sha256": "c856eb7ee2a5da816c5864e6e96ae51f4c8b138d2a2916db8fdad0d13b1626d7"
+    },
+    {
+      "batch": 77,
+      "selected_anchors": 10000,
+      "anchors_extended": 9956,
+      "output_rows": 21366,
+      "output_sha256": "65b08844f86a499eb8885cfefd17573426c5048d87994736496f0bde3fad0764"
+    },
+    {
+      "batch": 78,
+      "selected_anchors": 10000,
+      "anchors_extended": 9953,
+      "output_rows": 21633,
+      "output_sha256": "d93d6f6b95e1d5a9dadd7dcf727ea8334056b27dcce4b47f04c1af28e22cd6d0"
+    },
+    {
+      "batch": 79,
+      "selected_anchors": 10000,
+      "anchors_extended": 9940,
+      "output_rows": 21565,
+      "output_sha256": "3c8921858a17f6cfcd0c7c588ea6d31c2adaf4c50ec290b8df3e60c0111a9769"
+    },
+    {
+      "batch": 80,
+      "selected_anchors": 10000,
+      "anchors_extended": 9957,
+      "output_rows": 21993,
+      "output_sha256": "210a5961c9fd688037304408fbe99d4b63670c55c70ae6a64f9a75361bbbc145"
+    },
+    {
+      "batch": 81,
+      "selected_anchors": 10000,
+      "anchors_extended": 9943,
+      "output_rows": 21402,
+      "output_sha256": "fbde832f040ffa7f7329ac00d954fc0922834eb8311da9718ee76c51f7dd46ef"
+    },
+    {
+      "batch": 82,
+      "selected_anchors": 10000,
+      "anchors_extended": 9920,
+      "output_rows": 22301,
+      "output_sha256": "aa74c5f1ad167b66bbe6e7d32fcb0d42aa5412e42b06b17820b4ee10ce202e42"
+    },
+    {
+      "batch": 83,
+      "selected_anchors": 10000,
+      "anchors_extended": 9769,
+      "output_rows": 21094,
+      "output_sha256": "2fdef92f54a74dab899d8214ba6706f7f6ccd81abe3e69070d99f41a4f297540"
+    },
+    {
+      "batch": 84,
+      "selected_anchors": 10000,
+      "anchors_extended": 9953,
+      "output_rows": 21234,
+      "output_sha256": "bf1d49be25c9ebbea011b12971793b385bcaf0fe39b24675fe32e781bc1fbbcb"
+    },
+    {
+      "batch": 85,
+      "selected_anchors": 10000,
+      "anchors_extended": 9938,
+      "output_rows": 21813,
+      "output_sha256": "3a257315121394d6fc3823de5dbee8bd302d541b15885c1a20153dcf43f5da83"
+    },
+    {
+      "batch": 86,
+      "selected_anchors": 10000,
+      "anchors_extended": 9960,
+      "output_rows": 21219,
+      "output_sha256": "0d9eecef87531c9cb8803a2d09487b207ab02f0ad450a7d05a38084151e63ec9"
+    },
+    {
+      "batch": 87,
+      "selected_anchors": 10000,
+      "anchors_extended": 9939,
+      "output_rows": 21091,
+      "output_sha256": "37a79ecf5d876d4a8bc5e45963bb7a4cdb1353eeb72c51ce397580174de93638"
+    },
+    {
+      "batch": 88,
+      "selected_anchors": 10000,
+      "anchors_extended": 9375,
+      "output_rows": 20054,
+      "output_sha256": "602fc5635456c773c63b0c06ae572027ad3a5d0e01e9741fa0d40d9f0479163a"
+    },
+    {
+      "batch": 89,
+      "selected_anchors": 10000,
+      "anchors_extended": 9956,
+      "output_rows": 21221,
+      "output_sha256": "479109274a0553c40d58af7174ced027b4b149a37a2628efd2b08f769cd4841c"
+    },
+    {
+      "batch": 90,
+      "selected_anchors": 10000,
+      "anchors_extended": 9934,
+      "output_rows": 21912,
+      "output_sha256": "4c84965b8dd20da259364813583a70fede05af25eb145c196f92da190f94da54"
+    },
+    {
+      "batch": 91,
+      "selected_anchors": 10000,
+      "anchors_extended": 9967,
+      "output_rows": 21803,
+      "output_sha256": "785b166e5968e01fad49362135d42374ec06c5cd169277b19c666966f4155019"
+    },
+    {
+      "batch": 92,
+      "selected_anchors": 10000,
+      "anchors_extended": 9955,
+      "output_rows": 21926,
+      "output_sha256": "3a7f1d2e476ce612d7c1c325cf236587f13af198b65a5d4a1b1dfa18ba0ea05f"
+    },
+    {
+      "batch": 93,
+      "selected_anchors": 10000,
+      "anchors_extended": 9936,
+      "output_rows": 21869,
+      "output_sha256": "f816352d80dbeef9355079d490a342e09028f03f0319917539b322de040464a5"
+    },
+    {
+      "batch": 94,
+      "selected_anchors": 10000,
+      "anchors_extended": 9803,
+      "output_rows": 21339,
+      "output_sha256": "2fe95689dcebbe0cd2bc14780d955e4e67479a7314919d3514ec15348f93b003"
+    },
+    {
+      "batch": 95,
+      "selected_anchors": 10000,
+      "anchors_extended": 9942,
+      "output_rows": 21318,
+      "output_sha256": "61ed6a7785f999ab4a39808e65c184bc5798a9b25ed3bcb86d2136210a936c06"
+    },
+    {
+      "batch": 96,
+      "selected_anchors": 10000,
+      "anchors_extended": 9952,
+      "output_rows": 21098,
+      "output_sha256": "dcf8ea0e1b4ff201e8bf9d6c108083f6fa448945470615573b6f5bc1f75a2208"
+    },
+    {
+      "batch": 97,
+      "selected_anchors": 10000,
+      "anchors_extended": 9944,
+      "output_rows": 21378,
+      "output_sha256": "b60adab2041528740c857ef511416d1f030cb8885f44d9988b5b3448223931e2"
+    },
+    {
+      "batch": 98,
+      "selected_anchors": 10000,
+      "anchors_extended": 9965,
+      "output_rows": 21154,
+      "output_sha256": "fd4b5cc1d935c855a92a084ed68d25107d4f55a035632873ff1f6884907f13bf"
+    },
+    {
+      "batch": 99,
+      "selected_anchors": 10000,
+      "anchors_extended": 9965,
+      "output_rows": 21646,
+      "output_sha256": "e2a0c99081feee976efef059cca46525641df669ddac208ec578018b10467d86"
+    },
+    {
+      "batch": 100,
+      "selected_anchors": 10000,
+      "anchors_extended": 9923,
+      "output_rows": 21300,
+      "output_sha256": "e75b089480063257589a471d33e30663b740c6b1f9d736116cf3b38e1f132f0d"
+    },
+    {
+      "batch": 101,
+      "selected_anchors": 10000,
+      "anchors_extended": 9789,
+      "output_rows": 20719,
+      "output_sha256": "ccde619c4fcaf6d2b23fde7d4a8657ee43172fe446c2ae70a29ea5a287b92f19"
+    },
+    {
+      "batch": 102,
+      "selected_anchors": 10000,
+      "anchors_extended": 9957,
+      "output_rows": 21828,
+      "output_sha256": "59a85705deda8133b9868ecaf3ced1619c2018c81714c51a90eb8882c74871e7"
+    },
+    {
+      "batch": 103,
+      "selected_anchors": 10000,
+      "anchors_extended": 9967,
+      "output_rows": 20621,
+      "output_sha256": "f3805db935b725223884b19935b8a59033eb12e5172bde302ad13a8709e7d18d"
+    },
+    {
+      "batch": 104,
+      "selected_anchors": 10000,
+      "anchors_extended": 9936,
+      "output_rows": 20901,
+      "output_sha256": "30cbc4597df1e4e7091372198d08bef897b3b6d874db97eb98049d99b66dc018"
+    },
+    {
+      "batch": 105,
+      "selected_anchors": 10000,
+      "anchors_extended": 9933,
+      "output_rows": 21224,
+      "output_sha256": "d18cc56be8d6786e15d265637eb7fa269197ab62b1431f4852b2de7b98831437"
+    },
+    {
+      "batch": 106,
+      "selected_anchors": 10000,
+      "anchors_extended": 9964,
+      "output_rows": 20848,
+      "output_sha256": "1431bc905340a5617d6beb20f6e320cd4495b12a9094a801e813447ecac9ca9d"
+    },
+    {
+      "batch": 107,
+      "selected_anchors": 10000,
+      "anchors_extended": 9952,
+      "output_rows": 21399,
+      "output_sha256": "5b58f84e64a8782647ac6aeee86e82b27cb3b3a49051716cd10d0641fd3bcb9e"
+    },
+    {
+      "batch": 108,
+      "selected_anchors": 10000,
+      "anchors_extended": 9867,
+      "output_rows": 21264,
+      "output_sha256": "88cd9dfbfc830338317c0b05fcfe241d154bc2f84a704cc48841f5532ed0290a"
+    },
+    {
+      "batch": 109,
+      "selected_anchors": 10000,
+      "anchors_extended": 9941,
+      "output_rows": 21450,
+      "output_sha256": "b000035a2e487daf0a2551a049e5bdff332d37702cf31fc2b869060a65f4bbd5"
+    },
+    {
+      "batch": 110,
+      "selected_anchors": 10000,
+      "anchors_extended": 9962,
+      "output_rows": 20995,
+      "output_sha256": "54be080cfd37aa4c8b8cdb22f602daf2d5e08e0cc3cceb460aeca7f4dceed143"
+    },
+    {
+      "batch": 111,
+      "selected_anchors": 10000,
+      "anchors_extended": 9930,
+      "output_rows": 21585,
+      "output_sha256": "1af73ed206390b3aba8b8a67ea5833c0c2561a87ad5db1cfe3793f5f509de7c2"
+    },
+    {
+      "batch": 112,
+      "selected_anchors": 10000,
+      "anchors_extended": 9956,
+      "output_rows": 21555,
+      "output_sha256": "dd92d8c832a130baf9de96feaa4025b49af63eebad2a33628a0a740741f5172f"
+    },
+    {
+      "batch": 113,
+      "selected_anchors": 10000,
+      "anchors_extended": 9947,
+      "output_rows": 21784,
+      "output_sha256": "14369fe155c2194a38a7058b80531b0aeaa2c4ec44d1f3f0eb08e9c365c8284b"
+    },
+    {
+      "batch": 114,
+      "selected_anchors": 10000,
+      "anchors_extended": 9966,
+      "output_rows": 21689,
+      "output_sha256": "d01ed46e744750d58f42ea4eac240c1848ece5c84caea1e4238a12d515b2f23e"
+    },
+    {
+      "batch": 115,
+      "selected_anchors": 10000,
+      "anchors_extended": 9953,
+      "output_rows": 21592,
+      "output_sha256": "4b2f77090723e49218dc5be08f57dfec64affbe9be36866e575f1fdae5ccf5df"
+    },
+    {
+      "batch": 116,
+      "selected_anchors": 10000,
+      "anchors_extended": 9821,
+      "output_rows": 21673,
+      "output_sha256": "8d839ed1a9b08cbcf5089c43ec89cccec755d06c0009197490d952c88aee20c5"
+    },
+    {
+      "batch": 117,
+      "selected_anchors": 10000,
+      "anchors_extended": 9797,
+      "output_rows": 21504,
+      "output_sha256": "5150d6856c0f6fff66ac6b9dbcc22866732474383c59806f91feb3a075e70b89"
+    },
+    {
+      "batch": 118,
+      "selected_anchors": 10000,
+      "anchors_extended": 9906,
+      "output_rows": 21807,
+      "output_sha256": "ecc0bf72b0878682fd982fa16c9d61eaedd4ce22a5a547a9cc8b86c765db3397"
+    },
+    {
+      "batch": 119,
+      "selected_anchors": 10000,
+      "anchors_extended": 9900,
+      "output_rows": 21792,
+      "output_sha256": "337a2a36fe25b3735486f4ba313f54f73c5166ef33d04584a2a8b7a64c36d7b6"
+    },
+    {
+      "batch": 120,
+      "selected_anchors": 10000,
+      "anchors_extended": 9916,
+      "output_rows": 21457,
+      "output_sha256": "0bfee51bd18fd10c8726cc50ac42fbafcd59785b6817a92afb9b11f0fdd8bc82"
+    },
+    {
+      "batch": 121,
+      "selected_anchors": 10000,
+      "anchors_extended": 9929,
+      "output_rows": 22091,
+      "output_sha256": "dea849dc7fb15b1a8be1cb06c17d897d5596df1d55c9d380c8060689db034abf"
+    },
+    {
+      "batch": 122,
+      "selected_anchors": 10000,
+      "anchors_extended": 9058,
+      "output_rows": 20083,
+      "output_sha256": "4ffee4979f05be79bc0529743868071f66e51fe74d2118f33e52d268f60443e1"
+    },
+    {
+      "batch": 123,
+      "selected_anchors": 10000,
+      "anchors_extended": 9917,
+      "output_rows": 21916,
+      "output_sha256": "63c11333706b2fe0cb71e6771fde3ef2f71fe932cedd334baab2cadde8f148da"
+    },
+    {
+      "batch": 124,
+      "selected_anchors": 10000,
+      "anchors_extended": 9906,
+      "output_rows": 21634,
+      "output_sha256": "89f146c12933db33b16741da01ed8e9d9267e4628649bd7c9130995b60a4df72"
+    },
+    {
+      "batch": 125,
+      "selected_anchors": 10000,
+      "anchors_extended": 9910,
+      "output_rows": 21419,
+      "output_sha256": "53efe464e80f94572761b98f3ee73dfdb6468a42c78c9798f77ee9dca1736b9a"
+    },
+    {
+      "batch": 126,
+      "selected_anchors": 10000,
+      "anchors_extended": 9953,
+      "output_rows": 21659,
+      "output_sha256": "fee9ebf1eb9077949fd0d77efca028b4762a64252279a381142afeac852c4f6d"
+    },
+    {
+      "batch": 127,
+      "selected_anchors": 10000,
+      "anchors_extended": 9710,
+      "output_rows": 21257,
+      "output_sha256": "5db4acf405c8b53e405ec890be4655d714875e7a315f25055a2b88859a1e88ee"
+    },
+    {
+      "batch": 128,
+      "selected_anchors": 10000,
+      "anchors_extended": 9957,
+      "output_rows": 21835,
+      "output_sha256": "f84b0517950b45d124bf181f56712265f68656cc4b3c71da05c3ad3f91bf4c93"
+    },
+    {
+      "batch": 129,
+      "selected_anchors": 10000,
+      "anchors_extended": 9940,
+      "output_rows": 21361,
+      "output_sha256": "736b9d0575be0a94ade2ae33611154821cae43ab41e39501b5ad0d4107c80b0a"
+    },
+    {
+      "batch": 130,
+      "selected_anchors": 10000,
+      "anchors_extended": 9967,
+      "output_rows": 21533,
+      "output_sha256": "a3df19b9400644a611ee7470098ef29c0df03898997c95aed2d06e0bdbc443b7"
+    },
+    {
+      "batch": 131,
+      "selected_anchors": 10000,
+      "anchors_extended": 9954,
+      "output_rows": 21099,
+      "output_sha256": "b2a13b8b0f31a9a9e1f538a98d4aef54a4e88d2d27574f6541b2d4fc50d3fc21"
+    },
+    {
+      "batch": 132,
+      "selected_anchors": 10000,
+      "anchors_extended": 9937,
+      "output_rows": 21835,
+      "output_sha256": "e09126f5ea73525cf713a93678f62a608e4003a5194f73f101431786da6c0c8c"
+    },
+    {
+      "batch": 133,
+      "selected_anchors": 10000,
+      "anchors_extended": 9950,
+      "output_rows": 22097,
+      "output_sha256": "6a902025bad6e46849fb32457e8c8e04ce3783d843c4cd7f2063055d5b4ebdc4"
+    },
+    {
+      "batch": 134,
+      "selected_anchors": 10000,
+      "anchors_extended": 9948,
+      "output_rows": 21768,
+      "output_sha256": "d50c72a363ceab6358e8b4d81f7a3076eb226e8b4e6ed6c75a56ce8e924ecd05"
+    },
+    {
+      "batch": 135,
+      "selected_anchors": 10000,
+      "anchors_extended": 9914,
+      "output_rows": 21742,
+      "output_sha256": "51899b898853b823a410df4c350534f50fcbe3a1cdd82fbc9db31ab83018e03b"
+    },
+    {
+      "batch": 136,
+      "selected_anchors": 10000,
+      "anchors_extended": 9931,
+      "output_rows": 21949,
+      "output_sha256": "47bc8cd84ca46c474480a692e6d56747cccca773f24ab9490f47fcfa7df618f3"
+    },
+    {
+      "batch": 137,
+      "selected_anchors": 10000,
+      "anchors_extended": 9754,
+      "output_rows": 21799,
+      "output_sha256": "ec920b931f4675798baf65a38247af5d2e390f8fd1abbc5ea9bc9846ca828fdc"
+    },
+    {
+      "batch": 138,
+      "selected_anchors": 10000,
+      "anchors_extended": 9930,
+      "output_rows": 21580,
+      "output_sha256": "7b1e0b75188b0f263dba99c5a38d1bbd5b679799acbd6ea2bba3af95b2d156ac"
+    },
+    {
+      "batch": 139,
+      "selected_anchors": 10000,
+      "anchors_extended": 9952,
+      "output_rows": 22013,
+      "output_sha256": "3cfe999d95cb03cd10ad6b030f2916ec299c2d965fb12e6008130d225d66cd62"
+    },
+    {
+      "batch": 140,
+      "selected_anchors": 10000,
+      "anchors_extended": 9939,
+      "output_rows": 22135,
+      "output_sha256": "9c618888a11c9d838cab6ab61e4df6f3ec0a94ced21eb39fbffaefc485abfa45"
+    },
+    {
+      "batch": 141,
+      "selected_anchors": 10000,
+      "anchors_extended": 9942,
+      "output_rows": 22014,
+      "output_sha256": "cb827b65435f4f1926161770233b0da93ac8a98bacc04bd61285352884cb905a"
+    },
+    {
+      "batch": 142,
+      "selected_anchors": 10000,
+      "anchors_extended": 9851,
+      "output_rows": 21783,
+      "output_sha256": "4af04ee539d16bc3e2380cb69579b098a485827d718ca2670e8b3024c66c7978"
+    },
+    {
+      "batch": 143,
+      "selected_anchors": 10000,
+      "anchors_extended": 9954,
+      "output_rows": 21713,
+      "output_sha256": "4c33c5304c17e1d8ad679adee75633cc44a0ea9a49a9b32c836f0f2190f498dc"
+    },
+    {
+      "batch": 144,
+      "selected_anchors": 10000,
+      "anchors_extended": 9940,
+      "output_rows": 21886,
+      "output_sha256": "b263c31f0ab8d33eb99f92058ea4d796a9405127b9988e2364f720fdf6277a8f"
+    },
+    {
+      "batch": 145,
+      "selected_anchors": 10000,
+      "anchors_extended": 9858,
+      "output_rows": 21450,
+      "output_sha256": "56a41edd0046da130568b3b7a385db503a1605e66794911f48cc480abd6250f5"
+    },
+    {
+      "batch": 146,
+      "selected_anchors": 10000,
+      "anchors_extended": 9927,
+      "output_rows": 21954,
+      "output_sha256": "4a394fec8d7dec1814769495f4e7ae5775fa202e53788b4cd833277709598819"
+    },
+    {
+      "batch": 147,
+      "selected_anchors": 10000,
+      "anchors_extended": 9809,
+      "output_rows": 21316,
+      "output_sha256": "028c5b3a93295a8b15c305e3bc84611a2835a8062817eef66cf57997bb28faa4"
+    },
+    {
+      "batch": 148,
+      "selected_anchors": 10000,
+      "anchors_extended": 9920,
+      "output_rows": 21430,
+      "output_sha256": "c8068ae71b8b9332c2a9e06b35a99fbc1fd5cb975537cc1044cdf55bc5f11d6c"
+    },
+    {
+      "batch": 149,
+      "selected_anchors": 10000,
+      "anchors_extended": 9959,
+      "output_rows": 21668,
+      "output_sha256": "ee740932af5d485ff6580a205a36fcdf81a303ddf326c7f9c5984cfe9681c03c"
+    },
+    {
+      "batch": 150,
+      "selected_anchors": 10000,
+      "anchors_extended": 9913,
+      "output_rows": 22140,
+      "output_sha256": "5f6df987acec63957fe9be37e4593e1495dc12d002c061fc9d13f7d860503921"
+    },
+    {
+      "batch": 151,
+      "selected_anchors": 10000,
+      "anchors_extended": 9961,
+      "output_rows": 21606,
+      "output_sha256": "79e68ef1fc005abe151e14faea32df8d3db535e35da42be8dfd7ae0ea43934da"
+    },
+    {
+      "batch": 152,
+      "selected_anchors": 10000,
+      "anchors_extended": 9926,
+      "output_rows": 21969,
+      "output_sha256": "b5378e281ebdc23ea8a428ef7fe109351060ead4e4c5a2043f8073a6da15293f"
+    },
+    {
+      "batch": 153,
+      "selected_anchors": 10000,
+      "anchors_extended": 9876,
+      "output_rows": 21913,
+      "output_sha256": "f6a6e9c4fc10fb442db1b50b3095d1160c51b5ba4628ea50951484dfe4575ea9"
+    },
+    {
+      "batch": 154,
+      "selected_anchors": 10000,
+      "anchors_extended": 9957,
+      "output_rows": 22004,
+      "output_sha256": "962fa10290b61d82565f29daadae11932612c075a51d055517355e61be4757ed"
+    },
+    {
+      "batch": 155,
+      "selected_anchors": 10000,
+      "anchors_extended": 9932,
+      "output_rows": 21882,
+      "output_sha256": "c50ad124c716395ddac978213bab86630452f8daf6c2fbe9d34cb0ca4238f7ee"
+    },
+    {
+      "batch": 156,
+      "selected_anchors": 10000,
+      "anchors_extended": 9934,
+      "output_rows": 21298,
+      "output_sha256": "66ec7de46cf60a554e0174ab8bcb12a4bf181d88042d98c42e4319c8a51f4491"
+    },
+    {
+      "batch": 157,
+      "selected_anchors": 10000,
+      "anchors_extended": 9905,
+      "output_rows": 21786,
+      "output_sha256": "fa9180ec566861954b2c41f0407a0a666364f689816b3dc3d9886ccf52a5d116"
+    },
+    {
+      "batch": 158,
+      "selected_anchors": 10000,
+      "anchors_extended": 9931,
+      "output_rows": 21776,
+      "output_sha256": "b64162d3f3def0bb8688c300d1f2ff85c12df29dd3250b20e0513f56c90b4058"
+    },
+    {
+      "batch": 159,
+      "selected_anchors": 10000,
+      "anchors_extended": 9959,
+      "output_rows": 21551,
+      "output_sha256": "170c6a3bfe0b50dce7238c82c11d2c48d91496623c7ccf65258e77aac51241d6"
+    },
+    {
+      "batch": 160,
+      "selected_anchors": 10000,
+      "anchors_extended": 9933,
+      "output_rows": 21718,
+      "output_sha256": "8b19f2d24046d9a63c43163a961d664b61c40a5286306bd59d9ee4e5f7326675"
+    },
+    {
+      "batch": 161,
+      "selected_anchors": 10000,
+      "anchors_extended": 9689,
+      "output_rows": 21140,
+      "output_sha256": "7a67160aef82bbcd84d33f154eefb775d456e6139d56d5df198daf413c4f0b90"
+    },
+    {
+      "batch": 162,
+      "selected_anchors": 10000,
+      "anchors_extended": 9948,
+      "output_rows": 21633,
+      "output_sha256": "96d282b0477ca44c7c3e14d3104a4b131fc646bc3814b4591e978d6a316885fc"
+    },
+    {
+      "batch": 163,
+      "selected_anchors": 10000,
+      "anchors_extended": 9947,
+      "output_rows": 21608,
+      "output_sha256": "599b76551d471c88260cc289f04bebe437740134902833f7b4d00a0b8960b480"
+    },
+    {
+      "batch": 164,
+      "selected_anchors": 10000,
+      "anchors_extended": 9945,
+      "output_rows": 21397,
+      "output_sha256": "0347382572031867a38720315e6aaf04a70b15135b133c8f6b8cad6b06a4f428"
+    },
+    {
+      "batch": 165,
+      "selected_anchors": 10000,
+      "anchors_extended": 9947,
+      "output_rows": 21520,
+      "output_sha256": "d3a73cd980a2c718d6e0bc78e7455f01cb9e707a4399b268a64df36207d722c4"
+    },
+    {
+      "batch": 166,
+      "selected_anchors": 10000,
+      "anchors_extended": 9925,
+      "output_rows": 21783,
+      "output_sha256": "a2ac914135598958bacfb3c8ecdcc7db3612f664e64fb58f0c588de10f1d62e3"
+    },
+    {
+      "batch": 167,
+      "selected_anchors": 10000,
+      "anchors_extended": 9951,
+      "output_rows": 21724,
+      "output_sha256": "5a138d8ecf59c751cdeed822d468dc22f8e813742ab78a067dc4266eedcd4f43"
+    },
+    {
+      "batch": 168,
+      "selected_anchors": 10000,
+      "anchors_extended": 9953,
+      "output_rows": 21896,
+      "output_sha256": "6887382b238f4d761b29647f8623a0ec758af89af1ce8ba0f0cafffe96675346"
+    },
+    {
+      "batch": 169,
+      "selected_anchors": 10000,
+      "anchors_extended": 9511,
+      "output_rows": 20513,
+      "output_sha256": "8a573e75932acd712dc070d52e1ac725c10e85853c5064ce8e28e91e8f495a5f"
+    },
+    {
+      "batch": 170,
+      "selected_anchors": 10000,
+      "anchors_extended": 9806,
+      "output_rows": 20587,
+      "output_sha256": "2ca964157e6aa35fd88d1d84f774e3e9384d539ca02fe201a760cea6616cc67c"
+    },
+    {
+      "batch": 171,
+      "selected_anchors": 10000,
+      "anchors_extended": 9948,
+      "output_rows": 21313,
+      "output_sha256": "fe3034ccf7940c2725d95fe2cf75b5d14840f1856fa91335cb8bebae0cae21cc"
+    },
+    {
+      "batch": 172,
+      "selected_anchors": 10000,
+      "anchors_extended": 9785,
+      "output_rows": 21209,
+      "output_sha256": "ffff3e3112b04ba1a72219dd20e8c6667117ed1c5fca31347ee62268dc8aac66"
+    },
+    {
+      "batch": 173,
+      "selected_anchors": 10000,
+      "anchors_extended": 9951,
+      "output_rows": 20278,
+      "output_sha256": "882a24a373b78437af8930a7d22e03d21c5dd239472f27d9ca221d30f11e46be"
+    },
+    {
+      "batch": 174,
+      "selected_anchors": 10000,
+      "anchors_extended": 9951,
+      "output_rows": 20607,
+      "output_sha256": "dc71866c2f140d11c055628fc40dd0ebaccc422594de341ae3af8f53178bd0b7"
+    },
+    {
+      "batch": 175,
+      "selected_anchors": 10000,
+      "anchors_extended": 9932,
+      "output_rows": 20849,
+      "output_sha256": "a14966af40e129a12f5e572a730c67c148cb32f8b4d1d2375f2e01218a21a1e2"
+    },
+    {
+      "batch": 176,
+      "selected_anchors": 10000,
+      "anchors_extended": 9953,
+      "output_rows": 21533,
+      "output_sha256": "3fe7b35d05775dd35433f4841191c40b7eac85acd5a6e68a196a9399d5291288"
+    },
+    {
+      "batch": 177,
+      "selected_anchors": 10000,
+      "anchors_extended": 9962,
+      "output_rows": 21420,
+      "output_sha256": "45d4f63997fc9da4eea226f786cf3b729e26cfff69994def6daa1d066aca81fe"
+    },
+    {
+      "batch": 178,
+      "selected_anchors": 10000,
+      "anchors_extended": 9922,
+      "output_rows": 21199,
+      "output_sha256": "399e8f99f30c0097a46493a902b285c7d679d3cb02f1510d42705b626ae728d1"
+    },
+    {
+      "batch": 179,
+      "selected_anchors": 10000,
+      "anchors_extended": 9970,
+      "output_rows": 21538,
+      "output_sha256": "4e87b4a2ec9fc1f8819aa4f506f3a8e005cd9b9428f020ab61cd26e15a3f22cb"
+    },
+    {
+      "batch": 180,
+      "selected_anchors": 10000,
+      "anchors_extended": 9945,
+      "output_rows": 21379,
+      "output_sha256": "249c9305647704eab14e9c5f9e76a7fb720aff985911108ffc373cb280d2d5e7"
+    },
+    {
+      "batch": 181,
+      "selected_anchors": 10000,
+      "anchors_extended": 9775,
+      "output_rows": 20523,
+      "output_sha256": "5c67110423433b9d68c7c39904a2a74ac298f0d6a2a0c576484afae227a2427b"
+    },
+    {
+      "batch": 182,
+      "selected_anchors": 10000,
+      "anchors_extended": 9962,
+      "output_rows": 21273,
+      "output_sha256": "d6e8365d423bdb7bbff99994e8cda6988041d7de3c409d7a851280631bcaa8a4"
+    },
+    {
+      "batch": 183,
+      "selected_anchors": 10000,
+      "anchors_extended": 9939,
+      "output_rows": 21374,
+      "output_sha256": "bbffef7232114c1591bd098b6a11086170c80d5e720284db1953bfd847087324"
+    },
+    {
+      "batch": 184,
+      "selected_anchors": 10000,
+      "anchors_extended": 9942,
+      "output_rows": 20404,
+      "output_sha256": "094397d4e5ade0f8945a9d07849735ff76a0a20b176d372868ff34a10ada523d"
+    },
+    {
+      "batch": 185,
+      "selected_anchors": 10000,
+      "anchors_extended": 9961,
+      "output_rows": 21147,
+      "output_sha256": "0f57da17a0d33d5dca5593831d959e431dd9f87b198f51878e20eda3c0781eb4"
+    },
+    {
+      "batch": 186,
+      "selected_anchors": 10000,
+      "anchors_extended": 9945,
+      "output_rows": 21433,
+      "output_sha256": "1d5616bce0fed133836d4b48c65000b015758e29b0d6ff0b91aa7f7b9cbdd7dd"
+    },
+    {
+      "batch": 187,
+      "selected_anchors": 10000,
+      "anchors_extended": 9959,
+      "output_rows": 21637,
+      "output_sha256": "823697f8a23d5af3144179df090e455e1880899c1df86c7d3119024bbd4f0c69"
+    },
+    {
+      "batch": 188,
+      "selected_anchors": 10000,
+      "anchors_extended": 9879,
+      "output_rows": 21775,
+      "output_sha256": "c0fe8400ab0366e11aa27f748dcb0d8c8ed4911199ee32b07ae72d2b52309846"
+    },
+    {
+      "batch": 189,
+      "selected_anchors": 10000,
+      "anchors_extended": 9942,
+      "output_rows": 21869,
+      "output_sha256": "e24fa0419ccd7a2b79b56052ebd6f727a8e2fb8d08ccef09dd8ed351d7a5efda"
+    },
+    {
+      "batch": 190,
+      "selected_anchors": 10000,
+      "anchors_extended": 9943,
+      "output_rows": 21421,
+      "output_sha256": "74007cc54310b168905d33ed781e8683ecaa14311903c6a473c429f76377953e"
+    },
+    {
+      "batch": 191,
+      "selected_anchors": 10000,
+      "anchors_extended": 9697,
+      "output_rows": 21115,
+      "output_sha256": "b1d81377ab9560a71229e682a871da6ee1d8a4874605e3bf18c1f11c45064ba9"
+    },
+    {
+      "batch": 192,
+      "selected_anchors": 10000,
+      "anchors_extended": 9946,
+      "output_rows": 21453,
+      "output_sha256": "82d020fcc4c7c4c818be9e2e4e06441c2660d1d46616037880428b49cee93a3b"
+    },
+    {
+      "batch": 193,
+      "selected_anchors": 10000,
+      "anchors_extended": 9947,
+      "output_rows": 21532,
+      "output_sha256": "2f56d8c3f60ead778629373afae2777614b42b7216b0df51ef9b5ec37871ace0"
+    },
+    {
+      "batch": 194,
+      "selected_anchors": 10000,
+      "anchors_extended": 9927,
+      "output_rows": 21494,
+      "output_sha256": "fea0ceda6cf37652668fe4e0e28e970f7e15b4cd97325ad0442bceff871c4b10"
+    },
+    {
+      "batch": 195,
+      "selected_anchors": 10000,
+      "anchors_extended": 9925,
+      "output_rows": 21112,
+      "output_sha256": "ac8c0633d4d5aefb814d5f37b18c37f5937f9475eaba1a5e80806c4fd7c8264a"
+    },
+    {
+      "batch": 196,
+      "selected_anchors": 10000,
+      "anchors_extended": 9905,
+      "output_rows": 21591,
+      "output_sha256": "b0bec43b7336c2b7048f5ca226d53b571e0ded3279946b700c0ba9f7e15fb565"
+    },
+    {
+      "batch": 197,
+      "selected_anchors": 10000,
+      "anchors_extended": 9959,
+      "output_rows": 21710,
+      "output_sha256": "69d6b608c11255531d9ea126ca0bb676cda57ac28804599252d9515ce4b640b1"
+    },
+    {
+      "batch": 198,
+      "selected_anchors": 10000,
+      "anchors_extended": 9942,
+      "output_rows": 22368,
+      "output_sha256": "7cd1987ab73a2ba86c13f2ffc04363be8567f42787d55141bb63c55e5c0cdf81"
+    },
+    {
+      "batch": 199,
+      "selected_anchors": 10000,
+      "anchors_extended": 9944,
+      "output_rows": 21570,
+      "output_sha256": "34720e9045479bc37914e289958f051c17580d926f6c210caa9d7ecd517ea74d"
+    },
+    {
+      "batch": 200,
+      "selected_anchors": 10000,
+      "anchors_extended": 9939,
+      "output_rows": 21322,
+      "output_sha256": "b1af1bce046e11e689993aa9e888729ed750fea812b4d123971b317b9a273669"
+    },
+    {
+      "batch": 201,
+      "selected_anchors": 10000,
+      "anchors_extended": 9955,
+      "output_rows": 21935,
+      "output_sha256": "1ff3bc4fac7e74bcf3345a9c61e7aab804ed91798be7c003a14632794693a6d6"
+    },
+    {
+      "batch": 202,
+      "selected_anchors": 10000,
+      "anchors_extended": 9760,
+      "output_rows": 20692,
+      "output_sha256": "115194873fca622da2214b1762f3c203b534c076b8e1003114d54b660e6c886b"
+    },
+    {
+      "batch": 203,
+      "selected_anchors": 10000,
+      "anchors_extended": 9961,
+      "output_rows": 20871,
+      "output_sha256": "36aa4e7fd53271d4627ef5a43e71cd88eb112379a2cc1e1ac7020bafbf0b384d"
+    },
+    {
+      "batch": 204,
+      "selected_anchors": 10000,
+      "anchors_extended": 9959,
+      "output_rows": 20923,
+      "output_sha256": "09e7e508a71bda1a5951e4400fff64b9d0329d0ff1baaab6e97289b390849ef9"
+    },
+    {
+      "batch": 205,
+      "selected_anchors": 10000,
+      "anchors_extended": 9929,
+      "output_rows": 20674,
+      "output_sha256": "96ba8eae59978a26f88f1edd473123cbee3f522c605f73919cfb26ec8e5c10e9"
+    },
+    {
+      "batch": 206,
+      "selected_anchors": 10000,
+      "anchors_extended": 9959,
+      "output_rows": 21396,
+      "output_sha256": "0c550aaab0ea5a2deb41ba28185e56ffb39a33bae49590dce101df1d92956cea"
+    },
+    {
+      "batch": 207,
+      "selected_anchors": 10000,
+      "anchors_extended": 9940,
+      "output_rows": 22052,
+      "output_sha256": "fb3e9f5bf90cfe0ecd783599b208c7a3fbe6a53cd3f159c3f581c6932d9995c7"
+    },
+    {
+      "batch": 208,
+      "selected_anchors": 10000,
+      "anchors_extended": 9939,
+      "output_rows": 21836,
+      "output_sha256": "6a0778539aa5d95eb363a600817d701f52a6b04c9d341c686ce0a4a9694a23bf"
+    },
+    {
+      "batch": 209,
+      "selected_anchors": 10000,
+      "anchors_extended": 9969,
+      "output_rows": 21941,
+      "output_sha256": "e1a913a96f7ac1030d658e8da84be0edcd068e90d783d38cb1eec6f62748a75e"
+    },
+    {
+      "batch": 210,
+      "selected_anchors": 10000,
+      "anchors_extended": 9898,
+      "output_rows": 20385,
+      "output_sha256": "c7b27fd89ba398a4364af6ae2a235a04612b8490980f0a202650540c640173f6"
+    },
+    {
+      "batch": 211,
+      "selected_anchors": 10000,
+      "anchors_extended": 8753,
+      "output_rows": 17997,
+      "output_sha256": "905348e163858dfffb7498711d49c9293c7922b2364661bcf404d42d7d177300"
+    },
+    {
+      "batch": 212,
+      "selected_anchors": 10000,
+      "anchors_extended": 8224,
+      "output_rows": 16402,
+      "output_sha256": "a9fef74a7a24b817b421cd8c85532dfd43ced38fb23f92524692527e0a6376bc"
+    },
+    {
+      "batch": 213,
+      "selected_anchors": 10000,
+      "anchors_extended": 9946,
+      "output_rows": 20074,
+      "output_sha256": "1bcf7262f173dda3ae82c12bc17715f247eefcd5d9e642b663155931d3dab0ad"
+    },
+    {
+      "batch": 214,
+      "selected_anchors": 10000,
+      "anchors_extended": 9905,
+      "output_rows": 20315,
+      "output_sha256": "28f5dd4b7628a0c4e9d5e14a360924373b7d338f70405e8c5f138c5200c7525e"
+    },
+    {
+      "batch": 215,
+      "selected_anchors": 10000,
+      "anchors_extended": 9963,
+      "output_rows": 20647,
+      "output_sha256": "e0e1bf67a2a3d905f53a466d1b631ff178068b4e92f133917fb1d5ceb91de31d"
+    },
+    {
+      "batch": 216,
+      "selected_anchors": 10000,
+      "anchors_extended": 9951,
+      "output_rows": 20267,
+      "output_sha256": "463dfab28a4e9b3f6d2ddfc0db22ca99737a624b7cfe2840f4e60e3bf43226d0"
+    },
+    {
+      "batch": 217,
+      "selected_anchors": 10000,
+      "anchors_extended": 9874,
+      "output_rows": 20164,
+      "output_sha256": "ef8fe8869c591fa64eee070e46ebf097d0dd5508fc25ee78f83104859f6adf37"
+    },
+    {
+      "batch": 218,
+      "selected_anchors": 10000,
+      "anchors_extended": 9954,
+      "output_rows": 20411,
+      "output_sha256": "1764234c392a41eec2526f846d2122ad5f22f45dab7e3d2d8da69a59a4cbe5fd"
+    },
+    {
+      "batch": 219,
+      "selected_anchors": 10000,
+      "anchors_extended": 9959,
+      "output_rows": 21431,
+      "output_sha256": "ccd108bab2058115e95a7cf7256da92f6f62f027b4d9668e97950d754216d6d5"
+    },
+    {
+      "batch": 220,
+      "selected_anchors": 10000,
+      "anchors_extended": 9931,
+      "output_rows": 21419,
+      "output_sha256": "a7ad6194fb6908707b4af08b470312a3dff9b595d0260c255b478987d56511bb"
+    },
+    {
+      "batch": 221,
+      "selected_anchors": 10000,
+      "anchors_extended": 9663,
+      "output_rows": 20491,
+      "output_sha256": "740e0375068a931d4f64411268d0619adc0a530a50b6c1a8e437f554e8bf1346"
+    },
+    {
+      "batch": 222,
+      "selected_anchors": 10000,
+      "anchors_extended": 9950,
+      "output_rows": 20948,
+      "output_sha256": "502380e92273cb08d7df5e4624a90c3446a05a1065e740b9bcd510dcbcce6d03"
+    },
+    {
+      "batch": 223,
+      "selected_anchors": 10000,
+      "anchors_extended": 9940,
+      "output_rows": 20956,
+      "output_sha256": "f71fff0e8152a8bb63f032283433eaa5f0a0c1d6c1745adb958275a6825a5071"
+    },
+    {
+      "batch": 224,
+      "selected_anchors": 10000,
+      "anchors_extended": 9967,
+      "output_rows": 20342,
+      "output_sha256": "7228d73390689b3ac75017a22d755445f60cfcf8d588c03a1f7f48f8cca0f28f"
+    },
+    {
+      "batch": 225,
+      "selected_anchors": 10000,
+      "anchors_extended": 9963,
+      "output_rows": 21096,
+      "output_sha256": "bfc0959ea92f2396d38b7c65962a8ab48123e70562feb448cdeb5fd6d2306d88"
+    },
+    {
+      "batch": 226,
+      "selected_anchors": 10000,
+      "anchors_extended": 9939,
+      "output_rows": 21131,
+      "output_sha256": "8dded63dbe56ff28c6fc7dc947582c6dc7cc20e063bb4822c11897c37f32cc52"
+    },
+    {
+      "batch": 227,
+      "selected_anchors": 10000,
+      "anchors_extended": 9949,
+      "output_rows": 21781,
+      "output_sha256": "7c06598d94f47557214cfc0e85a8284c49ae6e3c0a47608be46cea0d13ef8d76"
+    },
+    {
+      "batch": 228,
+      "selected_anchors": 10000,
+      "anchors_extended": 9954,
+      "output_rows": 21292,
+      "output_sha256": "54717159d9fe643ffc53c4911deea671f5df57579ec56fda235fb11da04659ab"
+    },
+    {
+      "batch": 229,
+      "selected_anchors": 10000,
+      "anchors_extended": 9910,
+      "output_rows": 20462,
+      "output_sha256": "8105859578d1231744f2e9be4a0ef71a4a4ec55e1de879c3d4dda72c5f148f72"
+    },
+    {
+      "batch": 230,
+      "selected_anchors": 10000,
+      "anchors_extended": 9940,
+      "output_rows": 20150,
+      "output_sha256": "a89f5240684d9b54cb23920817ef65f0c9da7b1de5fd762bf098928d04171f76"
+    },
+    {
+      "batch": 231,
+      "selected_anchors": 10000,
+      "anchors_extended": 9963,
+      "output_rows": 21336,
+      "output_sha256": "bc07d071daff4fabb24aefc5eaac54c633a4d9e16e1e4bfde4199f3065070750"
+    },
+    {
+      "batch": 232,
+      "selected_anchors": 10000,
+      "anchors_extended": 9958,
+      "output_rows": 20908,
+      "output_sha256": "90b370fd6b48e48075ed1ba8af0310bc468e0abea6cbed64cd3ca7014ce66bf0"
+    },
+    {
+      "batch": 233,
+      "selected_anchors": 10000,
+      "anchors_extended": 9777,
+      "output_rows": 20160,
+      "output_sha256": "126c8c040cb8c677ede9ee1ccb52b08e11f66e28b989ec1dc6cb2118de6c71e0"
+    },
+    {
+      "batch": 234,
+      "selected_anchors": 10000,
+      "anchors_extended": 9953,
+      "output_rows": 20959,
+      "output_sha256": "1b47ca7c3f9a6404ee47a2fb5f92d4a6acc5db34f1d862c87f2a3b1a5096a0fb"
+    },
+    {
+      "batch": 235,
+      "selected_anchors": 10000,
+      "anchors_extended": 9948,
+      "output_rows": 21088,
+      "output_sha256": "529016c197fd50aa0152347c341b6b6d67d2e218d1924c623336d8f55c8b8bbe"
+    },
+    {
+      "batch": 236,
+      "selected_anchors": 10000,
+      "anchors_extended": 9965,
+      "output_rows": 21166,
+      "output_sha256": "c90c0be37c692a0f76dec74e9f21f08bd557d4fabf5c48a02665551e6870a215"
+    },
+    {
+      "batch": 237,
+      "selected_anchors": 10000,
+      "anchors_extended": 9914,
+      "output_rows": 19863,
+      "output_sha256": "21eab552ef93970f0d1195c547b9b50b5d317661311637f16e351c443bb42b80"
+    }
+  ],
+  "completed_selected_anchors": 2380000,
+  "anchors_extended": 2354815,
+  "extension_records": 5087523,
+  "scope": "Full-depth read1 SPLASH selection; both complete trimmed mates used for extension context",
+  "verification": "Output hashes, sequence membership, independent counts and exact frozen selection slices checked",
+  "complete": false
+}

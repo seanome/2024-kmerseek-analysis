@@ -1,0 +1,23 @@
+	Command being timed: "bash /scratch/users/olgabot/2024-kmerseek-analysis-299/notebooks/299_manysearch_chunks.sh /scratch/users/olgabot/299-omrgc-pilot/env/bin/sourmash /scratch/users/olgabot/299-omrgc-pilot/search/protein.k10.s10/queries.sig.zip /scratch/users/olgabot/299-omrgc-pilot/search/protein.k10.s10/catalog.txt 10 protein 10 32"
+	User time (seconds): 106325.86
+	System time (seconds): 3423.92
+	Percent of CPU this job got: 1626%
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 1:52:26
+	Average shared text size (kbytes): 0
+	Average unshared data size (kbytes): 0
+	Average stack size (kbytes): 0
+	Average total size (kbytes): 0
+	Maximum resident set size (kbytes): 2256532
+	Average resident set size (kbytes): 0
+	Major (requiring I/O) page faults: 1
+	Minor (reclaiming a frame) page faults: 302860646
+	Voluntary context switches: 65735513
+	Involuntary context switches: 69852959
+	Swaps: 0
+	File system inputs: 606129120
+	File system outputs: 0
+	Socket messages sent: 0
+	Socket messages received: 0
+	Signals delivered: 0
+	Page size (bytes): 4096
+	Exit status: 0
