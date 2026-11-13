@@ -1,0 +1,241 @@
+alphabet	word_length	family	chosen_by_rule	query	query_lineage	target	target_kind	n_shared_keys	key	query_start1	query_gap	query_start2	query_key_occurrences	target_start1	target_gap	target_start2	target_key_occurrences
+protein20	4	pair_gapbin3	true	P04002	1 fish, type I AFP	P24856	ice-binding, other lineage	3	1760320	39	33	76	1	73	33	110	1
+protein20	4	pair_gapbin3	true	P04002	1 fish, type I AFP	P24856	ice-binding, other lineage	3	539520320	36	36	76	1	2	36	42	1
+protein20	4	pair_gapbin3	true	P04002	1 fish, type I AFP	P24856	ice-binding, other lineage	3	10753760320	37	35	76	1	3	35	42	1
+protein20	4	pair_gapbin3	true	P02732	2 fish, AFGP	B1P0S1	ice-binding, other lineage	5	717600320	0	17	21	3	177	15	196	1
+protein20	4	pair_gapbin3	true	P02732	2 fish, AFGP	B1P0S1	ice-binding, other lineage	5	717760320	0	20	24	2	174	18	196	1
+protein20	4	pair_gapbin3	true	P02732	2 fish, AFGP	B1P0S1	ice-binding, other lineage	5	14336640320	1	13	18	4	178	14	196	1
+protein20	4	pair_gapbin3	true	P02732	2 fish, AFGP	B1P0S1	ice-binding, other lineage	5	14336800320	1	16	21	3	175	17	196	1
+protein20	4	pair_gapbin3	true	P02732	2 fish, AFGP	B1P0S1	ice-binding, other lineage	5	286756640320	2	15	21	3	176	16	196	1
+protein20	4	pair_gapbin3	true	P02732	2 fish, AFGP	P02734	ice-binding, other lineage	41	716960320	0	5	9	7	34	4	42	2
+protein20	4	pair_gapbin3	true	P02732	2 fish, AFGP	P02734	ice-binding, other lineage	41	716966400	0	3	7	7	34	5	43	2
+protein20	4	pair_gapbin3	true	P02732	2 fish, AFGP	P02734	ice-binding, other lineage	41	717120320	0	8	12	6	31	7	42	4
+protein20	4	pair_gapbin3	true	P02732	2 fish, AFGP	P02734	ice-binding, other lineage	41	717126400	0	6	10	6	31	8	43	4
+protein20	4	pair_gapbin3	true	P02732	2 fish, AFGP	P02734	ice-binding, other lineage	41	717248016	0	7	11	6	34	6	44	2
+protein20	4	pair_gapbin3	true	P02732	2 fish, AFGP	P02734	ice-binding, other lineage	41	717280320	0	11	15	5	31	10	45	2
+protein20	4	pair_gapbin3	true	P02732	2 fish, AFGP	P02734	ice-binding, other lineage	41	717286400	0	9	13	5	31	11	46	2
+protein20	4	pair_gapbin3	true	P02732	2 fish, AFGP	P02734	ice-binding, other lineage	41	717408016	0	10	14	5	31	9	44	2
+protein20	4	pair_gapbin3	true	P02732	2 fish, AFGP	P02734	ice-binding, other lineage	41	717600320	0	17	21	3	34	15	53	2
+protein20	4	pair_gapbin3	true	P02732	2 fish, AFGP	P02734	ice-binding, other lineage	41	717606400	0	15	19	3	34	16	54	2
+protein20	4	pair_gapbin3	true	P02732	2 fish, AFGP	P02734	ice-binding, other lineage	41	717728016	0	16	20	3	34	17	55	1
+protein20	4	pair_gapbin3	true	P02732	2 fish, AFGP	P02734	ice-binding, other lineage	41	717760320	0	20	24	2	31	18	53	3
+protein20	4	pair_gapbin3	true	P02732	2 fish, AFGP	P02734	ice-binding, other lineage	41	717766400	0	18	22	2	31	19	54	3
+protein20	4	pair_gapbin3	true	P02732	2 fish, AFGP	P02734	ice-binding, other lineage	41	717888016	0	19	23	2	31	20	55	1
+protein20	4	pair_gapbin3	true	P02732	2 fish, AFGP	P02734	ice-binding, other lineage	41	717920320	0	23	27	1	31	21	56	1
+protein20	4	pair_gapbin3	true	P02732	2 fish, AFGP	P02734	ice-binding, other lineage	41	717926400	0	21	25	1	31	22	57	1
+protein20	4	pair_gapbin3	true	P02732	2 fish, AFGP	P02734	ice-binding, other lineage	41	14336160320	1	4	9	7	35	3	42	2
+protein20	4	pair_gapbin3	true	P02732	2 fish, AFGP	P02734	ice-binding, other lineage	41	14336166400	1	5	10	6	35	4	43	2
+protein20	4	pair_gapbin3	true	P02732	2 fish, AFGP	P02734	ice-binding, other lineage	41	14336288016	1	3	8	7	35	5	44	2
+protein20	4	pair_gapbin3	true	P02732	2 fish, AFGP	P02734	ice-binding, other lineage	41	14336320320	1	7	12	6	32	6	42	4
+protein20	4	pair_gapbin3	true	P02732	2 fish, AFGP	P02734	ice-binding, other lineage	41	14336326400	1	8	13	5	32	7	43	4
+protein20	4	pair_gapbin3	true	P02732	2 fish, AFGP	P02734	ice-binding, other lineage	41	14336448016	1	6	11	6	32	8	44	2
+protein20	4	pair_gapbin3	true	P02732	2 fish, AFGP	P02734	ice-binding, other lineage	41	14336480320	1	10	15	5	32	9	45	2
+protein20	4	pair_gapbin3	true	P02732	2 fish, AFGP	P02734	ice-binding, other lineage	41	14336486400	1	11	16	4	32	10	46	2
+protein20	4	pair_gapbin3	true	P02732	2 fish, AFGP	P02734	ice-binding, other lineage	41	14336640320	1	13	18	4	35	14	53	2
+protein20	4	pair_gapbin3	true	P02732	2 fish, AFGP	P02734	ice-binding, other lineage	41	14336800320	1	16	21	3	32	17	53	3
+protein20	4	pair_gapbin3	true	P02732	2 fish, AFGP	P02734	ice-binding, other lineage	41	14336806400	1	17	22	2	35	15	54	2
+protein20	4	pair_gapbin3	true	P02732	2 fish, AFGP	P02734	ice-binding, other lineage	41	14336928016	1	15	20	3	35	16	55	1
+protein20	4	pair_gapbin3	true	P02732	2 fish, AFGP	P02734	ice-binding, other lineage	41	14336960320	1	19	24	2	32	20	56	1
+protein20	4	pair_gapbin3	true	P02732	2 fish, AFGP	P02734	ice-binding, other lineage	41	14336966400	1	20	25	1	32	18	54	3
+protein20	4	pair_gapbin3	true	P02732	2 fish, AFGP	P02734	ice-binding, other lineage	41	14337088016	1	18	23	2	32	19	55	1
+protein20	4	pair_gapbin3	true	P02732	2 fish, AFGP	P02734	ice-binding, other lineage	41	286756000320	2	3	9	7	33	5	42	2
+protein20	4	pair_gapbin3	true	P02732	2 fish, AFGP	P02734	ice-binding, other lineage	41	286756160320	2	6	12	6	33	8	45	2
+protein20	4	pair_gapbin3	true	P02732	2 fish, AFGP	P02734	ice-binding, other lineage	41	286756166400	2	7	13	5	33	6	43	2
+protein20	4	pair_gapbin3	true	P02732	2 fish, AFGP	P02734	ice-binding, other lineage	41	286756288016	2	8	14	5	33	7	44	2
+protein20	4	pair_gapbin3	true	P02732	2 fish, AFGP	P02734	ice-binding, other lineage	41	286756326400	2	10	16	4	33	9	46	2
+protein20	4	pair_gapbin3	true	P02732	2 fish, AFGP	P02734	ice-binding, other lineage	41	286756640320	2	15	21	3	33	16	53	2
+protein20	4	pair_gapbin3	true	P02732	2 fish, AFGP	P02734	ice-binding, other lineage	41	286756646400	2	16	22	2	33	17	54	2
+protein20	4	pair_gapbin3	true	P02732	2 fish, AFGP	P02734	ice-binding, other lineage	41	286756800320	2	18	24	2	33	19	56	1
+protein20	4	pair_gapbin3	true	P02732	2 fish, AFGP	P02734	ice-binding, other lineage	41	286756806400	2	19	25	1	33	20	57	1
+protein20	4	pair_gapbin3	true	P02732	2 fish, AFGP	P02734	ice-binding, other lineage	41	286756928016	2	20	26	1	33	18	55	1
+protein20	4	pair_gapbin3	true	P02732	2 fish, AFGP	P07835	ice-binding, other lineage	31	716960320	0	5	9	7	51	4	59	1
+protein20	4	pair_gapbin3	true	P02732	2 fish, AFGP	P07835	ice-binding, other lineage	31	716966400	0	3	7	7	51	5	60	1
+protein20	4	pair_gapbin3	true	P02732	2 fish, AFGP	P07835	ice-binding, other lineage	31	717120320	0	8	12	6	48	7	59	2
+protein20	4	pair_gapbin3	true	P02732	2 fish, AFGP	P07835	ice-binding, other lineage	31	717126400	0	6	10	6	48	8	60	2
+protein20	4	pair_gapbin3	true	P02732	2 fish, AFGP	P07835	ice-binding, other lineage	31	717248016	0	7	11	6	51	6	61	1
+protein20	4	pair_gapbin3	true	P02732	2 fish, AFGP	P07835	ice-binding, other lineage	31	717280320	0	11	15	5	48	10	62	1
+protein20	4	pair_gapbin3	true	P02732	2 fish, AFGP	P07835	ice-binding, other lineage	31	717286400	0	9	13	5	48	11	63	1
+protein20	4	pair_gapbin3	true	P02732	2 fish, AFGP	P07835	ice-binding, other lineage	31	717408016	0	10	14	5	48	9	61	1
+protein20	4	pair_gapbin3	true	P02732	2 fish, AFGP	P07835	ice-binding, other lineage	31	717600320	0	17	21	3	62	15	81	1
+protein20	4	pair_gapbin3	true	P02732	2 fish, AFGP	P07835	ice-binding, other lineage	31	717606400	0	15	19	3	62	16	82	1
+protein20	4	pair_gapbin3	true	P02732	2 fish, AFGP	P07835	ice-binding, other lineage	31	717760320	0	20	24	2	59	18	81	1
+protein20	4	pair_gapbin3	true	P02732	2 fish, AFGP	P07835	ice-binding, other lineage	31	717766400	0	18	22	2	59	19	82	1
+protein20	4	pair_gapbin3	true	P02732	2 fish, AFGP	P07835	ice-binding, other lineage	31	14336160320	1	4	9	7	52	3	59	1
+protein20	4	pair_gapbin3	true	P02732	2 fish, AFGP	P07835	ice-binding, other lineage	31	14336166400	1	5	10	6	52	4	60	1
+protein20	4	pair_gapbin3	true	P02732	2 fish, AFGP	P07835	ice-binding, other lineage	31	14336288016	1	3	8	7	52	5	61	1
+protein20	4	pair_gapbin3	true	P02732	2 fish, AFGP	P07835	ice-binding, other lineage	31	14336320320	1	7	12	6	49	6	59	2
+protein20	4	pair_gapbin3	true	P02732	2 fish, AFGP	P07835	ice-binding, other lineage	31	14336326400	1	8	13	5	49	7	60	2
+protein20	4	pair_gapbin3	true	P02732	2 fish, AFGP	P07835	ice-binding, other lineage	31	14336448016	1	6	11	6	49	8	61	1
+protein20	4	pair_gapbin3	true	P02732	2 fish, AFGP	P07835	ice-binding, other lineage	31	14336480320	1	10	15	5	49	9	62	1
+protein20	4	pair_gapbin3	true	P02732	2 fish, AFGP	P07835	ice-binding, other lineage	31	14336486400	1	11	16	4	49	10	63	1
+protein20	4	pair_gapbin3	true	P02732	2 fish, AFGP	P07835	ice-binding, other lineage	31	14336640320	1	13	18	4	63	14	81	1
+protein20	4	pair_gapbin3	true	P02732	2 fish, AFGP	P07835	ice-binding, other lineage	31	14336800320	1	16	21	3	60	17	81	1
+protein20	4	pair_gapbin3	true	P02732	2 fish, AFGP	P07835	ice-binding, other lineage	31	14336806400	1	17	22	2	63	15	82	1
+protein20	4	pair_gapbin3	true	P02732	2 fish, AFGP	P07835	ice-binding, other lineage	31	14336966400	1	20	25	1	60	18	82	1
+protein20	4	pair_gapbin3	true	P02732	2 fish, AFGP	P07835	ice-binding, other lineage	31	286756000320	2	3	9	7	50	5	59	1
+protein20	4	pair_gapbin3	true	P02732	2 fish, AFGP	P07835	ice-binding, other lineage	31	286756160320	2	6	12	6	50	8	62	1
+protein20	4	pair_gapbin3	true	P02732	2 fish, AFGP	P07835	ice-binding, other lineage	31	286756166400	2	7	13	5	50	6	60	1
+protein20	4	pair_gapbin3	true	P02732	2 fish, AFGP	P07835	ice-binding, other lineage	31	286756288016	2	8	14	5	50	7	61	1
+protein20	4	pair_gapbin3	true	P02732	2 fish, AFGP	P07835	ice-binding, other lineage	31	286756326400	2	10	16	4	50	9	63	1
+protein20	4	pair_gapbin3	true	P02732	2 fish, AFGP	P07835	ice-binding, other lineage	31	286756640320	2	15	21	3	61	16	81	1
+protein20	4	pair_gapbin3	true	P02732	2 fish, AFGP	P07835	ice-binding, other lineage	31	286756646400	2	16	22	2	61	17	82	1
+protein20	4	pair_gapbin3	true	P02732	2 fish, AFGP	P23699	ice-binding, other lineage	7	716960320	0	5	9	7	51	4	59	1
+protein20	4	pair_gapbin3	true	P02732	2 fish, AFGP	P23699	ice-binding, other lineage	7	717120320	0	8	12	6	48	7	59	1
+protein20	4	pair_gapbin3	true	P02732	2 fish, AFGP	P23699	ice-binding, other lineage	7	717760320	0	20	24	2	59	18	81	1
+protein20	4	pair_gapbin3	true	P02732	2 fish, AFGP	P23699	ice-binding, other lineage	7	717766400	0	18	22	2	59	19	82	1
+protein20	4	pair_gapbin3	true	P02732	2 fish, AFGP	P23699	ice-binding, other lineage	7	14336160320	1	4	9	7	52	3	59	1
+protein20	4	pair_gapbin3	true	P02732	2 fish, AFGP	P23699	ice-binding, other lineage	7	14336320320	1	7	12	6	49	6	59	1
+protein20	4	pair_gapbin3	true	P02732	2 fish, AFGP	P23699	ice-binding, other lineage	7	286756000320	2	3	9	7	50	5	59	1
+protein20	4	pair_gapbin3	true	H7FWB6	7 bacteria	P05140	ice-binding, other lineage	2	150054750720	1	32	37	1	20	31	55	1
+protein20	4	pair_gapbin3	true	H7FWB6	7 bacteria	P05140	ice-binding, other lineage	2	150054873536	1	31	36	1	20	30	54	1
+protein20	4	pair_gapbin3	true	H7FWB6	7 bacteria	B8XC03	ice-binding, other lineage	4	176334603988	131	34	169	1	98	34	136	1
+protein20	4	pair_gapbin3	true	H7FWB6	7 bacteria	B8XC03	ice-binding, other lineage	4	176334658199	131	33	168	1	98	33	135	1
+protein20	4	pair_gapbin3	true	H7FWB6	7 bacteria	B8XC03	ice-binding, other lineage	4	301095778199	132	32	168	1	99	32	135	1
+protein20	4	pair_gapbin3	true	H7FWB6	7 bacteria	B8XC03	ice-binding, other lineage	4	301095883988	132	33	169	1	99	33	136	1
+protein20	4	pair_gapbin3	true	H7FWB6	7 bacteria	B8XC04	ice-binding, other lineage	13	176164955576	166	1	171	1	179	1	184	1
+protein20	4	pair_gapbin3	true	H7FWB6	7 bacteria	B8XC04	ice-binding, other lineage	13	176334478645	131	31	166	1	144	31	179	1
+protein20	4	pair_gapbin3	true	H7FWB6	7 bacteria	B8XC04	ice-binding, other lineage	13	176334532909	131	32	167	1	144	32	180	1
+protein20	4	pair_gapbin3	true	H7FWB6	7 bacteria	B8XC04	ice-binding, other lineage	13	176334603988	131	34	169	1	144	34	182	1
+protein20	4	pair_gapbin3	true	H7FWB6	7 bacteria	B8XC04	ice-binding, other lineage	13	176334639778	131	35	170	1	144	35	183	1
+protein20	4	pair_gapbin3	true	H7FWB6	7 bacteria	B8XC04	ice-binding, other lineage	13	176334658199	131	33	168	1	144	33	181	1
+protein20	4	pair_gapbin3	true	H7FWB6	7 bacteria	B8XC04	ice-binding, other lineage	13	176334875576	131	36	171	1	144	36	184	1
+protein20	4	pair_gapbin3	true	H7FWB6	7 bacteria	B8XC04	ice-binding, other lineage	13	301095758645	132	30	166	1	145	30	179	1
+protein20	4	pair_gapbin3	true	H7FWB6	7 bacteria	B8XC04	ice-binding, other lineage	13	301095778199	132	32	168	1	145	32	181	1
+protein20	4	pair_gapbin3	true	H7FWB6	7 bacteria	B8XC04	ice-binding, other lineage	13	301095812909	132	31	167	1	145	31	180	1
+protein20	4	pair_gapbin3	true	H7FWB6	7 bacteria	B8XC04	ice-binding, other lineage	13	301095883988	132	33	169	1	145	33	182	1
+protein20	4	pair_gapbin3	true	H7FWB6	7 bacteria	B8XC04	ice-binding, other lineage	13	301095919778	132	34	170	1	145	34	183	1
+protein20	4	pair_gapbin3	true	H7FWB6	7 bacteria	B8XC04	ice-binding, other lineage	13	301095995576	132	35	171	1	145	35	184	1
+protein20	4	pair_gapbin3	true	H7FWB6	7 bacteria	C7F6X3	ice-binding, other lineage	31	4705009665	212	19	235	1	180	19	203	1
+protein20	4	pair_gapbin3	true	H7FWB6	7 bacteria	C7F6X3	ice-binding, other lineage	31	98535112105	169	38	211	1	137	38	179	1
+protein20	4	pair_gapbin3	true	H7FWB6	7 bacteria	C7F6X3	ice-binding, other lineage	31	98535171605	169	37	210	1	137	37	178	1
+protein20	4	pair_gapbin3	true	H7FWB6	7 bacteria	C7F6X3	ice-binding, other lineage	31	98535202100	169	39	212	1	137	39	180	1
+protein20	4	pair_gapbin3	true	H7FWB6	7 bacteria	C7F6X3	ice-binding, other lineage	31	160240232105	172	35	211	1	140	35	179	1
+protein20	4	pair_gapbin3	true	H7FWB6	7 bacteria	C7F6X3	ice-binding, other lineage	31	160240291605	172	34	210	1	140	34	178	1
+protein20	4	pair_gapbin3	true	H7FWB6	7 bacteria	C7F6X3	ice-binding, other lineage	31	160240322100	172	36	212	1	140	36	180	1
+protein20	4	pair_gapbin3	true	H7FWB6	7 bacteria	C7F6X3	ice-binding, other lineage	31	161516209665	211	20	235	1	179	20	203	1
+protein20	4	pair_gapbin3	true	H7FWB6	7 bacteria	C7F6X3	ice-binding, other lineage	31	165771618199	156	8	168	1	124	8	136	1
+protein20	4	pair_gapbin3	true	H7FWB6	7 bacteria	C7F6X3	ice-binding, other lineage	31	165771723988	156	9	169	1	124	9	137	1
+protein20	4	pair_gapbin3	true	H7FWB6	7 bacteria	C7F6X3	ice-binding, other lineage	31	165771759778	156	10	170	1	124	10	138	1
+protein20	4	pair_gapbin3	true	H7FWB6	7 bacteria	C7F6X3	ice-binding, other lineage	31	165771835576	156	11	171	1	124	11	139	1
+protein20	4	pair_gapbin3	true	H7FWB6	7 bacteria	C7F6X3	ice-binding, other lineage	31	165771911535	156	12	172	1	124	12	140	1
+protein20	4	pair_gapbin3	true	H7FWB6	7 bacteria	C7F6X3	ice-binding, other lineage	31	166521632149	66	2	72	1	27	2	33	1
+protein20	4	pair_gapbin3	true	H7FWB6	7 bacteria	C7F6X3	ice-binding, other lineage	31	166521689607	66	1	71	1	27	1	32	1
+protein20	4	pair_gapbin3	true	H7FWB6	7 bacteria	C7F6X3	ice-binding, other lineage	31	178704642100	170	38	212	1	138	38	180	1
+protein20	4	pair_gapbin3	true	H7FWB6	7 bacteria	C7F6X3	ice-binding, other lineage	31	178704712105	170	37	211	1	138	37	179	1
+protein20	4	pair_gapbin3	true	H7FWB6	7 bacteria	C7F6X3	ice-binding, other lineage	31	178704771605	170	36	210	1	138	36	178	1
+protein20	4	pair_gapbin3	true	H7FWB6	7 bacteria	C7F6X3	ice-binding, other lineage	31	217031434005	151	1	156	1	119	1	124	1
+protein20	4	pair_gapbin3	true	H7FWB6	7 bacteria	C7F6X3	ice-binding, other lineage	31	217032043988	151	14	169	1	119	14	137	1
+protein20	4	pair_gapbin3	true	H7FWB6	7 bacteria	C7F6X3	ice-binding, other lineage	31	217032098199	151	13	168	1	119	13	136	1
+protein20	4	pair_gapbin3	true	H7FWB6	7 bacteria	C7F6X3	ice-binding, other lineage	31	217032231535	151	17	172	1	119	17	140	1
+protein20	4	pair_gapbin3	true	H7FWB6	7 bacteria	C7F6X3	ice-binding, other lineage	31	217032239778	151	15	170	1	119	15	138	1
+protein20	4	pair_gapbin3	true	H7FWB6	7 bacteria	C7F6X3	ice-binding, other lineage	31	217032315576	151	16	171	1	119	16	139	1
+protein20	4	pair_gapbin3	true	H7FWB6	7 bacteria	C7F6X3	ice-binding, other lineage	31	219967811605	168	38	210	1	136	38	178	1
+protein20	4	pair_gapbin3	true	H7FWB6	7 bacteria	C7F6X3	ice-binding, other lineage	31	219967842100	168	40	212	1	136	40	180	1
+protein20	4	pair_gapbin3	true	H7FWB6	7 bacteria	C7F6X3	ice-binding, other lineage	31	219967912105	168	39	211	1	136	39	179	1
+protein20	4	pair_gapbin3	true	H7FWB6	7 bacteria	C7F6X3	ice-binding, other lineage	31	294796369665	210	21	235	1	178	21	203	1
+protein20	4	pair_gapbin3	true	H7FWB6	7 bacteria	C7F6X3	ice-binding, other lineage	31	348492131605	171	35	210	1	139	35	178	1
+protein20	4	pair_gapbin3	true	H7FWB6	7 bacteria	C7F6X3	ice-binding, other lineage	31	348492162100	171	37	212	1	139	37	180	1
+protein20	4	pair_gapbin3	true	H7FWB6	7 bacteria	C7F6X3	ice-binding, other lineage	31	348492232105	171	36	211	1	139	36	179	1
+protein20	4	pair_gapbin3	true	H7FWB6	7 bacteria	Q76CE6	ice-binding, other lineage	51	7676642017	217	4	225	1	185	4	193	1
+protein20	4	pair_gapbin3	true	H7FWB6	7 bacteria	Q76CE6	ice-binding, other lineage	51	11666242017	215	6	225	1	183	6	193	1
+protein20	4	pair_gapbin3	true	H7FWB6	7 bacteria	Q76CE6	ice-binding, other lineage	51	90182722017	214	7	225	1	182	7	193	1
+protein20	4	pair_gapbin3	true	H7FWB6	7 bacteria	Q76CE6	ice-binding, other lineage	51	94109442017	213	8	225	1	181	8	193	1
+protein20	4	pair_gapbin3	true	H7FWB6	7 bacteria	Q76CE6	ice-binding, other lineage	51	98533731105	169	11	184	1	137	11	152	1
+protein20	4	pair_gapbin3	true	H7FWB6	7 bacteria	Q76CE6	ice-binding, other lineage	51	98534226893	169	20	193	1	137	20	161	1
+protein20	4	pair_gapbin3	true	H7FWB6	7 bacteria	Q76CE6	ice-binding, other lineage	51	98535242013	169	40	213	1	137	40	181	1
+protein20	4	pair_gapbin3	true	H7FWB6	7 bacteria	Q76CE6	ice-binding, other lineage	51	160238851105	172	8	184	1	140	8	152	1
+protein20	4	pair_gapbin3	true	H7FWB6	7 bacteria	Q76CE6	ice-binding, other lineage	51	160239346893	172	17	193	1	140	17	161	1
+protein20	4	pair_gapbin3	true	H7FWB6	7 bacteria	Q76CE6	ice-binding, other lineage	51	160240360260	172	38	214	1	140	38	182	1
+protein20	4	pair_gapbin3	true	H7FWB6	7 bacteria	Q76CE6	ice-binding, other lineage	51	160240362013	172	37	213	1	140	37	181	1
+protein20	4	pair_gapbin3	true	H7FWB6	7 bacteria	Q76CE6	ice-binding, other lineage	51	160240485208	172	39	215	1	140	39	183	1
+protein20	4	pair_gapbin3	true	H7FWB6	7 bacteria	Q76CE6	ice-binding, other lineage	51	160240584171	172	40	216	1	140	40	184	1
+protein20	4	pair_gapbin3	true	H7FWB6	7 bacteria	Q76CE6	ice-binding, other lineage	51	176333696889	131	16	151	1	99	16	119	1
+protein20	4	pair_gapbin3	true	H7FWB6	7 bacteria	Q76CE6	ice-binding, other lineage	51	176334603988	131	34	169	1	99	34	137	1
+protein20	4	pair_gapbin3	true	H7FWB6	7 bacteria	Q76CE6	ice-binding, other lineage	51	176334639778	131	35	170	1	99	35	138	1
+protein20	4	pair_gapbin3	true	H7FWB6	7 bacteria	Q76CE6	ice-binding, other lineage	51	176334658199	131	33	168	1	99	33	136	1
+protein20	4	pair_gapbin3	true	H7FWB6	7 bacteria	Q76CE6	ice-binding, other lineage	51	176334791535	131	37	172	1	99	37	140	1
+protein20	4	pair_gapbin3	true	H7FWB6	7 bacteria	Q76CE6	ice-binding, other lineage	51	176334875576	131	36	171	1	99	36	139	1
+protein20	4	pair_gapbin3	true	H7FWB6	7 bacteria	Q76CE6	ice-binding, other lineage	51	178703331105	170	10	184	1	138	10	152	1
+protein20	4	pair_gapbin3	true	H7FWB6	7 bacteria	Q76CE6	ice-binding, other lineage	51	178703826893	170	19	193	1	138	19	161	1
+protein20	4	pair_gapbin3	true	H7FWB6	7 bacteria	Q76CE6	ice-binding, other lineage	51	178704840260	170	40	214	1	138	40	182	1
+protein20	4	pair_gapbin3	true	H7FWB6	7 bacteria	Q76CE6	ice-binding, other lineage	51	178704842013	170	39	213	1	138	39	181	1
+protein20	4	pair_gapbin3	true	H7FWB6	7 bacteria	Q76CE6	ice-binding, other lineage	51	217032043988	151	14	169	1	119	14	137	1
+protein20	4	pair_gapbin3	true	H7FWB6	7 bacteria	Q76CE6	ice-binding, other lineage	51	217032098199	151	13	168	1	119	13	136	1
+protein20	4	pair_gapbin3	true	H7FWB6	7 bacteria	Q76CE6	ice-binding, other lineage	51	217032231535	151	17	172	1	119	17	140	1
+protein20	4	pair_gapbin3	true	H7FWB6	7 bacteria	Q76CE6	ice-binding, other lineage	51	217032239778	151	15	170	1	119	15	138	1
+protein20	4	pair_gapbin3	true	H7FWB6	7 bacteria	Q76CE6	ice-binding, other lineage	51	217032315576	151	16	171	1	119	16	139	1
+protein20	4	pair_gapbin3	true	H7FWB6	7 bacteria	Q76CE6	ice-binding, other lineage	51	217032931105	151	29	184	1	119	29	152	1
+protein20	4	pair_gapbin3	true	H7FWB6	7 bacteria	Q76CE6	ice-binding, other lineage	51	217033426893	151	38	193	1	119	38	161	1
+protein20	4	pair_gapbin3	true	H7FWB6	7 bacteria	Q76CE6	ice-binding, other lineage	51	219966531105	168	12	184	1	136	12	152	1
+protein20	4	pair_gapbin3	true	H7FWB6	7 bacteria	Q76CE6	ice-binding, other lineage	51	219967026893	168	21	193	1	136	21	161	1
+protein20	4	pair_gapbin3	true	H7FWB6	7 bacteria	Q76CE6	ice-binding, other lineage	51	233343202017	216	5	225	1	184	5	193	1
+protein20	4	pair_gapbin3	true	H7FWB6	7 bacteria	Q76CE6	ice-binding, other lineage	51	293675506893	184	5	193	1	152	5	161	1
+protein20	4	pair_gapbin3	true	H7FWB6	7 bacteria	Q76CE6	ice-binding, other lineage	51	293676520260	184	26	214	1	152	26	182	1
+protein20	4	pair_gapbin3	true	H7FWB6	7 bacteria	Q76CE6	ice-binding, other lineage	51	293676522013	184	25	213	1	152	25	181	1
+protein20	4	pair_gapbin3	true	H7FWB6	7 bacteria	Q76CE6	ice-binding, other lineage	51	293676643427	184	29	217	1	152	29	185	1
+protein20	4	pair_gapbin3	true	H7FWB6	7 bacteria	Q76CE6	ice-binding, other lineage	51	293676645208	184	27	215	1	152	27	183	1
+protein20	4	pair_gapbin3	true	H7FWB6	7 bacteria	Q76CE6	ice-binding, other lineage	51	293676744171	184	28	216	1	152	28	184	1
+protein20	4	pair_gapbin3	true	H7FWB6	7 bacteria	Q76CE6	ice-binding, other lineage	51	293677122017	184	37	225	1	152	37	193	1
+protein20	4	pair_gapbin3	true	H7FWB6	7 bacteria	Q76CE6	ice-binding, other lineage	51	329041160260	193	17	214	1	161	17	182	1
+protein20	4	pair_gapbin3	true	H7FWB6	7 bacteria	Q76CE6	ice-binding, other lineage	51	329041162013	193	16	213	1	161	16	181	1
+protein20	4	pair_gapbin3	true	H7FWB6	7 bacteria	Q76CE6	ice-binding, other lineage	51	329041283427	193	20	217	1	161	20	185	1
+protein20	4	pair_gapbin3	true	H7FWB6	7 bacteria	Q76CE6	ice-binding, other lineage	51	329041285208	193	18	215	1	161	18	183	1
+protein20	4	pair_gapbin3	true	H7FWB6	7 bacteria	Q76CE6	ice-binding, other lineage	51	329041384171	193	19	216	1	161	19	184	1
+protein20	4	pair_gapbin3	true	H7FWB6	7 bacteria	Q76CE6	ice-binding, other lineage	51	329041762017	193	28	225	1	161	28	193	1
+protein20	4	pair_gapbin3	true	H7FWB6	7 bacteria	Q76CE6	ice-binding, other lineage	51	348490851105	171	9	184	1	139	9	152	1
+protein20	4	pair_gapbin3	true	H7FWB6	7 bacteria	Q76CE6	ice-binding, other lineage	51	348491346893	171	18	193	1	139	18	161	1
+protein20	4	pair_gapbin3	true	H7FWB6	7 bacteria	Q76CE6	ice-binding, other lineage	51	348492202013	171	38	213	1	139	38	181	1
+protein20	4	pair_gapbin3	true	H7FWB6	7 bacteria	Q76CE6	ice-binding, other lineage	51	348492325208	171	40	215	1	139	40	183	1
+protein20	4	pair_gapbin3	true	H7FWB6	7 bacteria	Q76CE6	ice-binding, other lineage	51	348492360260	171	39	214	1	139	39	182	1
+protein20	4	pair_gapbin3	true	H7FWB6	7 bacteria	Q76CE8	ice-binding, other lineage	52	4519790417	225	32	261	1	193	32	229	1
+protein20	4	pair_gapbin3	true	H7FWB6	7 bacteria	Q76CE8	ice-binding, other lineage	52	4704003427	212	1	217	1	180	1	185	1
+protein20	4	pair_gapbin3	true	H7FWB6	7 bacteria	Q76CE8	ice-binding, other lineage	52	4704482017	212	9	225	1	180	9	193	1
+protein20	4	pair_gapbin3	true	H7FWB6	7 bacteria	Q76CE8	ice-binding, other lineage	52	7676642017	217	4	225	1	185	4	193	1
+protein20	4	pair_gapbin3	true	H7FWB6	7 bacteria	Q76CE8	ice-binding, other lineage	52	7678670417	217	40	261	1	185	40	229	1
+protein20	4	pair_gapbin3	true	H7FWB6	7 bacteria	Q76CE8	ice-binding, other lineage	52	11666242017	215	6	225	1	183	6	193	1
+protein20	4	pair_gapbin3	true	H7FWB6	7 bacteria	Q76CE8	ice-binding, other lineage	52	15969499913	227	9	240	1	213	9	226	1
+protein20	4	pair_gapbin3	true	H7FWB6	7 bacteria	Q76CE8	ice-binding, other lineage	52	15969518276	227	10	241	1	213	10	227	1
+protein20	4	pair_gapbin3	true	H7FWB6	7 bacteria	Q76CE8	ice-binding, other lineage	52	90182722017	214	7	225	1	182	7	193	1
+protein20	4	pair_gapbin3	true	H7FWB6	7 bacteria	Q76CE8	ice-binding, other lineage	52	94109442017	213	8	225	1	181	8	193	1
+protein20	4	pair_gapbin3	true	H7FWB6	7 bacteria	Q76CE8	ice-binding, other lineage	52	98534226893	169	20	193	1	137	20	161	1
+protein20	4	pair_gapbin3	true	H7FWB6	7 bacteria	Q76CE8	ice-binding, other lineage	52	98535112105	169	38	211	1	137	38	179	1
+protein20	4	pair_gapbin3	true	H7FWB6	7 bacteria	Q76CE8	ice-binding, other lineage	52	98535202100	169	39	212	1	137	39	180	1
+protein20	4	pair_gapbin3	true	H7FWB6	7 bacteria	Q76CE8	ice-binding, other lineage	52	98535242013	169	40	213	1	137	40	181	1
+protein20	4	pair_gapbin3	true	H7FWB6	7 bacteria	Q76CE8	ice-binding, other lineage	52	160239346893	172	17	193	1	140	17	161	1
+protein20	4	pair_gapbin3	true	H7FWB6	7 bacteria	Q76CE8	ice-binding, other lineage	52	160240232105	172	35	211	1	140	35	179	1
+protein20	4	pair_gapbin3	true	H7FWB6	7 bacteria	Q76CE8	ice-binding, other lineage	52	160240322100	172	36	212	1	140	36	180	1
+protein20	4	pair_gapbin3	true	H7FWB6	7 bacteria	Q76CE8	ice-binding, other lineage	52	160240360260	172	38	214	1	140	38	182	1
+protein20	4	pair_gapbin3	true	H7FWB6	7 bacteria	Q76CE8	ice-binding, other lineage	52	160240362013	172	37	213	1	140	37	181	1
+protein20	4	pair_gapbin3	true	H7FWB6	7 bacteria	Q76CE8	ice-binding, other lineage	52	160240485208	172	39	215	1	140	39	183	1
+protein20	4	pair_gapbin3	true	H7FWB6	7 bacteria	Q76CE8	ice-binding, other lineage	52	160240584171	172	40	216	1	140	40	184	1
+protein20	4	pair_gapbin3	true	H7FWB6	7 bacteria	Q76CE8	ice-binding, other lineage	52	161515203427	211	2	217	1	179	2	185	1
+protein20	4	pair_gapbin3	true	H7FWB6	7 bacteria	Q76CE8	ice-binding, other lineage	52	161515304171	211	1	216	1	179	1	184	1
+protein20	4	pair_gapbin3	true	H7FWB6	7 bacteria	Q76CE8	ice-binding, other lineage	52	161515682017	211	10	225	1	179	10	193	1
+protein20	4	pair_gapbin3	true	H7FWB6	7 bacteria	Q76CE8	ice-binding, other lineage	52	176334603988	131	34	169	1	99	34	137	1
+protein20	4	pair_gapbin3	true	H7FWB6	7 bacteria	Q76CE8	ice-binding, other lineage	52	176334639778	131	35	170	1	99	35	138	1
+protein20	4	pair_gapbin3	true	H7FWB6	7 bacteria	Q76CE8	ice-binding, other lineage	52	176334658199	131	33	168	1	99	33	136	1
+protein20	4	pair_gapbin3	true	H7FWB6	7 bacteria	Q76CE8	ice-binding, other lineage	52	176334791535	131	37	172	1	99	37	140	1
+protein20	4	pair_gapbin3	true	H7FWB6	7 bacteria	Q76CE8	ice-binding, other lineage	52	176334875576	131	36	171	1	99	36	139	1
+protein20	4	pair_gapbin3	true	H7FWB6	7 bacteria	Q76CE8	ice-binding, other lineage	52	178703826893	170	19	193	1	138	19	161	1
+protein20	4	pair_gapbin3	true	H7FWB6	7 bacteria	Q76CE8	ice-binding, other lineage	52	178704642100	170	38	212	1	138	38	180	1
+protein20	4	pair_gapbin3	true	H7FWB6	7 bacteria	Q76CE8	ice-binding, other lineage	52	178704712105	170	37	211	1	138	37	179	1
+protein20	4	pair_gapbin3	true	H7FWB6	7 bacteria	Q76CE8	ice-binding, other lineage	52	178704840260	170	40	214	1	138	40	182	1
+protein20	4	pair_gapbin3	true	H7FWB6	7 bacteria	Q76CE8	ice-binding, other lineage	52	178704842013	170	39	213	1	138	39	181	1
+protein20	4	pair_gapbin3	true	H7FWB6	7 bacteria	Q76CE8	ice-binding, other lineage	52	219967026893	168	21	193	1	136	21	161	1
+protein20	4	pair_gapbin3	true	H7FWB6	7 bacteria	Q76CE8	ice-binding, other lineage	52	219967842100	168	40	212	1	136	40	180	1
+protein20	4	pair_gapbin3	true	H7FWB6	7 bacteria	Q76CE8	ice-binding, other lineage	52	219967912105	168	39	211	1	136	39	179	1
+protein20	4	pair_gapbin3	true	H7FWB6	7 bacteria	Q76CE8	ice-binding, other lineage	52	233343202017	216	5	225	1	184	5	193	1
+protein20	4	pair_gapbin3	true	H7FWB6	7 bacteria	Q76CE8	ice-binding, other lineage	52	329041032105	193	14	211	1	161	14	179	1
+protein20	4	pair_gapbin3	true	H7FWB6	7 bacteria	Q76CE8	ice-binding, other lineage	52	329041122100	193	15	212	1	161	15	180	1
+protein20	4	pair_gapbin3	true	H7FWB6	7 bacteria	Q76CE8	ice-binding, other lineage	52	329041160260	193	17	214	1	161	17	182	1
+protein20	4	pair_gapbin3	true	H7FWB6	7 bacteria	Q76CE8	ice-binding, other lineage	52	329041162013	193	16	213	1	161	16	181	1
+protein20	4	pair_gapbin3	true	H7FWB6	7 bacteria	Q76CE8	ice-binding, other lineage	52	329041283427	193	20	217	1	161	20	185	1
+protein20	4	pair_gapbin3	true	H7FWB6	7 bacteria	Q76CE8	ice-binding, other lineage	52	329041285208	193	18	215	1	161	18	183	1
+protein20	4	pair_gapbin3	true	H7FWB6	7 bacteria	Q76CE8	ice-binding, other lineage	52	329041384171	193	19	216	1	161	19	184	1
+protein20	4	pair_gapbin3	true	H7FWB6	7 bacteria	Q76CE8	ice-binding, other lineage	52	329041762017	193	28	225	1	161	28	193	1
+protein20	4	pair_gapbin3	true	H7FWB6	7 bacteria	Q76CE8	ice-binding, other lineage	52	348491346893	171	18	193	1	139	18	161	1
+protein20	4	pair_gapbin3	true	H7FWB6	7 bacteria	Q76CE8	ice-binding, other lineage	52	348492162100	171	37	212	1	139	37	180	1
+protein20	4	pair_gapbin3	true	H7FWB6	7 bacteria	Q76CE8	ice-binding, other lineage	52	348492202013	171	38	213	1	139	38	181	1
+protein20	4	pair_gapbin3	true	H7FWB6	7 bacteria	Q76CE8	ice-binding, other lineage	52	348492232105	171	36	211	1	139	36	179	1
+protein20	4	pair_gapbin3	true	H7FWB6	7 bacteria	Q76CE8	ice-binding, other lineage	52	348492325208	171	40	215	1	139	40	183	1
+protein20	4	pair_gapbin3	true	H7FWB6	7 bacteria	Q76CE8	ice-binding, other lineage	52	348492360260	171	39	214	1	139	39	182	1
