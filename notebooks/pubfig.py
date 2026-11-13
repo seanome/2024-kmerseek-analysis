@@ -6,9 +6,8 @@ rebuilt from committed code; do not import them from ~/.claude.
 
 from pathlib import Path
 
-import matplotlib.pyplot as plt
 import numpy as np
-import seaborn  # noqa: F401  registers mako and crest, the Seanome colour maps
+import matplotlib.pyplot as plt
 from matplotlib.transforms import ScaledTranslation
 
 MM = 1 / 25.4  # inches per millimetre

@@ -288,11 +288,16 @@ def test_the_truth_set_the_report_does_not_lead_on_is_marked_supplementary(tmp_p
         pl.DataFrame([row("protein20_k5_lcFalse", "mouse", 100, 0.11, 0.12,
                           split="all", truth="swissprot")]),
     ])
-    surface, _ = build(tmp_path, mixed)
+    # Derived from PRIMARY_TRUTH rather than written in: the lead key changed from
+    # Swiss-Prot to Pfam on 2026-09-19 and a test that names one of them breaks on the
+    # switch without saying anything about the code.
+    other = "swissprot" if bmi.PRIMARY_TRUTH == "pfam" else "pfam"
+    surface, _ = build(tmp_path, mixed, truth=other)
     assert surface["parent_id"] == bmi.SUPP_PARENT_ID
     assert surface["section_name"].startswith("Supp: ")
     primary, _ = build(tmp_path, mixed, truth=bmi.PRIMARY_TRUTH)
     assert primary["parent_id"] == "qfo_region"
+    assert not primary["section_name"].startswith("Supp: ")
 
 
 def test_the_selection_split_is_preferred_over_heldout(tmp_path):

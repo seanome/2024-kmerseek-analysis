@@ -1,20 +1,21 @@
 """Rank every human protein across all alphabets at once (notebook 242).
 
 Input: regions.parquet from 241_alphabet_ranking_collect.py, every region of the 152
-arms of the three-case sweep (Ced9, P66 and BHF against the 19_732 canonical human
-proteins; an arm is one alphabet at one seed length k).
+alphabet-ksize pairs of the three-case sweep (Ced9, P66 and BHF against the 19_732
+canonical human proteins; a pair is one alphabet at one seed length k). The code calls a
+pair an "arm".
 
-For one query and one metric, each arm ranks the human proteins it hit by their best
-region. A protein's normalised rank at an arm is rank / 19_732; a protein the arm did
+For one query and one metric, each pair ranks the human proteins it hit by their best
+region. A protein's normalised rank at a pair is rank / 19_732; a protein the pair did
 not hit gets the middle of the tied bottom ranks, (n_hit + 1 + 19_732) / 2 / 19_732.
-The ensemble score is the geometric mean of those normalised ranks (a rank product),
+The combined score is the geometric mean of those normalised ranks (a rank product),
 lower is better, in two weightings:
 
-  by_arm       every arm counts once;
-  by_alphabet  the arms of one alphabet are averaged first, so each of the 19
+  by_arm       every pair counts once;
+  by_alphabet  the pairs of one alphabet are averaged first, so each of the 19
                alphabets counts once, whatever number of k it was run at.
 
-Top-1% votes count the arms (or alphabets) that put a protein in the top 1% of the
+Top-1% votes count the pairs (or alphabets) that put a protein in the top 1% of the
 proteome, rank <= 197.
 """
 
@@ -85,6 +86,8 @@ def arm_ranks(metric: str, alphabets: list[str] | None = None) -> pl.DataFrame:
     return per.with_columns(
         pl.col("v").rank("average", descending=not lower).over(arm).alias("rank"),
         pl.len().over(arm).alias("n_hit"),
+        # proteins with exactly this protein's value at this pair, itself included
+        pl.len().over(arm + ["v"]).alias("n_tied"),
     )
 
 
@@ -203,6 +206,9 @@ def ensemble(
             .rank("min")
             .over("query_name")
             .alias("ens_rank_by_alphabet"),
+            pl.len()
+            .over("query_name", "log_rp_by_alphabet")
+            .alias("ens_n_tied_by_alphabet"),
             pl.col("votes_alphabet")
             .rank("min", descending=True)
             .over("query_name")
@@ -253,8 +259,14 @@ def partner_summary(
                         if best1 is None
                         else f"{best1['alphabet']} k={best1['ksize_arm']}"
                     ),
+                    # the size of that pair's hit list, and the proteins tied with the
+                    # partner there (itself included): a rank of 950 means little in a
+                    # list of 1_161
+                    best_single_n_hit=None if best1 is None else int(best1["n_hit"]),
+                    best_single_n_tied=None if best1 is None else int(best1["n_tied"]),
                     ens_rank_by_arm=int(s["ens_rank_by_arm"]),
                     ens_rank_by_alphabet=int(s["ens_rank_by_alphabet"]),
+                    ens_n_tied=int(s["ens_n_tied_by_alphabet"]),
                     votes_alphabet=int(s["votes_alphabet"]),
                     votes_arm=int(s["votes_arm"]),
                     n_alphabets_hit=int(s["n_alphabets_hit"]),
@@ -269,6 +281,49 @@ def partner_summary(
                 )
             )
     return pl.DataFrame(rows)
+
+
+def family_summary(
+    scores: pl.DataFrame, metric: str, query: str = "Ced9"
+) -> pl.DataFrame:
+    """Every reviewed human protein with the Bcl-2 Pfam domain (PF00452; the list is
+    notebook 241's UniProt cache): its best single-pair rank for `query`, that pair's
+    hit-list size and ties, and its combined rank among 19_732 with ties."""
+    from alphabet_ranking_utils import pfam_family
+
+    fam = pfam_family()["gene"].to_list()
+    per_arm = arm_ranks(metric).filter(
+        (pl.col("query_name") == query) & pl.col("gene").is_in(fam)
+    )
+    best = (
+        per_arm.sort("rank", "n_hit")
+        .group_by("gene")
+        .first()
+        .select(
+            "gene",
+            pl.col("rank").cast(pl.Int64).alias("best_single_rank"),
+            (pl.col("alphabet") + " k=" + pl.col("ksize_arm").cast(pl.Utf8)).alias(
+                "best_single_arm"
+            ),
+            pl.col("n_hit").alias("best_single_n_hit"),
+            pl.col("n_tied").alias("best_single_n_tied"),
+        )
+    )
+    s = scores.filter(
+        (pl.col("query_name") == query) & pl.col("gene").is_in(fam)
+    ).select(
+        "gene",
+        "length",
+        pl.col("ens_rank_by_alphabet").cast(pl.Int64),
+        pl.col("ens_n_tied_by_alphabet").alias("ens_n_tied"),
+    )
+    return (
+        pl.DataFrame({"gene": fam})
+        .join(s, on="gene", how="left")
+        .join(best, on="gene", how="left")
+        .with_columns(pl.lit(query).alias("query"), pl.lit(metric).alias("metric"))
+        .sort("ens_rank_by_alphabet")
+    )
 
 
 def beat_counts(
@@ -460,116 +515,213 @@ def null_summary(case: str, partner: str) -> pl.DataFrame:
 
 
 # ---------------------------------------------------------------------------
-# Figures
+# Figures, drawn at their printed size (183 mm wide) with the paper style of pubfig:
+# Arial, axis labels 7 pt, ticks and legend 6 pt.
 # ---------------------------------------------------------------------------
 import matplotlib.pyplot as plt  # noqa: E402
 from matplotlib.lines import Line2D  # noqa: E402
 
-from alphabet_ranking_utils import _figure_with_legend_row, RAMP  # noqa: E402
-from hp_conservation_utils import finish_figure  # noqa: E402
+import pubfig as pf  # noqa: E402
+from alphabet_ranking_utils import _figure_with_legend_row, _finish, RAMP  # noqa: E402
 
 FIG = Path(__file__).resolve().parent.parent / "figures"
 PURPLE = RAMP(0.85)
 GREY = "#9a9a9a"
+WIDTH = pf.TWO_COLUMN_MM
+MS = 4  # legend marker size, points
+S = 14  # scatter marker area, points^2
 TOOLS = (
     "kmerseek 0.4.0 (982a055) search results of notebook 241: Ced9, P66 and BHF against the "
-    "19_732 canonical human proteins, 19 alphabets, 152 arms; ensemble computed here, no new search"
+    "19_732 canonical human proteins, 19 alphabets, 152 alphabet-ksize pairs; ranks combined "
+    "here, no new search"
 )
+PAIR_TITLES = {
+    ("Ced9", "BCL2"): "Ced9 → BCL2, known homolog",
+    ("P66", "CD47"): "P66 → CD47, proposed partner",
+    ("Ced9", "CD47"): "Ced9 → CD47, no known link (control)",
+}
+
+
+def _save(fig, path: Path, hypothesis: str, conclusion: str, tools: str = TOOLS):
+    _finish(
+        fig,
+        path,
+        tight_layout=False,
+        tools=tools,
+        hypothesis=hypothesis,
+        conclusion=conclusion,
+        header_y=1.01,
+        footer_y=-0.02,
+    )
 
 
 def _rank_axis(ax, label):
+    """Rank on x, spaced by ratio (1 to 10 takes as much room as 1_000 to 10_000)."""
     ax.set_xscale("log")
     ax.set_xlim(0.8, 3e4)
     ax.set_xticks([1, 10, 100, 1000, 10_000])
     ax.set_xticklabels(["1", "10", "100", "1_000", "10_000"])
-    ax.set_xlabel(label, fontsize=9)
-    ax.grid(axis="x", alpha=0.25)
-    ax.spines[["top", "right"]].set_visible(False)
+    ax.minorticks_off()
+    ax.set_xlabel(label)
+    ax.grid(axis="x")
+
+
+def _row_guides(ax, ticks):
+    """A light line from each row's tick across the panel, so a mark reads back to its row."""
+    for t in ticks:
+        ax.axhline(t, color="#ececec", lw=0.4, zorder=0)
+
+
+def _pair_rows(ax, blocks):
+    """blocks: [(title, colour, [(row label, [(x, style)])])]. One row per label, a bold
+    title above each block. Returns nothing; sets the y ticks."""
+    y, ticks, labels = 0, [], []
+    for title, col, rows in blocks:
+        ax.text(0.85, y - 0.55, title, fontweight="bold", va="bottom")
+        for lab, marks in rows:
+            xs = [x for x, _ in marks if x is not None]
+            if xs:
+                ax.plot(
+                    [min(xs), max(xs)], [y, y], color=col, lw=0.6, alpha=0.6, zorder=1
+                )
+            for x, style in marks:
+                if x is None:
+                    continue
+                if style == "open":
+                    ax.scatter(
+                        [x],
+                        [y],
+                        s=S,
+                        facecolors="white",
+                        edgecolors=col,
+                        linewidths=0.9,
+                        zorder=3,
+                    )
+                elif style == "square":
+                    ax.scatter([x], [y], s=S, marker="s", color=col, zorder=4)
+                elif style == "diamond":
+                    ax.scatter([x], [y], s=S * 0.8, marker="D", color=col, zorder=3)
+            ticks.append(y)
+            labels.append(lab)
+            y += 1
+        y += 1.5
+    ax.set_yticks(ticks)
+    ax.set_yticklabels(labels)
+    ax.set_ylim(y - 1.3, -1.5)
+    _row_guides(ax, ticks)
+
+
+def _open_handle(label, col=PURPLE):
+    return Line2D(
+        [],
+        [],
+        marker="o",
+        ls="",
+        ms=MS,
+        markerfacecolor="white",
+        markeredgecolor=col,
+        markeredgewidth=0.9,
+        label=label,
+    )
+
+
+def _filled_handle(label, marker="s", col=PURPLE):
+    return Line2D([], [], marker=marker, ls="", ms=MS, color=col, label=label)
 
 
 def fig_single_vs_ensemble(
     summary: pl.DataFrame, path: Path, hypothesis: str, conclusion: str
 ):
     """Rows: (query, partner, metric). Open circle: the partner's best rank at any one
-    arm. Filled square: its rank when every alphabet's ranks are combined."""
-    order = [("Ced9", "BCL2"), ("P66", "CD47"), ("Ced9", "CD47")]
-    title = {
-        ("Ced9", "BCL2"): "Ced9 → BCL2, known homolog",
-        ("P66", "CD47"): "P66 → CD47, proposed partner",
-        ("Ced9", "CD47"): "Ced9 → CD47, no known link (control)",
-    }
+    alphabet-ksize pair. Filled square: its rank when every alphabet's ranks are combined.
+    """
     handles = [
-        Line2D(
-            [],
-            [],
-            marker="o",
-            ls="",
-            ms=8,
-            markerfacecolor="white",
-            markeredgecolor=PURPLE,
-            markeredgewidth=1.6,
-            label="best rank the partner reaches at any single arm (one alphabet, one k)",
+        _open_handle(
+            "best rank the partner reaches at any single alphabet-ksize pair (one alphabet, one k)"
         ),
-        Line2D(
-            [],
-            [],
-            marker="s",
-            ls="",
-            ms=8,
-            color=PURPLE,
-            label="its rank when the ranks of all 19 alphabets are combined (rank product, each alphabet weighted once)",
+        _filled_handle(
+            "its rank when the ranks of all 19 alphabets are combined (rank product, each alphabet weighted once)"
         ),
-        Line2D(
-            [],
-            [],
-            marker="s",
-            ls="",
-            ms=8,
-            color=GREY,
-            label="grey: the same two marks for a pair with no known link, the control",
+        _filled_handle(
+            "grey: the same two marks for a pair with no known link, the control",
+            col=GREY,
         ),
     ]
-    fig, (ax,) = _figure_with_legend_row(1, (11, 7.2), handles)
-    y, ticks, labels = 0, [], []
-    for pair in order:
+    fig, (ax,) = _figure_with_legend_row(1, (WIDTH, 82), handles, title_in=0.03)
+    blocks = []
+    for pair in PAIR_TITLES:
         col = GREY if pair == ("Ced9", "CD47") else PURPLE
         s = summary.filter(
             (pl.col("query") == pair[0]) & (pl.col("partner") == pair[1])
         )
-        ax.text(
-            0.85, y - 0.6, title[pair], fontsize=9.5, fontweight="bold", va="bottom"
-        )
+        rows = []
         for m in METRICS:
             r = s.filter(pl.col("metric") == m).row(0, named=True)
-            a, b = r["best_single_rank"], r["ens_rank_by_alphabet"]
-            ax.plot([a, b], [y, y], color=col, lw=1, alpha=0.6, zorder=1)
-            ax.scatter(
-                [a],
-                [y],
-                s=60,
-                facecolors="white",
-                edgecolors=col,
-                linewidths=1.6,
-                zorder=3,
+            rows.append(
+                (
+                    m,
+                    [
+                        (r["best_single_rank"], "open"),
+                        (r["ens_rank_by_alphabet"], "square"),
+                    ],
+                )
             )
-            ax.scatter([b], [y], s=60, marker="s", color=col, zorder=3)
-            ticks.append(y)
-            labels.append(m)
-            y += 1
-        y += 1.4
-    ax.set_yticks(ticks)
-    ax.set_yticklabels(labels, fontsize=8.5)
-    ax.set_ylim(y - 1, -1.4)
-    _rank_axis(ax, "rank among the 19_732 human proteins (1 = best, log scale)")
-    finish_figure(
-        fig,
-        path,
-        tools=TOOLS,
-        hypothesis=hypothesis,
-        conclusion=conclusion,
-        header_y=1.01,
-        footer_y=-0.02,
+        blocks.append((PAIR_TITLES[pair], col, rows))
+    _pair_rows(ax, blocks)
+    _rank_axis(ax, "rank among the 19_732 human proteins (1 = best)")
+    _save(fig, path, hypothesis, conclusion)
+
+
+def fig_family(fam: pl.DataFrame, path: Path, hypothesis: str, conclusion: str):
+    """One panel per metric; one row per Bcl-2 family member. Open circle: best rank at
+    any single alphabet-ksize pair for Ced9; filled square: rank with all 19 alphabets
+    combined. BCL2 is the only full-strength row; the other members are a light tint."""
+    light = RAMP(0.3)
+    handles = [
+        _open_handle("best rank at any single alphabet-ksize pair, Ced9 as the query"),
+        _filled_handle("rank with all 19 alphabets combined"),
+        _filled_handle(
+            "light purple: the other 9 reviewed human proteins with the Bcl-2 domain (PF00452)",
+            col=light,
+        ),
+    ]
+    metrics = list(METRICS)
+    fig, axes = _figure_with_legend_row(
+        len(metrics), (WIDTH, 62), handles, sharey=True, wspace=0.2
     )
+    genes = (
+        fam.filter(pl.col("metric") == "mean IDF")
+        .sort("ens_rank_by_alphabet")["gene"]
+        .to_list()
+    )
+    genes = ["BCL2"] + [g for g in genes if g != "BCL2"]
+    for ax, m in zip(axes, metrics):
+        f = fam.filter(pl.col("metric") == m)
+        for y, g in enumerate(genes):
+            r = f.filter(pl.col("gene") == g).row(0, named=True)
+            col = PURPLE if g == "BCL2" else light
+            a, b = r["best_single_rank"], r["ens_rank_by_alphabet"]
+            if a is not None:
+                ax.plot([a, b], [y, y], color=col, lw=0.6, zorder=1)
+                ax.scatter(
+                    [a],
+                    [y],
+                    s=S,
+                    facecolors="white",
+                    edgecolors=col,
+                    linewidths=0.9,
+                    zorder=3,
+                )
+            ax.scatter([b], [y], s=S, marker="s", color=col, zorder=4)
+        ax.set_yticks(range(len(genes)))
+        ax.set_yticklabels(genes)
+        ax.set_ylim(len(genes) - 0.4, -0.6)
+        _row_guides(ax, range(len(genes)))
+        _rank_axis(ax, "rank among 19_732")
+        ax.set_xticks([1, 100, 10_000])
+        ax.set_xticklabels(["1", "100", "10_000"])
+        ax.set_title(m)
+    _save(fig, path, hypothesis, conclusion)
 
 
 def fig_same_crowd(
@@ -579,27 +731,22 @@ def fig_same_crowd(
     of the alphabets that see it (bars), against the number expected if each alphabet
     drew the proteins that beat the partner independently of the others (line)."""
     handles = [
-        Line2D(
-            [],
-            [],
-            marker="s",
-            ls="",
-            ms=9,
-            color=PURPLE,
-            label="observed: proteins that beat the partner in exactly this many alphabets (each alphabet at the k where the partner ranks best)",
+        _filled_handle(
+            "observed: proteins that beat the partner in exactly this many alphabets (each alphabet at the k where the partner ranks best)"
         ),
         Line2D(
             [],
             [],
             marker="o",
             ls="-",
-            ms=5,
+            ms=2.5,
+            lw=0.8,
             color="black",
             label="expected if every alphabet picked the proteins that beat the partner independently of the others",
         ),
     ]
     fig, axes = _figure_with_legend_row(
-        len(panels), (5.2 * len(panels), 5.4), handles, sharey=True
+        len(panels), (WIDTH, 62), handles, sharey=True, wspace=0.12
     )
     out = []
     for ax, (q, partner, m) in zip(axes, panels):
@@ -609,17 +756,18 @@ def fig_same_crowd(
         exp = independent_expectation(pa)[1:]
         j = np.arange(1, A + 1)
         ax.bar(j, np.maximum(obs, 0.8), color=PURPLE, width=0.7, zorder=2)
-        ax.plot(j, np.maximum(exp, 1e-3), "o-", color="black", ms=4, lw=1.2, zorder=3)
+        ax.plot(j, np.maximum(exp, 1e-3), "o-", color="black", ms=2.5, lw=0.8, zorder=3)
         ax.set_yscale("log")
         ax.set_ylim(0.8, 3e4)
+        ax.set_yticks([1, 10, 100, 1000, 10_000])
+        ax.set_yticklabels(["1", "10", "100", "1_000", "10_000"])
+        ax.minorticks_off()
         ax.set_xticks(j)
         ax.set_xlabel(
-            f"alphabets (of the {A} that see {partner}) in which a protein beats it",
-            fontsize=8.5,
+            f"alphabets (of the {A} that see {partner}) in which a protein beats it"
         )
-        ax.set_title(f"{q} → {partner}, ranked by {m}", fontsize=10)
-        ax.grid(axis="y", alpha=0.25)
-        ax.spines[["top", "right"]].set_visible(False)
+        ax.set_title(f"{q} → {partner}, ranked by {m}")
+        ax.grid(axis="y")
         half = (A + 1) // 2
         out.append(
             dict(
@@ -633,16 +781,8 @@ def fig_same_crowd(
                 expected_all=round(float(exp[-1]), 2),
             )
         )
-    axes[0].set_ylabel("human proteins (log scale; 0 drawn at the floor)", fontsize=9)
-    finish_figure(
-        fig,
-        path,
-        tools=TOOLS,
-        hypothesis=hypothesis,
-        conclusion=conclusion,
-        header_y=1.01,
-        footer_y=-0.02,
-    )
+    axes[0].set_ylabel("human proteins (no bar: none)")
+    _save(fig, path, hypothesis, conclusion)
     return pl.DataFrame(out)
 
 
@@ -654,7 +794,7 @@ def fig_length_bias(
     conclusion: str,
     n_label: int = 8,
 ):
-    """Every human protein: its length against its ensemble rank for one query."""
+    """Every human protein: its length against its combined rank for one query."""
     s = scores.filter(pl.col("query_name") == query)
     handles = [
         Line2D(
@@ -662,9 +802,9 @@ def fig_length_bias(
             [],
             marker="o",
             ls="",
-            ms=5,
+            ms=2.5,
             color=PURPLE,
-            alpha=0.4,
+            alpha=0.5,
             label="one human protein",
         ),
         Line2D(
@@ -672,20 +812,26 @@ def fig_length_bias(
             [],
             marker="o",
             ls="",
-            ms=7,
+            ms=MS,
             markerfacecolor="none",
             markeredgecolor="black",
-            label=f"the {n_label} best-ranked proteins, numbered; names in the key",
+            markeredgewidth=0.7,
+            label=f"the {n_label} best-ranked proteins, numbered; names in the box",
         ),
         Line2D(
-            [], [], ls="--", color="#c0392b", label="median length of a human protein"
+            [],
+            [],
+            ls="--",
+            lw=0.8,
+            color=pf.OKABE_ITO["vermillion"],
+            label="median length of a human protein",
         ),
     ]
-    fig, (ax,) = _figure_with_legend_row(1, (9, 6.2), handles)
+    fig, (ax,) = _figure_with_legend_row(1, (WIDTH, 80), handles, title_in=0.03)
     ax.scatter(
         s["length"],
         s["ens_rank_by_alphabet"],
-        s=4,
+        s=2,
         color=PURPLE,
         alpha=0.25,
         lw=0,
@@ -695,21 +841,21 @@ def fig_length_bias(
     ax.scatter(
         top["length"],
         top["ens_rank_by_alphabet"],
-        s=40,
+        s=S,
         facecolors="none",
         edgecolors="black",
-        lw=1,
+        lw=0.7,
     )
-    # Numbers beside the circles, names in a key in the empty lower-left corner: the
+    # Numbers beside the circles, names in a box in the empty lower-left corner: the
     # top proteins sit close together and their names would collide.
     key = []
     for i, r in enumerate(top.iter_rows(named=True), start=1):
         ax.annotate(
             str(i),
             (r["length"], r["ens_rank_by_alphabet"]),
-            xytext=(6, -3),
+            xytext=(4, -2),
             textcoords="offset points",
-            fontsize=8,
+            fontsize=6,
             fontweight="bold",
         )
         key.append(f"{i}  {r['gene']}, {r['length']:_} aa")
@@ -719,28 +865,26 @@ def fig_length_bias(
         "best-ranked proteins\n" + "\n".join(key),
         transform=ax.transAxes,
         va="top",
-        fontsize=8,
+        fontsize=6,
         family="monospace",
-        bbox=dict(boxstyle="round,pad=0.4", facecolor="white", edgecolor="#dddddd"),
+        bbox=dict(
+            boxstyle="round,pad=0.4", facecolor="white", edgecolor="#dddddd", lw=0.5
+        ),
     )
     med = float(s["length"].median())
-    ax.axvline(med, ls="--", color="#c0392b", lw=1.2)
+    ax.axvline(med, ls="--", color=pf.OKABE_ITO["vermillion"], lw=0.8)
     ax.set_xscale("log")
     ax.set_yscale("log")
+    ax.set_xticks([30, 100, 300, 1000, 3000, 10_000, 30_000])
+    ax.set_xticklabels(["30", "100", "300", "1_000", "3_000", "10_000", "30_000"])
+    ax.set_yticks([1, 10, 100, 1000, 10_000])
+    ax.set_yticklabels(["1", "10", "100", "1_000", "10_000"])
+    ax.minorticks_off()
     ax.invert_yaxis()
-    ax.set_xlabel("protein length (aa, log scale)", fontsize=9)
-    ax.set_ylabel(f"ensemble rank for {query} (1 = best, log scale)", fontsize=9)
-    ax.grid(alpha=0.2)
-    ax.spines[["top", "right"]].set_visible(False)
-    finish_figure(
-        fig,
-        path,
-        tools=TOOLS,
-        hypothesis=hypothesis,
-        conclusion=conclusion,
-        header_y=1.01,
-        footer_y=-0.02,
-    )
+    ax.set_xlabel("protein length (aa)")
+    ax.set_ylabel(f"combined rank for {query} (1 = best)")
+    ax.grid(True)
+    _save(fig, path, hypothesis, conclusion)
     return top.select(
         "gene", "length", "ens_rank_by_alphabet", "votes_alphabet", "n_alphabets_hit"
     )
@@ -748,7 +892,7 @@ def fig_length_bias(
 
 def fig_null(path: Path, hypothesis: str, conclusion: str) -> pl.DataFrame:
     """Two panels, one per true pair. Rows: metrics, each with two strips: the best
-    single-arm rank and the ensemble rank. Grey dots: the 300 random queries of the
+    single-pair rank and the combined rank. Grey dots: the 300 random queries of the
     true query's length. Purple diamond: the true query."""
     handles = [
         Line2D(
@@ -756,24 +900,20 @@ def fig_null(path: Path, hypothesis: str, conclusion: str) -> pl.DataFrame:
             [],
             marker="o",
             ls="",
-            ms=5,
+            ms=2.5,
             color=GREY,
             alpha=0.6,
             label="one of 300 random human proteins of the query's length, used as the query",
         ),
-        Line2D(
-            [],
-            [],
+        _filled_handle(
+            "the true query (Ced9 or P66); p right of each row = share of random queries at least as good",
             marker="D",
-            ls="",
-            ms=8,
-            color=PURPLE,
-            label="the true query (Ced9 or P66); p right of each row = share of random queries at least as good",
         ),
     ]
     pairs = [("Ced9", "BCL2"), ("P66", "CD47")]
-    fig, axes = _figure_with_legend_row(2, (14, 6.4), handles, sharey=True)
-    fig.subplots_adjust(wspace=0.22)
+    fig, axes = _figure_with_legend_row(
+        2, (WIDTH, 78), handles, sharey=True, wspace=0.3
+    )
     rng = np.random.default_rng(0)
     rows = []
     for ax, (case, partner) in zip(axes, pairs):
@@ -781,7 +921,7 @@ def fig_null(path: Path, hypothesis: str, conclusion: str) -> pl.DataFrame:
         yt, yl, y = [], [], 0
         for m in METRICS:
             for stat, lab in (
-                ("best_single_rank", "best single arm"),
+                ("best_single_rank", "best single pair"),
                 ("ensemble_rank", "all 19 combined"),
             ):
                 s = t.filter(pl.col("metric") == m)
@@ -790,12 +930,12 @@ def fig_null(path: Path, hypothesis: str, conclusion: str) -> pl.DataFrame:
                 ax.scatter(
                     nul,
                     y + rng.uniform(-0.25, 0.25, len(nul)),
-                    s=6,
+                    s=2,
                     color=GREY,
                     alpha=0.5,
                     lw=0,
                 )
-                ax.scatter([tr], [y], marker="D", s=55, color=PURPLE, zorder=4)
+                ax.scatter([tr], [y], marker="D", s=S, color=PURPLE, zorder=4)
                 p = (1 + (nul <= tr).sum()) / (1 + len(nul))
                 # each panel's own p, just outside its right edge: the panels share row
                 # labels, so a p-value in the label would be the last panel's for both
@@ -806,7 +946,7 @@ def fig_null(path: Path, hypothesis: str, conclusion: str) -> pl.DataFrame:
                     transform=ax.get_yaxis_transform(),
                     va="center",
                     ha="left",
-                    fontsize=7.5,
+                    fontsize=6,
                     clip_on=False,
                 )
                 yt.append(y)
@@ -814,25 +954,21 @@ def fig_null(path: Path, hypothesis: str, conclusion: str) -> pl.DataFrame:
                 y += 1
             y += 0.6
         ax.set_yticks(yt)
-        ax.set_yticklabels(yl, fontsize=8)
+        ax.set_yticklabels(yl)
         ax.set_ylim(y - 0.4, -0.8)
-        _rank_axis(
-            ax,
-            f"rank of {partner} among the 19_732 human proteins (1 = best, log scale)",
-        )
-        ax.set_title(f"{case} → {partner}", fontsize=10.5)
+        _row_guides(ax, yt)
+        _rank_axis(ax, f"rank of {partner} among the 19_732 human proteins (1 = best)")
+        ax.set_title(f"{case} → {partner}")
         rows.append(null_summary(case, partner))
-    finish_figure(
+    _save(
         fig,
         path,
+        hypothesis,
+        conclusion,
         tools=TOOLS.replace(
             "no new search",
-            "plus 300 random queries per pair on 19 arms (242_null_queries.py)",
+            "plus 300 random queries per pair on 19 alphabet-ksize pairs (242_null_queries.py)",
         ),
-        hypothesis=hypothesis,
-        conclusion=conclusion,
-        header_y=1.01,
-        footer_y=-0.02,
     )
     return pl.concat(rows)
 
@@ -843,102 +979,44 @@ SUBSET3 = ["hp_lehninger2", "polarity4", "funcgroups8"]
 def fig_subset(
     sub: pl.DataFrame, path: Path, subset: list[str], hypothesis: str, conclusion: str
 ):
-    """Rows: (query, partner, metric). Open circle: best single arm among the subset's
+    """Rows: (query, partner, metric). Open circle: best single pair among the subset's
     alphabets. Filled square: combined over the subset. Filled diamond: combined over
     all 19 alphabets, for comparison. Grey rows: the no-known-link control."""
-    order = [("Ced9", "BCL2"), ("P66", "CD47"), ("Ced9", "CD47")]
-    title = {
-        ("Ced9", "BCL2"): "Ced9 → BCL2, known homolog",
-        ("P66", "CD47"): "P66 → CD47, proposed partner",
-        ("Ced9", "CD47"): "Ced9 → CD47, no known link (control)",
-    }
     handles = [
-        Line2D(
-            [],
-            [],
-            marker="o",
-            ls="",
-            ms=8,
-            markerfacecolor="white",
-            markeredgecolor=PURPLE,
-            markeredgewidth=1.6,
-            label=f"best rank at any single arm of {', '.join(subset)}",
+        _open_handle(
+            f"best rank at any single alphabet-ksize pair of {', '.join(subset)}"
         ),
-        Line2D(
-            [],
-            [],
-            marker="s",
-            ls="",
-            ms=8,
-            color=PURPLE,
-            label=f"combined over those {len(subset)} alphabets",
+        _filled_handle(f"combined over those {len(subset)} alphabets"),
+        _filled_handle(
+            "combined over all 19 alphabets (section 1), for comparison", marker="D"
         ),
-        Line2D(
-            [],
-            [],
-            marker="D",
-            ls="",
-            ms=7,
-            color=PURPLE,
-            label="combined over all 19 alphabets (section 1), for comparison",
-        ),
-        Line2D(
-            [],
-            [],
-            marker="s",
-            ls="",
-            ms=8,
-            color=GREY,
-            label="grey: the same marks for the pair with no known link, the control",
+        _filled_handle(
+            "grey: the same marks for the pair with no known link, the control",
+            col=GREY,
         ),
     ]
-    fig, (ax,) = _figure_with_legend_row(1, (11, 7.6), handles)
-    y, ticks, labels = 0, [], []
-    for pair in order:
+    fig, (ax,) = _figure_with_legend_row(1, (WIDTH, 86), handles, title_in=0.03)
+    blocks = []
+    for pair in PAIR_TITLES:
         col = GREY if pair == ("Ced9", "CD47") else PURPLE
         s = sub.filter((pl.col("query") == pair[0]) & (pl.col("partner") == pair[1]))
-        ax.text(
-            0.85, y - 0.6, title[pair], fontsize=9.5, fontweight="bold", va="bottom"
-        )
+        rows = []
         for m in METRICS:
             r = s.filter(pl.col("metric") == m).row(0, named=True)
-            a, b, c = r["best_single_rank"], r["ens_rank_by_alphabet"], r["all19"]
-            ax.plot(
-                [min(a, b, c), max(a, b, c)],
-                [y, y],
-                color=col,
-                lw=1,
-                alpha=0.5,
-                zorder=1,
+            rows.append(
+                (
+                    m,
+                    [
+                        (r["best_single_rank"], "open"),
+                        (r["ens_rank_by_alphabet"], "square"),
+                        (r["all19"], "diamond"),
+                    ],
+                )
             )
-            ax.scatter(
-                [a],
-                [y],
-                s=60,
-                facecolors="white",
-                edgecolors=col,
-                linewidths=1.6,
-                zorder=3,
-            )
-            ax.scatter([b], [y], s=60, marker="s", color=col, zorder=4)
-            ax.scatter([c], [y], s=50, marker="D", color=col, zorder=3)
-            ticks.append(y)
-            labels.append(m)
-            y += 1
-        y += 1.4
-    ax.set_yticks(ticks)
-    ax.set_yticklabels(labels, fontsize=8.5)
-    ax.set_ylim(y - 1, -1.4)
-    _rank_axis(ax, "rank among the 19_732 human proteins (1 = best, log scale)")
-    finish_figure(
-        fig,
-        path,
-        tools=TOOLS,
-        hypothesis=hypothesis,
-        conclusion=conclusion,
-        header_y=1.01,
-        footer_y=-0.02,
-    )
+        blocks.append((PAIR_TITLES[pair], col, rows))
+    _pair_rows(ax, blocks)
+    _rank_axis(ax, "rank among the 19_732 human proteins (1 = best)")
+    _save(fig, path, hypothesis, conclusion)
 
 
 # ---------------------------------------------------------------------------
@@ -1188,9 +1266,9 @@ def fig_subset_scan(
     diamond: the best subset for BCL2 at that size, so a panel shows whether the subsets
     picked for BCL2 also help the other pairs."""
     cols = [
-        ("Ced9->BCL2", "Ced9 → BCL2, known homolog"),
-        ("P66->CD47", "P66 → CD47, proposed partner"),
-        ("Ced9->CD47", "Ced9 → CD47, no known link (control)"),
+        ("Ced9->BCL2", ("Ced9", "BCL2")),
+        ("P66->CD47", ("P66", "CD47")),
+        ("Ced9->CD47", ("Ced9", "CD47")),
     ]
     handles = [
         Line2D(
@@ -1198,64 +1276,59 @@ def fig_subset_scan(
             [],
             marker="o",
             ls="",
-            ms=5,
+            ms=2.5,
             color=RAMP(0.25),
             label="one subset of the 19 alphabets (each alphabet at the k where Ced9 ranks BCL2 best; mean IDF)",
         ),
-        Line2D(
-            [],
-            [],
+        _filled_handle(
+            "the subset that ranks BCL2 best at that size, followed into every panel",
             marker="D",
-            ls="",
-            ms=8,
-            color=PURPLE,
-            label="the subset that ranks BCL2 best at that size, followed into every panel",
         ),
     ]
-    fig, axes = _figure_with_legend_row(3, (15, 6.2), handles, sharey=True)
+    fig, axes = _figure_with_legend_row(
+        3, (WIDTH, 70), handles, sharey=True, wspace=0.1
+    )
     rng = np.random.default_rng(0)
     best = scan.sort("Ced9->BCL2").group_by("size").first().sort("size")
-    for ax, (c, t) in zip(axes, cols):
+    for ax, (c, pair) in zip(axes, cols):
         for sz in sorted(scan["size"].unique()):
             v = scan.filter(pl.col("size") == sz)[c].to_numpy()
             ax.scatter(
                 sz + rng.uniform(-0.28, 0.28, len(v)),
                 v,
-                s=3,
+                s=1.5,
                 color=RAMP(0.25),
                 alpha=0.5,
                 lw=0,
                 rasterized=True,
             )
-        ax.plot(best["size"], best[c], "D-", color=PURPLE, ms=7, lw=1.2, zorder=4)
+        ax.plot(best["size"], best[c], "D-", color=PURPLE, ms=3, lw=0.8, zorder=4)
         for sz, v in zip(best["size"], best[c]):
             ax.annotate(
                 f"{v:_}",
                 (sz, v),
-                xytext=(8, -3),
+                xytext=(5, 5),
                 textcoords="offset points",
-                fontsize=8,
-                color=PURPLE,
+                fontsize=6,
+                bbox=dict(
+                    boxstyle="round,pad=0.15",
+                    facecolor="white",
+                    edgecolor="none",
+                    alpha=0.85,
+                ),
+                zorder=5,
             )
         ax.set_yscale("log")
         ax.set_ylim(2.5e4, 8)  # rank 1 at the top
+        ax.set_yticks([10, 100, 1000, 10_000])
+        ax.set_yticklabels(["10", "100", "1_000", "10_000"])
+        ax.minorticks_off()
         ax.set_xticks(sorted(scan["size"].unique()))
-        ax.set_xlabel("alphabets combined", fontsize=9)
-        ax.set_title(t, fontsize=10)
-        ax.grid(alpha=0.2)
-        ax.spines[["top", "right"]].set_visible(False)
-    axes[0].set_ylabel(
-        "rank among the 19_732 human proteins (1 = best, log scale)", fontsize=9
-    )
-    finish_figure(
-        fig,
-        path,
-        tools=TOOLS,
-        hypothesis=hypothesis,
-        conclusion=conclusion,
-        header_y=1.01,
-        footer_y=-0.02,
-    )
+        ax.set_xlabel("alphabets combined")
+        ax.set_title(PAIR_TITLES[pair])
+        ax.grid(axis="y")
+    axes[0].set_ylabel("rank among the 19_732 human proteins (1 = best)")
+    _save(fig, path, hypothesis, conclusion)
     return best.select("size", "subset", "Ced9->BCL2", "P66->CD47", "Ced9->CD47")
 
 
@@ -1270,57 +1343,57 @@ def fig_subset_null(
             [],
             marker="o",
             ls="",
-            ms=5,
+            ms=2.5,
             color=GREY,
             alpha=0.6,
             label="one random human protein of the query's length: its best subset of that size",
         ),
-        Line2D(
-            [],
-            [],
+        _filled_handle(
+            f"{case}: its best subset of that size; p in each row label = share of random queries at least as good",
             marker="D",
-            ls="",
-            ms=8,
-            color=PURPLE,
-            label=f"{case}: its best subset of that size; p in each row label = share of random queries at least as good",
         ),
     ]
-    fig, (ax,) = _figure_with_legend_row(1, (10.5, 5.6), handles)
+    fig, (ax,) = _figure_with_legend_row(1, (WIDTH, 62), handles, title_in=0.03)
     rng = np.random.default_rng(0)
     yt, yl, y = [], [], 0
-    for rule in ["k picked on BCL2 (same for every query)", "each query's own best k"]:
+    rule_titles = {
+        "k picked on BCL2 (same for every query)": "k picked on BCL2, the same k for every query",
+        "each query's own best k": "each query picks its own best k (the fair comparison)",
+    }
+    for rule, title in rule_titles.items():
+        ax.text(0.85, y - 0.55, title, fontweight="bold", va="bottom")
         for sz in (1, 2, 3, 4):
             nul, tr = dists[(rule, sz)]
             ax.scatter(
                 nul,
                 y + rng.uniform(-0.25, 0.25, len(nul)),
-                s=6,
+                s=2,
                 color=GREY,
                 alpha=0.5,
                 lw=0,
             )
-            ax.scatter([tr], [y], marker="D", s=55, color=PURPLE, zorder=4)
-            p = (1 + (nul <= tr).sum()) / (1 + len(nul))
+            ax.scatter([tr], [y], marker="D", s=S, color=PURPLE, zorder=4)
+            # rounded as null_subset_test rounds it, so label and conclusion agree
+            p = round(float((1 + (nul <= tr).sum()) / (1 + len(nul))), 4)
             yt.append(y)
-            yl.append(f"{rule}, {sz} alphabet{'s' if sz > 1 else ''} (p = {p:.3f})")
+            yl.append(f"{sz} alphabet{'s' if sz > 1 else ''} (p = {p:.3f})")
             y += 1
-        y += 0.7
+        y += 1.5
     ax.set_yticks(yt)
-    ax.set_yticklabels(yl, fontsize=8)
-    ax.set_ylim(y - 0.5, -0.8)
+    ax.set_yticklabels(yl)
+    ax.set_ylim(y - 1.3, -1.5)
+    _row_guides(ax, yt)
     _rank_axis(
         ax,
         f"{partner}: geometric mean of its normalised ranks over the subset, x 19_732 (lower is better)",
     )
-    finish_figure(
+    _save(
         fig,
         path,
+        hypothesis,
+        conclusion,
         tools=TOOLS.replace(
             "no new search",
-            "plus 300 random queries on all 152 arms (242_null_queries.py --arms all)",
+            "plus 300 random queries on all 152 alphabet-ksize pairs (242_null_queries.py --arms all)",
         ),
-        hypothesis=hypothesis,
-        conclusion=conclusion,
-        header_y=1.01,
-        footer_y=-0.02,
     )
