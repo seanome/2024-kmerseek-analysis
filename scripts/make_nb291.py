@@ -151,9 +151,10 @@ SEED = 291
 P20 = "protein20"
 HP = "hp_thomas_dill2"
 
-# The four alphabets not in hp_conservation_utils, copied from
-# scripts/plot_alphabet_class_shares.py (itself from kmerseek's src/rust/alphabets.rs).
-# Registered in hc.TABLES for this notebook only, so other notebooks' defaults do not change.
+# Four alphabets copied from scripts/plot_alphabet_class_shares.py (itself from kmerseek's
+# src/rust/alphabets.rs). hp_conservation_utils has held the same four since 2026-10-02.
+# This copy is kept so the class order stays as it was when the notebook ran. The assert
+# below stops the two copies from drifting apart.
 EXTRA_ALPHABETS = {
     "hsdm17": ["A", "D", "KE", "R", "N", "T", "S", "Q", "Y", "F", "LIV", "M", "C", "W", "H", "G", "P"],
     "wass14": ["WM", "DI", "P", "C", "AV", "K", "T", "RE", "G", "L", "Y", "SH", "F", "NQ"],
@@ -162,6 +163,7 @@ EXTRA_ALPHABETS = {
 }
 for name, clusters in EXTRA_ALPHABETS.items():
     assert sorted("".join(clusters)) == sorted(hc.AA20), name
+    assert {frozenset(c) for c in clusters} == {frozenset(c) for c in hc.ALPHABET_CLUSTERS[name]}, name
     hc.TABLES[name] = hc._table(clusters)
 CLUSTERS = hc.ALPHABET_CLUSTERS | EXTRA_ALPHABETS
 N_CLASSES = {a: len(c) for a, c in CLUSTERS.items()}
