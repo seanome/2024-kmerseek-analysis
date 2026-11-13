@@ -204,6 +204,9 @@ results-test/
 # is per-checkout scratch, not shared project config.
 .idea/
 
+# Pipeline Groovy source, rather than a generated Python packaging directory.
+!nextflow-runs/qfo-pfam-region-benchmark/lib/
+!nextflow-runs/qfo-pfam-region-benchmark/lib/*.groovy
 # Run outputs that stay on the laptop or Sherlock, never in git (added 2026-09-28).
 # Nextflow's -with-report/-with-timeline/-with-trace named <kind>.<run>.<ext>; the
 # *.report.html rules above only catch <run>.report.html.
