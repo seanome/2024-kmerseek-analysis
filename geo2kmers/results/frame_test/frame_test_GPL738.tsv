@@ -1,0 +1,4 @@
+reference	alphabet	k	ref_distinct_kmers	tags	tags_frame_ge90pct	tags_one_frame_ge90pct	tags_stretch_ge90pct	tags_one_stretch_ge90pct	tags_any_kmer	median_share_of_tag_in_passing_stretch	shuffled_frame_ge90pct_mean	shuffled_stretch_ge90pct_mean	shuffled_any_kmer_mean
+mouse	protein	7	12304558	8432	1381	1373	2970	2419	8413	0.801	0.0	0.3	8411.7
+mouse	protein	10	13108439	8432	1374	1369	2704	2304	4694	0.826	0.0	0.0	41.7
+mouse	hp	30	13310883	8432	1876	1831	2475	2250	6842	0.847	1.3	2.3	5267.7

@@ -1,0 +1,28 @@
+{
+ "reads": 1131,
+ "bases": 4541733,
+ "swissprot_proteins": 572970,
+ "swissprot_unique_10mers": 115732682,
+ "swissprot_build_s": 156.8,
+ "python_translate_s": 1.2,
+ "python_lookup_s": 15.6,
+ "residues": {
+  "a": 9078942,
+  "b": 5862511,
+  "c": 252541,
+  "d": 236537
+ },
+ "sequences": {
+  "a": 6786,
+  "b": 84185,
+  "c": 1131,
+  "d": 579
+ },
+ "residues_per_base": {
+  "a": 1.999003904456735,
+  "b": 1.2908092571712164,
+  "c": 0.05560454566571835,
+  "d": 0.05208078061832345
+ },
+ "reads_kept_d": 0.5119363395225465
+}

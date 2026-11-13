@@ -1,0 +1,168 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 540" width="1200" height="540" font-family="Arial, Helvetica, sans-serif">
+<rect width="1200" height="540" fill="#ffffff"/>
+<text x="20" y="28" font-size="15" font-weight="bold" text-anchor="start" fill="#222">Botryllus electrical stimulation (PEC), notebook 361: Nextflow pipeline nextflow-runs/pec-domen2026</text>
+<line x1="20" y1="52" x2="46" y2="52" stroke="#0570b0" stroke-width="5"/>
+<text x="52" y="56" font-size="11.5" font-weight="normal" text-anchor="start" fill="#222">SPLASH anchors</text>
+<line x1="162.2" y1="52" x2="188.2" y2="52" stroke="#2db572" stroke-width="5"/>
+<text x="194.2" y="56" font-size="11.5" font-weight="normal" text-anchor="start" fill="#222">anchor counts, PyDESeq2</text>
+<line x1="361.1" y1="52" x2="387.1" y2="52" stroke="#e6550d" stroke-width="5"/>
+<text x="393.1" y="56" font-size="11.5" font-weight="normal" text-anchor="start" fill="#222">DE-kupl k-mers, limma</text>
+<line x1="547.4" y1="52" x2="573.4" y2="52" stroke="#e7298a" stroke-width="5"/>
+<text x="579.4" y="56" font-size="11.5" font-weight="normal" text-anchor="start" fill="#222">KaMRaT contigs, t-test</text>
+<line x1="740.0" y1="52" x2="766.0" y2="52" stroke="#756bb1" stroke-width="5"/>
+<text x="772.0" y="56" font-size="11.5" font-weight="normal" text-anchor="start" fill="#222">protein search hits</text>
+<line x1="913.7" y1="52" x2="939.7" y2="52" stroke="#7f7f7f" stroke-width="5" stroke-dasharray="7 4"/>
+<text x="945.7" y="56" font-size="11.5" font-weight="normal" text-anchor="start" fill="#222">known answers: control, paper gene lists</text>
+<rect x="20" y="67" width="12" height="14" rx="6" fill="#fff" stroke="#222" stroke-width="2"/>
+<text x="38" y="78" font-size="11.5" font-weight="normal" text-anchor="start" fill="#222">step (white mark across the lines it reads)</text>
+<path d="M320,66 h9 l4,4 v12 h-13 z" fill="#fff" stroke="#222" stroke-width="1.2"/>
+<text x="340" y="78" font-size="11.5" font-weight="normal" text-anchor="start" fill="#222">file, with its type and what it holds; thin grey link = read or written by the step</text>
+<rect x="20" y="92" width="260" height="418" rx="8" fill="#f3f3f3"/>
+<circle cx="34" cy="108" r="9" fill="#333"/>
+<text x="34" y="112" font-size="11" font-weight="bold" text-anchor="middle" fill="#fff">1</text>
+<text x="48" y="112" font-size="12.5" font-weight="bold" text-anchor="start" fill="#444">Reads</text>
+<rect x="290" y="92" width="375" height="418" rx="8" fill="#f3f3f3"/>
+<circle cx="304" cy="108" r="9" fill="#333"/>
+<text x="304" y="112" font-size="11" font-weight="bold" text-anchor="middle" fill="#fff">2</text>
+<text x="318" y="112" font-size="12.5" font-weight="bold" text-anchor="start" fill="#444">Find changed sequences, PEC vs control</text>
+<rect x="675" y="92" width="210" height="418" rx="8" fill="#f3f3f3"/>
+<circle cx="689" cy="108" r="9" fill="#333"/>
+<text x="689" y="112" font-size="11" font-weight="bold" text-anchor="middle" fill="#fff">3</text>
+<text x="703" y="112" font-size="12.5" font-weight="bold" text-anchor="start" fill="#444">Search proteins;</text>
+<text x="703" y="127" font-size="12.5" font-weight="bold" text-anchor="start" fill="#444">score the control</text>
+<rect x="890" y="92" width="290" height="418" rx="8" fill="#f3f3f3"/>
+<circle cx="904" cy="108" r="9" fill="#333"/>
+<text x="904" y="112" font-size="11" font-weight="bold" text-anchor="middle" fill="#fff">4</text>
+<text x="918" y="112" font-size="12.5" font-weight="bold" text-anchor="start" fill="#444">Paper gene lists, notebook</text>
+<g transform="translate(0,45)">
+<line x1="62" y1="150" x2="140" y2="150" stroke="#999" stroke-width="1.3"/>
+<line x1="62" y1="262" x2="140" y2="300" stroke="#999" stroke-width="1.3"/>
+<line x1="62" y1="330" x2="140" y2="300" stroke="#999" stroke-width="1.3"/>
+<line x1="390" y1="148" x2="390" y2="236" stroke="#999" stroke-width="1.3"/>
+<line x1="390" y1="266" x2="390" y2="352" stroke="#999" stroke-width="1.3"/>
+<line x1="820" y1="215" x2="746" y2="161" stroke="#999" stroke-width="1.3"/>
+<line x1="820" y1="106" x2="748" y2="124" stroke="#999" stroke-width="1.3"/>
+<text x="846" y="104" font-size="10" font-weight="normal" text-anchor="start" fill="#444">3 protein</text>
+<text x="846" y="116" font-size="10" font-weight="normal" text-anchor="start" fill="#444">indexes</text>
+<line x1="800" y1="410" x2="744" y2="352" stroke="#999" stroke-width="1.3"/>
+<line x1="920" y1="380" x2="1000" y2="380" stroke="#999" stroke-width="1.3"/>
+<line x1="1100" y1="230" x2="1006" y2="230" stroke="#999" stroke-width="1.3"/>
+<path d="M140.0,139.5 L177.7,139.5 Q191.7,139.5 197.6,152.2 L221.8,203.9 Q226.7,214.5 238.3,214.5 L250.0,214.5" fill="none" stroke="#fff" stroke-width="8.5" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M140.0,139.5 L177.7,139.5 Q191.7,139.5 197.6,152.2 L221.8,203.9 Q226.7,214.5 238.3,214.5 L250.0,214.5" fill="none" stroke="#0570b0" stroke-width="4.5" stroke-linejoin="round"/>
+<path d="M140.0,289.5 L164.3,289.5 Q178.3,289.5 184.2,276.8 L207.4,227.2 Q213.3,214.5 227.3,214.5 L250.0,214.5" fill="none" stroke="#fff" stroke-width="8.5" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M140.0,289.5 L164.3,289.5 Q178.3,289.5 184.2,276.8 L207.4,227.2 Q213.3,214.5 227.3,214.5 L250.0,214.5" fill="none" stroke="#0570b0" stroke-width="4.5" stroke-linejoin="round"/>
+<path d="M140.0,146.5 L173.2,146.5 Q187.2,146.5 193.1,159.2 L216.4,208.9 Q222.2,221.5 236.1,221.5 L250.0,221.5" fill="none" stroke="#fff" stroke-width="8.5" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M140.0,146.5 L173.2,146.5 Q187.2,146.5 193.1,159.2 L216.4,208.9 Q222.2,221.5 236.1,221.5 L250.0,221.5" fill="none" stroke="#2db572" stroke-width="4.5" stroke-linejoin="round"/>
+<path d="M140.0,296.5 L168.8,296.5 Q182.8,296.5 188.7,283.8 L211.9,234.2 Q217.8,221.5 231.8,221.5 L250.0,221.5" fill="none" stroke="#fff" stroke-width="8.5" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M140.0,296.5 L168.8,296.5 Q182.8,296.5 188.7,283.8 L211.9,234.2 Q217.8,221.5 231.8,221.5 L250.0,221.5" fill="none" stroke="#2db572" stroke-width="4.5" stroke-linejoin="round"/>
+<path d="M140.0,153.5 L168.8,153.5 Q182.8,153.5 188.7,166.2 L211.9,215.8 Q217.8,228.5 231.8,228.5 L250.0,228.5" fill="none" stroke="#fff" stroke-width="8.5" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M140.0,153.5 L168.8,153.5 Q182.8,153.5 188.7,166.2 L211.9,215.8 Q217.8,228.5 231.8,228.5 L250.0,228.5" fill="none" stroke="#e6550d" stroke-width="4.5" stroke-linejoin="round"/>
+<path d="M140.0,303.5 L173.2,303.5 Q187.2,303.5 193.1,290.8 L216.4,241.1 Q222.2,228.5 236.1,228.5 L250.0,228.5" fill="none" stroke="#fff" stroke-width="8.5" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M140.0,303.5 L173.2,303.5 Q187.2,303.5 193.1,290.8 L216.4,241.1 Q222.2,228.5 236.1,228.5 L250.0,228.5" fill="none" stroke="#e6550d" stroke-width="4.5" stroke-linejoin="round"/>
+<path d="M140.0,160.5 L164.3,160.5 Q178.3,160.5 184.2,173.2 L207.4,222.8 Q213.3,235.5 227.3,235.5 L250.0,235.5" fill="none" stroke="#fff" stroke-width="8.5" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M140.0,160.5 L164.3,160.5 Q178.3,160.5 184.2,173.2 L207.4,222.8 Q213.3,235.5 227.3,235.5 L250.0,235.5" fill="none" stroke="#e7298a" stroke-width="4.5" stroke-linejoin="round"/>
+<path d="M140.0,310.5 L177.7,310.5 Q191.7,310.5 197.6,297.8 L221.8,246.1 Q226.7,235.5 238.3,235.5 L250.0,235.5" fill="none" stroke="#fff" stroke-width="8.5" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M140.0,310.5 L177.7,310.5 Q191.7,310.5 197.6,297.8 L221.8,246.1 Q226.7,235.5 238.3,235.5 L250.0,235.5" fill="none" stroke="#e7298a" stroke-width="4.5" stroke-linejoin="round"/>
+<path d="M250.0,214.5 L273.9,214.5 Q287.9,214.5 294.2,202.0 L321.5,149.0 Q327.9,136.5 341.9,136.5 L390.0,136.5" fill="none" stroke="#fff" stroke-width="8.5" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M250.0,214.5 L273.9,214.5 Q287.9,214.5 294.2,202.0 L321.5,149.0 Q327.9,136.5 341.9,136.5 L390.0,136.5" fill="none" stroke="#0570b0" stroke-width="4.5" stroke-linejoin="round"/>
+<path d="M250.0,221.5 L278.1,221.5 Q292.1,221.5 298.5,209.0 L325.8,156.0 Q332.1,143.5 346.1,143.5 L390.0,143.5" fill="none" stroke="#fff" stroke-width="8.5" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M250.0,221.5 L278.1,221.5 Q292.1,221.5 298.5,209.0 L325.8,156.0 Q332.1,143.5 346.1,143.5 L390.0,143.5" fill="none" stroke="#2db572" stroke-width="4.5" stroke-linejoin="round"/>
+<path d="M250.0,228.5 L278.6,228.5 Q292.6,228.5 296.7,241.9 L328.4,343.1 Q332.6,356.5 346.6,356.5 L390.0,356.5" fill="none" stroke="#fff" stroke-width="8.5" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M250.0,228.5 L278.6,228.5 Q292.6,228.5 296.7,241.9 L328.4,343.1 Q332.6,356.5 346.6,356.5 L390.0,356.5" fill="none" stroke="#e6550d" stroke-width="4.5" stroke-linejoin="round"/>
+<path d="M250.0,235.5 L273.4,235.5 Q287.4,235.5 291.6,248.9 L323.3,350.1 Q327.4,363.5 341.4,363.5 L390.0,363.5" fill="none" stroke="#fff" stroke-width="8.5" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M250.0,235.5 L273.4,235.5 Q287.4,235.5 291.6,248.9 L323.3,350.1 Q327.4,363.5 341.4,363.5 L390.0,363.5" fill="none" stroke="#e7298a" stroke-width="4.5" stroke-linejoin="round"/>
+<path d="M390.0,136.5 L426.0,136.5 Q440.0,136.5 448.7,125.5 L456.3,116.0 Q465.0,105.0 479.0,105.0 L586.0,105.0 Q600.0,105.0 609.8,115.0 L620.2,125.5 Q630.0,135.5 644.0,135.5 L740.0,135.5" fill="none" stroke="#fff" stroke-width="8.5" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M390.0,136.5 L426.0,136.5 Q440.0,136.5 448.7,125.5 L456.3,116.0 Q465.0,105.0 479.0,105.0 L586.0,105.0 Q600.0,105.0 609.8,115.0 L620.2,125.5 Q630.0,135.5 644.0,135.5 L740.0,135.5" fill="none" stroke="#0570b0" stroke-width="4.5" stroke-linejoin="round"/>
+<path d="M390.0,136.5 L506.0,136.5 Q520.0,136.5 520.0,150.5 L520.0,305.5 Q520.0,319.5 534.0,319.5 L740.0,319.5" fill="none" stroke="#fff" stroke-width="8.5" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M390.0,136.5 L506.0,136.5 Q520.0,136.5 520.0,150.5 L520.0,305.5 Q520.0,319.5 534.0,319.5 L740.0,319.5" fill="none" stroke="#0570b0" stroke-width="4.5" stroke-linejoin="round"/>
+<path d="M390.0,143.5 L426.0,143.5 Q440.0,143.5 448.7,154.5 L456.3,164.0 Q465.0,175.0 479.0,175.0 L513.0,175.0 Q527.0,175.0 527.0,189.0 L527.0,312.5 Q527.0,326.5 541.0,326.5 L740.0,326.5" fill="none" stroke="#fff" stroke-width="8.5" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M390.0,143.5 L426.0,143.5 Q440.0,143.5 448.7,154.5 L456.3,164.0 Q465.0,175.0 479.0,175.0 L513.0,175.0 Q527.0,175.0 527.0,189.0 L527.0,312.5 Q527.0,326.5 541.0,326.5 L740.0,326.5" fill="none" stroke="#2db572" stroke-width="4.5" stroke-linejoin="round"/>
+<path d="M527.0,175.0 L634.4,175.0 Q648.0,175.0 658.0,165.8 L658.0,165.8 Q668.0,156.5 681.6,156.5 L740.0,156.5" fill="none" stroke="#fff" stroke-width="8.5" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M527.0,175.0 L634.4,175.0 Q648.0,175.0 658.0,165.8 L658.0,165.8 Q668.0,156.5 681.6,156.5 L740.0,156.5" fill="none" stroke="#2db572" stroke-width="4.5" stroke-linejoin="round"/>
+<path d="M390.0,356.5 L686.0,356.5 Q700.0,356.5 709.2,345.9 L713.4,341.0 Q720.0,333.5 730.0,333.5 L740.0,333.5" fill="none" stroke="#fff" stroke-width="8.5" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M390.0,356.5 L686.0,356.5 Q700.0,356.5 709.2,345.9 L713.4,341.0 Q720.0,333.5 730.0,333.5 L740.0,333.5" fill="none" stroke="#e6550d" stroke-width="4.5" stroke-linejoin="round"/>
+<path d="M390.0,356.5 L666.0,356.5 Q680.0,356.5 680.0,342.5 L680.0,156.5 Q680.0,142.5 694.0,142.5 L740.0,142.5" fill="none" stroke="#fff" stroke-width="8.5" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M390.0,356.5 L666.0,356.5 Q680.0,356.5 680.0,342.5 L680.0,156.5 Q680.0,142.5 694.0,142.5 L740.0,142.5" fill="none" stroke="#e6550d" stroke-width="4.5" stroke-linejoin="round"/>
+<path d="M390.0,363.5 L426.0,363.5 Q440.0,363.5 447.9,375.1 L457.1,388.4 Q465.0,400.0 479.0,400.0 L696.0,400.0 Q710.0,400.0 714.5,386.7 L728.4,345.2 Q730.0,340.5 735.0,340.5 L740.0,340.5" fill="none" stroke="#fff" stroke-width="8.5" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M390.0,363.5 L426.0,363.5 Q440.0,363.5 447.9,375.1 L457.1,388.4 Q465.0,400.0 479.0,400.0 L696.0,400.0 Q710.0,400.0 714.5,386.7 L728.4,345.2 Q730.0,340.5 735.0,340.5 L740.0,340.5" fill="none" stroke="#e7298a" stroke-width="4.5" stroke-linejoin="round"/>
+<path d="M390.0,363.5 L426.0,363.5 Q440.0,363.5 447.9,375.1 L457.1,388.4 Q465.0,400.0 479.0,400.0 L681.0,400.0 Q695.0,400.0 695.0,386.0 L695.0,163.5 Q695.0,149.5 709.0,149.5 L740.0,149.5" fill="none" stroke="#fff" stroke-width="8.5" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M390.0,363.5 L426.0,363.5 Q440.0,363.5 447.9,375.1 L457.1,388.4 Q465.0,400.0 479.0,400.0 L681.0,400.0 Q695.0,400.0 695.0,386.0 L695.0,163.5 Q695.0,149.5 709.0,149.5 L740.0,149.5" fill="none" stroke="#e7298a" stroke-width="4.5" stroke-linejoin="round"/>
+<path d="M740.0,128.5 L881.0,128.5 Q895.0,128.5 901.6,140.8 L933.4,200.2 Q940.0,212.5 954.0,212.5 L1000.0,212.5" fill="none" stroke="#fff" stroke-width="8.5" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M740.0,128.5 L881.0,128.5 Q895.0,128.5 901.6,140.8 L933.4,200.2 Q940.0,212.5 954.0,212.5 L1000.0,212.5" fill="none" stroke="#756bb1" stroke-width="4.5" stroke-linejoin="round"/>
+<path d="M740.0,135.5 L881.0,135.5 Q895.0,135.5 901.6,147.8 L933.4,207.2 Q940.0,219.5 954.0,219.5 L1000.0,219.5" fill="none" stroke="#fff" stroke-width="8.5" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M740.0,135.5 L881.0,135.5 Q895.0,135.5 901.6,147.8 L933.4,207.2 Q940.0,219.5 954.0,219.5 L1000.0,219.5" fill="none" stroke="#0570b0" stroke-width="4.5" stroke-linejoin="round"/>
+<path d="M740.0,156.5 L881.0,156.5 Q895.0,156.5 902.6,168.3 L932.4,214.7 Q940.0,226.5 954.0,226.5 L1000.0,226.5" fill="none" stroke="#fff" stroke-width="8.5" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M740.0,156.5 L881.0,156.5 Q895.0,156.5 902.6,168.3 L932.4,214.7 Q940.0,226.5 954.0,226.5 L1000.0,226.5" fill="none" stroke="#2db572" stroke-width="4.5" stroke-linejoin="round"/>
+<path d="M1000.0,380.0 L1000.0,233.5" fill="none" stroke="#fff" stroke-width="8.5" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M1000.0,380.0 L1000.0,233.5" fill="none" stroke="#7f7f7f" stroke-width="4.5" stroke-linejoin="round" stroke-dasharray="7 4"/>
+<rect x="133.5" y="133.0" width="13" height="34.0" rx="6.5" fill="#fff" stroke="#222" stroke-width="2"/>
+<rect x="133.5" y="283.0" width="13" height="34.0" rx="6.5" fill="#fff" stroke="#222" stroke-width="2"/>
+<rect x="243.5" y="208.0" width="13" height="34.0" rx="6.5" fill="#fff" stroke="#222" stroke-width="2"/>
+<rect x="383.5" y="130.0" width="13" height="20.0" rx="6.5" fill="#fff" stroke="#222" stroke-width="2"/>
+<rect x="383.5" y="350.0" width="13" height="20.0" rx="6.5" fill="#fff" stroke="#222" stroke-width="2"/>
+<rect x="493.5" y="98.5" width="13" height="13" rx="6.5" fill="#fff" stroke="#222" stroke-width="2"/>
+<rect x="493.5" y="168.5" width="13" height="13" rx="6.5" fill="#fff" stroke="#222" stroke-width="2"/>
+<rect x="493.5" y="393.5" width="13" height="13" rx="6.5" fill="#fff" stroke="#222" stroke-width="2"/>
+<rect x="581.5" y="168.5" width="13" height="13" rx="6.5" fill="#fff" stroke="#222" stroke-width="2"/>
+<rect x="733.5" y="122.0" width="13" height="41.0" rx="6.5" fill="#fff" stroke="#222" stroke-width="2"/>
+<rect x="733.5" y="313.0" width="13" height="41.0" rx="6.5" fill="#fff" stroke="#222" stroke-width="2"/>
+<rect x="993.5" y="206.0" width="13" height="34.0" rx="6.5" fill="#fff" stroke="#222" stroke-width="2"/>
+<rect x="993.5" y="373.5" width="13" height="13" rx="6.5" fill="#fff" stroke="#222" stroke-width="2"/>
+<path d="M42.0,134.0 h32 l8,8 v24 h-40 z" fill="#fff" stroke="#222" stroke-width="1.3"/>
+<text x="62" y="154" font-size="6.5" font-weight="bold" text-anchor="middle" fill="#222">FASTQ.GZ</text>
+<text x="62" y="178.0" font-size="10" font-weight="normal" text-anchor="middle" fill="#444">47 of 64 runs</text>
+<text x="62" y="190.0" font-size="10" font-weight="normal" text-anchor="middle" fill="#444">78 GB</text>
+<path d="M49.0,246.0 h18 l8,8 v24 h-26 z" fill="#fff" stroke="#222" stroke-width="1.3"/>
+<text x="62" y="266" font-size="8.5" font-weight="bold" text-anchor="middle" fill="#222">FA</text>
+<text x="62" y="290.0" font-size="10" font-weight="normal" text-anchor="middle" fill="#444">control</text>
+<text x="62" y="302.0" font-size="10" font-weight="normal" text-anchor="middle" fill="#444">3,100 transcripts</text>
+<path d="M49.0,314.0 h18 l8,8 v24 h-26 z" fill="#fff" stroke="#222" stroke-width="1.3"/>
+<text x="62" y="334" font-size="8.5" font-weight="bold" text-anchor="middle" fill="#222">TSV</text>
+<text x="62" y="358.0" font-size="10" font-weight="normal" text-anchor="middle" fill="#444">control</text>
+<text x="62" y="370.0" font-size="10" font-weight="normal" text-anchor="middle" fill="#444">planted changes</text>
+<path d="M377.0,234.0 h18 l8,8 v24 h-26 z" fill="#fff" stroke="#222" stroke-width="1.3"/>
+<text x="390" y="254" font-size="8.5" font-weight="bold" text-anchor="middle" fill="#222">TSV</text>
+<path d="M800.0,199.0 h32 l8,8 v24 h-40 z" fill="#fff" stroke="#222" stroke-width="1.3"/>
+<text x="820" y="219" font-size="7" font-weight="bold" text-anchor="middle" fill="#222">PARQUET</text>
+<text x="820" y="243.0" font-size="10" font-weight="normal" text-anchor="middle" fill="#444">peptide hits,</text>
+<text x="820" y="255.0" font-size="10" font-weight="normal" text-anchor="middle" fill="#444">alignments</text>
+<path d="M800.0,90.0 h32 l8,8 v24 h-40 z" fill="#fff" stroke="#222" stroke-width="1.3"/>
+<text x="820" y="110" font-size="7" font-weight="bold" text-anchor="middle" fill="#222">ROCKSDB</text>
+<path d="M787.0,394.0 h18 l8,8 v24 h-26 z" fill="#fff" stroke="#222" stroke-width="1.3"/>
+<text x="800" y="414" font-size="8.5" font-weight="bold" text-anchor="middle" fill="#222">JSON</text>
+<text x="800" y="438.0" font-size="10" font-weight="normal" text-anchor="middle" fill="#444">control recall</text>
+<path d="M907.0,364.0 h18 l8,8 v24 h-26 z" fill="#fff" stroke="#222" stroke-width="1.3"/>
+<text x="920" y="384" font-size="8.5" font-weight="bold" text-anchor="middle" fill="#222">XLSX</text>
+<text x="920" y="408.0" font-size="10" font-weight="normal" text-anchor="middle" fill="#444">PNAS Dataset S1</text>
+<path d="M1083.0,214.0 h26 l8,8 v24 h-34 z" fill="#fff" stroke="#222" stroke-width="1.3"/>
+<text x="1100" y="234" font-size="8.5" font-weight="bold" text-anchor="middle" fill="#222">IPYNB</text>
+<text x="1100" y="258.0" font-size="10" font-weight="normal" text-anchor="middle" fill="#444">notebook 361,</text>
+<text x="1100" y="270.0" font-size="10" font-weight="normal" text-anchor="middle" fill="#444">figures, report</text>
+<text x="1100" y="282.0" font-size="10" font-weight="normal" text-anchor="middle" fill="#444">(planned)</text>
+<text x="410" y="247" font-size="10" font-weight="normal" text-anchor="start" fill="#444">design:</text>
+<text x="410" y="259" font-size="10" font-weight="normal" text-anchor="start" fill="#444">PEC +1,</text>
+<text x="410" y="271" font-size="10" font-weight="normal" text-anchor="start" fill="#444">control -1</text>
+<text x="140" y="116" font-size="12" font-weight="bold" text-anchor="middle" fill="#222">download</text>
+<text x="140" y="129" font-size="10.5" font-weight="normal" text-anchor="middle" fill="#555">md5, read count</text>
+<text x="140" y="330" font-size="12" font-weight="bold" text-anchor="middle" fill="#222">simulate_control</text>
+<text x="140" y="343" font-size="10.5" font-weight="normal" text-anchor="middle" fill="#555">12 samples,</text>
+<text x="140" y="356" font-size="10.5" font-weight="normal" text-anchor="middle" fill="#555">1 M read pairs each</text>
+<text x="250" y="258" font-size="12" font-weight="bold" text-anchor="middle" fill="#222">fastp</text>
+<text x="390" y="120" font-size="12" font-weight="bold" text-anchor="middle" fill="#222">splash</text>
+<text x="500" y="90" font-size="12" font-weight="bold" text-anchor="middle" fill="#222">compactors</text>
+<text x="493" y="192" font-size="12" font-weight="bold" text-anchor="end" fill="#222">anchor_counts</text>
+<text x="493" y="205" font-size="10.5" font-weight="normal" text-anchor="end" fill="#555">PyDESeq2</text>
+<text x="390" y="386" font-size="12" font-weight="bold" text-anchor="middle" fill="#222">dekupl</text>
+<text x="390" y="399" font-size="10.5" font-weight="normal" text-anchor="middle" fill="#555">DE-kupl 1.3.5</text>
+<text x="500" y="418" font-size="12" font-weight="bold" text-anchor="middle" fill="#222">kamrat</text>
+<text x="500" y="431" font-size="10.5" font-weight="normal" text-anchor="middle" fill="#555">KaMRaT 1.2</text>
+<text x="588" y="162" font-size="12" font-weight="bold" text-anchor="middle" fill="#222">compactors_nominal</text>
+<text x="735" y="112" font-size="12" font-weight="bold" text-anchor="end" fill="#222">search</text>
+<text x="800" y="300" font-size="12" font-weight="bold" text-anchor="middle" fill="#222">control_truth</text>
+<text x="1000" y="190" font-size="12" font-weight="bold" text-anchor="middle" fill="#222">paper_recovery</text>
+<text x="1000" y="203" font-size="10.5" font-weight="normal" text-anchor="middle" fill="#555">share of each list reached</text>
+<text x="1012" y="398" font-size="12" font-weight="bold" text-anchor="start" fill="#222">paper_gene_lists</text>
+<text x="1012" y="411" font-size="10.5" font-weight="normal" text-anchor="start" fill="#555">(script)</text>
+</g>
+<text x="20" y="528" font-size="11" font-weight="normal" text-anchor="start" fill="#555">Every step is a process of the pipeline unless marked (script) or (planned). A line through a step means the step reads that data.</text>
+</svg>

@@ -1,0 +1,3 @@
+command: mmseqs search query_db/db reference_db/db result tmp -s 7.5 -a --threads 16 && mmseqs convertalis query_db/db reference_db/db result hits.tsv --format-output query,target,qstart,qend,tstart,tend,bits,evalue,pident,qaln,taln --threads 16
+version: 18.8cc5c
+cpu_model: AMD EPYC 7543 32-Core Processor

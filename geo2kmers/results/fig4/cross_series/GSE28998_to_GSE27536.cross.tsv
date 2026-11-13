@@ -1,0 +1,4 @@
+trained_on	scored	comparison	kmers	headline	auc	p_labels_swapped	swaps	median_auc_labels_swapped	p_random_kmers	random_sets	median_auc_random_kmers	people_post_above_pre	people	people_p_labels_swapped	people_p_random_kmers	kmers_shared	kmers_dropped_for_no_variance	kmers_up_after_in_training
+GSE28998	GSE27536	main	100	False	0.706	0.0050	200	0.497	0.1393	200	0.608	22	27	0.0050	0.0348	594532	27	30
+GSE28998	GSE27536	main	1000	True	0.868	0.0050	200	0.498	0.0050	200	0.698	22	27	0.0050	0.1891	594532	27	459
+GSE28998	GSE27536	main	10000	False	0.840	0.0050	200	0.501	0.0050	200	0.724	24	27	0.0050	0.0398	594532	27	5519

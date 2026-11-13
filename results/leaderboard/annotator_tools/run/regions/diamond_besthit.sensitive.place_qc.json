@@ -1,0 +1,14 @@
+{
+ "tool": "diamond_besthit",
+ "setting": "sensitive",
+ "n_queries": 998,
+ "n_queries_with_hit": 824,
+ "n_best_hits_with_pfam_domain": 821,
+ "n_queries_with_call": 803,
+ "min_overlap": 0.5,
+ "n_domains_below_min_overlap": 768,
+ "n_domains_with_no_aligned_query_residue": 1,
+ "n_calls": 2188,
+ "n_calls_linear_differs": 1612,
+ "max_linear_shift": 494
+}

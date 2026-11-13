@@ -1,0 +1,70 @@
+flowchart TD
+ subgraph IN[Inputs]
+  RAW1["Raw mate 1: FASTQ.gz"]
+  RAW2["Raw mate 2: FASTQ.gz"]
+  META["64-library design: TSV + JSON"]
+  REF["Botryllus reference: FASTA + GTF"]
+ end
+ RAW1 --> TRIM["Trim Galore + synchronized-pair validation"]
+ RAW2 --> TRIM
+ TRIM --> T1["Trimmed mate 1: FQ.gz"]
+ TRIM --> T2["Trimmed mate 2: FQ.gz"]
+ TRIM --> TM["Counts + checksums: validated JSON"]
+ T1 --> SPL["SPLASH; all adjusted P < 0.05 anchors"]
+ T2 --> SPL
+ SPL --> SAT["Anchor statistics: TSV; SATC counts: .satc"]
+ SAT --> SC["Compactors"]
+ SC --> SD["SPLASH context: FASTA; membership: TSV"]
+ T1 --> DK["DE-kupl counter: canonical 31-mers"]
+ T2 --> DK
+ DK --> KC["Sample k-mer counts: TSV.gz"]
+ T1 --> KAL["Kallisto quantification"]
+ T2 --> KAL
+ REF --> KAL
+ KAL --> GC["Gene counts: TSV.gz; transcript map: TSV"]
+ KC --> MODEL["Collection-balanced pooling + genotype-blocked DESeq2"]
+ GC --> MODEL
+ META --> MODEL
+ MODEL --> DE["All tested genes and k-mers: TSV.gz"]
+ DE --> SEL["Select adjusted P < 0.05 k-mers per contrast"]
+ SEL --> MERGE["mergeTags; keep up/down separate"]
+ MERGE --> CONTIG["Native contigs: FASTA; assembly: TSV; metadata: JSON"]
+ SEL --> RECRUIT["Exact read recruitment; retain matching pairs"]
+ T1 --> RECRUIT
+ T2 --> RECRUIT
+ RECRUIT --> R1["Recruited mate 1: FASTQ.gz"]
+ RECRUIT --> R2["Recruited mate 2: FASTQ.gz"]
+ RECRUIT --> HIT["Seed / read / position / strand: TSV.gz"]
+ R1 --> DC["Compactors"]
+ R2 --> DC
+ DC --> EXT["Read-supported context: FASTA; membership: JSON"]
+ SD --> TRAN["Six frames; split only at stops; keep X; length >=30 aa"]
+ CONTIG --> TRAN
+ EXT --> TRAN
+ TRAN --> AA["Peptide stretches: FAA; origins: JSON"]
+ AA --> SK["Branchwater manysketch: protein7 / Dayhoff12 / HP30"]
+ SD --> DNA["Branchwater DNA31 sketches"]
+ CONTIG --> DNA
+ EXT --> DNA
+ SEL --> DNA
+ SW["Swiss-Prot: FASTA.gz; annotations: TSV / JSON"] --> TS["Branchwater target sketches"]
+ SR1["Public tunicate mate 1: FASTQ.gz"] --> TS
+ SR2["Public tunicate mate 2: FASTQ.gz"] --> TS
+ TS --> ZIP["Per-protein / per-run signatures: .sig.zip"]
+ ZIP --> DB["Optional Branchwater index: RocksDB directory"]
+ ZIP --> SEARCH["Branchwater manysearch; streaming ZIP or supported index"]
+ DB --> SEARCH
+ SK --> SEARCH
+ DNA --> SEARCH
+ SEARCH --> MATCH["Candidate matches: CSV; coverage + provenance: JSON"]
+ MATCH --> JOIN["Sequence confirmation; gene / species / Pfam / GO joins"]
+ SD --> JOIN
+ CONTIG --> JOIN
+ EXT --> JOIN
+ DE --> JOIN
+ PAPER["Paper gene / hub membership: TSV + JSON"] --> JOIN
+ JOIN --> TABLE["Per-gene evidence: TSV; sequences / annotations: JSON"]
+ TABLE --> APP["Validated app build: HTML + JS + JSON + downloads"]
+ TM --> APP
+ classDef neutral fill:#f4f6f8,stroke:#29434d,color:#152a33;
+ class RAW1,RAW2,META,REF,TRIM,T1,T2,TM,SPL,SAT,SC,SD,DK,KC,KAL,GC,MODEL,DE,SEL,MERGE,CONTIG,RECRUIT,R1,R2,HIT,DC,EXT,TRAN,AA,SK,DNA,SW,SR1,SR2,TS,ZIP,DB,SEARCH,MATCH,JOIN,PAPER,TABLE,APP neutral;

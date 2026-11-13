@@ -1,0 +1,59 @@
+=== kill2 exit 0 wall 48
+      1 SKETCH (GSM39424 ch2 dna k21 present)	COMPLETED	0	1
+      1 SKETCH (GSM39424 ch1 dna k21 present)	COMPLETED	0	1
+      1 SKETCH (GSM39423 ch2 dna k21 present)	COMPLETED	0	1
+      1 SKETCH (GSM39423 ch1 dna k21 present)	COMPLETED	0	1
+      1 SKETCH (GSM39422 ch2 dna k21 present)	COMPLETED	0	1
+      1 SKETCH (GSM39422 ch1 dna k21 present)	COMPLETED	0	1
+      1 SKETCH (GSM39421 ch2 dna k21 present)	COMPLETED	0	1
+      1 SKETCH (GSM39421 ch1 dna k21 present)	COMPLETED	0	1
+24
+=== killall exit 1 wall 6
+      1 FETCH (GSE2183)	FAILED	137	4
+      1 FETCH (GSE2183)	FAILED	137	3
+      1 FETCH (GSE2183)	FAILED	137	2
+      1 FETCH (GSE2183)	FAILED	137	1
+ERROR ~ Error executing process > 'FETCH (GSE2183)'
+ERROR ~ Error executing process > 'FETCH (GSE2183)'
+0
+=== exit1 exit 1 wall 3
+      1 FETCH (GSE2183)	FAILED	1	1
+ERROR ~ Error executing process > 'FETCH (GSE2183)'
+ERROR ~ Error executing process > 'FETCH (GSE2183)'
+0
+=== skfail exit 1 wall 19
+      1 SKETCH (GSM39424 ch2 dna k21 present)	FAILED	1	1
+      1 SKETCH (GSM39424 ch1 dna k21 present)	FAILED	1	1
+      1 SKETCH (GSM39423 ch2 dna k21 present)	FAILED	1	1
+      1 SKETCH (GSM39423 ch1 dna k21 present)	FAILED	1	1
+      1 SKETCH (GSM39422 ch2 dna k21 present)	FAILED	1	1
+      1 SKETCH (GSM39422 ch1 dna k21 present)	FAILED	1	1
+      1 SKETCH (GSM39421 ch2 dna k21 present)	FAILED	1	1
+      1 SKETCH (GSM39421 ch1 dna k21 present)	FAILED	1	1
+ERROR ~ Error executing process > 'SKETCH (GSM39421 ch2 dna k21 present)'
+ERROR ~ Error executing process > 'SKETCH (GSM39421 ch2 dna k21 present)'
+0
+=== options exit 0 wall 46
+      1 SKETCH (GSM39424 ch2 dna k21 present)	COMPLETED	0	1
+      1 SKETCH (GSM39424 ch1 dna k21 present)	COMPLETED	0	1
+      1 SKETCH (GSM39423 ch2 dna k21 present)	COMPLETED	0	1
+      1 SKETCH (GSM39423 ch1 dna k21 present)	COMPLETED	0	1
+      1 SKETCH (GSM39422 ch2 dna k21 present)	COMPLETED	0	1
+      1 SKETCH (GSM39422 ch1 dna k21 present)	COMPLETED	0	1
+      1 SKETCH (GSM39421 ch2 dna k21 present)	COMPLETED	0	1
+      1 SKETCH (GSM39421 ch1 dna k21 present)	COMPLETED	0	1
+24
+=== badgpl exit 1 wall 5
+      1 FETCH (GSE2183)	FAILED	1	1
+ERROR ~ Error executing process > 'FETCH (GSE2183)'
+ERROR ~ Error executing process > 'FETCH (GSE2183)'
+0
+=== noemail exit 1 wall 9
+      1 SEQUENCES (GSE2183)	FAILED	1	1
+      1 FETCH (GSE2183)	COMPLETED	0	1
+ERROR ~ Error executing process > 'SEQUENCES (GSE2183)'
+ERROR ~ Error executing process > 'SEQUENCES (GSE2183)'
+0
+=== noprot exit 1 wall 3
+0
+finished

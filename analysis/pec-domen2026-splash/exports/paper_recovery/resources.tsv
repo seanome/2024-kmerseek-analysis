@@ -1,0 +1,133 @@
+route	contrast	step	shared	wall_h	cpu_h	peak_gb	source
+splash	young_2h	splash	yes	0.308	2.483	41.400	trace pec361.2026-10-31_0754.trace.txt task 108
+splash	young_2h	compactors	no	0.163	0.309	22.800	trace pec361.2026-10-31_0754.trace.txt task 143
+splash	young_2h	search compactors	no	0.359	1.224	29.600	trace pec361.2026-10-31_0754.trace.txt task 149
+splash	young_24h	splash	yes	0.238	2.109	83.600	trace pec361.2026-10-31_0754.trace.txt task 110
+splash	young_24h	compactors	no	0.289	0.962	42.100	trace pec361.2026-10-31_0754.trace.txt task 141
+splash	young_24h	search compactors	no	0.962	3.292	66.500	trace pec361.2026-10-31_1031.trace.txt task 151
+splash	old_24h	splash	yes	0.047	0.399	81.300	trace pec361.2026-10-31_0754.trace.txt task 114
+splash	old_24h	compactors	no	0.409	0.518	56.000	trace pec361.2026-10-31_0754.trace.txt task 139
+splash	old_24h	search compactors	no	0.110	0.338	31.000	trace pec361.2026-10-31_0754.trace.txt task 147
+splash	young_13_49d	splash	yes	0.007	0.044	2.536	time /scratch/users/olgabot/nb361-pec/contrasts/young_13_49d/splash.time
+splash	young_13_49d	compactors	no	0.011	0.027	2.294	time /scratch/users/olgabot/nb361-pec/contrasts/young_13_49d/compactors.time
+splash	young_13_49d	search compactors	no	0.060	0.160	5.900	trace pec361.2026-10-31_0754.trace.txt task 133
+splash	young_132d	splash	yes	0.006	0.028	1.242	time /scratch/users/olgabot/nb361-pec/contrasts/young_132d/splash.time
+splash	young_132d	compactors	no	0.002	0.004	1.375	time /scratch/users/olgabot/nb361-pec/contrasts/young_132d/compactors.time
+splash	young_132d	search compactors	no				no record
+splash	old_41_93d	splash	yes	0.016	0.097	4.344	time /scratch/users/olgabot/nb361-pec/contrasts/old_41_93d/splash.time
+splash	old_41_93d	compactors	no	0.007	0.013	2.851	time /scratch/users/olgabot/nb361-pec/contrasts/old_41_93d/compactors.time
+splash	old_41_93d	search compactors	no	0.054	0.143	5.800	trace pec361.2026-10-31_0754.trace.txt task 137
+anchor_nominal	young_2h	splash	yes	0.308	2.483	41.400	trace pec361.2026-10-31_0754.trace.txt task 108
+anchor_nominal	young_2h	anchor counts + PyDESeq2 (3 designs)	no	2.035	14.630	26.900	trace pec361.2026-10-31_0754.trace.txt task 144
+anchor_nominal	young_2h	compactors of kept anchors	no	0.060	0.116	11.300	trace pec361.2026-11-01_1549.trace.txt task 133
+anchor_nominal	young_2h	search compactors_anchor_nominal	no	0.053	0.130	4.600	trace pec361.2026-11-01_1549.trace.txt task 171
+anchor_nominal	young_24h	splash	yes	0.238	2.109	83.600	trace pec361.2026-10-31_0754.trace.txt task 110
+anchor_nominal	young_24h	anchor counts + PyDESeq2 (3 designs)	no	2.216	20.268	24.400	trace pec361.2026-10-31_0754.trace.txt task 142
+anchor_nominal	young_24h	compactors of kept anchors	no	0.048	0.153	16.900	trace pec361.2026-11-01_1549.trace.txt task 144
+anchor_nominal	young_24h	search compactors_anchor_nominal	no	0.103	0.242	4.300	trace pec361.2026-11-01_1549.trace.txt task 173
+anchor_nominal	old_24h	splash	yes	0.047	0.399	81.300	trace pec361.2026-10-31_0754.trace.txt task 114
+anchor_nominal	old_24h	anchor counts + PyDESeq2 (3 designs)	no	0.179	1.729	6.400	trace pec361.2026-10-31_0754.trace.txt task 140
+anchor_nominal	old_24h	compactors of kept anchors	no	0.438	0.562	55.300	trace pec361.2026-11-01_1549.trace.txt task 145
+anchor_nominal	old_24h	search compactors_anchor_nominal	no	0.099	0.278	11.300	trace pec361.2026-11-01_1549.trace.txt task 176
+anchor_nominal	young_13_49d	splash	yes	0.007	0.044	2.536	time /scratch/users/olgabot/nb361-pec/contrasts/young_13_49d/splash.time
+anchor_nominal	young_13_49d	anchor counts + PyDESeq2 (3 designs)	no	0.145	1.345	3.836	sacct 49206522
+anchor_nominal	young_13_49d	compactors of kept anchors	no	0.004	0.007	1.700	trace pec361.2026-11-01_1549.trace.txt task 166
+anchor_nominal	young_13_49d	search compactors_anchor_nominal	no	0.028	0.037	0.786	trace pec361.2026-11-01_1549.trace.txt task 172
+anchor_nominal	young_132d	splash	yes	0.006	0.028	1.242	time /scratch/users/olgabot/nb361-pec/contrasts/young_132d/splash.time
+anchor_nominal	young_132d	anchor counts + PyDESeq2 (3 designs)	no	0.057	0.475	3.888	sacct 49206527
+anchor_nominal	young_132d	compactors of kept anchors	no	0.003	0.004	1.300	trace pec361.2026-11-01_1549.trace.txt task 169
+anchor_nominal	young_132d	search compactors_anchor_nominal	no	0.016	0.024	0.696	trace pec361.2026-11-01_1549.trace.txt task 174
+anchor_nominal	old_41_93d	splash	yes	0.016	0.097	4.344	time /scratch/users/olgabot/nb361-pec/contrasts/old_41_93d/splash.time
+anchor_nominal	old_41_93d	anchor counts + PyDESeq2 (3 designs)	no	0.100	0.855	3.869	sacct 49206542
+anchor_nominal	old_41_93d	compactors of kept anchors	no	0.004	0.007	0.949	trace pec361.2026-11-01_1549.trace.txt task 167
+anchor_nominal	old_41_93d	search compactors_anchor_nominal	no	0.026	0.038	0.999	trace pec361.2026-11-01_1549.trace.txt task 175
+kamrat_ttest_p05	young_2h	DE-kupl k-mer counting + limma test	yes	1.433	7.769	25.200	trace pec361.2026-10-31_0754.trace.txt task 109
+kamrat_ttest_p05	young_2h	KaMRaT index, t-test, merge	yes	0.888	0.882	10.100	trace pec361.2026-11-01_1030.trace.txt task 115
+kamrat_ttest_p05	young_2h	select kamrat_p05	no	0.002	0.004	2.847	time /scratch/users/olgabot/nb361-pec/contrasts/young_2h/kamrat_p05/select.time
+kamrat_ttest_p05	young_2h	search kamrat_p05	no	0.018	0.058	0.711	time /scratch/users/olgabot/nb361-pec/contrasts/young_2h/search_kamrat_p05/search.time
+kamrat_ttest_p05	young_24h	DE-kupl k-mer counting + limma test	yes	1.209	7.372	24.900	trace pec361.2026-10-31_0754.trace.txt task 111
+kamrat_ttest_p05	young_24h	KaMRaT index, t-test, merge	yes	1.028	1.020	11.700	trace pec361.2026-11-01_1030.trace.txt task 117
+kamrat_ttest_p05	young_24h	select kamrat_p05	no	0.004	0.004	4.051	time /scratch/users/olgabot/nb361-pec/contrasts/young_24h/kamrat_p05/select.time
+kamrat_ttest_p05	young_24h	search kamrat_p05	no	0.025	0.072	0.740	time /scratch/users/olgabot/nb361-pec/contrasts/young_24h/search_kamrat_p05/search.time
+kamrat_ttest_p05	old_24h	DE-kupl k-mer counting + limma test	yes	0.191	1.598	3.900	trace pec361.2026-10-31_0754.trace.txt task 115
+kamrat_ttest_p05	old_24h	KaMRaT index, t-test, merge	yes	0.073	0.071	0.945	trace pec361.2026-11-01_1030.trace.txt task 153
+kamrat_ttest_p05	old_24h	select kamrat_p05	no	0.005	0.003	0.360	time /scratch/users/olgabot/nb361-pec/contrasts/old_24h/kamrat_p05/select.time
+kamrat_ttest_p05	old_24h	search kamrat_p05	no	0.029	0.059	0.711	time /scratch/users/olgabot/nb361-pec/contrasts/old_24h/search_kamrat_p05/search.time
+kamrat_ttest_p05	young_13_49d	DE-kupl k-mer counting + limma test	yes	0.077	0.302	2.654	time /scratch/users/olgabot/nb361-pec/contrasts/young_13_49d/dekupl_limma.time
+kamrat_ttest_p05	young_13_49d	KaMRaT index, t-test, merge	yes	0.036	0.034	0.467	trace pec361.2026-11-01_1030.trace.txt task 154
+kamrat_ttest_p05	young_13_49d	select kamrat_p05	no	0.003	0.001	0.267	time /scratch/users/olgabot/nb361-pec/contrasts/young_13_49d/kamrat_p05/select.time
+kamrat_ttest_p05	young_13_49d	search kamrat_p05	no	0.022	0.040	0.711	time /scratch/users/olgabot/nb361-pec/contrasts/young_13_49d/search_kamrat_p05/search.time
+kamrat_ttest_p05	young_132d	DE-kupl k-mer counting + limma test	yes	0.061	0.209	1.213	time /scratch/users/olgabot/nb361-pec/contrasts/young_132d/dekupl_limma.time
+kamrat_ttest_p05	young_132d	KaMRaT index, t-test, merge	yes	0.025	0.023	0.328	trace pec361.2026-11-01_1030.trace.txt task 155
+kamrat_ttest_p05	young_132d	select kamrat_p05	no	0.003	0.001	0.213	time /scratch/users/olgabot/nb361-pec/contrasts/young_132d/kamrat_p05/select.time
+kamrat_ttest_p05	young_132d	search kamrat_p05	no	0.021	0.045	0.711	time /scratch/users/olgabot/nb361-pec/contrasts/young_132d/search_kamrat_p05/search.time
+kamrat_ttest_p05	old_41_93d	DE-kupl k-mer counting + limma test	yes	0.077	0.302	2.693	time /scratch/users/olgabot/nb361-pec/contrasts/old_41_93d/dekupl_limma.time
+kamrat_ttest_p05	old_41_93d	KaMRaT index, t-test, merge	yes	0.038	0.037	0.503	trace pec361.2026-11-01_1030.trace.txt task 156
+kamrat_ttest_p05	old_41_93d	select kamrat_p05	no	0.000	0.001	0.253	time /scratch/users/olgabot/nb361-pec/contrasts/old_41_93d/kamrat_p05/select.time
+kamrat_ttest_p05	old_41_93d	search kamrat_p05	no	0.015	0.041	0.711	time /scratch/users/olgabot/nb361-pec/contrasts/old_41_93d/search_kamrat_p05/search.time
+kamrat_deseq2_p05	young_2h	DE-kupl k-mer counting + limma test	yes	1.433	7.769	25.200	trace pec361.2026-10-31_0754.trace.txt task 109
+kamrat_deseq2_p05	young_2h	KaMRaT index, t-test, merge	yes	0.888	0.882	10.100	trace pec361.2026-11-01_1030.trace.txt task 115
+kamrat_deseq2_p05	young_2h	contig counts + PyDESeq2 + select	no	0.231	2.765	9.563	time /scratch/users/olgabot/nb361-pec/contrasts/young_2h/kamrat_deseq2/counts.time, /scratch/users/olgabot/nb361-pec/contrasts/young_2h/kamrat_deseq2/deseq.time, /scratch/users/olgabot/nb361-pec/contrasts/young_2h/kamrat_deseq2_p05/select.time
+kamrat_deseq2_p05	young_2h	search kamrat_deseq2_p05	no	0.018	0.056	0.711	time /scratch/users/olgabot/nb361-pec/contrasts/young_2h/search_kamrat_deseq2_p05/search.time
+kamrat_deseq2_p05	young_24h	DE-kupl k-mer counting + limma test	yes	1.209	7.372	24.900	trace pec361.2026-10-31_0754.trace.txt task 111
+kamrat_deseq2_p05	young_24h	KaMRaT index, t-test, merge	yes	1.028	1.020	11.700	trace pec361.2026-11-01_1030.trace.txt task 117
+kamrat_deseq2_p05	young_24h	contig counts + PyDESeq2 + select	no	0.484	3.995	13.545	time /scratch/users/olgabot/nb361-pec/contrasts/young_24h/kamrat_deseq2/counts.time, /scratch/users/olgabot/nb361-pec/contrasts/young_24h/kamrat_deseq2/deseq.time, /scratch/users/olgabot/nb361-pec/contrasts/young_24h/kamrat_deseq2_p05/select.time
+kamrat_deseq2_p05	young_24h	search kamrat_deseq2_p05	no	0.014	0.047	0.711	time /scratch/users/olgabot/nb361-pec/contrasts/young_24h/search_kamrat_deseq2_p05/search.time
+kamrat_deseq2_p05	old_24h	DE-kupl k-mer counting + limma test	yes	0.191	1.598	3.900	trace pec361.2026-10-31_0754.trace.txt task 115
+kamrat_deseq2_p05	old_24h	KaMRaT index, t-test, merge	yes	0.073	0.071	0.945	trace pec361.2026-11-01_1030.trace.txt task 153
+kamrat_deseq2_p05	old_24h	contig counts + PyDESeq2 + select	no	0.094	1.018	2.462	time /scratch/users/olgabot/nb361-pec/contrasts/old_24h/kamrat_deseq2/counts.time, /scratch/users/olgabot/nb361-pec/contrasts/old_24h/kamrat_deseq2/deseq.time, /scratch/users/olgabot/nb361-pec/contrasts/old_24h/kamrat_deseq2_p05/select.time
+kamrat_deseq2_p05	old_24h	search kamrat_deseq2_p05	no	0.151	0.096	0.711	time /scratch/users/olgabot/nb361-pec/contrasts/old_24h/search_kamrat_deseq2_p05/search.time
+kamrat_deseq2_p05	young_13_49d	DE-kupl k-mer counting + limma test	yes	0.077	0.302	2.654	time /scratch/users/olgabot/nb361-pec/contrasts/young_13_49d/dekupl_limma.time
+kamrat_deseq2_p05	young_13_49d	KaMRaT index, t-test, merge	yes	0.036	0.034	0.467	trace pec361.2026-11-01_1030.trace.txt task 154
+kamrat_deseq2_p05	young_13_49d	contig counts + PyDESeq2 + select	no	0.023	0.206	1.145	time /scratch/users/olgabot/nb361-pec/contrasts/young_13_49d/kamrat_deseq2/counts.time, /scratch/users/olgabot/nb361-pec/contrasts/young_13_49d/kamrat_deseq2/deseq.time, /scratch/users/olgabot/nb361-pec/contrasts/young_13_49d/kamrat_deseq2_p05/select.time
+kamrat_deseq2_p05	young_13_49d	search kamrat_deseq2_p05	no	0.019	0.045	0.711	time /scratch/users/olgabot/nb361-pec/contrasts/young_13_49d/search_kamrat_deseq2_p05/search.time
+kamrat_deseq2_p05	young_132d	DE-kupl k-mer counting + limma test	yes	0.061	0.209	1.213	time /scratch/users/olgabot/nb361-pec/contrasts/young_132d/dekupl_limma.time
+kamrat_deseq2_p05	young_132d	KaMRaT index, t-test, merge	yes	0.025	0.023	0.328	trace pec361.2026-11-01_1030.trace.txt task 155
+kamrat_deseq2_p05	young_132d	contig counts + PyDESeq2 + select	no	0.018	0.149	0.910	time /scratch/users/olgabot/nb361-pec/contrasts/young_132d/kamrat_deseq2/counts.time, /scratch/users/olgabot/nb361-pec/contrasts/young_132d/kamrat_deseq2/deseq.time, /scratch/users/olgabot/nb361-pec/contrasts/young_132d/kamrat_deseq2_p05/select.time
+kamrat_deseq2_p05	young_132d	search kamrat_deseq2_p05	no	0.019	0.039	0.711	time /scratch/users/olgabot/nb361-pec/contrasts/young_132d/search_kamrat_deseq2_p05/search.time
+kamrat_deseq2_p05	old_41_93d	DE-kupl k-mer counting + limma test	yes	0.077	0.302	2.693	time /scratch/users/olgabot/nb361-pec/contrasts/old_41_93d/dekupl_limma.time
+kamrat_deseq2_p05	old_41_93d	KaMRaT index, t-test, merge	yes	0.038	0.037	0.503	trace pec361.2026-11-01_1030.trace.txt task 156
+kamrat_deseq2_p05	old_41_93d	contig counts + PyDESeq2 + select	no	0.020	0.172	1.143	time /scratch/users/olgabot/nb361-pec/contrasts/old_41_93d/kamrat_deseq2/counts.time, /scratch/users/olgabot/nb361-pec/contrasts/old_41_93d/kamrat_deseq2/deseq.time, /scratch/users/olgabot/nb361-pec/contrasts/old_41_93d/kamrat_deseq2_p05/select.time
+kamrat_deseq2_p05	old_41_93d	search kamrat_deseq2_p05	no	0.015	0.044	0.711	time /scratch/users/olgabot/nb361-pec/contrasts/old_41_93d/search_kamrat_deseq2_p05/search.time
+dekupl_limma_p05	young_2h	DE-kupl k-mer counting + limma test	yes	1.433	7.769	25.200	trace pec361.2026-10-31_0754.trace.txt task 109
+dekupl_limma_p05	young_2h	select + merge dekupl_limma_p05	no	0.003	0.010	11.199	time /scratch/users/olgabot/nb361-pec/contrasts/young_2h/dekupl_limma_p05/select.time, /scratch/users/olgabot/nb361-pec/contrasts/young_2h/dekupl_limma_p05/merge_up.time, /scratch/users/olgabot/nb361-pec/contrasts/young_2h/dekupl_limma_p05/merge_down.time
+dekupl_limma_p05	young_2h	search dekupl_limma_p05	no	0.016	0.035	0.711	time /scratch/users/olgabot/nb361-pec/contrasts/young_2h/search_dekupl_limma_p05/search.time
+dekupl_limma_p05	young_24h	DE-kupl k-mer counting + limma test	yes	1.209	7.372	24.900	trace pec361.2026-10-31_0754.trace.txt task 111
+dekupl_limma_p05	young_24h	select + merge dekupl_limma_p05	no	0.006	0.013	12.479	time /scratch/users/olgabot/nb361-pec/contrasts/young_24h/dekupl_limma_p05/select.time, /scratch/users/olgabot/nb361-pec/contrasts/young_24h/dekupl_limma_p05/merge_up.time, /scratch/users/olgabot/nb361-pec/contrasts/young_24h/dekupl_limma_p05/merge_down.time
+dekupl_limma_p05	young_24h	search dekupl_limma_p05	no	0.019	0.058	0.711	time /scratch/users/olgabot/nb361-pec/contrasts/young_24h/search_dekupl_limma_p05/search.time
+dekupl_limma_p05	old_24h	DE-kupl k-mer counting + limma test	yes	0.191	1.598	3.900	trace pec361.2026-10-31_0754.trace.txt task 115
+dekupl_limma_p05	old_24h	select + merge dekupl_limma_p05	no	0.002	0.001	0.812	time /scratch/users/olgabot/nb361-pec/contrasts/old_24h/dekupl_limma_p05/select.time, /scratch/users/olgabot/nb361-pec/contrasts/old_24h/dekupl_limma_p05/merge_up.time, /scratch/users/olgabot/nb361-pec/contrasts/old_24h/dekupl_limma_p05/merge_down.time
+dekupl_limma_p05	old_24h	search dekupl_limma_p05	no	0.021	0.054	0.711	time /scratch/users/olgabot/nb361-pec/contrasts/old_24h/search_dekupl_limma_p05/search.time
+dekupl_limma_p05	young_13_49d	DE-kupl k-mer counting + limma test	yes	0.077	0.302	2.654	time /scratch/users/olgabot/nb361-pec/contrasts/young_13_49d/dekupl_limma.time
+dekupl_limma_p05	young_13_49d	select + merge dekupl_limma_p05	no	0.001	0.001	0.487	time /scratch/users/olgabot/nb361-pec/contrasts/young_13_49d/dekupl_limma_p05/select.time, /scratch/users/olgabot/nb361-pec/contrasts/young_13_49d/dekupl_limma_p05/merge_up.time, /scratch/users/olgabot/nb361-pec/contrasts/young_13_49d/dekupl_limma_p05/merge_down.time
+dekupl_limma_p05	young_13_49d	search dekupl_limma_p05	no	0.017	0.035	0.711	time /scratch/users/olgabot/nb361-pec/contrasts/young_13_49d/search_dekupl_limma_p05/search.time
+dekupl_limma_p05	young_132d	DE-kupl k-mer counting + limma test	yes	0.061	0.209	1.213	time /scratch/users/olgabot/nb361-pec/contrasts/young_132d/dekupl_limma.time
+dekupl_limma_p05	young_132d	select + merge dekupl_limma_p05	no	0.001	0.001	0.359	time /scratch/users/olgabot/nb361-pec/contrasts/young_132d/dekupl_limma_p05/select.time, /scratch/users/olgabot/nb361-pec/contrasts/young_132d/dekupl_limma_p05/merge_up.time, /scratch/users/olgabot/nb361-pec/contrasts/young_132d/dekupl_limma_p05/merge_down.time
+dekupl_limma_p05	young_132d	search dekupl_limma_p05	no	0.016	0.039	0.711	time /scratch/users/olgabot/nb361-pec/contrasts/young_132d/search_dekupl_limma_p05/search.time
+dekupl_limma_p05	old_41_93d	DE-kupl k-mer counting + limma test	yes	0.077	0.302	2.693	time /scratch/users/olgabot/nb361-pec/contrasts/old_41_93d/dekupl_limma.time
+dekupl_limma_p05	old_41_93d	select + merge dekupl_limma_p05	no	0.002	0.001	0.458	time /scratch/users/olgabot/nb361-pec/contrasts/old_41_93d/dekupl_limma_p05/select.time, /scratch/users/olgabot/nb361-pec/contrasts/old_41_93d/dekupl_limma_p05/merge_up.time, /scratch/users/olgabot/nb361-pec/contrasts/old_41_93d/dekupl_limma_p05/merge_down.time
+dekupl_limma_p05	old_41_93d	search dekupl_limma_p05	no	0.017	0.035	0.711	time /scratch/users/olgabot/nb361-pec/contrasts/old_41_93d/search_dekupl_limma_p05/search.time
+dekupl_deseq2_p05	young_2h	DE-kupl k-mer counting + limma test	yes	1.433	7.769	25.200	trace pec361.2026-10-31_0754.trace.txt task 109
+dekupl_deseq2_p05	young_2h	DE-kupl DESeq2 test	no	2.954	29.491	12.169	time /scratch/users/olgabot/nb361-pec/contrasts/young_2h/dekupl_DESeq2_allkmers/test.time
+dekupl_deseq2_p05	young_2h	select + merge dekupl_deseq2_p05	no	0.009	0.024	15.764	time /scratch/users/olgabot/nb361-pec/contrasts/young_2h/dekupl_deseq2_p05/select.time, /scratch/users/olgabot/nb361-pec/contrasts/young_2h/dekupl_deseq2_p05/merge_up.time, /scratch/users/olgabot/nb361-pec/contrasts/young_2h/dekupl_deseq2_p05/merge_down.time
+dekupl_deseq2_p05	young_2h	search dekupl_deseq2_p05	no	0.022	0.059	0.711	time /scratch/users/olgabot/nb361-pec/contrasts/young_2h/search_dekupl_deseq2_p05/*.time (32 files)
+dekupl_deseq2_p05	young_24h	DE-kupl k-mer counting + limma test	yes	1.209	7.372	24.900	trace pec361.2026-10-31_0754.trace.txt task 111
+dekupl_deseq2_p05	young_24h	DE-kupl DESeq2 test	no	2.897	27.654	12.522	time /scratch/users/olgabot/nb361-pec/contrasts/young_24h/dekupl_DESeq2_allkmers/test.time
+dekupl_deseq2_p05	young_24h	select + merge dekupl_deseq2_p05	no	0.010	0.028	17.559	time /scratch/users/olgabot/nb361-pec/contrasts/young_24h/dekupl_deseq2_p05/select.time, /scratch/users/olgabot/nb361-pec/contrasts/young_24h/dekupl_deseq2_p05/merge_up.time, /scratch/users/olgabot/nb361-pec/contrasts/young_24h/dekupl_deseq2_p05/merge_down.time
+dekupl_deseq2_p05	young_24h	search dekupl_deseq2_p05	no	0.023	0.063	0.711	time /scratch/users/olgabot/nb361-pec/contrasts/young_24h/search_dekupl_deseq2_p05/*.time (32 files)
+dekupl_deseq2_p05	old_24h	DE-kupl k-mer counting + limma test	yes	0.191	1.598	3.900	trace pec361.2026-10-31_0754.trace.txt task 115
+dekupl_deseq2_p05	old_24h	DE-kupl DESeq2 test	no	0.207	0.601	3.382	time /scratch/users/olgabot/nb361-pec/contrasts/old_24h/dekupl_DESeq2_allkmers/test.time
+dekupl_deseq2_p05	old_24h	select + merge dekupl_deseq2_p05	no	0.074	0.002	1.160	time /scratch/users/olgabot/nb361-pec/contrasts/old_24h/dekupl_deseq2_p05/select.time, /scratch/users/olgabot/nb361-pec/contrasts/old_24h/dekupl_deseq2_p05/merge_up.time, /scratch/users/olgabot/nb361-pec/contrasts/old_24h/dekupl_deseq2_p05/merge_down.time
+dekupl_deseq2_p05	old_24h	search dekupl_deseq2_p05	no	0.019	0.041	0.711	time /scratch/users/olgabot/nb361-pec/contrasts/old_24h/search_dekupl_deseq2_p05/*.time (32 files)
+dekupl_deseq2_p05	young_13_49d	DE-kupl k-mer counting + limma test	yes	0.077	0.302	2.654	time /scratch/users/olgabot/nb361-pec/contrasts/young_13_49d/dekupl_limma.time
+dekupl_deseq2_p05	young_13_49d	DE-kupl DESeq2 test	no	0.181	0.156	2.240	time /scratch/users/olgabot/nb361-pec/contrasts/young_13_49d/dekupl_DESeq2_allkmers/test.time
+dekupl_deseq2_p05	young_13_49d	select + merge dekupl_deseq2_p05	no	0.026	0.002	0.725	time /scratch/users/olgabot/nb361-pec/contrasts/young_13_49d/dekupl_deseq2_p05/select.time, /scratch/users/olgabot/nb361-pec/contrasts/young_13_49d/dekupl_deseq2_p05/merge_up.time, /scratch/users/olgabot/nb361-pec/contrasts/young_13_49d/dekupl_deseq2_p05/merge_down.time
+dekupl_deseq2_p05	young_13_49d	search dekupl_deseq2_p05	no	0.049	0.044	0.711	time /scratch/users/olgabot/nb361-pec/contrasts/young_13_49d/search_dekupl_deseq2_p05/*.time (32 files)
+dekupl_deseq2_p05	young_132d	DE-kupl k-mer counting + limma test	yes	0.061	0.209	1.213	time /scratch/users/olgabot/nb361-pec/contrasts/young_132d/dekupl_limma.time
+dekupl_deseq2_p05	young_132d	DE-kupl DESeq2 test	no				no record
+dekupl_deseq2_p05	young_132d	select + merge dekupl_deseq2_p05	no				no record
+dekupl_deseq2_p05	young_132d	search dekupl_deseq2_p05	no				no record
+dekupl_deseq2_p05	old_41_93d	DE-kupl k-mer counting + limma test	yes	0.077	0.302	2.693	time /scratch/users/olgabot/nb361-pec/contrasts/old_41_93d/dekupl_limma.time
+dekupl_deseq2_p05	old_41_93d	DE-kupl DESeq2 test	no	0.322	0.212	2.388	time /scratch/users/olgabot/nb361-pec/contrasts/old_41_93d/dekupl_DESeq2_allkmers/test.time
+dekupl_deseq2_p05	old_41_93d	select + merge dekupl_deseq2_p05	no	0.001	0.002	0.715	time /scratch/users/olgabot/nb361-pec/contrasts/old_41_93d/dekupl_deseq2_p05/select.time, /scratch/users/olgabot/nb361-pec/contrasts/old_41_93d/dekupl_deseq2_p05/merge_up.time, /scratch/users/olgabot/nb361-pec/contrasts/old_41_93d/dekupl_deseq2_p05/merge_down.time
+dekupl_deseq2_p05	old_41_93d	search dekupl_deseq2_p05	no	0.023	0.040	0.711	time /scratch/users/olgabot/nb361-pec/contrasts/old_41_93d/search_dekupl_deseq2_p05/*.time (32 files)

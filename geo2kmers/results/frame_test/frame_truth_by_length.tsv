@@ -1,0 +1,13 @@
+alphabet	k	min_longest_stretch_aa	sequences	longest_in_true_frame	share
+protein	7	0	6986	6524	0.934
+protein	7	30	6776	6493	0.958
+protein	7	50	6663	6479	0.972
+protein	7	100	6469	6397	0.989
+protein	10	0	6563	6147	0.937
+protein	10	30	6432	6124	0.952
+protein	10	50	6306	6108	0.969
+protein	10	100	6111	6032	0.987
+hp	30	0	6173	5893	0.955
+hp	30	30	6173	5893	0.955
+hp	30	50	6102	5884	0.964
+hp	30	100	5897	5811	0.985

@@ -1,0 +1,21 @@
+{
+  "rows": 129292764,
+  "not_in_index": 128847013,
+  "sequence_changed": 513,
+  "unknown_family": 0,
+  "bad_coordinates": 0,
+  "kept": 445238,
+  "entries": 445238,
+  "long": 434922,
+  "short_distinct": 9649,
+  "proteins": 256245,
+  "flank": 21,
+  "types": {
+    "COILED": 2047,
+    "REGION": 431,
+    "DOMAIN": 407176,
+    "REPEAT": 28125,
+    "ZN_FING": 5201,
+    "MOTIF": 2258
+  }
+}

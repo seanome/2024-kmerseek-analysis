@@ -335,13 +335,16 @@ ALL_CONTAINERS := $(shell sed -n "s/^[[:space:]]*container[[:space:]]*'\\(.*\\)'
 # second multi-GB image for arms it never executes.
 PREFETCH_CONTAINERS ?= $(ALL_CONTAINERS)
 
-.PHONY: run-midi-plus-0.4 run-human-allvall bootstrap-sherlock build-image build-image-local push-image \
+.PHONY: run-midi-plus-0.4 run-human-allvall \
+        run-random-alphabets run-random-alphabets-control diff-random-alphabets-control bootstrap-sherlock build-image build-image-local push-image \
         build-folddisco-image push-folddisco-image \
         build-metapredict-image push-metapredict-image structure-lists fetch-structures \
         mini-testset mini-testset-sherlock mhc-testset run-mhc-local \
         midi-testset-sherlock run-midi fetch-structures-login \
         midi-plus-testset-sherlock run-midi-plus pull-report-midi-plus \
-        run-midi-plus-all-qfo queue-empty \
+        rescore-midi-plus-projected \
+        stage-iupred run-no-search-baselines no-search-baselines-usage \
+        run-midi-plus-all-qfo run-midi-plus-hp-k35-k40 queue-empty reduce-delimitation reduce-delimitation-list \
         watch attach stop \
         fetch-structures-mac \
         run-mini run-mini-local pull-mini \
@@ -400,6 +403,13 @@ help:
 	@echo "  run-midi             chr6 queries vs FULL proteomes (includes the MHC)"
 	@echo "  run-midi-plus        chr6 PLUS B2M, CD1A-E, MR1, KIR and LILR (998 queries)."
 	@echo "  run-midi-plus-all-qfo  the same 998 queries against ALL 77 QfO targets."
+	@echo "  rescore-midi-plus-projected  rescore run-midi-plus with each Pfam domain at its own"
+	@echo "                       place on the query (the default transfer mode since 2026-11-10)."
+	@echo "                       Searches from cache; scores go to $(MIDI_PLUS_OUTDIR)/transfer-projected"
+	@echo "  run-no-search-baselines  Kyte-Doolittle, IUPred, metapredict, SEG and Pfam family"
+	@echo "                       frequency on the 998 midi-plus queries, scored on that run's"
+	@echo "                       truth tables. One 1 h job. Needs 'make stage-iupred' (Mac) first."
+	@echo "  no-search-baselines-usage  sacct peak and trace rows of the last baselines run"
 	@echo "  watch                attach to the running head and see the live table"
 	@echo "  stop                 ask the running head to cancel its tasks and exit"
 	@echo "                       Reuses run-midi-plus's stored searches; replaces its report"
@@ -1846,6 +1856,95 @@ run-midi-plus-0.4: prefetch-images midi-plus-testset-sherlock
 	    $(QUERY_SET_NF_ARG) \
 	    $(NF_ARGS)
 
+# ---- notebook 246: ten random 2-letter partitions (experiment A) --------------------
+#
+# Does the short-feature result belong to hydrophobic-polar, or to any 2-letter alphabet?
+# Ten partitions of the 20 amino acids into 10 and 10, drawn at random
+# (scripts/random_alphabets.py), and the six built-in H/P alphabets beside them, all under
+# kmerseek 0.4 with the same settings: the midi-plus query set, the nine targets, k19 and
+# k26, mask off, extension at C = 1.63 and C = 2 with region_evalue from a Karlin-Altschul
+# fit stored per index. 16 x 2 x 9 = 288 indexes, x 2 penalties = 576 searches.
+#
+# The H/P arms run here too because nothing else has them under 0.4: run-midi-plus-0.4
+# stopped after one search (2026-09-24), and notebook 244 scored 0.3.1 tables. They run
+# ENCODED, like the random partitions (encoded_hp_<alphabet>, hydrophobic -> A), so every
+# arm's E-value fit is made the same way. kmerseek's fit shuffles the sequence it is given:
+# amino acids for a built-in alphabet, A/D for an encoded one. On the laptop control that
+# let 11-13% more rows through E <= 0.01 for the encoded arm, while positions, n_shared and
+# mean IDF were identical.
+#
+# Writes where run-midi-plus-0.4 writes (ALLIDF_OUTDIR, ALLIDF_INDEX), under names it never
+# uses: every search file ends .extend-c<C>.regions.parquet, and the indexes, which carry
+# the fits, go in their own ka_fit/ folder of the 0.4 index store. There is no
+# --reuse_results flag in this pipeline; storeDir already skips every finished index and
+# search on a rerun.
+#
+# RANDOM_A_BASE is the pipeline directory whose data/ and results/ this reads and writes.
+# The default is this clone. The main Sherlock clone has a live head in it, so run from a
+# second clone and point this at the main one:
+#   make run-random-alphabets RANDOM_A_BASE=/scratch/users/olgabot/2024-kmerseek-analysis/nextflow-runs/qfo-pfam-region-benchmark
+RANDOM_A_BASE      ?= $(MAKEFILE_DIR)
+RANDOM_A_DATA      ?= $(MAKEFILE_DIR)/../../data/random_alphabets
+RANDOM_A_MANIFESTS ?= $(RANDOM_A_DATA)/random2.manifest.tsv,$(RANDOM_A_DATA)/hp2.manifest.tsv
+RANDOM_A_CONTROL   ?= $(RANDOM_A_DATA)/control.manifest.tsv
+RANDOM_A_KSIZES    ?= 19,26
+RANDOM_A_PENALTIES ?= 1.63,2
+comma := ,
+RANDOM_A_OUTDIR     = $(RANDOM_A_BASE)/data/midi-plus-0.4/results
+RANDOM_A_IMAGE_IMG  = $${SCRATCH}/apptainer-cache/$(subst /,-,$(subst :,-,$(ALLIDF_IMAGE))).img
+RANDOM_A_ARGS = -entry randomAlphabets -profile $(PROFILE) -resume \
+	    --kmerseek_image       $(ALLIDF_IMAGE) \
+	    --qfo_dir              $(RANDOM_A_BASE)/data/midi-plus/qfo \
+	    --outdir               $(RANDOM_A_OUTDIR) \
+	    --db_cache             $(RANDOM_A_BASE)/results \
+	    --kmerseek_index_cache $(RANDOM_A_BASE)/results/kmerseek_index_0.4 \
+	    --extra_encoded_penalties $(RANDOM_A_PENALTIES)
+
+# Positive control, first: pbotc's own partition encoded as A/D and run as protein20,
+# next to the built-in hp_pbotc_1st_ed2, human -> zebrafish, k19, both penalties. The
+# encoded arm's searches are part of run-random-alphabets too, and are not repeated there.
+run-random-alphabets-control: PREFETCH_CONTAINERS := $(ALLIDF_IMAGE)
+run-random-alphabets-control: HEAD_JOBNAME := nf-246-control
+run-random-alphabets-control: prefetch-images
+	$(call require_cluster)
+	mkdir -p run-random-alphabets-control
+	cd run-random-alphabets-control && \
+	  ml load biology nextflow && \
+	  $(HEAD_SUBMIT) nextflow run ../main.nf $(RANDOM_A_ARGS) \
+	    --target_species zebrafish \
+	    --extra_encoded_alphabets $(RANDOM_A_CONTROL) \
+	    --extra_encoded_ksizes 19 \
+	    $(NF_ARGS)
+
+# The diff, one per penalty. Blocks until it prints; exits 1 if more than 0.1% of rows
+# differ in position, n_shared or mean IDF. E-values are reported, not gated: the fit's
+# shuffled decoys are shuffled amino acids for the built-in alphabet and shuffled A/D for
+# the encoded one, so the two fits differ a little by construction.
+diff-random-alphabets-control:
+	$(call require_cluster)
+	srun --account=$(SLURM_ACCOUNT) --partition=$(SLURM_PARTITION) \
+	  --time=01:00:00 --cpus-per-task=4 --mem=64G --job-name=246-control-diff \
+	  apptainer exec --bind /scratch $(RANDOM_A_IMAGE_IMG) sh -c 'set -e; for c in $(subst $(comma), ,$(RANDOM_A_PENALTIES)); do \
+	    python3 $(MAKEFILE_DIR)/../../scripts/compare_encoded_control.py \
+	      --reference $(RANDOM_A_OUTDIR)/kmerseek/human_vs_zebrafish.hp_pbotc_1st_ed2.k19.lcfalse.extend-c$$c.regions.parquet \
+	      --encoded   $(RANDOM_A_OUTDIR)/kmerseek/human_vs_zebrafish.encoded_hp_pbotc_1st_ed2.k19.lcfalse.extend-c$$c.regions.parquet \
+	      --out       $(MAKEFILE_DIR)/run-random-alphabets-control/control_diff.C$$c.json; done'
+
+# The ten partitions and the six H/P alphabets x k19, k26 x nine targets x two penalties:
+# 576 searches.
+run-random-alphabets: PREFETCH_CONTAINERS := $(ALLIDF_IMAGE)
+run-random-alphabets: HEAD_JOBNAME := nf-246-random
+run-random-alphabets: prefetch-images
+	$(call require_cluster)
+	mkdir -p run-random-alphabets
+	cd run-random-alphabets && \
+	  ml load biology nextflow && \
+	  $(HEAD_SUBMIT) nextflow run ../main.nf $(RANDOM_A_ARGS) \
+	    --target_species $(MIDI_TARGETS) \
+	    --extra_encoded_alphabets $(RANDOM_A_MANIFESTS) \
+	    --extra_encoded_ksizes $(RANDOM_A_KSIZES) \
+	    $(NF_ARGS)
+
 run-midi-plus: QUERY_SET_LABEL := $(MIDI_PLUS_QUERY_SET)
 run-midi-plus: PREFETCH_CONTAINERS := $(RB_IMAGE_REMOTE) $(ALL_CONTAINERS)
 run-midi-plus: prefetch-images midi-plus-testset-sherlock
@@ -1872,6 +1971,89 @@ run-midi-plus: prefetch-images midi-plus-testset-sherlock
 	    $(PFAM_HMM_ARG) \
 	    $(QUERY_SET_NF_ARG) \
 	    $(NF_ARGS)
+
+## Rescore run-midi-plus with --transfer_mode projected (the default since 2026-11-10;
+## passed explicitly so this target does not change if the default does): each target
+## Pfam domain is placed
+## at its own position on the query, not on the alignment's whole query stretch
+## (evaluate_domain_calls.transfer_domains; PR 216 found the old placement under-scores
+## long alignments, MMseqs2 C2H2 Fmax 0.052 -> 0.367). Same launch folder and -resume, so
+## the searches come from run-midi-plus's cache and only the scoring steps and the report
+## run. Scores, all_domain_metrics.parquet and the MultiQC report go to
+## $(MIDI_PLUS_OUTDIR)/transfer-projected; the span scores in $(MIDI_PLUS_OUTDIR) stay.
+## Check after ~10 min that no search was resubmitted:
+##   grep -cE "Submitted process > .*(Search|Index)" run-midi-plus/.nextflow.log
+rescore-midi-plus-projected: override NF_ARGS += --transfer_mode projected --scoring_subdir transfer-projected
+rescore-midi-plus-projected: run-midi-plus
+
+# ---- no-search baselines on the midi-plus queries ----------------------------
+#
+# Four tools that read only the query sequence, scored like every search tool against the
+# midi-plus run's own truth tables (main.nf, `workflow noSearchBaselines`):
+# Kyte-Doolittle hydropathy (notebook 231's scan), IUPred long and metapredict disorder,
+# SEG low complexity (segmasker), and the most common Pfam family per length bin.
+#
+# One SLURM job: the head job runs every task itself (`withLabel: no_search` is the local
+# executor under the sherlock profile), because each task takes seconds to minutes and
+# Sherlock asks for jobs of at least 10 minutes. Sized from run-midi-plus's trace:
+# metapredict on the same 998 queries peaked at 3.3 GB (job 41567300, 12.3 s), reading the
+# Swiss-Prot flat file at 654.5 MB (job 42866517, 47.7 s), and every other task is smaller.
+# 16 GB = 12 GB for tasks (metapredict asks 8) + 4 GB for the Nextflow JVM.
+#
+# Data paths are absolute, into the main clone's data/, so this runs from any clone of
+# the branch. IUPred is not in git or any image (academic licence: no passing it on);
+# `make stage-iupred` on the Mac puts it at NOSEARCH_IUPRED first.
+NOSEARCH_DATA    ?= $(SCRATCH)/2024-kmerseek-analysis/nextflow-runs/qfo-pfam-region-benchmark/data
+NOSEARCH_IUPRED  ?= $(SCRATCH)/data/iupred
+NOSEARCH_OUTDIR  ?= $(NOSEARCH_DATA)/midi-plus/no-search-baselines
+NOSEARCH_RUN_DIR ?= run-no-search-baselines
+# The source the Mac copies from: InterProScan 5's bundled IUPred source and data files.
+IPS_IUPRED_DIR   ?= /Users/olga/data/interproscan/bin/mobidb/idrpred/bin/IUPred
+NOSEARCH_IMAGES   = $(IMAGE_REMOTE) $(METAPREDICT_REMOTE) \
+                    $(shell sed -n "s/^params\.\(gcc\|blast\)_image *= *'\(.*\)'.*/\2/p" main.nf)
+
+stage-iupred:
+	$(call require_mac)
+	@test -f "$(IPS_IUPRED_DIR)/src.zip" || { echo "no $(IPS_IUPRED_DIR)/src.zip"; exit 1; }
+	@stage=$$(mktemp -d) && \
+	  unzip -q -o "$(IPS_IUPRED_DIR)/src.zip" -d "$$stage" && \
+	  command cp "$(IPS_IUPRED_DIR)/histo" "$(IPS_IUPRED_DIR)/ss" "$$stage/" && \
+	  ls -l "$$stage" && \
+	  $(RSYNC) "$$stage/" $(SHERLOCK_HOST):'$$SCRATCH/data/iupred/' && \
+	  /bin/rm -rf "$$stage"
+
+run-no-search-baselines: PREFETCH_CONTAINERS := $(NOSEARCH_IMAGES)
+run-no-search-baselines: HEAD_TIME    := 01:00:00
+run-no-search-baselines: HEAD_CPUS    := 2
+run-no-search-baselines: HEAD_MEM     := 16G
+run-no-search-baselines: HEAD_JOBNAME := nf-nosearch
+run-no-search-baselines: HEAD_SESSION := nosearch
+run-no-search-baselines: prefetch-images
+	$(call require_cluster)
+	@test -f "$(NOSEARCH_IUPRED)/iupred_string.c" || \
+	  { echo "  no IUPred at $(NOSEARCH_IUPRED); run 'make stage-iupred' on the Mac"; exit 1; }
+	mkdir -p $(NOSEARCH_RUN_DIR)
+	cd $(NOSEARCH_RUN_DIR) && \
+	  ml load biology nextflow && \
+	  $(HEAD_SUBMIT) nextflow run ../main.nf -entry noSearchBaselines -profile $(PROFILE) -resume \
+	    --kmerseek_image                $(IMAGE_REMOTE) \
+	    --qfo_dir                       $(NOSEARCH_DATA)/midi-plus/qfo \
+	    --baseline_run_dir              $(NOSEARCH_DATA)/midi-plus/results \
+	    --pfamn_dir                     $(NOSEARCH_DATA)/pfamn \
+	    --swissprot_dat                 $(NOSEARCH_DATA)/uniprot_sprot.dat.gz \
+	    --baseline_reference_fasta      $(NOSEARCH_DATA)/qfo/Eukaryota/UP000005640_9606.fasta \
+	    --baseline_reference_annotation $(NOSEARCH_DATA)/annotations/human_pfam_domains.parquet \
+	    --iupred_dir                    $(NOSEARCH_IUPRED) \
+	    --outdir                        $(NOSEARCH_OUTDIR) \
+	    $(NF_ARGS)
+
+## After the run: the head job's peak memory and the tasks' own numbers.
+no-search-baselines-usage:
+	$(call require_cluster)
+	@job=$$(ls -t $(NOSEARCH_RUN_DIR)/nf-head.*.log | head -1 | sed 's/.*nf-head\.\([0-9]*\)\.log/\1/'); \
+	  echo "head job $$job"; \
+	  sacct -j $$job --format=JobID,State,Elapsed,MaxRSS,ReqMem,AllocCPUS; \
+	  cut -f4,5,7,20,26 $$(ls -t $(NOSEARCH_RUN_DIR)/*trace*.txt | head -1)
 
 # ---- midi-plus across every QfO target -------------------------------------
 #
@@ -2141,6 +2323,85 @@ run-rannon-burstein: prefetch-images midi-testset-sherlock
 	    --swissprot_dat       ../data/uniprot_sprot.dat.gz \
 	    --pfamn_dir           ../data/pfamn \
 	    $(PFAM_HMM_ARG) \
+	    $(NF_ARGS)
+
+# ---- midi-plus: H/P k35 and k40, dayhoff6 k19 and k21 ----------------------
+#
+# The settings run-midi-plus's matrix stops short of. Asked 2026-11-08 so H/P k-mers carry
+# the same 25-40 bits as protein20 k6-9 and dayhoff6 k9-15 (odd k only; one H/P letter is
+# 1 bit), and
+# so dayhoff6 reaches k21. Results: reports/qfo-requested-settings-2026-11-08/.
+#
+# Known failure: the last step, aggregateMetrics, refuses to build the combined table
+# because ciona has only 23 Swiss-Prot annotated proteins, so no all_domain_metrics.parquet
+# is written for these 14 settings and a -resume rerun fails the same way. Every search
+# and scoring task still finishes. Workaround: read the per-search files in
+# $(HPLONG_OUTDIR)/metrics/ (pfam.kmerseek.*_lcFalse.*.metrics.parquet), which is what the
+# report's summarize.py does.
+#
+# 6 two-letter H/P alphabets x k35, k40 + dayhoff6 k19, k21 = 14 settings, masking off,
+# x 9 targets = 126 index builds and 126 searches. hp_lehninger_hpc3 is left out: it has
+# three letters, so k35 would be 55 bits, past the range asked for.
+#
+# Same query set, image and targets as run-midi-plus, with the pattern of
+# run-rannon-burstein: its own launch directory (Nextflow truncates the trace of the
+# directory it starts in) and its own outdir, because aggregateMetrics would otherwise
+# replace run-midi-plus's all_domain_metrics.parquet with one that covers these 14 settings
+# only. Every other tool is skipped: run-midi-plus already scored them, and with a new
+# outdir their searches would run again. --db_cache is run-midi-plus's, so the human
+# query staging and proteome disorder are store hits; the new indexes are new store entries.
+#
+# Data paths are absolute, into the main clone, so this runs from a separate clone of the
+# branch while the main clone stays on main.
+#
+# Measured on run-midi-plus (traces 2026-09-01 to -13) at the nearest settings, H/P k27-33
+# and dayhoff6 k15-17, 9 targets: index peak 0.9-6.7 GB and at most 30 s; search peak
+# 0.6-11.1 GB and at most 3 min; scoring peak 4.3 GB and at most 6 min. The pipeline's own
+# asks (index 32 GB, search 25-43 GB, scoring from 8 GB) cover these on the first attempt.
+# A larger k makes fewer shared k-mers, so k35-40 should come in under these, not over.
+HPLONG_MAIN    ?= $(SCRATCH)/2024-kmerseek-analysis/nextflow-runs/qfo-pfam-region-benchmark
+HPLONG_DATA    ?= $(HPLONG_MAIN)/data
+HPLONG_RUN_DIR ?= run-midi-plus-hp-k35-k40
+HPLONG_OUTDIR  ?= $(HPLONG_DATA)/midi-plus/results-hp-k35-k40
+HPLONG_HP      := hp_kyte_doolittle2 hp_lehninger2 hp_lehninger_c_nonpolar2 \
+                  hp_pbotc_1st_ed2 hp_thomas_dill2 hp_thomas_dill_no_c2
+hplong_space  := $(subst ,, )
+HPLONG_COMBOS  ?= $(subst $(hplong_space),$(comma),$(strip \
+                  $(foreach a,$(HPLONG_HP),$(a):35 $(a):40) dayhoff6:19 dayhoff6:21))
+
+run-midi-plus-hp-k35-k40: QUERY_SET_LABEL := $(MIDI_PLUS_QUERY_SET)
+run-midi-plus-hp-k35-k40: PREFETCH_CONTAINERS := $(IMAGE_REMOTE)
+run-midi-plus-hp-k35-k40: HEAD_TIME    := 12:00:00
+run-midi-plus-hp-k35-k40: HEAD_JOBNAME := nf-hp-k35-k40
+run-midi-plus-hp-k35-k40: HEAD_SESSION := hpk35k40
+run-midi-plus-hp-k35-k40: prefetch-images
+	$(call require_cluster)
+	@test -d "$(HPLONG_DATA)/midi-plus/qfo" || \
+	  { echo "  no $(HPLONG_DATA)/midi-plus/qfo; set HPLONG_MAIN to the clone that ran run-midi-plus"; exit 1; }
+	mkdir -p $(HPLONG_RUN_DIR)
+	cd $(HPLONG_RUN_DIR) && \
+	  ml load biology nextflow && \
+	  $(HEAD_SUBMIT) nextflow run ../main.nf -profile $(PROFILE) -resume \
+	    --kmerseek_image  $(IMAGE_REMOTE) \
+	    --kmerseek_combos $(HPLONG_COMBOS) \
+	    --skip_baselines  true \
+	    --skip_foldseek   true \
+	    --skip_folddisco  true \
+	    --skip_reseek     true \
+	    --skip_prostt5    true \
+	    --skip_multiqc    true \
+	    --run_hmmscan     false \
+	    --qfo_dir         $(HPLONG_DATA)/midi-plus/qfo \
+	    --annotations     $(HPLONG_DATA)/midi-plus/annotations \
+	    --structures      $(HPLONG_DATA)/midi-plus/structures \
+	    --outdir          $(HPLONG_OUTDIR) \
+	    --db_cache        $(HPLONG_MAIN)/results \
+	    --target_species  $(MIDI_TARGETS) \
+	    --hgnc_file       $(HPLONG_DATA)/covariates/hgnc_complete_set.txt \
+	    --omega_file      $(HPLONG_DATA)/covariates/omega_results.tsv \
+	    --swissprot_dat   $(HPLONG_DATA)/uniprot_sprot.dat.gz \
+	    --pfamn_dir       $(HPLONG_DATA)/pfamn \
+	    $(QUERY_SET_NF_ARG) \
 	    $(NF_ARGS)
 
 # Same code path as the real run, scoped down. Do this before `make run`.
@@ -2506,6 +2767,54 @@ purge-empty-kmerseek-regions:
 	 find $(KMERSEEK_REGIONS_DIR) -maxdepth 1 -name '*.regions.parquet' -size 0 -exec /bin/rm -f {} +; \
 	 echo "deleted $$n; the next -resume runs those searches again"
 
+## Notebook 238 on the full midi-plus run: for every human Pfam instance, does a significant
+## region of each arm cover it (half the domain) and delimit it (IoU >= 0.5)? One job per
+## kmerseek region parquet and per comparison-tool TSV of the ten midi-plus targets, scored
+## by scripts/delimitation_pre_transfer.py --results as a SLURM array of at most
+## DELIM_TASKS tasks. That is 5, fewer than reduce-elm-cover's 20: a 2.9 GB region file
+## scores in seconds, so 20 tasks would each finish in a few minutes, and Sherlock asks for
+## tasks of at least 10 minutes. A second job, queued to start only if
+## every array task succeeds, joins the outputs into
+## $(DELIM_REDUCE_DIR)/238_delimitation_pre_transfer_full{,.hits}.parquet.
+##
+## The code runs from a git archive of HEAD in $(DELIM_REDUCE_DIR)/code, so a later `git pull`
+## cannot change it under a running array. DELIM_RESULTS is an absolute path so this also
+## runs from a second clone while another run holds the first one's checkout.
+## DELIM_ONLY=<regex> scores only the matching files, for a test.
+DELIM_RESULTS    ?= $(SCRATCH)/2024-kmerseek-analysis/nextflow-runs/qfo-pfam-region-benchmark/data/midi-plus/results
+DELIM_REDUCE_DIR ?= $(SCRATCH)/238-delimitation
+DELIM_IMAGE      ?= $(SCRATCH)/apptainer-cache/docker.io-olgabot-kmerseek-0.4.0-rc5.img
+DELIM_TASKS      ?= 5
+DELIM_ONLY       ?=
+DELIM_LIST = apptainer exec --bind /scratch $(DELIM_IMAGE) python3 $(DELIM_REDUCE_DIR)/code/scripts/delimitation_pre_transfer.py \
+	--results $(DELIM_RESULTS) --list $(if $(DELIM_ONLY),--only '$(DELIM_ONLY)')
+
+reduce-delimitation-list:
+	$(call require_cluster)
+	@test -d $(DELIM_RESULTS)/kmerseek || { echo "  no midi-plus kmerseek regions at $(DELIM_RESULTS)"; exit 1; }
+	mkdir -p $(DELIM_REDUCE_DIR)/code
+	cd ../.. && git archive HEAD | tar -x -C $(DELIM_REDUCE_DIR)/code
+	$(DELIM_LIST) > $(DELIM_REDUCE_DIR)/jobs.tsv
+	@awk -F'\t' '{split($$1, a, "."); n[a[1]]++; b += $$2} \
+	  END {for (t in n) printf "  %-20s %5d files\n", t, n[t]; printf "  %d jobs, %.0f GB of input\n", NR, b / 1e9}' \
+	  $(DELIM_REDUCE_DIR)/jobs.tsv
+
+reduce-delimitation: reduce-delimitation-list
+	mkdir -p $(DELIM_REDUCE_DIR)/logs
+	@cd $(DELIM_REDUCE_DIR) && \
+	  n=$$(wc -l < jobs.tsv); t=$$(( n < $(DELIM_TASKS) ? n : $(DELIM_TASKS) )); \
+	  test $$n -gt 0 || { echo "  no jobs"; exit 1; }; \
+	  a=$$(DELIM_RESULTS=$(DELIM_RESULTS) DELIM_IMAGE=$(DELIM_IMAGE) DELIM_ONLY='$(DELIM_ONLY)' \
+	       sbatch --parsable --export=ALL --account=$(SLURM_ACCOUNT) --partition=$(SLURM_PARTITION) \
+	         --array=0-$$(( t - 1 )) code/scripts/reduce_delimitation.sbatch); \
+	  c=$$(sbatch --parsable --dependency=afterok:$$a --account=$(SLURM_ACCOUNT) --partition=$(SLURM_PARTITION) \
+	         --job-name=238-delimitation-concat --cpus-per-task=8 --mem=32G --time=02:00:00 \
+	         --output=logs/concat_%j.log \
+	         --wrap "apptainer exec --bind /scratch $(DELIM_IMAGE) python3 code/scripts/concat_delimitation_pre_transfer.py \
+	                 --in-dir per-job --out 238_delimitation_pre_transfer_full.parquet"); \
+	  echo "  array $$a: $$n jobs over $$t tasks; join job $$c starts when every task succeeds"; \
+	  echo "  logs: $(DELIM_REDUCE_DIR)/logs"
+
 ## How much disk the shared cache is holding, and how much is left. Check this before
 ## launching the full sweep. Everything under results/ is shared between run-midi and run:
 ## the target databases are identical for both, and the human entries are kept apart by a
@@ -2519,3 +2828,156 @@ index-disk:
 	@echo "--- orphaned pre-digest human entries (safe to delete) ---"
 	@find results -maxdepth 2 \( -name 'human_*' -o -name 'human.bca' \) 2>/dev/null || true
 	@echo "--- quota ---"; lfs quota -h -u $$USER $$SCRATCH 2>/dev/null || df -h $$SCRATCH
+
+# ---- Annotator tools as leaderboard rows (annotator_tools.nf) -------------------------
+#
+# G1: best-hit transfer with DIAMOND (--sensitive, --ultra-sensitive) and MMseqs2
+# (-s 7.5, one round) against Swiss-Prot 2026_03 minus Mammalia, on the 998 midi-plus
+# queries, scored against the midi-plus Pfam truth. Its own launch folder and outdir, so
+# nothing it writes touches the main run's results.
+#
+# Inputs on Sherlock (paths relative to the launch folder):
+#   queries     data/midi-plus/qfo/Eukaryota/UP000005640_9606.fasta (998 proteins)
+#   truth       data/midi-plus/results/truth/human_domain_truth.parquet
+#   covariates  data/midi-plus/results/truth/human_query_covariates.parquet
+#   Swiss-Prot  $SCRATCH/regions-index-pilot/uniprot_sprot.2026_03.dat.gz
+#   Pfam-A      $(PFAM_HMM_REMOTE) (Pfam 38, pressed)
+ANNOT_RUN    ?= run-annotator-tools
+# Which tools run. The default is all six. tmvec and plmsearch run on a GPU and need
+# their two images (make push-embedding-images) and their model files under EMB_MODELS,
+# including the TM-Vec and DeepBLAST checkpoints placed by hand. Until those are in
+# place, start with the tools whose data and images are, e.g.
+#   make run-annotator-tools ANNOT_TOOLS=diamond,mmseqs2
+# and add the others later: -resume keeps what finished.
+ANNOT_TOOLS  ?= diamond,mmseqs2,interproscan,eggnog,tmvec,plmsearch
+ANNOT_OUTDIR ?= ../data/annotator-tools/results
+ANNOT_SPROT  ?= $$SCRATCH/regions-index-pilot/uniprot_sprot.2026_03.dat.gz
+# G2 data, downloaded once by `make interproscan-data` and `make eggnog-data`.
+ANNOT_IPS    ?= $$SCRATCH/data/interproscan/interproscan-5.78-109.0
+ANNOT_EGGNOG ?= $$SCRATCH/data/eggnog/emapperdb-5.0.2
+# G3 models and images. The images are built from Dockerfile.tmvec and Dockerfile.plmsearch
+# by `make push-embedding-images` (on the Mac); weights by `make embedding-models` plus the
+# TM-Vec and DeepBLAST checkpoints placed by hand (see assets/download_embedding_models.sbatch).
+EMB_MODELS     ?= $$SCRATCH/data/embedding-models
+EMB_DATE       ?= 2026-10-16
+TMVEC_IMAGE    ?= docker.io/olgabot/tmvec:$(EMB_DATE)
+PLMSEARCH_IMAGE ?= docker.io/olgabot/plmsearch:$(EMB_DATE)
+ANNOT_G3_INPUTS = --qfo_dir ../data/midi-plus/qfo \
+                  --domain_map_dir ../data/midi-plus/results/truth \
+                  --tmvec_image $(TMVEC_IMAGE) \
+                  --tmvec_model $(EMB_MODELS)/tmvec/tm_vec_cath_model.ckpt \
+                  --tmvec_config $(EMB_MODELS)/tmvec/tm_vec_cath_model_params.json \
+                  --deepblast_model $(EMB_MODELS)/tmvec/deepblast.ckpt \
+                  --prott5_dir $(EMB_MODELS)/prott5/prot_t5_xl_uniref50 \
+                  --plmsearch_image $(PLMSEARCH_IMAGE) \
+                  --plmsearch_model_dir $(EMB_MODELS)/plmsearch/plmsearch_data/model
+ANNOT_INPUTS  = --queries    ../data/midi-plus/qfo/Eukaryota/UP000005640_9606.fasta \
+                --truth      ../data/midi-plus/results/truth/human_domain_truth.parquet \
+                --covariates ../data/midi-plus/results/truth/human_query_covariates.parquet \
+                --swissprot_dat $(ANNOT_SPROT) \
+                --interproscan_dir $(ANNOT_IPS) \
+                --eggnog_data_dir  $(ANNOT_EGGNOG) \
+                $(ANNOT_G3_INPUTS)
+
+.PHONY: stub run-annotator-tools annotator-rows annotator-rows-stub interproscan-data eggnog-data \
+        embedding-models push-embedding-images
+
+embedding-models:
+	$(call require_cluster)
+	sbatch assets/download_embedding_models.sbatch
+
+# On the Mac (Docker). linux/amd64 for Sherlock. The Dockerfiles run each tool's --help
+# at build time, so a broken install fails the build rather than the run.
+push-embedding-images:
+	docker buildx build --platform $(DOCKER_PLATFORM) -f Dockerfile.tmvec -t $(TMVEC_IMAGE) --push .
+	docker buildx build --platform $(DOCKER_PLATFORM) -f Dockerfile.plmsearch -t $(PLMSEARCH_IMAGE) --push .
+
+# Each submits one sbatch job (4 h or less) that downloads into $SCRATCH/data and is
+# safe to resubmit: a finished file is skipped and a partial one is continued.
+interproscan-data:
+	$(call require_cluster)
+	sbatch assets/download_interproscan_data.sbatch
+
+eggnog-data:
+	$(call require_cluster)
+	sbatch assets/download_eggnog_data.sbatch
+
+# Every image the annotator modules name, plus the kmerseek image their python steps use.
+# Pulled before launch by prefetch-images: the head job's node cannot pull them itself.
+ANNOT_CONTAINERS := $(shell sed -n "s/^[[:space:]]*container[[:space:]]*'\\(.*\\)'.*/\\1/p" modules/*.nf | sort -u) \
+                    docker.io/olgabot/kmerseek:$(IMAGE_TAG) \
+                    $(if $(findstring tmvec,$(ANNOT_TOOLS)),$(TMVEC_IMAGE)) \
+                    $(if $(findstring plmsearch,$(ANNOT_TOOLS)),$(PLMSEARCH_IMAGE))
+
+run-annotator-tools: GUARD_NAME := run-annotator-tools
+run-annotator-tools: HEAD_TIME := 12:00:00
+run-annotator-tools: HEAD_JOBNAME := nf-head-annotator
+run-annotator-tools: HEAD_SESSION := annotator
+run-annotator-tools: PREFETCH_CONTAINERS := $(ANNOT_CONTAINERS)
+run-annotator-tools: prefetch-images
+	$(call require_cluster)
+	mkdir -p $(ANNOT_RUN)
+	cd $(ANNOT_RUN) && \
+	  ml load biology nextflow && \
+	  $(HEAD_SUBMIT) nextflow run ../annotator_tools.nf -profile $(PROFILE) -resume \
+	    $(ANNOT_INPUTS) \
+	    --pfam_hmm $(PFAM_HMM_REMOTE) \
+	    --outdir $(ANNOT_OUTDIR) \
+	    --trace_file annotator_tools.$$(date +%Y%m%d-%H%M%S).trace.txt \
+	    --tools $(ANNOT_TOOLS) \
+	    $(NF_ARGS)
+
+# Rows, cost rows, pile-up calls and tool cards from the finished run (light: reads a few
+# parquet files). Run on Sherlock in the pipeline folder, then copy results/leaderboard/
+# annotator_tools back with the leaderboard fetch.
+annotator-rows:
+	$(call require_cluster)
+	apptainer exec --bind $$SCRATCH:$$SCRATCH \
+	  $$SCRATCH/apptainer-cache/docker.io-olgabot-kmerseek-$(IMAGE_TAG).img \
+	  python3 bin/annotator_tool_rows.py \
+	  --results data/annotator-tools/results \
+	  --trace $(ANNOT_RUN)/annotator_tools.*.trace.txt \
+	  --source-root $$SCRATCH/2024-kmerseek-analysis/nextflow-runs/qfo-pfam-region-benchmark/data/annotator-tools/results \
+	  --source-commit $$(git rev-parse --short HEAD) \
+	  --out data/annotator-tools/leaderboard
+
+# Wiring check on the laptop: every process runs its stub block, which copies the real
+# tool output committed under tests/fixtures/annotator (60 human queries against 120
+# yeast proteins, made by tests/make_annotator_fixture.sh). No container, no search.
+stub:
+	mkdir -p stub/pfam stub/interproscan/data stub/eggnog stub/models stub/qfo/Eukaryota stub/maps
+	@# G3 against one target, yeast, laid out as the registry names it.
+	ln -sf $(CURDIR)/tests/fixtures/qfo/yeast.fasta stub/qfo/Eukaryota/UP000002311_559292.fasta
+	ln -sf $(CURDIR)/tests/fixtures/annotations/yeast_pfam_domains.parquet stub/maps/yeast_domain_map.parquet
+	touch stub/models/tmvec.ckpt stub/models/tmvec.json stub/models/deepblast.ckpt
+	mkdir -p stub/models/prott5 stub/models/plmsearch
+	touch stub/pfam/Pfam-A.hmm stub/pfam/Pfam-A.hmm.h3f stub/pfam/Pfam-A.hmm.h3i \
+	      stub/pfam/Pfam-A.hmm.h3m stub/pfam/Pfam-A.hmm.h3p
+	@# One CPU per task: the stub copies files, and the laptop has fewer cores than the
+	@# Sherlock asks (16 for MMseqs2), which Nextflow refuses to schedule locally.
+	printf 'process { withName: ".*" { cpus = 1 } }\n' > stub/stub.config
+	cd stub && \
+	  $(NEXTFLOW) run ../annotator_tools.nf -profile standard -stub-run -without-docker \
+	    -c stub.config \
+	    --queries       ../tests/fixtures/qfo/human.fasta \
+	    --truth         ../tests/fixtures/annotations/human_pfam_domains.parquet \
+	    --covariates    ../tests/fixtures/annotations/yeast_pfam_domains.parquet \
+	    --swissprot_dat ../tests/fixtures/uniprot_sprot_fixture.dat \
+	    --pfam_hmm      pfam/Pfam-A.hmm \
+	    --interproscan_dir interproscan \
+	    --eggnog_data_dir  eggnog \
+	    --embedding_targets yeast --qfo_dir qfo --domain_map_dir maps \
+	    --tmvec_image stub --tmvec_model models/tmvec.ckpt --tmvec_config models/tmvec.json \
+	    --prott5_dir models/prott5 --deepblast_model models/deepblast.ckpt \
+	    --plmsearch_image stub --plmsearch_model_dir models/plmsearch \
+	    --outdir        $(CURDIR)/stub/results \
+	    --trace_file    annotator_tools.trace.txt
+	$(MAKE) annotator-rows-stub
+
+annotator-rows-stub:
+	$(PYTHON) bin/annotator_tool_rows.py \
+	  --results stub/results \
+	  --trace stub/annotator_tools.trace.txt \
+	  --source-root stub/results \
+	  --source-commit $$(git rev-parse --short HEAD) \
+	  --out stub/leaderboard

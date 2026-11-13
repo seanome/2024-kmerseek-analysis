@@ -1,0 +1,7 @@
+route	wall_added_h	cpu_h	peak_gb	wall_busy_h
+nf-core, all steps and QC reports	22.066	86.741	25.400	3.614
+trim, STAR, RSEM, DESeq2	8.918	70.622	18.100	2.456
+KaMRaT, DESeq2, protein search	6.851	31.749	25.200	
+KaMRaT, t-test, protein search	5.892	23.446	25.200	
+SPLASH, protein search	3.657	15.648	83.600	
+gene-counts	1.211	6.776	1.364	

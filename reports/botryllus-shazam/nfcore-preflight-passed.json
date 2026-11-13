@@ -1,0 +1,63 @@
+{
+  "status": "passed",
+  "synthetic_fixture": true,
+  "commands": [
+    "/scratch/users/olgabot/oyster-shazam-20261023/software/nextflow-25.10.4",
+    "run",
+    "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/software/rnaseq-a1fcdddd3b826fe46eb46f0479f2ff8a7815af05",
+    "-profile",
+    "singularity",
+    "-c",
+    "/home/users/olgabot/botryllus-shazam-code/nfcore.config",
+    "-params-file",
+    "/home/users/olgabot/botryllus-shazam-code/nfcore-params.json",
+    "-work-dir",
+    "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/nfcore/preflight/work",
+    "-resume",
+    "--input",
+    "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/nfcore/preflight/samplesheet.csv",
+    "--outdir",
+    "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/nfcore/preflight/results",
+    "--transcript_fasta",
+    "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/references/botznik-transcripts.fa",
+    "--gtf",
+    "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/references/nc_nsi_nf.gtf"
+  ],
+  "generated_trim_argv": [
+    "trim_galore",
+    "--fastqc_args",
+    "-t 8",
+    "--quality",
+    "20",
+    "--length",
+    "62",
+    "--stringency",
+    "3",
+    "--adapter",
+    "AGATCGGAAGAGC",
+    "--adapter2",
+    "AGATCGGAAGAGC",
+    "--cores",
+    "4",
+    "--paired",
+    "--gzip",
+    "preflight_trimmed_1.fastq.gz",
+    "preflight_trimmed_2.fastq.gz"
+  ],
+  "sha256": {
+    "/home/users/olgabot/botryllus-shazam-code/nfcore.config": "7906cbe26d593e04d089b726fc85a6099ec117cca1a54193e317355873edf108",
+    "/home/users/olgabot/botryllus-shazam-code/nfcore-params.json": "b2563ec61a50d5797eb845477a803e95f32e1fe46e3ca3bdd2fe5e0bc5726e09",
+    "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/nfcore/preflight/work/bc/ce343afc69e874de40736b408743d7/.command.sh": "deec495a79349595c0f211989a0b1bb6952a7ccad973f6458625b18015473dbd",
+    "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/software/rnaseq-a1fcdddd3b826fe46eb46f0479f2ff8a7815af05/modules/nf-core/trimgalore/main.nf": "1265d3303de71c2ce162e3e58fd134fbb2b83f0b2705d19d5c9e7b08324f8b93"
+  },
+  "outputs": [
+    {
+      "path": "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/nfcore/preflight/results/trimgalore/preflight_trimmed_1_val_1.fq.gz",
+      "reads": 32
+    },
+    {
+      "path": "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/nfcore/preflight/results/trimgalore/preflight_trimmed_2_val_2.fq.gz",
+      "reads": 32
+    }
+  ]
+}

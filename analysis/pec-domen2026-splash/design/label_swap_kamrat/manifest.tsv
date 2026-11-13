@@ -1,0 +1,15 @@
+key	contrast	flip	design	deseq_design	flipped	counted_pairs
+young_2h/swap_uneven	young_2h	swap_uneven	design/label_swap/young_2h.swap_uneven.design.tsv	pair_condition	young_2h:JA100+JA101 young_2h:JA102+JA103 young_2h:JA104+JA105	6
+young_2h/swap_even	young_2h	swap_even	design/label_swap/young_2h.swap_even.design.tsv	pair_condition	young_2h:JA100+JA101 young_2h:JA104+JA105 young_2h:JA123+JA124	6
+young_2h/swap_middle	young_2h	swap_middle	design/label_swap/young_2h.swap_middle.design.tsv	pair_condition	young_2h:JA100+JA101 young_2h:JA112+JA113 young_2h:JA125+JA126	6
+young_24h/swap_uneven	young_24h	swap_uneven	design/label_swap/young_24h.swap_uneven.design.tsv	pair_condition	young_24h:JA106+JA107 young_24h:JA114+JA115 young_24h:JA129+JA130	6
+young_24h/swap_even	young_24h	swap_even	design/label_swap/young_24h.swap_even.design.tsv	pair_condition	young_24h:JA106+JA107 young_24h:JA110+JA111 young_24h:JA114+JA115	6
+young_24h/swap_middle	young_24h	swap_middle	design/label_swap/young_24h.swap_middle.design.tsv	pair_condition	young_24h:JA106+JA107 young_24h:JA127+JA128 young_24h:JA129+JA130	6
+old_24h/swap_uneven	old_24h	swap_uneven	design/label_swap/old_24h.swap_uneven.design.tsv	pair_condition	old_24h:JA116+JA117	2
+young_13_49d/pairflip1	young_13_49d	pairflip1	design/label_swap_kamrat/young_13_49d.pairflip1.design.tsv	pair_condition	young_13_49d:JA120+JA121	3
+young_13_49d/pairflip2	young_13_49d	pairflip2	design/label_swap_kamrat/young_13_49d.pairflip2.design.tsv	pair_condition	young_13_49d:JA150+JA153	3
+young_13_49d/pairflip3	young_13_49d	pairflip3	design/label_swap_kamrat/young_13_49d.pairflip3.design.tsv	pair_condition	young_13_49d:JA154+JA152	3
+young_132d/pairflip1	young_132d	pairflip1	design/label_swap_kamrat/young_132d.pairflip1.design.tsv	genotype_condition	6990b	3
+young_132d/pairflip2	young_132d	pairflip2	design/label_swap_kamrat/young_132d.pairflip2.design.tsv	genotype_condition	6996m	3
+young_132d/pairflip3	young_132d	pairflip3	design/label_swap_kamrat/young_132d.pairflip3.design.tsv	genotype_condition	6996n	3
+old_41_93d/pairflip1	old_41_93d	pairflip1	design/label_swap_kamrat/old_41_93d.pairflip1.design.tsv	pair_condition	old_41_93d:JA157+JA156	2

@@ -1,0 +1,9 @@
+what	n
+records	1000
+windows	2999
+record_shorter_than_window	1
+real_queries	35988
+real_skipped_too_few_eligible	0
+composition_queries	0
+dipeptide_queries	5600
+shuffles_identical_to_window_dropped	398

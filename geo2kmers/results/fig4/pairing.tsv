@@ -1,0 +1,8 @@
+gse	comparison	group_pair	samples_pre	samples_post	people_pre	people_post	people_in_both	most_samples_per_person_in_a_group	design	pre_samples_titled_post	auc_with_groups_from_titles
+GSE104079	main	Pre vs 45 Min Post	16	13	0	0	0		unpaired	0	
+GSE27536	main	Pre vs Post	27	27	27	27	27	1	paired	0	
+GSE83578	pre_vs_30min	Pre vs Post 30M	16	16	8	8	8	2	paired	0	
+GSE83578	pre_vs_3h	Pre vs Post 3H	16	16	8	8	8	2	paired	0	
+GSE83578	pre_vs_24h	Pre vs Post 24H	16	16	8	8	8	2	paired	0	
+GSE111555	main	Baseline (Sed) vs Post 18 Weeks (Ex)	22	10	16	10	10	2	partly paired	6	0.762
+GSE28998	main	Baseline (Sed) vs Post 12 Weeks (Ex)	7	7	7	7	7	1	paired	0	
