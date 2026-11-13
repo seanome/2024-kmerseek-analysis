@@ -1,0 +1,13 @@
+{
+  "first_run": true,
+  "unchanged_resume": true,
+  "unchanged_output_hashes": {
+    "work/39/91ebb635a585f51209ccb29e19d07d/validated.json": "2c2a33da5d9aedc46cc13bad88aa3cd697ab1803c46c4b184fd258c25db24091"
+  },
+  "query_change_reference_cached": true,
+  "controlled_stop_resume": true,
+  "external_scheduler_interruption": "not tested",
+  "corruption_rejected_before_search": true,
+  "protocol_mismatch_rejected_before_search": true,
+  "production_rollout": false
+}

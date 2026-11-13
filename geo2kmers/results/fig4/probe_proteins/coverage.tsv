@@ -1,0 +1,13 @@
+array	source	probe_sets	share_of_array	with_a_sequence	long_enough
+U133 Plus 2	refseq_mrna	40010	0.732	40010	40001
+U133 Plus 2	est	12975	0.237	12975	12975
+U133 Plus 2	cdna_with_protein	692	0.013	692	692
+U133 Plus 2	genbank_mrna	503	0.009	448	443
+U133 Plus 2	genomic_clone	254	0.005	254	254
+U133 Plus 2	refseq_model	189	0.003	189	189
+U133 Plus 2	none	52	0.001	0	0
+HTA 2.0	other_only	46555	0.658	0	0
+HTA 2.0	refseq_mrna	19741	0.279	19741	19731
+HTA 2.0	none	3391	0.048	0	0
+HTA 2.0	ensembl_coding	820	0.012	0	0
+HTA 2.0	genbank_mrna	246	0.003	246	242

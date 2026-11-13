@@ -1,0 +1,34 @@
+alphabet	k	species	set	proteins	passed	genes	genes_passed
+dayhoff	12	Botryllus	paper_list	849	0	823	0
+dayhoff	12	Botryllus	random_length_matched	849	0	848	0
+dayhoff	12	Botryllus	shuffled	849	0		
+dayhoff	12	human	paper_list	849	33	823	33
+dayhoff	12	human	random_length_matched	849	13	848	13
+dayhoff	12	human	shuffled	849	7		
+dayhoff	13	Botryllus	paper_list	849	680	823	663
+dayhoff	13	Botryllus	random_length_matched	849	510	848	509
+dayhoff	13	Botryllus	shuffled	849	7		
+dayhoff	13	human	paper_list	849	61	823	59
+dayhoff	13	human	random_length_matched	849	24	848	24
+dayhoff	13	human	shuffled	849	6		
+hp	27	Botryllus	paper_list	848	0	822	0
+hp	27	Botryllus	random_length_matched	849	0	848	0
+hp	27	Botryllus	shuffled	848	0		
+hp	27	human	paper_list	848	18	822	18
+hp	27	human	random_length_matched	849	4	848	4
+hp	27	human	shuffled	848	4		
+hp	30	Botryllus	paper_list	849	634	823	617
+hp	30	Botryllus	random_length_matched	849	403	848	402
+hp	30	Botryllus	shuffled	847	4		
+protein	6	Botryllus	paper_list	849	0	823	0
+protein	6	Botryllus	random_length_matched	849	0	848	0
+protein	6	Botryllus	shuffled	849	0		
+protein	6	human	paper_list	849	0	823	0
+protein	6	human	random_length_matched	849	0	848	0
+protein	6	human	shuffled	849	0		
+protein	7	Botryllus	paper_list	849	725	823	708
+protein	7	Botryllus	random_length_matched	849	591	848	590
+protein	7	Botryllus	shuffled	849	7		
+protein	7	human	paper_list	849	69	823	67
+protein	7	human	random_length_matched	849	21	848	21
+protein	7	human	shuffled	849	7		

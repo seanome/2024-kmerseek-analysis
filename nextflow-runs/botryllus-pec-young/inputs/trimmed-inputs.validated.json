@@ -1,0 +1,1026 @@
+[
+  {
+    "run": "SRR32233927",
+    "pairs": 636,
+    "bases": 174108,
+    "input_pairs": 692,
+    "files": [
+      {
+        "path": "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/nfcore/results/trimgalore/SRR32233927_trimmed_1_val_1.fq.gz",
+        "sha256": "60f50ed3746e75fecefc55d662a6d37fc0bca6720c84392ae7cdbf902897a0f0"
+      },
+      {
+        "path": "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/nfcore/results/trimgalore/SRR32233927_trimmed_2_val_2.fq.gz",
+        "sha256": "dda1ec25ec22b79b2bbe75e54279ba3a70b03fba47f04373510c7b0c6ea6ef88"
+      }
+    ]
+  },
+  {
+    "run": "SRR32233928",
+    "pairs": 10188292,
+    "bases": 2380948498,
+    "input_pairs": 12968144,
+    "files": [
+      {
+        "path": "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/nfcore/results/trimgalore/SRR32233928_trimmed_1_val_1.fq.gz",
+        "sha256": "26a29e1610d9719757da77688eb5234ffaabec559e28ba4b358639fcd219b2cd"
+      },
+      {
+        "path": "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/nfcore/results/trimgalore/SRR32233928_trimmed_2_val_2.fq.gz",
+        "sha256": "83c913521b943a215d592836c081fd2049989183dad4f6b371416bc627b89fac"
+      }
+    ]
+  },
+  {
+    "run": "SRR32233953",
+    "pairs": 2278635,
+    "bases": 485813976,
+    "input_pairs": 3427559,
+    "files": [
+      {
+        "path": "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/nfcore/results/trimgalore/SRR32233953_trimmed_1_val_1.fq.gz",
+        "sha256": "e345ebc73ba1263d8794ac5fa9c3639d36c1c18f790071535796b70cf3375404"
+      },
+      {
+        "path": "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/nfcore/results/trimgalore/SRR32233953_trimmed_2_val_2.fq.gz",
+        "sha256": "65da015b55b2624bdf6b18d640c6d30219529a15af4698294cb458579e158e25"
+      }
+    ]
+  },
+  {
+    "run": "SRR32233961",
+    "pairs": 22551001,
+    "bases": 5293359164,
+    "input_pairs": 28791681,
+    "files": [
+      {
+        "path": "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/nfcore/results/trimgalore/SRR32233961_trimmed_1_val_1.fq.gz",
+        "sha256": "cdafaf78e64a1148636a95e42db11fe78c526ac95e0bab30def63b3b417e0bf1"
+      },
+      {
+        "path": "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/nfcore/results/trimgalore/SRR32233961_trimmed_2_val_2.fq.gz",
+        "sha256": "b13a8d2e6ebe5ea1fbd9b5b611cd4e7b1ace9529e4959f7cd72384ef35877b83"
+      }
+    ]
+  },
+  {
+    "run": "SRR32233969",
+    "pairs": 702989,
+    "bases": 151019473,
+    "input_pairs": 2198347,
+    "files": [
+      {
+        "path": "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/nfcore/results/trimgalore/SRR32233969_trimmed_1_val_1.fq.gz",
+        "sha256": "cca33fe595ea475839211247afa7d9a810174cb67711e464ded74811a0b1dc35"
+      },
+      {
+        "path": "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/nfcore/results/trimgalore/SRR32233969_trimmed_2_val_2.fq.gz",
+        "sha256": "3946becb78fb9afac1818f474dd13b7f723eed69461595162c78f6797aba3893"
+      }
+    ]
+  },
+  {
+    "run": "SRR32233971",
+    "pairs": 927,
+    "bases": 222797,
+    "input_pairs": 1141,
+    "files": [
+      {
+        "path": "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/nfcore/results/trimgalore/SRR32233971_trimmed_1_val_1.fq.gz",
+        "sha256": "ec228526e15af68683f66c4abb55b274cce992cf2cb7db07c0a8bcdad33be655"
+      },
+      {
+        "path": "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/nfcore/results/trimgalore/SRR32233971_trimmed_2_val_2.fq.gz",
+        "sha256": "b5da5a07a59353483a8ed66345e65bc3299a3e2a68875d80625f54bb7e3e9222"
+      }
+    ]
+  },
+  {
+    "run": "SRR32233976",
+    "pairs": 6674,
+    "bases": 1574830,
+    "input_pairs": 9077,
+    "files": [
+      {
+        "path": "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/nfcore/results/trimgalore/SRR32233976_trimmed_1_val_1.fq.gz",
+        "sha256": "470dab9e92e6ec6a5c057c45ab96deba685b51f09758efe9bdc24ece59cf232f"
+      },
+      {
+        "path": "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/nfcore/results/trimgalore/SRR32233976_trimmed_2_val_2.fq.gz",
+        "sha256": "1079eb4b6e484775c3ee65be5724c11665ccf5fd910db74ee5aa9f075a5fd33b"
+      }
+    ]
+  },
+  {
+    "run": "SRR32233986",
+    "pairs": 42864377,
+    "bases": 9726960391,
+    "input_pairs": 56397481,
+    "files": [
+      {
+        "path": "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/nfcore/results/trimgalore/SRR32233986_trimmed_1_val_1.fq.gz",
+        "sha256": "1b5a571b31a57bec47494a2ee23433e4957ab47f5937222bbb9dfa043e791e0e"
+      },
+      {
+        "path": "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/nfcore/results/trimgalore/SRR32233986_trimmed_2_val_2.fq.gz",
+        "sha256": "74eb69ff0f5e4fead00aaf100c1a171e8e5595aa8daf1bd0e51e3ec12b39c068"
+      }
+    ]
+  },
+  {
+    "run": "SRR32233929",
+    "pairs": 1978556,
+    "bases": 440956579,
+    "input_pairs": 3724363,
+    "files": [
+      {
+        "path": "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/nfcore/results/trimgalore/SRR32233929_trimmed_1_val_1.fq.gz",
+        "sha256": "8cec16807d7877acd3b686ceee023563b1048a739f459ed04c10657c2d10bcfb"
+      },
+      {
+        "path": "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/nfcore/results/trimgalore/SRR32233929_trimmed_2_val_2.fq.gz",
+        "sha256": "8ef5cbb027184cde5f0a7e557c18846045580db09830ac82e91fcb76999f86ed"
+      }
+    ]
+  },
+  {
+    "run": "SRR32233930",
+    "pairs": 780584,
+    "bases": 195070738,
+    "input_pairs": 2353806,
+    "files": [
+      {
+        "path": "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/nfcore/results/trimgalore/SRR32233930_trimmed_1_val_1.fq.gz",
+        "sha256": "e8d55a40ab2bc5aaaaeb8a41e8932af7e9e1508660fcd10a758bd595d4e0234a"
+      },
+      {
+        "path": "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/nfcore/results/trimgalore/SRR32233930_trimmed_2_val_2.fq.gz",
+        "sha256": "087d5de61c42c45e552fe26da5b661c9991d8e05ff7543999908070ee20abc2a"
+      }
+    ]
+  },
+  {
+    "run": "SRR32233935",
+    "pairs": 13761,
+    "bases": 3695861,
+    "input_pairs": 15422,
+    "files": [
+      {
+        "path": "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/nfcore/results/trimgalore/SRR32233935_trimmed_1_val_1.fq.gz",
+        "sha256": "55c575ad46d3222c33fea46ec83da6ec17e45627d98eda56f22ad034a242b2e0"
+      },
+      {
+        "path": "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/nfcore/results/trimgalore/SRR32233935_trimmed_2_val_2.fq.gz",
+        "sha256": "9cad7c29100833d2608f25cebefceae3db28bdee098401057af46ad452748bce"
+      }
+    ]
+  },
+  {
+    "run": "SRR32233940",
+    "pairs": 10582387,
+    "bases": 2280669385,
+    "input_pairs": 15797579,
+    "files": [
+      {
+        "path": "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/nfcore/results/trimgalore/SRR32233940_trimmed_1_val_1.fq.gz",
+        "sha256": "f6e309945c56f6fd0c5692a4f2b85e5314e3d251d226bf46812483648d4e6aaa"
+      },
+      {
+        "path": "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/nfcore/results/trimgalore/SRR32233940_trimmed_2_val_2.fq.gz",
+        "sha256": "d432ff12734d79fb94663b9df094fed8e61037d7c18d34e7af49843e8ccc7325"
+      }
+    ]
+  },
+  {
+    "run": "SRR32233945",
+    "pairs": 2629,
+    "bases": 657842,
+    "input_pairs": 3076,
+    "files": [
+      {
+        "path": "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/nfcore/results/trimgalore/SRR32233945_trimmed_1_val_1.fq.gz",
+        "sha256": "4393014ed41a1d3248856fff12c9d25fbfb88cf5562cd425ac82007df31343f1"
+      },
+      {
+        "path": "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/nfcore/results/trimgalore/SRR32233945_trimmed_2_val_2.fq.gz",
+        "sha256": "32dbfe9862902918ab2ed999c04ce371c1f634a5d1ce01729879f44ac3bb06dc"
+      }
+    ]
+  },
+  {
+    "run": "SRR32233948",
+    "pairs": 892,
+    "bases": 247162,
+    "input_pairs": 967,
+    "files": [
+      {
+        "path": "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/nfcore/results/trimgalore/SRR32233948_trimmed_1_val_1.fq.gz",
+        "sha256": "fc19dd32eb4738131bec872455ab29f44fde0dd7c5948960b0bc717868ec050b"
+      },
+      {
+        "path": "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/nfcore/results/trimgalore/SRR32233948_trimmed_2_val_2.fq.gz",
+        "sha256": "3712389aa0c347489dfd52dd6effe69d28a5b53360f7ffdad962276587ab154d"
+      }
+    ]
+  },
+  {
+    "run": "SRR32233949",
+    "pairs": 23770123,
+    "bases": 4958104088,
+    "input_pairs": 40552226,
+    "files": [
+      {
+        "path": "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/nfcore/results/trimgalore/SRR32233949_trimmed_1_val_1.fq.gz",
+        "sha256": "76fe3e15cb088d2f03cfdd6683aa87b8a8cab57b363717b43a1473bcf0c17da7"
+      },
+      {
+        "path": "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/nfcore/results/trimgalore/SRR32233949_trimmed_2_val_2.fq.gz",
+        "sha256": "4dd21f5dc9b15e36077857b890199a2d8c428b28224f0e8b29c658957276462c"
+      }
+    ]
+  },
+  {
+    "run": "SRR32233960",
+    "pairs": 428851,
+    "bases": 95331948,
+    "input_pairs": 2384159,
+    "files": [
+      {
+        "path": "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/nfcore/results/trimgalore/SRR32233960_trimmed_1_val_1.fq.gz",
+        "sha256": "189e950c2fe8508a165e6478b45c6294d9fdc89636483a492fdfa520bcc8beb2"
+      },
+      {
+        "path": "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/nfcore/results/trimgalore/SRR32233960_trimmed_2_val_2.fq.gz",
+        "sha256": "f9dc1bde518f9166b11beb65a520cbd5c888fb3d1def0c5586bb19781cabf2e6"
+      }
+    ]
+  },
+  {
+    "run": "SRR32233963",
+    "pairs": 985791,
+    "bases": 212611320,
+    "input_pairs": 2663020,
+    "files": [
+      {
+        "path": "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/nfcore/results/trimgalore/SRR32233963_trimmed_1_val_1.fq.gz",
+        "sha256": "f782ab9d6e665fea115ba4ed4464f0a01e923431b119ac619a9c0c19c36253bb"
+      },
+      {
+        "path": "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/nfcore/results/trimgalore/SRR32233963_trimmed_2_val_2.fq.gz",
+        "sha256": "6a8a1ce0d12d8cd5b1d4ed862354d461e5bbc39446bffc73c9ef8b5ed0f3291e"
+      }
+    ]
+  },
+  {
+    "run": "SRR32233967",
+    "pairs": 1701020,
+    "bases": 373411472,
+    "input_pairs": 4444376,
+    "files": [
+      {
+        "path": "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/nfcore/results/trimgalore/SRR32233967_trimmed_1_val_1.fq.gz",
+        "sha256": "85e6512c35268a8a7d1b77bba02a0b1ee8b98b521634697ce85838d252ebff80"
+      },
+      {
+        "path": "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/nfcore/results/trimgalore/SRR32233967_trimmed_2_val_2.fq.gz",
+        "sha256": "e73518cb73cd68951fd5742ffca8c1c4fce8ceb615f5f6a714d948517f6b3d68"
+      }
+    ]
+  },
+  {
+    "run": "SRR32233968",
+    "pairs": 6785616,
+    "bases": 1485414738,
+    "input_pairs": 9919605,
+    "files": [
+      {
+        "path": "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/nfcore/results/trimgalore/SRR32233968_trimmed_1_val_1.fq.gz",
+        "sha256": "86ba0f9d342934cbfba4ff0e96306230a95537b3054d38ba839688ed23ab1482"
+      },
+      {
+        "path": "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/nfcore/results/trimgalore/SRR32233968_trimmed_2_val_2.fq.gz",
+        "sha256": "6be27ae070c117bf11e8dfbd425712de08f20fb72806f847fb0f6e2ca31b8100"
+      }
+    ]
+  },
+  {
+    "run": "SRR32233972",
+    "pairs": 17760,
+    "bases": 4558736,
+    "input_pairs": 21166,
+    "files": [
+      {
+        "path": "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/nfcore/results/trimgalore/SRR32233972_trimmed_1_val_1.fq.gz",
+        "sha256": "d67149300e56165a6c45203cc1a11b0512a3550d76b15250ff929b629b68f44e"
+      },
+      {
+        "path": "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/nfcore/results/trimgalore/SRR32233972_trimmed_2_val_2.fq.gz",
+        "sha256": "c5e356b1c9d374e716ee2680fe57ab4cccb90197ed7fb510ca3911761c7d0789"
+      }
+    ]
+  },
+  {
+    "run": "SRR32233973",
+    "pairs": 1537493,
+    "bases": 334059360,
+    "input_pairs": 3315415,
+    "files": [
+      {
+        "path": "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/nfcore/results/trimgalore/SRR32233973_trimmed_1_val_1.fq.gz",
+        "sha256": "fff9618bff7001577d9b66b4b862b53065d64d3fd17f36f04b52767e44849861"
+      },
+      {
+        "path": "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/nfcore/results/trimgalore/SRR32233973_trimmed_2_val_2.fq.gz",
+        "sha256": "d7a2ab2fb0dead235de814d1e45604fabab4e0ad5c3b2726e32ae0aac234ea6c"
+      }
+    ]
+  },
+  {
+    "run": "SRR32233989",
+    "pairs": 792787,
+    "bases": 194412375,
+    "input_pairs": 2428422,
+    "files": [
+      {
+        "path": "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/nfcore/results/trimgalore/SRR32233989_trimmed_1_val_1.fq.gz",
+        "sha256": "45f829a2f6f0d14ba1bbe2a00644575930eafcf243fc36674adf54ab65b8d77a"
+      },
+      {
+        "path": "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/nfcore/results/trimgalore/SRR32233989_trimmed_2_val_2.fq.gz",
+        "sha256": "db4d34945b48f92a70a6e68ee8aed1def87d7096b09cf42833fae4085fa63ddc"
+      }
+    ]
+  },
+  {
+    "run": "SRR32233938",
+    "pairs": 1984222,
+    "bases": 515647137,
+    "input_pairs": 2589562,
+    "files": [
+      {
+        "path": "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/nfcore/results/trimgalore/SRR32233938_trimmed_1_val_1.fq.gz",
+        "sha256": "79171b144179b814d842f3c1a83fc205c6c1688c01b796ee19130128c05ca4ec"
+      },
+      {
+        "path": "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/nfcore/results/trimgalore/SRR32233938_trimmed_2_val_2.fq.gz",
+        "sha256": "be2276eeb02d777fdf2ee863120b1204dd440a582aade63e1cc79feb8bb78880"
+      }
+    ]
+  },
+  {
+    "run": "SRR32233942",
+    "pairs": 2550085,
+    "bases": 606605908,
+    "input_pairs": 7194139,
+    "files": [
+      {
+        "path": "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/nfcore/results/trimgalore/SRR32233942_trimmed_1_val_1.fq.gz",
+        "sha256": "2d6088c124b1cb4499252a17dfbff0c5c1c24165bc5236fc27fffc655c3ee6ac"
+      },
+      {
+        "path": "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/nfcore/results/trimgalore/SRR32233942_trimmed_2_val_2.fq.gz",
+        "sha256": "a1d93d008e6d8d436cbde9e44b47b24a5f5ca9e3752ec0e06f00f66032310a8a"
+      }
+    ]
+  },
+  {
+    "run": "SRR32233947",
+    "pairs": 236,
+    "bases": 60351,
+    "input_pairs": 278,
+    "files": [
+      {
+        "path": "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/nfcore/results/trimgalore/SRR32233947_trimmed_1_val_1.fq.gz",
+        "sha256": "4b53f4d503922081314e17c1fed407619f109fdad498209e4c64c5ebfded1015"
+      },
+      {
+        "path": "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/nfcore/results/trimgalore/SRR32233947_trimmed_2_val_2.fq.gz",
+        "sha256": "94bcb8c32449f1300242b488d65839bcd5020a48c58ccb56b7ef795e16de1385"
+      }
+    ]
+  },
+  {
+    "run": "SRR32233956",
+    "pairs": 4463278,
+    "bases": 980439832,
+    "input_pairs": 9951424,
+    "files": [
+      {
+        "path": "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/nfcore/results/trimgalore/SRR32233956_trimmed_1_val_1.fq.gz",
+        "sha256": "4b63e03bb33d16181e6d8e628be8c30711b37e5b76c26571bdaab8ac7fe897d1"
+      },
+      {
+        "path": "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/nfcore/results/trimgalore/SRR32233956_trimmed_2_val_2.fq.gz",
+        "sha256": "e3d9c2fbb13e02c9cc4e5d2fda3d81bf59228a8d5e27940eba11673ed677cc7d"
+      }
+    ]
+  },
+  {
+    "run": "SRR32233958",
+    "pairs": 2343176,
+    "bases": 550237102,
+    "input_pairs": 3853177,
+    "files": [
+      {
+        "path": "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/nfcore/results/trimgalore/SRR32233958_trimmed_1_val_1.fq.gz",
+        "sha256": "34df8985d32bbc6129fc3bc5f3bc9467148c1059db58f9662826347c81b592c0"
+      },
+      {
+        "path": "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/nfcore/results/trimgalore/SRR32233958_trimmed_2_val_2.fq.gz",
+        "sha256": "bfd0942f21114cb894cb6ac8811edfa327b881bfc931541d45fd662d3ed0563a"
+      }
+    ]
+  },
+  {
+    "run": "SRR32233978",
+    "pairs": 31486260,
+    "bases": 6994963629,
+    "input_pairs": 45140878,
+    "files": [
+      {
+        "path": "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/nfcore/results/trimgalore/SRR32233978_trimmed_1_val_1.fq.gz",
+        "sha256": "d5c2213056118f8482b79e11a07ec5afc211cbfefce2bdedc97e697b0b10bf21"
+      },
+      {
+        "path": "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/nfcore/results/trimgalore/SRR32233978_trimmed_2_val_2.fq.gz",
+        "sha256": "5661f6e8ea874a3100093a48bb3f095e6dec0ab41cf57bdb5556a4a1f1250aec"
+      }
+    ]
+  },
+  {
+    "run": "SRR32233981",
+    "pairs": 1224445,
+    "bases": 303298791,
+    "input_pairs": 1898014,
+    "files": [
+      {
+        "path": "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/nfcore/results/trimgalore/SRR32233981_trimmed_1_val_1.fq.gz",
+        "sha256": "a7410f95ea24711241c3572f8cd11eb4c63c39688584b8ab8335d675fca4e9c8"
+      },
+      {
+        "path": "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/nfcore/results/trimgalore/SRR32233981_trimmed_2_val_2.fq.gz",
+        "sha256": "bf34ba3701ad2bdd3b17edb3c08c1c2446e4ef350db81a3cab643e4c33b8a4bd"
+      }
+    ]
+  },
+  {
+    "run": "SRR32233982",
+    "pairs": 129918,
+    "bases": 27566966,
+    "input_pairs": 343704,
+    "files": [
+      {
+        "path": "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/nfcore/results/trimgalore/SRR32233982_trimmed_1_val_1.fq.gz",
+        "sha256": "bcd78997cb6a6811ee2a5ea3d1fc66fa82671ae3d3a2c12f8099f549369c33a0"
+      },
+      {
+        "path": "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/nfcore/results/trimgalore/SRR32233982_trimmed_2_val_2.fq.gz",
+        "sha256": "fbc4adb3b25cd4508c5a939865729c6cb87dcc9250e63b3decbcedc668839ad3"
+      }
+    ]
+  },
+  {
+    "run": "SRR32233985",
+    "pairs": 3426,
+    "bases": 815890,
+    "input_pairs": 4247,
+    "files": [
+      {
+        "path": "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/nfcore/results/trimgalore/SRR32233985_trimmed_1_val_1.fq.gz",
+        "sha256": "0634c57fd880ddb977ea0c54385afc3752850a5540e81fa30733f84a6bf64896"
+      },
+      {
+        "path": "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/nfcore/results/trimgalore/SRR32233985_trimmed_2_val_2.fq.gz",
+        "sha256": "e3f57e75abe9ca3190b0cab924fd48fb3d0533355bd6fdbdc6bb1f8eb676077f"
+      }
+    ]
+  },
+  {
+    "run": "SRR32233988",
+    "pairs": 649,
+    "bases": 167449,
+    "input_pairs": 828,
+    "files": [
+      {
+        "path": "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/nfcore/results/trimgalore/SRR32233988_trimmed_1_val_1.fq.gz",
+        "sha256": "b8b17ae28b3dca0ad482c3520e76556bd66f721c5a2caf83492db144f4652331"
+      },
+      {
+        "path": "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/nfcore/results/trimgalore/SRR32233988_trimmed_2_val_2.fq.gz",
+        "sha256": "d70d71afd97b1495efc5caa05585a223fdbf3a6f4005d27d827aa96a768064a4"
+      }
+    ]
+  },
+  {
+    "run": "SRR32233926",
+    "pairs": 3336366,
+    "bases": 826323841,
+    "input_pairs": 4418415,
+    "files": [
+      {
+        "path": "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/nfcore/results/trimgalore/SRR32233926_trimmed_1_val_1.fq.gz",
+        "sha256": "c35cd9f268a9725467c9bbbc73bae214f9df62deb2ab7da16fcf56ebcdd4b1d4"
+      },
+      {
+        "path": "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/nfcore/results/trimgalore/SRR32233926_trimmed_2_val_2.fq.gz",
+        "sha256": "6a2469d0750d2bc4db2cc5277d64dacfc9e1e7d388a912a085657758d3f40821"
+      }
+    ]
+  },
+  {
+    "run": "SRR32233934",
+    "pairs": 1053079,
+    "bases": 244303721,
+    "input_pairs": 2997234,
+    "files": [
+      {
+        "path": "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/nfcore/results/trimgalore/SRR32233934_trimmed_1_val_1.fq.gz",
+        "sha256": "64ebe6ffdbec7fe4980c238aabba77f9650f5132dbcd4d740e27d9db01599671"
+      },
+      {
+        "path": "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/nfcore/results/trimgalore/SRR32233934_trimmed_2_val_2.fq.gz",
+        "sha256": "1586eb22cecfa2862fdff1c712bb0ff7b7d8e752607879d25ef0a6206d37bba7"
+      }
+    ]
+  },
+  {
+    "run": "SRR32233936",
+    "pairs": 232416,
+    "bases": 59640663,
+    "input_pairs": 375387,
+    "files": [
+      {
+        "path": "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/nfcore/results/trimgalore/SRR32233936_trimmed_1_val_1.fq.gz",
+        "sha256": "218597cf35b74edfc0f257f88cb4ba961878c1a38d2deefca07bad193b07e011"
+      },
+      {
+        "path": "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/nfcore/results/trimgalore/SRR32233936_trimmed_2_val_2.fq.gz",
+        "sha256": "59530ea9772bb2011ec7746d78cbf92fcc81730dd657c27fc1156add287b51e7"
+      }
+    ]
+  },
+  {
+    "run": "SRR32233939",
+    "pairs": 990,
+    "bases": 270770,
+    "input_pairs": 1136,
+    "files": [
+      {
+        "path": "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/nfcore/results/trimgalore/SRR32233939_trimmed_1_val_1.fq.gz",
+        "sha256": "0a5bb959f81dbb23deef21795da020d49a15038cc80a1249ca9955a57f50b67a"
+      },
+      {
+        "path": "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/nfcore/results/trimgalore/SRR32233939_trimmed_2_val_2.fq.gz",
+        "sha256": "da1966186f9eadc2874360897a0d889f3ff1f9eb1afc5f0089b1e4068ad18d7d"
+      }
+    ]
+  },
+  {
+    "run": "SRR32233944",
+    "pairs": 2783,
+    "bases": 752024,
+    "input_pairs": 2962,
+    "files": [
+      {
+        "path": "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/nfcore/results/trimgalore/SRR32233944_trimmed_1_val_1.fq.gz",
+        "sha256": "21edc317b07b226825e42f04760ae0b48e4a66d771b549bf9f5acceee7f20660"
+      },
+      {
+        "path": "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/nfcore/results/trimgalore/SRR32233944_trimmed_2_val_2.fq.gz",
+        "sha256": "ea4e1fc65c9984a4dcd73d955083d93dde87fe8f5a6bdb859c2713eaf56849d1"
+      }
+    ]
+  },
+  {
+    "run": "SRR32233951",
+    "pairs": 1219,
+    "bases": 319477,
+    "input_pairs": 1402,
+    "files": [
+      {
+        "path": "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/nfcore/results/trimgalore/SRR32233951_trimmed_1_val_1.fq.gz",
+        "sha256": "f59fa4c8bc278cd6b9196309f4347cc9f4ba7786e8e64f9a3627a8dbd291180f"
+      },
+      {
+        "path": "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/nfcore/results/trimgalore/SRR32233951_trimmed_2_val_2.fq.gz",
+        "sha256": "484ed9dc4ac855c94039004b39c69c9983059546ed751bc5dc64bde70229ba4c"
+      }
+    ]
+  },
+  {
+    "run": "SRR32233954",
+    "pairs": 10419689,
+    "bases": 2144692299,
+    "input_pairs": 20624885,
+    "files": [
+      {
+        "path": "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/nfcore/results/trimgalore/SRR32233954_trimmed_1_val_1.fq.gz",
+        "sha256": "531e72b3ae03f6b63e968ec83cdba43b24da92d549f72d9a8a4d9eeb283227c8"
+      },
+      {
+        "path": "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/nfcore/results/trimgalore/SRR32233954_trimmed_2_val_2.fq.gz",
+        "sha256": "f00ccddd2eb2072b3441bd7954939e86f9c05be9e3e1ff87849fcbbb3f491f8d"
+      }
+    ]
+  },
+  {
+    "run": "SRR32233957",
+    "pairs": 1806861,
+    "bases": 373945203,
+    "input_pairs": 4722202,
+    "files": [
+      {
+        "path": "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/nfcore/results/trimgalore/SRR32233957_trimmed_1_val_1.fq.gz",
+        "sha256": "87b53d9d7d9c9736e0876ca4c59c48b8284ded28768b1836b32613e9cba8b0c1"
+      },
+      {
+        "path": "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/nfcore/results/trimgalore/SRR32233957_trimmed_2_val_2.fq.gz",
+        "sha256": "48f501f10ec7b5d7d1111b06de9eb93636fa72529b99e83f8bf117360f94f3ac"
+      }
+    ]
+  },
+  {
+    "run": "SRR32233959",
+    "pairs": 3446108,
+    "bases": 761715774,
+    "input_pairs": 5466048,
+    "files": [
+      {
+        "path": "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/nfcore/results/trimgalore/SRR32233959_trimmed_1_val_1.fq.gz",
+        "sha256": "168b22a7af1f5373e22145d4ee6a32823b1f1c55c72f6ca834049722274b956d"
+      },
+      {
+        "path": "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/nfcore/results/trimgalore/SRR32233959_trimmed_2_val_2.fq.gz",
+        "sha256": "313f9b218814e4feed5caa78e3d4cc3769e2d63dfff6c53b21f76bfc0a3f60f9"
+      }
+    ]
+  },
+  {
+    "run": "SRR32233964",
+    "pairs": 69938926,
+    "bases": 15213725808,
+    "input_pairs": 108931114,
+    "files": [
+      {
+        "path": "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/nfcore/results/trimgalore/SRR32233964_trimmed_1_val_1.fq.gz",
+        "sha256": "cbafb011bdb95254e624ba77e674fa67738041689ef27293f74838d272130e37"
+      },
+      {
+        "path": "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/nfcore/results/trimgalore/SRR32233964_trimmed_2_val_2.fq.gz",
+        "sha256": "fcdd8d4776c2a7ca369889395de275954f0d03f35b1ec2427d14832d1e95d5f1"
+      }
+    ]
+  },
+  {
+    "run": "SRR32233966",
+    "pairs": 1049260,
+    "bases": 210099718,
+    "input_pairs": 3422520,
+    "files": [
+      {
+        "path": "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/nfcore/results/trimgalore/SRR32233966_trimmed_1_val_1.fq.gz",
+        "sha256": "519870bf5caea20379de73d17cb2e20fab149ebc174ba6d6b4840a823d681cfa"
+      },
+      {
+        "path": "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/nfcore/results/trimgalore/SRR32233966_trimmed_2_val_2.fq.gz",
+        "sha256": "62ed01a74c911e9827bf39c27112137f786b6522c860e9b974ae4bfd107fcc41"
+      }
+    ]
+  },
+  {
+    "run": "SRR32233974",
+    "pairs": 1252,
+    "bases": 315681,
+    "input_pairs": 1454,
+    "files": [
+      {
+        "path": "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/nfcore/results/trimgalore/SRR32233974_trimmed_1_val_1.fq.gz",
+        "sha256": "d7c2ea98f30f9a6d6cd00f27f3caaa107bd02ebb4297da69b7140d48298a0a87"
+      },
+      {
+        "path": "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/nfcore/results/trimgalore/SRR32233974_trimmed_2_val_2.fq.gz",
+        "sha256": "4f6a7f59352b6474ab12555db67dd5d4f380e4b67c69c85ba8918913625d7328"
+      }
+    ]
+  },
+  {
+    "run": "SRR32233977",
+    "pairs": 81277,
+    "bases": 18853390,
+    "input_pairs": 883811,
+    "files": [
+      {
+        "path": "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/nfcore/results/trimgalore/SRR32233977_trimmed_1_val_1.fq.gz",
+        "sha256": "eb1e14885e20acd3d1c2bb9136ded759de6021b3d28291859e75175aa0bae1f3"
+      },
+      {
+        "path": "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/nfcore/results/trimgalore/SRR32233977_trimmed_2_val_2.fq.gz",
+        "sha256": "b9065b8f3c4686a13ab03791f2644294a5d0593cf51bfef5e801488540a6cafc"
+      }
+    ]
+  },
+  {
+    "run": "SRR32233979",
+    "pairs": 1165237,
+    "bases": 246118860,
+    "input_pairs": 2322608,
+    "files": [
+      {
+        "path": "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/nfcore/results/trimgalore/SRR32233979_trimmed_1_val_1.fq.gz",
+        "sha256": "2d84a5efe187f6748d8cb68db0c4b7a09a5666c775bfa57ccb738125d310e1f9"
+      },
+      {
+        "path": "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/nfcore/results/trimgalore/SRR32233979_trimmed_2_val_2.fq.gz",
+        "sha256": "d1907a2cd8c7c1bead3e0503b175bf08781e0b8c938e7926b893986dc6384e1b"
+      }
+    ]
+  },
+  {
+    "run": "SRR32233983",
+    "pairs": 13423267,
+    "bases": 3091575796,
+    "input_pairs": 17888709,
+    "files": [
+      {
+        "path": "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/nfcore/results/trimgalore/SRR32233983_trimmed_1_val_1.fq.gz",
+        "sha256": "f72371a1d21b407f02eed00f68d8ae4d8b47d66003edfd152b9a2776731e1b84"
+      },
+      {
+        "path": "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/nfcore/results/trimgalore/SRR32233983_trimmed_2_val_2.fq.gz",
+        "sha256": "0e1b8dc7be5c141d2bb6e77b19a4f6fc57fde4da8dc9a7d00545e1a9dedebcc0"
+      }
+    ]
+  },
+  {
+    "run": "SRR32233984",
+    "pairs": 574969,
+    "bases": 148249328,
+    "input_pairs": 929341,
+    "files": [
+      {
+        "path": "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/nfcore/results/trimgalore/SRR32233984_trimmed_1_val_1.fq.gz",
+        "sha256": "40f13418f40d270c9418376f3b7422851b1fa44a799d4d659ceed828c7a6e272"
+      },
+      {
+        "path": "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/nfcore/results/trimgalore/SRR32233984_trimmed_2_val_2.fq.gz",
+        "sha256": "0c4e3b7bb9f979d9400bfa762b1debfaa98743bace2c5d53035fb467268f3227"
+      }
+    ]
+  },
+  {
+    "run": "SRR32233931",
+    "pairs": 30045871,
+    "bases": 6971069378,
+    "input_pairs": 37252574,
+    "files": [
+      {
+        "path": "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/nfcore/results/trimgalore/SRR32233931_trimmed_1_val_1.fq.gz",
+        "sha256": "b8fd4495ff0444901dba62e8e79ba9440fb2c1b1f6916eac8ab92d7a3304edd9"
+      },
+      {
+        "path": "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/nfcore/results/trimgalore/SRR32233931_trimmed_2_val_2.fq.gz",
+        "sha256": "f98d9f42a220d59ecbb4697df36e2a09546b473078437e147937ac7f50163a43"
+      }
+    ]
+  },
+  {
+    "run": "SRR32233932",
+    "pairs": 254572,
+    "bases": 55540790,
+    "input_pairs": 376309,
+    "files": [
+      {
+        "path": "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/nfcore/results/trimgalore/SRR32233932_trimmed_1_val_1.fq.gz",
+        "sha256": "b8ac15a1eba129b7d4e65086e777f9f0fbdbe7d819368528f024d0d73ec8657b"
+      },
+      {
+        "path": "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/nfcore/results/trimgalore/SRR32233932_trimmed_2_val_2.fq.gz",
+        "sha256": "fd23bf1a40454fead5056ba4050009f97a0dd3c870b9c7631ecc920cc1950571"
+      }
+    ]
+  },
+  {
+    "run": "SRR32233933",
+    "pairs": 324454,
+    "bases": 83197867,
+    "input_pairs": 613147,
+    "files": [
+      {
+        "path": "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/nfcore/results/trimgalore/SRR32233933_trimmed_1_val_1.fq.gz",
+        "sha256": "ad9fb4944a664a4f42ef17bb7ef885135f19deb10a843000979525207bdd93d5"
+      },
+      {
+        "path": "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/nfcore/results/trimgalore/SRR32233933_trimmed_2_val_2.fq.gz",
+        "sha256": "1b47904afd161d0f89c8c2336770624c04bffdbc2991127b8f59a7dcbbf1ae25"
+      }
+    ]
+  },
+  {
+    "run": "SRR32233937",
+    "pairs": 616136,
+    "bases": 143906380,
+    "input_pairs": 2668895,
+    "files": [
+      {
+        "path": "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/nfcore/results/trimgalore/SRR32233937_trimmed_1_val_1.fq.gz",
+        "sha256": "ee9d005537bbfd6d2ea7297aca90e7b74faf6f3f5113884855ff0c37826893df"
+      },
+      {
+        "path": "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/nfcore/results/trimgalore/SRR32233937_trimmed_2_val_2.fq.gz",
+        "sha256": "5ff8ea5a17916e9b5294ee6f9ba14308c3206e5c9036091ea0f5451e8d223280"
+      }
+    ]
+  },
+  {
+    "run": "SRR32233941",
+    "pairs": 2216686,
+    "bases": 477440379,
+    "input_pairs": 4084463,
+    "files": [
+      {
+        "path": "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/nfcore/results/trimgalore/SRR32233941_trimmed_1_val_1.fq.gz",
+        "sha256": "275410b707d6ea47ba03c102fc1cb4368182e8cd076ab45a89789bc618e79df7"
+      },
+      {
+        "path": "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/nfcore/results/trimgalore/SRR32233941_trimmed_2_val_2.fq.gz",
+        "sha256": "5a5733ec4b532bd9f285dafbceddcd63cda9db30dd438b9280e1b37bdc6b6e4f"
+      }
+    ]
+  },
+  {
+    "run": "SRR32233943",
+    "pairs": 2472397,
+    "bases": 527154743,
+    "input_pairs": 5197834,
+    "files": [
+      {
+        "path": "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/nfcore/results/trimgalore/SRR32233943_trimmed_1_val_1.fq.gz",
+        "sha256": "d037d16a94d9f5c6ec82d9c120343db74cfa16e2cfca1156cacc8441949649c8"
+      },
+      {
+        "path": "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/nfcore/results/trimgalore/SRR32233943_trimmed_2_val_2.fq.gz",
+        "sha256": "87d877ec491d471637ab61a302c637546f1e27775c560fbf91f71a95fb18333e"
+      }
+    ]
+  },
+  {
+    "run": "SRR32233946",
+    "pairs": 1496643,
+    "bases": 311246193,
+    "input_pairs": 3333419,
+    "files": [
+      {
+        "path": "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/nfcore/results/trimgalore/SRR32233946_trimmed_1_val_1.fq.gz",
+        "sha256": "fbb8a8ff962eb8d541c790ac3f2caecb65f5edd6c04b0434c6136073616cddb5"
+      },
+      {
+        "path": "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/nfcore/results/trimgalore/SRR32233946_trimmed_2_val_2.fq.gz",
+        "sha256": "2b4757b1f529cd6bdf049ae11b8d2b3b51aa067cb19adf8d81a7cc035582b6ec"
+      }
+    ]
+  },
+  {
+    "run": "SRR32233950",
+    "pairs": 227,
+    "bases": 54144,
+    "input_pairs": 342,
+    "files": [
+      {
+        "path": "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/nfcore/results/trimgalore/SRR32233950_trimmed_1_val_1.fq.gz",
+        "sha256": "77c42aef612998ff25ca4af6116744c6550526d747da117832c3486385de382c"
+      },
+      {
+        "path": "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/nfcore/results/trimgalore/SRR32233950_trimmed_2_val_2.fq.gz",
+        "sha256": "1af730e25846a63dcb6764a80350bada7c7a1b2f3fe60a86b69a422abfdd61ca"
+      }
+    ]
+  },
+  {
+    "run": "SRR32233952",
+    "pairs": 1181217,
+    "bases": 298162698,
+    "input_pairs": 1840946,
+    "files": [
+      {
+        "path": "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/nfcore/results/trimgalore/SRR32233952_trimmed_1_val_1.fq.gz",
+        "sha256": "680d82956a320bd25bdf05c5d1ea87cde53ebd4a2836f3e23d2ea5802ef07fc4"
+      },
+      {
+        "path": "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/nfcore/results/trimgalore/SRR32233952_trimmed_2_val_2.fq.gz",
+        "sha256": "d3a38e34160e3231072c359cee68dab49ef802bd6d6c508f7494c7742a31b660"
+      }
+    ]
+  },
+  {
+    "run": "SRR32233955",
+    "pairs": 827809,
+    "bases": 180601703,
+    "input_pairs": 3426654,
+    "files": [
+      {
+        "path": "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/nfcore/results/trimgalore/SRR32233955_trimmed_1_val_1.fq.gz",
+        "sha256": "d5abff2cda45686434db9a2dd847f864273849e73af6315a6c7d240fdbd180d4"
+      },
+      {
+        "path": "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/nfcore/results/trimgalore/SRR32233955_trimmed_2_val_2.fq.gz",
+        "sha256": "05b9f45617590f4c823d8566ebf7a8c292c0c07947e9e6558afeb27130009487"
+      }
+    ]
+  },
+  {
+    "run": "SRR32233962",
+    "pairs": 1352,
+    "bases": 362521,
+    "input_pairs": 1514,
+    "files": [
+      {
+        "path": "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/nfcore/results/trimgalore/SRR32233962_trimmed_1_val_1.fq.gz",
+        "sha256": "3d07bfba5aa2b495fa0c6675af43177e49d0585aaecd21a5cd85f10e8b8a8904"
+      },
+      {
+        "path": "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/nfcore/results/trimgalore/SRR32233962_trimmed_2_val_2.fq.gz",
+        "sha256": "8208d37570382286e39bbc543e2a6d30d03198eb93c80b74209f45ae8eb4f71f"
+      }
+    ]
+  },
+  {
+    "run": "SRR32233965",
+    "pairs": 6207607,
+    "bases": 1428653379,
+    "input_pairs": 11074239,
+    "files": [
+      {
+        "path": "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/nfcore/results/trimgalore/SRR32233965_trimmed_1_val_1.fq.gz",
+        "sha256": "646cad807929ec6b6dcf76a78be2f0421799809d44a531274d0108d261759908"
+      },
+      {
+        "path": "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/nfcore/results/trimgalore/SRR32233965_trimmed_2_val_2.fq.gz",
+        "sha256": "4bcedca101932de8fdc993afd4e455ee47daba3eddd860bb2699374238a17c68"
+      }
+    ]
+  },
+  {
+    "run": "SRR32233970",
+    "pairs": 18061867,
+    "bases": 3983861583,
+    "input_pairs": 29038831,
+    "files": [
+      {
+        "path": "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/nfcore/results/trimgalore/SRR32233970_trimmed_1_val_1.fq.gz",
+        "sha256": "a54b55868965958c57e755e6570005cd0fee132d499624e6432de3fa9a6d5468"
+      },
+      {
+        "path": "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/nfcore/results/trimgalore/SRR32233970_trimmed_2_val_2.fq.gz",
+        "sha256": "75fa4f97f451050545e0d11eb36084f8171a83b0a01a4ffc413557e088d1493a"
+      }
+    ]
+  },
+  {
+    "run": "SRR32233975",
+    "pairs": 19459800,
+    "bases": 3912712633,
+    "input_pairs": 60834367,
+    "files": [
+      {
+        "path": "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/nfcore/results/trimgalore/SRR32233975_trimmed_1_val_1.fq.gz",
+        "sha256": "53f3770256f0e68f4a175644bfd26fae340a828101f96e365a88ba99c821d240"
+      },
+      {
+        "path": "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/nfcore/results/trimgalore/SRR32233975_trimmed_2_val_2.fq.gz",
+        "sha256": "3e2f36e4f279ebb5d995f0b643086196e4c4ec2ae5108b9f1d4c8c3b28b8779f"
+      }
+    ]
+  },
+  {
+    "run": "SRR32233980",
+    "pairs": 949090,
+    "bases": 208520229,
+    "input_pairs": 3007040,
+    "files": [
+      {
+        "path": "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/nfcore/results/trimgalore/SRR32233980_trimmed_1_val_1.fq.gz",
+        "sha256": "7e40063e76afd69128c5e456e9b70a1978dec0543bcf4a33af8f07c59c9378fb"
+      },
+      {
+        "path": "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/nfcore/results/trimgalore/SRR32233980_trimmed_2_val_2.fq.gz",
+        "sha256": "761c1b1684c8e52777b426917e3ab2872688f874c4d619b93dba8ed401555a7a"
+      }
+    ]
+  },
+  {
+    "run": "SRR32233987",
+    "pairs": 42433155,
+    "bases": 9190016776,
+    "input_pairs": 56539102,
+    "files": [
+      {
+        "path": "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/nfcore/results/trimgalore/SRR32233987_trimmed_1_val_1.fq.gz",
+        "sha256": "409241ef64faf5f47726348959a7d74d07f97f270d6620a0f84bbf87790e2d70"
+      },
+      {
+        "path": "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/nfcore/results/trimgalore/SRR32233987_trimmed_2_val_2.fq.gz",
+        "sha256": "f61fc5f5be6bc0e5916ae202d4d308ffdc486684e0754c95806728a49f06cdf3"
+      }
+    ]
+  }
+]

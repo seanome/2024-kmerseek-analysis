@@ -497,7 +497,7 @@ def draw_alignment_rows(
 PROTEIN20_ORDER = "".join(ALPHABET_CLUSTERS["protein20"])
 
 
-def aligned_codes(qaln: str, taln: str) -> tuple[np.ndarray, np.ndarray]:
+def aligned_pair_codes(qaln: str, taln: str) -> tuple[np.ndarray, np.ndarray]:
     """protein20 indices (0-19, in PROTEIN20_ORDER) of the columns where neither side has a gap."""
     tab = TABLES["protein20"]
     q = tab[np.frombuffer(qaln.encode(), dtype=np.uint8)]
@@ -632,7 +632,7 @@ def score_pairs(
     """
     rows, fqs, fts, means = [], [], [], {k: [] for k in schemes}
     for i, (qa, ta) in enumerate(zip(qalns, talns)):
-        q, t = aligned_codes(qa, ta)
+        q, t = aligned_pair_codes(qa, ta)
         if q.size < min_cols:
             continue
         rows.append((i, q.size))
@@ -882,95 +882,61 @@ def frac_run_at_least(
 NO_TOOL = "none (no search result: computed from alignments and alphabet tables only)"
 
 
-def finish_figure(
-    fig,
-    path,
-    tools: str,
-    hypothesis: str,
-    conclusion: str,
-    title: str | None = None,
-    *,
-    footer_y: float = -0.01,
-    header_y: float = 1.005,
-    dpi: int = 200,
-    wrap: int | None = None,
-    subtitle: str | None = None,
-    font_scale: float = 1.0,
-    footer_box: dict | None = None,
-    tight_layout: bool = True,
-):
-    """Stamp TOOLS / hypothesis / conclusion on `fig`, then save it to `path`.
+# One implementation for every notebook; see figure_utils.finish_figure.
+from figure_utils import finish_figure  # noqa: E402,F401 (re-exported)
 
-    `subtitle` is one line under the title. `font_scale` multiplies every header and footer
-    font size, for figures drawn at their printed size. `footer_box` replaces the default
-    light grey box behind the hypothesis and conclusion.
+# ---------------------------------------------------------------------------
+# Exact chance of a long class-identical run, for one pair at a time.
+# ---------------------------------------------------------------------------
+
+
+def aligned_stretches(qaln: str, taln: str) -> np.ndarray:
+    """Lengths of the gap-free stretches of an alignment: runs of columns where both have a residue."""
+    q = TABLES["protein20"][np.frombuffer(qaln.encode(), dtype=np.uint8)]
+    t = TABLES["protein20"][np.frombuffer(taln.encode(), dtype=np.uint8)]
+    d = np.diff(np.concatenate(([0], ((q != GAP) & (t != GAP)).astype(np.int8), [0])))
+    return np.flatnonzero(d == -1) - np.flatnonzero(d == 1)
+
+
+def pr_longest_run_at_least(
+    pr_agree: np.ndarray, stretch_lengths: list[np.ndarray], ks: list[int] | np.ndarray
+) -> np.ndarray:
+    """Pr(longest run of agreeing positions >= k), exactly, for every pair and every k.
+
+    Each pair i is a set of stretches (lengths in ``stretch_lengths[i]``). Every position
+    agrees independently with probability ``pr_agree[i]``; a run cannot cross from one
+    stretch to the next. Pass one stretch per pair to ignore gaps.
+
+    Within one stretch of n positions, Q_n = Pr(no run >= k) follows
+    Q_n = 1 for n < k, Q_k = 1 - p^k, Q_n = Q_(n-1) - (1 - p) p^k Q_(n-k-1) for n > k
+    (the first run of k ends at position n, after a disagreeing position n - k).
+    Stretches are independent, so the pair's Pr(no run >= k) is the product over them.
+
+    Returns an array of shape (len(ks), n_pairs).
     """
-    if tight_layout:
-        try:
-            fig.tight_layout()
-        except Exception:  # noqa: BLE001
-            pass
-    # A legend placed above the axes can reach past the top of the figure; start the header
-    # above the highest legend so the two never overlap.
-    fig.canvas.draw()
-    renderer = fig.canvas.get_renderer()
-    legends = [ax.get_legend() for ax in fig.axes if ax.get_legend()] + list(
-        fig.legends
-    )
-    if legends:
-        top = (
-            max(leg.get_window_extent(renderer).y1 for leg in legends) / fig.bbox.height
+    p = np.asarray(pr_agree, dtype=float)
+    n_pairs = p.size
+    n_max = max(int(s.max()) for s in stretch_lengths)
+    pair_idx, length, count = [], [], []
+    for i, s in enumerate(stretch_lengths):
+        u, c = np.unique(s, return_counts=True)
+        pair_idx.append(np.full(u.size, i))
+        length.append(u)
+        count.append(c)
+    pair_idx, length, count = (np.concatenate(x) for x in (pair_idx, length, count))
+    out = np.empty((len(ks), n_pairs))
+    for ki, k in enumerate(ks):
+        q = np.ones((n_max + 1, n_pairs))
+        pk = p**k
+        if k <= n_max:
+            q[k] = 1 - pk
+        for n in range(k + 1, n_max + 1):
+            q[n] = q[n - 1] - (1 - p) * pk * q[n - k - 1]
+        log_none = np.zeros(n_pairs)
+        np.add.at(
+            log_none,
+            pair_idx,
+            count * np.log(np.clip(q[length, pair_idx], 1e-300, 1.0)),
         )
-        header_y = max(header_y, top + 0.01)
-
-    w_in, h_in = fig.get_size_inches()
-    wrap = wrap or max(70, int(w_in * 12))
-    line = lambda pt: pt * font_scale / 72.0 / h_in * 1.45
-    is_km = "kmerseek" in tools and not tools.startswith("no kmerseek")
-    tool_lines = textwrap.wrap("TOOLS: " + tools, wrap)
-    y = header_y
-    fig.text(
-        0.0,
-        y,
-        "\n".join(tool_lines),
-        ha="left",
-        va="bottom",
-        fontsize=9.5 * font_scale,
-        fontweight="bold",
-        color="#8B1A1A" if is_km else "#1F3B73",
-        bbox=dict(
-            boxstyle="round,pad=0.35",
-            facecolor="#FBEAEA" if is_km else "#E8EEF8",
-            edgecolor="none",
-        ),
-    )
-    y += line(9.5) * len(tool_lines) + line(9.5) * 0.9
-    if subtitle:
-        fig.text(0.5, y, subtitle, ha="center", va="bottom", fontsize=9 * font_scale)
-        y += line(9) * 1.1
-    if title:
-        fig.text(
-            0.5,
-            y,
-            title,
-            ha="center",
-            va="bottom",
-            fontsize=12.5 * font_scale,
-            fontweight="bold",
-        )
-    foot = textwrap.wrap("Hypothesis: " + hypothesis, wrap) + textwrap.wrap(
-        "Conclusion: " + conclusion, wrap
-    )
-    fig.text(
-        0.0,
-        footer_y,
-        "\n".join(foot),
-        ha="left",
-        va="top",
-        fontsize=9 * font_scale,
-        color="#222222",
-        linespacing=1.35,
-        bbox=footer_box
-        or dict(boxstyle="round,pad=0.4", facecolor="#F6F6F6", edgecolor="#DDDDDD"),
-    )
-    fig.savefig(path, dpi=dpi, bbox_inches="tight")
+        out[ki] = 1 - np.exp(log_none)
+    return out

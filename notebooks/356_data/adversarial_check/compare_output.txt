@@ -1,0 +1,12 @@
+my exons with a landing call of p_place < 0.05: 675  notebook: 675
+notebook null draws: 1000
+best_of_all                    observed=0.6765 null median=0.6195 max=0.6531 draws >= observed: 0 of 1000  excess exons vs mean=95.2
+best_of_all_p_place_lt_0.05    observed=0.4044 null median=0.3757 max=0.4104 draws >= observed: 11 of 1000  excess exons vs mean=48.1
+single_sdm12_k6_lcTrue         observed=0.3032 null median=0.2714 max=0.3038 draws >= observed: 1 of 1000  excess exons vs mean=53.0
+notebook verdict exons: 1669
+exons only in mine / only in notebook: 0 0
+landing disagreements: 0
+best p_place max abs diff: 0.0
+foldseek notebook lands: 0  rows: 1669
+reseek notebook lands: 0  rows: 1669
+prostt5 notebook lands: 0  rows: 1669

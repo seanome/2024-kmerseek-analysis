@@ -1,0 +1,190 @@
+SUMMARISING RUN PARAMETERS
+=========================
+Input filename: ZW3_trimmed_1.fastq.gz
+Trimming mode: paired-end
+Trim Galore version: 2.3.0
+Quality Phred score cutoff: 20
+Quality encoding type selected: ASCII+33
+Adapter sequence: 'AGATCGGAAGAGC' (user-specified or auto-detected)
+Maximum trimming error rate: 0.1
+Minimum required adapter overlap (stringency): 1 bp
+Minimum required sequence length for both reads before a sequence pair gets removed: 20 bp
+Poly-G trimming enabled: removing poly-G tails from 3' end of both R1 and R2 (2-colour sequencer artifact)
+Output file will be GZIP compressed
+
+
+Trim Galore 2.3.0 — adapter trimming built in
+This is cutadapt 4.0 (compatible; for MultiQC backwards compatibility)
+Command line parameters: -j 1 -e 0.1 -q 20 -O 1 -a AGATCGGAAGAGC ZW3_trimmed_1.fastq.gz
+Processing reads on 1 core in single-end mode ...
+
+=== Summary ===
+
+Total reads processed:            1,000,000
+Reads with adapters:                369,483 (36.9%)
+Reads written (passing filters):  1,000,000 (100.0%)
+
+Total basepairs processed:    150,000,000 bp
+Quality-trimmed:                  336,052 bp (0.2%)
+Total written (filtered):     148,434,417 bp (99.0%)
+
+=== Adapter 1 ===
+
+Sequence: AGATCGGAAGAGC; Type: regular 3'; Length: 13; Trimmed: 369483 times.
+
+No. of allowed errors:
+1-9 bp: 0; 10-13 bp: 1
+
+Overview of removed sequences
+length	count	expect	max.err	error counts
+1	259712	250000.0	0	259712
+2	59914	62500.0	0	59914
+3	21399	15625.0	0	21399
+4	5659	3906.2	0	5659
+5	2160	976.6	0	2160
+6	898	244.1	0	898
+7	834	61.0	0	834
+8	786	15.3	0	786
+9	830	3.8	0	830
+10	760	1.0	1	760
+11	773	0.2	1	773
+12	712	0.1	1	712
+13	652	0.0	1	652
+14	704	0.0	1	704
+15	657	0.0	1	657
+16	614	0.0	1	614
+17	616	0.0	1	616
+18	527	0.0	1	527
+19	488	0.0	1	488
+20	476	0.0	2	476
+21	461	0.0	2	461
+22	423	0.0	2	423
+23	531	0.0	2	531
+24	467	0.0	2	467
+25	460	0.0	2	460
+26	376	0.0	2	376
+27	369	0.0	2	369
+28	333	0.0	2	333
+29	385	0.0	2	385
+30	337	0.0	3	337
+31	311	0.0	3	311
+32	307	0.0	3	307
+33	294	0.0	3	294
+34	260	0.0	3	260
+35	265	0.0	3	265
+36	230	0.0	3	230
+37	230	0.0	3	230
+38	213	0.0	3	213
+39	229	0.0	3	229
+40	206	0.0	4	206
+41	193	0.0	4	193
+42	201	0.0	4	201
+43	163	0.0	4	163
+44	172	0.0	4	172
+45	228	0.0	4	228
+46	44	0.0	4	44
+47	84	0.0	4	84
+48	148	0.0	4	148
+49	123	0.0	4	123
+50	97	0.0	5	97
+51	91	0.0	5	91
+52	115	0.0	5	115
+53	74	0.0	5	74
+54	93	0.0	5	93
+55	92	0.0	5	92
+56	70	0.0	5	70
+57	72	0.0	5	72
+58	67	0.0	5	67
+59	58	0.0	5	58
+60	41	0.0	6	41
+61	31	0.0	6	31
+62	59	0.0	6	59
+63	68	0.0	6	68
+64	21	0.0	6	21
+65	20	0.0	6	20
+66	56	0.0	6	56
+67	23	0.0	6	23
+68	34	0.0	6	34
+69	24	0.0	6	24
+70	23	0.0	7	23
+71	12	0.0	7	12
+72	16	0.0	7	16
+73	18	0.0	7	18
+74	15	0.0	7	15
+75	18	0.0	7	18
+76	20	0.0	7	20
+77	27	0.0	7	27
+78	18	0.0	7	18
+79	17	0.0	7	17
+80	21	0.0	8	21
+81	22	0.0	8	22
+82	28	0.0	8	28
+83	18	0.0	8	18
+84	16	0.0	8	16
+85	24	0.0	8	24
+86	23	0.0	8	23
+87	23	0.0	8	23
+88	20	0.0	8	20
+89	20	0.0	8	20
+90	16	0.0	9	16
+91	23	0.0	9	23
+92	21	0.0	9	21
+93	21	0.0	9	21
+94	22	0.0	9	22
+95	16	0.0	9	16
+96	25	0.0	9	25
+97	25	0.0	9	25
+98	28	0.0	9	28
+99	15	0.0	9	15
+100	22	0.0	10	22
+101	14	0.0	10	14
+102	29	0.0	10	29
+103	18	0.0	10	18
+104	21	0.0	10	21
+105	9	0.0	10	9
+106	16	0.0	10	16
+107	20	0.0	10	20
+108	13	0.0	10	13
+109	20	0.0	10	20
+110	15	0.0	11	15
+111	16	0.0	11	16
+112	21	0.0	11	21
+113	15	0.0	11	15
+114	14	0.0	11	14
+115	11	0.0	11	11
+116	16	0.0	11	16
+117	10	0.0	11	10
+118	10	0.0	11	10
+119	13	0.0	11	13
+120	10	0.0	12	10
+121	11	0.0	12	11
+122	10	0.0	12	10
+123	8	0.0	12	8
+124	12	0.0	12	12
+125	16	0.0	12	16
+126	7	0.0	12	7
+127	10	0.0	12	10
+128	9	0.0	12	9
+129	11	0.0	12	11
+130	3	0.0	13	3
+131	2	0.0	13	2
+132	1	0.0	13	1
+133	3	0.0	13	3
+134	1	0.0	13	1
+135	1	0.0	13	1
+136	3	0.0	13	3
+137	3	0.0	13	3
+138	1	0.0	13	1
+139	1	0.0	13	1
+141	1	0.0	14	1
+146	1	0.0	14	1
+147	4	0.0	14	4
+
+
+RUN STATISTICS FOR INPUT FILE: ZW3_trimmed_1.fastq.gz
+=============================================
+1000000 sequences processed in total
+Sequences removed because they became shorter than the length cutoff of 20 bp:	1120 (0.1%)
+Sequences removed because they were longer than the upper length cutoff:	0 (0.0%)
+Sequences removed because of too many N bases:	0 (0.0%)
+Reads with poly-G/C trimmed:	23675 (2.4%); 199,759 bp removed

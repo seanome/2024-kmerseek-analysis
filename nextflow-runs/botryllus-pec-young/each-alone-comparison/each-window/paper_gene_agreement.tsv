@@ -1,0 +1,6 @@
+comparison	window	genes_in_both	spearman	paper_p_lt_0_05	also_p_lt_0_05_here_same_direction	chance_also_p_lt_0_05_here_same_direction	paper_padj_lt_0_05	paper_padj_also_padj_here_same_direction	paper_padj_also_p_here_same_direction	share_up_paper	share_up_here
+2 h	young_2h	28832	0.347	404	35	2.2	0	0	0	0.472	0.326
+24 h	young_24h	28173	0.475	462	35	3.1	1	0	0	0.632	0.36
+13-49 d	young_13_17d	11717	0.243	52	0	0.0	0	0	0	0.478	0.274
+13-49 d	young_49_52d	11365	0.177	63	5	0.2	0	0	0	0.521	0.863
+132 d	young_104_132d	11826	0.338	124	12	0.6	6	0	3	0.442	0.299

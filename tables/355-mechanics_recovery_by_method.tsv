@@ -1,0 +1,433 @@
+tag_name	category	tag_length_aa	host	insert_kind	method	insert_start	insert_end	flagged	flagged_named_right	flag_names_on_insert	n_flags_on_insert	n_flags_total
+His6	affinity tag	6	BCL2_HUMAN	exact tag	exact tag match (protein20)	215	220	true	true	His6	1	1
+His6	affinity tag	6	BCL2_HUMAN	exact tag	local alignment (BLOSUM62)	215	220	true	not applicable	none	1	1
+His6	affinity tag	6	BCL2_HUMAN	exact tag	kmerseek reduced alphabet (hp_thomas_dill, k=19)	215	220	false	false	none	0	0
+His6	affinity tag	6	BCL2_HUMAN	tag with one substitution	exact tag match (protein20)	208	213	false	false	none	0	0
+His6	affinity tag	6	BCL2_HUMAN	tag with one substitution	local alignment (BLOSUM62)	208	213	true	not applicable	none	1	1
+His6	affinity tag	6	BCL2_HUMAN	tag with one substitution	kmerseek reduced alphabet (hp_thomas_dill, k=19)	208	213	false	false	none	0	0
+His6	affinity tag	6	CED9_CAEEL	exact tag	exact tag match (protein20)	193	198	true	true	His6	1	1
+His6	affinity tag	6	CED9_CAEEL	exact tag	local alignment (BLOSUM62)	193	198	true	not applicable	none	1	1
+His6	affinity tag	6	CED9_CAEEL	exact tag	kmerseek reduced alphabet (hp_thomas_dill, k=19)	193	198	false	false	none	0	1
+His6	affinity tag	6	CED9_CAEEL	tag with one substitution	exact tag match (protein20)	247	252	false	false	none	0	0
+His6	affinity tag	6	CED9_CAEEL	tag with one substitution	local alignment (BLOSUM62)	247	252	true	not applicable	none	1	1
+His6	affinity tag	6	CED9_CAEEL	tag with one substitution	kmerseek reduced alphabet (hp_thomas_dill, k=19)	247	252	false	false	none	0	1
+His6	affinity tag	6	MCL1_HUMAN	exact tag	exact tag match (protein20)	262	267	true	true	His6	1	2
+His6	affinity tag	6	MCL1_HUMAN	exact tag	local alignment (BLOSUM62)	262	267	true	not applicable	none	1	1
+His6	affinity tag	6	MCL1_HUMAN	exact tag	kmerseek reduced alphabet (hp_thomas_dill, k=19)	262	267	false	false	none	0	0
+His6	affinity tag	6	MCL1_HUMAN	tag with one substitution	exact tag match (protein20)	323	328	false	false	none	0	1
+His6	affinity tag	6	MCL1_HUMAN	tag with one substitution	local alignment (BLOSUM62)	323	328	true	not applicable	none	1	1
+His6	affinity tag	6	MCL1_HUMAN	tag with one substitution	kmerseek reduced alphabet (hp_thomas_dill, k=19)	323	328	false	false	none	0	0
+His6	affinity tag	6	BAX_HUMAN	exact tag	exact tag match (protein20)	41	46	true	true	His6	1	2
+His6	affinity tag	6	BAX_HUMAN	exact tag	local alignment (BLOSUM62)	41	46	true	not applicable	none	1	1
+His6	affinity tag	6	BAX_HUMAN	exact tag	kmerseek reduced alphabet (hp_thomas_dill, k=19)	41	46	false	false	none	0	0
+His6	affinity tag	6	BAX_HUMAN	tag with one substitution	exact tag match (protein20)	82	87	false	false	none	0	1
+His6	affinity tag	6	BAX_HUMAN	tag with one substitution	local alignment (BLOSUM62)	82	87	true	not applicable	none	1	1
+His6	affinity tag	6	BAX_HUMAN	tag with one substitution	kmerseek reduced alphabet (hp_thomas_dill, k=19)	82	87	false	false	none	0	0
+His6	affinity tag	6	P53_HUMAN	exact tag	exact tag match (protein20)	243	248	true	true	His6	1	1
+His6	affinity tag	6	P53_HUMAN	exact tag	local alignment (BLOSUM62)	243	248	true	not applicable	none	1	1
+His6	affinity tag	6	P53_HUMAN	exact tag	kmerseek reduced alphabet (hp_thomas_dill, k=19)	243	248	false	false	none	0	0
+His6	affinity tag	6	P53_HUMAN	tag with one substitution	exact tag match (protein20)	232	237	false	false	none	0	0
+His6	affinity tag	6	P53_HUMAN	tag with one substitution	local alignment (BLOSUM62)	232	237	true	not applicable	none	1	1
+His6	affinity tag	6	P53_HUMAN	tag with one substitution	kmerseek reduced alphabet (hp_thomas_dill, k=19)	232	237	false	false	none	0	0
+His6	affinity tag	6	EGFR_HUMAN	exact tag	exact tag match (protein20)	195	200	true	true	His6	1	2
+His6	affinity tag	6	EGFR_HUMAN	exact tag	local alignment (BLOSUM62)	195	200	true	not applicable	none	1	1
+His6	affinity tag	6	EGFR_HUMAN	exact tag	kmerseek reduced alphabet (hp_thomas_dill, k=19)	195	200	false	false	none	0	0
+His6	affinity tag	6	EGFR_HUMAN	tag with one substitution	exact tag match (protein20)	781	786	false	false	none	0	1
+His6	affinity tag	6	EGFR_HUMAN	tag with one substitution	local alignment (BLOSUM62)	781	786	true	not applicable	none	1	1
+His6	affinity tag	6	EGFR_HUMAN	tag with one substitution	kmerseek reduced alphabet (hp_thomas_dill, k=19)	781	786	false	false	none	0	0
+His8	affinity tag	8	BCL2_HUMAN	exact tag	exact tag match (protein20)	141	148	true	true	His6;His8	4	4
+His8	affinity tag	8	BCL2_HUMAN	exact tag	local alignment (BLOSUM62)	141	148	true	not applicable	none	1	1
+His8	affinity tag	8	BCL2_HUMAN	exact tag	kmerseek reduced alphabet (hp_thomas_dill, k=19)	141	148	false	false	none	0	0
+His8	affinity tag	8	BCL2_HUMAN	tag with one substitution	exact tag match (protein20)	123	130	false	false	none	0	0
+His8	affinity tag	8	BCL2_HUMAN	tag with one substitution	local alignment (BLOSUM62)	123	130	true	not applicable	none	1	1
+His8	affinity tag	8	BCL2_HUMAN	tag with one substitution	kmerseek reduced alphabet (hp_thomas_dill, k=19)	123	130	false	false	none	0	0
+His8	affinity tag	8	CED9_CAEEL	exact tag	exact tag match (protein20)	247	254	true	true	His6;His8	4	4
+His8	affinity tag	8	CED9_CAEEL	exact tag	local alignment (BLOSUM62)	247	254	true	not applicable	none	1	1
+His8	affinity tag	8	CED9_CAEEL	exact tag	kmerseek reduced alphabet (hp_thomas_dill, k=19)	247	254	false	false	none	0	1
+His8	affinity tag	8	CED9_CAEEL	tag with one substitution	exact tag match (protein20)	42	49	false	false	none	0	0
+His8	affinity tag	8	CED9_CAEEL	tag with one substitution	local alignment (BLOSUM62)	42	49	true	not applicable	none	1	1
+His8	affinity tag	8	CED9_CAEEL	tag with one substitution	kmerseek reduced alphabet (hp_thomas_dill, k=19)	42	49	false	false	none	0	1
+His8	affinity tag	8	MCL1_HUMAN	exact tag	exact tag match (protein20)	60	67	true	true	His6;His8	4	5
+His8	affinity tag	8	MCL1_HUMAN	exact tag	local alignment (BLOSUM62)	60	67	true	not applicable	none	1	1
+His8	affinity tag	8	MCL1_HUMAN	exact tag	kmerseek reduced alphabet (hp_thomas_dill, k=19)	60	67	false	false	none	0	0
+His8	affinity tag	8	MCL1_HUMAN	tag with one substitution	exact tag match (protein20)	37	44	false	false	none	0	1
+His8	affinity tag	8	MCL1_HUMAN	tag with one substitution	local alignment (BLOSUM62)	37	44	true	not applicable	none	1	1
+His8	affinity tag	8	MCL1_HUMAN	tag with one substitution	kmerseek reduced alphabet (hp_thomas_dill, k=19)	37	44	false	false	none	0	0
+His8	affinity tag	8	BAX_HUMAN	exact tag	exact tag match (protein20)	129	136	true	true	His6;His8	4	5
+His8	affinity tag	8	BAX_HUMAN	exact tag	local alignment (BLOSUM62)	129	136	true	not applicable	none	1	1
+His8	affinity tag	8	BAX_HUMAN	exact tag	kmerseek reduced alphabet (hp_thomas_dill, k=19)	129	136	false	false	none	0	0
+His8	affinity tag	8	BAX_HUMAN	tag with one substitution	exact tag match (protein20)	76	83	false	false	none	0	1
+His8	affinity tag	8	BAX_HUMAN	tag with one substitution	local alignment (BLOSUM62)	76	83	true	not applicable	none	1	1
+His8	affinity tag	8	BAX_HUMAN	tag with one substitution	kmerseek reduced alphabet (hp_thomas_dill, k=19)	76	83	false	false	none	0	0
+His8	affinity tag	8	P53_HUMAN	exact tag	exact tag match (protein20)	253	260	true	true	His6;His8	4	4
+His8	affinity tag	8	P53_HUMAN	exact tag	local alignment (BLOSUM62)	253	260	true	not applicable	none	1	1
+His8	affinity tag	8	P53_HUMAN	exact tag	kmerseek reduced alphabet (hp_thomas_dill, k=19)	253	260	false	false	none	0	0
+His8	affinity tag	8	P53_HUMAN	tag with one substitution	exact tag match (protein20)	49	56	false	false	none	0	0
+His8	affinity tag	8	P53_HUMAN	tag with one substitution	local alignment (BLOSUM62)	49	56	true	not applicable	none	1	1
+His8	affinity tag	8	P53_HUMAN	tag with one substitution	kmerseek reduced alphabet (hp_thomas_dill, k=19)	49	56	false	false	none	0	0
+His8	affinity tag	8	EGFR_HUMAN	exact tag	exact tag match (protein20)	634	641	true	true	His6;His8	4	5
+His8	affinity tag	8	EGFR_HUMAN	exact tag	local alignment (BLOSUM62)	634	641	true	not applicable	none	1	1
+His8	affinity tag	8	EGFR_HUMAN	exact tag	kmerseek reduced alphabet (hp_thomas_dill, k=19)	634	641	false	false	none	0	0
+His8	affinity tag	8	EGFR_HUMAN	tag with one substitution	exact tag match (protein20)	334	341	false	false	none	0	1
+His8	affinity tag	8	EGFR_HUMAN	tag with one substitution	local alignment (BLOSUM62)	334	341	true	not applicable	none	1	1
+His8	affinity tag	8	EGFR_HUMAN	tag with one substitution	kmerseek reduced alphabet (hp_thomas_dill, k=19)	334	341	false	false	none	0	0
+FLAG	epitope tag	8	BCL2_HUMAN	exact tag	exact tag match (protein20)	51	58	true	true	FLAG	1	1
+FLAG	epitope tag	8	BCL2_HUMAN	exact tag	local alignment (BLOSUM62)	51	58	true	not applicable	none	1	1
+FLAG	epitope tag	8	BCL2_HUMAN	exact tag	kmerseek reduced alphabet (hp_thomas_dill, k=19)	51	58	false	false	none	0	0
+FLAG	epitope tag	8	BCL2_HUMAN	tag with one substitution	exact tag match (protein20)	49	56	false	false	none	0	0
+FLAG	epitope tag	8	BCL2_HUMAN	tag with one substitution	local alignment (BLOSUM62)	49	56	true	not applicable	none	1	1
+FLAG	epitope tag	8	BCL2_HUMAN	tag with one substitution	kmerseek reduced alphabet (hp_thomas_dill, k=19)	49	56	false	false	none	0	0
+FLAG	epitope tag	8	CED9_CAEEL	exact tag	exact tag match (protein20)	128	135	true	true	FLAG	1	1
+FLAG	epitope tag	8	CED9_CAEEL	exact tag	local alignment (BLOSUM62)	128	135	true	not applicable	none	1	1
+FLAG	epitope tag	8	CED9_CAEEL	exact tag	kmerseek reduced alphabet (hp_thomas_dill, k=19)	128	135	false	false	none	0	1
+FLAG	epitope tag	8	CED9_CAEEL	tag with one substitution	exact tag match (protein20)	112	119	false	false	none	0	0
+FLAG	epitope tag	8	CED9_CAEEL	tag with one substitution	local alignment (BLOSUM62)	112	119	true	not applicable	none	1	1
+FLAG	epitope tag	8	CED9_CAEEL	tag with one substitution	kmerseek reduced alphabet (hp_thomas_dill, k=19)	112	119	false	false	none	0	1
+FLAG	epitope tag	8	MCL1_HUMAN	exact tag	exact tag match (protein20)	51	58	true	true	FLAG	1	2
+FLAG	epitope tag	8	MCL1_HUMAN	exact tag	local alignment (BLOSUM62)	51	58	true	not applicable	none	1	1
+FLAG	epitope tag	8	MCL1_HUMAN	exact tag	kmerseek reduced alphabet (hp_thomas_dill, k=19)	51	58	false	false	none	0	0
+FLAG	epitope tag	8	MCL1_HUMAN	tag with one substitution	exact tag match (protein20)	99	106	false	false	none	0	1
+FLAG	epitope tag	8	MCL1_HUMAN	tag with one substitution	local alignment (BLOSUM62)	99	106	true	not applicable	none	1	1
+FLAG	epitope tag	8	MCL1_HUMAN	tag with one substitution	kmerseek reduced alphabet (hp_thomas_dill, k=19)	99	106	false	false	none	0	0
+FLAG	epitope tag	8	BAX_HUMAN	exact tag	exact tag match (protein20)	168	175	true	true	FLAG	1	2
+FLAG	epitope tag	8	BAX_HUMAN	exact tag	local alignment (BLOSUM62)	168	175	true	not applicable	none	1	1
+FLAG	epitope tag	8	BAX_HUMAN	exact tag	kmerseek reduced alphabet (hp_thomas_dill, k=19)	168	175	false	false	none	0	0
+FLAG	epitope tag	8	BAX_HUMAN	tag with one substitution	exact tag match (protein20)	27	34	false	false	none	0	1
+FLAG	epitope tag	8	BAX_HUMAN	tag with one substitution	local alignment (BLOSUM62)	27	34	true	not applicable	none	1	1
+FLAG	epitope tag	8	BAX_HUMAN	tag with one substitution	kmerseek reduced alphabet (hp_thomas_dill, k=19)	27	34	false	false	none	0	0
+FLAG	epitope tag	8	P53_HUMAN	exact tag	exact tag match (protein20)	240	247	true	true	FLAG	1	1
+FLAG	epitope tag	8	P53_HUMAN	exact tag	local alignment (BLOSUM62)	240	247	true	not applicable	none	1	1
+FLAG	epitope tag	8	P53_HUMAN	exact tag	kmerseek reduced alphabet (hp_thomas_dill, k=19)	240	247	false	false	none	0	0
+FLAG	epitope tag	8	P53_HUMAN	tag with one substitution	exact tag match (protein20)	100	107	false	false	none	0	0
+FLAG	epitope tag	8	P53_HUMAN	tag with one substitution	local alignment (BLOSUM62)	100	107	true	not applicable	none	1	1
+FLAG	epitope tag	8	P53_HUMAN	tag with one substitution	kmerseek reduced alphabet (hp_thomas_dill, k=19)	100	107	false	false	none	0	0
+FLAG	epitope tag	8	EGFR_HUMAN	exact tag	exact tag match (protein20)	1143	1150	true	true	FLAG	1	2
+FLAG	epitope tag	8	EGFR_HUMAN	exact tag	local alignment (BLOSUM62)	1143	1150	true	not applicable	none	1	1
+FLAG	epitope tag	8	EGFR_HUMAN	exact tag	kmerseek reduced alphabet (hp_thomas_dill, k=19)	1143	1150	false	false	none	0	0
+FLAG	epitope tag	8	EGFR_HUMAN	tag with one substitution	exact tag match (protein20)	78	85	false	false	none	0	1
+FLAG	epitope tag	8	EGFR_HUMAN	tag with one substitution	local alignment (BLOSUM62)	78	85	true	not applicable	none	1	1
+FLAG	epitope tag	8	EGFR_HUMAN	tag with one substitution	kmerseek reduced alphabet (hp_thomas_dill, k=19)	78	85	false	false	none	0	0
+HA	epitope tag	9	BCL2_HUMAN	exact tag	exact tag match (protein20)	137	145	true	true	HA	1	1
+HA	epitope tag	9	BCL2_HUMAN	exact tag	local alignment (BLOSUM62)	137	145	true	not applicable	none	1	1
+HA	epitope tag	9	BCL2_HUMAN	exact tag	kmerseek reduced alphabet (hp_thomas_dill, k=19)	137	145	false	false	none	0	0
+HA	epitope tag	9	BCL2_HUMAN	tag with one substitution	exact tag match (protein20)	154	162	false	false	none	0	0
+HA	epitope tag	9	BCL2_HUMAN	tag with one substitution	local alignment (BLOSUM62)	154	162	true	not applicable	none	1	1
+HA	epitope tag	9	BCL2_HUMAN	tag with one substitution	kmerseek reduced alphabet (hp_thomas_dill, k=19)	154	162	false	false	none	0	0
+HA	epitope tag	9	CED9_CAEEL	exact tag	exact tag match (protein20)	113	121	true	true	HA	1	1
+HA	epitope tag	9	CED9_CAEEL	exact tag	local alignment (BLOSUM62)	113	121	true	not applicable	none	1	1
+HA	epitope tag	9	CED9_CAEEL	exact tag	kmerseek reduced alphabet (hp_thomas_dill, k=19)	113	121	false	false	none	0	1
+HA	epitope tag	9	CED9_CAEEL	tag with one substitution	exact tag match (protein20)	63	71	false	false	none	0	0
+HA	epitope tag	9	CED9_CAEEL	tag with one substitution	local alignment (BLOSUM62)	63	71	true	not applicable	none	1	1
+HA	epitope tag	9	CED9_CAEEL	tag with one substitution	kmerseek reduced alphabet (hp_thomas_dill, k=19)	63	71	false	false	none	0	1
+HA	epitope tag	9	MCL1_HUMAN	exact tag	exact tag match (protein20)	209	217	true	true	HA	1	2
+HA	epitope tag	9	MCL1_HUMAN	exact tag	local alignment (BLOSUM62)	209	217	true	not applicable	none	1	1
+HA	epitope tag	9	MCL1_HUMAN	exact tag	kmerseek reduced alphabet (hp_thomas_dill, k=19)	209	217	false	false	none	0	0
+HA	epitope tag	9	MCL1_HUMAN	tag with one substitution	exact tag match (protein20)	129	137	false	false	none	0	1
+HA	epitope tag	9	MCL1_HUMAN	tag with one substitution	local alignment (BLOSUM62)	129	137	true	not applicable	none	1	1
+HA	epitope tag	9	MCL1_HUMAN	tag with one substitution	kmerseek reduced alphabet (hp_thomas_dill, k=19)	129	137	false	false	none	0	0
+HA	epitope tag	9	BAX_HUMAN	exact tag	exact tag match (protein20)	151	159	true	true	HA	1	2
+HA	epitope tag	9	BAX_HUMAN	exact tag	local alignment (BLOSUM62)	151	159	true	not applicable	none	1	1
+HA	epitope tag	9	BAX_HUMAN	exact tag	kmerseek reduced alphabet (hp_thomas_dill, k=19)	151	159	false	false	none	0	0
+HA	epitope tag	9	BAX_HUMAN	tag with one substitution	exact tag match (protein20)	156	164	false	false	none	0	1
+HA	epitope tag	9	BAX_HUMAN	tag with one substitution	local alignment (BLOSUM62)	156	164	true	not applicable	none	1	1
+HA	epitope tag	9	BAX_HUMAN	tag with one substitution	kmerseek reduced alphabet (hp_thomas_dill, k=19)	156	164	false	false	none	0	0
+HA	epitope tag	9	P53_HUMAN	exact tag	exact tag match (protein20)	122	130	true	true	HA	1	1
+HA	epitope tag	9	P53_HUMAN	exact tag	local alignment (BLOSUM62)	122	130	true	not applicable	none	1	1
+HA	epitope tag	9	P53_HUMAN	exact tag	kmerseek reduced alphabet (hp_thomas_dill, k=19)	122	130	false	false	none	0	0
+HA	epitope tag	9	P53_HUMAN	tag with one substitution	exact tag match (protein20)	373	381	false	false	none	0	0
+HA	epitope tag	9	P53_HUMAN	tag with one substitution	local alignment (BLOSUM62)	373	381	true	not applicable	none	1	1
+HA	epitope tag	9	P53_HUMAN	tag with one substitution	kmerseek reduced alphabet (hp_thomas_dill, k=19)	373	381	false	false	none	0	0
+HA	epitope tag	9	EGFR_HUMAN	exact tag	exact tag match (protein20)	908	916	true	true	HA	1	2
+HA	epitope tag	9	EGFR_HUMAN	exact tag	local alignment (BLOSUM62)	908	916	true	not applicable	none	1	1
+HA	epitope tag	9	EGFR_HUMAN	exact tag	kmerseek reduced alphabet (hp_thomas_dill, k=19)	908	916	false	false	none	0	0
+HA	epitope tag	9	EGFR_HUMAN	tag with one substitution	exact tag match (protein20)	832	840	false	false	none	0	1
+HA	epitope tag	9	EGFR_HUMAN	tag with one substitution	local alignment (BLOSUM62)	832	840	true	not applicable	none	1	1
+HA	epitope tag	9	EGFR_HUMAN	tag with one substitution	kmerseek reduced alphabet (hp_thomas_dill, k=19)	832	840	true	false	MBP (MalE mature chain)	1	1
+Myc	epitope tag	10	BCL2_HUMAN	exact tag	exact tag match (protein20)	92	101	true	true	Myc	1	1
+Myc	epitope tag	10	BCL2_HUMAN	exact tag	local alignment (BLOSUM62)	92	101	true	not applicable	none	1	1
+Myc	epitope tag	10	BCL2_HUMAN	exact tag	kmerseek reduced alphabet (hp_thomas_dill, k=19)	92	101	false	false	none	0	0
+Myc	epitope tag	10	BCL2_HUMAN	tag with one substitution	exact tag match (protein20)	119	128	false	false	none	0	0
+Myc	epitope tag	10	BCL2_HUMAN	tag with one substitution	local alignment (BLOSUM62)	119	128	true	not applicable	none	1	1
+Myc	epitope tag	10	BCL2_HUMAN	tag with one substitution	kmerseek reduced alphabet (hp_thomas_dill, k=19)	119	128	false	false	none	0	0
+Myc	epitope tag	10	CED9_CAEEL	exact tag	exact tag match (protein20)	234	243	true	true	Myc	1	1
+Myc	epitope tag	10	CED9_CAEEL	exact tag	local alignment (BLOSUM62)	234	243	true	not applicable	none	1	1
+Myc	epitope tag	10	CED9_CAEEL	exact tag	kmerseek reduced alphabet (hp_thomas_dill, k=19)	234	243	true	false	MBP (MalE mature chain)	1	1
+Myc	epitope tag	10	CED9_CAEEL	tag with one substitution	exact tag match (protein20)	260	269	false	false	none	0	0
+Myc	epitope tag	10	CED9_CAEEL	tag with one substitution	local alignment (BLOSUM62)	260	269	true	not applicable	none	1	1
+Myc	epitope tag	10	CED9_CAEEL	tag with one substitution	kmerseek reduced alphabet (hp_thomas_dill, k=19)	260	269	false	false	none	0	1
+Myc	epitope tag	10	MCL1_HUMAN	exact tag	exact tag match (protein20)	215	224	true	true	Myc	1	2
+Myc	epitope tag	10	MCL1_HUMAN	exact tag	local alignment (BLOSUM62)	215	224	true	not applicable	none	1	1
+Myc	epitope tag	10	MCL1_HUMAN	exact tag	kmerseek reduced alphabet (hp_thomas_dill, k=19)	215	224	false	false	none	0	0
+Myc	epitope tag	10	MCL1_HUMAN	tag with one substitution	exact tag match (protein20)	204	213	false	false	none	0	1
+Myc	epitope tag	10	MCL1_HUMAN	tag with one substitution	local alignment (BLOSUM62)	204	213	true	not applicable	none	1	1
+Myc	epitope tag	10	MCL1_HUMAN	tag with one substitution	kmerseek reduced alphabet (hp_thomas_dill, k=19)	204	213	false	false	none	0	0
+Myc	epitope tag	10	BAX_HUMAN	exact tag	exact tag match (protein20)	172	181	true	true	Myc	1	2
+Myc	epitope tag	10	BAX_HUMAN	exact tag	local alignment (BLOSUM62)	172	181	true	not applicable	none	1	1
+Myc	epitope tag	10	BAX_HUMAN	exact tag	kmerseek reduced alphabet (hp_thomas_dill, k=19)	172	181	false	false	none	0	0
+Myc	epitope tag	10	BAX_HUMAN	tag with one substitution	exact tag match (protein20)	116	125	false	false	none	0	1
+Myc	epitope tag	10	BAX_HUMAN	tag with one substitution	local alignment (BLOSUM62)	116	125	true	not applicable	none	1	1
+Myc	epitope tag	10	BAX_HUMAN	tag with one substitution	kmerseek reduced alphabet (hp_thomas_dill, k=19)	116	125	false	false	none	0	0
+Myc	epitope tag	10	P53_HUMAN	exact tag	exact tag match (protein20)	152	161	true	true	Myc	1	1
+Myc	epitope tag	10	P53_HUMAN	exact tag	local alignment (BLOSUM62)	152	161	true	not applicable	none	1	1
+Myc	epitope tag	10	P53_HUMAN	exact tag	kmerseek reduced alphabet (hp_thomas_dill, k=19)	152	161	false	false	none	0	0
+Myc	epitope tag	10	P53_HUMAN	tag with one substitution	exact tag match (protein20)	335	344	false	false	none	0	0
+Myc	epitope tag	10	P53_HUMAN	tag with one substitution	local alignment (BLOSUM62)	335	344	true	not applicable	none	1	1
+Myc	epitope tag	10	P53_HUMAN	tag with one substitution	kmerseek reduced alphabet (hp_thomas_dill, k=19)	335	344	false	false	none	0	0
+Myc	epitope tag	10	EGFR_HUMAN	exact tag	exact tag match (protein20)	152	161	true	true	Myc	1	2
+Myc	epitope tag	10	EGFR_HUMAN	exact tag	local alignment (BLOSUM62)	152	161	true	not applicable	none	1	1
+Myc	epitope tag	10	EGFR_HUMAN	exact tag	kmerseek reduced alphabet (hp_thomas_dill, k=19)	152	161	false	false	none	0	0
+Myc	epitope tag	10	EGFR_HUMAN	tag with one substitution	exact tag match (protein20)	780	789	false	false	none	0	1
+Myc	epitope tag	10	EGFR_HUMAN	tag with one substitution	local alignment (BLOSUM62)	780	789	true	not applicable	none	1	1
+Myc	epitope tag	10	EGFR_HUMAN	tag with one substitution	kmerseek reduced alphabet (hp_thomas_dill, k=19)	780	789	false	false	none	0	0
+Strep-tag II	affinity tag	8	BCL2_HUMAN	exact tag	exact tag match (protein20)	68	75	true	true	Strep-tag II	1	1
+Strep-tag II	affinity tag	8	BCL2_HUMAN	exact tag	local alignment (BLOSUM62)	68	75	true	not applicable	none	1	1
+Strep-tag II	affinity tag	8	BCL2_HUMAN	exact tag	kmerseek reduced alphabet (hp_thomas_dill, k=19)	68	75	false	false	none	0	0
+Strep-tag II	affinity tag	8	BCL2_HUMAN	tag with one substitution	exact tag match (protein20)	132	139	false	false	none	0	0
+Strep-tag II	affinity tag	8	BCL2_HUMAN	tag with one substitution	local alignment (BLOSUM62)	132	139	true	not applicable	none	1	1
+Strep-tag II	affinity tag	8	BCL2_HUMAN	tag with one substitution	kmerseek reduced alphabet (hp_thomas_dill, k=19)	132	139	false	false	none	0	0
+Strep-tag II	affinity tag	8	CED9_CAEEL	exact tag	exact tag match (protein20)	31	38	true	true	Strep-tag II	1	1
+Strep-tag II	affinity tag	8	CED9_CAEEL	exact tag	local alignment (BLOSUM62)	31	38	true	not applicable	none	1	1
+Strep-tag II	affinity tag	8	CED9_CAEEL	exact tag	kmerseek reduced alphabet (hp_thomas_dill, k=19)	31	38	false	false	none	0	1
+Strep-tag II	affinity tag	8	CED9_CAEEL	tag with one substitution	exact tag match (protein20)	70	77	false	false	none	0	0
+Strep-tag II	affinity tag	8	CED9_CAEEL	tag with one substitution	local alignment (BLOSUM62)	70	77	true	not applicable	none	1	1
+Strep-tag II	affinity tag	8	CED9_CAEEL	tag with one substitution	kmerseek reduced alphabet (hp_thomas_dill, k=19)	70	77	false	false	none	0	1
+Strep-tag II	affinity tag	8	MCL1_HUMAN	exact tag	exact tag match (protein20)	85	92	true	true	Strep-tag II	1	2
+Strep-tag II	affinity tag	8	MCL1_HUMAN	exact tag	local alignment (BLOSUM62)	85	92	true	not applicable	none	1	1
+Strep-tag II	affinity tag	8	MCL1_HUMAN	exact tag	kmerseek reduced alphabet (hp_thomas_dill, k=19)	85	92	false	false	none	0	0
+Strep-tag II	affinity tag	8	MCL1_HUMAN	tag with one substitution	exact tag match (protein20)	195	202	false	false	none	0	1
+Strep-tag II	affinity tag	8	MCL1_HUMAN	tag with one substitution	local alignment (BLOSUM62)	195	202	true	not applicable	none	1	1
+Strep-tag II	affinity tag	8	MCL1_HUMAN	tag with one substitution	kmerseek reduced alphabet (hp_thomas_dill, k=19)	195	202	false	false	none	0	0
+Strep-tag II	affinity tag	8	BAX_HUMAN	exact tag	exact tag match (protein20)	160	167	true	true	Strep-tag II	1	2
+Strep-tag II	affinity tag	8	BAX_HUMAN	exact tag	local alignment (BLOSUM62)	160	167	true	not applicable	none	1	1
+Strep-tag II	affinity tag	8	BAX_HUMAN	exact tag	kmerseek reduced alphabet (hp_thomas_dill, k=19)	160	167	false	false	none	0	0
+Strep-tag II	affinity tag	8	BAX_HUMAN	tag with one substitution	exact tag match (protein20)	143	150	false	false	none	0	1
+Strep-tag II	affinity tag	8	BAX_HUMAN	tag with one substitution	local alignment (BLOSUM62)	143	150	true	not applicable	none	1	1
+Strep-tag II	affinity tag	8	BAX_HUMAN	tag with one substitution	kmerseek reduced alphabet (hp_thomas_dill, k=19)	143	150	false	false	none	0	0
+Strep-tag II	affinity tag	8	P53_HUMAN	exact tag	exact tag match (protein20)	121	128	true	true	Strep-tag II	1	1
+Strep-tag II	affinity tag	8	P53_HUMAN	exact tag	local alignment (BLOSUM62)	121	128	true	not applicable	none	1	1
+Strep-tag II	affinity tag	8	P53_HUMAN	exact tag	kmerseek reduced alphabet (hp_thomas_dill, k=19)	121	128	false	false	none	0	0
+Strep-tag II	affinity tag	8	P53_HUMAN	tag with one substitution	exact tag match (protein20)	112	119	false	false	none	0	0
+Strep-tag II	affinity tag	8	P53_HUMAN	tag with one substitution	local alignment (BLOSUM62)	112	119	true	not applicable	none	1	1
+Strep-tag II	affinity tag	8	P53_HUMAN	tag with one substitution	kmerseek reduced alphabet (hp_thomas_dill, k=19)	112	119	false	false	none	0	0
+Strep-tag II	affinity tag	8	EGFR_HUMAN	exact tag	exact tag match (protein20)	81	88	true	true	Strep-tag II	1	2
+Strep-tag II	affinity tag	8	EGFR_HUMAN	exact tag	local alignment (BLOSUM62)	81	88	true	not applicable	none	1	1
+Strep-tag II	affinity tag	8	EGFR_HUMAN	exact tag	kmerseek reduced alphabet (hp_thomas_dill, k=19)	81	88	false	false	none	0	0
+Strep-tag II	affinity tag	8	EGFR_HUMAN	tag with one substitution	exact tag match (protein20)	283	290	false	false	none	0	1
+Strep-tag II	affinity tag	8	EGFR_HUMAN	tag with one substitution	local alignment (BLOSUM62)	283	290	true	not applicable	none	1	1
+Strep-tag II	affinity tag	8	EGFR_HUMAN	tag with one substitution	kmerseek reduced alphabet (hp_thomas_dill, k=19)	283	290	true	false	MBP (MalE mature chain)	1	1
+GS linker G4S	linker	5	BCL2_HUMAN	exact tag	exact tag match (protein20)	94	98	true	true	GS linker G4S	1	1
+GS linker G4S	linker	5	BCL2_HUMAN	exact tag	local alignment (BLOSUM62)	94	98	true	not applicable	none	1	1
+GS linker G4S	linker	5	BCL2_HUMAN	exact tag	kmerseek reduced alphabet (hp_thomas_dill, k=19)	94	98	false	false	none	0	0
+GS linker G4S	linker	5	BCL2_HUMAN	tag with one substitution	exact tag match (protein20)	170	174	false	false	none	0	0
+GS linker G4S	linker	5	BCL2_HUMAN	tag with one substitution	local alignment (BLOSUM62)	170	174	true	not applicable	none	1	1
+GS linker G4S	linker	5	BCL2_HUMAN	tag with one substitution	kmerseek reduced alphabet (hp_thomas_dill, k=19)	170	174	false	false	none	0	0
+GS linker G4S	linker	5	CED9_CAEEL	exact tag	exact tag match (protein20)	181	185	true	true	GS linker G4S	1	1
+GS linker G4S	linker	5	CED9_CAEEL	exact tag	local alignment (BLOSUM62)	181	185	true	not applicable	none	1	1
+GS linker G4S	linker	5	CED9_CAEEL	exact tag	kmerseek reduced alphabet (hp_thomas_dill, k=19)	181	185	false	false	none	0	1
+GS linker G4S	linker	5	CED9_CAEEL	tag with one substitution	exact tag match (protein20)	70	74	false	false	none	0	0
+GS linker G4S	linker	5	CED9_CAEEL	tag with one substitution	local alignment (BLOSUM62)	70	74	true	not applicable	none	1	1
+GS linker G4S	linker	5	CED9_CAEEL	tag with one substitution	kmerseek reduced alphabet (hp_thomas_dill, k=19)	70	74	false	false	none	0	1
+GS linker G4S	linker	5	MCL1_HUMAN	exact tag	exact tag match (protein20)	227	231	true	true	GS linker G4S	1	2
+GS linker G4S	linker	5	MCL1_HUMAN	exact tag	local alignment (BLOSUM62)	227	231	true	not applicable	none	1	1
+GS linker G4S	linker	5	MCL1_HUMAN	exact tag	kmerseek reduced alphabet (hp_thomas_dill, k=19)	227	231	false	false	none	0	0
+GS linker G4S	linker	5	MCL1_HUMAN	tag with one substitution	exact tag match (protein20)	203	207	true	false	GS linker GSG	1	2
+GS linker G4S	linker	5	MCL1_HUMAN	tag with one substitution	local alignment (BLOSUM62)	203	207	true	not applicable	none	1	1
+GS linker G4S	linker	5	MCL1_HUMAN	tag with one substitution	kmerseek reduced alphabet (hp_thomas_dill, k=19)	203	207	false	false	none	0	0
+GS linker G4S	linker	5	BAX_HUMAN	exact tag	exact tag match (protein20)	116	120	true	true	GS linker G4S	1	2
+GS linker G4S	linker	5	BAX_HUMAN	exact tag	local alignment (BLOSUM62)	116	120	true	not applicable	none	1	1
+GS linker G4S	linker	5	BAX_HUMAN	exact tag	kmerseek reduced alphabet (hp_thomas_dill, k=19)	116	120	false	false	none	0	0
+GS linker G4S	linker	5	BAX_HUMAN	tag with one substitution	exact tag match (protein20)	24	28	false	false	none	0	1
+GS linker G4S	linker	5	BAX_HUMAN	tag with one substitution	local alignment (BLOSUM62)	24	28	true	not applicable	none	1	1
+GS linker G4S	linker	5	BAX_HUMAN	tag with one substitution	kmerseek reduced alphabet (hp_thomas_dill, k=19)	24	28	false	false	none	0	0
+GS linker G4S	linker	5	P53_HUMAN	exact tag	exact tag match (protein20)	283	287	true	true	GS linker G4S	1	1
+GS linker G4S	linker	5	P53_HUMAN	exact tag	local alignment (BLOSUM62)	283	287	true	not applicable	none	1	1
+GS linker G4S	linker	5	P53_HUMAN	exact tag	kmerseek reduced alphabet (hp_thomas_dill, k=19)	283	287	false	false	none	0	0
+GS linker G4S	linker	5	P53_HUMAN	tag with one substitution	exact tag match (protein20)	280	284	false	false	none	0	0
+GS linker G4S	linker	5	P53_HUMAN	tag with one substitution	local alignment (BLOSUM62)	280	284	true	not applicable	none	1	1
+GS linker G4S	linker	5	P53_HUMAN	tag with one substitution	kmerseek reduced alphabet (hp_thomas_dill, k=19)	280	284	false	false	none	0	0
+GS linker G4S	linker	5	EGFR_HUMAN	exact tag	exact tag match (protein20)	156	160	true	true	GS linker G4S	1	2
+GS linker G4S	linker	5	EGFR_HUMAN	exact tag	local alignment (BLOSUM62)	156	160	true	not applicable	none	1	1
+GS linker G4S	linker	5	EGFR_HUMAN	exact tag	kmerseek reduced alphabet (hp_thomas_dill, k=19)	156	160	false	false	none	0	0
+GS linker G4S	linker	5	EGFR_HUMAN	tag with one substitution	exact tag match (protein20)	1125	1129	false	false	none	0	1
+GS linker G4S	linker	5	EGFR_HUMAN	tag with one substitution	local alignment (BLOSUM62)	1125	1129	true	not applicable	none	1	1
+GS linker G4S	linker	5	EGFR_HUMAN	tag with one substitution	kmerseek reduced alphabet (hp_thomas_dill, k=19)	1125	1129	false	false	none	0	0
+GS linker (G4S)x3	linker	15	BCL2_HUMAN	exact tag	exact tag match (protein20)	172	186	true	true	GS linker (G4S)x3;GS linker G4S;GS linker GSG	6	6
+GS linker (G4S)x3	linker	15	BCL2_HUMAN	exact tag	local alignment (BLOSUM62)	172	186	true	not applicable	none	1	1
+GS linker (G4S)x3	linker	15	BCL2_HUMAN	exact tag	kmerseek reduced alphabet (hp_thomas_dill, k=19)	172	186	false	false	none	0	0
+GS linker (G4S)x3	linker	15	BCL2_HUMAN	tag with one substitution	exact tag match (protein20)	109	123	true	false	GS linker G4S;GS linker GSG	4	4
+GS linker (G4S)x3	linker	15	BCL2_HUMAN	tag with one substitution	local alignment (BLOSUM62)	109	123	true	not applicable	none	1	1
+GS linker (G4S)x3	linker	15	BCL2_HUMAN	tag with one substitution	kmerseek reduced alphabet (hp_thomas_dill, k=19)	109	123	false	false	none	0	0
+GS linker (G4S)x3	linker	15	CED9_CAEEL	exact tag	exact tag match (protein20)	149	163	true	true	GS linker (G4S)x3;GS linker G4S;GS linker GSG	6	6
+GS linker (G4S)x3	linker	15	CED9_CAEEL	exact tag	local alignment (BLOSUM62)	149	163	true	not applicable	none	1	1
+GS linker (G4S)x3	linker	15	CED9_CAEEL	exact tag	kmerseek reduced alphabet (hp_thomas_dill, k=19)	149	163	false	false	none	0	1
+GS linker (G4S)x3	linker	15	CED9_CAEEL	tag with one substitution	exact tag match (protein20)	138	152	true	false	GS linker G4S;GS linker GSG	4	4
+GS linker (G4S)x3	linker	15	CED9_CAEEL	tag with one substitution	local alignment (BLOSUM62)	138	152	true	not applicable	none	1	1
+GS linker (G4S)x3	linker	15	CED9_CAEEL	tag with one substitution	kmerseek reduced alphabet (hp_thomas_dill, k=19)	138	152	false	false	none	0	1
+GS linker (G4S)x3	linker	15	MCL1_HUMAN	exact tag	exact tag match (protein20)	302	316	true	true	GS linker (G4S)x3;GS linker G4S;GS linker GSG	6	7
+GS linker (G4S)x3	linker	15	MCL1_HUMAN	exact tag	local alignment (BLOSUM62)	302	316	true	not applicable	none	1	1
+GS linker (G4S)x3	linker	15	MCL1_HUMAN	exact tag	kmerseek reduced alphabet (hp_thomas_dill, k=19)	302	316	false	false	none	0	0
+GS linker (G4S)x3	linker	15	MCL1_HUMAN	tag with one substitution	exact tag match (protein20)	121	135	true	false	GS linker G4S;GS linker GSG	4	5
+GS linker (G4S)x3	linker	15	MCL1_HUMAN	tag with one substitution	local alignment (BLOSUM62)	121	135	true	not applicable	none	1	1
+GS linker (G4S)x3	linker	15	MCL1_HUMAN	tag with one substitution	kmerseek reduced alphabet (hp_thomas_dill, k=19)	121	135	false	false	none	0	0
+GS linker (G4S)x3	linker	15	BAX_HUMAN	exact tag	exact tag match (protein20)	146	160	true	true	GS linker (G4S)x3;GS linker G4S;GS linker GSG	6	7
+GS linker (G4S)x3	linker	15	BAX_HUMAN	exact tag	local alignment (BLOSUM62)	146	160	true	not applicable	none	1	1
+GS linker (G4S)x3	linker	15	BAX_HUMAN	exact tag	kmerseek reduced alphabet (hp_thomas_dill, k=19)	146	160	false	false	none	0	0
+GS linker (G4S)x3	linker	15	BAX_HUMAN	tag with one substitution	exact tag match (protein20)	61	75	true	false	GS linker G4S;GS linker GSG	4	5
+GS linker (G4S)x3	linker	15	BAX_HUMAN	tag with one substitution	local alignment (BLOSUM62)	61	75	true	not applicable	none	1	1
+GS linker (G4S)x3	linker	15	BAX_HUMAN	tag with one substitution	kmerseek reduced alphabet (hp_thomas_dill, k=19)	61	75	false	false	none	0	0
+GS linker (G4S)x3	linker	15	P53_HUMAN	exact tag	exact tag match (protein20)	32	46	true	true	GS linker (G4S)x3;GS linker G4S;GS linker GSG	6	6
+GS linker (G4S)x3	linker	15	P53_HUMAN	exact tag	local alignment (BLOSUM62)	32	46	true	not applicable	none	1	1
+GS linker (G4S)x3	linker	15	P53_HUMAN	exact tag	kmerseek reduced alphabet (hp_thomas_dill, k=19)	32	46	false	false	none	0	0
+GS linker (G4S)x3	linker	15	P53_HUMAN	tag with one substitution	exact tag match (protein20)	180	194	true	false	GS linker G4S;GS linker GSG	4	4
+GS linker (G4S)x3	linker	15	P53_HUMAN	tag with one substitution	local alignment (BLOSUM62)	180	194	true	not applicable	none	1	1
+GS linker (G4S)x3	linker	15	P53_HUMAN	tag with one substitution	kmerseek reduced alphabet (hp_thomas_dill, k=19)	180	194	false	false	none	0	0
+GS linker (G4S)x3	linker	15	EGFR_HUMAN	exact tag	exact tag match (protein20)	467	481	true	true	GS linker (G4S)x3;GS linker G4S;GS linker GSG	6	7
+GS linker (G4S)x3	linker	15	EGFR_HUMAN	exact tag	local alignment (BLOSUM62)	467	481	true	not applicable	none	1	1
+GS linker (G4S)x3	linker	15	EGFR_HUMAN	exact tag	kmerseek reduced alphabet (hp_thomas_dill, k=19)	467	481	false	false	none	0	0
+GS linker (G4S)x3	linker	15	EGFR_HUMAN	tag with one substitution	exact tag match (protein20)	886	900	true	false	GS linker G4S;GS linker GSG	4	5
+GS linker (G4S)x3	linker	15	EGFR_HUMAN	tag with one substitution	local alignment (BLOSUM62)	886	900	true	not applicable	none	1	1
+GS linker (G4S)x3	linker	15	EGFR_HUMAN	tag with one substitution	kmerseek reduced alphabet (hp_thomas_dill, k=19)	886	900	false	false	none	0	0
+GS linker GSG	linker	3	BCL2_HUMAN	exact tag	exact tag match (protein20)	160	162	true	true	GS linker GSG	1	1
+GS linker GSG	linker	3	BCL2_HUMAN	exact tag	local alignment (BLOSUM62)	160	162	true	not applicable	none	1	1
+GS linker GSG	linker	3	BCL2_HUMAN	exact tag	kmerseek reduced alphabet (hp_thomas_dill, k=19)	160	162	false	false	none	0	0
+GS linker GSG	linker	3	BCL2_HUMAN	tag with one substitution	exact tag match (protein20)	96	98	false	false	none	0	0
+GS linker GSG	linker	3	BCL2_HUMAN	tag with one substitution	local alignment (BLOSUM62)	96	98	true	not applicable	none	1	1
+GS linker GSG	linker	3	BCL2_HUMAN	tag with one substitution	kmerseek reduced alphabet (hp_thomas_dill, k=19)	96	98	false	false	none	0	0
+GS linker GSG	linker	3	CED9_CAEEL	exact tag	exact tag match (protein20)	63	65	true	true	GS linker GSG	1	1
+GS linker GSG	linker	3	CED9_CAEEL	exact tag	local alignment (BLOSUM62)	63	65	true	not applicable	none	1	1
+GS linker GSG	linker	3	CED9_CAEEL	exact tag	kmerseek reduced alphabet (hp_thomas_dill, k=19)	63	65	false	false	none	0	1
+GS linker GSG	linker	3	CED9_CAEEL	tag with one substitution	exact tag match (protein20)	129	131	false	false	none	0	0
+GS linker GSG	linker	3	CED9_CAEEL	tag with one substitution	local alignment (BLOSUM62)	129	131	true	not applicable	none	1	1
+GS linker GSG	linker	3	CED9_CAEEL	tag with one substitution	kmerseek reduced alphabet (hp_thomas_dill, k=19)	129	131	false	false	none	0	1
+GS linker GSG	linker	3	MCL1_HUMAN	exact tag	exact tag match (protein20)	111	113	true	true	GS linker GSG	1	2
+GS linker GSG	linker	3	MCL1_HUMAN	exact tag	local alignment (BLOSUM62)	111	113	true	not applicable	none	1	1
+GS linker GSG	linker	3	MCL1_HUMAN	exact tag	kmerseek reduced alphabet (hp_thomas_dill, k=19)	111	113	false	false	none	0	0
+GS linker GSG	linker	3	MCL1_HUMAN	tag with one substitution	exact tag match (protein20)	127	129	false	false	none	0	1
+GS linker GSG	linker	3	MCL1_HUMAN	tag with one substitution	local alignment (BLOSUM62)	127	129	true	not applicable	none	1	1
+GS linker GSG	linker	3	MCL1_HUMAN	tag with one substitution	kmerseek reduced alphabet (hp_thomas_dill, k=19)	127	129	false	false	none	0	0
+GS linker GSG	linker	3	BAX_HUMAN	exact tag	exact tag match (protein20)	100	102	true	true	GS linker GSG	1	2
+GS linker GSG	linker	3	BAX_HUMAN	exact tag	local alignment (BLOSUM62)	100	102	true	not applicable	none	1	1
+GS linker GSG	linker	3	BAX_HUMAN	exact tag	kmerseek reduced alphabet (hp_thomas_dill, k=19)	100	102	false	false	none	0	0
+GS linker GSG	linker	3	BAX_HUMAN	tag with one substitution	exact tag match (protein20)	107	109	false	false	none	0	1
+GS linker GSG	linker	3	BAX_HUMAN	tag with one substitution	local alignment (BLOSUM62)	107	109	true	not applicable	none	1	1
+GS linker GSG	linker	3	BAX_HUMAN	tag with one substitution	kmerseek reduced alphabet (hp_thomas_dill, k=19)	107	109	false	false	none	0	0
+GS linker GSG	linker	3	P53_HUMAN	exact tag	exact tag match (protein20)	99	101	true	true	GS linker GSG	1	1
+GS linker GSG	linker	3	P53_HUMAN	exact tag	local alignment (BLOSUM62)	99	101	true	not applicable	none	1	1
+GS linker GSG	linker	3	P53_HUMAN	exact tag	kmerseek reduced alphabet (hp_thomas_dill, k=19)	99	101	false	false	none	0	0
+GS linker GSG	linker	3	P53_HUMAN	tag with one substitution	exact tag match (protein20)	307	309	false	false	none	0	0
+GS linker GSG	linker	3	P53_HUMAN	tag with one substitution	local alignment (BLOSUM62)	307	309	true	not applicable	none	1	1
+GS linker GSG	linker	3	P53_HUMAN	tag with one substitution	kmerseek reduced alphabet (hp_thomas_dill, k=19)	307	309	false	false	none	0	0
+GS linker GSG	linker	3	EGFR_HUMAN	exact tag	exact tag match (protein20)	663	665	true	true	GS linker GSG	1	2
+GS linker GSG	linker	3	EGFR_HUMAN	exact tag	local alignment (BLOSUM62)	663	665	true	not applicable	none	1	1
+GS linker GSG	linker	3	EGFR_HUMAN	exact tag	kmerseek reduced alphabet (hp_thomas_dill, k=19)	663	665	false	false	none	0	0
+GS linker GSG	linker	3	EGFR_HUMAN	tag with one substitution	exact tag match (protein20)	520	522	false	false	none	0	1
+GS linker GSG	linker	3	EGFR_HUMAN	tag with one substitution	local alignment (BLOSUM62)	520	522	true	not applicable	none	1	1
+GS linker GSG	linker	3	EGFR_HUMAN	tag with one substitution	kmerseek reduced alphabet (hp_thomas_dill, k=19)	520	522	false	false	none	0	0
+GS linker GGSGGS	linker	6	BCL2_HUMAN	exact tag	exact tag match (protein20)	34	39	true	true	GS linker GGSGGS;GS linker GSG	2	2
+GS linker GGSGGS	linker	6	BCL2_HUMAN	exact tag	local alignment (BLOSUM62)	34	39	true	not applicable	none	1	1
+GS linker GGSGGS	linker	6	BCL2_HUMAN	exact tag	kmerseek reduced alphabet (hp_thomas_dill, k=19)	34	39	false	false	none	0	0
+GS linker GGSGGS	linker	6	BCL2_HUMAN	tag with one substitution	exact tag match (protein20)	99	104	false	false	none	0	0
+GS linker GGSGGS	linker	6	BCL2_HUMAN	tag with one substitution	local alignment (BLOSUM62)	99	104	true	not applicable	none	1	1
+GS linker GGSGGS	linker	6	BCL2_HUMAN	tag with one substitution	kmerseek reduced alphabet (hp_thomas_dill, k=19)	99	104	false	false	none	0	0
+GS linker GGSGGS	linker	6	CED9_CAEEL	exact tag	exact tag match (protein20)	77	82	true	true	GS linker GGSGGS;GS linker GSG	2	2
+GS linker GGSGGS	linker	6	CED9_CAEEL	exact tag	local alignment (BLOSUM62)	77	82	true	not applicable	none	1	1
+GS linker GGSGGS	linker	6	CED9_CAEEL	exact tag	kmerseek reduced alphabet (hp_thomas_dill, k=19)	77	82	false	false	none	0	1
+GS linker GGSGGS	linker	6	CED9_CAEEL	tag with one substitution	exact tag match (protein20)	127	132	false	false	none	0	0
+GS linker GGSGGS	linker	6	CED9_CAEEL	tag with one substitution	local alignment (BLOSUM62)	127	132	true	not applicable	none	1	1
+GS linker GGSGGS	linker	6	CED9_CAEEL	tag with one substitution	kmerseek reduced alphabet (hp_thomas_dill, k=19)	127	132	false	false	none	0	1
+GS linker GGSGGS	linker	6	MCL1_HUMAN	exact tag	exact tag match (protein20)	273	278	true	true	GS linker GGSGGS;GS linker GSG	2	3
+GS linker GGSGGS	linker	6	MCL1_HUMAN	exact tag	local alignment (BLOSUM62)	273	278	true	not applicable	none	1	1
+GS linker GGSGGS	linker	6	MCL1_HUMAN	exact tag	kmerseek reduced alphabet (hp_thomas_dill, k=19)	273	278	false	false	none	0	0
+GS linker GGSGGS	linker	6	MCL1_HUMAN	tag with one substitution	exact tag match (protein20)	64	69	false	false	none	0	1
+GS linker GGSGGS	linker	6	MCL1_HUMAN	tag with one substitution	local alignment (BLOSUM62)	64	69	true	not applicable	none	1	1
+GS linker GGSGGS	linker	6	MCL1_HUMAN	tag with one substitution	kmerseek reduced alphabet (hp_thomas_dill, k=19)	64	69	false	false	none	0	0
+GS linker GGSGGS	linker	6	BAX_HUMAN	exact tag	exact tag match (protein20)	69	74	true	true	GS linker GGSGGS;GS linker GSG	2	3
+GS linker GGSGGS	linker	6	BAX_HUMAN	exact tag	local alignment (BLOSUM62)	69	74	true	not applicable	none	1	1
+GS linker GGSGGS	linker	6	BAX_HUMAN	exact tag	kmerseek reduced alphabet (hp_thomas_dill, k=19)	69	74	false	false	none	0	0
+GS linker GGSGGS	linker	6	BAX_HUMAN	tag with one substitution	exact tag match (protein20)	136	141	false	false	none	0	1
+GS linker GGSGGS	linker	6	BAX_HUMAN	tag with one substitution	local alignment (BLOSUM62)	136	141	true	not applicable	none	1	1
+GS linker GGSGGS	linker	6	BAX_HUMAN	tag with one substitution	kmerseek reduced alphabet (hp_thomas_dill, k=19)	136	141	false	false	none	0	0
+GS linker GGSGGS	linker	6	P53_HUMAN	exact tag	exact tag match (protein20)	125	130	true	true	GS linker GGSGGS;GS linker GSG	2	2
+GS linker GGSGGS	linker	6	P53_HUMAN	exact tag	local alignment (BLOSUM62)	125	130	true	not applicable	none	1	1
+GS linker GGSGGS	linker	6	P53_HUMAN	exact tag	kmerseek reduced alphabet (hp_thomas_dill, k=19)	125	130	false	false	none	0	0
+GS linker GGSGGS	linker	6	P53_HUMAN	tag with one substitution	exact tag match (protein20)	233	238	false	false	none	0	0
+GS linker GGSGGS	linker	6	P53_HUMAN	tag with one substitution	local alignment (BLOSUM62)	233	238	true	not applicable	none	1	1
+GS linker GGSGGS	linker	6	P53_HUMAN	tag with one substitution	kmerseek reduced alphabet (hp_thomas_dill, k=19)	233	238	false	false	none	0	0
+GS linker GGSGGS	linker	6	EGFR_HUMAN	exact tag	exact tag match (protein20)	84	89	true	true	GS linker GGSGGS;GS linker GSG	2	3
+GS linker GGSGGS	linker	6	EGFR_HUMAN	exact tag	local alignment (BLOSUM62)	84	89	true	not applicable	none	1	1
+GS linker GGSGGS	linker	6	EGFR_HUMAN	exact tag	kmerseek reduced alphabet (hp_thomas_dill, k=19)	84	89	false	false	none	0	0
+GS linker GGSGGS	linker	6	EGFR_HUMAN	tag with one substitution	exact tag match (protein20)	1025	1030	false	false	none	0	1
+GS linker GGSGGS	linker	6	EGFR_HUMAN	tag with one substitution	local alignment (BLOSUM62)	1025	1030	true	not applicable	none	1	1
+GS linker GGSGGS	linker	6	EGFR_HUMAN	tag with one substitution	kmerseek reduced alphabet (hp_thomas_dill, k=19)	1025	1030	false	false	none	0	0
+GST (sj26)	fusion partner	218	BCL2_HUMAN	exact tag	exact tag match (protein20)	111	328	true	true	GST (sj26)	1	1
+GST (sj26)	fusion partner	218	BCL2_HUMAN	exact tag	local alignment (BLOSUM62)	111	328	true	not applicable	none	1	1
+GST (sj26)	fusion partner	218	BCL2_HUMAN	exact tag	kmerseek reduced alphabet (hp_thomas_dill, k=19)	111	328	true	true	GST (sj26)	1	1
+GST (sj26)	fusion partner	218	BCL2_HUMAN	tag with one substitution	exact tag match (protein20)	143	360	false	false	none	0	0
+GST (sj26)	fusion partner	218	BCL2_HUMAN	tag with one substitution	local alignment (BLOSUM62)	143	360	true	not applicable	none	1	1
+GST (sj26)	fusion partner	218	BCL2_HUMAN	tag with one substitution	kmerseek reduced alphabet (hp_thomas_dill, k=19)	143	360	true	true	GST (sj26)	2	2
+GST (sj26)	fusion partner	218	CED9_CAEEL	exact tag	exact tag match (protein20)	131	348	true	true	GST (sj26)	1	1
+GST (sj26)	fusion partner	218	CED9_CAEEL	exact tag	local alignment (BLOSUM62)	131	348	true	not applicable	none	1	1
+GST (sj26)	fusion partner	218	CED9_CAEEL	exact tag	kmerseek reduced alphabet (hp_thomas_dill, k=19)	131	348	true	true	GST (sj26)	1	2
+GST (sj26)	fusion partner	218	CED9_CAEEL	tag with one substitution	exact tag match (protein20)	139	356	false	false	none	0	0
+GST (sj26)	fusion partner	218	CED9_CAEEL	tag with one substitution	local alignment (BLOSUM62)	139	356	true	not applicable	none	1	1
+GST (sj26)	fusion partner	218	CED9_CAEEL	tag with one substitution	kmerseek reduced alphabet (hp_thomas_dill, k=19)	139	356	true	true	GST (sj26)	2	3
+GST (sj26)	fusion partner	218	MCL1_HUMAN	exact tag	exact tag match (protein20)	159	376	true	true	GST (sj26)	1	2
+GST (sj26)	fusion partner	218	MCL1_HUMAN	exact tag	local alignment (BLOSUM62)	159	376	true	not applicable	none	1	1
+GST (sj26)	fusion partner	218	MCL1_HUMAN	exact tag	kmerseek reduced alphabet (hp_thomas_dill, k=19)	159	376	true	true	GST (sj26)	1	1
+GST (sj26)	fusion partner	218	MCL1_HUMAN	tag with one substitution	exact tag match (protein20)	317	534	false	false	none	0	1
+GST (sj26)	fusion partner	218	MCL1_HUMAN	tag with one substitution	local alignment (BLOSUM62)	317	534	true	not applicable	none	1	1
+GST (sj26)	fusion partner	218	MCL1_HUMAN	tag with one substitution	kmerseek reduced alphabet (hp_thomas_dill, k=19)	317	534	true	true	GST (sj26)	2	2
+GST (sj26)	fusion partner	218	BAX_HUMAN	exact tag	exact tag match (protein20)	79	296	true	true	GST (sj26)	1	2
+GST (sj26)	fusion partner	218	BAX_HUMAN	exact tag	local alignment (BLOSUM62)	79	296	true	not applicable	none	1	1
+GST (sj26)	fusion partner	218	BAX_HUMAN	exact tag	kmerseek reduced alphabet (hp_thomas_dill, k=19)	79	296	true	true	GST (sj26)	1	1
+GST (sj26)	fusion partner	218	BAX_HUMAN	tag with one substitution	exact tag match (protein20)	23	240	false	false	none	0	1
+GST (sj26)	fusion partner	218	BAX_HUMAN	tag with one substitution	local alignment (BLOSUM62)	23	240	true	not applicable	none	1	1
+GST (sj26)	fusion partner	218	BAX_HUMAN	tag with one substitution	kmerseek reduced alphabet (hp_thomas_dill, k=19)	23	240	true	true	GST (sj26)	2	2
+GST (sj26)	fusion partner	218	P53_HUMAN	exact tag	exact tag match (protein20)	315	532	true	true	GST (sj26)	1	1
+GST (sj26)	fusion partner	218	P53_HUMAN	exact tag	local alignment (BLOSUM62)	315	532	true	not applicable	none	1	1
+GST (sj26)	fusion partner	218	P53_HUMAN	exact tag	kmerseek reduced alphabet (hp_thomas_dill, k=19)	315	532	true	true	GST (sj26)	1	1
+GST (sj26)	fusion partner	218	P53_HUMAN	tag with one substitution	exact tag match (protein20)	127	344	false	false	none	0	0
+GST (sj26)	fusion partner	218	P53_HUMAN	tag with one substitution	local alignment (BLOSUM62)	127	344	true	not applicable	none	1	1
+GST (sj26)	fusion partner	218	P53_HUMAN	tag with one substitution	kmerseek reduced alphabet (hp_thomas_dill, k=19)	127	344	true	true	GST (sj26)	2	2
+GST (sj26)	fusion partner	218	EGFR_HUMAN	exact tag	exact tag match (protein20)	1136	1353	true	true	GST (sj26)	1	2
+GST (sj26)	fusion partner	218	EGFR_HUMAN	exact tag	local alignment (BLOSUM62)	1136	1353	true	not applicable	none	1	1
+GST (sj26)	fusion partner	218	EGFR_HUMAN	exact tag	kmerseek reduced alphabet (hp_thomas_dill, k=19)	1136	1353	true	true	GST (sj26)	1	1
+GST (sj26)	fusion partner	218	EGFR_HUMAN	tag with one substitution	exact tag match (protein20)	754	971	false	false	none	0	1
+GST (sj26)	fusion partner	218	EGFR_HUMAN	tag with one substitution	local alignment (BLOSUM62)	754	971	true	not applicable	none	1	1
+GST (sj26)	fusion partner	218	EGFR_HUMAN	tag with one substitution	kmerseek reduced alphabet (hp_thomas_dill, k=19)	754	971	true	true	GST (sj26)	2	2
+MBP (MalE mature chain)	fusion partner	370	BCL2_HUMAN	exact tag	exact tag match (protein20)	60	429	true	true	MBP (MalE mature chain)	1	1
+MBP (MalE mature chain)	fusion partner	370	BCL2_HUMAN	exact tag	local alignment (BLOSUM62)	60	429	true	not applicable	none	1	1
+MBP (MalE mature chain)	fusion partner	370	BCL2_HUMAN	exact tag	kmerseek reduced alphabet (hp_thomas_dill, k=19)	60	429	true	true	MBP (MalE mature chain)	1	1
+MBP (MalE mature chain)	fusion partner	370	BCL2_HUMAN	tag with one substitution	exact tag match (protein20)	122	491	false	false	none	0	0
+MBP (MalE mature chain)	fusion partner	370	BCL2_HUMAN	tag with one substitution	local alignment (BLOSUM62)	122	491	true	not applicable	none	1	1
+MBP (MalE mature chain)	fusion partner	370	BCL2_HUMAN	tag with one substitution	kmerseek reduced alphabet (hp_thomas_dill, k=19)	122	491	true	true	MBP (MalE mature chain)	2	2
+MBP (MalE mature chain)	fusion partner	370	CED9_CAEEL	exact tag	exact tag match (protein20)	45	414	true	true	MBP (MalE mature chain)	1	1
+MBP (MalE mature chain)	fusion partner	370	CED9_CAEEL	exact tag	local alignment (BLOSUM62)	45	414	true	not applicable	none	1	1
+MBP (MalE mature chain)	fusion partner	370	CED9_CAEEL	exact tag	kmerseek reduced alphabet (hp_thomas_dill, k=19)	45	414	true	true	MBP (MalE mature chain)	1	2
+MBP (MalE mature chain)	fusion partner	370	CED9_CAEEL	tag with one substitution	exact tag match (protein20)	249	618	false	false	none	0	0
+MBP (MalE mature chain)	fusion partner	370	CED9_CAEEL	tag with one substitution	local alignment (BLOSUM62)	249	618	true	not applicable	none	1	1
+MBP (MalE mature chain)	fusion partner	370	CED9_CAEEL	tag with one substitution	kmerseek reduced alphabet (hp_thomas_dill, k=19)	249	618	true	true	MBP (MalE mature chain)	2	3
+MBP (MalE mature chain)	fusion partner	370	MCL1_HUMAN	exact tag	exact tag match (protein20)	213	582	true	true	MBP (MalE mature chain)	1	2
+MBP (MalE mature chain)	fusion partner	370	MCL1_HUMAN	exact tag	local alignment (BLOSUM62)	213	582	true	not applicable	none	1	1
+MBP (MalE mature chain)	fusion partner	370	MCL1_HUMAN	exact tag	kmerseek reduced alphabet (hp_thomas_dill, k=19)	213	582	true	true	MBP (MalE mature chain)	1	1
+MBP (MalE mature chain)	fusion partner	370	MCL1_HUMAN	tag with one substitution	exact tag match (protein20)	87	456	false	false	none	0	1
+MBP (MalE mature chain)	fusion partner	370	MCL1_HUMAN	tag with one substitution	local alignment (BLOSUM62)	87	456	true	not applicable	none	1	1
+MBP (MalE mature chain)	fusion partner	370	MCL1_HUMAN	tag with one substitution	kmerseek reduced alphabet (hp_thomas_dill, k=19)	87	456	true	true	MBP (MalE mature chain)	2	2
+MBP (MalE mature chain)	fusion partner	370	BAX_HUMAN	exact tag	exact tag match (protein20)	55	424	true	true	MBP (MalE mature chain)	1	2
+MBP (MalE mature chain)	fusion partner	370	BAX_HUMAN	exact tag	local alignment (BLOSUM62)	55	424	true	not applicable	none	1	1
+MBP (MalE mature chain)	fusion partner	370	BAX_HUMAN	exact tag	kmerseek reduced alphabet (hp_thomas_dill, k=19)	55	424	true	true	MBP (MalE mature chain)	2	2
+MBP (MalE mature chain)	fusion partner	370	BAX_HUMAN	tag with one substitution	exact tag match (protein20)	146	515	false	false	none	0	1
+MBP (MalE mature chain)	fusion partner	370	BAX_HUMAN	tag with one substitution	local alignment (BLOSUM62)	146	515	true	not applicable	none	2	2
+MBP (MalE mature chain)	fusion partner	370	BAX_HUMAN	tag with one substitution	kmerseek reduced alphabet (hp_thomas_dill, k=19)	146	515	true	true	MBP (MalE mature chain)	2	2
+MBP (MalE mature chain)	fusion partner	370	P53_HUMAN	exact tag	exact tag match (protein20)	303	672	true	true	MBP (MalE mature chain)	1	1
+MBP (MalE mature chain)	fusion partner	370	P53_HUMAN	exact tag	local alignment (BLOSUM62)	303	672	true	not applicable	none	1	1
+MBP (MalE mature chain)	fusion partner	370	P53_HUMAN	exact tag	kmerseek reduced alphabet (hp_thomas_dill, k=19)	303	672	true	true	MBP (MalE mature chain)	1	1
+MBP (MalE mature chain)	fusion partner	370	P53_HUMAN	tag with one substitution	exact tag match (protein20)	89	458	false	false	none	0	0
+MBP (MalE mature chain)	fusion partner	370	P53_HUMAN	tag with one substitution	local alignment (BLOSUM62)	89	458	true	not applicable	none	1	1
+MBP (MalE mature chain)	fusion partner	370	P53_HUMAN	tag with one substitution	kmerseek reduced alphabet (hp_thomas_dill, k=19)	89	458	true	true	MBP (MalE mature chain)	2	2
+MBP (MalE mature chain)	fusion partner	370	EGFR_HUMAN	exact tag	exact tag match (protein20)	455	824	true	true	MBP (MalE mature chain)	1	2
+MBP (MalE mature chain)	fusion partner	370	EGFR_HUMAN	exact tag	local alignment (BLOSUM62)	455	824	true	not applicable	none	1	1
+MBP (MalE mature chain)	fusion partner	370	EGFR_HUMAN	exact tag	kmerseek reduced alphabet (hp_thomas_dill, k=19)	455	824	true	true	MBP (MalE mature chain)	1	1
+MBP (MalE mature chain)	fusion partner	370	EGFR_HUMAN	tag with one substitution	exact tag match (protein20)	701	1070	false	false	none	0	1
+MBP (MalE mature chain)	fusion partner	370	EGFR_HUMAN	tag with one substitution	local alignment (BLOSUM62)	701	1070	true	not applicable	none	1	1
+MBP (MalE mature chain)	fusion partner	370	EGFR_HUMAN	tag with one substitution	kmerseek reduced alphabet (hp_thomas_dill, k=19)	701	1070	true	true	MBP (MalE mature chain)	2	2

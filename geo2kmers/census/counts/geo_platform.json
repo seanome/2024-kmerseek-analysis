@@ -1,0 +1,28 @@
+{
+ "date": "2026-11-08",
+ "all_gsm": 8829388,
+ "all_gse": 300345,
+ "gsm_by_platform": {
+  "in situ oligonucleotide": 1485499,
+  "spotted oligonucleotide": 216702,
+  "spotted DNA/cDNA": 123693,
+  "oligonucleotide beads": 682728,
+  "mixed spotted oligonucleotide/cDNA": 304,
+  "high-throughput sequencing": 6106805,
+  "RT-PCR": 60617,
+  "antibody": 2733,
+  "MPSS": 198,
+  "other": 108552
+ },
+ "gsm_by_sample_type": {
+  "RNA": 1973841,
+  "genomic": 664389,
+  "SRA": 6116933,
+  "protein": 52812,
+  "mixed": 4978,
+  "other": 14448
+ },
+ "array_gsm": 2508926,
+ "array_gsm_rna": 1827810,
+ "array_gsm_genomic": 660165
+}

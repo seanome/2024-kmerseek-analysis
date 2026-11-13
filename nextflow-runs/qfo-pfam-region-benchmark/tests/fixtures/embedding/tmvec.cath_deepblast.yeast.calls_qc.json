@@ -1,0 +1,17 @@
+{
+ "tool": "tmvec",
+ "setting": "cath_deepblast",
+ "species": "yeast",
+ "n_queries": 60,
+ "n_queries_with_hit": 42,
+ "n_domains_below_min_overlap": 30,
+ "n_domains_with_no_aligned_query_residue": 0,
+ "n_calls": 133,
+ "n_calls_linear_differs": 125,
+ "max_linear_shift": 32,
+ "call_interval": "placed through the DeepBLAST alignment",
+ "n_best_hits_with_alignment": 42,
+ "n_best_hits_without_alignment": 0,
+ "n_alignments_not_found_in_sequence": 0,
+ "n_queries_with_call": 42
+}

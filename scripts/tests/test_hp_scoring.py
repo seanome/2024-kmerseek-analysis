@@ -15,8 +15,8 @@ import hp_conservation_utils as hc  # noqa: E402
 UNIFORM = np.full(20, 0.05)
 
 
-def test_aligned_codes_drops_gap_columns():
-    q, t = hc.aligned_codes("AC-De", "ACWD.")
+def test_aligned_pair_codes_drops_gap_columns():
+    q, t = hc.aligned_pair_codes("AC-De", "ACWD.")
     assert q.tolist() == [0, 1, 2]
     assert t.tolist() == [0, 1, 2]
 
@@ -95,7 +95,7 @@ def test_score_pairs_matches_score_vs_chance():
     qa = "ACDEFGHIKLMNPQRSTVWY" * 3
     ta = "ACDEFGHIKLMNPQRSTVWY"[::-1] * 3
     t = hc.score_pairs([qa], [ta], s, min_cols=10)
-    q, tt = hc.aligned_codes(qa, ta)
+    q, tt = hc.aligned_pair_codes(qa, ta)
     for k, sc in s.items():
         r = hc.score_vs_chance(q, tt, sc)
         row = t.filter(pl.col("scheme") == k).row(0, named=True)

@@ -1,0 +1,13 @@
+{
+  "threshold": 0.00022185308643008633,
+  "n_target": 16824,
+  "n_decoy": 841,
+  "nofit": false,
+  "label": "kmerseek.regionsshared.w10.uniprot18_k5_s1",
+  "calls_total": 5895410,
+  "decoy_calls_total": 2592660,
+  "max_decoy_rate": 0.05,
+  "features_found": 941,
+  "features_found_aligned": 1428,
+  "features_total": 7174
+}

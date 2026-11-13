@@ -1,0 +1,13 @@
+{
+  "threshold": 3.90075797793541e-05,
+  "n_target": 380,
+  "n_decoy": 19,
+  "nofit": false,
+  "label": "kmerseek.regions.w10.hp_lehninger_c_nonpolar2_k21_s1",
+  "calls_total": 13490008,
+  "decoy_calls_total": 6326147,
+  "max_decoy_rate": 0.05,
+  "features_found": 249,
+  "features_found_aligned": 236,
+  "features_total": 7174
+}

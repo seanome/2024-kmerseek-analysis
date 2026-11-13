@@ -1,0 +1,13 @@
+contrast	channel	list	list_genes	contigs_only	reads_only	both
+young_13_49d	kamrat_ttest_p05	up	18	0	1	2
+young_13_49d	kamrat_ttest_p05	down	48	0	1	0
+young_13_49d	kamrat_deseq2_p05	up	18	0	5	8
+young_13_49d	kamrat_deseq2_p05	down	48	0	0	0
+young_132d	kamrat_ttest_p05	up	40	0	4	1
+young_132d	kamrat_ttest_p05	down	46	0	17	6
+young_132d	kamrat_deseq2_p05	up	40	0	7	4
+young_132d	kamrat_deseq2_p05	down	46	0	10	8
+old_41_93d	kamrat_ttest_p05	up	19	0	2	1
+old_41_93d	kamrat_ttest_p05	down	17	0	4	0
+old_41_93d	kamrat_deseq2_p05	up	19	0	5	3
+old_41_93d	kamrat_deseq2_p05	down	17	0	0	0

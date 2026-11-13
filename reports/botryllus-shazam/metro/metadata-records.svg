@@ -1,0 +1,179 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1053.0" height="895.0" viewBox="0 0 1053.0 895.0" style="color-scheme: light"><title>5. Metadata and retained execution records — inputs, audits and provenance</title><rect width="100%" height="100%" fill="white" /><text x="25" y="30" font-family="Arial" font-size="23" font-weight="bold">5. Metadata and retained execution records — inputs, audits and provenance</text><path d="M25,60 h30" stroke="#0072B2" stroke-width="5" /><text x="65" y="65" font-family="Arial" font-size="15">Metadata and design audit</text><path d="M350,60 h30" stroke="#D55E00" stroke-width="5" stroke-dasharray="14,10" /><text x="390" y="65" font-family="Arial" font-size="15">Execution and provenance records</text><text x="25" y="95" font-family="Arial" font-size="15">Circle = program. Document = file. Folder = index directory. Read left to right.</text><g transform="translate(0,135)"><defs>
+</defs>
+<metadata id="diagram-manifest" data-schema-version="1.0">{"groups":[{"color":"#0072B2","id":"metadata","label":"Metadata and design audit"},{"color":"#D55E00","id":"records","label":"Execution and provenance records"}],"height":760,"match":{"flags":"i","target":"fqProcessName","type":"regex"},"nodes":[{"groups":["metadata"],"h":10.0,"id":"ena","label":"ena","patterns":[],"r":5.0,"region":"sample_design","rx":5.0,"w":10.0,"x":80.0,"y":116.8},{"groups":["metadata"],"h":10.0,"id":"bio","label":"bio","patterns":[],"r":5.0,"region":"sample_design","rx":5.0,"w":10.0,"x":80.0,"y":175.2},{"groups":["metadata"],"h":10.0,"id":"paper","label":"paper","patterns":[],"r":5.0,"region":"sample_design","rx":5.0,"w":10.0,"x":80.0,"y":233.6},{"groups":["metadata"],"h":10.0,"id":"workbook","label":"workbook","patterns":[],"r":5.0,"region":"sample_design","rx":5.0,"w":10.0,"x":80.0,"y":292.0},{"groups":["metadata"],"h":10.0,"id":"join","label":"Python / openpyxl / metadata audit","patterns":[],"r":5.0,"region":"sample_design","rx":5.0,"w":10.0,"x":274.0,"y":175.2},{"groups":["metadata","records"],"h":14.0,"id":"samples","label":"samples","patterns":[],"r":5.0,"region":"sample_design","rx":5.0,"w":10.0,"x":468.0,"y":235.6},{"groups":["metadata"],"h":10.0,"id":"audit","label":"audit","patterns":[],"r":5.0,"region":"sample_design","rx":5.0,"w":10.0,"x":468.0,"y":175.2},{"groups":["records"],"h":10.0,"id":"execution","label":"Slurm / Nextflow / upstream programs","patterns":[],"r":5.0,"region":"execution_records","rx":5.0,"w":10.0,"x":732.0,"y":237.6},{"groups":["records"],"h":10.0,"id":"logs","label":"logs","patterns":[],"r":5.0,"region":"execution_records","rx":5.0,"w":10.0,"x":935.0,"y":237.6},{"groups":["records"],"h":10.0,"id":"commands","label":"commands","patterns":[],"r":5.0,"region":"execution_records","rx":5.0,"w":10.0,"x":935.0,"y":292.0},{"groups":["records"],"h":10.0,"id":"resources","label":"resources","patterns":[],"r":5.0,"region":"execution_records","rx":5.0,"w":10.0,"x":935.0,"y":350.4},{"groups":["records"],"h":10.0,"id":"completion","label":"completion","patterns":[],"r":5.0,"region":"execution_records","rx":5.0,"w":10.0,"x":935.0,"y":408.8},{"groups":["records"],"h":10.0,"id":"hashes","label":"hashes","patterns":[],"r":5.0,"region":"execution_records","rx":5.0,"w":10.0,"x":935.0,"y":467.2},{"groups":["records"],"h":10.0,"id":"report","label":"report","patterns":[],"r":5.0,"region":"execution_records","rx":5.0,"w":10.0,"x":935.0,"y":525.6},{"groups":["records"],"h":10.0,"id":"timeline","label":"timeline","patterns":[],"r":5.0,"region":"execution_records","rx":5.0,"w":10.0,"x":935.0,"y":584.0}],"regions":[{"id":"sample_design","label":"Study identity; no automatic pooling of genotypes or times"},{"id":"execution_records","label":"Retained beside every executed stage; not substitutes for biological results"}],"title":"5. Metadata and retained execution records — inputs, audits and provenance","version":"1.0","width":1053}</metadata>
+<style>.nf-metro-bg { fill: var(--nfm-map-bg, light-dark(#f5f5f5, #2b2b2b)); }
+.nf-metro-title { fill: var(--nfm-map-title-color, light-dark(#111111, #ffffff)); }
+.nf-metro-station-label { fill: var(--nfm-map-label-color, light-dark(#333333, #e0e0e0)); }
+.nf-metro-section-box { fill: var(--nfm-map-section-fill, light-dark(#ededed, #373737)); stroke: var(--nfm-map-section-stroke, light-dark(#e6e6e6, #595959)); }
+.nf-metro-section-label { fill: var(--nfm-map-section-label-color, light-dark(#666666, #c8c8c8)); }
+.nf-metro-group-label { fill: var(--nfm-map-section-label-color, light-dark(#666666, #c8c8c8)); }
+.nf-metro-group-underline { stroke: var(--nfm-map-section-label-color, light-dark(#666666, #c8c8c8)); }
+.nf-metro-legend-bg { fill: var(--nfm-map-legend-bg, light-dark(rgba(255, 255, 255, 0.8), rgba(0, 0, 0, 0.3))); }
+.nf-metro-legend-text { fill: var(--nfm-map-legend-text-color, light-dark(#333333, #e0e0e0)); }
+.nf-metro-marker-stroke { stroke: var(--nfm-map-marker-stroke, light-dark(#333333, #f0f0f0)); }
+.nf-metro-label-halo { fill: var(--nfm-map-bg, light-dark(#f5f5f5, #2b2b2b)); stroke: var(--nfm-map-bg, light-dark(#f5f5f5, #2b2b2b)); }</style>
+<rect x="22.0" y="66.8" width="504.0" height="275.2" rx="8" ry="8" fill="#ededed" stroke="#e6e6e6" stroke-width="1.0" class="nf-metro-section-box" data-section-id="sample_design" data-section-lines="metadata,records" />
+<circle cx="33.0" cy="51.8" r="11" fill="#333333" class="nf-metro-section-num-circle" data-section-id="sample_design" />
+<text x="33.0" y="51.8" font-size="12" fill="#ffffff" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-weight="bold" text-anchor="middle" dy="0.3em" data-section-id="sample_design">1</text>
+<text x="49.0" y="51.8" font-size="16.0" fill="#666666" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-weight="bold" dy="0.3em" class="nf-metro-section-label" data-section-id="sample_design">Study identity; no automatic pooling of genotypes or times</text>
+<rect x="566.0" y="183.6" width="427.0" height="450.4000000000001" rx="8" ry="8" fill="#ededed" stroke="#e6e6e6" stroke-width="1.0" class="nf-metro-section-box" data-section-id="execution_records" data-section-lines="records" />
+<circle cx="577.0" cy="159.0" r="11" fill="#333333" class="nf-metro-section-num-circle" data-section-id="execution_records" />
+<text x="577.0" y="159.0" font-size="12" fill="#ffffff" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-weight="bold" text-anchor="middle" dy="0.3em" data-section-id="execution_records">2</text>
+<text x="593.0" y="149.4" font-size="16.0" fill="#666666" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-weight="bold" dy="0.3em" class="nf-metro-section-label" data-section-id="execution_records"><tspan x="593.0" dy="0em">Retained beside every executed stage; not</tspan><tspan x="593.0" dy="1.2em">substitutes for biological results</tspan></text>
+<path d="M732.0,237.6 L935.0,237.6" stroke="#D55E00" stroke-width="3.0" stroke-linecap="round" class="metro-line-records" data-line-id="records" stroke-dasharray="8,4" />
+<path d="M732.0,237.6 L884.0,237.6 Q894.0,237.6,898.8290712039521,246.35671578316663 L919.1709287960479,283.24328421683333 Q924.0,292.0,934.0,292.0 L935.0,292.0" stroke="#D55E00" stroke-width="3.0" fill="none" stroke-linecap="round" stroke-linejoin="round" class="metro-line-records" data-line-id="records" stroke-dasharray="8,4" />
+<path d="M732.0,237.6 L884.0,237.6 Q894.0,237.6,896.5702270350971,247.2640536519649 L921.4297729649029,340.7359463480351 Q924.0,350.4,934.0,350.4 L935.0,350.4" stroke="#D55E00" stroke-width="3.0" fill="none" stroke-linecap="round" stroke-linejoin="round" class="metro-line-records" data-line-id="records" stroke-dasharray="8,4" />
+<path d="M732.0,237.6 L884.0,237.6 Q894.0,237.6,895.726036269414,247.44991364412235 L922.273963730586,398.9500863558776 Q924.0,408.79999999999995,934.0,408.79999999999995 L935.0,408.79999999999995" stroke="#D55E00" stroke-width="3.0" fill="none" stroke-linecap="round" stroke-linejoin="round" class="metro-line-records" data-line-id="records" stroke-dasharray="8,4" />
+<path d="M732.0,237.6 L884.0,237.6 Q894.0,237.6,895.2956073451179,247.51571488130213 L922.7043926548821,457.2842851186979 Q924.0,467.2,934.0,467.2 L935.0,467.2" stroke="#D55E00" stroke-width="3.0" fill="none" stroke-linecap="round" stroke-linejoin="round" class="metro-line-records" data-line-id="records" stroke-dasharray="8,4" />
+<path d="M732.0,237.6 L884.0,237.6 Q894.0,237.6,895.0360608425946,247.54618408890778 L922.9639391574054,515.6538159110922 Q924.0,525.6,934.0,525.6 L935.0,525.6" stroke="#D55E00" stroke-width="3.0" fill="none" stroke-linecap="round" stroke-linejoin="round" class="metro-line-records" data-line-id="records" stroke-dasharray="8,4" />
+<path d="M732.0,237.6 L884.0,237.6 Q894.0,237.6,894.8628210841912,247.56270745212743 L923.1371789158088,574.0372925478725 Q924.0,584.0,934.0,584.0 L935.0,584.0" stroke="#D55E00" stroke-width="3.0" fill="none" stroke-linecap="round" stroke-linejoin="round" class="metro-line-records" data-line-id="records" stroke-dasharray="8,4" />
+<path d="M468.0,237.60000000000002 L526.0,237.6" stroke="#D55E00" stroke-width="3.0" stroke-linecap="round" class="metro-line-records" data-line-id="records" stroke-dasharray="8,4" />
+<path d="M566.0,237.6 L732.0,237.6" stroke="#D55E00" stroke-width="3.0" stroke-linecap="round" class="metro-line-records" data-line-id="records" stroke-dasharray="8,4" />
+<path d="M526.0,237.6 L566.0,237.6" stroke="#D55E00" stroke-width="3.0" stroke-linecap="round" class="metro-line-records" data-line-id="records" stroke-dasharray="8,4" />
+<path d="M80.0,116.8 L81.0,116.8 Q91.0,116.8,95.5693498139703,125.69500097119553 L116.4306501860297,166.30499902880447 Q121.0,175.20000000000002,131.0,175.20000000000002 L274.0,175.20000000000002" stroke="#0072B2" stroke-width="3.0" fill="none" stroke-linecap="round" stroke-linejoin="round" class="metro-line-metadata" data-line-id="metadata" />
+<path d="M80.0,175.2 L274.0,175.20000000000002" stroke="#0072B2" stroke-width="3.0" stroke-linecap="round" class="metro-line-metadata" data-line-id="metadata" />
+<path d="M80.0,233.6 L81.0,233.6 Q91.0,233.6,95.5693498139703,224.70499902880445 L116.4306501860297,184.09500097119556 Q121.0,175.20000000000002,131.0,175.20000000000002 L274.0,175.20000000000002" stroke="#0072B2" stroke-width="3.0" fill="none" stroke-linecap="round" stroke-linejoin="round" class="metro-line-metadata" data-line-id="metadata" />
+<path d="M80.0,292.0 L81.0,292.0 Q91.0,292.0,93.48774350361336,282.3143852925986 L118.51225649638664,184.88561470740137 Q121.0,175.20000000000002,131.0,175.20000000000002 L274.0,175.20000000000002" stroke="#0072B2" stroke-width="3.0" fill="none" stroke-linecap="round" stroke-linejoin="round" class="metro-line-metadata" data-line-id="metadata" />
+<path d="M274.0,175.20000000000002 L418.0,175.20000000000002 Q428.0,175.20000000000002,432.5693498139703,184.09500097119556 L453.4306501860297,224.70499902880448 Q458.0,233.60000000000002,468.0,233.60000000000002 L468.0,233.60000000000002" stroke="#0072B2" stroke-width="3.0" fill="none" stroke-linecap="round" stroke-linejoin="round" class="metro-line-metadata" data-line-id="metadata" />
+<path d="M274.0,175.20000000000002 L468.0,175.20000000000002" stroke="#0072B2" stroke-width="3.0" stroke-linecap="round" class="metro-line-metadata" data-line-id="metadata" />
+<g class="nf-metro-station-group" data-node-id="ena" data-node-cx="80.0" data-node-cy="116.8" data-node-r="5.0" data-node-groups="metadata" data-node-region="sample_design" data-node-w="10.0" data-node-h="10.0" data-node-rx="5.0">
+<rect x="75.0" y="111.8" width="10.0" height="10.0" fill="#ffffff" stroke="#333333" stroke-width="1.5" class="nf-metro-station" data-station-id="ena" data-station-lines="metadata" data-station-label="ena" data-section-id="sample_design" data-section-name="Study identity; no automatic pooling of genotypes or times" />
+<g data-station-id="ena">
+<path d="M43.0,100.8 L61.0,100.8 L69.0,108.8 L69.0,130.8 Q69.0,132.8,67.0,132.8 L43.0,132.8 Q41.0,132.8,41.0,130.8 L41.0,102.8 Q41.0,100.8,43.0,100.8 Z" fill="#ffffff" stroke="#333333" stroke-width="1.5" stroke-linejoin="round" />
+<path d="M61.0,100.8 L61.0,108.8 L69.0,108.8 Z" fill="#333333" opacity="0.15" stroke="none" />
+<path d="M61.0,100.8 L61.0,108.8 L69.0,108.8" fill="none" stroke="#333333" stroke-width="0.8999999999999999" />
+<text x="55.0" y="118.0" font-size="7.5" fill="#000000" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-weight="bold" text-anchor="middle" dy="0.3em">TSV</text>
+<text x="79.77000000000001" y="136.8" font-size="7.8" fill="#333333" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-weight="bold" text-anchor="middle" dominant-baseline="hanging" class="nf-metro-station-label">ENA runs and download URLs</text>
+</g>
+</g>
+<g class="nf-metro-station-group" data-node-id="bio" data-node-cx="80.0" data-node-cy="175.2" data-node-r="5.0" data-node-groups="metadata" data-node-region="sample_design" data-node-w="10.0" data-node-h="10.0" data-node-rx="5.0">
+<rect x="75.0" y="170.2" width="10.0" height="10.0" fill="#ffffff" stroke="#333333" stroke-width="1.5" class="nf-metro-station" data-station-id="bio" data-station-lines="metadata" data-station-label="bio" data-section-id="sample_design" data-section-name="Study identity; no automatic pooling of genotypes or times" />
+<g data-station-id="bio">
+<path d="M43.0,159.2 L61.0,159.2 L69.0,167.2 L69.0,189.2 Q69.0,191.2,67.0,191.2 L43.0,191.2 Q41.0,191.2,41.0,189.2 L41.0,161.2 Q41.0,159.2,43.0,159.2 Z" fill="#ffffff" stroke="#333333" stroke-width="1.5" stroke-linejoin="round" />
+<path d="M61.0,159.2 L61.0,167.2 L69.0,167.2 Z" fill="#333333" opacity="0.15" stroke="none" />
+<path d="M61.0,159.2 L61.0,167.2 L69.0,167.2" fill="none" stroke="#333333" stroke-width="0.8999999999999999" />
+<text x="55.0" y="176.39999999999998" font-size="7.5" fill="#000000" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-weight="bold" text-anchor="middle" dy="0.3em">XML</text>
+<text x="77.625" y="195.2" font-size="7.8" fill="#333333" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-weight="bold" text-anchor="middle" dominant-baseline="hanging" class="nf-metro-station-label">Public BioSample metadata</text>
+</g>
+</g>
+<g class="nf-metro-station-group" data-node-id="paper" data-node-cx="80.0" data-node-cy="233.6" data-node-r="5.0" data-node-groups="metadata" data-node-region="sample_design" data-node-w="10.0" data-node-h="10.0" data-node-rx="5.0">
+<rect x="75.0" y="228.6" width="10.0" height="10.0" fill="#ffffff" stroke="#333333" stroke-width="1.5" class="nf-metro-station" data-station-id="paper" data-station-lines="metadata" data-station-label="paper" data-section-id="sample_design" data-section-name="Study identity; no automatic pooling of genotypes or times" />
+<g data-station-id="paper">
+<path d="M43.0,217.6 L61.0,217.6 L69.0,225.6 L69.0,247.6 Q69.0,249.6,67.0,249.6 L43.0,249.6 Q41.0,249.6,41.0,247.6 L41.0,219.6 Q41.0,217.6,43.0,217.6 Z" fill="#ffffff" stroke="#333333" stroke-width="1.5" stroke-linejoin="round" />
+<path d="M61.0,217.6 L61.0,225.6 L69.0,225.6 Z" fill="#333333" opacity="0.15" stroke="none" />
+<path d="M61.0,217.6 L61.0,225.6 L69.0,225.6" fill="none" stroke="#333333" stroke-width="0.8999999999999999" />
+<text x="55.0" y="234.79999999999998" font-size="7.5" fill="#000000" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-weight="bold" text-anchor="middle" dy="0.3em">PDF</text>
+<text x="66.9" y="253.6" font-size="7.8" fill="#333333" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-weight="bold" text-anchor="middle" dominant-baseline="hanging" class="nf-metro-station-label">Published supplement</text>
+</g>
+</g>
+<g class="nf-metro-station-group" data-node-id="workbook" data-node-cx="80.0" data-node-cy="292.0" data-node-r="5.0" data-node-groups="metadata" data-node-region="sample_design" data-node-w="10.0" data-node-h="10.0" data-node-rx="5.0">
+<rect x="75.0" y="287.0" width="10.0" height="10.0" fill="#ffffff" stroke="#333333" stroke-width="1.5" class="nf-metro-station" data-station-id="workbook" data-station-lines="metadata" data-station-label="workbook" data-section-id="sample_design" data-section-name="Study identity; no automatic pooling of genotypes or times" />
+<g data-station-id="workbook">
+<path d="M43.0,276.0 L61.0,276.0 L69.0,284.0 L69.0,306.0 Q69.0,308.0,67.0,308.0 L43.0,308.0 Q41.0,308.0,41.0,306.0 L41.0,278.0 Q41.0,276.0,43.0,276.0 Z" fill="#ffffff" stroke="#333333" stroke-width="1.5" stroke-linejoin="round" />
+<path d="M61.0,276.0 L61.0,284.0 L69.0,284.0 Z" fill="#333333" opacity="0.15" stroke="none" />
+<path d="M61.0,276.0 L61.0,284.0 L69.0,284.0" fill="none" stroke="#333333" stroke-width="0.8999999999999999" />
+<text x="55.0" y="293.2" font-size="7.5" fill="#000000" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-weight="bold" text-anchor="middle" dy="0.3em">XLSX</text>
+<text x="55.0" y="312.0" font-size="7.8" fill="#333333" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-weight="bold" text-anchor="middle" dominant-baseline="hanging" class="nf-metro-station-label">Dataset S1</text>
+</g>
+</g>
+<g class="nf-metro-station-group" data-node-id="join" data-node-cx="274.0" data-node-cy="175.2" data-node-r="5.0" data-node-groups="metadata" data-node-region="sample_design" data-node-w="10.0" data-node-h="10.0" data-node-rx="5.0">
+<rect x="269.0" y="170.20000000000002" width="10.0" height="10.0" rx="5.0" ry="5.0" fill="#ffffff" stroke="#333333" stroke-width="1.5" class="nf-metro-station" data-station-id="join" data-station-lines="metadata" data-station-label="Python / openpyxl / metadata audit" data-section-id="sample_design" data-section-name="Study identity; no automatic pooling of genotypes or times" />
+</g>
+<g class="nf-metro-station-group" data-node-id="samples" data-node-cx="468.0" data-node-cy="235.6" data-node-r="5.0" data-node-groups="metadata,records" data-node-region="sample_design" data-node-w="10.0" data-node-h="14.0" data-node-rx="5.0">
+<rect x="463.0" y="228.60000000000002" width="10.0" height="14.0" fill="#ffffff" stroke="#333333" stroke-width="1.5" class="nf-metro-station" data-station-id="samples" data-station-lines="metadata,records" data-station-label="samples" data-section-id="sample_design" data-section-name="Study identity; no automatic pooling of genotypes or times" />
+<g data-station-id="samples">
+<path d="M481.0,219.60000000000002 L499.0,219.60000000000002 L507.0,227.60000000000002 L507.0,249.60000000000002 Q507.0,251.60000000000002,505.0,251.60000000000002 L481.0,251.60000000000002 Q479.0,251.60000000000002,479.0,249.60000000000002 L479.0,221.60000000000002 Q479.0,219.60000000000002,481.0,219.60000000000002 Z" fill="#ffffff" stroke="#333333" stroke-width="1.5" stroke-linejoin="round" />
+<path d="M499.0,219.60000000000002 L499.0,227.60000000000002 L507.0,227.60000000000002 Z" fill="#333333" opacity="0.15" stroke="none" />
+<path d="M499.0,219.60000000000002 L499.0,227.60000000000002 L507.0,227.60000000000002" fill="none" stroke="#333333" stroke-width="0.8999999999999999" />
+<text x="493.0" y="236.8" font-size="7.5" fill="#000000" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-weight="bold" text-anchor="middle" dy="0.3em">TSV</text>
+<text x="442.49" y="255.60000000000002" font-size="7.8" fill="#333333" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-weight="bold" text-anchor="middle" dominant-baseline="hanging" class="nf-metro-station-label">samples.tsv; exact times and genotypes</text>
+</g>
+</g>
+<g class="nf-metro-station-group" data-node-id="audit" data-node-cx="468.0" data-node-cy="175.2" data-node-r="5.0" data-node-groups="metadata" data-node-region="sample_design" data-node-w="10.0" data-node-h="10.0" data-node-rx="5.0">
+<rect x="463.0" y="170.20000000000002" width="10.0" height="10.0" fill="#ffffff" stroke="#333333" stroke-width="1.5" class="nf-metro-station" data-station-id="audit" data-station-lines="metadata" data-station-label="audit" data-section-id="sample_design" data-section-name="Study identity; no automatic pooling of genotypes or times" />
+<g data-station-id="audit">
+<path d="M481.0,159.20000000000002 L499.0,159.20000000000002 L507.0,167.20000000000002 L507.0,189.20000000000002 Q507.0,191.20000000000002,505.0,191.20000000000002 L481.0,191.20000000000002 Q479.0,191.20000000000002,479.0,189.20000000000002 L479.0,161.20000000000002 Q479.0,159.20000000000002,481.0,159.20000000000002 Z" fill="#ffffff" stroke="#333333" stroke-width="1.5" stroke-linejoin="round" />
+<path d="M499.0,159.20000000000002 L499.0,167.20000000000002 L507.0,167.20000000000002 Z" fill="#333333" opacity="0.15" stroke="none" />
+<path d="M499.0,159.20000000000002 L499.0,167.20000000000002 L507.0,167.20000000000002" fill="none" stroke="#333333" stroke-width="0.8999999999999999" />
+<text x="493.0" y="176.4" font-size="7.5" fill="#000000" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-weight="bold" text-anchor="middle" dy="0.3em">JSON</text>
+<text x="444.635" y="195.20000000000002" font-size="7.8" fill="#333333" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-weight="bold" text-anchor="middle" dominant-baseline="hanging" class="nf-metro-station-label">Sample audit; unresolved design flags</text>
+</g>
+</g>
+<g class="nf-metro-station-group" data-node-id="execution" data-node-cx="732.0" data-node-cy="237.6" data-node-r="5.0" data-node-groups="records" data-node-region="execution_records" data-node-w="10.0" data-node-h="10.0" data-node-rx="5.0">
+<rect x="727.0" y="232.6" width="10.0" height="10.0" rx="5.0" ry="5.0" fill="#ffffff" stroke="#333333" stroke-width="1.5" class="nf-metro-station" data-station-id="execution" data-station-lines="records" data-station-label="Slurm / Nextflow / upstream programs" data-section-id="execution_records" data-section-name="Retained beside every executed stage; not substitutes for biological results" />
+</g>
+<g class="nf-metro-station-group" data-node-id="logs" data-node-cx="935.0" data-node-cy="237.6" data-node-r="5.0" data-node-groups="records" data-node-region="execution_records" data-node-w="10.0" data-node-h="10.0" data-node-rx="5.0">
+<rect x="930.0" y="232.6" width="10.0" height="10.0" fill="#ffffff" stroke="#333333" stroke-width="1.5" class="nf-metro-station" data-station-id="logs" data-station-lines="records" data-station-label="logs" data-section-id="execution_records" data-section-name="Retained beside every executed stage; not substitutes for biological results" />
+<g data-station-id="logs">
+<path d="M948.0,221.6 L966.0,221.6 L974.0,229.6 L974.0,251.6 Q974.0,253.6,972.0,253.6 L948.0,253.6 Q946.0,253.6,946.0,251.6 L946.0,223.6 Q946.0,221.6,948.0,221.6 Z" fill="#ffffff" stroke="#333333" stroke-width="1.5" stroke-linejoin="round" />
+<path d="M966.0,221.6 L966.0,229.6 L974.0,229.6 Z" fill="#333333" opacity="0.15" stroke="none" />
+<path d="M966.0,221.6 L966.0,229.6 L974.0,229.6" fill="none" stroke="#333333" stroke-width="0.8999999999999999" />
+<text x="960.0" y="238.79999999999998" font-size="7.5" fill="#000000" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-weight="bold" text-anchor="middle" dy="0.3em">LOG</text>
+<text x="928.795" y="257.6" font-size="7.8" fill="#333333" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-weight="bold" text-anchor="middle" dominant-baseline="hanging" class="nf-metro-station-label">Separate log for each program</text>
+</g>
+</g>
+<g class="nf-metro-station-group" data-node-id="commands" data-node-cx="935.0" data-node-cy="292.0" data-node-r="5.0" data-node-groups="records" data-node-region="execution_records" data-node-w="10.0" data-node-h="10.0" data-node-rx="5.0">
+<rect x="930.0" y="287.0" width="10.0" height="10.0" fill="#ffffff" stroke="#333333" stroke-width="1.5" class="nf-metro-station" data-station-id="commands" data-station-lines="records" data-station-label="commands" data-section-id="execution_records" data-section-name="Retained beside every executed stage; not substitutes for biological results" />
+<g data-station-id="commands">
+<path d="M948.0,276.0 L966.0,276.0 L974.0,284.0 L974.0,306.0 Q974.0,308.0,972.0,308.0 L948.0,308.0 Q946.0,308.0,946.0,306.0 L946.0,278.0 Q946.0,276.0,948.0,276.0 Z" fill="#ffffff" stroke="#333333" stroke-width="1.5" stroke-linejoin="round" />
+<path d="M966.0,276.0 L966.0,284.0 L974.0,284.0 Z" fill="#333333" opacity="0.15" stroke="none" />
+<path d="M966.0,276.0 L966.0,284.0 L974.0,284.0" fill="none" stroke="#333333" stroke-width="0.8999999999999999" />
+<text x="960.0" y="293.2" font-size="7.5" fill="#000000" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-weight="bold" text-anchor="middle" dy="0.3em">JSON</text>
+<text x="911.635" y="312.0" font-size="7.8" fill="#333333" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-weight="bold" text-anchor="middle" dominant-baseline="hanging" class="nf-metro-station-label">Commands, exit codes and elapsed time</text>
+</g>
+</g>
+<g class="nf-metro-station-group" data-node-id="resources" data-node-cx="935.0" data-node-cy="350.4" data-node-r="5.0" data-node-groups="records" data-node-region="execution_records" data-node-w="10.0" data-node-h="10.0" data-node-rx="5.0">
+<rect x="930.0" y="345.4" width="10.0" height="10.0" fill="#ffffff" stroke="#333333" stroke-width="1.5" class="nf-metro-station" data-station-id="resources" data-station-lines="records" data-station-label="resources" data-section-id="execution_records" data-section-name="Retained beside every executed stage; not substitutes for biological results" />
+<g data-station-id="resources">
+<path d="M948.0,334.4 L966.0,334.4 L974.0,342.4 L974.0,364.4 Q974.0,366.4,972.0,366.4 L948.0,366.4 Q946.0,366.4,946.0,364.4 L946.0,336.4 Q946.0,334.4,948.0,334.4 Z" fill="#ffffff" stroke="#333333" stroke-width="1.5" stroke-linejoin="round" />
+<path d="M966.0,334.4 L966.0,342.4 L974.0,342.4 Z" fill="#333333" opacity="0.15" stroke="none" />
+<path d="M966.0,334.4 L966.0,342.4 L974.0,342.4" fill="none" stroke="#333333" stroke-width="0.8999999999999999" />
+<text x="960.0" y="351.59999999999997" font-size="7.5" fill="#000000" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-weight="bold" text-anchor="middle" dy="0.3em">JSON</text>
+<text x="933.085" y="370.4" font-size="7.8" fill="#333333" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-weight="bold" text-anchor="middle" dominant-baseline="hanging" class="nf-metro-station-label">Resource model and requests</text>
+</g>
+</g>
+<g class="nf-metro-station-group" data-node-id="completion" data-node-cx="935.0" data-node-cy="408.8" data-node-r="5.0" data-node-groups="records" data-node-region="execution_records" data-node-w="10.0" data-node-h="10.0" data-node-rx="5.0">
+<rect x="930.0" y="403.79999999999995" width="10.0" height="10.0" fill="#ffffff" stroke="#333333" stroke-width="1.5" class="nf-metro-station" data-station-id="completion" data-station-lines="records" data-station-label="completion" data-section-id="execution_records" data-section-name="Retained beside every executed stage; not substitutes for biological results" />
+<g data-station-id="completion">
+<path d="M948.0,392.79999999999995 L966.0,392.79999999999995 L974.0,400.79999999999995 L974.0,422.79999999999995 Q974.0,424.79999999999995,972.0,424.79999999999995 L948.0,424.79999999999995 Q946.0,424.79999999999995,946.0,422.79999999999995 L946.0,394.79999999999995 Q946.0,392.79999999999995,948.0,392.79999999999995 Z" fill="#ffffff" stroke="#333333" stroke-width="1.5" stroke-linejoin="round" />
+<path d="M966.0,392.79999999999995 L966.0,400.79999999999995 L974.0,400.79999999999995 Z" fill="#333333" opacity="0.15" stroke="none" />
+<path d="M966.0,392.79999999999995 L966.0,400.79999999999995 L974.0,400.79999999999995" fill="none" stroke="#333333" stroke-width="0.8999999999999999" />
+<text x="960.0" y="409.99999999999994" font-size="7.5" fill="#000000" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-weight="bold" text-anchor="middle" dy="0.3em">JSON</text>
+<text x="930.9399999999999" y="428.79999999999995" font-size="7.8" fill="#333333" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-weight="bold" text-anchor="middle" dominant-baseline="hanging" class="nf-metro-station-label">Validated completion markers</text>
+</g>
+</g>
+<g class="nf-metro-station-group" data-node-id="hashes" data-node-cx="935.0" data-node-cy="467.2" data-node-r="5.0" data-node-groups="records" data-node-region="execution_records" data-node-w="10.0" data-node-h="10.0" data-node-rx="5.0">
+<rect x="930.0" y="462.2" width="10.0" height="10.0" fill="#ffffff" stroke="#333333" stroke-width="1.5" class="nf-metro-station" data-station-id="hashes" data-station-lines="records" data-station-label="hashes" data-section-id="execution_records" data-section-name="Retained beside every executed stage; not substitutes for biological results" />
+<g data-station-id="hashes">
+<path d="M948.0,451.2 L966.0,451.2 L974.0,459.2 L974.0,481.2 Q974.0,483.2,972.0,483.2 L948.0,483.2 Q946.0,483.2,946.0,481.2 L946.0,453.2 Q946.0,451.2,948.0,451.2 Z" fill="#ffffff" stroke="#333333" stroke-width="1.5" stroke-linejoin="round" />
+<path d="M966.0,451.2 L966.0,459.2 L974.0,459.2 Z" fill="#333333" opacity="0.15" stroke="none" />
+<path d="M966.0,451.2 L966.0,459.2 L974.0,459.2" fill="none" stroke="#333333" stroke-width="0.8999999999999999" />
+<text x="960.0" y="468.4" font-size="6.388888888888889" fill="#000000" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-weight="bold" text-anchor="middle" dy="0.3em">SHA256</text>
+<text x="928.795" y="487.2" font-size="7.8" fill="#333333" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-weight="bold" text-anchor="middle" dominant-baseline="hanging" class="nf-metro-station-label">Input and output fingerprints</text>
+</g>
+</g>
+<g class="nf-metro-station-group" data-node-id="report" data-node-cx="935.0" data-node-cy="525.6" data-node-r="5.0" data-node-groups="records" data-node-region="execution_records" data-node-w="10.0" data-node-h="10.0" data-node-rx="5.0">
+<rect x="930.0" y="520.6" width="10.0" height="10.0" fill="#ffffff" stroke="#333333" stroke-width="1.5" class="nf-metro-station" data-station-id="report" data-station-lines="records" data-station-label="report" data-section-id="execution_records" data-section-name="Retained beside every executed stage; not substitutes for biological results" />
+<g data-station-id="report">
+<path d="M948.0,509.6 L966.0,509.6 L974.0,517.6 L974.0,539.6 Q974.0,541.6,972.0,541.6 L948.0,541.6 Q946.0,541.6,946.0,539.6 L946.0,511.6 Q946.0,509.6,948.0,509.6 Z" fill="#ffffff" stroke="#333333" stroke-width="1.5" stroke-linejoin="round" />
+<path d="M966.0,509.6 L966.0,517.6 L974.0,517.6 Z" fill="#333333" opacity="0.15" stroke="none" />
+<path d="M966.0,509.6 L966.0,517.6 L974.0,517.6" fill="none" stroke="#333333" stroke-width="0.8999999999999999" />
+<text x="960.0" y="526.8000000000001" font-size="7.5" fill="#000000" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-weight="bold" text-anchor="middle" dy="0.3em">HTML</text>
+<text x="937.375" y="545.6" font-size="7.8" fill="#333333" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-weight="bold" text-anchor="middle" dominant-baseline="hanging" class="nf-metro-station-label">Nextflow execution report</text>
+</g>
+</g>
+<g class="nf-metro-station-group" data-node-id="timeline" data-node-cx="935.0" data-node-cy="584.0" data-node-r="5.0" data-node-groups="records" data-node-region="execution_records" data-node-w="10.0" data-node-h="10.0" data-node-rx="5.0">
+<rect x="930.0" y="579.0" width="10.0" height="10.0" fill="#ffffff" stroke="#333333" stroke-width="1.5" class="nf-metro-station" data-station-id="timeline" data-station-lines="records" data-station-label="timeline" data-section-id="execution_records" data-section-name="Retained beside every executed stage; not substitutes for biological results" />
+<g data-station-id="timeline">
+<path d="M948.0,568.0 L966.0,568.0 L974.0,576.0 L974.0,598.0 Q974.0,600.0,972.0,600.0 L948.0,600.0 Q946.0,600.0,946.0,598.0 L946.0,570.0 Q946.0,568.0,948.0,568.0 Z" fill="#ffffff" stroke="#333333" stroke-width="1.5" stroke-linejoin="round" />
+<path d="M966.0,568.0 L966.0,576.0 L974.0,576.0 Z" fill="#333333" opacity="0.15" stroke="none" />
+<path d="M966.0,568.0 L966.0,576.0 L974.0,576.0" fill="none" stroke="#333333" stroke-width="0.8999999999999999" />
+<text x="960.0" y="585.2" font-size="7.5" fill="#000000" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-weight="bold" text-anchor="middle" dy="0.3em">HTML</text>
+<text x="933.085" y="604.0" font-size="7.8" fill="#333333" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-weight="bold" text-anchor="middle" dominant-baseline="hanging" class="nf-metro-station-label">Nextflow execution timeline</text>
+</g>
+</g>
+<text x="732.0" y="226.6" font-size="13.0" fill="#f5f5f5" stroke="#f5f5f5" stroke-width="3.0" stroke-linejoin="round" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-weight="bold" aria-hidden="true" class="nf-metro-label-halo" text-anchor="middle" dominant-baseline="auto">Slurm / Nextflow / upstream programs</text>
+<text x="732.0" y="226.6" font-size="13.0" fill="#333333" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-weight="bold" text-anchor="middle" dominant-baseline="auto" data-station-id="execution" class="nf-metro-station-label">Slurm / Nextflow / upstream programs</text>
+<text x="274.0" y="161.20000000000002" font-size="13.0" fill="#f5f5f5" stroke="#f5f5f5" stroke-width="3.0" stroke-linejoin="round" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-weight="bold" aria-hidden="true" class="nf-metro-label-halo" text-anchor="middle" dominant-baseline="auto">Python / openpyxl / metadata audit</text>
+<text x="274.0" y="161.20000000000002" font-size="13.0" fill="#333333" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-weight="bold" text-anchor="middle" dominant-baseline="auto" data-station-id="join" class="nf-metro-station-label">Python / openpyxl / metadata audit</text>
+</g></svg>

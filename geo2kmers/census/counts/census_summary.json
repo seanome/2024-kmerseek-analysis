@@ -1,0 +1,14 @@
+{
+ "geo_array_rna_gsm": 1827810,
+ "geo_expression_array_series_unique_gsm": 1859152,
+ "geo_rnaseq_series_unique_gsm": 4400422,
+ "arrayexpress_not_geo_studies": 9455,
+ "arrayexpress_not_geo_samples": 356392,
+ "arrayexpress_geo_compendia_samples": 42985,
+ "arrayexpress_kept_samples": 313407,
+ "gea_array_assays": 8428,
+ "expression_array_total": 2149645,
+ "sra_rnaseq_public_samples": 6291877,
+ "rnaseq_over_arrays": 2.927,
+ "arrays_added_fraction": 0.342
+}

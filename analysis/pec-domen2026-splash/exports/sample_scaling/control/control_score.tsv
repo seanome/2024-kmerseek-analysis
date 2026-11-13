@@ -1,0 +1,3 @@
+rule	planted_genes	right_direction	wrong_direction	unchanged_genes	unchanged_given_a_direction	isoform_switch_given_a_direction
+sample_mean	300	292	0	2600	25	0
+size_factor_mean	300	292	0	2600	15	0

@@ -93,3 +93,20 @@ def test_jobs_lists_only_runs_under_the_folder(tmp_path):
 
 def test_empty_queue(tmp_path):
     assert run(tmp_path, []).strip() == "no jobs in the queue"
+
+
+def test_a_head_with_any_name_is_found_by_its_launch_folder(tmp_path):
+    pipe = tmp_path / "c" / "nextflow-runs" / "qfo-pfam-region-benchmark"
+    launch = pipe / "run-disprot"
+    t1 = task_dir(pipe, "run-disprot", "aa11", "kmerseekIndex (ecoli_gbmr4_k14_lcfalse)")
+    (launch / ".nf-head.jobid").write_text("9\n")
+    pending = pipe / "run-random-alphabets-control"
+    pending.mkdir(parents=True)
+    (pending / ".nf-head.jobid").write_text("10\n")
+    rows = [f"9|R|4:02:00|None|{launch}|nf-disprot",
+            f"2|R|4:00|None|{t1}|nf-kmerseekIndex_(ecoli_gbmr4_k14_lcfalse)",
+            f"10|PD|0:00|Priority|{pending}|nf-246-control"]
+    out = run(tmp_path, rows)
+    assert "run run-disprot" in out and "head    job 9, running for 4:02:00" in out
+    assert "run run-random-alphabets-control" in out and "head    job 10, pending" in out
+    assert "left over" not in out and "Not part of a Nextflow run" not in out

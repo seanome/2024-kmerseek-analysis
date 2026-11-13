@@ -1,0 +1,65 @@
+{
+ "expression profiling by high throughput sequencing": {
+  "series": 148329,
+  "unique_gsm": 4400422,
+  "sum_n_samples": 5173645,
+  "by_year": {
+   "2006": 6,
+   "2007": 4,
+   "2008": 314,
+   "2009": 3200,
+   "2010": 2706,
+   "2011": 4316,
+   "2012": 7733,
+   "2013": 16589,
+   "2014": 39833,
+   "2015": 60932,
+   "2016": 144870,
+   "2017": 212943,
+   "2018": 317510,
+   "2019": 332133,
+   "2020": 431069,
+   "2021": 513627,
+   "2022": 475031,
+   "2023": 507443,
+   "2024": 456089,
+   "2025": 448229,
+   "2026": 425845
+  },
+  "top_taxa": [
+   [
+    "Homo sapiens",
+    1921045
+   ],
+   [
+    "Mus musculus",
+    1665397
+   ],
+   [
+    "Drosophila melanogaster",
+    97341
+   ],
+   [
+    "Rattus norvegicus",
+    68652
+   ],
+   [
+    "Arabidopsis thaliana",
+    63563
+   ],
+   [
+    "Danio rerio",
+    40537
+   ],
+   [
+    "Saccharomyces cerevisiae",
+    35644
+   ],
+   [
+    "Macaca mulatta",
+    34731
+   ]
+  ]
+ },
+ "union_unique_gsm": 4400422
+}

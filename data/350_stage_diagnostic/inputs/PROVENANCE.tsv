@@ -1,0 +1,5 @@
+file	source_branch	source_commit	source_path
+ice_binding_truth_set.tsv	convergence-afp	7b1704f94c8044ce3ec30228e526f9ba03b7fee1	data/convergence_afp/truth_set.tsv
+ice_binding_lineage_queries.tsv	convergence-afp	7b1704f94c8044ce3ec30228e526f9ba03b7fee1	data/convergence_afp/queries.tsv
+random_swissprot_5000.txt	olgabot/convergence-strobemers	e0e48563ceba4d56107e9d1e084fb6261c370301	data/convergence_afp/298_random_swissprot_5000.txt
+cys_framework_peptides.csv	olgabot/nb297-cys-phylum	55f74bf79a0bf2984f765d8af4b17388a8ba1353	tables/cys_frameworks/queries.csv

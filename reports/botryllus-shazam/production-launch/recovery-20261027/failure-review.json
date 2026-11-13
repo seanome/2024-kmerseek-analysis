@@ -1,0 +1,10 @@
+[
+  {
+    "trace_sha256": "0112c407046dc617a81180cedf99deb48b0e055f007894ee407f309dfbf150b4",
+    "task_id": "246",
+    "name": "COMPACT (splash)",
+    "cause": "oom",
+    "scheduler_job": "49830468",
+    "diagnosis": "Slurm OUT_OF_MEMORY at 96 GB; command log records oom_kill event. Request 192 GB; retain 48 h because this was not a time limit."
+  }
+]

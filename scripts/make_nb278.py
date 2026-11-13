@@ -145,7 +145,7 @@ scope_aln = pl.read_parquet(SCOPE_ALN).filter(pl.max_horizontal("tm_q", "tm_t") 
 # Background: residue composition of every aligned position in the Pfam seed pairs, both sides.
 counts = np.zeros(20)
 for qa, ta in pfam_aln.select("qaln", "taln").iter_rows():
-    q, t = hc.aligned_codes(qa, ta)
+    q, t = hc.aligned_pair_codes(qa, ta)
     counts += np.bincount(q, minlength=20)[:20] + np.bincount(t, minlength=20)[:20]
 background = counts / counts.sum()
 

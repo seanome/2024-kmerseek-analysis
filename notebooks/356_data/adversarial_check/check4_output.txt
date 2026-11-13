@@ -1,0 +1,37 @@
+landing (exon, call) rows: 119837
+Q5RHR6      protein20_k6_lcFalse         call [903,915) L= 12 exon [901,938) N=1298 formula=0.02020 brute=0.02020 OK
+Q5SNQ7      dayhoff6_k16_lcTrue          call [470,487) L= 17 exon [471,505) N=658 formula=0.03738 brute=0.03738 OK
+E7F8R4      hsdm17_k5_lcTrue             call [217,228) L= 11 exon [206,242) N=341 formula=0.07855 brute=0.07855 OK
+A0A1D5PSK2  wwmj5_k11_lcFalse            call [249,275) L= 26 exon [249,305) N=652 formula=0.06539 brute=0.06539 OK
+F1NWX6      hp_lehninger2_k22_lcFalse    call [321,349) L= 28 exon [316,361) N=802 formula=0.03613 brute=0.03613 OK
+F1NAG8      hp_thomas_dill_no_c2_k19_lcFalse call [481,538) L= 57 exon [485,540) N=605 formula=0.03825 brute=0.03825 OK
+A0A1D5PSK2  hp_thomas_dill_no_c2_k28_lcTrue call [551,603) L= 52 exon [560,602) N=652 formula=0.01830 brute=0.01830 OK
+Q5VSJ4      polarity4_k18_lcTrue         call [274,296) L= 22 exon [276,329) N=1016 formula=0.04020 brute=0.04020 OK
+Q9PWA0      hsdm17_k11_lcFalse           call [50,75) L= 25 exon [39,70) N=210 formula=0.09140 brute=0.09140 OK
+Q1LU99      mmseqs12_k14_lcTrue          call [189,206) L= 17 exon [174,224) N=1083 formula=0.03561 brute=0.03561 OK
+formula vs brute force, 2000 random landing calls: differ on 0
+shape: (1, 3)
+┌─────────┬─────────────────┬────────────┐
+│ best_p  ┆ n_landing_calls ┆ n_settings │
+│ ---     ┆ ---             ┆ ---        │
+│ f64     ┆ f64             ┆ f64        │
+╞═════════╪═════════════════╪════════════╡
+│ 0.04058 ┆ 65.0            ┆ 63.0       │
+└─────────┴─────────────────┴────────────┘
+distribution of number of settings that land, per landed exon:
+shape: (9, 2)
+┌────────────┬────────────┐
+│ statistic  ┆ value      │
+│ ---        ┆ ---        │
+│ str        ┆ f64        │
+╞════════════╪════════════╡
+│ count      ┆ 1129.0     │
+│ null_count ┆ 0.0        │
+│ mean       ┆ 99.9938    │
+│ std        ┆ 101.606654 │
+│ min        ┆ 1.0        │
+│ 25%        ┆ 16.0       │
+│ 50%        ┆ 63.0       │
+│ 75%        ┆ 155.0      │
+│ max        ┆ 404.0      │
+└────────────┴────────────┘

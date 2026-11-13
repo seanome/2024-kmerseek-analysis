@@ -1,0 +1,17 @@
+# TM-Vec (structure-aware embedding search) and DeepBLAST (its structural aligner), for
+# annotator_tools.nf's tmvec arm. GPU image: the CUDA build of torch is the point here.
+#
+# tm-vec 1.0.3 and deepblast 1.0.2 are the PyPI releases the TM-Vec README and the
+# DeepBLAST wiki install (`pip install tm-vec`); their CLIs are tmvec-build-database,
+# tmvec-search and build-fasta-index. Model weights are NOT baked in: they are files on
+# $SCRATCH passed by path (see assets/download_embedding_models.sbatch).
+#
+# No ENTRYPOINT (Nextflow runs `bash .command.sh` in the container); procps for the trace.
+FROM pytorch/pytorch@sha256:971fbeae82c0a5a7a970a264a8b8ce1c3426aa79df7111004ad2bc2640f7d89c
+# 2.1.2-cuda11.8-cudnn8-runtime
+
+RUN apt-get update && apt-get install -y --no-install-recommends procps \
+    && rm -rf /var/lib/apt/lists/* \
+    && pip install --no-cache-dir 'faiss-cpu==1.7.4' 'tm-vec==1.0.3' 'deepblast==1.0.2' \
+    && tmvec-search --help > /dev/null \
+    && tmvec-build-database --help > /dev/null

@@ -1,0 +1,16 @@
+{
+  "study": "PRJNA524442",
+  "source": "https://doi.org/10.3389/fgene.2019.00610",
+  "methods_source": "https://scxy.ouc.edu.cn/_upload/article/files/6a/ef/6ce549164628826eec005c4018e4/1728f30f-f4fe-49e1-b638-fa5485a3a362.pdf",
+  "sampling_date_resolution": "December2017; exact day not reported in inspected methods",
+  "marine_culture_site": "Sanggouwan Bay, Rongcheng, Shandong, China",
+  "tissue": "Mantle",
+  "individuals_per_pool": 3,
+  "pools_per_condition": 3,
+  "conditions": {"DW1":"wild","DW2":"wild","DW3":"wild","ZW1":"breed","ZW2":"breed","ZW3":"breed"},
+  "hatchery_design": "Bred and wild populations separately reared in two tanks; same stated procedures. Tank and breeding group are not independently replicated.",
+  "individual_genotypes": "Not available in the inspected manifest or methods; do not invent per-pool genotypes",
+  "adjustment_limits": "Collection month/site are shared, so they cannot be estimated as varying covariates. Breeding line/genetic background and hatchery tank history cannot be separated with this design. Existing model is condition-only, not genotype-adjusted.",
+  "dekupl_query_export": {"job":"49351890","root":"$SCRATCH/oyster-dekupl-queries-20261024","selection":"All merged full-depth contigs with BH-adjusted pvalue strictly<0.05; original sample/effect fields retained; no cap","state":"Submitted; current completion unverified after SSH authentication failure"},
+  "required_searches": "Search DE-kupl separately from SPLASH against public bivalve runs at10/100 and Swiss-Prot protein/Dayhoff/HP at5, using validated stop-free query/reference settings. Preserve original IDs, adjusted scores, counts and shared sequence membership. No inferred splicing from nonsignificant gene expression."
+}

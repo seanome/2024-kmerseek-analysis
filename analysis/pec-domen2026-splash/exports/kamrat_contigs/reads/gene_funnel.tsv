@@ -1,0 +1,7 @@
+step	real_labels	swapped_labels_average
+list genes with a protein	188	
+a k-mer in KaMRaT's table	117	
+a k-mer past the test, either way	39	21.0
+a k-mer past the test, same way as the list	32	9.333333333333334
+reached by contigs, same way	23	5.333333333333333
+reached by reads, same way	50	28.666666666666664
