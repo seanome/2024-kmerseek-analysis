@@ -1,0 +1,190 @@
+{
+  "protocol": "six-frame-standard-stop-only-X-preserved-min30-v1",
+  "scope": "1000 systematic first-batch full-depth SPLASH extensions and 1000 systematic DE-kupl contigs against one complete public run; candidate sequence matches only",
+  "reference": "SRR5945967",
+  "reference_records": 1881,
+  "reference_matches_historical_dna": true,
+  "sources": [
+    {
+      "url": "ftp.sra.ebi.ac.uk/vol1/fastq/SRR594/007/SRR5945967/SRR5945967_1.fastq.gz",
+      "md5": "c1722f4571636a13387c5c138b248d04",
+      "raw_sha256": "de53e928d5acb282b396c83925dfa58b4ffdb93fa37f0122b26d72d89bb762fa",
+      "trimmed_sha256": "6ba2e406a059c4faf9707f138a7836da4a90ec98b5b483a75721e8d14fb7c042",
+      "trimmed_records": 955
+    },
+    {
+      "url": "ftp.sra.ebi.ac.uk/vol1/fastq/SRR594/007/SRR5945967/SRR5945967_2.fastq.gz",
+      "md5": "62720f1ef4680873955f63a3f54b96f3",
+      "raw_sha256": "512351f5d707cd1c670accfd5bad6f9a43e089c9bf71f8b03c9583ae224ae8f2",
+      "trimmed_sha256": "8ea7554441ca94afc08830d0e635e931db8d0603116a51f475ffb65c8b6f2799",
+      "trimmed_records": 926
+    }
+  ],
+  "query_validation_sha256": "9444cd8cb5066d82dac1361b5880fb77c6905f8ae026d96546d0ca902a7a12ac",
+  "measurements": [
+    {
+      "group": "splash",
+      "moltype": "protein",
+      "k": 7,
+      "scaled": 10,
+      "queries": 1000,
+      "nonempty": 359,
+      "matches": 5,
+      "match_intersections": {
+        "splash:full:0:13027:AAAAAATTGATAAAGAGAGAGTTGATGAAGA": 1,
+        "splash:full:0:13320:AAAAACAAGGAGCAACGATGGGTAAGGAAAA": 1,
+        "splash:full:0:15457:AAAAACAAAGAGAATGTCAAATTCAAGGTCA": 1,
+        "splash:full:0:17197:AAAAAATGATGTGGCAAAAATGCTGCATTAA": 3,
+        "splash:full:0:17214:AAAAAATGATGTGGCAAAAATGCTGCATTAA": 3
+      },
+      "reference_hashes": 7514
+    },
+    {
+      "group": "dekupl",
+      "moltype": "protein",
+      "k": 7,
+      "scaled": 10,
+      "queries": 1000,
+      "nonempty": 93,
+      "matches": 0,
+      "match_intersections": {},
+      "reference_hashes": 7514
+    },
+    {
+      "group": "splash",
+      "moltype": "protein",
+      "k": 7,
+      "scaled": 100,
+      "queries": 1000,
+      "nonempty": 228,
+      "matches": 0,
+      "match_intersections": {},
+      "reference_hashes": 776
+    },
+    {
+      "group": "dekupl",
+      "moltype": "protein",
+      "k": 7,
+      "scaled": 100,
+      "queries": 1000,
+      "nonempty": 62,
+      "matches": 0,
+      "match_intersections": {},
+      "reference_hashes": 776
+    },
+    {
+      "group": "splash",
+      "moltype": "dayhoff",
+      "k": 12,
+      "scaled": 10,
+      "queries": 1000,
+      "nonempty": 352,
+      "matches": 13,
+      "match_intersections": {
+        "splash:full:0:12114:AAAAAAGGCTGTCCAAATGATGTTGAGGCCT": 1,
+        "splash:full:0:13320:AAAAACAAGGAGCAACGATGGGTAAGGAAAA": 1,
+        "splash:full:0:13440:AAAAACACCCTCACCCAAACCAGGAACCCCT": 2,
+        "splash:full:0:15215:AAAAAATAGAGTAATGGAATGTCAAAGTCTG": 1,
+        "splash:full:0:15560:AAAAACACCTCTGGGCGTCTGTACCTGAATA": 3,
+        "splash:full:0:15681:AAAAACCAACCCAAGGCCATGGAAATTCCTG": 1,
+        "splash:full:0:16404:AAAAACGAATAGACCACACAAGAGACAATTT": 1,
+        "splash:full:0:16559:AAAAAACGGGTGACCCAGTATCACTTTACAG": 1,
+        "splash:full:0:16749:AAAAACTGATGATAAAGATAGAACAGGACAC": 1,
+        "splash:full:0:17059:AAAAAAGCATTATCATACGTGTGATCCCATA": 1,
+        "splash:full:0:17163:AAAAAAGCATTATCATACGTGTGATCCCATA": 1,
+        "splash:full:0:17197:AAAAAATGATGTGGCAAAAATGCTGCATTAA": 1,
+        "splash:full:0:17214:AAAAAATGATGTGGCAAAAATGCTGCATTAA": 1
+      },
+      "reference_hashes": 6178
+    },
+    {
+      "group": "dekupl",
+      "moltype": "dayhoff",
+      "k": 12,
+      "scaled": 10,
+      "queries": 1000,
+      "nonempty": 92,
+      "matches": 3,
+      "match_intersections": {
+        "dekupl:full:169091:a089ad35f1c3819c": 1,
+        "dekupl:full:235272:eb1fe65f0c627eb1": 1,
+        "dekupl:full:319636:daca4a8c2bbe0849": 1
+      },
+      "reference_hashes": 6178
+    },
+    {
+      "group": "splash",
+      "moltype": "dayhoff",
+      "k": 12,
+      "scaled": 100,
+      "queries": 1000,
+      "nonempty": 213,
+      "matches": 5,
+      "match_intersections": {
+        "splash:full:0:15560:AAAAACACCTCTGGGCGTCTGTACCTGAATA": 1,
+        "splash:full:0:15681:AAAAACCAACCCAAGGCCATGGAAATTCCTG": 1,
+        "splash:full:0:16559:AAAAAACGGGTGACCCAGTATCACTTTACAG": 1,
+        "splash:full:0:17059:AAAAAAGCATTATCATACGTGTGATCCCATA": 1,
+        "splash:full:0:17163:AAAAAAGCATTATCATACGTGTGATCCCATA": 1
+      },
+      "reference_hashes": 637
+    },
+    {
+      "group": "dekupl",
+      "moltype": "dayhoff",
+      "k": 12,
+      "scaled": 100,
+      "queries": 1000,
+      "nonempty": 44,
+      "matches": 1,
+      "match_intersections": {
+        "dekupl:full:235272:eb1fe65f0c627eb1": 1
+      },
+      "reference_hashes": 637
+    },
+    {
+      "group": "splash",
+      "moltype": "hp",
+      "k": 30,
+      "scaled": 10,
+      "queries": 1000,
+      "nonempty": 313,
+      "matches": 0,
+      "match_intersections": {},
+      "reference_hashes": 1089
+    },
+    {
+      "group": "dekupl",
+      "moltype": "hp",
+      "k": 30,
+      "scaled": 10,
+      "queries": 1000,
+      "nonempty": 65,
+      "matches": 0,
+      "match_intersections": {},
+      "reference_hashes": 1089
+    },
+    {
+      "group": "splash",
+      "moltype": "hp",
+      "k": 30,
+      "scaled": 100,
+      "queries": 1000,
+      "nonempty": 118,
+      "matches": 0,
+      "match_intersections": {},
+      "reference_hashes": 118
+    },
+    {
+      "group": "dekupl",
+      "moltype": "hp",
+      "k": 30,
+      "scaled": 100,
+      "queries": 1000,
+      "nonempty": 26,
+      "matches": 0,
+      "match_intersections": {},
+      "reference_hashes": 118
+    }
+  ]
+}

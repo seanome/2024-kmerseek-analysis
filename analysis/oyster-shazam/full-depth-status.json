@@ -1,0 +1,108 @@
+{
+  "checked_utc": "2026-10-23T17:20:33.985178+00:00",
+  "samples": [
+    {
+      "sample": "DW1",
+      "depth": "full",
+      "pairs_in": 24137563,
+      "pairs_kept": 24131916,
+      "pairs_removed": 5647,
+      "reads_with_adapters": [
+        8792663,
+        8771594
+      ],
+      "quality_trimmed_bp": [
+        6436837,
+        8288689
+      ],
+      "prefix": "full file"
+    },
+    {
+      "sample": "DW2",
+      "depth": "full",
+      "pairs_in": 26805423,
+      "pairs_kept": 26797632,
+      "pairs_removed": 7791,
+      "reads_with_adapters": [
+        9740889,
+        9701474
+      ],
+      "quality_trimmed_bp": [
+        8933079,
+        11098885
+      ],
+      "prefix": "full file"
+    },
+    {
+      "sample": "DW3",
+      "depth": "full",
+      "pairs_in": 27795659,
+      "pairs_kept": 27786657,
+      "pairs_removed": 9002,
+      "reads_with_adapters": [
+        10061229,
+        10029195
+      ],
+      "quality_trimmed_bp": [
+        9277629,
+        11558731
+      ],
+      "prefix": "full file"
+    },
+    {
+      "sample": "ZW1",
+      "depth": "full",
+      "pairs_in": 23984808,
+      "pairs_kept": 23977315,
+      "pairs_removed": 7493,
+      "reads_with_adapters": [
+        8825405,
+        8793170
+      ],
+      "quality_trimmed_bp": [
+        7790931,
+        8947761
+      ],
+      "prefix": "full file"
+    },
+    {
+      "sample": "ZW2",
+      "depth": "full",
+      "pairs_in": 25720780,
+      "pairs_kept": 25714533,
+      "pairs_removed": 6247,
+      "reads_with_adapters": [
+        9591175,
+        9557550
+      ],
+      "quality_trimmed_bp": [
+        7593061,
+        9077017
+      ],
+      "prefix": "full file"
+    },
+    {
+      "sample": "ZW3",
+      "depth": "full",
+      "pairs_in": 25227468,
+      "pairs_kept": 25220125,
+      "pairs_removed": 7343,
+      "reads_with_adapters": [
+        9369273,
+        9347284
+      ],
+      "quality_trimmed_bp": [
+        7611024,
+        8913704
+      ],
+      "prefix": "full file"
+    }
+  ],
+  "total_raw_pairs": 153671701,
+  "total_trimmed_pairs": 153628178,
+  "baseline_counts_independently_agree": true,
+  "baseline_complete": true,
+  "full_splash_failed_job": "49203558",
+  "full_splash_replacement_job": "49214375",
+  "full_dekupl_job": "49203559"
+}

@@ -1,0 +1,13 @@
+{
+  "threshold": 0.07117316688767784,
+  "n_target": 1653,
+  "n_decoy": 82,
+  "nofit": false,
+  "label": "kmerseek.pfam.w20.hp_pbotc_1st_ed2_k21_s1",
+  "calls_total": 3394428,
+  "decoy_calls_total": 1584160,
+  "max_decoy_rate": 0.05,
+  "features_found": 253,
+  "features_found_aligned": 259,
+  "features_total": 7174
+}

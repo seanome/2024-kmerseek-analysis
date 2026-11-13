@@ -1,0 +1,136 @@
+{
+ "source": "https://rest.uniprot.org/uniprotkb/<acc>.json?fields=ft_motif",
+ "fetched": "2026-10-13",
+ "proteins": {
+  "Ced9": {
+   "accession": "P41958",
+   "motifs": [
+    {
+     "name": "BH4",
+     "start": 80,
+     "end": 99
+    },
+    {
+     "name": "BH1",
+     "start": 160,
+     "end": 179
+    },
+    {
+     "name": "BH2",
+     "start": 213,
+     "end": 229
+    }
+   ]
+  },
+  "BCL2": {
+   "accession": "P10415",
+   "motifs": [
+    {
+     "name": "BH4",
+     "start": 10,
+     "end": 30
+    },
+    {
+     "name": "BH3",
+     "start": 93,
+     "end": 107
+    },
+    {
+     "name": "BH1",
+     "start": 136,
+     "end": 155
+    },
+    {
+     "name": "BH2",
+     "start": 187,
+     "end": 202
+    }
+   ]
+  },
+  "BCL2L1": {
+   "accession": "Q07817",
+   "motifs": [
+    {
+     "name": "BH4",
+     "start": 4,
+     "end": 24
+    },
+    {
+     "name": "BH3",
+     "start": 86,
+     "end": 100
+    },
+    {
+     "name": "BH1",
+     "start": 129,
+     "end": 148
+    },
+    {
+     "name": "BH2",
+     "start": 180,
+     "end": 195
+    }
+   ]
+  },
+  "MCL1": {
+   "accession": "Q07820",
+   "motifs": [
+    {
+     "name": "BH3",
+     "start": 209,
+     "end": 223
+    },
+    {
+     "name": "BH1",
+     "start": 252,
+     "end": 272
+    },
+    {
+     "name": "BH2",
+     "start": 304,
+     "end": 319
+    }
+   ]
+  },
+  "BAK1": {
+   "accession": "Q16611",
+   "motifs": [
+    {
+     "name": "BH3",
+     "start": 74,
+     "end": 88
+    },
+    {
+     "name": "BH1",
+     "start": 117,
+     "end": 136
+    },
+    {
+     "name": "BH2",
+     "start": 169,
+     "end": 184
+    }
+   ]
+  },
+  "BAX": {
+   "accession": "Q07812",
+   "motifs": [
+    {
+     "name": "BH3",
+     "start": 59,
+     "end": 73
+    },
+    {
+     "name": "BH1",
+     "start": 98,
+     "end": 118
+    },
+    {
+     "name": "BH2",
+     "start": 150,
+     "end": 165
+    }
+   ]
+  }
+ }
+}

@@ -1,0 +1,10 @@
+accession	what_it_is	where_named	geo_data_type	organism	geo_samples	sra_study	n_runs	gbp
+PRJNA1219309	this study's Botryllus RNA-seq (PEC and control)	Data, Materials, and Software Availability statement; ref 42	sequencing (SRA BioProject)	Botryllus schlosseri		PRJNA1219309	64	196.4
+GSE104079	human and mouse exercise data: Marosi et al., intermittent fasting and endurance	Data, Materials, and Software Availability statement; ref 61	Expression profiling by array	Mus musculus	58		0	0.0
+GSE27536	human and mouse exercise data: Turan et al., vastus lateralis before/after 8 weeks training (healthy and COPD)	Data, Materials, and Software Availability statement; ref 62; Methods (Fig. 4C scores)	Expression profiling by array	Homo sapiens	54		0	0.0
+GSE120862	human and mouse exercise data: Popov et al., acute endurance exercise and training, skeletal muscle	Data, Materials, and Software Availability statement; ref 63	Expression profiling by high throughput sequencing	Homo sapiens	84	SRP163524	84	250.75
+GSE83578	human and mouse exercise data: Abbasi et al., leukocytes after endotoxin and exercise	Data, Materials, and Software Availability statement; ref 64	Expression profiling by array	Homo sapiens	64		0	0.0
+GSE111555	human and mouse exercise data: da Silva et al., blood and muscle signatures of training	Data, Materials, and Software Availability statement; ref 65	Expression profiling by array	Homo sapiens	142		0	0.0
+GSE99963	human and mouse exercise data: Laker et al., short-term nutrient-exercise stress [RNA-seq]	Data, Materials, and Software Availability statement; ref 66	Expression profiling by high throughput sequencing	Homo sapiens	28	SRP109080	28	33.13
+GSE144304	human and mouse exercise data: van der Hoek et al., muscle in fit and (pre-)frail adults	Data, Materials, and Software Availability statement; ref 67	Expression profiling by high throughput sequencing	Homo sapiens	80	SRP245393	80	108.85
+GSE28998	human and mouse exercise data: Gordon et al., muscle response to exercise	Data, Materials, and Software Availability statement; ref 68	Expression profiling by array	Homo sapiens	14		0	0.0

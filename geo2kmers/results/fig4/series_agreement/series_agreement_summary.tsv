@@ -1,0 +1,2 @@
+probe_sets	people_GSE28998	people_GSE27536	pearson_r_of_changes	spearman_r_of_changes	groups_of_probe_sets_with_the_same_proteins	pearson_r_over_groups	pearson_r_over_groups_95pct_bootstrap	share_up_in_GSE27536	GSE28998_mean_change_where_GSE27536_up	GSE28998_mean_change_where_GSE27536_down	GSE28998_share_higher_in_trained_arm_by_person	GSE28998_mean_change_over_all_probe_sets_by_person
+41325	7	27	0.274	0.152	19584	0.291	0.257-0.327	0.423	0.0408	-0.0191	0.47,0.51,0.52,0.49,0.49,0.52,0.52	-0.024,-0.005,0.022,0.004,0.015,0.017,0.014

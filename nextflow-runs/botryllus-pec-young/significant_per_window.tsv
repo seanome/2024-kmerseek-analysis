@@ -1,0 +1,7 @@
+window	hours_after_treatment	control_libraries	treated_libraries	genes_tested	genes_padj_lt_0.05	genes_up_in_treated	genes_down_in_treated	splash_anchors_corrected_p_lt_0.05
+young_2h	2	6	6	35541	140	2	138	86283
+young_24h	24	6	6	35541	76	27	49	936510
+young_13_17d	312-408	6	6	35541	176	23	153	10757
+young_21_28d	504-672	3	2	35541	151	101	50	1
+young_49_52d	1176-1248	2	3	35541	88	77	11	704
+young_104_132d	2496-3168	3	3	35541	51	5	46	9049

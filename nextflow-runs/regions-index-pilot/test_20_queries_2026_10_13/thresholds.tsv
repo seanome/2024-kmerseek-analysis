@@ -1,0 +1,8 @@
+threshold	n_target	n_decoy	nofit	label	calls_total	decoy_calls_total	max_decoy_rate	features_found	features_found_aligned	features_total	tool	index	window	setting
+0.0501602	1	0	false	composition.regions.w10.composition	931	482	0.05	38	38	100	composition	regions	w10	composition
+6921.879937696325	1109	55	false	kmerseek.regions.w10.protein20_k5_s1	1754	174	0.05	28	23	100	kmerseek	regions	w10	protein20_k5_s1
+38.49190707257085	4067	203	false	kmerseek.whole.w10.protein20_k5_s1	99232	42342	0.05	34	47	100	kmerseek	whole	w10	protein20_k5_s1
+14.710375433070741	1485	74	false	kmerseek.wholeannot.w10.protein20_k5_s1	43963	17953	0.05	32	38	100	kmerseek	wholeannot	w10	protein20_k5_s1
+9.607	2185	0	false	mmseqs2.regions.w10.mmseqs2	2185	0	0.05	35	48	100	mmseqs2	regions	w10	mmseqs2
+9.886	2351	2	false	mmseqs2.whole.w10.mmseqs2	2353	2	0.05	21	62	100	mmseqs2	whole	w10	mmseqs2
+9.886	905	0	false	mmseqs2.wholeannot.w10.mmseqs2	905	0	0.05	19	32	100	mmseqs2	wholeannot	w10	mmseqs2

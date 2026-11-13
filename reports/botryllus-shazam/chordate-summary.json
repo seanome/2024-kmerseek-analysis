@@ -1,0 +1,42 @@
+{
+  "query": "tax_tree(7711) AND library_strategy=\"RNA-Seq\"",
+  "taxon": 7711,
+  "taxonomy_source": "https://www.ncbi.nlm.nih.gov/datasets/taxonomy/7711/",
+  "url": "https://www.ebi.ac.uk/ena/portal/api/search?result=read_run&query=tax_tree%287711%29+AND+library_strategy%3D%22RNA-Seq%22&format=tsv&fields=run_accession%2Cstudy_accession%2Csecondary_study_accession%2Csample_accession%2Cexperiment_accession%2Cscientific_name%2Ctax_id%2Csample_title%2Cstudy_title%2Clibrary_layout%2Clibrary_strategy%2Clibrary_source%2Cinstrument_platform%2Cread_count%2Cbase_count%2Cfastq_bytes%2Cfastq_ftp%2Cfastq_md5%2Cfirst_public&limit=0",
+  "count_url": "https://www.ebi.ac.uk/ena/portal/api/count?result=read_run&query=tax_tree%287711%29+AND+library_strategy%3D%22RNA-Seq%22&format=tsv",
+  "expected_runs": 6311627,
+  "runs": 6311627,
+  "bases": 26373786161210361,
+  "listed_fastq_bytes": 13149391201931341,
+  "missing_fastq_urls": 419631,
+  "missing_fastq_sizes": 419631,
+  "studies": 145871,
+  "biosamples": 4493488,
+  "taxon_ids": 4972,
+  "platforms": {
+    "ILLUMINA": 5968877,
+    "ABI_SOLID": 17841,
+    "LS454": 1183,
+    "ION_TORRENT": 19179,
+    "DNBSEQ": 66575,
+    "BGISEQ": 125600,
+    "PACBIO_SMRT": 4557,
+    "OXFORD_NANOPORE": 97607,
+    "COMPLETE_GENOMICS": 583,
+    "HELICOS": 555,
+    "ULTIMA": 274,
+    "ELEMENT": 8226,
+    "CAPILLARY": 206,
+    "GENEMIND": 192,
+    "GENAPSYS": 16,
+    "VELA_DIAGNOSTICS": 156
+  },
+  "layouts": {
+    "SINGLE": 2192603,
+    "PAIRED": 4119024
+  },
+  "uncompressed_sha256": "89a93239145f280a74c8aae8c3a7fc806d8fc363aae7d8adc324663f2477fc9e",
+  "indexed_runs": 0,
+  "indexing_status": "not run",
+  "snapshot_date": "2026-10-23"
+}

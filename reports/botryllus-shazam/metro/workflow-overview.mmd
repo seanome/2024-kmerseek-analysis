@@ -1,0 +1,85 @@
+%%metro title: Botryllus — from RNA-seq reads to sequence evidence
+%%metro style: seqera
+%%metro legend: tl
+%%metro line: focal | Botryllus SPLASH | #0072B2
+%%metro line: protein | Protein search | #8A4298
+%%metro line: archive | Public SRA occurrence | #D55E00 | dashed
+%%metro grid: inputs | 0,0
+%%metro grid: processing | 1,0
+%%metro grid: discovery | 2,0
+%%metro grid: results | 3,0
+%%metro grid: references | 0,1
+%%metro grid: sketching | 1,1
+%%metro grid: retrieval | 2,1
+%%metro grid: matches | 3,1
+%%metro file: raw1 | FASTQ.gz | Experiment R1
+%%metro file: raw2 | FASTQ.gz | Experiment R2
+%%metro file: trimmed1 | FQ.gz | Trimmed R1
+%%metro file: trimmed2 | FQ.gz | Trimmed R2
+%%metro file: dna | FASTA | DNA extensions
+%%metro file: peptide | FASTA | Peptides
+%%metro file: swiss | FASTA.gz | Swiss-Prot proteins
+%%metro file: publicreads | FASTQ.gz | Public SRA reads
+%%metro file: refsigs | SIG.zip | Protein signatures
+%%metro file: runsigs | SIG.zip | Run signatures
+%%metro file: proteinscsv | CSV | Protein matches
+%%metro file: occurrencecsv | CSV | Run occurrences
+
+graph LR
+ subgraph inputs [Inputs]
+  raw1[ ]
+  raw2[ ]
+ end
+ subgraph processing [Read processing]
+  trim[Trim Galore]
+  trimmed1[ ]
+  trimmed2[ ]
+  trim -->|focal| trimmed1
+  trim -->|focal| trimmed2
+ end
+ subgraph discovery [Discovery and counts]
+  splash[SPLASH]
+  select[Adjusted P < 0.05]
+  extend[Compactors]
+  splash -->|focal| select
+  select -->|focal| extend
+ end
+ subgraph results [Discovery results]
+  dna[ ]
+  translate[Six-frame translation]
+  peptide[ ]
+  dna -->|focal| translate
+  translate -->|focal| peptide
+ end
+ subgraph references [Search inputs]
+  swiss[ ]
+  publicreads[ ]
+ end
+ subgraph sketching [Reference processing]
+  refsketch[Sourmash]
+  refsigs[ ]
+  pubtrim[Trim and sketch]
+  runsigs[ ]
+  refsketch -->|protein| refsigs
+  pubtrim -->|archive| runsigs
+ end
+ subgraph retrieval [Sequence search]
+  manysearch[Branchwater manysearch]
+  manysearch[Branchwater manysearch]
+ end
+ subgraph matches [Results]
+  proteinscsv[ ]
+  occurrencecsv[ ]
+ end
+ raw1 -->|focal| trim
+ raw2 -->|focal| trim
+ trimmed1 -->|focal| splash
+ trimmed2 -->|focal| splash
+ extend -->|focal| dna
+ swiss -->|protein| refsketch
+ publicreads -->|archive| pubtrim
+ refsigs -->|protein| manysearch
+ runsigs -->|archive| manysearch
+ manysearch -->|protein| proteinscsv
+ peptide -->|protein| manysearch
+ manysearch -->|archive| occurrencecsv

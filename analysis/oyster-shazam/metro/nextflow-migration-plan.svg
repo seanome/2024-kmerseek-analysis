@@ -1,0 +1,78 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1500" height="1040" viewBox="0 0 1500 1040">
+<rect width="1500" height="1040" fill="#fff"/>
+<style>text{font-family:Arial,sans-serif;fill:#202b30}.h{font-size:27px;font-weight:bold}.t{font-size:17px}.small{font-size:15px}.station{fill:white;stroke-width:4}</style>
+<text x="35" y="43" class="h">Nextflow migration plan — preserve completed work; replace only missing stages</text>
+<path d="M35,80 h30" fill="none" stroke="#0072B2" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="77" y="86" class="t">Public references</text>
+<path d="M365,80 h30" fill="none" stroke="#00856A" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="407" y="86" class="t">Oyster queries</text>
+<path d="M685,80 h30" fill="none" stroke="#79519A" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="727" y="86" class="t">Validation and reuse</text>
+<path d="M1080,80 h30" fill="none" stroke="#B85A00" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="1122" y="86" class="t">Rollout gates</text>
+<text x="35" y="124" class="t">PLAN ONLY: Nextflow is not implemented. Access renewal is required for Sherlock tests.</text>
+<rect x="25" y="145" width="1450" height="110" rx="12" fill="#F0F5F5"/>
+<text x="45" y="174" class="h">Fixed translation rule</text>
+<text x="45" y="204" class="t">ALL SIX FRAMES  →  split ONLY at stop codons (*)  →  preserve internal X  →  keep stretches ≥30 amino acids</text>
+<text x="45" y="234" class="small">Keep original DNA and query IDs. No proteome-match filter. Test X handling in the pinned sketcher before adoption.</text>
+<text x="35" y="292" class="h">1  Audit before reuse</text>
+<path d="M75,345 H1340" fill="none" stroke="#79519A" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+<circle cx="75" cy="345" r="9" class="station" stroke="#79519A"/>
+<text x="60" y="317" class="t">Existing outputs</text>
+<text x="60" y="385" class="small">Files + manifests + job logs</text>
+<circle cx="440" cy="345" r="9" class="station" stroke="#79519A"/>
+<text x="425" y="317" class="t">Content validation</text>
+<text x="425" y="385" class="small">Checksums · settings · IDs · ownership</text>
+<circle cx="910" cy="345" r="9" class="station" stroke="#79519A"/>
+<text x="895" y="317" class="t">Classify</text>
+<text x="895" y="385" class="small">Compatible / historical / missing</text>
+<text x="35" y="430" class="h">2  Missing reference stages only — separate Slurm tasks</text>
+<path d="M75,490 H1340" fill="none" stroke="#0072B2" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+<circle cx="75" cy="490" r="9" class="station" stroke="#0072B2"/>
+<text x="60" y="462" class="t">Download</text>
+<text x="60" y="530" class="small">FASTQ + verified source MD5</text>
+<circle cx="370" cy="490" r="9" class="station" stroke="#0072B2"/>
+<text x="355" y="462" class="t">Trim</text>
+<text x="355" y="530" class="small">Trimmed FASTQ + trim reports</text>
+<circle cx="700" cy="490" r="9" class="station" stroke="#0072B2"/>
+<text x="685" y="462" class="t">Translate</text>
+<text x="685" y="530" class="small">≥30aa FASTA + origin/frame IDs</text>
+<circle cx="1080" cy="490" r="9" class="station" stroke="#0072B2"/>
+<text x="1065" y="462" class="t">manysketch</text>
+<text x="1065" y="530" class="small">Sketches + settings manifest</text>
+<text x="45" y="558" class="small">Compatible validated reference sketches bypass download/trim/sketch. Historical translated sketches do not substitute for the corrected protocol.</text>
+<text x="35" y="611" class="h">3  Oyster query stages — retain every original query in membership records</text>
+<path d="M75,670 H1340" fill="none" stroke="#00856A" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+<circle cx="75" cy="670" r="9" class="station" stroke="#00856A"/>
+<text x="60" y="642" class="t">Full-depth inputs</text>
+<text x="60" y="710" class="small">SPLASH extensions + all DE-kupl contigs</text>
+<circle cx="545" cy="670" r="9" class="station" stroke="#00856A"/>
+<text x="530" y="642" class="t">Translate + manysketch</text>
+<text x="530" y="710" class="small">Same stop-only ≥30aa rule</text>
+<circle cx="1080" cy="670" r="9" class="station" stroke="#00856A"/>
+<text x="1065" y="642" class="t">Query collection</text>
+<text x="1065" y="710" class="small">Sketches + explicit empty-query IDs</text>
+<text x="35" y="755" class="h">4  Retrieval and audit</text>
+<path d="M75,810 H1340" fill="none" stroke="#79519A" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+<circle cx="75" cy="810" r="9" class="station" stroke="#79519A"/>
+<text x="60" y="782" class="t">Branchwater index</text>
+<text x="60" y="850" class="small">Compatible reference sketches</text>
+<circle cx="425" cy="810" r="9" class="station" stroke="#79519A"/>
+<text x="410" y="782" class="t">Branchwater manysearch</text>
+<text x="410" y="850" class="small">Reference index + query sketches</text>
+<circle cx="900" cy="810" r="9" class="station" stroke="#79519A"/>
+<text x="885" y="782" class="t">Independent audit</text>
+<text x="885" y="850" class="small">Match TSV/CSV + exact scope</text>
+<text x="35" y="900" class="h">5  Prove recovery before transferring production ownership</text>
+<path d="M75,945 H1340" fill="none" stroke="#B85A00" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+<circle cx="75" cy="945" r="9" class="station" stroke="#B85A00"/>
+<text x="60" y="917" class="t">Required tests</text>
+<text x="60" y="985" class="small">Reuse · resume · interruption</text>
+<circle cx="530" cy="945" r="9" class="station" stroke="#B85A00"/>
+<text x="515" y="917" class="t">Required tests</text>
+<text x="515" y="985" class="small">Query change · corruption · protocol mismatch</text>
+<circle cx="1120" cy="945" r="9" class="station" stroke="#B85A00"/>
+<text x="1105" y="917" class="t">Then roll out</text>
+<text x="1105" y="985" class="small">Drain safely · trace · report</text>
+<text x="35" y="1022" class="small">No blanket cancellations. No duplicate writers. No deletion of historical outputs. Public runs receive reference preparation only.</text>
+</svg>

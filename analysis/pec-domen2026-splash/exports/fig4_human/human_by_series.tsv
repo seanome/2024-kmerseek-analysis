@@ -1,0 +1,19 @@
+route	series	list_source	list_genes	reached	opposite_only	lists_beat_random	lists	pct
+kamrat_deseq2_corrected	GSE120862	rebuilt (PyDESeq2 on GEO normalised counts, ~ subject + condition, padj < 0.05)	10469	4162	591	2	2	39.8
+kamrat_deseq2_corrected	GSE144304	rebuilt (PyDESeq2 on GEO counts, ~ condition, p < 0.01)	4957	1366	52	2	2	27.6
+kamrat_deseq2_corrected	GSE99963	rebuilt (PyDESeq2 on GEO counts, ~ subject + condition, padj < 0.05)	3980	819	30	2	2	20.6
+kamrat_deseq2_p05	GSE120862	rebuilt (PyDESeq2 on GEO normalised counts, ~ subject + condition, padj < 0.05)	10469	4658	791	2	2	44.5
+kamrat_deseq2_p05	GSE144304	rebuilt (PyDESeq2 on GEO counts, ~ condition, p < 0.01)	4957	2336	65	2	2	47.1
+kamrat_deseq2_p05	GSE99963	rebuilt (PyDESeq2 on GEO counts, ~ subject + condition, padj < 0.05)	3980	1873	68	2	2	47.1
+kamrat_ttest_corrected	GSE120862	rebuilt (PyDESeq2 on GEO normalised counts, ~ subject + condition, padj < 0.05)	10469	5726	1352	2	2	54.7
+kamrat_ttest_corrected	GSE144304	rebuilt (PyDESeq2 on GEO counts, ~ condition, p < 0.01)	4957	2742	136	2	2	55.3
+kamrat_ttest_corrected	GSE99963	rebuilt (PyDESeq2 on GEO counts, ~ subject + condition, padj < 0.05)	3980	474	29	2	2	11.9
+kamrat_ttest_p05	GSE120862	rebuilt (PyDESeq2 on GEO normalised counts, ~ subject + condition, padj < 0.05)	10469	5115	971	2	2	48.9
+kamrat_ttest_p05	GSE144304	rebuilt (PyDESeq2 on GEO counts, ~ condition, p < 0.01)	4957	2936	124	2	2	59.2
+kamrat_ttest_p05	GSE99963	rebuilt (PyDESeq2 on GEO counts, ~ subject + condition, padj < 0.05)	3980	1909	43	2	2	48.0
+splash_compactors	GSE120862	rebuilt (PyDESeq2 on GEO normalised counts, ~ subject + condition, padj < 0.05)	10469	812	0	1	2	7.8
+splash_compactors	GSE144304	rebuilt (PyDESeq2 on GEO counts, ~ condition, p < 0.01)	4957	584	0	0	2	11.8
+splash_compactors	GSE99963	rebuilt (PyDESeq2 on GEO counts, ~ subject + condition, padj < 0.05)	3980	211	0	0	2	5.3
+splash_compactors_p05	GSE120862	rebuilt (PyDESeq2 on GEO normalised counts, ~ subject + condition, padj < 0.05)	10469	2092	0	0	2	20.0
+splash_compactors_p05	GSE144304	rebuilt (PyDESeq2 on GEO counts, ~ condition, p < 0.01)	4957	1217	0	0	2	24.6
+splash_compactors_p05	GSE99963	rebuilt (PyDESeq2 on GEO counts, ~ subject + condition, padj < 0.05)	3980	605	0	0	2	15.2

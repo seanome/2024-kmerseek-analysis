@@ -1,0 +1,13 @@
+{
+  "threshold": 0.015016186517196703,
+  "n_target": 26597,
+  "n_decoy": 1329,
+  "nofit": false,
+  "label": "kmerseek.pfam.w10.hsdm17_k6_s1",
+  "calls_total": 3141126,
+  "decoy_calls_total": 1454952,
+  "max_decoy_rate": 0.05,
+  "features_found": 695,
+  "features_found_aligned": 709,
+  "features_total": 7174
+}

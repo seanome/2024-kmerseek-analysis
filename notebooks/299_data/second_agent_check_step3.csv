@@ -1,0 +1,89 @@
+quantity,notebook_value,checker_value,held,note
+dayhoff.k10.s10 recall,0.1122234426486741,0.1122234426486741,true,3576 of 31865 truth pairs found; count source full
+dayhoff.k10.s10 shuffled_rate,0.9326083138090744,0.9326083138090744,true,full catalog counts
+dayhoff.k10.s10 passes,false,false,true,
+dayhoff.k10.s100 recall,0.004738741565981484,0.004738741565981484,true,151 of 31865 truth pairs found; count source full
+dayhoff.k10.s100 shuffled_rate,0.7342951403447279,0.7342951403447279,true,full catalog counts
+dayhoff.k10.s100 passes,false,false,true,
+dayhoff.k10.s1000 recall,0.00006276478895339714,6.276478895339714e-05,true,2 of 31865 truth pairs found; count source full
+dayhoff.k10.s1000 shuffled_rate,0.3449480908476887,0.3449480908476887,true,full catalog counts
+dayhoff.k10.s1000 passes,false,false,true,
+dayhoff.k13.s10 recall,0.04779538678801193,0.04779538678801193,true,1523 of 31865 truth pairs found; count source full
+dayhoff.k13.s10 shuffled_rate,0.46589112982487707,0.46589112982487707,true,full catalog counts
+dayhoff.k13.s10 passes,false,false,true,
+dayhoff.k13.s100 recall,0.004362152832261101,0.004362152832261101,true,139 of 31865 truth pairs found; count source full
+dayhoff.k13.s100 shuffled_rate,0.4270630670285868,0.4270630670285868,true,full catalog counts
+dayhoff.k13.s100 passes,false,false,true,
+dayhoff.k13.s1000 recall,0.00009414718343009572,9.414718343009572e-05,true,3 of 31865 truth pairs found; count source full
+dayhoff.k13.s1000 shuffled_rate,0.2644114189250294,0.2644114189250294,true,full catalog counts
+dayhoff.k13.s1000 passes,false,false,true,
+dayhoff.k7.s10 recall,0.7056331398085673,0.7056331398085673,true,22485 of 31865 truth pairs found; count source sample_1pct
+dayhoff.k7.s10 shuffled_rate,0.9740893964384266,0.9740893964384266,true,estimated from 1% gene sample
+dayhoff.k7.s10 passes,false,false,true,
+dayhoff.k7.s100 recall,0.16494586536952768,0.16494586536952768,true,5256 of 31865 truth pairs found; count source sample_1pct
+dayhoff.k7.s100 shuffled_rate,1.0034217157639809,1.0034217157639809,true,estimated from 1% gene sample
+dayhoff.k7.s100 passes,false,false,true,
+dayhoff.k7.s1000 recall,0.009508865526439668,0.009508865526439668,true,303 of 31865 truth pairs found; count source full
+dayhoff.k7.s1000 shuffled_rate,0.8725294531307777,0.8725294531307777,true,full catalog counts
+dayhoff.k7.s1000 passes,false,false,true,
+hp.k10.s10 recall,0.9999058528165699,0.9999058528165699,true,31862 of 31865 truth pairs found; count source sample_1pct
+hp.k10.s10 shuffled_rate,0.9956691738760731,0.9956691738760731,true,estimated from 1% gene sample
+hp.k10.s10 passes,false,false,true,
+hp.k10.s100 recall,0.911815471520477,0.911815471520477,true,29055 of 31865 truth pairs found; count source sample_1pct
+hp.k10.s100 shuffled_rate,1.0407886871255998,1.0407886871255998,true,estimated from 1% gene sample
+hp.k10.s100 passes,false,false,true,
+hp.k10.s1000 recall,0.019708143731366704,0.019708143731366704,true,628 of 31865 truth pairs found; count source sample_1pct
+hp.k10.s1000 shuffled_rate,1.8772727272727272,1.8772727272727272,true,estimated from 1% gene sample
+hp.k10.s1000 passes,false,false,true,
+hp.k13.s10 recall,0.9434489251529892,0.9434489251529892,true,30063 of 31865 truth pairs found; count source sample_1pct
+hp.k13.s10 shuffled_rate,0.9894348779698939,0.9894348779698939,true,estimated from 1% gene sample
+hp.k13.s10 passes,false,false,true,
+hp.k13.s100 recall,0.5140436215283226,0.5140436215283226,true,16380 of 31865 truth pairs found; count source sample_1pct
+hp.k13.s100 shuffled_rate,1.0547884586319285,1.0547884586319285,true,estimated from 1% gene sample
+hp.k13.s100 passes,false,false,true,
+hp.k13.s1000 recall,0.03323395575082379,0.03323395575082379,true,1059 of 31865 truth pairs found; count source sample_1pct
+hp.k13.s1000 shuffled_rate,0.8720623428623124,0.8720623428623124,true,estimated from 1% gene sample
+hp.k13.s1000 passes,false,false,true,
+hp.k7.s10 recall,1.0,1.0,true,31865 of 31865 truth pairs found; count source sample_1pct
+hp.k7.s10 shuffled_rate,0.9915151874084626,0.9915151874084626,true,estimated from 1% gene sample
+hp.k7.s10 passes,false,false,true,
+hp.k7.s100 recall,0.9737329358230032,0.9737329358230032,true,31028 of 31865 truth pairs found; count source sample_1pct
+hp.k7.s100 shuffled_rate,0.9802631578947368,0.9802631578947368,true,estimated from 1% gene sample
+hp.k7.s100 passes,false,false,true,
+hp.k7.s1000 recall,0.0,0.0,true,0 of 31865 truth pairs found; count source full
+hp.k7.s1000 shuffled_rate,undefined,undefined,true,"real-query gene count is 0, rate undefined"
+hp.k7.s1000 passes,false,false,true,
+protein.k10.s10 recall,0.007782833830221246,0.007782833830221246,true,248 of 31865 truth pairs found; count source full
+protein.k10.s10 shuffled_rate,0.7017460317460318,0.7017460317460318,true,full catalog counts
+protein.k10.s10 passes,false,false,true,
+protein.k10.s100 recall,0.0006904126784873686,0.0006904126784873686,true,22 of 31865 truth pairs found; count source full
+protein.k10.s100 shuffled_rate,0.4269230769230769,0.4269230769230769,true,full catalog counts
+protein.k10.s100 passes,false,false,true,
+protein.k10.s1000 recall,0.0,0.0,true,0 of 31865 truth pairs found; count source full
+protein.k10.s1000 shuffled_rate,undefined,undefined,true,"real-query gene count is 0, rate undefined"
+protein.k10.s1000 passes,false,false,true,
+protein.k13.s10 recall,0.005554683822375647,0.005554683822375647,true,177 of 31865 truth pairs found; count source full
+protein.k13.s10 shuffled_rate,0.21136363636363636,0.21136363636363636,true,full catalog counts
+protein.k13.s10 passes,false,false,true,
+protein.k13.s100 recall,0.00015691197238349287,0.00015691197238349287,true,5 of 31865 truth pairs found; count source full
+protein.k13.s100 shuffled_rate,0.016666666666666666,0.016666666666666666,true,full catalog counts
+protein.k13.s100 passes,false,false,true,
+protein.k13.s1000 recall,0.0,0.0,true,0 of 31865 truth pairs found; count source full
+protein.k13.s1000 shuffled_rate,undefined,undefined,true,"real-query gene count is 0, rate undefined"
+protein.k13.s1000 passes,false,false,true,
+protein.k7.s10 recall,0.03615251843715676,0.03615251843715676,true,1152 of 31865 truth pairs found; count source full
+protein.k7.s10 shuffled_rate,0.8702275001516162,0.8702275001516162,true,full catalog counts
+protein.k7.s10 passes,false,false,true,
+protein.k7.s100 recall,0.006841361995920289,0.006841361995920289,true,218 of 31865 truth pairs found; count source full
+protein.k7.s100 shuffled_rate,0.8186422861295681,0.8186422861295681,true,full catalog counts
+protein.k7.s100 passes,false,false,true,
+protein.k7.s1000 recall,0.005617448611329044,0.005617448611329044,true,179 of 31865 truth pairs found; count source full
+protein.k7.s1000 shuffled_rate,0.7155260011954573,0.7155260011954573,true,full catalog counts
+protein.k7.s1000 passes,false,false,true,
+"truth pairs (real query, gene) at E < 1e-5",31865,31865,true,unique pairs from diamond_hits.tsv; also equals table DIAMOND real_hits
+DIAMOND shuffled_rate,0.0,0.0,true,0 shuffled-copy pairs at E < 1e-5
+verdict,DEAD at step 3,DEAD at step 3,true,no setting passes
+passing settings,none,none,true,
+"malformed lines, all *.bad.txt over 27 settings",0,0,true,rule requires 0
+real queries with at least one truth pair,,51,,second route; no notebook value to compare; other 58 real queries have no DIAMOND pair at E < 1e-5
+hp.k7.s10 truth pairs missing from recall.pairs.tsv,0,0,true,recall.pairs.tsv covers every truth pair

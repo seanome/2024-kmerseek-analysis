@@ -4,7 +4,7 @@
 SHERLOCK_HOST ?= sherlock
 ON_CLUSTER := $(shell [ -n "$$SCRATCH" ] && [ -d "$$SCRATCH" ] && echo yes)
 
-.PHONY: help running leaderboard-tables leaderboard-fetch leaderboard-timetree
+.PHONY: help running leaderboard-tables leaderboard-fetch leaderboard-timetree leaderboard-alphabets
 
 help:
 	@echo "Sherlock:"
@@ -17,6 +17,8 @@ help:
 	@echo "                      LEADERBOARD_DATA (a mirror of /scratch/users/olgabot)"
 	@echo "  leaderboard-tables  Write results/leaderboard/ (results.parquet, compute.parquet,"
 	@echo "                      coverage.md, provenance.json) from LEADERBOARD_DATA"
+	@echo "  leaderboard-alphabets  Write results/leaderboard/alphabets/ (the alphabet page's"
+	@echo "                         tables) from notebooks 230 and 291 and PR 116's CSV"
 	@echo ""
 	@echo "Each pipeline's own targets: make -C nextflow-runs/<pipeline> help"
 
@@ -73,3 +75,11 @@ leaderboard-tables:
 	$(LEADERBOARD_PYTHON) scripts/build_leaderboard_long.py \
 	  --data $(LEADERBOARD_DATA) \
 	  --outdir results/leaderboard
+
+## The leaderboard site's alphabet page (seanome/protein-function-annotation-leaderboard copies
+## results/leaderboard/alphabets/ from a commit of this repo). Reads notebook 291's stored
+## table and the per-pair tables of notebook 230 from ~/data (about 100 MB), so it runs on the
+## laptop in about 20 s with a peak of 3.75 GB resident (measured 2026-10-16 with
+## /usr/bin/time -l); see scripts/build_leaderboard_alphabets.py.
+leaderboard-alphabets:
+	$(LEADERBOARD_PYTHON) scripts/build_leaderboard_alphabets.py --outdir results/leaderboard/alphabets

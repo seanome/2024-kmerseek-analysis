@@ -1,0 +1,99 @@
+{
+  "artifact_scope": "Corrected SRR5945967 reference only; historical reference builds remain unrecorded",
+  "provenance_scope": "recovered-from-preserved-build-evidence",
+  "job_id": 49521583,
+  "build_commit": "8d7efccb",
+  "archive_sha256": "c45bafee69a4430ccfecf567beb9b2b0fb3ed22b26f1a6b46312a406388fc534",
+  "protocol": "six-frame-standard-stop-only-X-preserved-min30-v1",
+  "source_code_sha256": {
+    "peptide_protocol.py": "1792cfaa6f0fc93538235946829827a14be80ff3fc0ec31842f01c30b6f89593",
+    "sketch_corrected_peptides.py": "4d3d112db50fca84603b8c1c682d9be5550c4b297b61eafefbc8d55d074acf30",
+    "nextflow/corrected_public_pilot.py": "3b7bb697637f4d35ca39696ff16192318ce71c96f302240dbe54cb08aff124cd",
+    "nextflow/migration-recovery.sbatch": "d4c792defbcb1d299d670d0b7ed53b39f60ed1ad626feff92916ff8bff82ab64"
+  },
+  "sources": [
+    {
+      "url": "ftp.sra.ebi.ac.uk/vol1/fastq/SRR594/007/SRR5945967/SRR5945967_1.fastq.gz",
+      "md5": "c1722f4571636a13387c5c138b248d04",
+      "raw_sha256": "de53e928d5acb282b396c83925dfa58b4ffdb93fa37f0122b26d72d89bb762fa",
+      "trimmed_sha256": "6ba2e406a059c4faf9707f138a7836da4a90ec98b5b483a75721e8d14fb7c042",
+      "trimmed_records": 955
+    },
+    {
+      "url": "ftp.sra.ebi.ac.uk/vol1/fastq/SRR594/007/SRR5945967/SRR5945967_2.fastq.gz",
+      "md5": "62720f1ef4680873955f63a3f54b96f3",
+      "raw_sha256": "512351f5d707cd1c670accfd5bad6f9a43e089c9bf71f8b03c9583ae224ae8f2",
+      "trimmed_sha256": "8ea7554441ca94afc08830d0e635e931db8d0603116a51f475ffb65c8b6f2799",
+      "trimmed_records": 926
+    }
+  ],
+  "translation": {
+    "protocol": "six-frame-standard-stop-only-X-preserved-min30-v1",
+    "source_sha256": "62d31f7d01ea34d1cec9d783e6e6fd5e98163004d44d1911ed8ef6386e0a20ef",
+    "origins": 1881,
+    "outputs": {
+      "origins.jsonl": "371080003867e85f90431cc41fa185cb8bb375f2437eb7ab639c14007852d704",
+      "segments.jsonl": "8c2e8ddb42d3f7d4e3bf0d8278ec0b254439cde28b4debea5b7a58b7b097cd18",
+      "peptides.fa": "465c24b99076a4f3bde847628dd45fb506a88fe035e5a9ad684edc86e8a269b7"
+    }
+  },
+  "sketches": {
+    "protocol": "six-frame-standard-stop-only-X-preserved-min30-v1",
+    "branchwater": "0.9.15",
+    "translation_manifest_sha256": "935e51cfc00bf10160aec2601b69e3a2a1f3d9b4545000787153af2917271ef5",
+    "segment_comparisons": 10530,
+    "internal_X_segments": 1,
+    "collections": [
+      {
+        "file": "protein-10.sig.gz",
+        "sha256": "23bf8fe6fdd3a7ba6eff82599e520072076c24464d395a452476cb76a68f26fe",
+        "origins": 1881,
+        "empty": 417
+      },
+      {
+        "file": "protein-100.sig.gz",
+        "sha256": "6c455230b391fec8ab9bb3e9c4cc63b846db5f37f70eeba0ae2461901003d17d",
+        "origins": 1881,
+        "empty": 1204
+      },
+      {
+        "file": "dayhoff-10.sig.gz",
+        "sha256": "60eeea1120c66bc5c05d31ca764dee93d2c1228f551253cb28ebe6615e60206c",
+        "origins": 1881,
+        "empty": 426
+      },
+      {
+        "file": "dayhoff-100.sig.gz",
+        "sha256": "0a1cc080a393506d5252498814e06eb09f8b20223a80218df3df1517fe381107",
+        "origins": 1881,
+        "empty": 1299
+      },
+      {
+        "file": "hp-10.sig.gz",
+        "sha256": "87b648ed255d03b81594c9de89fd9619229795458248fb246a2859e9a86edd17",
+        "origins": 1881,
+        "empty": 1085
+      },
+      {
+        "file": "hp-100.sig.gz",
+        "sha256": "183bdd99d17e3be3ae6fed18d6246c3355c9fd146f9a4cf97bba9230f4fa8433",
+        "origins": 1881,
+        "empty": 1767
+      }
+    ]
+  },
+  "tools": {
+    "trim_galore": "0.6.10",
+    "cutadapt": "5.2",
+    "sourmash": "4.9.4",
+    "sourmash_plugin_branchwater": "0.9.15"
+  },
+  "tool_version_evidence": "Trim logs and later checks in the same job and explicit Python/Sourmash environment; Biopython version was not recorded",
+  "version_files": {
+    "migration/work/d2/b4538d7efc5f0b64cbca72c14dab61/versions.json": "71d9bbc42ea743075335cc1034823e3b0e491a877081070c87c45d4cc5627191",
+    "migration/work/bd/c480c5e028a5c7e265263e0f51f12c/versions.json": "71d9bbc42ea743075335cc1034823e3b0e491a877081070c87c45d4cc5627191",
+    "migration/work/79/0cefaccc0f8d9ec36743bc965b5eca/versions.json": "71d9bbc42ea743075335cc1034823e3b0e491a877081070c87c45d4cc5627191",
+    "migration/work/c6/8c53b043479cb40e06081fb688bc2a/versions.json": "71d9bbc42ea743075335cc1034823e3b0e491a877081070c87c45d4cc5627191"
+  },
+  "production_rollout": false
+}

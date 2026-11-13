@@ -1,0 +1,4 @@
+dataset	comparison	significant_anchors	anchors_inside_one_feature	anchors_differing_between_groups	mean_with_shuffled_groups	highest_with_shuffled_groups	hits_inside_one_feature	hits_on_signature_proteins
+GSE83578	pre_vs_30min	250	4	43	0.00	0	0	2
+GSE83578	pre_vs_3h	250	4	51	0.04	2	0	2
+GSE83578	pre_vs_24h	250	4	0	0.02	1	0	0

@@ -1,0 +1,17 @@
+cutoff	channel	list_genes	reached	reached_either_way	lists_beating_random	lists_with_genes	share
+corrected	gene_counts_mean	2	2	2	1	1	1.0
+corrected	gene_counts	2	2	2	1	1	1.0
+corrected	splash	2	0	0	0	1	0.0
+corrected	kamrat_deseq2_p05	2	0	0	0	1	0.0
+corrected	anchor_nominal	2	0	0	0	1	0.0
+corrected	kamrat_ttest_p05	2	0	0	0	1	0.0
+corrected	dekupl_deseq2_p05	2	0	0	0	1	0.0
+corrected	dekupl_limma_p05	2	0	0	0	1	0.0
+paper_cutoff	gene_counts_mean	1135	688	696	12	12	0.606
+paper_cutoff	gene_counts	1135	609	618	11	12	0.537
+paper_cutoff	splash	1135	419	419	5	12	0.369
+paper_cutoff	kamrat_deseq2_p05	1135	259	271	11	12	0.228
+paper_cutoff	kamrat_ttest_p05	1135	229	231	6	12	0.202
+paper_cutoff	anchor_nominal	1135	160	174	8	12	0.141
+paper_cutoff	dekupl_deseq2_p05	1021	141	150	9	10	0.138
+paper_cutoff	dekupl_limma_p05	1021	139	143	6	10	0.136

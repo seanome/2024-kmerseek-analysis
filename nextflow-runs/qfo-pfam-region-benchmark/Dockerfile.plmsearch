@@ -1,0 +1,25 @@
+# PLMSearch (ESM-1b embeddings + a learned similarity, Liu et al. 2024) for
+# annotator_tools.nf's plmsearch arm. GPU image.
+#
+# PLMSearch has no package: the scripts are run from a clone pinned to one commit
+# (maovshao/PLMSearch main, 2025-09-09). Requirements follow its requirements.sh. The
+# model files (plmsearch.sav, esm1b_t33_650M_UR50S.pt) are NOT baked in: they come from
+# plmsearch_data.tar.gz on $SCRATCH (assets/download_embedding_models.sbatch).
+#
+# Only the embedding search is run (the "SS-predictor" in its notebook). Its full pipeline
+# first filters with PfamScan, which runs Pfam's own HMMs; that would grade it partly on
+# the truth's own models, so it is left out (see the PR body).
+#
+# No ENTRYPOINT; procps for the trace.
+FROM pytorch/pytorch@sha256:971fbeae82c0a5a7a970a264a8b8ce1c3426aa79df7111004ad2bc2640f7d89c
+# 2.1.2-cuda11.8-cudnn8-runtime
+
+ARG PLMSEARCH_COMMIT=d6df1dc11fbdabb1365f183ac05f509e2d758636
+RUN apt-get update && apt-get install -y --no-install-recommends procps git \
+    && rm -rf /var/lib/apt/lists/* \
+    && pip install --no-cache-dir 'fair-esm==2.0.0' biopython tqdm pandas logzero \
+        scikit-learn seaborn \
+    && git clone https://github.com/maovshao/PLMSearch.git /opt/PLMSearch \
+    && cd /opt/PLMSearch && git checkout "$PLMSEARCH_COMMIT" \
+    && python plmsearch/main_similarity.py --help > /dev/null
+ENV PLMSEARCH_HOME=/opt/PLMSearch

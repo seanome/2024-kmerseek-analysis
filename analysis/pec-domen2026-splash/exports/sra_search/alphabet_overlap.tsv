@@ -1,0 +1,26 @@
+method	alphabet	k	species	genes_random_length_matched	genes_paper_list	passed_random_length_matched	passed_paper_list	cut	runs
+Swiss-Prot 7-mer frames, scaled 10	dayhoff	12	Botryllus	848	823	0	0	1.0	64
+Swiss-Prot 7-mer frames, scaled 10	dayhoff	13	Botryllus	848	823	509	663	0.6111111111111112	64
+Swiss-Prot 7-mer frames, scaled 10	hp	27	Botryllus	848	822	0	0	1.0	64
+Swiss-Prot 7-mer frames, scaled 10	hp	30	Botryllus	848	823	402	617	0.42857142857142855	64
+Swiss-Prot 7-mer frames, scaled 10	protein	6	Botryllus	848	823	0	0	1.0	64
+Swiss-Prot 7-mer frames, scaled 10	protein	7	Botryllus	848	823	590	708	0.5555555555555556	64
+own 10-mer frames, scaled 1	dayhoff	12	Botryllus	848	823	562	701	0.6135265700483091	64
+own 10-mer frames, scaled 1	dayhoff	13	Botryllus	848	823	681	755	0.30857142857142855	64
+own 10-mer frames, scaled 1	hp	24	Botryllus	848	823	265	424	0.9868852459016394	64
+own 10-mer frames, scaled 1	hp	25	Botryllus	848	823	415	587	0.8846153846153846	64
+own 10-mer frames, scaled 1	hp	26	Botryllus	848	823	458	639	0.7176470588235294	64
+own 10-mer frames, scaled 1	hp	27	Botryllus	848	823	487	665	0.5411558669001751	64
+own 10-mer frames, scaled 1	protein	7	Botryllus	848	823	746	790	0.2222222222222222	64
+Swiss-Prot 7-mer frames, scaled 10	dayhoff	12	human	848	823	13	33	0.7777777777777778	108
+Swiss-Prot 7-mer frames, scaled 10	dayhoff	13	human	848	823	24	59	0.5	108
+Swiss-Prot 7-mer frames, scaled 10	hp	27	human	848	822	4	18	0.25	28
+Swiss-Prot 7-mer frames, scaled 10	protein	6	human	848	823	0	0	1.0	108
+Swiss-Prot 7-mer frames, scaled 10	protein	7	human	848	823	21	67	0.42857142857142855	108
+own 10-mer frames, scaled 1	dayhoff	12	human	848	823	73	147	0.328125	108
+own 10-mer frames, scaled 1	dayhoff	13	human	848	823	107	219	0.14814814814814814	108
+own 10-mer frames, scaled 1	hp	24	human	848	823	56	90	0.4329268292682927	108
+own 10-mer frames, scaled 1	hp	25	human	848	823	48	89	0.2564102564102564	108
+own 10-mer frames, scaled 1	hp	26	human	848	823	43	98	0.13157894736842105	28
+own 10-mer frames, scaled 1	hp	27	human	848	823	30	71	0.05405405405405406	28
+own 10-mer frames, scaled 1	protein	7	human	848	823	136	273	0.08661417322834646	108
