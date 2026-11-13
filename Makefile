@@ -45,25 +45,35 @@ running:
 ##
 ## One long table of every finished benchmark output: the QfO region benchmark (mini, midi,
 ## midi-plus), ELM cover, the dark set (Pfam Fmax, reach, best-hit accuracy), notebook
-## 241's three cases, the deep-twilight controls, and the SCOPe40 kmerseek 0.4 sweeps.
+## 241's three cases, the deep-twilight controls, the SCOPe40 kmerseek 0.4 sweeps, and
+## the Pfam protein-pair benchmark of other tools (pfam_pair_roc).
 ## results/leaderboard/inventory.md lists every output found and why some are left out; it is
 ## written by hand, not by leaderboard-tables.
 ##
 ## LEADERBOARD_DATA mirrors /scratch/users/olgabot: a file at $SCRATCH/x/y is read from
 ## $(LEADERBOARD_DATA)/x/y. leaderboard-fetch copies exactly the inputs provenance.json
-## lists, over the data transfer node.
+## lists, over the data transfer node. Inputs that exist only on the laptop
+## (/Users/olga/x/y) are copied to $(LEADERBOARD_DATA)/laptop/x/y.
 LEADERBOARD_DATA ?= $(HOME)/data/leaderboard-inputs
 # Olga's conda env on her Mac when it is there, else python3 from PATH (it needs polars).
 LEADERBOARD_ENV_PYTHON := /Users/olga/anaconda3/envs/2025-kmerseek-analysis/bin/python3
 LEADERBOARD_PYTHON ?= $(if $(wildcard $(LEADERBOARD_ENV_PYTHON)),$(LEADERBOARD_ENV_PYTHON),python3)
 SHERLOCK_DTN ?= sherlock-dtn
+## Where the laptop-only inputs are read from. provenance.json records them under
+## /Users/olga; set LAPTOP_HOME on a machine that keeps a copy somewhere else.
+LAPTOP_HOME ?= /Users/olga
 
 leaderboard-fetch:
 	mkdir -p $(LEADERBOARD_DATA)
-	$(LEADERBOARD_PYTHON) -c 'import json; [print(p.removeprefix("/scratch/users/olgabot/")) for p in json.load(open("results/leaderboard/provenance.json"))["inputs"]]' \
+	$(LEADERBOARD_PYTHON) -c 'import json; [print(p.removeprefix("/scratch/users/olgabot/")) for p in json.load(open("results/leaderboard/provenance.json"))["inputs"] if p.startswith("/scratch/")]' \
 	  > $(LEADERBOARD_DATA)/.fetch-list.txt
 	pixi exec rsync -a --files-from=$(LEADERBOARD_DATA)/.fetch-list.txt \
 	  "$(SHERLOCK_DTN):/scratch/users/olgabot/" $(LEADERBOARD_DATA)/
+	$(LEADERBOARD_PYTHON) -c 'import json; [print(p.removeprefix("/Users/olga/")) for p in json.load(open("results/leaderboard/provenance.json"))["inputs"] if p.startswith("/Users/olga/")]' \
+	  > $(LEADERBOARD_DATA)/.fetch-list-laptop.txt
+	mkdir -p $(LEADERBOARD_DATA)/laptop
+	pixi exec rsync -a --files-from=$(LEADERBOARD_DATA)/.fetch-list-laptop.txt \
+	  $(LAPTOP_HOME)/ $(LEADERBOARD_DATA)/laptop/
 
 ## TimeTree's divergence time from human for each QfO relative; leaderboard-tables reads it.
 leaderboard-timetree:
