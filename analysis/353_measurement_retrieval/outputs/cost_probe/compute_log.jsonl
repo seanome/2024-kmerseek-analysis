@@ -1,0 +1,4 @@
+{"step": "import-queries", "elapsed_s": 0.248, "cpu_s": 0.261, "peak_rss_bytes": 106659840, "work_dir_bytes": 12711236, "host": "Olgas-M4-Max-Macbook-Pro.local", "when": "2026-10-20T14:11:49"}
+{"step": "make-controls", "elapsed_s": 0.675, "cpu_s": 0.685, "peak_rss_bytes": 71467008, "work_dir_bytes": 13070519, "host": "Olgas-M4-Max-Macbook-Pro.local", "when": "2026-10-20T14:11:50"}
+{"step": "search-b", "elapsed_s": 30.782, "cpu_s": 79.64, "peak_rss_bytes": 1529626624, "work_dir_bytes": 63438172, "host": "Olgas-M4-Max-Macbook-Pro.local", "when": "2026-10-20T14:12:21", "blast_index_build_s": 0.044, "threads": 4}
+{"step": "cards", "elapsed_s": 21.559, "cpu_s": 21.917, "peak_rss_bytes": 1713061888, "work_dir_bytes": 69652922, "host": "Olgas-M4-Max-Macbook-Pro.local", "when": "2026-10-20T14:12:42"}

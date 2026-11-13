@@ -1,0 +1,4064 @@
+ID   PERC_AEDAE              Reviewed;         790 AA.
+AC   P82600; Q17CY6; Q5DQ92;
+DT   31-AUG-2004, integrated into UniProtKB/Swiss-Prot.
+DT   04-DEC-2007, sequence version 3.
+DT   02-SEP-2026, entry version 139.
+DE   RecName: Full=Chorion peroxidase;
+DE            EC=1.11.1.7;
+DE   Flags: Precursor;
+GN   Name=pxt; ORFNames=AAEL004386;
+OS   Aedes aegypti (Yellowfever mosquito) (Culex aegypti).
+OC   Eukaryota; Metazoa; Ecdysozoa; Arthropoda; Altocrustacea; Allotriocarida;
+OC   Hexapoda; Insecta; Pterygota; Neoptera; Eumetabola; Endopterygota;
+OC   Aparaglossata; Panorpida; Diptera; Nematocera; Culicoidea; Culicidae;
+OC   Culicinae; Aedini; Aedes; Stegomyia.
+OX   NCBI_TaxID=7159;
+RN   [1]
+RP   NUCLEOTIDE SEQUENCE [MRNA], AND PARTIAL PROTEIN SEQUENCE.
+RC   STRAIN=Black-eyed Liverpool; TISSUE=Ovary;
+RX   PubMed=15522615; DOI=10.1016/j.ibmb.2004.08.001;
+RA   Li J.S., Kim S.R., Li J.;
+RT   "Molecular characterization of a novel peroxidase involved in Aedes aegypti
+RT   chorion protein crosslinking.";
+RL   Insect Biochem. Mol. Biol. 34:1195-1203(2004).
+RN   [2]
+RP   NUCLEOTIDE SEQUENCE [LARGE SCALE GENOMIC DNA].
+RC   STRAIN=LVPib12;
+RX   PubMed=17510324; DOI=10.1126/science.1138878;
+RA   Nene V., Wortman J.R., Lawson D., Haas B.J., Kodira C.D., Tu Z.J.,
+RA   Loftus B.J., Xi Z., Megy K., Grabherr M., Ren Q., Zdobnov E.M., Lobo N.F.,
+RA   Campbell K.S., Brown S.E., Bonaldo M.F., Zhu J., Sinkins S.P.,
+RA   Hogenkamp D.G., Amedeo P., Arensburger P., Atkinson P.W., Bidwell S.L.,
+RA   Biedler J., Birney E., Bruggner R.V., Costas J., Coy M.R., Crabtree J.,
+RA   Crawford M., DeBruyn B., DeCaprio D., Eiglmeier K., Eisenstadt E.,
+RA   El-Dorry H., Gelbart W.M., Gomes S.L., Hammond M., Hannick L.I.,
+RA   Hogan J.R., Holmes M.H., Jaffe D., Johnston S.J., Kennedy R.C., Koo H.,
+RA   Kravitz S., Kriventseva E.V., Kulp D., Labutti K., Lee E., Li S.,
+RA   Lovin D.D., Mao C., Mauceli E., Menck C.F., Miller J.R., Montgomery P.,
+RA   Mori A., Nascimento A.L., Naveira H.F., Nusbaum C., O'Leary S.B., Orvis J.,
+RA   Pertea M., Quesneville H., Reidenbach K.R., Rogers Y.-H.C., Roth C.W.,
+RA   Schneider J.R., Schatz M., Shumway M., Stanke M., Stinson E.O.,
+RA   Tubio J.M.C., Vanzee J.P., Verjovski-Almeida S., Werner D., White O.R.,
+RA   Wyder S., Zeng Q., Zhao Q., Zhao Y., Hill C.A., Raikhel A.S., Soares M.B.,
+RA   Knudson D.L., Lee N.H., Galagan J., Salzberg S.L., Paulsen I.T.,
+RA   Dimopoulos G., Collins F.H., Bruce B., Fraser-Liggett C.M., Severson D.W.;
+RT   "Genome sequence of Aedes aegypti, a major arbovirus vector.";
+RL   Science 316:1718-1723(2007).
+RN   [3]
+RP   PROTEIN SEQUENCE OF 210-228, FUNCTION, AND COFACTOR.
+RC   STRAIN=Black-eyed Liverpool; TISSUE=Ovary;
+RX   PubMed=10871050; DOI=10.1006/abbi.2000.1821;
+RA   Han Q., Li G., Li J.;
+RT   "Purification and characterization of chorion peroxidase from Aedes aegypti
+RT   eggs.";
+RL   Arch. Biochem. Biophys. 378:107-115(2000).
+RN   [4]
+RP   PROTEIN SEQUENCE OF 210-221; 224-262; 276-355; 368-406; 413-467; 475-490;
+RP   514-559; 564-581; 606-613; 620-633; 636-646; 654-708; 712-737 AND 739-786,
+RP   ACETYLATION AT CYS-210, GLYCOSYLATION AT TRP-259; ASN-327; TRP-479 AND
+RP   TRP-785, HYDROXYLATION AT TYR-353, AND FUNCTION.
+RC   STRAIN=Black-eyed Liverpool; TISSUE=Ovary;
+RX   PubMed=16150691; DOI=10.1074/jbc.m508449200;
+RA   Li J.S., Cui L., Rock D.L., Li J.;
+RT   "Novel glycosidic linkage in Aedes aegypti chorion peroxidase: N-mannosyl
+RT   tryptophan.";
+RL   J. Biol. Chem. 280:38513-38521(2005).
+RN   [5]
+RP   PROTEIN SEQUENCE OF 317-337, AND GLYCOSYLATION AT ASN-327.
+RX   PubMed=16131661; DOI=10.1110/ps.051419105;
+RA   Li J.S., Li J.;
+RT   "Characterization of N-linked oligosaccharides in chorion peroxidase of
+RT   Aedes aegypti mosquito.";
+RL   Protein Sci. 14:2370-2386(2005).
+RN   [6]
+RP   FUNCTION, AND INDUCTION.
+RC   STRAIN=Black-eyed Liverpool; TISSUE=Ovary;
+RX   PubMed=8900599; DOI=10.1016/0965-1748(95)00099-2;
+RA   Li J., Hodgeman B.A., Christensen B.M.;
+RT   "Involvement of peroxidase in chorion hardening in Aedes aegypti.";
+RL   Insect Biochem. Mol. Biol. 26:309-317(1996).
+CC   -!- FUNCTION: Involved in the formation of a rigid and insoluble egg
+CC       chorion by catalyzing chorion protein cross-linking through dityrosine
+CC       formation and phenol oxidase-catalyzed chorion melanization.
+CC       {ECO:0000269|PubMed:10871050, ECO:0000269|PubMed:16150691,
+CC       ECO:0000269|PubMed:8900599}.
+CC   -!- CATALYTIC ACTIVITY:
+CC       Reaction=2 a phenolic donor + H2O2 = 2 a phenolic radical donor + 2
+CC         H2O; Xref=Rhea:RHEA:56136, ChEBI:CHEBI:15377, ChEBI:CHEBI:16240,
+CC         ChEBI:CHEBI:139520, ChEBI:CHEBI:139521; EC=1.11.1.7;
+CC   -!- COFACTOR:
+CC       Name=heme b; Xref=ChEBI:CHEBI:60344;
+CC         Evidence={ECO:0000269|PubMed:10871050};
+CC       Note=Binds 1 heme b (iron(II)-protoporphyrin IX) group per heterodimer.
+CC       {ECO:0000269|PubMed:10871050};
+CC   -!- ACTIVITY REGULATION: Extremely resistant to denaturating agents, such
+CC       as SDS and organic solvents.
+CC   -!- BIOPHYSICOCHEMICAL PROPERTIES:
+CC       pH dependence:
+CC         Optimum pH is 8.0 with guaiacol as the reducing agent.;
+CC   -!- SUBUNIT: Heterodimer. {ECO:0000305}.
+CC   -!- SUBCELLULAR LOCATION: Secreted. Note=In the chorion layer of the mature
+CC       eggs.
+CC   -!- INDUCTION: Expression levels increase 24 hours following blood feeding.
+CC       Peak peroxidase activity is reached at 36-48 hours after a blood meal.
+CC       {ECO:0000269|PubMed:8900599}.
+CC   -!- PTM: N-glycosylated on Trp by mannose and on Asn by N-
+CC       acetylglucosamine.
+CC   -!- PTM: There is a hexose glycosylation of an unidentified residue between
+CC       654 and 708; Trp-680 is conserved in closely related species and is
+CC       probably mannosylated.
+CC   -!- SIMILARITY: Belongs to the peroxidase family. XPO subfamily.
+CC       {ECO:0000255|PROSITE-ProRule:PRU00298}.
+CC   -!- SEQUENCE CAUTION:
+CC       Sequence=AAT27427.1; Type=Erroneous initiation; Note=Extended N-terminus.; Evidence={ECO:0000305};
+CC   ---------------------------------------------------------------------------
+CC   Copyrighted by the UniProt Consortium, see https://www.uniprot.org/terms
+CC   Distributed under the Creative Commons Attribution (CC BY 4.0) License
+CC   ---------------------------------------------------------------------------
+DR   EMBL; AY547316; AAT27427.1; ALT_INIT; mRNA.
+DR   EMBL; CH477302; EAT44219.1; -; Genomic_DNA.
+DR   AlphaFoldDB; P82600; -.
+DR   SMR; P82600; -.
+DR   FunCoup; P82600; 31.
+DR   STRING; 7159.P82600; -.
+DR   PeroxiBase; 3555; AaePxt02.
+DR   GlyCosmos; P82600; 5 sites, No reported glycans.
+DR   iPTMnet; P82600; -.
+DR   PaxDb; 7159-P82600; -.
+DR   GeneID; 5564684; -.
+DR   KEGG; aag:5564684; -.
+DR   VEuPathDB; VectorBase:AAEL004386; -.
+DR   eggNOG; KOG2408; Eukaryota.
+DR   HOGENOM; CLU_006087_5_0_1; -.
+DR   InParanoid; P82600; -.
+DR   OMA; ICANADH; -.
+DR   OrthoDB; 823504at2759; -.
+DR   PhylomeDB; P82600; -.
+DR   Proteomes; UP000008820; Unassembled WGS sequence.
+DR   GO; GO:0005576; C:extracellular region; IC:UniProtKB.
+DR   GO; GO:0020037; F:heme binding; IEA:InterPro.
+DR   GO; GO:0140825; F:lactoperoxidase activity; IEA:UniProtKB-EC.
+DR   GO; GO:0004601; F:peroxidase activity; IDA:UniProtKB.
+DR   GO; GO:0007306; P:egg chorion assembly; IDA:UniProtKB.
+DR   GO; GO:0042743; P:hydrogen peroxide metabolic process; IDA:UniProtKB.
+DR   GO; GO:0006979; P:response to oxidative stress; IEA:InterPro.
+DR   CDD; cd09823; peroxinectin_like; 1.
+DR   FunFam; 1.10.640.10:FF:000003; chorion peroxidase; 1.
+DR   Gene3D; 1.10.640.10; Haem peroxidase domain superfamily, animal type; 1.
+DR   InterPro; IPR019791; Haem_peroxidase_animal.
+DR   InterPro; IPR010255; Haem_peroxidase_sf.
+DR   InterPro; IPR037120; Haem_peroxidase_sf_animal.
+DR   PANTHER; PTHR11475:SF4; CHORION PEROXIDASE; 1.
+DR   PANTHER; PTHR11475; OXIDASE/PEROXIDASE; 1.
+DR   Pfam; PF03098; An_peroxidase; 1.
+DR   PRINTS; PR00457; ANPEROXIDASE.
+DR   SUPFAM; SSF48113; Heme-dependent peroxidases; 1.
+DR   PROSITE; PS50292; PEROXIDASE_3; 1.
+PE   1: Evidence at protein level;
+KW   Acetylation; Cleavage on pair of basic residues; Direct protein sequencing;
+KW   Disulfide bond; Glycoprotein; Heme; Hydrogen peroxide; Hydroxylation; Iron;
+KW   Metal-binding; Oxidoreductase; Peroxidase; Reference proteome; Secreted;
+KW   Signal.
+FT   SIGNAL          1..16
+FT                   /evidence="ECO:0000255"
+FT   PROPEP          17..209
+FT                   /evidence="ECO:0000269|PubMed:10871050,
+FT                   ECO:0000269|PubMed:16150691"
+FT                   /id="PRO_0000232892"
+FT   CHAIN           210..790
+FT                   /note="Chorion peroxidase"
+FT                   /id="PRO_0000407854"
+FT   ACT_SITE        305
+FT                   /note="Proton acceptor"
+FT                   /evidence="ECO:0000255|PROSITE-ProRule:PRU00298"
+FT   BINDING         551
+FT                   /ligand="heme b"
+FT                   /ligand_id="ChEBI:CHEBI:60344"
+FT                   /ligand_part="Fe"
+FT                   /ligand_part_id="ChEBI:CHEBI:18248"
+FT                   /note="axial binding residue"
+FT                   /evidence="ECO:0000255|PROSITE-ProRule:PRU00298"
+FT   SITE            447
+FT                   /note="Transition state stabilizer"
+FT                   /evidence="ECO:0000255|PROSITE-ProRule:PRU00298"
+FT   MOD_RES         210
+FT                   /note="N-acetylcysteine; in Chorion peroxidase light chain"
+FT                   /evidence="ECO:0000305|PubMed:16150691"
+FT   MOD_RES         353
+FT                   /note="3',4'-dihydroxyphenylalanine"
+FT                   /evidence="ECO:0000269|PubMed:16150691"
+FT   CARBOHYD        259
+FT                   /note="N-linked (Man) tryptophan"
+FT                   /evidence="ECO:0000269|PubMed:16150691"
+FT   CARBOHYD        327
+FT                   /note="N-linked (GlcNAc...) asparagine"
+FT                   /evidence="ECO:0000269|PubMed:16131661,
+FT                   ECO:0000269|PubMed:16150691"
+FT   CARBOHYD        479
+FT                   /note="N-linked (Man) tryptophan"
+FT                   /evidence="ECO:0000269|PubMed:16150691"
+FT   CARBOHYD        680
+FT                   /note="N-linked (Man) tryptophan"
+FT                   /evidence="ECO:0000305"
+FT   CARBOHYD        785
+FT                   /note="N-linked (Man) tryptophan"
+FT                   /evidence="ECO:0000269|PubMed:16150691"
+FT   DISULFID        216..229
+FT                   /evidence="ECO:0000255|PROSITE-ProRule:PRU00298"
+FT   DISULFID        433..440
+FT                   /evidence="ECO:0000255|PROSITE-ProRule:PRU00298"
+FT   DISULFID        746..774
+FT                   /evidence="ECO:0000255|PROSITE-ProRule:PRU00298"
+FT   CONFLICT        19
+FT                   /note="F -> I (in Ref. 1; AAT27427)"
+FT                   /evidence="ECO:0000305"
+FT   CONFLICT        60..62
+FT                   /note="VSV -> API (in Ref. 1; AAT27427)"
+FT                   /evidence="ECO:0000305"
+FT   CONFLICT        86
+FT                   /note="V -> I (in Ref. 1; AAT27427)"
+FT                   /evidence="ECO:0000305"
+FT   CONFLICT        93
+FT                   /note="Y -> H (in Ref. 1; AAT27427)"
+FT                   /evidence="ECO:0000305"
+FT   CONFLICT        103
+FT                   /note="N -> S (in Ref. 1; AAT27427)"
+FT                   /evidence="ECO:0000305"
+FT   CONFLICT        130
+FT                   /note="F -> L (in Ref. 1; AAT27427)"
+FT                   /evidence="ECO:0000305"
+FT   CONFLICT        158
+FT                   /note="K -> R (in Ref. 1; AAT27427)"
+FT                   /evidence="ECO:0000305"
+FT   CONFLICT        193
+FT                   /note="Q -> E (in Ref. 1; AAT27427)"
+FT                   /evidence="ECO:0000305"
+FT   CONFLICT        213..219
+FT                   /note="PVPCNPH -> NVPPNNL (in Ref. 3; AA sequence)"
+FT                   /evidence="ECO:0000305"
+FT   CONFLICT        217
+FT                   /note="N -> S (in Ref. 1; AAT27427)"
+FT                   /evidence="ECO:0000305"
+FT   CONFLICT        227..228
+FT                   /note="GS -> DE (in Ref. 3; AA sequence)"
+FT                   /evidence="ECO:0000305"
+FT   CONFLICT        458
+FT                   /note="H -> Y (in Ref. 1; AAT27427)"
+FT                   /evidence="ECO:0000305"
+FT   CONFLICT        495
+FT                   /note="E -> A (in Ref. 1; AAT27427)"
+FT                   /evidence="ECO:0000305"
+FT   CONFLICT        586
+FT                   /note="N -> T (in Ref. 1; AAT27427)"
+FT                   /evidence="ECO:0000305"
+FT   CONFLICT        696
+FT                   /note="S -> P (in Ref. 1; AAT27427)"
+FT                   /evidence="ECO:0000305"
+FT   CONFLICT        728
+FT                   /note="F -> L (in Ref. 1; AAT27427)"
+FT                   /evidence="ECO:0000305"
+SQ   SEQUENCE   790 AA;  89605 MW;  158F10FA6AA294CF CRC64;
+     MAKKVLLLSL YSAVLSTWFG FGYVQCKLPT SRSEIPNFDY TVAQQPDQSD ACEQNEVCMV
+     SVECILDAKK KAILKPCSTV PSVDGVCCPS SEYNGTSSRV QQNSEEHAAD HLVLQAIHEG
+     RREYDEKLRF EDEHRAVMTA KEKPEAMFHR MFLPGGLKTH GKEVVDAEEQ ANVYGHVFAS
+     RKYAELTNMT LKQRQGDRFA RIPRAIRKRC LPPVPCNPHS RYRTIDGSCN NPLPDRTSWG
+     MEGYPFDRVL EPAYEDGVWA PRIHSVTGNL LPSARVISVA LFPDEYRPDP RLNILFMQMG
+     QFISHDFTLS RGFTTKHGQA IECCTPNCTA PLFGPHRHFA CFPIEVPPND PFYSRFGVRC
+     LNLVRIRLAQ GPECQLGYAK QADLVTHFLD ASTVYGSTND VAAELRAFQQ GRLKDSFPNG
+     IELLPFARNR TACVPWARVC YEGGDIRTNQ LLGLTMVHTL FMREHNRLAV GLSKINPHWD
+     DERLYQEARR ILIAEYQNVV YNEFLPILLG HERVQQLGLA DPFDTYTNYY DPNLRPMTLA
+     EVGAAAHRYG HSLVEGFFRF LTRESPPEDV FIKDIFNDPS KTLEPNSFDV MMFSFNQQPM
+     EQMDRFLTYG LTRFLFKERK PFGSDLASLN IQRGRDFAVR PYNDYREWAG LGRITDFNQL
+     GEVGALLAQV YESPDDVDLW PGGVLEPPAE GAVVGSTFVA LLSAGYTRYK RADRYYFTNG
+     PEVNPGAFTL QQLGEIRRTT LAGIICANAD HKEDFYQAQE ALRQSSADNV PVPCTRYDTV
+     NLGLWREEGF
+//
+ID   FP1V1_PERVI             Reviewed;         561 AA.
+AC   A1X158;
+DT   15-JUN-2010, integrated into UniProtKB/Swiss-Prot.
+DT   06-FEB-2007, sequence version 1.
+DT   02-SEP-2026, entry version 38.
+DE   RecName: Full=Foot protein 1 variant 1 {ECO:0000303|PubMed:15203964, ECO:0000303|PubMed:19584055, ECO:0000312|EMBL:AAY46226.1};
+DE   Flags: Precursor;
+GN   Name=fp-1 {ECO:0000312|EMBL:AAY46226.1};
+OS   Perna viridis (Asian green mussel) (Mytilus viridis).
+OC   Eukaryota; Metazoa; Spiralia; Lophotrochozoa; Mollusca; Bivalvia;
+OC   Autobranchia; Pteriomorphia; Mytilida; Mytiloidea; Mytilidae; Crenellinae;
+OC   Perna.
+OX   NCBI_TaxID=73031;
+RN   [1] {ECO:0000305, ECO:0000312|EMBL:AAY46226.1}
+RP   NUCLEOTIDE SEQUENCE [MRNA], PROTEIN SEQUENCE OF 21-34, PROTEIN SEQUENCE OF
+RP   REPEAT A, PROTEIN SEQUENCE OF REPEAT B, TISSUE SPECIFICITY, HYDROXYLATION
+RP   AT TYR-22; PRO-33; TRP-46; TRP-49; TRP-56; TRP-59; PRO-65; TRP-69; PRO-72;
+RP   PRO-73; PRO-74; TRP-76; TRP-79; PRO-85; TRP-89; PRO-92; PRO-93; PRO-94;
+RP   TRP-96; TRP-99; PRO-105; TRP-109; PRO-112; PRO-113; PRO-114; TRP-116;
+RP   TRP-119; PRO-125; TRP-129; PRO-135; TRP-139; PRO-145; TRP-149; PRO-155;
+RP   TRP-159; PRO-165; TRP-169; PRO-175; TRP-179; PRO-185; TRP-189; PRO-195;
+RP   TRP-199; PRO-202; PRO-203; PRO-204; TRP-206; TRP-209; PRO-215; TRP-219;
+RP   PRO-225; TRP-229; PRO-235; TRP-239; PRO-245; TRP-249; PRO-255; TRP-259;
+RP   PRO-262; PRO-263; PRO-264; TRP-266; TRP-269; PRO-275; TRP-279; PRO-282;
+RP   PRO-283; PRO-284; TRP-286; TRP-289; PRO-295; TRP-299; PRO-302; PRO-303;
+RP   PRO-304; TRP-306; TRP-309; PRO-315; TRP-319; PRO-325; TRP-329; PRO-335;
+RP   TRP-339; PRO-345; TRP-349; PRO-352; PRO-353; PRO-354; TRP-356; TRP-359;
+RP   TRP-366; TRP-369; PRO-375; TRP-379; PRO-382; PRO-383; PRO-384; TRP-386;
+RP   TRP-389; PRO-395; TRP-399; PRO-402; PRO-403; PRO-404; TRP-406; TRP-409;
+RP   PRO-415; TRP-419; PRO-425; TRP-429; PRO-435; TRP-439; PRO-497; PRO-500 AND
+RP   PRO-506, GLYCOSYLATION AT TRP-46; TRP-49; TRP-56; TRP-59; TRP-66; TRP-69;
+RP   TRP-76; TRP-79; TRP-86; TRP-89; TRP-96; TRP-99; TRP-106; TRP-109; TRP-116;
+RP   TRP-119; TRP-126; TRP-129; TRP-136; TRP-139; TRP-146; TRP-149; TRP-156;
+RP   TRP-159; TRP-166; TRP-169; TRP-176; TRP-179; TRP-186; TRP-189; TRP-196;
+RP   TRP-199; TRP-206; TRP-209; TRP-216; TRP-219; TRP-226; TRP-229; TRP-236;
+RP   TRP-239; TRP-246; TRP-249; TRP-256; TRP-259; TRP-266; TRP-269; TRP-276;
+RP   TRP-279; TRP-286; TRP-289; TRP-296; TRP-299; TRP-306; TRP-309; TRP-316;
+RP   TRP-319; TRP-326; TRP-329; TRP-336; TRP-339; TRP-346; TRP-349; TRP-356;
+RP   TRP-359; TRP-366; TRP-369; TRP-376; TRP-379; TRP-386; TRP-389; TRP-396;
+RP   TRP-399; TRP-406; TRP-409; TRP-416; TRP-419; TRP-426; TRP-429; TRP-436 AND
+RP   TRP-439, AND IDENTIFICATION BY MASS SPECTROMETRY.
+RC   TISSUE=Foot {ECO:0000269|PubMed:19584055};
+RX   PubMed=19584055; DOI=10.1074/jbc.m109.022517;
+RA   Zhao H., Sagert J., Hwang D.S., Waite J.H.;
+RT   "Glycosylated hydroxytryptophan in a mussel adhesive protein from Perna
+RT   viridis.";
+RL   J. Biol. Chem. 284:23344-23352(2009).
+RN   [2] {ECO:0000305}
+RP   PROTEIN SEQUENCE OF REPEAT A, PROTEIN SEQUENCE OF REPEAT B, TISSUE
+RP   SPECIFICITY, HYDROXYLATION AT PRO-72; PRO-73; PRO-74; PRO-92; PRO-93;
+RP   PRO-94; PRO-112; PRO-113; PRO-114; PRO-202; PRO-203; PRO-204; PRO-262;
+RP   PRO-263; PRO-264; PRO-282; PRO-283; PRO-284; PRO-302; PRO-303; PRO-304;
+RP   PRO-352; PRO-353; PRO-354; PRO-382; PRO-383; PRO-384; PRO-402; PRO-403 AND
+RP   PRO-404, GLYCOSYLATION, AND IDENTIFICATION BY MASS SPECTROMETRY.
+RC   TISSUE=Foot {ECO:0000269|PubMed:15203964};
+RX   PubMed=15203964; DOI=10.1080/08927010410001681246;
+RA   Ohkawa K., Nishida A., Yamamoto H., Waite J.H.;
+RT   "A glycosylated byssal precursor protein from the green mussel Perna
+RT   viridis with modified dopa side-chains.";
+RL   Biofouling 20:101-115(2004).
+CC   -!- FUNCTION: Provides adhesiveness to the mussel's foot. Mussels produce
+CC       one of the strongest water insoluble glues. The mussel's adhesive is a
+CC       bundle of threads, called a byssus, formed by a fibrous collagenous
+CC       core coated with adhesive proteins (By similarity). {ECO:0000250}.
+CC   -!- SUBCELLULAR LOCATION: Secreted {ECO:0000250|UniProtKB:Q25460}.
+CC   -!- TISSUE SPECIFICITY: Produced by the byssal gland.
+CC       {ECO:0000269|PubMed:15203964, ECO:0000269|PubMed:19584055}.
+CC   -!- DOMAIN: Almost exclusively composed of repeats of the decapeptides
+CC       APPPAWTAWK and ATPKPWTAWK. {ECO:0000269|PubMed:19584055}.
+CC   -!- MISCELLANEOUS: The identity of the hexosyl group at the C-2 position in
+CC       the modified tryptophan residues has not been confirmed, but UV
+CC       absorbance data suggests that it is mannose.
+CC       {ECO:0000269|PubMed:19584055, ECO:0000305}.
+CC   -!- MISCELLANEOUS: On the 2D-gel the molecular weight of this protein is:
+CC       89 kDa. {ECO:0000269|PubMed:15203964}.
+CC   ---------------------------------------------------------------------------
+CC   Copyrighted by the UniProt Consortium, see https://www.uniprot.org/terms
+CC   Distributed under the Creative Commons Attribution (CC BY 4.0) License
+CC   ---------------------------------------------------------------------------
+DR   EMBL; DQ000154; AAY46226.1; -; mRNA.
+DR   AlphaFoldDB; A1X158; -.
+DR   GlyCosmos; A1X158; 80 sites, No reported glycans.
+DR   iPTMnet; A1X158; -.
+DR   GO; GO:0005576; C:extracellular region; ISS:UniProtKB.
+DR   InterPro; IPR008160; Collagen.
+DR   PANTHER; PTHR24637; COLLAGEN; 1.
+DR   PANTHER; PTHR24637:SF236; NEMATODE CUTICLE COLLAGEN N-TERMINAL DOMAIN-CONTAINING PROTEIN; 1.
+DR   Pfam; PF01391; Collagen; 1.
+PE   1: Evidence at protein level;
+KW   Direct protein sequencing; Glycoprotein; Hydroxylation; Repeat; Secreted;
+KW   Signal.
+FT   SIGNAL          1..20
+FT                   /evidence="ECO:0000269|PubMed:15203964,
+FT                   ECO:0000269|PubMed:19584055"
+FT   CHAIN           21..561
+FT                   /note="Foot protein 1 variant 1"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT                   /id="PRO_0000394802"
+FT   REPEAT          41..50
+FT                   /note="A-1; approximate"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   REPEAT          51..60
+FT                   /note="A-2; approximate"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   REPEAT          61..70
+FT                   /note="B-1"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   REPEAT          71..80
+FT                   /note="A-3"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   REPEAT          81..90
+FT                   /note="B-2"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   REPEAT          91..100
+FT                   /note="A-4; approximate"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   REPEAT          101..110
+FT                   /note="B-3"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   REPEAT          111..120
+FT                   /note="A-5"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   REPEAT          121..130
+FT                   /note="B-4; approximate"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   REPEAT          131..140
+FT                   /note="B-5"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   REPEAT          141..150
+FT                   /note="B-6"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   REPEAT          151..160
+FT                   /note="B-7"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   REPEAT          161..170
+FT                   /note="B-8"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   REPEAT          171..180
+FT                   /note="B-9; approximate"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   REPEAT          181..190
+FT                   /note="B-10"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   REPEAT          191..200
+FT                   /note="B-11"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   REPEAT          201..210
+FT                   /note="A-6; approximate"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   REPEAT          211..220
+FT                   /note="B-12; approximate"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   REPEAT          221..230
+FT                   /note="B-13"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   REPEAT          231..240
+FT                   /note="B-14"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   REPEAT          241..250
+FT                   /note="B-15; approximate"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   REPEAT          251..260
+FT                   /note="B-16"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   REPEAT          261..270
+FT                   /note="A-7"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   REPEAT          271..280
+FT                   /note="B-17"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   REPEAT          281..290
+FT                   /note="A-8; approximate"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   REPEAT          291..300
+FT                   /note="B-18"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   REPEAT          301..310
+FT                   /note="A-9; approximate"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   REPEAT          311..320
+FT                   /note="B-19"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   REPEAT          321..330
+FT                   /note="B-20"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   REPEAT          331..340
+FT                   /note="B-21"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   REPEAT          341..350
+FT                   /note="B-22"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   REPEAT          351..360
+FT                   /note="A-10; approximate"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   REPEAT          361..370
+FT                   /note="A-11; approximate"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   REPEAT          371..380
+FT                   /note="B-23"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   REPEAT          381..390
+FT                   /note="A-12"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   REPEAT          391..400
+FT                   /note="B-24"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   REPEAT          401..410
+FT                   /note="A-13"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   REPEAT          411..420
+FT                   /note="B-25"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   REPEAT          421..430
+FT                   /note="B-26; approximate"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   REPEAT          431..440
+FT                   /note="B-27; approximate"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   DOMAIN          459..510
+FT                   /note="Collagen-like"
+FT                   /evidence="ECO:0000255"
+FT   REGION          41..410
+FT                   /note="13 X 10 AA A-P-P-P-A-W-T-A-W-K"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   REGION          61..440
+FT                   /note="27 X 10 AA A-T-P-K-P-W-T-A-W-K"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   REGION          452..507
+FT                   /note="Disordered"
+FT                   /evidence="ECO:0000256|SAM:MobiDB-lite"
+FT   COMPBIAS        453..462
+FT                   /note="Gly residues"
+FT                   /evidence="ECO:0000256|SAM:MobiDB-lite"
+FT   COMPBIAS        466..496
+FT                   /note="Low complexity"
+FT                   /evidence="ECO:0000256|SAM:MobiDB-lite"
+FT   MOD_RES         22
+FT                   /note="3',4'-dihydroxyphenylalanine"
+FT                   /evidence="ECO:0000269|PubMed:15203964,
+FT                   ECO:0000269|PubMed:19584055"
+FT   MOD_RES         33
+FT                   /note="4-hydroxyproline"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   MOD_RES         46
+FT                   /note="7'-hydroxytryptophan"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   MOD_RES         49
+FT                   /note="7'-hydroxytryptophan"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   MOD_RES         56
+FT                   /note="7'-hydroxytryptophan"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   MOD_RES         59
+FT                   /note="7'-hydroxytryptophan"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   MOD_RES         65
+FT                   /note="4-hydroxyproline"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   MOD_RES         69
+FT                   /note="7'-hydroxytryptophan"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   MOD_RES         72
+FT                   /note="4-hydroxyproline"
+FT                   /evidence="ECO:0000269|PubMed:15203964,
+FT                   ECO:0000269|PubMed:19584055"
+FT   MOD_RES         73
+FT                   /note="4-hydroxyproline"
+FT                   /evidence="ECO:0000269|PubMed:15203964,
+FT                   ECO:0000269|PubMed:19584055"
+FT   MOD_RES         74
+FT                   /note="4-hydroxyproline"
+FT                   /evidence="ECO:0000269|PubMed:15203964,
+FT                   ECO:0000305|PubMed:19584055"
+FT   MOD_RES         76
+FT                   /note="7'-hydroxytryptophan"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   MOD_RES         79
+FT                   /note="7'-hydroxytryptophan"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   MOD_RES         85
+FT                   /note="4-hydroxyproline"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   MOD_RES         89
+FT                   /note="7'-hydroxytryptophan"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   MOD_RES         92
+FT                   /note="4-hydroxyproline"
+FT                   /evidence="ECO:0000269|PubMed:15203964,
+FT                   ECO:0000269|PubMed:19584055"
+FT   MOD_RES         93
+FT                   /note="4-hydroxyproline"
+FT                   /evidence="ECO:0000269|PubMed:15203964,
+FT                   ECO:0000269|PubMed:19584055"
+FT   MOD_RES         94
+FT                   /note="4-hydroxyproline"
+FT                   /evidence="ECO:0000269|PubMed:15203964,
+FT                   ECO:0000305|PubMed:19584055"
+FT   MOD_RES         96
+FT                   /note="7'-hydroxytryptophan"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   MOD_RES         99
+FT                   /note="7'-hydroxytryptophan"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   MOD_RES         105
+FT                   /note="4-hydroxyproline"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   MOD_RES         109
+FT                   /note="7'-hydroxytryptophan"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   MOD_RES         112
+FT                   /note="4-hydroxyproline"
+FT                   /evidence="ECO:0000269|PubMed:15203964,
+FT                   ECO:0000269|PubMed:19584055"
+FT   MOD_RES         113
+FT                   /note="4-hydroxyproline"
+FT                   /evidence="ECO:0000269|PubMed:15203964,
+FT                   ECO:0000269|PubMed:19584055"
+FT   MOD_RES         114
+FT                   /note="4-hydroxyproline"
+FT                   /evidence="ECO:0000269|PubMed:15203964,
+FT                   ECO:0000305|PubMed:19584055"
+FT   MOD_RES         116
+FT                   /note="7'-hydroxytryptophan"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   MOD_RES         119
+FT                   /note="7'-hydroxytryptophan"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   MOD_RES         125
+FT                   /note="4-hydroxyproline"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   MOD_RES         129
+FT                   /note="7'-hydroxytryptophan"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   MOD_RES         135
+FT                   /note="4-hydroxyproline"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   MOD_RES         139
+FT                   /note="7'-hydroxytryptophan"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   MOD_RES         145
+FT                   /note="4-hydroxyproline"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   MOD_RES         149
+FT                   /note="7'-hydroxytryptophan"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   MOD_RES         155
+FT                   /note="4-hydroxyproline"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   MOD_RES         159
+FT                   /note="7'-hydroxytryptophan"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   MOD_RES         165
+FT                   /note="4-hydroxyproline"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   MOD_RES         169
+FT                   /note="7'-hydroxytryptophan"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   MOD_RES         175
+FT                   /note="4-hydroxyproline"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   MOD_RES         179
+FT                   /note="7'-hydroxytryptophan"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   MOD_RES         185
+FT                   /note="4-hydroxyproline"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   MOD_RES         189
+FT                   /note="7'-hydroxytryptophan"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   MOD_RES         195
+FT                   /note="4-hydroxyproline"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   MOD_RES         199
+FT                   /note="7'-hydroxytryptophan"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   MOD_RES         202
+FT                   /note="4-hydroxyproline"
+FT                   /evidence="ECO:0000269|PubMed:15203964,
+FT                   ECO:0000269|PubMed:19584055"
+FT   MOD_RES         203
+FT                   /note="4-hydroxyproline"
+FT                   /evidence="ECO:0000269|PubMed:15203964,
+FT                   ECO:0000269|PubMed:19584055"
+FT   MOD_RES         204
+FT                   /note="4-hydroxyproline"
+FT                   /evidence="ECO:0000269|PubMed:15203964,
+FT                   ECO:0000305|PubMed:19584055"
+FT   MOD_RES         206
+FT                   /note="7'-hydroxytryptophan"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   MOD_RES         209
+FT                   /note="7'-hydroxytryptophan"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   MOD_RES         215
+FT                   /note="4-hydroxyproline"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   MOD_RES         219
+FT                   /note="7'-hydroxytryptophan"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   MOD_RES         225
+FT                   /note="4-hydroxyproline"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   MOD_RES         229
+FT                   /note="7'-hydroxytryptophan"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   MOD_RES         235
+FT                   /note="4-hydroxyproline"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   MOD_RES         239
+FT                   /note="7'-hydroxytryptophan"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   MOD_RES         245
+FT                   /note="4-hydroxyproline"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   MOD_RES         249
+FT                   /note="7'-hydroxytryptophan"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   MOD_RES         255
+FT                   /note="4-hydroxyproline"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   MOD_RES         259
+FT                   /note="7'-hydroxytryptophan"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   MOD_RES         262
+FT                   /note="4-hydroxyproline"
+FT                   /evidence="ECO:0000269|PubMed:15203964,
+FT                   ECO:0000269|PubMed:19584055"
+FT   MOD_RES         263
+FT                   /note="4-hydroxyproline"
+FT                   /evidence="ECO:0000269|PubMed:15203964,
+FT                   ECO:0000269|PubMed:19584055"
+FT   MOD_RES         264
+FT                   /note="4-hydroxyproline"
+FT                   /evidence="ECO:0000269|PubMed:15203964,
+FT                   ECO:0000305|PubMed:19584055"
+FT   MOD_RES         266
+FT                   /note="7'-hydroxytryptophan"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   MOD_RES         269
+FT                   /note="7'-hydroxytryptophan"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   MOD_RES         275
+FT                   /note="4-hydroxyproline"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   MOD_RES         279
+FT                   /note="7'-hydroxytryptophan"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   MOD_RES         282
+FT                   /note="4-hydroxyproline"
+FT                   /evidence="ECO:0000269|PubMed:15203964,
+FT                   ECO:0000269|PubMed:19584055"
+FT   MOD_RES         283
+FT                   /note="4-hydroxyproline"
+FT                   /evidence="ECO:0000269|PubMed:15203964,
+FT                   ECO:0000269|PubMed:19584055"
+FT   MOD_RES         284
+FT                   /note="4-hydroxyproline"
+FT                   /evidence="ECO:0000269|PubMed:15203964,
+FT                   ECO:0000305|PubMed:19584055"
+FT   MOD_RES         286
+FT                   /note="7'-hydroxytryptophan"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   MOD_RES         289
+FT                   /note="7'-hydroxytryptophan"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   MOD_RES         295
+FT                   /note="4-hydroxyproline"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   MOD_RES         299
+FT                   /note="7'-hydroxytryptophan"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   MOD_RES         302
+FT                   /note="4-hydroxyproline"
+FT                   /evidence="ECO:0000269|PubMed:15203964,
+FT                   ECO:0000269|PubMed:19584055"
+FT   MOD_RES         303
+FT                   /note="4-hydroxyproline"
+FT                   /evidence="ECO:0000269|PubMed:15203964,
+FT                   ECO:0000269|PubMed:19584055"
+FT   MOD_RES         304
+FT                   /note="4-hydroxyproline"
+FT                   /evidence="ECO:0000269|PubMed:15203964,
+FT                   ECO:0000305|PubMed:19584055"
+FT   MOD_RES         306
+FT                   /note="7'-hydroxytryptophan"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   MOD_RES         309
+FT                   /note="7'-hydroxytryptophan"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   MOD_RES         315
+FT                   /note="4-hydroxyproline"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   MOD_RES         319
+FT                   /note="7'-hydroxytryptophan"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   MOD_RES         325
+FT                   /note="4-hydroxyproline"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   MOD_RES         329
+FT                   /note="7'-hydroxytryptophan"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   MOD_RES         335
+FT                   /note="4-hydroxyproline"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   MOD_RES         339
+FT                   /note="7'-hydroxytryptophan"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   MOD_RES         345
+FT                   /note="4-hydroxyproline"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   MOD_RES         349
+FT                   /note="7'-hydroxytryptophan"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   MOD_RES         352
+FT                   /note="4-hydroxyproline"
+FT                   /evidence="ECO:0000269|PubMed:15203964,
+FT                   ECO:0000269|PubMed:19584055"
+FT   MOD_RES         353
+FT                   /note="4-hydroxyproline"
+FT                   /evidence="ECO:0000269|PubMed:15203964,
+FT                   ECO:0000269|PubMed:19584055"
+FT   MOD_RES         354
+FT                   /note="4-hydroxyproline"
+FT                   /evidence="ECO:0000269|PubMed:15203964,
+FT                   ECO:0000305|PubMed:19584055"
+FT   MOD_RES         356
+FT                   /note="7'-hydroxytryptophan"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   MOD_RES         359
+FT                   /note="7'-hydroxytryptophan"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   MOD_RES         366
+FT                   /note="7'-hydroxytryptophan"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   MOD_RES         369
+FT                   /note="7'-hydroxytryptophan"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   MOD_RES         375
+FT                   /note="4-hydroxyproline"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   MOD_RES         379
+FT                   /note="7'-hydroxytryptophan"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   MOD_RES         382
+FT                   /note="4-hydroxyproline"
+FT                   /evidence="ECO:0000269|PubMed:15203964,
+FT                   ECO:0000269|PubMed:19584055"
+FT   MOD_RES         383
+FT                   /note="4-hydroxyproline"
+FT                   /evidence="ECO:0000269|PubMed:15203964,
+FT                   ECO:0000269|PubMed:19584055"
+FT   MOD_RES         384
+FT                   /note="4-hydroxyproline"
+FT                   /evidence="ECO:0000269|PubMed:15203964,
+FT                   ECO:0000305|PubMed:19584055"
+FT   MOD_RES         386
+FT                   /note="7'-hydroxytryptophan"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   MOD_RES         389
+FT                   /note="7'-hydroxytryptophan"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   MOD_RES         395
+FT                   /note="4-hydroxyproline"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   MOD_RES         399
+FT                   /note="7'-hydroxytryptophan"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   MOD_RES         402
+FT                   /note="4-hydroxyproline"
+FT                   /evidence="ECO:0000269|PubMed:15203964,
+FT                   ECO:0000269|PubMed:19584055"
+FT   MOD_RES         403
+FT                   /note="4-hydroxyproline"
+FT                   /evidence="ECO:0000269|PubMed:15203964,
+FT                   ECO:0000269|PubMed:19584055"
+FT   MOD_RES         404
+FT                   /note="4-hydroxyproline"
+FT                   /evidence="ECO:0000269|PubMed:15203964,
+FT                   ECO:0000305|PubMed:19584055"
+FT   MOD_RES         406
+FT                   /note="7'-hydroxytryptophan"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   MOD_RES         409
+FT                   /note="7'-hydroxytryptophan"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   MOD_RES         415
+FT                   /note="4-hydroxyproline"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   MOD_RES         419
+FT                   /note="7'-hydroxytryptophan"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   MOD_RES         425
+FT                   /note="4-hydroxyproline"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   MOD_RES         429
+FT                   /note="7'-hydroxytryptophan"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   MOD_RES         435
+FT                   /note="4-hydroxyproline"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   MOD_RES         439
+FT                   /note="7'-hydroxytryptophan"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   MOD_RES         497
+FT                   /note="4-hydroxyproline"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   MOD_RES         500
+FT                   /note="4-hydroxyproline"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   MOD_RES         506
+FT                   /note="4-hydroxyproline"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   CARBOHYD        46
+FT                   /note="C-linked (Man) hydroxytryptophan"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   CARBOHYD        49
+FT                   /note="C-linked (Man) hydroxytryptophan"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   CARBOHYD        56
+FT                   /note="C-linked (Man) hydroxytryptophan"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   CARBOHYD        59
+FT                   /note="C-linked (Man) hydroxytryptophan"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   CARBOHYD        66
+FT                   /note="C-linked (Man) tryptophan"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   CARBOHYD        69
+FT                   /note="C-linked (Man) hydroxytryptophan"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   CARBOHYD        76
+FT                   /note="C-linked (Man) hydroxytryptophan"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   CARBOHYD        79
+FT                   /note="C-linked (Man) hydroxytryptophan"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   CARBOHYD        86
+FT                   /note="C-linked (Man) tryptophan"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   CARBOHYD        89
+FT                   /note="C-linked (Man) hydroxytryptophan"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   CARBOHYD        96
+FT                   /note="C-linked (Man) hydroxytryptophan"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   CARBOHYD        99
+FT                   /note="C-linked (Man) hydroxytryptophan"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   CARBOHYD        106
+FT                   /note="C-linked (Man) tryptophan"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   CARBOHYD        109
+FT                   /note="C-linked (Man) hydroxytryptophan"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   CARBOHYD        116
+FT                   /note="C-linked (Man) hydroxytryptophan"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   CARBOHYD        119
+FT                   /note="C-linked (Man) hydroxytryptophan"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   CARBOHYD        126
+FT                   /note="C-linked (Man) tryptophan"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   CARBOHYD        129
+FT                   /note="C-linked (Man) hydroxytryptophan"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   CARBOHYD        136
+FT                   /note="C-linked (Man) tryptophan"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   CARBOHYD        139
+FT                   /note="C-linked (Man) hydroxytryptophan"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   CARBOHYD        146
+FT                   /note="C-linked (Man) tryptophan"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   CARBOHYD        149
+FT                   /note="C-linked (Man) hydroxytryptophan"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   CARBOHYD        156
+FT                   /note="C-linked (Man) tryptophan"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   CARBOHYD        159
+FT                   /note="C-linked (Man) hydroxytryptophan"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   CARBOHYD        166
+FT                   /note="C-linked (Man) tryptophan"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   CARBOHYD        169
+FT                   /note="C-linked (Man) hydroxytryptophan"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   CARBOHYD        176
+FT                   /note="C-linked (Man) tryptophan"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   CARBOHYD        179
+FT                   /note="C-linked (Man) hydroxytryptophan"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   CARBOHYD        186
+FT                   /note="C-linked (Man) tryptophan"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   CARBOHYD        189
+FT                   /note="C-linked (Man) hydroxytryptophan"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   CARBOHYD        196
+FT                   /note="C-linked (Man) tryptophan"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   CARBOHYD        199
+FT                   /note="C-linked (Man) hydroxytryptophan"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   CARBOHYD        206
+FT                   /note="C-linked (Man) hydroxytryptophan"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   CARBOHYD        209
+FT                   /note="C-linked (Man) hydroxytryptophan"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   CARBOHYD        216
+FT                   /note="C-linked (Man) tryptophan"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   CARBOHYD        219
+FT                   /note="C-linked (Man) hydroxytryptophan"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   CARBOHYD        226
+FT                   /note="C-linked (Man) tryptophan"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   CARBOHYD        229
+FT                   /note="C-linked (Man) hydroxytryptophan"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   CARBOHYD        236
+FT                   /note="C-linked (Man) tryptophan"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   CARBOHYD        239
+FT                   /note="C-linked (Man) hydroxytryptophan"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   CARBOHYD        246
+FT                   /note="C-linked (Man) tryptophan"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   CARBOHYD        249
+FT                   /note="C-linked (Man) hydroxytryptophan"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   CARBOHYD        256
+FT                   /note="C-linked (Man) tryptophan"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   CARBOHYD        259
+FT                   /note="C-linked (Man) hydroxytryptophan"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   CARBOHYD        266
+FT                   /note="C-linked (Man) hydroxytryptophan"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   CARBOHYD        269
+FT                   /note="C-linked (Man) hydroxytryptophan"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   CARBOHYD        276
+FT                   /note="C-linked (Man) tryptophan"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   CARBOHYD        279
+FT                   /note="C-linked (Man) hydroxytryptophan"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   CARBOHYD        286
+FT                   /note="C-linked (Man) hydroxytryptophan"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   CARBOHYD        289
+FT                   /note="C-linked (Man) hydroxytryptophan"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   CARBOHYD        296
+FT                   /note="C-linked (Man) tryptophan"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   CARBOHYD        299
+FT                   /note="C-linked (Man) hydroxytryptophan"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   CARBOHYD        306
+FT                   /note="C-linked (Man) hydroxytryptophan"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   CARBOHYD        309
+FT                   /note="C-linked (Man) hydroxytryptophan"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   CARBOHYD        316
+FT                   /note="C-linked (Man) tryptophan"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   CARBOHYD        319
+FT                   /note="C-linked (Man) hydroxytryptophan"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   CARBOHYD        326
+FT                   /note="C-linked (Man) tryptophan"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   CARBOHYD        329
+FT                   /note="C-linked (Man) hydroxytryptophan"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   CARBOHYD        336
+FT                   /note="C-linked (Man) tryptophan"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   CARBOHYD        339
+FT                   /note="C-linked (Man) hydroxytryptophan"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   CARBOHYD        346
+FT                   /note="C-linked (Man) tryptophan"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   CARBOHYD        349
+FT                   /note="C-linked (Man) hydroxytryptophan"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   CARBOHYD        356
+FT                   /note="C-linked (Man) hydroxytryptophan"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   CARBOHYD        359
+FT                   /note="C-linked (Man) hydroxytryptophan"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   CARBOHYD        366
+FT                   /note="C-linked (Man) hydroxytryptophan"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   CARBOHYD        369
+FT                   /note="C-linked (Man) hydroxytryptophan"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   CARBOHYD        376
+FT                   /note="C-linked (Man) tryptophan"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   CARBOHYD        379
+FT                   /note="C-linked (Man) hydroxytryptophan"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   CARBOHYD        386
+FT                   /note="C-linked (Man) hydroxytryptophan"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   CARBOHYD        389
+FT                   /note="C-linked (Man) hydroxytryptophan"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   CARBOHYD        396
+FT                   /note="C-linked (Man) tryptophan"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   CARBOHYD        399
+FT                   /note="C-linked (Man) hydroxytryptophan"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   CARBOHYD        406
+FT                   /note="C-linked (Man) hydroxytryptophan"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   CARBOHYD        409
+FT                   /note="C-linked (Man) hydroxytryptophan"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   CARBOHYD        416
+FT                   /note="C-linked (Man) tryptophan"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   CARBOHYD        419
+FT                   /note="C-linked (Man) hydroxytryptophan"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   CARBOHYD        426
+FT                   /note="C-linked (Man) tryptophan"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   CARBOHYD        429
+FT                   /note="C-linked (Man) hydroxytryptophan"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   CARBOHYD        436
+FT                   /note="C-linked (Man) tryptophan"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   CARBOHYD        439
+FT                   /note="C-linked (Man) hydroxytryptophan"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+SQ   SEQUENCE   561 AA;  63248 MW;  723C2414C1FF831D CRC64;
+     MARNMNILTL FAVLIGSASA VYHPPSWTAW IAPKPWTAWK VHPPAWTAWK AHPPAWTAWK
+     ATPKPWTAWK APPPAWTAWK ATPKPWTAWK APPPTWTAWK ATPKPWTAWK APPPAWTAWK
+     ATLKPWTAWK ATPKPWTAWK ATPKPWTAWK ATPKPWTAWK ATPKPWTAWK ATPKPWTVWK
+     ATPKPWTAWK ATPKPWTAWK APPPAWSAWK ATPKPWTVWK ATPKPWTAWK ATPKPWTAWK
+     ATPKPWTVWK ATPKPWTAWK APPPAWTAWK ATPKPWTAWK APPPTWTAWK ATPKPWTAWK
+     APPPAWSAWK ATPKPWTAWK ATPKPWTAWK ATPKPWTAWK ATPKPWTAWK VPPPAWTAWK
+     AHPPAWTAWK ATPKPWTAWK APPPAWTAWK ATPKPWTAWK APPPAWTAWK ATPKPWTAWK
+     ATPKPWTVWK ATPKPWTAWR ATPPPTWTAW HGHGYGGYGK PGKPGKPGSK GPRGPAGPPG
+     ATGKTGRTGA TGKRGPPGYP GKPGVPGRNG YVHIVFDGYG KWEIGKIERK NIREAVAKAW
+     TAWNAGHGHG WTAWTAPPAY G
+//
+ID   FP1V2_PERVI             Reviewed;         431 AA.
+AC   A1X159;
+DT   13-JUL-2010, integrated into UniProtKB/Swiss-Prot.
+DT   06-FEB-2007, sequence version 1.
+DT   02-SEP-2026, entry version 39.
+DE   RecName: Full=Foot protein 1 variant 2 {ECO:0000303|PubMed:19584055, ECO:0000312|EMBL:AAY46227.1};
+DE   Flags: Precursor;
+GN   Name=fp-1 {ECO:0000312|EMBL:AAY46227.1};
+OS   Perna viridis (Asian green mussel) (Mytilus viridis).
+OC   Eukaryota; Metazoa; Spiralia; Lophotrochozoa; Mollusca; Bivalvia;
+OC   Autobranchia; Pteriomorphia; Mytilida; Mytiloidea; Mytilidae; Crenellinae;
+OC   Perna.
+OX   NCBI_TaxID=73031;
+RN   [1] {ECO:0000305, ECO:0000312|EMBL:AAY46227.1}
+RP   NUCLEOTIDE SEQUENCE [MRNA], PROTEIN SEQUENCE OF 21-34, PROTEIN SEQUENCE OF
+RP   REPEAT A, PROTEIN SEQUENCE OF REPEAT B, TISSUE SPECIFICITY, HYDROXYLATION
+RP   AT TYR-22; PRO-33; TRP-46; TRP-49; TRP-56; TRP-59; PRO-65; TRP-69; PRO-72;
+RP   PRO-73; PRO-74; TRP-76; TRP-79; PRO-85; TRP-89; PRO-92; PRO-93; PRO-94;
+RP   TRP-96; TRP-99; PRO-105; TRP-109; PRO-112; PRO-113; PRO-114; TRP-116;
+RP   TRP-119; PRO-125; TRP-129; PRO-132; PRO-133; PRO-134; TRP-136; TRP-139;
+RP   PRO-145; TRP-149; PRO-155; TRP-159; PRO-162; PRO-163; PRO-164; TRP-166;
+RP   TRP-169; PRO-175; TRP-179; PRO-185; TRP-189; PRO-195; TRP-199; PRO-205;
+RP   TRP-209; PRO-215; TRP-219; PRO-222; PRO-223; PRO-224; TRP-226; TRP-229;
+RP   PRO-235; TRP-239; PRO-242; PRO-243; PRO-244; TRP-246; TRP-249; PRO-255;
+RP   TRP-259; PRO-262; PRO-263; PRO-264; TRP-266; TRP-269; PRO-275; TRP-279;
+RP   PRO-285; TRP-289; PRO-295; TRP-299; PRO-305; TRP-309; PRO-367; PRO-370 AND
+RP   PRO-376, GLYCOSYLATION AT TRP-46; TRP-49; TRP-56; TRP-59; TRP-66; TRP-69;
+RP   TRP-76; TRP-79; TRP-86; TRP-89; TRP-96; TRP-99; TRP-106; TRP-109; TRP-116;
+RP   TRP-119; TRP-129; TRP-136; TRP-139; TRP-146; TRP-149; TRP-156; TRP-159;
+RP   TRP-166; TRP-169; TRP-176; TRP-179; TRP-186; TRP-189; TRP-196; TRP-199;
+RP   TRP-206; TRP-209; TRP-216; TRP-219; TRP-226; TRP-229; TRP-236; TRP-239;
+RP   TRP-246; TRP-249; TRP-256; TRP-259; TRP-266; TRP-269; TRP-276; TRP-279;
+RP   TRP-286; TRP-289; TRP-296; TRP-299; TRP-306 AND TRP-309, AND IDENTIFICATION
+RP   BY MASS SPECTROMETRY.
+RC   TISSUE=Foot {ECO:0000269|PubMed:19584055};
+RX   PubMed=19584055; DOI=10.1074/jbc.m109.022517;
+RA   Zhao H., Sagert J., Hwang D.S., Waite J.H.;
+RT   "Glycosylated hydroxytryptophan in a mussel adhesive protein from Perna
+RT   viridis.";
+RL   J. Biol. Chem. 284:23344-23352(2009).
+CC   -!- FUNCTION: Provides adhesiveness to the mussel's foot. Mussels produce
+CC       one of the strongest water insoluble glues. The mussel's adhesive is a
+CC       bundle of threads, called a byssus, formed by a fibrous collagenous
+CC       core coated with adhesive proteins (By similarity).
+CC       {ECO:0000250|UniProtKB:Q25460}.
+CC   -!- SUBCELLULAR LOCATION: Secreted {ECO:0000250|UniProtKB:Q25460}.
+CC   -!- TISSUE SPECIFICITY: Produced by the byssal gland.
+CC       {ECO:0000269|PubMed:19584055}.
+CC   -!- DOMAIN: Almost exclusively composed of repeats of the decapeptides
+CC       APPPAWTAWK and ATPKPWTAWK. {ECO:0000269|PubMed:19584055}.
+CC   -!- MISCELLANEOUS: The identity of the hexosyl group at the C-2 position in
+CC       the modified tryptophan residues has not been confirmed, but UV
+CC       absorbance data suggests that it is mannose.
+CC       {ECO:0000269|PubMed:19584055, ECO:0000305}.
+CC   ---------------------------------------------------------------------------
+CC   Copyrighted by the UniProt Consortium, see https://www.uniprot.org/terms
+CC   Distributed under the Creative Commons Attribution (CC BY 4.0) License
+CC   ---------------------------------------------------------------------------
+DR   EMBL; DQ000155; AAY46227.1; -; mRNA.
+DR   AlphaFoldDB; A1X159; -.
+DR   GlyCosmos; A1X159; 53 sites, No reported glycans.
+DR   iPTMnet; A1X159; -.
+DR   GO; GO:0005576; C:extracellular region; ISS:UniProtKB.
+DR   InterPro; IPR008160; Collagen.
+DR   PANTHER; PTHR24637; COLLAGEN; 1.
+DR   PANTHER; PTHR24637:SF421; CUTICLE COLLAGEN DPY-2; 1.
+DR   Pfam; PF01391; Collagen; 1.
+PE   1: Evidence at protein level;
+KW   Direct protein sequencing; Glycoprotein; Hydroxylation; Repeat; Secreted;
+KW   Signal.
+FT   SIGNAL          1..20
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   CHAIN           21..431
+FT                   /note="Foot protein 1 variant 2"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT                   /id="PRO_0000395668"
+FT   REPEAT          41..50
+FT                   /note="A-1; approximate"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   REPEAT          51..60
+FT                   /note="A-2; approximate"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   REPEAT          61..70
+FT                   /note="B-1"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   REPEAT          71..80
+FT                   /note="A-3"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   REPEAT          81..90
+FT                   /note="B-2"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   REPEAT          91..100
+FT                   /note="A-4; approximate"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   REPEAT          101..110
+FT                   /note="B-3"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   REPEAT          111..120
+FT                   /note="A-5; approximate"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   REPEAT          121..130
+FT                   /note="B-4; approximate"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   REPEAT          131..140
+FT                   /note="A-6; approximate"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   REPEAT          141..150
+FT                   /note="B-5; approximate"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   REPEAT          151..160
+FT                   /note="B-6"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   REPEAT          161..170
+FT                   /note="A-7"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   REPEAT          171..180
+FT                   /note="B-7"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   REPEAT          181..190
+FT                   /note="B-8"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   REPEAT          191..200
+FT                   /note="B-9"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   REPEAT          201..210
+FT                   /note="B-10; approximate"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   REPEAT          211..220
+FT                   /note="B-11"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   REPEAT          221..230
+FT                   /note="A-8"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   REPEAT          231..240
+FT                   /note="B-12"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   REPEAT          241..250
+FT                   /note="A-9"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   REPEAT          251..260
+FT                   /note="B-13"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   REPEAT          261..270
+FT                   /note="A-10"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   REPEAT          271..280
+FT                   /note="B-14"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   REPEAT          281..290
+FT                   /note="B-15"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   REPEAT          291..300
+FT                   /note="B-16"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   REPEAT          301..310
+FT                   /note="B-17; approximate"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   DOMAIN          329..380
+FT                   /note="Collagen-like"
+FT                   /evidence="ECO:0000255"
+FT   REGION          41..270
+FT                   /note="13 X 10 AA A-P-P-P-A-W-T-A-W-K"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   REGION          61..310
+FT                   /note="27 X 10 AA A-T-P-K-P-W-T-A-W-K"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   REGION          322..377
+FT                   /note="Disordered"
+FT                   /evidence="ECO:0000256|SAM:MobiDB-lite"
+FT   COMPBIAS        323..332
+FT                   /note="Gly residues"
+FT                   /evidence="ECO:0000256|SAM:MobiDB-lite"
+FT   COMPBIAS        336..366
+FT                   /note="Low complexity"
+FT                   /evidence="ECO:0000256|SAM:MobiDB-lite"
+FT   MOD_RES         22
+FT                   /note="3',4'-dihydroxyphenylalanine"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   MOD_RES         33
+FT                   /note="4-hydroxyproline"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   MOD_RES         46
+FT                   /note="7'-hydroxytryptophan"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   MOD_RES         49
+FT                   /note="7'-hydroxytryptophan"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   MOD_RES         56
+FT                   /note="7'-hydroxytryptophan"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   MOD_RES         59
+FT                   /note="7'-hydroxytryptophan"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   MOD_RES         65
+FT                   /note="4-hydroxyproline"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   MOD_RES         69
+FT                   /note="7'-hydroxytryptophan"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   MOD_RES         72
+FT                   /note="4-hydroxyproline"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   MOD_RES         73
+FT                   /note="4-hydroxyproline"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   MOD_RES         74
+FT                   /note="4-hydroxyproline"
+FT                   /evidence="ECO:0000305|PubMed:19584055"
+FT   MOD_RES         76
+FT                   /note="7'-hydroxytryptophan"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   MOD_RES         79
+FT                   /note="7'-hydroxytryptophan"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   MOD_RES         85
+FT                   /note="4-hydroxyproline"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   MOD_RES         89
+FT                   /note="7'-hydroxytryptophan"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   MOD_RES         92
+FT                   /note="4-hydroxyproline"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   MOD_RES         93
+FT                   /note="4-hydroxyproline"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   MOD_RES         94
+FT                   /note="4-hydroxyproline"
+FT                   /evidence="ECO:0000305|PubMed:19584055"
+FT   MOD_RES         96
+FT                   /note="7'-hydroxytryptophan"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   MOD_RES         99
+FT                   /note="7'-hydroxytryptophan"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   MOD_RES         105
+FT                   /note="4-hydroxyproline"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   MOD_RES         109
+FT                   /note="7'-hydroxytryptophan"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   MOD_RES         112
+FT                   /note="4-hydroxyproline"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   MOD_RES         113
+FT                   /note="4-hydroxyproline"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   MOD_RES         114
+FT                   /note="4-hydroxyproline"
+FT                   /evidence="ECO:0000305|PubMed:19584055"
+FT   MOD_RES         116
+FT                   /note="7'-hydroxytryptophan"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   MOD_RES         119
+FT                   /note="7'-hydroxytryptophan"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   MOD_RES         125
+FT                   /note="4-hydroxyproline"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   MOD_RES         129
+FT                   /note="7'-hydroxytryptophan"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   MOD_RES         132
+FT                   /note="4-hydroxyproline"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   MOD_RES         133
+FT                   /note="4-hydroxyproline"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   MOD_RES         134
+FT                   /note="4-hydroxyproline"
+FT                   /evidence="ECO:0000305|PubMed:19584055"
+FT   MOD_RES         136
+FT                   /note="7'-hydroxytryptophan"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   MOD_RES         139
+FT                   /note="7'-hydroxytryptophan"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   MOD_RES         145
+FT                   /note="4-hydroxyproline"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   MOD_RES         149
+FT                   /note="7'-hydroxytryptophan"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   MOD_RES         155
+FT                   /note="4-hydroxyproline"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   MOD_RES         159
+FT                   /note="7'-hydroxytryptophan"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   MOD_RES         162
+FT                   /note="4-hydroxyproline"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   MOD_RES         163
+FT                   /note="4-hydroxyproline"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   MOD_RES         164
+FT                   /note="4-hydroxyproline"
+FT                   /evidence="ECO:0000305|PubMed:19584055"
+FT   MOD_RES         166
+FT                   /note="7'-hydroxytryptophan"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   MOD_RES         169
+FT                   /note="7'-hydroxytryptophan"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   MOD_RES         175
+FT                   /note="4-hydroxyproline"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   MOD_RES         179
+FT                   /note="7'-hydroxytryptophan"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   MOD_RES         185
+FT                   /note="4-hydroxyproline"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   MOD_RES         189
+FT                   /note="7'-hydroxytryptophan"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   MOD_RES         195
+FT                   /note="4-hydroxyproline"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   MOD_RES         199
+FT                   /note="7'-hydroxytryptophan"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   MOD_RES         205
+FT                   /note="4-hydroxyproline"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   MOD_RES         209
+FT                   /note="7'-hydroxytryptophan"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   MOD_RES         215
+FT                   /note="4-hydroxyproline"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   MOD_RES         219
+FT                   /note="7'-hydroxytryptophan"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   MOD_RES         222
+FT                   /note="4-hydroxyproline"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   MOD_RES         223
+FT                   /note="4-hydroxyproline"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   MOD_RES         224
+FT                   /note="4-hydroxyproline"
+FT                   /evidence="ECO:0000305|PubMed:19584055"
+FT   MOD_RES         226
+FT                   /note="7'-hydroxytryptophan"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   MOD_RES         229
+FT                   /note="7'-hydroxytryptophan"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   MOD_RES         235
+FT                   /note="4-hydroxyproline"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   MOD_RES         239
+FT                   /note="7'-hydroxytryptophan"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   MOD_RES         242
+FT                   /note="4-hydroxyproline"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   MOD_RES         243
+FT                   /note="4-hydroxyproline"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   MOD_RES         244
+FT                   /note="4-hydroxyproline"
+FT                   /evidence="ECO:0000305|PubMed:19584055"
+FT   MOD_RES         246
+FT                   /note="7'-hydroxytryptophan"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   MOD_RES         249
+FT                   /note="7'-hydroxytryptophan"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   MOD_RES         255
+FT                   /note="4-hydroxyproline"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   MOD_RES         259
+FT                   /note="7'-hydroxytryptophan"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   MOD_RES         262
+FT                   /note="4-hydroxyproline"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   MOD_RES         263
+FT                   /note="4-hydroxyproline"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   MOD_RES         264
+FT                   /note="4-hydroxyproline"
+FT                   /evidence="ECO:0000305|PubMed:19584055"
+FT   MOD_RES         266
+FT                   /note="7'-hydroxytryptophan"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   MOD_RES         269
+FT                   /note="7'-hydroxytryptophan"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   MOD_RES         275
+FT                   /note="4-hydroxyproline"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   MOD_RES         279
+FT                   /note="7'-hydroxytryptophan"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   MOD_RES         285
+FT                   /note="4-hydroxyproline"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   MOD_RES         289
+FT                   /note="7'-hydroxytryptophan"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   MOD_RES         295
+FT                   /note="4-hydroxyproline"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   MOD_RES         299
+FT                   /note="7'-hydroxytryptophan"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   MOD_RES         305
+FT                   /note="4-hydroxyproline"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   MOD_RES         309
+FT                   /note="7'-hydroxytryptophan"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   MOD_RES         367
+FT                   /note="4-hydroxyproline"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   MOD_RES         370
+FT                   /note="4-hydroxyproline"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   MOD_RES         376
+FT                   /note="4-hydroxyproline"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   CARBOHYD        46
+FT                   /note="C-linked (Man) hydroxytryptophan"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   CARBOHYD        49
+FT                   /note="C-linked (Man) hydroxytryptophan"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   CARBOHYD        56
+FT                   /note="C-linked (Man) hydroxytryptophan"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   CARBOHYD        59
+FT                   /note="C-linked (Man) hydroxytryptophan"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   CARBOHYD        66
+FT                   /note="C-linked (Man) tryptophan"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   CARBOHYD        69
+FT                   /note="C-linked (Man) hydroxytryptophan"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   CARBOHYD        76
+FT                   /note="C-linked (Man) hydroxytryptophan"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   CARBOHYD        79
+FT                   /note="C-linked (Man) hydroxytryptophan"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   CARBOHYD        86
+FT                   /note="C-linked (Man) tryptophan"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   CARBOHYD        89
+FT                   /note="C-linked (Man) hydroxytryptophan"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   CARBOHYD        96
+FT                   /note="C-linked (Man) hydroxytryptophan"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   CARBOHYD        99
+FT                   /note="C-linked (Man) hydroxytryptophan"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   CARBOHYD        106
+FT                   /note="C-linked (Man) tryptophan"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   CARBOHYD        109
+FT                   /note="C-linked (Man) hydroxytryptophan"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   CARBOHYD        116
+FT                   /note="C-linked (Man) hydroxytryptophan"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   CARBOHYD        119
+FT                   /note="C-linked (Man) hydroxytryptophan"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   CARBOHYD        129
+FT                   /note="C-linked (Man) hydroxytryptophan"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   CARBOHYD        136
+FT                   /note="C-linked (Man) hydroxytryptophan"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   CARBOHYD        139
+FT                   /note="C-linked (Man) hydroxytryptophan"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   CARBOHYD        146
+FT                   /note="C-linked (Man) tryptophan"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   CARBOHYD        149
+FT                   /note="C-linked (Man) hydroxytryptophan"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   CARBOHYD        156
+FT                   /note="C-linked (Man) tryptophan"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   CARBOHYD        159
+FT                   /note="C-linked (Man) hydroxytryptophan"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   CARBOHYD        166
+FT                   /note="C-linked (Man) hydroxytryptophan"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   CARBOHYD        169
+FT                   /note="C-linked (Man) hydroxytryptophan"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   CARBOHYD        176
+FT                   /note="C-linked (Man) tryptophan"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   CARBOHYD        179
+FT                   /note="C-linked (Man) hydroxytryptophan"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   CARBOHYD        186
+FT                   /note="C-linked (Man) tryptophan"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   CARBOHYD        189
+FT                   /note="C-linked (Man) hydroxytryptophan"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   CARBOHYD        196
+FT                   /note="C-linked (Man) tryptophan"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   CARBOHYD        199
+FT                   /note="C-linked (Man) hydroxytryptophan"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   CARBOHYD        206
+FT                   /note="C-linked (Man) tryptophan"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   CARBOHYD        209
+FT                   /note="C-linked (Man) hydroxytryptophan"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   CARBOHYD        216
+FT                   /note="C-linked (Man) tryptophan"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   CARBOHYD        219
+FT                   /note="C-linked (Man) hydroxytryptophan"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   CARBOHYD        226
+FT                   /note="C-linked (Man) hydroxytryptophan"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   CARBOHYD        229
+FT                   /note="C-linked (Man) hydroxytryptophan"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   CARBOHYD        236
+FT                   /note="C-linked (Man) tryptophan"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   CARBOHYD        239
+FT                   /note="C-linked (Man) hydroxytryptophan"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   CARBOHYD        246
+FT                   /note="C-linked (Man) hydroxytryptophan"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   CARBOHYD        249
+FT                   /note="C-linked (Man) hydroxytryptophan"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   CARBOHYD        256
+FT                   /note="C-linked (Man) tryptophan"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   CARBOHYD        259
+FT                   /note="C-linked (Man) hydroxytryptophan"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   CARBOHYD        266
+FT                   /note="C-linked (Man) hydroxytryptophan"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   CARBOHYD        269
+FT                   /note="C-linked (Man) hydroxytryptophan"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   CARBOHYD        276
+FT                   /note="C-linked (Man) tryptophan"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   CARBOHYD        279
+FT                   /note="C-linked (Man) hydroxytryptophan"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   CARBOHYD        286
+FT                   /note="C-linked (Man) tryptophan"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   CARBOHYD        289
+FT                   /note="C-linked (Man) hydroxytryptophan"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   CARBOHYD        296
+FT                   /note="C-linked (Man) tryptophan"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   CARBOHYD        299
+FT                   /note="C-linked (Man) hydroxytryptophan"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   CARBOHYD        306
+FT                   /note="C-linked (Man) tryptophan"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+FT   CARBOHYD        309
+FT                   /note="C-linked (Man) hydroxytryptophan"
+FT                   /evidence="ECO:0000269|PubMed:19584055"
+SQ   SEQUENCE   431 AA;  48043 MW;  9E72A4F9703C419F CRC64;
+     MARNMNILTL FAVLLGSASA VYHPPSWTAW IAPKPWTAWK VPPPAWTAWK AHPPAWTAWK
+     ATPKPWTAWK APPPAWTAWK ATPKPWTAWK APPPTWTAWK ATPKPWTAWK APPPVWTAWK
+     ATPKPRTAWK APPPTWTAWK AAPKPWTAWK ATPKPWTAWK APPPAWTAWK ATPKPWTAWK
+     ATPKPWTAWK ATPKPWTAWK ATPKPWTVWK ATPKPWTAWK APPPAWTAWK ATPKPWTAWK
+     APPPAWTAWK ATPKPWTAWK APPPAWTAWK ATPKPWTAWK ATPKPWTAWK ATPKPWTAWK
+     ATPKPWTAWR ATPPPTWTAW HGHGYGGYGK PGKPGKPGSK GPRGPAGPPG ATGKTGRTGA
+     TGKRGPPGYP GKPGVPGRNG YVHIVFDGYG KWEIGKIERK NIREAVAKAW TAWNAGHGHG
+     WTAWTAPPAY G
+//
+ID   POI_MUSDO               Reviewed;          38 AA.
+AC   P81765;
+DT   10-JAN-2003, integrated into UniProtKB/Swiss-Prot.
+DT   10-JAN-2003, sequence version 1.
+DT   02-SEP-2026, entry version 52.
+DE   RecName: Full=Tyrosinase inhibitor;
+DE   AltName: Full=Phenol oxidase inhibitor;
+DE   AltName: Full=Phenoloxidase inhibitor;
+DE            Short=POI;
+OS   Musca domestica (House fly).
+OC   Eukaryota; Metazoa; Ecdysozoa; Arthropoda; Altocrustacea; Allotriocarida;
+OC   Hexapoda; Insecta; Pterygota; Neoptera; Eumetabola; Endopterygota;
+OC   Aparaglossata; Panorpida; Diptera; Brachycera; Muscomorpha; Muscoidea;
+OC   Muscidae; Musca.
+OX   NCBI_TaxID=7370;
+RN   [1]
+RP   PROTEIN SEQUENCE, CHARACTERIZATION, HYDROXYLATION AT TYR-32, AND MASS
+RP   SPECTROMETRY.
+RC   TISSUE=Hemolymph;
+RX   PubMed=7708756; DOI=10.1073/pnas.92.7.2964;
+RA   Daquinag A.C., Nakamura S., Takao T., Shimonishi Y., Tsukamoto T.;
+RT   "Primary structure of a potent endogenous dopa-containing inhibitor of
+RT   phenol oxidase from Musca domestica.";
+RL   Proc. Natl. Acad. Sci. U.S.A. 92:2964-2968(1995).
+RN   [2]
+RP   PROTEIN SEQUENCE OF 6-9, CHARACTERIZATION, AND DEVELOPMENTAL STAGE.
+RC   TISSUE=Hemolymph;
+RX   PubMed=1567460; DOI=10.1016/0006-291x(92)91161-i;
+RA   Tsukamoto T., Ichimaru Y., Kanegae N., Watanabe K., Yamaura I., Katsura Y.,
+RA   Funatsu M.;
+RT   "Identification and isolation of endogenous insect phenoloxidase
+RT   inhibitors.";
+RL   Biochem. Biophys. Res. Commun. 184:86-92(1992).
+RN   [3]
+RP   SYNTHESIS, AND DISULFIDE BONDS.
+RX   PubMed=10026302; DOI=10.1021/bi9819834;
+RA   Daquinag A.C., Sato T., Koda H., Takao T., Fukuda M., Shimonishi Y.,
+RA   Tsukamoto T.;
+RT   "A novel endogenous inhibitor of phenoloxidase from Musca domestica has a
+RT   cystine motif commonly found in snail and spider toxins.";
+RL   Biochemistry 38:2179-2188(1999).
+CC   -!- FUNCTION: Potent reversible, competitive inhibitor of tyrosinase
+CC       (phenol oxidase) in the nanomolar range.
+CC   -!- SUBUNIT: Monomer.
+CC   -!- SUBCELLULAR LOCATION: Secreted.
+CC   -!- DEVELOPMENTAL STAGE: POI activity increases throughout pupariation, and
+CC       is highest in final instar pupae. No activity in newly emerged adults.
+CC       {ECO:0000269|PubMed:1567460}.
+CC   -!- DOMAIN: The presence of a 'disulfide through disulfide knot'
+CC       structurally defines this protein as a knottin.
+CC   -!- PTM: Contains L-DOPA (3',4'-dihydroxyphenylalanine).
+CC   -!- MASS SPECTROMETRY: Mass=4213.1; Mass_error=0.2; Method=Electrospray;
+CC       Evidence={ECO:0000269|PubMed:7708756};
+CC   ---------------------------------------------------------------------------
+CC   Copyrighted by the UniProt Consortium, see https://www.uniprot.org/terms
+CC   Distributed under the Creative Commons Attribution (CC BY 4.0) License
+CC   ---------------------------------------------------------------------------
+DR   AlphaFoldDB; P81765; -.
+DR   SMR; P81765; -.
+DR   Proteomes; UP001652621; Unplaced.
+DR   GO; GO:0005576; C:extracellular region; IEA:UniProtKB-SubCell.
+DR   InterPro; IPR063322; Tyrosinase_inhib_dom.
+DR   Pfam; PF29409; Tyrosinase_inhib; 1.
+PE   1: Evidence at protein level;
+KW   Direct protein sequencing; Disulfide bond; Hydroxylation; Knottin;
+KW   Reference proteome; Secreted.
+FT   PEPTIDE         1..38
+FT                   /note="Tyrosinase inhibitor"
+FT                   /id="PRO_0000044781"
+FT   MOD_RES         32
+FT                   /note="3',4'-dihydroxyphenylalanine"
+FT                   /evidence="ECO:0000269|PubMed:7708756"
+FT   DISULFID        11..25
+FT                   /evidence="ECO:0000269|PubMed:10026302"
+FT   DISULFID        18..29
+FT                   /evidence="ECO:0000269|PubMed:10026302"
+FT   DISULFID        24..36
+FT                   /evidence="ECO:0000269|PubMed:10026302"
+SQ   SEQUENCE   38 AA;  4204 MW;  E597BE0BFF286792 CRC64;
+     AVTDNEIVPQ CLANGSKCYS HDVCCTKRCH NYAKKCVT
+//
+ID   FP1_MYTED               Reviewed;         875 AA.
+AC   Q25460;
+DT   30-MAY-2000, integrated into UniProtKB/Swiss-Prot.
+DT   01-NOV-1996, sequence version 1.
+DT   09-APR-2025, entry version 80.
+DE   RecName: Full=Adhesive plaque matrix protein;
+DE   AltName: Full=Foot protein 1;
+DE   AltName: Full=MEFP1;
+DE   AltName: Full=Polyphenolic adhesive protein;
+DE   Flags: Fragment;
+GN   Name=FP1;
+OS   Mytilus edulis (Blue mussel).
+OC   Eukaryota; Metazoa; Spiralia; Lophotrochozoa; Mollusca; Bivalvia;
+OC   Autobranchia; Pteriomorphia; Mytilida; Mytiloidea; Mytilidae; Mytilinae;
+OC   Mytilus.
+OX   NCBI_TaxID=6550;
+RN   [1]
+RP   NUCLEOTIDE SEQUENCE [GENOMIC DNA].
+RX   PubMed=1367451; DOI=10.1021/bp00003a001;
+RA   Filpula D.R., Lee S.M., Link R.P., Strausberg S.L., Strausberg R.L.;
+RT   "Structural and functional repetition in a marine mussel adhesive
+RT   protein.";
+RL   Biotechnol. Prog. 6:171-177(1990).
+RN   [2]
+RP   PARTIAL PROTEIN SEQUENCE, AND HYDROXYLATION AT PRO-89; TYR-91; PRO-92;
+RP   PRO-93; TYR-95; PRO-115; TYR-117; PRO-118; TYR-121; PRO-145; TYR-147;
+RP   PRO-148; PRO-149; TYR-151; PRO-155; TYR-157; PRO-158; PRO-159; TYR-161;
+RP   PRO-175; TYR-177; PRO-178; PRO-179; TYR-181; PRO-185; TYR-187; PRO-188;
+RP   PRO-189; TYR-191; PRO-195; TYR-197; PRO-198; PRO-199; TYR-201; PRO-211;
+RP   TYR-213; PRO-214; TYR-217; PRO-221; TYR-223; PRO-224; PRO-225; TYR-227;
+RP   PRO-237; TYR-239; PRO-240; PRO-241; TYR-243; PRO-247; TYR-249; PRO-250;
+RP   PRO-251; TYR-253; PRO-257; TYR-259; PRO-260; PRO-261; TYR-263; PRO-285;
+RP   TYR-287; PRO-288; PRO-289; TYR-291; PRO-295; TYR-297; PRO-298; PRO-299;
+RP   TYR-301; PRO-305; TYR-307; PRO-308; PRO-309; TYR-311; PRO-315; TYR-317;
+RP   PRO-318; PRO-319; TYR-321; PRO-325; TYR-327; PRO-328; PRO-329; TYR-331;
+RP   PRO-335; TYR-337; PRO-338; PRO-339; TYR-341; PRO-351; TYR-353; PRO-354;
+RP   TYR-357; PRO-361; TYR-363; PRO-364; PRO-365; TYR-367; PRO-371; TYR-373;
+RP   PRO-374; PRO-375; TYR-377; PRO-387; TYR-389; PRO-390; PRO-391; TYR-393;
+RP   PRO-397; TYR-399; PRO-400; PRO-401; TYR-403; PRO-407; TYR-409; PRO-410;
+RP   PRO-411; TYR-413; PRO-423; TYR-425; PRO-426; TYR-429; PRO-433; TYR-435;
+RP   PRO-436; PRO-437; TYR-439; PRO-443; TYR-445; PRO-446; PRO-447; TYR-449;
+RP   PRO-459; TYR-461; PRO-462; TYR-465; PRO-469; TYR-471; PRO-472; TYR-475;
+RP   PRO-479; TYR-481; PRO-482; PRO-483; TYR-485; PRO-519; TYR-521; PRO-522;
+RP   PRO-523; TYR-525; TYR-541; PRO-542; PRO-543; TYR-545; PRO-549; TYR-551;
+RP   PRO-552; TYR-555; PRO-559; TYR-561; PRO-562; PRO-563; TYR-565; PRO-569;
+RP   TYR-571; PRO-572; PRO-573; TYR-575; PRO-579; TYR-581; PRO-582; PRO-583;
+RP   TYR-585; PRO-595; TYR-597; PRO-598; TYR-601; PRO-605; TYR-607; PRO-608;
+RP   PRO-609; TYR-611; PRO-615; TYR-617; PRO-618; PRO-619; TYR-621; PRO-625;
+RP   TYR-627; PRO-628; PRO-629; TYR-631; PRO-635; TYR-637; PRO-638; TYR-641;
+RP   PRO-645; TYR-647; PRO-648; PRO-649; TYR-651; TYR-657; PRO-658; PRO-659;
+RP   TYR-661; PRO-665; TYR-667; PRO-668; PRO-669; TYR-671; PRO-675; TYR-677;
+RP   PRO-678; PRO-679; TYR-681; PRO-701; TYR-703; PRO-704; PRO-705; TYR-707;
+RP   PRO-711; TYR-713; PRO-714; PRO-715; TYR-717; PRO-721; TYR-723; PRO-724;
+RP   PRO-725; TYR-727; PRO-737; TYR-739; PRO-740; TYR-743; PRO-753; TYR-755;
+RP   PRO-756; PRO-757; TYR-759; PRO-763; TYR-765; PRO-766; PRO-767; TYR-769;
+RP   PRO-773; TYR-775; PRO-776; PRO-777; TYR-779; PRO-813; TYR-815; PRO-816;
+RP   PRO-817; TYR-819; PRO-833; TYR-835; PRO-836; PRO-837; TYR-839; TYR-865;
+RP   PRO-866; PRO-867 AND TYR-869.
+RX   PubMed=6298211; DOI=10.1016/s0021-9258(18)32805-9;
+RA   Waite J.H.;
+RT   "Evidence for a repeating 3,4-dihydroxyphenylalanine- and hydroxyproline-
+RT   containing decapeptide in the adhesive protein of the mussel, Mytilus
+RT   edulis L.";
+RL   J. Biol. Chem. 258:2911-2915(1983).
+RN   [3]
+RP   HYDROXYLATION AT PRO-89; TYR-91; PRO-92; PRO-93; TYR-95; PRO-115; TYR-117;
+RP   PRO-118; TYR-121; PRO-145; TYR-147; PRO-148; PRO-149; TYR-151; PRO-155;
+RP   TYR-157; PRO-158; PRO-159; TYR-161; PRO-175; TYR-177; PRO-178; PRO-179;
+RP   TYR-181; PRO-185; TYR-187; PRO-188; PRO-189; TYR-191; PRO-195; TYR-197;
+RP   PRO-198; PRO-199; TYR-201; PRO-211; TYR-213; PRO-214; TYR-217; PRO-221;
+RP   TYR-223; PRO-224; PRO-225; TYR-227; PRO-237; TYR-239; PRO-240; PRO-241;
+RP   TYR-243; PRO-247; TYR-249; PRO-250; PRO-251; TYR-253; PRO-257; TYR-259;
+RP   PRO-260; PRO-261; TYR-263; PRO-285; TYR-287; PRO-288; PRO-289; TYR-291;
+RP   PRO-295; TYR-297; PRO-298; PRO-299; TYR-301; PRO-305; TYR-307; PRO-308;
+RP   PRO-309; TYR-311; PRO-315; TYR-317; PRO-318; PRO-319; TYR-321; PRO-325;
+RP   TYR-327; PRO-328; PRO-329; TYR-331; PRO-335; TYR-337; PRO-338; PRO-339;
+RP   TYR-341; PRO-351; TYR-353; PRO-354; TYR-357; PRO-361; TYR-363; PRO-364;
+RP   PRO-365; TYR-367; PRO-371; TYR-373; PRO-374; PRO-375; TYR-377; PRO-387;
+RP   TYR-389; PRO-390; PRO-391; TYR-393; PRO-397; TYR-399; PRO-400; PRO-401;
+RP   TYR-403; PRO-407; TYR-409; PRO-410; PRO-411; TYR-413; PRO-423; TYR-425;
+RP   PRO-426; TYR-429; PRO-433; TYR-435; PRO-436; PRO-437; TYR-439; PRO-443;
+RP   TYR-445; PRO-446; PRO-447; TYR-449; PRO-459; TYR-461; PRO-462; TYR-465;
+RP   PRO-469; TYR-471; PRO-472; TYR-475; PRO-479; TYR-481; PRO-482; PRO-483;
+RP   TYR-485; PRO-519; TYR-521; PRO-522; PRO-523; TYR-525; TYR-541; PRO-542;
+RP   PRO-543; TYR-545; PRO-549; TYR-551; PRO-552; TYR-555; PRO-559; TYR-561;
+RP   PRO-562; PRO-563; TYR-565; PRO-569; TYR-571; PRO-572; PRO-573; TYR-575;
+RP   PRO-579; TYR-581; PRO-582; PRO-583; TYR-585; PRO-595; TYR-597; PRO-598;
+RP   TYR-601; PRO-605; TYR-607; PRO-608; PRO-609; TYR-611; PRO-615; TYR-617;
+RP   PRO-618; PRO-619; TYR-621; PRO-625; TYR-627; PRO-628; PRO-629; TYR-631;
+RP   PRO-635; TYR-637; PRO-638; TYR-641; PRO-645; TYR-647; PRO-648; PRO-649;
+RP   TYR-651; TYR-657; PRO-658; PRO-659; TYR-661; PRO-665; TYR-667; PRO-668;
+RP   PRO-669; TYR-671; PRO-675; TYR-677; PRO-678; PRO-679; TYR-681; PRO-701;
+RP   TYR-703; PRO-704; PRO-705; TYR-707; PRO-711; TYR-713; PRO-714; PRO-715;
+RP   TYR-717; PRO-721; TYR-723; PRO-724; PRO-725; TYR-727; PRO-737; TYR-739;
+RP   PRO-740; TYR-743; PRO-753; TYR-755; PRO-756; PRO-757; TYR-759; PRO-763;
+RP   TYR-765; PRO-766; PRO-767; TYR-769; PRO-773; TYR-775; PRO-776; PRO-777;
+RP   TYR-779; PRO-813; TYR-815; PRO-816; PRO-817; TYR-819; PRO-833; TYR-835;
+RP   PRO-836; PRO-837; TYR-839; TYR-865; PRO-866; PRO-867 AND TYR-869,
+RP   IDENTIFICATION BY MASS SPECTROMETRY, AND STRUCTURE BY NMR.
+RX   DOI=10.1021/ja00102a063;
+RA   Taylor S.W., Waite J.H., Ross M.M., Shabanowitz J., Hunt D.F.;
+RT   "Trans-2,3-cis-3,4-dihydroxyproline, a new naturally occurring amino acid,
+RT   is the sixth residue in the tandemly repeated consensus decapeptides of an
+RT   adhesive protein from Mytilus edulis.";
+RL   J. Am. Chem. Soc. 116:10803-10804(1994).
+CC   -!- FUNCTION: Provides adhesiveness to the mussel's foot. Mussels produce
+CC       one of the strongest water insoluble glues. The mussel's adhesive is a
+CC       bundle of threads, called a byssus, formed by a fibrous collagenous
+CC       core coated with adhesive proteins.
+CC   -!- SUBCELLULAR LOCATION: Secreted.
+CC   -!- TISSUE SPECIFICITY: Produced by the byssal gland.
+CC   -!- DOMAIN: Almost exclusively composed of repeats of a decapeptide.
+CC   -!- PTM: Hydroxylated on second and third proline and last tyrosine
+CC       residues (to L-DOPA = 3',4'-dihydroxyphenylalanine) of the tandem
+CC       repeats. {ECO:0000269|PubMed:6298211, ECO:0000269|Ref.3}.
+CC   -!- WEB RESOURCE: Name=Protein Spotlight; Note=Sticky business - Issue 2 of
+CC       September 2001;
+CC       URL="https://www.proteinspotlight.org/back_issues/002";
+CC   ---------------------------------------------------------------------------
+CC   Copyrighted by the UniProt Consortium, see https://www.uniprot.org/terms
+CC   Distributed under the Creative Commons Attribution (CC BY 4.0) License
+CC   ---------------------------------------------------------------------------
+DR   EMBL; X54422; CAA38294.1; -; Genomic_DNA.
+DR   PIR; S23760; S23760.
+DR   AlphaFoldDB; Q25460; -.
+DR   GO; GO:0005576; C:extracellular region; IDA:UniProtKB.
+DR   InterPro; IPR002964; Adhesive_plaq.
+DR   PRINTS; PR01216; ADHESIVEI.
+PE   1: Evidence at protein level;
+KW   Direct protein sequencing; Hydroxylation; Repeat; Secreted.
+FT   CHAIN           <1..875
+FT                   /note="Adhesive plaque matrix protein"
+FT                   /id="PRO_0000087326"
+FT   REPEAT          75..84
+FT                   /note="1"
+FT   REPEAT          85..94
+FT                   /note="2"
+FT   REPEAT          95..100
+FT                   /note="3; truncated"
+FT   REPEAT          101..110
+FT                   /note="4"
+FT   REPEAT          111..120
+FT                   /note="5"
+FT   REPEAT          121..130
+FT                   /note="6"
+FT   REPEAT          131..140
+FT                   /note="7"
+FT   REPEAT          141..150
+FT                   /note="8"
+FT   REPEAT          151..160
+FT                   /note="9"
+FT   REPEAT          161..170
+FT                   /note="10"
+FT   REPEAT          171..180
+FT                   /note="11"
+FT   REPEAT          181..190
+FT                   /note="12"
+FT   REPEAT          191..200
+FT                   /note="13"
+FT   REPEAT          201..206
+FT                   /note="14; truncated"
+FT   REPEAT          207..216
+FT                   /note="15"
+FT   REPEAT          217..226
+FT                   /note="16"
+FT   REPEAT          227..232
+FT                   /note="17; truncated"
+FT   REPEAT          233..242
+FT                   /note="18"
+FT   REPEAT          243..252
+FT                   /note="19"
+FT   REPEAT          253..262
+FT                   /note="20"
+FT   REPEAT          263..268
+FT                   /note="21; truncated"
+FT   REPEAT          269..274
+FT                   /note="22; truncated"
+FT   REPEAT          275..280
+FT                   /note="23; truncated"
+FT   REPEAT          281..290
+FT                   /note="24"
+FT   REPEAT          291..300
+FT                   /note="25"
+FT   REPEAT          301..310
+FT                   /note="26"
+FT   REPEAT          311..320
+FT                   /note="27"
+FT   REPEAT          321..330
+FT                   /note="28"
+FT   REPEAT          331..340
+FT                   /note="29"
+FT   REPEAT          341..346
+FT                   /note="30; truncated"
+FT   REPEAT          347..356
+FT                   /note="31"
+FT   REPEAT          357..366
+FT                   /note="32"
+FT   REPEAT          367..376
+FT                   /note="33"
+FT   REPEAT          377..382
+FT                   /note="34; truncated"
+FT   REPEAT          383..392
+FT                   /note="35"
+FT   REPEAT          393..402
+FT                   /note="36"
+FT   REPEAT          403..412
+FT                   /note="37"
+FT   REPEAT          413..418
+FT                   /note="38"
+FT   REPEAT          419..428
+FT                   /note="39"
+FT   REPEAT          429..438
+FT                   /note="40"
+FT   REPEAT          439..448
+FT                   /note="41"
+FT   REPEAT          449..454
+FT                   /note="42; truncated"
+FT   REPEAT          455..464
+FT                   /note="43"
+FT   REPEAT          465..474
+FT                   /note="44"
+FT   REPEAT          475..484
+FT                   /note="45"
+FT   REPEAT          485..494
+FT                   /note="46"
+FT   REPEAT          495..504
+FT                   /note="47"
+FT   REPEAT          505..514
+FT                   /note="48"
+FT   REPEAT          515..524
+FT                   /note="49"
+FT   REPEAT          525..534
+FT                   /note="50"
+FT   REPEAT          535..544
+FT                   /note="51"
+FT   REPEAT          545..554
+FT                   /note="52"
+FT   REPEAT          555..564
+FT                   /note="53"
+FT   REPEAT          565..574
+FT                   /note="54"
+FT   REPEAT          575..584
+FT                   /note="55"
+FT   REPEAT          585..590
+FT                   /note="56; truncated"
+FT   REPEAT          591..600
+FT                   /note="57"
+FT   REPEAT          601..610
+FT                   /note="58"
+FT   REPEAT          611..620
+FT                   /note="59"
+FT   REPEAT          621..630
+FT                   /note="60"
+FT   REPEAT          631..640
+FT                   /note="61"
+FT   REPEAT          641..650
+FT                   /note="62"
+FT   REPEAT          651..660
+FT                   /note="63"
+FT   REPEAT          661..670
+FT                   /note="64"
+FT   REPEAT          671..680
+FT                   /note="65"
+FT   REPEAT          681..686
+FT                   /note="66; truncated"
+FT   REPEAT          687..696
+FT                   /note="67"
+FT   REPEAT          697..706
+FT                   /note="68"
+FT   REPEAT          707..716
+FT                   /note="69"
+FT   REPEAT          717..726
+FT                   /note="70"
+FT   REPEAT          727..732
+FT                   /note="71; truncated"
+FT   REPEAT          733..742
+FT                   /note="72"
+FT   REPEAT          743..748
+FT                   /note="73; truncated"
+FT   REPEAT          749..758
+FT                   /note="74"
+FT   REPEAT          759..768
+FT                   /note="75"
+FT   REPEAT          769..778
+FT                   /note="76"
+FT   REPEAT          779..788
+FT                   /note="77"
+FT   REPEAT          789..798
+FT                   /note="78"
+FT   REPEAT          799..808
+FT                   /note="79"
+FT   REPEAT          809..818
+FT                   /note="80"
+FT   REPEAT          819..828
+FT                   /note="81"
+FT   REPEAT          829..838
+FT                   /note="82"
+FT   REPEAT          839..848
+FT                   /note="83"
+FT   REPEAT          849..858
+FT                   /note="84"
+FT   REPEAT          859..868
+FT                   /note="85"
+FT   REGION          75..868
+FT                   /note="85 X 10 AA tandem repeats of Y-[KN]-[PALKTS]-K-
+FT                   [LPMIKST]-[ST]-[YN]-[PK]-[PAS]-[STA]"
+FT   REGION          80..267
+FT                   /note="Disordered"
+FT                   /evidence="ECO:0000256|SAM:MobiDB-lite"
+FT   REGION          279..537
+FT                   /note="Disordered"
+FT                   /evidence="ECO:0000256|SAM:MobiDB-lite"
+FT   REGION          556..820
+FT                   /note="Disordered"
+FT                   /evidence="ECO:0000256|SAM:MobiDB-lite"
+FT   COMPBIAS        93..139
+FT                   /note="Low complexity"
+FT                   /evidence="ECO:0000256|SAM:MobiDB-lite"
+FT   COMPBIAS        140..158
+FT                   /note="Pro residues"
+FT                   /evidence="ECO:0000256|SAM:MobiDB-lite"
+FT   COMPBIAS        166..218
+FT                   /note="Low complexity"
+FT                   /evidence="ECO:0000256|SAM:MobiDB-lite"
+FT   COMPBIAS        425..466
+FT                   /note="Low complexity"
+FT                   /evidence="ECO:0000256|SAM:MobiDB-lite"
+FT   COMPBIAS        474..518
+FT                   /note="Low complexity"
+FT                   /evidence="ECO:0000256|SAM:MobiDB-lite"
+FT   COMPBIAS        526..537
+FT                   /note="Low complexity"
+FT                   /evidence="ECO:0000256|SAM:MobiDB-lite"
+FT   COMPBIAS        600..642
+FT                   /note="Low complexity"
+FT                   /evidence="ECO:0000256|SAM:MobiDB-lite"
+FT   COMPBIAS        741..763
+FT                   /note="Low complexity"
+FT                   /evidence="ECO:0000256|SAM:MobiDB-lite"
+FT   COMPBIAS        764..776
+FT                   /note="Pro residues"
+FT                   /evidence="ECO:0000256|SAM:MobiDB-lite"
+FT   COMPBIAS        777..807
+FT                   /note="Low complexity"
+FT                   /evidence="ECO:0000256|SAM:MobiDB-lite"
+FT   COMPBIAS        808..819
+FT                   /note="Pro residues"
+FT                   /evidence="ECO:0000256|SAM:MobiDB-lite"
+FT   MOD_RES         89
+FT                   /note="4-hydroxyproline; partial"
+FT                   /evidence="ECO:0000305|PubMed:6298211, ECO:0000305|Ref.3"
+FT   MOD_RES         91
+FT                   /note="3',4'-dihydroxyphenylalanine"
+FT                   /evidence="ECO:0000305|PubMed:6298211, ECO:0000305|Ref.3"
+FT   MOD_RES         92
+FT                   /note="(3R,4S)-3,4-dihydroxyproline"
+FT                   /evidence="ECO:0000305|PubMed:6298211, ECO:0000305|Ref.3"
+FT   MOD_RES         93
+FT                   /note="4-hydroxyproline"
+FT                   /evidence="ECO:0000305|PubMed:6298211, ECO:0000305|Ref.3"
+FT   MOD_RES         95
+FT                   /note="3',4'-dihydroxyphenylalanine"
+FT                   /evidence="ECO:0000305|PubMed:6298211, ECO:0000305|Ref.3"
+FT   MOD_RES         115
+FT                   /note="4-hydroxyproline; partial"
+FT                   /evidence="ECO:0000305|PubMed:6298211, ECO:0000305|Ref.3"
+FT   MOD_RES         117
+FT                   /note="3',4'-dihydroxyphenylalanine"
+FT                   /evidence="ECO:0000305|PubMed:6298211, ECO:0000305|Ref.3"
+FT   MOD_RES         118
+FT                   /note="(3R,4S)-3,4-dihydroxyproline"
+FT                   /evidence="ECO:0000305|PubMed:6298211, ECO:0000305|Ref.3"
+FT   MOD_RES         121
+FT                   /note="3',4'-dihydroxyphenylalanine"
+FT                   /evidence="ECO:0000305|PubMed:6298211, ECO:0000305|Ref.3"
+FT   MOD_RES         145
+FT                   /note="4-hydroxyproline; partial"
+FT                   /evidence="ECO:0000305|PubMed:6298211, ECO:0000305|Ref.3"
+FT   MOD_RES         147
+FT                   /note="3',4'-dihydroxyphenylalanine"
+FT                   /evidence="ECO:0000305|PubMed:6298211, ECO:0000305|Ref.3"
+FT   MOD_RES         148
+FT                   /note="(3R,4S)-3,4-dihydroxyproline"
+FT                   /evidence="ECO:0000305|PubMed:6298211, ECO:0000305|Ref.3"
+FT   MOD_RES         149
+FT                   /note="4-hydroxyproline"
+FT                   /evidence="ECO:0000305|PubMed:6298211, ECO:0000305|Ref.3"
+FT   MOD_RES         151
+FT                   /note="3',4'-dihydroxyphenylalanine"
+FT                   /evidence="ECO:0000305|PubMed:6298211, ECO:0000305|Ref.3"
+FT   MOD_RES         155
+FT                   /note="4-hydroxyproline; partial"
+FT                   /evidence="ECO:0000305|PubMed:6298211, ECO:0000305|Ref.3"
+FT   MOD_RES         157
+FT                   /note="3',4'-dihydroxyphenylalanine"
+FT                   /evidence="ECO:0000305|PubMed:6298211, ECO:0000305|Ref.3"
+FT   MOD_RES         158
+FT                   /note="(3R,4S)-3,4-dihydroxyproline"
+FT                   /evidence="ECO:0000305|PubMed:6298211, ECO:0000305|Ref.3"
+FT   MOD_RES         159
+FT                   /note="4-hydroxyproline"
+FT                   /evidence="ECO:0000305|PubMed:6298211, ECO:0000305|Ref.3"
+FT   MOD_RES         161
+FT                   /note="3',4'-dihydroxyphenylalanine"
+FT                   /evidence="ECO:0000305|PubMed:6298211, ECO:0000305|Ref.3"
+FT   MOD_RES         175
+FT                   /note="4-hydroxyproline; partial"
+FT                   /evidence="ECO:0000269|PubMed:6298211, ECO:0000269|Ref.3"
+FT   MOD_RES         177
+FT                   /note="3',4'-dihydroxyphenylalanine"
+FT                   /evidence="ECO:0000269|PubMed:6298211, ECO:0000269|Ref.3"
+FT   MOD_RES         178
+FT                   /note="(3R,4S)-3,4-dihydroxyproline"
+FT                   /evidence="ECO:0000269|PubMed:6298211, ECO:0000269|Ref.3"
+FT   MOD_RES         179
+FT                   /note="4-hydroxyproline"
+FT                   /evidence="ECO:0000269|PubMed:6298211, ECO:0000269|Ref.3"
+FT   MOD_RES         181
+FT                   /note="3',4'-dihydroxyphenylalanine"
+FT                   /evidence="ECO:0000269|PubMed:6298211, ECO:0000269|Ref.3"
+FT   MOD_RES         185
+FT                   /note="4-hydroxyproline; partial"
+FT                   /evidence="ECO:0000269|PubMed:6298211, ECO:0000269|Ref.3"
+FT   MOD_RES         187
+FT                   /note="3',4'-dihydroxyphenylalanine"
+FT                   /evidence="ECO:0000269|PubMed:6298211, ECO:0000269|Ref.3"
+FT   MOD_RES         188
+FT                   /note="(3R,4S)-3,4-dihydroxyproline"
+FT                   /evidence="ECO:0000269|PubMed:6298211, ECO:0000269|Ref.3"
+FT   MOD_RES         189
+FT                   /note="4-hydroxyproline"
+FT                   /evidence="ECO:0000269|PubMed:6298211, ECO:0000269|Ref.3"
+FT   MOD_RES         191
+FT                   /note="3',4'-dihydroxyphenylalanine"
+FT                   /evidence="ECO:0000269|PubMed:6298211, ECO:0000269|Ref.3"
+FT   MOD_RES         195
+FT                   /note="4-hydroxyproline; partial"
+FT                   /evidence="ECO:0000269|PubMed:6298211, ECO:0000269|Ref.3"
+FT   MOD_RES         197
+FT                   /note="3',4'-dihydroxyphenylalanine"
+FT                   /evidence="ECO:0000269|PubMed:6298211, ECO:0000269|Ref.3"
+FT   MOD_RES         198
+FT                   /note="(3R,4S)-3,4-dihydroxyproline"
+FT                   /evidence="ECO:0000269|PubMed:6298211, ECO:0000269|Ref.3"
+FT   MOD_RES         199
+FT                   /note="4-hydroxyproline"
+FT                   /evidence="ECO:0000269|PubMed:6298211, ECO:0000269|Ref.3"
+FT   MOD_RES         201
+FT                   /note="3',4'-dihydroxyphenylalanine"
+FT                   /evidence="ECO:0000269|PubMed:6298211, ECO:0000269|Ref.3"
+FT   MOD_RES         211
+FT                   /note="4-hydroxyproline; partial"
+FT                   /evidence="ECO:0000269|PubMed:6298211, ECO:0000269|Ref.3"
+FT   MOD_RES         213
+FT                   /note="3',4'-dihydroxyphenylalanine"
+FT                   /evidence="ECO:0000305|PubMed:6298211, ECO:0000305|Ref.3"
+FT   MOD_RES         214
+FT                   /note="(3R,4S)-3,4-dihydroxyproline"
+FT                   /evidence="ECO:0000305|PubMed:6298211, ECO:0000305|Ref.3"
+FT   MOD_RES         217
+FT                   /note="3',4'-dihydroxyphenylalanine"
+FT                   /evidence="ECO:0000305|PubMed:6298211, ECO:0000305|Ref.3"
+FT   MOD_RES         221
+FT                   /note="4-hydroxyproline; partial"
+FT                   /evidence="ECO:0000269|PubMed:6298211, ECO:0000269|Ref.3"
+FT   MOD_RES         223
+FT                   /note="3',4'-dihydroxyphenylalanine"
+FT                   /evidence="ECO:0000269|PubMed:6298211, ECO:0000269|Ref.3"
+FT   MOD_RES         224
+FT                   /note="(3R,4S)-3,4-dihydroxyproline"
+FT                   /evidence="ECO:0000269|PubMed:6298211, ECO:0000269|Ref.3"
+FT   MOD_RES         225
+FT                   /note="4-hydroxyproline"
+FT                   /evidence="ECO:0000269|PubMed:6298211, ECO:0000269|Ref.3"
+FT   MOD_RES         227
+FT                   /note="3',4'-dihydroxyphenylalanine"
+FT                   /evidence="ECO:0000269|PubMed:6298211, ECO:0000269|Ref.3"
+FT   MOD_RES         237
+FT                   /note="4-hydroxyproline; partial"
+FT                   /evidence="ECO:0000269|PubMed:6298211, ECO:0000269|Ref.3"
+FT   MOD_RES         239
+FT                   /note="3',4'-dihydroxyphenylalanine"
+FT                   /evidence="ECO:0000269|PubMed:6298211, ECO:0000269|Ref.3"
+FT   MOD_RES         240
+FT                   /note="(3R,4S)-3,4-dihydroxyproline"
+FT                   /evidence="ECO:0000269|PubMed:6298211, ECO:0000269|Ref.3"
+FT   MOD_RES         241
+FT                   /note="4-hydroxyproline"
+FT                   /evidence="ECO:0000269|PubMed:6298211, ECO:0000269|Ref.3"
+FT   MOD_RES         243
+FT                   /note="3',4'-dihydroxyphenylalanine"
+FT                   /evidence="ECO:0000269|PubMed:6298211, ECO:0000269|Ref.3"
+FT   MOD_RES         247
+FT                   /note="4-hydroxyproline; partial"
+FT                   /evidence="ECO:0000269|PubMed:6298211, ECO:0000269|Ref.3"
+FT   MOD_RES         249
+FT                   /note="3',4'-dihydroxyphenylalanine"
+FT                   /evidence="ECO:0000269|PubMed:6298211, ECO:0000269|Ref.3"
+FT   MOD_RES         250
+FT                   /note="(3R,4S)-3,4-dihydroxyproline"
+FT                   /evidence="ECO:0000269|PubMed:6298211, ECO:0000269|Ref.3"
+FT   MOD_RES         251
+FT                   /note="4-hydroxyproline"
+FT                   /evidence="ECO:0000269|PubMed:6298211, ECO:0000269|Ref.3"
+FT   MOD_RES         253
+FT                   /note="3',4'-dihydroxyphenylalanine"
+FT                   /evidence="ECO:0000269|PubMed:6298211, ECO:0000269|Ref.3"
+FT   MOD_RES         257
+FT                   /note="4-hydroxyproline; partial"
+FT                   /evidence="ECO:0000269|PubMed:6298211, ECO:0000269|Ref.3"
+FT   MOD_RES         259
+FT                   /note="3',4'-dihydroxyphenylalanine"
+FT                   /evidence="ECO:0000269|PubMed:6298211, ECO:0000269|Ref.3"
+FT   MOD_RES         260
+FT                   /note="(3R,4S)-3,4-dihydroxyproline"
+FT                   /evidence="ECO:0000269|PubMed:6298211, ECO:0000269|Ref.3"
+FT   MOD_RES         261
+FT                   /note="4-hydroxyproline"
+FT                   /evidence="ECO:0000269|PubMed:6298211, ECO:0000269|Ref.3"
+FT   MOD_RES         263
+FT                   /note="3',4'-dihydroxyphenylalanine"
+FT                   /evidence="ECO:0000269|PubMed:6298211, ECO:0000269|Ref.3"
+FT   MOD_RES         285
+FT                   /note="4-hydroxyproline; partial"
+FT                   /evidence="ECO:0000269|PubMed:6298211, ECO:0000269|Ref.3"
+FT   MOD_RES         287
+FT                   /note="3',4'-dihydroxyphenylalanine"
+FT                   /evidence="ECO:0000269|PubMed:6298211, ECO:0000269|Ref.3"
+FT   MOD_RES         288
+FT                   /note="(3R,4S)-3,4-dihydroxyproline"
+FT                   /evidence="ECO:0000269|PubMed:6298211, ECO:0000269|Ref.3"
+FT   MOD_RES         289
+FT                   /note="4-hydroxyproline"
+FT                   /evidence="ECO:0000269|PubMed:6298211, ECO:0000269|Ref.3"
+FT   MOD_RES         291
+FT                   /note="3',4'-dihydroxyphenylalanine"
+FT                   /evidence="ECO:0000269|PubMed:6298211, ECO:0000269|Ref.3"
+FT   MOD_RES         295
+FT                   /note="4-hydroxyproline; partial"
+FT                   /evidence="ECO:0000269|PubMed:6298211, ECO:0000269|Ref.3"
+FT   MOD_RES         297
+FT                   /note="3',4'-dihydroxyphenylalanine"
+FT                   /evidence="ECO:0000269|PubMed:6298211, ECO:0000269|Ref.3"
+FT   MOD_RES         298
+FT                   /note="(3R,4S)-3,4-dihydroxyproline"
+FT                   /evidence="ECO:0000269|PubMed:6298211, ECO:0000269|Ref.3"
+FT   MOD_RES         299
+FT                   /note="4-hydroxyproline"
+FT                   /evidence="ECO:0000269|PubMed:6298211, ECO:0000269|Ref.3"
+FT   MOD_RES         301
+FT                   /note="3',4'-dihydroxyphenylalanine"
+FT                   /evidence="ECO:0000269|PubMed:6298211, ECO:0000269|Ref.3"
+FT   MOD_RES         305
+FT                   /note="4-hydroxyproline; partial"
+FT                   /evidence="ECO:0000269|PubMed:6298211, ECO:0000269|Ref.3"
+FT   MOD_RES         307
+FT                   /note="3',4'-dihydroxyphenylalanine"
+FT                   /evidence="ECO:0000269|PubMed:6298211, ECO:0000269|Ref.3"
+FT   MOD_RES         308
+FT                   /note="(3R,4S)-3,4-dihydroxyproline"
+FT                   /evidence="ECO:0000269|PubMed:6298211, ECO:0000269|Ref.3"
+FT   MOD_RES         309
+FT                   /note="4-hydroxyproline"
+FT                   /evidence="ECO:0000269|PubMed:6298211, ECO:0000269|Ref.3"
+FT   MOD_RES         311
+FT                   /note="3',4'-dihydroxyphenylalanine"
+FT                   /evidence="ECO:0000269|PubMed:6298211, ECO:0000269|Ref.3"
+FT   MOD_RES         315
+FT                   /note="4-hydroxyproline; partial"
+FT                   /evidence="ECO:0000269|PubMed:6298211, ECO:0000269|Ref.3"
+FT   MOD_RES         317
+FT                   /note="3',4'-dihydroxyphenylalanine"
+FT                   /evidence="ECO:0000269|PubMed:6298211, ECO:0000269|Ref.3"
+FT   MOD_RES         318
+FT                   /note="(3R,4S)-3,4-dihydroxyproline"
+FT                   /evidence="ECO:0000269|PubMed:6298211, ECO:0000269|Ref.3"
+FT   MOD_RES         319
+FT                   /note="4-hydroxyproline"
+FT                   /evidence="ECO:0000269|PubMed:6298211, ECO:0000269|Ref.3"
+FT   MOD_RES         321
+FT                   /note="3',4'-dihydroxyphenylalanine"
+FT                   /evidence="ECO:0000269|PubMed:6298211, ECO:0000269|Ref.3"
+FT   MOD_RES         325
+FT                   /note="4-hydroxyproline; partial"
+FT                   /evidence="ECO:0000269|PubMed:6298211, ECO:0000269|Ref.3"
+FT   MOD_RES         327
+FT                   /note="3',4'-dihydroxyphenylalanine"
+FT                   /evidence="ECO:0000269|PubMed:6298211, ECO:0000269|Ref.3"
+FT   MOD_RES         328
+FT                   /note="(3R,4S)-3,4-dihydroxyproline"
+FT                   /evidence="ECO:0000269|PubMed:6298211, ECO:0000269|Ref.3"
+FT   MOD_RES         329
+FT                   /note="4-hydroxyproline"
+FT                   /evidence="ECO:0000269|PubMed:6298211, ECO:0000269|Ref.3"
+FT   MOD_RES         331
+FT                   /note="3',4'-dihydroxyphenylalanine"
+FT                   /evidence="ECO:0000269|PubMed:6298211, ECO:0000269|Ref.3"
+FT   MOD_RES         335
+FT                   /note="4-hydroxyproline; partial"
+FT                   /evidence="ECO:0000269|PubMed:6298211, ECO:0000269|Ref.3"
+FT   MOD_RES         337
+FT                   /note="3',4'-dihydroxyphenylalanine"
+FT                   /evidence="ECO:0000269|PubMed:6298211, ECO:0000269|Ref.3"
+FT   MOD_RES         338
+FT                   /note="(3R,4S)-3,4-dihydroxyproline"
+FT                   /evidence="ECO:0000269|PubMed:6298211, ECO:0000269|Ref.3"
+FT   MOD_RES         339
+FT                   /note="4-hydroxyproline"
+FT                   /evidence="ECO:0000269|PubMed:6298211, ECO:0000269|Ref.3"
+FT   MOD_RES         341
+FT                   /note="3',4'-dihydroxyphenylalanine"
+FT                   /evidence="ECO:0000269|PubMed:6298211, ECO:0000269|Ref.3"
+FT   MOD_RES         351
+FT                   /note="4-hydroxyproline; partial"
+FT                   /evidence="ECO:0000269|PubMed:6298211, ECO:0000269|Ref.3"
+FT   MOD_RES         353
+FT                   /note="3',4'-dihydroxyphenylalanine"
+FT                   /evidence="ECO:0000305|PubMed:6298211, ECO:0000305|Ref.3"
+FT   MOD_RES         354
+FT                   /note="(3R,4S)-3,4-dihydroxyproline"
+FT                   /evidence="ECO:0000305|PubMed:6298211, ECO:0000305|Ref.3"
+FT   MOD_RES         357
+FT                   /note="3',4'-dihydroxyphenylalanine"
+FT                   /evidence="ECO:0000305|PubMed:6298211, ECO:0000305|Ref.3"
+FT   MOD_RES         361
+FT                   /note="4-hydroxyproline; partial"
+FT                   /evidence="ECO:0000269|PubMed:6298211, ECO:0000269|Ref.3"
+FT   MOD_RES         363
+FT                   /note="3',4'-dihydroxyphenylalanine"
+FT                   /evidence="ECO:0000269|PubMed:6298211, ECO:0000269|Ref.3"
+FT   MOD_RES         364
+FT                   /note="(3R,4S)-3,4-dihydroxyproline"
+FT                   /evidence="ECO:0000269|PubMed:6298211, ECO:0000269|Ref.3"
+FT   MOD_RES         365
+FT                   /note="4-hydroxyproline"
+FT                   /evidence="ECO:0000269|PubMed:6298211, ECO:0000269|Ref.3"
+FT   MOD_RES         367
+FT                   /note="3',4'-dihydroxyphenylalanine"
+FT                   /evidence="ECO:0000269|PubMed:6298211, ECO:0000269|Ref.3"
+FT   MOD_RES         371
+FT                   /note="4-hydroxyproline; partial"
+FT                   /evidence="ECO:0000269|PubMed:6298211, ECO:0000269|Ref.3"
+FT   MOD_RES         373
+FT                   /note="3',4'-dihydroxyphenylalanine"
+FT                   /evidence="ECO:0000269|PubMed:6298211, ECO:0000269|Ref.3"
+FT   MOD_RES         374
+FT                   /note="(3R,4S)-3,4-dihydroxyproline"
+FT                   /evidence="ECO:0000269|PubMed:6298211, ECO:0000269|Ref.3"
+FT   MOD_RES         375
+FT                   /note="4-hydroxyproline"
+FT                   /evidence="ECO:0000269|PubMed:6298211, ECO:0000269|Ref.3"
+FT   MOD_RES         377
+FT                   /note="3',4'-dihydroxyphenylalanine"
+FT                   /evidence="ECO:0000269|PubMed:6298211, ECO:0000269|Ref.3"
+FT   MOD_RES         387
+FT                   /note="4-hydroxyproline; partial"
+FT                   /evidence="ECO:0000269|PubMed:6298211, ECO:0000269|Ref.3"
+FT   MOD_RES         389
+FT                   /note="3',4'-dihydroxyphenylalanine"
+FT                   /evidence="ECO:0000269|PubMed:6298211, ECO:0000269|Ref.3"
+FT   MOD_RES         390
+FT                   /note="(3R,4S)-3,4-dihydroxyproline"
+FT                   /evidence="ECO:0000269|PubMed:6298211, ECO:0000269|Ref.3"
+FT   MOD_RES         391
+FT                   /note="4-hydroxyproline"
+FT                   /evidence="ECO:0000269|PubMed:6298211, ECO:0000269|Ref.3"
+FT   MOD_RES         393
+FT                   /note="3',4'-dihydroxyphenylalanine"
+FT                   /evidence="ECO:0000269|PubMed:6298211, ECO:0000269|Ref.3"
+FT   MOD_RES         397
+FT                   /note="4-hydroxyproline; partial"
+FT                   /evidence="ECO:0000269|PubMed:6298211, ECO:0000269|Ref.3"
+FT   MOD_RES         399
+FT                   /note="3',4'-dihydroxyphenylalanine"
+FT                   /evidence="ECO:0000269|PubMed:6298211, ECO:0000269|Ref.3"
+FT   MOD_RES         400
+FT                   /note="(3R,4S)-3,4-dihydroxyproline"
+FT                   /evidence="ECO:0000269|PubMed:6298211, ECO:0000269|Ref.3"
+FT   MOD_RES         401
+FT                   /note="4-hydroxyproline"
+FT                   /evidence="ECO:0000269|PubMed:6298211, ECO:0000269|Ref.3"
+FT   MOD_RES         403
+FT                   /note="3',4'-dihydroxyphenylalanine"
+FT                   /evidence="ECO:0000269|PubMed:6298211, ECO:0000269|Ref.3"
+FT   MOD_RES         407
+FT                   /note="4-hydroxyproline; partial"
+FT                   /evidence="ECO:0000269|PubMed:6298211, ECO:0000269|Ref.3"
+FT   MOD_RES         409
+FT                   /note="3',4'-dihydroxyphenylalanine"
+FT                   /evidence="ECO:0000269|PubMed:6298211, ECO:0000269|Ref.3"
+FT   MOD_RES         410
+FT                   /note="(3R,4S)-3,4-dihydroxyproline"
+FT                   /evidence="ECO:0000269|PubMed:6298211, ECO:0000269|Ref.3"
+FT   MOD_RES         411
+FT                   /note="4-hydroxyproline"
+FT                   /evidence="ECO:0000269|PubMed:6298211, ECO:0000269|Ref.3"
+FT   MOD_RES         413
+FT                   /note="3',4'-dihydroxyphenylalanine"
+FT                   /evidence="ECO:0000269|PubMed:6298211, ECO:0000269|Ref.3"
+FT   MOD_RES         423
+FT                   /note="4-hydroxyproline; partial"
+FT                   /evidence="ECO:0000269|PubMed:6298211, ECO:0000269|Ref.3"
+FT   MOD_RES         425
+FT                   /note="3',4'-dihydroxyphenylalanine"
+FT                   /evidence="ECO:0000305|PubMed:6298211, ECO:0000305|Ref.3"
+FT   MOD_RES         426
+FT                   /note="(3R,4S)-3,4-dihydroxyproline"
+FT                   /evidence="ECO:0000305|PubMed:6298211, ECO:0000305|Ref.3"
+FT   MOD_RES         429
+FT                   /note="3',4'-dihydroxyphenylalanine"
+FT                   /evidence="ECO:0000305|PubMed:6298211, ECO:0000305|Ref.3"
+FT   MOD_RES         433
+FT                   /note="4-hydroxyproline; partial"
+FT                   /evidence="ECO:0000269|PubMed:6298211, ECO:0000269|Ref.3"
+FT   MOD_RES         435
+FT                   /note="3',4'-dihydroxyphenylalanine"
+FT                   /evidence="ECO:0000269|PubMed:6298211, ECO:0000269|Ref.3"
+FT   MOD_RES         436
+FT                   /note="(3R,4S)-3,4-dihydroxyproline"
+FT                   /evidence="ECO:0000269|PubMed:6298211, ECO:0000269|Ref.3"
+FT   MOD_RES         437
+FT                   /note="4-hydroxyproline"
+FT                   /evidence="ECO:0000269|PubMed:6298211, ECO:0000269|Ref.3"
+FT   MOD_RES         439
+FT                   /note="3',4'-dihydroxyphenylalanine"
+FT                   /evidence="ECO:0000269|PubMed:6298211, ECO:0000269|Ref.3"
+FT   MOD_RES         443
+FT                   /note="4-hydroxyproline; partial"
+FT                   /evidence="ECO:0000269|PubMed:6298211, ECO:0000269|Ref.3"
+FT   MOD_RES         445
+FT                   /note="3',4'-dihydroxyphenylalanine"
+FT                   /evidence="ECO:0000269|PubMed:6298211, ECO:0000269|Ref.3"
+FT   MOD_RES         446
+FT                   /note="(3R,4S)-3,4-dihydroxyproline"
+FT                   /evidence="ECO:0000269|PubMed:6298211, ECO:0000269|Ref.3"
+FT   MOD_RES         447
+FT                   /note="4-hydroxyproline"
+FT                   /evidence="ECO:0000269|PubMed:6298211, ECO:0000269|Ref.3"
+FT   MOD_RES         449
+FT                   /note="3',4'-dihydroxyphenylalanine"
+FT                   /evidence="ECO:0000269|PubMed:6298211, ECO:0000269|Ref.3"
+FT   MOD_RES         459
+FT                   /note="4-hydroxyproline; partial"
+FT                   /evidence="ECO:0000269|PubMed:6298211, ECO:0000269|Ref.3"
+FT   MOD_RES         461
+FT                   /note="3',4'-dihydroxyphenylalanine"
+FT                   /evidence="ECO:0000305|PubMed:6298211, ECO:0000305|Ref.3"
+FT   MOD_RES         462
+FT                   /note="(3R,4S)-3,4-dihydroxyproline"
+FT                   /evidence="ECO:0000305|PubMed:6298211, ECO:0000305|Ref.3"
+FT   MOD_RES         465
+FT                   /note="3',4'-dihydroxyphenylalanine"
+FT                   /evidence="ECO:0000305|PubMed:6298211, ECO:0000305|Ref.3"
+FT   MOD_RES         469
+FT                   /note="4-hydroxyproline; partial"
+FT                   /evidence="ECO:0000269|PubMed:6298211, ECO:0000269|Ref.3"
+FT   MOD_RES         471
+FT                   /note="3',4'-dihydroxyphenylalanine"
+FT                   /evidence="ECO:0000305|PubMed:6298211, ECO:0000305|Ref.3"
+FT   MOD_RES         472
+FT                   /note="(3R,4S)-3,4-dihydroxyproline"
+FT                   /evidence="ECO:0000305|PubMed:6298211, ECO:0000305|Ref.3"
+FT   MOD_RES         475
+FT                   /note="3',4'-dihydroxyphenylalanine"
+FT                   /evidence="ECO:0000305|PubMed:6298211, ECO:0000305|Ref.3"
+FT   MOD_RES         479
+FT                   /note="4-hydroxyproline; partial"
+FT                   /evidence="ECO:0000269|PubMed:6298211, ECO:0000269|Ref.3"
+FT   MOD_RES         481
+FT                   /note="3',4'-dihydroxyphenylalanine"
+FT                   /evidence="ECO:0000269|PubMed:6298211, ECO:0000269|Ref.3"
+FT   MOD_RES         482
+FT                   /note="(3R,4S)-3,4-dihydroxyproline"
+FT                   /evidence="ECO:0000269|PubMed:6298211, ECO:0000269|Ref.3"
+FT   MOD_RES         483
+FT                   /note="4-hydroxyproline"
+FT                   /evidence="ECO:0000269|PubMed:6298211, ECO:0000269|Ref.3"
+FT   MOD_RES         485
+FT                   /note="3',4'-dihydroxyphenylalanine"
+FT                   /evidence="ECO:0000269|PubMed:6298211, ECO:0000269|Ref.3"
+FT   MOD_RES         519
+FT                   /note="4-hydroxyproline; partial"
+FT                   /evidence="ECO:0000305|PubMed:6298211, ECO:0000305|Ref.3"
+FT   MOD_RES         521
+FT                   /note="3',4'-dihydroxyphenylalanine"
+FT                   /evidence="ECO:0000305|PubMed:6298211, ECO:0000305|Ref.3"
+FT   MOD_RES         522
+FT                   /note="(3R,4S)-3,4-dihydroxyproline"
+FT                   /evidence="ECO:0000305|PubMed:6298211, ECO:0000305|Ref.3"
+FT   MOD_RES         523
+FT                   /note="4-hydroxyproline"
+FT                   /evidence="ECO:0000305|PubMed:6298211, ECO:0000305|Ref.3"
+FT   MOD_RES         525
+FT                   /note="3',4'-dihydroxyphenylalanine"
+FT                   /evidence="ECO:0000305|PubMed:6298211, ECO:0000305|Ref.3"
+FT   MOD_RES         541
+FT                   /note="3',4'-dihydroxyphenylalanine"
+FT                   /evidence="ECO:0000305|PubMed:6298211, ECO:0000305|Ref.3"
+FT   MOD_RES         542
+FT                   /note="(3R,4S)-3,4-dihydroxyproline"
+FT                   /evidence="ECO:0000305|PubMed:6298211, ECO:0000305|Ref.3"
+FT   MOD_RES         543
+FT                   /note="4-hydroxyproline"
+FT                   /evidence="ECO:0000305|PubMed:6298211, ECO:0000305|Ref.3"
+FT   MOD_RES         545
+FT                   /note="3',4'-dihydroxyphenylalanine"
+FT                   /evidence="ECO:0000305|PubMed:6298211, ECO:0000305|Ref.3"
+FT   MOD_RES         549
+FT                   /note="4-hydroxyproline; partial"
+FT                   /evidence="ECO:0000269|PubMed:6298211, ECO:0000269|Ref.3"
+FT   MOD_RES         551
+FT                   /note="3',4'-dihydroxyphenylalanine"
+FT                   /evidence="ECO:0000305|PubMed:6298211, ECO:0000305|Ref.3"
+FT   MOD_RES         552
+FT                   /note="(3R,4S)-3,4-dihydroxyproline"
+FT                   /evidence="ECO:0000305|PubMed:6298211, ECO:0000305|Ref.3"
+FT   MOD_RES         555
+FT                   /note="3',4'-dihydroxyphenylalanine"
+FT                   /evidence="ECO:0000305|PubMed:6298211, ECO:0000305|Ref.3"
+FT   MOD_RES         559
+FT                   /note="4-hydroxyproline; partial"
+FT                   /evidence="ECO:0000269|PubMed:6298211, ECO:0000269|Ref.3"
+FT   MOD_RES         561
+FT                   /note="3',4'-dihydroxyphenylalanine"
+FT                   /evidence="ECO:0000269|PubMed:6298211, ECO:0000269|Ref.3"
+FT   MOD_RES         562
+FT                   /note="(3R,4S)-3,4-dihydroxyproline"
+FT                   /evidence="ECO:0000269|PubMed:6298211, ECO:0000269|Ref.3"
+FT   MOD_RES         563
+FT                   /note="4-hydroxyproline"
+FT                   /evidence="ECO:0000269|PubMed:6298211, ECO:0000269|Ref.3"
+FT   MOD_RES         565
+FT                   /note="3',4'-dihydroxyphenylalanine"
+FT                   /evidence="ECO:0000269|PubMed:6298211, ECO:0000269|Ref.3"
+FT   MOD_RES         569
+FT                   /note="4-hydroxyproline; partial"
+FT                   /evidence="ECO:0000269|PubMed:6298211, ECO:0000269|Ref.3"
+FT   MOD_RES         571
+FT                   /note="3',4'-dihydroxyphenylalanine"
+FT                   /evidence="ECO:0000269|PubMed:6298211, ECO:0000269|Ref.3"
+FT   MOD_RES         572
+FT                   /note="(3R,4S)-3,4-dihydroxyproline"
+FT                   /evidence="ECO:0000269|PubMed:6298211, ECO:0000269|Ref.3"
+FT   MOD_RES         573
+FT                   /note="4-hydroxyproline"
+FT                   /evidence="ECO:0000269|PubMed:6298211, ECO:0000269|Ref.3"
+FT   MOD_RES         575
+FT                   /note="3',4'-dihydroxyphenylalanine"
+FT                   /evidence="ECO:0000269|PubMed:6298211, ECO:0000269|Ref.3"
+FT   MOD_RES         579
+FT                   /note="4-hydroxyproline; partial"
+FT                   /evidence="ECO:0000269|PubMed:6298211, ECO:0000269|Ref.3"
+FT   MOD_RES         581
+FT                   /note="3',4'-dihydroxyphenylalanine"
+FT                   /evidence="ECO:0000269|PubMed:6298211, ECO:0000269|Ref.3"
+FT   MOD_RES         582
+FT                   /note="(3R,4S)-3,4-dihydroxyproline"
+FT                   /evidence="ECO:0000269|PubMed:6298211, ECO:0000269|Ref.3"
+FT   MOD_RES         583
+FT                   /note="4-hydroxyproline"
+FT                   /evidence="ECO:0000269|PubMed:6298211, ECO:0000269|Ref.3"
+FT   MOD_RES         585
+FT                   /note="3',4'-dihydroxyphenylalanine"
+FT                   /evidence="ECO:0000269|PubMed:6298211, ECO:0000269|Ref.3"
+FT   MOD_RES         595
+FT                   /note="4-hydroxyproline; partial"
+FT                   /evidence="ECO:0000269|PubMed:6298211, ECO:0000269|Ref.3"
+FT   MOD_RES         597
+FT                   /note="3',4'-dihydroxyphenylalanine"
+FT                   /evidence="ECO:0000305|PubMed:6298211, ECO:0000305|Ref.3"
+FT   MOD_RES         598
+FT                   /note="(3R,4S)-3,4-dihydroxyproline"
+FT                   /evidence="ECO:0000305|PubMed:6298211, ECO:0000305|Ref.3"
+FT   MOD_RES         601
+FT                   /note="3',4'-dihydroxyphenylalanine"
+FT                   /evidence="ECO:0000305|PubMed:6298211, ECO:0000305|Ref.3"
+FT   MOD_RES         605
+FT                   /note="4-hydroxyproline; partial"
+FT                   /evidence="ECO:0000269|PubMed:6298211, ECO:0000269|Ref.3"
+FT   MOD_RES         607
+FT                   /note="3',4'-dihydroxyphenylalanine"
+FT                   /evidence="ECO:0000269|PubMed:6298211, ECO:0000269|Ref.3"
+FT   MOD_RES         608
+FT                   /note="(3R,4S)-3,4-dihydroxyproline"
+FT                   /evidence="ECO:0000269|PubMed:6298211, ECO:0000269|Ref.3"
+FT   MOD_RES         609
+FT                   /note="4-hydroxyproline"
+FT                   /evidence="ECO:0000269|PubMed:6298211, ECO:0000269|Ref.3"
+FT   MOD_RES         611
+FT                   /note="3',4'-dihydroxyphenylalanine"
+FT                   /evidence="ECO:0000269|PubMed:6298211, ECO:0000269|Ref.3"
+FT   MOD_RES         615
+FT                   /note="4-hydroxyproline; partial"
+FT                   /evidence="ECO:0000269|PubMed:6298211, ECO:0000269|Ref.3"
+FT   MOD_RES         617
+FT                   /note="3',4'-dihydroxyphenylalanine"
+FT                   /evidence="ECO:0000269|PubMed:6298211, ECO:0000269|Ref.3"
+FT   MOD_RES         618
+FT                   /note="(3R,4S)-3,4-dihydroxyproline"
+FT                   /evidence="ECO:0000269|PubMed:6298211, ECO:0000269|Ref.3"
+FT   MOD_RES         619
+FT                   /note="4-hydroxyproline"
+FT                   /evidence="ECO:0000269|PubMed:6298211, ECO:0000269|Ref.3"
+FT   MOD_RES         621
+FT                   /note="3',4'-dihydroxyphenylalanine"
+FT                   /evidence="ECO:0000269|PubMed:6298211, ECO:0000269|Ref.3"
+FT   MOD_RES         625
+FT                   /note="4-hydroxyproline; partial"
+FT                   /evidence="ECO:0000269|PubMed:6298211, ECO:0000269|Ref.3"
+FT   MOD_RES         627
+FT                   /note="3',4'-dihydroxyphenylalanine"
+FT                   /evidence="ECO:0000269|PubMed:6298211, ECO:0000269|Ref.3"
+FT   MOD_RES         628
+FT                   /note="(3R,4S)-3,4-dihydroxyproline"
+FT                   /evidence="ECO:0000269|PubMed:6298211, ECO:0000269|Ref.3"
+FT   MOD_RES         629
+FT                   /note="4-hydroxyproline"
+FT                   /evidence="ECO:0000269|PubMed:6298211, ECO:0000269|Ref.3"
+FT   MOD_RES         631
+FT                   /note="3',4'-dihydroxyphenylalanine"
+FT                   /evidence="ECO:0000269|PubMed:6298211, ECO:0000269|Ref.3"
+FT   MOD_RES         635
+FT                   /note="4-hydroxyproline; partial"
+FT                   /evidence="ECO:0000269|PubMed:6298211, ECO:0000269|Ref.3"
+FT   MOD_RES         637
+FT                   /note="3',4'-dihydroxyphenylalanine"
+FT                   /evidence="ECO:0000305|PubMed:6298211, ECO:0000305|Ref.3"
+FT   MOD_RES         638
+FT                   /note="(3R,4S)-3,4-dihydroxyproline"
+FT                   /evidence="ECO:0000305|PubMed:6298211, ECO:0000305|Ref.3"
+FT   MOD_RES         641
+FT                   /note="3',4'-dihydroxyphenylalanine"
+FT                   /evidence="ECO:0000305|PubMed:6298211, ECO:0000305|Ref.3"
+FT   MOD_RES         645
+FT                   /note="4-hydroxyproline; partial"
+FT                   /evidence="ECO:0000269|PubMed:6298211, ECO:0000269|Ref.3"
+FT   MOD_RES         647
+FT                   /note="3',4'-dihydroxyphenylalanine"
+FT                   /evidence="ECO:0000269|PubMed:6298211, ECO:0000269|Ref.3"
+FT   MOD_RES         648
+FT                   /note="(3R,4S)-3,4-dihydroxyproline"
+FT                   /evidence="ECO:0000269|PubMed:6298211, ECO:0000269|Ref.3"
+FT   MOD_RES         649
+FT                   /note="4-hydroxyproline"
+FT                   /evidence="ECO:0000269|PubMed:6298211, ECO:0000269|Ref.3"
+FT   MOD_RES         651
+FT                   /note="3',4'-dihydroxyphenylalanine"
+FT                   /evidence="ECO:0000269|PubMed:6298211, ECO:0000269|Ref.3"
+FT   MOD_RES         657
+FT                   /note="3',4'-dihydroxyphenylalanine"
+FT                   /evidence="ECO:0000305|PubMed:6298211, ECO:0000305|Ref.3"
+FT   MOD_RES         658
+FT                   /note="(3R,4S)-3,4-dihydroxyproline"
+FT                   /evidence="ECO:0000305|PubMed:6298211, ECO:0000305|Ref.3"
+FT   MOD_RES         659
+FT                   /note="4-hydroxyproline"
+FT                   /evidence="ECO:0000305|PubMed:6298211, ECO:0000305|Ref.3"
+FT   MOD_RES         661
+FT                   /note="3',4'-dihydroxyphenylalanine"
+FT                   /evidence="ECO:0000305|PubMed:6298211, ECO:0000305|Ref.3"
+FT   MOD_RES         665
+FT                   /note="4-hydroxyproline; partial"
+FT                   /evidence="ECO:0000269|PubMed:6298211, ECO:0000269|Ref.3"
+FT   MOD_RES         667
+FT                   /note="3',4'-dihydroxyphenylalanine"
+FT                   /evidence="ECO:0000269|PubMed:6298211, ECO:0000269|Ref.3"
+FT   MOD_RES         668
+FT                   /note="(3R,4S)-3,4-dihydroxyproline"
+FT                   /evidence="ECO:0000269|PubMed:6298211, ECO:0000269|Ref.3"
+FT   MOD_RES         669
+FT                   /note="4-hydroxyproline"
+FT                   /evidence="ECO:0000269|PubMed:6298211, ECO:0000269|Ref.3"
+FT   MOD_RES         671
+FT                   /note="3',4'-dihydroxyphenylalanine"
+FT                   /evidence="ECO:0000269|PubMed:6298211, ECO:0000269|Ref.3"
+FT   MOD_RES         675
+FT                   /note="4-hydroxyproline; partial"
+FT                   /evidence="ECO:0000269|PubMed:6298211, ECO:0000269|Ref.3"
+FT   MOD_RES         677
+FT                   /note="3',4'-dihydroxyphenylalanine"
+FT                   /evidence="ECO:0000269|PubMed:6298211, ECO:0000269|Ref.3"
+FT   MOD_RES         678
+FT                   /note="(3R,4S)-3,4-dihydroxyproline"
+FT                   /evidence="ECO:0000269|PubMed:6298211, ECO:0000269|Ref.3"
+FT   MOD_RES         679
+FT                   /note="4-hydroxyproline"
+FT                   /evidence="ECO:0000269|PubMed:6298211, ECO:0000269|Ref.3"
+FT   MOD_RES         681
+FT                   /note="3',4'-dihydroxyphenylalanine"
+FT                   /evidence="ECO:0000269|PubMed:6298211, ECO:0000269|Ref.3"
+FT   MOD_RES         701
+FT                   /note="4-hydroxyproline; partial"
+FT                   /evidence="ECO:0000269|PubMed:6298211, ECO:0000269|Ref.3"
+FT   MOD_RES         703
+FT                   /note="3',4'-dihydroxyphenylalanine"
+FT                   /evidence="ECO:0000269|PubMed:6298211, ECO:0000269|Ref.3"
+FT   MOD_RES         704
+FT                   /note="(3R,4S)-3,4-dihydroxyproline"
+FT                   /evidence="ECO:0000269|PubMed:6298211, ECO:0000269|Ref.3"
+FT   MOD_RES         705
+FT                   /note="4-hydroxyproline"
+FT                   /evidence="ECO:0000269|PubMed:6298211, ECO:0000269|Ref.3"
+FT   MOD_RES         707
+FT                   /note="3',4'-dihydroxyphenylalanine"
+FT                   /evidence="ECO:0000269|PubMed:6298211, ECO:0000269|Ref.3"
+FT   MOD_RES         711
+FT                   /note="4-hydroxyproline; partial"
+FT                   /evidence="ECO:0000269|PubMed:6298211, ECO:0000269|Ref.3"
+FT   MOD_RES         713
+FT                   /note="3',4'-dihydroxyphenylalanine"
+FT                   /evidence="ECO:0000269|PubMed:6298211, ECO:0000269|Ref.3"
+FT   MOD_RES         714
+FT                   /note="(3R,4S)-3,4-dihydroxyproline"
+FT                   /evidence="ECO:0000269|PubMed:6298211, ECO:0000269|Ref.3"
+FT   MOD_RES         715
+FT                   /note="4-hydroxyproline"
+FT                   /evidence="ECO:0000269|PubMed:6298211, ECO:0000269|Ref.3"
+FT   MOD_RES         717
+FT                   /note="3',4'-dihydroxyphenylalanine"
+FT                   /evidence="ECO:0000269|PubMed:6298211, ECO:0000269|Ref.3"
+FT   MOD_RES         721
+FT                   /note="4-hydroxyproline; partial"
+FT                   /evidence="ECO:0000269|PubMed:6298211, ECO:0000269|Ref.3"
+FT   MOD_RES         723
+FT                   /note="3',4'-dihydroxyphenylalanine"
+FT                   /evidence="ECO:0000269|PubMed:6298211, ECO:0000269|Ref.3"
+FT   MOD_RES         724
+FT                   /note="(3R,4S)-3,4-dihydroxyproline"
+FT                   /evidence="ECO:0000269|PubMed:6298211, ECO:0000269|Ref.3"
+FT   MOD_RES         725
+FT                   /note="4-hydroxyproline"
+FT                   /evidence="ECO:0000269|PubMed:6298211, ECO:0000269|Ref.3"
+FT   MOD_RES         727
+FT                   /note="3',4'-dihydroxyphenylalanine"
+FT                   /evidence="ECO:0000269|PubMed:6298211, ECO:0000269|Ref.3"
+FT   MOD_RES         737
+FT                   /note="4-hydroxyproline; partial"
+FT                   /evidence="ECO:0000269|PubMed:6298211, ECO:0000269|Ref.3"
+FT   MOD_RES         739
+FT                   /note="3',4'-dihydroxyphenylalanine"
+FT                   /evidence="ECO:0000305|PubMed:6298211, ECO:0000305|Ref.3"
+FT   MOD_RES         740
+FT                   /note="(3R,4S)-3,4-dihydroxyproline"
+FT                   /evidence="ECO:0000305|PubMed:6298211, ECO:0000305|Ref.3"
+FT   MOD_RES         743
+FT                   /note="3',4'-dihydroxyphenylalanine"
+FT                   /evidence="ECO:0000305|PubMed:6298211, ECO:0000305|Ref.3"
+FT   MOD_RES         753
+FT                   /note="4-hydroxyproline; partial"
+FT                   /evidence="ECO:0000269|PubMed:6298211, ECO:0000269|Ref.3"
+FT   MOD_RES         755
+FT                   /note="3',4'-dihydroxyphenylalanine"
+FT                   /evidence="ECO:0000305|PubMed:6298211, ECO:0000305|Ref.3"
+FT   MOD_RES         756
+FT                   /note="(3R,4S)-3,4-dihydroxyproline"
+FT                   /evidence="ECO:0000305|PubMed:6298211, ECO:0000305|Ref.3"
+FT   MOD_RES         757
+FT                   /note="4-hydroxyproline"
+FT                   /evidence="ECO:0000305|PubMed:6298211, ECO:0000305|Ref.3"
+FT   MOD_RES         759
+FT                   /note="3',4'-dihydroxyphenylalanine"
+FT                   /evidence="ECO:0000305|PubMed:6298211, ECO:0000305|Ref.3"
+FT   MOD_RES         763
+FT                   /note="4-hydroxyproline; partial"
+FT                   /evidence="ECO:0000269|PubMed:6298211, ECO:0000269|Ref.3"
+FT   MOD_RES         765
+FT                   /note="3',4'-dihydroxyphenylalanine"
+FT                   /evidence="ECO:0000269|PubMed:6298211, ECO:0000269|Ref.3"
+FT   MOD_RES         766
+FT                   /note="(3R,4S)-3,4-dihydroxyproline"
+FT                   /evidence="ECO:0000269|PubMed:6298211, ECO:0000269|Ref.3"
+FT   MOD_RES         767
+FT                   /note="4-hydroxyproline"
+FT                   /evidence="ECO:0000269|PubMed:6298211, ECO:0000269|Ref.3"
+FT   MOD_RES         769
+FT                   /note="3',4'-dihydroxyphenylalanine"
+FT                   /evidence="ECO:0000269|PubMed:6298211, ECO:0000269|Ref.3"
+FT   MOD_RES         773
+FT                   /note="4-hydroxyproline; partial"
+FT                   /evidence="ECO:0000305|PubMed:6298211, ECO:0000305|Ref.3"
+FT   MOD_RES         775
+FT                   /note="3',4'-dihydroxyphenylalanine"
+FT                   /evidence="ECO:0000305|PubMed:6298211, ECO:0000305|Ref.3"
+FT   MOD_RES         776
+FT                   /note="(3R,4S)-3,4-dihydroxyproline"
+FT                   /evidence="ECO:0000305|PubMed:6298211, ECO:0000305|Ref.3"
+FT   MOD_RES         777
+FT                   /note="4-hydroxyproline"
+FT                   /evidence="ECO:0000305|PubMed:6298211, ECO:0000305|Ref.3"
+FT   MOD_RES         779
+FT                   /note="3',4'-dihydroxyphenylalanine"
+FT                   /evidence="ECO:0000305|PubMed:6298211, ECO:0000305|Ref.3"
+FT   MOD_RES         813
+FT                   /note="4-hydroxyproline; partial"
+FT                   /evidence="ECO:0000305|PubMed:6298211, ECO:0000305|Ref.3"
+FT   MOD_RES         815
+FT                   /note="3',4'-dihydroxyphenylalanine"
+FT                   /evidence="ECO:0000305|PubMed:6298211, ECO:0000305|Ref.3"
+FT   MOD_RES         816
+FT                   /note="(3R,4S)-3,4-dihydroxyproline"
+FT                   /evidence="ECO:0000305|PubMed:6298211, ECO:0000305|Ref.3"
+FT   MOD_RES         817
+FT                   /note="4-hydroxyproline"
+FT                   /evidence="ECO:0000305|PubMed:6298211, ECO:0000305|Ref.3"
+FT   MOD_RES         819
+FT                   /note="3',4'-dihydroxyphenylalanine"
+FT                   /evidence="ECO:0000305|PubMed:6298211, ECO:0000305|Ref.3"
+FT   MOD_RES         833
+FT                   /note="4-hydroxyproline; partial"
+FT                   /evidence="ECO:0000305|PubMed:6298211, ECO:0000305|Ref.3"
+FT   MOD_RES         835
+FT                   /note="3',4'-dihydroxyphenylalanine"
+FT                   /evidence="ECO:0000305|PubMed:6298211, ECO:0000305|Ref.3"
+FT   MOD_RES         836
+FT                   /note="(3R,4S)-3,4-dihydroxyproline"
+FT                   /evidence="ECO:0000305|PubMed:6298211, ECO:0000305|Ref.3"
+FT   MOD_RES         837
+FT                   /note="4-hydroxyproline"
+FT                   /evidence="ECO:0000305|PubMed:6298211, ECO:0000305|Ref.3"
+FT   MOD_RES         839
+FT                   /note="3',4'-dihydroxyphenylalanine"
+FT                   /evidence="ECO:0000305|PubMed:6298211, ECO:0000305|Ref.3"
+FT   MOD_RES         865
+FT                   /note="3',4'-dihydroxyphenylalanine"
+FT                   /evidence="ECO:0000305|PubMed:6298211, ECO:0000305|Ref.3"
+FT   MOD_RES         866
+FT                   /note="(3R,4S)-3,4-dihydroxyproline"
+FT                   /evidence="ECO:0000305|PubMed:6298211, ECO:0000305|Ref.3"
+FT   MOD_RES         867
+FT                   /note="4-hydroxyproline"
+FT                   /evidence="ECO:0000305|PubMed:6298211, ECO:0000305|Ref.3"
+FT   MOD_RES         869
+FT                   /note="3',4'-dihydroxyphenylalanine"
+FT                   /evidence="ECO:0000305|PubMed:6298211, ECO:0000305|Ref.3"
+FT   NON_TER         1
+SQ   SEQUENCE   875 AA;  100413 MW;  6EA85312748CAACE CRC64;
+     TKHEPVYKPV KTSYSAPYKP PTYQPLKKKV DYRPTKSYPP TYGSKTNYLP LAKKLSSYKP
+     IKTTYNAKTN YPPVYKPKMT YPPTYKPKPS YPPTYKSKPT YKPKITYPPT YKAKPSYPSS
+     YKPKKTYPPT YKPKLTYPPT YKPKPSYPPT YKPKPSYPPS YKTKKTYPSS YKAKPSYPPT
+     YKAKPSYPPT YKAKPSYPPT YKAKPTYKAK PTYPSTYKAK PSYPPTYKAK PTYKAKPSYP
+     PTYKAKPSYP PTYKAKPSYP PTYKAKPTYK AKPTYKAKPT YKAKPSYPPT YKAKPSYPPT
+     YKAKPSYPPT YKAKPSYPPT YKAKPSYPPT YKAKPSYPPT YKAKPTYKAK PTYPSTYKAK
+     PSYPPTYKAK PSYPPTYKAK PTYKAKPSYP PTYKAKPSYP PTYKAKPSYP PTYKAKPTYK
+     AKPTYPSTYK AKPSYPPSYK AKPSYPPTYK AKPTYKAKPT YPSTYKAKPS YPASYKAKPS
+     YPPTYKSKSS YPSSYKPKKT YPPTYKPKLT YKPTYKPKPS YPPSYKPKTT YPPTYKPKIS
+     YPPTYKAKPS YPATYKAKPS YPPTYKAKPS YPPTYKAKPS YPPTYKAKPS YKAKPTYPST
+     YKAKPSYPPT YKAKPSYPPT YKAKPSYPPT YKAKPTYPST YKAKPSYPPT YKPKISYPPT
+     YKAKPSYPPT YKAKPSYPPT YKAKPTYKAK PTNPSTYKAK PSYPPTYKAK PSYPPTYKAK
+     PSYPPTYKAK PTYKAKPTYP STYKAKPTYK AKPTYPPTYK AKPSYPPTYK PKPSYPPTYK
+     SKSIYPSSYK PKKTYPPTYK PKLTYPPTYK PKPSYPPSYK PKITYPSTYK LKPSYPPTYK
+     SKTSYPPTYN KKISYPSSYK AKTSYPPAYK PTNRY
+//
+ID   PERC_ANOGA              Reviewed;         767 AA.
+AC   Q7QH73; Q5UEA9;
+DT   18-APR-2006, integrated into UniProtKB/Swiss-Prot.
+DT   18-APR-2006, sequence version 3.
+DT   02-SEP-2026, entry version 132.
+DE   RecName: Full=Chorion peroxidase;
+DE            EC=1.11.1.7;
+DE   Flags: Precursor;
+GN   Name=pxt {ECO:0000250|UniProtKB:Q9VEG6}; ORFNames=AGAP004038;
+OS   Anopheles gambiae (African malaria mosquito).
+OC   Eukaryota; Metazoa; Ecdysozoa; Arthropoda; Altocrustacea; Allotriocarida;
+OC   Hexapoda; Insecta; Pterygota; Neoptera; Eumetabola; Endopterygota;
+OC   Aparaglossata; Panorpida; Diptera; Nematocera; Culicoidea; Culicidae;
+OC   Anophelinae; Anopheles.
+OX   NCBI_TaxID=7165;
+RN   [1] {ECO:0000305}
+RP   NUCLEOTIDE SEQUENCE [LARGE SCALE GENOMIC DNA].
+RC   STRAIN=PEST;
+RX   PubMed=12364791; DOI=10.1126/science.1076181;
+RA   Holt R.A., Subramanian G.M., Halpern A., Sutton G.G., Charlab R.,
+RA   Nusskern D.R., Wincker P., Clark A.G., Ribeiro J.M.C., Wides R.,
+RA   Salzberg S.L., Loftus B.J., Yandell M.D., Majoros W.H., Rusch D.B., Lai Z.,
+RA   Kraft C.L., Abril J.F., Anthouard V., Arensburger P., Atkinson P.W.,
+RA   Baden H., de Berardinis V., Baldwin D., Benes V., Biedler J., Blass C.,
+RA   Bolanos R., Boscus D., Barnstead M., Cai S., Center A., Chaturverdi K.,
+RA   Christophides G.K., Chrystal M.A.M., Clamp M., Cravchik A., Curwen V.,
+RA   Dana A., Delcher A., Dew I., Evans C.A., Flanigan M.,
+RA   Grundschober-Freimoser A., Friedli L., Gu Z., Guan P., Guigo R.,
+RA   Hillenmeyer M.E., Hladun S.L., Hogan J.R., Hong Y.S., Hoover J.,
+RA   Jaillon O., Ke Z., Kodira C.D., Kokoza E., Koutsos A., Letunic I.,
+RA   Levitsky A.A., Liang Y., Lin J.-J., Lobo N.F., Lopez J.R., Malek J.A.,
+RA   McIntosh T.C., Meister S., Miller J.R., Mobarry C., Mongin E., Murphy S.D.,
+RA   O'Brochta D.A., Pfannkoch C., Qi R., Regier M.A., Remington K., Shao H.,
+RA   Sharakhova M.V., Sitter C.D., Shetty J., Smith T.J., Strong R., Sun J.,
+RA   Thomasova D., Ton L.Q., Topalis P., Tu Z.J., Unger M.F., Walenz B.,
+RA   Wang A.H., Wang J., Wang M., Wang X., Woodford K.J., Wortman J.R., Wu M.,
+RA   Yao A., Zdobnov E.M., Zhang H., Zhao Q., Zhao S., Zhu S.C., Zhimulev I.,
+RA   Coluzzi M., della Torre A., Roth C.W., Louis C., Kalush F., Mural R.J.,
+RA   Myers E.W., Adams M.D., Smith H.O., Broder S., Gardner M.J., Fraser C.M.,
+RA   Birney E., Bork P., Brey P.T., Venter J.C., Weissenbach J., Kafatos F.C.,
+RA   Collins F.H., Hoffman S.L.;
+RT   "The genome sequence of the malaria mosquito Anopheles gambiae.";
+RL   Science 298:129-149(2002).
+RN   [2] {ECO:0000305, ECO:0000312|EMBL:AAV30079.1}
+RP   NUCLEOTIDE SEQUENCE [MRNA] OF 560-659.
+RC   STRAIN=Kisumu {ECO:0000312|EMBL:AAV30079.1};
+RX   PubMed=15753317; DOI=10.1073/pnas.0409348102;
+RA   David J.-P., Strode C., Vontas J., Nikou D., Vaughan A., Pignatelli P.M.,
+RA   Louis C., Hemingway J., Ranson H.;
+RT   "The Anopheles gambiae detoxification chip: a highly specific microarray to
+RT   study metabolic-based insecticide resistance in malaria vectors.";
+RL   Proc. Natl. Acad. Sci. U.S.A. 102:4080-4084(2005).
+CC   -!- FUNCTION: Involved in the formation of a rigid and insoluble egg
+CC       chorion by catalyzing chorion protein cross-linking through dityrosine
+CC       formation and phenol oxidase-catalyzed chorion melanization.
+CC       {ECO:0000250}.
+CC   -!- CATALYTIC ACTIVITY:
+CC       Reaction=2 a phenolic donor + H2O2 = 2 a phenolic radical donor + 2
+CC         H2O; Xref=Rhea:RHEA:56136, ChEBI:CHEBI:15377, ChEBI:CHEBI:16240,
+CC         ChEBI:CHEBI:139520, ChEBI:CHEBI:139521; EC=1.11.1.7;
+CC   -!- COFACTOR:
+CC       Name=heme b; Xref=ChEBI:CHEBI:60344; Evidence={ECO:0000250};
+CC       Note=Binds 1 heme b (iron(II)-protoporphyrin IX) group per heterodimer.
+CC       {ECO:0000250};
+CC   -!- SUBUNIT: Heterodimer. {ECO:0000250|UniProtKB:P05164, ECO:0000305}.
+CC   -!- SUBCELLULAR LOCATION: Secreted. Note=In the chorion layer of the mature
+CC       eggs. {ECO:0000250}.
+CC   -!- PTM: N-glycosylated on Trp by mannose. {ECO:0000250|UniProtKB:P82600}.
+CC   -!- SIMILARITY: Belongs to the peroxidase family. XPO subfamily.
+CC       {ECO:0000255|PROSITE-ProRule:PRU00298}.
+CC   ---------------------------------------------------------------------------
+CC   Copyrighted by the UniProt Consortium, see https://www.uniprot.org/terms
+CC   Distributed under the Creative Commons Attribution (CC BY 4.0) License
+CC   ---------------------------------------------------------------------------
+DR   EMBL; AAAB01008817; EAA05374.4; -; Genomic_DNA.
+DR   EMBL; AY752905; AAV30079.1; -; mRNA.
+DR   AlphaFoldDB; Q7QH73; -.
+DR   SMR; Q7QH73; -.
+DR   FunCoup; Q7QH73; 28.
+DR   STRING; 7165.Q7QH73; -.
+DR   PeroxiBase; 4153; AgaPxt03.
+DR   GlyCosmos; Q7QH73; 5 sites, No reported glycans.
+DR   PaxDb; 7165-Q7QH73; -.
+DR   EnsemblMetazoa; AGAMI1_009264.R18483; AGAMI1_009264.P18483; AGAMI1_009264.
+DR   EnsemblMetazoa; AGAP004038-RA; AGAP004038-PA; AGAP004038.
+DR   GeneID; 1270899; -.
+DR   KEGG; aga:1270899; -.
+DR   VEuPathDB; VectorBase:AGAMI1_009264; -.
+DR   VEuPathDB; VectorBase:AGAP004038; -.
+DR   eggNOG; KOG2408; Eukaryota.
+DR   HOGENOM; CLU_006087_5_0_1; -.
+DR   InParanoid; Q7QH73; -.
+DR   OMA; IQCPAHV; -.
+DR   OrthoDB; 823504at2759; -.
+DR   PhylomeDB; Q7QH73; -.
+DR   Proteomes; UP000007062; Chromosome 2R.
+DR   GO; GO:0005576; C:extracellular region; IEA:UniProtKB-SubCell.
+DR   GO; GO:0020037; F:heme binding; IEA:InterPro.
+DR   GO; GO:0140825; F:lactoperoxidase activity; IEA:UniProtKB-EC.
+DR   GO; GO:0004601; F:peroxidase activity; IBA:GO_Central.
+DR   GO; GO:0022412; P:cellular process involved in reproduction in multicellular organism; IEA:UniProtKB-ARBA.
+DR   GO; GO:0006979; P:response to oxidative stress; IEA:InterPro.
+DR   CDD; cd09823; peroxinectin_like; 1.
+DR   FunFam; 1.10.640.10:FF:000003; chorion peroxidase; 1.
+DR   Gene3D; 1.10.640.10; Haem peroxidase domain superfamily, animal type; 1.
+DR   InterPro; IPR019791; Haem_peroxidase_animal.
+DR   InterPro; IPR010255; Haem_peroxidase_sf.
+DR   InterPro; IPR037120; Haem_peroxidase_sf_animal.
+DR   PANTHER; PTHR11475:SF4; CHORION PEROXIDASE; 1.
+DR   PANTHER; PTHR11475; OXIDASE/PEROXIDASE; 1.
+DR   Pfam; PF03098; An_peroxidase; 1.
+DR   PRINTS; PR00457; ANPEROXIDASE.
+DR   SUPFAM; SSF48113; Heme-dependent peroxidases; 1.
+DR   PROSITE; PS50292; PEROXIDASE_3; 1.
+PE   2: Evidence at transcript level;
+KW   Acetylation; Cleavage on pair of basic residues; Disulfide bond;
+KW   Glycoprotein; Heme; Hydrogen peroxide; Hydroxylation; Iron; Metal-binding;
+KW   Oxidoreductase; Peroxidase; Reference proteome; Secreted; Signal.
+FT   SIGNAL          1..27
+FT                   /evidence="ECO:0000255"
+FT   PROPEP          28..187
+FT                   /evidence="ECO:0000250|UniProtKB:P82600"
+FT                   /id="PRO_0000232895"
+FT   CHAIN           188..767
+FT                   /note="Chorion peroxidase"
+FT                   /id="PRO_0000407855"
+FT   ACT_SITE        284
+FT                   /note="Proton acceptor"
+FT                   /evidence="ECO:0000250|UniProtKB:P05164,
+FT                   ECO:0000255|PROSITE-ProRule:PRU00298"
+FT   BINDING         529
+FT                   /ligand="heme b"
+FT                   /ligand_id="ChEBI:CHEBI:60344"
+FT                   /ligand_part="Fe"
+FT                   /ligand_part_id="ChEBI:CHEBI:18248"
+FT                   /note="axial binding residue"
+FT                   /evidence="ECO:0000250|UniProtKB:P05164,
+FT                   ECO:0000255|PROSITE-ProRule:PRU00298"
+FT   SITE            425
+FT                   /note="Transition state stabilizer"
+FT                   /evidence="ECO:0000250|UniProtKB:P05164,
+FT                   ECO:0000255|PROSITE-ProRule:PRU00298"
+FT   MOD_RES         188
+FT                   /note="N-acetylcysteine; in Chorion peroxidase light chain"
+FT                   /evidence="ECO:0000250"
+FT   MOD_RES         331
+FT                   /note="3',4'-dihydroxyphenylalanine"
+FT                   /evidence="ECO:0000250|UniProtKB:P82600"
+FT   CARBOHYD        165
+FT                   /note="N-linked (GlcNAc...) asparagine"
+FT                   /evidence="ECO:0000255"
+FT   CARBOHYD        237
+FT                   /note="N-linked (Man) tryptophan"
+FT                   /evidence="ECO:0000250|UniProtKB:P82600"
+FT   CARBOHYD        457
+FT                   /note="N-linked (Man) tryptophan"
+FT                   /evidence="ECO:0000250|UniProtKB:P82600"
+FT   CARBOHYD        658
+FT                   /note="N-linked (Man) tryptophan"
+FT                   /evidence="ECO:0000250|UniProtKB:P82600"
+FT   CARBOHYD        764
+FT                   /note="N-linked (Man) tryptophan"
+FT                   /evidence="ECO:0000250|UniProtKB:P82600"
+FT   DISULFID        194..207
+FT                   /evidence="ECO:0000250|UniProtKB:P05164,
+FT                   ECO:0000255|PROSITE-ProRule:PRU00298"
+FT   DISULFID        411..418
+FT                   /evidence="ECO:0000250|UniProtKB:P05164,
+FT                   ECO:0000255|PROSITE-ProRule:PRU00298"
+FT   DISULFID        725..753
+FT                   /evidence="ECO:0000250|UniProtKB:P05164,
+FT                   ECO:0000255|PROSITE-ProRule:PRU00298"
+SQ   SEQUENCE   767 AA;  85796 MW;  982917AE62397A0F CRC64;
+     MLPKGVLLFL VLIVLVQHFA TVQTTNAIER PSAPSSQCTS SHESCVLRVM CEVEPRARTT
+     LVPCLTADGL EGVCCSVAKE GKQRKKRSLP FELSQELFQN AVGEGHRVYT RKLANIDHHR
+     EVMRGGSVDT LVRQFHAPPG EPLGAEDPTA YEDMFVARSF ANALNLSVAE RLDLPELTLD
+     PALRRKRCLP PRSCDPHARY RSLDGSCNNP VPARSSWGAA GYPFERLLPP AYEDGVWAPR
+     VHSSVSGRLL ASARDISVAV FPDVDRRDRK FNLLLMQFGQ FMSHDFTRSA SVRIGQEEVQ
+     CCNAEHSGAL RGEQAHFACM PIAVSPADPF YSRFGIRCLN FVRLALARDG KCRLGYGKQL
+     NRVTHFIDGS AVYGSNEALA ASLRTFEGGR LRSSFPTGEE LLPFARTRAA CEPWAKACFR
+     AGDDRVNQIV SLTEMHTLFL REHNRVATAL AALNRHWDDE RLYQETRRIV GAVMQKIFYN
+     EYLPSIVGHS KARQYGLLDS HGEQTDFYSP DVKPAVFNEL SGAAFRFGHS TVDGAFLIQH
+     RHRRTELVPI QEVFLNPSRL LQRSFFDDFL FSLMDQPQQQ LDDSITFGLT RLLFAGRNPF
+     GSDLASLNIQ RGRDHALRPY NDYRSWAGLE RLTSFEQFGP VGARLASVYE FPDDVDLWVG
+     GLLEPPTQDG ALFGETFAAI ISEQFARLKF GDRYYYTNGP RTNPGFFTGE QLRELSKVSL
+     ASVICANLDQ ADGFSAPRDA FRQPSEHNPP VPCQTLVGMD LSAWRGH
+//
+ID   FP1_MYTCO               Reviewed;         872 AA.
+AC   Q25434;
+DT   30-MAY-2000, integrated into UniProtKB/Swiss-Prot.
+DT   01-NOV-1996, sequence version 1.
+DT   09-APR-2025, entry version 79.
+DE   RecName: Full=Adhesive plaque matrix protein;
+DE   AltName: Full=Foot protein 1;
+DE   AltName: Full=MCFP1;
+DE   Flags: Precursor;
+GN   Name=FP1;
+OS   Mytilus coruscus (Sea mussel).
+OC   Eukaryota; Metazoa; Spiralia; Lophotrochozoa; Mollusca; Bivalvia;
+OC   Autobranchia; Pteriomorphia; Mytilida; Mytiloidea; Mytilidae; Mytilinae;
+OC   Mytilus.
+OX   NCBI_TaxID=42192;
+RN   [1]
+RP   NUCLEOTIDE SEQUENCE [MRNA].
+RC   TISSUE=Foot;
+RX   PubMed=8798340; DOI=10.1007/bf02339009;
+RA   Inoue K., Takeuchi Y., Takeyama S., Yamaha E., Yamazaki F., Odo S.,
+RA   Harayama S.;
+RT   "Adhesive protein cDNA sequence of the mussel Mytilus coruscus and its
+RT   evolutionary implications.";
+RL   J. Mol. Evol. 43:348-356(1996).
+CC   -!- FUNCTION: Provides adhesiveness to the mussel's foot. Mussels produce
+CC       one of the strongest water insoluble glues. The mussel's adhesive is a
+CC       bundle of threads, called a byssus, formed by a fibrous collagenous
+CC       core coated with adhesive proteins.
+CC   -!- SUBCELLULAR LOCATION: Secreted.
+CC   -!- TISSUE SPECIFICITY: Produced by the byssal gland.
+CC   -!- DOMAIN: Almost exclusively composed of repeats of a decapeptide.
+CC   -!- PTM: Hydroxylated on proline (mono- or dihydroxylation) and tyrosine
+CC       residues (to L-DOPA = 3',4'-dihydroxyphenylalanine) of the tandem
+CC       repeats.
+CC   -!- WEB RESOURCE: Name=Protein Spotlight; Note=Sticky business - Issue 2 of
+CC       September 2001;
+CC       URL="https://www.proteinspotlight.org/back_issues/002";
+CC   ---------------------------------------------------------------------------
+CC   Copyrighted by the UniProt Consortium, see https://www.uniprot.org/terms
+CC   Distributed under the Creative Commons Attribution (CC BY 4.0) License
+CC   ---------------------------------------------------------------------------
+DR   EMBL; D63777; BAA09850.1; -; mRNA.
+DR   AlphaFoldDB; Q25434; -.
+DR   GO; GO:0005576; C:extracellular region; IEA:UniProtKB-SubCell.
+DR   InterPro; IPR002964; Adhesive_plaq.
+DR   PRINTS; PR01216; ADHESIVEI.
+PE   2: Evidence at transcript level;
+KW   Hydroxylation; Repeat; Secreted; Signal.
+FT   SIGNAL          1..20
+FT                   /evidence="ECO:0000255"
+FT   CHAIN           21..872
+FT                   /note="Adhesive plaque matrix protein"
+FT                   /id="PRO_0000021285"
+FT   REPEAT          124..133
+FT                   /note="1"
+FT   REPEAT          134..143
+FT                   /note="2"
+FT   REPEAT          144..153
+FT                   /note="3"
+FT   REPEAT          154..163
+FT                   /note="4"
+FT   REPEAT          174..183
+FT                   /note="5"
+FT   REPEAT          184..192
+FT                   /note="6"
+FT   REPEAT          193..202
+FT                   /note="7"
+FT   REPEAT          203..212
+FT                   /note="8"
+FT   REPEAT          213..221
+FT                   /note="9"
+FT   REPEAT          222..231
+FT                   /note="10"
+FT   REPEAT          232..241
+FT                   /note="11"
+FT   REPEAT          242..251
+FT                   /note="12"
+FT   REPEAT          252..261
+FT                   /note="13"
+FT   REPEAT          262..271
+FT                   /note="14"
+FT   REPEAT          272..281
+FT                   /note="15"
+FT   REPEAT          282..291
+FT                   /note="16"
+FT   REPEAT          292..301
+FT                   /note="17"
+FT   REPEAT          302..311
+FT                   /note="18"
+FT   REPEAT          312..321
+FT                   /note="19"
+FT   REPEAT          322..331
+FT                   /note="20"
+FT   REPEAT          332..341
+FT                   /note="21"
+FT   REPEAT          342..351
+FT                   /note="22"
+FT   REPEAT          352..361
+FT                   /note="23"
+FT   REPEAT          362..371
+FT                   /note="24"
+FT   REPEAT          372..381
+FT                   /note="25"
+FT   REPEAT          382..391
+FT                   /note="26"
+FT   REPEAT          402..411
+FT                   /note="27"
+FT   REPEAT          412..421
+FT                   /note="28"
+FT   REPEAT          422..431
+FT                   /note="29"
+FT   REPEAT          432..441
+FT                   /note="30"
+FT   REPEAT          442..451
+FT                   /note="31"
+FT   REPEAT          452..461
+FT                   /note="32"
+FT   REPEAT          462..471
+FT                   /note="33"
+FT   REPEAT          472..481
+FT                   /note="34"
+FT   REPEAT          482..491
+FT                   /note="35"
+FT   REPEAT          502..511
+FT                   /note="36"
+FT   REPEAT          512..521
+FT                   /note="37"
+FT   REPEAT          522..531
+FT                   /note="38"
+FT   REPEAT          532..541
+FT                   /note="39"
+FT   REPEAT          542..551
+FT                   /note="40"
+FT   REPEAT          552..561
+FT                   /note="41"
+FT   REPEAT          562..571
+FT                   /note="42"
+FT   REPEAT          572..581
+FT                   /note="43"
+FT   REPEAT          582..591
+FT                   /note="44"
+FT   REPEAT          602..611
+FT                   /note="45"
+FT   REPEAT          612..621
+FT                   /note="46"
+FT   REPEAT          622..631
+FT                   /note="47"
+FT   REPEAT          632..641
+FT                   /note="48"
+FT   REPEAT          642..651
+FT                   /note="49"
+FT   REPEAT          652..661
+FT                   /note="50"
+FT   REPEAT          662..671
+FT                   /note="51"
+FT   REPEAT          672..681
+FT                   /note="52"
+FT   REPEAT          682..691
+FT                   /note="53"
+FT   REPEAT          702..711
+FT                   /note="54"
+FT   REPEAT          712..721
+FT                   /note="55"
+FT   REPEAT          722..731
+FT                   /note="56"
+FT   REPEAT          732..741
+FT                   /note="57"
+FT   REPEAT          742..751
+FT                   /note="58"
+FT   REPEAT          752..761
+FT                   /note="59"
+FT   REPEAT          762..771
+FT                   /note="60"
+FT   REPEAT          772..781
+FT                   /note="61"
+FT   REPEAT          782..791
+FT                   /note="62"
+FT   REPEAT          792..801
+FT                   /note="63"
+FT   REPEAT          812..821
+FT                   /note="64"
+FT   REPEAT          822..831
+FT                   /note="65"
+FT   REPEAT          832..841
+FT                   /note="66"
+FT   REPEAT          842..851
+FT                   /note="67"
+FT   REPEAT          852..861
+FT                   /note="68"
+FT   REPEAT          862..871
+FT                   /note="69"
+FT   REGION          21..41
+FT                   /note="Nonrepetitive linker"
+FT   REGION          124..871
+FT                   /note="69 X 10 AA tandem repeats of Y-[KRQ]-[PSTAHQR]-K-
+FT                   [AIPTSKGV]-[STR]-Y-[PTSVA]-[PSTQA]-[STYIPAQ]"
+FT   REGION          184..192
+FT                   /note="Nonapeptide 1"
+FT   REGION          213..221
+FT                   /note="Nonapeptide 2"
+FT   REGION          273..781
+FT                   /note="Disordered"
+FT                   /evidence="ECO:0000256|SAM:MobiDB-lite"
+FT   COMPBIAS        273..282
+FT                   /note="Pro residues"
+FT                   /evidence="ECO:0000256|SAM:MobiDB-lite"
+FT   COMPBIAS        291..302
+FT                   /note="Pro residues"
+FT                   /evidence="ECO:0000256|SAM:MobiDB-lite"
+FT   COMPBIAS        320..360
+FT                   /note="Low complexity"
+FT                   /evidence="ECO:0000256|SAM:MobiDB-lite"
+FT   COMPBIAS        361..372
+FT                   /note="Pro residues"
+FT                   /evidence="ECO:0000256|SAM:MobiDB-lite"
+FT   COMPBIAS        377..390
+FT                   /note="Low complexity"
+FT                   /evidence="ECO:0000256|SAM:MobiDB-lite"
+FT   COMPBIAS        391..402
+FT                   /note="Pro residues"
+FT                   /evidence="ECO:0000256|SAM:MobiDB-lite"
+FT   COMPBIAS        403..450
+FT                   /note="Low complexity"
+FT                   /evidence="ECO:0000256|SAM:MobiDB-lite"
+FT   COMPBIAS        451..462
+FT                   /note="Pro residues"
+FT                   /evidence="ECO:0000256|SAM:MobiDB-lite"
+FT   COMPBIAS        471..482
+FT                   /note="Pro residues"
+FT                   /evidence="ECO:0000256|SAM:MobiDB-lite"
+FT   COMPBIAS        501..540
+FT                   /note="Low complexity"
+FT                   /evidence="ECO:0000256|SAM:MobiDB-lite"
+FT   COMPBIAS        541..552
+FT                   /note="Pro residues"
+FT                   /evidence="ECO:0000256|SAM:MobiDB-lite"
+FT   COMPBIAS        568..590
+FT                   /note="Low complexity"
+FT                   /evidence="ECO:0000256|SAM:MobiDB-lite"
+FT   COMPBIAS        600..640
+FT                   /note="Low complexity"
+FT                   /evidence="ECO:0000256|SAM:MobiDB-lite"
+FT   COMPBIAS        641..652
+FT                   /note="Pro residues"
+FT                   /evidence="ECO:0000256|SAM:MobiDB-lite"
+FT   COMPBIAS        677..690
+FT                   /note="Low complexity"
+FT                   /evidence="ECO:0000256|SAM:MobiDB-lite"
+FT   COMPBIAS        698..719
+FT                   /note="Low complexity"
+FT                   /evidence="ECO:0000256|SAM:MobiDB-lite"
+FT   COMPBIAS        754..763
+FT                   /note="Low complexity"
+FT                   /evidence="ECO:0000256|SAM:MobiDB-lite"
+SQ   SEQUENCE   872 AA;  101678 MW;  98CC70D7C75FF3C4 CRC64;
+     MEGIKLNLCL LCIFSCDIFA LSNGNIHNVY GSAYSGASAG AYKTLPGSHP YGSKHVPVYK
+     PMNKIPTPYI SKKSYPAPYK PKGYYPTKRY QPTYGSKTNY PPIYKPIAKK LSSYKAIKTT
+     YPAYKAKTSY PPSYKHKITY PPTYKPKITY PPTYKQKPSY PPSYKPKTTY PPTYKPKITY
+     PPTYKRKPSY TPYKPKATYP PTYKPKITYP PTYKRKPSYT PYKPKTTYPP TYKPKISYPS
+     IYKPKASYVS SYKSKKTYPP TYKPKISYPP TYKPKPSYPP TYKPKVTYPP TYKPKPSYPP
+     TYKPKITYPP TYKPKPSYPT PYKQKPSYPP IYKSKSSYPT SYKSKKTYPP TYKPKITYPP
+     TYKPKPSYPP SYKPKKTYSP TYKPKITYPP TYKPKPSYPP SYKPKTTYPP TYKPKISYPP
+     TYKPKASYVS SYKSKKTYPP TYKPKISYPP TYKPKPSYPP TYKPKITYPP TYKPKPSYPP
+     TYKPKITYPP TYKRKPSYPT PYKQKPSYPP IYKSKSSYPT SYKSKKTYPP TYKPKITYPP
+     TYKPKPSYPP SYKPKTTYPP TYKPKIRYPP TYKPKASYPP TYKPKITYPP TYKPKPSYPT
+     PYKQKPSYPP IYKSKSSYPT AYKSKKTYPP TYKPKITYPP TYKPKPSYPP SYRPKITYPP
+     TYKPKKSYPQ AYKSKGSYPP SYQPKKTYPP SYKPKKTYPP TYKPKISYPP TYKTKPSYPA
+     SYKRKTSYPP TYKPKISYPS TYKAKPSYPP TYKPKPSYAS SYKPKIRYPP TYKPKPSYAS
+     SYKPKIRYPP TYKPKPSYAS SYKPKIRYPP TYKPKPSYAS SYKPKITYPP TYKPKISYPP
+     TYKPKITYPP TYKPKISYPP AYKPKISYPS QY
+//
+ID   FP2_MYTGA               Reviewed;         473 AA.
+AC   Q25464;
+DT   30-MAY-2000, integrated into UniProtKB/Swiss-Prot.
+DT   01-NOV-1996, sequence version 1.
+DT   28-JAN-2026, entry version 105.
+DE   RecName: Full=Adhesive plaque matrix protein 2;
+DE   AltName: Full=Foot protein 2;
+DE   AltName: Full=MGFP-2;
+DE            Short=MGFP2;
+DE   Flags: Precursor;
+GN   Name=FP2;
+OS   Mytilus galloprovincialis (Mediterranean mussel).
+OC   Eukaryota; Metazoa; Spiralia; Lophotrochozoa; Mollusca; Bivalvia;
+OC   Autobranchia; Pteriomorphia; Mytilida; Mytiloidea; Mytilidae; Mytilinae;
+OC   Mytilus.
+OX   NCBI_TaxID=29158;
+RN   [1]
+RP   NUCLEOTIDE SEQUENCE [MRNA].
+RC   TISSUE=Foot;
+RX   PubMed=7896812; DOI=10.1074/jbc.270.12.6698;
+RA   Inoue K., Takeuchi Y., Miki D., Odo S.;
+RT   "Mussel adhesive plaque protein gene is a novel member of epidermal growth
+RT   factor-like gene family.";
+RL   J. Biol. Chem. 270:6698-6701(1995).
+CC   -!- FUNCTION: Provides adhesiveness to the mussel's foot. Mussels produce
+CC       one of the strongest water insoluble glues. The mussel's adhesive is a
+CC       bundle of threads, called a byssus, formed by a fibrous collagenous
+CC       core coated with adhesive proteins.
+CC   -!- SUBCELLULAR LOCATION: Secreted.
+CC   -!- TISSUE SPECIFICITY: Produced by the byssal gland.
+CC   -!- DEVELOPMENTAL STAGE: Expression starts at the pediveliger, foot
+CC       formation, stage.
+CC   -!- PTM: Contains L-DOPA (3',4'-dihydroxyphenylalanine). {ECO:0000250}.
+CC   -!- WEB RESOURCE: Name=Protein Spotlight; Note=Sticky business - Issue 2 of
+CC       September 2001;
+CC       URL="https://www.proteinspotlight.org/back_issues/002";
+CC   ---------------------------------------------------------------------------
+CC   Copyrighted by the UniProt Consortium, see https://www.uniprot.org/terms
+CC   Distributed under the Creative Commons Attribution (CC BY 4.0) License
+CC   ---------------------------------------------------------------------------
+DR   EMBL; D43794; BAA07852.1; -; mRNA.
+DR   PIR; A56175; A56175.
+DR   AlphaFoldDB; Q25464; -.
+DR   SMR; Q25464; -.
+DR   GlyCosmos; Q25464; 1 site, No reported glycans.
+DR   GO; GO:0005576; C:extracellular region; IEA:UniProtKB-SubCell.
+DR   GO; GO:0005509; F:calcium ion binding; IEA:InterPro.
+DR   CDD; cd00054; EGF_CA; 5.
+DR   FunFam; 2.10.25.10:FF:000066; FAT atypical cadherin 4; 1.
+DR   FunFam; 2.10.25.10:FF:000095; Notch, isoform B; 3.
+DR   FunFam; 2.10.25.10:FF:000472; Uncharacterized protein, isoform A; 1.
+DR   Gene3D; 2.10.25.10; Laminin; 11.
+DR   InterPro; IPR000742; EGF.
+DR   InterPro; IPR001881; EGF-like_Ca-bd_dom.
+DR   InterPro; IPR000152; EGF-type_Asp/Asn_hydroxyl_site.
+DR   PANTHER; PTHR12916; CYTOCHROME C OXIDASE POLYPEPTIDE VIC-2; 1.
+DR   PANTHER; PTHR12916:SF4; UNINFLATABLE, ISOFORM C; 1.
+DR   Pfam; PF00008; EGF; 2.
+DR   Pfam; PF25024; EGF_TEN; 1.
+DR   SMART; SM00181; EGF; 11.
+DR   SMART; SM00179; EGF_CA; 10.
+DR   SUPFAM; SSF57196; EGF/Laminin; 11.
+DR   PROSITE; PS00010; ASX_HYDROXYL; 2.
+DR   PROSITE; PS00022; EGF_1; 11.
+DR   PROSITE; PS01186; EGF_2; 10.
+DR   PROSITE; PS50026; EGF_3; 11.
+PE   2: Evidence at transcript level;
+KW   Disulfide bond; EGF-like domain; Glycoprotein; Hydroxylation; Repeat;
+KW   Secreted; Signal.
+FT   SIGNAL          1..17
+FT                   /evidence="ECO:0000255"
+FT   CHAIN           18..473
+FT                   /note="Adhesive plaque matrix protein 2"
+FT                   /id="PRO_0000007588"
+FT   DOMAIN          45..81
+FT                   /note="EGF-like 1"
+FT                   /evidence="ECO:0000255|PROSITE-ProRule:PRU00076"
+FT   DOMAIN          82..117
+FT                   /note="EGF-like 2"
+FT                   /evidence="ECO:0000255|PROSITE-ProRule:PRU00076"
+FT   DOMAIN          118..154
+FT                   /note="EGF-like 3"
+FT                   /evidence="ECO:0000255|PROSITE-ProRule:PRU00076"
+FT   DOMAIN          155..191
+FT                   /note="EGF-like 4"
+FT                   /evidence="ECO:0000255|PROSITE-ProRule:PRU00076"
+FT   DOMAIN          192..228
+FT                   /note="EGF-like 5"
+FT                   /evidence="ECO:0000255|PROSITE-ProRule:PRU00076"
+FT   DOMAIN          229..265
+FT                   /note="EGF-like 6"
+FT                   /evidence="ECO:0000255|PROSITE-ProRule:PRU00076"
+FT   DOMAIN          266..301
+FT                   /note="EGF-like 7"
+FT                   /evidence="ECO:0000255|PROSITE-ProRule:PRU00076"
+FT   DOMAIN          302..340
+FT                   /note="EGF-like 8"
+FT                   /evidence="ECO:0000255|PROSITE-ProRule:PRU00076"
+FT   DOMAIN          342..378
+FT                   /note="EGF-like 9"
+FT                   /evidence="ECO:0000255|PROSITE-ProRule:PRU00076"
+FT   DOMAIN          383..420
+FT                   /note="EGF-like 10"
+FT                   /evidence="ECO:0000255|PROSITE-ProRule:PRU00076"
+FT   DOMAIN          425..461
+FT                   /note="EGF-like 11"
+FT                   /evidence="ECO:0000255|PROSITE-ProRule:PRU00076"
+FT   MOD_RES         23
+FT                   /note="3',4'-dihydroxyphenylalanine"
+FT                   /evidence="ECO:0000250"
+FT   MOD_RES         31
+FT                   /note="3',4'-dihydroxyphenylalanine"
+FT                   /evidence="ECO:0000250"
+FT   MOD_RES         36
+FT                   /note="3',4'-dihydroxyphenylalanine"
+FT                   /evidence="ECO:0000250"
+FT   MOD_RES         43
+FT                   /note="3',4'-dihydroxyphenylalanine"
+FT                   /evidence="ECO:0000250"
+FT   CARBOHYD        93
+FT                   /note="N-linked (GlcNAc...) asparagine"
+FT                   /evidence="ECO:0000255"
+FT   DISULFID        49..60
+FT                   /evidence="ECO:0000255|PROSITE-ProRule:PRU00076"
+FT   DISULFID        54..69
+FT                   /evidence="ECO:0000255|PROSITE-ProRule:PRU00076"
+FT   DISULFID        71..80
+FT                   /evidence="ECO:0000255|PROSITE-ProRule:PRU00076"
+FT   DISULFID        86..97
+FT                   /evidence="ECO:0000255|PROSITE-ProRule:PRU00076"
+FT   DISULFID        91..106
+FT                   /evidence="ECO:0000255|PROSITE-ProRule:PRU00076"
+FT   DISULFID        108..117
+FT                   /evidence="ECO:0000255|PROSITE-ProRule:PRU00076"
+FT   DISULFID        122..133
+FT                   /evidence="ECO:0000255|PROSITE-ProRule:PRU00076"
+FT   DISULFID        127..143
+FT                   /evidence="ECO:0000255|PROSITE-ProRule:PRU00076"
+FT   DISULFID        145..154
+FT                   /evidence="ECO:0000255|PROSITE-ProRule:PRU00076"
+FT   DISULFID        159..170
+FT                   /evidence="ECO:0000255|PROSITE-ProRule:PRU00076"
+FT   DISULFID        164..180
+FT                   /evidence="ECO:0000255|PROSITE-ProRule:PRU00076"
+FT   DISULFID        182..191
+FT                   /evidence="ECO:0000255|PROSITE-ProRule:PRU00076"
+FT   DISULFID        196..207
+FT                   /evidence="ECO:0000255|PROSITE-ProRule:PRU00076"
+FT   DISULFID        201..217
+FT                   /evidence="ECO:0000255|PROSITE-ProRule:PRU00076"
+FT   DISULFID        219..228
+FT                   /evidence="ECO:0000255|PROSITE-ProRule:PRU00076"
+FT   DISULFID        233..244
+FT                   /evidence="ECO:0000255|PROSITE-ProRule:PRU00076"
+FT   DISULFID        238..254
+FT                   /evidence="ECO:0000255|PROSITE-ProRule:PRU00076"
+FT   DISULFID        256..265
+FT                   /evidence="ECO:0000255|PROSITE-ProRule:PRU00076"
+FT   DISULFID        270..281
+FT                   /evidence="ECO:0000255|PROSITE-ProRule:PRU00076"
+FT   DISULFID        275..290
+FT                   /evidence="ECO:0000255|PROSITE-ProRule:PRU00076"
+FT   DISULFID        292..301
+FT                   /evidence="ECO:0000255|PROSITE-ProRule:PRU00076"
+FT   DISULFID        306..317
+FT                   /evidence="ECO:0000255|PROSITE-ProRule:PRU00076"
+FT   DISULFID        311..328
+FT                   /evidence="ECO:0000255|PROSITE-ProRule:PRU00076"
+FT   DISULFID        330..339
+FT                   /evidence="ECO:0000255|PROSITE-ProRule:PRU00076"
+FT   DISULFID        346..357
+FT                   /evidence="ECO:0000255|PROSITE-ProRule:PRU00076"
+FT   DISULFID        351..366
+FT                   /evidence="ECO:0000255|PROSITE-ProRule:PRU00076"
+FT   DISULFID        368..377
+FT                   /evidence="ECO:0000255|PROSITE-ProRule:PRU00076"
+FT   DISULFID        387..399
+FT                   /evidence="ECO:0000255|PROSITE-ProRule:PRU00076"
+FT   DISULFID        393..408
+FT                   /evidence="ECO:0000255|PROSITE-ProRule:PRU00076"
+FT   DISULFID        410..419
+FT                   /evidence="ECO:0000255|PROSITE-ProRule:PRU00076"
+FT   DISULFID        429..440
+FT                   /evidence="ECO:0000255|PROSITE-ProRule:PRU00076"
+FT   DISULFID        434..449
+FT                   /evidence="ECO:0000255|PROSITE-ProRule:PRU00076"
+FT   DISULFID        451..460
+FT                   /evidence="ECO:0000255|PROSITE-ProRule:PRU00076"
+SQ   SEQUENCE   473 AA;  51772 MW;  BA76BA8C3BA49A0F CRC64;
+     MLFSFFLLLT CTQLCLGTNR PDYNDDEEDD YKPPVYKPSP SKYRPVNPCL KKPCKYNGVC
+     KPRGGSYKCF CKGGYYGYNC NLKNACKPNQ CKNKSRCVPV GKTFKCVCRN GNFGRLCEKN
+     VCSPNPCKNN GKCSPLGKTG YKCTCSGGYT GPRCEVHACK PNPCKNKGRC FPDGKTGYKC
+     RCVDGYSGPT CQENACKPNP CSNGGTCSAD KFGDYSCECR PGYFGPECER YVCAPNPCKN
+     GGICSSDGSG GYRCRCKGGY SGPTCKVNVC KPTPCKNSGR CVNKGSSYNC ICKGGYSGPT
+     CGENVCKPNP CQNRGRCYPD NSDDGFKCRC VGGYKGPTCE DKPNPCNTKP CKNGGKCNYN
+     GKIYTCKCAY GWRGRHCTDK AYKPNPCVVS KPCKNRGKCI WNGKAYRCKC AYGYGGRHCT
+     KKSYKKNPCA SRPCKNRGKC TDKGNGYVCK CARGYSGRYC SLKSPPSYDD DEY
+//
+ID   FP1_MYTGA               Reviewed;         751 AA.
+AC   Q27409;
+DT   30-MAY-2000, integrated into UniProtKB/Swiss-Prot.
+DT   01-NOV-1996, sequence version 1.
+DT   09-APR-2025, entry version 76.
+DE   RecName: Full=Adhesive plaque matrix protein;
+DE   AltName: Full=Foot protein 1;
+DE   AltName: Full=MGFP-1;
+DE            Short=MGFP1;
+DE   Flags: Precursor;
+GN   Name=FP1;
+OS   Mytilus galloprovincialis (Mediterranean mussel).
+OC   Eukaryota; Metazoa; Spiralia; Lophotrochozoa; Mollusca; Bivalvia;
+OC   Autobranchia; Pteriomorphia; Mytilida; Mytiloidea; Mytilidae; Mytilinae;
+OC   Mytilus.
+OX   NCBI_TaxID=29158;
+RN   [1]
+RP   NUCLEOTIDE SEQUENCE [MRNA].
+RC   TISSUE=Foot;
+RX   PubMed=8043658; DOI=10.2307/1542281;
+RA   Inoue K., Odo S.;
+RT   "The adhesive protein cDNA of Mytilus galloprovincialis encodes decapeptide
+RT   repeats but no hexapeptide motif.";
+RL   Biol. Bull. 186:349-355(1994).
+CC   -!- FUNCTION: Provides adhesiveness to the mussel's foot. Mussels produce
+CC       one of the strongest water insoluble glues. The mussel's adhesive is a
+CC       bundle of threads, called a byssus, formed by a fibrous collagenous
+CC       core coated with adhesive proteins.
+CC   -!- SUBCELLULAR LOCATION: Secreted.
+CC   -!- TISSUE SPECIFICITY: Produced by the byssal gland.
+CC   -!- DOMAIN: Almost exclusively composed of repeats of a decapeptide.
+CC   -!- PTM: Hydroxylated on proline (mono- or dihydroxylation) and tyrosine
+CC       residues (to L-DOPA = 3',4'-dihydroxyphenylalanine) of the tandem
+CC       repeats. {ECO:0000250}.
+CC   -!- WEB RESOURCE: Name=Protein Spotlight; Note=Sticky business - Issue 2 of
+CC       September 2001;
+CC       URL="https://www.proteinspotlight.org/back_issues/002";
+CC   ---------------------------------------------------------------------------
+CC   Copyrighted by the UniProt Consortium, see https://www.uniprot.org/terms
+CC   Distributed under the Creative Commons Attribution (CC BY 4.0) License
+CC   ---------------------------------------------------------------------------
+DR   EMBL; D63778; BAA09851.1; -; mRNA.
+DR   PIR; S68957; S68957.
+DR   AlphaFoldDB; Q27409; -.
+DR   GO; GO:0005576; C:extracellular region; IEA:UniProtKB-SubCell.
+DR   InterPro; IPR002964; Adhesive_plaq.
+DR   PRINTS; PR01216; ADHESIVEI.
+PE   2: Evidence at transcript level;
+KW   Hydroxylation; Repeat; Secreted; Signal.
+FT   SIGNAL          1..20
+FT                   /evidence="ECO:0000255"
+FT   CHAIN           21..751
+FT                   /note="Adhesive plaque matrix protein"
+FT                   /id="PRO_0000021286"
+FT   REPEAT          109..118
+FT                   /note="1"
+FT   REPEAT          119..128
+FT                   /note="2"
+FT   REPEAT          129..138
+FT                   /note="3"
+FT   REPEAT          139..148
+FT                   /note="4"
+FT   REPEAT          149..158
+FT                   /note="5"
+FT   REPEAT          159..168
+FT                   /note="6"
+FT   REPEAT          169..178
+FT                   /note="7"
+FT   REPEAT          179..188
+FT                   /note="8"
+FT   REPEAT          189..198
+FT                   /note="9"
+FT   REPEAT          199..208
+FT                   /note="10"
+FT   REPEAT          209..218
+FT                   /note="11"
+FT   REPEAT          219..228
+FT                   /note="12"
+FT   REPEAT          229..238
+FT                   /note="13"
+FT   REPEAT          239..248
+FT                   /note="14"
+FT   REPEAT          249..258
+FT                   /note="15"
+FT   REPEAT          259..268
+FT                   /note="16"
+FT   REPEAT          269..278
+FT                   /note="17"
+FT   REPEAT          279..288
+FT                   /note="18"
+FT   REPEAT          289..298
+FT                   /note="19"
+FT   REPEAT          299..308
+FT                   /note="20"
+FT   REPEAT          309..318
+FT                   /note="21"
+FT   REPEAT          319..328
+FT                   /note="22"
+FT   REPEAT          329..338
+FT                   /note="23"
+FT   REPEAT          339..348
+FT                   /note="24"
+FT   REPEAT          349..358
+FT                   /note="25"
+FT   REPEAT          359..368
+FT                   /note="26"
+FT   REPEAT          369..378
+FT                   /note="27"
+FT   REPEAT          379..388
+FT                   /note="28"
+FT   REPEAT          389..398
+FT                   /note="29"
+FT   REPEAT          399..408
+FT                   /note="30"
+FT   REPEAT          409..418
+FT                   /note="31"
+FT   REPEAT          419..428
+FT                   /note="32"
+FT   REPEAT          429..438
+FT                   /note="33"
+FT   REPEAT          439..448
+FT                   /note="34"
+FT   REPEAT          449..458
+FT                   /note="35"
+FT   REPEAT          459..468
+FT                   /note="36"
+FT   REPEAT          469..478
+FT                   /note="37"
+FT   REPEAT          479..488
+FT                   /note="38"
+FT   REPEAT          489..498
+FT                   /note="39"
+FT   REPEAT          499..508
+FT                   /note="40"
+FT   REPEAT          509..518
+FT                   /note="41"
+FT   REPEAT          519..528
+FT                   /note="42"
+FT   REPEAT          529..538
+FT                   /note="43"
+FT   REPEAT          539..548
+FT                   /note="44"
+FT   REPEAT          549..558
+FT                   /note="45"
+FT   REPEAT          559..568
+FT                   /note="46"
+FT   REPEAT          569..578
+FT                   /note="47"
+FT   REPEAT          579..588
+FT                   /note="48"
+FT   REPEAT          589..598
+FT                   /note="49"
+FT   REPEAT          599..608
+FT                   /note="50"
+FT   REPEAT          609..618
+FT                   /note="51"
+FT   REPEAT          619..628
+FT                   /note="52"
+FT   REPEAT          629..638
+FT                   /note="53"
+FT   REPEAT          639..648
+FT                   /note="54"
+FT   REPEAT          649..658
+FT                   /note="55"
+FT   REPEAT          659..662
+FT                   /note="56; truncated"
+FT   REPEAT          663..672
+FT                   /note="57"
+FT   REPEAT          673..682
+FT                   /note="58"
+FT   REPEAT          683..692
+FT                   /note="59"
+FT   REPEAT          693..702
+FT                   /note="60"
+FT   REPEAT          703..712
+FT                   /note="61"
+FT   REPEAT          713..722
+FT                   /note="62"
+FT   REPEAT          723..732
+FT                   /note="63"
+FT   REGION          21..41
+FT                   /note="Nonrepetitive linker"
+FT   REGION          109..732
+FT                   /note="63 X 10 AA tandem repeats of Y-[KR]-[APTS]-K-
+FT                   [KPMSLTIVA]-[STR]-Y-[PLS]-[PASRQT]-[STI]"
+FT   REGION          158..359
+FT                   /note="Disordered"
+FT                   /evidence="ECO:0000256|SAM:MobiDB-lite"
+FT   REGION          397..636
+FT                   /note="Disordered"
+FT                   /evidence="ECO:0000256|SAM:MobiDB-lite"
+FT   REGION          660..751
+FT                   /note="Disordered"
+FT                   /evidence="ECO:0000256|SAM:MobiDB-lite"
+FT   COMPBIAS        158..167
+FT                   /note="Low complexity"
+FT                   /evidence="ECO:0000256|SAM:MobiDB-lite"
+FT   COMPBIAS        168..184
+FT                   /note="Pro residues"
+FT                   /evidence="ECO:0000256|SAM:MobiDB-lite"
+FT   COMPBIAS        185..262
+FT                   /note="Low complexity"
+FT                   /evidence="ECO:0000256|SAM:MobiDB-lite"
+FT   COMPBIAS        288..343
+FT                   /note="Low complexity"
+FT                   /evidence="ECO:0000256|SAM:MobiDB-lite"
+FT   COMPBIAS        350..359
+FT                   /note="Low complexity"
+FT                   /evidence="ECO:0000256|SAM:MobiDB-lite"
+FT   COMPBIAS        444..486
+FT                   /note="Low complexity"
+FT                   /evidence="ECO:0000256|SAM:MobiDB-lite"
+FT   COMPBIAS        662..677
+FT                   /note="Low complexity"
+FT                   /evidence="ECO:0000256|SAM:MobiDB-lite"
+FT   COMPBIAS        678..690
+FT                   /note="Pro residues"
+FT                   /evidence="ECO:0000256|SAM:MobiDB-lite"
+FT   COMPBIAS        691..721
+FT                   /note="Low complexity"
+FT                   /evidence="ECO:0000256|SAM:MobiDB-lite"
+SQ   SEQUENCE   751 AA;  85791 MW;  E9E8D91C33C95C7D CRC64;
+     MEGIKLNLCL LCIFTCDILG FSNGNIYNAH GSAYAGASAG AYKTLPNAYP YGTKHGPVYK
+     PVKTSYHPTN SYPPTYGSKT NYLPLAKKLS SYKPIKTTYN AKTNYPPVYK PKMTYPPTYK
+     PKPSYPPTYK PKPSYPATYK SKSSYPSSYK PKKTYPPTYK PKLTYPPTYK PKPSYPPTYK
+     PKPSYPATYK SKSSYPPSYK TKKTYPSSYK PKKTYPSTYK PKVSYPPTYK SKKSYPPIYK
+     TKASYPSSYK PKKTYPSTYK PKISYPPTYK AKPSYPTSYR AKPSYPSTYK AKPSYPPTYK
+     AKPSYPPTYK AKPTYPSTYK AKPSYPPTYK AKPSYPPTYK AKPSYPPSYK PKTTYPPSYK
+     PKISYPPTYK AKPSYPPIYK AKPSYPPTYK AKPSYLPTYK AKPSYPPTYK AKPRYPTTYK
+     AKPSYPPTYK AKPSYPPTYK AKLSYPPTYK AKPSYPPTYK AKPSYPPTYK AKPSYPPTYK
+     TKPSYPRTYK AKPSYSSTYK AKPSYPPTYK AKPSYPPTYK AKPSYPPTYK AKPSYPPTYK
+     AKPSYPPTYK AKPSYPQTYK AKSSYPPTYK AKPSYPPTYK AKPSYPPTYK AKPSYPPTYK
+     AKPSYPPTYK AKPSYPPTYK AKPSYPPTYK AKPSYPPTYK AKPSYPPTYK AKPSYPATYP
+     STYKAKPSYP PTYKAKPSYP PTYKPKPSYP PTYKSKSSYP SSYKPKKTYP PTYKPKLTYP
+     PIYKPKPSYP PTYKSSYPPR YKKKISYPSQ Y
+//
+ID   CEM20_MEGRO             Reviewed;         202 AA.
+AC   Q9GRC4;
+DT   10-FEB-2021, integrated into UniProtKB/Swiss-Prot.
+DT   01-MAR-2001, sequence version 1.
+DT   02-SEP-2026, entry version 30.
+DE   RecName: Full=Cement protein 20 {ECO:0000303|PubMed:31495314};
+DE   AltName: Full=20 kDa cement protein {ECO:0000303|PubMed:11368778};
+DE            Short=Mrcp-20k {ECO:0000303|PubMed:11368778};
+DE   Flags: Precursor;
+GN   Name=cp-20k {ECO:0000303|PubMed:11368778};
+OS   Megabalanus rosa (Acorn barnacle).
+OC   Eukaryota; Metazoa; Ecdysozoa; Arthropoda; Altocrustacea; Communostraca;
+OC   Cirripedia; Thoracica; Thoracicalcarea; Balanomorpha; Balanoidea;
+OC   Balanidae; Megabalaninae; Megabalanus.
+OX   NCBI_TaxID=6680 {ECO:0000312|EMBL:BAB18762.1};
+RN   [1] {ECO:0000312|EMBL:BAB18762.1}
+RP   NUCLEOTIDE SEQUENCE [MRNA], PROTEIN SEQUENCE OF 20-56, FUNCTION,
+RP   SUBCELLULAR LOCATION, AND IDENTIFICATION BY MASS SPECTROMETRY.
+RX   PubMed=11368778; DOI=10.1042/0264-6021:3560503;
+RA   Kamino K.;
+RT   "Novel barnacle underwater adhesive protein is a charged amino acid-rich
+RT   protein constituted by a Cys-rich repetitive sequence.";
+RL   Biochem. J. 356:503-507(2001).
+RN   [2] {ECO:0000305}
+RP   FUNCTION, AND SUBCELLULAR LOCATION.
+RX   PubMed=18021251; DOI=10.1111/j.1742-4658.2007.06161.x;
+RA   Mori Y., Urushida Y., Nakano M., Uchiyama S., Kamino K.;
+RT   "Calcite-specific coupling protein in barnacle underwater cement.";
+RL   FEBS J. 274:6436-6446(2007).
+RN   [3] {ECO:0007744|PDB:6LEK}
+RP   STRUCTURE BY NMR OF 19-202, AND DISULFIDE BONDS.
+RX   PubMed=31495314; DOI=10.1098/rstb.2019.0198;
+RA   Mohanram H., Kumar A., Verma C.S., Pervushin K., Miserez A.;
+RT   "Three-dimensional structure of Megabalanus rosa Cement Protein 20 revealed
+RT   by multi-dimensional NMR and molecular dynamics simulations.";
+RL   Philos. Trans. R. Soc. Lond., B, Biol. Sci. 374:20190198-20190198(2019).
+CC   -!- FUNCTION: Component of the insoluble proteinaceous cement which allows
+CC       underwater adhesion to rocks and other surfaces (PubMed:11368778,
+CC       PubMed:18021251). Shows specific adsorption on calcite substrates
+CC       (PubMed:18021251). {ECO:0000269|PubMed:11368778,
+CC       ECO:0000269|PubMed:18021251}.
+CC   -!- SUBCELLULAR LOCATION: Secreted {ECO:0000269|PubMed:11368778,
+CC       ECO:0000269|PubMed:18021251}.
+CC   ---------------------------------------------------------------------------
+CC   Copyrighted by the UniProt Consortium, see https://www.uniprot.org/terms
+CC   Distributed under the Creative Commons Attribution (CC BY 4.0) License
+CC   ---------------------------------------------------------------------------
+DR   EMBL; AB035415; BAB18762.1; -; mRNA.
+DR   PDB; 6LEK; NMR; -; A=19-202.
+DR   AlphaFoldDB; Q9GRC4; -.
+DR   SMR; Q9GRC4; -.
+DR   GlyCosmos; Q9GRC4; 1 site, No reported glycans.
+DR   GO; GO:0005576; C:extracellular region; IDA:UniProtKB.
+DR   GO; GO:0022608; P:multicellular organism adhesion; IDA:UniProtKB.
+DR   PDBsum; 6LEK; -.
+PE   1: Evidence at protein level;
+KW   3D-structure; Direct protein sequencing; Disulfide bond; Glycoprotein;
+KW   Secreted; Signal.
+FT   SIGNAL          1..19
+FT                   /evidence="ECO:0000305"
+FT   CHAIN           20..202
+FT                   /note="Cement protein 20"
+FT                   /evidence="ECO:0000269|PubMed:11368778"
+FT                   /id="PRO_5004330620"
+FT   CARBOHYD        41
+FT                   /note="N-linked (GlcNAc...) asparagine"
+FT                   /evidence="ECO:0000255|PROSITE-ProRule:PRU00498"
+FT   DISULFID        51..64
+FT                   /evidence="ECO:0000269|PubMed:31495314,
+FT                   ECO:0007744|PDB:6LEK"
+FT   DISULFID        120..126
+FT                   /evidence="ECO:0000269|PubMed:31495314,
+FT                   ECO:0007744|PDB:6LEK"
+FT   DISULFID        149..167
+FT                   /evidence="ECO:0000269|PubMed:31495314,
+FT                   ECO:0007744|PDB:6LEK"
+FT   DISULFID        172..178
+FT                   /evidence="ECO:0000269|PubMed:31495314,
+FT                   ECO:0007744|PDB:6LEK"
+FT   STRAND          23..30
+FT                   /evidence="ECO:0007829|PDB:6LEK"
+FT   HELIX           36..42
+FT                   /evidence="ECO:0007829|PDB:6LEK"
+FT   STRAND          56..58
+FT                   /evidence="ECO:0007829|PDB:6LEK"
+FT   STRAND          83..85
+FT                   /evidence="ECO:0007829|PDB:6LEK"
+FT   HELIX           99..111
+FT                   /evidence="ECO:0007829|PDB:6LEK"
+FT   STRAND          116..119
+FT                   /evidence="ECO:0007829|PDB:6LEK"
+FT   STRAND          122..124
+FT                   /evidence="ECO:0007829|PDB:6LEK"
+FT   STRAND          134..136
+FT                   /evidence="ECO:0007829|PDB:6LEK"
+FT   HELIX           141..143
+FT                   /evidence="ECO:0007829|PDB:6LEK"
+FT   STRAND          153..155
+FT                   /evidence="ECO:0007829|PDB:6LEK"
+FT   STRAND          157..159
+FT                   /evidence="ECO:0007829|PDB:6LEK"
+FT   STRAND          161..163
+FT                   /evidence="ECO:0007829|PDB:6LEK"
+FT   STRAND          167..169
+FT                   /evidence="ECO:0007829|PDB:6LEK"
+FT   STRAND          173..176
+FT                   /evidence="ECO:0007829|PDB:6LEK"
+SQ   SEQUENCE   202 AA;  22467 MW;  3EDF48D4C6D9C0DF CRC64;
+     MKWFLFLLTT AVLAAVVSAH EEDGVCNSNA PCYHCDANGE NCSCNCELFD CEAKKPDGSY
+     AHPCRRCDAN NICKCSCTAI PCNEDHPCHH CHEEDDGDTH CHCSCEHSHD HHDDDTHGEC
+     TKKAPCWRCE YNADLKHDVC GCECSKLPCN DEHPCYRKEG GVVSCDCKTI TCNEDHPCYH
+     SYEEDGVTKS DCDCEHSPGP SE
+//
+ID   Q7M3Q2_PHRCA            Unreviewed;       161 AA.
+AC   Q7M3Q2;
+DT   15-DEC-2003, integrated into UniProtKB/TrEMBL.
+DT   15-DEC-2003, sequence version 1.
+DT   19-JAN-2022, entry version 21.
+DE   SubName: Full=Cement protein Pc-2 {ECO:0000313|PIR:B42627};
+DE   Flags: Precursor; Fragments;
+OS   Phragmatopoma californica (Sandcastle worm) (Sabellaria californica).
+OC   Eukaryota; Metazoa; Spiralia; Lophotrochozoa; Annelida; Polychaeta;
+OC   Sedentaria; Canalipalpata; Sabellida; Sabellariidae; Phragmatopoma.
+OX   NCBI_TaxID=13208 {ECO:0000313|PIR:B42627};
+RN   [1] {ECO:0000313|PIR:B42627}
+RP   PROTEIN SEQUENCE.
+RX   PubMed=1610822; DOI=10.1021/bi00140a007;
+RA   Waite J.H., Jensen R.A., Morse D.E.;
+RT   "Cement precursor proteins of the reef-building polychaete Phragmatopoma
+RT   californica (Fewkes).";
+RL   Biochemistry 31:5733-5738(1992).
+CC   ---------------------------------------------------------------------------
+CC   Copyrighted by the UniProt Consortium, see https://www.uniprot.org/terms
+CC   Distributed under the Creative Commons Attribution (CC BY 4.0) License
+CC   ---------------------------------------------------------------------------
+DR   PIR; B42627; B42627.
+PE   1: Evidence at protein level;
+KW   Direct protein sequencing.
+FT   NON_TER         1
+FT                   /evidence="ECO:0000313|PIR:B42627"
+FT   NON_TER         161
+FT                   /evidence="ECO:0000313|PIR:B42627"
+SQ   SEQUENCE   161 AA;  15364 MW;  D14C8FE4C7DE96B2 CRC64;
+     XGGAGGWXGG SAGGGHPAVH KAFSRAATGY GYGLAHPAVH KWGHPAVHKA GGYGGYGAHP
+     AAGGAGGWAG GGFGGYGAHP AVHKALGGYG GYGAHPAVHK ALGGYGGYGA HPAVHAAVHK
+     AAYNHGFNYG AALGGYGAGA WGHKALGGYG AGAWGHPAVH K
+//
+ID   Q7M3Q3_PHRCA            Unreviewed;        53 AA.
+AC   Q7M3Q3;
+DT   15-DEC-2003, integrated into UniProtKB/TrEMBL.
+DT   15-DEC-2003, sequence version 1.
+DT   14-DEC-2022, entry version 21.
+DE   SubName: Full=Cement protein Pc-1 {ECO:0000313|PIR:A42627};
+DE   Flags: Precursor; Fragments;
+OS   Phragmatopoma californica (Sandcastle worm) (Sabellaria californica).
+OC   Eukaryota; Metazoa; Spiralia; Lophotrochozoa; Annelida; Polychaeta;
+OC   Sedentaria; Canalipalpata; Sabellida; Sabellariidae; Phragmatopoma.
+OX   NCBI_TaxID=13208 {ECO:0000313|PIR:A42627};
+RN   [1] {ECO:0000313|PIR:A42627}
+RP   PROTEIN SEQUENCE.
+RX   PubMed=1610822; DOI=10.1021/bi00140a007;
+RA   Waite J.H., Jensen R.A., Morse D.E.;
+RT   "Cement precursor proteins of the reef-building polychaete Phragmatopoma
+RT   californica (Fewkes).";
+RL   Biochemistry 31:5733-5738(1992).
+CC   ---------------------------------------------------------------------------
+CC   Copyrighted by the UniProt Consortium, see https://www.uniprot.org/terms
+CC   Distributed under the Creative Commons Attribution (CC BY 4.0) License
+CC   ---------------------------------------------------------------------------
+DR   PIR; A42627; A42627.
+DR   AlphaFoldDB; Q7M3Q3; -.
+PE   1: Evidence at protein level;
+KW   Direct protein sequencing.
+FT   NON_TER         1
+FT                   /evidence="ECO:0000313|PIR:A42627"
+FT   NON_TER         53
+FT                   /evidence="ECO:0000313|PIR:A42627"
+SQ   SEQUENCE   53 AA;  4988 MW;  B9EA962B432672CF CRC64;
+     AAGGYGYGAK KVGGYGYGAK LGGYGYGAKI GGYGYGAKSG IQVRALGGYG AGA
+//
+ID   Q9TWD7_MEGRO            Unreviewed;        28 AA.
+AC   Q9TWD7;
+DT   01-MAY-2000, integrated into UniProtKB/TrEMBL.
+DT   01-MAY-2000, sequence version 1.
+DT   02-SEP-2026, entry version 18.
+DE   SubName: Full=CEMENT protein CYANOGEN bromide peptide 1;
+DE   Flags: Fragment;
+OS   Megabalanus rosa (Acorn barnacle).
+OC   Eukaryota; Metazoa; Ecdysozoa; Arthropoda; Altocrustacea; Communostraca;
+OC   Cirripedia; Thoracica; Thoracicalcarea; Balanomorpha; Balanoidea;
+OC   Balanidae; Megabalaninae; Megabalanus.
+OX   NCBI_TaxID=6680;
+RN   [1]
+RP   PROTEIN SEQUENCE.
+RX   PubMed=8679743;
+RA   Kamino K., Odo S., Maruyama T.;
+RT   "Cement proteins of the acorn barnacle, Megabalanus rosa.";
+RL   Biol. Bull. 190:403-409(1996).
+CC   ---------------------------------------------------------------------------
+CC   Copyrighted by the UniProt Consortium, see https://www.uniprot.org/terms
+CC   Distributed under the Creative Commons Attribution (CC BY 4.0) License
+CC   ---------------------------------------------------------------------------
+PE   1: Evidence at protein level;
+KW   Direct protein sequencing.
+SQ   SEQUENCE   28 AA;  3318 MW;  821EAED4E906DCA7 CRC64;
+     ITIFRGWGLP KLYQPRYTLX GIVXYIKV
+//

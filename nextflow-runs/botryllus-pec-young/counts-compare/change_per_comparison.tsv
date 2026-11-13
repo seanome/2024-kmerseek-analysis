@@ -1,0 +1,37 @@
+pair	comparison	genes_compared	treated	control	genes	rank_correlation_of_change	same_sign
+A. paper against no-genome, on the paper's genes	2 h	all genes	6	6	27937	0.6819783436923185	0.7904928947274225
+A. paper against no-genome, on the paper's genes	24 h	all genes	6	6	28218	0.7046145225388364	0.8072506910482671
+A. paper against no-genome, on the paper's genes	13-49 d	all genes	4	4	4820	0.6935004488170944	0.7713692946058092
+A. paper against no-genome, on the paper's genes	132 d	all genes	3	3	3834	0.6362702679364257	0.7287428273343767
+B. salmon against no-genome, on this run's genes	2 h	all genes	6	6	21869	0.6999995886333698	0.800859664365083
+B. salmon against no-genome, on this run's genes	24 h	all genes	6	6	21920	0.7035696532688032	0.810720802919708
+B. salmon against no-genome, on this run's genes	13-49 d	all genes	4	4	5071	0.7197069387028747	0.7820942614868862
+B. salmon against no-genome, on this run's genes	132 d	all genes	3	3	3610	0.7189075247926293	0.7703601108033241
+B2. salmon against rsem	2 h	all genes	6	6	23280	0.863772295580244	0.869458762886598
+B2. salmon against rsem	24 h	all genes	6	6	23415	0.8433046341485717	0.8700832799487508
+B2. salmon against rsem	13-49 d	all genes	4	4	6107	0.766848465933759	0.8069428524643851
+B2. salmon against rsem	132 d	all genes	3	3	4073	0.7391058787949807	0.7876258286275473
+C. no-genome on the paper's genes against no-genome on this run's genes	2 h	all genes	6	6	14199	0.7282745473855966	0.8278047749841538
+C. no-genome on the paper's genes against no-genome on this run's genes	2 h	one g gene to one FUN gene	6	6	7719	0.7439327822536943	0.8359891177613681
+C. no-genome on the paper's genes against no-genome on this run's genes	2 h	several g genes to one FUN gene	6	6	6480	0.709588337791923	0.8180555555555555
+C. no-genome on the paper's genes against no-genome on this run's genes	24 h	all genes	6	6	14207	0.7280107363162196	0.837826423594003
+C. no-genome on the paper's genes against no-genome on this run's genes	24 h	one g gene to one FUN gene	6	6	7727	0.7589935772043241	0.8494888054872525
+C. no-genome on the paper's genes against no-genome on this run's genes	24 h	several g genes to one FUN gene	6	6	6480	0.6916586878305987	0.8239197530864197
+C. no-genome on the paper's genes against no-genome on this run's genes	13-49 d	all genes	4	4	3660	0.8231242553439485	0.8538251366120219
+C. no-genome on the paper's genes against no-genome on this run's genes	13-49 d	one g gene to one FUN gene	4	4	1780	0.8633917197914456	0.8837078651685393
+C. no-genome on the paper's genes against no-genome on this run's genes	13-49 d	several g genes to one FUN gene	4	4	1880	0.7826346916237549	0.825531914893617
+C. no-genome on the paper's genes against no-genome on this run's genes	132 d	all genes	3	3	2813	0.8445410068206101	0.8880199075719872
+C. no-genome on the paper's genes against no-genome on this run's genes	132 d	one g gene to one FUN gene	3	3	1401	0.888189261490178	0.913633119200571
+C. no-genome on the paper's genes against no-genome on this run's genes	132 d	several g genes to one FUN gene	3	3	1412	0.7964213145222503	0.8626062322946175
+D. paper against salmon	2 h	all genes	6	6	14088	0.6311508842455443	0.7791737649063032
+D. paper against salmon	2 h	one g gene to one FUN gene	6	6	7483	0.6486279970675869	0.782841106508085
+D. paper against salmon	2 h	several g genes to one FUN gene	6	6	6605	0.6111148772268604	0.7750189250567752
+D. paper against salmon	24 h	all genes	6	6	14090	0.5877332721410203	0.7740951029098652
+D. paper against salmon	24 h	one g gene to one FUN gene	6	6	7448	0.624003890974257	0.7819548872180451
+D. paper against salmon	24 h	several g genes to one FUN gene	6	6	6642	0.5470083726571832	0.765281541704306
+D. paper against salmon	13-49 d	all genes	4	4	3631	0.5753559882756275	0.7251445882676949
+D. paper against salmon	13-49 d	one g gene to one FUN gene	4	4	1681	0.6067867274279157	0.7412254610350981
+D. paper against salmon	13-49 d	several g genes to one FUN gene	4	4	1950	0.5460374489120934	0.7112820512820512
+D. paper against salmon	132 d	all genes	3	3	2710	0.5470609279002969	0.7044280442804428
+D. paper against salmon	132 d	one g gene to one FUN gene	3	3	1257	0.6051587034585544	0.7231503579952268
+D. paper against salmon	132 d	several g genes to one FUN gene	3	3	1453	0.4968535416779552	0.6882312456985548

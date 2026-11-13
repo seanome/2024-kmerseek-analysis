@@ -1,0 +1,11 @@
+channel	route	planted_found	planted	unchanged_found	unchanged	sensitivity	specificity	precision	F1	accuracy	cpu_hours	wall_minutes	peak_gb
+splash	SPLASH anchors, corrected p ≤ 0.05	56	400	0	2600	0.14	1.0	1.0	0.2456	0.8853	0.237	1.6	2.26
+abundance	anchor counts, DESeq2, corrected p ≤ 0.05, 2-fold	255	400	380	2600	0.6375	0.8538	0.4016	0.4928	0.825	6.27	62.3	17.86
+dekupl_limma	DE-kupl, limma, corrected p ≤ 0.05, 2-fold	194	400	3	2600	0.485	0.9988	0.9848	0.6499	0.9303	0.439	6.2	0.93
+dekupl_limma_p05	DE-kupl, limma, p < 0.05	371	400	1013	2600	0.9275	0.6104	0.2681	0.4159	0.6527	0.439	6.2	0.93
+dekupl_DESeq2	DE-kupl, DESeq2, corrected p ≤ 0.05, 2-fold	371	400	128	2600	0.9275	0.9508	0.7435	0.8254	0.9477	0.726	16.8	3.13
+dekupl_DESeq2_p05	DE-kupl, DESeq2, p < 0.05	381	400	914	2600	0.9525	0.6485	0.2942	0.4496	0.689	0.726	16.8	3.13
+kamrat_ttest	KaMRaT, t-test, corrected p ≤ 0.05	355	400	200	2600	0.8875	0.9231	0.6396	0.7435	0.9183	0.481	8.8	0.93
+kamrat_ttest_p05	KaMRaT, t-test, p < 0.05	378	400	275	2600	0.945	0.8942	0.5789	0.7179	0.901	0.481	8.8	0.93
+kamrat_deseq2_q05	KaMRaT, DESeq2, corrected p ≤ 0.05	316	400	14	2600	0.79	0.9946	0.9576	0.8658	0.9673	0.503	9.0	0.93
+kamrat_deseq2_p05	KaMRaT, DESeq2, p < 0.05	361	400	149	2600	0.9025	0.9427	0.7078	0.7934	0.9373	0.503	9.0	0.93

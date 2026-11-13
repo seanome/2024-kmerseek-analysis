@@ -1,0 +1,46 @@
+#!/bin/bash
+#
+# Run two commands in one job, the second only if the first succeeds.
+#
+#   run-and-score <first command...> -- <second command...>
+#
+# One driver job for the searches and the scoring, instead of waiting for the first to
+# finish and submitting the second by hand. scripts/nf-head passes its arguments through
+# printf %q one at a time, so a `&&` between two command lines would arrive as a literal
+# argument; the two commands are split here on the first bare `--` instead.
+#
+# Both commands run in the directory this was started in, which is the launch directory,
+# so the second reads the first's results and -resume finds its cache. A failing first
+# command stops the job with its own exit status: scoring half a run would write tables
+# that look complete.
+set -uo pipefail
+
+first=()
+second=()
+seen=0
+for arg in "$@"; do
+    if [ "$seen" = 0 ] && [ "$arg" = "--" ]; then
+        seen=1
+        continue
+    fi
+    if [ "$seen" = 0 ]; then first+=("$arg"); else second+=("$arg"); fi
+done
+
+if [ "$seen" = 0 ] || [ "${#first[@]}" = 0 ] || [ "${#second[@]}" = 0 ]; then
+    echo "run-and-score: needs <first command> -- <second command>" >&2
+    exit 2
+fi
+
+echo "run-and-score: step 1 of 2"
+printf '  %q' "${first[@]}"; echo
+"${first[@]}"
+status=$?
+if [ "$status" -ne 0 ]; then
+    echo "run-and-score: step 1 exited $status; not scoring a run that did not finish" >&2
+    exit "$status"
+fi
+
+echo "run-and-score: step 2 of 2"
+printf '  %q' "${second[@]}"; echo
+"${second[@]}"
+exit $?

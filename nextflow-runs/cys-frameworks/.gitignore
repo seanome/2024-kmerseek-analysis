@@ -1,0 +1,6 @@
+# Run folders, logs and reports. Results that a notebook reads are copied into tables/.
+pilot/
+run-*/
+stub/
+*.trace.txt
+*.report.html

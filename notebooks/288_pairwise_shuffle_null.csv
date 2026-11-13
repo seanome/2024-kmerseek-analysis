@@ -1,0 +1,4 @@
+case,database,real_best_e,n_shuffles,n_shuffles_at_or_below_real,n_shuffles_below_pass_e,empirical_p,passes
+Ced9,BCL2,0.04135913188938131,100,39,42,0.39603960396039606,false
+Ced9,BCL2_family,0.005183715261040793,100,8,64,0.0891089108910891,false
+P66,CD47,0.019805615355344277,100,29,52,0.297029702970297,false

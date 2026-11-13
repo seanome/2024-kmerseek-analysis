@@ -1,0 +1,25 @@
+# kappa, the copy rate, per alphabet: chance-corrected agreement of the class of aligned residues
+# in Pfam-A seed 38.2 pairs at 20-30% identity with >= 50 aligned columns (analysis notebook 230;
+# 163_448 sampled pairs from 29_151 families; mean over pairs, bootstrap 95% CI). mmseqs12, wass14
+# and hsdm17 computed 2026-09-21 with the same code on the same pairs, classes from kmerseek
+# src/rust/alphabets.rs. c_opt = -ln(1 - kappa) / ln(1 + kappa * classes - kappa), the log-odds
+# scoring for a +1/-C scheme with equal class shares (E-value explainer, eq. 2b); xdrop_4c = 4 x c_opt.
+alphabet	classes	kappa	kappa_lo	kappa_hi	n_pairs	c_opt	xdrop_4c
+hp_thomas_dill2	2	0.4626	0.4616	0.4635	37085	1.63	6.53
+hp_thomas_dill_no_c2	2	0.4541	0.453	0.455	37085	1.62	6.47
+hp_pbotc_1st_ed2	2	0.4389	0.438	0.4399	37085	1.59	6.35
+hp_kyte_doolittle2	2	0.4296	0.4286	0.4305	37085	1.57	6.28
+gbmr4	4	0.4257	0.4248	0.4266	37085	0.67	2.7
+hp_lehninger_c_nonpolar2	2	0.4014	0.4004	0.4024	37085	1.52	6.08
+hp_lehninger_hpc3	3	0.397	0.396	0.398	37085	0.87	3.46
+hp_lehninger2	2	0.3944	0.3934	0.3954	37085	1.51	6.03
+dayhoff6	6	0.3304	0.3298	0.3311	37085	0.41	1.65
+wwmj5	5	0.3262	0.3256	0.3268	37085	0.47	1.89
+polarity4	4	0.2837	0.2831	0.2844	37085	0.54	2.17
+sdm12	12	0.2831	0.2826	0.2836	37085	0.24	0.94
+mmseqs12	12	0.2597	0.2592	0.2601	37085	0.22	0.89
+gbmr7	7	0.2574	0.2567	0.2581	37085	0.32	1.27
+hsdm17	17	0.2441	0.2437	0.2445	37085	0.18	0.7
+wass14	14	0.201	0.2006	0.2014	37085	0.17	0.7
+protein20	20	0.1988	0.1985	0.1992	37085	0.14	0.57
+uniprot18	18	0.1975	0.1972	0.1979	37085	0.15	0.6

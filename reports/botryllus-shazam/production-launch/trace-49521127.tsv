@@ -1,0 +1,7 @@
+task_id	hash	name	status	exit	submit	duration	realtime	cpus	memory	time	peak_rss	workdir
+2	16/b226f9	SPLIT_PFAM (positive)	COMPLETED	0	2026-10-25 13:13:15.535	639ms	323ms	1	2 GB	4h	10.5 MB	/scratch/users/olgabot/botryllus-reference-check-49521127/work/16/b226f9c05eb87e0a069891dbaa3cff
+4	c6/e96570	SPLIT_PFAM (empty)	COMPLETED	0	2026-10-25 13:13:15.548	663ms	246ms	1	2 GB	4h	1.6 MB	/scratch/users/olgabot/botryllus-reference-check-49521127/work/c6/e96570cfcd42d7908948df0e77763a
+3	44/6c38f2	ALIGN_CONTEXT (empty)	COMPLETED	0	2026-10-25 13:13:16.185	827ms	648ms	4	12 GB	12h	11.5 MB	/scratch/users/olgabot/botryllus-reference-check-49521127/work/44/6c38f2ffb9416ba414cb90fadf48ae
+1	34/f18464	ALIGN_CONTEXT (positive)	COMPLETED	0	2026-10-25 13:13:17.019	18.4s	18.1s	4	12 GB	12h	7.2 GB	/scratch/users/olgabot/botryllus-reference-check-49521127/work/34/f18464243dd197d5dab1ce7e2d40d2
+6	dd/cda28f	QUERY_PFAM (empty:chunk-00000)	COMPLETED	0	2026-10-25 13:13:36.220	2.4s	2s	2	4 GB	2h	24.2 MB	/scratch/users/olgabot/botryllus-reference-check-49521127/work/dd/cda28fb752c13534f1d8cef290c84f
+5	c3/c8ace9	QUERY_PFAM (positive:chunk-00000)	COMPLETED	0	2026-10-25 13:13:35.450	3m 34s	3m 31s	2	4 GB	2h	289.1 MB	/scratch/users/olgabot/botryllus-reference-check-49521127/work/c3/c8ace906367727fa7a6c309e119b2d

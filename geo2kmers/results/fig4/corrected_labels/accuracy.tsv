@@ -1,0 +1,8 @@
+comparison	published_auc	planned_auc	planned_distance	ghosh_weights_auc	ghosh_weights_distance
+GSE111555, 18 weeks training	0.809	0.762	0.047	0.875	0.066
+GSE28998, 12 weeks training	0.8	0.531	0.269	0.592	0.208
+GSE83578, 24 h after	0.54	0.648	0.108	0.598	0.058
+GSE104079, 45 min after	0.18	0.495	0.315	0.322	0.142
+GSE27536, after exercise	0.17	0.277	0.107	0.277	0.107
+GSE83578, 3 h after	0.07	0.266	0.196	0.105	0.035
+GSE83578, 30 min after	0.07	0.34	0.27	0.094	0.024

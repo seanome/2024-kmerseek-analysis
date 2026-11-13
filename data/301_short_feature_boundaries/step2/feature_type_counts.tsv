@@ -1,0 +1,12 @@
+query_kind	organism_group	feature_type	n_features	n_queries
+chimera	human	ELM	96	96
+chimera	human	SIGNAL	154	154
+chimera	microbial	ELM	81	81
+chimera	microbial	SIGNAL	169	169
+real	human	ELM	974	565
+real	human	SIGNAL	305	305
+real	human	TRANSIT	32	32
+real	human	TRANSMEM	979	141
+real	microbial	ELM	53	26
+real	microbial	SIGNAL	828	828
+real	microbial	TRANSMEM	931	153

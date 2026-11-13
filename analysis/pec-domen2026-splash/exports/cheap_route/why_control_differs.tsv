@@ -1,0 +1,10 @@
+data	route	found	genes	share
+simulated control	kamrat_ttest_p05	378	400	0.945
+simulated control	kamrat_deseq2_p05	361	400	0.902
+simulated control	splash	56	400	0.14
+human	kamrat_ttest_p05	7321	13417	0.546
+human	kamrat_deseq2_p05	5660	13417	0.422
+human	splash	1084	13417	0.081
+Botryllus	kamrat_ttest_p05	50	878	0.057
+Botryllus	kamrat_deseq2_p05	69	878	0.079
+Botryllus	splash	250	878	0.285

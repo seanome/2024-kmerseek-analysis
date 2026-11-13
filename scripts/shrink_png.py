@@ -87,7 +87,8 @@ def shrink_png_bytes(data: bytes) -> bytes | None:
         # average pixel about 100x less than fast octree (0.01 vs 1-3.5 on this repo's
         # figures), but Pillow allows it only without an alpha channel.
         quantized = rgba.convert("RGB").quantize(
-            256, method=Image.Quantize.MEDIANCUT, dither=Image.Dither.NONE)
+            256, method=Image.Quantize.MEDIANCUT, dither=Image.Dither.NONE
+        )
     else:
         quantized = rgba.quantize(256, method=Image.Quantize.FASTOCTREE)
     change = ImageStat.Stat(
@@ -116,7 +117,9 @@ def shrink_notebook_text(text: str) -> tuple[str, int]:
             # The image sits in the file as its JSON-encoded string; base64 has no
             # characters JSON escapes except a trailing newline, which json.dumps keeps.
             old_json = json.dumps(b64)
-            new_b64 = base64.b64encode(new).decode() + ("\n" if b64.endswith("\n") else "")
+            new_b64 = base64.b64encode(new).decode() + (
+                "\n" if b64.endswith("\n") else ""
+            )
             if text.count(old_json) == 0:
                 continue
             text = text.replace(old_json, json.dumps(new_b64))
@@ -143,8 +146,11 @@ def process(path: Path, check: bool) -> tuple[int, int]:
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
     parser.add_argument("files", nargs="*", type=Path)
-    parser.add_argument("--check", action="store_true",
-                        help="change nothing; exit 1 if any file would shrink")
+    parser.add_argument(
+        "--check",
+        action="store_true",
+        help="change nothing; exit 1 if any file would shrink",
+    )
     args = parser.parse_args(argv)
     changed = 0
     for path in args.files:
@@ -156,8 +162,11 @@ def main(argv: list[str] | None = None) -> int:
             verb = "would shrink" if args.check else "shrank"
             print(f"{verb} {path}: {before / 1e3:.0f} KB -> {after / 1e3:.0f} KB")
     if args.check and changed:
-        print(f"\n{changed} file(s) not yet at 256 colours. Fix with:\n"
-              f"  python scripts/shrink_png.py <files>", file=sys.stderr)
+        print(
+            f"\n{changed} file(s) not yet at 256 colours. Fix with:\n"
+            f"  python scripts/shrink_png.py <files>",
+            file=sys.stderr,
+        )
         return 1
     return 0
 

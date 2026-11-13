@@ -1,0 +1,85 @@
+cohort	hub	direction	time	count
+young	DNA / RNA / Epigenetic	Up-reg	2 Hours Young	9
+young	DNA / RNA / Epigenetic	Up-reg	24 Hours Young	30
+young	DNA / RNA / Epigenetic	Up-reg	13–49 Days Young	8
+young	DNA / RNA / Epigenetic	Up-reg	132 Days Young	20
+young	DNA / RNA / Epigenetic	Down-reg	2 Hours Young	31
+young	DNA / RNA / Epigenetic	Down-reg	24 Hours Young	14
+young	DNA / RNA / Epigenetic	Down-reg	13–49 Days Young	9
+young	DNA / RNA / Epigenetic	Down-reg	132 Days Young	6
+young	Signaling / Regulation	Up-reg	2 Hours Young	11
+young	Signaling / Regulation	Up-reg	24 Hours Young	30
+young	Signaling / Regulation	Up-reg	13–49 Days Young	4
+young	Signaling / Regulation	Up-reg	132 Days Young	4
+young	Signaling / Regulation	Down-reg	2 Hours Young	28
+young	Signaling / Regulation	Down-reg	24 Hours Young	11
+young	Signaling / Regulation	Down-reg	13–49 Days Young	9
+young	Signaling / Regulation	Down-reg	132 Days Young	12
+young	Mitochondrial / Metabolic	Up-reg	2 Hours Young	9
+young	Mitochondrial / Metabolic	Up-reg	24 Hours Young	38
+young	Mitochondrial / Metabolic	Up-reg	13–49 Days Young	3
+young	Mitochondrial / Metabolic	Up-reg	132 Days Young	2
+young	Mitochondrial / Metabolic	Down-reg	2 Hours Young	19
+young	Mitochondrial / Metabolic	Down-reg	24 Hours Young	24
+young	Mitochondrial / Metabolic	Down-reg	13–49 Days Young	11
+young	Mitochondrial / Metabolic	Down-reg	132 Days Young	8
+young	Contractile / Cytoskeletal	Up-reg	2 Hours Young	3
+young	Contractile / Cytoskeletal	Up-reg	24 Hours Young	23
+young	Contractile / Cytoskeletal	Up-reg	13–49 Days Young	2
+young	Contractile / Cytoskeletal	Up-reg	132 Days Young	2
+young	Contractile / Cytoskeletal	Down-reg	2 Hours Young	25
+young	Contractile / Cytoskeletal	Down-reg	24 Hours Young	10
+young	Contractile / Cytoskeletal	Down-reg	13–49 Days Young	8
+young	Contractile / Cytoskeletal	Down-reg	132 Days Young	8
+young	ECM / Structural	Up-reg	2 Hours Young	3
+young	ECM / Structural	Up-reg	24 Hours Young	22
+young	ECM / Structural	Up-reg	13–49 Days Young	1
+young	ECM / Structural	Up-reg	132 Days Young	2
+young	ECM / Structural	Down-reg	2 Hours Young	20
+young	ECM / Structural	Down-reg	24 Hours Young	6
+young	ECM / Structural	Down-reg	13–49 Days Young	6
+young	ECM / Structural	Down-reg	132 Days Young	2
+young	Immune	Up-reg	2 Hours Young	10
+young	Immune	Up-reg	24 Hours Young	10
+young	Immune	Up-reg	13–49 Days Young	2
+young	Immune	Up-reg	132 Days Young	4
+young	Immune	Down-reg	2 Hours Young	8
+young	Immune	Down-reg	24 Hours Young	7
+young	Immune	Down-reg	13–49 Days Young	2
+young	Immune	Down-reg	132 Days Young	4
+young	Others	Up-reg	2 Hours Young	8
+young	Others	Up-reg	24 Hours Young	63
+young	Others	Up-reg	13–49 Days Young	0
+young	Others	Up-reg	132 Days Young	3
+young	Others	Down-reg	2 Hours Young	19
+young	Others	Down-reg	24 Hours Young	21
+young	Others	Down-reg	13–49 Days Young	5
+young	Others	Down-reg	132 Days Young	3
+old	DNA / RNA / Epigenetic	Up-reg	24 Hours	10
+old	DNA / RNA / Epigenetic	Up-reg	41–96 Days	3
+old	DNA / RNA / Epigenetic	Down-reg	24 Hours	1
+old	DNA / RNA / Epigenetic	Down-reg	41–96 Days	2
+old	Signaling / Regulation	Up-reg	24 Hours	12
+old	Signaling / Regulation	Up-reg	41–96 Days	3
+old	Signaling / Regulation	Down-reg	24 Hours	1
+old	Signaling / Regulation	Down-reg	41–96 Days	2
+old	Mitochondrial / Metabolic	Up-reg	24 Hours	10
+old	Mitochondrial / Metabolic	Up-reg	41–96 Days	3
+old	Mitochondrial / Metabolic	Down-reg	24 Hours	1
+old	Mitochondrial / Metabolic	Down-reg	41–96 Days	3
+old	Contractile / Cytoskeletal	Up-reg	24 Hours	11
+old	Contractile / Cytoskeletal	Up-reg	41–96 Days	3
+old	Contractile / Cytoskeletal	Down-reg	24 Hours	0
+old	Contractile / Cytoskeletal	Down-reg	41–96 Days	3
+old	ECM / Structural	Up-reg	24 Hours	6
+old	ECM / Structural	Up-reg	41–96 Days	4
+old	ECM / Structural	Down-reg	24 Hours	0
+old	ECM / Structural	Down-reg	41–96 Days	1
+old	Immune	Up-reg	24 Hours	4
+old	Immune	Up-reg	41–96 Days	2
+old	Immune	Down-reg	24 Hours	0
+old	Immune	Down-reg	41–96 Days	3
+old	Other	Up-reg	24 Hours	9
+old	Other	Up-reg	41–96 Days	0
+old	Others	Down-reg	24 Hours	0
+old	Others	Down-reg	41–96 Days	2

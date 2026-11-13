@@ -1,0 +1,9 @@
+kmerseek         exons covered >=80% by some call:   676 / 1669 (40.5%)
+foldseek         exons covered >=80% by some call:  1614 / 1669 (96.7%)
+reseek           exons covered >=80% by some call:  1659 / 1669 (99.4%)
+prostt5          exons covered >=80% by some call:  1603 / 1669 (96.0%)
+hmmer3_phmmer    exons covered >=80% by some call:  1648 / 1669 (98.7%)
+mmseqs2_seqseq   exons covered >=80% by some call:  1638 / 1669 (98.1%)
+hhblits          exons covered >=80% by some call:  1623 / 1669 (97.2%)
+best single kmerseek settings (setting, exons landed): [('sdm12_k6_lcTrue', 506), ('dayhoff6_k8_lcTrue', 504), ('sdm12_k6_lcFalse', 504), ('dayhoff6_k8_lcFalse', 504), ('mmseqs12_k5_lcTrue', 490)]
+median single setting: 276.5  settings landing on 0: 0
