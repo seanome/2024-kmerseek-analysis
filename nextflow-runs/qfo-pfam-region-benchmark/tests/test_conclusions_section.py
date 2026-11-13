@@ -38,6 +38,26 @@ PLDDT = {
     "hmmer3_phmmer": {"0-50": 0.05, "50-70": 0.08, "70-90": 0.10, "90-100": 0.15},
     "mmseqs2_seqseq": {"0-50": 0.04, "50-70": 0.06, "70-90": 0.08, "90-100": 0.12},
 }
+# Fmax by disorder bin (the four-bin axis evaluate_domain_calls writes), keyed by kmerseek
+# variant and by baseline tool. Both kmerseek arms fall from the least to the most
+# disordered bin (to x0.50 and x0.60 of where they start) while every baseline holds
+# (x1.00 to x1.07), so the disorder caveat has to say kmerseek falls and the baselines
+# stay flat. The caveat was a sentence typed in by hand until 2026-09-19; now it is read
+# off these strata.
+DISORDER = {
+    "polarity4_k17_lcFalse": {"0.0-0.1": 0.20, "0.1-0.3": 0.16, "0.3-0.6": 0.12,
+                              "0.6-1.01": 0.10},
+    "wwmj5_k11_lcFalse": {"0.0-0.1": 0.15, "0.1-0.3": 0.13, "0.3-0.6": 0.11,
+                          "0.6-1.01": 0.09},
+    "hhblits": {"0.0-0.1": 0.18, "0.1-0.3": 0.18, "0.3-0.6": 0.17, "0.6-1.01": 0.19},
+    "hmmer3_phmmer": {"0.0-0.1": 0.14, "0.1-0.3": 0.14, "0.3-0.6": 0.13, "0.6-1.01": 0.15},
+    "mmseqs2_seqseq": {"0.0-0.1": 0.11, "0.1-0.3": 0.11, "0.3-0.6": 0.10, "0.6-1.01": 0.11},
+}
+# Whether the right family was named anywhere in the protein, for the two kmerseek arms.
+# The 4-letter alphabet names the family far more often than it places it (0.30 vs 0.139),
+# the 5-letter one less so (0.20 vs 0.135): recognition spans 1.5x across alphabets,
+# placement about 1.0x, so reduction buys recognition and not placement.
+FAMILY_FMAX = {"polarity4_k17_lcFalse": 0.30, "wwmj5_k11_lcFalse": 0.20}
 
 
 def metrics() -> pl.DataFrame:
@@ -52,10 +72,13 @@ def metrics() -> pl.DataFrame:
                         residue_precision=0.1, residue_recall=0.041, residue_f1=0.06,
                         median_iou_tp=iou, precision_iou80=p80,
                         n_reachable=1_161 if species == "ecoli" else 7_063,
-                        n_instances=7_185)
+                        n_instances=7_185,
+                        family_fmax=FAMILY_FMAX.get(variant))
             rows.append(dict(base, stratum_axis="all", stratum="all"))
             for band, v in PLDDT.get(tool, {}).items():
                 rows.append(dict(base, stratum_axis="plddt", stratum=band, fmax=v))
+            for band, v in DISORDER.get(variant if tool == "kmerseek" else tool, {}).items():
+                rows.append(dict(base, stratum_axis="disorder", stratum=band, fmax=v))
     return pl.DataFrame(rows)
 
 
@@ -87,13 +110,14 @@ def test_it_is_written_and_says_which_truth_set(tmp_path):
     cfg = built(tmp_path)
     assert cfg, "the conclusions section was not written"
     assert cfg["id"] == "qfo_conclusions"
-    assert "pfam" in cfg["description"]
+    assert "Pfam answer key" in cfg["description"]
 
 
-def test_the_deliverable_recall_headline_names_the_arm_and_the_baseline(tmp_path):
+def test_the_recall_at_precision_headline_names_the_arm_and_the_baseline(tmp_path):
     body = built(tmp_path)["data"]
-    assert "Deliverable recall" in body
+    assert "Recall at a precision floor" in body
     assert "kmerseek polarity4_k17_lcFalse" in body
+    assert "0.087" in body and "0.051" in body
     # The comparison has to be against the best BASELINE, not against the second kmerseek
     # arm, or the lead is a comparison of the method with itself.
     assert "mmseqs2_seqseq" in body or "hhblits" in body
@@ -116,16 +140,35 @@ def test_the_gain_is_never_below_one(tmp_path):
     0.99 -- the best threshold reading worse than the default, which cannot happen."""
     body = built(tmp_path)["data"]
     assert "threshold comparison is not the fight" in body
-    assert "already at its own optimum" in body
+    assert "already at their own optimum" in body
     assert "-4%" not in body and "-0%" not in body
 
 
 def test_the_negative_results_are_in_the_same_list(tmp_path):
     body = built(tmp_path)["data"]
     assert "does not show" in body
-    assert "disorder half of the hypothesis is not supported" in body
+    assert "Disorder is not where kmerseek gains ground" in body
     assert "carries a sampling error" in body
-    assert "Reduction buys recognition" in body
+    assert "Reduction buys recognition much more than placement" in body
+
+
+def test_the_disorder_caveat_is_read_off_the_strata(tmp_path):
+    # kmerseek's two arms end at x0.50 and x0.60 of their least-disordered value while
+    # the baselines sit between x1.00 and x1.07; the words have to match those numbers.
+    body = built(tmp_path)["data"]
+    assert "Fmax falls for every kmerseek arm (x0.50 to x0.60" in body, body
+    assert "stays flat for every baseline (x1.00 to x1.07)" in body, body
+    assert "<code>0.0-0.1</code> to <code>0.6-1.01</code>" in body
+    # The most-disordered bin names the best arm on each side with its number.
+    assert "<code>kmerseek polarity4_k17_lcFalse</code>, is at 0.100 against 0.190 for " \
+           "<code>hhblits</code>" in body, body
+
+
+def test_the_disorder_caveat_drops_out_without_the_strata(tmp_path):
+    # A run without the disorder axis must not print a sentence about it. This was the
+    # failure mode before 2026-09-19: the sentence was typed in and printed regardless.
+    bare = metrics().filter(pl.col("stratum_axis") != "disorder")
+    assert bmi.conclusion_disorder(bare, "pfam") == ""
 
 
 def test_the_reachability_census_is_stated_with_its_spread(tmp_path):

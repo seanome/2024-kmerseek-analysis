@@ -1,0 +1,207 @@
+"""Regression checks for tied decoy E-values and interrupted index recovery."""
+
+import importlib.util
+import subprocess
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[1]
+spec = importlib.util.spec_from_file_location(
+    "scoring", ROOT / "scripts/score_301_completed.py"
+)
+scoring = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(scoring)
+
+
+def test_threshold_strict_and_tied():
+    assert scoring.threshold([0] * 55, 1356) == 0
+    assert scoring.threshold([0.1] * 14, 1356) == 0.1
+    assert scoring.threshold([0.1] * 13, 1356) == 10
+    assert scoring.threshold([0] * 2, 200) == 0
+
+
+def test_interrupted_index_is_rebuilt_and_finished_chunk_reused(tmp_path):
+    import os
+    import gzip
+    import json
+
+    repo = tmp_path / "repo"
+    (repo / "notebooks").mkdir(parents=True)
+    (repo / "scripts").mkdir()
+    (repo / "notebooks/241_plan.json").write_text(
+        json.dumps([dict(alphabet="protein20", ksize=5, penalty="0.14", xdrop="0.57")])
+    )
+    (repo / "scripts/filter_301_regions.py").write_text(
+        (ROOT / "scripts/filter_301_regions.py").read_text()
+    )
+    base = tmp_path / "base"
+    (base / "step2").mkdir(parents=True)
+    (base / "step3").mkdir()
+    d = base / "step5/protein20/protein20.k5.s1.lctrue.c0.14.x0.57"
+    (d / "idx").mkdir(parents=True)
+    (d / "idx/CURRENT").touch()
+    (d / "index.log").write_text("killed during calibration")
+    (base / "step2/swissprot_minus_query_clusters.fasta").write_text(">T\nAAAAA\n")
+    (base / "step2/truth.tsv").write_text("query_id\tstart\tend\nQ\t1\t5\n")
+    (base / "step3/decoys.tsv").write_text("decoy_id\tstart\tend\tunchanged\n")
+    (base / "step5/subset_queries.fasta").write_text(">Q\nAAAAA\n")
+    # Finished chunk was promoted only after the writer and filter succeeded.
+    with gzip.open(d / "regions_filtered.chunk000.tsv.gz", "wt") as f:
+        f.write("kept\n")
+    (d / "filter.chunk000.log").write_text("finished filter\n")
+    (d / "search.chunk000.time").write_text(
+        "Elapsed: 0:01.00\nMaximum resident: 1024\n"
+    )
+    binary = tmp_path / "fake_kmerseek"
+    binary.write_text("""#!/bin/bash
+[ "$1" = index ] || exit 99
+while [ $# -gt 0 ]; do if [ "$1" = -o ]; then shift; mkdir -p "$1"; touch "$1/CURRENT"; fi; shift; done
+echo 'fitted now'
+echo 'Indexing completed successfully!'
+""")
+    binary.chmod(0o755)
+    # GNU time is present on Linux; use a portable stand-in on macOS.
+    timer = tmp_path / "time"
+    timer.write_text("""#!/bin/bash
+shift; shift; out=$1; shift
+"$@"; rc=$?
+printf 'Elapsed: 0:01.00\nMaximum resident: 1024\n' > "$out"
+exit $rc
+""")
+    timer.chmod(0o755)
+    env = dict(
+        os.environ,
+        SCRATCH=str(tmp_path),
+        SLURM_SUBMIT_DIR=str(repo),
+        ALPHABET="protein20",
+        KMERSEEK=str(binary),
+        NB301_DIR=str(base),
+        TIME_BIN=str(timer),
+        CHUNK="100",
+    )
+    subprocess.run(
+        ["bash", str(ROOT / "scripts/301_kmerseek_alphabet.sbatch")],
+        env=env,
+        check=True,
+        capture_output=True,
+    )
+    assert not list(d.glob("idx.failed.*"))
+    assert (d / "index.log.failed.test").read_text() == "killed during calibration"
+    assert "fitted" in (d.parent / "status.tsv").read_text()
+    assert gzip.open(d / "regions_filtered.chunk000.tsv.gz", "rt").read() == "kept\n"
+
+
+def test_wrong_chunk_count_setting_is_skipped_and_marked_incomplete(tmp_path):
+    import gzip
+    import re
+    import sys
+
+    base = tmp_path / "base"
+    (base / "step2").mkdir(parents=True)
+    (base / "step3").mkdir()
+    (base / "step5").mkdir()
+    (base / "step5/subset_query_ids.txt").write_text("Q\n")
+    (base / "step2/truth.tsv").write_text(
+        "query_id\tfeature_type\tstart\tend\nQ\tdomain\t1\t5\n"
+    )
+    (base / "step3/decoys.tsv").write_text(
+        "decoy_id\tquery_id\tfeature_type\tstart\tend\tunchanged\n"
+        "D\tQ\tdomain\t10\t14\tFalse\n"
+    )
+    for name, n_files in [("good", 1), ("short", 1)]:
+        d = base / "step5" / name
+        tag = d / f"{name}.k5.x"
+        tag.mkdir(parents=True)
+        (d / "status.tsv").write_text("ksize\tfit\n5\tfitted\n")
+        # "short" expects two chunks but has one output, so it must be skipped.
+        (d / "expected_chunks.txt").write_text("1" if name == "good" else "2")
+        for i in range(n_files):
+            with gzip.open(tag / f"regions_filtered.chunk{i:03d}.tsv.gz", "wt") as f:
+                f.write("query_id\ttarget_name\tstart\tend\tregion_evalue\n")
+                f.write("Q\tT\t1\t5\t0.001\n")
+    (base / "step5/nofit").mkdir()
+    out = tmp_path / "out"
+    subprocess.run(
+        [sys.executable, str(ROOT / "scripts/score_301_completed.py")]
+        + ["--base", str(base), "--out", str(out)],
+        check=True,
+        capture_output=True,
+    )
+    skipped = (out / "301_settings_skipped_swissprot.tsv").read_text().splitlines()
+    assert skipped == ["alphabet\tstate", "short\tincomplete"]
+    summary = (out / "301_partial_summary_swissprot.tsv").read_text()
+    assert "good.k5.x" in summary
+    assert "short.k5.x" not in summary
+    # Run the coverage step embedded in the sbatch file on this output.
+    text = (ROOT / "scripts/301_score_after_recovery.sbatch").read_text()
+    code = re.search(r"<<'PY'\n(.*?)\nPY\n", text, re.S).group(1)
+    subprocess.run(
+        [sys.executable, "-I", "-", str(base), str(out)],
+        input=code,
+        text=True,
+        check=True,
+        capture_output=True,
+    )
+    coverage = (out / "301_settings_coverage_swissprot.tsv").read_text().splitlines()
+    assert coverage == [
+        "alphabet\tstate",
+        "good\tcompleted",
+        "nofit\tincomplete_or_no_fit",
+        "short\tincomplete_or_no_fit",
+    ]
+
+
+def test_real_snapshot_zero_evalue_groups_exceed_one_percent():
+    import csv
+    import gzip
+
+    raw = ROOT / "data/301_short_feature_boundaries/partial/raw/step5"
+    for alphabet, expected in [("protein20", 55), ("uniprot18", 45), ("wass14", 35)]:
+        queries = set()
+        for path in (raw / alphabet).glob("*/regions_filtered.chunk*.tsv.gz"):
+            with gzip.open(path, "rt") as f:
+                for row in csv.DictReader(f, delimiter="\t"):
+                    if (
+                        row["query_id"].startswith("decoy_")
+                        and float(row["region_evalue"]) == 0
+                    ):
+                        queries.add(row["query_id"])
+        assert len(queries) == expected
+        assert len(queries) / 1356 > 0.01
+
+
+def test_recovery_ask_doubles_latest_killed_job_and_borrows_slowest_chunk(tmp_path):
+    import subprocess
+    import sys
+
+    logs = tmp_path / "step5"
+    done = logs / "a/a.k5"
+    done.mkdir(parents=True)
+    (done / "search.chunk000.time").write_text(
+        "Elapsed (wall clock) time (h:mm:ss or m:ss): 29:26.32\n"
+        "Maximum resident set size (kbytes): 100\n"
+    )
+    killed = logs / "b/b.k5"
+    killed.mkdir(parents=True)
+    (killed / "index.time").write_text(
+        "Command terminated by signal 9\nMaximum resident set size (kbytes): 100\n"
+    )
+    acc = tmp_path / "acc.txt"
+    acc.write_text(
+        "1|301-a|COMPLETED|00:00:10|96G|16\n"
+        "2|301-b|OUT_OF_MEMORY|00:05:00|96G|16\n"
+        "3|301-resume-b|OUT_OF_MEMORY|00:05:00|248G|16\n"
+    )
+    out = tmp_path / "res.tsv"
+    subprocess.run(
+        [sys.executable, str(ROOT / "scripts/measure_301_recovery.py")]
+        + ["--logs", str(logs), "--accounting", str(acc), "--out", str(out)],
+        check=True,
+        capture_output=True,
+    )
+    rows = [r.split("\t") for r in out.read_text().splitlines()]
+    col = {name: i for i, name in enumerate(rows[0])}
+    b = next(r for r in rows if r[0] == "b")
+    assert b[col["previous_job_id"]] == "3"
+    assert b[col["requested_memory_gib"]] == "496"
+    # 18 chunks x 1766 s x 1.5 + 1 h, borrowed from alphabet a.
+    assert b[col["requested_hours"]] == "15"

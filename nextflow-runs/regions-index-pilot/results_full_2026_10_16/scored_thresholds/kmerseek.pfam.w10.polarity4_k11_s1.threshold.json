@@ -1,0 +1,13 @@
+{
+  "threshold": 4.679003709883421,
+  "n_target": 1065,
+  "n_decoy": 53,
+  "nofit": false,
+  "label": "kmerseek.pfam.w10.polarity4_k11_s1",
+  "calls_total": 190601185,
+  "decoy_calls_total": 88782199,
+  "max_decoy_rate": 0.05,
+  "features_found": 134,
+  "features_found_aligned": 220,
+  "features_total": 7174
+}

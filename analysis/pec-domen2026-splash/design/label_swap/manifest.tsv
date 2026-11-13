@@ -1,0 +1,15 @@
+key	contrast	flip	cjs	design	swap	control_over_PEC_reads	real_control_over_PEC_reads	choices
+young_2h/swap_uneven	young_2h	swap_uneven	design/label_swap/young_2h.swap_uneven.cjs	design/label_swap/young_2h.swap_uneven.design.tsv	pairs flipped: JA100+JA101, JA102+JA103, JA104+JA105	0.34	3.41	10
+young_2h/swap_even	young_2h	swap_even	design/label_swap/young_2h.swap_even.cjs	design/label_swap/young_2h.swap_even.design.tsv	pairs flipped: JA100+JA101, JA104+JA105, JA123+JA124	2.13	3.41	10
+young_2h/swap_middle	young_2h	swap_middle	design/label_swap/young_2h.swap_middle.cjs	design/label_swap/young_2h.swap_middle.design.tsv	pairs flipped: JA100+JA101, JA112+JA113, JA125+JA126	2.44	3.41	10
+young_24h/swap_uneven	young_24h	swap_uneven	design/label_swap/young_24h.swap_uneven.cjs	design/label_swap/young_24h.swap_uneven.design.tsv	pairs flipped: JA106+JA107, JA114+JA115, JA129+JA130	2.88	2.62	10
+young_24h/swap_even	young_24h	swap_even	design/label_swap/young_24h.swap_even.cjs	design/label_swap/young_24h.swap_even.design.tsv	pairs flipped: JA106+JA107, JA110+JA111, JA114+JA115	1.01	2.62	10
+young_24h/swap_middle	young_24h	swap_middle	design/label_swap/young_24h.swap_middle.cjs	design/label_swap/young_24h.swap_middle.design.tsv	pairs flipped: JA106+JA107, JA127+JA128, JA129+JA130	1.65	2.62	10
+old_24h/swap_uneven	old_24h	swap_uneven	design/label_swap/old_24h.swap_uneven.cjs	design/label_swap/old_24h.swap_uneven.design.tsv	pairs flipped: JA116+JA117	0.52	1.9	1
+young_13_49d/swap_uneven	young_13_49d	swap_uneven	design/label_swap/young_13_49d.swap_uneven.cjs	design/label_swap/young_13_49d.swap_uneven.design.tsv	control -> PEC: JA120,JA131; PEC -> control: JA151,JA153	0.24	1.3	15
+young_13_49d/swap_even	young_13_49d	swap_even	design/label_swap/young_13_49d.swap_even.cjs	design/label_swap/young_13_49d.swap_even.design.tsv	control -> PEC: JA120,JA150; PEC -> control: JA121,JA153	1.11	1.3	15
+young_13_49d/swap_middle	young_13_49d	swap_middle	design/label_swap/young_13_49d.swap_middle.cjs	design/label_swap/young_13_49d.swap_middle.design.tsv	control -> PEC: JA120,JA154; PEC -> control: JA152,JA153	1.83	1.3	15
+young_132d/swap_uneven	young_132d	swap_uneven	design/label_swap/young_132d.swap_uneven.cjs	design/label_swap/young_132d.swap_uneven.design.tsv	control -> PEC: JA163; PEC -> control: JA167	1.73	1.13	9
+young_132d/swap_even	young_132d	swap_even	design/label_swap/young_132d.swap_even.cjs	design/label_swap/young_132d.swap_even.design.tsv	control -> PEC: JA162; PEC -> control: JA167	1.0	1.13	9
+old_41_93d/swap_uneven	old_41_93d	swap_uneven	design/label_swap/old_41_93d.swap_uneven.cjs	design/label_swap/old_41_93d.swap_uneven.design.tsv	control -> PEC: JA158; PEC -> control: JA166	0.25	0.57	4
+old_41_93d/swap_even	old_41_93d	swap_even	design/label_swap/old_41_93d.swap_even.cjs	design/label_swap/old_41_93d.swap_even.design.tsv	control -> PEC: JA158; PEC -> control: JA159	1.62	0.57	4

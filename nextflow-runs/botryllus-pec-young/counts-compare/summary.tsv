@@ -1,0 +1,10 @@
+pair	genes_compared	median_change_correlation	lowest	highest	median_count_correlation	agree
+A. paper against no-genome, on the paper's genes	all genes	0.6877393962547065	0.6362702679364257	0.7046145225388364	0.36226229803120835	False
+B. salmon against no-genome, on this run's genes	all genes	0.7112385890307162	0.6999995886333698	0.7197069387028747	0.483126446186416	False
+B2. salmon against rsem	all genes	0.8050765500411654	0.7391058787949807	0.863772295580244	0.8314730613693562	True
+C. no-genome on the paper's genes against no-genome on this run's genes	all genes	0.7756994013647726	0.7280107363162196	0.8445410068206101	0.5404756707799723	False
+C. no-genome on the paper's genes against no-genome on this run's genes	one g gene to one FUN gene	0.8111926484978849	0.7439327822536943	0.888189261490178	0.5404756707799723	False
+C. no-genome on the paper's genes against no-genome on this run's genes	several g genes to one FUN gene	0.746111514707839	0.6916586878305987	0.7964213145222503	0.5404756707799723	False
+D. paper against salmon	all genes	0.5815446302083239	0.5470609279002969	0.6311508842455443	0.45067911285250717	False
+D. paper against salmon	one g gene to one FUN gene	0.6153953092010864	0.6051587034585544	0.6486279970675869	0.45067911285250717	False
+D. paper against salmon	several g genes to one FUN gene	0.5465229107846383	0.4968535416779552	0.6111148772268604	0.45067911285250717	False

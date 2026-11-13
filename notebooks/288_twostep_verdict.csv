@@ -1,0 +1,5 @@
+case,rule,partner_is_candidate,n_shuffles,n_shuffles_without_candidates,n_shuffles_any_candidate_below_005,passes
+Ced9,A50,false,100,0,100,false
+Ced9,B,false,100,0,100,false
+P66,A50,false,100,0,100,false
+P66,B,false,100,1,99,false

@@ -1,0 +1,15 @@
+run	comparison	window	paper_listed	listed_found_same_direction	listed_found_pct	genes_in_both	spearman	paper_p_lt_0_05	also_p_lt_0_05_here_same_direction
+joint	2 h	young_2h	280	4	1.4	30129	0.338	433	9
+joint	24 h	young_24h	350	6	1.7	29516	0.444	495	11
+joint	13-49 d	young_13_17d	66	10	15.2	17241	0.19	72	4
+joint	13-49 d	young_49_52d	66	10	15.2	17241	0.162	72	10
+joint	132 d	young_104_132d	86	10	11.6	15325	0.297	131	17
+each-window	2 h	young_2h	280	20	7.1	28832	0.347	404	35
+each-window	24 h	young_24h	350	21	6.0	28173	0.475	462	35
+each-window	13-49 d	young_13_17d	66	0	0.0	11717	0.243	52	0
+each-window	13-49 d	young_49_52d	66	0	0.0	11365	0.177	63	5
+each-window	132 d	young_104_132d	86	8	9.3	11826	0.338	124	12
+paper	2 h	young_2h	280	90	32.1	28654	0.351	391	159
+paper	24 h	young_24h	350	76	21.7	27921	0.483	446	119
+paper	13-49 d	young_13_49d	66	12	18.2	14248	0.392	67	19
+paper	132 d	young_132d	86	5	5.8	11827	0.346	124	7

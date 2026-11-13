@@ -1,0 +1,6 @@
+comparison	paper_window	paper_control	paper_treated	paper_padj_lt_0.05	paper_p_lt_0.05_up	paper_p_lt_0.05_down	paper_listed_up	paper_listed_down	this_run_window	this_run_control	this_run_treated	this_run_padj_lt_0.05_up	this_run_padj_lt_0.05_down	this_run_p_lt_0.05_up	this_run_p_lt_0.05_down
+2 h	2 h	6	6	0	94	552	43	237	young_2h	6	6	2	138	4	279
+24 h	24 h	6	6	1	689	127	252	98	young_24h	6	6	27	49	82	175
+13-49 d	13 and 49 d pooled	4	4	0	37	57	18	48	young_13_17d	6	6	23	153	39	327
+13-49 d	13 and 49 d pooled	4	4	0	37	57	18	48	young_49_52d	2	3	77	11	358	31
+132 d	132 d	3	3	11	92	87	40	46	young_104_132d	3	3	5	46	64	252

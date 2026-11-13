@@ -1,0 +1,14 @@
+# nf-core/rnaseq 3.27.0, pre-processing only: FastQC, Trim Galore, FastQC on the
+# trimmed reads, a strandedness check on a 1 million read subsample, and MultiQC.
+# No genome alignment and no transcript quantification.
+skip_alignment: true
+skip_pseudo_alignment: true
+
+# The pipeline refuses to start without a genome and annotation, even with both steps
+# above skipped. They are used only to build the Salmon index for the strandedness check.
+# IMPORTANT_NOTE.txt next to these files names the FullNames annotation as the current one.
+fasta: /home/groups/ayeletv/Index_Genome_New_April2024/ReferenceFiles/final_purged_primary.fasta
+gtf: /home/groups/ayeletv/Index_Genome_New_April2024/ReferenceFiles/Annotated_Merge_Botryllus.sofMask_CorrectedNames_FullNames.gtf
+
+trimmer: trimgalore
+save_trimmed: true

@@ -1,0 +1,12 @@
+kmerseek        calls on verdict pairs=  515335 verdict pairs with any call=261/261 call len median=26.0 p10=12.0 frac calls <=75 res=0.920 median call/target len=0.05
+   calls with coords outside [0,target_len] or empty: 0
+foldseek        calls on verdict pairs=     251 verdict pairs with any call=251/261 call len median=396.0 p10=171.0 frac calls <=75 res=0.000 median call/target len=1.00
+   calls with coords outside [0,target_len] or empty: 0
+reseek          calls on verdict pairs=     261 verdict pairs with any call=261/261 call len median=394.0 p10=164.0 frac calls <=75 res=0.000 median call/target len=1.00
+   calls with coords outside [0,target_len] or empty: 3
+prostt5         calls on verdict pairs=     252 verdict pairs with any call=252/261 call len median=388.0 p10=164.0 frac calls <=75 res=0.000 median call/target len=1.00
+   calls with coords outside [0,target_len] or empty: 0
+hmmer3_phmmer   calls on verdict pairs=     301 verdict pairs with any call=261/261 call len median=351.0 p10=132.0 frac calls <=75 res=0.030 median call/target len=0.99
+   calls with coords outside [0,target_len] or empty: 0
+hhblits         calls on verdict pairs=     617 verdict pairs with any call=261/261 call len median=95.0 p10=14.0 frac calls <=75 res=0.475 median call/target len=0.19
+   calls with coords outside [0,target_len] or empty: 0

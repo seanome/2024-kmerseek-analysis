@@ -1,0 +1,17 @@
+k,rule,BHF_regions_E_below_10,BHF_best_E,copies_with_a_region_E_below_10,copies_best_E_below_1,copies_best_E_median,copies_at_or_below_BHF_best_E,p
+17,no filter,6,2.9666360557501026,94,36,1.5600317197338482,60,0.604
+17,share of the region,4,2.9666360557501026,94,35,1.6558867317658907,59,0.594
+17,share of the shared k-mers,4,2.9666360557501026,91,36,1.5195056568282979,59,0.594
+17,"shared k-mers, both proteins",2,2.9666360557501026,88,32,1.8165279202023292,53,0.535
+19,no filter,2,5.611113681739554,62,6,4.20441538890481,43,0.436
+19,share of the region,0,,62,6,4.20441538890481,,
+19,share of the shared k-mers,1,5.611113681739554,61,6,4.319449759192284,41,0.416
+19,"shared k-mers, both proteins",0,,55,4,4.319449759192284,,
+21,no filter,2,5.181017954233801,84,13,2.8301478061663143,65,0.653
+21,share of the region,1,5.181017954233801,84,13,2.8301478061663143,65,0.653
+21,share of the shared k-mers,0,,81,12,2.771526993058433,,
+21,"shared k-mers, both proteins",0,,76,10,3.1960625093462602,,
+23,no filter,0,,45,1,5.0402672469618,,
+23,share of the region,0,,45,1,5.0402672469618,,
+23,share of the shared k-mers,0,,44,1,4.905730899783935,,
+23,"shared k-mers, both proteins",0,,35,1,4.744432852901504,,

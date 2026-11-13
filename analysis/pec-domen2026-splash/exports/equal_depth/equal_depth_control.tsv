@@ -1,0 +1,17 @@
+pairs_per_sample	truth_class	genes_in_class	genes_found	recall	significant_anchors
+full (about 1000000)	abundance_down	150	0	0.0	10300
+full (about 1000000)	abundance_up	150	0	0.0	10300
+full (about 1000000)	isoform_switch	100	56	0.56	10300
+full (about 1000000)	unchanged	2600	0	0.0	10300
+500000	abundance_down	150	0	0.0	5761
+500000	abundance_up	150	0	0.0	5761
+500000	isoform_switch	100	43	0.43	5761
+500000	unchanged	2600	0	0.0	5761
+250000	abundance_down	150	0	0.0	2720
+250000	abundance_up	150	0	0.0	2720
+250000	isoform_switch	100	32	0.32	2720
+250000	unchanged	2600	0	0.0	2720
+125000	abundance_down	150	0	0.0	1447
+125000	abundance_up	150	0	0.0	1447
+125000	isoform_switch	100	24	0.24	1447
+125000	unchanged	2600	0	0.0	1447

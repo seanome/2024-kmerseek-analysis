@@ -1,0 +1,41 @@
+alphabet,k,score,n_same_family,cutoff,percent_kept
+hp_lehninger_c_nonpolar2,18,E-value,192,0.65,6.8
+hp_lehninger_c_nonpolar2,18,Poisson score,192,307.65,0.0
+hp_lehninger_c_nonpolar2,18,TF-IDF,192,380.93,1.0
+hp_lehninger_c_nonpolar2,18,mean IDF,192,324.33,0.0
+hp_lehninger_c_nonpolar2,18,region length,192,141.0,2.1
+hp_thomas_dill2,19,E-value,352,0.47,4.3
+hp_thomas_dill2,19,Poisson score,352,307.65,0.0
+hp_thomas_dill2,19,TF-IDF,352,1048.35,0.0
+hp_thomas_dill2,19,mean IDF,352,870.68,0.0
+hp_thomas_dill2,19,region length,352,362.0,0.0
+hp_thomas_dill_no_c2,19,E-value,237,0.18,5.5
+hp_thomas_dill_no_c2,19,Poisson score,237,307.65,0.0
+hp_thomas_dill_no_c2,19,TF-IDF,237,1083.88,0.0
+hp_thomas_dill_no_c2,19,mean IDF,237,935.07,0.0
+hp_thomas_dill_no_c2,19,region length,237,373.0,0.0
+hp_kyte_doolittle2,19,E-value,350,0.26,2.6
+hp_kyte_doolittle2,19,Poisson score,350,307.65,0.0
+hp_kyte_doolittle2,19,TF-IDF,350,1290.18,0.0
+hp_kyte_doolittle2,19,mean IDF,350,1115.71,0.0
+hp_kyte_doolittle2,19,region length,350,556.0,0.0
+gbmr4,16,E-value,155,-1000000.0,0.0
+gbmr4,16,Poisson score,155,307.65,0.0
+gbmr4,16,TF-IDF,155,45.52,9.0
+gbmr4,16,mean IDF,155,5.69,0.0
+gbmr4,16,region length,155,24.0,7.7
+mmseqs12,7,E-value,581,0.51,17.6
+mmseqs12,7,Poisson score,581,7.28,6.4
+mmseqs12,7,TF-IDF,581,63.57,2.9
+mmseqs12,7,mean IDF,581,60.44,0.0
+mmseqs12,7,region length,581,50.0,3.6
+sdm12,6,E-value,1910,1.08,3.7
+sdm12,6,Poisson score,1910,8.49,1.3
+sdm12,6,TF-IDF,1910,146.12,1.0
+sdm12,6,mean IDF,1910,140.56,0.2
+sdm12,6,region length,1910,54.0,1.4
+protein20,5,E-value,488,0.65,40.4
+protein20,5,Poisson score,488,6.77,9.4
+protein20,5,TF-IDF,488,38.49,10.2
+protein20,5,mean IDF,488,36.48,2.5
+protein20,5,region length,488,24.0,16.8

@@ -1,0 +1,7 @@
+protein	group	rule	expected	length	mmseqs2_best_target	mmseqs2_best_description	mmseqs2_best_species	mmseqs2_best_bits	mmseqs2_best_evalue	in_dark_txt
+FUN032689_RPL7A	everywhere	cytoplasmic ribosomal protein	present in every sample	413	P32429	Large ribosomal subunit protein eL8	Gallus gallus	394.0	1.336e-120	false
+FUN013198_ACTIN,	everywhere	cytoplasmic actin	present in every sample	376	P12716	Actin, cytoplasmic	Pisaster ochraceus	767.0	3.647e-250	false
+FUN027227_FUN027227	Botryllus only	no hit from any tool at any E-value	present in Botryllus samples only	2793						true
+FUN025138_FUN025138	Botryllus only	no hit from any tool at any E-value	present in Botryllus samples only	1345						true
+FUN002048_FUN002048	muscle and mitochondria-rich samples	mitochondrial protein	highest in muscle and mitochondria-rich samples	1200	Q05920	Pyruvate carboxylase, mitochondrial	Mus musculus	1622.0	0.0	false
+FUN015674_GYS1	muscle and mitochondria-rich samples	muscle protein	highest in muscle and mitochondria-rich samples	690	P13834	Glycogen [starch] synthase, muscle	Oryctolagus cuniculus	813.0	4.323e-260	false

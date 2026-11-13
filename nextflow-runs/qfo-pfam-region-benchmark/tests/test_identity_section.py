@@ -40,20 +40,26 @@ def metrics(bins: dict[str, float]) -> pl.DataFrame:
 
 
 def section(tmp_path, bins) -> dict:
+    bmi.NOT_IN_RUN.clear()
     bmi.section_identity(tmp_path, metrics(bins), "swissprot", max_tools=10)
     return json.loads((tmp_path / "qfo_identity_mqc.json").read_text())
 
 
 def test_a_single_bin_is_not_drawn_as_a_bargraph(tmp_path):
-    cfg = section(tmp_path, {"no_homolog": 0.13})
-    assert cfg["plot_type"] == "html"
-    assert "Not plotted" in cfg["data"]
+    bmi.NOT_IN_RUN.clear()
+    bmi.section_identity(tmp_path, metrics({"no_homolog": 0.13}), "swissprot", max_tools=10)
+    # Not a section at all (until 2026-09-20 it was one saying "Not plotted"): a line in
+    # the "Not in this run" list.
+    assert not (tmp_path / "qfo_identity_mqc.json").exists()
+    assert any("Percent identity" in what for what, _ in bmi.NOT_IN_RUN)
 
 
 def test_it_names_the_reason_the_swissprot_join_cannot_match(tmp_path):
-    cfg = section(tmp_path, {"no_homolog": 0.13})
-    assert "feature type" in cfg["data"]
-    assert "Pfam truth set" in cfg["data"]
+    bmi.NOT_IN_RUN.clear()
+    bmi.section_identity(tmp_path, metrics({"no_homolog": 0.13}), "swissprot", max_tools=10)
+    why = next(y for w, y in bmi.NOT_IN_RUN if "Percent identity" in w)
+    assert "typed (DOMAIN, TRANSMEM" in why
+    assert "Pfam key has all six identity bands" in why
 
 
 def test_a_real_gradient_is_still_drawn(tmp_path):

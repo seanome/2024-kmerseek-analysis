@@ -1,0 +1,24 @@
+	Command being timed: "bash /scratch/users/olgabot/2024-kmerseek-analysis-299/notebooks/299_manysearch_chunks.sh /scratch/users/olgabot/299-omrgc-pilot/env/bin/sourmash /scratch/users/olgabot/299-omrgc-pilot/search/dayhoff.k13.s1000/queries.sig.zip /scratch/users/olgabot/299-omrgc-pilot/search/dayhoff.k13.s1000/catalog.txt 13 dayhoff 1000 32"
+	User time (seconds): 5293.93
+	System time (seconds): 709.35
+	Percent of CPU this job got: 573%
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 17:26.82
+	Average shared text size (kbytes): 0
+	Average unshared data size (kbytes): 0
+	Average stack size (kbytes): 0
+	Average total size (kbytes): 0
+	Maximum resident set size (kbytes): 1057620
+	Average resident set size (kbytes): 0
+	Major (requiring I/O) page faults: 6
+	Minor (reclaiming a frame) page faults: 102203078
+	Voluntary context switches: 17305457
+	Involuntary context switches: 1339438
+	Swaps: 0
+	File system inputs: 168643976
+	File system outputs: 0
+	Socket messages sent: 0
+	Socket messages received: 0
+	Signals delivered: 0
+	Page size (bytes): 4096
+	Exit status: 0
+

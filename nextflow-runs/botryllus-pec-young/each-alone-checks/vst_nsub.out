@@ -1,0 +1,11 @@
+21-28d nsub 10 ok 
+-- note: fitType='parametric', but the dispersion trend was not well captured by the
+   function: y = a/x + b, and a local regression fit was automatically substituted.
+   specify fitType='local' or 'mean' to avoid this message next time.
+21-28d nsub 12 ok 
+-- note: fitType='parametric', but the dispersion trend was not well captured by the
+   function: y = a/x + b, and a local regression fit was automatically substituted.
+   specify fitType='local' or 'mean' to avoid this message next time.
+21-28d nsub 14 ok 
+21-28d direct direct ok 
+21-28d rlog rlog ok 

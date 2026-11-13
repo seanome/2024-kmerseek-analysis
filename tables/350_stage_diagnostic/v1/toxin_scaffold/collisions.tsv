@@ -1,0 +1,7 @@
+relation	shares_full_residue_kmer	len	dataset	setting
+background	false	36086	toxin_scaffold	cys2.k12.mask
+negative_annotated	false	8228	toxin_scaffold	cys2.k12.mask
+negative_annotated	true	1	toxin_scaffold	cys2.k12.mask
+negative_hard	false	8571	toxin_scaffold	cys2.k12.mask
+positive	false	1246	toxin_scaffold	cys2.k12.mask
+positive	true	62	toxin_scaffold	cys2.k12.mask

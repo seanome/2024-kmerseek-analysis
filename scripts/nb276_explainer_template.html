@@ -1,0 +1,564 @@
+<title>Circular Evidence</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;0,9..144,800;1,9..144,400&family=Source+Sans+3:ital,wght@0,300;0,400;0,600;1,400&display=swap">
+<style>
+/* FONTS_GO_HERE */
+
+/* Layout: one reading column; each interactive sits in a glass panel that breaks
+   the measure, so the thing you operate is visually separate from the argument. */
+:root {
+  --paper: #F6F7F5;
+  --ink: #1C211F;
+  --ink-soft: #5A635F;
+  --rule: #D7DBD6;
+  --panel: rgba(255, 255, 255, 0.62);
+  --match: #0F766E;      /* a column the alphabet calls a match */
+  --loop: #C2410C;       /* the loop named in the claim */
+  --face: #1D4ED8;       /* a CD47 residue that touches SIRPalpha */
+  --dim: #9AA39E;
+  --display: "Fraunces", Georgia, serif;
+  --text: "Source Sans 3", system-ui, sans-serif;
+  --mono: "Fantasque Sans Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --paper: #151917; --ink: #ECEFEC; --ink-soft: #9EA8A3; --rule: #2C3330;
+    --panel: rgba(255, 255, 255, 0.05);
+    --match: #5EEAD4; --loop: #FB923C; --face: #93B4FD; --dim: #6B7470;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --paper: #151917; --ink: #ECEFEC; --ink-soft: #9EA8A3; --rule: #2C3330;
+  --panel: rgba(255, 255, 255, 0.05);
+  --match: #5EEAD4; --loop: #FB923C; --face: #93B4FD; --dim: #6B7470;
+  color-scheme: dark;
+}
+
+body { background: var(--paper); color: var(--ink); font-family: var(--text); font-size: 17px; line-height: 1.6; }
+.wrap { max-width: 46rem; margin: 0 auto; padding-inline: 16px; padding-block: 3rem 5rem; }
+h1 { font-family: var(--display); font-weight: 800; font-size: clamp(2rem, 6vw, 3.1rem); line-height: 1.05; margin: 0 0 .6rem; text-wrap: balance; letter-spacing: -0.015em; }
+h2 { font-family: var(--display); font-weight: 600; font-size: clamp(1.25rem, 3.4vw, 1.6rem); margin: 3.2rem 0 .8rem; text-wrap: balance; }
+h3 { font-family: var(--text); font-weight: 600; font-size: 1rem; margin: 1.6rem 0 .4rem; }
+p { margin: 0 0 1rem; max-width: 62ch; }
+.lede { font-size: 1.14rem; color: var(--ink-soft); max-width: 58ch; }
+.eyebrow { font-family: var(--text); font-weight: 600; font-size: .72rem; letter-spacing: .13em; text-transform: uppercase; color: var(--ink-soft); margin: 0 0 .5rem; }
+code, .seq { font-family: var(--mono); }
+a { color: inherit; text-decoration-color: var(--dim); text-underline-offset: 3px; }
+hr { border: 0; border-top: 1px solid var(--rule); margin: 3rem 0 0; }
+.panel { background: var(--panel); border: 1px solid var(--rule); border-radius: 14px; padding: 1.1rem 1.1rem 1.25rem; margin: 1.4rem 0 1.8rem; backdrop-filter: blur(6px); }
+.panel h3 { margin-top: 0; }
+.controls { display: flex; flex-wrap: wrap; gap: .4rem; margin: 0 0 1rem; }
+button.chip { font-family: var(--text); font-size: .78rem; font-weight: 600; padding: .3rem .6rem; border-radius: 999px; border: 1px solid var(--rule); background: transparent; color: var(--ink-soft); cursor: pointer; }
+button.chip[aria-pressed="true"] { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+button.chip:focus-visible, input:focus-visible { outline: 2px solid var(--face); outline-offset: 2px; }
+.alnscroll { overflow-x: auto; }
+table.aln { border-collapse: collapse; font-family: var(--mono); font-size: 15px; }
+table.aln td { padding: 1px 0; text-align: center; min-width: 1.05em; }
+table.aln td.lbl { font-family: var(--text); font-size: .72rem; color: var(--ink-soft); text-align: right; padding-right: .6rem; white-space: nowrap; min-width: 0; }
+td.m { color: var(--match); font-weight: 700; }
+td.x { color: var(--dim); }
+td.bar { color: var(--match); }
+td.loopcol { background: color-mix(in srgb, var(--loop) 16%, transparent); }
+td.facecol { background: color-mix(in srgb, var(--face) 14%, transparent); }
+.stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(8.5rem, 1fr)); gap: .8rem; margin: 1rem 0 0; }
+.stat { min-width: 0; }
+.stat .k { font-family: var(--text); font-size: .7rem; letter-spacing: .09em; text-transform: uppercase; color: var(--ink-soft); }
+.stat .v { font-family: var(--mono); font-size: 1.45rem; font-variant-numeric: tabular-nums; line-height: 1.2; }
+.stat .n { font-size: .78rem; color: var(--ink-soft); }
+.note { font-size: .88rem; color: var(--ink-soft); max-width: 60ch; }
+.slider { width: 100%; }
+.rankrow { display: flex; align-items: baseline; gap: .6rem; font-family: var(--mono); font-variant-numeric: tabular-nums; }
+.rankrow .big { font-size: 2.1rem; }
+.bars { display: grid; gap: .55rem; margin: .8rem 0 0; }
+.barline { display: grid; grid-template-columns: 11.5rem 1fr; gap: .7rem; align-items: center; font-size: .84rem; }
+.barline .lab { color: var(--ink-soft); min-width: 0; }
+.bars .eyebrow + .barline { margin-top: .1rem; }
+.track { position: relative; height: 1.15rem; background: color-mix(in srgb, var(--ink) 7%, transparent); border-radius: 4px; min-width: 0; }
+.track .fill { position: absolute; inset-block: 0; left: 0; border-radius: 4px; background: var(--dim); }
+.track .fill.claim { background: var(--loop); }
+.track .val { position: absolute; right: .4rem; top: 0; font-family: var(--mono); font-size: .76rem; line-height: 1.15rem; font-variant-numeric: tabular-nums; }
+.verdict { font-family: var(--display); font-weight: 600; font-size: 1.1rem; border-left: 3px solid var(--loop); padding-left: .9rem; margin: 1.2rem 0; max-width: 58ch; }
+details { margin: .8rem 0; }
+summary { cursor: pointer; font-weight: 600; font-size: .9rem; }
+details .note { margin-top: .6rem; }
+.legend { display: flex; flex-wrap: wrap; gap: .9rem; font-size: .78rem; color: var(--ink-soft); margin: 0 0 .7rem; }
+.legend span { display: inline-flex; align-items: center; gap: .35rem; }
+.swatch { width: .8rem; height: .8rem; border-radius: 3px; display: inline-block; }
+figure { margin: 1.2rem 0; }
+figcaption { font-size: .84rem; color: var(--ink-soft); margin-top: .5rem; max-width: 60ch; }
+svg { max-width: 100%; height: auto; }
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
+</style>
+
+<div class="wrap">
+
+<p class="eyebrow">Notebook 276 · Borreliella burgdorferi P66 and human CD47</p>
+<h1>Circular Evidence</h1>
+<p class="lede">A 2024 preprint proposes that a loop of the bacterial protein P66 mimics human CD47 to bind the macrophage receptor SIRPα. Searching hard enough found a result. Finding out where the result came from took longer.</p>
+
+<p class="verdict">One setting out of 76 makes CD47 the single best match in the human proteome for a P66 query. The query was cut from the place P66 happens to align to CD47. Move it to the loop the claim is actually about, and CD47's best rank over 152 settings is 8.</p>
+
+<h2>What the claim says</h2>
+<p>The preprint names a predicted extracellular loop of P66, mature residues 181–187, and two aspartates in it. In the UniProt entry for P66 the signal peptide runs 1–21, so that loop is residues <strong>202–208</strong>: <span class="seq">QENDKDT</span>, with aspartates at 205 and 207. The claim is that this stretch lets P66 bind SIRPα the way CD47's own surface does.</p>
+
+<figure>
+<svg viewBox="0 0 640 120" role="img" aria-label="P66 is 618 residues with the loop at 202 to 208; CD47 is 323 residues with 21 residues contacting SIRP-alpha between positions 21 and 124.">
+  <text x="0" y="14" font-family="Source Sans 3, sans-serif" font-size="10" fill="currentColor" opacity=".65">P66 · 618 aa</text>
+  <line x1="0" y1="32" x2="618" y2="32" stroke="currentColor" stroke-width="1.4"/>
+  <rect x="0" y="26" width="21" height="12" fill="none" stroke="currentColor" stroke-width="1"/>
+  <rect x="202" y="23" width="7" height="18" fill="var(--loop)"/>
+  <text x="215" y="22" font-family="Source Sans 3, sans-serif" font-size="9.5" fill="var(--loop)">loop 202–208, QENDKDT</text>
+  <text x="0" y="78" font-family="Source Sans 3, sans-serif" font-size="10" fill="currentColor" opacity=".65">CD47 · 323 aa</text>
+  <line x1="0" y1="96" x2="323" y2="96" stroke="currentColor" stroke-width="1.4"/>
+  <rect x="0" y="90" width="18" height="12" fill="none" stroke="currentColor" stroke-width="1"/>
+  <g id="faceticks"></g>
+  <text x="332" y="99" font-family="Source Sans 3, sans-serif" font-size="9.5" fill="var(--face)">21 residues touch SIRPα</text>
+</svg>
+<figcaption>Each protein drawn as a line, with an open box for its signal peptide. The CD47 marks are measured, not quoted: every CD47 residue with an atom within 4.5 Å of SIRPα in PDB 2JJS, a 1.85 Å crystal structure of the two together.</figcaption>
+</figure>
+
+<h2>Structure says no, three times</h2>
+<p>Shape is the natural way to test a mimicry claim, so that came first. Each comparison needs a background, because both quantities are easy to reach by accident: any immunoglobulin domain resembles CD47, and any seven residues can be laid on any other seven.</p>
+
+<div class="panel">
+<h3>Each claim against its own background</h3>
+<div class="bars" id="structbars"></div>
+<p class="note" style="margin-top:.7rem"><strong>The two groups run in opposite directions.</strong> Read each against the grey bar beneath it, never across the two.</p>
+<p class="note" id="structnote"></p>
+</div>
+
+<h3>The caveat that comes before all three</h3>
+<p>P66 has no experimental structure, so every comparison above rests on an AlphaFold model. Here is that model's confidence, residue by residue, next to CD47's from the same database on the same axis.</p>
+
+<div class="panel">
+<h3>How much of each model can be trusted</h3>
+<div class="legend">
+  <span><i class="swatch" style="background:var(--loop)"></i>P66 (H7C7N8)</span>
+  <span><i class="swatch" style="background:var(--face)"></i>CD47 (Q08722)</span>
+  <span><i class="swatch" style="background:color-mix(in srgb, var(--dim) 30%, transparent)"></i>below 50, AlphaFold's "very low" band</span>
+</div>
+<svg id="plddtchart" viewBox="0 0 660 210" role="img" aria-label="Per-residue AlphaFold confidence for P66 and CD47. CD47 sits between 70 and 98 for most of its length; P66 never rises above 50."></svg>
+<div class="stats">
+  <div class="stat"><div class="k">P66 mean pLDDT</div><div class="v" id="pl-p66"></div><div class="n" id="pl-p66n"></div></div>
+  <div class="stat"><div class="k">CD47 mean pLDDT</div><div class="v" id="pl-cd47"></div><div class="n" id="pl-cd47n"></div></div>
+  <div class="stat"><div class="k">TM-score, P66 vs CD47</div><div class="v" id="pl-tm"></div><div class="n">0.5 is the same-fold line</div></div>
+</div>
+<p class="note" id="plnote"></p>
+</div>
+
+<p>A model this uncertain cannot show that P66 resembles CD47, and cannot firmly show that it does not. It is not noise — Foldseek's top hits for it are bacterial outer-membrane β-barrels, which is what P66 is — but no number above should be read as settled.</p>
+
+<h2>Sequence found nothing, and that part is not a near miss</h2>
+<p>A separate line of work searched the two proteins for shared k-mers across 16 reduced alphabets and 27 settings. None of the 326 shared k-mers touches the loop. The reason is not that the search was unlucky. Below is the 36-residue stretch where P66 and CD47 align best, written out with the columns an alphabet calls a match. Pick an alphabet and watch what it can and cannot see.</p>
+
+<div class="panel">
+<h3>The alignment, as each alphabet sees it</h3>
+<div class="legend">
+  <span><i class="swatch" style="background:var(--match)"></i>column this alphabet calls a match</span>
+  <span><i class="swatch" style="background:color-mix(in srgb, var(--loop) 40%, transparent)"></i>the loop in the claim</span>
+  <span><i class="swatch" style="background:color-mix(in srgb, var(--face) 36%, transparent)"></i>CD47 residue touching SIRPα</span>
+</div>
+<div class="controls" id="alphabetchips" role="group" aria-label="Choose an alphabet"></div>
+<div class="alnscroll"><table class="aln" id="alntable"></table></div>
+<div class="stats">
+  <div class="stat"><div class="k">Matched columns</div><div class="v" id="s-matched"></div><div class="n">of 36</div></div>
+  <div class="stat"><div class="k">Expected by chance</div><div class="v" id="s-expected"></div><div class="n" id="s-chance"></div></div>
+  <div class="stat"><div class="k">Longest run</div><div class="v" id="s-run"></div><div class="n">consecutive matches</div></div>
+  <div class="stat"><div class="k">Beats its background</div><div class="v" id="s-p"></div><div class="n" id="s-corr"></div></div>
+</div>
+<p class="note" id="alnnote"></p>
+</div>
+
+<p>The longest run of consecutive matching columns is never more than <strong>4</strong>, in any alphabet, including a two-letter one where 24 of the 36 columns match. An exact 5-mer cannot be placed anywhere in this stretch, so no k-mer search at k of 5 or more can find it, and nothing that reweights k-mers afterwards can either. Inverse document frequency ranks the matches a search already made; with no match there is nothing to weight. Measured over the whole human proteome, the summed IDF of this stretch's matching 5-mers is 0.00 in every alphabet tried.</p>
+
+<details>
+<summary>Why funcgroups8 sees less than hsdm17, despite having fewer classes to spare</summary>
+<p class="note">Class count does not decide it. <span class="seq">funcgroups8</span> calls a random pair of residues a match 14.5% of the time, rarer than <span class="seq">dayhoff6</span> at 19%. What decides it is which pairs an alphabet merges. Beyond the 10 identical columns, <span class="seq">funcgroups8</span> accepts only I against L or V. <span class="seq">sdm12</span> and <span class="seq">hsdm17</span> accept those and also <strong>K against E</strong>, which is worth three more columns. So <span class="seq">funcgroups8</span> fails for the most ordinary reason in biochemistry: it keeps acidic and basic residues in separate classes, as a functional-group alphabet should, while the signal in this stretch is three columns of a P66 lysine against a CD47 glutamate. And the two alphabets that find it most strongly are not independent of each other — they accept the same four non-identical pairs and both come from the same 2000 paper.</p>
+</details>
+
+<h2>Then a search did find something</h2>
+<p>Exact matching has a floor; seed-and-extend does not. A short seed beside a region extends across it, tolerating mismatches. Run that way, one setting produced a 36-residue ungapped segment: <strong>P66 197–232 against CD47 109–144</strong>, 92% inside CD47's ectodomain, covering 9 of the 21 residues that touch SIRPα. It passed a test fixed in advance — against 437 human proteins matched to CD47 on length and acidic content, <span id="prespec-ge"></span> reached its score.</p>
+<p>Then the same background, split by column:</p>
+
+<div class="panel">
+<h3>Where that score comes from</h3>
+<div class="bars" id="splitbars"></div>
+<p class="note">On the 29 columns outside the loop, CD47 beats all 437. On the loop's own 7 columns, every one of the <span id="split-n"></span> matched proteins that reach the loop at all beats CD47. It is the best of 438 on the part of the segment the claim is not about, and the worst of <span id="split-worst"></span> on the part it is.</p>
+</div>
+
+<h2>And this is the part that took longest to see</h2>
+<p>A search tool ranks a database, so the real question is whether CD47 ever comes out on top of the human proteome for a P66 query. It does, once: in <span class="seq">hsdm17</span>, with the 36-residue segment, CD47 scores <span id="circ-score"></span> and no other protein of 19,705 reaches it. Sole first place.</p>
+<p>But that query is the window seed-and-extend produced <em>because</em> it aligns to CD47. It is not a stretch of P66 chosen on its own merits. So here is the same search with the window defined by a rule that never looks at CD47: take the loop's midpoint and extend a fixed distance each way. Drag the window and watch what happens.</p>
+
+<div class="panel">
+<h3>A window chosen without CD47</h3>
+<label for="winslider" class="note">Window width, centred on the loop midpoint (P66 205)</label>
+<input type="range" class="slider" id="winslider" min="0" max="7" step="1" value="5" aria-describedby="winreadout">
+<div class="rankrow" id="winreadout">
+  <span class="big" id="w-rank"></span>
+  <span class="note" id="w-detail"></span>
+</div>
+<div class="stats">
+  <div class="stat"><div class="k">Window</div><div class="v" id="w-span"></div><div class="n" id="w-len"></div></div>
+  <div class="stat"><div class="k">Best alphabet</div><div class="v" style="font-size:1rem" id="w-alpha"></div><div class="n">of the 19</div></div>
+  <div class="stat"><div class="k">Share rank 1</div><div class="v" id="w-tied"></div><div class="n">proteins at the top</div></div>
+</div>
+<h3 style="margin-top:1.2rem">The residues in this window, and where they best match CD47</h3>
+<div class="legend">
+  <span><i class="swatch" style="background:color-mix(in srgb, var(--loop) 40%, transparent)"></i>the loop, P66 202&ndash;208</span>
+  <span><i class="swatch" style="background:var(--match)"></i>column the alphabet calls a match</span>
+  <span><i class="swatch" style="background:color-mix(in srgb, var(--face) 36%, transparent)"></i>CD47 residue touching SIRP&alpha;</span>
+</div>
+<div class="alnscroll"><table class="aln" id="wintable"></table></div>
+<p class="note" id="winmatch"></p>
+<p class="note" id="winnote"></p>
+</div>
+
+<p><strong>No loop-centred window makes CD47 the sole top hit — 0 of 152 settings.</strong> Excluding the settings that tie more than 100 proteins at the top, CD47's best rank from a loop-centred window is <strong>8</strong>. The window that does put CD47 first is the one placed where CD47 matches.</p>
+
+<details>
+<summary>Why "rank 1 somewhere" proves nothing on its own</summary>
+<p class="note">Of 200 arbitrary human proteins put through the same 76 settings, 197 reach rank 1 in at least one of them, with a median best rank of 1. Sweeping settings will promote almost any protein to the top of something. That is why the tests above used a setting fixed in advance and a matched background, and why every rank here is shown next to how many proteins share it. Under the stricter criterion — sole top hit, nobody tied — 0 of the 200 ever qualify from a loop-centred window, and neither does CD47.</p>
+</details>
+
+<h2>Holding CD47 out</h2>
+<p>The slider changes where the window sits but still fixes it by a rule. The sharper test lets the data choose the window, with CD47 taken out of the room: score every one of P66's 583 windows of 36 residues against the 437 matched human proteins that are <em>not</em> CD47, take the window that scores highest, and only then ask where CD47 ranks for it.</p>
+
+<div class="panel">
+<h3>Choose the window with CD47 held out</h3>
+<div class="bars" id="heldoutbars"></div>
+<p class="note" id="heldoutnote"></p>
+</div>
+
+<p>Both halves of that point in opposite directions, and both are worth keeping. <strong>Discovery is circular</strong>: no search of P66 against a database would ever surface this window, because held out the data picks a different part of the protein and CD47 sits near the middle of the pack for it. <strong>But given the window, the match is specific to CD47</strong>: a merely matchable stretch would score well against the held-out set too, and this one is exactly median there while being the proteome's best against CD47.</p>
+<p>So the result is hypothesis-confirming, not hypothesis-generating. If you already suspect CD47, the segment is unusually good. Nothing would have handed it to you.</p>
+
+<h2>What would make it non-circular</h2>
+<p>The statistics were never the problem. The prespecified test was properly prespecified, the background was real proteins matched on length and composition, and the segment passed. What was contaminated is the <em>query</em>, and no better null fixes that: the window has to be chosen without reference to CD47.</p>
+<p>Three ways to do it, in rising order of what they would prove:</p>
+<ol>
+<li><strong>Centre the window on the loop and fix the width in advance.</strong> Done above. CD47's best rank is 8 of 19,705, and never sole first. This is the test, and the result does not survive it.</li>
+<li><strong>Define the window from P66's own structure, not from an alignment.</strong> Take the extracellular loop region the model's topology gives, decided before any CD47 comparison. The model's mean pLDDT is 29, so the topology is weak evidence, which is why this was not run.</li>
+<li><strong>Hold CD47 out entirely.</strong> Run above. The window chosen without CD47 is elsewhere in the protein, and CD47 ranks 4,696 of 19,705 for it. The result does not survive.</li>
+</ol>
+<p>All three have now been answered, and the honest statement is the narrow one: P66 197–232 and CD47 109–144 share a real 36-residue similarity that no length- and acidity-matched human protein matches; the loop the claim names is its weakest seven columns; and the only query that puts CD47 at the top of the proteome is one that was cut to fit CD47.</p>
+
+<hr>
+<p class="note">Every number on this page is recomputed by committed scripts in <span class="seq">seanome/2024-kmerseek-analysis</span>, notebook 276, pull request 118. The alignment columns above are computed in your browser from the 19 alphabet definitions, so what you see is derived rather than transcribed. Accessions, model versions and the PDB entry were resolved against UniProt, the AlphaFold database and RCSB at run time, not written from memory. Claim: Tal et al. 2024, bioRxiv <a href="https://doi.org/10.1101/2024.04.29.591704">10.1101/2024.04.29.591704</a>. Structure: Hatherley et al. 2008, <a href="https://doi.org/10.1016/j.molcel.2008.05.026">10.1016/j.molcel.2008.05.026</a>.</p>
+
+</div>
+
+<script>
+const DATA = /* DATA_GOES_HERE */;
+
+const q = (s) => {
+  const el = document.querySelector(s);
+  if (!el) throw new Error("missing element " + s);
+  return el;
+};
+/* Each section sets itself up inside this, so one broken section cannot stop
+   the others from rendering. */
+const section = (name, fn) => {
+  try { fn(); } catch (err) { console.error("section " + name + " failed:", err); }
+};
+const fmt = (n) => n.toLocaleString("en-US");
+
+/* ---- the claim diagram's CD47 contact ticks ---- */
+section("claim diagram", () => {
+  const g = q("#faceticks");
+  for (const p of DATA.cd47.face_positions) {
+    const t = document.createElementNS("http://www.w3.org/2000/svg", "line");
+    t.setAttribute("x1", p); t.setAttribute("x2", p);
+    t.setAttribute("y1", 88); t.setAttribute("y2", 104);
+    t.setAttribute("stroke", "var(--face)"); t.setAttribute("stroke-width", "1.2");
+    g.appendChild(t);
+  }
+});
+
+/* ---- structure bars ---- */
+section("structure bars", () => {
+  const s = DATA.structure;
+  const groups = [
+    {
+      head: "Whole fold, TM-score &mdash; a longer bar is more alike",
+      rows: [
+        {lab: "P66 vs CD47", v: s.tm_score, max: 1, claim: true, show: s.tm_score.toFixed(2)},
+        {lab: s.ig_n + " immunoglobulin domains", v: s.ig_median, max: 1,
+         show: s.ig_median.toFixed(2) + " median, " + s.ig_min.toFixed(2) + "\u2013" + s.ig_max.toFixed(2)},
+      ],
+    },
+    {
+      head: "The loop on the binding face, backbone RMSD &mdash; a <em>shorter</em> bar is a better fit",
+      rows: [
+        {lab: "the loop in the claim", v: s.loop_rmsd, max: 2.4, claim: true, show: s.loop_rmsd.toFixed(2) + " \u00c5"},
+        {lab: s.loop_bg_n + " other P66 loops", v: s.loop_bg_median, max: 2.4,
+         show: s.loop_bg_median.toFixed(2) + " \u00c5 median"},
+      ],
+    },
+  ];
+  q("#structbars").innerHTML = groups.map((g) =>
+    `<p class="eyebrow" style="margin:.2rem 0 .1rem">${g.head}</p>` +
+    g.rows.map((r) => `
+    <div class="barline"><div class="lab">${r.lab}</div>
+      <div class="track"><div class="fill${r.claim ? " claim" : ""}" style="width:${Math.min(100, 100 * r.v / r.max)}%"></div>
+        <span class="val">${r.show}</span></div></div>`).join("")
+  ).join("");
+  q("#structnote").innerHTML =
+    `${s.ig_n} of ${s.ig_n} unrelated immunoglobulin domains score higher against CD47 than P66 does, and the lowest of them still clears the 0.5 line usually read as the same fold. ` +
+    `All ${s.loop_bg_n} other 7-residue P66 loops fit the binding face better than the loop in the claim does. ` +
+    `Foldseek, not drawn: 176 hits for P66 in the PDB, none reaching E = 0.001, and no CD47 entry among them although all four chains of 2JJS are in the database.`;
+});
+
+/* ---- the two pLDDT traces ---- */
+section("plddt", () => {
+  const d = DATA.plddt, s = DATA.structure;
+  const W = 660, H = 210, L = 34, R = 8, T = 10, B = 26;
+  const maxLen = Math.max(d.p66.length, d.cd47.length);
+  const x = (i) => L + (i / (maxLen - 1)) * (W - L - R);
+  const y = (v) => T + (1 - v / 100) * (H - T - B);
+  const path = (arr) => arr.map((v, i) => `${i ? "L" : "M"}${x(i).toFixed(1)},${y(v).toFixed(1)}`).join("");
+  const ticksY = [0, 50, 70, 100], ticksX = [1, 100, 200, 300, 400, 500, 618];
+  const svg = q("#plddtchart");
+  svg.innerHTML =
+    `<rect x="${L}" y="${y(50)}" width="${W - L - R}" height="${y(0) - y(50)}"
+       fill="currentColor" opacity="0.07"/>` +
+    ticksY.map((v) => `<line x1="${L}" x2="${W - R}" y1="${y(v)}" y2="${y(v)}"
+       stroke="currentColor" stroke-width="0.4" opacity="0.25"/>
+       <text x="${L - 5}" y="${y(v) + 3}" text-anchor="end" font-size="9"
+       font-family="Source Sans 3, sans-serif" fill="currentColor" opacity=".7">${v}</text>`).join("") +
+    ticksX.map((v) => `<text x="${x(v - 1)}" y="${H - 8}" text-anchor="middle" font-size="9"
+       font-family="Source Sans 3, sans-serif" fill="currentColor" opacity=".7">${v}</text>`).join("") +
+    `<path d="${path(d.cd47)}" fill="none" stroke="var(--face)" stroke-width="1.1"/>` +
+    `<path d="${path(d.p66)}" fill="none" stroke="var(--loop)" stroke-width="1.1"/>` +
+    `<text x="${W - R}" y="${y(d.cd47[160]) - 6}" text-anchor="end" font-size="9"
+       font-family="Source Sans 3, sans-serif" fill="var(--face)">CD47 ends at 323</text>` +
+    `<text x="${L + 6}" y="${H - 8}" font-size="9" font-family="Source Sans 3, sans-serif"
+       fill="currentColor" opacity=".7">residue</text>`;
+  q("#pl-p66").textContent = d.p66_mean;
+  q("#pl-p66n").textContent = `${d.p66_above_50} of ${d.p66.length} residues reach 50`;
+  q("#pl-cd47").textContent = d.cd47_mean;
+  q("#pl-cd47n").textContent = `${d.cd47_above_70} of ${d.cd47.length} reach 70`;
+  q("#pl-tm").textContent = s.tm_score.toFixed(2);
+  q("#plnote").innerHTML =
+    `The whole P66 trace lies inside the very low band: its highest residue anywhere in 618 ` +
+    `is ${d.p66_max}, and exactly ${d.p66_above_50} of them reaches 50. CD47, fetched from the ` +
+    `same database in the same run, has a mean of ${d.cd47_mean} and ${d.cd47_above_70} residues above 70. ` +
+    `So the two structures being compared are not comparable objects: one is a model you could ` +
+    `place a side chain with, the other is a guess at a fold.`;
+});
+
+/* ---- the held-out test ---- */
+section("held out", () => {
+  const rows = DATA.heldout;
+  const held = rows.find((r) => !r.chosen_using_cd47);
+  const circ = rows.find((r) => r.chosen_using_cd47);
+  const N = 19705;
+  const bars = [
+    {lab: "window chosen without CD47<br><span style='opacity:.7'>P66 " + held.p66_span + "</span>",
+     v: 1 - (held.cd47_rank - 1) / N, show: "CD47 rank " + fmt(held.cd47_rank) + " of " + fmt(N)},
+    {lab: "window chosen using CD47<br><span style='opacity:.7'>P66 " + circ.p66_span + "</span>",
+     v: 1, claim: true, show: "CD47 rank " + circ.cd47_rank + ", sole first"},
+  ];
+  q("#heldoutbars").innerHTML = bars.map((r) => `
+    <div class="barline"><div class="lab">${r.lab}</div>
+      <div class="track"><div class="fill${r.claim ? " claim" : ""}" style="width:${(100 * r.v).toFixed(1)}%"></div>
+        <span class="val">${r.show}</span></div></div>`).join("");
+  q("#heldoutnote").innerHTML =
+    `Held out, the data picks <strong>P66 ${held.p66_span}</strong>, which does not contain the loop and ` +
+    `does not overlap the circular window at all. CD47 scores ${held.cd47_score} there against the ` +
+    `proteome's best of ${held.best_score_in_proteome}, and ${fmt(held.n_tied_with_cd47)} proteins tie with it. ` +
+    `Meanwhile P66 ${circ.p66_span} scores only ${circ.held_out_score} against the held-out set, which is the ` +
+    `<em>median</em> of all 583 windows, with 280 scoring higher — and ${circ.cd47_score} against CD47, the highest ` +
+    `anything reaches for it.`;
+});
+
+/* ---- the alignment widget ---- */
+const SEG_P66 = DATA.p66.segment, SEG_CD47 = DATA.cd47.segment;
+const N = SEG_P66.length;
+const classOf = (alphabet) => {
+  const m = {};
+  alphabet.classes.forEach((cl, i) => { for (const r of cl) m[r] = i; });
+  return m;
+};
+const matchedColumns = (alphabet) => {
+  const m = classOf(alphabet);
+  const out = [];
+  for (let i = 0; i < N; i++) {
+    const a = SEG_P66[i], b = SEG_CD47[i];
+    out.push(a in m && b in m && m[a] === m[b]);
+  }
+  return out;
+};
+const longestRun = (flags) => {
+  let best = 0, run = 0;
+  for (const f of flags) { run = f ? run + 1 : 0; if (run > best) best = run; }
+  return best;
+};
+
+let current = DATA.alphabets.find((a) => a.name === "hsdm17") || DATA.alphabets[0];
+
+function renderAlphabetChips() {
+  q("#alphabetchips").innerHTML = DATA.alphabets.map((a) =>
+    `<button class="chip" type="button" data-name="${a.name}" aria-pressed="${a.name === current.name}">${a.name} <span style="opacity:.6">${a.n_classes}</span></button>`
+  ).join("");
+  q("#alphabetchips").querySelectorAll("button").forEach((b) => {
+    b.addEventListener("click", () => {
+      current = DATA.alphabets.find((a) => a.name === b.dataset.name);
+      renderAlphabetChips(); renderAlignment();
+    });
+  });
+}
+
+function renderAlignment() {
+  const flags = matchedColumns(current);
+  const loopCols = new Set();
+  for (let p = DATA.p66.loop_start; p <= DATA.p66.loop_end; p++) loopCols.add(p - DATA.p66.segment_start);
+  const faceSet = new Set(DATA.cd47.face_positions);
+  const cells = (row) => {
+    let s = "";
+    for (let i = 0; i < N; i++) {
+      const p66pos = DATA.p66.segment_start + i, cd47pos = DATA.cd47.segment_start + i;
+      let cls = [];
+      if (row === "p66") { cls.push(flags[i] ? "m" : "x"); if (loopCols.has(i)) cls.push("loopcol"); }
+      if (row === "cd47") { cls.push(flags[i] ? "m" : "x"); if (faceSet.has(cd47pos)) cls.push("facecol"); }
+      if (row === "bar") cls.push("bar");
+      const ch = row === "p66" ? SEG_P66[i] : row === "cd47" ? SEG_CD47[i] : (flags[i] ? "|" : " ");
+      s += `<td class="${cls.join(" ")}">${ch === " " ? "&nbsp;" : ch}</td>`;
+    }
+    return s;
+  };
+  q("#alntable").innerHTML =
+    `<tr><td class="lbl">P66 ${DATA.p66.segment_start}</td>${cells("p66")}</tr>` +
+    `<tr><td class="lbl"></td>${cells("bar")}</tr>` +
+    `<tr><td class="lbl">CD47 ${DATA.cd47.segment_start}</td>${cells("cd47")}</tr>`;
+  const matched = flags.filter(Boolean).length;
+  const expected = current.chance * N;
+  q("#s-matched").textContent = matched;
+  q("#s-expected").textContent = expected.toFixed(1);
+  q("#s-chance").textContent = (100 * current.chance).toFixed(1) + "% per column";
+  q("#s-run").textContent = longestRun(flags);
+  q("#s-p").textContent = current.p_value === 0 ? "<0.01" : current.p_value.toFixed(2);
+  q("#s-corr").textContent = current.corroborates ? "yes, p < 0.05" : "no";
+  const identical = flags.filter((f, i) => SEG_P66[i] === SEG_CD47[i]).length;
+  q("#alnnote").innerHTML =
+    `<span class="seq">${current.name}</span> puts these residues in ${current.n_classes} classes: ` +
+    `<span class="seq">${current.classes.join(" ")}</span>. ` +
+    `${identical} of the 36 columns are the same residue in both proteins; this alphabet calls ${matched} a match, ` +
+    `against ${expected.toFixed(1)} expected from its own chance rate. ` +
+    `The longest run of consecutive matches is ${longestRun(flags)}, which is why an exact 5-mer has nowhere to sit.`;
+}
+
+/* ---- the window slider ---- */
+
+/* The best place this window sits on CD47, in the alphabet that ranked it best.
+   Computed here rather than carried, so the residues and the score agree. */
+function bestOnCd47(windowSeq, alphabetName) {
+  const alphabet = DATA.alphabets.find((a) => a.name === alphabetName)
+    || DATA.alphabets[0];
+  const m = classOf(alphabet);
+  const target = DATA.cd47.sequence;
+  let best = {score: -1, start: 1};
+  for (let b = 0; b + windowSeq.length <= target.length; b++) {
+    let score = 0;
+    for (let i = 0; i < windowSeq.length; i++) {
+      const x = windowSeq[i], y = target[b + i];
+      if (x in m && y in m && m[x] === m[y]) score++;
+    }
+    if (score > best.score) best = {score, start: b + 1};
+  }
+  return {...best, alphabet};
+}
+
+function renderWindowSequence(w) {
+  const start = Number(w.p66_span.split("-")[0]);
+  const seq = DATA.p66.sequence.slice(start - 1, start - 1 + w.window_length);
+  const hit = bestOnCd47(seq, w.alphabet);
+  const m = classOf(hit.alphabet);
+  const faceSet = new Set(DATA.cd47.face_positions);
+  const cd47Seq = DATA.cd47.sequence.slice(hit.start - 1, hit.start - 1 + seq.length);
+
+  const cells = (row) => {
+    let out = "";
+    for (let i = 0; i < seq.length; i++) {
+      const p66pos = start + i, cd47pos = hit.start + i;
+      const a = seq[i], b = cd47Seq[i];
+      const same = a in m && b in m && m[a] === m[b];
+      const cls = [];
+      let ch;
+      if (row === "p66") {
+        ch = a; cls.push(same ? "m" : "x");
+        if (p66pos >= DATA.p66.loop_start && p66pos <= DATA.p66.loop_end) cls.push("loopcol");
+      } else if (row === "cd47") {
+        ch = b; cls.push(same ? "m" : "x");
+        if (faceSet.has(cd47pos)) cls.push("facecol");
+      } else {
+        ch = same ? (a === b ? "|" : ":") : " "; cls.push("bar");
+      }
+      out += `<td class="${cls.join(" ")}">${ch === " " ? "&nbsp;" : ch}</td>`;
+    }
+    return out;
+  };
+  q("#wintable").innerHTML =
+    `<tr><td class="lbl">P66 ${start}</td>${cells("p66")}</tr>` +
+    `<tr><td class="lbl"></td>${cells("bar")}</tr>` +
+    `<tr><td class="lbl">CD47 ${hit.start}</td>${cells("cd47")}</tr>`;
+
+  const identical = [...seq].filter((c, i) => c === cd47Seq[i]).length;
+  const faceHit = [...seq].filter((_, i) => faceSet.has(hit.start + i)).length;
+  q("#winmatch").innerHTML =
+    `In <span class="seq">${hit.alphabet.name}</span> this window sits best on CD47 ` +
+    `${hit.start}&ndash;${hit.start + seq.length - 1}, matching ${hit.score} of ` +
+    `${seq.length} columns, ${identical} of them the same residue. ` +
+    `${faceHit === 0 ? "None of that stretch touches SIRP\u03b1."
+      : faceHit + " residue" + (faceHit === 1 ? "" : "s") + " of that stretch touch SIRP\u03b1."} ` +
+    `A bar is <span class="seq">|</span> for an identical residue and ` +
+    `<span class="seq">:</span> for a different one the alphabet puts in the same class.`;
+}
+
+function renderWindow() {
+  const i = Number(q("#winslider").value);
+  const w = DATA.windows[i];
+  renderWindowSequence(w);
+  const degenerate = w.n_at_rank_1 > 100;
+  q("#w-rank").textContent = degenerate ? "—" : fmt(w.best_rank);
+  q("#w-detail").innerHTML = degenerate
+    ? `rank 1, but shared with ${fmt(w.n_at_rank_1)} proteins, so there is no ranking here at all`
+    : `CD47's best rank of 19,705 human proteins`;
+  q("#w-span").textContent = w.p66_span;
+  q("#w-len").textContent = w.window_length + " residues";
+  q("#w-alpha").textContent = w.alphabet;
+  q("#w-tied").textContent = fmt(w.n_at_rank_1);
+  q("#winnote").innerHTML = degenerate
+    ? `At ${w.window_length} residues the query is too short to distinguish anything: in a 2- or 4-class alphabet it matches most of the proteome, and ${fmt(w.n_at_rank_1)} proteins sit at rank 1 together. A rank means nothing without the number beside it.`
+    : `The circular window, P66 197–232, gives CD47 rank ${DATA.circular.cd47_rank} with ${DATA.circular.n_at_rank_1} protein at the top: sole first place. Every window on this slider is the same length scale and none of them does that.`;
+}
+
+/* ---- prespecified test numbers ---- */
+section("prespecified", () => {
+  const p = DATA.prespecified;
+  q("#prespec-ge").textContent = p.n_ge === 0 ? "none of them" : p.n_ge + " of them";
+  const rows = [
+    {lab: "29 columns outside the loop", v: p.flank_observed, max: 6, claim: true, show: p.flank_observed.toFixed(1) + ", beaten by 0 of 437"},
+    {lab: "the loop's 7 columns", v: p.loop_observed, max: 6, claim: true, show: p.loop_observed.toFixed(1) + ", beaten by all " + p.loop_bg_beating},
+  ];
+  q("#splitbars").innerHTML = rows.map((r) => `
+    <div class="barline"><div class="lab">${r.lab}</div>
+      <div class="track"><div class="fill${r.claim ? " claim" : ""}" style="width:${Math.min(100, 100 * r.v / r.max)}%"></div>
+        <span class="val">${r.show}</span></div></div>`).join("");
+  q("#split-n").textContent = p.loop_bg_beating;
+  q("#split-worst").textContent = p.loop_bg_beating + 1;
+  q("#circ-score").textContent = DATA.circular.cd47_score;
+});
+
+renderAlphabetChips();
+renderAlignment();
+q("#winslider").max = String(DATA.windows.length - 1);
+// Start on the window that is the same length as the circular one, 35 residues,
+// so the first thing shown is the like-for-like comparison. Set explicitly
+// because the platform restores form values across a republish.
+q("#winslider").value = String(
+  Math.max(0, DATA.windows.findIndex((w) => w.window_length === 35))
+);
+q("#winslider").addEventListener("input", renderWindow);
+renderWindow();
+</script>
