@@ -1,0 +1,64 @@
+data	contrast	route	contigs	contig_bases	peptides	residues	protein_bytes	protein_sketches	protein_hashes	dayhoff_bytes	dayhoff_sketches	dayhoff_hashes	hp_bytes	hp_sketches	hp_hashes	dna_bytes
+Botryllus	young_2h	splash	184920	16245834	0	0	280162850	725805	2906086	271152835	725805	2227423	241948931	725805	73744	151372516
+Botryllus	young_2h	kamrat	29301	1076734	5169	139114	1845167	5169	21665	1777515	5169	16483	1589793	5169	2459	20662418
+Botryllus	young_24h	splash	826942	73731220	3186139	85643654	1269696812	3186139	13132556	1228686809	3186139	10039219	1106066590	3186139	453146	681283879
+Botryllus	young_24h	kamrat	118268	4283320	18291	482675	6497035	18291	74373	6257462	18291	55983	5625647	18291	8295	83663090
+Botryllus	old_24h	splash	64982	5824034	0	0	78107964	209145	639202	76721537	209145	542224	70058818	209145	43506	51359479
+Botryllus	old_24h	kamrat	164	8747	127	3853	45904	127	607	44541	127	502	39868	127	155	119925
+Botryllus	young_13_49d	splash	15871	1581721	0	0	26449126	67559	305225	25569826	67559	238393	22848793	67559	36131	13491738
+Botryllus	young_13_49d	kamrat	762	36730	526	18038	197814	526	2961	190330	526	2382	170535	526	872	557269
+Botryllus	young_132d	splash	5414	522398	0	0	8884070	22588	99739	8626520	22588	80427	7717064	22588	10897	4544972
+Botryllus	young_132d	kamrat	17798	656986	3538	100399	1266543	3538	15665	1223042	3538	12321	1095618	3538	2572	12601120
+Botryllus	old_41_93d	splash	18359	1731803	0	0	28586619	74080	305335	27706050	74080	237360	24891204	74080	28585	15170066
+Botryllus	old_41_93d	kamrat	1567	66758	682	18299	241024	682	2793	232988	682	2164	208316	682	324	1118827
+human	gse120862_baseline_trained_vs_untrained	splash_p05	32325	2739903	81883	2505067										
+human	gse120862_baseline_trained_vs_untrained	kamrat_ttest_corrected	537	242329	0	0										
+human	gse120862_baseline_trained_vs_untrained	kamrat_ttest_p05	70811	8169834	0	0										
+human	gse120862_fig4_trained_vs_untrained	splash_corrected	38072	3194918	92232	2838357										
+human	gse120862_fig4_trained_vs_untrained	splash_p05	182784	14932947	408849	12405519										
+human	gse120862_fig4_trained_vs_untrained	kamrat_ttest_corrected	303463	34078125	879608	36673112										
+human	gse120862_fig4_trained_vs_untrained	kamrat_ttest_p05	451289	34764945	748971	29861401										
+human	gse120862_trained_1h_ex_vs_ne	splash_p05	48641	4025702	115582	3494399										
+human	gse120862_trained_1h_ex_vs_ne	kamrat_ttest_corrected	261	112354	0	0										
+human	gse120862_trained_1h_ex_vs_ne	kamrat_ttest_p05	44357	5049118	0	0										
+human	gse120862_trained_4h_ex_vs_ne	splash_p05	24809	2035082	58278	1747162										
+human	gse120862_trained_4h_ex_vs_ne	kamrat_ttest_corrected	0	0	0	0										
+human	gse120862_trained_4h_ex_vs_ne	kamrat_ttest_p05	19685	1607996	0	0										
+human	gse120862_untrained_1h_ex_vs_ne	splash_p05	16039	1384807	42252	1307827										
+human	gse120862_untrained_1h_ex_vs_ne	kamrat_ttest_corrected	1727	431238	0	0										
+human	gse120862_untrained_1h_ex_vs_ne	kamrat_ttest_p05	27435	2733976	0	0										
+human	gse120862_untrained_4h_ex_vs_ne	splash_p05	14179	1183561	34365	1062834										
+human	gse120862_untrained_4h_ex_vs_ne	kamrat_ttest_corrected	1140	346281	0	0										
+human	gse120862_untrained_4h_ex_vs_ne	kamrat_ttest_p05	34305	4014943	0	0										
+human	gse144304_female_frail_vs_fit	splash_corrected	69942	6204297	166578	4944951										
+human	gse144304_female_frail_vs_fit	splash_p05	163858	13492312	343409	10100575										
+human	gse144304_female_frail_vs_fit	kamrat_ttest_corrected	2	187	4	104										
+human	gse144304_female_frail_vs_fit	kamrat_ttest_p05	66105	4571150	95309	3436655										
+human	gse144304_female_old_vs_young	splash_corrected	118480	10162303	255079	7490583										
+human	gse144304_female_old_vs_young	splash_p05	265908	21907146	547263	16179775										
+human	gse144304_female_old_vs_young	kamrat_ttest_corrected	118311	14313449	387738	16039522										
+human	gse144304_female_old_vs_young	kamrat_ttest_p05	277183	20691219	450382	17473099										
+human	gse144304_fig4_fit_vs_young	splash_corrected	140536	12080290	295427	8743102										
+human	gse144304_fig4_fit_vs_young	splash_p05	314754	25771668	624600	18402082										
+human	gse144304_fig4_fit_vs_young	kamrat_ttest_corrected	131254	14252858	371723	15285304										
+human	gse144304_fig4_fit_vs_young	kamrat_ttest_p05	318013	22507766	474506	17972952										
+human	gse144304_male_frail_vs_fit	splash_corrected	64594	5675251	150892	4429321										
+human	gse144304_male_frail_vs_fit	splash_p05	163897	13432717	339266	9953799										
+human	gse144304_male_frail_vs_fit	kamrat_ttest_corrected	2	106	2	40										
+human	gse144304_male_frail_vs_fit	kamrat_ttest_p05	65806	4439918	89750	3286399										
+human	gse144304_male_old_vs_young	splash_corrected	109868	9363107	234690	6901795										
+human	gse144304_male_old_vs_young	splash_p05	243256	19768372	484270	14197002										
+human	gse144304_male_old_vs_young	kamrat_ttest_corrected	48038	6147457	168346	6927493										
+human	gse144304_male_old_vs_young	kamrat_ttest_p05	215024	15211253	316868	11950940										
+human	gse99963_ex_post_vs_pre	splash_corrected	24874	2004508	50778	1658294										
+human	gse99963_ex_post_vs_pre	splash_p05	68903	5141282	108988	3423791										
+human	gse99963_ex_post_vs_pre	kamrat_ttest_corrected	1318	167895	5181	213879										
+human	gse99963_ex_post_vs_pre	kamrat_ttest_p05	95494	5445049	107284	3782830										
+human	gse99963_fig4_post_vs_pre	splash_corrected	33864	2678559	66209	2166853										
+human	gse99963_fig4_post_vs_pre	splash_p05	119414	8727830	171513	5368212										
+human	gse99963_fig4_post_vs_pre	kamrat_ttest_corrected	6540	667173	18291	776231										
+human	gse99963_fig4_post_vs_pre	kamrat_ttest_p05	119868	6627902	124288	4435127										
+human	gse99963_sed_post_vs_pre	splash_corrected	14959	1308559	41739	1360612										
+human	gse99963_sed_post_vs_pre	splash_p05	41116	3254155	85079	2700398										
+human	gse99963_sed_post_vs_pre	kamrat_ttest_corrected	0	0	0	0										
+human	gse99963_sed_post_vs_pre	kamrat_ttest_p05	30958	1645134	31136	1097540										

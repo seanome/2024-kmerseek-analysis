@@ -1,0 +1,21 @@
+gse99963_sed_post_vs_pre Table S1 rows at FDR < 0.1: 1602 up 869 down 733
+gse99963_ex_post_vs_pre Table S1 rows at FDR < 0.1: 3999 up 2146 down 1853
+[20101 rows x 6 columns]
+gse144304_female_frail_vs_fit rebuilt p < 0.01: 540 up 212 down 328
+[19580 rows x 6 columns]
+gse144304_male_frail_vs_fit rebuilt p < 0.01: 330 up 203 down 127
+[19502 rows x 6 columns]
+gse144304_female_old_vs_young rebuilt p < 0.01: 4754 up 2499 down 2255
+[19110 rows x 6 columns]
+gse144304_male_old_vs_young rebuilt p < 0.01: 3250 up 1635 down 1615
+[24162 rows x 6 columns]
+gse120862_untrained_1h_ex_vs_ne rebuilt padj < 0.05: 1321 up 990 down 331
+[24576 rows x 6 columns]
+gse120862_untrained_4h_ex_vs_ne rebuilt padj < 0.05: 2612 up 1585 down 1027
+[25674 rows x 6 columns]
+gse120862_trained_1h_ex_vs_ne rebuilt padj < 0.05: 578 up 523 down 55
+[25260 rows x 6 columns]
+gse120862_trained_4h_ex_vs_ne rebuilt padj < 0.05: 368 up 282 down 86
+[25179 rows x 6 columns]
+gse120862_baseline_trained_vs_untrained rebuilt padj < 0.05: 4644 up 2572 down 2072
+wrote .

@@ -1,0 +1,14 @@
+{
+ "tool": "mmseqs2_besthit",
+ "setting": "s7.5",
+ "n_queries": 998,
+ "n_queries_with_hit": 855,
+ "n_best_hits_with_pfam_domain": 852,
+ "n_queries_with_call": 840,
+ "min_overlap": 0.5,
+ "n_domains_below_min_overlap": 845,
+ "n_domains_with_no_aligned_query_residue": 12,
+ "n_calls": 2679,
+ "n_calls_linear_differs": 2071,
+ "max_linear_shift": 465
+}

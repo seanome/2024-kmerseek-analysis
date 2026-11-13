@@ -1,0 +1,146 @@
+[
+  {
+    "pairs": 1000000,
+    "bases": [
+      150000000,
+      150000000
+    ],
+    "lengths": [
+      {
+        "150": 1000000
+      },
+      {
+        "150": 1000000
+      }
+    ],
+    "reads_at_least_62bp": [
+      1000000,
+      1000000
+    ],
+    "uncompressed_sha256": [
+      "a8da332f0be6b9fd9bba05edafedc2679b61e30b4732a4dd9e0344954225b303",
+      "1d5fd4c2486340526a7704c3238f8be572a57f4231231795d4d4aa185eb50535"
+    ],
+    "sample": "DW1"
+  },
+  {
+    "pairs": 1000000,
+    "bases": [
+      150000000,
+      150000000
+    ],
+    "lengths": [
+      {
+        "150": 1000000
+      },
+      {
+        "150": 1000000
+      }
+    ],
+    "reads_at_least_62bp": [
+      1000000,
+      1000000
+    ],
+    "uncompressed_sha256": [
+      "c1d8e8dcf6cc30a523e628f10c98adec2e10bc03189c6ea7f8fd6b399d571183",
+      "37f1362d3db71d32255a5bbdf46704a25385cd6a573a8433eb86377d04d46b97"
+    ],
+    "sample": "DW2"
+  },
+  {
+    "pairs": 1000000,
+    "bases": [
+      150000000,
+      150000000
+    ],
+    "lengths": [
+      {
+        "150": 1000000
+      },
+      {
+        "150": 1000000
+      }
+    ],
+    "reads_at_least_62bp": [
+      1000000,
+      1000000
+    ],
+    "uncompressed_sha256": [
+      "34870b9a6afa7b5522c5a55c4ff910cd8c6ea95b3032c979a18715234b523f66",
+      "d5ac1fb331425ea544c7bacf2174469b0a1ec271e434a5d131d59481e6a4faf4"
+    ],
+    "sample": "DW3"
+  },
+  {
+    "pairs": 1000000,
+    "bases": [
+      150000000,
+      150000000
+    ],
+    "lengths": [
+      {
+        "150": 1000000
+      },
+      {
+        "150": 1000000
+      }
+    ],
+    "reads_at_least_62bp": [
+      1000000,
+      1000000
+    ],
+    "uncompressed_sha256": [
+      "3975cf3cff71e6a133cb42c63c6f7c9f649f7062b4f3d91604120f9a1dbb1890",
+      "002f3e8de6894b986e2c90ecae4b364927da919eee265765518991de5f98aea0"
+    ],
+    "sample": "ZW1"
+  },
+  {
+    "pairs": 1000000,
+    "bases": [
+      150000000,
+      150000000
+    ],
+    "lengths": [
+      {
+        "150": 1000000
+      },
+      {
+        "150": 1000000
+      }
+    ],
+    "reads_at_least_62bp": [
+      1000000,
+      1000000
+    ],
+    "uncompressed_sha256": [
+      "23e9f1cfee1317f55f2774627bd71f62c2a931fd7907d1a3c24133c95834f6e9",
+      "e132c61be5cd39d87ccfe1dc5a90ed82b6a828bfbff58b8aa86beca2c8bdb453"
+    ],
+    "sample": "ZW2"
+  },
+  {
+    "pairs": 1000000,
+    "bases": [
+      150000000,
+      150000000
+    ],
+    "lengths": [
+      {
+        "150": 1000000
+      },
+      {
+        "150": 1000000
+      }
+    ],
+    "reads_at_least_62bp": [
+      1000000,
+      1000000
+    ],
+    "uncompressed_sha256": [
+      "8523b9e9dfd5f761fb92776431ebe458f94fa27b08b6a65586a6c41134811992",
+      "cf4d87686f9aba0ad6c131155b04f5c1a3591253715979aacf9a15a364d3984e"
+    ],
+    "sample": "ZW3"
+  }
+]

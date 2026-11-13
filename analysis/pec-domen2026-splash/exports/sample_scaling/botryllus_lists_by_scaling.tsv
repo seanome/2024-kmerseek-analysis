@@ -1,0 +1,49 @@
+lists	scaling	contrast	list	genes	reached	share_null_at_or_above	beats_random_gene_sets
+nf-core's lists	total	young_2h	up	25	20	0.0	True
+nf-core's lists	total	young_2h	down	298	100	0.0	True
+nf-core's lists	total	young_24h	up	35	26	0.0	True
+nf-core's lists	total	young_24h	down	480	267	0.0	True
+nf-core's lists	total	old_24h	up	34	21	0.0	True
+nf-core's lists	total	old_24h	down	69	57	0.0	True
+nf-core's lists	total	young_13_49d	up	30	19	0.0	True
+nf-core's lists	total	young_13_49d	down	7	3	0.073	False
+nf-core's lists	total	young_132d	up	18	10	0.0	True
+nf-core's lists	total	young_132d	down	96	64	0.0	True
+nf-core's lists	total	old_41_93d	up	7	5	0.014	True
+nf-core's lists	total	old_41_93d	down	36	17	0.0	True
+nf-core's lists	size factor	young_2h	up	25	16	0.0	True
+nf-core's lists	size factor	young_2h	down	298	126	0.0	True
+nf-core's lists	size factor	young_24h	up	35	22	0.0	True
+nf-core's lists	size factor	young_24h	down	480	320	0.0	True
+nf-core's lists	size factor	old_24h	up	34	21	0.0	True
+nf-core's lists	size factor	old_24h	down	69	56	0.0	True
+nf-core's lists	size factor	young_13_49d	up	30	23	0.0	True
+nf-core's lists	size factor	young_13_49d	down	7	4	0.004	True
+nf-core's lists	size factor	young_132d	up	18	10	0.0	True
+nf-core's lists	size factor	young_132d	down	96	66	0.0	True
+nf-core's lists	size factor	old_41_93d	up	7	5	0.0	True
+nf-core's lists	size factor	old_41_93d	down	36	19	0.0	True
+the paper's lists	total	young_2h	up	43	39	0.0	True
+the paper's lists	total	young_2h	down	237	128	0.0	True
+the paper's lists	total	young_24h	up	252	140	0.0	True
+the paper's lists	total	young_24h	down	98	79	0.0	True
+the paper's lists	total	old_24h	up	57	28	0.0	True
+the paper's lists	total	old_24h	down	3	3	0.134	False
+the paper's lists	total	young_13_49d	up	18	12	0.0	True
+the paper's lists	total	young_13_49d	down	48	29	0.0	True
+the paper's lists	total	young_132d	up	40	15	0.0	True
+the paper's lists	total	young_132d	down	46	29	0.0	True
+the paper's lists	total	old_41_93d	up	19	12	0.0	True
+the paper's lists	total	old_41_93d	down	17	8	0.0	True
+the paper's lists	size factor	young_2h	up	43	21	0.0	True
+the paper's lists	size factor	young_2h	down	237	103	0.0	True
+the paper's lists	size factor	young_24h	up	252	42	0.0	True
+the paper's lists	size factor	young_24h	down	98	86	0.0	True
+the paper's lists	size factor	old_24h	up	57	28	0.0	True
+the paper's lists	size factor	old_24h	down	3	3	0.128	False
+the paper's lists	size factor	young_13_49d	up	18	13	0.0	True
+the paper's lists	size factor	young_13_49d	down	48	27	0.0	True
+the paper's lists	size factor	young_132d	up	40	14	0.0	True
+the paper's lists	size factor	young_132d	down	46	31	0.0	True
+the paper's lists	size factor	old_41_93d	up	19	10	0.0	True
+the paper's lists	size factor	old_41_93d	down	17	8	0.0	True

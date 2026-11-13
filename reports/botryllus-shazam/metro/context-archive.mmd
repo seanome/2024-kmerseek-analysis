@@ -1,0 +1,61 @@
+%%metro title: 3. Abundance and genome branches — not run; design and resource gates
+%%metro style: nfcore
+%%metro legend: tl
+%%metro line: abundance | Abundance and genome evidence | #1e3d6b
+%%metro file: trim | FQ.gz | Same validated trimmed mates
+%%metro file: counts | TSV | DE-kupl k-mer counts
+%%metro file: stats | TSV | Valid contrast statistics
+%%metro file: contigs | FASTA | Abundance-associated DNA contigs
+%%metro file: genome | FASTA | Version-matched genome required
+%%metro file: gtf | GTF | Version-matched gene annotation required
+%%metro file: bam | BAM | Genome alignments
+%%metro file: bai | BAI | Alignment index
+%%metro file: bed | BED | Genomic intervals
+%%metro file: class | TSV | SPLASH+ classifications
+%%metro file: gene_counts | TSV | Reference gene counts
+%%metro file: gene_de | CSV | Reference gene abundance statistics
+
+graph LR
+ subgraph abundance [Treatment inference requires resolved biological units]
+  trim[ ]
+  dk[Upstream DE-kupl / counting stages]
+  counts[ ]
+  design[Genotype and pairing review / valid abundance model]
+  stats[ ]
+  assemble[DE-kupl contig assembly]
+  contigs[ ]
+  trim -->|abundance| dk
+  dk -->|abundance| counts
+  counts -->|abundance| design
+  design -->|abundance| stats
+  stats -->|abundance| assemble
+  assemble -->|abundance| contigs
+ end
+ subgraph genome_evidence [Genome and splice evidence; resource version unresolved]
+  genome[ ]
+  gtf[ ]
+  align[STAR / SAMtools]
+  bam[ ]
+  bai[ ]
+  intervals[BEDTools]
+  bed[ ]
+  plus[Actual SPLASH+ R workflow]
+  class[ ]
+  htseq[HTSeq-count / planned]
+  gene_counts[ ]
+  deseq[DESeq2 / design-appropriate model only]
+  gene_de[ ]
+  bam -->|abundance| htseq
+  htseq -->|abundance| gene_counts
+  gene_counts -->|abundance| deseq
+  deseq -->|abundance| gene_de
+  genome -->|abundance| align
+  gtf -->|abundance| align
+  align -->|abundance| bam
+  bam -->|abundance| bai
+  bam -->|abundance| intervals
+  intervals -->|abundance| bed
+  bed -->|abundance| plus
+  plus -->|abundance| class
+ end
+ trim -->|abundance| align

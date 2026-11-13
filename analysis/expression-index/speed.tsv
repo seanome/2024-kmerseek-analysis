@@ -1,0 +1,5 @@
+accession	files	bytes	download_s	reads	reads_with_kept_frame	kept_translations	translate_s	reads_per_s	no_N	one_N_could_be_stop	one_N_ambiguous	one_N_resolved
+SRR32233927	2.0	96725	17.29	1384.0	1349.0	5667.0	0.18	7544.0	409634.0	3.0	24.0	3.0
+SRR32233988	2.0	144104	23.44	1656.0	1603.0	5384.0	0.25	6608.7	490008.0	25.0	114.0	29.0
+SRR32233950	2.0	50027	22.87	684.0	672.0	2442.0	0.11	6490.2	202392.0	13.0	46.0	13.0
+SRR13759047 (first 200 MB, bandwidth test)		12905518	120.02									

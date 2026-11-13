@@ -1,0 +1,71 @@
+%%metro title: 0. Search collections — Swiss-Prot proteins AND public SRA RNA-seq
+%%metro style: nfcore
+%%metro legend: tl
+%%metro line: protein | Protein reference search | #0072B2
+%%metro line: sra | Public SRA occurrence search | #D55E00 | dashed
+%%metro file: querydna | FASTA | Botryllus-experiment DNA extensions
+%%metro file: querypep | FASTA | Botryllus-experiment peptide fragments
+%%metro file: swiss | FASTA.gz | Swiss-Prot; 575748 reference proteins
+%%metro file: swiss_sig | SIG.zip | Protein7 / Dayhoff12 / HP30; scaled 5
+%%metro file: swiss_hits | CSV | Swiss-Prot candidate matches; validation required
+%%metro file: sra_manifest | TSV.gz | Public tunicates; 5776-run inventory complete
+%%metro file: sra_r1 | FASTQ.gz | Public SRA read 1; archive files via ENA
+%%metro file: sra_r2 | FASTQ.gz | Public SRA read 2; paired libraries only
+%%metro file: sra_trim1 | FQ.gz | Trimmed public SRA read 1
+%%metro file: sra_trim2 | FQ.gz | Trimmed public SRA read 2
+%%metro file: sra_sig | SIG.zip | DNA31 / protein7 / Dayhoff12 / HP30; scaled 10 and 100
+%%metro dir: sra_index | RocksDB | Run index directory; same runs at both scales
+%%metro file: sra_hits | CSV | Query-to-public-run occurrence matches
+%%metro file: coverage | JSON | Indexed runs/studies; empty-query denominators
+
+graph LR
+ subgraph protein_reference [Swiss-Prot protein retrieval; pilot execution completed, validation pending]
+  querypep[ ]
+  swiss[ ]
+  protein_sketch[Sourmash 4.9.4 / Branchwater 0.9.15]
+  swiss_sig[ ]
+  protein_search[Sourmash manysearch; scaled 5]
+  swiss_hits[ ]
+  querypep -->|protein| protein_sketch
+  swiss -->|protein| protein_sketch
+  protein_sketch -->|protein| swiss_sig
+  swiss_sig -->|protein| protein_search
+  protein_search -->|protein| swiss_hits
+ end
+ subgraph public_sra [Public SRA RNA-seq; full tunicate collection NOT yet indexed or searched]
+  sra_manifest[ ]
+  fetch[curl / MD5 / Rust FASTQ validation]
+  sra_r1[ ]
+  sra_r2[ ]
+  trim[Trim Galore; public archive only]
+  sra_trim1[ ]
+  sra_trim2[ ]
+  sra_sketch[sourmash sketch dna / translate]
+  sra_sig[ ]
+  index[Branchwater index]
+  sra_index[ ]
+  occurrence[Branchwater manysearch; scaled 10 and 100]
+  sra_hits[ ]
+  coverage[ ]
+  sra_manifest -->|sra| fetch
+  fetch -->|sra| sra_r1
+  fetch -->|sra| sra_r2
+  sra_r1 -->|sra| trim
+  sra_r2 -->|sra| trim
+  trim -->|sra| sra_trim1
+  trim -->|sra| sra_trim2
+  sra_trim1 -->|sra| sra_sketch
+  sra_trim2 -->|sra| sra_sketch
+  sra_sketch -->|sra| sra_sig
+  sra_sig -->|sra| index
+  index -->|sra| sra_index
+  sra_index -->|sra| occurrence
+  occurrence -->|sra| sra_hits
+  occurrence -->|sra| coverage
+ end
+ subgraph dna_query [SRA queries use the Botryllus experiment; no archive-wide SPLASH or DE-kupl]
+  querydna[ ]
+  query_sketch[Sourmash DNA and translated-peptide query sketches]
+  querydna -->|sra| query_sketch
+ end
+ query_sketch -->|sra| occurrence

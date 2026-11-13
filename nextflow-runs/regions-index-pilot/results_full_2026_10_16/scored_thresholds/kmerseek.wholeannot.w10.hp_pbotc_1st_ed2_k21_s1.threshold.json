@@ -1,0 +1,13 @@
+{
+  "threshold": 2.082753994105864e-10,
+  "n_target": 351,
+  "n_decoy": 17,
+  "nofit": false,
+  "label": "kmerseek.wholeannot.w10.hp_pbotc_1st_ed2_k21_s1",
+  "calls_total": 6404687,
+  "decoy_calls_total": 3070323,
+  "max_decoy_rate": 0.05,
+  "features_found": 65,
+  "features_found_aligned": 126,
+  "features_total": 7174
+}

@@ -1,0 +1,17 @@
+[
+  {
+    "stage": "K-mer count: largest library",
+    "observed_gib": 52.132408142089844,
+    "requested_gb": 91
+  },
+  {
+    "stage": "Kallisto: largest library",
+    "observed_gib": 1.7398719787597656,
+    "requested_gb": 8
+  },
+  {
+    "stage": "Kallisto reference index",
+    "observed_gib": 2.32073974609375,
+    "requested_gb": 16
+  }
+]

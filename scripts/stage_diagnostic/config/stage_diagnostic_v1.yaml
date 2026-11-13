@@ -1,0 +1,102 @@
+# kmerseek stage diagnostic, config version 1. Frozen 2026-10-19 before any stage was run.
+# Changing anything here makes a new version (v2), never an edit of this file.
+version: 1
+seed: 20261019
+
+inputs:
+  swissprot_dat: ~/data/uniprot/uniprot_sprot.2026_03.dat.gz
+  swissprot_dat_md5: a31b5d0756f0a8f94164bf20b703812c
+  swissprot_release: "2026_03"
+  ice_truth: data/350_stage_diagnostic/inputs/ice_binding_truth_set.tsv
+  random_swissprot: data/350_stage_diagnostic/inputs/random_swissprot_5000.txt
+  cys_peptides: data/350_stage_diagnostic/inputs/cys_framework_peptides.csv
+
+panels:
+  # Shared by all three datasets: unannotated background, the first N entries of the
+  # notebook 298 random Swiss-Prot sample that are not positives of any dataset and have
+  # only the 20 canonical residues.
+  n_background: 1000
+  ice_binding:
+    # hard negatives: for every ice-binding protein, the Swiss-Prot entries that are not
+    # ice-binding, closest in 20-residue composition (L1 distance), length 0.5x-2x
+    n_composition_matched: 5
+    # and up to this many non-ice-binding entries of each ice-binding protein's own family
+    n_same_family: 10
+    # one origin = one independent evolutionary invention of ice binding (see panels.py)
+    dev_fraction: 0.5
+  toxin_scaffold:
+    min_peptides_per_framework: 40
+    n_frameworks: 10
+    peptides_per_framework: 30
+    queries_per_framework: 6
+    n_cys_rich_nontoxin: 200   # hard negatives: non-toxin Swiss-Prot, <= 120 aa, >= 6 Cys
+    dev_fraction: 0.5          # split by framework
+  toxin_target:
+    # UniProt keywords; an entry with more than one class is left out
+    classes:
+      Nav: Voltage-gated sodium channel impairing toxin
+      Kv: Potassium channel impairing toxin
+      Cav: Calcium channel impairing toxin
+      nAChR: Acetylcholine receptor inhibiting toxin
+    references_per_class: 60
+    queries_per_class: 12
+    dev_fraction: 0.5          # split by toxin family (SIMILARITY), so no family is in both
+    min_mature_length: 10
+
+stages:
+  full_scorer: {matrix: BLOSUM62, gap_open: 11, gap_extend: 1}
+  reduced_scorer: {matrix: BLOSUM62 collapsed onto the alphabet, gap_open: 11, gap_extend: 1}
+
+kmerseek:
+  image: docker.io/olgabot/kmerseek:2026-10-17-cys-frameworks-05b4131
+  sif: /scratch/users/olgabot/apptainer_cache/docker.io-olgabot-kmerseek-2026-10-17-cys-frameworks-05b4131.img
+  scaled_no_subsampling: 1
+  scaled_sketch: 10            # the subsampled value in the dark-set / convergence settings table
+  # candidate generation (stages C, D): every target sharing one retained k-mer, no filter
+  candidate_flags: --threshold 0 --min-shared-kmers 1 --max-query-pvalue 1 --min-region-score 0
+  # end-to-end (stage E): each dataset's existing pipeline, flags and ranking as it ran
+  end_to_end:
+    ice_binding:
+      pipeline: nextflow-runs/convergence-afp (branch convergence-afp, 7b1704f9)
+      flags: --threshold 0.0 --min-shared-kmers 2 --max-query-pvalue 0.05 --min-region-score 1.3 --chain-max-gap 30 --chain-max-shift 10
+      extend: true             # penalty and X-drop from the settings table, KA fit in the index
+      rank_by: min region_evalue
+    toxin:
+      pipeline: nextflow-runs/cys-frameworks (branch olgabot/nb297-cys-phylum)
+      flags: ""                # kmerseek defaults
+      extend: false
+      rank_by: max region_poisson_score, then n_intersecting_hashes
+  # settings to choose from on the development split; each alphabet at the lowest k an
+  # earlier run used. Penalty / X-drop as in convergence-afp/assets/kmerseek_settings.tsv.
+  settings:
+    ice_binding:
+      - {alphabet: dayhoff6, ksize: 9, mask: false, penalty: 0.41, xdrop: 1.64}
+      - {alphabet: sdm12, ksize: 7, mask: false, penalty: 0.24, xdrop: 0.96}
+      - {alphabet: hp_lehninger2, ksize: 17, mask: false, penalty: 1.51, xdrop: 6.04}
+    toxin_scaffold: &toxin_settings
+      - {alphabet: cys2, ksize: 12, mask: true, penalty: null, xdrop: null}
+      - {alphabet: dayhoff6, ksize: 9, mask: false, penalty: null, xdrop: null}
+      - {alphabet: sdm12, ksize: 7, mask: false, penalty: null, xdrop: null}
+    toxin_target: *toxin_settings
+  # chosen on the development split only: highest candidate recall at scaled 1;
+  # ties go to the fewer candidates per query
+  selection_metric: candidate_recall_dev
+
+evaluation:
+  false_hit_budgets: [0, 1, 5]     # negatives allowed above a positive, per query
+  headline_budget: 1
+  bootstrap_reps: 2000
+  bootstrap_unit:                  # resample these, not protein pairs
+    ice_binding: origin
+    toxin_scaffold: framework
+    toxin_target: family
+
+# Written before any result. evaluate.py applies them to the held-out split only, at the
+# headline budget, with the bootstrap 95% interval.
+decision_rules:
+  no_signal: full-residue recall (A) below 0.10 -> no useful signal under the tested conditions
+  richer_representation: A minus B at least 0.10 and the interval excludes 0
+  candidate_generation: of the positives B ranks within budget, at least 20% are not C candidates
+  sketch: C candidate recall minus D candidate recall at least 0.05 and the interval excludes 0
+  ranking: B-rescored C minus E at least 0.10, or C rescored by A minus C rescored by B at least 0.10
+  subgroup: when no_signal or every other rule fails overall, an origin / framework / class with at least 3 queries and recall at least 0.5 under A or B

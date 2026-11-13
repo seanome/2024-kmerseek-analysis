@@ -1,0 +1,68 @@
+# Pillon et al. 2020 Nat Commun doi:10.1038/s41467-019-13869-w, Table 2, from Europe PMC PMC6981202 fullTextXML, read 2026-10-27
+table2_row	Protocol	GEO	Author	Reference	DOI
+1	Acute aerobic	GSE4247	Mahoney DJ, 2005	13	10.1096/fj.04-3149fje
+2	Acute aerobic	GSE27285	Rowlands DS, 2011	44	10.1152/physiolgenomics.00073.2011
+3	Acute aerobic	GSE33603	Crane JD, 2012	45	10.1126/scitranslmed.3002882
+4	Acute aerobic	GSE41769	Catoire M, 2012	46	10.1371/journal.pone.0051066
+5	Acute aerobic	GSE43219	McLean CS, 2015	47	10.1371/journal.pone.0127089
+6	Acute aerobic	GSE43856	Neubauer O, 2013	48	10.1152/japplphysiol.00143.2013
+7	Acute aerobic	GSE44818	Rowlands DS, 2016	49	10.1152/physiolgenomics.00068.2015
+8	Acute aerobic	GSE59088	Vissing K, 2014	50	10.1038/sdata.2014.41
+9	Acute aerobic	GSE59363	Hansen JS, 2015	51	10.1007/s00125-015-3584-x
+10	Acute aerobic	GSE68585	Coletta DK, 2016	52	10.1371/journal.pone.0160327
+11	Acute aerobic	GSE71972	Romero SA, 2016	53	10.1113/JP272177
+12	Acute aerobic	GSE86931	Popov DV, 2015	54	10.1530/JME-15-0150
+13	Acute aerobic	GSE87748	Pattamaprapanont P, 2016	14	10.3389/fendo.2016.00165
+14	Acute resistance	GSE1832	Zambon AC, 2003	55	10.1186/gb-2003-4-10-r61
+15	Acute resistance	GSE4249	Mohoney DJ, 2009	56	10.1152/ajpregu.00847.2007
+16	Acute resistance	GSE7286	Kostek MC, 2007	57	10.1152/physiolgenomics.00151.2006
+17	Acute resistance	GSE19062	MacNeil LG, 2010	58	10.1371/journal.pone.0010695
+18	Acute resistance	GSE23697	Hyldahl RD, 2011	59	10.1096/fj.10-177105
+19	Acute resistance	GSE24235	Liu D, 2010	60	10.1186/1471-2164-11-659
+20	Acute resistance	GSE28422	Raue U, 2012	61	10.1152/japplphysiol.00435.2011
+21	Acute resistance	GSE59088	Vissing K, 2014	50	10.1038/sdata.2014.41
+22	Inactivity	GSE14798	Chopard A, 2009	62	10.1152/physiolgenomics.00036.2009
+23	Inactivity	GSE14901	Abadi A, 2009	63	10.1371/journal.pone.0006518
+24	Inactivity	GSE21496	Reich KA, 2010	64	10.1152/japplphysiol.00444.2010
+25	Inactivity	GSE24215	Alibegovic AC, 2010	65	10.1152/ajpendo.00590.2009
+26	Inactivity	GSE33886	Lammers G, 2012	66	10.1113/expphysiol.2012.068726
+27	Inactivity	GSE104999	Rullman E, 2016	67	10.14814/phy2.12753
+28	Inactivity	GSE113165	Mahmassani ZS, 2019	68	10.1152/japplphysiol.01093.2018
+29	Training aerobic	GSE1295	Hittel DS, 2005	69	10.1152/japplphysiol.00331.2004
+30	Training aerobic	GSE1718	Teran-Garcia M, 2005	70	10.1152/ajpendo.00467.2004
+31	Training aerobic	GSE1786	Radom-Aizik S, 2005	71	10.1249/01.mss.0000181838.96815.4d
+32	Training aerobic	GSE9103	Lanza IR, 2008	72	10.2337/db08-0349
+33	Training aerobic	GSE9405	Stepto NK, 2009	73	10.1249/MSS.0b013e31818c6be9
+34	Training aerobic	GSE20319	Leskinen T, 2010	74	10.1371/journal.pone.0012609
+35	Training aerobic	GSE24215	Alibegovic AC, 2010	65	10.1152/ajpendo.00590.2009
+36	Training aerobic	GSE27536	Turan N, 2011	75	10.1371/journal.pcbi.1002129
+37	Training aerobic	GSE27543			
+38	Training aerobic	GSE35661	Keller P, 2011	76	10.1152/japplphysiol.00634.2010
+39	Training aerobic	GSE40551	Engeli S, 2012	77	10.1172/JCI64526
+40	Training aerobic	GSE43760	Verheggen RJHM, 2016	78	10.1249/MSS.0000000000001035
+41	Training aerobic	GSE48278	Huffman KM, 2014	79	10.1007/s00125-014-3343-4
+42	Training aerobic	GSE58249	Sukala WR, 2012	80	10.1007/s00421-011-1978-0
+43	Training aerobic	GSE72462	Böhm A, 2016	81	10.2337/db15-1723
+44	Training aerobic	GSE111551			
+45	Training combined	GSE14798	Chopard A, 2009	62	10.1152/physiolgenomics.00036.2009
+46	Training combined	GSE19420	van Tienen FHJ, 2012	82	10.1210/jc.2011-3454
+47	Training combined	GSE53598	Catoire M, 2014	83	10.1152/physiolgenomics.00174.2013
+48	Training combined	GSE83352	Barberio MD, 2016	84	10.1249/MSS.0000000000001041
+49	Training combined	GSE97084	Robinson MM, 2017	8	10.1016/j.cmet.2017.02.009
+50	Training HIIT	GSE97084	Robinson MM, 2017	8	10.1016/j.cmet.2017.02.009
+51	Training HIIT	GSE109657	Miyamoto-Mikami E, 2018	85	10.1038/s41598-018-35115-x
+52	Training resistance	GSE8479	Melov S, 2007	86	10.1371/journal.pone.0000465
+53	Training resistance	GSE9405	Stepto NK, 2009	73	10.1249/MSS.0b013e31818c6be9
+54	Training resistance	GSE16907	Pöllänen E, 2010	87	10.1007/s11357-010-9140-1
+55	Training resistance	GSE24235	Liu D, 2010	60	10.1186/1471-2164-11-659
+56	Training resistance	GSE28422	Raue U, 2012	61	10.1152/japplphysiol.00435.2011
+57	Training resistance	GSE28998	Gordon PM, 2012	88	10.1152/japplphysiol.00860.2011
+58	Training resistance	GSE45426	Murton AJ, 2014	89	10.1152/japplphysiol.00426.2013
+59	Training resistance	GSE47881	Phillips BE, 2013	90	10.1371/journal.pgen.1003389
+60	Training resistance	GSE48278	Huffman KM, 2014	79	10.1007/s00125-014-3343-4
+61	Training resistance	GSE58249	Sukala WR, 2012	80	10.1007/s00421-011-1978-0
+62	Training resistance	GSE97084	Robinson MM, 2017	8	10.1016/j.cmet.2017.02.009
+63	Training resistance	GSE99963	Laker RC, 2017	91	10.1038/s41598-017-15420-7
+64	Training resistance	GSE106865	Damas F, 2018	92	10.1007/s00421-018-3984-y
+65	Training resistance	GSE117525	Hangelbroek RW, 2018	93	10.1002/jcsm.12099
+66	Training resistance	EMEXP740	Tarnopolsky M, 2007	94	10.1093/gerona/62.10.1088
