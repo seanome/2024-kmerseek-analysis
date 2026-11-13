@@ -1,0 +1,23 @@
+{
+  "n_reference_proteomes": 37190,
+  "dropped": {
+    "no class or no family": 3167,
+    "taxid not in NCBI taxonomy": 67,
+    "CPD outlier": 158,
+    "not in FTP README": 1
+  },
+  "n_with_class_and_family": 33797,
+  "n_families": 2193,
+  "n_classes_any": 338,
+  "n_classes_kept": 6,
+  "n_species_selected": 48,
+  "species_per_class": {
+    "Alphaproteobacteria": 8,
+    "Magnoliopsida": 8,
+    "Actinopteri": 8,
+    "Aves": 8,
+    "Caudoviricetes": 8,
+    "Gammaproteobacteria": 8
+  },
+  "pilot": true
+}
