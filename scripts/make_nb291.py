@@ -70,8 +70,9 @@ from notebook 230's table, so the whole-pair rule below is not a blind test.
   the 20 amino acids in those groups but outcome 1 fails. Otherwise it is outcome 3.
 * Changed on 2026-10-15, after the run: the rule first counted any 2 of the 4 SCOPe
   relationships, so a lead in pairs SCOPe does not call homologs counted as a win. More
-  evidence of relatedness for pairs that are not related is a flaw, not a win, so those two
-  groups no longer count. The outcome is the same either way (section 2 prints both).
+  agreement outside the same superfamily does not establish a homology gain. Same-fold,
+  different-superfamily pairs are unresolved; different-fold pairs are benchmark negatives.
+  Those two groups no longer count. The outcome is the same either way (section 2 prints both).
 * The groups that count are the ones where the pairs were not picked by the positions
   measured: pairs at 20% identity or less grouped on one half of their positions and measured
   on the other half, and pairs at all identities (no picking by identity).
@@ -346,10 +347,10 @@ biased view (pairs picked by the 20 amino acid identity of the same positions me
 only to show where notebook 273's 1.13 came from; they are not a result. Vermillion: the six
 alphabets with two classes; blue: the rest.
 
-The first three panels are homologs (Pfam families; SCOPe same family; SCOPe same
-superfamily): right of the line is better. The last two are pairs SCOPe does not call homologs
-(same fold but different superfamily; different fold): right of the line is worse, because it is
-evidence that two proteins are related when they are not.
+The first three panels contain annotated homologs (Pfam families; SCOPe same family;
+same superfamily). The last two are outside the same superfamily: same-fold pairs remain
+unresolved, while different-fold pairs are benchmark negatives. Right of the line means
+a larger aligned-position statistic; it does not by itself measure a homology call or its error rate.
 """)
 
 code(r"""
@@ -461,10 +462,10 @@ for ax in axs[1:]:
     ax.tick_params(labelleft=False)
 header_ax = fig.add_subplot(gs[1, :])  # empty: keeps a row free for the block headers
 header_ax.axis("off")
-BLOCKS = ((axs[:n_hom], "Homologs:\nright of the line is better\n"
-           "(more evidence that related proteins are related)"),
-          (axs[n_hom:], "Not homologs (SCOPe):\nright of the line is worse\n"
-           "(evidence that unrelated proteins are related)"))
+BLOCKS = (
+    (axs[:n_hom], "Annotated homologs:\nright = more aligned-position evidence\n(not a database sensitivity measure)"),
+    (axs[n_hom:], "Outside the same superfamily:\nsame fold unresolved; different fold negative\n(a score alone is not a homology call)"),
+)
 COL = {True: pf.OKABE_ITO["vermillion"], False: pf.OKABE_ITO["blue"]}
 BIASED = pf.GREY
 MARK = {  # one shape per way of choosing the pairs; the fair test sits on top of each row
@@ -494,7 +495,7 @@ for ax, g in zip(axs, panels):
     hi = res.filter(pl.col("group") == gname)["hi"].max()
     ax.set_xticks([t for t in (0.1, 0.2, 0.5, 1, 2, 4) if lo * 0.8 <= t <= hi * 1.25])
     ax.set_title(g.replace("SCOPe: ", "SCOPe:\n") if "\n" not in g else g)
-    ax.set_xlabel("I(alphabet) / I(20 aa)\n" + ("higher is better" if homolog[g] else "higher is worse"))
+    ax.set_xlabel("I(alphabet) / I(20 aa)\n" + ("annotated homologs" if homolog[g] else ("unresolved" if "same fold" in g else "benchmark negative")))
 axs[0].set_yticks(y, [f"{a} ({N_CLASSES[a]})" for a in ALPHABETS])
 axs[0].invert_yaxis()
 handles = [
@@ -532,8 +533,9 @@ stamp(
     conclusion=(f"Diamonds, 20% identity or less: Pfam first is {pfr['first']} ({pfr['first_ratio']}x), "
                 f"{HP} rank {pfr['hp_rank']} ({pfr['hp_ratio']}x); SCOPe same superfamily first is "
                 f"{ssf['first']} ({ssf['first_ratio']}x), {HP} rank {ssf['hp_rank']}. "
-                f"Outcome {OUTCOME['low_half']}. In pairs SCOPe does not call homologs, {HP} gives the most "
-                f"false evidence of relatedness (first in {len(hp_first_not_hom)} of 2 groups): a flaw, not a lead."),
+                f"Outcome {OUTCOME['low_half']}. {HP} ranks first in {len(hp_first_not_hom)} of 2 groups outside the same "
+                f"superfamily. Same-fold pairs are unresolved; different-fold pairs are benchmark negatives. "
+                f"A larger statistic alone is not a homology call."),
 )
 """)
 
@@ -672,9 +674,10 @@ alphabet, and how do all 19 alphabets compare?
 **Answer.** Outcome 2 of the decision rule. For distant homologs, a few alphabets keep slightly
 more evidence per aligned position than the 20 amino acids: `sdm12`, `hsdm17` and, in Pfam,
 `mmseqs12`, by 1 to 10%. No two-class alphabet does in Pfam, and only `hp_thomas_dill2` does
-among SCOPe same-superfamily pairs. The two-class alphabets lead only for SCOPe pairs that
-SCOPe does not call homologs, and there more evidence is a flaw: it says two proteins are
-related when they are not.
+among SCOPe same-superfamily pairs. The largest relative advantages of two-class alphabets occur outside the same
+superfamily. Different-fold pairs are benchmark negatives; same-fold, different-superfamily
+pairs are unresolved and are usually ignored in homology scoring. Higher agreement alone
+does not establish that a search would call either set homologous.
 
 1. Pfam seed pairs at 20% identity or less, grouped on one half and measured on the other
    (37,573 pair-halves from 10,921 families): 3 of the 18 alphabets are above the 20 amino
@@ -694,12 +697,12 @@ related when they are not.
    (17,303 pair-halves, 451 folds), four are above 1: `sdm12` 1.104, `hsdm17` 1.081,
    `hp_thomas_dill2` 1.065 (1.027 to 1.105) and `mmseqs12` 1.020. `sdm12` is first in 98.6% of
    resamples. The other five two-class alphabets are at or below 1 (0.72 to 1.00).
-4. A flaw, not a strength. SCOPe pairs that are not homologs by SCOPe's definition, where every
-   bit of evidence is evidence for a wrong answer, at 20% identity or less, grouped on one half: same fold, different superfamily (2,345 pair-halves, 112 folds), `hp_thomas_dill2`
+4. Agreement outside the same superfamily can reflect shared structure. At 20% identity
+   or less, grouped on one half: same fold, different superfamily (2,345 pair-halves, 112 folds), `hp_thomas_dill2`
    is first in every resample at 1.47 times, and 5 of the 9 alphabets above 1 have two classes.
    Different fold, same class (368 pair-halves, 138 folds): the 4 alphabets above 1 all have two
-   classes; `hp_thomas_dill2` is first in 61% of resamples and `hp_kyte_doolittle2` in 37%. So
-   the two-class alphabets are the ones that most make unrelated proteins look related.
+   classes; `hp_thomas_dill2` is first in 61% of resamples and `hp_kyte_doolittle2` in 37%. These agreement scores suggest a possible source of false positives on different-fold
+   pairs, but do not themselves measure a search error rate.
 5. Among the two-class alphabets the order barely changes between groups: `hp_thomas_dill2`,
    then `hp_thomas_dill_no_c2` and `hp_pbotc_1st_ed2`, then `hp_kyte_doolittle2`, then the two
    two-class Lehninger alphabets, which put glycine and proline in the hydrophobic class.
@@ -715,8 +718,10 @@ related when they are not.
 position than the 20 amino acids between distant homologs. With the correct alignment given,
 the alphabets that keep more are `sdm12` and `hsdm17`, and only by 2 to 10%. H/P's 1.4 to 1.7
 times lead is between structure-aligned domains that SCOPe puts in different superfamilies or
-folds, which SCOPe does not call homologs. That is a flaw, not a lead: an H/P match there is
-more evidence than a 20 amino acid match that two unrelated proteins are related. A structural
+folds, which SCOPe does not place in the same superfamily. Different-fold pairs are benchmark
+negatives; same-fold, different-superfamily pairs remain unresolved. Greater H/P agreement
+there can reflect shared packing and is not by itself evidence of ancestry or a measured
+false-positive call. A structural
 superposition places buried positions on buried positions, which may be the cause (notebook
 273, item 6). This notebook does not test whether it adds false hits to a kmerseek search.
 

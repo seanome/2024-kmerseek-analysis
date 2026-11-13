@@ -1,0 +1,11 @@
+file	md5
+best_hits.tsv	1dd664a3ae660c4f41750a4286955bfc
+cutoffs.tsv	9fc076c186cb1c73ae69451c146ca4a3
+kind4_features.tsv	a0d7a8b738ccb3bf2373b63af6b030db
+own_gene_hits.tsv	bd757081c5a796530275b66c889f458e
+# Made by scripts/342_kind4_features.py at commit fa52f117 (drops calls whose E is not a finite number),
+# Sherlock job 48804096 (2026-10-21, 5 min, 64 GB asked), from the call files of jobs 48247314, 48247318
+# and 48247321 (2026-10-17) in /scratch/users/olgabot/exon-function-342/calls: aro_hyd_arg_chg_pol5 k9,
+# aro_hyd_chg_pol4 k11 and hp_pbotc_1st_ed2 k21, 10 chunks each. 574_553_721 rows, 113_106 with a finite E.
+# protein20 k5 is left out: at kmerseek tag nb342-kmerseek-9ce5865 its closed-form match probability is
+# 0.000 in all three of its index builds, so it has no lambda and every E is inf. Copied with scp 2026-10-21.
