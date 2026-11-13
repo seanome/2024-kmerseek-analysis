@@ -109,9 +109,13 @@ S = Path("289_summary")
 FIG = Path("../figures/289")
 C = pf.OKABE_ITO
 FAMILY = ["BAK1", "BAX", "BCL2", "BCL2A1", "BCL2L1", "BCL2L10", "BCL2L2", "BOK", "MCL1"]
-TOOL = ("kmerseek 982a055, notebook 241's 152 alphabet-ksize settings, gapless calls. "
-        "Queries: human (GENCODE v49)")
-single = {s: pl.read_csv(S / s / "289_single_query_partner.csv") for s in ("worm", "borrelia")}
+TOOL = (
+    "kmerseek 982a055, notebook 241's 152 alphabet-ksize settings, gapless calls. "
+    "Queries: human (GENCODE v49)"
+)
+single = {
+    s: pl.read_csv(S / s / "289_single_query_partner.csv") for s in ("worm", "borrelia")
+}
 pooled = pl.read_csv(S / "worm" / "289_pooled_family_partner.csv")
 calls = {s: pl.read_csv(S / s / "289_partner_calls.csv") for s in ("worm", "borrelia")}
 motifs = pl.read_csv(S / "bh_motifs_uniprot.csv")
@@ -119,9 +123,11 @@ feats = pl.read_csv(S / "cd47_p66_features_uniprot.csv")
 for s in ("worm", "borrelia"):
     runs = [json.loads(line) for line in open(S / s / "runs.jsonl")]
     sd = pl.read_csv(S / s / "289_search_space_check.csv")["sd"].max()
-    print(f"{s}: {len(runs)} settings finished, {sum(r.get('fitted') is True for r in runs)} with an "
-          f"E-value fit, {sum(r['regions_rows'] or 0 for r in runs):_} calls kept; "
-          f"largest s.d. of log2(E) + bits within one query and setting: {sd:.1e}")
+    print(
+        f"{s}: {len(runs)} settings finished, {sum(r.get('fitted') is True for r in runs)} with an "
+        f"E-value fit, {sum(r['regions_rows'] or 0 for r in runs):_} calls kept; "
+        f"largest s.d. of log2(E) + bits within one query and setting: {sd:.1e}"
+    )
 """)
 
 md(r"""
@@ -134,27 +140,48 @@ Ranks are drawn on spacing by ratio: 1 to 10 takes as much room as 100 to 1_000.
 """)
 
 code(r"""
-w = single["worm"].with_columns(member=pl.col("query").str.split("_shuf").list.first(),
-                                shuffled=pl.col("query").str.contains("_shuf"))
+w = single["worm"].with_columns(
+    member=pl.col("query").str.split("_shuf").list.first(),
+    shuffled=pl.col("query").str.contains("_shuf"),
+)
 real = w.filter(~pl.col("shuffled")).sort("partner_rank")
 print("Ced9's rank for each query alone (19_792 worm proteins; ties printed):")
 print(real.select("query", "partner_log10_p", "partner_rank", "partner_n_tied"))
-sh = w.filter(pl.col("shuffled")).group_by("member").agg(
-    shuffles_better=(pl.col("partner_rank") < pl.first("partner_rank")).sum(),
-    shuffle_best_rank=pl.col("partner_rank").min(), shuffle_median_rank=pl.col("partner_rank").median())
+sh = (
+    w.filter(pl.col("shuffled"))
+    .group_by("member")
+    .agg(
+        shuffles_better=(pl.col("partner_rank") < pl.first("partner_rank")).sum(),
+        shuffle_best_rank=pl.col("partner_rank").min(),
+        shuffle_median_rank=pl.col("partner_rank").median(),
+    )
+)
 tab = real.join(sh, left_on="query", right_on="member").select(
-    "query", "partner_rank", "shuffle_best_rank", "shuffle_median_rank")
-tab = tab.with_columns(shuffles_ranked_better=pl.struct("query", "partner_rank").map_elements(
-    lambda r: int((w.filter((pl.col("member") == r["query"]) & pl.col("shuffled"))["partner_rank"]
-                   < r["partner_rank"]).sum()), return_dtype=pl.Int64))
+    "query", "partner_rank", "shuffle_best_rank", "shuffle_median_rank"
+)
+tab = tab.with_columns(
+    shuffles_ranked_better=pl.struct("query", "partner_rank").map_elements(
+        lambda r: int(
+            (
+                w.filter((pl.col("member") == r["query"]) & pl.col("shuffled"))[
+                    "partner_rank"
+                ]
+                < r["partner_rank"]
+            ).sum()
+        ),
+        return_dtype=pl.Int64,
+    )
+)
 print(tab)
 pr = pooled.filter(pl.col("pool") == "real").row(0, named=True)
 ps = pooled.filter(pl.col("pool") != "real")
-print(f"\nNine members combined: Ced9 rank {pr['partner_rank']} (ties {pr['partner_n_tied']}), "
-      f"10^{pr['partner_log10_p']:.2f} at Ced9 residue {pr['partner_best_residue0'] + 1}, "
-      f"{pr['partner_n_queries_there']} of 9 members with a call there. Shuffled pools: best rank "
-      f"{ps['partner_rank'].min()}, median {ps['partner_rank'].median():.0f}; "
-      f"{int((ps['partner_log10_p'] < pr['partner_log10_p']).sum())} of 20 score better than the real family.")
+print(
+    f"\nNine members combined: Ced9 rank {pr['partner_rank']} (ties {pr['partner_n_tied']}), "
+    f"10^{pr['partner_log10_p']:.2f} at Ced9 residue {pr['partner_best_residue0'] + 1}, "
+    f"{pr['partner_n_queries_there']} of 9 members with a call there. Shuffled pools: best rank "
+    f"{ps['partner_rank'].min()}, median {ps['partner_rank'].median():.0f}; "
+    f"{int((ps['partner_log10_p'] < pr['partner_log10_p']).sum())} of 20 score better than the real family."
+)
 
 rows = list(real["query"]) + ["9 combined"]
 fig, ax = pf.figure(pf.ONE_COLUMN_MM, 78)
@@ -163,18 +190,38 @@ for i, q in enumerate(rows):
         r_real, r_sh = pr["partner_rank"], ps["partner_rank"].to_numpy()
     else:
         r_real = real.filter(pl.col("query") == q)["partner_rank"][0]
-        r_sh = w.filter((pl.col("member") == q) & pl.col("shuffled"))["partner_rank"].to_numpy()
-    ax.scatter(r_sh, np.full(len(r_sh), i), s=6, color=pf.GREY, lw=0, alpha=0.8,
-               label="20 shuffled copies" if i == 0 else None)
-    ax.scatter([r_real], [i], marker="*", s=45, color=C["vermillion"], edgecolor="black", lw=0.3,
-               zorder=3, label="real query" if i == 0 else None)
+        r_sh = w.filter((pl.col("member") == q) & pl.col("shuffled"))[
+            "partner_rank"
+        ].to_numpy()
+    ax.scatter(
+        r_sh,
+        np.full(len(r_sh), i),
+        s=6,
+        color=pf.GREY,
+        lw=0,
+        alpha=0.8,
+        label="20 shuffled copies" if i == 0 else None,
+    )
+    ax.scatter(
+        [r_real],
+        [i],
+        marker="*",
+        s=45,
+        color=C["vermillion"],
+        edgecolor="black",
+        lw=0.3,
+        zorder=3,
+        label="real query" if i == 0 else None,
+    )
     ax.axhline(i, color="#DDDDDD", lw=0.3, zorder=0)
 ax.axvline(10, color="black", ls="--", lw=0.6, label="rank 10 (pass line)")
 ax.set_xscale("log")
 ticks = [1, 10, 100, 1000, 10_000]
-ax.set_xticks(ticks, ["1", "10", "100", "1,000", "10,000"]); ax.minorticks_off()
+ax.set_xticks(ticks, ["1", "10", "100", "1,000", "10,000"])
+ax.minorticks_off()
 ax.set_xlim(0.7, 25_000)
-ax.set_yticks(range(len(rows)), rows); ax.invert_yaxis()
+ax.set_yticks(range(len(rows)), rows)
+ax.invert_yaxis()
 ax.axhline(len(rows) - 1.5, color="black", lw=0.5)
 ax.set_xlabel("Ced9's rank among 19,792 C. elegans proteins (1 = best)")
 pf.shared_legend(fig, ncol=3)
@@ -209,73 +256,141 @@ best = int(np.argmax(comb))
 # The job reports one best residue; several residues can share the top value (they differ
 # only by floating-point rounding), so check the value and that the job's residue is among them.
 tied = np.flatnonzero(np.isclose(comb, comb.max(), rtol=0, atol=1e-9)) + 1
-assert abs(comb.max() + pr["partner_log10_p"]) < 1e-6 and pr["partner_best_residue0"] + 1 in tied, (comb.max(), tied)
+assert (
+    abs(comb.max() + pr["partner_log10_p"]) < 1e-6
+    and pr["partner_best_residue0"] + 1 in tied
+), (comb.max(), tied)
 best = pr["partner_best_residue0"]
-print(f"combined score recomputed from the per-residue table: 10^-{comb.max():.2f}, "
-      f"at Ced9 residues {tied.min()}-{tied.max()} ({len(tied)} residues tied)")
+print(
+    f"combined score recomputed from the per-residue table: 10^-{comb.max():.2f}, "
+    f"at Ced9 residues {tied.min()}-{tied.max()} ({len(tied)} residues tied)"
+)
 
 
 def register(row) -> str:
     out = []
     for mot in ("BH4", "BH1", "BH2", "BH3"):
-        m = motifs.filter((pl.col("gene") == row["query_name"]) & (pl.col("motif") == mot))
+        m = motifs.filter(
+            (pl.col("gene") == row["query_name"]) & (pl.col("motif") == mot)
+        )
         c9 = motifs.filter((pl.col("gene") == "Ced9") & (pl.col("motif") == mot))
         if m.height and c9.height:
             want = m["start1"][0] - c9["start1"][0]
             have = int(row["region_start"]) - int(row["target_start"])
-            covers = row["target_start"] < c9["end1"][0] and row["target_end"] > c9["start1"][0] - 1
+            covers = (
+                row["target_start"] < c9["end1"][0]
+                and row["target_end"] > c9["start1"][0] - 1
+            )
             if abs(have - want) <= 1 and covers:
                 out.append(mot)
     return ",".join(out) or "no"
 
 
-cw = calls["worm"].sort("neg_ln_p", "alphabet", "ksize", descending=[True, False, False]).group_by(
-    "query_name", maintain_order=True).first().sort("neg_ln_p", descending=True)
-cw = cw.with_columns(in_register=pl.struct(cw.columns).map_elements(register, return_dtype=pl.String))
-print("\nEach query's strongest call on Ced9 (E-value for the 19,792-protein worm database):")
+cw = (
+    calls["worm"]
+    .sort("neg_ln_p", "alphabet", "ksize", descending=[True, False, False])
+    .group_by("query_name", maintain_order=True)
+    .first()
+    .sort("neg_ln_p", descending=True)
+)
+cw = cw.with_columns(
+    in_register=pl.struct(cw.columns).map_elements(register, return_dtype=pl.String)
+)
+print(
+    "\nEach query's strongest call on Ced9 (E-value for the 19,792-protein worm database):"
+)
 for r in cw.iter_rows(named=True):
     a, b = r["query_residues"], r["target_residues"]
     m = "".join("|" if x == y else " " for x, y in zip(a, b))
-    print(f"\n{r['query_name']}  {r['alphabet']} k={r['ksize']}  E = {r['region_evalue']:.1f}  "
-          f"{m.count('|')} of {len(a)} identical  in register on: {r['in_register']}")
-    print(f"  {r['query_name']:<8}{int(r['region_start']) + 1:>4} {a} {int(r['region_end'])}")
+    print(
+        f"\n{r['query_name']}  {r['alphabet']} k={r['ksize']}  E = {r['region_evalue']:.1f}  "
+        f"{m.count('|')} of {len(a)} identical  in register on: {r['in_register']}"
+    )
+    print(
+        f"  {r['query_name']:<8}{int(r['region_start']) + 1:>4} {a} {int(r['region_end'])}"
+    )
     print(f"  {'':<8}{'':>4} {m}")
     print(f"  {'Ced9':<8}{int(r['target_start']) + 1:>4} {b} {int(r['target_end'])}")
 
 ced = motifs.filter(pl.col("gene") == "Ced9")
 fig = plt.figure(figsize=(pf.TWO_COLUMN_MM * pf.MM, 92 * pf.MM), layout="constrained")
 gs = fig.add_gridspec(3, 2, height_ratios=[0.5, len(order), 3.2], width_ratios=[40, 1])
-a0, a1, a2, cax = (fig.add_subplot(gs[0, 0]), fig.add_subplot(gs[1, 0]), fig.add_subplot(gs[2, 0]),
-                   fig.add_subplot(gs[1, 1]))
+a0, a1, a2, cax = (
+    fig.add_subplot(gs[0, 0]),
+    fig.add_subplot(gs[1, 0]),
+    fig.add_subplot(gs[2, 0]),
+    fig.add_subplot(gs[1, 1]),
+)
 a0.plot([1, L], [0, 0], color="black", lw=1)
 for r in ced.iter_rows(named=True):
-    a0.add_patch(mpl.patches.Rectangle((r["start1"] - 0.5, -0.4), r["end1"] - r["start1"] + 1, 0.8,
-                                       facecolor=C["orange"], edgecolor="black", lw=0.5))
+    a0.add_patch(
+        mpl.patches.Rectangle(
+            (r["start1"] - 0.5, -0.4),
+            r["end1"] - r["start1"] + 1,
+            0.8,
+            facecolor=C["orange"],
+            edgecolor="black",
+            lw=0.5,
+        )
+    )
     a0.text((r["start1"] + r["end1"]) / 2, 0.55, r["motif"], ha="center", va="bottom")
-a0.set_ylim(-0.6, 1.4); a0.set_yticks([]); a0.set_xticks([]); a0.set_xlim(0.5, L + 0.5)
+a0.set_ylim(-0.6, 1.4)
+a0.set_yticks([])
+a0.set_xticks([])
+a0.set_xlim(0.5, L + 0.5)
 a0.spines[["left", "bottom"]].set_visible(False)
-a0.set_title("Ced9 (UniProt P41958, 280 aa) in the C. elegans proteome; boxes: BH motifs (UniProt)", loc="left")
-cmap = mpl.colors.ListedColormap(plt.get_cmap("viridis")(np.linspace(0.25, 1, 256))[::-1])
+a0.set_title(
+    "Ced9 (UniProt P41958, 280 aa) in the C. elegans proteome; boxes: BH motifs (UniProt)",
+    loc="left",
+)
+cmap = mpl.colors.ListedColormap(
+    plt.get_cmap("viridis")(np.linspace(0.25, 1, 256))[::-1]
+)
 cmap.set_bad("white")
-im = a1.imshow(np.ma.masked_where(M10 <= 0, M10), aspect="auto", cmap=cmap, interpolation="nearest",
-               extent=(0.5, L + 0.5, len(order) - 0.5, -0.5), vmin=0, vmax=float(M10.max()))
+im = a1.imshow(
+    np.ma.masked_where(M10 <= 0, M10),
+    aspect="auto",
+    cmap=cmap,
+    interpolation="nearest",
+    extent=(0.5, L + 0.5, len(order) - 0.5, -0.5),
+    vmin=0,
+    vmax=float(M10.max()),
+)
 a1.set_yticks(range(len(order)), [f"{q} (query)" for q in order])
 for i in range(len(order)):
     a1.axhline(i + 0.5, color="#DDDDDD", lw=0.3)
-a1.set_xlim(0.5, L + 0.5); a1.set_xticks([])
+a1.set_xlim(0.5, L + 0.5)
+a1.set_xticks([])
 fig.colorbar(im, cax=cax, label="Per-protein\n−log10 p\n(white: no call)")
-a2.plot(np.arange(1, L + 1), comb, color=C["blue"], lw=1, label="nine combined (Fisher)")
-a2.axvspan(tied.min() - 0.5, tied.max() + 0.5, color=C["vermillion"], alpha=0.35, lw=0,
-            label=f"peak: Ced9 {tied.min()}-{tied.max()} ({len(tied)} residues tied)")
+a2.plot(
+    np.arange(1, L + 1), comb, color=C["blue"], lw=1, label="nine combined (Fisher)"
+)
+a2.axvspan(
+    tied.min() - 0.5,
+    tied.max() + 0.5,
+    color=C["vermillion"],
+    alpha=0.35,
+    lw=0,
+    label=f"peak: Ced9 {tied.min()}-{tied.max()} ({len(tied)} residues tied)",
+)
 for r in ced.iter_rows(named=True):
     a2.axvspan(r["start1"] - 0.5, r["end1"] + 0.5, color=C["orange"], alpha=0.25, lw=0)
-a2.set_xlim(0.5, L + 0.5); a2.set_xlabel("Ced9 residue (1-based)"); a2.set_ylabel("Combined −log10 p")
+a2.set_xlim(0.5, L + 0.5)
+a2.set_xlabel("Ced9 residue (1-based)")
+a2.set_ylabel("Combined −log10 p")
 a2.legend(loc="upper left", frameon=False)
 fig.suptitle(TOOL + "; database C. elegans UP000001940", fontsize=6, x=0.01, ha="left")
 pf.save(fig, FIG / "289_bcl2_family_evidence_along_ced9_celegans")
-print(pl.DataFrame({"query": order, "strongest_minus_log10_p": M10.max(axis=1).round(2),
-                    "at_ced9_residue": M10.argmax(axis=1) + 1,
-                    f"at_residue_{best + 1}": M10[:, best].round(2)}))
+print(
+    pl.DataFrame(
+        {
+            "query": order,
+            "strongest_minus_log10_p": M10.max(axis=1).round(2),
+            "at_ced9_residue": M10.argmax(axis=1) + 1,
+            f"at_residue_{best + 1}": M10[:, best].round(2),
+        }
+    )
+)
 """)
 
 md(r"""
@@ -287,23 +402,44 @@ proteome FASTA headers). Ced9 is 30th.
 
 code(r"""
 gn = {}
-with gzip.open("/Users/olga/data/uniprot/reference_proteomes/UP000001940_6239.fasta.gz", "rt") as fh:
+with gzip.open(
+    "/Users/olga/data/uniprot/reference_proteomes/UP000001940_6239.fasta.gz", "rt"
+) as fh:
     for line in fh:
         if line.startswith(">"):
             name = line[1:].split()[0]
             gene = [t[3:] for t in line.split() if t.startswith("GN=")]
             gn[name] = gene[0] if gene else ""
-top = pl.read_csv(S / "worm" / "289_pooled_top25.csv").with_row_index("rank", offset=1).with_columns(
-    gene=pl.col("target_name").replace_strict(gn, default=""),
-    combined_minus_log10_p=(-pl.col("log10_p")).round(2))
-print(top.select("rank", "gene", "target_name", "combined_minus_log10_p", "n_queries_there"))
+top = (
+    pl.read_csv(S / "worm" / "289_pooled_top25.csv")
+    .with_row_index("rank", offset=1)
+    .with_columns(
+        gene=pl.col("target_name").replace_strict(gn, default=""),
+        combined_minus_log10_p=(-pl.col("log10_p")).round(2),
+    )
+)
+print(
+    top.select(
+        "rank", "gene", "target_name", "combined_minus_log10_p", "n_queries_there"
+    )
+)
 fig, ax = pf.figure(pf.ONE_COLUMN_MM, 80)
 y = np.arange(top.height + 1)
 vals = list(top["combined_minus_log10_p"]) + [-pr["partner_log10_p"]]
-labels = [f"{g or t.split('|')[1]}" for g, t in zip(top["gene"], top["target_name"])] + ["ced-9 (rank 30)"]
+labels = [
+    f"{g or t.split('|')[1]}" for g, t in zip(top["gene"], top["target_name"])
+] + ["ced-9 (rank 30)"]
 ax.scatter(vals[:-1], y[:-1], s=8, color=pf.GREY, label="worm protein in the top 25")
-ax.scatter([vals[-1]], [y[-1] + 0.5], marker="*", s=45, color=C["vermillion"], edgecolor="black", lw=0.3,
-           label="Ced9")
+ax.scatter(
+    [vals[-1]],
+    [y[-1] + 0.5],
+    marker="*",
+    s=45,
+    color=C["vermillion"],
+    edgecolor="black",
+    lw=0.3,
+    label="Ced9",
+)
 for i in range(top.height):
     ax.axhline(i, color="#EEEEEE", lw=0.3, zorder=0)
 ax.set_yticks(list(y[:-1]) + [y[-1] + 0.5], labels[:-1] + [labels[-1]])
@@ -327,25 +463,48 @@ code(r"""
 b = single["borrelia"].with_columns(shuffled=pl.col("query").str.contains("_shuf"))
 cd = b.filter(~pl.col("shuffled")).row(0, named=True)
 bs = b.filter(pl.col("shuffled"))
-print(f"P66's rank for CD47: {cd['partner_rank']} of {cd['n_targets']:_} B31 proteins "
-      f"(ties {cd['partner_n_tied']}), 10^{cd['partner_log10_p']:.2f}. Shuffled CD47: best rank "
-      f"{bs['partner_rank'].min()}, median {bs['partner_rank'].median():.0f}; "
-      f"{int((bs['partner_log10_p'] < cd['partner_log10_p']).sum())} of 20 score P66 better.")
-cb = calls["borrelia"].filter(pl.col("query_name") == "CD47").sort("neg_ln_p", descending=True)
+print(
+    f"P66's rank for CD47: {cd['partner_rank']} of {cd['n_targets']:_} B31 proteins "
+    f"(ties {cd['partner_n_tied']}), 10^{cd['partner_log10_p']:.2f}. Shuffled CD47: best rank "
+    f"{bs['partner_rank'].min()}, median {bs['partner_rank'].median():.0f}; "
+    f"{int((bs['partner_log10_p'] < cd['partner_log10_p']).sum())} of 20 score P66 better."
+)
+cb = (
+    calls["borrelia"]
+    .filter(pl.col("query_name") == "CD47")
+    .sort("neg_ln_p", descending=True)
+)
 
 
 def feat(prot: str, a: int, z: int) -> str:
-    f = feats.filter((pl.col("protein") == prot) & (pl.col("start1") <= z) & (pl.col("end1") >= a))
-    return "; ".join(f"{x} {s}-{e}" for x, s, e in f.select("feature", "start1", "end1").iter_rows()) or "none"
+    f = feats.filter(
+        (pl.col("protein") == prot) & (pl.col("start1") <= z) & (pl.col("end1") >= a)
+    )
+    return (
+        "; ".join(
+            f"{x} {s}-{e}"
+            for x, s, e in f.select("feature", "start1", "end1").iter_rows()
+        )
+        or "none"
+    )
 
 
-top_cb = cb.unique(["region_start", "target_start"], keep="first", maintain_order=True).head(5)
+top_cb = cb.unique(
+    ["region_start", "target_start"], keep="first", maintain_order=True
+).head(5)
 for r in top_cb.iter_rows(named=True):
     a, z = r["query_residues"], r["target_residues"]
     m = "".join("|" if x == y else " " for x, y in zip(a, z))
-    qa, qz, ta, tz = int(r["region_start"]) + 1, int(r["region_end"]), int(r["target_start"]) + 1, int(r["target_end"])
-    print(f"\nCD47 {qa}-{qz} -> P66 {ta}-{tz}  {r['alphabet']} k={r['ksize']}  E = {r['region_evalue']:.1f}  "
-          f"{m.count('|')} of {len(a)} identical")
+    qa, qz, ta, tz = (
+        int(r["region_start"]) + 1,
+        int(r["region_end"]),
+        int(r["target_start"]) + 1,
+        int(r["target_end"]),
+    )
+    print(
+        f"\nCD47 {qa}-{qz} -> P66 {ta}-{tz}  {r['alphabet']} k={r['ksize']}  E = {r['region_evalue']:.1f}  "
+        f"{m.count('|')} of {len(a)} identical"
+    )
     print(f"  {'CD47':<6}{qa:>4} {a} {qz}   CD47 features: {feat('CD47', qa, qz)}")
     print(f"  {'':<6}{'':>4} {m}")
     print(f"  {'P66':<6}{ta:>4} {z} {tz}   P66 features: {feat('P66', ta, tz)}")
@@ -353,39 +512,106 @@ for r in top_cb.iter_rows(named=True):
 fig = plt.figure(figsize=(pf.TWO_COLUMN_MM * pf.MM, 60 * pf.MM), layout="constrained")
 g = fig.add_gridspec(1, 2, width_ratios=[1, 2.4])
 a, bx = fig.add_subplot(g[0]), fig.add_subplot(g[1])
-a.scatter(bs["partner_rank"], np.zeros(bs.height), s=8, color=pf.GREY, label="20 shuffled CD47")
-a.scatter([cd["partner_rank"]], [0], marker="*", s=60, color=C["vermillion"], edgecolor="black", lw=0.3,
-          zorder=3, label="real CD47")
+a.scatter(
+    bs["partner_rank"],
+    np.zeros(bs.height),
+    s=8,
+    color=pf.GREY,
+    label="20 shuffled CD47",
+)
+a.scatter(
+    [cd["partner_rank"]],
+    [0],
+    marker="*",
+    s=60,
+    color=C["vermillion"],
+    edgecolor="black",
+    lw=0.3,
+    zorder=3,
+    label="real CD47",
+)
 a.axvline(10, color="black", ls="--", lw=0.6, label="rank 10 (pass line)")
-a.set_xscale("log"); a.set_xticks([1, 10, 100, 1000], ["1", "10", "100", "1,000"]); a.minorticks_off()
-a.set_xlim(0.7, 2000); a.set_yticks([])
+a.set_xscale("log")
+a.set_xticks([1, 10, 100, 1000], ["1", "10", "100", "1,000"])
+a.minorticks_off()
+a.set_xlim(0.7, 2000)
+a.set_yticks([])
 a.set_xlabel("P66's rank among 1,291 B31 proteins")
 a.legend(loc="upper center", bbox_to_anchor=(0.5, 1.45), frameon=False)
 prot = {"P66": (618, 1.0), "CD47": (323, 0.0)}
-colours = {"Signal": C["orange"], "Domain Ig-like V-type": C["bluish_green"], "Transmembrane Helical": C["reddish_purple"]}
-names = {"Signal": "signal peptide", "Domain Ig-like V-type": "Ig-like V domain", "Transmembrane Helical": "transmembrane helix"}
+colours = {
+    "Signal": C["orange"],
+    "Domain Ig-like V-type": C["bluish_green"],
+    "Transmembrane Helical": C["reddish_purple"],
+}
+names = {
+    "Signal": "signal peptide",
+    "Domain Ig-like V-type": "Ig-like V domain",
+    "Transmembrane Helical": "transmembrane helix",
+}
 seen = set()
 for p_, (length, yy) in prot.items():
     bx.plot([1, length], [yy, yy], color="black", lw=1)
     bx.text(-10, yy, f"{p_} ({length} aa)", ha="right", va="center")
-    for f, s_, e_ in feats.filter(pl.col("protein") == p_).select("feature", "start1", "end1").iter_rows():
-        bx.add_patch(mpl.patches.Rectangle((s_, yy - 0.09), e_ - s_ + 1, 0.18, facecolor=colours[f],
-                                           edgecolor="black", lw=0.4, label=names[f] if f not in seen else None))
+    for f, s_, e_ in (
+        feats.filter(pl.col("protein") == p_)
+        .select("feature", "start1", "end1")
+        .iter_rows()
+    ):
+        bx.add_patch(
+            mpl.patches.Rectangle(
+                (s_, yy - 0.09),
+                e_ - s_ + 1,
+                0.18,
+                facecolor=colours[f],
+                edgecolor="black",
+                lw=0.4,
+                label=names[f] if f not in seen else None,
+            )
+        )
         seen.add(f)
 for j, r in enumerate(top_cb.iter_rows(named=True)):
-    qa, qz, ta, tz = int(r["region_start"]) + 1, int(r["region_end"]), int(r["target_start"]) + 1, int(r["target_end"])
+    qa, qz, ta, tz = (
+        int(r["region_start"]) + 1,
+        int(r["region_end"]),
+        int(r["target_start"]) + 1,
+        int(r["target_end"]),
+    )
     yp, yc = 0.78 - 0.07 * j, -0.22 - 0.07 * j
-    bx.plot([ta, tz], [yp, yp], color=C["blue"], lw=2, solid_capstyle="butt",
-            label="kmerseek call (E-value fitted)" if j == 0 else None)
+    bx.plot(
+        [ta, tz],
+        [yp, yp],
+        color=C["blue"],
+        lw=2,
+        solid_capstyle="butt",
+        label="kmerseek call (E-value fitted)" if j == 0 else None,
+    )
     bx.plot([qa, qz], [yc, yc], color=C["blue"], lw=2, solid_capstyle="butt")
     bx.plot([(ta + tz) / 2, (qa + qz) / 2], [yp, yc], color=C["blue"], lw=0.4, ls=":")
-bx.set_xlim(-120, 640); bx.set_ylim(-0.65, 1.3); bx.set_yticks([]); bx.spines["left"].set_visible(False)
-bx.set_xticks([1, 100, 200, 300, 400, 500, 600]); bx.set_xlabel("Residue (1-based); the five strongest calls")
+bx.set_xlim(-120, 640)
+bx.set_ylim(-0.65, 1.3)
+bx.set_yticks([])
+bx.spines["left"].set_visible(False)
+bx.set_xticks([1, 100, 200, 300, 400, 500, 600])
+bx.set_xlabel("Residue (1-based); the five strongest calls")
 bx.legend(loc="upper center", bbox_to_anchor=(0.5, 1.45), ncol=2, frameon=False)
-pf.panel_label(a, "a"); pf.panel_label(bx, "b")
-fig.supxlabel(TOOL + "; database B. burgdorferi B31 UP000001807; UniProt features", fontsize=5)
+pf.panel_label(a, "a")
+pf.panel_label(bx, "b")
+fig.supxlabel(
+    TOOL + "; database B. burgdorferi B31 UP000001807; UniProt features", fontsize=5
+)
 pf.save(fig, FIG / "289_cd47_to_p66_borrelia_b31")
-print(top_cb.select("alphabet", "ksize", "region_start", "region_end", "target_start", "target_end", "region_evalue"))
+print(
+    top_cb.select(
+        "alphabet",
+        "ksize",
+        "region_start",
+        "region_end",
+        "target_start",
+        "target_end",
+        "region_evalue",
+    )
+)
 """)
 
 md(r"""
@@ -393,22 +619,41 @@ md(r"""
 """)
 
 code(r"""
-verd = [json.loads((S / s / "289_verdict.json").read_text()) for s in ("worm", "borrelia")]
+verd = [
+    json.loads((S / s / "289_verdict.json").read_text()) for s in ("worm", "borrelia")
+]
 v = pl.DataFrame(verd)
 print(v)
 fig, ax = pf.figure(pf.ONE_COLUMN_MM, 40)
 style = {True: ("o", C["bluish_green"]), False: ("X", C["vermillion"])}
 for yi, r in enumerate(verd):
-    for xi, (ok, note) in enumerate([(r["rank"] <= 10, f"rank {r['rank']} of {r['n_targets']:,}"),
-                                     (r["shuffles_beaten"] >= 19, f"beats {r['shuffles_beaten']} of 20")]):
+    for xi, (ok, note) in enumerate(
+        [
+            (r["rank"] <= 10, f"rank {r['rank']} of {r['n_targets']:,}"),
+            (r["shuffles_beaten"] >= 19, f"beats {r['shuffles_beaten']} of 20"),
+        ]
+    ):
         m, col = style[ok]
         ax.scatter(xi, yi, marker=m, s=40, color=col, edgecolor="black", lw=0.3)
-        ax.annotate(note, (xi, yi), xytext=(0, -9), textcoords="offset points", ha="center")
+        ax.annotate(
+            note, (xi, yi), xytext=(0, -9), textcoords="offset points", ha="center"
+        )
 for ok, (m, col) in style.items():
-    ax.scatter([], [], marker=m, s=25, color=col, edgecolor="black", lw=0.3, label="pass" if ok else "fail")
+    ax.scatter(
+        [],
+        [],
+        marker=m,
+        s=25,
+        color=col,
+        edgecolor="black",
+        lw=0.3,
+        label="pass" if ok else "fail",
+    )
 ax.set_xticks([0, 1], ["Top 10 of the proteome", "Better than 19 of\n20 shuffles"])
 ax.set_yticks([0, 1], ["9 BCL-2 members → Ced9", "CD47 → P66"])
-ax.set_xlim(-0.6, 1.6); ax.set_ylim(1.5, -0.6); ax.tick_params(axis="x", length=0)
+ax.set_xlim(-0.6, 1.6)
+ax.set_ylim(1.5, -0.6)
+ax.tick_params(axis="x", length=0)
 pf.shared_legend(fig, ncol=2)
 pf.save(fig, FIG / "289_decision_reverse_search")
 """)
