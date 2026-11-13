@@ -1,0 +1,9 @@
+source	group	frames	reads	median_share	q90_share	share_at_0	at_least_0.1	at_least_0.5	with_stop
+real reads wholly in a CDS	opposite strand (3 frames)	731814	243938	0.659	0.929	0.002	0.994	0.757	0.613
+real reads wholly in a CDS	same strand, 1 nt off	243938	243938	0.667	0.929	0.002	0.993	0.788	0.72
+real reads wholly in a CDS	same strand, 2 nt off	243938	243938	0.571	0.846	0.002	0.992	0.656	0.717
+real reads wholly in a CDS	true frame	243938	243938	0.844	1.0	0.0	1.0	0.972	0.029
+simulated reads cut from CDS	opposite strand (3 frames)	119562	39854	0.622	0.841	0.0	1.0	0.778	0.822
+simulated reads cut from CDS	same strand, 1 nt off	39854	39854	0.568	0.773	0.0	0.999	0.688	0.905
+simulated reads cut from CDS	same strand, 2 nt off	39854	39854	0.545	0.773	0.0	0.998	0.611	0.899
+simulated reads cut from CDS	true frame	39854	39854	0.841	0.955	0.0	1.0	0.993	0.049

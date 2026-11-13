@@ -1,0 +1,13 @@
+{
+  "threshold": 1.3568251236287565e-10,
+  "n_target": 140,
+  "n_decoy": 7,
+  "nofit": false,
+  "label": "kmerseek.wholeannot.w20.hp_thomas_dill2_k22_s1",
+  "calls_total": 11502527,
+  "decoy_calls_total": 5333077,
+  "max_decoy_rate": 0.05,
+  "features_found": 32,
+  "features_found_aligned": 68,
+  "features_total": 7174
+}

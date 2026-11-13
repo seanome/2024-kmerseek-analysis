@@ -6,7 +6,7 @@ import io
 import json
 from pathlib import Path
 
-from PIL import Image
+from PIL import Image, ImageChops, ImageStat
 
 import matplotlib
 
@@ -14,7 +14,8 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt  # noqa: E402
 
 spec = importlib.util.spec_from_file_location(
-    "shrink_png", Path(__file__).parents[1] / "scripts" / "shrink_png.py")
+    "shrink_png", Path(__file__).parents[1] / "scripts" / "shrink_png.py"
+)
 shrink_png = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(shrink_png)
 
@@ -24,8 +25,13 @@ def figure_png(dpi=100) -> bytes:
     fig, ax = plt.subplots(figsize=(5, 4))
     for i in range(20):
         ax.plot(range(50), [x * (i + 1) / 10 for x in range(50)], alpha=0.5)
-    ax.imshow([[i * j for i in range(60)] for j in range(60)], extent=(0, 50, 0, 100),
-              aspect="auto", cmap="magma", alpha=0.6)
+    ax.imshow(
+        [[i * j for i in range(60)] for j in range(60)],
+        extent=(0, 50, 0, 100),
+        aspect="auto",
+        cmap="magma",
+        alpha=0.6,
+    )
     ax.set_title("test figure")
     buf = io.BytesIO()
     fig.savefig(buf, format="png", dpi=dpi)
@@ -65,9 +71,12 @@ def test_check_reports_and_does_not_write(tmp_path):
 def test_photograph_like_image_is_left_alone(tmp_path):
     # Random noise has no small palette; 256 colours would visibly change it.
     import random
+
     random.seed(0)
     im = Image.new("RGB", (200, 200))
-    im.putdata([tuple(random.randrange(256) for _ in range(3)) for _ in range(200 * 200)])
+    im.putdata(
+        [tuple(random.randrange(256) for _ in range(3)) for _ in range(200 * 200)]
+    )
     path = tmp_path / "noise.png"
     im.save(path)
     original = path.read_bytes()
@@ -77,12 +86,27 @@ def test_photograph_like_image_is_left_alone(tmp_path):
 
 def test_notebook_only_images_change(tmp_path):
     png = base64.b64encode(figure_png()).decode() + "\n"
-    nb = {"cells": [
-        {"cell_type": "markdown", "metadata": {}, "source": ["# Title é"]},
-        {"cell_type": "code", "execution_count": 1, "metadata": {}, "source": ["plot()"],
-         "outputs": [{"output_type": "display_data", "metadata": {},
-                      "data": {"image/png": png, "text/plain": ["<Figure>"]}}]}],
-        "metadata": {}, "nbformat": 4, "nbformat_minor": 5}
+    nb = {
+        "cells": [
+            {"cell_type": "markdown", "metadata": {}, "source": ["# Title é"]},
+            {
+                "cell_type": "code",
+                "execution_count": 1,
+                "metadata": {},
+                "source": ["plot()"],
+                "outputs": [
+                    {
+                        "output_type": "display_data",
+                        "metadata": {},
+                        "data": {"image/png": png, "text/plain": ["<Figure>"]},
+                    }
+                ],
+            },
+        ],
+        "metadata": {},
+        "nbformat": 4,
+        "nbformat_minor": 5,
+    }
     # Unusual formatting on purpose: indent 2 and unescaped non-ASCII must survive.
     text = json.dumps(nb, indent=2, ensure_ascii=False)
     path = tmp_path / "nb.ipynb"
@@ -95,3 +119,41 @@ def test_notebook_only_images_change(tmp_path):
     assert Image.open(io.BytesIO(base64.b64decode(new_png))).mode == "P"
     # Everything except the image is byte-for-byte the same.
     assert new_text.replace(json.dumps(new_png), json.dumps(png)) == text
+
+
+def test_opaque_figure_changes_less_than_fast_octree(tmp_path):
+    # An opaque figure gets median cut. On this figure's 13_626 colours it moves the
+    # average pixel by 0.78 of 255, against 2.26 for fast octree, the earlier method.
+    path = tmp_path / "fig.png"
+    original = figure_png()
+    path.write_bytes(original)
+    shrink_png.main([str(path)])
+    before = Image.open(io.BytesIO(original)).convert("RGB")
+
+    def change(quantized):
+        diff = ImageChops.difference(before, quantized.convert("RGB")).convert("L")
+        return ImageStat.Stat(diff).mean[0]
+
+    octree = before.convert("RGBA").quantize(256, method=Image.Quantize.FASTOCTREE)
+    assert change(Image.open(path)) < change(octree) / 2
+
+
+def test_figure_with_colour_bar_is_left_alone(tmp_path):
+    # At 256 colours a continuous colour bar shows steps, so the figure stays as it is.
+    fig, ax = plt.subplots(figsize=(4, 3))
+    mesh = ax.pcolormesh([[i + j for i in range(8)] for j in range(6)], cmap="viridis")
+    fig.colorbar(mesh)
+    path = tmp_path / "heatmap.png"
+    fig.savefig(path, dpi=300)
+    original = path.read_bytes()
+    assert (
+        shrink_png.colour_bar_shades(Image.open(path))
+        >= shrink_png.MIN_COLOUR_BAR_SHADES
+    )
+    shrink_png.main([str(path)])
+    assert path.read_bytes() == original
+
+
+def test_line_plot_is_not_a_colour_bar():
+    im = Image.open(io.BytesIO(figure_png(dpi=300)))
+    assert shrink_png.colour_bar_shades(im) < shrink_png.MIN_COLOUR_BAR_SHADES

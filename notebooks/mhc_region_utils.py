@@ -552,87 +552,11 @@ def arm_label(tool: pl.Expr, variant: pl.Expr) -> pl.Expr:
 
 
 # ---------------------------------------------------------------------------
-# Figure finishing: every saved figure states which tool it shows, the hypothesis it
-# tests and the conclusion it supports, on the image itself, so a panel pasted into a
-# talk carries its own provenance.
-#
-# The text is placed outside the axes area in figure coordinates (above 1 and below 0)
-# and relies on `savefig.bbox = "tight"` (set in every notebook's rcParams) and the inline
-# backend's own tight bbox to be included. That keeps it out of the way of tight_layout
-# and of colorbars added with `fig.colorbar(ax=...)`.
+# Figure finishing: every saved figure states its tools, hypothesis and conclusion on
+# the image itself, so a panel pasted into a talk carries its own provenance.
 # ---------------------------------------------------------------------------
-def finish_figure(
-    fig,
-    path,
-    tools: str,
-    hypothesis: str,
-    conclusion: str,
-    title: str | None = None,
-    *,
-    footer_y: float = -0.01,
-    header_y: float = 1.005,
-    layout: bool = True,
-    dpi: int = 200,
-    wrap: int | None = None,
-) -> None:
-    """Stamp TOOLS / hypothesis / conclusion on `fig`, then save it to `path`.
-
-    ``tools`` is the string from `tools_text` (or `kmerseek_label`, `NO_TOOL`). ``title``
-    replaces `fig.suptitle`: pass the figure's title here so it stacks cleanly under the
-    tools line. ``footer_y`` moves the footer down when a legend already hangs below the
-    axes. ``layout=False`` skips tight_layout for figures whose colorbars dislike it.
-    """
-    import textwrap
-
-    if layout:
-        try:
-            fig.tight_layout()
-        except Exception:  # noqa: BLE001  (a colorbar layout warning is not a failure)
-            pass
-    w_in, h_in = fig.get_size_inches()
-    wrap = wrap or max(70, int(w_in * 12))
-    line = lambda pt: pt / 72.0 / h_in * 1.45  # one text line, in figure fraction
-
-    is_km = "kmerseek" in tools and not tools.startswith("no kmerseek")
-    tool_lines = textwrap.wrap("TOOLS: " + tools, wrap)
-    y = header_y
-    fig.text(
-        0.0,
-        y,
-        "\n".join(tool_lines),
-        ha="left",
-        va="bottom",
-        fontsize=9.5,
-        fontweight="bold",
-        color="#8B1A1A" if is_km else "#1F3B73",
-        bbox=dict(
-            boxstyle="round,pad=0.35",
-            facecolor="#FBEAEA" if is_km else "#E8EEF8",
-            edgecolor="none",
-        ),
-    )
-    y += line(9.5) * len(tool_lines) + line(9.5) * 0.9
-    if title:
-        fig.text(
-            0.5, y, title, ha="center", va="bottom", fontsize=12.5, fontweight="bold"
-        )
-
-    foot = textwrap.wrap("Hypothesis: " + hypothesis, wrap) + textwrap.wrap(
-        "Conclusion: " + conclusion, wrap
-    )
-    fig.text(
-        0.0,
-        footer_y,
-        "\n".join(foot),
-        ha="left",
-        va="top",
-        fontsize=9,
-        color="#222222",
-        linespacing=1.35,
-        bbox=dict(boxstyle="round,pad=0.4", facecolor="#F6F6F6", edgecolor="#DDDDDD"),
-    )
-    fig.savefig(path, dpi=dpi, bbox_inches="tight")
-
+# One implementation for every notebook; see figure_utils.finish_figure.
+from figure_utils import finish_figure  # noqa: E402,F401  (re-exported)
 
 # ---------------------------------------------------------------------------
 # Loaders.

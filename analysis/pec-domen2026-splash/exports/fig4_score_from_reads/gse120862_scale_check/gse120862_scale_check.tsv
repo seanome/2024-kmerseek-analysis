@@ -1,0 +1,8 @@
+version	source	auc_listed_genes	auc_all_genes_weight_1	listed_genes_found	genes
+authors' FPKM table, as on GEO	authors' table	0.07993197278911565	0.6660997732426304	240	56609
+authors' FPKM table, genes with a read only	authors' table	0.09750566893424036	0.7341269841269842	232	17939
+authors' FPKM table, every sample scaled to the same total	authors' table	0.6422902494331066	0.8015873015873016	232	17939
+authors' DESeq-normalised counts, as on GEO	authors' table	0.07312925170068028	0.7103174603174602	240	56609
+reads, no genome, every sample scaled to the same total (CPM)	reads	0.7108843537414966	0.8741496598639455	232	19230
+reads, no genome, scaled as DESeq does (median of ratios)	reads	0.2692743764172335	0.7930839002267573	232	19230
+reads, no genome, every sample given its total from the authors' FPKM table	reads	0.2777777777777778	0.6507936507936508	232	19230

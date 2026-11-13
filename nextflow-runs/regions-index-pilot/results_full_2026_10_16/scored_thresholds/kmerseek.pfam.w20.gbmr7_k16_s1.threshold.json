@@ -1,0 +1,13 @@
+{
+  "threshold": null,
+  "n_target": 0,
+  "n_decoy": 0,
+  "nofit": true,
+  "label": "kmerseek.pfam.w20.gbmr7_k16_s1",
+  "calls_total": 0,
+  "decoy_calls_total": 0,
+  "max_decoy_rate": 0.05,
+  "features_found": 0,
+  "features_found_aligned": 0,
+  "features_total": 7174
+}

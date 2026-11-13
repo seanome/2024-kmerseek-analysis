@@ -1,0 +1,863 @@
+method	setting_label	target	truth_lineage	rank	score	n_wrong_at_or_above	n_reported	cutoff	n_ranked
+composition	composition_aa20	A1X158	B1 mussels and other bivalves	759	-0.30361346000356815	754	2005	-0.19312315314371636	575751
+composition	composition_aa20	A1X159	B1 mussels and other bivalves	552	-0.30058961361950415	548	2005	-0.19312315314371636	575751
+composition	composition_aa20	Q25434	B1 mussels and other bivalves	3	-0.06926044491106582	0	2005	-0.19312315314371636	575751
+composition	composition_aa20	Q25460	B1 mussels and other bivalves	1	-0.0	0	2005	-0.19312315314371636	575751
+composition	composition_aa20	Q25464	B1 mussels and other bivalves	9151	-0.3321130702821017	9145	2005	-0.19312315314371636	575751
+composition	composition_aa20	Q27409	B1 mussels and other bivalves	2	-0.044556310376864895	0	2005	-0.19312315314371636	575751
+composition	composition_aa20	Q7M3Q2	B2 tube-building polychaetes	572978	-0.48888497616781046	572969	2005	-0.19312315314371636	575751
+composition	composition_aa20	Q7M3Q3	B2 tube-building polychaetes	574302	-0.5205717607324528	574292	2005	-0.19312315314371636	575751
+composition	composition_aa20	Q9GRC4	B3 barnacles (control)	458229	-0.4013245235550756	458221	2005	-0.19312315314371636	575751
+composition	composition_aa20	Q9TWD7	B3 barnacles (control)	152339	-0.3688521711522766	152332	2005	-0.19312315314371636	575751
+composition	composition_dayhoff6	A1X158	B1 mussels and other bivalves	18	-0.06644703378318993	14	2003	-0.03931876435668672	575751
+composition	composition_dayhoff6	A1X159	B1 mussels and other bivalves	19	-0.07571095202079257	14	2003	-0.03931876435668672	575751
+composition	composition_dayhoff6	Q25434	B1 mussels and other bivalves	17	-0.06469749647978336	14	2003	-0.03931876435668672	575751
+composition	composition_dayhoff6	Q25460	B1 mussels and other bivalves	1	-0.0	0	2003	-0.03931876435668672	575751
+composition	composition_dayhoff6	Q25464	B1 mussels and other bivalves	20220	-0.31715251714528686	20212	2003	-0.03931876435668672	575751
+composition	composition_dayhoff6	Q27409	B1 mussels and other bivalves	2	-0.02885616644372735	0	2003	-0.03931876435668672	575751
+composition	composition_dayhoff6	Q7M3Q2	B2 tube-building polychaetes	27	-0.1099614000610488	21	2003	-0.03931876435668672	575751
+composition	composition_dayhoff6	Q7M3Q3	B2 tube-building polychaetes	59	-0.14558080748174337	52	2003	-0.03931876435668672	575751
+composition	composition_dayhoff6	Q9GRC4	B3 barnacles (control)	389321	-0.43588868417680676	389312	2003	-0.03931876435668672	575751
+composition	composition_dayhoff6	Q9TWD7	B3 barnacles (control)	394359	-0.4370621398525625	394349	2003	-0.03931876435668672	575751
+composition	composition_funcgroups8	A1X158	B1 mussels and other bivalves	3805	-0.29523653548689344	3801	2007	-0.10198523269393976	575751
+composition	composition_funcgroups8	A1X159	B1 mussels and other bivalves	5178	-0.30172527351953404	5173	2007	-0.10198523269393976	575751
+composition	composition_funcgroups8	Q25434	B1 mussels and other bivalves	2	-0.014479048517693225	0	2007	-0.10198523269393976	575751
+composition	composition_funcgroups8	Q25460	B1 mussels and other bivalves	1	-0.0	0	2007	-0.10198523269393976	575751
+composition	composition_funcgroups8	Q25464	B1 mussels and other bivalves	8330	-0.31180608888783895	8324	2007	-0.10198523269393976	575751
+composition	composition_funcgroups8	Q27409	B1 mussels and other bivalves	3	-0.03292264627502401	0	2007	-0.10198523269393976	575751
+composition	composition_funcgroups8	Q7M3Q2	B2 tube-building polychaetes	572567	-0.5901637540758697	572558	2007	-0.10198523269393976	575751
+composition	composition_funcgroups8	Q7M3Q3	B2 tube-building polychaetes	575199	-0.6757832504624735	575189	2007	-0.10198523269393976	575751
+composition	composition_funcgroups8	Q9GRC4	B3 barnacles (control)	105582	-0.3768551003257429	105575	2007	-0.10198523269393976	575751
+composition	composition_funcgroups8	Q9TWD7	B3 barnacles (control)	299885	-0.42391468132897975	299877	2007	-0.10198523269393976	575751
+composition	composition_gbmr4	A1X158	B1 mussels and other bivalves	74	-0.08417292676025614	70	2005	-0.02643862298389779	575751
+composition	composition_gbmr4	A1X159	B1 mussels and other bivalves	137	-0.09704400849863061	132	2005	-0.02643862298389779	575751
+composition	composition_gbmr4	Q25434	B1 mussels and other bivalves	61	-0.07562341307071277	58	2005	-0.02643862298389779	575751
+composition	composition_gbmr4	Q25460	B1 mussels and other bivalves	1	-0.0	0	2005	-0.02643862298389779	575751
+composition	composition_gbmr4	Q25464	B1 mussels and other bivalves	60762	-0.2418852421615616	60756	2005	-0.02643862298389779	575751
+composition	composition_gbmr4	Q27409	B1 mussels and other bivalves	6	-0.037458304152314825	4	2005	-0.02643862298389779	575751
+composition	composition_gbmr4	Q7M3Q2	B2 tube-building polychaetes	570018	-0.4479171064754043	570010	2005	-0.02643862298389779	575751
+composition	composition_gbmr4	Q7M3Q3	B2 tube-building polychaetes	574504	-0.5182632114799045	574494	2005	-0.02643862298389779	575751
+composition	composition_gbmr4	Q9GRC4	B3 barnacles (control)	330011	-0.2796286145317457	330004	2005	-0.02643862298389779	575751
+composition	composition_gbmr4	Q9TWD7	B3 barnacles (control)	571691	-0.4641901721059211	571682	2005	-0.02643862298389779	575751
+composition	composition_gbmr7	A1X158	B1 mussels and other bivalves	137	-0.13511746138049285	133	2005	-0.04791855954210714	575751
+composition	composition_gbmr7	A1X159	B1 mussels and other bivalves	189	-0.1393205829918933	184	2005	-0.04791855954210714	575751
+composition	composition_gbmr7	Q25434	B1 mussels and other bivalves	2	-0.020817575190604155	0	2005	-0.04791855954210714	575751
+composition	composition_gbmr7	Q25460	B1 mussels and other bivalves	1	-0.0	0	2005	-0.04791855954210714	575751
+composition	composition_gbmr7	Q25464	B1 mussels and other bivalves	450726	-0.31462243566248077	450720	2005	-0.04791855954210714	575751
+composition	composition_gbmr7	Q27409	B1 mussels and other bivalves	3	-0.03568530046563828	0	2005	-0.04791855954210714	575751
+composition	composition_gbmr7	Q7M3Q2	B2 tube-building polychaetes	573136	-0.4177493443012861	573127	2005	-0.04791855954210714	575751
+composition	composition_gbmr7	Q7M3Q3	B2 tube-building polychaetes	575262	-0.49844896724586296	575252	2005	-0.04791855954210714	575751
+composition	composition_gbmr7	Q9GRC4	B3 barnacles (control)	570179	-0.39300842417139586	570171	2005	-0.04791855954210714	575751
+composition	composition_gbmr7	Q9TWD7	B3 barnacles (control)	493268	-0.32401977693266987	493261	2005	-0.04791855954210714	575751
+composition	composition_hp_kyte_doolittle2	A1X158	B1 mussels and other bivalves	4449	-0.193759142192697	4445	2007	-0.0003486016624337299	575751
+composition	composition_hp_kyte_doolittle2	A1X159	B1 mussels and other bivalves	4924	-0.19897052013511185	4919	2007	-0.0003486016624337299	575751
+composition	composition_hp_kyte_doolittle2	Q25434	B1 mussels and other bivalves	44	-0.0027654084338934177	42	2007	-0.0003486016624337299	575751
+composition	composition_hp_kyte_doolittle2	Q25460	B1 mussels and other bivalves	1	-0.0	0	2007	-0.0003486016624337299	575751
+composition	composition_hp_kyte_doolittle2	Q25464	B1 mussels and other bivalves	9097	-0.22875833370025145	9091	2007	-0.0003486016624337299	575751
+composition	composition_hp_kyte_doolittle2	Q27409	B1 mussels and other bivalves	180	-0.0229502353877066	177	2007	-0.0003486016624337299	575751
+composition	composition_hp_kyte_doolittle2	Q7M3Q2	B2 tube-building polychaetes	53391	-0.31461868081947647	53383	2007	-0.0003486016624337299	575751
+composition	composition_hp_kyte_doolittle2	Q7M3Q3	B2 tube-building polychaetes	18024	-0.2612521312959635	18017	2007	-0.0003486016624337299	575751
+composition	composition_hp_kyte_doolittle2	Q9GRC4	B3 barnacles (control)	62862	-0.32307278767468645	62853	2007	-0.0003486016624337299	575751
+composition	composition_hp_kyte_doolittle2	Q9TWD7	B3 barnacles (control)	269435	-0.40493130309003694	269425	2007	-0.0003486016624337299	575751
+composition	composition_hp_lehninger2	A1X158	B1 mussels and other bivalves	508902	-0.1585446122759436	508898	2009	-0.0	575751
+composition	composition_hp_lehninger2	A1X159	B1 mussels and other bivalves	519682	-0.17081562341307754	519677	2009	-0.0	575751
+composition	composition_hp_lehninger2	Q25434	B1 mussels and other bivalves	3140	-0.0005801426540271641	3138	2009	-0.0	575751
+composition	composition_hp_lehninger2	Q25460	B1 mussels and other bivalves	1	-0.0	0	2009	-0.0	575751
+composition	composition_hp_lehninger2	Q25464	B1 mussels and other bivalves	534072	-0.19115417724258693	534066	2009	-0.0	575751
+composition	composition_hp_lehninger2	Q27409	B1 mussels and other bivalves	52663	-0.009191715617113187	52660	2009	-0.0	575751
+composition	composition_hp_lehninger2	Q7M3Q2	B2 tube-building polychaetes	573155	-0.3554110547695447	573146	2009	-0.0	575751
+composition	composition_hp_lehninger2	Q7M3Q3	B2 tube-building polychaetes	574710	-0.4265664541342287	574700	2009	-0.0	575751
+composition	composition_hp_lehninger2	Q9GRC4	B3 barnacles (control)	572321	-0.3331143040581559	572313	2009	-0.0	575751
+composition	composition_hp_lehninger2	Q9TWD7	B3 barnacles (control)	563153	-0.25928284697398596	563146	2009	-0.0	575751
+composition	composition_hp_lehninger_c_nonpolar2	A1X158	B1 mussels and other bivalves	516123	-0.1585446122759436	516117	2009	-0.0	575751
+composition	composition_hp_lehninger_c_nonpolar2	A1X159	B1 mussels and other bivalves	525573	-0.17081562341307754	525566	2009	-0.0	575751
+composition	composition_hp_lehninger_c_nonpolar2	Q25434	B1 mussels and other bivalves	26280	-0.004285270977990335	26278	2009	-0.0	575751
+composition	composition_hp_lehninger_c_nonpolar2	Q25460	B1 mussels and other bivalves	1	-0.0	0	2009	-0.0	575751
+composition	composition_hp_lehninger_c_nonpolar2	Q25464	B1 mussels and other bivalves	74818	-0.012157709102805158	74815	2009	-0.0	575751
+composition	composition_hp_lehninger_c_nonpolar2	Q27409	B1 mussels and other bivalves	91248	-0.01484103743751174	91244	2009	-0.0	575751
+composition	composition_hp_lehninger_c_nonpolar2	Q7M3Q2	B2 tube-building polychaetes	573468	-0.3554110547695447	573459	2009	-0.0	575751
+composition	composition_hp_lehninger_c_nonpolar2	Q7M3Q3	B2 tube-building polychaetes	574963	-0.4265664541342287	574953	2009	-0.0	575751
+composition	composition_hp_lehninger_c_nonpolar2	Q9GRC4	B3 barnacles (control)	456827	-0.1090804723950914	456822	2009	-0.0	575751
+composition	composition_hp_lehninger_c_nonpolar2	Q9TWD7	B3 barnacles (control)	564111	-0.25928284697398596	564103	2009	-0.0	575751
+composition	composition_hp_lehninger_hpc3	A1X158	B1 mussels and other bivalves	509488	-0.1585446122759436	509484	2009	-0.000013581882951963121	575751
+composition	composition_hp_lehninger_hpc3	A1X159	B1 mussels and other bivalves	520151	-0.17081562341307754	520146	2009	-0.000013581882951963121	575751
+composition	composition_hp_lehninger_hpc3	Q25434	B1 mussels and other bivalves	4627	-0.00460284491724679	4625	2009	-0.000013581882951963121	575751
+composition	composition_hp_lehninger_hpc3	Q25460	B1 mussels and other bivalves	1	-0.0	0	2009	-0.000013581882951963121	575751
+composition	composition_hp_lehninger_hpc3	Q25464	B1 mussels and other bivalves	538144	-0.19751386343398833	538138	2009	-0.000013581882951963121	575751
+composition	composition_hp_lehninger_hpc3	Q27409	B1 mussels and other bivalves	30394	-0.012974183312215398	30391	2009	-0.000013581882951963121	575751
+composition	composition_hp_lehninger_hpc3	Q7M3Q2	B2 tube-building polychaetes	573111	-0.3554110547695447	573102	2009	-0.000013581882951963121	575751
+composition	composition_hp_lehninger_hpc3	Q7M3Q3	B2 tube-building polychaetes	574672	-0.4265664541342287	574662	2009	-0.000013581882951963121	575751
+composition	composition_hp_lehninger_hpc3	Q9GRC4	B3 barnacles (control)	569037	-0.29415544084354467	569029	2009	-0.000013581882951963121	575751
+composition	composition_hp_lehninger_hpc3	Q9TWD7	B3 barnacles (control)	563123	-0.25928284697398596	563116	2009	-0.000013581882951963121	575751
+composition	composition_hp_pbotc_1st_ed2	A1X158	B1 mussels and other bivalves	189609	-0.08453446263743597	189604	2008	-1.6441953930006562e-6	575751
+composition	composition_hp_pbotc_1st_ed2	A1X159	B1 mussels and other bivalves	151171	-0.07399472857208067	151167	2008	-1.6441953930006562e-6	575751
+composition	composition_hp_pbotc_1st_ed2	Q25434	B1 mussels and other bivalves	13600	-0.010316530390784543	13597	2008	-1.6441953930006562e-6	575751
+composition	composition_hp_pbotc_1st_ed2	Q25460	B1 mussels and other bivalves	1	-0.0	0	2008	-1.6441953930006562e-6	575751
+composition	composition_hp_pbotc_1st_ed2	Q25464	B1 mussels and other bivalves	469295	-0.16561888771890437	469286	2008	-1.6441953930006562e-6	575751
+composition	composition_hp_pbotc_1st_ed2	Q27409	B1 mussels and other bivalves	598	-0.0004906839524003099	596	2008	-1.6441953930006562e-6	575751
+composition	composition_hp_pbotc_1st_ed2	Q7M3Q2	B2 tube-building polychaetes	201913	-0.08769394718844697	201907	2008	-1.6441953930006562e-6	575751
+composition	composition_hp_pbotc_1st_ed2	Q7M3Q3	B2 tube-building polychaetes	379341	-0.1321660717913745	379333	2008	-1.6441953930006562e-6	575751
+composition	composition_hp_pbotc_1st_ed2	Q9GRC4	B3 barnacles (control)	490641	-0.17747480071851549	490631	2008	-1.6441953930006562e-6	575751
+composition	composition_hp_pbotc_1st_ed2	Q9TWD7	B3 barnacles (control)	242377	-0.09772060307914314	242370	2008	-1.6441953930006562e-6	575751
+composition	composition_hp_thomas_dill2	A1X158	B1 mussels and other bivalves	187534	-0.16927635766904733	187527	2008	-0.0	575751
+composition	composition_hp_thomas_dill2	A1X159	B1 mussels and other bivalves	159496	-0.16040941158520788	159490	2008	-0.0	575751
+composition	composition_hp_thomas_dill2	Q25434	B1 mussels and other bivalves	1110	-0.003453053560551837	1108	2008	-0.0	575751
+composition	composition_hp_thomas_dill2	Q25460	B1 mussels and other bivalves	1	-0.0	0	2008	-0.0	575751
+composition	composition_hp_thomas_dill2	Q25464	B1 mussels and other bivalves	28407	-0.06785491494196297	28403	2008	-0.0	575751
+composition	composition_hp_thomas_dill2	Q27409	B1 mussels and other bivalves	6815	-0.020705571517734944	6812	2008	-0.0	575751
+composition	composition_hp_thomas_dill2	Q7M3Q2	B2 tube-building polychaetes	321828	-0.20318932541438134	321820	2008	-0.0	575751
+composition	composition_hp_thomas_dill2	Q7M3Q3	B2 tube-building polychaetes	421229	-0.22987260017613786	421220	2008	-0.0	575751
+composition	composition_hp_thomas_dill2	Q9GRC4	B3 barnacles (control)	61685	-0.10755224161481838	61680	2008	-0.0	575751
+composition	composition_hp_thomas_dill2	Q9TWD7	B3 barnacles (control)	542605	-0.3509736164025712	542595	2008	-0.0	575751
+composition	composition_hp_thomas_dill_no_c2	A1X158	B1 mussels and other bivalves	258189	-0.16927635766904733	258182	2009	-1.7839338535691592e-6	575751
+composition	composition_hp_thomas_dill_no_c2	A1X159	B1 mussels and other bivalves	223556	-0.16040941158520788	223550	2009	-1.7839338535691592e-6	575751
+composition	composition_hp_thomas_dill_no_c2	Q25434	B1 mussels and other bivalves	4772	-0.008318467192569375	4770	2009	-1.7839338535691592e-6	575751
+composition	composition_hp_thomas_dill_no_c2	Q25460	B1 mussels and other bivalves	1	-0.0	0	2009	-1.7839338535691592e-6	575751
+composition	composition_hp_thomas_dill_no_c2	Q25464	B1 mussels and other bivalves	145245	-0.1354569714034291	145240	2009	-1.7839338535691592e-6	575751
+composition	composition_hp_thomas_dill_no_c2	Q27409	B1 mussels and other bivalves	8899	-0.01505624969733639	8896	2009	-1.7839338535691592e-6	575751
+composition	composition_hp_thomas_dill_no_c2	Q7M3Q2	B2 tube-building polychaetes	393197	-0.20318932541438134	393189	2009	-1.7839338535691592e-6	575751
+composition	composition_hp_thomas_dill_no_c2	Q7M3Q3	B2 tube-building polychaetes	469852	-0.22987260017613786	469843	2009	-1.7839338535691592e-6	575751
+composition	composition_hp_thomas_dill_no_c2	Q9GRC4	B3 barnacles (control)	105693	-0.11648159004824621	105689	2009	-1.7839338535691592e-6	575751
+composition	composition_hp_thomas_dill_no_c2	Q9TWD7	B3 barnacles (control)	548440	-0.3509736164025712	548430	2009	-1.7839338535691592e-6	575751
+composition	composition_hsdm17	A1X158	B1 mussels and other bivalves	1731	-0.3026618407272493	1726	2005	-0.20351936155747868	575751
+composition	composition_hsdm17	A1X159	B1 mussels and other bivalves	1340	-0.299230085934313	1336	2005	-0.20351936155747868	575751
+composition	composition_hsdm17	Q25434	B1 mussels and other bivalves	3	-0.06989194567148686	0	2005	-0.20351936155747868	575751
+composition	composition_hsdm17	Q25460	B1 mussels and other bivalves	1	-0.0	0	2005	-0.20351936155747868	575751
+composition	composition_hsdm17	Q25464	B1 mussels and other bivalves	10381	-0.3274154487769671	10375	2005	-0.20351936155747868	575751
+composition	composition_hsdm17	Q27409	B1 mussels and other bivalves	2	-0.045897963647583015	0	2005	-0.20351936155747868	575751
+composition	composition_hsdm17	Q7M3Q2	B2 tube-building polychaetes	567292	-0.4902464389317786	567283	2005	-0.20351936155747868	575751
+composition	composition_hsdm17	Q7M3Q3	B2 tube-building polychaetes	572433	-0.526160630776831	572423	2005	-0.20351936155747868	575751
+composition	composition_hsdm17	Q9GRC4	B3 barnacles (control)	101986	-0.365302191078323	101979	2005	-0.20351936155747868	575751
+composition	composition_hsdm17	Q9TWD7	B3 barnacles (control)	547355	-0.4514867463077237	547347	2005	-0.20351936155747868	575751
+composition	composition_mmseqs12	A1X158	B1 mussels and other bivalves	614	-0.2651645347899178	609	2005	-0.10385796702657384	575751
+composition	composition_mmseqs12	A1X159	B1 mussels and other bivalves	376	-0.2574831491427553	372	2005	-0.10385796702657384	575751
+composition	composition_mmseqs12	Q25434	B1 mussels and other bivalves	3	-0.07028321632866259	0	2005	-0.10385796702657384	575751
+composition	composition_mmseqs12	Q25460	B1 mussels and other bivalves	1	-0.0	0	2005	-0.10385796702657384	575751
+composition	composition_mmseqs12	Q25464	B1 mussels and other bivalves	106777	-0.34865287724916855	106771	2005	-0.10385796702657384	575751
+composition	composition_mmseqs12	Q27409	B1 mussels and other bivalves	2	-0.032828556204550906	0	2005	-0.10385796702657384	575751
+composition	composition_mmseqs12	Q7M3Q2	B2 tube-building polychaetes	560703	-0.44064198182092706	560694	2005	-0.10385796702657384	575751
+composition	composition_mmseqs12	Q7M3Q3	B2 tube-building polychaetes	573484	-0.5002167989670689	573474	2005	-0.10385796702657384	575751
+composition	composition_mmseqs12	Q9GRC4	B3 barnacles (control)	528668	-0.41213875613802925	528660	2005	-0.10385796702657384	575751
+composition	composition_mmseqs12	Q9TWD7	B3 barnacles (control)	494382	-0.4011017215014493	494375	2005	-0.10385796702657384	575751
+composition	composition_polarity4	A1X158	B1 mussels and other bivalves	536673	-0.3854072878436535	536666	2006	-0.009731077923386521	575751
+composition	composition_polarity4	A1X159	B1 mussels and other bivalves	541982	-0.3916139524552718	541974	2006	-0.009731077923386521	575751
+composition	composition_polarity4	Q25434	B1 mussels and other bivalves	2	-0.008598888483148059	0	2006	-0.009731077923386521	575751
+composition	composition_polarity4	Q25460	B1 mussels and other bivalves	1	-0.0	0	2006	-0.009731077923386521	575751
+composition	composition_polarity4	Q25464	B1 mussels and other bivalves	225	-0.07289622132166843	221	2006	-0.009731077923386521	575751
+composition	composition_polarity4	Q27409	B1 mussels and other bivalves	8	-0.023831818951157838	5	2006	-0.009731077923386521	575751
+composition	composition_polarity4	Q7M3Q2	B2 tube-building polychaetes	571313	-0.47799422054355356	571303	2006	-0.009731077923386521	575751
+composition	composition_polarity4	Q7M3Q3	B2 tube-building polychaetes	549729	-0.4028114245633603	549720	2006	-0.009731077923386521	575751
+composition	composition_polarity4	Q9GRC4	B3 barnacles (control)	91659	-0.22658358721858707	91654	2006	-0.009731077923386521	575751
+composition	composition_polarity4	Q9TWD7	B3 barnacles (control)	434569	-0.32938525403272995	434563	2006	-0.009731077923386521	575751
+composition	composition_protein20	A1X158	B1 mussels and other bivalves	759	-0.30361346000356815	754	2005	-0.19312315314371636	575751
+composition	composition_protein20	A1X159	B1 mussels and other bivalves	552	-0.30058961361950415	548	2005	-0.19312315314371636	575751
+composition	composition_protein20	Q25434	B1 mussels and other bivalves	3	-0.06926044491106582	0	2005	-0.19312315314371636	575751
+composition	composition_protein20	Q25460	B1 mussels and other bivalves	1	-0.0	0	2005	-0.19312315314371636	575751
+composition	composition_protein20	Q25464	B1 mussels and other bivalves	9151	-0.3321130702821017	9145	2005	-0.19312315314371636	575751
+composition	composition_protein20	Q27409	B1 mussels and other bivalves	2	-0.044556310376864895	0	2005	-0.19312315314371636	575751
+composition	composition_protein20	Q7M3Q2	B2 tube-building polychaetes	572978	-0.48888497616781046	572969	2005	-0.19312315314371636	575751
+composition	composition_protein20	Q7M3Q3	B2 tube-building polychaetes	574302	-0.5205717607324528	574292	2005	-0.19312315314371636	575751
+composition	composition_protein20	Q9GRC4	B3 barnacles (control)	458229	-0.4013245235550756	458221	2005	-0.19312315314371636	575751
+composition	composition_protein20	Q9TWD7	B3 barnacles (control)	152339	-0.3688521711522766	152332	2005	-0.19312315314371636	575751
+composition	composition_sdm12	A1X158	B1 mussels and other bivalves	9601	-0.29196105446101145	9596	2007	-0.11153110047009081	575751
+composition	composition_sdm12	A1X159	B1 mussels and other bivalves	7834	-0.28809677246010507	7830	2007	-0.11153110047009081	575751
+composition	composition_sdm12	Q25434	B1 mussels and other bivalves	3	-0.06614355516742751	0	2007	-0.11153110047009081	575751
+composition	composition_sdm12	Q25460	B1 mussels and other bivalves	1	-0.0	0	2007	-0.11153110047009081	575751
+composition	composition_sdm12	Q25464	B1 mussels and other bivalves	32772	-0.3157781124864851	32766	2007	-0.11153110047009081	575751
+composition	composition_sdm12	Q27409	B1 mussels and other bivalves	2	-0.03530032479782241	0	2007	-0.11153110047009081	575751
+composition	composition_sdm12	Q7M3Q2	B2 tube-building polychaetes	571193	-0.5052836787634876	571184	2007	-0.11153110047009081	575751
+composition	composition_sdm12	Q7M3Q3	B2 tube-building polychaetes	573498	-0.5338887367992927	573488	2007	-0.11153110047009081	575751
+composition	composition_sdm12	Q9GRC4	B3 barnacles (control)	241829	-0.3638738854352694	241822	2007	-0.11153110047009081	575751
+composition	composition_sdm12	Q9TWD7	B3 barnacles (control)	516450	-0.41751310934371366	516442	2007	-0.11153110047009081	575751
+composition	composition_uniprot18	A1X158	B1 mussels and other bivalves	24212	-0.3026834074938038	24207	2007	-0.19119139684014483	575751
+composition	composition_uniprot18	A1X159	B1 mussels and other bivalves	18769	-0.2994115985168001	18765	2007	-0.19119139684014483	575751
+composition	composition_uniprot18	Q25434	B1 mussels and other bivalves	3	-0.06920468175286561	0	2007	-0.19119139684014483	575751
+composition	composition_uniprot18	Q25460	B1 mussels and other bivalves	1	-0.0	0	2007	-0.19119139684014483	575751
+composition	composition_uniprot18	Q25464	B1 mussels and other bivalves	88462	-0.32116126741569495	88456	2007	-0.19119139684014483	575751
+composition	composition_uniprot18	Q27409	B1 mussels and other bivalves	2	-0.04501324387723889	0	2007	-0.19119139684014483	575751
+composition	composition_uniprot18	Q7M3Q2	B2 tube-building polychaetes	573743	-0.49444673029196734	573734	2007	-0.19119139684014483	575751
+composition	composition_uniprot18	Q7M3Q3	B2 tube-building polychaetes	574479	-0.5210707682447178	574469	2007	-0.19119139684014483	575751
+composition	composition_uniprot18	Q9GRC4	B3 barnacles (control)	372493	-0.358257504726401	372486	2007	-0.19119139684014483	575751
+composition	composition_uniprot18	Q9TWD7	B3 barnacles (control)	436729	-0.3690777757336717	436721	2007	-0.19119139684014483	575751
+composition	composition_wass14	A1X158	B1 mussels and other bivalves	418	-0.30689255284001765	413	2005	-0.17968639852270107	575751
+composition	composition_wass14	A1X159	B1 mussels and other bivalves	336	-0.30411254079150307	332	2005	-0.17968639852270107	575751
+composition	composition_wass14	Q25434	B1 mussels and other bivalves	3	-0.06797770329298296	0	2005	-0.17968639852270107	575751
+composition	composition_wass14	Q25460	B1 mussels and other bivalves	1	-0.0	0	2005	-0.17968639852270107	575751
+composition	composition_wass14	Q25464	B1 mussels and other bivalves	3236	-0.3315543271515936	3230	2005	-0.17968639852270107	575751
+composition	composition_wass14	Q27409	B1 mussels and other bivalves	2	-0.045930152458458086	0	2005	-0.17968639852270107	575751
+composition	composition_wass14	Q7M3Q2	B2 tube-building polychaetes	569580	-0.48239491349153296	569571	2005	-0.17968639852270107	575751
+composition	composition_wass14	Q7M3Q3	B2 tube-building polychaetes	574080	-0.526393805601581	574070	2005	-0.17968639852270107	575751
+composition	composition_wass14	Q9GRC4	B3 barnacles (control)	250124	-0.3975572829285728	250116	2005	-0.17968639852270107	575751
+composition	composition_wass14	Q9TWD7	B3 barnacles (control)	15719	-0.352506387245889	15712	2005	-0.17968639852270107	575751
+composition	composition_wwmj5	A1X158	B1 mussels and other bivalves	81525	-0.2118850755855509	81519	2007	-0.029618840141734524	575751
+composition	composition_wwmj5	A1X159	B1 mussels and other bivalves	70469	-0.20764079458290222	70464	2007	-0.029618840141734524	575751
+composition	composition_wwmj5	Q25434	B1 mussels and other bivalves	111	-0.07467401263439485	108	2007	-0.029618840141734524	575751
+composition	composition_wwmj5	Q25460	B1 mussels and other bivalves	1	-0.0	0	2007	-0.029618840141734524	575751
+composition	composition_wwmj5	Q25464	B1 mussels and other bivalves	28853	-0.17898469403737044	28849	2007	-0.029618840141734524	575751
+composition	composition_wwmj5	Q27409	B1 mussels and other bivalves	3	-0.03261481869957487	1	2007	-0.029618840141734524	575751
+composition	composition_wwmj5	Q7M3Q2	B2 tube-building polychaetes	497170	-0.30245501394722707	497161	2007	-0.029618840141734524	575751
+composition	composition_wwmj5	Q7M3Q3	B2 tube-building polychaetes	185146	-0.23618803395105945	185139	2007	-0.029618840141734524	575751
+composition	composition_wwmj5	Q9GRC4	B3 barnacles (control)	485118	-0.296907602303377	485110	2007	-0.029618840141734524	575751
+composition	composition_wwmj5	Q9TWD7	B3 barnacles (control)	563605	-0.37669629547137473	563595	2007	-0.029618840141734524	575751
+foldseek	prostt5	A1X158	B1 mussels and other bivalves	14	192.0	10	10000	313.0	10000
+foldseek	prostt5	A1X159	B1 mussels and other bivalves	57	99.0	52	10000	313.0	10000
+foldseek	prostt5	Q25434	B1 mussels and other bivalves	3	860.0	0	10000	313.0	10000
+foldseek	prostt5	Q25460	B1 mussels and other bivalves	1	2415.0	0	10000	313.0	10000
+foldseek	prostt5	Q27409	B1 mussels and other bivalves	2	1405.0	0	10000	313.0	10000
+foldseek	structure	A1X158	B1 mussels and other bivalves	8	54.0	4	10000	65.0	10000
+foldseek	structure	A1X159	B1 mussels and other bivalves	47	19.0	45	10000	65.0	10000
+foldseek	structure	Q25434	B1 mussels and other bivalves	3	221.0	0	10000	65.0	10000
+foldseek	structure	Q25460	B1 mussels and other bivalves	1	5811.0	0	10000	65.0	10000
+foldseek	structure	Q27409	B1 mussels and other bivalves	2	446.0	0	10000	65.0	10000
+jackhmmer	default	Q25434	B1 mussels and other bivalves	2	1065.4	0	33	343.0	33
+jackhmmer	default	Q25460	B1 mussels and other bivalves	1	1405.8	0	33	343.0	33
+jackhmmer	default	Q27409	B1 mussels and other bivalves	3	1006.8	0	33	343.0	33
+kmerseek	dayhoff6.k9.s1.lcfalse.extend-c0.41	Q25434	B1 mussels and other bivalves	3088	-inf	3166	3169	-141.44967472112327	3169
+kmerseek	dayhoff6.k9.s1.lcfalse.extend-c0.41	Q25460	B1 mussels and other bivalves	3089	-inf	3166	3169	-141.44967472112327	3169
+kmerseek	dayhoff6.k9.s1.lcfalse.extend-c0.41	Q27409	B1 mussels and other bivalves	3090	-inf	3166	3169	-141.44967472112327	3169
+kmerseek	dayhoff6.k9.s10.lcfalse.extend-c0.41	Q25434	B1 mussels and other bivalves	124	-inf	124	127	-111.11779382035061	127
+kmerseek	dayhoff6.k9.s10.lcfalse.extend-c0.41	Q25460	B1 mussels and other bivalves	125	-inf	124	127	-111.11779382035061	127
+kmerseek	dayhoff6.k9.s10.lcfalse.extend-c0.41	Q27409	B1 mussels and other bivalves	126	-inf	124	127	-111.11779382035061	127
+kmerseek	funcgroups8.k11.s1.lcfalse.extend-c0.29	Q25434	B1 mussels and other bivalves	3	-484.7322621282362	0	3		3
+kmerseek	funcgroups8.k11.s1.lcfalse.extend-c0.29	Q25460	B1 mussels and other bivalves	1	-2.7358320071947103e-6	0	3		3
+kmerseek	funcgroups8.k11.s1.lcfalse.extend-c0.29	Q27409	B1 mussels and other bivalves	2	-197.54629864653353	0	3		3
+kmerseek	funcgroups8.k11.s10.lcfalse.extend-c0.29	Q25434	B1 mussels and other bivalves	3	-646.3817784975566	0	3		3
+kmerseek	funcgroups8.k11.s10.lcfalse.extend-c0.29	Q25460	B1 mussels and other bivalves	1	-0.00022502304036675077	0	3		3
+kmerseek	funcgroups8.k11.s10.lcfalse.extend-c0.29	Q27409	B1 mussels and other bivalves	2	-320.0821211875775	0	3		3
+kmerseek	funcgroups8.k13.s1.lcfalse.extend-c0.29	Q25434	B1 mussels and other bivalves	3	-62.16952686828216	0	3		3
+kmerseek	funcgroups8.k13.s1.lcfalse.extend-c0.29	Q25460	B1 mussels and other bivalves	1	-5.537517327587344e-7	0	3		3
+kmerseek	funcgroups8.k13.s1.lcfalse.extend-c0.29	Q27409	B1 mussels and other bivalves	2	-25.88865080063934	0	3		3
+kmerseek	funcgroups8.k13.s10.lcfalse.extend-c0.29	Q25434	B1 mussels and other bivalves	3	-8.356242127544352	0	3		3
+kmerseek	funcgroups8.k13.s10.lcfalse.extend-c0.29	Q25460	B1 mussels and other bivalves	1	-8.151296753416896e-8	0	3		3
+kmerseek	funcgroups8.k13.s10.lcfalse.extend-c0.29	Q27409	B1 mussels and other bivalves	2	-3.4946901085381907	0	3		3
+kmerseek	funcgroups8.k14.s1.lcfalse.extend-c0.29	Q25434	B1 mussels and other bivalves	3	-172.67688058622545	0	3		3
+kmerseek	funcgroups8.k14.s1.lcfalse.extend-c0.29	Q25460	B1 mussels and other bivalves	1	-0.0054819197331000095	0	3		3
+kmerseek	funcgroups8.k14.s1.lcfalse.extend-c0.29	Q27409	B1 mussels and other bivalves	2	-105.83695718785869	0	3		3
+kmerseek	funcgroups8.k14.s10.lcfalse.extend-c0.29	Q25434	B1 mussels and other bivalves	3	-20.628835856408724	0	3		3
+kmerseek	funcgroups8.k14.s10.lcfalse.extend-c0.29	Q25460	B1 mussels and other bivalves	1	-0.000650712326951181	0	3		3
+kmerseek	funcgroups8.k14.s10.lcfalse.extend-c0.29	Q27409	B1 mussels and other bivalves	2	-12.639977098726602	0	3		3
+kmerseek	funcgroups8.k9.s1.lcfalse.extend-c0.29	Q25434	B1 mussels and other bivalves	3	-317.15490888762736	0	36	-1186.3632912934895	36
+kmerseek	funcgroups8.k9.s1.lcfalse.extend-c0.29	Q25460	B1 mussels and other bivalves	1	-8.402679320938905e-13	0	36	-1186.3632912934895	36
+kmerseek	funcgroups8.k9.s1.lcfalse.extend-c0.29	Q27409	B1 mussels and other bivalves	2	-64.91517982180694	0	36	-1186.3632912934895	36
+kmerseek	funcgroups8.k9.s10.lcfalse.extend-c0.29	Q25434	B1 mussels and other bivalves	3	-0.9621912363806762	0	7	-21.759080186088685	7
+kmerseek	funcgroups8.k9.s10.lcfalse.extend-c0.29	Q25460	B1 mussels and other bivalves	1	-3.1141736264031122e-24	0	7	-21.759080186088685	7
+kmerseek	funcgroups8.k9.s10.lcfalse.extend-c0.29	Q27409	B1 mussels and other bivalves	2	-0.07466046134449268	0	7	-21.759080186088685	7
+kmerseek	gbmr4.k16.s1.lcfalse.extend-c0.67	Q25434	B1 mussels and other bivalves	2	-1.9195167721565718e-6	0	355	-0.09664787138829176	355
+kmerseek	gbmr4.k16.s1.lcfalse.extend-c0.67	Q25460	B1 mussels and other bivalves	1	-1.1956581904247613e-18	0	355	-0.09664787138829176	355
+kmerseek	gbmr4.k16.s1.lcfalse.extend-c0.67	Q27409	B1 mussels and other bivalves	3	-0.0032218628756803705	0	355	-0.09664787138829176	355
+kmerseek	gbmr4.k16.s10.lcfalse.extend-c0.67	Q25434	B1 mussels and other bivalves	2	-0.000262153710783461	0	5	-222.4597406734577	5
+kmerseek	gbmr4.k16.s10.lcfalse.extend-c0.67	Q25460	B1 mussels and other bivalves	1	-5.4110424505556845e-18	0	5	-222.4597406734577	5
+kmerseek	gbmr4.k16.s10.lcfalse.extend-c0.67	Q27409	B1 mussels and other bivalves	3	-0.0013568509202101762	0	5	-222.4597406734577	5
+kmerseek	gbmr4.k18.s1.lcfalse.extend-c0.67	Q25434	B1 mussels and other bivalves	2	-0.000021359576154309405	0	52	-3.886175118313447	52
+kmerseek	gbmr4.k18.s1.lcfalse.extend-c0.67	Q25460	B1 mussels and other bivalves	1	-4.7984152902427e-16	0	52	-3.886175118313447	52
+kmerseek	gbmr4.k18.s1.lcfalse.extend-c0.67	Q27409	B1 mussels and other bivalves	3	-0.005893870730143656	0	52	-3.886175118313447	52
+kmerseek	gbmr4.k18.s10.lcfalse.extend-c0.67	Q25434	B1 mussels and other bivalves	2	-0.00013114954489850628	0	8	-4.082988303624883	8
+kmerseek	gbmr4.k18.s10.lcfalse.extend-c0.67	Q25460	B1 mussels and other bivalves	1	-4.005000421770763e-13	0	8	-4.082988303624883	8
+kmerseek	gbmr4.k18.s10.lcfalse.extend-c0.67	Q27409	B1 mussels and other bivalves	3	-0.011737638852068263	0	8	-4.082988303624883	8
+kmerseek	gbmr4.k20.s1.lcfalse.extend-c0.67	Q25434	B1 mussels and other bivalves	2	-0.0004563581175899772	0	15	-4.16085309278272	15
+kmerseek	gbmr4.k20.s1.lcfalse.extend-c0.67	Q25460	B1 mussels and other bivalves	1	-4.392491950731874e-12	0	15	-4.16085309278272	15
+kmerseek	gbmr4.k20.s1.lcfalse.extend-c0.67	Q27409	B1 mussels and other bivalves	3	-0.03139348477452402	0	15	-4.16085309278272	15
+kmerseek	gbmr4.k20.s10.lcfalse.extend-c0.67	Q25434	B1 mussels and other bivalves	2	-0.006662646390994006	0	3		3
+kmerseek	gbmr4.k20.s10.lcfalse.extend-c0.67	Q25460	B1 mussels and other bivalves	1	-1.8821136980350633e-8	0	3		3
+kmerseek	gbmr4.k20.s10.lcfalse.extend-c0.67	Q27409	B1 mussels and other bivalves	3	-0.12461430723401606	0	3		3
+kmerseek	gbmr4.k22.s1.lcfalse.extend-c0.67	Q25434	B1 mussels and other bivalves	2	-0.022851955171066345	0	8	-13.908914582234468	8
+kmerseek	gbmr4.k22.s1.lcfalse.extend-c0.67	Q25460	B1 mussels and other bivalves	1	-1.6671177409380897e-7	0	8	-13.908914582234468	8
+kmerseek	gbmr4.k22.s1.lcfalse.extend-c0.67	Q27409	B1 mussels and other bivalves	3	-0.34387243999584244	0	8	-13.908914582234468	8
+kmerseek	gbmr4.k22.s10.lcfalse.extend-c0.67	Q25434	B1 mussels and other bivalves	2	-1.2634089627218739	0	3		3
+kmerseek	gbmr4.k22.s10.lcfalse.extend-c0.67	Q25460	B1 mussels and other bivalves	1	-0.006876908016092877	0	3		3
+kmerseek	gbmr4.k22.s10.lcfalse.extend-c0.67	Q27409	B1 mussels and other bivalves	3	-4.173727397761079	0	3		3
+kmerseek	gbmr4.k24.s1.lcfalse.extend-c0.67	Q25434	B1 mussels and other bivalves	2	-0.4674971983307725	0	7	-22.030029821889713	7
+kmerseek	gbmr4.k24.s1.lcfalse.extend-c0.67	Q25460	B1 mussels and other bivalves	1	-0.0003826324959610174	0	7	-22.030029821889713	7
+kmerseek	gbmr4.k24.s1.lcfalse.extend-c0.67	Q27409	B1 mussels and other bivalves	3	-2.3843439571041887	0	7	-22.030029821889713	7
+kmerseek	gbmr4.k24.s10.lcfalse.extend-c0.67	Q25434	B1 mussels and other bivalves	2	-3.765650662654436	0	3		3
+kmerseek	gbmr4.k24.s10.lcfalse.extend-c0.67	Q25460	B1 mussels and other bivalves	1	-0.0958167210283352	0	3		3
+kmerseek	gbmr4.k24.s10.lcfalse.extend-c0.67	Q27409	B1 mussels and other bivalves	3	-8.735788567027553	0	3		3
+kmerseek	gbmr4.k26.s1.lcfalse.extend-c0.67	Q25434	B1 mussels and other bivalves	2	-0.5985054701102616	0	5	-18.296438482955534	5
+kmerseek	gbmr4.k26.s1.lcfalse.extend-c0.67	Q25460	B1 mussels and other bivalves	1	-0.001088433857416812	0	5	-18.296438482955534	5
+kmerseek	gbmr4.k26.s1.lcfalse.extend-c0.67	Q27409	B1 mussels and other bivalves	3	-2.54203555795398	0	5	-18.296438482955534	5
+kmerseek	gbmr4.k26.s10.lcfalse.extend-c0.67	Q25434	B1 mussels and other bivalves	2	-0.49644206698003485	0	3		3
+kmerseek	gbmr4.k26.s10.lcfalse.extend-c0.67	Q25460	B1 mussels and other bivalves	1	-0.0004711307835048599	0	3		3
+kmerseek	gbmr4.k26.s10.lcfalse.extend-c0.67	Q27409	B1 mussels and other bivalves	3	-1.3647594275521895	0	3		3
+kmerseek	gbmr7.k17.s1.lcfalse.extend-c0.32	Q25434	B1 mussels and other bivalves	3	-inf	3	6	-inf	6
+kmerseek	gbmr7.k17.s1.lcfalse.extend-c0.32	Q25460	B1 mussels and other bivalves	4	-inf	3	6	-inf	6
+kmerseek	gbmr7.k17.s1.lcfalse.extend-c0.32	Q27409	B1 mussels and other bivalves	5	-inf	3	6	-inf	6
+kmerseek	gbmr7.k19.s1.lcfalse.extend-c0.32	Q25434	B1 mussels and other bivalves	1	-inf	1	4	-inf	4
+kmerseek	gbmr7.k19.s1.lcfalse.extend-c0.32	Q25460	B1 mussels and other bivalves	2	-inf	1	4	-inf	4
+kmerseek	gbmr7.k19.s1.lcfalse.extend-c0.32	Q27409	B1 mussels and other bivalves	3	-inf	1	4	-inf	4
+kmerseek	hp_kyte_doolittle2.k21.s1.lcfalse.extend-c1.57	A1X158	B1 mussels and other bivalves	28911	-inf	85950	85956	-0.00014022020158570322	85956
+kmerseek	hp_kyte_doolittle2.k21.s1.lcfalse.extend-c1.57	A1X159	B1 mussels and other bivalves	28912	-inf	85950	85956	-0.00014022020158570322	85956
+kmerseek	hp_kyte_doolittle2.k21.s1.lcfalse.extend-c1.57	Q25434	B1 mussels and other bivalves	57637	-inf	85950	85956	-0.00014022020158570322	85956
+kmerseek	hp_kyte_doolittle2.k21.s1.lcfalse.extend-c1.57	Q25460	B1 mussels and other bivalves	57638	-inf	85950	85956	-0.00014022020158570322	85956
+kmerseek	hp_kyte_doolittle2.k21.s1.lcfalse.extend-c1.57	Q25464	B1 mussels and other bivalves	57640	-inf	85950	85956	-0.00014022020158570322	85956
+kmerseek	hp_kyte_doolittle2.k21.s1.lcfalse.extend-c1.57	Q27409	B1 mussels and other bivalves	57700	-inf	85950	85956	-0.00014022020158570322	85956
+kmerseek	hp_kyte_doolittle2.k21.s10.lcfalse.extend-c1.57	Q25434	B1 mussels and other bivalves	11472	-inf	19695	19698	-3.478032688893017e-7	19698
+kmerseek	hp_kyte_doolittle2.k21.s10.lcfalse.extend-c1.57	Q25460	B1 mussels and other bivalves	11473	-inf	19695	19698	-3.478032688893017e-7	19698
+kmerseek	hp_kyte_doolittle2.k21.s10.lcfalse.extend-c1.57	Q27409	B1 mussels and other bivalves	11490	-inf	19695	19698	-3.478032688893017e-7	19698
+kmerseek	hp_kyte_doolittle2.k23.s10.lcfalse.extend-c1.57	Q25434	B1 mussels and other bivalves	5324	-inf	10018	10021	-8.302839287178016e-6	10021
+kmerseek	hp_kyte_doolittle2.k23.s10.lcfalse.extend-c1.57	Q25460	B1 mussels and other bivalves	5325	-inf	10018	10021	-8.302839287178016e-6	10021
+kmerseek	hp_kyte_doolittle2.k23.s10.lcfalse.extend-c1.57	Q27409	B1 mussels and other bivalves	5341	-inf	10018	10021	-8.302839287178016e-6	10021
+kmerseek	hp_kyte_doolittle2.k31.s1.lcfalse.extend-c1.57	A1X158	B1 mussels and other bivalves	2177	-inf	16412	16417	-0.03345316134455094	16417
+kmerseek	hp_kyte_doolittle2.k31.s1.lcfalse.extend-c1.57	A1X159	B1 mussels and other bivalves	2178	-inf	16412	16417	-0.03345316134455094	16417
+kmerseek	hp_kyte_doolittle2.k31.s1.lcfalse.extend-c1.57	Q25434	B1 mussels and other bivalves	8783	-inf	16412	16417	-0.03345316134455094	16417
+kmerseek	hp_kyte_doolittle2.k31.s1.lcfalse.extend-c1.57	Q25460	B1 mussels and other bivalves	8784	-inf	16412	16417	-0.03345316134455094	16417
+kmerseek	hp_kyte_doolittle2.k31.s1.lcfalse.extend-c1.57	Q27409	B1 mussels and other bivalves	8814	-inf	16412	16417	-0.03345316134455094	16417
+kmerseek	hp_kyte_doolittle2.k31.s10.lcfalse.extend-c1.57	Q25434	B1 mussels and other bivalves	536	-inf	1097	1100	-8.002597197821379	1100
+kmerseek	hp_kyte_doolittle2.k31.s10.lcfalse.extend-c1.57	Q25460	B1 mussels and other bivalves	537	-inf	1097	1100	-8.002597197821379	1100
+kmerseek	hp_kyte_doolittle2.k31.s10.lcfalse.extend-c1.57	Q27409	B1 mussels and other bivalves	538	-inf	1097	1100	-8.002597197821379	1100
+kmerseek	hp_kyte_doolittle2.k33.s1.lcfalse.extend-c1.57	A1X158	B1 mussels and other bivalves	1498	-inf	12829	12834	-18616.507802171815	12834
+kmerseek	hp_kyte_doolittle2.k33.s1.lcfalse.extend-c1.57	A1X159	B1 mussels and other bivalves	1499	-inf	12829	12834	-18616.507802171815	12834
+kmerseek	hp_kyte_doolittle2.k33.s1.lcfalse.extend-c1.57	Q25434	B1 mussels and other bivalves	6687	-inf	12829	12834	-18616.507802171815	12834
+kmerseek	hp_kyte_doolittle2.k33.s1.lcfalse.extend-c1.57	Q25460	B1 mussels and other bivalves	6688	-inf	12829	12834	-18616.507802171815	12834
+kmerseek	hp_kyte_doolittle2.k33.s1.lcfalse.extend-c1.57	Q27409	B1 mussels and other bivalves	6710	-inf	12829	12834	-18616.507802171815	12834
+kmerseek	hp_kyte_doolittle2.k35.s1.lcfalse.extend-c1.57	Q25434	B1 mussels and other bivalves	5201	-inf	10179	10182	-0.19342861174702533	10182
+kmerseek	hp_kyte_doolittle2.k35.s1.lcfalse.extend-c1.57	Q25460	B1 mussels and other bivalves	5202	-inf	10179	10182	-0.19342861174702533	10182
+kmerseek	hp_kyte_doolittle2.k35.s1.lcfalse.extend-c1.57	Q27409	B1 mussels and other bivalves	5218	-inf	10179	10182	-0.19342861174702533	10182
+kmerseek	hp_kyte_doolittle2.k35.s10.lcfalse.extend-c1.57	Q25434	B1 mussels and other bivalves	1206	-inf	2626	2629	-1.4779828644903954	2629
+kmerseek	hp_kyte_doolittle2.k35.s10.lcfalse.extend-c1.57	Q25460	B1 mussels and other bivalves	1207	-inf	2626	2629	-1.4779828644903954	2629
+kmerseek	hp_kyte_doolittle2.k35.s10.lcfalse.extend-c1.57	Q27409	B1 mussels and other bivalves	1217	-inf	2626	2629	-1.4779828644903954	2629
+kmerseek	hp_kyte_doolittle2.k37.s10.lcfalse.extend-c1.57	Q25434	B1 mussels and other bivalves	981	-inf	2138	2141	-3.688567263102286	2141
+kmerseek	hp_kyte_doolittle2.k37.s10.lcfalse.extend-c1.57	Q25460	B1 mussels and other bivalves	982	-inf	2138	2141	-3.688567263102286	2141
+kmerseek	hp_kyte_doolittle2.k37.s10.lcfalse.extend-c1.57	Q27409	B1 mussels and other bivalves	987	-inf	2138	2141	-3.688567263102286	2141
+kmerseek	hp_lehninger2.k17.s1.lcfalse.extend-c1.51	Q25434	B1 mussels and other bivalves	4	-2.6375470832119925e-24	1	82650	-7.809084579133676e-47	82650
+kmerseek	hp_lehninger2.k17.s1.lcfalse.extend-c1.51	Q25460	B1 mussels and other bivalves	1	-1.238497436736359e-98	0	82650	-7.809084579133676e-47	82650
+kmerseek	hp_lehninger2.k17.s1.lcfalse.extend-c1.51	Q27409	B1 mussels and other bivalves	3	-1.0621732627525226e-35	1	82650	-7.809084579133676e-47	82650
+kmerseek	hp_lehninger2.k17.s10.lcfalse.extend-c1.51	Q25434	B1 mussels and other bivalves	4	-1.1942298307227211e-25	1	3187	-9.538246159877897e-49	3187
+kmerseek	hp_lehninger2.k17.s10.lcfalse.extend-c1.51	Q25460	B1 mussels and other bivalves	1	-7.437468788035541e-102	0	3187	-9.538246159877897e-49	3187
+kmerseek	hp_lehninger2.k17.s10.lcfalse.extend-c1.51	Q27409	B1 mussels and other bivalves	3	-2.4789748281295716e-37	1	3187	-9.538246159877897e-49	3187
+kmerseek	hp_lehninger2.k19.s1.lcfalse.extend-c1.51	Q25434	B1 mussels and other bivalves	4	-1.058858128372108e-22	1	24581	-1.0518646838784112e-43	24581
+kmerseek	hp_lehninger2.k19.s1.lcfalse.extend-c1.51	Q25460	B1 mussels and other bivalves	1	-5.374365900627362e-92	0	24581	-1.0518646838784112e-43	24581
+kmerseek	hp_lehninger2.k19.s1.lcfalse.extend-c1.51	Q27409	B1 mussels and other bivalves	3	-2.5208432462532778e-33	1	24581	-1.0518646838784112e-43	24581
+kmerseek	hp_lehninger2.k19.s10.lcfalse.extend-c1.51	Q25434	B1 mussels and other bivalves	3	-4.2821776595150083e-17	0	760	-0.005308636413008573	760
+kmerseek	hp_lehninger2.k19.s10.lcfalse.extend-c1.51	Q25460	B1 mussels and other bivalves	1	-3.2939488268274933e-99	0	760	-0.005308636413008573	760
+kmerseek	hp_lehninger2.k19.s10.lcfalse.extend-c1.51	Q27409	B1 mussels and other bivalves	2	-1.6326693809770416e-36	0	760	-0.005308636413008573	760
+kmerseek	hp_lehninger2.k21.s1.lcfalse.extend-c1.51	Q25434	B1 mussels and other bivalves	4	-1.6705570647669543e-21	1	7416	-2.675264866492272e-41	7416
+kmerseek	hp_lehninger2.k21.s1.lcfalse.extend-c1.51	Q25460	B1 mussels and other bivalves	1	-8.163086032817078e-87	0	7416	-2.675264866492272e-41	7416
+kmerseek	hp_lehninger2.k21.s1.lcfalse.extend-c1.51	Q27409	B1 mussels and other bivalves	3	-1.6228036539691997e-31	1	7416	-2.675264866492272e-41	7416
+kmerseek	hp_lehninger2.k21.s10.lcfalse.extend-c1.51	Q25434	B1 mussels and other bivalves	4	-1.2066736205868264e-15	1	258	-2.1138872956419425e-43	258
+kmerseek	hp_lehninger2.k21.s10.lcfalse.extend-c1.51	Q25460	B1 mussels and other bivalves	1	-2.3928069169368816e-90	0	258	-2.1138872956419425e-43	258
+kmerseek	hp_lehninger2.k21.s10.lcfalse.extend-c1.51	Q27409	B1 mussels and other bivalves	3	-1.6193428299488625e-30	1	258	-2.1138872956419425e-43	258
+kmerseek	hp_lehninger2.k23.s1.lcfalse.extend-c1.51	Q25434	B1 mussels and other bivalves	4	-8.502733980031234e-20	1	2189	-5.609381278593042e-38	2189
+kmerseek	hp_lehninger2.k23.s1.lcfalse.extend-c1.51	Q25460	B1 mussels and other bivalves	1	-8.839085663875372e-80	0	2189	-5.609381278593042e-38	2189
+kmerseek	hp_lehninger2.k23.s1.lcfalse.extend-c1.51	Q27409	B1 mussels and other bivalves	3	-5.416984937656191e-29	1	2189	-5.609381278593042e-38	2189
+kmerseek	hp_lehninger2.k23.s10.lcfalse.extend-c1.51	Q25434	B1 mussels and other bivalves	4	-7.821936068032542e-15	1	81	-1.1117498350623624e-40	81
+kmerseek	hp_lehninger2.k23.s10.lcfalse.extend-c1.51	Q25460	B1 mussels and other bivalves	1	-7.172114049910004e-85	0	81	-1.1117498350623624e-40	81
+kmerseek	hp_lehninger2.k23.s10.lcfalse.extend-c1.51	Q27409	B1 mussels and other bivalves	3	-2.140002894274109e-31	1	81	-1.1117498350623624e-40	81
+kmerseek	hp_lehninger2.k25.s1.lcfalse.extend-c1.51	Q25434	B1 mussels and other bivalves	4	-5.688971706584045e-15	1	715	-1.4180141993211046e-33	715
+kmerseek	hp_lehninger2.k25.s1.lcfalse.extend-c1.51	Q25460	B1 mussels and other bivalves	1	-1.3874493252067519e-70	0	715	-1.4180141993211046e-33	715
+kmerseek	hp_lehninger2.k25.s1.lcfalse.extend-c1.51	Q27409	B1 mussels and other bivalves	3	-1.277402983371711e-25	1	715	-1.4180141993211046e-33	715
+kmerseek	hp_lehninger2.k25.s10.lcfalse.extend-c1.51	Q25434	B1 mussels and other bivalves	4	-5.553474108950117e-16	1	30	-7.284334948428695e-35	30
+kmerseek	hp_lehninger2.k25.s10.lcfalse.extend-c1.51	Q25460	B1 mussels and other bivalves	1	-1.9871899291653404e-72	0	30	-7.284334948428695e-35	30
+kmerseek	hp_lehninger2.k25.s10.lcfalse.extend-c1.51	Q27409	B1 mussels and other bivalves	3	-8.634937448543676e-27	1	30	-7.284334948428695e-35	30
+kmerseek	hp_lehninger2.k27.s1.lcfalse.extend-c1.51	Q25434	B1 mussels and other bivalves	4	-1.9431035351192962e-11	1	288	-4.924339868217304e-26	288
+kmerseek	hp_lehninger2.k27.s1.lcfalse.extend-c1.51	Q25460	B1 mussels and other bivalves	1	-4.5165677419183684e-55	0	288	-4.924339868217304e-26	288
+kmerseek	hp_lehninger2.k27.s1.lcfalse.extend-c1.51	Q27409	B1 mussels and other bivalves	3	-8.581158893493824e-20	1	288	-4.924339868217304e-26	288
+kmerseek	hp_lehninger2.k27.s10.lcfalse.extend-c1.51	Q25434	B1 mussels and other bivalves	4	-1.193549983886802e-12	1	28	-3.1731700639095773e-34	28
+kmerseek	hp_lehninger2.k27.s10.lcfalse.extend-c1.51	Q25460	B1 mussels and other bivalves	1	-1.0229888163495731e-70	0	28	-3.1731700639095773e-34	28
+kmerseek	hp_lehninger2.k27.s10.lcfalse.extend-c1.51	Q27409	B1 mussels and other bivalves	3	-3.284924906879609e-24	1	28	-3.1731700639095773e-34	28
+kmerseek	hp_lehninger2.k29.s1.lcfalse.extend-c1.51	Q25434	B1 mussels and other bivalves	4	-7.948472316806212e-13	1	95	-3.9986036380782316e-15	95
+kmerseek	hp_lehninger2.k29.s1.lcfalse.extend-c1.51	Q25460	B1 mussels and other bivalves	1	-1.7258518455026453e-60	0	95	-3.9986036380782316e-15	95
+kmerseek	hp_lehninger2.k29.s1.lcfalse.extend-c1.51	Q27409	B1 mussels and other bivalves	2	-5.9394998911399985e-22	0	95	-3.9986036380782316e-15	95
+kmerseek	hp_lehninger2.k29.s10.lcfalse.extend-c1.51	Q25434	B1 mussels and other bivalves	3	-3.0194967159833957e-7	0	5	-10.18728418725803	5
+kmerseek	hp_lehninger2.k29.s10.lcfalse.extend-c1.51	Q25460	B1 mussels and other bivalves	1	-4.1585309723224735e-41	0	5	-10.18728418725803	5
+kmerseek	hp_lehninger2.k29.s10.lcfalse.extend-c1.51	Q27409	B1 mussels and other bivalves	2	-2.9668585752578365e-15	0	5	-10.18728418725803	5
+kmerseek	hp_lehninger2.k30.s1.lcfalse.extend-c1.51	Q25434	B1 mussels and other bivalves	4	-2.4159572204018526e-12	1	51	-1.4785199731780655e-14	51
+kmerseek	hp_lehninger2.k30.s1.lcfalse.extend-c1.51	Q25460	B1 mussels and other bivalves	1	-3.054022008779991e-58	0	51	-1.4785199731780655e-14	51
+kmerseek	hp_lehninger2.k30.s1.lcfalse.extend-c1.51	Q27409	B1 mussels and other bivalves	2	-3.931231138351416e-21	0	51	-1.4785199731780655e-14	51
+kmerseek	hp_lehninger2.k30.s10.lcfalse.extend-c1.51	Q25434	B1 mussels and other bivalves	4	-0.00005574772979031328	1	16	-1.6791100438666905e-6	16
+kmerseek	hp_lehninger2.k30.s10.lcfalse.extend-c1.51	Q25460	B1 mussels and other bivalves	1	-2.8375118749812037e-30	0	16	-1.6791100438666905e-6	16
+kmerseek	hp_lehninger2.k30.s10.lcfalse.extend-c1.51	Q27409	B1 mussels and other bivalves	2	-5.8173926534610736e-11	0	16	-1.6791100438666905e-6	16
+kmerseek	hp_lehninger_c_nonpolar2.k19.s1.lcfalse.extend-c1.52	Q25434	B1 mussels and other bivalves	4	-1.0359806897287127e-22	1	23788	-8.468409715503325e-44	23788
+kmerseek	hp_lehninger_c_nonpolar2.k19.s1.lcfalse.extend-c1.52	Q25460	B1 mussels and other bivalves	1	-8.098628642643684e-93	0	23788	-8.468409715503325e-44	23788
+kmerseek	hp_lehninger_c_nonpolar2.k19.s1.lcfalse.extend-c1.52	Q27409	B1 mussels and other bivalves	3	-2.2608233416757654e-33	1	23788	-8.468409715503325e-44	23788
+kmerseek	hp_lehninger_c_nonpolar2.k19.s10.lcfalse.extend-c1.52	Q25434	B1 mussels and other bivalves	3	-1.636516547741198e-23	0	1181	-0.0004948327888572297	1181
+kmerseek	hp_lehninger_c_nonpolar2.k19.s10.lcfalse.extend-c1.52	Q25460	B1 mussels and other bivalves	1	-5.659349699345491e-94	0	1181	-0.0004948327888572297	1181
+kmerseek	hp_lehninger_c_nonpolar2.k19.s10.lcfalse.extend-c1.52	Q27409	B1 mussels and other bivalves	2	-3.1547902011687753e-34	0	1181	-0.0004948327888572297	1181
+kmerseek	hp_lehninger_c_nonpolar2.k21.s1.lcfalse.extend-c1.52	Q25434	B1 mussels and other bivalves	4	-2.3830413334719038e-21	1	7325	-4.257948624381907e-41	7325
+kmerseek	hp_lehninger_c_nonpolar2.k21.s1.lcfalse.extend-c1.52	Q25460	B1 mussels and other bivalves	1	-5.294699198968941e-87	0	7325	-4.257948624381907e-41	7325
+kmerseek	hp_lehninger_c_nonpolar2.k21.s1.lcfalse.extend-c1.52	Q27409	B1 mussels and other bivalves	3	-2.473478659882074e-31	1	7325	-4.257948624381907e-41	7325
+kmerseek	hp_lehninger_c_nonpolar2.k21.s10.lcfalse.extend-c1.52	Q25434	B1 mussels and other bivalves	4	-1.5040612037016381e-21	1	337	-1.9581768179991812e-38	337
+kmerseek	hp_lehninger_c_nonpolar2.k21.s10.lcfalse.extend-c1.52	Q25460	B1 mussels and other bivalves	1	-7.161650145665019e-86	0	337	-1.9581768179991812e-38	337
+kmerseek	hp_lehninger_c_nonpolar2.k21.s10.lcfalse.extend-c1.52	Q27409	B1 mussels and other bivalves	3	-2.488006798023292e-31	1	337	-1.9581768179991812e-38	337
+kmerseek	hp_lehninger_c_nonpolar2.k23.s1.lcfalse.extend-c1.52	Q25434	B1 mussels and other bivalves	4	-2.4695024020418556e-19	1	2189	-3.2001827878701773e-37	2189
+kmerseek	hp_lehninger_c_nonpolar2.k23.s1.lcfalse.extend-c1.52	Q25460	B1 mussels and other bivalves	1	-8.407397516429294e-79	0	2189	-3.2001827878701773e-37	2189
+kmerseek	hp_lehninger_c_nonpolar2.k23.s1.lcfalse.extend-c1.52	Q27409	B1 mussels and other bivalves	3	-2.235549244374644e-28	1	2189	-3.2001827878701773e-37	2189
+kmerseek	hp_lehninger_c_nonpolar2.k23.s10.lcfalse.extend-c1.52	Q25434	B1 mussels and other bivalves	4	-6.254786834980938e-14	1	133	-1.4024513226304796e-37	133
+kmerseek	hp_lehninger_c_nonpolar2.k23.s10.lcfalse.extend-c1.52	Q25460	B1 mussels and other bivalves	1	-1.1545468371651906e-83	0	133	-1.4024513226304796e-37	133
+kmerseek	hp_lehninger_c_nonpolar2.k23.s10.lcfalse.extend-c1.52	Q27409	B1 mussels and other bivalves	3	-1.1177937207915809e-30	1	133	-1.4024513226304796e-37	133
+kmerseek	hp_lehninger_c_nonpolar2.k25.s1.lcfalse.extend-c1.52	Q25434	B1 mussels and other bivalves	4	-1.985928466995772e-16	1	741	-9.19096770106015e-32	741
+kmerseek	hp_lehninger_c_nonpolar2.k25.s1.lcfalse.extend-c1.52	Q25460	B1 mussels and other bivalves	1	-2.075266617098911e-67	0	741	-9.19096770106015e-32	741
+kmerseek	hp_lehninger_c_nonpolar2.k25.s1.lcfalse.extend-c1.52	Q27409	B1 mussels and other bivalves	3	-3.510394778054969e-24	1	741	-9.19096770106015e-32	741
+kmerseek	hp_lehninger_c_nonpolar2.k25.s10.lcfalse.extend-c1.52	Q25434	B1 mussels and other bivalves	4	-9.8135931351203e-18	1	50	-3.991596793072011e-31	50
+kmerseek	hp_lehninger_c_nonpolar2.k25.s10.lcfalse.extend-c1.52	Q25460	B1 mussels and other bivalves	1	-4.144386424170819e-70	0	50	-3.991596793072011e-31	50
+kmerseek	hp_lehninger_c_nonpolar2.k25.s10.lcfalse.extend-c1.52	Q27409	B1 mussels and other bivalves	3	-1.064916924822017e-25	1	50	-3.991596793072011e-31	50
+kmerseek	hp_lehninger_c_nonpolar2.k27.s1.lcfalse.extend-c1.52	Q25434	B1 mussels and other bivalves	4	-3.381808767463831e-13	1	313	-9.7520893089848e-26	313
+kmerseek	hp_lehninger_c_nonpolar2.k27.s1.lcfalse.extend-c1.52	Q25460	B1 mussels and other bivalves	1	-6.901239356146177e-55	0	313	-9.7520893089848e-26	313
+kmerseek	hp_lehninger_c_nonpolar2.k27.s1.lcfalse.extend-c1.52	Q27409	B1 mussels and other bivalves	3	-1.5465465502862638e-19	1	313	-9.7520893089848e-26	313
+kmerseek	hp_lehninger_c_nonpolar2.k27.s10.lcfalse.extend-c1.52	Q25434	B1 mussels and other bivalves	4	-4.5225324630165937e-10	1	15	-2.3625375784803103e-15	15
+kmerseek	hp_lehninger_c_nonpolar2.k27.s10.lcfalse.extend-c1.52	Q25460	B1 mussels and other bivalves	1	-2.3271085548807325e-60	0	15	-2.3625375784803103e-15	15
+kmerseek	hp_lehninger_c_nonpolar2.k27.s10.lcfalse.extend-c1.52	Q27409	B1 mussels and other bivalves	2	-3.78147097026973e-22	0	15	-2.3625375784803103e-15	15
+kmerseek	hp_lehninger_c_nonpolar2.k29.s1.lcfalse.extend-c1.52	Q25434	B1 mussels and other bivalves	4	-3.560270343707608e-13	1	84	-3.1563749011753597e-13	84
+kmerseek	hp_lehninger_c_nonpolar2.k29.s1.lcfalse.extend-c1.52	Q25460	B1 mussels and other bivalves	1	-1.7752566180315312e-54	0	84	-3.1563749011753597e-13	84
+kmerseek	hp_lehninger_c_nonpolar2.k29.s1.lcfalse.extend-c1.52	Q27409	B1 mussels and other bivalves	2	-1.865089501748274e-19	0	84	-3.1563749011753597e-13	84
+kmerseek	hp_lehninger_c_nonpolar2.k29.s10.lcfalse.extend-c1.52	Q25434	B1 mussels and other bivalves	4	-8.18587330441951e-10	1	10	-7.461906753991437e-10	10
+kmerseek	hp_lehninger_c_nonpolar2.k29.s10.lcfalse.extend-c1.52	Q25460	B1 mussels and other bivalves	1	-1.4158458902501026e-41	0	10	-7.461906753991437e-10	10
+kmerseek	hp_lehninger_c_nonpolar2.k29.s10.lcfalse.extend-c1.52	Q27409	B1 mussels and other bivalves	2	-1.2107243312234692e-14	0	10	-7.461906753991437e-10	10
+kmerseek	hp_lehninger_c_nonpolar2.k31.s1.lcfalse.extend-c1.52	Q25434	B1 mussels and other bivalves	4	-3.335185076600395e-10	1	37	-3.03042819245614e-10	37
+kmerseek	hp_lehninger_c_nonpolar2.k31.s1.lcfalse.extend-c1.52	Q25460	B1 mussels and other bivalves	1	-4.5160978734974975e-43	0	37	-3.03042819245614e-10	37
+kmerseek	hp_lehninger_c_nonpolar2.k31.s1.lcfalse.extend-c1.52	Q27409	B1 mussels and other bivalves	2	-3.3486150185009226e-15	0	37	-3.03042819245614e-10	37
+kmerseek	hp_lehninger_hpc3.k17.s1.lcfalse.extend-c0.87	Q25434	B1 mussels and other bivalves	39372	-inf	66636	66639	-14.707330761231274	66639
+kmerseek	hp_lehninger_hpc3.k17.s1.lcfalse.extend-c0.87	Q25460	B1 mussels and other bivalves	39375	-inf	66636	66639	-14.707330761231274	66639
+kmerseek	hp_lehninger_hpc3.k17.s1.lcfalse.extend-c0.87	Q27409	B1 mussels and other bivalves	39423	-inf	66636	66639	-14.707330761231274	66639
+kmerseek	hp_lehninger_hpc3.k17.s10.lcfalse.extend-c0.87	Q25434	B1 mussels and other bivalves	1490	-inf	2530	2533	-18.444932940708565	2533
+kmerseek	hp_lehninger_hpc3.k17.s10.lcfalse.extend-c0.87	Q25460	B1 mussels and other bivalves	1491	-inf	2530	2533	-18.444932940708565	2533
+kmerseek	hp_lehninger_hpc3.k17.s10.lcfalse.extend-c0.87	Q27409	B1 mussels and other bivalves	1495	-inf	2530	2533	-18.444932940708565	2533
+kmerseek	hp_lehninger_hpc3.k19.s1.lcfalse.extend-c0.87	Q25434	B1 mussels and other bivalves	11612	-inf	19449	19452	-7.659595032617219	19452
+kmerseek	hp_lehninger_hpc3.k19.s1.lcfalse.extend-c0.87	Q25460	B1 mussels and other bivalves	11613	-inf	19449	19452	-7.659595032617219	19452
+kmerseek	hp_lehninger_hpc3.k19.s1.lcfalse.extend-c0.87	Q27409	B1 mussels and other bivalves	11629	-inf	19449	19452	-7.659595032617219	19452
+kmerseek	hp_lehninger_hpc3.k19.s10.lcfalse.extend-c0.87	Q25434	B1 mussels and other bivalves	609	-inf	955	958	-98.02664532578248	958
+kmerseek	hp_lehninger_hpc3.k19.s10.lcfalse.extend-c0.87	Q25460	B1 mussels and other bivalves	610	-inf	955	958	-98.02664532578248	958
+kmerseek	hp_lehninger_hpc3.k19.s10.lcfalse.extend-c0.87	Q27409	B1 mussels and other bivalves	613	-inf	955	958	-98.02664532578248	958
+kmerseek	hp_lehninger_hpc3.k21.s1.lcfalse.extend-c0.87	Q25434	B1 mussels and other bivalves	3592	-inf	5937	5940	-22.86852538363556	5940
+kmerseek	hp_lehninger_hpc3.k21.s1.lcfalse.extend-c0.87	Q25460	B1 mussels and other bivalves	3593	-inf	5937	5940	-22.86852538363556	5940
+kmerseek	hp_lehninger_hpc3.k21.s1.lcfalse.extend-c0.87	Q27409	B1 mussels and other bivalves	3598	-inf	5937	5940	-22.86852538363556	5940
+kmerseek	hp_lehninger_hpc3.k21.s10.lcfalse.extend-c0.87	Q25434	B1 mussels and other bivalves	147	-inf	252	255	-inf	255
+kmerseek	hp_lehninger_hpc3.k21.s10.lcfalse.extend-c0.87	Q25460	B1 mussels and other bivalves	148	-inf	252	255	-inf	255
+kmerseek	hp_lehninger_hpc3.k21.s10.lcfalse.extend-c0.87	Q27409	B1 mussels and other bivalves	149	-inf	252	255	-inf	255
+kmerseek	hp_lehninger_hpc3.k23.s1.lcfalse.extend-c0.87	Q25434	B1 mussels and other bivalves	1047	-inf	1767	1770	-15.981730864043953	1770
+kmerseek	hp_lehninger_hpc3.k23.s1.lcfalse.extend-c0.87	Q25460	B1 mussels and other bivalves	1048	-inf	1767	1770	-15.981730864043953	1770
+kmerseek	hp_lehninger_hpc3.k23.s1.lcfalse.extend-c0.87	Q27409	B1 mussels and other bivalves	1052	-inf	1767	1770	-15.981730864043953	1770
+kmerseek	hp_lehninger_hpc3.k23.s10.lcfalse.extend-c0.87	Q25434	B1 mussels and other bivalves	67	-inf	94	97	-inf	97
+kmerseek	hp_lehninger_hpc3.k23.s10.lcfalse.extend-c0.87	Q25460	B1 mussels and other bivalves	68	-inf	94	97	-inf	97
+kmerseek	hp_lehninger_hpc3.k23.s10.lcfalse.extend-c0.87	Q27409	B1 mussels and other bivalves	69	-inf	94	97	-inf	97
+kmerseek	hp_lehninger_hpc3.k25.s1.lcfalse.extend-c0.87	Q25434	B1 mussels and other bivalves	370	-inf	594	597	-7.619946238530985	597
+kmerseek	hp_lehninger_hpc3.k25.s1.lcfalse.extend-c0.87	Q25460	B1 mussels and other bivalves	371	-inf	594	597	-7.619946238530985	597
+kmerseek	hp_lehninger_hpc3.k25.s1.lcfalse.extend-c0.87	Q27409	B1 mussels and other bivalves	373	-inf	594	597	-7.619946238530985	597
+kmerseek	hp_lehninger_hpc3.k25.s10.lcfalse.extend-c0.87	Q25434	B1 mussels and other bivalves	27	-inf	36	39	-inf	39
+kmerseek	hp_lehninger_hpc3.k25.s10.lcfalse.extend-c0.87	Q25460	B1 mussels and other bivalves	28	-inf	36	39	-inf	39
+kmerseek	hp_lehninger_hpc3.k25.s10.lcfalse.extend-c0.87	Q27409	B1 mussels and other bivalves	29	-inf	36	39	-inf	39
+kmerseek	hp_lehninger_hpc3.k27.s1.lcfalse.extend-c0.87	Q25434	B1 mussels and other bivalves	161	-inf	231	234	-inf	234
+kmerseek	hp_lehninger_hpc3.k27.s1.lcfalse.extend-c0.87	Q25460	B1 mussels and other bivalves	162	-inf	231	234	-inf	234
+kmerseek	hp_lehninger_hpc3.k27.s1.lcfalse.extend-c0.87	Q27409	B1 mussels and other bivalves	164	-inf	231	234	-inf	234
+kmerseek	hp_lehninger_hpc3.k27.s10.lcfalse.extend-c0.87	Q25434	B1 mussels and other bivalves	11	-inf	12	15	-inf	15
+kmerseek	hp_lehninger_hpc3.k27.s10.lcfalse.extend-c0.87	Q25460	B1 mussels and other bivalves	12	-inf	12	15	-inf	15
+kmerseek	hp_lehninger_hpc3.k27.s10.lcfalse.extend-c0.87	Q27409	B1 mussels and other bivalves	13	-inf	12	15	-inf	15
+kmerseek	hp_lehninger_hpc3.k29.s1.lcfalse.extend-c0.87	Q25434	B1 mussels and other bivalves	49	-inf	70	73	-inf	73
+kmerseek	hp_lehninger_hpc3.k29.s1.lcfalse.extend-c0.87	Q25460	B1 mussels and other bivalves	50	-inf	70	73	-inf	73
+kmerseek	hp_lehninger_hpc3.k29.s1.lcfalse.extend-c0.87	Q27409	B1 mussels and other bivalves	51	-inf	70	73	-inf	73
+kmerseek	hp_pbotc_1st_ed2.k19.s1.lcfalse.extend-c1.59	Q25434	B1 mussels and other bivalves	4	-4.619322404223317e-22	1	23739	-2.776297102055384e-34	23739
+kmerseek	hp_pbotc_1st_ed2.k19.s1.lcfalse.extend-c1.59	Q25460	B1 mussels and other bivalves	1	-5.976155112290294e-94	0	23739	-2.776297102055384e-34	23739
+kmerseek	hp_pbotc_1st_ed2.k19.s1.lcfalse.extend-c1.59	Q27409	B1 mussels and other bivalves	3	-2.5841218109812535e-33	1	23739	-2.776297102055384e-34	23739
+kmerseek	hp_pbotc_1st_ed2.k19.s10.lcfalse.extend-c1.59	Q25434	B1 mussels and other bivalves	4	-2.0826680497877542e-23	1	824	-5.983126737778295e-36	824
+kmerseek	hp_pbotc_1st_ed2.k19.s10.lcfalse.extend-c1.59	Q25460	B1 mussels and other bivalves	1	-3.505267595758657e-97	0	824	-5.983126737778295e-36	824
+kmerseek	hp_pbotc_1st_ed2.k19.s10.lcfalse.extend-c1.59	Q27409	B1 mussels and other bivalves	3	-5.904588919485844e-35	1	824	-5.983126737778295e-36	824
+kmerseek	hp_pbotc_1st_ed2.k21.s1.lcfalse.extend-c1.59	Q25434	B1 mussels and other bivalves	4	-2.2702094637276602e-20	1	7204	-4.23770845376684e-31	7204
+kmerseek	hp_pbotc_1st_ed2.k21.s1.lcfalse.extend-c1.59	Q25460	B1 mussels and other bivalves	1	-1.0250193978030911e-86	0	7204	-4.23770845376684e-31	7204
+kmerseek	hp_pbotc_1st_ed2.k21.s1.lcfalse.extend-c1.59	Q27409	B1 mussels and other bivalves	3	-9.36243359138033e-31	1	7204	-4.23770845376684e-31	7204
+kmerseek	hp_pbotc_1st_ed2.k21.s10.lcfalse.extend-c1.59	Q25434	B1 mussels and other bivalves	3	-4.1873412115368065e-23	0	342	-3.606190228046152e-9	342
+kmerseek	hp_pbotc_1st_ed2.k21.s10.lcfalse.extend-c1.59	Q25460	B1 mussels and other bivalves	1	-3.4576167341305076e-96	0	342	-3.606190228046152e-9	342
+kmerseek	hp_pbotc_1st_ed2.k21.s10.lcfalse.extend-c1.59	Q27409	B1 mussels and other bivalves	2	-8.25305691929468e-35	0	342	-3.606190228046152e-9	342
+kmerseek	hp_pbotc_1st_ed2.k23.s1.lcfalse.extend-c1.59	Q25434	B1 mussels and other bivalves	4	-7.431197371218185e-19	1	1808	-8.975196024032383e-29	1808
+kmerseek	hp_pbotc_1st_ed2.k23.s1.lcfalse.extend-c1.59	Q25460	B1 mussels and other bivalves	1	-3.469547952344413e-80	0	1808	-8.975196024032383e-29	1808
+kmerseek	hp_pbotc_1st_ed2.k23.s1.lcfalse.extend-c1.59	Q27409	B1 mussels and other bivalves	3	-1.8675909177406811e-28	1	1808	-8.975196024032383e-29	1808
+kmerseek	hp_pbotc_1st_ed2.k23.s10.lcfalse.extend-c1.59	Q25434	B1 mussels and other bivalves	3	-1.0031166850050419e-13	0	58	-2.3922793342068206e-8	58
+kmerseek	hp_pbotc_1st_ed2.k23.s10.lcfalse.extend-c1.59	Q25460	B1 mussels and other bivalves	1	-3.6967195496429135e-91	0	58	-2.3922793342068206e-8	58
+kmerseek	hp_pbotc_1st_ed2.k23.s10.lcfalse.extend-c1.59	Q27409	B1 mussels and other bivalves	2	-4.538236554404396e-33	0	58	-2.3922793342068206e-8	58
+kmerseek	hp_pbotc_1st_ed2.k25.s1.lcfalse.extend-c1.59	Q25434	B1 mussels and other bivalves	4	-2.1692737379781447e-15	1	542	-5.811996720509419e-24	542
+kmerseek	hp_pbotc_1st_ed2.k25.s1.lcfalse.extend-c1.59	Q25460	B1 mussels and other bivalves	1	-3.082127719616849e-67	0	542	-5.811996720509419e-24	542
+kmerseek	hp_pbotc_1st_ed2.k25.s1.lcfalse.extend-c1.59	Q27409	B1 mussels and other bivalves	3	-1.0769473035740788e-23	1	542	-5.811996720509419e-24	542
+kmerseek	hp_pbotc_1st_ed2.k25.s10.lcfalse.extend-c1.59	Q25434	B1 mussels and other bivalves	3	-1.5481184369669434e-16	0	49	-1.9551493475060807e-6	49
+kmerseek	hp_pbotc_1st_ed2.k25.s10.lcfalse.extend-c1.59	Q25460	B1 mussels and other bivalves	1	-1.632278493149244e-69	0	49	-1.9551493475060807e-6	49
+kmerseek	hp_pbotc_1st_ed2.k25.s10.lcfalse.extend-c1.59	Q27409	B1 mussels and other bivalves	2	-5.067236160864211e-25	0	49	-1.9551493475060807e-6	49
+kmerseek	hp_pbotc_1st_ed2.k27.s1.lcfalse.extend-c1.59	Q25434	B1 mussels and other bivalves	4	-7.661802705390146e-12	1	209	-3.323352857673017e-15	209
+kmerseek	hp_pbotc_1st_ed2.k27.s1.lcfalse.extend-c1.59	Q25460	B1 mussels and other bivalves	1	-5.21967339662537e-53	0	209	-3.323352857673017e-15	209
+kmerseek	hp_pbotc_1st_ed2.k27.s1.lcfalse.extend-c1.59	Q27409	B1 mussels and other bivalves	2	-1.9538515448982636e-18	0	209	-3.323352857673017e-15	209
+kmerseek	hp_pbotc_1st_ed2.k27.s10.lcfalse.extend-c1.59	Q25434	B1 mussels and other bivalves	3	-2.0644642296484298e-8	0	19	-0.000052862910771649745	19
+kmerseek	hp_pbotc_1st_ed2.k27.s10.lcfalse.extend-c1.59	Q25460	B1 mussels and other bivalves	1	-1.721310489124151e-57	0	19	-0.000052862910771649745	19
+kmerseek	hp_pbotc_1st_ed2.k27.s10.lcfalse.extend-c1.59	Q27409	B1 mussels and other bivalves	2	-1.1321207030811632e-20	0	19	-0.000052862910771649745	19
+kmerseek	hp_pbotc_1st_ed2.k29.s1.lcfalse.extend-c1.59	Q25434	B1 mussels and other bivalves	3	-9.378757496292598e-11	0	81	-0.0012332586310246998	81
+kmerseek	hp_pbotc_1st_ed2.k29.s1.lcfalse.extend-c1.59	Q25460	B1 mussels and other bivalves	1	-4.3329614363446996e-48	0	81	-0.0012332586310246998	81
+kmerseek	hp_pbotc_1st_ed2.k29.s1.lcfalse.extend-c1.59	Q27409	B1 mussels and other bivalves	2	-9.825355343080795e-17	0	81	-0.0012332586310246998	81
+kmerseek	hp_pbotc_1st_ed2.k29.s10.lcfalse.extend-c1.59	Q25434	B1 mussels and other bivalves	3	-2.704719792645134e-7	0	14	-0.09526467997644626	14
+kmerseek	hp_pbotc_1st_ed2.k29.s10.lcfalse.extend-c1.59	Q25460	B1 mussels and other bivalves	1	-2.0376305092728607e-34	0	14	-0.09526467997644626	14
+kmerseek	hp_pbotc_1st_ed2.k29.s10.lcfalse.extend-c1.59	Q27409	B1 mussels and other bivalves	2	-1.2245674868434637e-11	0	14	-0.09526467997644626	14
+kmerseek	hp_pbotc_1st_ed2.k30.s1.lcfalse.extend-c1.59	Q25434	B1 mussels and other bivalves	3	-4.445932090225835e-13	0	63	-0.00009548611366192144	63
+kmerseek	hp_pbotc_1st_ed2.k30.s1.lcfalse.extend-c1.59	Q25460	B1 mussels and other bivalves	1	-8.92530366195639e-57	0	63	-0.00009548611366192144	63
+kmerseek	hp_pbotc_1st_ed2.k30.s1.lcfalse.extend-c1.59	Q27409	B1 mussels and other bivalves	2	-4.4586454265755136e-20	0	63	-0.00009548611366192144	63
+kmerseek	hp_pbotc_1st_ed2.k30.s10.lcfalse.extend-c1.59	Q25434	B1 mussels and other bivalves	3	-2.2640714997100718e-8	0	14	-0.004677014101451232	14
+kmerseek	hp_pbotc_1st_ed2.k30.s10.lcfalse.extend-c1.59	Q25460	B1 mussels and other bivalves	1	-2.571092946835416e-35	0	14	-0.004677014101451232	14
+kmerseek	hp_pbotc_1st_ed2.k30.s10.lcfalse.extend-c1.59	Q27409	B1 mussels and other bivalves	2	-1.094701737576548e-12	0	14	-0.004677014101451232	14
+kmerseek	hp_thomas_dill2.k20.s1.lcfalse.extend-c1.63	Q25434	B1 mussels and other bivalves	25	-87.80606946968818	22	26131	-1.0660179874881999e-13	26131
+kmerseek	hp_thomas_dill2.k20.s1.lcfalse.extend-c1.63	Q25460	B1 mussels and other bivalves	1	-8.709027820004788e-20	0	26131	-1.0660179874881999e-13	26131
+kmerseek	hp_thomas_dill2.k20.s1.lcfalse.extend-c1.63	Q25464	B1 mussels and other bivalves	23105	-754819.45376911	23101	26131	-1.0660179874881999e-13	26131
+kmerseek	hp_thomas_dill2.k20.s1.lcfalse.extend-c1.63	Q27409	B1 mussels and other bivalves	8	-0.0015616624668044342	6	26131	-1.0660179874881999e-13	26131
+kmerseek	hp_thomas_dill2.k20.s10.lcfalse.extend-c1.63	Q25434	B1 mussels and other bivalves	10	-218.7077199278167	7	1756	-1.735914380551652e-8	1756
+kmerseek	hp_thomas_dill2.k20.s10.lcfalse.extend-c1.63	Q25460	B1 mussels and other bivalves	1	-1.2141360887286196e-13	0	1756	-1.735914380551652e-8	1756
+kmerseek	hp_thomas_dill2.k20.s10.lcfalse.extend-c1.63	Q27409	B1 mussels and other bivalves	6	-0.07759307126572519	4	1756	-1.735914380551652e-8	1756
+kmerseek	hp_thomas_dill2.k22.s1.lcfalse.extend-c1.63	Q25434	B1 mussels and other bivalves	14	-84.82639091148113	11	8673	-6.709778077106224e-12	8673
+kmerseek	hp_thomas_dill2.k22.s1.lcfalse.extend-c1.63	Q25460	B1 mussels and other bivalves	1	-1.2204555985571838e-17	0	8673	-6.709778077106224e-12	8673
+kmerseek	hp_thomas_dill2.k22.s1.lcfalse.extend-c1.63	Q25464	B1 mussels and other bivalves	7628	-287048.7757936613	7624	8673	-6.709778077106224e-12	8673
+kmerseek	hp_thomas_dill2.k22.s1.lcfalse.extend-c1.63	Q27409	B1 mussels and other bivalves	7	-0.004649706230887214	5	8673	-6.709778077106224e-12	8673
+kmerseek	hp_thomas_dill2.k22.s10.lcfalse.extend-c1.63	Q25434	B1 mussels and other bivalves	6	-10.122001076356336	3	228	-6.079471505265497e-13	228
+kmerseek	hp_thomas_dill2.k22.s10.lcfalse.extend-c1.63	Q25460	B1 mussels and other bivalves	1	-3.9197618971894156e-20	0	228	-6.079471505265497e-13	228
+kmerseek	hp_thomas_dill2.k22.s10.lcfalse.extend-c1.63	Q27409	B1 mussels and other bivalves	4	-0.00024496676449600193	2	228	-6.079471505265497e-13	228
+kmerseek	hp_thomas_dill2.k24.s1.lcfalse.extend-c1.63	Q25434	B1 mussels and other bivalves	12	-62.91199382305345	9	2862	-2.109077606159631e-11	2862
+kmerseek	hp_thomas_dill2.k24.s1.lcfalse.extend-c1.63	Q25460	B1 mussels and other bivalves	1	-7.222508907445778e-17	0	2862	-2.109077606159631e-11	2862
+kmerseek	hp_thomas_dill2.k24.s1.lcfalse.extend-c1.63	Q27409	B1 mussels and other bivalves	7	-0.005515772444823291	5	2862	-2.109077606159631e-11	2862
+kmerseek	hp_thomas_dill2.k24.s10.lcfalse.extend-c1.63	Q25434	B1 mussels and other bivalves	7	-6.903484251271596	4	190	-4.077250087038347e-12	190
+kmerseek	hp_thomas_dill2.k24.s10.lcfalse.extend-c1.63	Q25460	B1 mussels and other bivalves	1	-9.11280210761116e-19	0	190	-4.077250087038347e-12	190
+kmerseek	hp_thomas_dill2.k24.s10.lcfalse.extend-c1.63	Q27409	B1 mussels and other bivalves	4	-0.0003711104735824179	2	190	-4.077250087038347e-12	190
+kmerseek	hp_thomas_dill2.k26.s1.lcfalse.extend-c1.63	Q25434	B1 mussels and other bivalves	11	-73.8284798130145	8	964	-1.0101085728833316e-9	964
+kmerseek	hp_thomas_dill2.k26.s1.lcfalse.extend-c1.63	Q25460	B1 mussels and other bivalves	1	-1.7566394333104444e-14	0	964	-1.0101085728833316e-9	964
+kmerseek	hp_thomas_dill2.k26.s1.lcfalse.extend-c1.63	Q27409	B1 mussels and other bivalves	6	-0.021625810087123384	4	964	-1.0101085728833316e-9	964
+kmerseek	hp_thomas_dill2.k26.s10.lcfalse.extend-c1.63	Q25434	B1 mussels and other bivalves	6	-21.40641783208907	3	42	-8.442008639139772e-10	42
+kmerseek	hp_thomas_dill2.k26.s10.lcfalse.extend-c1.63	Q25460	B1 mussels and other bivalves	1	-2.1777372025706526e-15	0	42	-8.442008639139772e-10	42
+kmerseek	hp_thomas_dill2.k26.s10.lcfalse.extend-c1.63	Q27409	B1 mussels and other bivalves	3	-0.0024169007887445493	1	42	-8.442008639139772e-10	42
+kmerseek	hp_thomas_dill2.k28.s10.lcfalse.extend-c1.63	Q25434	B1 mussels and other bivalves	5	-12.911294797787951	2	33	-3.362482811057108e-8	33
+kmerseek	hp_thomas_dill2.k28.s10.lcfalse.extend-c1.63	Q25460	B1 mussels and other bivalves	1	-2.3876196596986407e-12	0	33	-3.362482811057108e-8	33
+kmerseek	hp_thomas_dill2.k28.s10.lcfalse.extend-c1.63	Q27409	B1 mussels and other bivalves	3	-0.017037694976618674	1	33	-3.362482811057108e-8	33
+kmerseek	hp_thomas_dill2.k30.s1.lcfalse.extend-c1.63	Q25434	B1 mussels and other bivalves	9	-91.85323075792799	6	133	-8.283352511249887e-7	133
+kmerseek	hp_thomas_dill2.k30.s1.lcfalse.extend-c1.63	Q25460	B1 mussels and other bivalves	1	-1.0720306147776743e-10	0	133	-8.283352511249887e-7	133
+kmerseek	hp_thomas_dill2.k30.s1.lcfalse.extend-c1.63	Q27409	B1 mussels and other bivalves	3	-0.18385751987756732	1	133	-8.283352511249887e-7	133
+kmerseek	hp_thomas_dill2.k30.s10.lcfalse.extend-c1.63	Q25434	B1 mussels and other bivalves	5	-7.0078800029011274	2	18	-1.74198030628285e-6	18
+kmerseek	hp_thomas_dill2.k30.s10.lcfalse.extend-c1.63	Q25460	B1 mussels and other bivalves	1	-4.606674076121615e-12	0	18	-1.74198030628285e-6	18
+kmerseek	hp_thomas_dill2.k30.s10.lcfalse.extend-c1.63	Q27409	B1 mussels and other bivalves	3	-0.012319467138161674	1	18	-1.74198030628285e-6	18
+kmerseek	hp_thomas_dill2.k32.s1.lcfalse.extend-c1.63	Q25434	B1 mussels and other bivalves	8	-16.739969246281415	5	72	-3.4780881946280805e-10	72
+kmerseek	hp_thomas_dill2.k32.s1.lcfalse.extend-c1.63	Q25460	B1 mussels and other bivalves	1	-2.3914249529636573e-15	0	72	-3.4780881946280805e-10	72
+kmerseek	hp_thomas_dill2.k32.s1.lcfalse.extend-c1.63	Q27409	B1 mussels and other bivalves	3	-0.004369163169191643	1	72	-3.4780881946280805e-10	72
+kmerseek	hp_thomas_dill2.k32.s10.lcfalse.extend-c1.63	Q25434	B1 mussels and other bivalves	5	-5.1178787936383765	2	10	-0.0000860361595643825	10
+kmerseek	hp_thomas_dill2.k32.s10.lcfalse.extend-c1.63	Q25460	B1 mussels and other bivalves	1	-9.300236132095107e-9	0	10	-0.0000860361595643825	10
+kmerseek	hp_thomas_dill2.k32.s10.lcfalse.extend-c1.63	Q27409	B1 mussels and other bivalves	3	-0.05400215617578919	1	10	-0.0000860361595643825	10
+kmerseek	hp_thomas_dill2.k34.s1.lcfalse.extend-c1.63	Q25434	B1 mussels and other bivalves	7	-16.42593677976174	4	44	-9.50169102934191e-7	44
+kmerseek	hp_thomas_dill2.k34.s1.lcfalse.extend-c1.63	Q25460	B1 mussels and other bivalves	1	-9.231868444856843e-13	0	44	-9.50169102934191e-7	44
+kmerseek	hp_thomas_dill2.k34.s1.lcfalse.extend-c1.63	Q27409	B1 mussels and other bivalves	3	-0.016557650082487538	1	44	-9.50169102934191e-7	44
+kmerseek	hp_thomas_dill2.k34.s10.lcfalse.extend-c1.63	Q25434	B1 mussels and other bivalves	4	-5.6222361955747635	1	6	-0.04902388538298236	6
+kmerseek	hp_thomas_dill2.k34.s10.lcfalse.extend-c1.63	Q25460	B1 mussels and other bivalves	1	-0.00001891563948446606	0	6	-0.04902388538298236	6
+kmerseek	hp_thomas_dill2.k34.s10.lcfalse.extend-c1.63	Q27409	B1 mussels and other bivalves	3	-0.32521797351938775	1	6	-0.04902388538298236	6
+kmerseek	hp_thomas_dill2.k36.s10.lcfalse.extend-c1.63	Q25434	B1 mussels and other bivalves	5	-7.039503416899765	2	12	-0.0004703499410734355	12
+kmerseek	hp_thomas_dill2.k36.s10.lcfalse.extend-c1.63	Q25460	B1 mussels and other bivalves	1	-1.6209352670184213e-7	0	12	-0.0004703499410734355	12
+kmerseek	hp_thomas_dill2.k36.s10.lcfalse.extend-c1.63	Q27409	B1 mussels and other bivalves	3	-0.11541258494522297	1	12	-0.0004703499410734355	12
+kmerseek	hp_thomas_dill_no_c2.k20.s1.lcfalse.extend-c1.62	Q25434	B1 mussels and other bivalves	26	-224.3833381592459	23	31130	-2.4302841994126087e-13	31130
+kmerseek	hp_thomas_dill_no_c2.k20.s1.lcfalse.extend-c1.62	Q25460	B1 mussels and other bivalves	1	-1.2874109223268956e-18	0	31130	-2.4302841994126087e-13	31130
+kmerseek	hp_thomas_dill_no_c2.k20.s1.lcfalse.extend-c1.62	Q27409	B1 mussels and other bivalves	8	-0.008214162521566436	6	31130	-2.4302841994126087e-13	31130
+kmerseek	hp_thomas_dill_no_c2.k20.s10.lcfalse.extend-c1.62	Q25434	B1 mussels and other bivalves	10	-259.27516654911244	7	2110	-9.816682629569505e-10	2110
+kmerseek	hp_thomas_dill_no_c2.k20.s10.lcfalse.extend-c1.62	Q25460	B1 mussels and other bivalves	1	-7.102087635650431e-15	0	2110	-9.816682629569505e-10	2110
+kmerseek	hp_thomas_dill_no_c2.k20.s10.lcfalse.extend-c1.62	Q27409	B1 mussels and other bivalves	6	-0.060766551517235985	4	2110	-9.816682629569505e-10	2110
+kmerseek	hp_thomas_dill_no_c2.k22.s1.lcfalse.extend-c1.62	Q25434	B1 mussels and other bivalves	19	-146.36663090638538	16	10808	-1.4840441523494389e-12	10808
+kmerseek	hp_thomas_dill_no_c2.k22.s1.lcfalse.extend-c1.62	Q25460	B1 mussels and other bivalves	1	-7.326101982082013e-18	0	10808	-1.4840441523494389e-12	10808
+kmerseek	hp_thomas_dill_no_c2.k22.s1.lcfalse.extend-c1.62	Q27409	B1 mussels and other bivalves	7	-0.00861381966499637	5	10808	-1.4840441523494389e-12	10808
+kmerseek	hp_thomas_dill_no_c2.k22.s10.lcfalse.extend-c1.62	Q25434	B1 mussels and other bivalves	6	-27.75304148032904	3	268	-3.594022719247001e-12	268
+kmerseek	hp_thomas_dill_no_c2.k22.s10.lcfalse.extend-c1.62	Q25460	B1 mussels and other bivalves	1	-2.3429463871751355e-18	0	268	-3.594022719247001e-12	268
+kmerseek	hp_thomas_dill_no_c2.k22.s10.lcfalse.extend-c1.62	Q27409	B1 mussels and other bivalves	4	-0.0018315640224572795	2	268	-3.594022719247001e-12	268
+kmerseek	hp_thomas_dill_no_c2.k24.s10.lcfalse.extend-c1.62	Q25434	B1 mussels and other bivalves	6	-13.564566604597829	3	234	-3.3683182178322717e-12	234
+kmerseek	hp_thomas_dill_no_c2.k24.s10.lcfalse.extend-c1.62	Q25460	B1 mussels and other bivalves	1	-3.00124870014635e-18	0	234	-3.3683182178322717e-12	234
+kmerseek	hp_thomas_dill_no_c2.k24.s10.lcfalse.extend-c1.62	Q27409	B1 mussels and other bivalves	4	-0.0011056837468686343	2	234	-3.3683182178322717e-12	234
+kmerseek	hp_thomas_dill_no_c2.k26.s10.lcfalse.extend-c1.62	Q25434	B1 mussels and other bivalves	7	-34.10904560708933	4	58	-3.724704519893114e-10	58
+kmerseek	hp_thomas_dill_no_c2.k26.s10.lcfalse.extend-c1.62	Q25460	B1 mussels and other bivalves	1	-2.1142216360444045e-15	0	58	-3.724704519893114e-10	58
+kmerseek	hp_thomas_dill_no_c2.k26.s10.lcfalse.extend-c1.62	Q27409	B1 mussels and other bivalves	3	-0.004559246590069825	1	58	-3.724704519893114e-10	58
+kmerseek	hp_thomas_dill_no_c2.k28.s1.lcfalse.extend-c1.62	Q25434	B1 mussels and other bivalves	12	-4092.481254992381	9	437	-17.172098084294174	437
+kmerseek	hp_thomas_dill_no_c2.k28.s1.lcfalse.extend-c1.62	Q25460	B1 mussels and other bivalves	1	-1.6924203183235602	0	437	-17.172098084294174	437
+kmerseek	hp_thomas_dill_no_c2.k28.s1.lcfalse.extend-c1.62	Q27409	B1 mussels and other bivalves	4	-742.0020084214742	2	437	-17.172098084294174	437
+kmerseek	hp_thomas_dill_no_c2.k28.s10.lcfalse.extend-c1.62	Q25434	B1 mussels and other bivalves	5	-29.62544882507298	2	35	-4.973332317872754e-7	35
+kmerseek	hp_thomas_dill_no_c2.k28.s10.lcfalse.extend-c1.62	Q25460	B1 mussels and other bivalves	1	-2.542612450912648e-10	0	35	-4.973332317872754e-7	35
+kmerseek	hp_thomas_dill_no_c2.k28.s10.lcfalse.extend-c1.62	Q27409	B1 mussels and other bivalves	3	-0.11121536494843934	1	35	-4.973332317872754e-7	35
+kmerseek	hp_thomas_dill_no_c2.k30.s10.lcfalse.extend-c1.62	Q25434	B1 mussels and other bivalves	5	-7.249134543502252	2	19	-6.851557130412514e-8	19
+kmerseek	hp_thomas_dill_no_c2.k30.s10.lcfalse.extend-c1.62	Q25460	B1 mussels and other bivalves	1	-5.6226011834049826e-14	0	19	-6.851557130412514e-8	19
+kmerseek	hp_thomas_dill_no_c2.k30.s10.lcfalse.extend-c1.62	Q27409	B1 mussels and other bivalves	3	-0.005856231405081833	1	19	-6.851557130412514e-8	19
+kmerseek	hp_thomas_dill_no_c2.k34.s10.lcfalse.extend-c1.62	Q25434	B1 mussels and other bivalves	4	-6.299678534638302	1	6	-0.057811053836970334	6
+kmerseek	hp_thomas_dill_no_c2.k34.s10.lcfalse.extend-c1.62	Q25460	B1 mussels and other bivalves	1	-0.00005071475397443873	0	6	-0.057811053836970334	6
+kmerseek	hp_thomas_dill_no_c2.k34.s10.lcfalse.extend-c1.62	Q27409	B1 mussels and other bivalves	3	-0.48171366403488697	1	6	-0.057811053836970334	6
+kmerseek	hp_thomas_dill_no_c2.k36.s1.lcfalse.extend-c1.62	Q25434	B1 mussels and other bivalves	5	-15.04517321076098	2	24	-1.45212408046949e-6	24
+kmerseek	hp_thomas_dill_no_c2.k36.s1.lcfalse.extend-c1.62	Q25460	B1 mussels and other bivalves	1	-6.9416866161107174e-12	0	24	-1.45212408046949e-6	24
+kmerseek	hp_thomas_dill_no_c2.k36.s1.lcfalse.extend-c1.62	Q27409	B1 mussels and other bivalves	3	-0.029760559423178113	1	24	-1.45212408046949e-6	24
+kmerseek	hp_thomas_dill_no_c2.k36.s10.lcfalse.extend-c1.62	Q25434	B1 mussels and other bivalves	5	-5.303734728954111	2	13	-0.00001962689191189429	13
+kmerseek	hp_thomas_dill_no_c2.k36.s10.lcfalse.extend-c1.62	Q25460	B1 mussels and other bivalves	1	-1.741686261156483e-9	0	13	-0.00001962689191189429	13
+kmerseek	hp_thomas_dill_no_c2.k36.s10.lcfalse.extend-c1.62	Q27409	B1 mussels and other bivalves	3	-0.03770504811171775	1	13	-0.00001962689191189429	13
+kmerseek	hp_thomas_dill_no_c2.k38.s1.lcfalse.extend-c1.62	Q25434	B1 mussels and other bivalves	5	-1089.3857618916466	2	14	-336.73838979905474	14
+kmerseek	hp_thomas_dill_no_c2.k38.s1.lcfalse.extend-c1.62	Q25460	B1 mussels and other bivalves	1	-60.25009659551914	0	14	-336.73838979905474	14
+kmerseek	hp_thomas_dill_no_c2.k38.s1.lcfalse.extend-c1.62	Q27409	B1 mussels and other bivalves	3	-565.459303003029	1	14	-336.73838979905474	14
+kmerseek	hp_thomas_dill_no_c2.k39.s1.lcfalse.extend-c1.62	Q25434	B1 mussels and other bivalves	5	-998.5139101817892	2	13	-335.59415853433154	13
+kmerseek	hp_thomas_dill_no_c2.k39.s1.lcfalse.extend-c1.62	Q25460	B1 mussels and other bivalves	1	-67.88222276659161	0	13	-335.59415853433154	13
+kmerseek	hp_thomas_dill_no_c2.k39.s1.lcfalse.extend-c1.62	Q27409	B1 mussels and other bivalves	3	-543.0944983269533	1	13	-335.59415853433154	13
+kmerseek	hsdm17.k10.s1.lcfalse.extend-c0.18	Q25434	B1 mussels and other bivalves	1	-inf	0	3		3
+kmerseek	hsdm17.k10.s1.lcfalse.extend-c0.18	Q25460	B1 mussels and other bivalves	2	-inf	0	3		3
+kmerseek	hsdm17.k10.s1.lcfalse.extend-c0.18	Q27409	B1 mussels and other bivalves	3	-inf	0	3		3
+kmerseek	hsdm17.k6.s1.lcfalse.extend-c0.18	Q25434	B1 mussels and other bivalves	1063	-inf	1062	1065	-0.48702119701637536	1065
+kmerseek	hsdm17.k6.s1.lcfalse.extend-c0.18	Q25460	B1 mussels and other bivalves	1064	-inf	1062	1065	-0.48702119701637536	1065
+kmerseek	hsdm17.k6.s1.lcfalse.extend-c0.18	Q27409	B1 mussels and other bivalves	1065	-inf	1062	1065	-0.48702119701637536	1065
+kmerseek	hsdm17.k6.s10.lcfalse.extend-c0.18	Q25434	B1 mussels and other bivalves	2	-inf	1	4	-647.0442817944314	4
+kmerseek	hsdm17.k6.s10.lcfalse.extend-c0.18	Q25460	B1 mussels and other bivalves	3	-inf	1	4	-647.0442817944314	4
+kmerseek	hsdm17.k6.s10.lcfalse.extend-c0.18	Q27409	B1 mussels and other bivalves	4	-inf	1	4	-647.0442817944314	4
+kmerseek	hsdm17.k8.s1.lcfalse.extend-c0.18	Q25434	B1 mussels and other bivalves	7	-inf	6	9	-294.905658597748	9
+kmerseek	hsdm17.k8.s1.lcfalse.extend-c0.18	Q25460	B1 mussels and other bivalves	8	-inf	6	9	-294.905658597748	9
+kmerseek	hsdm17.k8.s1.lcfalse.extend-c0.18	Q27409	B1 mussels and other bivalves	9	-inf	6	9	-294.905658597748	9
+kmerseek	hsdm17.k8.s10.lcfalse.extend-c0.18	Q25434	B1 mussels and other bivalves	1	-inf	0	3		3
+kmerseek	hsdm17.k8.s10.lcfalse.extend-c0.18	Q25460	B1 mussels and other bivalves	2	-inf	0	3		3
+kmerseek	hsdm17.k8.s10.lcfalse.extend-c0.18	Q27409	B1 mussels and other bivalves	3	-inf	0	3		3
+kmerseek	mmseqs12.k10.s1.lcfalse.extend-c0.22	Q25434	B1 mussels and other bivalves	1	-inf	0	3		3
+kmerseek	mmseqs12.k10.s1.lcfalse.extend-c0.22	Q25460	B1 mussels and other bivalves	2	-inf	0	3		3
+kmerseek	mmseqs12.k10.s1.lcfalse.extend-c0.22	Q27409	B1 mussels and other bivalves	3	-inf	0	3		3
+kmerseek	mmseqs12.k8.s1.lcfalse.extend-c0.22	Q25434	B1 mussels and other bivalves	61	-inf	60	63	-121.51330604183339	63
+kmerseek	mmseqs12.k8.s1.lcfalse.extend-c0.22	Q25460	B1 mussels and other bivalves	62	-inf	60	63	-121.51330604183339	63
+kmerseek	mmseqs12.k8.s1.lcfalse.extend-c0.22	Q27409	B1 mussels and other bivalves	63	-inf	60	63	-121.51330604183339	63
+kmerseek	mmseqs12.k8.s10.lcfalse.extend-c0.22	Q25434	B1 mussels and other bivalves	1	-inf	0	3		3
+kmerseek	mmseqs12.k8.s10.lcfalse.extend-c0.22	Q25460	B1 mussels and other bivalves	2	-inf	0	3		3
+kmerseek	mmseqs12.k8.s10.lcfalse.extend-c0.22	Q27409	B1 mussels and other bivalves	3	-inf	0	3		3
+kmerseek	polarity4.k13.s1.lcfalse.extend-c0.54	Q25434	B1 mussels and other bivalves	611	-inf	613	616	-170.89813117015316	616
+kmerseek	polarity4.k13.s1.lcfalse.extend-c0.54	Q25460	B1 mussels and other bivalves	612	-inf	613	616	-170.89813117015316	616
+kmerseek	polarity4.k13.s1.lcfalse.extend-c0.54	Q27409	B1 mussels and other bivalves	613	-inf	613	616	-170.89813117015316	616
+kmerseek	polarity4.k13.s10.lcfalse.extend-c0.54	Q25434	B1 mussels and other bivalves	9	-inf	8	11	-166.64492749884212	11
+kmerseek	polarity4.k13.s10.lcfalse.extend-c0.54	Q25460	B1 mussels and other bivalves	10	-inf	8	11	-166.64492749884212	11
+kmerseek	polarity4.k13.s10.lcfalse.extend-c0.54	Q27409	B1 mussels and other bivalves	11	-inf	8	11	-166.64492749884212	11
+kmerseek	polarity4.k15.s1.lcfalse.extend-c0.54	Q25434	B1 mussels and other bivalves	54	-inf	54	57	-546.0905610084441	57
+kmerseek	polarity4.k15.s1.lcfalse.extend-c0.54	Q25460	B1 mussels and other bivalves	55	-inf	54	57	-546.0905610084441	57
+kmerseek	polarity4.k15.s1.lcfalse.extend-c0.54	Q27409	B1 mussels and other bivalves	56	-inf	54	57	-546.0905610084441	57
+kmerseek	polarity4.k15.s10.lcfalse.extend-c0.54	Q25434	B1 mussels and other bivalves	1	-inf	0	3		3
+kmerseek	polarity4.k15.s10.lcfalse.extend-c0.54	Q25460	B1 mussels and other bivalves	2	-inf	0	3		3
+kmerseek	polarity4.k15.s10.lcfalse.extend-c0.54	Q27409	B1 mussels and other bivalves	3	-inf	0	3		3
+kmerseek	polarity4.k17.s1.lcfalse.extend-c0.54	Q25434	B1 mussels and other bivalves	1	-inf	0	3		3
+kmerseek	polarity4.k17.s1.lcfalse.extend-c0.54	Q25460	B1 mussels and other bivalves	2	-inf	0	3		3
+kmerseek	polarity4.k17.s1.lcfalse.extend-c0.54	Q27409	B1 mussels and other bivalves	3	-inf	0	3		3
+kmerseek	polarity4.k17.s10.lcfalse.extend-c0.54	Q25434	B1 mussels and other bivalves	1	-inf	0	3		3
+kmerseek	polarity4.k17.s10.lcfalse.extend-c0.54	Q25460	B1 mussels and other bivalves	2	-inf	0	3		3
+kmerseek	polarity4.k17.s10.lcfalse.extend-c0.54	Q27409	B1 mussels and other bivalves	3	-inf	0	3		3
+kmerseek	polarity4.k19.s1.lcfalse.extend-c0.54	Q25434	B1 mussels and other bivalves	1	-inf	0	3		3
+kmerseek	polarity4.k19.s1.lcfalse.extend-c0.54	Q25460	B1 mussels and other bivalves	2	-inf	0	3		3
+kmerseek	polarity4.k19.s1.lcfalse.extend-c0.54	Q27409	B1 mussels and other bivalves	3	-inf	0	3		3
+kmerseek	polarity4.k19.s10.lcfalse.extend-c0.54	Q25434	B1 mussels and other bivalves	1	-inf	0	3		3
+kmerseek	polarity4.k19.s10.lcfalse.extend-c0.54	Q25460	B1 mussels and other bivalves	2	-inf	0	3		3
+kmerseek	polarity4.k19.s10.lcfalse.extend-c0.54	Q27409	B1 mussels and other bivalves	3	-inf	0	3		3
+kmerseek	polarity4.k21.s1.lcfalse.extend-c0.54	Q25434	B1 mussels and other bivalves	1	-inf	0	3		3
+kmerseek	polarity4.k21.s1.lcfalse.extend-c0.54	Q25460	B1 mussels and other bivalves	2	-inf	0	3		3
+kmerseek	polarity4.k21.s1.lcfalse.extend-c0.54	Q27409	B1 mussels and other bivalves	3	-inf	0	3		3
+kmerseek	polarity4.k21.s10.lcfalse.extend-c0.54	Q25460	B1 mussels and other bivalves	1	-inf	0	2		2
+kmerseek	polarity4.k21.s10.lcfalse.extend-c0.54	Q27409	B1 mussels and other bivalves	2	-inf	0	2		2
+kmerseek	polarity4.k23.s1.lcfalse.extend-c0.54	Q25434	B1 mussels and other bivalves	1	-inf	0	3		3
+kmerseek	polarity4.k23.s1.lcfalse.extend-c0.54	Q25460	B1 mussels and other bivalves	2	-inf	0	3		3
+kmerseek	polarity4.k23.s1.lcfalse.extend-c0.54	Q27409	B1 mussels and other bivalves	3	-inf	0	3		3
+kmerseek	protein20.k5.s1.lcfalse.extend-c0.14	Q25434	B1 mussels and other bivalves	1735	-inf	1739	1743	-49.871723764786545	1743
+kmerseek	protein20.k5.s1.lcfalse.extend-c0.14	Q25460	B1 mussels and other bivalves	1736	-inf	1739	1743	-49.871723764786545	1743
+kmerseek	protein20.k5.s1.lcfalse.extend-c0.14	Q25464	B1 mussels and other bivalves	1685	-392478.06731937255	1684	1743	-49.871723764786545	1743
+kmerseek	protein20.k5.s1.lcfalse.extend-c0.14	Q27409	B1 mussels and other bivalves	1737	-inf	1739	1743	-49.871723764786545	1743
+kmerseek	protein20.k5.s10.lcfalse.extend-c0.14	Q25434	B1 mussels and other bivalves	11	-inf	10	13	-437.49770710942283	13
+kmerseek	protein20.k5.s10.lcfalse.extend-c0.14	Q25460	B1 mussels and other bivalves	12	-inf	10	13	-437.49770710942283	13
+kmerseek	protein20.k5.s10.lcfalse.extend-c0.14	Q27409	B1 mussels and other bivalves	13	-inf	10	13	-437.49770710942283	13
+kmerseek	protein20.k7.s1.lcfalse.extend-c0.14	Q25434	B1 mussels and other bivalves	2	-inf	1	4	-1864.2157755598996	4
+kmerseek	protein20.k7.s1.lcfalse.extend-c0.14	Q25460	B1 mussels and other bivalves	3	-inf	1	4	-1864.2157755598996	4
+kmerseek	protein20.k7.s1.lcfalse.extend-c0.14	Q27409	B1 mussels and other bivalves	4	-inf	1	4	-1864.2157755598996	4
+kmerseek	protein20.k7.s10.lcfalse.extend-c0.14	Q25434	B1 mussels and other bivalves	1	-inf	0	3		3
+kmerseek	protein20.k7.s10.lcfalse.extend-c0.14	Q25460	B1 mussels and other bivalves	2	-inf	0	3		3
+kmerseek	protein20.k7.s10.lcfalse.extend-c0.14	Q27409	B1 mussels and other bivalves	3	-inf	0	3		3
+kmerseek	protein20.k8.s1.lcfalse.extend-c0.14	Q25434	B1 mussels and other bivalves	1	-inf	0	3		3
+kmerseek	protein20.k8.s1.lcfalse.extend-c0.14	Q25460	B1 mussels and other bivalves	2	-inf	0	3		3
+kmerseek	protein20.k8.s1.lcfalse.extend-c0.14	Q27409	B1 mussels and other bivalves	3	-inf	0	3		3
+kmerseek	protein20.k8.s10.lcfalse.extend-c0.14	Q25434	B1 mussels and other bivalves	1	-inf	0	3		3
+kmerseek	protein20.k8.s10.lcfalse.extend-c0.14	Q25460	B1 mussels and other bivalves	2	-inf	0	3		3
+kmerseek	protein20.k8.s10.lcfalse.extend-c0.14	Q27409	B1 mussels and other bivalves	3	-inf	0	3		3
+kmerseek	sdm12.k11.s1.lcfalse.extend-c0.24	Q25434	B1 mussels and other bivalves	1	-inf	0	3		3
+kmerseek	sdm12.k11.s1.lcfalse.extend-c0.24	Q25460	B1 mussels and other bivalves	2	-inf	0	3		3
+kmerseek	sdm12.k11.s1.lcfalse.extend-c0.24	Q27409	B1 mussels and other bivalves	3	-inf	0	3		3
+kmerseek	sdm12.k11.s10.lcfalse.extend-c0.24	Q25434	B1 mussels and other bivalves	1	-inf	0	3		3
+kmerseek	sdm12.k11.s10.lcfalse.extend-c0.24	Q25460	B1 mussels and other bivalves	2	-inf	0	3		3
+kmerseek	sdm12.k11.s10.lcfalse.extend-c0.24	Q27409	B1 mussels and other bivalves	3	-inf	0	3		3
+kmerseek	sdm12.k12.s1.lcfalse.extend-c0.24	Q25434	B1 mussels and other bivalves	1	-inf	0	3		3
+kmerseek	sdm12.k12.s1.lcfalse.extend-c0.24	Q25460	B1 mussels and other bivalves	2	-inf	0	3		3
+kmerseek	sdm12.k12.s1.lcfalse.extend-c0.24	Q27409	B1 mussels and other bivalves	3	-inf	0	3		3
+kmerseek	sdm12.k12.s10.lcfalse.extend-c0.24	Q25434	B1 mussels and other bivalves	1	-inf	0	3		3
+kmerseek	sdm12.k12.s10.lcfalse.extend-c0.24	Q25460	B1 mussels and other bivalves	2	-inf	0	3		3
+kmerseek	sdm12.k12.s10.lcfalse.extend-c0.24	Q27409	B1 mussels and other bivalves	3	-inf	0	3		3
+kmerseek	sdm12.k7.s1.lcfalse.extend-c0.24	Q25434	B1 mussels and other bivalves	1357	-inf	1356	1359	-2.6864134126462726	1359
+kmerseek	sdm12.k7.s1.lcfalse.extend-c0.24	Q25460	B1 mussels and other bivalves	1358	-inf	1356	1359	-2.6864134126462726	1359
+kmerseek	sdm12.k7.s1.lcfalse.extend-c0.24	Q27409	B1 mussels and other bivalves	1359	-inf	1356	1359	-2.6864134126462726	1359
+kmerseek	sdm12.k7.s10.lcfalse.extend-c0.24	Q25434	B1 mussels and other bivalves	1	-inf	0	3		3
+kmerseek	sdm12.k7.s10.lcfalse.extend-c0.24	Q25460	B1 mussels and other bivalves	2	-inf	0	3		3
+kmerseek	sdm12.k7.s10.lcfalse.extend-c0.24	Q27409	B1 mussels and other bivalves	3	-inf	0	3		3
+kmerseek	sdm12.k9.s1.lcfalse.extend-c0.24	Q25434	B1 mussels and other bivalves	11	-inf	10	13	-123.14041256291462	13
+kmerseek	sdm12.k9.s1.lcfalse.extend-c0.24	Q25460	B1 mussels and other bivalves	12	-inf	10	13	-123.14041256291462	13
+kmerseek	sdm12.k9.s1.lcfalse.extend-c0.24	Q27409	B1 mussels and other bivalves	13	-inf	10	13	-123.14041256291462	13
+kmerseek	sdm12.k9.s10.lcfalse.extend-c0.24	Q25434	B1 mussels and other bivalves	1	-inf	0	3		3
+kmerseek	sdm12.k9.s10.lcfalse.extend-c0.24	Q25460	B1 mussels and other bivalves	2	-inf	0	3		3
+kmerseek	sdm12.k9.s10.lcfalse.extend-c0.24	Q27409	B1 mussels and other bivalves	3	-inf	0	3		3
+kmerseek	uniprot18.k5.s1.lcfalse.extend-c0.15	Q25434	B1 mussels and other bivalves	6797	-inf	6801	6805	-26.42359549743643	6805
+kmerseek	uniprot18.k5.s1.lcfalse.extend-c0.15	Q25460	B1 mussels and other bivalves	6798	-inf	6801	6805	-26.42359549743643	6805
+kmerseek	uniprot18.k5.s1.lcfalse.extend-c0.15	Q25464	B1 mussels and other bivalves	5598	-358996.12327549636	5597	6805	-26.42359549743643	6805
+kmerseek	uniprot18.k5.s1.lcfalse.extend-c0.15	Q27409	B1 mussels and other bivalves	6799	-inf	6801	6805	-26.42359549743643	6805
+kmerseek	uniprot18.k5.s10.lcfalse.extend-c0.15	Q25434	B1 mussels and other bivalves	90	-inf	89	92	-100.38868817391489	92
+kmerseek	uniprot18.k5.s10.lcfalse.extend-c0.15	Q25460	B1 mussels and other bivalves	91	-inf	89	92	-100.38868817391489	92
+kmerseek	uniprot18.k5.s10.lcfalse.extend-c0.15	Q27409	B1 mussels and other bivalves	92	-inf	89	92	-100.38868817391489	92
+kmerseek	uniprot18.k7.s1.lcfalse.extend-c0.15	Q25434	B1 mussels and other bivalves	33	-inf	32	35	-390.50911373004413	35
+kmerseek	uniprot18.k7.s1.lcfalse.extend-c0.15	Q25460	B1 mussels and other bivalves	34	-inf	32	35	-390.50911373004413	35
+kmerseek	uniprot18.k7.s1.lcfalse.extend-c0.15	Q27409	B1 mussels and other bivalves	35	-inf	32	35	-390.50911373004413	35
+kmerseek	uniprot18.k7.s10.lcfalse.extend-c0.15	Q25434	B1 mussels and other bivalves	1	-inf	0	3		3
+kmerseek	uniprot18.k7.s10.lcfalse.extend-c0.15	Q25460	B1 mussels and other bivalves	2	-inf	0	3		3
+kmerseek	uniprot18.k7.s10.lcfalse.extend-c0.15	Q27409	B1 mussels and other bivalves	3	-inf	0	3		3
+kmerseek	uniprot18.k9.s1.lcfalse.extend-c0.15	Q25434	B1 mussels and other bivalves	1	-inf	0	3		3
+kmerseek	uniprot18.k9.s1.lcfalse.extend-c0.15	Q25460	B1 mussels and other bivalves	2	-inf	0	3		3
+kmerseek	uniprot18.k9.s1.lcfalse.extend-c0.15	Q27409	B1 mussels and other bivalves	3	-inf	0	3		3
+kmerseek	wass14.k6.s1.lcfalse.extend-c0.17	Q25434	B1 mussels and other bivalves	209	-inf	208	211	-3.3862200170924917	211
+kmerseek	wass14.k6.s1.lcfalse.extend-c0.17	Q25460	B1 mussels and other bivalves	210	-inf	208	211	-3.3862200170924917	211
+kmerseek	wass14.k6.s1.lcfalse.extend-c0.17	Q27409	B1 mussels and other bivalves	211	-inf	208	211	-3.3862200170924917	211
+kmerseek	wass14.k6.s10.lcfalse.extend-c0.17	Q25434	B1 mussels and other bivalves	1	-inf	0	3		3
+kmerseek	wass14.k6.s10.lcfalse.extend-c0.17	Q25460	B1 mussels and other bivalves	2	-inf	0	3		3
+kmerseek	wass14.k6.s10.lcfalse.extend-c0.17	Q27409	B1 mussels and other bivalves	3	-inf	0	3		3
+kmerseek	wass14.k8.s1.lcfalse.extend-c0.17	Q25434	B1 mussels and other bivalves	1	-inf	0	3		3
+kmerseek	wass14.k8.s1.lcfalse.extend-c0.17	Q25460	B1 mussels and other bivalves	2	-inf	0	3		3
+kmerseek	wass14.k8.s1.lcfalse.extend-c0.17	Q27409	B1 mussels and other bivalves	3	-inf	0	3		3
+kmerseek	wass14.k8.s10.lcfalse.extend-c0.17	Q25434	B1 mussels and other bivalves	1	-inf	0	3		3
+kmerseek	wass14.k8.s10.lcfalse.extend-c0.17	Q25460	B1 mussels and other bivalves	2	-inf	0	3		3
+kmerseek	wass14.k8.s10.lcfalse.extend-c0.17	Q27409	B1 mussels and other bivalves	3	-inf	0	3		3
+kmerseek	wass14.k9.s1.lcfalse.extend-c0.17	Q25434	B1 mussels and other bivalves	1	-inf	0	3		3
+kmerseek	wass14.k9.s1.lcfalse.extend-c0.17	Q25460	B1 mussels and other bivalves	2	-inf	0	3		3
+kmerseek	wass14.k9.s1.lcfalse.extend-c0.17	Q27409	B1 mussels and other bivalves	3	-inf	0	3		3
+kmerseek	wass14.k9.s10.lcfalse.extend-c0.17	Q25434	B1 mussels and other bivalves	1	-inf	0	3		3
+kmerseek	wass14.k9.s10.lcfalse.extend-c0.17	Q25460	B1 mussels and other bivalves	2	-inf	0	3		3
+kmerseek	wass14.k9.s10.lcfalse.extend-c0.17	Q27409	B1 mussels and other bivalves	3	-inf	0	3		3
+kmerseek	wwmj5.k11.s1.lcfalse.extend-c0.47	Q25434	B1 mussels and other bivalves	2	-5.7776549878886636e-9	0	649	-0.0016309307371879269	649
+kmerseek	wwmj5.k11.s1.lcfalse.extend-c0.47	Q25460	B1 mussels and other bivalves	1	-6.150859950406595e-109	0	649	-0.0016309307371879269	649
+kmerseek	wwmj5.k11.s1.lcfalse.extend-c0.47	Q27409	B1 mussels and other bivalves	3	-7.990337875536487e-9	0	649	-0.0016309307371879269	649
+kmerseek	wwmj5.k11.s10.lcfalse.extend-c0.47	Q25434	B1 mussels and other bivalves	2	-3.532773643660157e-9	0	6	-83.85330990895062	6
+kmerseek	wwmj5.k11.s10.lcfalse.extend-c0.47	Q25460	B1 mussels and other bivalves	1	-1.3351677984840487e-103	0	6	-83.85330990895062	6
+kmerseek	wwmj5.k11.s10.lcfalse.extend-c0.47	Q27409	B1 mussels and other bivalves	3	-3.524670957576554e-7	0	6	-83.85330990895062	6
+kmerseek	wwmj5.k13.s1.lcfalse.extend-c0.47	Q25434	B1 mussels and other bivalves	2	-0.04854654249467624	0	33	-389.20313981486447	33
+kmerseek	wwmj5.k13.s1.lcfalse.extend-c0.47	Q25460	B1 mussels and other bivalves	1	-3.1227382275415064e-39	0	33	-389.20313981486447	33
+kmerseek	wwmj5.k13.s1.lcfalse.extend-c0.47	Q27409	B1 mussels and other bivalves	3	-0.0547700813011224	0	33	-389.20313981486447	33
+kmerseek	wwmj5.k13.s10.lcfalse.extend-c0.47	Q25434	B1 mussels and other bivalves	2	-0.0002450315278583308	0	5	-23.889246485498678	5
+kmerseek	wwmj5.k13.s10.lcfalse.extend-c0.47	Q25460	B1 mussels and other bivalves	1	-7.272870193650622e-52	0	5	-23.889246485498678	5
+kmerseek	wwmj5.k13.s10.lcfalse.extend-c0.47	Q27409	B1 mussels and other bivalves	3	-0.00028586786873007337	0	5	-23.889246485498678	5
+kmerseek	wwmj5.k15.s1.lcfalse.extend-c0.47	Q25434	B1 mussels and other bivalves	2	-0.012269630858767764	0	5	-189.78343978189315	5
+kmerseek	wwmj5.k15.s1.lcfalse.extend-c0.47	Q25460	B1 mussels and other bivalves	1	-2.423540292660759e-40	0	5	-189.78343978189315	5
+kmerseek	wwmj5.k15.s1.lcfalse.extend-c0.47	Q27409	B1 mussels and other bivalves	3	-0.013865604474314624	0	5	-189.78343978189315	5
+kmerseek	wwmj5.k15.s10.lcfalse.extend-c0.47	Q25434	B1 mussels and other bivalves	2	-22.19871695214456	0	3		3
+kmerseek	wwmj5.k15.s10.lcfalse.extend-c0.47	Q25460	B1 mussels and other bivalves	1	-0.0001245117835904874	0	3		3
+kmerseek	wwmj5.k15.s10.lcfalse.extend-c0.47	Q27409	B1 mussels and other bivalves	3	-22.580012012533455	0	3		3
+kmerseek	wwmj5.k9.s1.lcfalse.extend-c0.47	Q25434	B1 mussels and other bivalves	2	-3.9663894856954475e-11	0	16213	-1.7331828231775862e-7	16213
+kmerseek	wwmj5.k9.s1.lcfalse.extend-c0.47	Q25460	B1 mussels and other bivalves	1	-1.7854442092177717e-135	0	16213	-1.7331828231775862e-7	16213
+kmerseek	wwmj5.k9.s1.lcfalse.extend-c0.47	Q27409	B1 mussels and other bivalves	3	-5.936628707639295e-11	0	16213	-1.7331828231775862e-7	16213
+kmerseek	wwmj5.k9.s10.lcfalse.extend-c0.47	Q25434	B1 mussels and other bivalves	2	-3.38689609618553e-11	0	378	-0.00009194301016409293	378
+kmerseek	wwmj5.k9.s10.lcfalse.extend-c0.47	Q25460	B1 mussels and other bivalves	1	-3.3639574436833606e-129	0	378	-0.00009194301016409293	378
+kmerseek	wwmj5.k9.s10.lcfalse.extend-c0.47	Q27409	B1 mussels and other bivalves	3	-4.966051155527177e-11	0	378	-0.00009194301016409293	378
+mmseqs2	default	Q25434	B1 mussels and other bivalves	3	949.0	0	4	31.0	4
+mmseqs2	default	Q25460	B1 mussels and other bivalves	1	1679.0	0	4	31.0	4
+mmseqs2	default	Q27409	B1 mussels and other bivalves	2	1028.0	0	4	31.0	4
+period	period_hp_autocorr	A1X158	B1 mussels and other bivalves	35396	-0.7219654432434583	35391	2007	-0.01105300751900351	575751
+period	period_hp_autocorr	A1X159	B1 mussels and other bivalves	46290	-0.7577211034267051	46284	2007	-0.01105300751900351	575751
+period	period_hp_autocorr	Q25434	B1 mussels and other bivalves	10	-0.025736759893660976	7	2007	-0.01105300751900351	575751
+period	period_hp_autocorr	Q25460	B1 mussels and other bivalves	1	-1.1102230246251565e-16	0	2007	-0.01105300751900351	575751
+period	period_hp_autocorr	Q25464	B1 mussels and other bivalves	402041	-1.0981130863711834	402032	2007	-0.01105300751900351	575751
+period	period_hp_autocorr	Q27409	B1 mussels and other bivalves	2	-0.007467710306138686	0	2007	-0.01105300751900351	575751
+period	period_hp_autocorr	Q7M3Q2	B2 tube-building polychaetes	148881	-0.9237910140099693	148873	2007	-0.01105300751900351	575751
+period	period_hp_autocorr	Q7M3Q3	B2 tube-building polychaetes	21597	-0.6562465127906465	21593	2007	-0.01105300751900351	575751
+period	period_hp_autocorr	Q9GRC4	B3 barnacles (control)	117701	-0.8881374971614145	117694	2007	-0.01105300751900351	575751
+period	period_hp_autocorr	Q9TWD7	B3 barnacles (control)	406357	-1.1007604400276225	406347	2007	-0.01105300751900351	575751
+period	period_hp_moment	A1X158	B1 mussels and other bivalves	8	-0.04980077187473697	4	2005	-0.009971535551571487	575751
+period	period_hp_moment	A1X159	B1 mussels and other bivalves	31	-0.13520994753299387	26	2005	-0.009971535551571487	575751
+period	period_hp_moment	Q25434	B1 mussels and other bivalves	5	-0.015989482650589304	2	2005	-0.009971535551571487	575751
+period	period_hp_moment	Q25460	B1 mussels and other bivalves	1	-1.1102230246251565e-16	0	2005	-0.009971535551571487	575751
+period	period_hp_moment	Q25464	B1 mussels and other bivalves	177288	-0.626061809982934	177281	2005	-0.009971535551571487	575751
+period	period_hp_moment	Q27409	B1 mussels and other bivalves	3	-0.011053710993352506	1	2005	-0.009971535551571487	575751
+period	period_hp_moment	Q7M3Q2	B2 tube-building polychaetes	571791	-0.8448314725148964	571781	2005	-0.009971535551571487	575751
+period	period_hp_moment	Q7M3Q3	B2 tube-building polychaetes	205749	-0.6451309317652627	205741	2005	-0.009971535551571487	575751
+period	period_hp_moment	Q9GRC4	B3 barnacles (control)	128404	-0.5894254577794	128398	2005	-0.009971535551571487	575751
+period	period_hp_moment	Q9TWD7	B3 barnacles (control)	504717	-0.7989496393795223	504708	2005	-0.009971535551571487	575751
+phmmer	default	Q25434	B1 mussels and other bivalves	2	920.0	0	19	15.0	19
+phmmer	default	Q25460	B1 mussels and other bivalves	1	1523.8	0	19	15.0	19
+phmmer	default	Q27409	B1 mussels and other bivalves	3	919.3	0	19	15.0	19
+window	window_kd_match_w19_ov0	A1X158	B1 mussels and other bivalves	23302	-0.5458525787662623	23296	2009	8.881784197001252e-16	575751
+window	window_kd_match_w19_ov0	A1X159	B1 mussels and other bivalves	26278	-0.5870123348304878	26271	2009	8.881784197001252e-16	575751
+window	window_kd_match_w19_ov0	Q25434	B1 mussels and other bivalves	7944	-0.23935850195234323	7941	2009	8.881784197001252e-16	575751
+window	window_kd_match_w19_ov0	Q25460	B1 mussels and other bivalves	16	-3.0307398649593307e-10	15	2009	8.881784197001252e-16	575751
+window	window_kd_match_w19_ov0	Q25464	B1 mussels and other bivalves	21257	-0.5146562965026038	21252	2009	8.881784197001252e-16	575751
+window	window_kd_match_w19_ov0	Q27409	B1 mussels and other bivalves	5727	-0.17964283692049973	5725	2009	8.881784197001252e-16	575751
+window	window_kd_match_w19_ov0	Q7M3Q2	B2 tube-building polychaetes	199109	-1.5838473155000499	199099	2009	8.881784197001252e-16	575751
+window	window_kd_match_w19_ov0	Q7M3Q3	B2 tube-building polychaetes	32959	-0.6755243385136485	32951	2009	8.881784197001252e-16	575751
+window	window_kd_match_w19_ov0	Q9GRC4	B3 barnacles (control)	34960	-0.6985646753691128	34951	2009	8.881784197001252e-16	575751
+window	window_kd_match_w19_ov0	Q9TWD7	B3 barnacles (control)	11286	-0.325293628769156	11282	2009	8.881784197001252e-16	575751
+window	window_kd_match_w19_ov10	A1X158	B1 mussels and other bivalves	22320	-0.5458525787662623	22314	2009	-0.008426592800526577	575751
+window	window_kd_match_w19_ov10	A1X159	B1 mussels and other bivalves	25272	-0.5870123348304878	25265	2009	-0.008426592800526577	575751
+window	window_kd_match_w19_ov10	Q25434	B1 mussels and other bivalves	7223	-0.23935850195234323	7220	2009	-0.008426592800526577	575751
+window	window_kd_match_w19_ov10	Q25460	B1 mussels and other bivalves	1	-3.0307398649593307e-10	0	2009	-0.008426592800526577	575751
+window	window_kd_match_w19_ov10	Q25464	B1 mussels and other bivalves	20302	-0.5146562965026038	20297	2009	-0.008426592800526577	575751
+window	window_kd_match_w19_ov10	Q27409	B1 mussels and other bivalves	5063	-0.17964283692049973	5061	2009	-0.008426592800526577	575751
+window	window_kd_match_w19_ov10	Q7M3Q2	B2 tube-building polychaetes	197718	-1.5838473155000499	197708	2009	-0.008426592800526577	575751
+window	window_kd_match_w19_ov10	Q7M3Q3	B2 tube-building polychaetes	31908	-0.6755243385136485	31900	2009	-0.008426592800526577	575751
+window	window_kd_match_w19_ov10	Q9GRC4	B3 barnacles (control)	33899	-0.6985646753691128	33890	2009	-0.008426592800526577	575751
+window	window_kd_match_w19_ov10	Q9TWD7	B3 barnacles (control)	10504	-0.325293628769156	10500	2009	-0.008426592800526577	575751
+window	window_kd_match_w19_ov20	A1X158	B1 mussels and other bivalves	20893	-0.5458525787662623	20888	2009	-0.011772853199069004	575751
+window	window_kd_match_w19_ov20	A1X159	B1 mussels and other bivalves	23812	-0.5870123348304878	23806	2009	-0.011772853199069004	575751
+window	window_kd_match_w19_ov20	Q25434	B1 mussels and other bivalves	6192	-0.23935850195234323	6189	2009	-0.011772853199069004	575751
+window	window_kd_match_w19_ov20	Q25460	B1 mussels and other bivalves	1	-3.0307398649593307e-10	0	2009	-0.011772853199069004	575751
+window	window_kd_match_w19_ov20	Q25464	B1 mussels and other bivalves	18904	-0.5146562965026038	18900	2009	-0.011772853199069004	575751
+window	window_kd_match_w19_ov20	Q27409	B1 mussels and other bivalves	4293	-0.17964283692049973	4291	2009	-0.011772853199069004	575751
+window	window_kd_match_w19_ov20	Q7M3Q2	B2 tube-building polychaetes	195747	-1.5838473155000499	195738	2009	-0.011772853199069004	575751
+window	window_kd_match_w19_ov20	Q7M3Q3	B2 tube-building polychaetes	30358	-0.6755243385136485	30351	2009	-0.011772853199069004	575751
+window	window_kd_match_w19_ov20	Q9GRC4	B3 barnacles (control)	32329	-0.6985646753691128	32321	2009	-0.011772853199069004	575751
+window	window_kd_match_w19_ov20	Q9TWD7	B3 barnacles (control)	567161	-inf	567151	2009	-0.011772853199069004	575751
+window	window_kd_match_w19_ov50	A1X158	B1 mussels and other bivalves	13069	-0.5458525787662623	13064	2007	-0.022868364169658883	575751
+window	window_kd_match_w19_ov50	A1X159	B1 mussels and other bivalves	15690	-0.5870123348304878	15684	2007	-0.022868364169658883	575751
+window	window_kd_match_w19_ov50	Q25434	B1 mussels and other bivalves	1690	-0.23935850195234323	1687	2007	-0.022868364169658883	575751
+window	window_kd_match_w19_ov50	Q25460	B1 mussels and other bivalves	1	-3.0307398649593307e-10	0	2007	-0.022868364169658883	575751
+window	window_kd_match_w19_ov50	Q25464	B1 mussels and other bivalves	11310	-0.5146562965026038	11306	2007	-0.022868364169658883	575751
+window	window_kd_match_w19_ov50	Q27409	B1 mussels and other bivalves	906	-0.17964283692049973	904	2007	-0.022868364169658883	575751
+window	window_kd_match_w19_ov50	Q7M3Q2	B2 tube-building polychaetes	184263	-1.5838473155000499	184255	2007	-0.022868364169658883	575751
+window	window_kd_match_w19_ov50	Q7M3Q3	B2 tube-building polychaetes	551144	-inf	551135	2007	-0.022868364169658883	575751
+window	window_kd_match_w19_ov50	Q9GRC4	B3 barnacles (control)	23610	-0.6985646753691128	23603	2007	-0.022868364169658883	575751
+window	window_kd_match_w19_ov50	Q9TWD7	B3 barnacles (control)	551144	-inf	551135	2007	-0.022868364169658883	575751
+window	window_kd_match_w9_ov0	A1X158	B1 mussels and other bivalves	13629	-0.7565284757131595	13625	2009	8.881784197001252e-16	575751
+window	window_kd_match_w9_ov0	A1X159	B1 mussels and other bivalves	16105	-0.8226209033016376	16100	2009	8.881784197001252e-16	575751
+window	window_kd_match_w9_ov0	Q25434	B1 mussels and other bivalves	5888	-0.4487311385660825	5885	2009	8.881784197001252e-16	575751
+window	window_kd_match_w9_ov0	Q25460	B1 mussels and other bivalves	103	-5.270359199682107e-10	102	2009	8.881784197001252e-16	575751
+window	window_kd_match_w9_ov0	Q25464	B1 mussels and other bivalves	21359	-0.9382718703563647	21353	2009	8.881784197001252e-16	575751
+window	window_kd_match_w9_ov0	Q27409	B1 mussels and other bivalves	4504	-0.36224182914261605	4502	2009	8.881784197001252e-16	575751
+window	window_kd_match_w9_ov0	Q7M3Q2	B2 tube-building polychaetes	118239	-1.7574856767943026	118229	2009	8.881784197001252e-16	575751
+window	window_kd_match_w9_ov0	Q7M3Q3	B2 tube-building polychaetes	27007	-1.0393662564021073	27000	2009	8.881784197001252e-16	575751
+window	window_kd_match_w9_ov0	Q9GRC4	B3 barnacles (control)	62947	-1.42159221069107	62939	2009	8.881784197001252e-16	575751
+window	window_kd_match_w9_ov0	Q9TWD7	B3 barnacles (control)	75944	-1.5174012346218035	75935	2009	8.881784197001252e-16	575751
+window	window_kd_match_w9_ov10	A1X158	B1 mussels and other bivalves	11390	-0.7565284757131595	11386	2009	-0.015074074078377464	575751
+window	window_kd_match_w9_ov10	A1X159	B1 mussels and other bivalves	13842	-0.8226209033016376	13837	2009	-0.015074074078377464	575751
+window	window_kd_match_w9_ov10	Q25434	B1 mussels and other bivalves	3812	-0.4487311385660825	3809	2009	-0.015074074078377464	575751
+window	window_kd_match_w9_ov10	Q25460	B1 mussels and other bivalves	1	-5.270359199682107e-10	0	2009	-0.015074074078377464	575751
+window	window_kd_match_w9_ov10	Q25464	B1 mussels and other bivalves	19040	-0.9382718703563647	19034	2009	-0.015074074078377464	575751
+window	window_kd_match_w9_ov10	Q27409	B1 mussels and other bivalves	2487	-0.36224182914261605	2485	2009	-0.015074074078377464	575751
+window	window_kd_match_w9_ov10	Q7M3Q2	B2 tube-building polychaetes	115747	-1.7574856767943026	115737	2009	-0.015074074078377464	575751
+window	window_kd_match_w9_ov10	Q7M3Q3	B2 tube-building polychaetes	24660	-1.0393662564021073	24653	2009	-0.015074074078377464	575751
+window	window_kd_match_w9_ov10	Q9GRC4	B3 barnacles (control)	60513	-1.42159221069107	60505	2009	-0.015074074078377464	575751
+window	window_kd_match_w9_ov10	Q9TWD7	B3 barnacles (control)	73485	-1.5174012346218035	73476	2009	-0.015074074078377464	575751
+window	window_kd_match_w9_ov20	A1X158	B1 mussels and other bivalves	10412	-0.7565284757131595	10408	2008	-0.06849999999769807	575751
+window	window_kd_match_w9_ov20	A1X159	B1 mussels and other bivalves	12816	-0.8226209033016376	12811	2008	-0.06849999999769807	575751
+window	window_kd_match_w9_ov20	Q25434	B1 mussels and other bivalves	3106	-0.4487311385660825	3103	2008	-0.06849999999769807	575751
+window	window_kd_match_w9_ov20	Q25460	B1 mussels and other bivalves	1	-5.270359199682107e-10	0	2008	-0.06849999999769807	575751
+window	window_kd_match_w9_ov20	Q25464	B1 mussels and other bivalves	17939	-0.9382718703563647	17933	2008	-0.06849999999769807	575751
+window	window_kd_match_w9_ov20	Q27409	B1 mussels and other bivalves	1883	-0.36224182914261605	1881	2008	-0.06849999999769807	575751
+window	window_kd_match_w9_ov20	Q7M3Q2	B2 tube-building polychaetes	114275	-1.7574856767943026	114265	2008	-0.06849999999769807	575751
+window	window_kd_match_w9_ov20	Q7M3Q3	B2 tube-building polychaetes	23466	-1.0393662564021073	23459	2008	-0.06849999999769807	575751
+window	window_kd_match_w9_ov20	Q9GRC4	B3 barnacles (control)	59139	-1.42159221069107	59131	2008	-0.06849999999769807	575751
+window	window_kd_match_w9_ov20	Q9TWD7	B3 barnacles (control)	72079	-1.5174012346218035	72070	2008	-0.06849999999769807	575751
+window	window_kd_match_w9_ov50	A1X158	B1 mussels and other bivalves	6778	-0.7565284757131595	6774	2007	-0.08662650608890266	575751
+window	window_kd_match_w9_ov50	A1X159	B1 mussels and other bivalves	8826	-0.8226209033016376	8821	2007	-0.08662650608890266	575751
+window	window_kd_match_w9_ov50	Q25434	B1 mussels and other bivalves	1261	-0.4487311385660825	1258	2007	-0.08662650608890266	575751
+window	window_kd_match_w9_ov50	Q25460	B1 mussels and other bivalves	1	-5.270359199682107e-10	0	2007	-0.08662650608890266	575751
+window	window_kd_match_w9_ov50	Q25464	B1 mussels and other bivalves	13445	-0.9382718703563647	13439	2007	-0.08662650608890266	575751
+window	window_kd_match_w9_ov50	Q27409	B1 mussels and other bivalves	604	-0.36224182914261605	602	2007	-0.08662650608890266	575751
+window	window_kd_match_w9_ov50	Q7M3Q2	B2 tube-building polychaetes	107607	-1.7574856767943026	107599	2007	-0.08662650608890266	575751
+window	window_kd_match_w9_ov50	Q7M3Q3	B2 tube-building polychaetes	559552	-inf	559543	2007	-0.08662650608890266	575751
+window	window_kd_match_w9_ov50	Q9GRC4	B3 barnacles (control)	53110	-1.42159221069107	53103	2007	-0.08662650608890266	575751
+window	window_kd_match_w9_ov50	Q9TWD7	B3 barnacles (control)	559552	-inf	559543	2007	-0.08662650608890266	575751
+window	window_kd_spread_w19	A1X158	B1 mussels and other bivalves	114916	-0.6544340792773073	114909	2007	-0.00046280102174944826	575751
+window	window_kd_spread_w19	A1X159	B1 mussels and other bivalves	90718	-0.6120153091048397	90712	2007	-0.00046280102174944826	575751
+window	window_kd_spread_w19	Q25434	B1 mussels and other bivalves	1101	-0.08275955928129664	1098	2007	-0.00046280102174944826	575751
+window	window_kd_spread_w19	Q25460	B1 mussels and other bivalves	3	-0.0005429650924529961	2	2007	-0.00046280102174944826	575751
+window	window_kd_spread_w19	Q25464	B1 mussels and other bivalves	38880	-0.4643091880220104	38875	2007	-0.00046280102174944826	575751
+window	window_kd_spread_w19	Q27409	B1 mussels and other bivalves	11	-0.001556313608711668	9	2007	-0.00046280102174944826	575751
+window	window_kd_spread_w19	Q7M3Q2	B2 tube-building polychaetes	552068	-0.9956535912303714	552060	2007	-0.00046280102174944826	575751
+window	window_kd_spread_w19	Q7M3Q3	B2 tube-building polychaetes	557082	-0.9973585483107595	557073	2007	-0.00046280102174944826	575751
+window	window_kd_spread_w19	Q9GRC4	B3 barnacles (control)	16539	-0.3320094357511396	16535	2007	-0.00046280102174944826	575751
+window	window_kd_spread_w19	Q9TWD7	B3 barnacles (control)	560613	-0.998456025048833	560603	2007	-0.00046280102174944826	575751
+window	window_kd_spread_w9	A1X158	B1 mussels and other bivalves	49946	-0.40446863869002947	49939	2007	-0.007443345450685146	575751
+window	window_kd_spread_w9	A1X159	B1 mussels and other bivalves	36928	-0.37405433493711215	36922	2007	-0.007443345450685146	575751
+window	window_kd_spread_w9	Q25434	B1 mussels and other bivalves	66	-0.03395179968332507	63	2007	-0.007443345450685146	575751
+window	window_kd_spread_w9	Q25460	B1 mussels and other bivalves	1	-0.00011413590838194043	0	2007	-0.007443345450685146	575751
+window	window_kd_spread_w9	Q25464	B1 mussels and other bivalves	29714	-0.35300257361363263	29709	2007	-0.007443345450685146	575751
+window	window_kd_spread_w9	Q27409	B1 mussels and other bivalves	31	-0.009750062838693285	29	2007	-0.007443345450685146	575751
+window	window_kd_spread_w9	Q7M3Q2	B2 tube-building polychaetes	560922	-0.907826044897919	560913	2007	-0.007443345450685146	575751
+window	window_kd_spread_w9	Q7M3Q3	B2 tube-building polychaetes	566300	-0.9416745392968762	566290	2007	-0.007443345450685146	575751
+window	window_kd_spread_w9	Q9GRC4	B3 barnacles (control)	13796	-0.28913782711687397	13792	2007	-0.007443345450685146	575751
+window	window_kd_spread_w9	Q9TWD7	B3 barnacles (control)	111337	-0.4937516124111849	111329	2007	-0.007443345450685146	575751

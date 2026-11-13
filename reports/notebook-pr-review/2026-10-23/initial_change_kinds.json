@@ -1,0 +1,4370 @@
+[
+  {
+    "pr": 199,
+    "path": "notebooks/300_mass_spec_peptide_source_lookup_uhgp90.ipynb",
+    "kind": "added",
+    "base": "0b968d9f3cedfc5e4df6b28b042726b2c36a50f2",
+    "head": "581b058befbf468ff0540e1d5beb2720b02b8dba"
+  },
+  {
+    "pr": 195,
+    "path": "notebooks/359_isoform_blank_exons_WTC11_kmerseek_vs_IsoAnnotLite.ipynb",
+    "kind": "added",
+    "base": "0b968d9f3cedfc5e4df6b28b042726b2c36a50f2",
+    "head": "88218cee7631831f8dc0f48dbaad292698cbec17"
+  },
+  {
+    "pr": 194,
+    "path": "notebooks/241_alphabet_ranking_BCL2-Ced9_P66-CD47_BHF.ipynb",
+    "kind": "source_changed",
+    "base": "0b968d9f3cedfc5e4df6b28b042726b2c36a50f2",
+    "head": "078134a20939f8032d460b686641927f290f5e7e"
+  },
+  {
+    "pr": 193,
+    "path": "notebooks/354_kill_test_fragment_source_massspec18_PXD005280.ipynb",
+    "kind": "added",
+    "base": "0b968d9f3cedfc5e4df6b28b042726b2c36a50f2",
+    "head": "758b2a2e5edf283e3c7869d3040d7d2bc3be0ed2"
+  },
+  {
+    "pr": 191,
+    "path": "notebooks/357_condensate_label_lead_figure_stop0_pfam_blind_spot_setA.ipynb",
+    "kind": "added",
+    "base": "0b968d9f3cedfc5e4df6b28b042726b2c36a50f2",
+    "head": "06db9a66069f5f95cd6cc067370d8869fb7f7234"
+  },
+  {
+    "pr": 190,
+    "path": "notebooks/356_exon_landing_midi_plus_chicken_zebrafish.ipynb",
+    "kind": "added",
+    "base": "0b968d9f3cedfc5e4df6b28b042726b2c36a50f2",
+    "head": "73fbb01767f4d2ff2743103a2b9795f10156197d"
+  },
+  {
+    "pr": 189,
+    "path": "notebooks/355_construct_check_kill_test_not_run_missing_submissions.ipynb",
+    "kind": "added",
+    "base": "0b968d9f3cedfc5e4df6b28b042726b2c36a50f2",
+    "head": "f6521776926947aa0e90138c666e5c8a54bd6a54"
+  },
+  {
+    "pr": 184,
+    "path": "notebooks/353_short_stretch_evidence_lookup_elm_yeast_tiles.ipynb",
+    "kind": "added",
+    "base": "c6754372fa18228381b461c6e9f9d61249702de9",
+    "head": "3f69d18c47b020fc53f4551eafc5030aae6603b1"
+  },
+  {
+    "pr": 183,
+    "path": "notebooks/352_kmerseek_index_scale_UniParc.ipynb",
+    "kind": "added",
+    "base": "0b968d9f3cedfc5e4df6b28b042726b2c36a50f2",
+    "head": "417a05787659b39824f1236cb7617116abb31660"
+  },
+  {
+    "pr": 182,
+    "path": "notebooks/301_kmerseek_short_feature_boundaries_swissprot_elm.ipynb",
+    "kind": "added",
+    "base": "0b968d9f3cedfc5e4df6b28b042726b2c36a50f2",
+    "head": "879708f148b0d874954a6827122da55938e7cbd4"
+  },
+  {
+    "pr": 178,
+    "path": "notebooks/349_ice_binding_seedless_alignment_swissprot.ipynb",
+    "kind": "added",
+    "base": "0b968d9f3cedfc5e4df6b28b042726b2c36a50f2",
+    "head": "ad9d95bee8463f80ea477913dbd7736bf055f1e6"
+  },
+  {
+    "pr": 176,
+    "path": "notebooks/245_bits_ceiling_exact_seed.ipynb",
+    "kind": "added",
+    "base": "0b968d9f3cedfc5e4df6b28b042726b2c36a50f2",
+    "head": "fc86c695770d5d90ccefadf5f607bb2ef1d53a94"
+  },
+  {
+    "pr": 176,
+    "path": "notebooks/294_linked_hp_word_pairs_kill_test_pfam_seed.ipynb",
+    "kind": "added",
+    "base": "0b968d9f3cedfc5e4df6b28b042726b2c36a50f2",
+    "head": "fc86c695770d5d90ccefadf5f607bb2ef1d53a94"
+  },
+  {
+    "pr": 176,
+    "path": "notebooks/346_linked_hp_keys_BCL2-Ced9_P66-CD47_Pfam_database_scale.ipynb",
+    "kind": "added",
+    "base": "0b968d9f3cedfc5e4df6b28b042726b2c36a50f2",
+    "head": "fc86c695770d5d90ccefadf5f607bb2ef1d53a94"
+  },
+  {
+    "pr": 175,
+    "path": "notebooks/298_linked_word_pairs_ice_binding_reach_swissprot.ipynb",
+    "kind": "added",
+    "base": "7b1704f94c8044ce3ec30228e526f9ba03b7fee1",
+    "head": "e0e48563ceba4d56107e9d1e084fb6261c370301"
+  },
+  {
+    "pr": 174,
+    "path": "notebooks/344_region_evalue_calibration_dipeptide_decoys_human_proteome.ipynb",
+    "kind": "added",
+    "base": "0b968d9f3cedfc5e4df6b28b042726b2c36a50f2",
+    "head": "29671fa21b3239c48db92ff5dc6631b89d68c72a"
+  },
+  {
+    "pr": 173,
+    "path": "notebooks/343_same_reduced_kmers_new_order_gencode_human_hp_pbotc_dayhoff6.ipynb",
+    "kind": "added",
+    "base": "0b968d9f3cedfc5e4df6b28b042726b2c36a50f2",
+    "head": "ec6b9cd02fea7ae0a77ce726fade1215020fcb99"
+  },
+  {
+    "pr": 172,
+    "path": "notebooks/345_recurring_word_discovery_curves_qfo2020_04.ipynb",
+    "kind": "added",
+    "base": "0b968d9f3cedfc5e4df6b28b042726b2c36a50f2",
+    "head": "73dda97bdf710ce01b2feaf8de7368860a5299cd"
+  },
+  {
+    "pr": 168,
+    "path": "notebooks/296_cys_frameworks_cnidaria_pilot_kmerseek_vs_phmmer_regex_swissprot.ipynb",
+    "kind": "source_changed",
+    "base": "de7128075b357db3f8125d169bb9e433d572b04b",
+    "head": "3104185b318377ff01616f6800f4f3816ef17522"
+  },
+  {
+    "pr": 168,
+    "path": "notebooks/297_cys_frameworks_phylum_run_cys_hp3_vs_phmmer_regex_swissprot.ipynb",
+    "kind": "added",
+    "base": "de7128075b357db3f8125d169bb9e433d572b04b",
+    "head": "3104185b318377ff01616f6800f4f3816ef17522"
+  },
+  {
+    "pr": 167,
+    "path": "notebooks/296_cys_frameworks_cnidaria_pilot_kmerseek_vs_phmmer_regex_swissprot.ipynb",
+    "kind": "added",
+    "base": "d860d19c4590dd607905a5053e1668aa29e0345f",
+    "head": "de7128075b357db3f8125d169bb9e433d572b04b"
+  },
+  {
+    "pr": 152,
+    "path": "notebooks/230_hp_class_conservation_in_aligned_homologs.ipynb",
+    "kind": "source_changed",
+    "base": "6018587813736958cd4e74db5f203c48664cf4e8",
+    "head": "9ceb51027a7d9c2499fb8bb361e15728a4a65a22"
+  },
+  {
+    "pr": 152,
+    "path": "notebooks/273_hp_agreement_per_100_positions_pfam_seed_scope40.ipynb",
+    "kind": "added",
+    "base": "6018587813736958cd4e74db5f203c48664cf4e8",
+    "head": "9ceb51027a7d9c2499fb8bb361e15728a4a65a22"
+  },
+  {
+    "pr": 152,
+    "path": "notebooks/291_evidence_per_position_19_alphabets_pfam_seed_scope40.ipynb",
+    "kind": "added",
+    "base": "6018587813736958cd4e74db5f203c48664cf4e8",
+    "head": "9ceb51027a7d9c2499fb8bb361e15728a4a65a22"
+  },
+  {
+    "pr": 152,
+    "path": "notebooks/342_exon_function_pattern_label_vs_splicing_setA.ipynb",
+    "kind": "added",
+    "base": "6018587813736958cd4e74db5f203c48664cf4e8",
+    "head": "9ceb51027a7d9c2499fb8bb361e15728a4a65a22"
+  },
+  {
+    "pr": 143,
+    "path": "notebooks/294_linked_hp_word_pairs_kill_test_pfam_seed.ipynb",
+    "kind": "added",
+    "base": "6f0012fd10fee42a7dc22095caf8530b8e243bbb",
+    "head": "7195a9a8ed50f92f3ddc5bf4e0e36e01209eb09e"
+  },
+  {
+    "pr": 142,
+    "path": "notebooks/292_adaptive_sampling_translated_kmers_tarantula_venom_SRR32537183.ipynb",
+    "kind": "added",
+    "base": "6f0012fd10fee42a7dc22095caf8530b8e243bbb",
+    "head": "48adc4f81dbf981ecd218b8aa78437204a6c73cd"
+  },
+  {
+    "pr": 141,
+    "path": "notebooks/295_convergence_search_ice_binding_proteins_swissprot.ipynb",
+    "kind": "added",
+    "base": "6f0012fd10fee42a7dc22095caf8530b8e243bbb",
+    "head": "ae98dc32a3cafc071effee9b0393dba33fe67389"
+  },
+  {
+    "pr": 140,
+    "path": "notebooks/341_condensate_exons_aro_hyd_chg_pol4_bugz.ipynb",
+    "kind": "added",
+    "base": "6f0012fd10fee42a7dc22095caf8530b8e243bbb",
+    "head": "6018587813736958cd4e74db5f203c48664cf4e8"
+  },
+  {
+    "pr": 139,
+    "path": "notebooks/284_exact_run_vs_blosum62_segment_pfam_seed.ipynb",
+    "kind": "added",
+    "base": "d2ed1b790779d71ca1cd4e2a1a834e2b31092064",
+    "head": "f08f5e6c452a6f6d5b200e6212a645b175ed59b1"
+  },
+  {
+    "pr": 134,
+    "path": "notebooks/290_dark_set_kmerseek_reach_vs_shuffled_copies.ipynb",
+    "kind": "added",
+    "base": "40c98e261fd6295f9be5309c95c931e204ab14fe",
+    "head": "e99dd5a6f3e4c28a2485fbdf96a864138a888a0f"
+  },
+  {
+    "pr": 133,
+    "path": "notebooks/013-compute-all-sensitivity-to-first-fp.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "645e7713bd2ee4185f4e3efe30accee55cbe63e6",
+    "head": "c11c5b056f8c8bda415b0e70d96ef041d7f11738"
+  },
+  {
+    "pr": 133,
+    "path": "notebooks/014-plot-sensitivity-to-first-fp.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "645e7713bd2ee4185f4e3efe30accee55cbe63e6",
+    "head": "c11c5b056f8c8bda415b0e70d96ef041d7f11738"
+  },
+  {
+    "pr": 133,
+    "path": "notebooks/015-which-kmers-match.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "645e7713bd2ee4185f4e3efe30accee55cbe63e6",
+    "head": "c11c5b056f8c8bda415b0e70d96ef041d7f11738"
+  },
+  {
+    "pr": 133,
+    "path": "notebooks/016-ced9-bcl2-and-p66-cd47.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "645e7713bd2ee4185f4e3efe30accee55cbe63e6",
+    "head": "c11c5b056f8c8bda415b0e70d96ef041d7f11738"
+  },
+  {
+    "pr": 133,
+    "path": "notebooks/017-p66-cd47.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "645e7713bd2ee4185f4e3efe30accee55cbe63e6",
+    "head": "c11c5b056f8c8bda415b0e70d96ef041d7f11738"
+  },
+  {
+    "pr": 133,
+    "path": "notebooks/018-explore-hp-k10.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "645e7713bd2ee4185f4e3efe30accee55cbe63e6",
+    "head": "c11c5b056f8c8bda415b0e70d96ef041d7f11738"
+  },
+  {
+    "pr": 133,
+    "path": "notebooks/022-plot-subsampled-sourmash-scores-per-moltype-ksize.ipynb",
+    "kind": "source_changed",
+    "base": "645e7713bd2ee4185f4e3efe30accee55cbe63e6",
+    "head": "c11c5b056f8c8bda415b0e70d96ef041d7f11738"
+  },
+  {
+    "pr": 133,
+    "path": "notebooks/030-test-polars-read-fasta.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "645e7713bd2ee4185f4e3efe30accee55cbe63e6",
+    "head": "c11c5b056f8c8bda415b0e70d96ef041d7f11738"
+  },
+  {
+    "pr": 133,
+    "path": "notebooks/040-cargo-bench-string-with-capacity.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "645e7713bd2ee4185f4e3efe30accee55cbe63e6",
+    "head": "c11c5b056f8c8bda415b0e70d96ef041d7f11738"
+  },
+  {
+    "pr": 133,
+    "path": "notebooks/051-scope40-hp-k15.ipynb",
+    "kind": "source_changed",
+    "base": "645e7713bd2ee4185f4e3efe30accee55cbe63e6",
+    "head": "c11c5b056f8c8bda415b0e70d96ef041d7f11738"
+  },
+  {
+    "pr": 133,
+    "path": "notebooks/052-scope40-hp-k15-bcl2-ced9.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "645e7713bd2ee4185f4e3efe30accee55cbe63e6",
+    "head": "c11c5b056f8c8bda415b0e70d96ef041d7f11738"
+  },
+  {
+    "pr": 133,
+    "path": "notebooks/053-scope40-hp-k15-plots.ipynb",
+    "kind": "source_changed",
+    "base": "645e7713bd2ee4185f4e3efe30accee55cbe63e6",
+    "head": "c11c5b056f8c8bda415b0e70d96ef041d7f11738"
+  },
+  {
+    "pr": 133,
+    "path": "notebooks/054-scope40-hp-dayhoff-protein-plots.ipynb",
+    "kind": "source_changed",
+    "base": "645e7713bd2ee4185f4e3efe30accee55cbe63e6",
+    "head": "c11c5b056f8c8bda415b0e70d96ef041d7f11738"
+  },
+  {
+    "pr": 133,
+    "path": "notebooks/055-scope40-hp-dayhoff-protein-sensitivity.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "645e7713bd2ee4185f4e3efe30accee55cbe63e6",
+    "head": "c11c5b056f8c8bda415b0e70d96ef041d7f11738"
+  },
+  {
+    "pr": 133,
+    "path": "notebooks/056-scope40-hp-k15-k20-vs-tea.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "645e7713bd2ee4185f4e3efe30accee55cbe63e6",
+    "head": "c11c5b056f8c8bda415b0e70d96ef041d7f11738"
+  },
+  {
+    "pr": 133,
+    "path": "notebooks/057-scope40-hp-k15-k20-vs-tea-clean.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "645e7713bd2ee4185f4e3efe30accee55cbe63e6",
+    "head": "c11c5b056f8c8bda415b0e70d96ef041d7f11738"
+  },
+  {
+    "pr": 133,
+    "path": "notebooks/058-hp-k20-vs-foldseek-tea.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "645e7713bd2ee4185f4e3efe30accee55cbe63e6",
+    "head": "c11c5b056f8c8bda415b0e70d96ef041d7f11738"
+  },
+  {
+    "pr": 133,
+    "path": "notebooks/059-hp-k20-45-comparison.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "645e7713bd2ee4185f4e3efe30accee55cbe63e6",
+    "head": "c11c5b056f8c8bda415b0e70d96ef041d7f11738"
+  },
+  {
+    "pr": 133,
+    "path": "notebooks/060-hp-k41-unique-vs-foldseek-analysis.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "645e7713bd2ee4185f4e3efe30accee55cbe63e6",
+    "head": "c11c5b056f8c8bda415b0e70d96ef041d7f11738"
+  },
+  {
+    "pr": 133,
+    "path": "notebooks/061-hp-k35-k36-family-analysis.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "645e7713bd2ee4185f4e3efe30accee55cbe63e6",
+    "head": "c11c5b056f8c8bda415b0e70d96ef041d7f11738"
+  },
+  {
+    "pr": 133,
+    "path": "notebooks/062-hp-k24-threshold-optimization.ipynb",
+    "kind": "source_changed",
+    "base": "645e7713bd2ee4185f4e3efe30accee55cbe63e6",
+    "head": "c11c5b056f8c8bda415b0e70d96ef041d7f11738"
+  },
+  {
+    "pr": 133,
+    "path": "notebooks/063-hp-unique-families-deep-analysis.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "645e7713bd2ee4185f4e3efe30accee55cbe63e6",
+    "head": "c11c5b056f8c8bda415b0e70d96ef041d7f11738"
+  },
+  {
+    "pr": 133,
+    "path": "notebooks/064-hp-k24-ml-classification.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "645e7713bd2ee4185f4e3efe30accee55cbe63e6",
+    "head": "c11c5b056f8c8bda415b0e70d96ef041d7f11738"
+  },
+  {
+    "pr": 133,
+    "path": "notebooks/065-hp-scope-pvalue-benchmark.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "645e7713bd2ee4185f4e3efe30accee55cbe63e6",
+    "head": "c11c5b056f8c8bda415b0e70d96ef041d7f11738"
+  },
+  {
+    "pr": 133,
+    "path": "notebooks/066_scope_all_metrics_auc_k15_45.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "645e7713bd2ee4185f4e3efe30accee55cbe63e6",
+    "head": "c11c5b056f8c8bda415b0e70d96ef041d7f11738"
+  },
+  {
+    "pr": 133,
+    "path": "notebooks/067_scope_all_metrics_all_fps.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "645e7713bd2ee4185f4e3efe30accee55cbe63e6",
+    "head": "c11c5b056f8c8bda415b0e70d96ef041d7f11738"
+  },
+  {
+    "pr": 133,
+    "path": "notebooks/068_scope_all_metrics_excl_gz.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "645e7713bd2ee4185f4e3efe30accee55cbe63e6",
+    "head": "c11c5b056f8c8bda415b0e70d96ef041d7f11738"
+  },
+  {
+    "pr": 133,
+    "path": "notebooks/069_scope_excl_gz_unique_hits.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "645e7713bd2ee4185f4e3efe30accee55cbe63e6",
+    "head": "c11c5b056f8c8bda415b0e70d96ef041d7f11738"
+  },
+  {
+    "pr": 133,
+    "path": "notebooks/070_scope_bcl2_ced9_small_k.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "645e7713bd2ee4185f4e3efe30accee55cbe63e6",
+    "head": "c11c5b056f8c8bda415b0e70d96ef041d7f11738"
+  },
+  {
+    "pr": 133,
+    "path": "notebooks/071_scope_unique_hits_scop_class_enrichment.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "645e7713bd2ee4185f4e3efe30accee55cbe63e6",
+    "head": "c11c5b056f8c8bda415b0e70d96ef041d7f11738"
+  },
+  {
+    "pr": 133,
+    "path": "notebooks/072_scope_threshold_filter_benchmark.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "645e7713bd2ee4185f4e3efe30accee55cbe63e6",
+    "head": "c11c5b056f8c8bda415b0e70d96ef041d7f11738"
+  },
+  {
+    "pr": 133,
+    "path": "notebooks/073_scope40_hp_kmer_distribution.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "645e7713bd2ee4185f4e3efe30accee55cbe63e6",
+    "head": "c11c5b056f8c8bda415b0e70d96ef041d7f11738"
+  },
+  {
+    "pr": 133,
+    "path": "notebooks/074_scope_family_auc_mechanism.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "645e7713bd2ee4185f4e3efe30accee55cbe63e6",
+    "head": "c11c5b056f8c8bda415b0e70d96ef041d7f11738"
+  },
+  {
+    "pr": 133,
+    "path": "notebooks/075_hp_alphabet_sweep_benchmark.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "645e7713bd2ee4185f4e3efe30accee55cbe63e6",
+    "head": "c11c5b056f8c8bda415b0e70d96ef041d7f11738"
+  },
+  {
+    "pr": 133,
+    "path": "notebooks/076_hp_alphabet_sweep_per_class.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "645e7713bd2ee4185f4e3efe30accee55cbe63e6",
+    "head": "c11c5b056f8c8bda415b0e70d96ef041d7f11738"
+  },
+  {
+    "pr": 133,
+    "path": "notebooks/077_hp_alphabet_sweep_summary.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "645e7713bd2ee4185f4e3efe30accee55cbe63e6",
+    "head": "c11c5b056f8c8bda415b0e70d96ef041d7f11738"
+  },
+  {
+    "pr": 133,
+    "path": "notebooks/078_frontier_figure.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "645e7713bd2ee4185f4e3efe30accee55cbe63e6",
+    "head": "c11c5b056f8c8bda415b0e70d96ef041d7f11738"
+  },
+  {
+    "pr": 133,
+    "path": "notebooks/078_thomas_dill_k26_mechanism.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "645e7713bd2ee4185f4e3efe30accee55cbe63e6",
+    "head": "c11c5b056f8c8bda415b0e70d96ef041d7f11738"
+  },
+  {
+    "pr": 133,
+    "path": "notebooks/079_annotation_gaps_and_validation.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "645e7713bd2ee4185f4e3efe30accee55cbe63e6",
+    "head": "c11c5b056f8c8bda415b0e70d96ef041d7f11738"
+  },
+  {
+    "pr": 133,
+    "path": "notebooks/080_pbotc_k26_qfo2020_partial_analysis.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "645e7713bd2ee4185f4e3efe30accee55cbe63e6",
+    "head": "c11c5b056f8c8bda415b0e70d96ef041d7f11738"
+  },
+  {
+    "pr": 133,
+    "path": "notebooks/081_disprot_benchmark_analysis.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "645e7713bd2ee4185f4e3efe30accee55cbe63e6",
+    "head": "c11c5b056f8c8bda415b0e70d96ef041d7f11738"
+  },
+  {
+    "pr": 133,
+    "path": "notebooks/082_thomas_dill_k26_vs_k27_lost_queries.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "645e7713bd2ee4185f4e3efe30accee55cbe63e6",
+    "head": "c11c5b056f8c8bda415b0e70d96ef041d7f11738"
+  },
+  {
+    "pr": 133,
+    "path": "notebooks/083_km_fails_foldseek_wins.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "645e7713bd2ee4185f4e3efe30accee55cbe63e6",
+    "head": "c11c5b056f8c8bda415b0e70d96ef041d7f11738"
+  },
+  {
+    "pr": 133,
+    "path": "notebooks/084_plddt_qfo_pfam.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "645e7713bd2ee4185f4e3efe30accee55cbe63e6",
+    "head": "c11c5b056f8c8bda415b0e70d96ef041d7f11738"
+  },
+  {
+    "pr": 133,
+    "path": "notebooks/085_search_time_significance_prefilter.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "645e7713bd2ee4185f4e3efe30accee55cbe63e6",
+    "head": "c11c5b056f8c8bda415b0e70d96ef041d7f11738"
+  },
+  {
+    "pr": 133,
+    "path": "notebooks/086_lowcomplexity_fraction_threshold.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "645e7713bd2ee4185f4e3efe30accee55cbe63e6",
+    "head": "c11c5b056f8c8bda415b0e70d96ef041d7f11738"
+  },
+  {
+    "pr": 133,
+    "path": "notebooks/115-human-mouse-ortholog-double-peaks.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "645e7713bd2ee4185f4e3efe30accee55cbe63e6",
+    "head": "c11c5b056f8c8bda415b0e70d96ef041d7f11738"
+  },
+  {
+    "pr": 133,
+    "path": "notebooks/116-kmerseek-vs-orthofinder.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "645e7713bd2ee4185f4e3efe30accee55cbe63e6",
+    "head": "c11c5b056f8c8bda415b0e70d96ef041d7f11738"
+  },
+  {
+    "pr": 133,
+    "path": "notebooks/117-human-mouse-ortholog-bimodality-investigation.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "645e7713bd2ee4185f4e3efe30accee55cbe63e6",
+    "head": "c11c5b056f8c8bda415b0e70d96ef041d7f11738"
+  },
+  {
+    "pr": 133,
+    "path": "notebooks/118-kmerseek-vs-orthofinder-mgi-ground-truth.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "645e7713bd2ee4185f4e3efe30accee55cbe63e6",
+    "head": "c11c5b056f8c8bda415b0e70d96ef041d7f11738"
+  },
+  {
+    "pr": 133,
+    "path": "notebooks/119_kmerseek_only_orthologs_characterization.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "645e7713bd2ee4185f4e3efe30accee55cbe63e6",
+    "head": "c11c5b056f8c8bda415b0e70d96ef041d7f11738"
+  },
+  {
+    "pr": 133,
+    "path": "notebooks/120_kmerseek_only_orthologs_conservative_threshold.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "645e7713bd2ee4185f4e3efe30accee55cbe63e6",
+    "head": "c11c5b056f8c8bda415b0e70d96ef041d7f11738"
+  },
+  {
+    "pr": 133,
+    "path": "notebooks/121_qfo2020_kmerseek_analysis.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "645e7713bd2ee4185f4e3efe30accee55cbe63e6",
+    "head": "c11c5b056f8c8bda415b0e70d96ef041d7f11738"
+  },
+  {
+    "pr": 133,
+    "path": "notebooks/122_subdomain_detection_benchmark.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "645e7713bd2ee4185f4e3efe30accee55cbe63e6",
+    "head": "c11c5b056f8c8bda415b0e70d96ef041d7f11738"
+  },
+  {
+    "pr": 133,
+    "path": "notebooks/123_pfam_subdomain_divergence_benchmark.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "645e7713bd2ee4185f4e3efe30accee55cbe63e6",
+    "head": "c11c5b056f8c8bda415b0e70d96ef041d7f11738"
+  },
+  {
+    "pr": 133,
+    "path": "notebooks/124_kmerseek_false_positives_characterization.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "645e7713bd2ee4185f4e3efe30accee55cbe63e6",
+    "head": "c11c5b056f8c8bda415b0e70d96ef041d7f11738"
+  },
+  {
+    "pr": 133,
+    "path": "notebooks/125_build_pfam_benchmark_ground_truth.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "645e7713bd2ee4185f4e3efe30accee55cbe63e6",
+    "head": "c11c5b056f8c8bda415b0e70d96ef041d7f11738"
+  },
+  {
+    "pr": 133,
+    "path": "notebooks/126_pfam_benchmark_ksize_window_ml.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "645e7713bd2ee4185f4e3efe30accee55cbe63e6",
+    "head": "c11c5b056f8c8bda415b0e70d96ef041d7f11738"
+  },
+  {
+    "pr": 133,
+    "path": "notebooks/200_human_mouse_ortholog_alphabet_ksize_comparison.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "645e7713bd2ee4185f4e3efe30accee55cbe63e6",
+    "head": "c11c5b056f8c8bda415b0e70d96ef041d7f11738"
+  },
+  {
+    "pr": 133,
+    "path": "notebooks/202_human_mouse_kmerseek_vs_plddt.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "645e7713bd2ee4185f4e3efe30accee55cbe63e6",
+    "head": "c11c5b056f8c8bda415b0e70d96ef041d7f11738"
+  },
+  {
+    "pr": 133,
+    "path": "notebooks/203_human_mouse_ortholog_disorder_comparison.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "645e7713bd2ee4185f4e3efe30accee55cbe63e6",
+    "head": "c11c5b056f8c8bda415b0e70d96ef041d7f11738"
+  },
+  {
+    "pr": 133,
+    "path": "notebooks/205_hp_thomas_dill_deep_dive.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "645e7713bd2ee4185f4e3efe30accee55cbe63e6",
+    "head": "c11c5b056f8c8bda415b0e70d96ef041d7f11738"
+  },
+  {
+    "pr": 133,
+    "path": "notebooks/206_dnds_hp_alphabet_mechanism.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "645e7713bd2ee4185f4e3efe30accee55cbe63e6",
+    "head": "c11c5b056f8c8bda415b0e70d96ef041d7f11738"
+  },
+  {
+    "pr": 133,
+    "path": "notebooks/207_omega_selection_vs_divergence.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "645e7713bd2ee4185f4e3efe30accee55cbe63e6",
+    "head": "c11c5b056f8c8bda415b0e70d96ef041d7f11738"
+  },
+  {
+    "pr": 133,
+    "path": "notebooks/210_mhc_benchmark_setup_and_label_policy.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "645e7713bd2ee4185f4e3efe30accee55cbe63e6",
+    "head": "c11c5b056f8c8bda415b0e70d96ef041d7f11738"
+  },
+  {
+    "pr": 133,
+    "path": "notebooks/211_mhc_recovery_and_auc.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "645e7713bd2ee4185f4e3efe30accee55cbe63e6",
+    "head": "c11c5b056f8c8bda415b0e70d96ef041d7f11738"
+  },
+  {
+    "pr": 133,
+    "path": "notebooks/212_mhc_domain_localisation.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "645e7713bd2ee4185f4e3efe30accee55cbe63e6",
+    "head": "c11c5b056f8c8bda415b0e70d96ef041d7f11738"
+  },
+  {
+    "pr": 133,
+    "path": "notebooks/213_mhc_metric_choice.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "645e7713bd2ee4185f4e3efe30accee55cbe63e6",
+    "head": "c11c5b056f8c8bda415b0e70d96ef041d7f11738"
+  },
+  {
+    "pr": 133,
+    "path": "notebooks/214_mhc_igsf_specificity.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "645e7713bd2ee4185f4e3efe30accee55cbe63e6",
+    "head": "c11c5b056f8c8bda415b0e70d96ef041d7f11738"
+  },
+  {
+    "pr": 133,
+    "path": "notebooks/215_mhc_synteny_ground_truth.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "645e7713bd2ee4185f4e3efe30accee55cbe63e6",
+    "head": "c11c5b056f8c8bda415b0e70d96ef041d7f11738"
+  },
+  {
+    "pr": 133,
+    "path": "notebooks/216_mhc_solvent_accessibility_jaccard.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "645e7713bd2ee4185f4e3efe30accee55cbe63e6",
+    "head": "c11c5b056f8c8bda415b0e70d96ef041d7f11738"
+  },
+  {
+    "pr": 133,
+    "path": "notebooks/217_rbh_false_positive_paralog_contamination.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "645e7713bd2ee4185f4e3efe30accee55cbe63e6",
+    "head": "c11c5b056f8c8bda415b0e70d96ef041d7f11738"
+  },
+  {
+    "pr": 132,
+    "path": "notebooks/241_alphabet_ranking_BCL2-Ced9_P66-CD47_BHF.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "90fbf96832291ec79760e8a98c130f7dec1f5296",
+    "head": "144532d882ab0f0ba25e867f098e1d68b20a914b"
+  },
+  {
+    "pr": 132,
+    "path": "notebooks/242_alphabet_ensemble.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "90fbf96832291ec79760e8a98c130f7dec1f5296",
+    "head": "144532d882ab0f0ba25e867f098e1d68b20a914b"
+  },
+  {
+    "pr": 132,
+    "path": "notebooks/243_alphabet_logistic_regression.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "90fbf96832291ec79760e8a98c130f7dec1f5296",
+    "head": "144532d882ab0f0ba25e867f098e1d68b20a914b"
+  },
+  {
+    "pr": 132,
+    "path": "notebooks/256_bhf_dipeptide_shuffle_null.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "90fbf96832291ec79760e8a98c130f7dec1f5296",
+    "head": "144532d882ab0f0ba25e867f098e1d68b20a914b"
+  },
+  {
+    "pr": 132,
+    "path": "notebooks/258_bhf_zinc_finger_membrane_extracellular.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "90fbf96832291ec79760e8a98c130f7dec1f5296",
+    "head": "144532d882ab0f0ba25e867f098e1d68b20a914b"
+  },
+  {
+    "pr": 132,
+    "path": "notebooks/283_bhf_low_complexity_control.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "90fbf96832291ec79760e8a98c130f7dec1f5296",
+    "head": "144532d882ab0f0ba25e867f098e1d68b20a914b"
+  },
+  {
+    "pr": 132,
+    "path": "notebooks/289_reverse_search_BCL2family-Ced9_CD47-P66.ipynb",
+    "kind": "added",
+    "base": "90fbf96832291ec79760e8a98c130f7dec1f5296",
+    "head": "144532d882ab0f0ba25e867f098e1d68b20a914b"
+  },
+  {
+    "pr": 131,
+    "path": "notebooks/287_sum_statistics_BH4_BH1_chains.ipynb",
+    "kind": "added",
+    "base": "03361e9225579f02e65e870321b5727d27d6ca7d",
+    "head": "09eb2f140272c67ed27af535ad0a5c6e2a01c08a"
+  },
+  {
+    "pr": 130,
+    "path": "notebooks/286_intermediate_sequence_Ced9-BCL2_P66-CD47.ipynb",
+    "kind": "added",
+    "base": "03361e9225579f02e65e870321b5727d27d6ca7d",
+    "head": "a2db7d80daa4f1eb8d2ebeb16a82c053dd91dcaf"
+  },
+  {
+    "pr": 129,
+    "path": "notebooks/288_two_step_pairwise_evalue_Ced9-BCL2_P66-CD47.ipynb",
+    "kind": "added",
+    "base": "03361e9225579f02e65e870321b5727d27d6ca7d",
+    "head": "8ee9cc607083a1078cb3226c445d2d85047cc8b6"
+  },
+  {
+    "pr": 128,
+    "path": "notebooks/285_family_pooled_evidence_Ced9-BCL2_P66-CD47.ipynb",
+    "kind": "added",
+    "base": "03361e9225579f02e65e870321b5727d27d6ca7d",
+    "head": "a85a53dd729cc41d24ff2dff86dabe88211c2562"
+  },
+  {
+    "pr": 126,
+    "path": "notebooks/281_botryllus_mhc_histocompatibility_self_nonself_kmerseek_vs_tools.ipynb",
+    "kind": "added",
+    "base": "db0607dd5448d94f6e16e9a40329bbdbc5b2a3e5",
+    "head": "0502f3e0ad220d60c45ddb3f5877bae5057f68d2"
+  },
+  {
+    "pr": 124,
+    "path": "notebooks/241_alphabet_ranking_BCL2-Ced9_P66-CD47_BHF.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "afd917e6b1a3b6ca1577a8ebfaf7be633f7aad9e",
+    "head": "586011e1067a169dde018ca884f4e5535d448e53"
+  },
+  {
+    "pr": 124,
+    "path": "notebooks/242_alphabet_ensemble.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "afd917e6b1a3b6ca1577a8ebfaf7be633f7aad9e",
+    "head": "586011e1067a169dde018ca884f4e5535d448e53"
+  },
+  {
+    "pr": 124,
+    "path": "notebooks/243_alphabet_logistic_regression.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "afd917e6b1a3b6ca1577a8ebfaf7be633f7aad9e",
+    "head": "586011e1067a169dde018ca884f4e5535d448e53"
+  },
+  {
+    "pr": 124,
+    "path": "notebooks/256_bhf_dipeptide_shuffle_null.ipynb",
+    "kind": "source_changed",
+    "base": "afd917e6b1a3b6ca1577a8ebfaf7be633f7aad9e",
+    "head": "586011e1067a169dde018ca884f4e5535d448e53"
+  },
+  {
+    "pr": 124,
+    "path": "notebooks/258_bhf_zinc_finger_membrane_extracellular.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "afd917e6b1a3b6ca1577a8ebfaf7be633f7aad9e",
+    "head": "586011e1067a169dde018ca884f4e5535d448e53"
+  },
+  {
+    "pr": 124,
+    "path": "notebooks/283_bhf_low_complexity_control.ipynb",
+    "kind": "added",
+    "base": "afd917e6b1a3b6ca1577a8ebfaf7be633f7aad9e",
+    "head": "586011e1067a169dde018ca884f4e5535d448e53"
+  },
+  {
+    "pr": 122,
+    "path": "notebooks/282_ohnolog_specialization_botryllus_amphioxus_human.ipynb",
+    "kind": "added",
+    "base": "db0607dd5448d94f6e16e9a40329bbdbc5b2a3e5",
+    "head": "f89fdfdf10b9c2e3d10906699777c4add0225aaa"
+  },
+  {
+    "pr": 121,
+    "path": "notebooks/280_time_split_pfam_33_to_38.ipynb",
+    "kind": "added",
+    "base": "db0607dd5448d94f6e16e9a40329bbdbc5b2a3e5",
+    "head": "7cfece5c4c7accf81920f8e3163f535f4b882dc9"
+  },
+  {
+    "pr": 120,
+    "path": "notebooks/279_dark_set_kmerseek_reach_at_E1_E10.ipynb",
+    "kind": "added",
+    "base": "db0607dd5448d94f6e16e9a40329bbdbc5b2a3e5",
+    "head": "acdf245e6d56515d7da155df7eee494b10fc2cfa"
+  },
+  {
+    "pr": 119,
+    "path": "notebooks/278_hp_vs_blosum62_evidence_per_position_pfam_seed_scope40.ipynb",
+    "kind": "added",
+    "base": "69904c613c339a34754cc5f475e22de76f3a41e4",
+    "head": "1fa3eb9b94a8c1b5c5a04300a7f6841583e3feed"
+  },
+  {
+    "pr": 118,
+    "path": "notebooks/276_p66_cd47_structural_mimicry_test.ipynb",
+    "kind": "added",
+    "base": "db0607dd5448d94f6e16e9a40329bbdbc5b2a3e5",
+    "head": "895b2e7a7f123feef752425828f3ef56ae6cddcc"
+  },
+  {
+    "pr": 117,
+    "path": "notebooks/247_bcl2_family_query_panel_vs_ced9_alone.ipynb",
+    "kind": "added",
+    "base": "db0607dd5448d94f6e16e9a40329bbdbc5b2a3e5",
+    "head": "91be446d50174c4dbbd9ab41522a8457f40156bf"
+  },
+  {
+    "pr": 113,
+    "path": "notebooks/246_mismatch_seeds_BCL2-Ced9_P66-CD47.ipynb",
+    "kind": "added",
+    "base": "a106ca90da68a4df84ac5f2bcba822339d087790",
+    "head": "7478c4d8db7874d3131a4b02767014ce152c2c4b"
+  },
+  {
+    "pr": 107,
+    "path": "notebooks/277_scope40_kmerseek_0.4_auc_19_alphabets_six_settings.ipynb",
+    "kind": "added",
+    "base": "db0607dd5448d94f6e16e9a40329bbdbc5b2a3e5",
+    "head": "9b8910da3015ecd0982c3b173684b323fc36b3c8"
+  },
+  {
+    "pr": 106,
+    "path": "notebooks/230_hp_class_conservation_in_aligned_homologs.ipynb",
+    "kind": "outputs_changed",
+    "base": "66fa6f50b91f2c33b727563b51656bf82475b604",
+    "head": "30c714e225bcaddf979d1f26fc373972a8369c43"
+  },
+  {
+    "pr": 104,
+    "path": "notebooks/244_hero_example_candidates.ipynb",
+    "kind": "outputs_changed",
+    "base": "309dc6e8d5d27eed6fdc18695e13c2b671319323",
+    "head": "fdb74a76dce322cd6d243ba12eb5a5dc16193cf3"
+  },
+  {
+    "pr": 104,
+    "path": "notebooks/250_elm_motif_transfer.ipynb",
+    "kind": "outputs_changed",
+    "base": "309dc6e8d5d27eed6fdc18695e13c2b671319323",
+    "head": "fdb74a76dce322cd6d243ba12eb5a5dc16193cf3"
+  },
+  {
+    "pr": 104,
+    "path": "notebooks/260_kmerseek_region_table.ipynb",
+    "kind": "outputs_changed",
+    "base": "309dc6e8d5d27eed6fdc18695e13c2b671319323",
+    "head": "fdb74a76dce322cd6d243ba12eb5a5dc16193cf3"
+  },
+  {
+    "pr": 104,
+    "path": "notebooks/261_combiner_a_intersection_panel.ipynb",
+    "kind": "outputs_changed",
+    "base": "309dc6e8d5d27eed6fdc18695e13c2b671319323",
+    "head": "fdb74a76dce322cd6d243ba12eb5a5dc16193cf3"
+  },
+  {
+    "pr": 104,
+    "path": "notebooks/262_combiner_b_best_of_n.ipynb",
+    "kind": "outputs_changed",
+    "base": "309dc6e8d5d27eed6fdc18695e13c2b671319323",
+    "head": "fdb74a76dce322cd6d243ba12eb5a5dc16193cf3"
+  },
+  {
+    "pr": 104,
+    "path": "notebooks/263_combiner_c_consensus_vote.ipynb",
+    "kind": "outputs_changed",
+    "base": "309dc6e8d5d27eed6fdc18695e13c2b671319323",
+    "head": "fdb74a76dce322cd6d243ba12eb5a5dc16193cf3"
+  },
+  {
+    "pr": 104,
+    "path": "notebooks/264_combiner_comparison_test_split.ipynb",
+    "kind": "added",
+    "base": "309dc6e8d5d27eed6fdc18695e13c2b671319323",
+    "head": "fdb74a76dce322cd6d243ba12eb5a5dc16193cf3"
+  },
+  {
+    "pr": 103,
+    "path": "notebooks/244_hero_example_candidates.ipynb",
+    "kind": "outputs_changed",
+    "base": "b31a3d2429e487e6a3ea6a64b93c5c3c20c34256",
+    "head": "5c53ac93eb557dd64fc30fd59d1cd2aad12763aa"
+  },
+  {
+    "pr": 103,
+    "path": "notebooks/250_elm_motif_transfer.ipynb",
+    "kind": "outputs_changed",
+    "base": "b31a3d2429e487e6a3ea6a64b93c5c3c20c34256",
+    "head": "5c53ac93eb557dd64fc30fd59d1cd2aad12763aa"
+  },
+  {
+    "pr": 103,
+    "path": "notebooks/260_kmerseek_region_table.ipynb",
+    "kind": "outputs_changed",
+    "base": "b31a3d2429e487e6a3ea6a64b93c5c3c20c34256",
+    "head": "5c53ac93eb557dd64fc30fd59d1cd2aad12763aa"
+  },
+  {
+    "pr": 103,
+    "path": "notebooks/261_combiner_a_intersection_panel.ipynb",
+    "kind": "outputs_changed",
+    "base": "b31a3d2429e487e6a3ea6a64b93c5c3c20c34256",
+    "head": "5c53ac93eb557dd64fc30fd59d1cd2aad12763aa"
+  },
+  {
+    "pr": 103,
+    "path": "notebooks/262_combiner_b_best_of_n.ipynb",
+    "kind": "outputs_changed",
+    "base": "b31a3d2429e487e6a3ea6a64b93c5c3c20c34256",
+    "head": "5c53ac93eb557dd64fc30fd59d1cd2aad12763aa"
+  },
+  {
+    "pr": 103,
+    "path": "notebooks/263_combiner_c_consensus_vote.ipynb",
+    "kind": "added",
+    "base": "b31a3d2429e487e6a3ea6a64b93c5c3c20c34256",
+    "head": "5c53ac93eb557dd64fc30fd59d1cd2aad12763aa"
+  },
+  {
+    "pr": 102,
+    "path": "notebooks/244_hero_example_candidates.ipynb",
+    "kind": "outputs_changed",
+    "base": "348d61e716640961f7eceb48d7b6ce97a4289927",
+    "head": "6fc4ee94276608ced0bbdda7b55b02aab463823a"
+  },
+  {
+    "pr": 102,
+    "path": "notebooks/250_elm_motif_transfer.ipynb",
+    "kind": "outputs_changed",
+    "base": "348d61e716640961f7eceb48d7b6ce97a4289927",
+    "head": "6fc4ee94276608ced0bbdda7b55b02aab463823a"
+  },
+  {
+    "pr": 102,
+    "path": "notebooks/260_kmerseek_region_table.ipynb",
+    "kind": "outputs_changed",
+    "base": "348d61e716640961f7eceb48d7b6ce97a4289927",
+    "head": "6fc4ee94276608ced0bbdda7b55b02aab463823a"
+  },
+  {
+    "pr": 102,
+    "path": "notebooks/261_combiner_a_intersection_panel.ipynb",
+    "kind": "outputs_changed",
+    "base": "348d61e716640961f7eceb48d7b6ce97a4289927",
+    "head": "6fc4ee94276608ced0bbdda7b55b02aab463823a"
+  },
+  {
+    "pr": 102,
+    "path": "notebooks/262_combiner_b_best_of_n.ipynb",
+    "kind": "added",
+    "base": "348d61e716640961f7eceb48d7b6ce97a4289927",
+    "head": "6fc4ee94276608ced0bbdda7b55b02aab463823a"
+  },
+  {
+    "pr": 101,
+    "path": "notebooks/274_ksizes_to_test_per_alphabet_human_swissprot.ipynb",
+    "kind": "added",
+    "base": "4bea4c236799bfa1e5c0ad032b296fce9a1ee876",
+    "head": "2df1f3b3474cbb803b0c43fe89bb7759500a7a5a"
+  },
+  {
+    "pr": 98,
+    "path": "notebooks/244_hero_example_candidates.ipynb",
+    "kind": "outputs_changed",
+    "base": "f7e3df2ace9e7d36af4c47d1b20958a78d4b387d",
+    "head": "9a8b61ae8a74c585b9269b1e3482ab10ec82d1c9"
+  },
+  {
+    "pr": 98,
+    "path": "notebooks/250_elm_motif_transfer.ipynb",
+    "kind": "outputs_changed",
+    "base": "f7e3df2ace9e7d36af4c47d1b20958a78d4b387d",
+    "head": "9a8b61ae8a74c585b9269b1e3482ab10ec82d1c9"
+  },
+  {
+    "pr": 98,
+    "path": "notebooks/260_kmerseek_region_table.ipynb",
+    "kind": "outputs_changed",
+    "base": "f7e3df2ace9e7d36af4c47d1b20958a78d4b387d",
+    "head": "9a8b61ae8a74c585b9269b1e3482ab10ec82d1c9"
+  },
+  {
+    "pr": 98,
+    "path": "notebooks/261_combiner_a_intersection_panel.ipynb",
+    "kind": "added",
+    "base": "f7e3df2ace9e7d36af4c47d1b20958a78d4b387d",
+    "head": "9a8b61ae8a74c585b9269b1e3482ab10ec82d1c9"
+  },
+  {
+    "pr": 96,
+    "path": "notebooks/241_alphabet_ranking_BCL2-Ced9_P66-CD47_BHF.ipynb",
+    "kind": "outputs_changed",
+    "base": "f2f5a437c3bbcfae101a58554ef6b06aaa0fbf5d",
+    "head": "e24fc1b568853201620780b1a05e1b8e3dd389c1"
+  },
+  {
+    "pr": 96,
+    "path": "notebooks/242_alphabet_ensemble.ipynb",
+    "kind": "outputs_changed",
+    "base": "f2f5a437c3bbcfae101a58554ef6b06aaa0fbf5d",
+    "head": "e24fc1b568853201620780b1a05e1b8e3dd389c1"
+  },
+  {
+    "pr": 96,
+    "path": "notebooks/243_alphabet_logistic_regression.ipynb",
+    "kind": "outputs_changed",
+    "base": "f2f5a437c3bbcfae101a58554ef6b06aaa0fbf5d",
+    "head": "e24fc1b568853201620780b1a05e1b8e3dd389c1"
+  },
+  {
+    "pr": 96,
+    "path": "notebooks/245_p66_cd47_pair_coordinates.ipynb",
+    "kind": "added",
+    "base": "f2f5a437c3bbcfae101a58554ef6b06aaa0fbf5d",
+    "head": "e24fc1b568853201620780b1a05e1b8e3dd389c1"
+  },
+  {
+    "pr": 93,
+    "path": "notebooks/271_region_filters_evalue_poisson_tfidf_mini_pfam.ipynb",
+    "kind": "added",
+    "base": "c643ae33be4d117a4c4bd6db4738f57e9d64b4a8",
+    "head": "ac043af512ac9b629184921a46fc097caf6e43c6"
+  },
+  {
+    "pr": 92,
+    "path": "notebooks/244_hero_example_candidates.ipynb",
+    "kind": "outputs_changed",
+    "base": "e504445bc134654434f01595fab4857a31672784",
+    "head": "017d49e7172147eb34cf6ecfac00d84aa93a9982"
+  },
+  {
+    "pr": 92,
+    "path": "notebooks/250_elm_motif_transfer.ipynb",
+    "kind": "outputs_changed",
+    "base": "e504445bc134654434f01595fab4857a31672784",
+    "head": "017d49e7172147eb34cf6ecfac00d84aa93a9982"
+  },
+  {
+    "pr": 88,
+    "path": "notebooks/244_hero_example_candidates.ipynb",
+    "kind": "outputs_changed",
+    "base": "eb4151191f58232cfad66905937b6632bf6f997c",
+    "head": "5b311aacb5410f04c4100a4edcc4e99533a7cd7f"
+  },
+  {
+    "pr": 88,
+    "path": "notebooks/250_elm_motif_transfer.ipynb",
+    "kind": "outputs_changed",
+    "base": "eb4151191f58232cfad66905937b6632bf6f997c",
+    "head": "5b311aacb5410f04c4100a4edcc4e99533a7cd7f"
+  },
+  {
+    "pr": 88,
+    "path": "notebooks/260_kmerseek_region_table.ipynb",
+    "kind": "added",
+    "base": "eb4151191f58232cfad66905937b6632bf6f997c",
+    "head": "5b311aacb5410f04c4100a4edcc4e99533a7cd7f"
+  },
+  {
+    "pr": 87,
+    "path": "notebooks/244_hero_example_candidates.ipynb",
+    "kind": "outputs_changed",
+    "base": "53c757cc20e23a678b36c9b5b082234c21cf3ea4",
+    "head": "26f1f75e555e21eea998ff70579a3b9e80c3d142"
+  },
+  {
+    "pr": 87,
+    "path": "notebooks/250_elm_motif_transfer.ipynb",
+    "kind": "outputs_changed",
+    "base": "53c757cc20e23a678b36c9b5b082234c21cf3ea4",
+    "head": "26f1f75e555e21eea998ff70579a3b9e80c3d142"
+  },
+  {
+    "pr": 87,
+    "path": "notebooks/270_scaled_short_features.ipynb",
+    "kind": "added",
+    "base": "53c757cc20e23a678b36c9b5b082234c21cf3ea4",
+    "head": "26f1f75e555e21eea998ff70579a3b9e80c3d142"
+  },
+  {
+    "pr": 85,
+    "path": "notebooks/241_alphabet_ranking_BCL2-Ced9_P66-CD47_BHF.ipynb",
+    "kind": "outputs_changed",
+    "base": "f2f5a437c3bbcfae101a58554ef6b06aaa0fbf5d",
+    "head": "09027b4f5b72e38053d0f4df202c76479e656faa"
+  },
+  {
+    "pr": 85,
+    "path": "notebooks/242_alphabet_ensemble.ipynb",
+    "kind": "outputs_changed",
+    "base": "f2f5a437c3bbcfae101a58554ef6b06aaa0fbf5d",
+    "head": "09027b4f5b72e38053d0f4df202c76479e656faa"
+  },
+  {
+    "pr": 85,
+    "path": "notebooks/243_alphabet_logistic_regression.ipynb",
+    "kind": "outputs_changed",
+    "base": "f2f5a437c3bbcfae101a58554ef6b06aaa0fbf5d",
+    "head": "09027b4f5b72e38053d0f4df202c76479e656faa"
+  },
+  {
+    "pr": 84,
+    "path": "notebooks/255_ranking_metrics_vs_human_pfam.ipynb",
+    "kind": "added",
+    "base": "db0607dd5448d94f6e16e9a40329bbdbc5b2a3e5",
+    "head": "3fc493288ed9a6d07634ab2108901ab558db1675"
+  },
+  {
+    "pr": 83,
+    "path": "notebooks/241_alphabet_ranking_BCL2-Ced9_P66-CD47_BHF.ipynb",
+    "kind": "outputs_changed",
+    "base": "f2f5a437c3bbcfae101a58554ef6b06aaa0fbf5d",
+    "head": "b0db164e24f2046ba57eaf538a2237644e5c4846"
+  },
+  {
+    "pr": 83,
+    "path": "notebooks/242_alphabet_ensemble.ipynb",
+    "kind": "outputs_changed",
+    "base": "f2f5a437c3bbcfae101a58554ef6b06aaa0fbf5d",
+    "head": "b0db164e24f2046ba57eaf538a2237644e5c4846"
+  },
+  {
+    "pr": 83,
+    "path": "notebooks/243_alphabet_logistic_regression.ipynb",
+    "kind": "outputs_changed",
+    "base": "f2f5a437c3bbcfae101a58554ef6b06aaa0fbf5d",
+    "head": "b0db164e24f2046ba57eaf538a2237644e5c4846"
+  },
+  {
+    "pr": 83,
+    "path": "notebooks/256_bhf_dipeptide_shuffle_null.ipynb",
+    "kind": "added",
+    "base": "f2f5a437c3bbcfae101a58554ef6b06aaa0fbf5d",
+    "head": "b0db164e24f2046ba57eaf538a2237644e5c4846"
+  },
+  {
+    "pr": 83,
+    "path": "notebooks/258_bhf_zinc_finger_membrane_extracellular.ipynb",
+    "kind": "added",
+    "base": "f2f5a437c3bbcfae101a58554ef6b06aaa0fbf5d",
+    "head": "b0db164e24f2046ba57eaf538a2237644e5c4846"
+  },
+  {
+    "pr": 82,
+    "path": "notebooks/244_hero_example_candidates.ipynb",
+    "kind": "outputs_changed",
+    "base": "68d6946bcae2fbe625c56aa8d56304014f7d7f25",
+    "head": "944ded897186329c81a0e8b3d7a33d496050c77e"
+  },
+  {
+    "pr": 80,
+    "path": "notebooks/244_hero_example_candidates.ipynb",
+    "kind": "outputs_changed",
+    "base": "68d6946bcae2fbe625c56aa8d56304014f7d7f25",
+    "head": "3e3767c1211736f9eb0a755f199fd0de95c42897"
+  },
+  {
+    "pr": 78,
+    "path": "notebooks/244_hero_example_candidates.ipynb",
+    "kind": "source_changed",
+    "base": "972948e8e3a02f2bfeb33be78f07c2bee8ebeb93",
+    "head": "e39faf036dc390dbb65bb8b58a5157047ba2d222"
+  },
+  {
+    "pr": 78,
+    "path": "notebooks/272_swissprot_feature_placement_all_tools_report_half.ipynb",
+    "kind": "added",
+    "base": "972948e8e3a02f2bfeb33be78f07c2bee8ebeb93",
+    "head": "e39faf036dc390dbb65bb8b58a5157047ba2d222"
+  },
+  {
+    "pr": 77,
+    "path": "notebooks/244_hero_example_candidates.ipynb",
+    "kind": "outputs_changed",
+    "base": "972948e8e3a02f2bfeb33be78f07c2bee8ebeb93",
+    "head": "c79f84a4536d6d4814594bb213feb825f8954edc"
+  },
+  {
+    "pr": 77,
+    "path": "notebooks/254_hero_cases_seed_extension.ipynb",
+    "kind": "added",
+    "base": "972948e8e3a02f2bfeb33be78f07c2bee8ebeb93",
+    "head": "c79f84a4536d6d4814594bb213feb825f8954edc"
+  },
+  {
+    "pr": 72,
+    "path": "notebooks/244_hero_example_candidates.ipynb",
+    "kind": "outputs_changed",
+    "base": "18f5b53aae6f3a2b8a3d0d558520e94974d70c0d",
+    "head": "cde8ae4259b7a3b3e75106d1aa7bdcb5c9feae5c"
+  },
+  {
+    "pr": 72,
+    "path": "notebooks/250_elm_motif_transfer.ipynb",
+    "kind": "outputs_changed",
+    "base": "18f5b53aae6f3a2b8a3d0d558520e94974d70c0d",
+    "head": "cde8ae4259b7a3b3e75106d1aa7bdcb5c9feae5c"
+  },
+  {
+    "pr": 71,
+    "path": "notebooks/244_hero_example_candidates.ipynb",
+    "kind": "outputs_changed",
+    "base": "6c2a4944883da57f8f2ce9a7a0b66a094942ac91",
+    "head": "d3e558adcb0809933adda03615ef4bafb39ab6f6"
+  },
+  {
+    "pr": 71,
+    "path": "notebooks/250_elm_motif_transfer.ipynb",
+    "kind": "outputs_changed",
+    "base": "6c2a4944883da57f8f2ce9a7a0b66a094942ac91",
+    "head": "d3e558adcb0809933adda03615ef4bafb39ab6f6"
+  },
+  {
+    "pr": 69,
+    "path": "notebooks/244_hero_example_candidates.ipynb",
+    "kind": "outputs_changed",
+    "base": "6c2a4944883da57f8f2ce9a7a0b66a094942ac91",
+    "head": "53dd71f90fd97b67f4f00c4f30be09646e6ebaff"
+  },
+  {
+    "pr": 69,
+    "path": "notebooks/250_elm_motif_transfer.ipynb",
+    "kind": "outputs_changed",
+    "base": "6c2a4944883da57f8f2ce9a7a0b66a094942ac91",
+    "head": "53dd71f90fd97b67f4f00c4f30be09646e6ebaff"
+  },
+  {
+    "pr": 69,
+    "path": "notebooks/253_elm_motif_cover_chicken.ipynb",
+    "kind": "added",
+    "base": "6c2a4944883da57f8f2ce9a7a0b66a094942ac91",
+    "head": "53dd71f90fd97b67f4f00c4f30be09646e6ebaff"
+  },
+  {
+    "pr": 67,
+    "path": "notebooks/220_scope40_bcl2_ced9_all_hp_alphabets_k15_25.ipynb",
+    "kind": "added",
+    "base": "4bea4c236799bfa1e5c0ad032b296fce9a1ee876",
+    "head": "e09f97fc6941c742588df9cf795e46235d4ba128"
+  },
+  {
+    "pr": 66,
+    "path": "notebooks/013-compute-all-sensitivity-to-first-fp.ipynb",
+    "kind": "source_changed",
+    "base": "a3e8233c97d0010bab9c3f3c10e56c9efba25423",
+    "head": "eac40d03ff3abc0bd75001dfa509711f559bb081"
+  },
+  {
+    "pr": 66,
+    "path": "notebooks/014-plot-sensitivity-to-first-fp.ipynb",
+    "kind": "source_changed",
+    "base": "a3e8233c97d0010bab9c3f3c10e56c9efba25423",
+    "head": "eac40d03ff3abc0bd75001dfa509711f559bb081"
+  },
+  {
+    "pr": 66,
+    "path": "notebooks/015-which-kmers-match.ipynb",
+    "kind": "source_changed",
+    "base": "a3e8233c97d0010bab9c3f3c10e56c9efba25423",
+    "head": "eac40d03ff3abc0bd75001dfa509711f559bb081"
+  },
+  {
+    "pr": 66,
+    "path": "notebooks/016-ced9-bcl2-and-p66-cd47.ipynb",
+    "kind": "source_changed",
+    "base": "a3e8233c97d0010bab9c3f3c10e56c9efba25423",
+    "head": "eac40d03ff3abc0bd75001dfa509711f559bb081"
+  },
+  {
+    "pr": 66,
+    "path": "notebooks/017-p66-cd47.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "a3e8233c97d0010bab9c3f3c10e56c9efba25423",
+    "head": "eac40d03ff3abc0bd75001dfa509711f559bb081"
+  },
+  {
+    "pr": 66,
+    "path": "notebooks/018-explore-hp-k10.ipynb",
+    "kind": "source_changed",
+    "base": "a3e8233c97d0010bab9c3f3c10e56c9efba25423",
+    "head": "eac40d03ff3abc0bd75001dfa509711f559bb081"
+  },
+  {
+    "pr": 66,
+    "path": "notebooks/022-plot-subsampled-sourmash-scores-per-moltype-ksize.ipynb",
+    "kind": "source_changed",
+    "base": "a3e8233c97d0010bab9c3f3c10e56c9efba25423",
+    "head": "eac40d03ff3abc0bd75001dfa509711f559bb081"
+  },
+  {
+    "pr": 66,
+    "path": "notebooks/030-test-polars-read-fasta.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "a3e8233c97d0010bab9c3f3c10e56c9efba25423",
+    "head": "eac40d03ff3abc0bd75001dfa509711f559bb081"
+  },
+  {
+    "pr": 66,
+    "path": "notebooks/040-cargo-bench-string-with-capacity.ipynb",
+    "kind": "source_changed",
+    "base": "a3e8233c97d0010bab9c3f3c10e56c9efba25423",
+    "head": "eac40d03ff3abc0bd75001dfa509711f559bb081"
+  },
+  {
+    "pr": 66,
+    "path": "notebooks/051-scope40-hp-k15.ipynb",
+    "kind": "source_changed",
+    "base": "a3e8233c97d0010bab9c3f3c10e56c9efba25423",
+    "head": "eac40d03ff3abc0bd75001dfa509711f559bb081"
+  },
+  {
+    "pr": 66,
+    "path": "notebooks/052-scope40-hp-k15-bcl2-ced9.ipynb",
+    "kind": "source_changed",
+    "base": "a3e8233c97d0010bab9c3f3c10e56c9efba25423",
+    "head": "eac40d03ff3abc0bd75001dfa509711f559bb081"
+  },
+  {
+    "pr": 66,
+    "path": "notebooks/053-scope40-hp-k15-plots.ipynb",
+    "kind": "source_changed",
+    "base": "a3e8233c97d0010bab9c3f3c10e56c9efba25423",
+    "head": "eac40d03ff3abc0bd75001dfa509711f559bb081"
+  },
+  {
+    "pr": 66,
+    "path": "notebooks/054-scope40-hp-dayhoff-protein-plots.ipynb",
+    "kind": "source_changed",
+    "base": "a3e8233c97d0010bab9c3f3c10e56c9efba25423",
+    "head": "eac40d03ff3abc0bd75001dfa509711f559bb081"
+  },
+  {
+    "pr": 66,
+    "path": "notebooks/055-scope40-hp-dayhoff-protein-sensitivity.ipynb",
+    "kind": "source_changed",
+    "base": "a3e8233c97d0010bab9c3f3c10e56c9efba25423",
+    "head": "eac40d03ff3abc0bd75001dfa509711f559bb081"
+  },
+  {
+    "pr": 66,
+    "path": "notebooks/056-scope40-hp-k15-k20-vs-tea.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "a3e8233c97d0010bab9c3f3c10e56c9efba25423",
+    "head": "eac40d03ff3abc0bd75001dfa509711f559bb081"
+  },
+  {
+    "pr": 66,
+    "path": "notebooks/057-scope40-hp-k15-k20-vs-tea-clean.ipynb",
+    "kind": "source_changed",
+    "base": "a3e8233c97d0010bab9c3f3c10e56c9efba25423",
+    "head": "eac40d03ff3abc0bd75001dfa509711f559bb081"
+  },
+  {
+    "pr": 66,
+    "path": "notebooks/058-hp-k20-vs-foldseek-tea.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "a3e8233c97d0010bab9c3f3c10e56c9efba25423",
+    "head": "eac40d03ff3abc0bd75001dfa509711f559bb081"
+  },
+  {
+    "pr": 66,
+    "path": "notebooks/059-hp-k20-45-comparison.ipynb",
+    "kind": "source_changed",
+    "base": "a3e8233c97d0010bab9c3f3c10e56c9efba25423",
+    "head": "eac40d03ff3abc0bd75001dfa509711f559bb081"
+  },
+  {
+    "pr": 66,
+    "path": "notebooks/060-hp-k41-unique-vs-foldseek-analysis.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "a3e8233c97d0010bab9c3f3c10e56c9efba25423",
+    "head": "eac40d03ff3abc0bd75001dfa509711f559bb081"
+  },
+  {
+    "pr": 66,
+    "path": "notebooks/061-hp-k35-k36-family-analysis.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "a3e8233c97d0010bab9c3f3c10e56c9efba25423",
+    "head": "eac40d03ff3abc0bd75001dfa509711f559bb081"
+  },
+  {
+    "pr": 66,
+    "path": "notebooks/062-hp-k24-threshold-optimization.ipynb",
+    "kind": "source_changed",
+    "base": "a3e8233c97d0010bab9c3f3c10e56c9efba25423",
+    "head": "eac40d03ff3abc0bd75001dfa509711f559bb081"
+  },
+  {
+    "pr": 66,
+    "path": "notebooks/063-hp-unique-families-deep-analysis.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "a3e8233c97d0010bab9c3f3c10e56c9efba25423",
+    "head": "eac40d03ff3abc0bd75001dfa509711f559bb081"
+  },
+  {
+    "pr": 66,
+    "path": "notebooks/064-hp-k24-ml-classification.ipynb",
+    "kind": "source_changed",
+    "base": "a3e8233c97d0010bab9c3f3c10e56c9efba25423",
+    "head": "eac40d03ff3abc0bd75001dfa509711f559bb081"
+  },
+  {
+    "pr": 66,
+    "path": "notebooks/065-hp-scope-pvalue-benchmark.ipynb",
+    "kind": "source_changed",
+    "base": "a3e8233c97d0010bab9c3f3c10e56c9efba25423",
+    "head": "eac40d03ff3abc0bd75001dfa509711f559bb081"
+  },
+  {
+    "pr": 66,
+    "path": "notebooks/066_scope_all_metrics_auc_k15_45.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "a3e8233c97d0010bab9c3f3c10e56c9efba25423",
+    "head": "eac40d03ff3abc0bd75001dfa509711f559bb081"
+  },
+  {
+    "pr": 66,
+    "path": "notebooks/067_scope_all_metrics_all_fps.ipynb",
+    "kind": "source_changed",
+    "base": "a3e8233c97d0010bab9c3f3c10e56c9efba25423",
+    "head": "eac40d03ff3abc0bd75001dfa509711f559bb081"
+  },
+  {
+    "pr": 66,
+    "path": "notebooks/068_scope_all_metrics_excl_gz.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "a3e8233c97d0010bab9c3f3c10e56c9efba25423",
+    "head": "eac40d03ff3abc0bd75001dfa509711f559bb081"
+  },
+  {
+    "pr": 66,
+    "path": "notebooks/069_scope_excl_gz_unique_hits.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "a3e8233c97d0010bab9c3f3c10e56c9efba25423",
+    "head": "eac40d03ff3abc0bd75001dfa509711f559bb081"
+  },
+  {
+    "pr": 66,
+    "path": "notebooks/070_scope_bcl2_ced9_small_k.ipynb",
+    "kind": "source_changed",
+    "base": "a3e8233c97d0010bab9c3f3c10e56c9efba25423",
+    "head": "eac40d03ff3abc0bd75001dfa509711f559bb081"
+  },
+  {
+    "pr": 66,
+    "path": "notebooks/071_scope_unique_hits_scop_class_enrichment.ipynb",
+    "kind": "source_changed",
+    "base": "a3e8233c97d0010bab9c3f3c10e56c9efba25423",
+    "head": "eac40d03ff3abc0bd75001dfa509711f559bb081"
+  },
+  {
+    "pr": 66,
+    "path": "notebooks/072_scope_threshold_filter_benchmark.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "a3e8233c97d0010bab9c3f3c10e56c9efba25423",
+    "head": "eac40d03ff3abc0bd75001dfa509711f559bb081"
+  },
+  {
+    "pr": 66,
+    "path": "notebooks/073_scope40_hp_kmer_distribution.ipynb",
+    "kind": "source_changed",
+    "base": "a3e8233c97d0010bab9c3f3c10e56c9efba25423",
+    "head": "eac40d03ff3abc0bd75001dfa509711f559bb081"
+  },
+  {
+    "pr": 66,
+    "path": "notebooks/074_scope_family_auc_mechanism.ipynb",
+    "kind": "source_changed",
+    "base": "a3e8233c97d0010bab9c3f3c10e56c9efba25423",
+    "head": "eac40d03ff3abc0bd75001dfa509711f559bb081"
+  },
+  {
+    "pr": 66,
+    "path": "notebooks/075_hp_alphabet_sweep_benchmark.ipynb",
+    "kind": "source_changed",
+    "base": "a3e8233c97d0010bab9c3f3c10e56c9efba25423",
+    "head": "eac40d03ff3abc0bd75001dfa509711f559bb081"
+  },
+  {
+    "pr": 66,
+    "path": "notebooks/076_hp_alphabet_sweep_per_class.ipynb",
+    "kind": "source_changed",
+    "base": "a3e8233c97d0010bab9c3f3c10e56c9efba25423",
+    "head": "eac40d03ff3abc0bd75001dfa509711f559bb081"
+  },
+  {
+    "pr": 66,
+    "path": "notebooks/077_hp_alphabet_sweep_summary.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "a3e8233c97d0010bab9c3f3c10e56c9efba25423",
+    "head": "eac40d03ff3abc0bd75001dfa509711f559bb081"
+  },
+  {
+    "pr": 66,
+    "path": "notebooks/078_frontier_figure.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "a3e8233c97d0010bab9c3f3c10e56c9efba25423",
+    "head": "eac40d03ff3abc0bd75001dfa509711f559bb081"
+  },
+  {
+    "pr": 66,
+    "path": "notebooks/078_thomas_dill_k26_mechanism.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "a3e8233c97d0010bab9c3f3c10e56c9efba25423",
+    "head": "eac40d03ff3abc0bd75001dfa509711f559bb081"
+  },
+  {
+    "pr": 66,
+    "path": "notebooks/079_annotation_gaps_and_validation.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "a3e8233c97d0010bab9c3f3c10e56c9efba25423",
+    "head": "eac40d03ff3abc0bd75001dfa509711f559bb081"
+  },
+  {
+    "pr": 66,
+    "path": "notebooks/080_pbotc_k26_qfo2020_partial_analysis.ipynb",
+    "kind": "source_changed",
+    "base": "a3e8233c97d0010bab9c3f3c10e56c9efba25423",
+    "head": "eac40d03ff3abc0bd75001dfa509711f559bb081"
+  },
+  {
+    "pr": 66,
+    "path": "notebooks/081_disprot_benchmark_analysis.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "a3e8233c97d0010bab9c3f3c10e56c9efba25423",
+    "head": "eac40d03ff3abc0bd75001dfa509711f559bb081"
+  },
+  {
+    "pr": 66,
+    "path": "notebooks/082_thomas_dill_k26_vs_k27_lost_queries.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "a3e8233c97d0010bab9c3f3c10e56c9efba25423",
+    "head": "eac40d03ff3abc0bd75001dfa509711f559bb081"
+  },
+  {
+    "pr": 66,
+    "path": "notebooks/083_km_fails_foldseek_wins.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "a3e8233c97d0010bab9c3f3c10e56c9efba25423",
+    "head": "eac40d03ff3abc0bd75001dfa509711f559bb081"
+  },
+  {
+    "pr": 66,
+    "path": "notebooks/084_plddt_qfo_pfam.ipynb",
+    "kind": "source_changed",
+    "base": "a3e8233c97d0010bab9c3f3c10e56c9efba25423",
+    "head": "eac40d03ff3abc0bd75001dfa509711f559bb081"
+  },
+  {
+    "pr": 66,
+    "path": "notebooks/085_search_time_significance_prefilter.ipynb",
+    "kind": "source_changed",
+    "base": "a3e8233c97d0010bab9c3f3c10e56c9efba25423",
+    "head": "eac40d03ff3abc0bd75001dfa509711f559bb081"
+  },
+  {
+    "pr": 66,
+    "path": "notebooks/086_lowcomplexity_fraction_threshold.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "a3e8233c97d0010bab9c3f3c10e56c9efba25423",
+    "head": "eac40d03ff3abc0bd75001dfa509711f559bb081"
+  },
+  {
+    "pr": 66,
+    "path": "notebooks/115-human-mouse-ortholog-double-peaks.ipynb",
+    "kind": "source_changed",
+    "base": "a3e8233c97d0010bab9c3f3c10e56c9efba25423",
+    "head": "eac40d03ff3abc0bd75001dfa509711f559bb081"
+  },
+  {
+    "pr": 66,
+    "path": "notebooks/116-kmerseek-vs-orthofinder.ipynb",
+    "kind": "source_changed",
+    "base": "a3e8233c97d0010bab9c3f3c10e56c9efba25423",
+    "head": "eac40d03ff3abc0bd75001dfa509711f559bb081"
+  },
+  {
+    "pr": 66,
+    "path": "notebooks/117-human-mouse-ortholog-bimodality-investigation.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "a3e8233c97d0010bab9c3f3c10e56c9efba25423",
+    "head": "eac40d03ff3abc0bd75001dfa509711f559bb081"
+  },
+  {
+    "pr": 66,
+    "path": "notebooks/118-kmerseek-vs-orthofinder-mgi-ground-truth.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "a3e8233c97d0010bab9c3f3c10e56c9efba25423",
+    "head": "eac40d03ff3abc0bd75001dfa509711f559bb081"
+  },
+  {
+    "pr": 66,
+    "path": "notebooks/119_kmerseek_only_orthologs_characterization.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "a3e8233c97d0010bab9c3f3c10e56c9efba25423",
+    "head": "eac40d03ff3abc0bd75001dfa509711f559bb081"
+  },
+  {
+    "pr": 66,
+    "path": "notebooks/120_kmerseek_only_orthologs_conservative_threshold.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "a3e8233c97d0010bab9c3f3c10e56c9efba25423",
+    "head": "eac40d03ff3abc0bd75001dfa509711f559bb081"
+  },
+  {
+    "pr": 66,
+    "path": "notebooks/121_qfo2020_kmerseek_analysis.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "a3e8233c97d0010bab9c3f3c10e56c9efba25423",
+    "head": "eac40d03ff3abc0bd75001dfa509711f559bb081"
+  },
+  {
+    "pr": 66,
+    "path": "notebooks/122_subdomain_detection_benchmark.ipynb",
+    "kind": "source_changed",
+    "base": "a3e8233c97d0010bab9c3f3c10e56c9efba25423",
+    "head": "eac40d03ff3abc0bd75001dfa509711f559bb081"
+  },
+  {
+    "pr": 66,
+    "path": "notebooks/123_pfam_subdomain_divergence_benchmark.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "a3e8233c97d0010bab9c3f3c10e56c9efba25423",
+    "head": "eac40d03ff3abc0bd75001dfa509711f559bb081"
+  },
+  {
+    "pr": 66,
+    "path": "notebooks/124_kmerseek_false_positives_characterization.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "a3e8233c97d0010bab9c3f3c10e56c9efba25423",
+    "head": "eac40d03ff3abc0bd75001dfa509711f559bb081"
+  },
+  {
+    "pr": 66,
+    "path": "notebooks/125_build_pfam_benchmark_ground_truth.ipynb",
+    "kind": "source_changed",
+    "base": "a3e8233c97d0010bab9c3f3c10e56c9efba25423",
+    "head": "eac40d03ff3abc0bd75001dfa509711f559bb081"
+  },
+  {
+    "pr": 66,
+    "path": "notebooks/126_pfam_benchmark_ksize_window_ml.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "a3e8233c97d0010bab9c3f3c10e56c9efba25423",
+    "head": "eac40d03ff3abc0bd75001dfa509711f559bb081"
+  },
+  {
+    "pr": 66,
+    "path": "notebooks/200_human_mouse_ortholog_alphabet_ksize_comparison.ipynb",
+    "kind": "source_changed",
+    "base": "a3e8233c97d0010bab9c3f3c10e56c9efba25423",
+    "head": "eac40d03ff3abc0bd75001dfa509711f559bb081"
+  },
+  {
+    "pr": 66,
+    "path": "notebooks/201_human_mouse_mhc_top5_per_alphabet_deep_dive.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "a3e8233c97d0010bab9c3f3c10e56c9efba25423",
+    "head": "eac40d03ff3abc0bd75001dfa509711f559bb081"
+  },
+  {
+    "pr": 66,
+    "path": "notebooks/202_human_mouse_kmerseek_vs_plddt.ipynb",
+    "kind": "source_changed",
+    "base": "a3e8233c97d0010bab9c3f3c10e56c9efba25423",
+    "head": "eac40d03ff3abc0bd75001dfa509711f559bb081"
+  },
+  {
+    "pr": 66,
+    "path": "notebooks/203_human_mouse_ortholog_disorder_comparison.ipynb",
+    "kind": "source_changed",
+    "base": "a3e8233c97d0010bab9c3f3c10e56c9efba25423",
+    "head": "eac40d03ff3abc0bd75001dfa509711f559bb081"
+  },
+  {
+    "pr": 66,
+    "path": "notebooks/205_hp_thomas_dill_deep_dive.ipynb",
+    "kind": "source_changed",
+    "base": "a3e8233c97d0010bab9c3f3c10e56c9efba25423",
+    "head": "eac40d03ff3abc0bd75001dfa509711f559bb081"
+  },
+  {
+    "pr": 66,
+    "path": "notebooks/206_dnds_hp_alphabet_mechanism.ipynb",
+    "kind": "source_changed",
+    "base": "a3e8233c97d0010bab9c3f3c10e56c9efba25423",
+    "head": "eac40d03ff3abc0bd75001dfa509711f559bb081"
+  },
+  {
+    "pr": 65,
+    "path": "notebooks/24-kmer-frequency-spectra-across-alphabets-ksizes.ipynb",
+    "kind": "source_changed",
+    "base": "200ee0fdc8cba3b23b51d19c681a2d2442102628",
+    "head": "e55f0314932ba2b7dd417bd80e790f1b525a766c"
+  },
+  {
+    "pr": 64,
+    "path": "notebooks/013-compute-all-sensitivity-to-first-fp.ipynb",
+    "kind": "source_changed",
+    "base": "a801357fa41054c281fcbc02854779e924d2368c",
+    "head": "bb4a625656022ce6f45dbf17f6e4d6b8f887b0ec"
+  },
+  {
+    "pr": 64,
+    "path": "notebooks/014-plot-sensitivity-to-first-fp.ipynb",
+    "kind": "source_changed",
+    "base": "a801357fa41054c281fcbc02854779e924d2368c",
+    "head": "bb4a625656022ce6f45dbf17f6e4d6b8f887b0ec"
+  },
+  {
+    "pr": 64,
+    "path": "notebooks/015-which-kmers-match.ipynb",
+    "kind": "source_changed",
+    "base": "a801357fa41054c281fcbc02854779e924d2368c",
+    "head": "bb4a625656022ce6f45dbf17f6e4d6b8f887b0ec"
+  },
+  {
+    "pr": 64,
+    "path": "notebooks/016-ced9-bcl2-and-p66-cd47.ipynb",
+    "kind": "source_changed",
+    "base": "a801357fa41054c281fcbc02854779e924d2368c",
+    "head": "bb4a625656022ce6f45dbf17f6e4d6b8f887b0ec"
+  },
+  {
+    "pr": 64,
+    "path": "notebooks/017-p66-cd47.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "a801357fa41054c281fcbc02854779e924d2368c",
+    "head": "bb4a625656022ce6f45dbf17f6e4d6b8f887b0ec"
+  },
+  {
+    "pr": 64,
+    "path": "notebooks/018-explore-hp-k10.ipynb",
+    "kind": "source_changed",
+    "base": "a801357fa41054c281fcbc02854779e924d2368c",
+    "head": "bb4a625656022ce6f45dbf17f6e4d6b8f887b0ec"
+  },
+  {
+    "pr": 64,
+    "path": "notebooks/022-plot-subsampled-sourmash-scores-per-moltype-ksize.ipynb",
+    "kind": "source_changed",
+    "base": "a801357fa41054c281fcbc02854779e924d2368c",
+    "head": "bb4a625656022ce6f45dbf17f6e4d6b8f887b0ec"
+  },
+  {
+    "pr": 64,
+    "path": "notebooks/030-test-polars-read-fasta.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "a801357fa41054c281fcbc02854779e924d2368c",
+    "head": "bb4a625656022ce6f45dbf17f6e4d6b8f887b0ec"
+  },
+  {
+    "pr": 64,
+    "path": "notebooks/040-cargo-bench-string-with-capacity.ipynb",
+    "kind": "source_changed",
+    "base": "a801357fa41054c281fcbc02854779e924d2368c",
+    "head": "bb4a625656022ce6f45dbf17f6e4d6b8f887b0ec"
+  },
+  {
+    "pr": 64,
+    "path": "notebooks/051-scope40-hp-k15.ipynb",
+    "kind": "source_changed",
+    "base": "a801357fa41054c281fcbc02854779e924d2368c",
+    "head": "bb4a625656022ce6f45dbf17f6e4d6b8f887b0ec"
+  },
+  {
+    "pr": 64,
+    "path": "notebooks/052-scope40-hp-k15-bcl2-ced9.ipynb",
+    "kind": "source_changed",
+    "base": "a801357fa41054c281fcbc02854779e924d2368c",
+    "head": "bb4a625656022ce6f45dbf17f6e4d6b8f887b0ec"
+  },
+  {
+    "pr": 64,
+    "path": "notebooks/053-scope40-hp-k15-plots.ipynb",
+    "kind": "source_changed",
+    "base": "a801357fa41054c281fcbc02854779e924d2368c",
+    "head": "bb4a625656022ce6f45dbf17f6e4d6b8f887b0ec"
+  },
+  {
+    "pr": 64,
+    "path": "notebooks/054-scope40-hp-dayhoff-protein-plots.ipynb",
+    "kind": "source_changed",
+    "base": "a801357fa41054c281fcbc02854779e924d2368c",
+    "head": "bb4a625656022ce6f45dbf17f6e4d6b8f887b0ec"
+  },
+  {
+    "pr": 64,
+    "path": "notebooks/055-scope40-hp-dayhoff-protein-sensitivity.ipynb",
+    "kind": "source_changed",
+    "base": "a801357fa41054c281fcbc02854779e924d2368c",
+    "head": "bb4a625656022ce6f45dbf17f6e4d6b8f887b0ec"
+  },
+  {
+    "pr": 64,
+    "path": "notebooks/056-scope40-hp-k15-k20-vs-tea.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "a801357fa41054c281fcbc02854779e924d2368c",
+    "head": "bb4a625656022ce6f45dbf17f6e4d6b8f887b0ec"
+  },
+  {
+    "pr": 64,
+    "path": "notebooks/057-scope40-hp-k15-k20-vs-tea-clean.ipynb",
+    "kind": "source_changed",
+    "base": "a801357fa41054c281fcbc02854779e924d2368c",
+    "head": "bb4a625656022ce6f45dbf17f6e4d6b8f887b0ec"
+  },
+  {
+    "pr": 64,
+    "path": "notebooks/058-hp-k20-vs-foldseek-tea.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "a801357fa41054c281fcbc02854779e924d2368c",
+    "head": "bb4a625656022ce6f45dbf17f6e4d6b8f887b0ec"
+  },
+  {
+    "pr": 64,
+    "path": "notebooks/059-hp-k20-45-comparison.ipynb",
+    "kind": "source_changed",
+    "base": "a801357fa41054c281fcbc02854779e924d2368c",
+    "head": "bb4a625656022ce6f45dbf17f6e4d6b8f887b0ec"
+  },
+  {
+    "pr": 64,
+    "path": "notebooks/060-hp-k41-unique-vs-foldseek-analysis.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "a801357fa41054c281fcbc02854779e924d2368c",
+    "head": "bb4a625656022ce6f45dbf17f6e4d6b8f887b0ec"
+  },
+  {
+    "pr": 64,
+    "path": "notebooks/061-hp-k35-k36-family-analysis.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "a801357fa41054c281fcbc02854779e924d2368c",
+    "head": "bb4a625656022ce6f45dbf17f6e4d6b8f887b0ec"
+  },
+  {
+    "pr": 64,
+    "path": "notebooks/062-hp-k24-threshold-optimization.ipynb",
+    "kind": "source_changed",
+    "base": "a801357fa41054c281fcbc02854779e924d2368c",
+    "head": "bb4a625656022ce6f45dbf17f6e4d6b8f887b0ec"
+  },
+  {
+    "pr": 64,
+    "path": "notebooks/063-hp-unique-families-deep-analysis.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "a801357fa41054c281fcbc02854779e924d2368c",
+    "head": "bb4a625656022ce6f45dbf17f6e4d6b8f887b0ec"
+  },
+  {
+    "pr": 64,
+    "path": "notebooks/064-hp-k24-ml-classification.ipynb",
+    "kind": "source_changed",
+    "base": "a801357fa41054c281fcbc02854779e924d2368c",
+    "head": "bb4a625656022ce6f45dbf17f6e4d6b8f887b0ec"
+  },
+  {
+    "pr": 64,
+    "path": "notebooks/065-hp-scope-pvalue-benchmark.ipynb",
+    "kind": "source_changed",
+    "base": "a801357fa41054c281fcbc02854779e924d2368c",
+    "head": "bb4a625656022ce6f45dbf17f6e4d6b8f887b0ec"
+  },
+  {
+    "pr": 64,
+    "path": "notebooks/066_scope_all_metrics_auc_k15_45.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "a801357fa41054c281fcbc02854779e924d2368c",
+    "head": "bb4a625656022ce6f45dbf17f6e4d6b8f887b0ec"
+  },
+  {
+    "pr": 64,
+    "path": "notebooks/067_scope_all_metrics_all_fps.ipynb",
+    "kind": "source_changed",
+    "base": "a801357fa41054c281fcbc02854779e924d2368c",
+    "head": "bb4a625656022ce6f45dbf17f6e4d6b8f887b0ec"
+  },
+  {
+    "pr": 64,
+    "path": "notebooks/068_scope_all_metrics_excl_gz.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "a801357fa41054c281fcbc02854779e924d2368c",
+    "head": "bb4a625656022ce6f45dbf17f6e4d6b8f887b0ec"
+  },
+  {
+    "pr": 64,
+    "path": "notebooks/069_scope_excl_gz_unique_hits.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "a801357fa41054c281fcbc02854779e924d2368c",
+    "head": "bb4a625656022ce6f45dbf17f6e4d6b8f887b0ec"
+  },
+  {
+    "pr": 64,
+    "path": "notebooks/070_scope_bcl2_ced9_small_k.ipynb",
+    "kind": "source_changed",
+    "base": "a801357fa41054c281fcbc02854779e924d2368c",
+    "head": "bb4a625656022ce6f45dbf17f6e4d6b8f887b0ec"
+  },
+  {
+    "pr": 64,
+    "path": "notebooks/071_scope_unique_hits_scop_class_enrichment.ipynb",
+    "kind": "source_changed",
+    "base": "a801357fa41054c281fcbc02854779e924d2368c",
+    "head": "bb4a625656022ce6f45dbf17f6e4d6b8f887b0ec"
+  },
+  {
+    "pr": 64,
+    "path": "notebooks/072_scope_threshold_filter_benchmark.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "a801357fa41054c281fcbc02854779e924d2368c",
+    "head": "bb4a625656022ce6f45dbf17f6e4d6b8f887b0ec"
+  },
+  {
+    "pr": 64,
+    "path": "notebooks/073_scope40_hp_kmer_distribution.ipynb",
+    "kind": "source_changed",
+    "base": "a801357fa41054c281fcbc02854779e924d2368c",
+    "head": "bb4a625656022ce6f45dbf17f6e4d6b8f887b0ec"
+  },
+  {
+    "pr": 64,
+    "path": "notebooks/074_scope_family_auc_mechanism.ipynb",
+    "kind": "source_changed",
+    "base": "a801357fa41054c281fcbc02854779e924d2368c",
+    "head": "bb4a625656022ce6f45dbf17f6e4d6b8f887b0ec"
+  },
+  {
+    "pr": 64,
+    "path": "notebooks/075_hp_alphabet_sweep_benchmark.ipynb",
+    "kind": "source_changed",
+    "base": "a801357fa41054c281fcbc02854779e924d2368c",
+    "head": "bb4a625656022ce6f45dbf17f6e4d6b8f887b0ec"
+  },
+  {
+    "pr": 64,
+    "path": "notebooks/076_hp_alphabet_sweep_per_class.ipynb",
+    "kind": "source_changed",
+    "base": "a801357fa41054c281fcbc02854779e924d2368c",
+    "head": "bb4a625656022ce6f45dbf17f6e4d6b8f887b0ec"
+  },
+  {
+    "pr": 64,
+    "path": "notebooks/077_hp_alphabet_sweep_summary.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "a801357fa41054c281fcbc02854779e924d2368c",
+    "head": "bb4a625656022ce6f45dbf17f6e4d6b8f887b0ec"
+  },
+  {
+    "pr": 64,
+    "path": "notebooks/078_frontier_figure.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "a801357fa41054c281fcbc02854779e924d2368c",
+    "head": "bb4a625656022ce6f45dbf17f6e4d6b8f887b0ec"
+  },
+  {
+    "pr": 64,
+    "path": "notebooks/078_thomas_dill_k26_mechanism.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "a801357fa41054c281fcbc02854779e924d2368c",
+    "head": "bb4a625656022ce6f45dbf17f6e4d6b8f887b0ec"
+  },
+  {
+    "pr": 64,
+    "path": "notebooks/079_annotation_gaps_and_validation.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "a801357fa41054c281fcbc02854779e924d2368c",
+    "head": "bb4a625656022ce6f45dbf17f6e4d6b8f887b0ec"
+  },
+  {
+    "pr": 64,
+    "path": "notebooks/080_pbotc_k26_qfo2020_partial_analysis.ipynb",
+    "kind": "source_changed",
+    "base": "a801357fa41054c281fcbc02854779e924d2368c",
+    "head": "bb4a625656022ce6f45dbf17f6e4d6b8f887b0ec"
+  },
+  {
+    "pr": 64,
+    "path": "notebooks/081_disprot_benchmark_analysis.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "a801357fa41054c281fcbc02854779e924d2368c",
+    "head": "bb4a625656022ce6f45dbf17f6e4d6b8f887b0ec"
+  },
+  {
+    "pr": 64,
+    "path": "notebooks/082_thomas_dill_k26_vs_k27_lost_queries.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "a801357fa41054c281fcbc02854779e924d2368c",
+    "head": "bb4a625656022ce6f45dbf17f6e4d6b8f887b0ec"
+  },
+  {
+    "pr": 64,
+    "path": "notebooks/083_km_fails_foldseek_wins.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "a801357fa41054c281fcbc02854779e924d2368c",
+    "head": "bb4a625656022ce6f45dbf17f6e4d6b8f887b0ec"
+  },
+  {
+    "pr": 64,
+    "path": "notebooks/084_plddt_qfo_pfam.ipynb",
+    "kind": "source_changed",
+    "base": "a801357fa41054c281fcbc02854779e924d2368c",
+    "head": "bb4a625656022ce6f45dbf17f6e4d6b8f887b0ec"
+  },
+  {
+    "pr": 64,
+    "path": "notebooks/085_search_time_significance_prefilter.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "a801357fa41054c281fcbc02854779e924d2368c",
+    "head": "bb4a625656022ce6f45dbf17f6e4d6b8f887b0ec"
+  },
+  {
+    "pr": 64,
+    "path": "notebooks/086_lowcomplexity_fraction_threshold.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "a801357fa41054c281fcbc02854779e924d2368c",
+    "head": "bb4a625656022ce6f45dbf17f6e4d6b8f887b0ec"
+  },
+  {
+    "pr": 64,
+    "path": "notebooks/115-human-mouse-ortholog-double-peaks.ipynb",
+    "kind": "source_changed",
+    "base": "a801357fa41054c281fcbc02854779e924d2368c",
+    "head": "bb4a625656022ce6f45dbf17f6e4d6b8f887b0ec"
+  },
+  {
+    "pr": 64,
+    "path": "notebooks/116-kmerseek-vs-orthofinder.ipynb",
+    "kind": "source_changed",
+    "base": "a801357fa41054c281fcbc02854779e924d2368c",
+    "head": "bb4a625656022ce6f45dbf17f6e4d6b8f887b0ec"
+  },
+  {
+    "pr": 64,
+    "path": "notebooks/117-human-mouse-ortholog-bimodality-investigation.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "a801357fa41054c281fcbc02854779e924d2368c",
+    "head": "bb4a625656022ce6f45dbf17f6e4d6b8f887b0ec"
+  },
+  {
+    "pr": 64,
+    "path": "notebooks/118-kmerseek-vs-orthofinder-mgi-ground-truth.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "a801357fa41054c281fcbc02854779e924d2368c",
+    "head": "bb4a625656022ce6f45dbf17f6e4d6b8f887b0ec"
+  },
+  {
+    "pr": 64,
+    "path": "notebooks/119_kmerseek_only_orthologs_characterization.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "a801357fa41054c281fcbc02854779e924d2368c",
+    "head": "bb4a625656022ce6f45dbf17f6e4d6b8f887b0ec"
+  },
+  {
+    "pr": 64,
+    "path": "notebooks/120_kmerseek_only_orthologs_conservative_threshold.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "a801357fa41054c281fcbc02854779e924d2368c",
+    "head": "bb4a625656022ce6f45dbf17f6e4d6b8f887b0ec"
+  },
+  {
+    "pr": 64,
+    "path": "notebooks/121_qfo2020_kmerseek_analysis.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "a801357fa41054c281fcbc02854779e924d2368c",
+    "head": "bb4a625656022ce6f45dbf17f6e4d6b8f887b0ec"
+  },
+  {
+    "pr": 64,
+    "path": "notebooks/122_subdomain_detection_benchmark.ipynb",
+    "kind": "source_changed",
+    "base": "a801357fa41054c281fcbc02854779e924d2368c",
+    "head": "bb4a625656022ce6f45dbf17f6e4d6b8f887b0ec"
+  },
+  {
+    "pr": 64,
+    "path": "notebooks/123_pfam_subdomain_divergence_benchmark.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "a801357fa41054c281fcbc02854779e924d2368c",
+    "head": "bb4a625656022ce6f45dbf17f6e4d6b8f887b0ec"
+  },
+  {
+    "pr": 64,
+    "path": "notebooks/124_kmerseek_false_positives_characterization.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "a801357fa41054c281fcbc02854779e924d2368c",
+    "head": "bb4a625656022ce6f45dbf17f6e4d6b8f887b0ec"
+  },
+  {
+    "pr": 64,
+    "path": "notebooks/125_build_pfam_benchmark_ground_truth.ipynb",
+    "kind": "source_changed",
+    "base": "a801357fa41054c281fcbc02854779e924d2368c",
+    "head": "bb4a625656022ce6f45dbf17f6e4d6b8f887b0ec"
+  },
+  {
+    "pr": 64,
+    "path": "notebooks/126_pfam_benchmark_ksize_window_ml.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "a801357fa41054c281fcbc02854779e924d2368c",
+    "head": "bb4a625656022ce6f45dbf17f6e4d6b8f887b0ec"
+  },
+  {
+    "pr": 64,
+    "path": "notebooks/200_human_mouse_ortholog_alphabet_ksize_comparison.ipynb",
+    "kind": "source_changed",
+    "base": "a801357fa41054c281fcbc02854779e924d2368c",
+    "head": "bb4a625656022ce6f45dbf17f6e4d6b8f887b0ec"
+  },
+  {
+    "pr": 64,
+    "path": "notebooks/202_human_mouse_kmerseek_vs_plddt.ipynb",
+    "kind": "source_changed",
+    "base": "a801357fa41054c281fcbc02854779e924d2368c",
+    "head": "bb4a625656022ce6f45dbf17f6e4d6b8f887b0ec"
+  },
+  {
+    "pr": 64,
+    "path": "notebooks/203_human_mouse_ortholog_disorder_comparison.ipynb",
+    "kind": "source_changed",
+    "base": "a801357fa41054c281fcbc02854779e924d2368c",
+    "head": "bb4a625656022ce6f45dbf17f6e4d6b8f887b0ec"
+  },
+  {
+    "pr": 64,
+    "path": "notebooks/205_hp_thomas_dill_deep_dive.ipynb",
+    "kind": "outputs_changed",
+    "base": "a801357fa41054c281fcbc02854779e924d2368c",
+    "head": "bb4a625656022ce6f45dbf17f6e4d6b8f887b0ec"
+  },
+  {
+    "pr": 64,
+    "path": "notebooks/206_dnds_hp_alphabet_mechanism.ipynb",
+    "kind": "source_changed",
+    "base": "a801357fa41054c281fcbc02854779e924d2368c",
+    "head": "bb4a625656022ce6f45dbf17f6e4d6b8f887b0ec"
+  },
+  {
+    "pr": 64,
+    "path": "notebooks/207_omega_selection_vs_divergence.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "a801357fa41054c281fcbc02854779e924d2368c",
+    "head": "bb4a625656022ce6f45dbf17f6e4d6b8f887b0ec"
+  },
+  {
+    "pr": 64,
+    "path": "notebooks/210_mhc_benchmark_setup_and_label_policy.ipynb",
+    "kind": "outputs_changed",
+    "base": "a801357fa41054c281fcbc02854779e924d2368c",
+    "head": "bb4a625656022ce6f45dbf17f6e4d6b8f887b0ec"
+  },
+  {
+    "pr": 64,
+    "path": "notebooks/211_mhc_recovery_and_auc.ipynb",
+    "kind": "outputs_changed",
+    "base": "a801357fa41054c281fcbc02854779e924d2368c",
+    "head": "bb4a625656022ce6f45dbf17f6e4d6b8f887b0ec"
+  },
+  {
+    "pr": 64,
+    "path": "notebooks/212_mhc_domain_localisation.ipynb",
+    "kind": "outputs_changed",
+    "base": "a801357fa41054c281fcbc02854779e924d2368c",
+    "head": "bb4a625656022ce6f45dbf17f6e4d6b8f887b0ec"
+  },
+  {
+    "pr": 64,
+    "path": "notebooks/213_mhc_metric_choice.ipynb",
+    "kind": "outputs_changed",
+    "base": "a801357fa41054c281fcbc02854779e924d2368c",
+    "head": "bb4a625656022ce6f45dbf17f6e4d6b8f887b0ec"
+  },
+  {
+    "pr": 64,
+    "path": "notebooks/214_mhc_igsf_specificity.ipynb",
+    "kind": "outputs_changed",
+    "base": "a801357fa41054c281fcbc02854779e924d2368c",
+    "head": "bb4a625656022ce6f45dbf17f6e4d6b8f887b0ec"
+  },
+  {
+    "pr": 64,
+    "path": "notebooks/215_mhc_synteny_ground_truth.ipynb",
+    "kind": "source_changed",
+    "base": "a801357fa41054c281fcbc02854779e924d2368c",
+    "head": "bb4a625656022ce6f45dbf17f6e4d6b8f887b0ec"
+  },
+  {
+    "pr": 64,
+    "path": "notebooks/216_mhc_solvent_accessibility_jaccard.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "a801357fa41054c281fcbc02854779e924d2368c",
+    "head": "bb4a625656022ce6f45dbf17f6e4d6b8f887b0ec"
+  },
+  {
+    "pr": 64,
+    "path": "notebooks/217_rbh_false_positive_paralog_contamination.ipynb",
+    "kind": "source_changed",
+    "base": "a801357fa41054c281fcbc02854779e924d2368c",
+    "head": "bb4a625656022ce6f45dbf17f6e4d6b8f887b0ec"
+  },
+  {
+    "pr": 63,
+    "path": "notebooks/340_e3_detection_gap_baselines.ipynb",
+    "kind": "added",
+    "base": "4bea4c236799bfa1e5c0ad032b296fce9a1ee876",
+    "head": "7b86f4e6ef4dac635d6949702b17e3313073ce22"
+  },
+  {
+    "pr": 59,
+    "path": "notebooks/013-compute-all-sensitivity-to-first-fp.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "dc8cff8a78bbb4fb707372927313f557ae59e900",
+    "head": "52186fd097740ced2545950fe0e0bda330e6053e"
+  },
+  {
+    "pr": 59,
+    "path": "notebooks/014-plot-sensitivity-to-first-fp.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "dc8cff8a78bbb4fb707372927313f557ae59e900",
+    "head": "52186fd097740ced2545950fe0e0bda330e6053e"
+  },
+  {
+    "pr": 59,
+    "path": "notebooks/015-which-kmers-match.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "dc8cff8a78bbb4fb707372927313f557ae59e900",
+    "head": "52186fd097740ced2545950fe0e0bda330e6053e"
+  },
+  {
+    "pr": 59,
+    "path": "notebooks/016-ced9-bcl2-and-p66-cd47.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "dc8cff8a78bbb4fb707372927313f557ae59e900",
+    "head": "52186fd097740ced2545950fe0e0bda330e6053e"
+  },
+  {
+    "pr": 59,
+    "path": "notebooks/017-p66-cd47.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "dc8cff8a78bbb4fb707372927313f557ae59e900",
+    "head": "52186fd097740ced2545950fe0e0bda330e6053e"
+  },
+  {
+    "pr": 59,
+    "path": "notebooks/018-explore-hp-k10.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "dc8cff8a78bbb4fb707372927313f557ae59e900",
+    "head": "52186fd097740ced2545950fe0e0bda330e6053e"
+  },
+  {
+    "pr": 59,
+    "path": "notebooks/022-plot-subsampled-sourmash-scores-per-moltype-ksize.ipynb",
+    "kind": "source_changed",
+    "base": "dc8cff8a78bbb4fb707372927313f557ae59e900",
+    "head": "52186fd097740ced2545950fe0e0bda330e6053e"
+  },
+  {
+    "pr": 59,
+    "path": "notebooks/030-test-polars-read-fasta.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "dc8cff8a78bbb4fb707372927313f557ae59e900",
+    "head": "52186fd097740ced2545950fe0e0bda330e6053e"
+  },
+  {
+    "pr": 59,
+    "path": "notebooks/040-cargo-bench-string-with-capacity.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "dc8cff8a78bbb4fb707372927313f557ae59e900",
+    "head": "52186fd097740ced2545950fe0e0bda330e6053e"
+  },
+  {
+    "pr": 59,
+    "path": "notebooks/051-scope40-hp-k15.ipynb",
+    "kind": "source_changed",
+    "base": "dc8cff8a78bbb4fb707372927313f557ae59e900",
+    "head": "52186fd097740ced2545950fe0e0bda330e6053e"
+  },
+  {
+    "pr": 59,
+    "path": "notebooks/052-scope40-hp-k15-bcl2-ced9.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "dc8cff8a78bbb4fb707372927313f557ae59e900",
+    "head": "52186fd097740ced2545950fe0e0bda330e6053e"
+  },
+  {
+    "pr": 59,
+    "path": "notebooks/053-scope40-hp-k15-plots.ipynb",
+    "kind": "source_changed",
+    "base": "dc8cff8a78bbb4fb707372927313f557ae59e900",
+    "head": "52186fd097740ced2545950fe0e0bda330e6053e"
+  },
+  {
+    "pr": 59,
+    "path": "notebooks/054-scope40-hp-dayhoff-protein-plots.ipynb",
+    "kind": "source_changed",
+    "base": "dc8cff8a78bbb4fb707372927313f557ae59e900",
+    "head": "52186fd097740ced2545950fe0e0bda330e6053e"
+  },
+  {
+    "pr": 59,
+    "path": "notebooks/055-scope40-hp-dayhoff-protein-sensitivity.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "dc8cff8a78bbb4fb707372927313f557ae59e900",
+    "head": "52186fd097740ced2545950fe0e0bda330e6053e"
+  },
+  {
+    "pr": 59,
+    "path": "notebooks/056-scope40-hp-k15-k20-vs-tea.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "dc8cff8a78bbb4fb707372927313f557ae59e900",
+    "head": "52186fd097740ced2545950fe0e0bda330e6053e"
+  },
+  {
+    "pr": 59,
+    "path": "notebooks/057-scope40-hp-k15-k20-vs-tea-clean.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "dc8cff8a78bbb4fb707372927313f557ae59e900",
+    "head": "52186fd097740ced2545950fe0e0bda330e6053e"
+  },
+  {
+    "pr": 59,
+    "path": "notebooks/058-hp-k20-vs-foldseek-tea.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "dc8cff8a78bbb4fb707372927313f557ae59e900",
+    "head": "52186fd097740ced2545950fe0e0bda330e6053e"
+  },
+  {
+    "pr": 59,
+    "path": "notebooks/059-hp-k20-45-comparison.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "dc8cff8a78bbb4fb707372927313f557ae59e900",
+    "head": "52186fd097740ced2545950fe0e0bda330e6053e"
+  },
+  {
+    "pr": 59,
+    "path": "notebooks/060-hp-k41-unique-vs-foldseek-analysis.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "dc8cff8a78bbb4fb707372927313f557ae59e900",
+    "head": "52186fd097740ced2545950fe0e0bda330e6053e"
+  },
+  {
+    "pr": 59,
+    "path": "notebooks/061-hp-k35-k36-family-analysis.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "dc8cff8a78bbb4fb707372927313f557ae59e900",
+    "head": "52186fd097740ced2545950fe0e0bda330e6053e"
+  },
+  {
+    "pr": 59,
+    "path": "notebooks/062-hp-k24-threshold-optimization.ipynb",
+    "kind": "source_changed",
+    "base": "dc8cff8a78bbb4fb707372927313f557ae59e900",
+    "head": "52186fd097740ced2545950fe0e0bda330e6053e"
+  },
+  {
+    "pr": 59,
+    "path": "notebooks/063-hp-unique-families-deep-analysis.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "dc8cff8a78bbb4fb707372927313f557ae59e900",
+    "head": "52186fd097740ced2545950fe0e0bda330e6053e"
+  },
+  {
+    "pr": 59,
+    "path": "notebooks/064-hp-k24-ml-classification.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "dc8cff8a78bbb4fb707372927313f557ae59e900",
+    "head": "52186fd097740ced2545950fe0e0bda330e6053e"
+  },
+  {
+    "pr": 59,
+    "path": "notebooks/065-hp-scope-pvalue-benchmark.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "dc8cff8a78bbb4fb707372927313f557ae59e900",
+    "head": "52186fd097740ced2545950fe0e0bda330e6053e"
+  },
+  {
+    "pr": 59,
+    "path": "notebooks/066_scope_all_metrics_auc_k15_45.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "dc8cff8a78bbb4fb707372927313f557ae59e900",
+    "head": "52186fd097740ced2545950fe0e0bda330e6053e"
+  },
+  {
+    "pr": 59,
+    "path": "notebooks/067_scope_all_metrics_all_fps.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "dc8cff8a78bbb4fb707372927313f557ae59e900",
+    "head": "52186fd097740ced2545950fe0e0bda330e6053e"
+  },
+  {
+    "pr": 59,
+    "path": "notebooks/068_scope_all_metrics_excl_gz.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "dc8cff8a78bbb4fb707372927313f557ae59e900",
+    "head": "52186fd097740ced2545950fe0e0bda330e6053e"
+  },
+  {
+    "pr": 59,
+    "path": "notebooks/069_scope_excl_gz_unique_hits.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "dc8cff8a78bbb4fb707372927313f557ae59e900",
+    "head": "52186fd097740ced2545950fe0e0bda330e6053e"
+  },
+  {
+    "pr": 59,
+    "path": "notebooks/070_scope_bcl2_ced9_small_k.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "dc8cff8a78bbb4fb707372927313f557ae59e900",
+    "head": "52186fd097740ced2545950fe0e0bda330e6053e"
+  },
+  {
+    "pr": 59,
+    "path": "notebooks/071_scope_unique_hits_scop_class_enrichment.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "dc8cff8a78bbb4fb707372927313f557ae59e900",
+    "head": "52186fd097740ced2545950fe0e0bda330e6053e"
+  },
+  {
+    "pr": 59,
+    "path": "notebooks/072_scope_threshold_filter_benchmark.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "dc8cff8a78bbb4fb707372927313f557ae59e900",
+    "head": "52186fd097740ced2545950fe0e0bda330e6053e"
+  },
+  {
+    "pr": 59,
+    "path": "notebooks/073_scope40_hp_kmer_distribution.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "dc8cff8a78bbb4fb707372927313f557ae59e900",
+    "head": "52186fd097740ced2545950fe0e0bda330e6053e"
+  },
+  {
+    "pr": 59,
+    "path": "notebooks/074_scope_family_auc_mechanism.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "dc8cff8a78bbb4fb707372927313f557ae59e900",
+    "head": "52186fd097740ced2545950fe0e0bda330e6053e"
+  },
+  {
+    "pr": 59,
+    "path": "notebooks/075_hp_alphabet_sweep_benchmark.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "dc8cff8a78bbb4fb707372927313f557ae59e900",
+    "head": "52186fd097740ced2545950fe0e0bda330e6053e"
+  },
+  {
+    "pr": 59,
+    "path": "notebooks/076_hp_alphabet_sweep_per_class.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "dc8cff8a78bbb4fb707372927313f557ae59e900",
+    "head": "52186fd097740ced2545950fe0e0bda330e6053e"
+  },
+  {
+    "pr": 59,
+    "path": "notebooks/077_hp_alphabet_sweep_summary.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "dc8cff8a78bbb4fb707372927313f557ae59e900",
+    "head": "52186fd097740ced2545950fe0e0bda330e6053e"
+  },
+  {
+    "pr": 59,
+    "path": "notebooks/078_frontier_figure.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "dc8cff8a78bbb4fb707372927313f557ae59e900",
+    "head": "52186fd097740ced2545950fe0e0bda330e6053e"
+  },
+  {
+    "pr": 59,
+    "path": "notebooks/078_thomas_dill_k26_mechanism.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "dc8cff8a78bbb4fb707372927313f557ae59e900",
+    "head": "52186fd097740ced2545950fe0e0bda330e6053e"
+  },
+  {
+    "pr": 59,
+    "path": "notebooks/079_annotation_gaps_and_validation.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "dc8cff8a78bbb4fb707372927313f557ae59e900",
+    "head": "52186fd097740ced2545950fe0e0bda330e6053e"
+  },
+  {
+    "pr": 59,
+    "path": "notebooks/080_pbotc_k26_qfo2020_partial_analysis.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "dc8cff8a78bbb4fb707372927313f557ae59e900",
+    "head": "52186fd097740ced2545950fe0e0bda330e6053e"
+  },
+  {
+    "pr": 59,
+    "path": "notebooks/081_disprot_benchmark_analysis.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "dc8cff8a78bbb4fb707372927313f557ae59e900",
+    "head": "52186fd097740ced2545950fe0e0bda330e6053e"
+  },
+  {
+    "pr": 59,
+    "path": "notebooks/082_thomas_dill_k26_vs_k27_lost_queries.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "dc8cff8a78bbb4fb707372927313f557ae59e900",
+    "head": "52186fd097740ced2545950fe0e0bda330e6053e"
+  },
+  {
+    "pr": 59,
+    "path": "notebooks/083_km_fails_foldseek_wins.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "dc8cff8a78bbb4fb707372927313f557ae59e900",
+    "head": "52186fd097740ced2545950fe0e0bda330e6053e"
+  },
+  {
+    "pr": 59,
+    "path": "notebooks/084_plddt_qfo_pfam.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "dc8cff8a78bbb4fb707372927313f557ae59e900",
+    "head": "52186fd097740ced2545950fe0e0bda330e6053e"
+  },
+  {
+    "pr": 59,
+    "path": "notebooks/085_search_time_significance_prefilter.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "dc8cff8a78bbb4fb707372927313f557ae59e900",
+    "head": "52186fd097740ced2545950fe0e0bda330e6053e"
+  },
+  {
+    "pr": 59,
+    "path": "notebooks/086_lowcomplexity_fraction_threshold.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "dc8cff8a78bbb4fb707372927313f557ae59e900",
+    "head": "52186fd097740ced2545950fe0e0bda330e6053e"
+  },
+  {
+    "pr": 59,
+    "path": "notebooks/115-human-mouse-ortholog-double-peaks.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "dc8cff8a78bbb4fb707372927313f557ae59e900",
+    "head": "52186fd097740ced2545950fe0e0bda330e6053e"
+  },
+  {
+    "pr": 59,
+    "path": "notebooks/116-kmerseek-vs-orthofinder.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "dc8cff8a78bbb4fb707372927313f557ae59e900",
+    "head": "52186fd097740ced2545950fe0e0bda330e6053e"
+  },
+  {
+    "pr": 59,
+    "path": "notebooks/117-human-mouse-ortholog-bimodality-investigation.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "dc8cff8a78bbb4fb707372927313f557ae59e900",
+    "head": "52186fd097740ced2545950fe0e0bda330e6053e"
+  },
+  {
+    "pr": 59,
+    "path": "notebooks/118-kmerseek-vs-orthofinder-mgi-ground-truth.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "dc8cff8a78bbb4fb707372927313f557ae59e900",
+    "head": "52186fd097740ced2545950fe0e0bda330e6053e"
+  },
+  {
+    "pr": 59,
+    "path": "notebooks/119_kmerseek_only_orthologs_characterization.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "dc8cff8a78bbb4fb707372927313f557ae59e900",
+    "head": "52186fd097740ced2545950fe0e0bda330e6053e"
+  },
+  {
+    "pr": 59,
+    "path": "notebooks/120_kmerseek_only_orthologs_conservative_threshold.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "dc8cff8a78bbb4fb707372927313f557ae59e900",
+    "head": "52186fd097740ced2545950fe0e0bda330e6053e"
+  },
+  {
+    "pr": 59,
+    "path": "notebooks/121_qfo2020_kmerseek_analysis.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "dc8cff8a78bbb4fb707372927313f557ae59e900",
+    "head": "52186fd097740ced2545950fe0e0bda330e6053e"
+  },
+  {
+    "pr": 59,
+    "path": "notebooks/122_subdomain_detection_benchmark.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "dc8cff8a78bbb4fb707372927313f557ae59e900",
+    "head": "52186fd097740ced2545950fe0e0bda330e6053e"
+  },
+  {
+    "pr": 59,
+    "path": "notebooks/123_pfam_subdomain_divergence_benchmark.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "dc8cff8a78bbb4fb707372927313f557ae59e900",
+    "head": "52186fd097740ced2545950fe0e0bda330e6053e"
+  },
+  {
+    "pr": 59,
+    "path": "notebooks/124_kmerseek_false_positives_characterization.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "dc8cff8a78bbb4fb707372927313f557ae59e900",
+    "head": "52186fd097740ced2545950fe0e0bda330e6053e"
+  },
+  {
+    "pr": 59,
+    "path": "notebooks/125_build_pfam_benchmark_ground_truth.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "dc8cff8a78bbb4fb707372927313f557ae59e900",
+    "head": "52186fd097740ced2545950fe0e0bda330e6053e"
+  },
+  {
+    "pr": 59,
+    "path": "notebooks/126_pfam_benchmark_ksize_window_ml.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "dc8cff8a78bbb4fb707372927313f557ae59e900",
+    "head": "52186fd097740ced2545950fe0e0bda330e6053e"
+  },
+  {
+    "pr": 59,
+    "path": "notebooks/200_human_mouse_ortholog_alphabet_ksize_comparison.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "dc8cff8a78bbb4fb707372927313f557ae59e900",
+    "head": "52186fd097740ced2545950fe0e0bda330e6053e"
+  },
+  {
+    "pr": 59,
+    "path": "notebooks/202_human_mouse_kmerseek_vs_plddt.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "dc8cff8a78bbb4fb707372927313f557ae59e900",
+    "head": "52186fd097740ced2545950fe0e0bda330e6053e"
+  },
+  {
+    "pr": 59,
+    "path": "notebooks/203_human_mouse_ortholog_disorder_comparison.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "dc8cff8a78bbb4fb707372927313f557ae59e900",
+    "head": "52186fd097740ced2545950fe0e0bda330e6053e"
+  },
+  {
+    "pr": 59,
+    "path": "notebooks/205_hp_thomas_dill_deep_dive.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "dc8cff8a78bbb4fb707372927313f557ae59e900",
+    "head": "52186fd097740ced2545950fe0e0bda330e6053e"
+  },
+  {
+    "pr": 59,
+    "path": "notebooks/206_dnds_hp_alphabet_mechanism.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "dc8cff8a78bbb4fb707372927313f557ae59e900",
+    "head": "52186fd097740ced2545950fe0e0bda330e6053e"
+  },
+  {
+    "pr": 59,
+    "path": "notebooks/207_omega_selection_vs_divergence.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "dc8cff8a78bbb4fb707372927313f557ae59e900",
+    "head": "52186fd097740ced2545950fe0e0bda330e6053e"
+  },
+  {
+    "pr": 59,
+    "path": "notebooks/210_mhc_benchmark_setup_and_label_policy.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "dc8cff8a78bbb4fb707372927313f557ae59e900",
+    "head": "52186fd097740ced2545950fe0e0bda330e6053e"
+  },
+  {
+    "pr": 59,
+    "path": "notebooks/211_mhc_recovery_and_auc.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "dc8cff8a78bbb4fb707372927313f557ae59e900",
+    "head": "52186fd097740ced2545950fe0e0bda330e6053e"
+  },
+  {
+    "pr": 59,
+    "path": "notebooks/212_mhc_domain_localisation.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "dc8cff8a78bbb4fb707372927313f557ae59e900",
+    "head": "52186fd097740ced2545950fe0e0bda330e6053e"
+  },
+  {
+    "pr": 59,
+    "path": "notebooks/213_mhc_metric_choice.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "dc8cff8a78bbb4fb707372927313f557ae59e900",
+    "head": "52186fd097740ced2545950fe0e0bda330e6053e"
+  },
+  {
+    "pr": 59,
+    "path": "notebooks/214_mhc_igsf_specificity.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "dc8cff8a78bbb4fb707372927313f557ae59e900",
+    "head": "52186fd097740ced2545950fe0e0bda330e6053e"
+  },
+  {
+    "pr": 59,
+    "path": "notebooks/215_mhc_synteny_ground_truth.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "dc8cff8a78bbb4fb707372927313f557ae59e900",
+    "head": "52186fd097740ced2545950fe0e0bda330e6053e"
+  },
+  {
+    "pr": 59,
+    "path": "notebooks/216_mhc_solvent_accessibility_jaccard.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "dc8cff8a78bbb4fb707372927313f557ae59e900",
+    "head": "52186fd097740ced2545950fe0e0bda330e6053e"
+  },
+  {
+    "pr": 59,
+    "path": "notebooks/217_rbh_false_positive_paralog_contamination.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "dc8cff8a78bbb4fb707372927313f557ae59e900",
+    "head": "52186fd097740ced2545950fe0e0bda330e6053e"
+  },
+  {
+    "pr": 58,
+    "path": "notebooks/244_hero_example_candidates.ipynb",
+    "kind": "outputs_changed",
+    "base": "e504445bc134654434f01595fab4857a31672784",
+    "head": "95f1649de31cab7bae4f90d4da0fedf5334e3693"
+  },
+  {
+    "pr": 58,
+    "path": "notebooks/250_elm_motif_transfer.ipynb",
+    "kind": "outputs_changed",
+    "base": "e504445bc134654434f01595fab4857a31672784",
+    "head": "95f1649de31cab7bae4f90d4da0fedf5334e3693"
+  },
+  {
+    "pr": 57,
+    "path": "notebooks/013-compute-all-sensitivity-to-first-fp.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "5afda0530c07f9395988a4ad13c18abfbf795d2f",
+    "head": "ee0a0d7d0dfd5ebde4f709e6f1a15cd4faa72ff8"
+  },
+  {
+    "pr": 57,
+    "path": "notebooks/014-plot-sensitivity-to-first-fp.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "5afda0530c07f9395988a4ad13c18abfbf795d2f",
+    "head": "ee0a0d7d0dfd5ebde4f709e6f1a15cd4faa72ff8"
+  },
+  {
+    "pr": 57,
+    "path": "notebooks/015-which-kmers-match.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "5afda0530c07f9395988a4ad13c18abfbf795d2f",
+    "head": "ee0a0d7d0dfd5ebde4f709e6f1a15cd4faa72ff8"
+  },
+  {
+    "pr": 57,
+    "path": "notebooks/016-ced9-bcl2-and-p66-cd47.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "5afda0530c07f9395988a4ad13c18abfbf795d2f",
+    "head": "ee0a0d7d0dfd5ebde4f709e6f1a15cd4faa72ff8"
+  },
+  {
+    "pr": 57,
+    "path": "notebooks/017-p66-cd47.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "5afda0530c07f9395988a4ad13c18abfbf795d2f",
+    "head": "ee0a0d7d0dfd5ebde4f709e6f1a15cd4faa72ff8"
+  },
+  {
+    "pr": 57,
+    "path": "notebooks/018-explore-hp-k10.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "5afda0530c07f9395988a4ad13c18abfbf795d2f",
+    "head": "ee0a0d7d0dfd5ebde4f709e6f1a15cd4faa72ff8"
+  },
+  {
+    "pr": 57,
+    "path": "notebooks/022-plot-subsampled-sourmash-scores-per-moltype-ksize.ipynb",
+    "kind": "source_changed",
+    "base": "5afda0530c07f9395988a4ad13c18abfbf795d2f",
+    "head": "ee0a0d7d0dfd5ebde4f709e6f1a15cd4faa72ff8"
+  },
+  {
+    "pr": 57,
+    "path": "notebooks/030-test-polars-read-fasta.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "5afda0530c07f9395988a4ad13c18abfbf795d2f",
+    "head": "ee0a0d7d0dfd5ebde4f709e6f1a15cd4faa72ff8"
+  },
+  {
+    "pr": 57,
+    "path": "notebooks/040-cargo-bench-string-with-capacity.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "5afda0530c07f9395988a4ad13c18abfbf795d2f",
+    "head": "ee0a0d7d0dfd5ebde4f709e6f1a15cd4faa72ff8"
+  },
+  {
+    "pr": 57,
+    "path": "notebooks/051-scope40-hp-k15.ipynb",
+    "kind": "source_changed",
+    "base": "5afda0530c07f9395988a4ad13c18abfbf795d2f",
+    "head": "ee0a0d7d0dfd5ebde4f709e6f1a15cd4faa72ff8"
+  },
+  {
+    "pr": 57,
+    "path": "notebooks/052-scope40-hp-k15-bcl2-ced9.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "5afda0530c07f9395988a4ad13c18abfbf795d2f",
+    "head": "ee0a0d7d0dfd5ebde4f709e6f1a15cd4faa72ff8"
+  },
+  {
+    "pr": 57,
+    "path": "notebooks/053-scope40-hp-k15-plots.ipynb",
+    "kind": "source_changed",
+    "base": "5afda0530c07f9395988a4ad13c18abfbf795d2f",
+    "head": "ee0a0d7d0dfd5ebde4f709e6f1a15cd4faa72ff8"
+  },
+  {
+    "pr": 57,
+    "path": "notebooks/054-scope40-hp-dayhoff-protein-plots.ipynb",
+    "kind": "source_changed",
+    "base": "5afda0530c07f9395988a4ad13c18abfbf795d2f",
+    "head": "ee0a0d7d0dfd5ebde4f709e6f1a15cd4faa72ff8"
+  },
+  {
+    "pr": 57,
+    "path": "notebooks/055-scope40-hp-dayhoff-protein-sensitivity.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "5afda0530c07f9395988a4ad13c18abfbf795d2f",
+    "head": "ee0a0d7d0dfd5ebde4f709e6f1a15cd4faa72ff8"
+  },
+  {
+    "pr": 57,
+    "path": "notebooks/056-scope40-hp-k15-k20-vs-tea.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "5afda0530c07f9395988a4ad13c18abfbf795d2f",
+    "head": "ee0a0d7d0dfd5ebde4f709e6f1a15cd4faa72ff8"
+  },
+  {
+    "pr": 57,
+    "path": "notebooks/057-scope40-hp-k15-k20-vs-tea-clean.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "5afda0530c07f9395988a4ad13c18abfbf795d2f",
+    "head": "ee0a0d7d0dfd5ebde4f709e6f1a15cd4faa72ff8"
+  },
+  {
+    "pr": 57,
+    "path": "notebooks/058-hp-k20-vs-foldseek-tea.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "5afda0530c07f9395988a4ad13c18abfbf795d2f",
+    "head": "ee0a0d7d0dfd5ebde4f709e6f1a15cd4faa72ff8"
+  },
+  {
+    "pr": 57,
+    "path": "notebooks/059-hp-k20-45-comparison.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "5afda0530c07f9395988a4ad13c18abfbf795d2f",
+    "head": "ee0a0d7d0dfd5ebde4f709e6f1a15cd4faa72ff8"
+  },
+  {
+    "pr": 57,
+    "path": "notebooks/060-hp-k41-unique-vs-foldseek-analysis.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "5afda0530c07f9395988a4ad13c18abfbf795d2f",
+    "head": "ee0a0d7d0dfd5ebde4f709e6f1a15cd4faa72ff8"
+  },
+  {
+    "pr": 57,
+    "path": "notebooks/061-hp-k35-k36-family-analysis.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "5afda0530c07f9395988a4ad13c18abfbf795d2f",
+    "head": "ee0a0d7d0dfd5ebde4f709e6f1a15cd4faa72ff8"
+  },
+  {
+    "pr": 57,
+    "path": "notebooks/062-hp-k24-threshold-optimization.ipynb",
+    "kind": "source_changed",
+    "base": "5afda0530c07f9395988a4ad13c18abfbf795d2f",
+    "head": "ee0a0d7d0dfd5ebde4f709e6f1a15cd4faa72ff8"
+  },
+  {
+    "pr": 57,
+    "path": "notebooks/063-hp-unique-families-deep-analysis.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "5afda0530c07f9395988a4ad13c18abfbf795d2f",
+    "head": "ee0a0d7d0dfd5ebde4f709e6f1a15cd4faa72ff8"
+  },
+  {
+    "pr": 57,
+    "path": "notebooks/064-hp-k24-ml-classification.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "5afda0530c07f9395988a4ad13c18abfbf795d2f",
+    "head": "ee0a0d7d0dfd5ebde4f709e6f1a15cd4faa72ff8"
+  },
+  {
+    "pr": 57,
+    "path": "notebooks/065-hp-scope-pvalue-benchmark.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "5afda0530c07f9395988a4ad13c18abfbf795d2f",
+    "head": "ee0a0d7d0dfd5ebde4f709e6f1a15cd4faa72ff8"
+  },
+  {
+    "pr": 57,
+    "path": "notebooks/066_scope_all_metrics_auc_k15_45.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "5afda0530c07f9395988a4ad13c18abfbf795d2f",
+    "head": "ee0a0d7d0dfd5ebde4f709e6f1a15cd4faa72ff8"
+  },
+  {
+    "pr": 57,
+    "path": "notebooks/067_scope_all_metrics_all_fps.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "5afda0530c07f9395988a4ad13c18abfbf795d2f",
+    "head": "ee0a0d7d0dfd5ebde4f709e6f1a15cd4faa72ff8"
+  },
+  {
+    "pr": 57,
+    "path": "notebooks/068_scope_all_metrics_excl_gz.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "5afda0530c07f9395988a4ad13c18abfbf795d2f",
+    "head": "ee0a0d7d0dfd5ebde4f709e6f1a15cd4faa72ff8"
+  },
+  {
+    "pr": 57,
+    "path": "notebooks/069_scope_excl_gz_unique_hits.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "5afda0530c07f9395988a4ad13c18abfbf795d2f",
+    "head": "ee0a0d7d0dfd5ebde4f709e6f1a15cd4faa72ff8"
+  },
+  {
+    "pr": 57,
+    "path": "notebooks/070_scope_bcl2_ced9_small_k.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "5afda0530c07f9395988a4ad13c18abfbf795d2f",
+    "head": "ee0a0d7d0dfd5ebde4f709e6f1a15cd4faa72ff8"
+  },
+  {
+    "pr": 57,
+    "path": "notebooks/071_scope_unique_hits_scop_class_enrichment.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "5afda0530c07f9395988a4ad13c18abfbf795d2f",
+    "head": "ee0a0d7d0dfd5ebde4f709e6f1a15cd4faa72ff8"
+  },
+  {
+    "pr": 57,
+    "path": "notebooks/072_scope_threshold_filter_benchmark.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "5afda0530c07f9395988a4ad13c18abfbf795d2f",
+    "head": "ee0a0d7d0dfd5ebde4f709e6f1a15cd4faa72ff8"
+  },
+  {
+    "pr": 57,
+    "path": "notebooks/073_scope40_hp_kmer_distribution.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "5afda0530c07f9395988a4ad13c18abfbf795d2f",
+    "head": "ee0a0d7d0dfd5ebde4f709e6f1a15cd4faa72ff8"
+  },
+  {
+    "pr": 57,
+    "path": "notebooks/074_scope_family_auc_mechanism.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "5afda0530c07f9395988a4ad13c18abfbf795d2f",
+    "head": "ee0a0d7d0dfd5ebde4f709e6f1a15cd4faa72ff8"
+  },
+  {
+    "pr": 57,
+    "path": "notebooks/075_hp_alphabet_sweep_benchmark.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "5afda0530c07f9395988a4ad13c18abfbf795d2f",
+    "head": "ee0a0d7d0dfd5ebde4f709e6f1a15cd4faa72ff8"
+  },
+  {
+    "pr": 57,
+    "path": "notebooks/076_hp_alphabet_sweep_per_class.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "5afda0530c07f9395988a4ad13c18abfbf795d2f",
+    "head": "ee0a0d7d0dfd5ebde4f709e6f1a15cd4faa72ff8"
+  },
+  {
+    "pr": 57,
+    "path": "notebooks/077_hp_alphabet_sweep_summary.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "5afda0530c07f9395988a4ad13c18abfbf795d2f",
+    "head": "ee0a0d7d0dfd5ebde4f709e6f1a15cd4faa72ff8"
+  },
+  {
+    "pr": 57,
+    "path": "notebooks/078_frontier_figure.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "5afda0530c07f9395988a4ad13c18abfbf795d2f",
+    "head": "ee0a0d7d0dfd5ebde4f709e6f1a15cd4faa72ff8"
+  },
+  {
+    "pr": 57,
+    "path": "notebooks/078_thomas_dill_k26_mechanism.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "5afda0530c07f9395988a4ad13c18abfbf795d2f",
+    "head": "ee0a0d7d0dfd5ebde4f709e6f1a15cd4faa72ff8"
+  },
+  {
+    "pr": 57,
+    "path": "notebooks/079_annotation_gaps_and_validation.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "5afda0530c07f9395988a4ad13c18abfbf795d2f",
+    "head": "ee0a0d7d0dfd5ebde4f709e6f1a15cd4faa72ff8"
+  },
+  {
+    "pr": 57,
+    "path": "notebooks/080_pbotc_k26_qfo2020_partial_analysis.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "5afda0530c07f9395988a4ad13c18abfbf795d2f",
+    "head": "ee0a0d7d0dfd5ebde4f709e6f1a15cd4faa72ff8"
+  },
+  {
+    "pr": 57,
+    "path": "notebooks/081_disprot_benchmark_analysis.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "5afda0530c07f9395988a4ad13c18abfbf795d2f",
+    "head": "ee0a0d7d0dfd5ebde4f709e6f1a15cd4faa72ff8"
+  },
+  {
+    "pr": 57,
+    "path": "notebooks/082_thomas_dill_k26_vs_k27_lost_queries.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "5afda0530c07f9395988a4ad13c18abfbf795d2f",
+    "head": "ee0a0d7d0dfd5ebde4f709e6f1a15cd4faa72ff8"
+  },
+  {
+    "pr": 57,
+    "path": "notebooks/083_km_fails_foldseek_wins.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "5afda0530c07f9395988a4ad13c18abfbf795d2f",
+    "head": "ee0a0d7d0dfd5ebde4f709e6f1a15cd4faa72ff8"
+  },
+  {
+    "pr": 57,
+    "path": "notebooks/084_plddt_qfo_pfam.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "5afda0530c07f9395988a4ad13c18abfbf795d2f",
+    "head": "ee0a0d7d0dfd5ebde4f709e6f1a15cd4faa72ff8"
+  },
+  {
+    "pr": 57,
+    "path": "notebooks/085_search_time_significance_prefilter.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "5afda0530c07f9395988a4ad13c18abfbf795d2f",
+    "head": "ee0a0d7d0dfd5ebde4f709e6f1a15cd4faa72ff8"
+  },
+  {
+    "pr": 57,
+    "path": "notebooks/086_lowcomplexity_fraction_threshold.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "5afda0530c07f9395988a4ad13c18abfbf795d2f",
+    "head": "ee0a0d7d0dfd5ebde4f709e6f1a15cd4faa72ff8"
+  },
+  {
+    "pr": 57,
+    "path": "notebooks/115-human-mouse-ortholog-double-peaks.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "5afda0530c07f9395988a4ad13c18abfbf795d2f",
+    "head": "ee0a0d7d0dfd5ebde4f709e6f1a15cd4faa72ff8"
+  },
+  {
+    "pr": 57,
+    "path": "notebooks/116-kmerseek-vs-orthofinder.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "5afda0530c07f9395988a4ad13c18abfbf795d2f",
+    "head": "ee0a0d7d0dfd5ebde4f709e6f1a15cd4faa72ff8"
+  },
+  {
+    "pr": 57,
+    "path": "notebooks/117-human-mouse-ortholog-bimodality-investigation.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "5afda0530c07f9395988a4ad13c18abfbf795d2f",
+    "head": "ee0a0d7d0dfd5ebde4f709e6f1a15cd4faa72ff8"
+  },
+  {
+    "pr": 57,
+    "path": "notebooks/118-kmerseek-vs-orthofinder-mgi-ground-truth.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "5afda0530c07f9395988a4ad13c18abfbf795d2f",
+    "head": "ee0a0d7d0dfd5ebde4f709e6f1a15cd4faa72ff8"
+  },
+  {
+    "pr": 57,
+    "path": "notebooks/119_kmerseek_only_orthologs_characterization.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "5afda0530c07f9395988a4ad13c18abfbf795d2f",
+    "head": "ee0a0d7d0dfd5ebde4f709e6f1a15cd4faa72ff8"
+  },
+  {
+    "pr": 57,
+    "path": "notebooks/120_kmerseek_only_orthologs_conservative_threshold.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "5afda0530c07f9395988a4ad13c18abfbf795d2f",
+    "head": "ee0a0d7d0dfd5ebde4f709e6f1a15cd4faa72ff8"
+  },
+  {
+    "pr": 57,
+    "path": "notebooks/121_qfo2020_kmerseek_analysis.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "5afda0530c07f9395988a4ad13c18abfbf795d2f",
+    "head": "ee0a0d7d0dfd5ebde4f709e6f1a15cd4faa72ff8"
+  },
+  {
+    "pr": 57,
+    "path": "notebooks/122_subdomain_detection_benchmark.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "5afda0530c07f9395988a4ad13c18abfbf795d2f",
+    "head": "ee0a0d7d0dfd5ebde4f709e6f1a15cd4faa72ff8"
+  },
+  {
+    "pr": 57,
+    "path": "notebooks/123_pfam_subdomain_divergence_benchmark.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "5afda0530c07f9395988a4ad13c18abfbf795d2f",
+    "head": "ee0a0d7d0dfd5ebde4f709e6f1a15cd4faa72ff8"
+  },
+  {
+    "pr": 57,
+    "path": "notebooks/124_kmerseek_false_positives_characterization.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "5afda0530c07f9395988a4ad13c18abfbf795d2f",
+    "head": "ee0a0d7d0dfd5ebde4f709e6f1a15cd4faa72ff8"
+  },
+  {
+    "pr": 57,
+    "path": "notebooks/125_build_pfam_benchmark_ground_truth.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "5afda0530c07f9395988a4ad13c18abfbf795d2f",
+    "head": "ee0a0d7d0dfd5ebde4f709e6f1a15cd4faa72ff8"
+  },
+  {
+    "pr": 57,
+    "path": "notebooks/126_pfam_benchmark_ksize_window_ml.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "5afda0530c07f9395988a4ad13c18abfbf795d2f",
+    "head": "ee0a0d7d0dfd5ebde4f709e6f1a15cd4faa72ff8"
+  },
+  {
+    "pr": 57,
+    "path": "notebooks/200_human_mouse_ortholog_alphabet_ksize_comparison.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "5afda0530c07f9395988a4ad13c18abfbf795d2f",
+    "head": "ee0a0d7d0dfd5ebde4f709e6f1a15cd4faa72ff8"
+  },
+  {
+    "pr": 57,
+    "path": "notebooks/202_human_mouse_kmerseek_vs_plddt.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "5afda0530c07f9395988a4ad13c18abfbf795d2f",
+    "head": "ee0a0d7d0dfd5ebde4f709e6f1a15cd4faa72ff8"
+  },
+  {
+    "pr": 57,
+    "path": "notebooks/203_human_mouse_ortholog_disorder_comparison.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "5afda0530c07f9395988a4ad13c18abfbf795d2f",
+    "head": "ee0a0d7d0dfd5ebde4f709e6f1a15cd4faa72ff8"
+  },
+  {
+    "pr": 57,
+    "path": "notebooks/205_hp_thomas_dill_deep_dive.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "5afda0530c07f9395988a4ad13c18abfbf795d2f",
+    "head": "ee0a0d7d0dfd5ebde4f709e6f1a15cd4faa72ff8"
+  },
+  {
+    "pr": 57,
+    "path": "notebooks/206_dnds_hp_alphabet_mechanism.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "5afda0530c07f9395988a4ad13c18abfbf795d2f",
+    "head": "ee0a0d7d0dfd5ebde4f709e6f1a15cd4faa72ff8"
+  },
+  {
+    "pr": 57,
+    "path": "notebooks/207_omega_selection_vs_divergence.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "5afda0530c07f9395988a4ad13c18abfbf795d2f",
+    "head": "ee0a0d7d0dfd5ebde4f709e6f1a15cd4faa72ff8"
+  },
+  {
+    "pr": 57,
+    "path": "notebooks/210_mhc_benchmark_setup_and_label_policy.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "5afda0530c07f9395988a4ad13c18abfbf795d2f",
+    "head": "ee0a0d7d0dfd5ebde4f709e6f1a15cd4faa72ff8"
+  },
+  {
+    "pr": 57,
+    "path": "notebooks/211_mhc_recovery_and_auc.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "5afda0530c07f9395988a4ad13c18abfbf795d2f",
+    "head": "ee0a0d7d0dfd5ebde4f709e6f1a15cd4faa72ff8"
+  },
+  {
+    "pr": 57,
+    "path": "notebooks/212_mhc_domain_localisation.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "5afda0530c07f9395988a4ad13c18abfbf795d2f",
+    "head": "ee0a0d7d0dfd5ebde4f709e6f1a15cd4faa72ff8"
+  },
+  {
+    "pr": 57,
+    "path": "notebooks/213_mhc_metric_choice.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "5afda0530c07f9395988a4ad13c18abfbf795d2f",
+    "head": "ee0a0d7d0dfd5ebde4f709e6f1a15cd4faa72ff8"
+  },
+  {
+    "pr": 57,
+    "path": "notebooks/214_mhc_igsf_specificity.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "5afda0530c07f9395988a4ad13c18abfbf795d2f",
+    "head": "ee0a0d7d0dfd5ebde4f709e6f1a15cd4faa72ff8"
+  },
+  {
+    "pr": 57,
+    "path": "notebooks/215_mhc_synteny_ground_truth.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "5afda0530c07f9395988a4ad13c18abfbf795d2f",
+    "head": "ee0a0d7d0dfd5ebde4f709e6f1a15cd4faa72ff8"
+  },
+  {
+    "pr": 57,
+    "path": "notebooks/216_mhc_solvent_accessibility_jaccard.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "5afda0530c07f9395988a4ad13c18abfbf795d2f",
+    "head": "ee0a0d7d0dfd5ebde4f709e6f1a15cd4faa72ff8"
+  },
+  {
+    "pr": 57,
+    "path": "notebooks/217_rbh_false_positive_paralog_contamination.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "5afda0530c07f9395988a4ad13c18abfbf795d2f",
+    "head": "ee0a0d7d0dfd5ebde4f709e6f1a15cd4faa72ff8"
+  },
+  {
+    "pr": 57,
+    "path": "notebooks/289_dark_set_evalue_1_vs_10_kmerseek_midi.ipynb",
+    "kind": "added",
+    "base": "5afda0530c07f9395988a4ad13c18abfbf795d2f",
+    "head": "ee0a0d7d0dfd5ebde4f709e6f1a15cd4faa72ff8"
+  },
+  {
+    "pr": 57,
+    "path": "notebooks/291_dark_set_pfam_fmax_kmerseek_vs_tools_midi.ipynb",
+    "kind": "added",
+    "base": "5afda0530c07f9395988a4ad13c18abfbf795d2f",
+    "head": "ee0a0d7d0dfd5ebde4f709e6f1a15cd4faa72ff8"
+  },
+  {
+    "pr": 54,
+    "path": "notebooks/245_bits_ceiling_exact_seed.ipynb",
+    "kind": "added",
+    "base": "01eace4b4fea242b338ef54f349406b1c06768be",
+    "head": "e85889f4df18973408e20211ec4e5bf5c8f25871"
+  },
+  {
+    "pr": 53,
+    "path": "notebooks/251_disprot_region_transfer.ipynb",
+    "kind": "added",
+    "base": "28cf12c6a3b5a278b04a586ecac59e2f6ed584a8",
+    "head": "3c04f7f315ee790af86ba617f03e54612ece6c85"
+  },
+  {
+    "pr": 51,
+    "path": "notebooks/244_hero_example_candidates.ipynb",
+    "kind": "added",
+    "base": "4bea4c236799bfa1e5c0ad032b296fce9a1ee876",
+    "head": "31eb205d5da81939ff79c3980e133baf725cd842"
+  },
+  {
+    "pr": 51,
+    "path": "notebooks/250_elm_motif_transfer.ipynb",
+    "kind": "added",
+    "base": "4bea4c236799bfa1e5c0ad032b296fce9a1ee876",
+    "head": "31eb205d5da81939ff79c3980e133baf725cd842"
+  },
+  {
+    "pr": 49,
+    "path": "notebooks/244_hero_example_candidates.ipynb",
+    "kind": "added",
+    "base": "4bea4c236799bfa1e5c0ad032b296fce9a1ee876",
+    "head": "2d88d11e97220cbefe1b3ab561ae38848dff1849"
+  },
+  {
+    "pr": 47,
+    "path": "notebooks/013-compute-all-sensitivity-to-first-fp.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "e383d80fe56c5356079be305f6d1bd4d68623009",
+    "head": "cb86b46c87beb3a227da23e08a8d529547e1a55c"
+  },
+  {
+    "pr": 47,
+    "path": "notebooks/014-plot-sensitivity-to-first-fp.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "e383d80fe56c5356079be305f6d1bd4d68623009",
+    "head": "cb86b46c87beb3a227da23e08a8d529547e1a55c"
+  },
+  {
+    "pr": 47,
+    "path": "notebooks/015-which-kmers-match.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "e383d80fe56c5356079be305f6d1bd4d68623009",
+    "head": "cb86b46c87beb3a227da23e08a8d529547e1a55c"
+  },
+  {
+    "pr": 47,
+    "path": "notebooks/016-ced9-bcl2-and-p66-cd47.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "e383d80fe56c5356079be305f6d1bd4d68623009",
+    "head": "cb86b46c87beb3a227da23e08a8d529547e1a55c"
+  },
+  {
+    "pr": 47,
+    "path": "notebooks/017-p66-cd47.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "e383d80fe56c5356079be305f6d1bd4d68623009",
+    "head": "cb86b46c87beb3a227da23e08a8d529547e1a55c"
+  },
+  {
+    "pr": 47,
+    "path": "notebooks/018-explore-hp-k10.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "e383d80fe56c5356079be305f6d1bd4d68623009",
+    "head": "cb86b46c87beb3a227da23e08a8d529547e1a55c"
+  },
+  {
+    "pr": 47,
+    "path": "notebooks/022-plot-subsampled-sourmash-scores-per-moltype-ksize.ipynb",
+    "kind": "source_changed",
+    "base": "e383d80fe56c5356079be305f6d1bd4d68623009",
+    "head": "cb86b46c87beb3a227da23e08a8d529547e1a55c"
+  },
+  {
+    "pr": 47,
+    "path": "notebooks/030-test-polars-read-fasta.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "e383d80fe56c5356079be305f6d1bd4d68623009",
+    "head": "cb86b46c87beb3a227da23e08a8d529547e1a55c"
+  },
+  {
+    "pr": 47,
+    "path": "notebooks/040-cargo-bench-string-with-capacity.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "e383d80fe56c5356079be305f6d1bd4d68623009",
+    "head": "cb86b46c87beb3a227da23e08a8d529547e1a55c"
+  },
+  {
+    "pr": 47,
+    "path": "notebooks/051-scope40-hp-k15.ipynb",
+    "kind": "source_changed",
+    "base": "e383d80fe56c5356079be305f6d1bd4d68623009",
+    "head": "cb86b46c87beb3a227da23e08a8d529547e1a55c"
+  },
+  {
+    "pr": 47,
+    "path": "notebooks/052-scope40-hp-k15-bcl2-ced9.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "e383d80fe56c5356079be305f6d1bd4d68623009",
+    "head": "cb86b46c87beb3a227da23e08a8d529547e1a55c"
+  },
+  {
+    "pr": 47,
+    "path": "notebooks/053-scope40-hp-k15-plots.ipynb",
+    "kind": "source_changed",
+    "base": "e383d80fe56c5356079be305f6d1bd4d68623009",
+    "head": "cb86b46c87beb3a227da23e08a8d529547e1a55c"
+  },
+  {
+    "pr": 47,
+    "path": "notebooks/054-scope40-hp-dayhoff-protein-plots.ipynb",
+    "kind": "source_changed",
+    "base": "e383d80fe56c5356079be305f6d1bd4d68623009",
+    "head": "cb86b46c87beb3a227da23e08a8d529547e1a55c"
+  },
+  {
+    "pr": 47,
+    "path": "notebooks/055-scope40-hp-dayhoff-protein-sensitivity.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "e383d80fe56c5356079be305f6d1bd4d68623009",
+    "head": "cb86b46c87beb3a227da23e08a8d529547e1a55c"
+  },
+  {
+    "pr": 47,
+    "path": "notebooks/056-scope40-hp-k15-k20-vs-tea.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "e383d80fe56c5356079be305f6d1bd4d68623009",
+    "head": "cb86b46c87beb3a227da23e08a8d529547e1a55c"
+  },
+  {
+    "pr": 47,
+    "path": "notebooks/057-scope40-hp-k15-k20-vs-tea-clean.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "e383d80fe56c5356079be305f6d1bd4d68623009",
+    "head": "cb86b46c87beb3a227da23e08a8d529547e1a55c"
+  },
+  {
+    "pr": 47,
+    "path": "notebooks/058-hp-k20-vs-foldseek-tea.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "e383d80fe56c5356079be305f6d1bd4d68623009",
+    "head": "cb86b46c87beb3a227da23e08a8d529547e1a55c"
+  },
+  {
+    "pr": 47,
+    "path": "notebooks/059-hp-k20-45-comparison.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "e383d80fe56c5356079be305f6d1bd4d68623009",
+    "head": "cb86b46c87beb3a227da23e08a8d529547e1a55c"
+  },
+  {
+    "pr": 47,
+    "path": "notebooks/060-hp-k41-unique-vs-foldseek-analysis.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "e383d80fe56c5356079be305f6d1bd4d68623009",
+    "head": "cb86b46c87beb3a227da23e08a8d529547e1a55c"
+  },
+  {
+    "pr": 47,
+    "path": "notebooks/061-hp-k35-k36-family-analysis.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "e383d80fe56c5356079be305f6d1bd4d68623009",
+    "head": "cb86b46c87beb3a227da23e08a8d529547e1a55c"
+  },
+  {
+    "pr": 47,
+    "path": "notebooks/062-hp-k24-threshold-optimization.ipynb",
+    "kind": "source_changed",
+    "base": "e383d80fe56c5356079be305f6d1bd4d68623009",
+    "head": "cb86b46c87beb3a227da23e08a8d529547e1a55c"
+  },
+  {
+    "pr": 47,
+    "path": "notebooks/063-hp-unique-families-deep-analysis.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "e383d80fe56c5356079be305f6d1bd4d68623009",
+    "head": "cb86b46c87beb3a227da23e08a8d529547e1a55c"
+  },
+  {
+    "pr": 47,
+    "path": "notebooks/064-hp-k24-ml-classification.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "e383d80fe56c5356079be305f6d1bd4d68623009",
+    "head": "cb86b46c87beb3a227da23e08a8d529547e1a55c"
+  },
+  {
+    "pr": 47,
+    "path": "notebooks/065-hp-scope-pvalue-benchmark.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "e383d80fe56c5356079be305f6d1bd4d68623009",
+    "head": "cb86b46c87beb3a227da23e08a8d529547e1a55c"
+  },
+  {
+    "pr": 47,
+    "path": "notebooks/066_scope_all_metrics_auc_k15_45.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "e383d80fe56c5356079be305f6d1bd4d68623009",
+    "head": "cb86b46c87beb3a227da23e08a8d529547e1a55c"
+  },
+  {
+    "pr": 47,
+    "path": "notebooks/067_scope_all_metrics_all_fps.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "e383d80fe56c5356079be305f6d1bd4d68623009",
+    "head": "cb86b46c87beb3a227da23e08a8d529547e1a55c"
+  },
+  {
+    "pr": 47,
+    "path": "notebooks/068_scope_all_metrics_excl_gz.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "e383d80fe56c5356079be305f6d1bd4d68623009",
+    "head": "cb86b46c87beb3a227da23e08a8d529547e1a55c"
+  },
+  {
+    "pr": 47,
+    "path": "notebooks/069_scope_excl_gz_unique_hits.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "e383d80fe56c5356079be305f6d1bd4d68623009",
+    "head": "cb86b46c87beb3a227da23e08a8d529547e1a55c"
+  },
+  {
+    "pr": 47,
+    "path": "notebooks/070_scope_bcl2_ced9_small_k.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "e383d80fe56c5356079be305f6d1bd4d68623009",
+    "head": "cb86b46c87beb3a227da23e08a8d529547e1a55c"
+  },
+  {
+    "pr": 47,
+    "path": "notebooks/071_scope_unique_hits_scop_class_enrichment.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "e383d80fe56c5356079be305f6d1bd4d68623009",
+    "head": "cb86b46c87beb3a227da23e08a8d529547e1a55c"
+  },
+  {
+    "pr": 47,
+    "path": "notebooks/072_scope_threshold_filter_benchmark.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "e383d80fe56c5356079be305f6d1bd4d68623009",
+    "head": "cb86b46c87beb3a227da23e08a8d529547e1a55c"
+  },
+  {
+    "pr": 47,
+    "path": "notebooks/073_scope40_hp_kmer_distribution.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "e383d80fe56c5356079be305f6d1bd4d68623009",
+    "head": "cb86b46c87beb3a227da23e08a8d529547e1a55c"
+  },
+  {
+    "pr": 47,
+    "path": "notebooks/074_scope_family_auc_mechanism.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "e383d80fe56c5356079be305f6d1bd4d68623009",
+    "head": "cb86b46c87beb3a227da23e08a8d529547e1a55c"
+  },
+  {
+    "pr": 47,
+    "path": "notebooks/075_hp_alphabet_sweep_benchmark.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "e383d80fe56c5356079be305f6d1bd4d68623009",
+    "head": "cb86b46c87beb3a227da23e08a8d529547e1a55c"
+  },
+  {
+    "pr": 47,
+    "path": "notebooks/076_hp_alphabet_sweep_per_class.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "e383d80fe56c5356079be305f6d1bd4d68623009",
+    "head": "cb86b46c87beb3a227da23e08a8d529547e1a55c"
+  },
+  {
+    "pr": 47,
+    "path": "notebooks/077_hp_alphabet_sweep_summary.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "e383d80fe56c5356079be305f6d1bd4d68623009",
+    "head": "cb86b46c87beb3a227da23e08a8d529547e1a55c"
+  },
+  {
+    "pr": 47,
+    "path": "notebooks/078_frontier_figure.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "e383d80fe56c5356079be305f6d1bd4d68623009",
+    "head": "cb86b46c87beb3a227da23e08a8d529547e1a55c"
+  },
+  {
+    "pr": 47,
+    "path": "notebooks/078_thomas_dill_k26_mechanism.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "e383d80fe56c5356079be305f6d1bd4d68623009",
+    "head": "cb86b46c87beb3a227da23e08a8d529547e1a55c"
+  },
+  {
+    "pr": 47,
+    "path": "notebooks/079_annotation_gaps_and_validation.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "e383d80fe56c5356079be305f6d1bd4d68623009",
+    "head": "cb86b46c87beb3a227da23e08a8d529547e1a55c"
+  },
+  {
+    "pr": 47,
+    "path": "notebooks/080_pbotc_k26_qfo2020_partial_analysis.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "e383d80fe56c5356079be305f6d1bd4d68623009",
+    "head": "cb86b46c87beb3a227da23e08a8d529547e1a55c"
+  },
+  {
+    "pr": 47,
+    "path": "notebooks/081_disprot_benchmark_analysis.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "e383d80fe56c5356079be305f6d1bd4d68623009",
+    "head": "cb86b46c87beb3a227da23e08a8d529547e1a55c"
+  },
+  {
+    "pr": 47,
+    "path": "notebooks/082_thomas_dill_k26_vs_k27_lost_queries.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "e383d80fe56c5356079be305f6d1bd4d68623009",
+    "head": "cb86b46c87beb3a227da23e08a8d529547e1a55c"
+  },
+  {
+    "pr": 47,
+    "path": "notebooks/083_km_fails_foldseek_wins.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "e383d80fe56c5356079be305f6d1bd4d68623009",
+    "head": "cb86b46c87beb3a227da23e08a8d529547e1a55c"
+  },
+  {
+    "pr": 47,
+    "path": "notebooks/084_plddt_qfo_pfam.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "e383d80fe56c5356079be305f6d1bd4d68623009",
+    "head": "cb86b46c87beb3a227da23e08a8d529547e1a55c"
+  },
+  {
+    "pr": 47,
+    "path": "notebooks/085_search_time_significance_prefilter.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "e383d80fe56c5356079be305f6d1bd4d68623009",
+    "head": "cb86b46c87beb3a227da23e08a8d529547e1a55c"
+  },
+  {
+    "pr": 47,
+    "path": "notebooks/086_lowcomplexity_fraction_threshold.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "e383d80fe56c5356079be305f6d1bd4d68623009",
+    "head": "cb86b46c87beb3a227da23e08a8d529547e1a55c"
+  },
+  {
+    "pr": 47,
+    "path": "notebooks/115-human-mouse-ortholog-double-peaks.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "e383d80fe56c5356079be305f6d1bd4d68623009",
+    "head": "cb86b46c87beb3a227da23e08a8d529547e1a55c"
+  },
+  {
+    "pr": 47,
+    "path": "notebooks/116-kmerseek-vs-orthofinder.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "e383d80fe56c5356079be305f6d1bd4d68623009",
+    "head": "cb86b46c87beb3a227da23e08a8d529547e1a55c"
+  },
+  {
+    "pr": 47,
+    "path": "notebooks/117-human-mouse-ortholog-bimodality-investigation.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "e383d80fe56c5356079be305f6d1bd4d68623009",
+    "head": "cb86b46c87beb3a227da23e08a8d529547e1a55c"
+  },
+  {
+    "pr": 47,
+    "path": "notebooks/118-kmerseek-vs-orthofinder-mgi-ground-truth.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "e383d80fe56c5356079be305f6d1bd4d68623009",
+    "head": "cb86b46c87beb3a227da23e08a8d529547e1a55c"
+  },
+  {
+    "pr": 47,
+    "path": "notebooks/119_kmerseek_only_orthologs_characterization.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "e383d80fe56c5356079be305f6d1bd4d68623009",
+    "head": "cb86b46c87beb3a227da23e08a8d529547e1a55c"
+  },
+  {
+    "pr": 47,
+    "path": "notebooks/120_kmerseek_only_orthologs_conservative_threshold.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "e383d80fe56c5356079be305f6d1bd4d68623009",
+    "head": "cb86b46c87beb3a227da23e08a8d529547e1a55c"
+  },
+  {
+    "pr": 47,
+    "path": "notebooks/121_qfo2020_kmerseek_analysis.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "e383d80fe56c5356079be305f6d1bd4d68623009",
+    "head": "cb86b46c87beb3a227da23e08a8d529547e1a55c"
+  },
+  {
+    "pr": 47,
+    "path": "notebooks/122_subdomain_detection_benchmark.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "e383d80fe56c5356079be305f6d1bd4d68623009",
+    "head": "cb86b46c87beb3a227da23e08a8d529547e1a55c"
+  },
+  {
+    "pr": 47,
+    "path": "notebooks/123_pfam_subdomain_divergence_benchmark.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "e383d80fe56c5356079be305f6d1bd4d68623009",
+    "head": "cb86b46c87beb3a227da23e08a8d529547e1a55c"
+  },
+  {
+    "pr": 47,
+    "path": "notebooks/124_kmerseek_false_positives_characterization.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "e383d80fe56c5356079be305f6d1bd4d68623009",
+    "head": "cb86b46c87beb3a227da23e08a8d529547e1a55c"
+  },
+  {
+    "pr": 47,
+    "path": "notebooks/125_build_pfam_benchmark_ground_truth.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "e383d80fe56c5356079be305f6d1bd4d68623009",
+    "head": "cb86b46c87beb3a227da23e08a8d529547e1a55c"
+  },
+  {
+    "pr": 47,
+    "path": "notebooks/126_pfam_benchmark_ksize_window_ml.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "e383d80fe56c5356079be305f6d1bd4d68623009",
+    "head": "cb86b46c87beb3a227da23e08a8d529547e1a55c"
+  },
+  {
+    "pr": 47,
+    "path": "notebooks/200_human_mouse_ortholog_alphabet_ksize_comparison.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "e383d80fe56c5356079be305f6d1bd4d68623009",
+    "head": "cb86b46c87beb3a227da23e08a8d529547e1a55c"
+  },
+  {
+    "pr": 47,
+    "path": "notebooks/202_human_mouse_kmerseek_vs_plddt.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "e383d80fe56c5356079be305f6d1bd4d68623009",
+    "head": "cb86b46c87beb3a227da23e08a8d529547e1a55c"
+  },
+  {
+    "pr": 47,
+    "path": "notebooks/203_human_mouse_ortholog_disorder_comparison.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "e383d80fe56c5356079be305f6d1bd4d68623009",
+    "head": "cb86b46c87beb3a227da23e08a8d529547e1a55c"
+  },
+  {
+    "pr": 47,
+    "path": "notebooks/205_hp_thomas_dill_deep_dive.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "e383d80fe56c5356079be305f6d1bd4d68623009",
+    "head": "cb86b46c87beb3a227da23e08a8d529547e1a55c"
+  },
+  {
+    "pr": 47,
+    "path": "notebooks/206_dnds_hp_alphabet_mechanism.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "e383d80fe56c5356079be305f6d1bd4d68623009",
+    "head": "cb86b46c87beb3a227da23e08a8d529547e1a55c"
+  },
+  {
+    "pr": 47,
+    "path": "notebooks/207_omega_selection_vs_divergence.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "e383d80fe56c5356079be305f6d1bd4d68623009",
+    "head": "cb86b46c87beb3a227da23e08a8d529547e1a55c"
+  },
+  {
+    "pr": 47,
+    "path": "notebooks/210_mhc_benchmark_setup_and_label_policy.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "e383d80fe56c5356079be305f6d1bd4d68623009",
+    "head": "cb86b46c87beb3a227da23e08a8d529547e1a55c"
+  },
+  {
+    "pr": 47,
+    "path": "notebooks/211_mhc_recovery_and_auc.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "e383d80fe56c5356079be305f6d1bd4d68623009",
+    "head": "cb86b46c87beb3a227da23e08a8d529547e1a55c"
+  },
+  {
+    "pr": 47,
+    "path": "notebooks/212_mhc_domain_localisation.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "e383d80fe56c5356079be305f6d1bd4d68623009",
+    "head": "cb86b46c87beb3a227da23e08a8d529547e1a55c"
+  },
+  {
+    "pr": 47,
+    "path": "notebooks/213_mhc_metric_choice.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "e383d80fe56c5356079be305f6d1bd4d68623009",
+    "head": "cb86b46c87beb3a227da23e08a8d529547e1a55c"
+  },
+  {
+    "pr": 47,
+    "path": "notebooks/214_mhc_igsf_specificity.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "e383d80fe56c5356079be305f6d1bd4d68623009",
+    "head": "cb86b46c87beb3a227da23e08a8d529547e1a55c"
+  },
+  {
+    "pr": 47,
+    "path": "notebooks/215_mhc_synteny_ground_truth.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "e383d80fe56c5356079be305f6d1bd4d68623009",
+    "head": "cb86b46c87beb3a227da23e08a8d529547e1a55c"
+  },
+  {
+    "pr": 47,
+    "path": "notebooks/216_mhc_solvent_accessibility_jaccard.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "e383d80fe56c5356079be305f6d1bd4d68623009",
+    "head": "cb86b46c87beb3a227da23e08a8d529547e1a55c"
+  },
+  {
+    "pr": 47,
+    "path": "notebooks/217_rbh_false_positive_paralog_contamination.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "e383d80fe56c5356079be305f6d1bd4d68623009",
+    "head": "cb86b46c87beb3a227da23e08a8d529547e1a55c"
+  },
+  {
+    "pr": 30,
+    "path": "notebooks/013-compute-all-sensitivity-to-first-fp.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "a0478a91b4ba06c0090cf9f9791a223e62d8a75a",
+    "head": "5a1d3735460fad5886ef208abb269a8605e99ab0"
+  },
+  {
+    "pr": 30,
+    "path": "notebooks/014-plot-sensitivity-to-first-fp.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "a0478a91b4ba06c0090cf9f9791a223e62d8a75a",
+    "head": "5a1d3735460fad5886ef208abb269a8605e99ab0"
+  },
+  {
+    "pr": 30,
+    "path": "notebooks/015-which-kmers-match.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "a0478a91b4ba06c0090cf9f9791a223e62d8a75a",
+    "head": "5a1d3735460fad5886ef208abb269a8605e99ab0"
+  },
+  {
+    "pr": 30,
+    "path": "notebooks/016-ced9-bcl2-and-p66-cd47.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "a0478a91b4ba06c0090cf9f9791a223e62d8a75a",
+    "head": "5a1d3735460fad5886ef208abb269a8605e99ab0"
+  },
+  {
+    "pr": 30,
+    "path": "notebooks/017-p66-cd47.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "a0478a91b4ba06c0090cf9f9791a223e62d8a75a",
+    "head": "5a1d3735460fad5886ef208abb269a8605e99ab0"
+  },
+  {
+    "pr": 30,
+    "path": "notebooks/018-explore-hp-k10.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "a0478a91b4ba06c0090cf9f9791a223e62d8a75a",
+    "head": "5a1d3735460fad5886ef208abb269a8605e99ab0"
+  },
+  {
+    "pr": 30,
+    "path": "notebooks/022-plot-subsampled-sourmash-scores-per-moltype-ksize.ipynb",
+    "kind": "source_changed",
+    "base": "a0478a91b4ba06c0090cf9f9791a223e62d8a75a",
+    "head": "5a1d3735460fad5886ef208abb269a8605e99ab0"
+  },
+  {
+    "pr": 30,
+    "path": "notebooks/030-test-polars-read-fasta.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "a0478a91b4ba06c0090cf9f9791a223e62d8a75a",
+    "head": "5a1d3735460fad5886ef208abb269a8605e99ab0"
+  },
+  {
+    "pr": 30,
+    "path": "notebooks/040-cargo-bench-string-with-capacity.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "a0478a91b4ba06c0090cf9f9791a223e62d8a75a",
+    "head": "5a1d3735460fad5886ef208abb269a8605e99ab0"
+  },
+  {
+    "pr": 30,
+    "path": "notebooks/051-scope40-hp-k15.ipynb",
+    "kind": "source_changed",
+    "base": "a0478a91b4ba06c0090cf9f9791a223e62d8a75a",
+    "head": "5a1d3735460fad5886ef208abb269a8605e99ab0"
+  },
+  {
+    "pr": 30,
+    "path": "notebooks/052-scope40-hp-k15-bcl2-ced9.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "a0478a91b4ba06c0090cf9f9791a223e62d8a75a",
+    "head": "5a1d3735460fad5886ef208abb269a8605e99ab0"
+  },
+  {
+    "pr": 30,
+    "path": "notebooks/053-scope40-hp-k15-plots.ipynb",
+    "kind": "source_changed",
+    "base": "a0478a91b4ba06c0090cf9f9791a223e62d8a75a",
+    "head": "5a1d3735460fad5886ef208abb269a8605e99ab0"
+  },
+  {
+    "pr": 30,
+    "path": "notebooks/054-scope40-hp-dayhoff-protein-plots.ipynb",
+    "kind": "source_changed",
+    "base": "a0478a91b4ba06c0090cf9f9791a223e62d8a75a",
+    "head": "5a1d3735460fad5886ef208abb269a8605e99ab0"
+  },
+  {
+    "pr": 30,
+    "path": "notebooks/055-scope40-hp-dayhoff-protein-sensitivity.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "a0478a91b4ba06c0090cf9f9791a223e62d8a75a",
+    "head": "5a1d3735460fad5886ef208abb269a8605e99ab0"
+  },
+  {
+    "pr": 30,
+    "path": "notebooks/056-scope40-hp-k15-k20-vs-tea.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "a0478a91b4ba06c0090cf9f9791a223e62d8a75a",
+    "head": "5a1d3735460fad5886ef208abb269a8605e99ab0"
+  },
+  {
+    "pr": 30,
+    "path": "notebooks/057-scope40-hp-k15-k20-vs-tea-clean.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "a0478a91b4ba06c0090cf9f9791a223e62d8a75a",
+    "head": "5a1d3735460fad5886ef208abb269a8605e99ab0"
+  },
+  {
+    "pr": 30,
+    "path": "notebooks/058-hp-k20-vs-foldseek-tea.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "a0478a91b4ba06c0090cf9f9791a223e62d8a75a",
+    "head": "5a1d3735460fad5886ef208abb269a8605e99ab0"
+  },
+  {
+    "pr": 30,
+    "path": "notebooks/059-hp-k20-45-comparison.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "a0478a91b4ba06c0090cf9f9791a223e62d8a75a",
+    "head": "5a1d3735460fad5886ef208abb269a8605e99ab0"
+  },
+  {
+    "pr": 30,
+    "path": "notebooks/060-hp-k41-unique-vs-foldseek-analysis.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "a0478a91b4ba06c0090cf9f9791a223e62d8a75a",
+    "head": "5a1d3735460fad5886ef208abb269a8605e99ab0"
+  },
+  {
+    "pr": 30,
+    "path": "notebooks/061-hp-k35-k36-family-analysis.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "a0478a91b4ba06c0090cf9f9791a223e62d8a75a",
+    "head": "5a1d3735460fad5886ef208abb269a8605e99ab0"
+  },
+  {
+    "pr": 30,
+    "path": "notebooks/062-hp-k24-threshold-optimization.ipynb",
+    "kind": "source_changed",
+    "base": "a0478a91b4ba06c0090cf9f9791a223e62d8a75a",
+    "head": "5a1d3735460fad5886ef208abb269a8605e99ab0"
+  },
+  {
+    "pr": 30,
+    "path": "notebooks/063-hp-unique-families-deep-analysis.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "a0478a91b4ba06c0090cf9f9791a223e62d8a75a",
+    "head": "5a1d3735460fad5886ef208abb269a8605e99ab0"
+  },
+  {
+    "pr": 30,
+    "path": "notebooks/064-hp-k24-ml-classification.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "a0478a91b4ba06c0090cf9f9791a223e62d8a75a",
+    "head": "5a1d3735460fad5886ef208abb269a8605e99ab0"
+  },
+  {
+    "pr": 30,
+    "path": "notebooks/065-hp-scope-pvalue-benchmark.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "a0478a91b4ba06c0090cf9f9791a223e62d8a75a",
+    "head": "5a1d3735460fad5886ef208abb269a8605e99ab0"
+  },
+  {
+    "pr": 30,
+    "path": "notebooks/066_scope_all_metrics_auc_k15_45.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "a0478a91b4ba06c0090cf9f9791a223e62d8a75a",
+    "head": "5a1d3735460fad5886ef208abb269a8605e99ab0"
+  },
+  {
+    "pr": 30,
+    "path": "notebooks/067_scope_all_metrics_all_fps.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "a0478a91b4ba06c0090cf9f9791a223e62d8a75a",
+    "head": "5a1d3735460fad5886ef208abb269a8605e99ab0"
+  },
+  {
+    "pr": 30,
+    "path": "notebooks/068_scope_all_metrics_excl_gz.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "a0478a91b4ba06c0090cf9f9791a223e62d8a75a",
+    "head": "5a1d3735460fad5886ef208abb269a8605e99ab0"
+  },
+  {
+    "pr": 30,
+    "path": "notebooks/069_scope_excl_gz_unique_hits.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "a0478a91b4ba06c0090cf9f9791a223e62d8a75a",
+    "head": "5a1d3735460fad5886ef208abb269a8605e99ab0"
+  },
+  {
+    "pr": 30,
+    "path": "notebooks/070_scope_bcl2_ced9_small_k.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "a0478a91b4ba06c0090cf9f9791a223e62d8a75a",
+    "head": "5a1d3735460fad5886ef208abb269a8605e99ab0"
+  },
+  {
+    "pr": 30,
+    "path": "notebooks/071_scope_unique_hits_scop_class_enrichment.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "a0478a91b4ba06c0090cf9f9791a223e62d8a75a",
+    "head": "5a1d3735460fad5886ef208abb269a8605e99ab0"
+  },
+  {
+    "pr": 30,
+    "path": "notebooks/072_scope_threshold_filter_benchmark.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "a0478a91b4ba06c0090cf9f9791a223e62d8a75a",
+    "head": "5a1d3735460fad5886ef208abb269a8605e99ab0"
+  },
+  {
+    "pr": 30,
+    "path": "notebooks/073_scope40_hp_kmer_distribution.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "a0478a91b4ba06c0090cf9f9791a223e62d8a75a",
+    "head": "5a1d3735460fad5886ef208abb269a8605e99ab0"
+  },
+  {
+    "pr": 30,
+    "path": "notebooks/074_scope_family_auc_mechanism.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "a0478a91b4ba06c0090cf9f9791a223e62d8a75a",
+    "head": "5a1d3735460fad5886ef208abb269a8605e99ab0"
+  },
+  {
+    "pr": 30,
+    "path": "notebooks/075_hp_alphabet_sweep_benchmark.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "a0478a91b4ba06c0090cf9f9791a223e62d8a75a",
+    "head": "5a1d3735460fad5886ef208abb269a8605e99ab0"
+  },
+  {
+    "pr": 30,
+    "path": "notebooks/076_hp_alphabet_sweep_per_class.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "a0478a91b4ba06c0090cf9f9791a223e62d8a75a",
+    "head": "5a1d3735460fad5886ef208abb269a8605e99ab0"
+  },
+  {
+    "pr": 30,
+    "path": "notebooks/077_hp_alphabet_sweep_summary.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "a0478a91b4ba06c0090cf9f9791a223e62d8a75a",
+    "head": "5a1d3735460fad5886ef208abb269a8605e99ab0"
+  },
+  {
+    "pr": 30,
+    "path": "notebooks/078_frontier_figure.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "a0478a91b4ba06c0090cf9f9791a223e62d8a75a",
+    "head": "5a1d3735460fad5886ef208abb269a8605e99ab0"
+  },
+  {
+    "pr": 30,
+    "path": "notebooks/078_thomas_dill_k26_mechanism.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "a0478a91b4ba06c0090cf9f9791a223e62d8a75a",
+    "head": "5a1d3735460fad5886ef208abb269a8605e99ab0"
+  },
+  {
+    "pr": 30,
+    "path": "notebooks/079_annotation_gaps_and_validation.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "a0478a91b4ba06c0090cf9f9791a223e62d8a75a",
+    "head": "5a1d3735460fad5886ef208abb269a8605e99ab0"
+  },
+  {
+    "pr": 30,
+    "path": "notebooks/080_pbotc_k26_qfo2020_partial_analysis.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "a0478a91b4ba06c0090cf9f9791a223e62d8a75a",
+    "head": "5a1d3735460fad5886ef208abb269a8605e99ab0"
+  },
+  {
+    "pr": 30,
+    "path": "notebooks/081_disprot_benchmark_analysis.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "a0478a91b4ba06c0090cf9f9791a223e62d8a75a",
+    "head": "5a1d3735460fad5886ef208abb269a8605e99ab0"
+  },
+  {
+    "pr": 30,
+    "path": "notebooks/082_thomas_dill_k26_vs_k27_lost_queries.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "a0478a91b4ba06c0090cf9f9791a223e62d8a75a",
+    "head": "5a1d3735460fad5886ef208abb269a8605e99ab0"
+  },
+  {
+    "pr": 30,
+    "path": "notebooks/083_km_fails_foldseek_wins.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "a0478a91b4ba06c0090cf9f9791a223e62d8a75a",
+    "head": "5a1d3735460fad5886ef208abb269a8605e99ab0"
+  },
+  {
+    "pr": 30,
+    "path": "notebooks/084_plddt_qfo_pfam.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "a0478a91b4ba06c0090cf9f9791a223e62d8a75a",
+    "head": "5a1d3735460fad5886ef208abb269a8605e99ab0"
+  },
+  {
+    "pr": 30,
+    "path": "notebooks/085_search_time_significance_prefilter.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "a0478a91b4ba06c0090cf9f9791a223e62d8a75a",
+    "head": "5a1d3735460fad5886ef208abb269a8605e99ab0"
+  },
+  {
+    "pr": 30,
+    "path": "notebooks/086_lowcomplexity_fraction_threshold.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "a0478a91b4ba06c0090cf9f9791a223e62d8a75a",
+    "head": "5a1d3735460fad5886ef208abb269a8605e99ab0"
+  },
+  {
+    "pr": 30,
+    "path": "notebooks/115-human-mouse-ortholog-double-peaks.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "a0478a91b4ba06c0090cf9f9791a223e62d8a75a",
+    "head": "5a1d3735460fad5886ef208abb269a8605e99ab0"
+  },
+  {
+    "pr": 30,
+    "path": "notebooks/116-kmerseek-vs-orthofinder.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "a0478a91b4ba06c0090cf9f9791a223e62d8a75a",
+    "head": "5a1d3735460fad5886ef208abb269a8605e99ab0"
+  },
+  {
+    "pr": 30,
+    "path": "notebooks/117-human-mouse-ortholog-bimodality-investigation.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "a0478a91b4ba06c0090cf9f9791a223e62d8a75a",
+    "head": "5a1d3735460fad5886ef208abb269a8605e99ab0"
+  },
+  {
+    "pr": 30,
+    "path": "notebooks/118-kmerseek-vs-orthofinder-mgi-ground-truth.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "a0478a91b4ba06c0090cf9f9791a223e62d8a75a",
+    "head": "5a1d3735460fad5886ef208abb269a8605e99ab0"
+  },
+  {
+    "pr": 30,
+    "path": "notebooks/119_kmerseek_only_orthologs_characterization.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "a0478a91b4ba06c0090cf9f9791a223e62d8a75a",
+    "head": "5a1d3735460fad5886ef208abb269a8605e99ab0"
+  },
+  {
+    "pr": 30,
+    "path": "notebooks/120_kmerseek_only_orthologs_conservative_threshold.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "a0478a91b4ba06c0090cf9f9791a223e62d8a75a",
+    "head": "5a1d3735460fad5886ef208abb269a8605e99ab0"
+  },
+  {
+    "pr": 30,
+    "path": "notebooks/121_qfo2020_kmerseek_analysis.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "a0478a91b4ba06c0090cf9f9791a223e62d8a75a",
+    "head": "5a1d3735460fad5886ef208abb269a8605e99ab0"
+  },
+  {
+    "pr": 30,
+    "path": "notebooks/122_subdomain_detection_benchmark.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "a0478a91b4ba06c0090cf9f9791a223e62d8a75a",
+    "head": "5a1d3735460fad5886ef208abb269a8605e99ab0"
+  },
+  {
+    "pr": 30,
+    "path": "notebooks/123_pfam_subdomain_divergence_benchmark.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "a0478a91b4ba06c0090cf9f9791a223e62d8a75a",
+    "head": "5a1d3735460fad5886ef208abb269a8605e99ab0"
+  },
+  {
+    "pr": 30,
+    "path": "notebooks/124_kmerseek_false_positives_characterization.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "a0478a91b4ba06c0090cf9f9791a223e62d8a75a",
+    "head": "5a1d3735460fad5886ef208abb269a8605e99ab0"
+  },
+  {
+    "pr": 30,
+    "path": "notebooks/125_build_pfam_benchmark_ground_truth.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "a0478a91b4ba06c0090cf9f9791a223e62d8a75a",
+    "head": "5a1d3735460fad5886ef208abb269a8605e99ab0"
+  },
+  {
+    "pr": 30,
+    "path": "notebooks/126_pfam_benchmark_ksize_window_ml.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "a0478a91b4ba06c0090cf9f9791a223e62d8a75a",
+    "head": "5a1d3735460fad5886ef208abb269a8605e99ab0"
+  },
+  {
+    "pr": 30,
+    "path": "notebooks/200_human_mouse_ortholog_alphabet_ksize_comparison.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "a0478a91b4ba06c0090cf9f9791a223e62d8a75a",
+    "head": "5a1d3735460fad5886ef208abb269a8605e99ab0"
+  },
+  {
+    "pr": 30,
+    "path": "notebooks/202_human_mouse_kmerseek_vs_plddt.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "a0478a91b4ba06c0090cf9f9791a223e62d8a75a",
+    "head": "5a1d3735460fad5886ef208abb269a8605e99ab0"
+  },
+  {
+    "pr": 30,
+    "path": "notebooks/203_human_mouse_ortholog_disorder_comparison.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "a0478a91b4ba06c0090cf9f9791a223e62d8a75a",
+    "head": "5a1d3735460fad5886ef208abb269a8605e99ab0"
+  },
+  {
+    "pr": 30,
+    "path": "notebooks/205_hp_thomas_dill_deep_dive.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "a0478a91b4ba06c0090cf9f9791a223e62d8a75a",
+    "head": "5a1d3735460fad5886ef208abb269a8605e99ab0"
+  },
+  {
+    "pr": 30,
+    "path": "notebooks/206_dnds_hp_alphabet_mechanism.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "a0478a91b4ba06c0090cf9f9791a223e62d8a75a",
+    "head": "5a1d3735460fad5886ef208abb269a8605e99ab0"
+  },
+  {
+    "pr": 30,
+    "path": "notebooks/207_omega_selection_vs_divergence.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "a0478a91b4ba06c0090cf9f9791a223e62d8a75a",
+    "head": "5a1d3735460fad5886ef208abb269a8605e99ab0"
+  },
+  {
+    "pr": 30,
+    "path": "notebooks/210_mhc_benchmark_setup_and_label_policy.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "a0478a91b4ba06c0090cf9f9791a223e62d8a75a",
+    "head": "5a1d3735460fad5886ef208abb269a8605e99ab0"
+  },
+  {
+    "pr": 30,
+    "path": "notebooks/211_mhc_recovery_and_auc.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "a0478a91b4ba06c0090cf9f9791a223e62d8a75a",
+    "head": "5a1d3735460fad5886ef208abb269a8605e99ab0"
+  },
+  {
+    "pr": 30,
+    "path": "notebooks/212_mhc_domain_localisation.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "a0478a91b4ba06c0090cf9f9791a223e62d8a75a",
+    "head": "5a1d3735460fad5886ef208abb269a8605e99ab0"
+  },
+  {
+    "pr": 30,
+    "path": "notebooks/213_mhc_metric_choice.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "a0478a91b4ba06c0090cf9f9791a223e62d8a75a",
+    "head": "5a1d3735460fad5886ef208abb269a8605e99ab0"
+  },
+  {
+    "pr": 30,
+    "path": "notebooks/214_mhc_igsf_specificity.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "a0478a91b4ba06c0090cf9f9791a223e62d8a75a",
+    "head": "5a1d3735460fad5886ef208abb269a8605e99ab0"
+  },
+  {
+    "pr": 30,
+    "path": "notebooks/215_mhc_synteny_ground_truth.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "a0478a91b4ba06c0090cf9f9791a223e62d8a75a",
+    "head": "5a1d3735460fad5886ef208abb269a8605e99ab0"
+  },
+  {
+    "pr": 30,
+    "path": "notebooks/216_mhc_solvent_accessibility_jaccard.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "a0478a91b4ba06c0090cf9f9791a223e62d8a75a",
+    "head": "5a1d3735460fad5886ef208abb269a8605e99ab0"
+  },
+  {
+    "pr": 30,
+    "path": "notebooks/217_rbh_false_positive_paralog_contamination.ipynb",
+    "kind": "format_or_metadata_only",
+    "base": "a0478a91b4ba06c0090cf9f9791a223e62d8a75a",
+    "head": "5a1d3735460fad5886ef208abb269a8605e99ab0"
+  }
+]

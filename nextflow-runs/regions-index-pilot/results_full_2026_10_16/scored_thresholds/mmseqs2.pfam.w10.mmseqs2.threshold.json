@@ -1,0 +1,13 @@
+{
+  "threshold": 9.975,
+  "n_target": 85628,
+  "n_decoy": 109,
+  "nofit": false,
+  "label": "mmseqs2.pfam.w10.mmseqs2",
+  "calls_total": 85737,
+  "decoy_calls_total": 109,
+  "max_decoy_rate": 0.05,
+  "features_found": 1164,
+  "features_found_aligned": 1228,
+  "features_total": 7174
+}

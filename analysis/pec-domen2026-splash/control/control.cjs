@@ -1,0 +1,12 @@
+ctrl1,-1
+ctrl2,-1
+ctrl3,-1
+ctrl4,-1
+ctrl5,-1
+ctrl6,-1
+pec1,1
+pec2,1
+pec3,1
+pec4,1
+pec5,1
+pec6,1

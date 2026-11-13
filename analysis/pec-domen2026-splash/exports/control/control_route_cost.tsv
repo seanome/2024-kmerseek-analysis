@@ -1,0 +1,7 @@
+route	cpu_seconds	wall_seconds	peak_gb	steps	source
+splash	853.5	97.3	2.26	SPLASH	contrasts/control/splash.time (/usr/bin/time -v)
+anchor_deseq2	22571.5	3739.0	17.86	SPLASH + anchor counts + PyDESeq2	splash.time; anchor_counts.log 'seconds 363' (counted as 363 CPU s, one thread, memory not recorded); deseq.time
+dekupl_limma	1581.6	374.9	0.93	DE-kupl counting + limma	contrasts/control/dekupl_limma.time
+dekupl_deseq2	2614.7	1005.3	3.13	DE-kupl counting + DESeq2	contrasts/control/dekupl_DESeq2.time
+kamrat_ttest	1731.6	528.9	0.93	DE-kupl counting (whole limma run, an upper bound) + KaMRaT index, t-test, merge	dekupl_limma.time; Nextflow trace pec361.2026-11-01_1549, task 126 kamrat (control): realtime 153 s at 98 % CPU, peak 0.62 GB
+kamrat_deseq2	1809.3	539.4	0.93	as kamrat_ttest + contig counts + PyDESeq2	as kamrat_ttest; kamrat_deseq2/counts.time; kamrat_deseq2/deseq.time

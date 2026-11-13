@@ -1,0 +1,9 @@
+PhaSePro file	phasepro_download_full_2026-10-20.json	md5 f0c9179eb575bcea0c7438f82477e89f
+PhaSePro URL	https://phasepro.elte.hu/download_full.json
+PhaSePro release	no numbered release; newest entry date 2019-09-11
+DisProt file	disprot_current_2026-10-20.json	md5 bd7609c0ca1618d76fb5f3c5bee54e3b
+DisProt URL	https://disprot.org/api/search?release=current&show_ambiguous=true&show_obsolete=false&format=json&page_size=5000
+DisProt release	current on 2026-10-20; newest region release tag 2026_06
+DisProt term	GO:0140693
+flank	10
+region table md5	c3591f4b29e30a9abf0cf22eb75b7362

@@ -1,0 +1,955 @@
+{
+  "captured_at": "2026-10-23T14:39:38.296532+00:00",
+  "repository": "seanome/protein-function-annotation-leaderboard",
+  "pull_requests": [
+    {
+      "number": 34,
+      "title": "Table 2: best-hit transfer rows in their own group, with the call rule named",
+      "url": "https://github.com/seanome/protein-function-annotation-leaderboard/pull/34",
+      "head": "e1911d196913eb2698ea239fe1ef26cbcf8a0055",
+      "base": "olgabot/no-search-baselines",
+      "depends_on_open_pr": 21,
+      "mergeable": "MERGEABLE",
+      "checks": [
+        {
+          "name": "check",
+          "conclusion": "SUCCESS"
+        },
+        {
+          "name": "check",
+          "conclusion": "SUCCESS"
+        },
+        {
+          "name": "rebuild",
+          "conclusion": "SUCCESS"
+        },
+        {
+          "name": "rebuild",
+          "conclusion": "SUCCESS"
+        }
+      ],
+      "review_scope": "Read-only GitHub metadata inventory; no scientific or code approval",
+      "recommendation": "Stack dependency must land or be reconciled first",
+      "current_head": "e1911d196913eb2698ea239fe1ef26cbcf8a0055",
+      "current_github_state": "CLEAN",
+      "current_base": "olgabot/no-search-baselines",
+      "isDraft": false,
+      "current_checks": "SUCCESS",
+      "review_matches_current_head": true
+    },
+    {
+      "number": 33,
+      "title": "Tolerance atlas: 60 human diseases through five steps, from 235 PubMed queries",
+      "url": "https://github.com/seanome/protein-function-annotation-leaderboard/pull/33",
+      "head": "51b161384a8e74887ebf0373f495230c2104c6d0",
+      "base": "main",
+      "depends_on_open_pr": null,
+      "mergeable": "MERGEABLE",
+      "checks": [],
+      "review_scope": "Focused source/claim review; external science not fully recertified",
+      "recommendation": "Hold for resolution of4failed human-target source assertions before treating as verified transfer evidence. Original screen counts retained explicitly; no external literature fetch",
+      "comment_url": "https://github.com/seanome/protein-function-annotation-leaderboard/pull/33#issuecomment-6367310646",
+      "fixes": [
+        "First result/figure/table/body label7as originally reported claims, not validated transfers",
+        "First result exposes4failed source assertions and3or2remaining",
+        "Universal tolerance conclusion narrowed to registered screen threshold"
+      ],
+      "tests": "62x11 atlas cells and235queries rebuild exactly; independent funnels60/42/29/7/0and60/7/7/3/0 PASS; rebuilt figure visually inspected",
+      "current_head": "51b161384a8e74887ebf0373f495230c2104c6d0",
+      "current_github_state": "CLEAN",
+      "current_base": "main",
+      "isDraft": false,
+      "current_checks": "No checks",
+      "review_matches_current_head": true
+    },
+    {
+      "number": 32,
+      "title": "Transferability back-test: T fails the registered rule in 43 collected entries",
+      "url": "https://github.com/seanome/protein-function-annotation-leaderboard/pull/32",
+      "head": "553fb63cf6974639a2ca76313e3acc0de0d536a0",
+      "base": "main",
+      "depends_on_open_pr": null,
+      "mergeable": "MERGEABLE",
+      "checks": [],
+      "review_scope": "Focused source/claim review; external science not fully recertified",
+      "recommendation": "Merge candidate as bounded retrospective result after repository checks; new head has no CI result yet. External original source/blinding/selection not independently recertified",
+      "comment_url": "https://github.com/seanome/protein-function-annotation-leaderboard/pull/32#issuecomment-6367310321",
+      "fixes": [
+        "Narrow no-prediction claim to frozen rule failing in43selected entries",
+        "Minimum sample size is not power analysis",
+        "PR title/body corrected"
+      ],
+      "tests": "Independent CSV pair counting reproduces AUROC 0.569078947 and median scores 5 and 3.5. The 43-row recheck script passes twice; the frozen scientific success rule fails. U=259.5, p=0.439551989.",
+      "current_head": "553fb63cf6974639a2ca76313e3acc0de0d536a0",
+      "current_github_state": "CLEAN",
+      "current_base": "main",
+      "isDraft": false,
+      "current_checks": "No checks",
+      "review_matches_current_head": true
+    },
+    {
+      "number": 31,
+      "title": "Solvers unreadable: tolerant species are not harder to annotate than matched random species (42 proteomes)",
+      "url": "https://github.com/seanome/protein-function-annotation-leaderboard/pull/31",
+      "head": "0bb72330ad4f788a77e8e6f18e3d860dd6f4cfda",
+      "base": "olgabot/why-numbers",
+      "depends_on_open_pr": 12,
+      "mergeable": "MERGEABLE",
+      "checks": [],
+      "review_scope": "Read-only GitHub metadata inventory; no scientific or code approval",
+      "recommendation": "Stack dependency must land or be reconciled first",
+      "current_head": "0bb72330ad4f788a77e8e6f18e3d860dd6f4cfda",
+      "current_github_state": "CLEAN",
+      "current_base": "olgabot/why-numbers",
+      "isDraft": false,
+      "current_checks": "No checks",
+      "review_matches_current_head": true
+    },
+    {
+      "number": 30,
+      "title": "Known cases: fourteen protein pairs proven in a laboratory, and what each tool does with them",
+      "url": "https://github.com/seanome/protein-function-annotation-leaderboard/pull/30",
+      "head": "576d824f6688cf8908586a44f6e28e5fda635ab6",
+      "base": "olgabot/contribute",
+      "depends_on_open_pr": 16,
+      "mergeable": "MERGEABLE",
+      "checks": [
+        {
+          "name": "check",
+          "conclusion": "SUCCESS"
+        },
+        {
+          "name": "check",
+          "conclusion": "SUCCESS"
+        },
+        {
+          "name": "rebuild",
+          "conclusion": "SUCCESS"
+        },
+        {
+          "name": "rebuild",
+          "conclusion": "SUCCESS"
+        }
+      ],
+      "review_scope": "Read-only GitHub metadata inventory; no scientific or code approval",
+      "recommendation": "Stack dependency must land or be reconciled first",
+      "current_head": "576d824f6688cf8908586a44f6e28e5fda635ab6",
+      "current_github_state": "CLEAN",
+      "current_base": "olgabot/contribute",
+      "isDraft": false,
+      "current_checks": "SUCCESS",
+      "review_matches_current_head": true
+    },
+    {
+      "number": 29,
+      "title": "SCOPe40 ranking page: Foldseek, MMseqs2 and kmerseek scored per query with LoL-align's denominators",
+      "url": "https://github.com/seanome/protein-function-annotation-leaderboard/pull/29",
+      "head": "7feeb97d1788d384d6c9a4b475618831349c82ee",
+      "base": "olgabot/no-search-baselines",
+      "depends_on_open_pr": 21,
+      "mergeable": "MERGEABLE",
+      "checks": [
+        {
+          "name": "check",
+          "conclusion": "SUCCESS"
+        },
+        {
+          "name": "check",
+          "conclusion": "SUCCESS"
+        },
+        {
+          "name": "rebuild",
+          "conclusion": "SUCCESS"
+        },
+        {
+          "name": "rebuild",
+          "conclusion": "SUCCESS"
+        }
+      ],
+      "review_scope": "Read-only GitHub metadata inventory; no scientific or code approval",
+      "recommendation": "Stack dependency must land or be reconciled first",
+      "current_head": "7feeb97d1788d384d6c9a4b475618831349c82ee",
+      "current_github_state": "CLEAN",
+      "current_base": "olgabot/no-search-baselines",
+      "isDraft": false,
+      "current_checks": "SUCCESS",
+      "review_matches_current_head": true
+    },
+    {
+      "number": 28,
+      "title": "Cost of labelling the two proteomes, from Slurm's record of job 47961379",
+      "url": "https://github.com/seanome/protein-function-annotation-leaderboard/pull/28",
+      "head": "31fcdfff7025bb4103ad440f8f6094e773083a5d",
+      "base": "olgabot/why-numbers",
+      "depends_on_open_pr": 12,
+      "mergeable": "MERGEABLE",
+      "checks": [],
+      "review_scope": "Read-only GitHub metadata inventory; no scientific or code approval",
+      "recommendation": "Stack dependency must land or be reconciled first",
+      "current_head": "31fcdfff7025bb4103ad440f8f6094e773083a5d",
+      "current_github_state": "CLEAN",
+      "current_base": "olgabot/why-numbers",
+      "isDraft": true,
+      "current_checks": "No checks",
+      "review_matches_current_head": true
+    },
+    {
+      "number": 27,
+      "title": "Antifreeze glycoprotein: masking test job, E below 1e-300, mussel foot sentence",
+      "url": "https://github.com/seanome/protein-function-annotation-leaderboard/pull/27",
+      "head": "77f3c9bb1016bea82ef9ee047c22338d81977f62",
+      "base": "olgabot/why-numbers",
+      "depends_on_open_pr": 12,
+      "mergeable": "MERGEABLE",
+      "checks": [],
+      "review_scope": "Read-only GitHub metadata inventory; no scientific or code approval",
+      "recommendation": "Stack dependency must land or be reconciled first",
+      "current_head": "77f3c9bb1016bea82ef9ee047c22338d81977f62",
+      "current_github_state": "CLEAN",
+      "current_base": "olgabot/why-numbers",
+      "isDraft": true,
+      "current_checks": "No checks",
+      "review_matches_current_head": true
+    },
+    {
+      "number": 26,
+      "title": "Why page: what the dark proteins are, and \"A model is not a label\"",
+      "url": "https://github.com/seanome/protein-function-annotation-leaderboard/pull/26",
+      "head": "ab7de005626ecd5465f573174a8c31249ca3a857",
+      "base": "olgabot/why-numbers",
+      "depends_on_open_pr": 12,
+      "mergeable": "MERGEABLE",
+      "checks": [],
+      "review_scope": "Read-only GitHub metadata inventory; no scientific or code approval",
+      "recommendation": "Stack dependency must land or be reconciled first",
+      "current_head": "ab7de005626ecd5465f573174a8c31249ca3a857",
+      "current_github_state": "CLEAN",
+      "current_base": "olgabot/why-numbers",
+      "isDraft": true,
+      "current_checks": "No checks",
+      "review_matches_current_head": true
+    },
+    {
+      "number": 25,
+      "title": "Filter rows for eight subsets an annotator can compute, and the commands on Methods",
+      "url": "https://github.com/seanome/protein-function-annotation-leaderboard/pull/25",
+      "head": "e2a09d9e0be1740648780683ec1c8f7ba9d40696",
+      "base": "olgabot/plain-metric-words",
+      "depends_on_open_pr": 11,
+      "mergeable": "MERGEABLE",
+      "checks": [
+        {
+          "name": "check",
+          "conclusion": "SUCCESS"
+        },
+        {
+          "name": "check",
+          "conclusion": "SUCCESS"
+        },
+        {
+          "name": "rebuild",
+          "conclusion": "SUCCESS"
+        },
+        {
+          "name": "rebuild",
+          "conclusion": "SUCCESS"
+        }
+      ],
+      "review_scope": "Read-only GitHub metadata inventory; no scientific or code approval",
+      "recommendation": "Stack dependency must land or be reconciled first",
+      "current_head": "e2a09d9e0be1740648780683ec1c8f7ba9d40696",
+      "current_github_state": "CLEAN",
+      "current_base": "olgabot/plain-metric-words",
+      "isDraft": false,
+      "current_checks": "SUCCESS",
+      "review_matches_current_head": true
+    },
+    {
+      "number": 24,
+      "title": "Weak hits right: leaderboard columns and a card block from the dark set",
+      "url": "https://github.com/seanome/protein-function-annotation-leaderboard/pull/24",
+      "head": "7d47e434fbf2adcfde169c09af4b127d637ad575",
+      "base": "olgabot/plain-metric-words",
+      "depends_on_open_pr": 11,
+      "mergeable": "MERGEABLE",
+      "checks": [
+        {
+          "name": "check",
+          "conclusion": "SUCCESS"
+        },
+        {
+          "name": "check",
+          "conclusion": "SUCCESS"
+        },
+        {
+          "name": "rebuild",
+          "conclusion": "SUCCESS"
+        },
+        {
+          "name": "rebuild",
+          "conclusion": "SUCCESS"
+        }
+      ],
+      "review_scope": "Read-only GitHub metadata inventory; no scientific or code approval",
+      "recommendation": "Stack dependency must land or be reconciled first",
+      "current_head": "7d47e434fbf2adcfde169c09af4b127d637ad575",
+      "current_github_state": "CLEAN",
+      "current_base": "olgabot/plain-metric-words",
+      "isDraft": false,
+      "current_checks": "SUCCESS",
+      "review_matches_current_head": true
+    },
+    {
+      "number": 23,
+      "title": "Cost calculator for a proteome and a budget, and the hardware line on tool cards",
+      "url": "https://github.com/seanome/protein-function-annotation-leaderboard/pull/23",
+      "head": "157d0d32a5299152aee7eeedd05d7f26d673ae32",
+      "base": "olgabot/scatter-axes",
+      "depends_on_open_pr": 7,
+      "mergeable": "MERGEABLE",
+      "checks": [
+        {
+          "name": "check",
+          "conclusion": "SUCCESS"
+        },
+        {
+          "name": "check",
+          "conclusion": "SUCCESS"
+        }
+      ],
+      "review_scope": "Read-only GitHub metadata inventory; no scientific or code approval",
+      "recommendation": "Stack dependency must land or be reconciled first",
+      "current_head": "157d0d32a5299152aee7eeedd05d7f26d673ae32",
+      "current_github_state": "CLEAN",
+      "current_base": "olgabot/scatter-axes",
+      "isDraft": false,
+      "current_checks": "SUCCESS",
+      "review_matches_current_head": true
+    },
+    {
+      "number": 22,
+      "title": "Organism page: type a species, get four facts, three tools and a command",
+      "url": "https://github.com/seanome/protein-function-annotation-leaderboard/pull/22",
+      "head": "4a33f5b5ffb8fbc05cc90f4b76f1ee522958c1a0",
+      "base": "olgabot/plain-metric-words",
+      "depends_on_open_pr": 11,
+      "mergeable": "MERGEABLE",
+      "checks": [
+        {
+          "name": "check",
+          "conclusion": "SUCCESS"
+        },
+        {
+          "name": "check",
+          "conclusion": "SUCCESS"
+        },
+        {
+          "name": "rebuild",
+          "conclusion": "SUCCESS"
+        },
+        {
+          "name": "rebuild",
+          "conclusion": "SUCCESS"
+        }
+      ],
+      "review_scope": "Read-only GitHub metadata inventory; no scientific or code approval",
+      "recommendation": "Stack dependency must land or be reconciled first",
+      "current_head": "4a33f5b5ffb8fbc05cc90f4b76f1ee522958c1a0",
+      "current_github_state": "CLEAN",
+      "current_base": "olgabot/plain-metric-words",
+      "isDraft": false,
+      "current_checks": "SUCCESS",
+      "review_matches_current_head": true
+    },
+    {
+      "number": 21,
+      "title": "No-search baselines in Table 1: pinned under the search tools, not applicable where they cannot score",
+      "url": "https://github.com/seanome/protein-function-annotation-leaderboard/pull/21",
+      "head": "1c0cddf91d4b3c848bd378fb0f6f0f96307bbee9",
+      "base": "olgabot/more-figures",
+      "depends_on_open_pr": 17,
+      "mergeable": "MERGEABLE",
+      "checks": [
+        {
+          "name": "check",
+          "conclusion": "SUCCESS"
+        },
+        {
+          "name": "check",
+          "conclusion": "SUCCESS"
+        },
+        {
+          "name": "rebuild",
+          "conclusion": "SUCCESS"
+        },
+        {
+          "name": "rebuild",
+          "conclusion": "SUCCESS"
+        }
+      ],
+      "review_scope": "Read-only GitHub metadata inventory; no scientific or code approval",
+      "recommendation": "Stack dependency must land or be reconciled first",
+      "current_head": "1c0cddf91d4b3c848bd378fb0f6f0f96307bbee9",
+      "current_github_state": "CLEAN",
+      "current_base": "olgabot/more-figures",
+      "isDraft": false,
+      "current_checks": "SUCCESS",
+      "review_matches_current_head": true
+    },
+    {
+      "number": 20,
+      "title": "Reduced alphabets page: evidence per position, kappa and usable k for 19 alphabets",
+      "url": "https://github.com/seanome/protein-function-annotation-leaderboard/pull/20",
+      "head": "1c32dbca5517cc47d0368cae99079d15ebb00ffe",
+      "base": "olgabot/plain-metric-words",
+      "depends_on_open_pr": 11,
+      "mergeable": "MERGEABLE",
+      "checks": [
+        {
+          "name": "check",
+          "conclusion": "SUCCESS"
+        },
+        {
+          "name": "check",
+          "conclusion": "SUCCESS"
+        },
+        {
+          "name": "rebuild",
+          "conclusion": "SUCCESS"
+        },
+        {
+          "name": "rebuild",
+          "conclusion": "SUCCESS"
+        }
+      ],
+      "review_scope": "Read-only GitHub metadata inventory; no scientific or code approval",
+      "recommendation": "Stack dependency must land or be reconciled first",
+      "current_head": "1c32dbca5517cc47d0368cae99079d15ebb00ffe",
+      "current_github_state": "CLEAN",
+      "current_base": "olgabot/plain-metric-words",
+      "isDraft": false,
+      "current_checks": "SUCCESS",
+      "review_matches_current_head": true
+    },
+    {
+      "number": 19,
+      "title": "Known failure modes on every tool card, each quoted from its source",
+      "url": "https://github.com/seanome/protein-function-annotation-leaderboard/pull/19",
+      "head": "c39547d83a62999660cc0d17aca4d460b59ca67a",
+      "base": "olgabot/plain-metric-words",
+      "depends_on_open_pr": 11,
+      "mergeable": "MERGEABLE",
+      "checks": [
+        {
+          "name": "check",
+          "conclusion": "SUCCESS"
+        },
+        {
+          "name": "check",
+          "conclusion": "SUCCESS"
+        },
+        {
+          "name": "check",
+          "conclusion": "SUCCESS"
+        },
+        {
+          "name": "check",
+          "conclusion": "SUCCESS"
+        },
+        {
+          "name": "rebuild",
+          "conclusion": "SUCCESS"
+        },
+        {
+          "name": "rebuild",
+          "conclusion": "SUCCESS"
+        }
+      ],
+      "review_scope": "Read-only GitHub metadata inventory; no scientific or code approval",
+      "recommendation": "Stack dependency must land or be reconciled first",
+      "current_head": "c39547d83a62999660cc0d17aca4d460b59ca67a",
+      "current_github_state": "CLEAN",
+      "current_base": "olgabot/plain-metric-words",
+      "isDraft": false,
+      "current_checks": "SUCCESS",
+      "review_matches_current_head": true
+    },
+    {
+      "number": 18,
+      "title": "Submission guide, authors' quoted claims for four tools, results-row schema and make release",
+      "url": "https://github.com/seanome/protein-function-annotation-leaderboard/pull/18",
+      "head": "b9f04812b740c0902c96dbd47858cdb80593840c",
+      "base": "olgabot/plain-metric-words",
+      "depends_on_open_pr": 11,
+      "mergeable": "MERGEABLE",
+      "checks": [
+        {
+          "name": "check",
+          "conclusion": "SUCCESS"
+        },
+        {
+          "name": "check",
+          "conclusion": "SUCCESS"
+        },
+        {
+          "name": "quotes-online",
+          "conclusion": "SUCCESS"
+        },
+        {
+          "name": "release-table",
+          "conclusion": "SUCCESS"
+        },
+        {
+          "name": "release-table",
+          "conclusion": "SUCCESS"
+        },
+        {
+          "name": "rebuild",
+          "conclusion": "SUCCESS"
+        },
+        {
+          "name": "rebuild",
+          "conclusion": "SUCCESS"
+        }
+      ],
+      "review_scope": "Read-only GitHub metadata inventory; no scientific or code approval",
+      "recommendation": "Stack dependency must land or be reconciled first",
+      "current_head": "b9f04812b740c0902c96dbd47858cdb80593840c",
+      "current_github_state": "CLEAN",
+      "current_base": "olgabot/plain-metric-words",
+      "isDraft": false,
+      "current_checks": "SUCCESS",
+      "review_matches_current_head": true
+    },
+    {
+      "number": 17,
+      "title": "Seven figures: Fmax by distance, identity and feature type; who found which region",
+      "url": "https://github.com/seanome/protein-function-annotation-leaderboard/pull/17",
+      "head": "100878dba1fe310f89570845b228c67f25d26e95",
+      "base": "olgabot/plain-metric-words",
+      "depends_on_open_pr": 11,
+      "mergeable": "MERGEABLE",
+      "checks": [
+        {
+          "name": "check",
+          "conclusion": "SUCCESS"
+        },
+        {
+          "name": "check",
+          "conclusion": "SUCCESS"
+        },
+        {
+          "name": "rebuild",
+          "conclusion": "SUCCESS"
+        },
+        {
+          "name": "rebuild",
+          "conclusion": "SUCCESS"
+        }
+      ],
+      "review_scope": "Read-only GitHub metadata inventory; no scientific or code approval",
+      "recommendation": "Stack dependency must land or be reconciled first",
+      "current_head": "100878dba1fe310f89570845b228c67f25d26e95",
+      "current_github_state": "CLEAN",
+      "current_base": "olgabot/plain-metric-words",
+      "isDraft": false,
+      "current_checks": "SUCCESS",
+      "review_matches_current_head": true
+    },
+    {
+      "number": 16,
+      "title": "Two ways in: scored tool submissions and a wet-lab truth form",
+      "url": "https://github.com/seanome/protein-function-annotation-leaderboard/pull/16",
+      "head": "a1b5dc15cc2cc8a3678e6ddc03cdd5e0db75e221",
+      "base": "olgabot/plain-metric-words",
+      "depends_on_open_pr": 11,
+      "mergeable": "MERGEABLE",
+      "checks": [
+        {
+          "name": "check",
+          "conclusion": "SUCCESS"
+        },
+        {
+          "name": "check",
+          "conclusion": "SUCCESS"
+        },
+        {
+          "name": "score",
+          "conclusion": "SUCCESS"
+        },
+        {
+          "name": "rebuild",
+          "conclusion": "SUCCESS"
+        },
+        {
+          "name": "rebuild",
+          "conclusion": "SUCCESS"
+        }
+      ],
+      "review_scope": "Read-only GitHub metadata inventory; no scientific or code approval",
+      "recommendation": "Stack dependency must land or be reconciled first",
+      "current_head": "a1b5dc15cc2cc8a3678e6ddc03cdd5e0db75e221",
+      "current_github_state": "CLEAN",
+      "current_base": "olgabot/plain-metric-words",
+      "isDraft": false,
+      "current_checks": "SUCCESS",
+      "review_matches_current_head": true
+    },
+    {
+      "number": 13,
+      "title": "Why this project: a four-screen page for funders, from measured numbers",
+      "url": "https://github.com/seanome/protein-function-annotation-leaderboard/pull/13",
+      "head": "7c1a927145f4ce39a7867720e25c23196c5a7920",
+      "base": "olgabot/plain-metric-words",
+      "depends_on_open_pr": 11,
+      "mergeable": "MERGEABLE",
+      "checks": [
+        {
+          "name": "check",
+          "conclusion": "SUCCESS"
+        },
+        {
+          "name": "check",
+          "conclusion": "SUCCESS"
+        },
+        {
+          "name": "rebuild",
+          "conclusion": "SUCCESS"
+        },
+        {
+          "name": "rebuild",
+          "conclusion": "SUCCESS"
+        }
+      ],
+      "review_scope": "Read-only GitHub metadata inventory; no scientific or code approval",
+      "recommendation": "Stack dependency must land or be reconciled first",
+      "current_head": "7c1a927145f4ce39a7867720e25c23196c5a7920",
+      "current_github_state": "CLEAN",
+      "current_base": "olgabot/plain-metric-words",
+      "isDraft": false,
+      "current_checks": "SUCCESS",
+      "review_matches_current_head": true
+    },
+    {
+      "number": 12,
+      "title": "Why-this-project numbers: Swiss-Prot, PDB, species, and labelled proteins in human and oyster",
+      "url": "https://github.com/seanome/protein-function-annotation-leaderboard/pull/12",
+      "head": "81c1a18cb373a454e72e6d55e31879558bdb84d2",
+      "base": "main",
+      "depends_on_open_pr": null,
+      "mergeable": "MERGEABLE",
+      "checks": [],
+      "review_scope": "Focused source/claim review; external science not fully recertified",
+      "recommendation": "Merge candidate as dated descriptive data snapshot after repository checks; no CI on initial head, current CI not yet established. Pending kmerseek search not complete; full raw SwissProt/taxonomy/API revalidation not run",
+      "comment_url": "https://github.com/seanome/protein-function-annotation-leaderboard/pull/12#issuecomment-6367309991",
+      "fixes": [
+        "Verifier now reads current checkout, not hardcoded other worktree"
+      ],
+      "tests": "Current checkout verifier path test; raw MMseqs streaming hit/nonself membership50924 proteins/0mismatches;108 source metadata rows and24 label count/percent entries PASS",
+      "isDraft": false,
+      "current_head": "81c1a18cb373a454e72e6d55e31879558bdb84d2",
+      "current_github_state": "CLEAN",
+      "current_base": "main",
+      "current_checks": "No checks",
+      "review_matches_current_head": true
+    },
+    {
+      "number": 11,
+      "title": "Plain words for each column; draggable IoU call and cost numbers",
+      "url": "https://github.com/seanome/protein-function-annotation-leaderboard/pull/11",
+      "head": "ead7951ce7b2f21a137ee10530231447b494c0c0",
+      "base": "olgabot/lower-load",
+      "depends_on_open_pr": 10,
+      "mergeable": "MERGEABLE",
+      "checks": [
+        {
+          "name": "check",
+          "conclusion": "SUCCESS"
+        },
+        {
+          "name": "check",
+          "conclusion": "SUCCESS"
+        },
+        {
+          "name": "build",
+          "conclusion": "SUCCESS"
+        },
+        {
+          "name": "rebuild",
+          "conclusion": "SUCCESS"
+        },
+        {
+          "name": "rebuild",
+          "conclusion": "SUCCESS"
+        },
+        {
+          "name": "report-build-status",
+          "conclusion": "SUCCESS"
+        },
+        {
+          "name": "deploy",
+          "conclusion": "SUCCESS"
+        }
+      ],
+      "review_scope": "Read-only GitHub metadata inventory; no scientific or code approval",
+      "recommendation": "Stack dependency must land or be reconciled first",
+      "current_head": "ead7951ce7b2f21a137ee10530231447b494c0c0",
+      "current_github_state": "CLEAN",
+      "current_base": "olgabot/lower-load",
+      "isDraft": false,
+      "current_checks": "SUCCESS",
+      "review_matches_current_head": true
+    },
+    {
+      "number": 10,
+      "title": "Data first on every page: one row per tool, a computed answer, bars per relative, pile-up result first",
+      "url": "https://github.com/seanome/protein-function-annotation-leaderboard/pull/10",
+      "head": "ffd3c0cd9e482affc3e804fc279cfd309035d3cf",
+      "base": "olgabot/fix-correctness",
+      "depends_on_open_pr": 9,
+      "mergeable": "MERGEABLE",
+      "checks": [
+        {
+          "name": "check",
+          "conclusion": "SUCCESS"
+        },
+        {
+          "name": "check",
+          "conclusion": "SUCCESS"
+        },
+        {
+          "name": "rebuild",
+          "conclusion": "SUCCESS"
+        },
+        {
+          "name": "rebuild",
+          "conclusion": "SUCCESS"
+        }
+      ],
+      "review_scope": "Read-only GitHub metadata inventory; no scientific or code approval",
+      "recommendation": "Stack dependency must land or be reconciled first",
+      "current_head": "ffd3c0cd9e482affc3e804fc279cfd309035d3cf",
+      "current_github_state": "CLEAN",
+      "current_base": "olgabot/fix-correctness",
+      "isDraft": false,
+      "current_checks": "SUCCESS",
+      "review_matches_current_head": true
+    },
+    {
+      "number": 9,
+      "title": "Fix 24 correctness findings: IoU wording, MMseqs2 build cost, URL hash, dark-mode colours, deterministic builds",
+      "url": "https://github.com/seanome/protein-function-annotation-leaderboard/pull/9",
+      "head": "086cef60dd6213ee4aaec128a8be05fbb916bafa",
+      "base": "olgabot/leaderboard-first",
+      "depends_on_open_pr": 6,
+      "mergeable": "MERGEABLE",
+      "checks": [
+        {
+          "name": "check",
+          "conclusion": "SUCCESS"
+        },
+        {
+          "name": "check",
+          "conclusion": "SUCCESS"
+        },
+        {
+          "name": "rebuild",
+          "conclusion": "SUCCESS"
+        },
+        {
+          "name": "rebuild",
+          "conclusion": "SUCCESS"
+        }
+      ],
+      "review_scope": "Read-only GitHub metadata inventory; no scientific or code approval",
+      "recommendation": "Stack dependency must land or be reconciled first",
+      "current_head": "086cef60dd6213ee4aaec128a8be05fbb916bafa",
+      "current_github_state": "CLEAN",
+      "current_base": "olgabot/leaderboard-first",
+      "isDraft": false,
+      "current_checks": "SUCCESS",
+      "review_matches_current_head": true
+    },
+    {
+      "number": 8,
+      "title": "Definitions beside each score, and a \"How the scores work\" page",
+      "url": "https://github.com/seanome/protein-function-annotation-leaderboard/pull/8",
+      "head": "862b4cf094e299a9d1469f43c2f01ebe8cc42d65",
+      "base": "olgabot/leaderboard-first",
+      "depends_on_open_pr": 6,
+      "mergeable": "MERGEABLE",
+      "checks": [
+        {
+          "name": "check",
+          "conclusion": "SUCCESS"
+        },
+        {
+          "name": "check",
+          "conclusion": "SUCCESS"
+        }
+      ],
+      "review_scope": "Focused fresh browser/data correctness review; no upstream scientific signoff",
+      "recommendation": "No confirmed issue in focused review; reconcile/land PR6 stack dependency first",
+      "comment_url": "https://github.com/seanome/protein-function-annotation-leaderboard/pull/8#issuecomment-6367214913",
+      "tests": "179 explainer numbers, claims checker, prose checker PASS",
+      "current_head": "862b4cf094e299a9d1469f43c2f01ebe8cc42d65",
+      "current_github_state": "CLEAN",
+      "current_base": "olgabot/leaderboard-first",
+      "isDraft": false,
+      "current_checks": "SUCCESS",
+      "review_matches_current_head": true
+    },
+    {
+      "number": 7,
+      "title": "Compare two columns: pick both axes of the cost figure",
+      "url": "https://github.com/seanome/protein-function-annotation-leaderboard/pull/7",
+      "head": "8b7ac003e2bb34aa5d1a67e37c719ac9cc57996d",
+      "base": "olgabot/leaderboard-first",
+      "depends_on_open_pr": 6,
+      "mergeable": "MERGEABLE",
+      "checks": [
+        {
+          "name": "check",
+          "conclusion": "SUCCESS"
+        },
+        {
+          "name": "check",
+          "conclusion": "SUCCESS"
+        }
+      ],
+      "review_scope": "Focused fresh browser/data correctness review; no upstream scientific signoff",
+      "recommendation": "No confirmed issue in focused review; reconcile/land PR6 stack dependency first",
+      "comment_url": "https://github.com/seanome/protein-function-annotation-leaderboard/pull/7#issuecomment-6367214437",
+      "tests": "2976 filter combinations, 233208 numbers, 9408 plot renders, 84045 markers, 8 axis pairs PASS",
+      "current_head": "8b7ac003e2bb34aa5d1a67e37c719ac9cc57996d",
+      "current_github_state": "CLEAN",
+      "current_base": "olgabot/leaderboard-first",
+      "isDraft": false,
+      "current_checks": "SUCCESS",
+      "review_matches_current_head": true
+    },
+    {
+      "number": 6,
+      "title": "Leaderboard first: table above the fold, choices in a drop-down",
+      "url": "https://github.com/seanome/protein-function-annotation-leaderboard/pull/6",
+      "head": "153b1ca3fa965d7c79aa935e4f4705cde2dcbcec",
+      "base": "olgabot/claims-card",
+      "depends_on_open_pr": 5,
+      "mergeable": "MERGEABLE",
+      "checks": [
+        {
+          "name": "check",
+          "conclusion": "SUCCESS"
+        },
+        {
+          "name": "check",
+          "conclusion": "SUCCESS"
+        }
+      ],
+      "review_scope": "Read-only GitHub metadata inventory; no scientific or code approval",
+      "recommendation": "Stack dependency must land or be reconciled first",
+      "current_head": "153b1ca3fa965d7c79aa935e4f4705cde2dcbcec",
+      "current_github_state": "CLEAN",
+      "current_base": "olgabot/claims-card",
+      "isDraft": false,
+      "current_checks": "SUCCESS",
+      "review_matches_current_head": true
+    },
+    {
+      "number": 5,
+      "title": "Claims card for kmerseek, and a filterable tool cards index",
+      "url": "https://github.com/seanome/protein-function-annotation-leaderboard/pull/5",
+      "head": "97e41d18ae83e16958cd3d271f7ac1c7c9e13baf",
+      "base": "olgabot/long-tables",
+      "depends_on_open_pr": 4,
+      "mergeable": "MERGEABLE",
+      "checks": [
+        {
+          "name": "check",
+          "conclusion": "SUCCESS"
+        },
+        {
+          "name": "check",
+          "conclusion": "SUCCESS"
+        }
+      ],
+      "review_scope": "Read-only GitHub metadata inventory; no scientific or code approval",
+      "recommendation": "Stack dependency must land or be reconciled first",
+      "current_head": "97e41d18ae83e16958cd3d271f7ac1c7c9e13baf",
+      "current_github_state": "CLEAN",
+      "current_base": "olgabot/long-tables",
+      "isDraft": false,
+      "current_checks": "SUCCESS",
+      "review_matches_current_head": true
+    },
+    {
+      "number": 4,
+      "title": "Read the leaderboard from PR 148's long tables",
+      "url": "https://github.com/seanome/protein-function-annotation-leaderboard/pull/4",
+      "head": "3d7876d3f5c7891eb64a7698ecd3c7684c68d950",
+      "base": "olgabot/region-pileup",
+      "depends_on_open_pr": 3,
+      "mergeable": "MERGEABLE",
+      "checks": [],
+      "review_scope": "Read-only GitHub metadata inventory; no scientific or code approval",
+      "recommendation": "Stack dependency must land or be reconciled first",
+      "current_head": "3d7876d3f5c7891eb64a7698ecd3c7684c68d950",
+      "current_github_state": "CLEAN",
+      "current_base": "olgabot/region-pileup",
+      "isDraft": false,
+      "current_checks": "No checks",
+      "review_matches_current_head": true
+    },
+    {
+      "number": 3,
+      "title": "Region pile-up page (Figures 3 and 4)",
+      "url": "https://github.com/seanome/protein-function-annotation-leaderboard/pull/3",
+      "head": "65bb7e0ce17c1c83d617eb9ecb7150138c2bb623",
+      "base": "olgabot/leaderboard-v1",
+      "depends_on_open_pr": 2,
+      "mergeable": "CONFLICTING",
+      "checks": [
+        {
+          "name": "build",
+          "conclusion": "SUCCESS"
+        },
+        {
+          "name": "report-build-status",
+          "conclusion": "SUCCESS"
+        },
+        {
+          "name": "deploy",
+          "conclusion": "SUCCESS"
+        }
+      ],
+      "review_scope": "Read-only GitHub metadata inventory; no scientific or code approval",
+      "recommendation": "Resolve conflict before assessing checks",
+      "current_head": "65bb7e0ce17c1c83d617eb9ecb7150138c2bb623",
+      "current_github_state": "DIRTY",
+      "current_base": "olgabot/leaderboard-v1",
+      "isDraft": true,
+      "current_checks": "SUCCESS",
+      "review_matches_current_head": true
+    },
+    {
+      "number": 2,
+      "title": "Leaderboard v1: five pages built from results/leaderboard",
+      "url": "https://github.com/seanome/protein-function-annotation-leaderboard/pull/2",
+      "head": "22545c3a39269816e1647d371d408e48d44008c7",
+      "base": "main",
+      "depends_on_open_pr": null,
+      "mergeable": "MERGEABLE",
+      "checks": [],
+      "review_scope": "Focused source/claim review; external science not fully recertified",
+      "recommendation": "Hold standalone publication/merge decision until later PR9 correctness fixes reconciled; root of site stack",
+      "comment_url": "https://github.com/seanome/protein-function-annotation-leaderboard/pull/2#issuecomment-6367309701",
+      "tests": "Fresh browser:2976 combinations,235808 numbers,8928 plots,77971 markers PASS",
+      "current_head": "22545c3a39269816e1647d371d408e48d44008c7",
+      "current_github_state": "CLEAN",
+      "current_base": "main",
+      "isDraft": false,
+      "current_checks": "No checks",
+      "review_matches_current_head": true
+    }
+  ]
+}
