@@ -67,6 +67,10 @@ COLUMNS = [
 ]
 
 
+class FetchFailed(Exception):
+    """TimeTree did not answer after three tries (not the same as answering with no row)."""
+
+
 def pairwise(taxon: str) -> dict:
     url = f"{API}/{HUMAN}/{taxon}"
     for attempt in range(3):
@@ -74,9 +78,10 @@ def pairwise(taxon: str) -> dict:
             with urllib.request.urlopen(url, timeout=60) as r:
                 body = r.read().decode()
             break
-        except Exception:  # TimeTree answers HTTP 500 for some pairs it cannot place
+        # TimeTree answers HTTP 500 for some pairs it cannot place
+        except Exception as e:
             if attempt == 2:
-                return {"url": url}
+                raise FetchFailed(f"{url}: {e}") from e
             time.sleep(5)
     lines = body.strip().splitlines()
     if len(lines) < 2 or not lines[0].startswith("taxon_a_id"):
@@ -105,16 +110,33 @@ def main() -> None:
     args = ap.parse_args()
     with args.species.open() as f:
         registry = {r["label"]: r for r in csv.DictReader(f, delimiter="\t")}
+    # A failed fetch keeps the row already in --out, so one HTTP error does not turn a real
+    # age into an empty one. A failure with no old row to keep makes the script exit 1.
+    old = {}
+    if args.out.exists():
+        with args.out.open() as f:
+            old = {r["label"]: r for r in csv.DictReader(f, delimiter="\t")}
     today = datetime.date.today().isoformat()
     rows = []
+    unfilled = []
     for label in LABELS:
         sp = registry[label]
+        try:
+            fetched = pairwise(sp["taxon"])
+        except FetchFailed as e:
+            print(f"{label:14s} fetch failed: {e}", file=sys.stderr)
+            if label in old:
+                print(f"{label:14s} kept the old row", file=sys.stderr)
+                rows.append({c: old[label].get(c, "") for c in COLUMNS})
+                continue
+            unfilled.append(label)
+            fetched = {"url": f"{API}/{HUMAN}/{sp['taxon']}"}
         row = {
             "label": label,
             "taxon": sp["taxon"],
             "scientific_name": sp["scientific_name"],
             "fetched": today,
-            **pairwise(sp["taxon"]),
+            **fetched,
         }
         rows.append({c: row.get(c, "") for c in COLUMNS})
         print(f"{label:14s} {row.get('mya') or 'no age'}", file=sys.stderr)
@@ -122,6 +144,8 @@ def main() -> None:
         w = csv.DictWriter(f, fieldnames=COLUMNS, delimiter="\t", lineterminator="\n")
         w.writeheader()
         w.writerows(rows)
+    if unfilled:
+        sys.exit(f"fetch failed, no old row to keep: {', '.join(unfilled)}")
 
 
 if __name__ == "__main__":
