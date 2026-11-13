@@ -10,6 +10,8 @@ dependencies:
   - ipykernel
   - jupyterlab
   - seaborn
+  # pubfig.save rewrites PNGs with 256 colours; Image.Dither needs Pillow 9.1
+  - pillow>=9.1
   - pyarrow
   - scikit-learn
   - rich
