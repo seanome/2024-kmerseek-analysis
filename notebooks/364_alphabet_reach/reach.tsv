@@ -1,0 +1,100 @@
+alphabet	k	bits_uniform	anchor	input_type	reach_rank	reach_relative	containment_at_reach	containment_next_rank	floor	ranks_below_floor_inside_reach
+protein	7	30.25	Mus musculus	proteome	kingdom	Drosophila melanogaster	0.0622061	0.0426861	0.0541866	
+protein	7	30.25	Magallana gigas	proteome	kingdom	Capitella teleta	0.0729156	0.0499887	0.0712596	
+protein	7	30.25	Escherichia coli K-12	proteome	class	Pseudomonas aeruginosa	0.0470132	0.016129	0.0239195	
+protein	10	43.22	Mus musculus	proteome	subphylum	Danio rerio	0.0964043	0.0139828	0.0148928	
+protein	10	43.22	Magallana gigas	proteome	kingdom	Capitella teleta	0.0218702	0.004381	0.0116144	
+protein	10	43.22	Escherichia coli K-12	proteome	class	Pseudomonas aeruginosa	0.0195679	0.00475268	0.00813002	
+dayhoff	12	31.02	Mus musculus	proteome	subphylum	Danio rerio	0.305143	0.165192	0.212093	
+dayhoff	12	31.02	Magallana gigas	proteome	family	Crassostrea virginica	0.412723	0.21924	0.231286	
+dayhoff	12	31.02	Escherichia coli K-12	proteome	class	Pseudomonas aeruginosa	0.11071	0.066	0.0742806	
+dayhoff	16	41.36	Mus musculus	proteome	subphylum	Danio rerio	0.143895	0.029245	0.030135	
+dayhoff	16	41.36	Magallana gigas	proteome	kingdom	Capitella teleta	0.036745	0.0118553	0.0295171	
+dayhoff	16	41.36	Escherichia coli K-12	proteome	class	Pseudomonas aeruginosa	0.0301875	0.00816114	0.0124046	
+hp	30	30.00	Mus musculus	proteome	subphylum	Danio rerio	0.120961	0.0297274	0.0312553	
+hp	30	30.00	Magallana gigas	proteome	kingdom	Capitella teleta	0.0392964	0.0234132	0.0370404	
+hp	30	30.00	Escherichia coli K-12	proteome	class	Pseudomonas aeruginosa	0.0245648	0.00912987	0.0171643	
+hp	42	42.00	Mus musculus	proteome	kingdom	Drosophila melanogaster	0.00704605	0.00156998	0.00356481	
+hp	42	42.00	Magallana gigas	proteome	kingdom	Capitella teleta	0.0105506	0.00172698	0.00419281	
+hp	42	42.00	Escherichia coli K-12	proteome	class	Pseudomonas aeruginosa	0.00800272	0	0.00298285	
+dayhoff	15	38.77	Mus musculus	proteome	kingdom	Drosophila melanogaster	0.0391774	0.0171569	0.0311459	
+dayhoff	15	38.77	Magallana gigas	proteome	kingdom	Capitella teleta	0.0443215	0.0153952	0.0286732	
+dayhoff	15	38.77	Escherichia coli K-12	proteome	class	Pseudomonas aeruginosa	0.0384738	0.0117544	0.0147954	
+dayhoff	17	43.94	Mus musculus	proteome	kingdom	Drosophila melanogaster	0.0236908	0.00864857	0.0189946	
+dayhoff	17	43.94	Magallana gigas	proteome	kingdom	Capitella teleta	0.0324445	0.00819734	0.0198105	
+dayhoff	17	43.94	Escherichia coli K-12	proteome	class	Pseudomonas aeruginosa	0.0290771	0.00638864	0.0135316	
+dayhoff	19	49.11	Mus musculus	proteome	kingdom	Drosophila melanogaster	0.0176193	0.00562609	0.0121501	
+dayhoff	19	49.11	Magallana gigas	proteome	kingdom	Capitella teleta	0.0263141	0.00494184	0.0117692	
+dayhoff	19	49.11	Escherichia coli K-12	proteome	class	Pseudomonas aeruginosa	0.0221803	0.00518224	0.00578559	
+dayhoff	21	54.28	Mus musculus	proteome	kingdom	Drosophila melanogaster	0.0147736	0.00471842	0.0121789	
+dayhoff	21	54.28	Magallana gigas	proteome	kingdom	Capitella teleta	0.0216733	0.00395738	0.00994061	
+dayhoff	21	54.28	Escherichia coli K-12	proteome	class	Pseudomonas aeruginosa	0.0197842	0.00377087	0.0127154	
+hp	24	24.00	Mus musculus	proteome	subphylum	Danio rerio	0.576525	0.469862	0.535124	
+hp	24	24.00	Magallana gigas	proteome	family	Crassostrea virginica	0.650728	0.549498	0.638856	
+hp	24	24.00	Escherichia coli K-12	proteome	class	Pseudomonas aeruginosa	0.162838	0.125397	0.134333	
+hp	27	27.00	Mus musculus	proteome	subphylum	Danio rerio	0.207993	0.108842	0.155186	
+hp	27	27.00	Magallana gigas	proteome	class	Solemya velum	0.157439	0.139268	0.153153	subclass
+hp	27	27.00	Escherichia coli K-12	proteome	class	Pseudomonas aeruginosa	0.0496728	0.0275298	0.0288958	
+hp	33	33.00	Mus musculus	proteome	kingdom	Drosophila melanogaster	0.01499	0.0058103	0.00855536	
+hp	33	33.00	Magallana gigas	proteome	kingdom	Capitella teleta	0.0209753	0.00683103	0.0120636	
+hp	33	33.00	Escherichia coli K-12	proteome	class	Pseudomonas aeruginosa	0.0172881	0.00411446	0.00862277	
+hp	36	36.00	Mus musculus	proteome	kingdom	Drosophila melanogaster	0.0104059	0.00365645	0.00863357	
+hp	36	36.00	Magallana gigas	proteome	kingdom	Capitella teleta	0.0152025	0.00357865	0.00813115	
+hp	36	36.00	Escherichia coli K-12	proteome	class	Pseudomonas aeruginosa	0.0118503	0.00267227	0.00413393	
+hp	39	39.00	Mus musculus	proteome	subphylum	Danio rerio	0.0722499	0.00816024	0.00823801	
+hp	39	39.00	Magallana gigas	proteome	kingdom	Capitella teleta	0.0127046	0.00256072	0.00674956	
+hp	39	39.00	Escherichia coli K-12	proteome	class	Pseudomonas aeruginosa	0.0104184	0.00151429	0.00169499	
+protein	8	34.58	Mus musculus	proteome	subphylum	Danio rerio	0.125398	0.024778	0.0257208	
+protein	8	34.58	Magallana gigas	proteome	kingdom	Capitella teleta	0.0332277	0.0115761	0.0249604	
+protein	8	34.58	Escherichia coli K-12	proteome	phylum	Caulobacter vibrioides	0.0101724	0.0046375	0.009535	
+dayhoff	13	33.60	Mus musculus	proteome	subphylum	Danio rerio	0.225206	0.0932765	0.108209	
+dayhoff	13	33.60	Magallana gigas	proteome	phylum	Aplysia californica	0.113583	0.0927866	0.101434	
+dayhoff	13	33.60	Escherichia coli K-12	proteome	class	Pseudomonas aeruginosa	0.0692785	0.0282019	0.0589968	
+hp	35	35.00	Mus musculus	proteome	kingdom	Drosophila melanogaster	0.0120073	0.00442581	0.00990939	
+hp	35	35.00	Magallana gigas	proteome	kingdom	Capitella teleta	0.0179747	0.0045811	0.0106573	
+hp	35	35.00	Escherichia coli K-12	proteome	class	Pseudomonas aeruginosa	0.012931	0.00246072	0.00293722	
+protein	9	38.90	Mus musculus	proteome	kingdom	Drosophila melanogaster	0.0178612	0.00621164	0.0123222	
+protein	9	38.90	Magallana gigas	proteome	kingdom	Capitella teleta	0.0251161	0.005694	0.0112853	
+protein	9	38.90	Escherichia coli K-12	proteome	class	Pseudomonas aeruginosa	0.0192044	0.00675208	0.00975581	
+hp	43	43.00	Mus musculus	proteome	kingdom	Drosophila melanogaster	0.00650792	0.00175243	0.00482972	
+hp	43	43.00	Magallana gigas	proteome	kingdom	Capitella teleta	0.0104729	0.00191174	0.00476167	
+hp	43	43.00	Escherichia coli K-12	proteome	class	Pseudomonas aeruginosa	0.00569358	0.000772052	0.00368264	
+protein	11	47.54	Mus musculus	proteome	kingdom	Drosophila melanogaster	0.0121777	0.00413712	0.0108226	
+protein	11	47.54	Magallana gigas	proteome	kingdom	Capitella teleta	0.0167907	0.00391548	0.0099957	
+protein	11	47.54	Escherichia coli K-12	proteome	phylum	Caulobacter vibrioides	0.00476353	0.00159033	0.00353557	
+dayhoff	18	46.53	Mus musculus	proteome	kingdom	Drosophila melanogaster	0.0219793	0.00760256	0.0179853	
+dayhoff	18	46.53	Magallana gigas	proteome	kingdom	Capitella teleta	0.0282451	0.0069251	0.0170771	
+dayhoff	18	46.53	Escherichia coli K-12	proteome	class	Pseudomonas aeruginosa	0.0248227	0.00464452	0.0068292	
+hp	48	48.00	Mus musculus	proteome	kingdom	Drosophila melanogaster	0.00463468	0.000881764	0.00185861	
+hp	48	48.00	Magallana gigas	proteome	kingdom	Capitella teleta	0.00772736	0.00112224	0.002628	
+hp	48	48.00	Escherichia coli K-12	proteome	class	Pseudomonas aeruginosa	0.00440451	0.00039801	0.00108898	
+protein	12	51.86	Mus musculus	proteome	kingdom	Drosophila melanogaster	0.00949635	0.00277632	0.00720864	
+protein	12	51.86	Magallana gigas	proteome	kingdom	Capitella teleta	0.0149978	0.00225107	0.00528476	
+protein	12	51.86	Escherichia coli K-12	proteome	class	Pseudomonas aeruginosa	0.0146734	0.00289954	0.00509361	
+dayhoff	20	51.70	Mus musculus	proteome	kingdom	Drosophila melanogaster	0.0171363	0.00477621	0.0109646	
+dayhoff	20	51.70	Magallana gigas	proteome	kingdom	Capitella teleta	0.024308	0.00493028	0.0120781	
+dayhoff	20	51.70	Escherichia coli K-12	proteome	class	Pseudomonas aeruginosa	0.0202182	0.00283336	0.00460619	
+hp	52	52.00	Mus musculus	proteome	kingdom	Drosophila melanogaster	0.00433754	0.000870391	0.00167157	
+hp	52	52.00	Magallana gigas	proteome	kingdom	Capitella teleta	0.00677694	0.000712138	0.0011032	
+hp	52	52.00	Escherichia coli K-12	proteome	class	Pseudomonas aeruginosa	0.00468975	0.000394711	0.000801444	
+DNA	15	30.00	Mus musculus	cds	subphylum	Danio rerio	0.197206	0.143995	0.154123	
+DNA	15	30.00	Magallana gigas	cds	family	Crassostrea virginica	0.179259	0.142193	0.168695	
+DNA	15	30.00	Escherichia coli K-12	cds	class	Pseudomonas aeruginosa	0.0339295	0.0217729	0.0234808	
+DNA	21	42.00	Mus musculus	cds	kingdom	Drosophila melanogaster	0.000993284	0.000190749	0.000762996	
+DNA	21	42.00	Magallana gigas	cds	family	Crassostrea virginica	0.013521	0.000733278	0.00142095	
+DNA	21	42.00	Escherichia coli K-12	cds	class	Pseudomonas aeruginosa	0.000496524	0	0	
+DNA	24	48.00	Mus musculus	cds	subphylum	Danio rerio	0.000834008	0.000279955	0.000489476	
+DNA	24	48.00	Magallana gigas	cds	family	Crassostrea virginica	0.00949057	0.000445973	0.00176749	
+DNA	24	48.00	Escherichia coli K-12	cds	class	Pseudomonas aeruginosa	0.000513215	0	0	
+DNA	27	54.00	Mus musculus	cds	class	Rhinolophus ferrumequinum	0.0267056	0.000406378	0.000806249	
+DNA	27	54.00	Magallana gigas	cds	kingdom	Capitella teleta	0.000201742	3.14832e-05	0.000125933	subclass,subclass,subclass,phylum
+DNA	27	54.00	Escherichia coli K-12	cds	order	Yersinia pestis	0.000551116	0	0	
+DNA	30	60.00	Mus musculus	cds	class	Rhinolophus ferrumequinum	0.018943	0.000238931	0.000251572	
+DNA	30	60.00	Magallana gigas	cds	phylum	Aplysia californica	3.40657e-05	0	0	subclass,subclass
+DNA	30	60.00	Escherichia coli K-12	cds	class	Pseudomonas aeruginosa	0.000261917	0	0	
+DNA	33	66.00	Mus musculus	cds	subphylum	Danio rerio	0.000141871	0	0	
+DNA	33	66.00	Magallana gigas	cds	subclass	Mizuhopecten yessoensis	3.17642e-05	0	0	
+DNA	33	66.00	Escherichia coli K-12	cds	order	Yersinia pestis	0.00110558	0	0	
+DNA	36	72.00	Mus musculus	cds	class	Rhinolophus ferrumequinum	0.0121862	7.09404e-05	0.000498256	
+DNA	36	72.00	Magallana gigas	cds	kingdom	Capitella teleta	3.33767e-05	0	0	subclass,subclass,class,phylum
+DNA	36	72.00	Escherichia coli K-12	cds	family	Salmonella enterica	0.0111399	0	0	

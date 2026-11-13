@@ -182,6 +182,10 @@ nextflow-runs/kmer-spectra/results-*/
 .nextflow.log*
 work/
 results/
+# Except the leaderboard tables, which the leaderboard site copies from a commit.
+!/results/
+/results/*
+!/results/leaderboard/
 results-test/
 *.report.html
 *.timeline.html
@@ -203,3 +207,15 @@ results-test/
 # Pipeline Groovy source, rather than a generated Python packaging directory.
 !nextflow-runs/qfo-pfam-region-benchmark/lib/
 !nextflow-runs/qfo-pfam-region-benchmark/lib/*.groovy
+# Run outputs that stay on the laptop or Sherlock, never in git (added 2026-09-28).
+# Nextflow's -with-report/-with-timeline/-with-trace named <kind>.<run>.<ext>; the
+# *.report.html rules above only catch <run>.report.html.
+report.*.html
+timeline.*.html
+trace.*.txt
+# MultiQC reports rendered from test data or a PR's local build, copied down for review.
+# A report from a real run (reports/invertebrate-dark-set/) is a result and is tracked.
+/reports/review-*/
+# Scratch output of a local build_multiqc_inputs.py run.
+reg_out/
+notebooks/284_explainer_files/

@@ -1,0 +1,52 @@
+genes: this run 35618 paper 72119 libraries 38 
+listed entries 782 with a matched gene in this run 667 
+this_run 2 h     default                 tested 31577 p<.05  649 2-fold up   94 down  555 | listed 280 tested 217 found  90 | largest p difference from pipeline 0.0051, spearman 1.00000 over 31541 genes, tested there 31541
+this_run 2 h     poscounts               tested 31589 p<.05  179 2-fold up   42 down  137 | listed 280 tested 228 found  20 | 
+this_run 2 h     total                   tested 31451 p<.05  195 2-fold up  125 down   70 | listed 280 tested 222 found  16 | 
+this_run 2 h     swapped                 tested 31533 p<.05  701 2-fold up  108 down  592 | listed 280 tested 216 found  90 | 
+this_run 2 h     default_no_gene_lengths tested 31574 p<.05  686 2-fold up   95 down  591 | listed 280 tested 217 found  88 | 
+paper    2 h     default                 tested 50240 p<.05  639 2-fold up   94 down  545 | listed 280 tested 280 found 239 | spearman with paper p 0.99995 over 50233 genes
+paper    2 h     poscounts               tested 50041 p<.05   94 2-fold up   29 down   65 | listed 280 tested 276 found  11 | 
+paper    2 h     total                   tested 50111 p<.05  174 2-fold up  147 down   27 | listed 280 tested 276 found  22 | 
+paper    2 h     swapped                 tested 50262 p<.05  592 2-fold up   83 down  509 | listed 280 tested 280 found 208 | 
+this_run 24 h    default                 tested 31628 p<.05  553 2-fold up  438 down  115 | listed 350 tested 266 found  76 | largest p difference from pipeline 0.003, spearman 1.00000 over 31585 genes, tested there 31585
+this_run 24 h    poscounts               tested 31805 p<.05  305 2-fold up   73 down  232 | listed 350 tested 273 found  21 | 
+this_run 24 h    total                   tested 31583 p<.05  256 2-fold up  146 down  110 | listed 350 tested 276 found  24 | 
+this_run 24 h    swapped                 tested 31499 p<.05  615 2-fold up  528 down   87 | listed 350 tested 254 found  67 | 
+this_run 24 h    default_no_gene_lengths tested 31633 p<.05  514 2-fold up  402 down  112 | listed 350 tested 267 found  66 | 
+paper    24 h    default                 tested 50608 p<.05  803 2-fold up  671 down  132 | listed 350 tested 350 found 272 | spearman with paper p 0.99988 over 50588 genes
+paper    24 h    poscounts               tested 51235 p<.05  513 2-fold up   39 down  474 | listed 350 tested 341 found  85 | 
+paper    24 h    total                   tested 50014 p<.05  367 2-fold up  195 down  172 | listed 350 tested 341 found  95 | 
+paper    24 h    swapped                 tested 50929 p<.05  655 2-fold up  474 down  181 | listed 350 tested 348 found 229 | 
+this_run 13-49 d default                 tested 17278 p<.05  111 2-fold up   41 down   70 | listed  66 tested  55 found  12 | largest p difference from pipeline 0.00013, spearman 1.00000 over 17276 genes, tested there 17276
+this_run 13-49 d poscounts               tested 17197 p<.05   85 2-fold up   72 down   13 | listed  66 tested  54 found   5 | 
+this_run 13-49 d total                   tested 17315 p<.05  106 2-fold up   58 down   48 | listed  66 tested  56 found  10 | 
+this_run 13-49 d swapped                 tested 17106 p<.05  124 2-fold up   92 down   32 | listed  66 tested  53 found   8 | 
+this_run 13-49 d default_no_gene_lengths tested 17278 p<.05  109 2-fold up   40 down   69 | listed  66 tested  55 found  12 | 
+paper    13-49 d default                 tested 25414 p<.05   93 2-fold up   37 down   56 | listed  66 tested  66 found  51 | spearman with paper p 0.99953 over 25407 genes
+paper    13-49 d poscounts               tested 25339 p<.05   61 2-fold up   24 down   37 | listed  66 tested  66 found  25 | 
+paper    13-49 d total                   tested 25384 p<.05  118 2-fold up  104 down   14 | listed  66 tested  64 found  23 | 
+paper    13-49 d swapped                 tested 25419 p<.05  127 2-fold up   14 down  113 | listed  66 tested  65 found  38 | 
+this_run 132 d   default                 tested 13240 p<.05   80 2-fold up   46 down   34 | listed  86 tested  75 found   5 | largest p difference from pipeline 1.4e-05, spearman 1.00000 over 13238 genes, tested there 13238
+this_run 132 d   poscounts               tested 13242 p<.05  115 2-fold up   17 down   98 | listed  86 tested  75 found   8 | 
+this_run 132 d   total                   tested 13243 p<.05   75 2-fold up   46 down   29 | listed  86 tested  75 found   5 | 
+this_run 132 d   swapped                 tested 13239 p<.05   72 2-fold up   41 down   31 | listed  86 tested  75 found   5 | 
+this_run 132 d   default_no_gene_lengths tested 13240 p<.05   79 2-fold up   45 down   34 | listed  86 tested  75 found   5 | 
+paper    132 d   default                 tested 21037 p<.05  179 2-fold up   92 down   87 | listed  86 tested  86 found  64 | spearman with paper p 0.99992 over 21031 genes
+paper    132 d   poscounts               tested 21033 p<.05  190 2-fold up   50 down  140 | listed  86 tested  86 found  61 | 
+paper    132 d   total                   tested 21035 p<.05  317 2-fold up   31 down  286 | listed  86 tested  86 found  56 | 
+paper    132 d   swapped                 tested 21033 p<.05  190 2-fold up  164 down   26 | listed  86 tested  86 found  42 | 
+There were 50 or more warnings (use warnings() to see the first 50)
+
+listed genes found, all four comparisons (of 782 entries)
+    counts            size_factors listed_p_lt_0_05_same_direction
+1    paper                 default                             626
+2 this_run                 default                             183
+3 this_run default_no_gene_lengths                             171
+4    paper               poscounts                             182
+5 this_run               poscounts                              54
+6    paper                 swapped                             517
+7 this_run                 swapped                             170
+8    paper                   total                             196
+9 this_run                   total                              55
+DESeq2 1.42.0 R version 4.3.3 (2024-02-29) 

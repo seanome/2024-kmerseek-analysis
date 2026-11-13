@@ -1,0 +1,8 @@
+contrast	real_designs	real_genes	real_agree	real_pct	swapped_designs	swapped_genes	swapped_agree	swapped_pct	balanced_designs	balanced_genes	balanced_agree	balanced_pct
+young_2h	1	231	92	39.8	3	398	250	62.8	3	398	250	62.8
+young_24h	1	310	184	59.4	3	1278	680	53.2	3	1278	680	53.2
+old_24h	1	8	3	37.5	1	7	6	85.7	1	7	6	85.7
+young_13_49d	1	6	3	50.0	3	20	9	45.0	0	0	0	
+young_132d	1	43	25	58.1	3	246	183	74.4	0	0	0	
+old_41_93d	1	3	1	33.3	1	2	1	50.0	1	2	1	50.0
+all	6	601	308	51.2	14	1951	1129	57.9	8	1685	937	55.6

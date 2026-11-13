@@ -1,0 +1,11 @@
+alphabet,ksize,n_peptides,n_peptides_with_no_kmers,total_distinct_kmers_summed,mean_kmers_per_peptide,subsampling
+cys2,12,9571,462,128371,13.412496081914115,none (scaled=1): every k-mer kept
+cys2,20,9571,2392,103093,10.771392748929056,none (scaled=1): every k-mer kept
+cys_hp3,9,9571,0,216459,22.616132065614877,none (scaled=1): every k-mer kept
+cys_hp3,12,9571,462,190918,19.947549890293594,none (scaled=1): every k-mer kept
+hp_pbotc_1st_ed2,9,9571,0,211426,22.090272698777557,none (scaled=1): every k-mer kept
+hp_pbotc_1st_ed2,12,9571,462,190196,19.872113676731793,none (scaled=1): every k-mer kept
+dayhoff6,6,9571,0,247071,25.81454393480305,none (scaled=1): every k-mer kept
+dayhoff6,10,9571,0,210326,21.975342179500576,none (scaled=1): every k-mer kept
+protein20,4,9571,0,266357,27.82958938459931,none (scaled=1): every k-mer kept
+protein20,6,9571,0,248386,25.95193814648417,none (scaled=1): every k-mer kept

@@ -1,0 +1,12 @@
+{
+  "method": "reduced_massspec18_k5",
+  "n_queries": 948,
+  "load_seconds": 0.0031225409475155175,
+  "cold_wall_seconds": 0.2585856659570709,
+  "cold_cpu_seconds": 0.25850900000000054,
+  "cold_verify_seconds": 0.16997118073049933,
+  "warm_wall_seconds": 0.25537395803257823,
+  "warm_cpu_seconds": 0.2553029999999996,
+  "warm_verify_seconds": 0.17063324811169878,
+  "peak_rss_bytes": 137101312
+}

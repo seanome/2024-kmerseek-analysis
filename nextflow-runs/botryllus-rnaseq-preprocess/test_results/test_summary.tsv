@@ -1,0 +1,5 @@
+sample	read	reads_in	reads_after_trimming	mean_length_raw	mean_length_trimmed	pct_reads_with_adapter	salmon_fragments_assigned	salmon_ISF	salmon_ISR	salmon_SF	salmon_SR	strand_mapping_bias
+TL3_GSC3_old	1	200000	199083	150	115.9	76.8	96644	42824	42917	5964	5640	0.499
+TL3_GSC3_old	2	200000	199083	150	115.1	77.0	96644	42824	42917	5964	5640	0.499
+TL14_STD2_young	1	200000	199412	150	100.7	85.6	144491	69232	66344	6023	3333	0.511
+TL14_STD2_young	2	200000	199412	150	98.8	87.6	144491	69232	66344	6023	3333	0.511

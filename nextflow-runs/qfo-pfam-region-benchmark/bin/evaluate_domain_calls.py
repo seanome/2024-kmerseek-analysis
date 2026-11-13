@@ -260,12 +260,15 @@ def drop_self_matches(lf: pl.LazyFrame, names: list[str] | None = None) -> pl.La
 
     Two separate cases, so two separate filters:
 
-    * Same accession. kmerseek already suppresses this -- a 933-protein human
-      all-against-all on 2026-09-23 had 0 rows with query_name == target_name -- so the
-      filter is belt and braces against a tool that does not.
-    * Different accessions holding the SAME sequence, 26 of 11_298 rows in that run.
-      These survive an accession check by construction, so they need the md5 columns.
-      Applied only when both are present, and BEFORE the select that drops them.
+    * Same accession. kmerseek already drops these. A 933-protein human
+      all-against-all on 2026-09-23 had 0 rows with query_name == target_name.
+      DIAMOND, MMseqs2 and Foldseek do not: searched against their own proteome, they
+      list each protein as its own top hit. The accession filter is for them, and
+      load_regions applies it to their TSV output.
+    * Different accessions holding the SAME sequence. kmerseek reported 26 of these,
+      out of 11_298 rows, in that run. An accession check cannot catch them, so they
+      need the md5 columns. Applied only when both are present, and BEFORE the select
+      that drops them.
     """
     if names is not None:
         if "query_md5" in names and "target_md5" in names:
@@ -626,8 +629,38 @@ def overlap_expr(a_start: str, a_end: str, b_start: str, b_end: str) -> pl.Expr:
     return (hi - lo).clip(lower_bound=0)
 
 
-def transfer_domains(regions: pl.LazyFrame, domain_map: pl.LazyFrame, min_overlap: float) -> pl.LazyFrame:
-    """Label each region with every target-side Pfam domain it covers."""
+TRANSFER_MODES = ("span", "projected")
+
+
+def transfer_domains(regions: pl.LazyFrame, domain_map: pl.LazyFrame, min_overlap: float,
+                     mode: str = "span") -> pl.LazyFrame:
+    """Label each region with every target-side Pfam domain it covers.
+
+    A target domain is kept when the alignment covers at least `min_overlap` of its length
+    on the target. That rule is the same in both modes. The modes differ in where the
+    kept domain is placed on the query:
+
+      span       every kept domain gets the alignment's whole query stretch,
+                 [qstart, qend). The scores from before 2026-11-10 used this. Still this
+                 function's default; the command line and the pipeline default to
+                 projected. No notebook and no script in scripts/ calls this function.
+                 Notebook 223 (rebuild_calls) and
+                 scripts/reduce_swissprot_instance_landing.py (transfer_keep_target)
+                 each hold their own copy of the span rule, so they reproduce
+                 --transfer-mode span, not the pipeline's default.
+      projected  each kept domain is moved by the alignment's offset (qstart - tstart)
+                 and cut to the aligned stretch [qstart, qend). A 140-residue alignment
+                 over six 23-residue zinc fingers gives six 23-residue calls, one per
+                 finger, instead of six 140-residue calls that each fail the IoU test
+                 against a single finger.
+
+    `projected` ignores gaps inside the alignment, so a domain far from the alignment's
+    start can land a few residues off; score_calls' IoU test still decides whether it
+    counts. A projected domain cut to nothing (possible only when the query side of the
+    alignment is much shorter than the target side) claims no residues and is dropped.
+    """
+    if mode not in TRANSFER_MODES:
+        raise ValueError(f"transfer mode {mode!r} is not one of {TRANSFER_MODES}")
     joined = regions.join(
         domain_map.select(
             pl.col("accession").alias("target_acc"),
@@ -638,13 +671,24 @@ def transfer_domains(regions: pl.LazyFrame, domain_map: pl.LazyFrame, min_overla
         on="target_acc",
         how="inner",
     )
-    return (
+    kept = (
         joined.with_columns(
             overlap_expr("tstart", "tend", "t_dom_start", "t_dom_end").alias("t_overlap"),
             (pl.col("t_dom_end") - pl.col("t_dom_start")).alias("t_dom_len"),
         )
         .filter(pl.col("t_overlap") >= min_overlap * pl.col("t_dom_len"))
-        .select("query_acc", "pfam_id", "qstart", "qend", "score")
+    )
+    if mode == "span":
+        return kept.select("query_acc", "pfam_id", "qstart", "qend", "score")
+    offset = pl.col("qstart") - pl.col("tstart")
+    return (
+        kept.with_columns(
+            pl.max_horizontal("qstart", pl.col("t_dom_start") + offset).alias("p_start"),
+            pl.min_horizontal("qend", pl.col("t_dom_end") + offset).alias("p_end"),
+        )
+        .filter(pl.col("p_end") > pl.col("p_start"))
+        .select("query_acc", "pfam_id",
+                pl.col("p_start").alias("qstart"), pl.col("p_end").alias("qend"), "score")
     )
 
 
@@ -1789,7 +1833,8 @@ def score_one(args, truth, truth_lf, job, instance_axes=frozenset(),
         target_coverage = target_map_coverage(map_lf, target_families,
                                               args.domain_map, job)
         calls_lf = (
-            transfer_domains(regions, map_lf, args.min_overlap) if regions is not None else None
+            transfer_domains(regions, map_lf, args.min_overlap, mode=args.transfer_mode)
+            if regions is not None else None
         )
         if calls_lf is not None and job["dedup"]:
             iou_min = (args.transfer_dedup_iou if args.transfer_dedup_iou is not None
@@ -1843,7 +1888,12 @@ def score_one(args, truth, truth_lf, job, instance_axes=frozenset(),
              "dedup_transfers": bool(job["dedup"]),
              # Same reason, for the truth side. A cell scored by containment and one scored
              # by IoU are not the same measurement, and the row has to say which it is.
-             "point_semantics": args.point_semantics}
+             "point_semantics": args.point_semantics,
+             # Where a transferred domain sits on the query: the alignment's whole span,
+             # or the domain's own position (transfer_domains). The two give different
+             # numbers from the same search, so pooled rows must say which they are.
+             # Null under --direct-annotation, where nothing is transferred.
+             "transfer_mode": None if args.direct_annotation else args.transfer_mode}
     # Target-side annotation coverage, on every row. See target_map_coverage: without it a
     # species with almost no target annotation is indistinguishable from a species no tool
     # could reach, and the reachability bar cannot tell the two apart on a truth set whose
@@ -2042,6 +2092,13 @@ def main():
                         "protein and is not predictable from the input file size "
                         f"(default: {DEDUP_PAIR_BUDGET})")
     p.add_argument("--min-overlap", type=float, default=0.5)
+    # projected since 2026-11-10. transfer_domains() itself still defaults to span; no
+    # notebook and no script in scripts/ calls it directly (see its docstring).
+    p.add_argument("--transfer-mode", choices=TRANSFER_MODES, default="projected",
+                   help="where a target domain lands on the query: projected (default) = "
+                        "the domain's own position, shifted by the alignment offset and cut "
+                        "to the aligned stretch; span = the alignment's whole query stretch, "
+                        "as all scores before 2026-11-10 (see transfer_domains)")
     p.add_argument("--strict-iou", type=float, default=0.8)
     p.add_argument("--gray-min-annotated-fraction", type=float, default=0.5,
                    help="share of a call that must lie in annotated territory before it "

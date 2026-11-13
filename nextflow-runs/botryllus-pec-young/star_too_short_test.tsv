@@ -1,0 +1,71 @@
+sample	mode	measure	value
+SRR32233964	paired	Number of input reads	500000
+SRR32233964	paired	Average input read length	172
+SRR32233964	paired	Uniquely mapped reads %	42.85%
+SRR32233964	paired	% of reads mapped to multiple loci	20.51%
+SRR32233964	paired	% of reads unmapped: too short	36.23%
+SRR32233964	paired	% of reads unmapped: other	0.22%
+SRR32233964	paired	% of reads mapped to too many loci	0.19%
+SRR32233964	mate1	Number of input reads	500000
+SRR32233964	mate1	Average input read length	86
+SRR32233964	mate1	Uniquely mapped reads %	42.33%
+SRR32233964	mate1	% of reads mapped to multiple loci	22.54%
+SRR32233964	mate1	% of reads unmapped: too short	34.69%
+SRR32233964	mate1	% of reads unmapped: other	0.23%
+SRR32233964	mate1	% of reads mapped to too many loci	0.21%
+SRR32233964	mate2	Number of input reads	500000
+SRR32233964	mate2	Average input read length	85
+SRR32233964	mate2	Uniquely mapped reads %	42.88%
+SRR32233964	mate2	% of reads mapped to multiple loci	22.76%
+SRR32233964	mate2	% of reads unmapped: too short	33.93%
+SRR32233964	mate2	% of reads unmapped: other	0.23%
+SRR32233964	mate2	% of reads mapped to too many loci	0.21%
+SRR32233964	relaxed	Number of input reads	500000
+SRR32233964	relaxed	Average input read length	172
+SRR32233964	relaxed	Uniquely mapped reads %	62.92%
+SRR32233964	relaxed	% of reads mapped to multiple loci	36.37%
+SRR32233964	relaxed	% of reads unmapped: too short	0.11%
+SRR32233964	relaxed	% of reads unmapped: other	0.22%
+SRR32233964	relaxed	% of reads mapped to too many loci	0.37%
+SRR32233964	mate1+mate2	pairs: both reads align alone	317480 (63.50%)
+SRR32233964	mate1+mate2	pairs: only read 1 aligns alone	6860 (1.37%)
+SRR32233964	mate1+mate2	pairs: only read 2 aligns alone	10691 (2.14%)
+SRR32233964	mate1+mate2	pairs: neither read aligns alone	164969 (32.99%)
+SRR32233964	relaxed	primary mapped reads	982718
+SRR32233964	relaxed	reads with mate also mapped	972510
+SRR32233964	relaxed	singleton reads (mate not mapped)	10208
+SRR32233984	paired	Number of input reads	500000
+SRR32233984	paired	Average input read length	210
+SRR32233984	paired	Uniquely mapped reads %	7.98%
+SRR32233984	paired	% of reads mapped to multiple loci	6.86%
+SRR32233984	paired	% of reads unmapped: too short	83.46%
+SRR32233984	paired	% of reads unmapped: other	1.07%
+SRR32233984	paired	% of reads mapped to too many loci	0.63%
+SRR32233984	mate1	Number of input reads	500000
+SRR32233984	mate1	Average input read length	101
+SRR32233984	mate1	Uniquely mapped reads %	16.12%
+SRR32233984	mate1	% of reads mapped to multiple loci	15.39%
+SRR32233984	mate1	% of reads unmapped: too short	65.49%
+SRR32233984	mate1	% of reads unmapped: other	1.24%
+SRR32233984	mate1	% of reads mapped to too many loci	1.76%
+SRR32233984	mate2	Number of input reads	500000
+SRR32233984	mate2	Average input read length	109
+SRR32233984	mate2	Uniquely mapped reads %	9.06%
+SRR32233984	mate2	% of reads mapped to multiple loci	10.24%
+SRR32233984	mate2	% of reads unmapped: too short	77.80%
+SRR32233984	mate2	% of reads unmapped: other	1.18%
+SRR32233984	mate2	% of reads mapped to too many loci	1.73%
+SRR32233984	relaxed	Number of input reads	500000
+SRR32233984	relaxed	Average input read length	210
+SRR32233984	relaxed	Uniquely mapped reads %	24.94%
+SRR32233984	relaxed	% of reads mapped to multiple loci	49.09%
+SRR32233984	relaxed	% of reads unmapped: too short	0.29%
+SRR32233984	relaxed	% of reads unmapped: other	1.07%
+SRR32233984	relaxed	% of reads mapped to too many loci	24.61%
+SRR32233984	mate1+mate2	pairs: both reads align alone	75749 (15.15%)
+SRR32233984	mate1+mate2	pairs: only read 1 aligns alone	81796 (16.36%)
+SRR32233984	mate1+mate2	pairs: only read 2 aligns alone	20727 (4.15%)
+SRR32233984	mate1+mate2	pairs: neither read aligns alone	321728 (64.35%)
+SRR32233984	relaxed	primary mapped reads	725912
+SRR32233984	relaxed	reads with mate also mapped	711520
+SRR32233984	relaxed	singleton reads (mate not mapped)	14392

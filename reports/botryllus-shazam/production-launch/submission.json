@@ -1,0 +1,15 @@
+{
+  "checked_at": "2026-10-25T20:36:00Z",
+  "job_id": 49523163,
+  "state": "PENDING",
+  "reason": "Dependency",
+  "dependency": "afterok:49520541",
+  "production_started": false,
+  "source_sha": "4da3d1692869394ff58996e544d02bb3db1da18c",
+  "source": "$HOME/botryllus-shazam-code/production-4da3d169",
+  "launch": "$SCRATCH/botryllus-shazam-PEC-nextflow-20261025",
+  "log": "$SCRATCH/botryllus-64-nextflow-49523163.log",
+  "libraries": 64,
+  "resource_policy": "Prepare requests at launch from completed preflight; abort if incomplete or failed.",
+  "existing_outputs_and_caches": "Preserved"
+}
