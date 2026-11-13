@@ -73,6 +73,12 @@ reads only the tables copied back from there to
 (tag `nb241-kmerseek-982a055`). `ranks.csv` was rebuilt on 2026-10-16 from
 `regions.parquet` with `241_alphabet_ranking_collect.py --from-regions`, which adds
 `n_finite` and names the alphabetically first of tied top proteins; no rank changed.
+On 2026-10-20 one setting was searched again (PR 194): hp_lehninger_hpc3 k=21 is
+recorded as having no Karlin-Altschul fit, but its search had been run with region
+extension under a fit an earlier run made, so its regions were longer than exact runs and
+six of them had a finite E-value. It is now searched with exact regions, like the other 81
+settings with no fit, and `arms.csv`, `ranks.csv` and `regions.parquet` were rebuilt; only
+that setting's rows changed.
 
 **Before kmerseek PR 136.** Three of the eleven metrics, containment, protein enrichment
 and protein Poisson p-value, are computed once per protein pair. kmerseek 982a055 is from
@@ -103,7 +109,7 @@ bits = pl.DataFrame({"alphabet": list(au.CLASSES), "classes": list(au.CLASSES.va
     on="alphabet").sort("classes", "alphabet")
 print(f"{arms.height} settings over {arms['alphabet'].n_unique()} alphabets; "
       f"{arms.filter(pl.col('searched')).height} searched")
-print(f"alphabets that cannot have an E-value (section 11): {', '.join(au.no_evalue_alphabets(arms))}")
+print(f"alphabets excluded from E-value comparisons (section 11): {', '.join(au.no_evalue_alphabets(arms))}")
 print(bits.with_columns(pl.col("bits_per_position").round(3)))
 """),
     md(r"""
@@ -114,7 +120,7 @@ shuffled curve. Above about 30 bits per seed both curves run short and the fit i
 refused; the retry with more queries and shuffles rescues some. A setting without a fit
 has every metric but the E-value. Rows in the figure are grouped by how many letters the
 alphabet has. Getting a fit is not the same as being able to give a region an E-value:
-section 11 is about three alphabets that pass this step and still cannot produce one.
+section 11 is about three alphabets excluded by the additional drift guard.
 """),
     code(r"""
 n_fit = arms.filter(pl.col("fitted") == True).height
@@ -171,7 +177,7 @@ is its best region. The rank is among the proteins with a finite value under the
 (`n_finite`): a protein with no E-value is left out, not ranked last. `n_targets` is
 every protein with a region. A grey cross means BCL2 has no region at that setting. A
 small black dot in the E-value panel means the setting has no E-value, either because
-the fit was refused or because the alphabet cannot have one (gbmr4, gbmr7,
+the fit was refused or because of the drift exclusion (gbmr4, gbmr7,
 hp_lehninger_hpc3; section 11). The number of proteins ranked falls with seed
 information (thousands at 16 bits, a handful at 28), so a rank is only comparable to
 other ranks at the same setting; the table under the figure carries both denominators.
@@ -317,8 +323,8 @@ human protein that is not the partner. The two nulls are the ones of section 4. 
 uniform null draws each rank independently from 1 to the number of proteins ranked; the
 real-protein null takes a real human protein's own best rank over the same settings.
 The first treats ranks as independent across settings, which they are not; the second
-compares the partner with proteins that are hit less often. The truth lies between them,
-so both are shown.
+compares the partner with proteins that are hit less often. They make different assumptions; neither is a proven bound on the correct null
+probability, so both are shown as sensitivity checks.
 """),
     code(r"""
 tr_p66 = au.all_target_ranks("P66", arms)
@@ -352,8 +358,7 @@ same as the E-value.
 The denominator matters most for the E-value. The first version of this notebook ranked
 a protein with no E-value below every protein with one, so its denominator was every
 protein hit. At hp_lehninger_hpc3 k=14 that turned CD47's rank 166 among the 750 proteins
-with an E-value into the top 0.88% of 18_775. hp_lehninger_hpc3 cannot have an E-value at
-all (section 11), so that rank is now left out. The table below the figure prints both
+with an E-value into the top 0.88% of 18_775. hp_lehninger_hpc3 is excluded from E-value comparisons (section 11), so that rank is now left out. The table below the figure prints both
 denominators for the two E-value ranks the first version quoted.
 """),
     code(r"""
@@ -380,7 +385,7 @@ print(raw.filter(((pl.col("query") == "Ced9") & (pl.col("alphabet") == "wwmj5") 
          .select("query", "alphabet", "ksize", "rank", "n_finite", "n_targets", "partner_value")
          .with_columns((100 * pl.col("rank") / pl.col("n_finite")).round(2).alias("percent_of_finite"),
                        (100 * pl.col("rank") / pl.col("n_targets")).round(2).alias("percent_of_all_hit"),
-                       pl.col("alphabet").is_in(au.no_evalue_alphabets(arms)).alias("alphabet_cannot_have_evalue")))
+                       pl.col("alphabet").is_in(au.no_evalue_alphabets(arms)).alias("alphabet_excluded_by_drift")))
 """),
     md(r"""
 ## 8. Why: the partner's own E-value against chance
@@ -446,12 +451,12 @@ BHF has no known partner, so the two panels show what any alphabet returns: the 
 E-value of any human protein (left; a black ring where it is below 1, with the gene
 named) and how many human proteins have at least one region (right).
 
-If the E-values were right, chance alone would put the best hit of one search below
-E = 1 with probability $1 - e^{-1} = 0.63$: the number of regions with E ≤ 1 in a search
-is a Poisson count with mean 1, and the best hit is below 1 unless that count is 0. The
-cell counts how many settings that predicts and how many are seen. The settings are not
-independent searches (neighbouring k share most k-mers), but each one alone still has
-0.63.
+Under an additional Poisson model with a mean of one null exceedance per search,
+the probability of at least one exceedance is $1 - e^{-1} = 0.63$. An E-value alone
+does not establish that model. The table shows its illustrative expectation, not a
+calibration test: these settings share k-mers, only settings with finite values are
+counted in one row, and BHF is one biological query. Random-query or shuffled-query
+searches are needed to measure calibration.
 """),
     code(r"""
 bhf = au.bhf_matrix(
@@ -460,8 +465,7 @@ bhf = au.bhf_matrix(
     conclusion=(lambda e: (
         f"{e.filter(pl.col('best_value') < 1).height} of the {e.filter(pl.col('n_finite') > 0).height} settings that give BHF any E-value put a human protein below E = 1: "
         + ("; ".join(f"{r['top_gene']} E={r['best_value']:.2g} ({r['alphabet']} k={r['ksize']})" for r in e.filter(pl.col('best_value') < 1).sort('best_value').iter_rows(named=True)) or "none")
-        + f". Correct E-values would give about {(1 - math.exp(-1)) * e.filter(pl.col('n_finite') > 0).height:.0f} by chance alone, "
-          "so these E-values are too cautious, and nothing here beats chance."))(
+        + ". These counts alone do not measure E-value calibration or validate a BHF partner."))(
         ranks.filter((pl.col("query") == "BHF") & (pl.col("metric") == "E-value") & pl.col("valid"))
              .join(arms.select("alphabet", "ksize", "fitted"), on=["alphabet", "ksize"]).filter(pl.col("fitted") == True)),
 )
@@ -472,19 +476,19 @@ bhf_e = (pl.read_csv(au.DATA / "ranks.csv", infer_schema_length=None)
          .filter((pl.col("query") == "BHF") & (pl.col("metric") == "E-value"))
          .join(arms.select("alphabet", "ksize", "fitted"), on=["alphabet", "ksize"])
          .filter(pl.col("fitted") == True)
-         .with_columns(pl.col("alphabet").is_in(au.no_evalue_alphabets(arms)).alias("alphabet_cannot_have_evalue")))
+         .with_columns(pl.col("alphabet").is_in(au.no_evalue_alphabets(arms)).alias("alphabet_excluded_by_drift")))
 rows = []
 for label, sub in (("every fitted setting", bhf_e),
-                   ("fitted, alphabet can have an E-value", bhf_e.filter(~pl.col("alphabet_cannot_have_evalue")))):
+                   ("fitted, alphabet can have an E-value", bhf_e.filter(~pl.col("alphabet_excluded_by_drift")))):
     finite = sub.filter(pl.col("n_finite") > 0)
     rows.append({"settings": label, "fitted": sub.height, "give_BHF_a_finite_E": finite.height,
                  "expected_below_1_of_fitted": round(p_below_1 * sub.height, 1),
                  "expected_below_1_of_finite": round(p_below_1 * finite.height, 1),
                  "seen_below_1": sub.filter(pl.col("best_value") < 1).height})
-print(f"\nPr(best hit of one search has E < 1) = 1 - e^-1 = {p_below_1:.3f} if the E-values are right")
+print(f"\nPr(best hit of one search has E < 1) = 1 - e^-1 = {p_below_1:.3f} under the illustrative Poisson model, not a calibration measurement")
 print(pl.DataFrame(rows))
 print("\nThe fitted settings where BHF's best hit has E < 1:")
-print(bhf_e.filter(pl.col("best_value") < 1).select("alphabet", "ksize", "top_gene", "best_value", "alphabet_cannot_have_evalue"))
+print(bhf_e.filter(pl.col("best_value") < 1).select("alphabet", "ksize", "top_gene", "best_value", "alphabet_excluded_by_drift"))
 """),
     md(r"""
 ## 10. Cross-check against PR #44's P66 ladder and random-protein control
@@ -586,11 +590,12 @@ chance that two random residues of this proteome fall in the same class. So one 
 of a chance match scores p − C (1 − p) on average. That number has to be **below zero**.
 Below zero, a chance match loses score the longer it runs, high scores stay rare, and
 lambda exists. At or above zero, a chance match keeps gaining score just by running
-longer, no score is ever surprising, and there is no lambda and no E-value at any k.
+longer, no score is ever surprising, and lambda does not exist.
 That is what the right panel shows: bars to the left of the red line are fine, bars
-touching or crossing it mean the alphabet can never produce an E-value. This notebook
-counts a drift within 0.001 of zero as zero (gbmr4 is at −0.0003), and leaves out the
-E-value and bit score of these alphabets everywhere above.
+touching or crossing it are excluded by the drift guard, so they get no E-value. This notebook retains its existing exclusion of drifts within 0.001 of zero
+(gbmr4 is at −0.0003) from E-value and bit-score comparisons. That is a heuristic
+exclusion, not proof that lambda is impossible: negative drift can have a positive
+root. Conclusions above apply to the settings actually retained by this rule.
 
 **Even where lambda exists for the alphabet, it can come out as zero for a region.**
 This kmerseek build solves lambda from each region's own two spans. It counts the
@@ -640,7 +645,7 @@ The two problems have one root: the penalty C is derived from kappa assuming eve
 holds the same share of residues (1 / classes). On this proteome the real chance match
 probability is 0.39 for gbmr7 (one class holds most residues), 0.48 for
 hp_lehninger_hpc3 and 0.40 for gbmr4, all far above 1 / classes, which is why their bars
-sit at or past zero. The fix is to derive C from the measured class shares (p = sum of
+sit at or near zero. The fix is to derive C from the measured class shares (p = sum of
 p_i squared) instead.
 """),
     code(r"""
@@ -651,7 +656,7 @@ lz = au.lambda_zero_figure(
         f"No: the mismatch penalty decides it, not the fit. For "
         f"{a.filter(pl.col('chance_drift') >= -0.001)['alphabet'].n_unique()} alphabets "
         f"({', '.join(a.filter(pl.col('chance_drift') >= -0.001).sort('chance_drift', descending=True)['alphabet'])}) "
-        f"a chance match gains score on average instead of losing it, so those alphabets can never have an E-value, at any k. "
+        f"the notebook excludes E-value comparisons at nonnegative or near-zero average drift; this is not proof that every region lacks lambda. "
         f"Among the alphabets that can, the share of regions that still come out with no E-value is "
         f"{arms.join(a.filter(pl.col('chance_drift') < -0.001).select('alphabet'), on='alphabet')['frac_lambda_zero'].median():.2f} at the median setting: "
         f"{arms.filter(pl.col('alphabet') == 'hp_lehninger2')['frac_lambda_zero'].mean():.2f} for hp_lehninger2, "
@@ -669,8 +674,8 @@ print(arms.group_by("alphabet").agg(pl.col("frac_lambda_zero").mean().round(2).a
 The decision rule in the first cell asked for a protein with the Bcl-2 domain in the top
 10 and a best rank that beats random human proteins in at least 95% of draws. The first
 half is met; the second is not. So the gold standard says no kmerseek ranking in this
-sweep finds Ced9's human homologs better than chance, and what the method needs is a
-longer region, not a different metric.
+sweep finds Ced9's human homologs better than chance, and longer regions are one next experiment; this comparison does not establish the only
+change that could improve the method.
 
 **BCL2 itself never comes near the top.** BCL2 is among the hits for 13 of 19 alphabets
 when Ced9 is the query. Its best rank over every k and the five metrics is 213 of 18_064
@@ -691,17 +696,17 @@ the smallest of many tries: 102 setting and metric combinations for BCL2, 957 fo
 family. Random human proteins, scored over the same combinations, do as well as BCL2's
 213 in 97.7% of draws under the uniform null and 59.1% under the real-protein null (section
 7 says how the two differ). For the family, 10 random human proteins reach a best rank as
-good as MCL1's 1 in 26.8% of draws, and a best percent of the list as good as MCL1's
+good as MCL1's 1 in 27.2% of draws, and a best percent of the list as good as MCL1's
 0.012% in 12.5% (uniform null: 6.4%). The best rank favours settings that rank few
 proteins, which is why the family's rank 1 is so easy to match; the percent is the fairer
-of the two and still misses 95%. For CD47 the numbers are 99.7% and 75.3%.
+of the two and still misses 95%. For CD47 the numbers are 99.7% and 75.2%.
 
 **P66/CD47 does no better.** CD47 is among the hits for 16 of 19 alphabets when P66 is the
 query. Its best rank over the five metrics is 413 of 3_064 (hsdm17, enrichment, k=6, 55
 proteins tied); its best percent is enrichment at wwmj5 k=7, 1_138 of 19_066 (5.97%).
 The first version of this notebook gave CD47's best as the top 0.88% (rank 166 of 18_775,
 E-value, hp_lehninger_hpc3 k=14). Only 750 proteins have an E-value at that setting, so
-the rank is 166 of 750 (22%), and hp_lehninger_hpc3 cannot have an E-value at all (section
+the rank is 166 of 750 (22%), and hp_lehninger_hpc3 is excluded from E-value comparisons (section
 11), so it is left out. Under hp_lehninger2 and the five metrics CD47 sits between the
 27th and the 86th percentile of the proteins P66 hits, and the pairwise counts agree with
 PR #44 at all 12 k values both ladders ran.
@@ -720,14 +725,14 @@ the same H/P class, 16.6 bits, E = 29_482. The best E-values the partners ever g
 1_955 (BCL2, wwmj5 k=9, rank 1_352 of the 2_175 proteins with an E-value) and 899 (CD47,
 sdm12 k=6).
 
-**BHF: the E-values are too cautious, so nothing can beat chance.** 61 of the 71 fitted
-settings give BHF any finite E-value. If the E-values were right, the best hit of one
-search would fall below E = 1 by chance with probability 1 − e⁻¹ = 0.63, so about 39 of
-those 61 (45 of all 71) would. Three do: SCN10A 0.61 (polarity4 k=13), SFI1 0.84
-(hp_lehninger_c_nonpolar2 k=28) and FXYD5 0.99 (gbmr7 k=8, an alphabet that cannot have
-an E-value). Without the three alphabets that cannot have an E-value, 2 of 54 against
-about 34 expected. These E-values understate how often chance reaches a given score, so
-"E < 1" here is a stricter bar than it reads, and BHF does not clear it.
+**BHF: few settings return a best E-value below 1.** 61 of the 70 fitted settings give
+BHF any finite E-value. Three give a best value below 1: SCN10A 0.61 (polarity4 k=13),
+SFI1 0.84 (hp_lehninger_c_nonpolar2 k=28) and FXYD5 0.99 (gbmr7 k=8, excluded by this
+notebook's drift rule). After that exclusion, 2 of 54 settings have a best value below 1.
+The illustrative Poisson model predicts about 34, but this is not a calibration test.
+A single query across related settings cannot establish conservative E-values or a
+validated BHF partner. If E-values were conservative, they would overstate expected
+chance counts at a given score.
 
 **Two things about the E-value itself, which matter beyond these three proteins.**
 (1) The per-region lambda gives E = inf to every region whose u is at or above
@@ -736,8 +741,8 @@ falls in the same class. With the kappa penalties that removes 35% of hp_lehning
 regions and 88 to 98% for the 12- to 20-class alphabets, and the regions it removes have
 the same or a higher median identity than the ones it keeps. (2) The kappa-optimal
 penalty assumes equal class shares; on this proteome gbmr7, hp_lehninger_hpc3 and gbmr4
-have a chance match rate high enough that a chance position scores at or above zero, so
-no lambda exists for them at any k. 81 of 152 settings ended without a Karlin-Altschul
+are excluded by the notebook's nonnegative-or-near-zero drift guard. For gbmr4 the
+drift is slightly negative, so a positive root is mathematically possible despite the exclusion. 82 of 152 settings ended without a Karlin-Altschul
 fit.
 
 **What this changes.** The E-value, mean IDF, tf-idf, enrichment and Poisson p-value all

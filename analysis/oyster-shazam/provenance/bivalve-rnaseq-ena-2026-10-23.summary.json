@@ -1,0 +1,26 @@
+{
+  "runs": 17623,
+  "studies": 1223,
+  "samples": 15549,
+  "taxa": 455,
+  "fastq_compressed_bytes": 57212581544473,
+  "base_count": 118429875014140,
+  "missing_fastq_urls": 181,
+  "platforms": {
+    "LS454": 47,
+    "ILLUMINA": 16644,
+    "PACBIO_SMRT": 58,
+    "ION_TORRENT": 76,
+    "ABI_SOLID": 40,
+    "BGISEQ": 499,
+    "DNBSEQ": 186,
+    "OXFORD_NANOPORE": 26,
+    "ELEMENT": 32,
+    "HELICOS": 15
+  },
+  "layouts": {
+    "SINGLE": 3140,
+    "PAIRED": 14483
+  },
+  "sha256": "6f65ed2fb95232caa90834fd6e2df210abd9a6cbd1a11b76f54ca8dccf540084"
+}

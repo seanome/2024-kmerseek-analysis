@@ -1,0 +1,50 @@
+[
+  {
+    "file": "ena-runs.tsv",
+    "url": "https://www.ebi.ac.uk/ena/portal/api/filereport?accession=PRJNA1219309&result=read_run&fields=run_accession,study_accession,sample_accession,experiment_accession,sample_title,library_name,library_layout,library_strategy,read_count,base_count,fastq_ftp,fastq_md5,fastq_bytes&format=tsv",
+    "sha256": "1ffcfe9d934905df72f8f2d23574244fabdc6dff594c19243ed4df54d57a24f8",
+    "bytes": 23642
+  },
+  {
+    "file": "study.xml",
+    "url": "https://www.ebi.ac.uk/ena/browser/api/xml/PRJNA1219309",
+    "sha256": "e0ba15f51e79fe11f0dc73822df16a31fc31bb4eec47bf8ee0baef501589ef1d",
+    "bytes": 2828
+  },
+  {
+    "file": "sample-example.xml",
+    "url": "https://www.ebi.ac.uk/ena/browser/api/xml/SAMN46550931",
+    "sha256": "0106a5e9dbcd1fc7d2967d0e5a551f61d0dcc4bf5d280a39ffb664c17609ccf7",
+    "bytes": 4441
+  },
+  {
+    "file": "article.xml",
+    "url": "https://www.ncbi.nlm.nih.gov/research/bionlp/RESTful/pmcoa.cgi/BioC_xml/PMC13229227/unicode",
+    "sha256": "73d7ee0bb83785939e4863d5a369cc235b6264a9e97aa52fbf8efec793118f86",
+    "bytes": 89979
+  },
+  {
+    "file": "dekupl-readme.md",
+    "url": "https://raw.githubusercontent.com/Transipedia/dekupl-run/master/README.md",
+    "sha256": "2a8fd81bbe7ad3e3798e95a38442814edc25d23c116c311b3dd84a01a969fd80",
+    "bytes": 13217
+  },
+  {
+    "file": "dekupl-config.json",
+    "url": "https://raw.githubusercontent.com/Transipedia/dekupl-run/master/config.json",
+    "sha256": "040dcf5d541c25145a23f51208e6aa61234ef57772f7e1009b5789a793c8c3d1",
+    "bytes": 717
+  },
+  {
+    "file": "dekupl-Snakefile",
+    "url": "https://raw.githubusercontent.com/Transipedia/dekupl-run/master/Snakefile",
+    "sha256": "a0b6c54b5f56ba47b857e4087b71c5d610a8539cfe3cb245c616298059d00832",
+    "bytes": 27452
+  },
+  {
+    "file": "splash-plus-readme.md",
+    "url": "https://raw.githubusercontent.com/salzman-lab/SPLASH-plus/main/README.md",
+    "sha256": "5cc0f781f7c02bf7518f7f7e608396075df7491cf89d22d8cc5905b29406f39f",
+    "bytes": 14836
+  }
+]

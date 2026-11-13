@@ -1,0 +1,13 @@
+case,variant,n_copies,mean_proteins_chain_e_below_1,max_proteins_chain_e_below_1,frac_partner_chain_e_below_1,n_copies_partner_without_call,real_proteins_chain_e_below_1,real_partner_rank,copies_ranking_partner_at_least_as_high,calibrated
+BHF,"across settings, no factor",20,48.55,65,,20,34,,0,false
+BHF,"across settings, x71",20,0.0,0,,20,0,,0,false
+BHF,"one setting, no factor",20,5.0,10,,20,3,,0,false
+BHF,"one setting, x71",20,0.0,0,,20,0,,0,false
+Ced9,"across settings, no factor",20,110.15,145,0.0,3,112,12262,7,false
+Ced9,"across settings, x71",20,0.0,0,0.0,3,0,12906,6,false
+Ced9,"one setting, no factor",20,7.9,21,0.0,3,10,12991,6,false
+Ced9,"one setting, x71",20,0.0,0,0.0,3,0,12906,6,false
+P66,"across settings, no factor",20,206.45,258,0.0,0,189,673,0,false
+P66,"across settings, x71",20,0.0,0,0.0,0,0,8648,4,false
+P66,"one setting, no factor",20,4.8,7,0.0,0,4,8815,5,false
+P66,"one setting, x71",20,0.0,0,0.0,0,0,8647,4,false

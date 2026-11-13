@@ -1,0 +1,78 @@
+{
+  "protocol": "HISTORICAL split stop/X; not corrected >=30aa",
+  "scope": "Saved sketches, identities, match tables and scale losses; translation not independently rebuilt",
+  "settings": [
+    {
+      "moltype": "dna",
+      "scaled": 10,
+      "queries": 380867,
+      "empty": 106301,
+      "pairs": 7,
+      "query_sha256": "067edb1a8412c0bb88d168d3d6cfd5eec35e4ba646638fecbb9592a1bb61cc6a",
+      "reference_sha256": "2714ce68af1de1a6337e9fe5fefc3f9ee8b40d60ecec532824fde842c96b58a7"
+    },
+    {
+      "moltype": "dna",
+      "scaled": 100,
+      "queries": 380867,
+      "empty": 296249,
+      "pairs": 0,
+      "query_sha256": "e1806f203a34aab2b439d0a3903828320e767c238ff549fd5f5cb7d86e1feb92",
+      "reference_sha256": "f6b9ee134c589256b0c068048f562f0346b56fb500b6ac21798ced49c7401a68"
+    },
+    {
+      "moltype": "protein",
+      "scaled": 10,
+      "queries": 380867,
+      "empty": 21699,
+      "pairs": 2291,
+      "query_sha256": "a2a338cb45003faf2c1fa718e3fc1fbe3df7beec73a7daae4744723a20906176",
+      "reference_sha256": "26e2b12a64cedf80f6dbe5faab95d2a8a18dbbab79eb3173c3a5ff0e75c2ed4d"
+    },
+    {
+      "moltype": "protein",
+      "scaled": 100,
+      "queries": 380867,
+      "empty": 237724,
+      "pairs": 210,
+      "query_sha256": "19a2ce002459fcef50173fffdfa3c0a0e388dc52f48cdd16369f2f10709f0499",
+      "reference_sha256": "bfc8e009560183da4fd414b62b8acd0a8ff92f63d455296ab0c5ddf39ba04b51"
+    },
+    {
+      "moltype": "dayhoff",
+      "scaled": 10,
+      "queries": 380867,
+      "empty": 150700,
+      "pairs": 4312,
+      "query_sha256": "608d1566eec81be2dfa7d73b0d37f93c58ad920e19e31e5e842ebc1dddc82911",
+      "reference_sha256": "9bafe7cdcb7ab8e11d37b2a5a6e904f8ad99adad4a6c73b78c44965f801c43d5"
+    },
+    {
+      "moltype": "dayhoff",
+      "scaled": 100,
+      "queries": 380867,
+      "empty": 304072,
+      "pairs": 701,
+      "query_sha256": "62f3ea8c4b58fa5b7ff58c0315a94c3d8cdae4e7e7b47d4e482dff4b9973563f",
+      "reference_sha256": "f9868450e44450a51e3c61fcca951c16f28e14f327f12bdcfde869ac92fc882c"
+    },
+    {
+      "moltype": "hp",
+      "scaled": 10,
+      "queries": 380867,
+      "empty": 350914,
+      "pairs": 12,
+      "query_sha256": "5ab817790cf1d4d917ec5681b71fc0f69a717ba47d9484dc1b0453e1c89f009a",
+      "reference_sha256": "6b9a775c74e35dd3d68c7a544adf1420bf65b09e9b565c9497f2434b1fe8e486"
+    },
+    {
+      "moltype": "hp",
+      "scaled": 100,
+      "queries": 380867,
+      "empty": 370140,
+      "pairs": 0,
+      "query_sha256": "aa5a4828d1967eccd697011cf7487ca0eab503df2f49026b602fa683909f2408",
+      "reference_sha256": "12bd92afbd3601f33f0219092bd3d50a8e9f2ed52c89a8cd7d68651e41ade3a2"
+    }
+  ]
+}

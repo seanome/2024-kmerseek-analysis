@@ -1,0 +1,7 @@
+values	alphabet	random_hp_median_auc	random_probe_median_auc	difference	difference_95pct_low	difference_95pct_high	auc_step	reading	readings_within_95pct
+earlier	hp_lehninger2	0.959	0.714	0.245	0.224	0.245	0.020		
+earlier	hp_thomas_dill2	0.959	0.714	0.245	0.204	0.245	0.020		
+SCAN	hp_lehninger2	0.796	0.735	0.061	0.041	0.061	0.020	unclear	the values explain the gap / unclear
+SCAN	hp_thomas_dill2	0.796	0.735	0.061	0.041	0.061	0.020	unclear	the values explain the gap / unclear
+SCAN without unstandardised	hp_lehninger2	0.776	0.735	0.041	0.021	0.061	0.020	the values explain the gap	the values explain the gap / unclear
+SCAN without unstandardised	hp_thomas_dill2	0.796	0.735	0.061	0.041	0.061	0.020	unclear	the values explain the gap / unclear

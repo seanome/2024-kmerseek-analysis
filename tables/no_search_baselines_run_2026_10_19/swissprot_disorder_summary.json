@@ -1,0 +1,15 @@
+{
+  "n_query_proteins": 998,
+  "by_label": {
+    "REGION_DISORDERED": {
+      "n_features": 1302,
+      "n_proteins": 566,
+      "n_mobidb_lite": 1301
+    },
+    "COMPBIAS": {
+      "n_features": 1445,
+      "n_proteins": 428,
+      "n_mobidb_lite": 1445
+    }
+  }
+}

@@ -1,0 +1,13 @@
+dataset	panel	comparison	group0	group1	n0	n1	auc	p	model
+GSE104079	4C	main	Pre	45 Min Post	16	13	0.18	0.00655	full
+GSE27536	4C	main	Pre	Post	27	27	0.17	0.000144	m1_only
+GSE120862	4C	main	Pre	1Hr and 4Hr Post	42	42	0.08	1.51e-13	full
+GSE83578	4C	pre_vs_30min	Pre	Post 30M	16	16	0.07	2.9e-06	full
+GSE83578	4C	pre_vs_3h	Pre	Post 3H	16	16	0.07	4.18e-06	full
+GSE83578	4C	pre_vs_24h	Pre	Post 24H	16	16	0.54		full
+GSE111555	4D	main	Baseline (Sed)	Post 18 Weeks (Ex)	22	10	0.93	2.96e-05	full
+GSE99963	4D	main	Baseline (Sed)	Post 10 Days (Ex)	14	14	0.91	0.000105	full
+GSE144304	4D	main	Sedentary (Sed)	Exercised (Ex)	26	30	0.86	1.19e-05	full
+GSE28998	4D	main	Baseline (Sed)	Post 12 Weeks (Ex)	7	7	0.80	0.0396	full
+GSE27536	Table S1	full_model	Pre	Post	27	27	0.38	0.403	full
+GSE83578	Table S1	early_vs_rest	Pre	Post	32	32	0.05	1.27e-12	full

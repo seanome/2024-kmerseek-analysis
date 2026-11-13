@@ -1,0 +1,44 @@
+{
+  "software_fixture": true,
+  "canonical_kmers_checked": 29483,
+  "samples": 18,
+  "model_checks": [
+    {
+      "path": "/scratch/users/olgabot/botryllus-nextflow-fixture-49514880/input/results/models/fixture0/genes/result/all-features.tsv.gz",
+      "features": 100,
+      "finite_p": 100,
+      "significant": 2
+    },
+    {
+      "path": "/scratch/users/olgabot/botryllus-nextflow-fixture-49514880/input/results/models/fixture0/kmers/result/all-features.tsv.gz",
+      "features": 29151,
+      "finite_p": 29151,
+      "significant": 559
+    },
+    {
+      "path": "/scratch/users/olgabot/botryllus-nextflow-fixture-49514880/input/results/models/fixture1/genes/result/all-features.tsv.gz",
+      "features": 100,
+      "finite_p": 100,
+      "significant": 1
+    },
+    {
+      "path": "/scratch/users/olgabot/botryllus-nextflow-fixture-49514880/input/results/models/fixture1/kmers/result/all-features.tsv.gz",
+      "features": 29129,
+      "finite_p": 29129,
+      "significant": 292
+    },
+    {
+      "path": "/scratch/users/olgabot/botryllus-nextflow-fixture-49514880/input/results/models/fixture2/genes/result/all-features.tsv.gz",
+      "features": 100,
+      "finite_p": 100,
+      "significant": 0
+    },
+    {
+      "path": "/scratch/users/olgabot/botryllus-nextflow-fixture-49514880/input/results/models/fixture2/kmers/result/all-features.tsv.gz",
+      "features": 29137,
+      "finite_p": 29137,
+      "significant": 0
+    }
+  ],
+  "gene_evidence_rows": 100
+}

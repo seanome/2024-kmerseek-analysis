@@ -1,0 +1,44 @@
+{
+  "runs": [
+    "DRR350416",
+    "DRR354099",
+    "SRR10403264",
+    "SRR18575420",
+    "SRR330464",
+    "SRR7640806",
+    "SRR942484"
+  ],
+  "raw_bytes": 153830099,
+  "encodings": {
+    "dna": [
+      153830099,
+      126057726,
+      62981766,
+      6258011
+    ],
+    "protein": [
+      153830099,
+      216492657,
+      108146091,
+      10762874
+    ],
+    "dayhoff": [
+      153830099,
+      224460359,
+      112111868,
+      11146003
+    ],
+    "hp": [
+      153830099,
+      215993398,
+      107883068,
+      10714977
+    ]
+  },
+  "total_sketch_bytes": {
+    "5": 783004140,
+    "10": 391122793,
+    "100": 38881865
+  },
+  "scope": "Actual complete public-run pilot before trimming; file sizes exclude RocksDB indexes, metadata and search results."
+}

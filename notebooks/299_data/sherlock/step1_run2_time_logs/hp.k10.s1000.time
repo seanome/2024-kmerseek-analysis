@@ -1,0 +1,23 @@
+	Command being timed: "timeout 40000 /scratch/users/olgabot/299-omrgc-pilot/env/bin/sourmash sketch translate --singleton -p hp,k=10,scaled=1000,noabund -o /scratch/users/olgabot/299-omrgc-pilot/step1/hp.k10.s1000.sig.gz /scratch/users/olgabot/299-omrgc-pilot/slice/OM-RGC_v2_genes_first_1GB.fna"
+	User time (seconds): 248.83
+	System time (seconds): 1.56
+	Percent of CPU this job got: 99%
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 4:10.77
+	Average shared text size (kbytes): 0
+	Average unshared data size (kbytes): 0
+	Average stack size (kbytes): 0
+	Average total size (kbytes): 0
+	Maximum resident set size (kbytes): 2169316
+	Average resident set size (kbytes): 0
+	Major (requiring I/O) page faults: 0
+	Minor (reclaiming a frame) page faults: 554150
+	Voluntary context switches: 2151
+	Involuntary context switches: 4496
+	Swaps: 0
+	File system inputs: 116256
+	File system outputs: 132848
+	Socket messages sent: 0
+	Socket messages received: 0
+	Signals delivered: 0
+	Page size (bytes): 4096
+	Exit status: 0

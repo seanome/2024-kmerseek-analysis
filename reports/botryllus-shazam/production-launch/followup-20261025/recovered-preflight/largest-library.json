@@ -1,0 +1,16 @@
+{
+  "run": "SRR32233964",
+  "pairs": 69938926,
+  "bases": 15213725808,
+  "input_pairs": 108931114,
+  "files": [
+    {
+      "path": "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/nfcore/results/trimgalore/SRR32233964_trimmed_1_val_1.fq.gz",
+      "sha256": "cbafb011bdb95254e624ba77e674fa67738041689ef27293f74838d272130e37"
+    },
+    {
+      "path": "/scratch/users/olgabot/botryllus-shazam-PEC-20261023/nfcore/results/trimgalore/SRR32233964_trimmed_2_val_2.fq.gz",
+      "sha256": "fcdd8d4776c2a7ca369889395de275954f0d03f35b1ec2427d14832d1e95d5f1"
+    }
+  ]
+}

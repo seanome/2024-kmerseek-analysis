@@ -1,0 +1,13 @@
+{
+  "threshold": 4.3320183199332116e-07,
+  "n_target": 783,
+  "n_decoy": 39,
+  "nofit": false,
+  "label": "kmerseek.pfamshared.w10.gbmr4_k14_s1",
+  "calls_total": 76055230,
+  "decoy_calls_total": 35497240,
+  "max_decoy_rate": 0.05,
+  "features_found": 14,
+  "features_found_aligned": 14,
+  "features_total": 7174
+}

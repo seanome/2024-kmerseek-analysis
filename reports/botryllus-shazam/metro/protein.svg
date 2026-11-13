@@ -1,0 +1,207 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1782.0" height="829.0" viewBox="0 0 1782.0 829.0" style="color-scheme: light"><title>2. Sourmash is the primary protein search — full-depth stage pending</title><rect width="100%" height="100%" fill="white" /><text x="25" y="30" font-family="Arial" font-size="23" font-weight="bold">2. Sourmash is the primary protein search — full-depth stage pending</text><path d="M25,60 h30" stroke="#206E82" stroke-width="5" /><text x="65" y="65" font-family="Arial" font-size="15">Primary protein retrieval</text><path d="M350,60 h30" stroke="#b15c16" stroke-width="5" /><text x="390" y="65" font-family="Arial" font-size="15">Follow-up evidence only</text><text x="25" y="95" font-family="Arial" font-size="15">Circle = program. Document = file. Folder = index directory. Read left to right.</text><g transform="translate(0,135)"><defs>
+</defs>
+<metadata id="diagram-manifest" data-schema-version="1.0">{"groups":[{"color":"#206E82","id":"primary","label":"Primary protein retrieval"},{"color":"#b15c16","id":"followup","label":"Follow-up evidence only"}],"height":694,"match":{"flags":"i","target":"fqProcessName","type":"regex"},"nodes":[{"groups":["primary"],"h":10.0,"id":"dna","label":"dna","patterns":[],"r":5.0,"region":"translate","rx":5.0,"w":10.0,"x":203.5,"y":353.6},{"groups":["primary"],"h":10.0,"id":"tr","label":"Six-frame translation / split stops / minimum 20 aa","patterns":[],"r":5.0,"region":"translate","rx":5.0,"w":10.0,"x":263.5,"y":353.6},{"groups":["primary"],"h":10.0,"id":"peptide","label":"peptide","patterns":[],"r":5.0,"region":"translate","rx":5.0,"w":10.0,"x":534.0,"y":353.6},{"groups":["primary"],"h":10.0,"id":"member","label":"member","patterns":[],"r":5.0,"region":"translate","rx":5.0,"w":10.0,"x":534.0,"y":295.2},{"groups":["primary"],"h":10.0,"id":"bot","label":"bot","patterns":[],"r":5.0,"region":"sketch","rx":5.0,"w":10.0,"x":690.0,"y":236.8},{"groups":["primary"],"h":10.0,"id":"swiss","label":"swiss","patterns":[],"r":5.0,"region":"sketch","rx":5.0,"w":10.0,"x":690.0,"y":120.0},{"groups":["primary"],"h":10.0,"id":"sk","label":"Sourmash 4.9.4 / protein k7 / Dayhoff k12 / HP k30","patterns":[],"r":5.0,"region":"sketch","rx":5.0,"w":10.0,"x":956.0,"y":353.6},{"groups":["primary"],"h":10.0,"id":"sig","label":"sig","patterns":[],"r":5.0,"region":"sketch","rx":5.0,"w":10.0,"x":1016.0,"y":353.6},{"groups":["primary"],"h":10.0,"id":"ss","label":"Sourmash / Branchwater 0.9.15 manysearch","patterns":[],"r":5.0,"region":"search","rx":5.0,"w":10.0,"x":1409.0,"y":353.6},{"groups":["primary"],"h":10.0,"id":"hits","label":"hits","patterns":[],"r":5.0,"region":"search","rx":5.0,"w":10.0,"x":1469.0,"y":353.6},{"groups":["primary"],"h":10.0,"id":"ev","label":"Validate sampled hashes / preserve no hits","patterns":[],"r":5.0,"region":"search","rx":5.0,"w":10.0,"x":1529.0,"y":353.6},{"groups":["primary"],"h":10.0,"id":"evidence","label":"evidence","patterns":[],"r":5.0,"region":"search","rx":5.0,"w":10.0,"x":1589.0,"y":353.6},{"groups":["followup"],"h":10.0,"id":"botcopy","label":"botcopy","patterns":[],"r":5.0,"region":"annotation","rx":5.0,"w":10.0,"x":167.5,"y":503.6},{"groups":["followup"],"h":10.0,"id":"mask","label":"Search copy only / unsupported residue to X","patterns":[],"r":5.0,"region":"annotation","rx":5.0,"w":10.0,"x":227.5,"y":503.6},{"groups":["followup"],"h":10.0,"id":"map","label":"map","patterns":[],"r":5.0,"region":"annotation","rx":5.0,"w":10.0,"x":541.0,"y":503.6},{"groups":["followup"],"h":10.0,"id":"al","label":"DIAMOND 2.1.23","patterns":[],"r":5.0,"region":"annotation","rx":5.0,"w":10.0,"x":541.0,"y":562.0},{"groups":["followup"],"h":10.0,"id":"hm","label":"HMMER 3.4 / Pfam","patterns":[],"r":5.0,"region":"annotation","rx":5.0,"w":10.0,"x":541.0,"y":620.4},{"groups":["followup"],"h":10.0,"id":"diamond","label":"diamond","patterns":[],"r":5.0,"region":"annotation","rx":5.0,"w":10.0,"x":601.0,"y":562.0},{"groups":["followup"],"h":10.0,"id":"pfam","label":"pfam","patterns":[],"r":5.0,"region":"annotation","rx":5.0,"w":10.0,"x":601.0,"y":620.4}],"regions":[{"id":"translate","label":"DNA to peptides"},{"id":"sketch","label":"Matching query and reference settings"},{"id":"search","label":"Protein retrieval"},{"id":"annotation","label":"Separate follow-up evidence"}],"title":"2. Sourmash is the primary protein search — full-depth stage pending","version":"1.0","width":1782}</metadata>
+<style>.nf-metro-bg { fill: var(--nfm-map-bg, light-dark(#f5f5f5, #2b2b2b)); }
+.nf-metro-title { fill: var(--nfm-map-title-color, light-dark(#111111, #ffffff)); }
+.nf-metro-station-label { fill: var(--nfm-map-label-color, light-dark(#333333, #e0e0e0)); }
+.nf-metro-section-box { fill: var(--nfm-map-section-fill, light-dark(#ededed, #373737)); stroke: var(--nfm-map-section-stroke, light-dark(#e6e6e6, #595959)); }
+.nf-metro-section-label { fill: var(--nfm-map-section-label-color, light-dark(#666666, #c8c8c8)); }
+.nf-metro-group-label { fill: var(--nfm-map-section-label-color, light-dark(#666666, #c8c8c8)); }
+.nf-metro-group-underline { stroke: var(--nfm-map-section-label-color, light-dark(#666666, #c8c8c8)); }
+.nf-metro-legend-bg { fill: var(--nfm-map-legend-bg, light-dark(rgba(255, 255, 255, 0.8), rgba(0, 0, 0, 0.3))); }
+.nf-metro-legend-text { fill: var(--nfm-map-legend-text-color, light-dark(#333333, #e0e0e0)); }
+.nf-metro-marker-stroke { stroke: var(--nfm-map-marker-stroke, light-dark(#333333, #f0f0f0)); }
+.nf-metro-label-halo { fill: var(--nfm-map-bg, light-dark(#f5f5f5, #2b2b2b)); stroke: var(--nfm-map-bg, light-dark(#f5f5f5, #2b2b2b)); }</style>
+<rect x="30.0" y="245.2" width="562.0" height="158.40000000000003" rx="8" ry="8" fill="#ededed" stroke="#e6e6e6" stroke-width="1.0" class="nf-metro-section-box" data-section-id="translate" data-section-lines="primary" />
+<circle cx="41.0" cy="230.2" r="11" fill="#333333" class="nf-metro-section-num-circle" data-section-id="translate" />
+<text x="41.0" y="230.2" font-size="12" fill="#ffffff" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-weight="bold" text-anchor="middle" dy="0.3em" data-section-id="translate">1</text>
+<text x="57.0" y="230.2" font-size="16.0" fill="#666666" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-weight="bold" dy="0.3em" class="nf-metro-section-label" data-section-id="translate">DNA to peptides</text>
+<rect x="632.0" y="70.0" width="553.0" height="333.6" rx="8" ry="8" fill="#ededed" stroke="#e6e6e6" stroke-width="1.0" class="nf-metro-section-box" data-section-id="sketch" data-section-lines="primary" />
+<circle cx="643.0" cy="55.0" r="11" fill="#333333" class="nf-metro-section-num-circle" data-section-id="sketch" />
+<text x="643.0" y="55.0" font-size="12" fill="#ffffff" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-weight="bold" text-anchor="middle" dy="0.3em" data-section-id="sketch">2</text>
+<text x="659.0" y="55.0" font-size="16.0" fill="#666666" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-weight="bold" dy="0.3em" class="nf-metro-section-label" data-section-id="sketch">Matching query and reference settings</text>
+<rect x="1225.0" y="261.0" width="497.0" height="142.60000000000002" rx="8" ry="8" fill="#ededed" stroke="#e6e6e6" stroke-width="1.0" class="nf-metro-section-box" data-section-id="search" data-section-lines="primary" />
+<circle cx="1236.0" cy="246.0" r="11" fill="#333333" class="nf-metro-section-num-circle" data-section-id="search" />
+<text x="1236.0" y="246.0" font-size="12" fill="#ffffff" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-weight="bold" text-anchor="middle" dy="0.3em" data-section-id="search">3</text>
+<text x="1252.0" y="246.0" font-size="16.0" fill="#666666" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-weight="bold" dy="0.3em" class="nf-metro-section-label" data-section-id="search">Protein retrieval</text>
+<rect x="30.0" y="453.6" width="629.0" height="216.79999999999998" rx="8" ry="8" fill="#ededed" stroke="#e6e6e6" stroke-width="1.0" class="nf-metro-section-box" data-section-id="annotation" data-section-lines="followup" />
+<circle cx="41.0" cy="438.6" r="11" fill="#333333" class="nf-metro-section-num-circle" data-section-id="annotation" />
+<text x="41.0" y="438.6" font-size="12" fill="#ffffff" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-weight="bold" text-anchor="middle" dy="0.3em" data-section-id="annotation">4</text>
+<text x="57.0" y="438.6" font-size="16.0" fill="#666666" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-weight="bold" dy="0.3em" class="nf-metro-section-label" data-section-id="annotation">Separate follow-up evidence</text>
+<path d="M167.5,503.6 L227.5,503.6" stroke="#b15c16" stroke-width="3.0" stroke-linecap="round" class="metro-line-followup" data-line-id="followup" />
+<path d="M227.5,503.6 L541.0,503.6" stroke="#b15c16" stroke-width="3.0" stroke-linecap="round" class="metro-line-followup" data-line-id="followup" />
+<path d="M227.5,503.6 L415.0,503.6 Q425.0,503.6,429.5693498139703,512.4950009711955 L450.4306501860297,553.1049990288045 Q455.0,562.0,465.0,562.0 L541.0,562.0" stroke="#b15c16" stroke-width="3.0" fill="none" stroke-linecap="round" stroke-linejoin="round" class="metro-line-followup" data-line-id="followup" />
+<path d="M227.5,503.6 L411.0,503.6 Q421.0,503.6,423.4877435036134,513.2856147074014 L448.5122564963866,610.7143852925986 Q451.0,620.4,461.0,620.4 L541.0,620.4" stroke="#b15c16" stroke-width="3.0" fill="none" stroke-linecap="round" stroke-linejoin="round" class="metro-line-followup" data-line-id="followup" />
+<path d="M541.0,562.0 L601.0,562.0" stroke="#b15c16" stroke-width="3.0" stroke-linecap="round" class="metro-line-followup" data-line-id="followup" />
+<path d="M541.0,620.4 L601.0,620.4" stroke="#b15c16" stroke-width="3.0" stroke-linecap="round" class="metro-line-followup" data-line-id="followup" />
+<path d="M203.5,353.59999999999997 L263.5,353.59999999999997" stroke="#206E82" stroke-width="3.0" stroke-linecap="round" class="metro-line-primary" data-line-id="primary" />
+<path d="M263.5,353.59999999999997 L534.0,353.59999999999997" stroke="#206E82" stroke-width="3.0" stroke-linecap="round" class="metro-line-primary" data-line-id="primary" />
+<path d="M263.5,353.59999999999997 L483.0,353.59999999999997 Q493.0,353.59999999999997,497.5693498139703,344.7049990288044 L518.4306501860297,304.09500097119553 Q523.0,295.2,533.0,295.2 L534.0,295.2" stroke="#206E82" stroke-width="3.0" fill="none" stroke-linecap="round" stroke-linejoin="round" class="metro-line-primary" data-line-id="primary" />
+<path d="M690.0,236.79999999999998 L691.0,236.79999999999998 Q701.0,236.79999999999998,703.4877435036134,246.48561470740134 L728.5122564963866,343.9143852925986 Q731.0,353.59999999999997,741.0,353.59999999999997 L956.0,353.59999999999997" stroke="#206E82" stroke-width="3.0" fill="none" stroke-linecap="round" stroke-linejoin="round" class="metro-line-primary" data-line-id="primary" />
+<path d="M690.0,120.0 L691.0,120.0 Q701.0,120.0,702.2737853306228,129.918541774449 L729.7262146693772,343.68145822555095 Q731.0,353.59999999999997,741.0,353.59999999999997 L956.0,353.59999999999997" stroke="#206E82" stroke-width="3.0" fill="none" stroke-linecap="round" stroke-linejoin="round" class="metro-line-primary" data-line-id="primary" />
+<path d="M956.0,353.59999999999997 L1016.0,353.59999999999997" stroke="#206E82" stroke-width="3.0" stroke-linecap="round" class="metro-line-primary" data-line-id="primary" />
+<path d="M1409.0,353.59999999999997 L1469.0,353.59999999999997" stroke="#206E82" stroke-width="3.0" stroke-linecap="round" class="metro-line-primary" data-line-id="primary" />
+<path d="M1469.0,353.59999999999997 L1529.0,353.59999999999997" stroke="#206E82" stroke-width="3.0" stroke-linecap="round" class="metro-line-primary" data-line-id="primary" />
+<path d="M1529.0,353.59999999999997 L1589.0,353.59999999999997" stroke="#206E82" stroke-width="3.0" stroke-linecap="round" class="metro-line-primary" data-line-id="primary" />
+<path d="M534.0,353.59999999999997 L592.0,353.59999999999997" stroke="#206E82" stroke-width="3.0" stroke-linecap="round" class="metro-line-primary" data-line-id="primary" />
+<path d="M632.0,353.59999999999997 L956.0,353.59999999999997" stroke="#206E82" stroke-width="3.0" stroke-linecap="round" class="metro-line-primary" data-line-id="primary" />
+<path d="M1016.0,353.59999999999997 L1185.0,353.59999999999997" stroke="#206E82" stroke-width="3.0" stroke-linecap="round" class="metro-line-primary" data-line-id="primary" />
+<path d="M1225.0,353.59999999999997 L1409.0,353.59999999999997" stroke="#206E82" stroke-width="3.0" stroke-linecap="round" class="metro-line-primary" data-line-id="primary" />
+<path d="M592.0,353.59999999999997 L632.0,353.59999999999997" stroke="#206E82" stroke-width="3.0" stroke-linecap="round" class="metro-line-primary" data-line-id="primary" />
+<path d="M1185.0,353.59999999999997 L1225.0,353.59999999999997" stroke="#206E82" stroke-width="3.0" stroke-linecap="round" class="metro-line-primary" data-line-id="primary" />
+<g class="nf-metro-station-group" data-node-id="dna" data-node-cx="203.5" data-node-cy="353.6" data-node-r="5.0" data-node-groups="primary" data-node-region="translate" data-node-w="10.0" data-node-h="10.0" data-node-rx="5.0">
+<rect x="198.5" y="348.59999999999997" width="10.0" height="10.0" fill="#ffffff" stroke="#333333" stroke-width="1.5" class="nf-metro-station" data-station-id="dna" data-station-lines="primary" data-station-label="dna" data-section-id="translate" data-section-name="DNA to peptides" />
+<g data-station-id="dna">
+<path d="M166.5,337.59999999999997 L184.5,337.59999999999997 L192.5,345.59999999999997 L192.5,367.59999999999997 Q192.5,369.59999999999997,190.5,369.59999999999997 L166.5,369.59999999999997 Q164.5,369.59999999999997,164.5,367.59999999999997 L164.5,339.59999999999997 Q164.5,337.59999999999997,166.5,337.59999999999997 Z" fill="#ffffff" stroke="#333333" stroke-width="1.5" stroke-linejoin="round" />
+<path d="M184.5,337.59999999999997 L184.5,345.59999999999997 L192.5,345.59999999999997 Z" fill="#333333" opacity="0.15" stroke="none" />
+<path d="M184.5,337.59999999999997 L184.5,345.59999999999997 L192.5,345.59999999999997" fill="none" stroke="#333333" stroke-width="0.8999999999999999" />
+<text x="178.5" y="354.79999999999995" font-size="7.5" fill="#000000" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-weight="bold" text-anchor="middle" dy="0.3em">FASTA</text>
+<text x="178.5" y="373.59999999999997" font-size="7.8" fill="#333333" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-weight="bold" text-anchor="middle" dominant-baseline="hanging" class="nf-metro-station-label">DNA extensions</text>
+</g>
+</g>
+<g class="nf-metro-station-group" data-node-id="tr" data-node-cx="263.5" data-node-cy="353.6" data-node-r="5.0" data-node-groups="primary" data-node-region="translate" data-node-w="10.0" data-node-h="10.0" data-node-rx="5.0">
+<rect x="258.5" y="348.59999999999997" width="10.0" height="10.0" rx="5.0" ry="5.0" fill="#ffffff" stroke="#333333" stroke-width="1.5" class="nf-metro-station" data-station-id="tr" data-station-lines="primary" data-station-label="Six-frame translation / split stops / minimum 20 aa" data-section-id="translate" data-section-name="DNA to peptides" />
+</g>
+<g class="nf-metro-station-group" data-node-id="peptide" data-node-cx="534.0" data-node-cy="353.6" data-node-r="5.0" data-node-groups="primary" data-node-region="translate" data-node-w="10.0" data-node-h="10.0" data-node-rx="5.0">
+<rect x="529.0" y="348.59999999999997" width="10.0" height="10.0" fill="#ffffff" stroke="#333333" stroke-width="1.5" class="nf-metro-station" data-station-id="peptide" data-station-lines="primary" data-station-label="peptide" data-section-id="translate" data-section-name="DNA to peptides" />
+<g data-station-id="peptide">
+<path d="M547.0,337.59999999999997 L565.0,337.59999999999997 L573.0,345.59999999999997 L573.0,367.59999999999997 Q573.0,369.59999999999997,571.0,369.59999999999997 L547.0,369.59999999999997 Q545.0,369.59999999999997,545.0,367.59999999999997 L545.0,339.59999999999997 Q545.0,337.59999999999997,547.0,337.59999999999997 Z" fill="#ffffff" stroke="#333333" stroke-width="1.5" stroke-linejoin="round" />
+<path d="M565.0,337.59999999999997 L565.0,345.59999999999997 L573.0,345.59999999999997 Z" fill="#333333" opacity="0.15" stroke="none" />
+<path d="M565.0,337.59999999999997 L565.0,345.59999999999997 L573.0,345.59999999999997" fill="none" stroke="#333333" stroke-width="0.8999999999999999" />
+<text x="559.0" y="354.79999999999995" font-size="7.5" fill="#000000" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-weight="bold" text-anchor="middle" dy="0.3em">FASTA</text>
+<text x="504.2" y="373.59999999999997" font-size="7.8" fill="#333333" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-weight="bold" text-anchor="middle" dominant-baseline="hanging" class="nf-metro-station-label">Peptide fragments; not complete proteins</text>
+</g>
+</g>
+<g class="nf-metro-station-group" data-node-id="member" data-node-cx="534.0" data-node-cy="295.2" data-node-r="5.0" data-node-groups="primary" data-node-region="translate" data-node-w="10.0" data-node-h="10.0" data-node-rx="5.0">
+<rect x="529.0" y="290.2" width="10.0" height="10.0" fill="#ffffff" stroke="#333333" stroke-width="1.5" class="nf-metro-station" data-station-id="member" data-station-lines="primary" data-station-label="member" data-section-id="translate" data-section-name="DNA to peptides" />
+<g data-station-id="member">
+<path d="M547.0,279.2 L565.0,279.2 L573.0,287.2 L573.0,309.2 Q573.0,311.2,571.0,311.2 L547.0,311.2 Q545.0,311.2,545.0,309.2 L545.0,281.2 Q545.0,279.2,547.0,279.2 Z" fill="#ffffff" stroke="#333333" stroke-width="1.5" stroke-linejoin="round" />
+<path d="M565.0,279.2 L565.0,287.2 L573.0,287.2 Z" fill="#333333" opacity="0.15" stroke="none" />
+<path d="M565.0,279.2 L565.0,287.2 L573.0,287.2" fill="none" stroke="#333333" stroke-width="0.8999999999999999" />
+<text x="559.0" y="296.4" font-size="7.5" fill="#000000" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-weight="bold" text-anchor="middle" dy="0.3em">TSV</text>
+<text x="534.23" y="315.2" font-size="7.8" fill="#333333" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-weight="bold" text-anchor="middle" dominant-baseline="hanging" class="nf-metro-station-label">Peptide-to-DNA coordinates</text>
+</g>
+</g>
+<g class="nf-metro-station-group" data-node-id="bot" data-node-cx="690.0" data-node-cy="236.8" data-node-r="5.0" data-node-groups="primary" data-node-region="sketch" data-node-w="10.0" data-node-h="10.0" data-node-rx="5.0">
+<rect x="685.0" y="231.79999999999998" width="10.0" height="10.0" fill="#ffffff" stroke="#333333" stroke-width="1.5" class="nf-metro-station" data-station-id="bot" data-station-lines="primary" data-station-label="bot" data-section-id="sketch" data-section-name="Matching query and reference settings" />
+<g data-station-id="bot">
+<path d="M653.0,220.79999999999998 L671.0,220.79999999999998 L679.0,228.79999999999998 L679.0,250.79999999999998 Q679.0,252.79999999999998,677.0,252.79999999999998 L653.0,252.79999999999998 Q651.0,252.79999999999998,651.0,250.79999999999998 L651.0,222.79999999999998 Q651.0,220.79999999999998,653.0,220.79999999999998 Z" fill="#ffffff" stroke="#333333" stroke-width="1.5" stroke-linejoin="round" />
+<path d="M671.0,220.79999999999998 L671.0,228.79999999999998 L679.0,228.79999999999998 Z" fill="#333333" opacity="0.15" stroke="none" />
+<path d="M671.0,220.79999999999998 L671.0,228.79999999999998 L679.0,228.79999999999998" fill="none" stroke="#333333" stroke-width="0.8999999999999999" />
+<text x="665.0" y="237.99999999999997" font-size="7.5" fill="#000000" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-weight="bold" text-anchor="middle" dy="0.3em">FASTA</text>
+<text x="713.365" y="256.79999999999995" font-size="7.8" fill="#333333" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-weight="bold" text-anchor="middle" dominant-baseline="hanging" class="nf-metro-station-label">Original Botryllus reference proteins</text>
+</g>
+</g>
+<g class="nf-metro-station-group" data-node-id="swiss" data-node-cx="690.0" data-node-cy="120.0" data-node-r="5.0" data-node-groups="primary" data-node-region="sketch" data-node-w="10.0" data-node-h="10.0" data-node-rx="5.0">
+<rect x="685.0" y="115.0" width="10.0" height="10.0" fill="#ffffff" stroke="#333333" stroke-width="1.5" class="nf-metro-station" data-station-id="swiss" data-station-lines="primary" data-station-label="swiss" data-section-id="sketch" data-section-name="Matching query and reference settings" />
+<g data-station-id="swiss">
+<path d="M653.0,104.0 L671.0,104.0 L679.0,112.0 L679.0,134.0 Q679.0,136.0,677.0,136.0 L653.0,136.0 Q651.0,136.0,651.0,134.0 L651.0,106.0 Q651.0,104.0,653.0,104.0 Z" fill="#ffffff" stroke="#333333" stroke-width="1.5" stroke-linejoin="round" />
+<path d="M671.0,104.0 L671.0,112.0 L679.0,112.0 Z" fill="#333333" opacity="0.15" stroke="none" />
+<path d="M671.0,104.0 L671.0,112.0 L679.0,112.0" fill="none" stroke="#333333" stroke-width="0.8999999999999999" />
+<text x="665.0" y="121.2" font-size="4.791666666666667" fill="#000000" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-weight="bold" text-anchor="middle" dy="0.3em">FASTA.gz</text>
+<text x="715.51" y="140.0" font-size="7.8" fill="#333333" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-weight="bold" text-anchor="middle" dominant-baseline="hanging" class="nf-metro-station-label">Reviewed Swiss-Prot reference proteins</text>
+</g>
+</g>
+<g class="nf-metro-station-group" data-node-id="sk" data-node-cx="956.0" data-node-cy="353.6" data-node-r="5.0" data-node-groups="primary" data-node-region="sketch" data-node-w="10.0" data-node-h="10.0" data-node-rx="5.0">
+<rect x="951.0" y="348.59999999999997" width="10.0" height="10.0" rx="5.0" ry="5.0" fill="#ffffff" stroke="#333333" stroke-width="1.5" class="nf-metro-station" data-station-id="sk" data-station-lines="primary" data-station-label="Sourmash 4.9.4 / protein k7 / Dayhoff k12 / HP k30" data-section-id="sketch" data-section-name="Matching query and reference settings" />
+</g>
+<g class="nf-metro-station-group" data-node-id="sig" data-node-cx="1016.0" data-node-cy="353.6" data-node-r="5.0" data-node-groups="primary" data-node-region="sketch" data-node-w="10.0" data-node-h="10.0" data-node-rx="5.0">
+<rect x="1011.0" y="348.59999999999997" width="10.0" height="10.0" fill="#ffffff" stroke="#333333" stroke-width="1.5" class="nf-metro-station" data-station-id="sig" data-station-lines="primary" data-station-label="sig" data-section-id="sketch" data-section-name="Matching query and reference settings" />
+<g data-station-id="sig">
+<path d="M1029.0,337.59999999999997 L1047.0,337.59999999999997 L1055.0,345.59999999999997 L1055.0,367.59999999999997 Q1055.0,369.59999999999997,1053.0,369.59999999999997 L1029.0,369.59999999999997 Q1027.0,369.59999999999997,1027.0,367.59999999999997 L1027.0,339.59999999999997 Q1027.0,337.59999999999997,1029.0,337.59999999999997 Z" fill="#ffffff" stroke="#333333" stroke-width="1.5" stroke-linejoin="round" />
+<path d="M1047.0,337.59999999999997 L1047.0,345.59999999999997 L1055.0,345.59999999999997 Z" fill="#333333" opacity="0.15" stroke="none" />
+<path d="M1047.0,337.59999999999997 L1047.0,345.59999999999997 L1055.0,345.59999999999997" fill="none" stroke="#333333" stroke-width="0.8999999999999999" />
+<text x="1041.0" y="354.79999999999995" font-size="5.476190476190476" fill="#000000" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-weight="bold" text-anchor="middle" dy="0.3em">SIG.zip</text>
+<text x="1041.0" y="373.59999999999997" font-size="7.8" fill="#333333" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-weight="bold" text-anchor="middle" dominant-baseline="hanging" class="nf-metro-station-label">Swiss-Prot scaled 5; Botryllus scaled 5, 10, 100</text>
+</g>
+</g>
+<g class="nf-metro-station-group" data-node-id="ss" data-node-cx="1409.0" data-node-cy="353.6" data-node-r="5.0" data-node-groups="primary" data-node-region="search" data-node-w="10.0" data-node-h="10.0" data-node-rx="5.0">
+<rect x="1404.0" y="348.59999999999997" width="10.0" height="10.0" rx="5.0" ry="5.0" fill="#ffffff" stroke="#333333" stroke-width="1.5" class="nf-metro-station" data-station-id="ss" data-station-lines="primary" data-station-label="Sourmash / Branchwater 0.9.15 manysearch" data-section-id="search" data-section-name="Protein retrieval" />
+</g>
+<g class="nf-metro-station-group" data-node-id="hits" data-node-cx="1469.0" data-node-cy="353.6" data-node-r="5.0" data-node-groups="primary" data-node-region="search" data-node-w="10.0" data-node-h="10.0" data-node-rx="5.0">
+<rect x="1464.0" y="348.59999999999997" width="10.0" height="10.0" fill="#ffffff" stroke="#333333" stroke-width="1.5" class="nf-metro-station" data-station-id="hits" data-station-lines="primary" data-station-label="hits" data-section-id="search" data-section-name="Protein retrieval" />
+<g data-station-id="hits">
+<path d="M1482.0,337.59999999999997 L1500.0,337.59999999999997 L1508.0,345.59999999999997 L1508.0,367.59999999999997 Q1508.0,369.59999999999997,1506.0,369.59999999999997 L1482.0,369.59999999999997 Q1480.0,369.59999999999997,1480.0,367.59999999999997 L1480.0,339.59999999999997 Q1480.0,337.59999999999997,1482.0,337.59999999999997 Z" fill="#ffffff" stroke="#333333" stroke-width="1.5" stroke-linejoin="round" />
+<path d="M1500.0,337.59999999999997 L1500.0,345.59999999999997 L1508.0,345.59999999999997 Z" fill="#333333" opacity="0.15" stroke="none" />
+<path d="M1500.0,337.59999999999997 L1500.0,345.59999999999997 L1508.0,345.59999999999997" fill="none" stroke="#333333" stroke-width="0.8999999999999999" />
+<text x="1494.0" y="354.79999999999995" font-size="7.5" fill="#000000" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-weight="bold" text-anchor="middle" dy="0.3em">CSV</text>
+<text x="1494.0" y="373.59999999999997" font-size="7.8" fill="#333333" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-weight="bold" text-anchor="middle" dominant-baseline="hanging" class="nf-metro-station-label">Sourmash containment matches</text>
+</g>
+</g>
+<g class="nf-metro-station-group" data-node-id="ev" data-node-cx="1529.0" data-node-cy="353.6" data-node-r="5.0" data-node-groups="primary" data-node-region="search" data-node-w="10.0" data-node-h="10.0" data-node-rx="5.0">
+<rect x="1524.0" y="348.59999999999997" width="10.0" height="10.0" rx="5.0" ry="5.0" fill="#ffffff" stroke="#333333" stroke-width="1.5" class="nf-metro-station" data-station-id="ev" data-station-lines="primary" data-station-label="Validate sampled hashes / preserve no hits" data-section-id="search" data-section-name="Protein retrieval" />
+</g>
+<g class="nf-metro-station-group" data-node-id="evidence" data-node-cx="1589.0" data-node-cy="353.6" data-node-r="5.0" data-node-groups="primary" data-node-region="search" data-node-w="10.0" data-node-h="10.0" data-node-rx="5.0">
+<rect x="1584.0" y="348.59999999999997" width="10.0" height="10.0" fill="#ffffff" stroke="#333333" stroke-width="1.5" class="nf-metro-station" data-station-id="evidence" data-station-lines="primary" data-station-label="evidence" data-section-id="search" data-section-name="Protein retrieval" />
+<g data-station-id="evidence">
+<path d="M1602.0,337.59999999999997 L1620.0,337.59999999999997 L1628.0,345.59999999999997 L1628.0,367.59999999999997 Q1628.0,369.59999999999997,1626.0,369.59999999999997 L1602.0,369.59999999999997 Q1600.0,369.59999999999997,1600.0,367.59999999999997 L1600.0,339.59999999999997 Q1600.0,337.59999999999997,1602.0,337.59999999999997 Z" fill="#ffffff" stroke="#333333" stroke-width="1.5" stroke-linejoin="round" />
+<path d="M1620.0,337.59999999999997 L1620.0,345.59999999999997 L1628.0,345.59999999999997 Z" fill="#333333" opacity="0.15" stroke="none" />
+<path d="M1620.0,337.59999999999997 L1620.0,345.59999999999997 L1628.0,345.59999999999997" fill="none" stroke="#333333" stroke-width="0.8999999999999999" />
+<text x="1614.0" y="354.79999999999995" font-size="7.5" fill="#000000" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-weight="bold" text-anchor="middle" dy="0.3em">TSV</text>
+<text x="1614.0" y="373.59999999999997" font-size="7.8" fill="#333333" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-weight="bold" text-anchor="middle" dominant-baseline="hanging" class="nf-metro-station-label">Match evidence, ties, empty queries</text>
+</g>
+</g>
+<g class="nf-metro-station-group" data-node-id="botcopy" data-node-cx="167.5" data-node-cy="503.6" data-node-r="5.0" data-node-groups="followup" data-node-region="annotation" data-node-w="10.0" data-node-h="10.0" data-node-rx="5.0">
+<rect x="162.5" y="498.6" width="10.0" height="10.0" fill="#ffffff" stroke="#333333" stroke-width="1.5" class="nf-metro-station" data-station-id="botcopy" data-station-lines="followup" data-station-label="botcopy" data-section-id="annotation" data-section-name="Separate follow-up evidence" />
+<g data-station-id="botcopy">
+<path d="M130.5,487.6 L148.5,487.6 L156.5,495.6 L156.5,517.6 Q156.5,519.6,154.5,519.6 L130.5,519.6 Q128.5,519.6,128.5,517.6 L128.5,489.6 Q128.5,487.6,130.5,487.6 Z" fill="#ffffff" stroke="#333333" stroke-width="1.5" stroke-linejoin="round" />
+<path d="M148.5,487.6 L148.5,495.6 L156.5,495.6 Z" fill="#333333" opacity="0.15" stroke="none" />
+<path d="M148.5,487.6 L148.5,495.6 L156.5,495.6" fill="none" stroke="#333333" stroke-width="0.8999999999999999" />
+<text x="142.5" y="504.8" font-size="7.5" fill="#000000" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-weight="bold" text-anchor="middle" dy="0.3em">FASTA</text>
+<text x="142.5" y="523.6" font-size="7.8" fill="#333333" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-weight="bold" text-anchor="middle" dominant-baseline="hanging" class="nf-metro-station-label">Same original Botryllus proteins</text>
+</g>
+</g>
+<g class="nf-metro-station-group" data-node-id="mask" data-node-cx="227.5" data-node-cy="503.6" data-node-r="5.0" data-node-groups="followup" data-node-region="annotation" data-node-w="10.0" data-node-h="10.0" data-node-rx="5.0">
+<rect x="222.5" y="498.6" width="10.0" height="10.0" rx="5.0" ry="5.0" fill="#ffffff" stroke="#333333" stroke-width="1.5" class="nf-metro-station" data-station-id="mask" data-station-lines="followup" data-station-label="Search copy only / unsupported residue to X" data-section-id="annotation" data-section-name="Separate follow-up evidence" />
+</g>
+<g class="nf-metro-station-group" data-node-id="map" data-node-cx="541.0" data-node-cy="503.6" data-node-r="5.0" data-node-groups="followup" data-node-region="annotation" data-node-w="10.0" data-node-h="10.0" data-node-rx="5.0">
+<rect x="536.0" y="498.6" width="10.0" height="10.0" fill="#ffffff" stroke="#333333" stroke-width="1.5" class="nf-metro-station" data-station-id="map" data-station-lines="followup" data-station-label="map" data-section-id="annotation" data-section-name="Separate follow-up evidence" />
+<g data-station-id="map">
+<path d="M554.0,487.6 L572.0,487.6 L580.0,495.6 L580.0,517.6 Q580.0,519.6,578.0,519.6 L554.0,519.6 Q552.0,519.6,552.0,517.6 L552.0,489.6 Q552.0,487.6,554.0,487.6 Z" fill="#ffffff" stroke="#333333" stroke-width="1.5" stroke-linejoin="round" />
+<path d="M572.0,487.6 L572.0,495.6 L580.0,495.6 Z" fill="#333333" opacity="0.15" stroke="none" />
+<path d="M572.0,487.6 L572.0,495.6 L580.0,495.6" fill="none" stroke="#333333" stroke-width="0.8999999999999999" />
+<text x="566.0" y="504.8" font-size="7.5" fill="#000000" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-weight="bold" text-anchor="middle" dy="0.3em">TSV</text>
+<text x="566.0" y="523.6" font-size="7.8" fill="#333333" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-weight="bold" text-anchor="middle" dominant-baseline="hanging" class="nf-metro-station-label">Explicit masked reference positions</text>
+</g>
+</g>
+<g class="nf-metro-station-group" data-node-id="al" data-node-cx="541.0" data-node-cy="562.0" data-node-r="5.0" data-node-groups="followup" data-node-region="annotation" data-node-w="10.0" data-node-h="10.0" data-node-rx="5.0">
+<rect x="536.0" y="557.0" width="10.0" height="10.0" rx="5.0" ry="5.0" fill="#ffffff" stroke="#333333" stroke-width="1.5" class="nf-metro-station" data-station-id="al" data-station-lines="followup" data-station-label="DIAMOND 2.1.23" data-section-id="annotation" data-section-name="Separate follow-up evidence" />
+</g>
+<g class="nf-metro-station-group" data-node-id="hm" data-node-cx="541.0" data-node-cy="620.4" data-node-r="5.0" data-node-groups="followup" data-node-region="annotation" data-node-w="10.0" data-node-h="10.0" data-node-rx="5.0">
+<rect x="536.0" y="615.4" width="10.0" height="10.0" rx="5.0" ry="5.0" fill="#ffffff" stroke="#333333" stroke-width="1.5" class="nf-metro-station" data-station-id="hm" data-station-lines="followup" data-station-label="HMMER 3.4 / Pfam" data-section-id="annotation" data-section-name="Separate follow-up evidence" />
+</g>
+<g class="nf-metro-station-group" data-node-id="diamond" data-node-cx="601.0" data-node-cy="562.0" data-node-r="5.0" data-node-groups="followup" data-node-region="annotation" data-node-w="10.0" data-node-h="10.0" data-node-rx="5.0">
+<rect x="596.0" y="557.0" width="10.0" height="10.0" fill="#ffffff" stroke="#333333" stroke-width="1.5" class="nf-metro-station" data-station-id="diamond" data-station-lines="followup" data-station-label="diamond" data-section-id="annotation" data-section-name="Separate follow-up evidence" />
+<g data-station-id="diamond">
+<path d="M614.0,546.0 L632.0,546.0 L640.0,554.0 L640.0,576.0 Q640.0,578.0,638.0,578.0 L614.0,578.0 Q612.0,578.0,612.0,576.0 L612.0,548.0 Q612.0,546.0,614.0,546.0 Z" fill="#ffffff" stroke="#333333" stroke-width="1.5" stroke-linejoin="round" />
+<path d="M632.0,546.0 L632.0,554.0 L640.0,554.0 Z" fill="#333333" opacity="0.15" stroke="none" />
+<path d="M632.0,546.0 L632.0,554.0 L640.0,554.0" fill="none" stroke="#333333" stroke-width="0.8999999999999999" />
+<text x="626.0" y="563.2" font-size="7.5" fill="#000000" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-weight="bold" text-anchor="middle" dy="0.3em">TSV</text>
+<text x="618.39" y="582.0" font-size="7.8" fill="#333333" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-weight="bold" text-anchor="middle" dominant-baseline="hanging" class="nf-metro-station-label">DIAMOND alignments</text>
+</g>
+</g>
+<g class="nf-metro-station-group" data-node-id="pfam" data-node-cx="601.0" data-node-cy="620.4" data-node-r="5.0" data-node-groups="followup" data-node-region="annotation" data-node-w="10.0" data-node-h="10.0" data-node-rx="5.0">
+<rect x="596.0" y="615.4" width="10.0" height="10.0" fill="#ffffff" stroke="#333333" stroke-width="1.5" class="nf-metro-station" data-station-id="pfam" data-station-lines="followup" data-station-label="pfam" data-section-id="annotation" data-section-name="Separate follow-up evidence" />
+<g data-station-id="pfam">
+<path d="M614.0,604.4 L632.0,604.4 L640.0,612.4 L640.0,634.4 Q640.0,636.4,638.0,636.4 L614.0,636.4 Q612.0,636.4,612.0,634.4 L612.0,606.4 Q612.0,604.4,614.0,604.4 Z" fill="#ffffff" stroke="#333333" stroke-width="1.5" stroke-linejoin="round" />
+<path d="M632.0,604.4 L632.0,612.4 L640.0,612.4 Z" fill="#333333" opacity="0.15" stroke="none" />
+<path d="M632.0,604.4 L632.0,612.4 L640.0,612.4" fill="none" stroke="#333333" stroke-width="0.8999999999999999" />
+<text x="626.0" y="621.6" font-size="6.388888888888889" fill="#000000" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-weight="bold" text-anchor="middle" dy="0.3em">DOMTBL</text>
+<text x="599.085" y="640.4" font-size="7.8" fill="#333333" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-weight="bold" text-anchor="middle" dominant-baseline="hanging" class="nf-metro-station-label">HMMER / Pfam domain matches</text>
+</g>
+</g>
+<text x="1409.0" y="292.79999999999995" font-size="13.0" fill="#f5f5f5" stroke="#f5f5f5" stroke-width="3.0" stroke-linejoin="round" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-weight="bold" aria-hidden="true" class="nf-metro-label-halo" text-anchor="middle" dominant-baseline="auto"><tspan x="1409.0" dy="0em">Sourmash /</tspan><tspan x="1409.0" dy="1.2em">Branchwater</tspan><tspan x="1409.0" dy="1.2em">0.9.15</tspan><tspan x="1409.0" dy="1.2em">manysearch</tspan></text>
+<text x="1409.0" y="292.79999999999995" font-size="13.0" fill="#333333" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-weight="bold" text-anchor="middle" dominant-baseline="auto" data-station-id="ss" class="nf-metro-station-label"><tspan x="1409.0" dy="0em">Sourmash /</tspan><tspan x="1409.0" dy="1.2em">Branchwater</tspan><tspan x="1409.0" dy="1.2em">0.9.15</tspan><tspan x="1409.0" dy="1.2em">manysearch</tspan></text>
+<text x="263.5" y="339.59999999999997" font-size="13.0" fill="#f5f5f5" stroke="#f5f5f5" stroke-width="3.0" stroke-linejoin="round" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-weight="bold" aria-hidden="true" class="nf-metro-label-halo" text-anchor="middle" dominant-baseline="auto">Six-frame translation / split stops / minimum 20 aa</text>
+<text x="263.5" y="339.59999999999997" font-size="13.0" fill="#333333" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-weight="bold" text-anchor="middle" dominant-baseline="auto" data-station-id="tr" class="nf-metro-station-label">Six-frame translation / split stops / minimum 20 aa</text>
+<text x="956.0" y="339.59999999999997" font-size="13.0" fill="#f5f5f5" stroke="#f5f5f5" stroke-width="3.0" stroke-linejoin="round" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-weight="bold" aria-hidden="true" class="nf-metro-label-halo" text-anchor="middle" dominant-baseline="auto">Sourmash 4.9.4 / protein k7 / Dayhoff k12 / HP k30</text>
+<text x="956.0" y="339.59999999999997" font-size="13.0" fill="#333333" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-weight="bold" text-anchor="middle" dominant-baseline="auto" data-station-id="sk" class="nf-metro-station-label">Sourmash 4.9.4 / protein k7 / Dayhoff k12 / HP k30</text>
+<text x="227.5" y="489.6" font-size="13.0" fill="#f5f5f5" stroke="#f5f5f5" stroke-width="3.0" stroke-linejoin="round" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-weight="bold" aria-hidden="true" class="nf-metro-label-halo" text-anchor="middle" dominant-baseline="auto">Search copy only / unsupported residue to X</text>
+<text x="227.5" y="489.6" font-size="13.0" fill="#333333" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-weight="bold" text-anchor="middle" dominant-baseline="auto" data-station-id="mask" class="nf-metro-station-label">Search copy only / unsupported residue to X</text>
+<text x="1529.0" y="282.59999999999997" font-size="13.0" fill="#f5f5f5" stroke="#f5f5f5" stroke-width="3.0" stroke-linejoin="round" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-weight="bold" aria-hidden="true" class="nf-metro-label-halo" text-anchor="middle" dominant-baseline="auto"><tspan x="1529.0" dy="0em">Validate</tspan><tspan x="1529.0" dy="1.2em">sampled hashes</tspan><tspan x="1529.0" dy="1.2em">/ preserve no</tspan><tspan x="1529.0" dy="1.2em">hits</tspan></text>
+<text x="1529.0" y="282.59999999999997" font-size="13.0" fill="#333333" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-weight="bold" text-anchor="middle" dominant-baseline="auto" data-station-id="ev" class="nf-metro-station-label"><tspan x="1529.0" dy="0em">Validate</tspan><tspan x="1529.0" dy="1.2em">sampled hashes</tspan><tspan x="1529.0" dy="1.2em">/ preserve no</tspan><tspan x="1529.0" dy="1.2em">hits</tspan></text>
+<text x="541.0" y="573.0" font-size="13.0" fill="#f5f5f5" stroke="#f5f5f5" stroke-width="3.0" stroke-linejoin="round" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-weight="bold" aria-hidden="true" class="nf-metro-label-halo" text-anchor="middle" dominant-baseline="hanging">DIAMOND 2.1.23</text>
+<text x="541.0" y="573.0" font-size="13.0" fill="#333333" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-weight="bold" text-anchor="middle" dominant-baseline="hanging" data-station-id="al" class="nf-metro-station-label">DIAMOND 2.1.23</text>
+<text x="533.9" y="631.4" font-size="13.0" fill="#f5f5f5" stroke="#f5f5f5" stroke-width="3.0" stroke-linejoin="round" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-weight="bold" aria-hidden="true" class="nf-metro-label-halo" text-anchor="middle" dominant-baseline="hanging">HMMER 3.4 / Pfam</text>
+<text x="533.9" y="631.4" font-size="13.0" fill="#333333" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-weight="bold" text-anchor="middle" dominant-baseline="hanging" data-station-id="hm" class="nf-metro-station-label">HMMER 3.4 / Pfam</text>
+</g></svg>

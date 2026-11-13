@@ -1,0 +1,13 @@
+{
+  "threshold": 9.083180142153209,
+  "n_target": 15416,
+  "n_decoy": 770,
+  "nofit": false,
+  "label": "kmerseek.whole.w10.funcgroups8_k8_s1",
+  "calls_total": 167736307,
+  "decoy_calls_total": 78124642,
+  "max_decoy_rate": 0.05,
+  "features_found": 442,
+  "features_found_aligned": 1411,
+  "features_total": 7174
+}

@@ -1,0 +1,4 @@
+dataset	comparison	kmers	headline	held_out_auc	p	swaps	median_auc_swapped	highest_auc_swapped	people_post_above_pre	people	people_p	auc_kmers_chosen_from_everyone	kmers_tested	kmers_below_fdr_all_samples	fewest_probe_sets_behind	most_probe_sets_behind
+GSE28998	main	100	False	1.000	0.0469	127	0.469	1.000	7	7	0.0781	1.000	9656563	25884	3	12
+GSE28998	main	1000	True	1.000	0.0156	127	0.469	1.000	7	7	0.0469	1.000	9656563	25884	111	777
+GSE28998	main	10000	False	1.000	0.0156	127	0.490	1.000	7	7	0.0625	1.000	9656563	25884	1677	3122

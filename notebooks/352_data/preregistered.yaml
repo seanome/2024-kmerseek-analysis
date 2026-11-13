@@ -1,0 +1,168 @@
+# Notebook 352: how kmerseek index build and query time grow with database size.
+#
+# Written and committed on 2026-10-20, before any data for this experiment was downloaded,
+# built, searched or loaded. Nothing below may change after this commit. If a choice turns
+# out to be badly made, the report says so and still gives the answer under this rule.
+#
+# Read before writing this file, for sizing the jobs only (not results of this test):
+# earlier Sherlock runs of the same kmerseek setting on Swiss-Prot-sized databases
+# (invertebrate dark-set run ladder-0.4-midi, image olgabot/kmerseek:0.4.0-rc5) and
+# notebook 239 (laptop, Swiss-Prot, older engine). They appear in the PR only as the source
+# of the predicted memory and time asks, labelled as predictions.
+
+question: >
+  When the database kmerseek searches grows from 1 to 10 to 100 billion amino acids, does
+  the time to answer one query grow in proportion to the index size (linearly), or faster?
+
+decision: >
+  Whether the paper and every description of kmerseek may say that it scales to
+  petabase-sized databases. The rule below decides it. A second decision follows from the
+  same numbers: how large a database the next experiments can search within a two-day
+  compute budget.
+
+kmerseek_setting:
+  # One setting. "A kmerseek setting" means one combination of alphabet, k, scaled,
+  # extension and mask; every result names it.
+  name: hp_pbotc_1st_ed2.k19.s1.extend-c1.59.lcfalse
+  alphabet: hp_pbotc_1st_ed2   # hydrophobic/polar, two letters; the paper's best HP alphabet
+  ksize: 19                    # the paper's chosen k for this alphabet (set 2026-08-11)
+  scaled: 1                    # every k-mer kept, as in all of Olga's pipelines
+  extension:
+    extend_mismatch_penalty: 1.59  # C_opt for hp_pbotc_1st_ed2 (assets/kappa_by_alphabet.tsv)
+    extend_xdrop: 6.36             # 4 x C, as in the dark-set runs
+    chain_max_gap: 30
+    chain_max_shift: 10
+    # The E-value fit (Karlin-Altschul lambda and K) is NOT run at index time
+    # (--ka-queries 0): on Swiss-Prot it took 24 min for 500 queries and would take days at
+    # 100 billion residues. Every search passes --ka-k 0.00020260135043837733, the K fitted
+    # for this alphabet, k and penalty on Swiss-Prot minus Chromadorea (dark-set index
+    # minus_Chromadorea.hp_pbotc_1st_ed2.k19.lcfalse, ka_survival.C1.59.csv). With --ka-k the
+    # search uses the closed-form lambda per pair. This changes E-values, not which regions
+    # are found or written, so it does not change the work being timed.
+  mask: false                  # --remove-low-complexity off, as in the dark-set runs
+  search_filters:              # the dark-set search filters, unchanged
+    threshold: 0.0
+    min_shared_kmers: 2
+    max_query_pvalue: 0.05
+    min_region_score: 1.3
+  kmerseek_version: "kmerseek 0.4.0, image docker.io/olgabot/kmerseek:0.4.0-rc5 (the image the dark-set sizing history was measured on); the job records the image's sha256"
+
+database:
+  source: UniParc active sequences, UniProt release 2026_03
+  url: https://ftp.uniprot.org/pub/databases/uniprot/current_release/uniparc/fasta/active/
+  files: uniparc_active_p1.fasta.gz ... uniparc_active_p200.fasta.gz (200 files), each checked against the md5 in that folder's RELEASE.metalink
+  why_uniparc: >
+    UniRef100 2026_03 has 221,143,266 sequences, likely under 100 billion residues, so one
+    source would not cover all three sizes. UniParc active has 1,128,904,654 sequences
+    (UniProt relnotes 2026_03). If UniParc active holds fewer residues than the largest size
+    asked for, that size is not built and the report says so.
+  size_unit: >
+    "1 GB of protein sequence" means 1,000,000,000 amino-acid residues (one byte each in
+    FASTA). Headers and line breaks are not counted. The residues actually written to each
+    subset are counted and reported.
+  sizes_residues: [1_000_000_000, 10_000_000_000, 100_000_000_000]
+  nesting: >
+    Each sequence gets a number u in [0, 1): the first 8 bytes of BLAKE2b(UPI accession,
+    key "nb352-subset") read as an unsigned integer, divided by 2^64. Sequences are taken in
+    order of increasing u until the residue count reaches the target size. So the 1 GB set
+    is inside the 10 GB set, which is inside the 100 GB set, and the sets differ only in how
+    many sequences they hold, not in how those sequences were chosen. The cut-off is found
+    from a histogram of u (2^24 bins, weighted by sequence length), so a subset can overshoot
+    its target by at most the residues in one bin; the real count is reported.
+  headers: each subset FASTA keeps only ">UPI..." as the header line
+
+queries:
+  count: 1000
+  chosen_from: the 1 GB subset, so every query is in all three databases
+  rule: >
+    Among sequences of the 1 GB subset with at least 19 residues (k; a shorter one has no
+    k-mer), the 1,000 with the lowest value of a second hash, BLAKE2b(UPI accession, key
+    "nb352-queries"). No other filter on length or content. The same 1,000 sequences, in the
+    same order, are searched at every size.
+
+machine:
+  cluster: Stanford Sherlock, partition hns, account ayeletv
+  node: >
+    One whole node per size (sbatch --exclusive), so no other job runs on it. Node type
+    fixed for all sizes: AMD EPYC 7742, 128 cores, 1,024 GB memory, 3 TB node-local SSD,
+    no GPU (--constraint "CPU_SKU:7742&NO_GPU"; nine such hns nodes on 2026-10-20).
+  local_disk: >
+    The subset FASTA is copied to $L_SCRATCH_JOB (the node's own SSD, purged when the job
+    ends) before the build starts; the index is built and searched there. The copy is not
+    part of the build time.
+  cpu_only: >
+    No GPU anywhere. The node constraint excludes GPU nodes, the job asserts that
+    CUDA_VISIBLE_DEVICES is empty and that no GPU device is visible, apptainer runs without
+    --nv, and the Python code asserts that no GPU library is loaded. kmerseek has no GPU code.
+
+measurements:
+  index_build:
+    command: kmerseek index (the setting above, --ka-queries 0), all 128 cores
+    wall_time: seconds from process start to exit, measured by the parent process
+    peak_memory: maximum resident set size of the kmerseek process (os.wait4 ru_maxrss)
+    index_size_on_disk: apparent bytes of the index directory (du -sb), also allocated bytes (du -sk)
+  queries:
+    how: >
+      Each query is its own kmerseek search process (one-sequence FASTA). 16 run at a time,
+      each with RAYON_NUM_THREADS=8, so the 128 cores are used and no core runs two
+      threads. The same 16 x 8 layout at every size. Queries start in the fixed order above.
+      The search output goes to a pipe that counts its bytes and lines and discards them,
+      so disk writes of output are not timed; formatting the output is.
+    per_query: wall seconds (process start to exit, includes opening the index), peak RSS, output bytes and lines, exit status
+    summary: median and 95th percentile of per-query wall seconds over the 1,000 queries
+    page_cache: >
+      The index is searched right after it is built, and the operating system may hold some
+      of its files in memory. Caches are not dropped (that needs root). At sizes where the
+      index is larger than the node's memory this matters more; the report states the index
+      size next to the node memory.
+    known_bias: >
+      Opening the index is a fixed cost in every query's time. It makes small databases look
+      relatively slower and pulls the fitted exponent down. Not corrected.
+
+analysis:
+  fit: >
+    Ordinary least squares of log10(median per-query wall seconds) on log10(index size on
+    disk, bytes), over the three measured sizes. The slope is the fitted exponent b. Its
+    95% interval is b +/- t(0.975, df = 1) x SE(b), t = 12.706. This is arithmetic on three
+    points and is labelled so in the figure caption and the report.
+  three_points_warning: >
+    With three points there is one degree of freedom left, so the 95% interval is about 13
+    standard errors wide on each side. Unless the three points lie almost exactly on a line,
+    the interval will include 1, and the rule cannot fire. That outcome does not show the
+    growth is linear; it shows three points cannot tell.
+  secondary_no_rule: same fit for the 95th percentile, and for build wall time and build peak memory against residues; reported, not tested
+  significantly_above_1: lower bound of the 95% interval of b is greater than 1
+
+rule:
+  fires_if: lower bound of the 95% interval of the fitted exponent b (median query time against index size) > 1
+  if_fires: >
+    Query time grows faster than linearly in index size over the measured range. The
+    petabase claim is not supported and is removed from every description of the method
+    (README, paper text, talks, landing page) until it is measured directly. The report
+    says this plainly.
+  if_not: >
+    The rule does not fire. The report gives b and its interval, says whether b itself is
+    above 1, and says that three points cannot show the growth is linear.
+  extrapolation: >
+    Any sentence about petabase-scale behaviour is extrapolation, is written as its own
+    sentence, names the three measured sizes, and never sits in a table column with
+    measured values.
+
+budget:
+  limit: 48 hours of wall time, summed over every job of this experiment (setup included)
+  running_total: every job adds its wall time to $WORK/budget.tsv and prints the total so far
+  gate: >
+    Sizes run in order 1, 10, then the third. Before the third, a gate job predicts its
+    build and query time as (measured 10 GB wall time) x (size ratio), a linear prediction,
+    times 1.2, and its memory and disk the same way. The third size is the largest of
+    100, 50, 30 and 20 billion residues whose prediction fits the remaining budget, 950 GB of
+    memory and 2.8 TB of local disk. If none fits, no third size runs and the report has two
+    points and no fit. The gate's predictions are logged as predictions.
+  bias_of_gate: >
+    The gate uses the 10 GB measurement, so a larger measured time makes a smaller third
+    size more likely. The third size is chosen before it is measured and the fit uses
+    measured values only.
+
+failure: >
+  A job that fails is reported with its cause. A failed size is not replaced by an
+  estimate; it is missing from the fit.
