@@ -97,3 +97,29 @@ def shuffle_around_fixed(seq: str, rng: random.Random, fixed: str = "C") -> str:
     rng.shuffle(movable)
     moved = iter(movable)
     return "".join(r if r in keep else next(moved) for r in seq)
+
+
+# Same function as full_shuffle under the name the region E-value calibration run
+# (notebook 344, make_decoys.py) used when both were written on separate branches.
+# One body, two names, so a decoy is the same whichever name a caller imports.
+composition_shuffle = full_shuffle
+
+
+def window_shuffle(seq: str, rng: random.Random, window: int = 10) -> str:
+    """`seq` with its residues shuffled inside each non-overlapping `window`-residue
+    stretch, counted from the first residue (the last stretch may be shorter).
+
+    Each stretch keeps its residues, so its mean hydrophobicity stays where it was, and a
+    low-complexity run longer than `window` stays low-complexity. A stronger null than
+    `dipeptide_shuffle`. The code is the `window_shuffle` of
+    nextflow-runs/regions-index-pilot/bin/make_window_decoys.py (PR 114), which notebook
+    290 (PR 134) also copied.
+    """
+    if window < 1:
+        raise ValueError(f"window must be at least 1, got {window}")
+    out = []
+    for i in range(0, len(seq), window):
+        w = list(seq[i : i + window])
+        rng.shuffle(w)
+        out.extend(w)
+    return "".join(out)

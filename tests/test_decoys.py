@@ -10,9 +10,11 @@ import pytest
 REPO = Path(__file__).parents[1]
 sys.path.insert(0, str(REPO / "nextflow-runs" / "shared"))
 from decoys import (  # noqa: E402
+    composition_shuffle,
     dipeptide_shuffle,
     full_shuffle,
     shuffle_around_fixed,
+    window_shuffle,
 )
 
 FASTA = REPO / "data" / "fig1_ced9_bcl2" / "ced9_P41958_bcl2_P10415.fasta"
@@ -84,6 +86,53 @@ def test_fixed_seed_gives_fixed_output(seed):
     assert dipeptide_shuffle(BCL2, random.Random(seed)) == BCL2_SHUFFLED[seed]
 
 
+@pytest.mark.parametrize("seq", [BCL2, CED9, "AAAAB"])
+@pytest.mark.parametrize("seed", range(5))
+def test_composition_shuffle_keeps_only_the_residue_counts(seq, seed):
+    assert Counter(composition_shuffle(seq, random.Random(seed))) == Counter(seq)
+
+
+def test_composition_shuffle_breaks_pairs_dipeptide_shuffle_keeps():
+    """On BCL2, 20 plain shuffles never keep every adjacent pair count."""
+    for seed in range(20):
+        assert pair_counts(
+            composition_shuffle(BCL2, random.Random(seed))
+        ) != pair_counts(BCL2)
+
+
+@pytest.mark.parametrize("seq", [BCL2, CED9, "MKKLLPTAAAGLLLLAAQPAMA"])
+@pytest.mark.parametrize("window", [1, 10, 37])
+def test_window_shuffle_keeps_each_window(seq, window):
+    shuffled = window_shuffle(seq, random.Random(0), window)
+    assert len(shuffled) == len(seq)
+    for i in range(0, len(seq), window):
+        assert Counter(shuffled[i : i + window]) == Counter(seq[i : i + window])
+
+
+def test_window_of_one_changes_nothing():
+    assert window_shuffle(BCL2, random.Random(0), 1) == BCL2
+
+
+def test_window_shuffle_reorders_bcl2():
+    assert window_shuffle(BCL2, random.Random(0), 10) != BCL2
+
+
+def test_window_shuffle_matches_pr114_copy():
+    """Same draws as the PR 114 / PR 134 copy, which shuffles a list per window."""
+    rng = random.Random(7)
+    expected = []
+    for i in range(0, len(BCL2), 10):
+        w = list(BCL2[i : i + 10])
+        rng.shuffle(w)
+        expected.extend(w)
+    assert window_shuffle(BCL2, random.Random(7), 10) == "".join(expected)
+
+
+def test_window_must_be_positive():
+    with pytest.raises(ValueError):
+        window_shuffle(BCL2, random.Random(0), 0)
+
+
 def test_full_shuffle_keeps_only_the_residue_counts():
     rng = random.Random(0)
     seq = "CKGKGAKCSRLMYDCCTGSCRSGKC"
@@ -121,3 +170,8 @@ def test_shuffle_around_fixed_does_move_the_other_residues():
 
 def test_shuffle_around_fixed_on_an_all_cysteine_sequence_is_unchanged():
     assert shuffle_around_fixed("CCCC", random.Random(0)) == "CCCC"
+
+
+def test_composition_shuffle_is_full_shuffle():
+    """The two names are one function, so the same seed gives the same decoy."""
+    assert composition_shuffle is full_shuffle
