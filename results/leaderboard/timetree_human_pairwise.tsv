@@ -1,0 +1,16 @@
+label	taxon	scientific_name	timetree_taxon_b	timetree_name_b	mya	adjusted_age	precomputed_age	ci_low	ci_high	n_studies	url	fetched
+ptroglodytes	9598	Pan troglodytes	9598	Pan troglodytes	6.45	6.45284	6.4528429670444	6.1571704915901	6.7485154424986	90	https://timetree.org/api/pairwise/9606/9598	2026-10-20
+rnorvegicus	10116	Rattus norvegicus	10116	Rattus norvegicus	83.51	83.51396	83.51395605058	80.136695286752	86.891216814408	75	https://timetree.org/api/pairwise/9606/10116	2026-10-20
+mouse	10090	Mus musculus	10090	Mus musculus	83.51	83.51396	83.51395605058	80.136695286752	86.891216814408	75	https://timetree.org/api/pairwise/9606/10090	2026-10-20
+btaurus	9913	Bos taurus	9913	Bos taurus	89.48	89.48067	89.480669664156	86.018420156916	92.942919171395	64	https://timetree.org/api/pairwise/9606/9913	2026-10-20
+clupus	9615	Canis lupus familiaris	9615	Canis lupus familiaris	89.48	89.48067	89.480669664156	86.018420156916	92.942919171395	64	https://timetree.org/api/pairwise/9606/9615	2026-10-20
+mdomestica	13616	Monodelphis domestica	13616	Monodelphis domestica	159.16	159.15818	159.1581830164	152.24224520775	166.07412082505	42	https://timetree.org/api/pairwise/9606/13616	2026-10-20
+chicken	9031	Gallus gallus	9031	Gallus gallus	318.82	318.82488	318.82487763205	316.68717845111	320.962576813	37	https://timetree.org/api/pairwise/9606/9031	2026-10-20
+xtropicalis	8364	Xenopus tropicalis	8364	Xenopus tropicalis	352.08	352.08192	352.08191893591	349.44147355034	354.72236432147	38	https://timetree.org/api/pairwise/9606/8364	2026-10-20
+zebrafish	7955	Danio rerio	7955	Danio rerio	435.13	435.12563	435.12562641043	428.13539896745	442.11585385342	37	https://timetree.org/api/pairwise/9606/7955	2026-10-20
+ciona	7719	Ciona intestinalis	7719	Ciona intestinalis	600.96	600.96099	600.96098530339	550.11811384501	651.80385676177	11	https://timetree.org/api/pairwise/9606/7719	2026-10-20
+fly	7227	Drosophila melanogaster	7227	Drosophila melanogaster	692.17	692.17015	721.45304263256	645.71043982296	797.19564544216	21	https://timetree.org/api/pairwise/9606/7227	2026-10-20
+worm	6239	Caenorhabditis elegans	6239	Caenorhabditis elegans	692.17	692.17015	721.45304263256	645.71043982296	797.19564544216	21	https://timetree.org/api/pairwise/9606/6239	2026-10-20
+yeast	559292	Saccharomyces cerevisiae	4932	Saccharomyces cerevisiae S288C	1164.30	1164.29781	1217.8553761111	1113.0995219198	1322.6112303024	17	https://timetree.org/api/pairwise/9606/559292	2026-10-20
+arabidopsis	3702	Arabidopsis thaliana	3702	Arabidopsis thaliana	1515.83	1515.8312	1455.2614625	1227.8780803201	1682.6448446799	10	https://timetree.org/api/pairwise/9606/3702	2026-10-20
+ecoli	83333	Escherichia coli									https://timetree.org/api/pairwise/9606/83333	2026-10-20

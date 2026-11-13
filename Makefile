@@ -4,7 +4,7 @@
 SHERLOCK_HOST ?= sherlock
 ON_CLUSTER := $(shell [ -n "$$SCRATCH" ] && [ -d "$$SCRATCH" ] && echo yes)
 
-.PHONY: help running leaderboard-alphabets
+.PHONY: help running leaderboard-tables leaderboard-fetch leaderboard-timetree leaderboard-alphabets
 
 help:
 	@echo "Sherlock:"
@@ -13,6 +13,10 @@ help:
 	@echo "             are not part of a run"
 	@echo ""
 	@echo "Leaderboard:"
+	@echo "  leaderboard-fetch   Copy every input provenance.json lists from Sherlock into"
+	@echo "                      LEADERBOARD_DATA (a mirror of /scratch/users/olgabot)"
+	@echo "  leaderboard-tables  Write results/leaderboard/ (results.parquet, compute.parquet,"
+	@echo "                      coverage.md, provenance.json) from LEADERBOARD_DATA"
 	@echo "  leaderboard-alphabets  Write results/leaderboard/alphabets/ (the alphabet page's"
 	@echo "                         tables) from notebooks 230 and 291 and PR 116's CSV"
 	@echo ""
@@ -36,11 +40,46 @@ running:
 	fi
 	@python3 $$SCRATCH/nf-running
 
+## The protein annotation leaderboard's tables (seanome/protein-function-annotation-leaderboard
+## copies results/leaderboard/ from a commit of this repo).
+##
+## One long table of every finished benchmark output: the QfO region benchmark (mini, midi,
+## midi-plus), ELM cover, the dark set (Pfam Fmax, reach, best-hit accuracy), notebook
+## 241's three cases, the deep-twilight controls, and the SCOPe40 kmerseek 0.4 sweeps.
+## results/leaderboard/inventory.md lists every output found and why some are left out; it is
+## written by hand, not by leaderboard-tables.
+##
+## LEADERBOARD_DATA mirrors /scratch/users/olgabot: a file at $SCRATCH/x/y is read from
+## $(LEADERBOARD_DATA)/x/y. leaderboard-fetch copies exactly the inputs provenance.json
+## lists, over the data transfer node.
+LEADERBOARD_DATA ?= $(HOME)/data/leaderboard-inputs
+# Olga's conda env on her Mac when it is there, else python3 from PATH (it needs polars).
+LEADERBOARD_ENV_PYTHON := /Users/olga/anaconda3/envs/2025-kmerseek-analysis/bin/python3
+LEADERBOARD_PYTHON ?= $(if $(wildcard $(LEADERBOARD_ENV_PYTHON)),$(LEADERBOARD_ENV_PYTHON),python3)
+SHERLOCK_DTN ?= sherlock-dtn
+
+leaderboard-fetch:
+	mkdir -p $(LEADERBOARD_DATA)
+	$(LEADERBOARD_PYTHON) -c 'import json; [print(p.removeprefix("/scratch/users/olgabot/")) for p in json.load(open("results/leaderboard/provenance.json"))["inputs"]]' \
+	  > $(LEADERBOARD_DATA)/.fetch-list.txt
+	pixi exec rsync -a --files-from=$(LEADERBOARD_DATA)/.fetch-list.txt \
+	  "$(SHERLOCK_DTN):/scratch/users/olgabot/" $(LEADERBOARD_DATA)/
+
+## TimeTree's divergence time from human for each QfO relative; leaderboard-tables reads it.
+leaderboard-timetree:
+	$(LEADERBOARD_PYTHON) scripts/fetch_timetree_human_pairwise.py \
+	  --species nextflow-runs/qfo-pfam-region-benchmark/assets/qfo_species.tsv \
+	  --out results/leaderboard/timetree_human_pairwise.tsv
+
+leaderboard-tables:
+	$(LEADERBOARD_PYTHON) scripts/build_leaderboard_long.py \
+	  --data $(LEADERBOARD_DATA) \
+	  --outdir results/leaderboard
+
 ## The leaderboard site's alphabet page (seanome/protein-function-annotation-leaderboard copies
 ## results/leaderboard/alphabets/ from a commit of this repo). Reads notebook 291's stored
 ## table and the per-pair tables of notebook 230 from ~/data (about 100 MB), so it runs on the
 ## laptop in about 20 s with a peak of 3.75 GB resident (measured 2026-10-16 with
 ## /usr/bin/time -l); see scripts/build_leaderboard_alphabets.py.
-LEADERBOARD_PYTHON ?= /Users/olga/anaconda3/envs/2025-kmerseek-analysis/bin/python3
 leaderboard-alphabets:
 	$(LEADERBOARD_PYTHON) scripts/build_leaderboard_alphabets.py --outdir results/leaderboard/alphabets
