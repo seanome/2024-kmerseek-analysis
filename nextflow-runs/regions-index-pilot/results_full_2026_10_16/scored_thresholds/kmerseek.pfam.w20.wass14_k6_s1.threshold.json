@@ -1,0 +1,13 @@
+{
+  "threshold": 0.00012104211691839827,
+  "n_target": 13153,
+  "n_decoy": 655,
+  "nofit": false,
+  "label": "kmerseek.pfam.w20.wass14_k6_s1",
+  "calls_total": 1898426,
+  "decoy_calls_total": 839535,
+  "max_decoy_rate": 0.05,
+  "features_found": 519,
+  "features_found_aligned": 565,
+  "features_total": 7174
+}

@@ -1,0 +1,17 @@
+rows with NA:  
+converting counts to integer mode
+group 5 ~ treat            genes 21031 spearman_p 0.99992 pearson_logp 1.00000 medabsdiff_logp 0.0002 n_p05 179 paper_n_p05 179
+converting counts to integer mode
+group 5 ~ colony + treat   genes 21031 spearman_p 0.80285 pearson_logp 0.80023 medabsdiff_logp 0.0406 n_p05 125 paper_n_p05 179
+converting counts to integer mode
+group 4 ~ treat            genes 25407 spearman_p 0.99953 pearson_logp 0.99984 medabsdiff_logp 0.0011 n_p05 92 paper_n_p05 94
+converting counts to integer mode
+group 4 ~ colony + treat   genes 25407 spearman_p 0.76896 pearson_logp 0.79213 medabsdiff_logp 0.0374 n_p05 42 paper_n_p05 94
+converting counts to integer mode
+group 1 ~ treat            genes 50233 spearman_p 0.99995 pearson_logp 0.99999 medabsdiff_logp 0.0004 n_p05 639 paper_n_p05 645
+converting counts to integer mode
+group 1 ~ colony + treat   genes 50236 spearman_p 0.57871 pearson_logp 0.56302 medabsdiff_logp 0.0508 n_p05 70 paper_n_p05 646
+converting counts to integer mode
+group 2 ~ treat            genes 50588 spearman_p 0.99988 pearson_logp 0.99985 medabsdiff_logp 0.0017 n_p05 802 paper_n_p05 816
+converting counts to integer mode
+group 2 ~ colony + treat   genes 50592 spearman_p 0.73610 pearson_logp 0.68338 medabsdiff_logp 0.0881 n_p05 184 paper_n_p05 816

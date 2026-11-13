@@ -1,0 +1,83 @@
+{
+  "strict_RNA_seq": {
+    "public": {
+      "runs": 8490727,
+      "sample_acc_distinct": 6291877,
+      "sample_acc_missing_runs": 11403,
+      "biosample_distinct": 6291877,
+      "biosample_missing_runs": 11403
+    },
+    "controlled": {
+      "runs": 378551,
+      "sample_acc_distinct": 252416,
+      "sample_acc_missing_runs": 0,
+      "biosample_distinct": 252416,
+      "biosample_missing_runs": 0
+    },
+    "all": {
+      "runs": 8869278,
+      "sample_acc_distinct": 6544293,
+      "sample_acc_missing_runs": 11403,
+      "biosample_distinct": 6544293,
+      "biosample_missing_runs": 11403
+    },
+    "public_controlled_overlap": {
+      "sample_acc": 0,
+      "biosample": 0
+    }
+  },
+  "broad_transcriptomic": {
+    "public": {
+      "runs": 9494738,
+      "sample_acc_distinct": 7057286,
+      "sample_acc_missing_runs": 12240,
+      "biosample_distinct": 7057286,
+      "biosample_missing_runs": 12240
+    },
+    "controlled": {
+      "runs": 415704,
+      "sample_acc_distinct": 270695,
+      "sample_acc_missing_runs": 0,
+      "biosample_distinct": 270695,
+      "biosample_missing_runs": 0
+    },
+    "all": {
+      "runs": 9910442,
+      "sample_acc_distinct": 7327981,
+      "sample_acc_missing_runs": 12240,
+      "biosample_distinct": 7327981,
+      "biosample_missing_runs": 12240
+    },
+    "public_controlled_overlap": {
+      "sample_acc": 0,
+      "biosample": 0
+    }
+  },
+  "SRA_EST_assay": {
+    "public": {
+      "runs": 14653,
+      "sample_acc_distinct": 5452,
+      "sample_acc_missing_runs": 0,
+      "biosample_distinct": 5452,
+      "biosample_missing_runs": 0
+    },
+    "controlled": {
+      "runs": 0,
+      "sample_acc_distinct": 0,
+      "sample_acc_missing_runs": 0,
+      "biosample_distinct": 0,
+      "biosample_missing_runs": 0
+    },
+    "all": {
+      "runs": 14653,
+      "sample_acc_distinct": 5452,
+      "sample_acc_missing_runs": 0,
+      "biosample_distinct": 5452,
+      "biosample_missing_runs": 0
+    },
+    "public_controlled_overlap": {
+      "sample_acc": 0,
+      "biosample": 0
+    }
+  }
+}

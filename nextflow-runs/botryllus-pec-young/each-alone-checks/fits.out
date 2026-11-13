@@ -1,0 +1,21 @@
+genes 35619 
+young_104_132d   ~ treatment            libs 6 residual_df 4 tested 13241 p<.05 118 padj<.05 0 baseMean>5 1680 | vst ok
+young_104_132d   ~ colony + treatment   libs 6 residual_df 2 tested 13251 p<.05 61 padj<.05 0 baseMean>5 1680 | vst ok
+young_13_17d     ~ treatment            libs 12 residual_df 10 tested 13835 p<.05 0 padj<.05 0 baseMean>5 490 | VST FAIL: less than 'nsub' rows with mean normalized count > 5, 
+  it is recommended to use varianceStabilizingTransformation directly
+young_13_17d     ~ colony + treatment   libs 12 residual_df 7 tested 14900 p<.05 238 padj<.05 8 baseMean>5 490 | VST FAIL: less than 'nsub' rows with mean normalized count > 5, 
+  it is recommended to use varianceStabilizingTransformation directly
+young_21_28d     ~ treatment            libs 5 residual_df 3 tested 1513 p<.05 0 padj<.05 0 baseMean>5 14 | VST FAIL: less than 'nsub' rows with mean normalized count > 5, 
+  it is recommended to use varianceStabilizingTransformation directly
+young_21_28d     ~ colony + treatment   libs 5 residual_df 2 tested 1513 p<.05 0 padj<.05 0 baseMean>5 14 | VST FAIL: less than 'nsub' rows with mean normalized count > 5, 
+  it is recommended to use varianceStabilizingTransformation directly
+young_24h        ~ treatment            libs 12 residual_df 10 tested 31814 p<.05 297 padj<.05 0 baseMean>5 12786 | vst ok
+young_24h        ~ colony + treatment   libs 12 residual_df 7 tested 33169 p<.05 350 padj<.05 0 baseMean>5 12786 | vst ok
+young_2h         ~ treatment            libs 12 residual_df 10 tested 31582 p<.05 171 padj<.05 0 baseMean>5 13381 | vst ok
+young_2h         ~ colony + treatment   libs 12 residual_df 7 tested 32709 p<.05 138 padj<.05 1 baseMean>5 13381 | vst ok
+young_49_52d     ~ treatment            libs 5 residual_df 3 tested 11783 p<.05 62 padj<.05 0 baseMean>5 992 | VST FAIL: less than 'nsub' rows with mean normalized count > 5, 
+  it is recommended to use varianceStabilizingTransformation directly
+young_49_52d     ~ colony + treatment   libs 5 residual_df 1 tested 11789 p<.05 55 padj<.05 0 baseMean>5 992 | VST FAIL: less than 'nsub' rows with mean normalized count > 5, 
+  it is recommended to use varianceStabilizingTransformation directly
+paper_13_49d     ~ treatment            libs 8 residual_df 6 tested 17197 p<.05 84 padj<.05 0 baseMean>5 1667 | vst ok
+paper_13_49d     ~ colony + treatment   libs 8 residual_df 4 tested 17396 p<.05 47 padj<.05 0 baseMean>5 1667 | vst ok

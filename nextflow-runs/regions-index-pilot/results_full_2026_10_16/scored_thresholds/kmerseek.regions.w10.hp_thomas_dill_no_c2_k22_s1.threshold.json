@@ -1,0 +1,13 @@
+{
+  "threshold": 17.06086946545615,
+  "n_target": 1003,
+  "n_decoy": 49,
+  "nofit": false,
+  "label": "kmerseek.regions.w10.hp_thomas_dill_no_c2_k22_s1",
+  "calls_total": 97796266,
+  "decoy_calls_total": 47142984,
+  "max_decoy_rate": 0.05,
+  "features_found": 305,
+  "features_found_aligned": 443,
+  "features_total": 7174
+}

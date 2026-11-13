@@ -1,0 +1,13 @@
+{
+  "threshold": 0.0011497670652302647,
+  "n_target": 8,
+  "n_decoy": 0,
+  "nofit": false,
+  "label": "kmerseek.whole.w10.gbmr7_k16_s1",
+  "calls_total": 275506664,
+  "decoy_calls_total": 134854769,
+  "max_decoy_rate": 0.05,
+  "features_found": 4,
+  "features_found_aligned": 4,
+  "features_total": 7174
+}

@@ -1,0 +1,6 @@
+Traceback (most recent call last):
+  File "/home/users/olgabot/botryllus-shazam-code/production-9aa951b1/scripts/botryllus_shazam/nextflow_stages.py", line 864, in <module>
+    actions[sys.argv[1]](*sys.argv[2:])
+  File "/home/users/olgabot/botryllus-shazam-code/production-9aa951b1/scripts/botryllus_shazam/nextflow_stages.py", line 88, in genes
+    raise ValueError(
+ValueError: Reference requires unresolved or length-aware gene aggregation

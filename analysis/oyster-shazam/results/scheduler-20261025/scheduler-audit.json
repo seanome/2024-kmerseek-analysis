@@ -1,0 +1,11 @@
+{
+  "cancelled_job": 49525039,
+  "resumed_job": 49525575,
+  "slurm_dispatch": true,
+  "external_task_cancellation": true,
+  "interruption_resume": true,
+  "completed_task_cached": true,
+  "completion_sha256": "f200d7916f93ca6a3ade6b024b6f45a9500fa1e744369c4eeb637b4d3c25505a",
+  "production_rollout": false,
+  "scope": "One grouped Slurm task; task cancellation, not controller kill or preemption"
+}

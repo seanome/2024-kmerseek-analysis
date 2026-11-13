@@ -1,0 +1,2 @@
+gse	gpl	rule	k	median_probe_length	probes	probes_with_a_kmer_in_proteome	share_of_probes_with_a_kmer_in_proteome	features_landed	proteins_landed	orientation	probes_with_a_kmer_as_given	probes_with_a_kmer_complemented	landings	reversed_landings
+GSE28998	GPL570	probe_set	7	25.0	604258	4752	0.0079	314	186	as_given	4752	2065	316	7

@@ -1,0 +1,27 @@
+# Tests the Python modules in nextflow-runs/shared/ that notebooks, scripts and pipelines
+# import from one place instead of copying.
+
+name: shared-python
+
+on:
+  push:
+    paths:
+      - 'nextflow-runs/shared/**'
+      - 'tests/test_decoys.py'
+      - '.github/workflows/shared-python.yml'
+  pull_request:
+    paths:
+      - 'nextflow-runs/shared/**'
+      - 'tests/test_decoys.py'
+      - '.github/workflows/shared-python.yml'
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - run: pip install pytest
+      - run: pytest -q tests/test_decoys.py

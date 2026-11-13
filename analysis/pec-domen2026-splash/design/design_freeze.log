@@ -1,0 +1,13 @@
+sheets: ['sequenced samples meta data', 'DEseq group annotation', 'Pacemaker_Counts_Table', 'Group1_2Hr_young_DEseqres', 'group2_24Hr_Young_DEseqresult', 'group3_24Hr_OLD_DEseq', 'Group4_13and49Days_Young_DEseq', 'group5_132Days_young_DEseq', 'group6_41to93days_oldDEseq', 'Fig 4_M1 M2 Botryllus gene set', 'annotated DE all groups young', 'annotated DE all groups old', 'Temporal Reg gene list young ', 'Temporal Reg gene list Old', 'fig4a&bgene_count']
+Group 1 after 2h young 12
+Group 2 after 24h young 12
+Group 3 after 24h old 4
+Group 4 after 13 and 49 days Young 8
+Group 5 after 132 days Young 6
+Group 6 after 41 and 93 days Old 5
+young_2h 12 PEC 6 genotypes ['6941c', '6990b', '6996m', '6996n']
+young_24h 12 PEC 6 genotypes ['6941c', '6990b', '6996m', '6996n']
+old_24h 4 PEC 2 genotypes ['944aXBYd196-4']
+young_13_49d 8 PEC 4 genotypes ['6941c', '6990b', '6996m']
+young_132d 6 PEC 3 genotypes ['6990b', '6996m', '6996n']
+old_41_93d 5 PEC 3 genotypes ['944aXBYd196-4']
