@@ -618,7 +618,7 @@ def draw_suppfig1(t: pl.DataFrame, stem: Path) -> None:
         fontsize=6,
     )
     assert_no_text_collisions(fig)
-    pf.save(fig, stem)
+    pf.save(fig, stem, formats=("pdf", "svg", "png"))
     print(f"wrote {stem}.pdf/.png/.svg ({W_MM} x {h_mm:.0f} mm)")
 
 
@@ -691,7 +691,7 @@ def draw_seed_reach(t: pl.DataFrame, stem: Path) -> None:
         pf.ONE_COLUMN_MM,
     )
     assert_no_text_collisions(fig)
-    pf.save(fig, stem)
+    pf.save(fig, stem, formats=("pdf", "svg", "png"))
     print(f"wrote {stem}.pdf/.png/.svg ({pf.ONE_COLUMN_MM} x {h_mm:.0f} mm)")
 
 
