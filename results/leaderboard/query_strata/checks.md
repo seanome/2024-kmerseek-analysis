@@ -40,4 +40,4 @@
 
 results.parquet has no query-side rows yet: the midi-plus run has not been rescored with the strata covariates.
 
-Mismatches: 0.
+Mismatches: 0 in the bin recounts above. The long-table check did not run.
