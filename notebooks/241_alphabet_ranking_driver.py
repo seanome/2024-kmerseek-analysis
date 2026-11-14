@@ -394,10 +394,13 @@ def one_arm(
     if fit is not True:
         # Exact regions only: no extension, so no E-value, but IDF, tf-idf, enrichment
         # and the Poisson score are all still written.
+        # Drop each flag together with the value after it, by position. Dropping by
+        # value would also remove any other flag's value that happens to equal c or x.
+        ext_flags = ("--extend-mismatch-penalty", "--extend-xdrop")
         search_cmd = [
             a
-            for a in search_cmd
-            if a not in ("--extend-mismatch-penalty", "--extend-xdrop", c, x)
+            for i, a in enumerate(search_cmd)
+            if a not in ext_flags and (i == 0 or search_cmd[i - 1] not in ext_flags)
         ]
         search_cmd += ["--extend-mismatch-penalty", "0"]
         (out / "search" / f"{tag}.nofit").write_text(
