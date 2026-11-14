@@ -8,6 +8,7 @@ from pathlib import Path
 
 import numpy as np
 import matplotlib.pyplot as plt
+import seaborn  # noqa: F401  registers mako and crest, the Seanome colour maps
 from matplotlib.transforms import ScaledTranslation
 
 MM = 1 / 25.4  # inches per millimetre
